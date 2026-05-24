@@ -1,0 +1,55 @@
+{
+  "slug": "banks-gn5-2008",
+  "title": "Banks Act Guidance Note 5/2008 — Electronic Communications with the Office",
+  "shortTitle": "GN 5/2008 (Electronic Communications)",
+  "regulator": "Prudential Authority",
+  "year": 2008,
+  "effectiveDate": "2008-01-01",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G5/2008",
+    "G5/08",
+    "Guidance Note 5/2008",
+    "Guidance Note 5 of 2008"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 5/2008 (Electronic Communications)",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This Office receives on a daily basis numerous official electronic messages (e-mail), which\nmessages are addressed directly to individual staff members within this Office. This Office is\nconcerned that official correspondence may not receive attention or get mislaid when the\ndocumentation is submitted directly to individual staff members. This Office is also concerned\nthat the said\npractice may lead to undue delays in our response time and that the\ncorrespondence might not be registered properly within our central registry.\nGuidance on electronic communication: new e-mail address\nIn the light of the concerns set out above, this Office has established a centralised e-mail\naddress to which banks must submit all official electronic correspondence.\nAll banks, controlling companies and branches of foreign banks are required to utilise the\nfollowing e-mail address for the submission of all electronic enquiries and/or correspondence:\nSARB-BANKSUP@resbank.co.za\nPlease note that electronic messages that are sent to individual staff members within this Office,\ninstead of to the above e-mail address, shall in future neither be registered nor processed.\nPO Box 8432 Pretoria 0001\n370 Church Street Pretoria 0002\nSouth Africa\nTel +27 12 3133911/0861 12 7272\nFax +27 12 3133758\nwww.reservebank.co.za\n\n\n2",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "Guidance on telephonic enquiries",
+          "text": "Please note that the current single point-of-entry arrangement for telephonic enquiries remains\nin place.",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "Acknowledgement of receipt",
+          "text": "Two additional copies of this guidance note are enclosed for the use of your institution's\nindependent auditors. The attached acknowledgement of receipt, duly completed and\nsigned by both the chief executive officer of the institution and the said auditors, should be\nreturned to this Office at the earliest convenience of the aforementioned signatories.\nEM Kruger\nRegistrar of Banks\nThe previous guidance note issued was Guidance Note 4/2008 dated 7 May 2008.",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

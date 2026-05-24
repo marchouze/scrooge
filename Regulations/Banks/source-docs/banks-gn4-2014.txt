@@ -1,0 +1,328 @@
+--- Page 1 ---
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+G4/2014
+PO Box 8432 Pretoria 0001
+2014-02-18
+To banks, branches of foreign institutions, controlling companies, eligible
+institutions and auditors of banks or controlling companies
+Guidance Note 4/2014 issued in terms of section 6(5) of the Banks Act, 1990
+Application process in respect of the proposed adoption of the internal ratings-
+based approach for the measurement of banks' credit risk exposure in respect of
+positions held in the banking book
+Executive summary
+In terms of regulation 23(10)(a) of the Regulations relating to Banks (the
+Regulations), banks are required to obtain the prior written approval of the
+Registrar of Banks to adopt the foundation internal ratings-based (IRB) approach
+or the advanced IRB approach (jointly referred to as the 'advanced approaches')
+for the measurement of their exposure to credit risk in respect of positions held in
+the banking book.
+The purpose of this guidance note is to inform all banks, controlling companies
+and branches of foreign institutions (hereinafter collectively referred to as 'banks')
+of the process to be followed and the information required to be submitted when
+applying to use the advanced approaches.
+This Guidance Note replaces Guidance Note 4/2010, issued 25 June 2010, and
+requires additional information and documentation
+to be included in the IRB
+application pack.
+1. Guidance on submitting an internal ratings-based approach application
+1.1 All banks intending to adopt the advanced approaches are required to submit a duly
+completed IRB application pack, attached as Annexure A. This would include the
+information as required in the various sections of the application pack and duly
+completed declarations signed by the bank's chief executive officer and chairperson
+of the board of directors.
+1.2
+Banks should make provision for a period of up to 18 months between submitting a
+completed IRB application pack and approval being granted or denied. Applicant
+banks will also be required, once advised by this Office, to perform a BA return
+reporting parallel run for a period of 6 months during the above-mentioned
+application period of 18 months as described in Annexure A.
+370 Helen Joseph Street Pretoria C002
+South Africa
+Tel +27 12 3133911/0861 12 7272
+Fax +27 12 3133758
+www.reservebank.co.za
+
+--- Page 2 ---
+2
+2.
+Acknowledgement of receipt
+Two additional copies of this guidance note are enclosed for use by your
+institution's independent auditors. The attached acknowledgement of receipt, duly
+completed and signed by both the chief executive officer of the institution and the
+said auditors, should be returned to this Office at the earliest convenience of the
+aforementioned signatories.
+René van Wyk
+Registrar of Banks
+Encl. 2
+The previous guidance note issued was Guidance Note 3/2014, dated 13 February 2014.
+
+--- Page 3 ---
+Annexure A
+Application to adopt the internal ratings-based approach for the measurement of
+credit risk exposure in respect of positions held in the banking book (IRB
+application)
+Februarv
+1 2014
+
+--- Page 4 ---
+General information on the IRB application
+1. The Regulations relating to Banks (the Regulations) stipulate several approaches
+available to banks, controlling companies and branches of foreign institutions
+(hereafter referred to as 'banks') for calculating the minimum required amount of
+Common Equity Tier 1, Additional Tier 1 and Tier 2 capital and reserve funds
+relating to banks' exposure to credit risk. Banks are required to obtain the prior
+written approval of the Registrar of Banks to adopt the foundation IRB approach
+and/or the advanced IRB approach (jointly referred to as the 'advanced approaches)
+for calculating exposure to credit risk in respect of positions held in the banking
+book.
+2. Banks should make provision for a period of up to 18 months between submitting a
+completed IRB application pack and approval being granted or denied.
+3. All banks applying to adopt the advanced approaches will be required, once advised
+by this Office, to undertake a parallel reporting run for a minimum of six months for
+the affected portfolios prior to using such approaches in capital calculations. This
+parallel run period will be performed during the above-mentioned 18 month
+application period. The aim of the parallel run is to give both the applicant bank and
+the Bank Supervision Department (BSD) comfort that the applicant bank has tested
+its systems for management and regulatory reporting purposes, and will be able to
+successfully use them for capital calculations by the end of the parallel run period.
+The capital impact of the models will also be monitored and assessed by BSD during
+the parallel run period. The parallel run submissions are in addition to the regular
+BA returns submitted by banks and applicant banks should therefore liaise with BSD
+for arrangements with regard to the parallel run submission process.
+4. The IRB application process consists of two stages. The first stage requires the
+applicant bank to complete the IRB application pack, which provides summary
+information on its plans for IRB implementation and its approach to a number of key
+areas such as governance and the use of internal ratings. The second stage
+requires BSD to carry out an on-site focused review at the bank to assess areas
+identified for follow-up (during the review of the IRB application pack submitted) to
+determine whether the applicant bank will be able to meet the minimum
+requirements. BSD is likely to request further detailed information if deemed
+necessary.
+5. Banks are expected to be in a reasonable state of readiness when they apply for
+approval to adopt the advanced approaches, which would include having a clear and
+realistic roll-out plan covering the material portfolios for inclusion in the advanced
+approaches. BSD will rely on preparatory work undertaken by the banks themselves,
+with a key element in this regard being the involvement of senior management in the
+approach being considered, including the requirement for the information submitted
+by banks being signed off by the applicant bank's chief executive officer.
+6. When compiling information requested in the sections below, banks should provide
+concise responses. Where necessary, applicant banks may refer to supporting
+documentation, which BSD can request during stage two of the IRB application
+process. The primary aim of the information is to enable BSD to determine the scope
+of its supervisory review work in respect of assessing a bank's IRB application (as
+part of stage two of the application) and the bank should bear this in mind when
+formulating its application.
+Page 2 of 7
+
+--- Page 5 ---
+Information to be provided by a bank, controlling company or branch of a foreign
+institution
+Section A: General overview of application
+1. Overview of IRB implementation plan and key milestones, including an overview of
+the external expertise or internal expertise used within the group.
+2. A summary of why the bank is applying for use of the advanced approaches and
+what it aims to achieve as a consequence.
+3. Overview of the group and legal entity structure.
+Scope of the application, setting out the approaches being applied for, including
+the business lines, portfolios and legal entities (mapped to the different asset
+classes per the form BA 200) to which the approach will apply.
+5. Detail of portfolios for which the bank wishes to apply for any permanent
+exemptions.
+Section B: Corporate governance and oversight
+6. I
+Review
+of governance of the IRB implementation process including a brief
+overview of how it fits into the governance process at a group level):
+6.1 Description of the governance process.
+6.2 Model development and maintenance.
+6.3 Independent validation, including a motivation for structural independence and
+appropriate incentive structure.
+7. Copy of the board-approved credit policy and a description of future changes
+planned.
+8. Copies of the board-approved model validation, development and monitoring
+policies, where relevant.
+Section C: Internal ratings-based approaches self-assessment
+9. Complete and submit schedules 1, 2 and 3 of the self-assessment (refer to
+http://www.reservebank.co.za> Regulation and supervision> Bank Supervision>
+International standards> Internal ratings-based approaches: Application process
+and Self-assessment and long-form review templates).
+Page 3 of 7
+
+--- Page 6 ---
+Section D: Rating and risk estimation systems
+10. Complete Annexure B for each model that will be used for the IRB approach. The
+application pack shall include all relevant documentation as described in point 8 of
+Annexure B
+11. Complete and submit a Credit Risk Rating System Register (refer to
+http://www.reservebank.co.za> Regulation and supervision> Bank Supervision>
+International standards> Internal ratings-based approaches: Application process
+and Self-assessment and long-form review templates).
+12. The process followed in tailoring the models for the South African environment and
+the branch management's input into the development of the models.
+13. Description of how the bank meets the experience requirement, elaborating on the
+time that the rating/scoring systems have been in operation.
+14. Summary of the level of compliance with the use test requirements, specifically
+describing how the rating systems form an integral part of:
+14.1 Credit approval.
+14.2 Reporting of credit risk information: description of reports produced using data of
+the model.
+14.3 Risk management and internal capital allocation process.
+15. Outline the differences, if any, between the parameter estimates used for
+regulatory capital purposes and those for internal purposes.
+Section E: Stress testing
+16.
+Description of the bank's approach to credit risk stress testing. In particular,
+describe the level of compliance with the requirements specified in regulation
+23(11)(b)(ix) of the Regulations.
+Section F: Technological environment, data maintenance and regulatory
+reporting requirements
+17. Description of the bank's approach to data management, with reference to the
+applications used to store information relating to the rating system, the estimated
+parameters and any other relevant aspect. In particular, describe the level of
+compliance with the requirements specified in regulation 23(11) (b)(viii) of the
+Regulations.
+18. The process followed to obtain calibration databases and regulatory capital
+figures, including an overview of the regulatory reporting system and whether the
+bank would be in a position to complete and submit the risk-based returns within
+the periods specified in regulation 7 of the Regulations.
+Page 4 of 7
+
+--- Page 7 ---
+Section G: Independent validation
+19. Description of the bank's approach to validation, with reference to:
+19.1 Back testing. Analysis of the differences between the parameter estimates (PD,
+LGD and EAD) and the realised default rates, loss severities and EAD amounts.
+19.2 Performance monitoring. Description of tests used to validate the accuracy,
+stability, discriminatory power and calibration of the rating systems.
+19.3 Benchmarking. Comparison of parameter estimates across banks and/or external
+benchmarks.
+20. Staffing of validation unit, including approved vacancies and skillset.
+Section H: Declaration by the Chief Executive Officer (attached)
+Section I: Declaration by the Chairperson of the Board of Directors (attached)
+Note: Please supply responses to this questionnaire and supporting documentation
+either electronically to SARB-BANKSUP@resbank.co.za or via hard medium such as
+CD or memory stick.
+Page 5 of 7
+
+--- Page 8 ---
+Section H: Declaration by the Chief Executive Officer
+Declaration constituting the formal application for approval for use of the IRB
+approach in respect of credit risk exposures for purposes of determining the
+minimum required regulatory capital to be held
+1, the undersigned, hereby declare that I have carefully worked through the content
+of the information that is being submitted as part of the application for permission
+to use the IRB approach to calculate minimum required capital and reserve funds
+relating to credit risk
+I declare that this information is correct, complete, accurate and truthful and
+presents a true picture of the situation at ...
+(name of bank) on the basis of which BSD can form an appropriately informed
+judgement on the application.
+• I undertake to notify BSD immediately if there is a significant change to the
+information given in the application pack. I hereby also acknowledge that if I fail to
+do so, this may result in a delay in the application process.
+Signed at...
+year)
+this..... day of
+(month and
+....
+Signature: Chief Executive Officer
+Page 6 of 7
+
+--- Page 9 ---
+Section I: Declaration by the Chairperson of the Board of Directors
+Declaration constituting the formal application for approval for use of the IRB
+approach in respect of credit risk exposures for purposes of determining the
+minimum required regulatory capital to be held
+• I sign this application on behalf of every legal entity making the application.
+• I confirm that the information submitted in the application pack represents a true
+and fair view, to the best of my knowledge and belief, and that I have taken all
+reasonable steps to ensure that this is the case.
+• I confirm that I am aware that it is an offence to provide BSD, knowingly or not,
+with information that is false or misleading.
+• give consent to make the records that demonstrate (name of bank's) compliance
+with the IRB minimum requirements available to BSD upon its request.
+I confirm that I give consent for any information provided in relation to this
+application to be shared with other local and/or international regulators at BSD's
+discretion.
+Signed at.
+year)
+this.......
+....day of
+(month and
+Signature: Chairperson of the Board of Directors
+Page 7 of 7
+
+--- Page 10 ---
+Annexure B: Summary of model to be used for internal ratings-based approach
+Table 1: Summary information
+1. Bank name
+Rating system
+Name:
+Unique number:
+Type (PD, LGD, EAD):
+6.
+7.
+Brief description of model
+methodology
+Model weaknesses and
+limitations: description of any
+known weaknesses of the models
+and anticipated timetable for
+remedying or improving them
+Portfolio(s)/business units
+covered by the rating system
+Asset class(es) affected by the
+rating system
+Relevant committee approval
+8.
+Supporting documentation for
+rating system
+Committee:
+Date:
+Development documentation
+Validation documentation
+Documentation presented to approval
+committee
+Approval committee minutes
+Other supplementary material
+Page 1 of 2
+
+--- Page 11 ---
+Table 2: Parameter estimates and capital information
+As at:'
+Exposure
+(R'm)
+EAD
+(R'm)
+EAD weighted PD
+(%)
+Point in
+time
+Long
+Run
+Average
+EAD weighted LGD
+(%)
+Downturn
+Long
+Run
+Average
+Expected
+loss
+(R'm)
+Risk
+weighted
+assets (R'm)?
+Capital
+requirement
+(R'm)?
+Performing loans
+Non-performing
+loans
+' This table needs to be completed when the IRB application pack is submitted and for every month of the parallel-run reporting period
+2 Scalar of 1.06 should be included within the risk weighted assets (RWA)
+Calculated using RWA x minimum required capital percentage + expected losses
+4 Non-performing loans i.e. exposures that are in default as defined in Regulation 67
+Page 2 of 2

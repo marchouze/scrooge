@@ -1,0 +1,38 @@
+{
+  "slug": "banks-gn7-2016",
+  "title": "Banks Act Guidance Note 7/2016 — Capital Arbitrage Transactions",
+  "shortTitle": "GN 7/2016 (Capital Arbitrage)",
+  "regulator": "Prudential Authority",
+  "year": 2016,
+  "effectiveDate": "2016-08-08",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G7/2016",
+    "Guidance Note 7/2016",
+    "Guidance Note 7 of 2016"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 7/2016 (Capital Arbitrage)",
+      "sections": [
+        {
+          "id": "s0",
+          "number": "0",
+          "heading": "Full text",
+          "text": "South African Reserve Bank\nFrom the Office of\nthe Registrar of Banks\nRef.: 15/8/2\nG7/2016\n2016-08-02\nTo banks, branches of foreign institutions, controlling companies, eligible\ninstitutions and auditors of banks or controlling companies\nGuidance Note G7/2016 issued in terms of section 6(5) of the Banks Act 94 of\n1990\nCapital arbitrage transactions\nExecutive summary\nThe Basel Committee on Banking Supervision (Basel Committee) has recently\nissued a statement on capital arbitrage transactions.\nThe purpose of this guidance note is to inform banks, branches of foreign\ninstitutions, controlling companies, eligible institutions and auditors of banks\nor controlling companies (hereinafter collectively referred to as all interested\npersons) not to engage in transactions that aim to unduly offset regulatory\nadjustments.\nBackground and documents issued by the Basel Committee relating to\ncapital arbitrage transactions\n1.1\n1.2\nThe Basel Committee has issued Newsletter 18 during June 2016.'\nIn the Newsletter, it is stated that since the publication of the Basel I!!\nframework in 2010, Basel Committee members have received numerous\nrequests to review or approve transactions that seek to alter the form or\nsubstance of items subject to regulatory adjustments, which are outlined in\nparagraphs 66 to 90 of the Basel III standard. These include, for example,\nproposals for structured transactions that result in deferred tax assets being\nreclassified as a way of seeking to avoid their deduction from the calculation\nof regulatory capital.\nPO Box 8432 Pretoria 0001\n' Available online at https://www.bis.org/publ/bcbs_ni18.htm\n370 Helen Josech Street Pretoria 0032\nSouth Africa\nTel +27 12 3133911/0861 12 7272\nFax +27 12 3133758\nwww.reservebank.co.za\n\n\n2\n1.3\n1.4\n2.\n2.1\nTransactions that are designed to offset regulatory adjustments employ a\nvariety of strategies. For example, these may include: (1) the issuance of\nsenior or subordinated securities with or without contingent write off\nmechanisms; (2) sales contracts that transfer insufficient risk to be deemed\nsales for accounting purposes; (3) fully-collateralised derivative contracts;\nand (4) guarantees or insurance policies. These types of transactions pose a\nnumber of risks, and they can be complex, artificial and opaque. They can\ninclude legal risk and be untested in their ability to fully address the\nunderlying rationale for the\nregulatory adjustment. Furthermore, such\ntransactions can have the effect of overestimating eligible capital or reducing\ncapital requirements, without commensurately reducing the risk in the\nfinancial system, thus undermining the calibration of minimum regulatory\ncapital requirements.\nBased on the aforesaid, this Office hereby informs all interested persons that\nbanks should not engage in transactions that aim to unduly offset regulatory\nadjustments. Any such transactions will be subject to careful scrutiny by this\nOffice in the evaluation of risk transfer and the assessment of the capital\nadequacy of banks and controlling companies.\nAcknowledgement of receipt\nTwo additional copies of this guidance note are enclosed for use by your\ninstitution's independent auditors. The attached acknowledgement of receipt,\nduly completed and signed by both the chief executive officer of the\ninstitution and the said auditors, should be returned to this Office at the\nearliest convenience of the aforementioned signatories.\na dap\nKuben Naidoo\nDeputy Governor and Registrar of Banks\nThe previous guidance note issued was Guidance Note 6/2016, dated 14 July 2016.",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

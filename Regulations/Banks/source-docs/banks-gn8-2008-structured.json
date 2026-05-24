@@ -1,0 +1,55 @@
+{
+  "slug": "banks-gn8-2008",
+  "title": "Banks Act Guidance Note 8/2008 — FATF Enhanced Scrutiny and UN Sanctions (Proliferation)",
+  "shortTitle": "GN 8/2008 (FATF/Proliferation)",
+  "regulator": "Prudential Authority",
+  "year": 2008,
+  "effectiveDate": "2008-06-17",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G8/2008",
+    "G8/08",
+    "Guidance Note 8/2008",
+    "Guidance Note 8 of 2008"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 8/2008 (FATF/Proliferation)",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "The purpose of this guidance note is to inform all banks and controlling companies of the call\nmade by the Financial Action Task Force (\"FATF\") for enhanced scrutiny of transactions with\ncertain jurisdictions and of United Nations sanctions in relation to the proliferation of weapons of\nmass destruction.",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Guidance on call made by FATF",
+          "text": "Enclosed hereto please find a copy of a letter from the Director of the Financial Intelligence\nCentre setting out the background and details of the call by FATF for enhanced scrutiny of\ntransactions with certain jurisdictions and of the United Nations sanctions in relation to the\nproliferation of weapons of mass destruction for your information and adoption.",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "Acknowledgement of receipt",
+          "text": "Two additional copies of this guidance note are enclosed for the use of your institution's\nindependent auditors. The attached acknowledgement of receipt, duly completed and\nsigned by both the chief executive officer of the institution and the said auditors, should be\nreturned to this Office at the earliest convenience of the aforementioned signatories.\nRegistrar of Banks\nThe previous guidance note issued was Guidance Note 7/2008, dated 7 May 2008.\nPO Box 8432 Pretoria 0001\n• 370 Church Street Pretoria 0002\nTel +27 12 3133911/0861 12 7272 Fax +27 12 3133758\nwww.resarvebank.co.za",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

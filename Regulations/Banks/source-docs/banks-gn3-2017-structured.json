@@ -1,0 +1,45 @@
+{
+  "slug": "banks-gn3-2017",
+  "title": "Banks Act Guidance Note 3/2017 — Audit Implications of the Expected Credit Loss Model",
+  "shortTitle": "GN 3/2017 (ECL Audit)",
+  "regulator": "Prudential Authority",
+  "year": 2017,
+  "effectiveDate": "2017-05-08",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G3/2017",
+    "Guidance Note 3/2017",
+    "Guidance Note 3 of 2017"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 3/2017 (ECL Audit)",
+      "sections": [
+        {
+          "id": "s5",
+          "number": "5",
+          "heading": "Acknowledgement of receipt",
+          "text": "5.1 Two additional copies of this guidance note are enclosed for use by your\ninstitution's independent auditors. The attached acknowledgement of receipt\ndul the sated and sirs shby dote he chief executive office of the triest\nKuben Naidoo\nDeputy Governor and Registrar of Banks\nDate: 3/57207\nThe previous\n7 February 2017.\nguidance\nnote issued was Guidance Note 2/2017, dated",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s5-5-1",
+              "number": "5.1",
+              "text": "Two additional copies of this guidance note are enclosed for use by your\ninstitution's independent auditors. The attached acknowledgement of receipt\ndul the sated and sirs shby dote he chief executive office of the triest\nKuben Naidoo\nDeputy Governor and Registrar of Banks\nDate: 3/57207\nThe previous\n7 February 2017.\nguidance\nnote issued was Guidance Note 2/2017, dated",
+              "verbatim": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
