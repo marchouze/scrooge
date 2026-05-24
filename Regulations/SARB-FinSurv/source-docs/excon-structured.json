@@ -194,9 +194,26 @@
                   "id": "excon-reg3.3.b",
                   "number": "b",
                   "heading": "excon-reg3.3.b",
-                  "text": "produce any bank notes, gold, securities or foreign currency which he has with him;\nand the appropriate officer and any person acting under his directions may search such person and examine or search any article which such person has with him, for the purpose of ascertaining whether he has with him any bank notes, gold, securities or foreign currency, and may seize any bank notes, gold, securities or foreign currency produced or found upon such examination or search unless either –\n(i) the appropriate officer is satisfied that such person is, in respect of any bank notes, gold, securities or foreign currency which he has with him, exempt from the prohibition imposed by sub-regulation (1); or\n(ii) such person produces to the appropriate officer a certificate granted by the Treasury which shows that the exportation by such person of any bank notes, gold, securities or foreign currency which he has with him does not involve a contravention of that sub-regulation.\nNo female shall be searched in pursuance of this sub-regulation except by a female.",
+                  "text": "produce any bank notes, gold, securities or foreign currency which he has with him;\nand the appropriate officer and any person acting under his directions may search such person and examine or search any article which such person has with him, for the purpose of ascertaining whether he has with him any bank notes, gold, securities or foreign currency, and may seize any bank notes, gold, securities or foreign currency produced or found upon such examination or search unless either –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "excon-reg3.3.b.i",
+                      "number": "i",
+                      "heading": "excon-reg3.3.b.i",
+                      "text": "the appropriate officer is satisfied that such person is, in respect of any bank notes, gold, securities or foreign currency which he has with him, exempt from the prohibition imposed by sub-regulation (1); or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg3.3.b.ii",
+                      "number": "ii",
+                      "heading": "excon-reg3.3.b.ii",
+                      "text": "such person produces to the appropriate officer a certificate granted by the Treasury which shows that the exportation by such person of any bank notes, gold, securities or foreign currency which he has with him does not involve a contravention of that sub-regulation.\nNo female shall be searched in pursuance of this sub-regulation except by a female.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -919,9 +936,42 @@
                   "id": "excon-reg14.2.b",
                   "number": "b",
                   "heading": "excon-reg14.2.b",
-                  "text": "The securities submitted in terms of paragraph (a) must be accompanied by a list giving the following particulars:\n(i) Full name and country of residence of owner or person interested in the securities, together with a signed declaration by the holder that to the best of his knowledge, the owner or interested person is actually resident in the country stated.\n(ii) Name of company or body which issued the securities.\n(iii) Total number of securities.\n(iv) Full name and residential address of person in possession of the securities or who has the securities in his custody.\nFor the purpose of facilitating identification of controlled securities the Treasury may direct authorised dealers to affix to the securities so submitted to them their stamp together with such endorsement as the Treasury may determine.",
+                  "text": "The securities submitted in terms of paragraph (a) must be accompanied by a list giving the following particulars:",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "excon-reg14.2.b.i",
+                      "number": "i",
+                      "heading": "excon-reg14.2.b.i",
+                      "text": "Full name and country of residence of owner or person interested in the securities, together with a signed declaration by the holder that to the best of his knowledge, the owner or interested person is actually resident in the country stated.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg14.2.b.ii",
+                      "number": "ii",
+                      "heading": "excon-reg14.2.b.ii",
+                      "text": "Name of company or body which issued the securities.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg14.2.b.iii",
+                      "number": "iii",
+                      "heading": "excon-reg14.2.b.iii",
+                      "text": "Total number of securities.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg14.2.b.iv",
+                      "number": "iv",
+                      "heading": "excon-reg14.2.b.iv",
+                      "text": "Full name and residential address of person in possession of the securities or who has the securities in his custody.\nFor the purpose of facilitating identification of controlled securities the Treasury may direct authorised dealers to affix to the securities so submitted to them their stamp together with such endorsement as the Treasury may determine.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -1236,9 +1286,42 @@
                   "id": "excon-reg22A.1.a",
                   "number": "a",
                   "heading": "excon-reg22A.1.a",
-                  "text": "attach –\n(i) any money or goods, notwithstanding the person in whose possession it is, in respect of which a contravention of any provision of these regulations has been committed or in respect of which an act or omission has been committed which the Treasury on reasonable grounds suspects to constitute any such contravention, or, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is kept in credit in that account, and shall, in the case of money attached, deposit such money in an account opened by the Treasury with an authorised dealer for such purpose, and may, in the case of goods attached, leave such goods, subject to an order issued or made under paragraph (c), in the possession of the person in whose possession such goods have been found or shall otherwise keep or cause it to be kept in custody in such manner and at such place as it may deem fit;\n(ii) any money or goods, notwithstanding the person in whose possession it is –\n(aa) which the Treasury on reasonable grounds suspects to be involved in a contravention of any provision of these regulations or in a failure to comply with any such provision, or which the Treasury on reasonable grounds suspects to be involved in any act or omission which the Treasury so suspects to constitute a contravention of any such provision or a failure to comply with any such provision;\n(bb) which have been obtained by any person or are due to him, whether by virtue of any personal right or otherwise, and which would not have been obtained by him or would not have been due to him if any such contravention or failure or any such act or omission had not been committed;\n(cc) by which any person has been benefited or enriched as a result of any such contravention or failure or any such act or omission,\nor, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is held in credit in that account;\n(iii) any money or goods, notwithstanding the person in whose possession it may be, into which money or goods referred to in subparagraph (i) or (ii) have been transformed, including any personal right obtained with money or goods referred to in subparagraph (i) or (ii), or, in the case of such money or any part thereof which has been deposited into any account, an equal amount of money which is held in credit in that account;\n(iv) any money which is held in a blocked account referred to in regulation 4 and which the Treasury on reasonable grounds suspects to be money –\n(aa) in respect of which a contravention or act or omission referred to in subparagraph (i) has been committed;\n(bb) which has been involved in a contravention or failure or act or omission referred to in subparagraph (ii)(aa);\n(cc) which has been obtained by any person or is due to him as referred to in subparagraph (ii)(bb);\n(dd) by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc);",
+                  "text": "attach –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "excon-reg22A.1.a.i",
+                      "number": "i",
+                      "heading": "excon-reg22A.1.a.i",
+                      "text": "any money or goods, notwithstanding the person in whose possession it is, in respect of which a contravention of any provision of these regulations has been committed or in respect of which an act or omission has been committed which the Treasury on reasonable grounds suspects to constitute any such contravention, or, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is kept in credit in that account, and shall, in the case of money attached, deposit such money in an account opened by the Treasury with an authorised dealer for such purpose, and may, in the case of goods attached, leave such goods, subject to an order issued or made under paragraph (c), in the possession of the person in whose possession such goods have been found or shall otherwise keep or cause it to be kept in custody in such manner and at such place as it may deem fit",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg22A.1.a.ii",
+                      "number": "ii",
+                      "heading": "excon-reg22A.1.a.ii",
+                      "text": "any money or goods, notwithstanding the person in whose possession it is –\n(aa) which the Treasury on reasonable grounds suspects to be involved in a contravention of any provision of these regulations or in a failure to comply with any such provision, or which the Treasury on reasonable grounds suspects to be involved in any act or omission which the Treasury so suspects to constitute a contravention of any such provision or a failure to comply with any such provision;\n(bb) which have been obtained by any person or are due to him, whether by virtue of any personal right or otherwise, and which would not have been obtained by him or would not have been due to him if any such contravention or failure or any such act or omission had not been committed;\n(cc) by which any person has been benefited or enriched as a result of any such contravention or failure or any such act or omission,\nor, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is held in credit in that account",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg22A.1.a.iii",
+                      "number": "iii",
+                      "heading": "excon-reg22A.1.a.iii",
+                      "text": "any money or goods, notwithstanding the person in whose possession it may be, into which money or goods referred to in subparagraph (i) or (ii) have been transformed, including any personal right obtained with money or goods referred to in subparagraph (i) or (ii), or, in the case of such money or any part thereof which has been deposited into any account, an equal amount of money which is held in credit in that account",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg22A.1.a.iv",
+                      "number": "iv",
+                      "heading": "excon-reg22A.1.a.iv",
+                      "text": "any money which is held in a blocked account referred to in regulation 4 and which the Treasury on reasonable grounds suspects to be money –\n(aa) in respect of which a contravention or act or omission referred to in subparagraph (i) has been committed;\n(bb) which has been involved in a contravention or failure or act or omission referred to in subparagraph (ii)(aa);\n(cc) which has been obtained by any person or is due to him as referred to in subparagraph (ii)(bb);\n(dd) by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc);",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "excon-reg22A.1.b",
@@ -1412,9 +1495,42 @@
               "id": "excon-reg22C.d",
               "number": "d",
               "heading": "excon-reg22C.d",
-              "text": "by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc) of that regulation,\nor when no money or goods have been forfeited for the State under the said regulation 22B, the Treasury may recover an amount equal to the difference between the last-mentioned amount and the first-mentioned amount of money and proceeds or an amount equal to the last-mentioned amount, as the case may be –\n(i) from the person who committed the contravention or failure or act or omission in question;\n(ii) from the person who the Treasury on reasonable grounds suspects to have committed the contravention or failure or act or omission in question;\n(iii) from the person benefited or enriched as a result of the contravention or failure or act or omission in question;\n(iv) if more persons have committed the contravention or failure or act or omission in question or if the Treasury on reasonable grounds suspects that more persons have committed any such contravention or failure or act or omission or if more persons have been benefited or enriched as a result of the contravention or failure or act or omission in question, separately and jointly from those persons,\nby attaching in such manner as it may deem fit any other money, including money in a blocked account referred to in regulation 4, or other goods of the person or persons concerned.",
+              "text": "by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc) of that regulation,\nor when no money or goods have been forfeited for the State under the said regulation 22B, the Treasury may recover an amount equal to the difference between the last-mentioned amount and the first-mentioned amount of money and proceeds or an amount equal to the last-mentioned amount, as the case may be –",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "excon-reg22C.d.i",
+                  "number": "i",
+                  "heading": "excon-reg22C.d.i",
+                  "text": "from the person who committed the contravention or failure or act or omission in question",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg22C.d.ii",
+                  "number": "ii",
+                  "heading": "excon-reg22C.d.ii",
+                  "text": "from the person who the Treasury on reasonable grounds suspects to have committed the contravention or failure or act or omission in question",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg22C.d.iii",
+                  "number": "iii",
+                  "heading": "excon-reg22C.d.iii",
+                  "text": "from the person benefited or enriched as a result of the contravention or failure or act or omission in question",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg22C.d.iv",
+                  "number": "iv",
+                  "heading": "excon-reg22C.d.iv",
+                  "text": "if more persons have committed the contravention or failure or act or omission in question or if the Treasury on reasonable grounds suspects that more persons have committed any such contravention or failure or act or omission or if more persons have been benefited or enriched as a result of the contravention or failure or act or omission in question, separately and jointly from those persons,\nby attaching in such manner as it may deem fit any other money, including money in a blocked account referred to in regulation 4, or other goods of the person or persons concerned.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -1541,9 +1657,34 @@
                   "id": "excon-reg24.2.c",
                   "number": "c",
                   "heading": "excon-reg24.2.c",
-                  "text": "such person, when making application in terms of this regulation in respect of any foreign asset, must –\n(i) disclose the market value of that foreign asset in the foreign currency of the country in which the foreign asset is situated; and\n(ii) include a description of the identifying characteristics and location of that foreign asset; and\n(iii) submit, in respect of the market value, in the foreign currency of that foreign asset, as at such date as may be prescribed –\n(aa) a valuation certificate by a valuator of the country where that foreign asset is located; and/or\n(bb) a valuation by a sphere of government of the country where that foreign asset is located; and/or\n(cc) where the asset constitutes a financial instrument, an original or certified copy of a statement of account indicating the balance or market value; and/or\n(dd) any other form of proof of value of that foreign asset as the Treasury may on good cause shown allow to be submitted; and",
+                  "text": "such person, when making application in terms of this regulation in respect of any foreign asset, must –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "excon-reg24.2.c.i",
+                      "number": "i",
+                      "heading": "excon-reg24.2.c.i",
+                      "text": "disclose the market value of that foreign asset in the foreign currency of the country in which the foreign asset is situated; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg24.2.c.ii",
+                      "number": "ii",
+                      "heading": "excon-reg24.2.c.ii",
+                      "text": "include a description of the identifying characteristics and location of that foreign asset; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg24.2.c.iii",
+                      "number": "iii",
+                      "heading": "excon-reg24.2.c.iii",
+                      "text": "submit, in respect of the market value, in the foreign currency of that foreign asset, as at such date as may be prescribed –\n(aa) a valuation certificate by a valuator of the country where that foreign asset is located; and/or\n(bb) a valuation by a sphere of government of the country where that foreign asset is located; and/or\n(cc) where the asset constitutes a financial instrument, an original or certified copy of a statement of account indicating the balance or market value; and/or\n(dd) any other form of proof of value of that foreign asset as the Treasury may on good cause shown allow to be submitted; and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "excon-reg24.2.d",

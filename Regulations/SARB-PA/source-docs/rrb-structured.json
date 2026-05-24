@@ -179,9 +179,50 @@
                   "id": "reg3.4.a",
                   "number": "a",
                   "heading": "reg3.4.a",
-                  "text": "shall have in place robust risk management systems and board approved policies, procedures and controls prior to the initial application of the said fair value option for a particular activity, instrument or purpose, and on an ongoing basis, in order to ensure, amongst other things, that—\n(i) sound risk management objectives consistent with the risk management framework and overall risk appetite approved by the bank or controlling company's board of directors, or a relevant committee of the board, are met when the fair value option or approach is applied;\n(ii) the bank or controlling company applies appropriate valuation methods;\n(iii) fair values are reliable for all instruments included in the fair value option category;\n(iv) relevant risk management and control policies pertaining to the use of the fair value option and related valuation methodologies are consistently applied and complied with; and\n(v) appropriate information is periodically provided to the bank or controlling company's relevant senior management and board of directors, or a relevant committee of the board, about the use of the fair value option, and the impact thereof on the bank's financial condition and performance;",
+                  "text": "shall have in place robust risk management systems and board approved policies, procedures and controls prior to the initial application of the said fair value option for a particular activity, instrument or purpose, and on an ongoing basis, in order to ensure, amongst other things, that—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "reg3.4.a.i",
+                      "number": "i",
+                      "heading": "reg3.4.a.i",
+                      "text": "sound risk management objectives consistent with the risk management framework and overall risk appetite approved by the bank or controlling company's board of directors, or a relevant committee of the board, are met when the fair value option or approach is applied",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.a.ii",
+                      "number": "ii",
+                      "heading": "reg3.4.a.ii",
+                      "text": "the bank or controlling company applies appropriate valuation methods",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.a.iii",
+                      "number": "iii",
+                      "heading": "reg3.4.a.iii",
+                      "text": "fair values are reliable for all instruments included in the fair value option category",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.a.iv",
+                      "number": "iv",
+                      "heading": "reg3.4.a.iv",
+                      "text": "relevant risk management and control policies pertaining to the use of the fair value option and related valuation methodologies are consistently applied and complied with; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.a.v",
+                      "number": "v",
+                      "heading": "reg3.4.a.v",
+                      "text": "appropriate information is periodically provided to the bank or controlling company's relevant senior management and board of directors, or a relevant committee of the board, about the use of the fair value option, and the impact thereof on the bank's financial condition and performance;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "reg3.4.b",
@@ -203,9 +244,58 @@
                   "id": "reg3.4.d",
                   "number": "d",
                   "heading": "reg3.4.d",
-                  "text": "shall ensure that all relevant assets and liabilities designated as at fair value under the fair value option are duly captured in the relevant risk measurement systems and that the resulting exposure amounts are included in all relevant internal reports that compare actual overall exposure to approved overall risk management limits,\nprovided that—\n(i) no bank or controlling company shall for the purposes of these Regulations apply any fair value option or approach to instruments in respect of which it is unable to reliably estimate fair values;\n(ii) the Registrar may in writing require a bank or controlling company—\n(A) to provide supplemental information regarding its application of the fair value option or approach in order to, amongst other things, assess the impact thereof on the bank or controlling company's overall risk profile, capital adequacy position, earnings and volatility in earnings, net interest margin, profit and loss position, and credit risk and related allowances for loss;\n(B) to exclude from its qualifying amount of capital and reserve funds any gains or losses arising from changes in its own credit risk due to the application of the fair value option to financial liabilities, or any unrealised gains or losses on items designated as at fair value through profit and loss when such treatment gives rise to safety and soundness concerns;\n(iii) the relevant fair values of assets and liabilities designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit independent from the relevant business unit(s), with the same frequency that the fair values of any related assets or liabilities are independently verified;\n(iv) all relevant models used to value items designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit as part of the bank or controlling company's regular cycle of model validation;\n(v) staff independent from those responsible for the origination of transactions shall monitor the application of the fair value option, amongst others, for conformity with all relevant Financial Reporting Standards, including all relevant accounting and disclosure requirements;\n(vi) based on its risk assessment, the appropriateness of a bank or controlling company's use of the fair value option shall periodically be subject to review by internal audit.",
+                  "text": "shall ensure that all relevant assets and liabilities designated as at fair value under the fair value option are duly captured in the relevant risk measurement systems and that the resulting exposure amounts are included in all relevant internal reports that compare actual overall exposure to approved overall risk management limits,\nprovided that—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "reg3.4.d.i",
+                      "number": "i",
+                      "heading": "reg3.4.d.i",
+                      "text": "no bank or controlling company shall for the purposes of these Regulations apply any fair value option or approach to instruments in respect of which it is unable to reliably estimate fair values",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.d.ii",
+                      "number": "ii",
+                      "heading": "reg3.4.d.ii",
+                      "text": "the Registrar may in writing require a bank or controlling company—\n(A) to provide supplemental information regarding its application of the fair value option or approach in order to, amongst other things, assess the impact thereof on the bank or controlling company's overall risk profile, capital adequacy position, earnings and volatility in earnings, net interest margin, profit and loss position, and credit risk and related allowances for loss;\n(B) to exclude from its qualifying amount of capital and reserve funds any gains or losses arising from changes in its own credit risk due to the application of the fair value option to financial liabilities, or any unrealised gains or losses on items designated as at fair value through profit and loss when such treatment gives rise to safety and soundness concerns",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.d.iii",
+                      "number": "iii",
+                      "heading": "reg3.4.d.iii",
+                      "text": "the relevant fair values of assets and liabilities designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit independent from the relevant business unit(s), with the same frequency that the fair values of any related assets or liabilities are independently verified",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.d.iv",
+                      "number": "iv",
+                      "heading": "reg3.4.d.iv",
+                      "text": "all relevant models used to value items designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit as part of the bank or controlling company's regular cycle of model validation",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.d.v",
+                      "number": "v",
+                      "heading": "reg3.4.d.v",
+                      "text": "staff independent from those responsible for the origination of transactions shall monitor the application of the fair value option, amongst others, for conformity with all relevant Financial Reporting Standards, including all relevant accounting and disclosure requirements",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg3.4.d.vi",
+                      "number": "vi",
+                      "heading": "reg3.4.d.vi",
+                      "text": "based on its risk assessment, the appropriateness of a bank or controlling company's use of the fair value option shall periodically be subject to review by internal audit.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }
@@ -880,9 +970,130 @@
                   "id": "reg39.5.d",
                   "number": "d",
                   "heading": "reg39.5.d",
-                  "text": "shall be sufficiently robust to: (i) determine and monitor the total indebtedness of any person to whom the bank granted credit; (ii) ensure that the bank raises appropriate and timely credit impairments and maintains adequate allowances or reserves for potential losses in respect of its loans or advances; (iii) identify and manage material interrelationships between the bank's relevant risk exposures; (iv) ensure the bank's continued compliance with the relevant documented set of internal policies, controls and procedures; (v) ensure that the bank captures the economic substance and not merely the legal form of the bank's various exposures to risk; (vi) ensure that the bank conducts sufficiently robust and independent due diligence in respect of the bank's respective investment in or exposure to instruments, products or markets; (vii) ensure that the bank regularly conducts appropriate stress-testing or scenario analysis; (viii) ensure that the bank maintains sufficient liquidity and capital adequacy buffers to remain solvent during prolonged periods of financial market stress and illiquidity; (ix) clearly delineate accountability and all relevant lines of authority across the bank's various business units, lines or activities; (x) ensure that all relevant risk management, control and business units or lines appropriately review and assess proposed new activities, investment in new instruments or the introduction of new products; (xi) ensure that the bank is able to appropriately aggregate or consolidate all relevant risks or exposure to risk; (xii) ensure ongoing, accurate, appropriate and timely communication or reporting of the bank's relevant risk exposures and any material deviation from approved policies, processes or procedures to the senior management and the board of directors; (xiii) ensure that the bank's board of directors and senior management receive timely and appropriate information regarding the condition of the bank's respective asset portfolios, including matters related to the relevant classification of credit exposure, the level of impairment or provisioning, and major problem assets; (xiv) enable the proactive management of all relevant risks; (xv) ensure that any breach of an internal limit is duly escalated and addressed.",
+                  "text": "shall be sufficiently robust to:",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "reg39.5.d.i",
+                      "number": "i",
+                      "heading": "reg39.5.d.i",
+                      "text": "determine and monitor the total indebtedness of any person to whom the bank granted credit",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.ii",
+                      "number": "ii",
+                      "heading": "reg39.5.d.ii",
+                      "text": "ensure that the bank raises appropriate and timely credit impairments and maintains adequate allowances or reserves for potential losses in respect of its loans or advances",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.iii",
+                      "number": "iii",
+                      "heading": "reg39.5.d.iii",
+                      "text": "identify and manage material interrelationships between the bank's relevant risk exposures",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.iv",
+                      "number": "iv",
+                      "heading": "reg39.5.d.iv",
+                      "text": "ensure the bank's continued compliance with the relevant documented set of internal policies, controls and procedures",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.v",
+                      "number": "v",
+                      "heading": "reg39.5.d.v",
+                      "text": "ensure that the bank captures the economic substance and not merely the legal form of the bank's various exposures to risk",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.vi",
+                      "number": "vi",
+                      "heading": "reg39.5.d.vi",
+                      "text": "ensure that the bank conducts sufficiently robust and independent due diligence in respect of the bank's respective investment in or exposure to instruments, products or markets",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.vii",
+                      "number": "vii",
+                      "heading": "reg39.5.d.vii",
+                      "text": "ensure that the bank regularly conducts appropriate stress-testing or scenario analysis",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.viii",
+                      "number": "viii",
+                      "heading": "reg39.5.d.viii",
+                      "text": "ensure that the bank maintains sufficient liquidity and capital adequacy buffers to remain solvent during prolonged periods of financial market stress and illiquidity",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.ix",
+                      "number": "ix",
+                      "heading": "reg39.5.d.ix",
+                      "text": "clearly delineate accountability and all relevant lines of authority across the bank's various business units, lines or activities",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.x",
+                      "number": "x",
+                      "heading": "reg39.5.d.x",
+                      "text": "ensure that all relevant risk management, control and business units or lines appropriately review and assess proposed new activities, investment in new instruments or the introduction of new products",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.xi",
+                      "number": "xi",
+                      "heading": "reg39.5.d.xi",
+                      "text": "ensure that the bank is able to appropriately aggregate or consolidate all relevant risks or exposure to risk",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.xii",
+                      "number": "xii",
+                      "heading": "reg39.5.d.xii",
+                      "text": "ensure ongoing, accurate, appropriate and timely communication or reporting of the bank's relevant risk exposures and any material deviation from approved policies, processes or procedures to the senior management and the board of directors",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.xiii",
+                      "number": "xiii",
+                      "heading": "reg39.5.d.xiii",
+                      "text": "ensure that the bank's board of directors and senior management receive timely and appropriate information regarding the condition of the bank's respective asset portfolios, including matters related to the relevant classification of credit exposure, the level of impairment or provisioning, and major problem assets",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.xiv",
+                      "number": "xiv",
+                      "heading": "reg39.5.d.xiv",
+                      "text": "enable the proactive management of all relevant risks",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "reg39.5.d.xv",
+                      "number": "xv",
+                      "heading": "reg39.5.d.xv",
+                      "text": "ensure that any breach of an internal limit is duly escalated and addressed.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }

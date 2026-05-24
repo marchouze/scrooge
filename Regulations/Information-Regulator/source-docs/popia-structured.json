@@ -93,9 +93,50 @@
               "id": "s1.i",
               "number": "i",
               "heading": "s1.i",
-              "text": "exercising a power or performing a duty in terms of the Constitution or a provincial constitution; or (ii) exercising a public power or performing a public function in terms of any legislation;\n'public record' means a record that is accessible in the public domain and which is in the possession of or under the control of a public body, whether or not it was created by that public body;\n'record' means any recorded information—(a) regardless of form or medium, including any of the following: (i) Writing on any material; (ii) information produced, recorded or stored by means of any tape-recorder, computer equipment, whether hardware or software or both, or other device, and any material subsequently derived from information so produced, recorded or stored; (iii) label, marking or other writing that identifies or describes any thing of which it forms part, or to which it is attached by any means; (iv) book, map, plan, graph or drawing; (v) photograph, film, negative, tape or other device in which one or more visual images are embodied so as to be capable, with or without the aid of some other equipment, of being reproduced; (b) in the possession or under the control of a responsible party; (c) whether or not it was created by a responsible party; and (d) regardless of when it came into existence;\n'Regulator' means the Information Regulator established in terms of section 39;\n're-identify', in relation to personal information of a data subject, means to resurrect any information that has been de-identified, that—(a) identifies the data subject; (b) can be used or manipulated by a reasonably foreseeable method to identify the data subject; or (c) can be linked by a reasonably foreseeable method to other information that identifies the data subject, and 're-identified' has a corresponding meaning;\n'Republic' means the Republic of South Africa;\n'responsible party' means a public or private body or any other person which, alone or in conjunction with others, determines the purpose of and means for processing personal information;\n'restriction' means to withhold from circulation, use or publication any personal information that forms part of a filing system, but not to delete or destroy such information;\n'special personal information' means personal information as referred to in section 26;\n'this Act' includes any regulation or code of conduct made under this Act; and\n'unique identifier' means any identifier that is assigned to a data subject and is used by a responsible party for the purposes of the operations of that responsible party and that uniquely identifies that data subject in relation to that responsible party.",
+              "text": "exercising a power or performing a duty in terms of the Constitution or a provincial constitution; or (ii) exercising a public power or performing a public function in terms of any legislation;\n'public record' means a record that is accessible in the public domain and which is in the possession of or under the control of a public body, whether or not it was created by that public body;\n'record' means any recorded information—(a) regardless of form or medium, including any of the following:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1.i.i",
+                  "number": "i",
+                  "heading": "s1.i.i",
+                  "text": "Writing on any material",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.i.ii",
+                  "number": "ii",
+                  "heading": "s1.i.ii",
+                  "text": "information produced, recorded or stored by means of any tape-recorder, computer equipment, whether hardware or software or both, or other device, and any material subsequently derived from information so produced, recorded or stored",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.i.iii",
+                  "number": "iii",
+                  "heading": "s1.i.iii",
+                  "text": "label, marking or other writing that identifies or describes any thing of which it forms part, or to which it is attached by any means",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.i.iv",
+                  "number": "iv",
+                  "heading": "s1.i.iv",
+                  "text": "book, map, plan, graph or drawing",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.i.v",
+                  "number": "v",
+                  "heading": "s1.i.v",
+                  "text": "photograph, film, negative, tape or other device in which one or more visual images are embodied so as to be capable, with or without the aid of some other equipment, of being reproduced; (b) in the possession or under the control of a responsible party; (c) whether or not it was created by a responsible party; and (d) regardless of when it came into existence;\n'Regulator' means the Information Regulator established in terms of section 39;\n're-identify', in relation to personal information of a data subject, means to resurrect any information that has been de-identified, that—(a) identifies the data subject; (b) can be used or manipulated by a reasonably foreseeable method to identify the data subject; or (c) can be linked by a reasonably foreseeable method to other information that identifies the data subject, and 're-identified' has a corresponding meaning;\n'Republic' means the Republic of South Africa;\n'responsible party' means a public or private body or any other person which, alone or in conjunction with others, determines the purpose of and means for processing personal information;\n'restriction' means to withhold from circulation, use or publication any personal information that forms part of a filing system, but not to delete or destroy such information;\n'special personal information' means personal information as referred to in section 26;\n'this Act' includes any regulation or code of conduct made under this Act; and\n'unique identifier' means any identifier that is assigned to a data subject and is used by a responsible party for the purposes of the operations of that responsible party and that uniquely identifies that data subject in relation to that responsible party.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -714,9 +755,42 @@
               "id": "s15.e",
               "number": "e",
               "heading": "s15.e",
-              "text": "any contractual rights and obligations between the parties.\n(3) The further processing of personal information is not incompatible with the purpose of collection if—(a) the data subject or a competent person where the data subject is a child has consented to the further processing of the information; (b) the information is available in or derived from a public record or has deliberately been made public by the data subject; (c) further processing is necessary—(i) to avoid prejudice to the maintenance of the law by any public body including the prevention, detection, investigation, prosecution and punishment of offences; (ii) to comply with an obligation imposed by law or to enforce legislation concerning the collection of revenue as defined in section 1 of the South African Revenue Service Act, 1997 (Act 34 of 1997); (iii) for the conduct of proceedings in any court or tribunal that have commenced or are reasonably contemplated; or (iv) in the interests of national security; (d) the further processing of the information is necessary to prevent or mitigate a serious and imminent threat to—(i) public health or public safety; or (ii) the life or health of the data subject or another individual; (e) the information is used for historical, statistical or research purposes and the responsible party ensures that the further processing is carried out solely for such purposes and will not be published in an identifiable form; or",
+              "text": "any contractual rights and obligations between the parties.\n(3) The further processing of personal information is not incompatible with the purpose of collection if—(a) the data subject or a competent person where the data subject is a child has consented to the further processing of the information; (b) the information is available in or derived from a public record or has deliberately been made public by the data subject; (c) further processing is necessary—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s15.e.i",
+                  "number": "i",
+                  "heading": "s15.e.i",
+                  "text": "to avoid prejudice to the maintenance of the law by any public body including the prevention, detection, investigation, prosecution and punishment of offences",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s15.e.ii",
+                  "number": "ii",
+                  "heading": "s15.e.ii",
+                  "text": "to comply with an obligation imposed by law or to enforce legislation concerning the collection of revenue as defined in section 1 of the South African Revenue Service Act, 1997 (Act 34 of 1997)",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s15.e.iii",
+                  "number": "iii",
+                  "heading": "s15.e.iii",
+                  "text": "for the conduct of proceedings in any court or tribunal that have commenced or are reasonably contemplated; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s15.e.iv",
+                  "number": "iv",
+                  "heading": "s15.e.iv",
+                  "text": "in the interests of national security; (d) the further processing of the information is necessary to prevent or mitigate a serious and imminent threat to—(i) public health or public safety; or (ii) the life or health of the data subject or another individual; (e) the information is used for historical, statistical or research purposes and the responsible party ensures that the further processing is carried out solely for such purposes and will not be published in an identifiable form; or",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s15.f",
@@ -1297,8 +1371,26 @@
           "id": "s38",
           "number": "38",
           "heading": "Exemption in respect of certain functions",
-          "text": "(1) Personal information processed for the purpose of discharging a relevant function is exempt from sections 11(3) and (4), 12, 15 and 18 in any case to the extent to which the application of those provisions to the personal information would be likely to prejudice the proper discharge of that function.\n(2) 'Relevant function' for purposes of subsection (1), means any function—(a) of a public body; or (b) conferred on any person in terms of the law, which is performed with the view to protecting members of the public against—(i) financial loss due to dishonesty, malpractice or other seriously improper conduct by, or the unfitness or incompetence of, persons concerned in the provision of banking, insurance, investment or other financial services or in the management of bodies corporate; or (ii) dishonesty, malpractice or other seriously improper conduct by, or the unfitness or incompetence of, persons authorised to carry on any profession or other activity.",
-          "verbatim": true
+          "text": "(1) Personal information processed for the purpose of discharging a relevant function is exempt from sections 11(3) and (4), 12, 15 and 18 in any case to the extent to which the application of those provisions to the personal information would be likely to prejudice the proper discharge of that function.\n(2) 'Relevant function' for purposes of subsection (1), means any function—(a) of a public body; or (b) conferred on any person in terms of the law, which is performed with the view to protecting members of the public against—",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s38.i",
+              "number": "i",
+              "heading": "s38.i",
+              "text": "financial loss due to dishonesty, malpractice or other seriously improper conduct by, or the unfitness or incompetence of, persons concerned in the provision of banking, insurance, investment or other financial services or in the management of bodies corporate; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s38.ii",
+              "number": "ii",
+              "heading": "s38.ii",
+              "text": "dishonesty, malpractice or other seriously improper conduct by, or the unfitness or incompetence of, persons authorised to carry on any profession or other activity.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -1519,9 +1611,26 @@
                   "id": "s69.b.c",
                   "number": "c",
                   "heading": "s69.b.c",
-                  "text": "if the data subject has been given a reasonable opportunity to object, free of charge and in a manner free of unnecessary formality, to such use of his, her or its electronic details—(i) at the time when the information was collected; and (ii) on the occasion of each communication with the data subject for the purpose of marketing if the data subject has not initially refused such use.\n(4) Any communication for the purpose of direct marketing must contain—(a) details of the identity of the sender or the person on whose behalf the communication has been sent; and (b) an address or other contact details to which the recipient may send a request that such communications cease.\n(5) 'Automatic calling machine', for purposes of subsection (1), means a machine that is able to do automated calls without human intervention.",
+                  "text": "if the data subject has been given a reasonable opportunity to object, free of charge and in a manner free of unnecessary formality, to such use of his, her or its electronic details—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s69.b.c.i",
+                      "number": "i",
+                      "heading": "s69.b.c.i",
+                      "text": "at the time when the information was collected; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s69.b.c.ii",
+                      "number": "ii",
+                      "heading": "s69.b.c.ii",
+                      "text": "on the occasion of each communication with the data subject for the purpose of marketing if the data subject has not initially refused such use.\n(4) Any communication for the purpose of direct marketing must contain—(a) details of the identity of the sender or the person on whose behalf the communication has been sent; and (b) an address or other contact details to which the recipient may send a request that such communications cease.\n(5) 'Automatic calling machine', for purposes of subsection (1), means a machine that is able to do automated calls without human intervention.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }

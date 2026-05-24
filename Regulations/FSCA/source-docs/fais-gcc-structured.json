@@ -36,9 +36,26 @@
               "id": "gcc1.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2)(a) This Code must be construed (i) in conjunction with the provisions of the Act and in manner conducive to the promotion and achievement of the objectives of codes of conduct as stated in section 16 of the Act; and (ii) as being in addition to any other law not inconsistent with its provisions and not as replacing any such law. (b) In the case of any inconsistency or conflict between (i) a provision of this Code and a provision of any other specific Code drafted under section 15 of the Act, the last mentioned provision shall prevail; and (ii) a provision of this Code and a provision of any other law specifically regulating market conduct in the rendering of financial services in respect of one or more specific financial products, the last mentioned provision, unless inconsistent or in conflict with the Act, shall prevail.",
+              "text": "(2)(a) This Code must be construed",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "gcc1.2.i",
+                  "number": "i",
+                  "heading": "gcc1.2.i",
+                  "text": "in conjunction with the provisions of the Act and in manner conducive to the promotion and achievement of the objectives of codes of conduct as stated in section 16 of the Act; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc1.2.ii",
+                  "number": "ii",
+                  "heading": "gcc1.2.ii",
+                  "text": "as being in addition to any other law not inconsistent with its provisions and not as replacing any such law. (b) In the case of any inconsistency or conflict between (i) a provision of this Code and a provision of any other specific Code drafted under section 15 of the Act, the last mentioned provision shall prevail; and (ii) a provision of this Code and a provision of any other law specifically regulating market conduct in the rendering of financial services in respect of one or more specific financial products, the last mentioned provision, unless inconsistent or in conflict with the Act, shall prevail.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "gcc1.3",
@@ -82,9 +99,74 @@
                   "id": "gcc3.1.a",
                   "number": "a",
                   "heading": "gcc3.1.a",
-                  "text": "representations made and information provided to a client by the provider– (i) must be factually correct; (ii) must be provided in plain language, avoid uncertainty or confusion and not be misleading; (iii) must be adequate and appropriate in the circumstances of the particular financial service, taking into account the factually established or reasonably assumed level of knowledge of the client; (iv) must be provided timeously so as to afford the client reasonably sufficient time to make an informed decision about the proposed transaction; (v) may, subject to the provisions of this Code, be provided orally and, at the client's request, confirmed in writing within a reasonable time after such request; (vi) must, where provided in writing or by means of standard forms or format, be in a clear and readable print size, spacing and format; (vii) must, as regards all amounts, sums, values, charges, fees, remuneration or monetary obligations mentioned or referred to therein and payable to the product supplier or the provider, be reflected in specific monetary terms: Provided that where any such amount, sum, value, charge, fee, remuneration or monetary obligation is not reasonably predeterminable, its basis of calculation must be adequately described; and (viii) need not be duplicated or repeated to the same client unless material or significant changes affecting that client occur, or the relevant financial service renders it necessary, in which case a disclosure of the changes to the client must be made without delay;",
+                  "text": "representations made and information provided to a client by the provider–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc3.1.a.i",
+                      "number": "i",
+                      "heading": "gcc3.1.a.i",
+                      "text": "must be factually correct",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.1.a.ii",
+                      "number": "ii",
+                      "heading": "gcc3.1.a.ii",
+                      "text": "must be provided in plain language, avoid uncertainty or confusion and not be misleading",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.1.a.iii",
+                      "number": "iii",
+                      "heading": "gcc3.1.a.iii",
+                      "text": "must be adequate and appropriate in the circumstances of the particular financial service, taking into account the factually established or reasonably assumed level of knowledge of the client",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.1.a.iv",
+                      "number": "iv",
+                      "heading": "gcc3.1.a.iv",
+                      "text": "must be provided timeously so as to afford the client reasonably sufficient time to make an informed decision about the proposed transaction",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.1.a.v",
+                      "number": "v",
+                      "heading": "gcc3.1.a.v",
+                      "text": "may, subject to the provisions of this Code, be provided orally and, at the client's request, confirmed in writing within a reasonable time after such request",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.1.a.vi",
+                      "number": "vi",
+                      "heading": "gcc3.1.a.vi",
+                      "text": "must, where provided in writing or by means of standard forms or format, be in a clear and readable print size, spacing and format",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.1.a.vii",
+                      "number": "vii",
+                      "heading": "gcc3.1.a.vii",
+                      "text": "must, as regards all amounts, sums, values, charges, fees, remuneration or monetary obligations mentioned or referred to therein and payable to the product supplier or the provider, be reflected in specific monetary terms: Provided that where any such amount, sum, value, charge, fee, remuneration or monetary obligation is not reasonably predeterminable, its basis of calculation must be adequately described; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.1.a.viii",
+                      "number": "viii",
+                      "heading": "gcc3.1.a.viii",
+                      "text": "need not be duplicated or repeated to the same client unless material or significant changes affecting that client occur, or the relevant financial service renders it necessary, in which case a disclosure of the changes to the client must be made without delay;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc3.1.b",
@@ -189,9 +271,26 @@
               "id": "gcc4.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) A provider other than a direct marketer must at the earliest reasonable opportunity, and only where appropriate, furnish the client with full particulars of the following information about the relevant product supplier and, where such information is provided orally, must confirm such information within 30 days in writing: (a) Name, physical location, and postal and telephone contact details of the product supplier; (b)(i) the contractual relationship with the product supplier (if any), and whether the provider has contractual relationships with other product suppliers; (ii) names and contact details of the relevant compliance and complaints departments of the product supplier. (c) the existence of any conditions or restrictions imposed by the product supplier with regard to the types of financial products or services that may be provided or rendered by the provider; and (d) where applicable, the fact that the provider – (i) directly or indirectly holds more than 10% of the relevant product supplier's shares, or has any equivalent substantial financial interest in the product supplier; (ii) during the preceding 12 month period received more than 30% of total remuneration, including commission, from the product supplier, and the provider must convey any changes thereafter in regard to such information at the earliest opportunity to the client.",
+              "text": "(1) A provider other than a direct marketer must at the earliest reasonable opportunity, and only where appropriate, furnish the client with full particulars of the following information about the relevant product supplier and, where such information is provided orally, must confirm such information within 30 days in writing: (a) Name, physical location, and postal and telephone contact details of the product supplier; (b)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "gcc4.1.i",
+                  "number": "i",
+                  "heading": "gcc4.1.i",
+                  "text": "the contractual relationship with the product supplier (if any), and whether the provider has contractual relationships with other product suppliers",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc4.1.ii",
+                  "number": "ii",
+                  "heading": "gcc4.1.ii",
+                  "text": "names and contact details of the relevant compliance and complaints departments of the product supplier. (c) the existence of any conditions or restrictions imposed by the product supplier with regard to the types of financial products or services that may be provided or rendered by the provider; and (d) where applicable, the fact that the provider – (i) directly or indirectly holds more than 10% of the relevant product supplier's shares, or has any equivalent substantial financial interest in the product supplier; (ii) during the preceding 12 month period received more than 30% of total remuneration, including commission, from the product supplier, and the provider must convey any changes thereafter in regard to such information at the earliest opportunity to the client.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "gcc4.2",
@@ -346,17 +445,163 @@
                   "id": "gcc7.1.c",
                   "number": "c",
                   "heading": "gcc7.1.c",
-                  "text": "in particular, at the earliest reasonable opportunity, provide, where applicable, full and appropriate information of the following: (i) Name, class or type of financial product concerned; (ii) nature and extent of benefits to be provided, including details of the manner in which such benefits are derived or calculated and the manner in which they will accrue or be paid; (iii) where the financial product is marketed or positioned as an investment or as having an investment component: (aa) concise details of the manner in which the value of the investment is determined, including concise details of any underlying assets or other financial instruments; (bb) separate disclosure (and not mere disclosure of an all inclusive fee or charge) of any charges and fees to be levied against the product, including (A) the amount and frequency thereof; (B) the identity of the recipient; (C) the services or other purpose for which each fee or charge is levied; (D) where any charges or fees are to be levied in respect of investment performance, details of the frequency, performance measurement period (including any part of the period prior to the client's particular investment) and performance benchmarks or other criteria applicable to such charges or fees; and (E) where the specific structure of the product entails other underlying financial products, disclosure must be made in such a manner as to enable the client to determine the net investment amount ultimately invested for the benefit of the client; and (cc) on request, information concerning the past investment performance of the product over periods and at intervals which are reasonable with regard to the type of product involved including a warning that past performances are not necessarily indicative of future performances; (dd) any rebate arrangements and thereafter on a regular basis (but not less frequently than annually): Provided that where the rebate arrangement is initially disclosed in percentage terms, an example using actual monetary amounts must be given and disclosure in specific monetary terms must be made at the earliest reasonable opportunity thereafter: Provided further that for the purposes of this subparagraph, \"rebate\" means a discount on the administration, management or any other fee that is passed through to the client, whether by reduced fees, the purchase of additional investments or direct payment, and that the term \"rebate\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition; (ee) any platform fee arrangements, which may be disclosed by informing the client that a platform fee of up to a stated percentage may be paid by the product supplier to the administrative financial services provider concerned, rather than disclosing the actual monetary amount: Provided that for the purposes of this sub-paragraph, \"platform fee\" means a payment by a product supplier to an administrative financial services provider for the administration and/or distribution and/or marketing cost savings represented by the distribution opportunity presented by the administrative platform, and may be structured as a stipulated monetary amount or a volume based percentage of assets held on the platform, and that the term \"platform fee\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition. (iv) the nature and extent of monetary obligations assumed by the client, directly or indirectly, in favour of the product supplier, including the manner of payment or discharge thereof, the frequency thereof, the consequences of non-compliance and, subject to subparagraph (xiv), any anticipated or contractual escalations, increases or additions; (v) the nature and extent of monetary obligations assumed by the client, directly or indirectly, in favour of the provider, including the manner of payment or discharge thereof, the frequency thereof, and the consequences of non-compliance (vi) the nature, extent and frequency of any incentive, remuneration, consideration, commission, fee or brokerages (\"valuable consideration\"), which will or may become payable to the provider, directly or indirectly, by any product supplier or any person other than the client, or for which the provider may become eligible, as a result of rendering of the financial service, as well as the identity of the product supplier or other person providing or offering the valuable consideration: Provided that where the maximum amount or rate of such valuable consideration is prescribed by any law, the provider may (subject to clause 3(1)(a)(vii)) elect to disclose either the actual amount applicable or such prescribed maximum amount or rate.; (vii) concise details of any special terms or conditions, exclusions of liability, waiting periods, loadings, penalties, excesses, restrictions or circumstances in which benefits will not be provided; (viii) any guaranteed minimum benefits or other guarantees; (ix) to what extent the product is readily realisable or the funds concerned are accessible; (x) any restrictions on or penalties for early termination of or withdrawal from the product, or other effects, if any, of such termination or withdrawal; (xi) material tax considerations; (xii) whether cooling off rights are offered and, if so, procedures for the exercise of such rights; (xiii) any material investment or other risks associated with the product; and (xiv) in the case of an insurance product in respect of which provision is made for increase of premiums, the amount of the increased premium for the first five years and thereafter on a five year basis but not exceeding twenty years;",
+                  "text": "in particular, at the earliest reasonable opportunity, provide, where applicable, full and appropriate information of the following:",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc7.1.c.i",
+                      "number": "i",
+                      "heading": "gcc7.1.c.i",
+                      "text": "Name, class or type of financial product concerned",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.ii",
+                      "number": "ii",
+                      "heading": "gcc7.1.c.ii",
+                      "text": "nature and extent of benefits to be provided, including details of the manner in which such benefits are derived or calculated and the manner in which they will accrue or be paid",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.iii",
+                      "number": "iii",
+                      "heading": "gcc7.1.c.iii",
+                      "text": "where the financial product is marketed or positioned as an investment or as having an investment component: (aa) concise details of the manner in which the value of the investment is determined, including concise details of any underlying assets or other financial instruments; (bb) separate disclosure (and not mere disclosure of an all inclusive fee or charge) of any charges and fees to be levied against the product, including (A) the amount and frequency thereof; (B) the identity of the recipient; (C) the services or other purpose for which each fee or charge is levied; (D) where any charges or fees are to be levied in respect of investment performance, details of the frequency, performance measurement period (including any part of the period prior to the client's particular investment) and performance benchmarks or other criteria applicable to such charges or fees; and (E) where the specific structure of the product entails other underlying financial products, disclosure must be made in such a manner as to enable the client to determine the net investment amount ultimately invested for the benefit of the client; and (cc) on request, information concerning the past investment performance of the product over periods and at intervals which are reasonable with regard to the type of product involved including a warning that past performances are not necessarily indicative of future performances; (dd) any rebate arrangements and thereafter on a regular basis (but not less frequently than annually): Provided that where the rebate arrangement is initially disclosed in percentage terms, an example using actual monetary amounts must be given and disclosure in specific monetary terms must be made at the earliest reasonable opportunity thereafter: Provided further that for the purposes of this subparagraph, \"rebate\" means a discount on the administration, management or any other fee that is passed through to the client, whether by reduced fees, the purchase of additional investments or direct payment, and that the term \"rebate\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition; (ee) any platform fee arrangements, which may be disclosed by informing the client that a platform fee of up to a stated percentage may be paid by the product supplier to the administrative financial services provider concerned, rather than disclosing the actual monetary amount: Provided that for the purposes of this sub-paragraph, \"platform fee\" means a payment by a product supplier to an administrative financial services provider for the administration and/or distribution and/or marketing cost savings represented by the distribution opportunity presented by the administrative platform, and may be structured as a stipulated monetary amount or a volume based percentage of assets held on the platform, and that the term \"platform fee\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.iv",
+                      "number": "iv",
+                      "heading": "gcc7.1.c.iv",
+                      "text": "the nature and extent of monetary obligations assumed by the client, directly or indirectly, in favour of the product supplier, including the manner of payment or discharge thereof, the frequency thereof, the consequences of non-compliance and, subject to subparagraph (xiv), any anticipated or contractual escalations, increases or additions",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.v",
+                      "number": "v",
+                      "heading": "gcc7.1.c.v",
+                      "text": "the nature and extent of monetary obligations assumed by the client, directly or indirectly, in favour of the provider, including the manner of payment or discharge thereof, the frequency thereof, and the consequences of non-compliance",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.vi",
+                      "number": "vi",
+                      "heading": "gcc7.1.c.vi",
+                      "text": "the nature, extent and frequency of any incentive, remuneration, consideration, commission, fee or brokerages (\"valuable consideration\"), which will or may become payable to the provider, directly or indirectly, by any product supplier or any person other than the client, or for which the provider may become eligible, as a result of rendering of the financial service, as well as the identity of the product supplier or other person providing or offering the valuable consideration: Provided that where the maximum amount or rate of such valuable consideration is prescribed by any law, the provider may (subject to clause 3(1)(a)(vii)) elect to disclose either the actual amount applicable or such prescribed maximum amount or rate.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.vii",
+                      "number": "vii",
+                      "heading": "gcc7.1.c.vii",
+                      "text": "concise details of any special terms or conditions, exclusions of liability, waiting periods, loadings, penalties, excesses, restrictions or circumstances in which benefits will not be provided",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.viii",
+                      "number": "viii",
+                      "heading": "gcc7.1.c.viii",
+                      "text": "any guaranteed minimum benefits or other guarantees",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.ix",
+                      "number": "ix",
+                      "heading": "gcc7.1.c.ix",
+                      "text": "to what extent the product is readily realisable or the funds concerned are accessible",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.x",
+                      "number": "x",
+                      "heading": "gcc7.1.c.x",
+                      "text": "any restrictions on or penalties for early termination of or withdrawal from the product, or other effects, if any, of such termination or withdrawal",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.xi",
+                      "number": "xi",
+                      "heading": "gcc7.1.c.xi",
+                      "text": "material tax considerations",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.xii",
+                      "number": "xii",
+                      "heading": "gcc7.1.c.xii",
+                      "text": "whether cooling off rights are offered and, if so, procedures for the exercise of such rights",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.xiii",
+                      "number": "xiii",
+                      "heading": "gcc7.1.c.xiii",
+                      "text": "any material investment or other risks associated with the product; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.c.xiv",
+                      "number": "xiv",
+                      "heading": "gcc7.1.c.xiv",
+                      "text": "in the case of an insurance product in respect of which provision is made for increase of premiums, the amount of the increased premium for the first five years and thereafter on a five year basis but not exceeding twenty years;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc7.1.d",
                   "number": "d",
                   "heading": "gcc7.1.d",
-                  "text": "fully inform a client in regard to the completion or submission of any transaction requirement– (i) that all material facts must be accurately and properly disclosed, and that the accuracy and completeness of all answers, statements or other information provided by or on behalf of the client, are the client's own responsibility; (ii) that if the provider completes or submits any transaction requirement on behalf of the client, the client should be satisfied as to the accuracy and completeness of the details; (iii) of the possible consequences of the misrepresentation or non-disclosure of a material fact or the inclusion of incorrect information; and (iv) that the client must on request be supplied with a copy or written or printed record of any transaction requirement within a reasonable time.",
+                  "text": "fully inform a client in regard to the completion or submission of any transaction requirement–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc7.1.d.i",
+                      "number": "i",
+                      "heading": "gcc7.1.d.i",
+                      "text": "that all material facts must be accurately and properly disclosed, and that the accuracy and completeness of all answers, statements or other information provided by or on behalf of the client, are the client's own responsibility",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.d.ii",
+                      "number": "ii",
+                      "heading": "gcc7.1.d.ii",
+                      "text": "that if the provider completes or submits any transaction requirement on behalf of the client, the client should be satisfied as to the accuracy and completeness of the details",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.d.iii",
+                      "number": "iii",
+                      "heading": "gcc7.1.d.iii",
+                      "text": "of the possible consequences of the misrepresentation or non-disclosure of a material fact or the inclusion of incorrect information; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc7.1.d.iv",
+                      "number": "iv",
+                      "heading": "gcc7.1.d.iv",
+                      "text": "that the client must on request be supplied with a copy or written or printed record of any transaction requirement within a reasonable time.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -468,9 +713,82 @@
                   "id": "gcc8.1.d",
                   "number": "d",
                   "heading": "gcc8.1.d",
-                  "text": "where the financial product (\"the replacement product\") is to replace an existing financial product wholly or partially (\"the terminated product\") held by the client, fully disclose to the client the actual and potential financial implications, costs and consequences of such a replacement, including, where applicable, full details of (i) fees and charges in respect of the replacement product compared to those in respect of the terminated product; (ii) special terms and conditions, exclusions of liability, waiting periods, loadings, penalties, excesses, restrictions or circumstances in which benefits will not be provided, which may be applicable to the replacement product compared to those applicable to the terminated product; (iii) in the case of an insurance product, the impact of age and health changes on the premium payable; (iv) differences between the tax implications of the replacement product and the terminated product; (v) material differences between the investment risk of the replacement product and the terminated product; (vi) penalties or unrecovered expenses deductible or payable due to termination of the terminated product; (vii) to what extent the replacement product is readily realisable or the relevant funds accessible, compared to the terminated product; and (viii) vested rights, minimum guaranteed benefits or other guarantees or benefits which will be lost as a result of the replacement.; and (ix) any incentive, remuneration, consideration, commission, fee or brokerages received, directly or indirectly, by the provider on the terminated product and any incentive, remuneration, consideration, commission, fee or brokerages payable, directly or indirectly, to the provider on the replacement product where the provider rendered financial services on both the terminated and replacement product.",
+                  "text": "where the financial product (\"the replacement product\") is to replace an existing financial product wholly or partially (\"the terminated product\") held by the client, fully disclose to the client the actual and potential financial implications, costs and consequences of such a replacement, including, where applicable, full details of",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc8.1.d.i",
+                      "number": "i",
+                      "heading": "gcc8.1.d.i",
+                      "text": "fees and charges in respect of the replacement product compared to those in respect of the terminated product",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.ii",
+                      "number": "ii",
+                      "heading": "gcc8.1.d.ii",
+                      "text": "special terms and conditions, exclusions of liability, waiting periods, loadings, penalties, excesses, restrictions or circumstances in which benefits will not be provided, which may be applicable to the replacement product compared to those applicable to the terminated product",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.iii",
+                      "number": "iii",
+                      "heading": "gcc8.1.d.iii",
+                      "text": "in the case of an insurance product, the impact of age and health changes on the premium payable",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.iv",
+                      "number": "iv",
+                      "heading": "gcc8.1.d.iv",
+                      "text": "differences between the tax implications of the replacement product and the terminated product",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.v",
+                      "number": "v",
+                      "heading": "gcc8.1.d.v",
+                      "text": "material differences between the investment risk of the replacement product and the terminated product",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.vi",
+                      "number": "vi",
+                      "heading": "gcc8.1.d.vi",
+                      "text": "penalties or unrecovered expenses deductible or payable due to termination of the terminated product",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.vii",
+                      "number": "vii",
+                      "heading": "gcc8.1.d.vii",
+                      "text": "to what extent the replacement product is readily realisable or the relevant funds accessible, compared to the terminated product; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.viii",
+                      "number": "viii",
+                      "heading": "gcc8.1.d.viii",
+                      "text": "vested rights, minimum guaranteed benefits or other guarantees or benefits which will be lost as a result of the replacement.; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc8.1.d.ix",
+                      "number": "ix",
+                      "heading": "gcc8.1.d.ix",
+                      "text": "any incentive, remuneration, consideration, commission, fee or brokerages received, directly or indirectly, by the provider on the terminated product and any incentive, remuneration, consideration, commission, fee or brokerages payable, directly or indirectly, to the provider on the replacement product where the provider rendered financial services on both the terminated and replacement product.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc8.1.e",
@@ -725,9 +1043,42 @@
                   "id": "gcc14.1.b",
                   "number": "b",
                   "heading": "gcc14.1.b",
-                  "text": "if it contains (i) performance data (including awards and rankings), include references to their source and date; (ii) illustrations, forecasts or hypothetical data (aa) contain support in the form of clearly stated basic assumptions (including but not limited to any relevant assumptions in respect of performance, returns, costs and charges) with a reasonable prospect of being met under current circumstances; (bb) make it clear that they are not guaranteed and are provided for illustrative purposes only; and (cc) also contain, where returns or benefits are dependent on the performance of underlying assets or other variable market factors, clear indications of such dependence; (iii) a warning statement about risks involved in buying or selling a financial product, prominently render or display such statement; and (iv) information about past performances, also contain a warning that past performances are not necessarily indicative of future performances; and",
+                  "text": "if it contains",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc14.1.b.i",
+                      "number": "i",
+                      "heading": "gcc14.1.b.i",
+                      "text": "performance data (including awards and rankings), include references to their source and date",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc14.1.b.ii",
+                      "number": "ii",
+                      "heading": "gcc14.1.b.ii",
+                      "text": "illustrations, forecasts or hypothetical data (aa) contain support in the form of clearly stated basic assumptions (including but not limited to any relevant assumptions in respect of performance, returns, costs and charges) with a reasonable prospect of being met under current circumstances; (bb) make it clear that they are not guaranteed and are provided for illustrative purposes only; and (cc) also contain, where returns or benefits are dependent on the performance of underlying assets or other variable market factors, clear indications of such dependence",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc14.1.b.iii",
+                      "number": "iii",
+                      "heading": "gcc14.1.b.iii",
+                      "text": "a warning statement about risks involved in buying or selling a financial product, prominently render or display such statement; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc14.1.b.iv",
+                      "number": "iv",
+                      "heading": "gcc14.1.b.iv",
+                      "text": "information about past performances, also contain a warning that past performances are not necessarily indicative of future performances; and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc14.1.c",
@@ -791,9 +1142,34 @@
                   "id": "gcc15.2.b",
                   "number": "b",
                   "heading": "gcc15.2.b",
-                  "text": "furnish the client with the following particulars where appropriate: (i) business or trade name of the product supplier; (ii) legal status and relationship with product supplier; (iii) the following details in respect of the product: (aa) Name, class or type of financial product concerned; (bb) Nature and extent of benefits to be provided; (cc) Manner in which such benefits are derived or calculated, with specific reference to the underlying assets of any investment component and the manner in which the value of such investment component is determined; (dd) Monetary obligations assumed by the client as well as manner of payment; (ee) Whether cooling off rights are offered and, if so, procedures for the exercise of such rights; (ff) Any material investment or other risks associated with the product;",
+                  "text": "furnish the client with the following particulars where appropriate:",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc15.2.b.i",
+                      "number": "i",
+                      "heading": "gcc15.2.b.i",
+                      "text": "business or trade name of the product supplier",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc15.2.b.ii",
+                      "number": "ii",
+                      "heading": "gcc15.2.b.ii",
+                      "text": "legal status and relationship with product supplier",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc15.2.b.iii",
+                      "number": "iii",
+                      "heading": "gcc15.2.b.iii",
+                      "text": "the following details in respect of the product: (aa) Name, class or type of financial product concerned; (bb) Nature and extent of benefits to be provided; (cc) Manner in which such benefits are derived or calculated, with specific reference to the underlying assets of any investment component and the manner in which the value of such investment component is determined; (dd) Monetary obligations assumed by the client as well as manner of payment; (ee) Whether cooling off rights are offered and, if so, procedures for the exercise of such rights; (ff) Any material investment or other risks associated with the product;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc15.2.c",
@@ -1024,9 +1400,34 @@
                   "id": "gcc19.1.d",
                   "number": "d",
                   "heading": "gcc19.1.d",
-                  "text": "of the Act; (d) must make provision that after the receipt and recording of a particular complaint, the complaint will as soon as practically possible be forwarded to the relevant staff appointed to consider its resolution, and that (i) the complaint receives proper consideration; (ii) appropriate management controls are available to exercise effective control and supervision of the consideration process; (iii) the client is informed of the results of the consideration within the time referred to in Rule 6(b) of the Rules: Provided that if the outcome is not favourable to the client, full written reasons must be furnished to the client within the time referred to in Rule 6(b) of the Rules, and the client must be advised that the complaint may within six months be pursued with the Ombud whose name, address and other contact particulars must simultaneously be provided to the client.",
+                  "text": "of the Act; (d) must make provision that after the receipt and recording of a particular complaint, the complaint will as soon as practically possible be forwarded to the relevant staff appointed to consider its resolution, and that",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc19.1.d.i",
+                      "number": "i",
+                      "heading": "gcc19.1.d.i",
+                      "text": "the complaint receives proper consideration",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc19.1.d.ii",
+                      "number": "ii",
+                      "heading": "gcc19.1.d.ii",
+                      "text": "appropriate management controls are available to exercise effective control and supervision of the consideration process",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc19.1.d.iii",
+                      "number": "iii",
+                      "heading": "gcc19.1.d.iii",
+                      "text": "the client is informed of the results of the consideration within the time referred to in Rule 6(b) of the Rules: Provided that if the outcome is not favourable to the client, full written reasons must be furnished to the client within the time referred to in Rule 6(b) of the Rules, and the client must be advised that the complaint may within six months be pursued with the Ombud whose name, address and other contact particulars must simultaneously be provided to the client.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -1051,8 +1452,26 @@
           "id": "gcc20",
           "number": "20",
           "heading": "Termination of agreement or business",
-          "text": "Subject to the Act, and sections 3(2) and (3) of this Code (a)(i) a provider must, subject to any contractual obligations, give immediate effect to a request of a client who voluntarily seeks to terminate any agreement with the provider or relating to a financial product or advice; (ii) where the client makes the request on the advice of the provider, the provider must take reasonable steps to ensure that the client fully understands all the implications of the termination; (b) a provider, other than a representative who ceases to operate as such, must immediately notify all affected clients accordingly and take, where reasonably necessary or appropriate in consultation with the clients and product suppliers concerned, reasonable steps to ensure that any outstanding business is completed promptly or transferred to another provider; and (c) where a representative ceases to operate as a representative of a provider, such provider must immediately take, where reasonably necessary or appropriate in consultation with the clients and product suppliers concerned, reasonable steps to notify all affected clients accordingly and ensure that outstanding business is completed or transferred to such provider or another representative of that provider.",
-          "verbatim": true
+          "text": "Subject to the Act, and sections 3(2) and (3) of this Code (a)",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "gcc20.i",
+              "number": "i",
+              "heading": "gcc20.i",
+              "text": "a provider must, subject to any contractual obligations, give immediate effect to a request of a client who voluntarily seeks to terminate any agreement with the provider or relating to a financial product or advice",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc20.ii",
+              "number": "ii",
+              "heading": "gcc20.ii",
+              "text": "where the client makes the request on the advice of the provider, the provider must take reasonable steps to ensure that the client fully understands all the implications of the termination; (b) a provider, other than a representative who ceases to operate as such, must immediately notify all affected clients accordingly and take, where reasonably necessary or appropriate in consultation with the clients and product suppliers concerned, reasonable steps to ensure that any outstanding business is completed promptly or transferred to another provider; and (c) where a representative ceases to operate as a representative of a provider, such provider must immediately take, where reasonably necessary or appropriate in consultation with the clients and product suppliers concerned, reasonable steps to notify all affected clients accordingly and ensure that outstanding business is completed or transferred to such provider or another representative of that provider.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
