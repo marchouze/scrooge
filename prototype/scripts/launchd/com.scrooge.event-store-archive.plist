@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  com.scrooge.event-store-archive.plist
+  ======================================
+
+  macOS LaunchAgent that runs `bun run archive:check` every 6 hours.
+  Checks whether the hot event store has exceeded size (100 MB) or event-
+  count (500k) thresholds; when either is breached, evicts the oldest events
+  to a dated cold archive file in ~/.local/share/bank/archives/.
+
+  Fires every 6 hours (21600 s) rather than daily so a machine that sleeps
+  during a calendar-time window still catches the check within 6 hours of
+  waking. launchd guarantees a single in-flight invocation — if a run takes
+  longer than 6 h (it won't) the next is delayed, not stacked.
+
+  Authority: D-EVENT-STORE-SCALING-PHASE-5
+  Author: Atlas (Core banking platform architect, engineering)
+
+  TEMPLATE — install.sh substitutes __BUN_PATH__, __WORKING_DIRECTORY__,
+  __LOG_DIR__, and __ENVIRONMENT_VARIABLES__ at install time.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.scrooge.event-store-archive</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>__BUN_PATH__</string>
+      <string>run</string>
+      <string>scripts/archive/check-and-archive.ts</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__WORKING_DIRECTORY__</string>
+
+    <!-- Every 6 hours -->
+    <key>StartInterval</key>
+    <integer>21600</integer>
+
+    <!-- Run once at load so a freshly-installed agent checks immediately -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <false/>
+
+    <key>Nice</key>
+    <integer>10</integer>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>StandardOutPath</key>
+    <string>__LOG_DIR__/event-store-archive.log</string>
+    <key>StandardErrorPath</key>
+    <string>__LOG_DIR__/event-store-archive.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+__ENVIRONMENT_VARIABLES__
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
+  </dict>
+</plist>
