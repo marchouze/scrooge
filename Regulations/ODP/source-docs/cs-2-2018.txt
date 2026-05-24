@@ -1,0 +1,511 @@
+A FSCA
+Financial Sector
+Conduct Authority
+FMA CONDUCT STANDARD 2 OF 2018
+FINANCIAL MARKETS ACT 19 OF 2012
+CONDUCT STANDARD FOR AUTHORISED OTC DERIVATIVE PROVIDERS
+The Financial Sector Conduct Authority, under section 6(8)(b), read with sections 74 and 75,
+of the Financial Markets Act, 2012 (Act No. 19 of 2012), hereby prescribes a Conduct
+Standard for authorised over-the-counter derivative providers.
+ABEL MOFFAT SITHOLE
+For THE FINANCIAL SECTOR CONDUCT AUTHORITY
+Date of publication: // October 2018
+Page 1 of 13
+
+--- PAGE BREAK ---
+
+SCHEDULE
+1. Definitions and interpretation
+In this Schedule, "the Act" means the Financial Markets Act, 2012 (Act No. 19 of 2012),
+and "the Regulations" means the Regulations prescribed under section 5(1)(b) of the Act,
+and any word or expression to which a meaning has been assigned in the Act or in the
+Regulations, bears the meaning so assigned to it, and unless the context indicates
+otherwise-
+"confirmation" means acknowledgement in writing or electronically of legally binding
+documentation that records the agreement of the parties to all of the terms of an OTC
+derivative transaction and occurs when a record, in writing, of all of the terms of an OTC
+derivative transaction is signed manually, electronically or by some other legally equivalent
+means by the OTC derivative provider and client or counterparty;
+"portfolio compression" means a risk reduction service in which two or more
+counterparties wholly or partially terminate some or all of the derivatives transactions and
+replace the terminated derivatives with another derivative whose combined notional value is
+less than the combined notional value of the terminated derivatives; and
+"provider" means an authorised OTC derivative provider.
+2. Application of the Conduct Standard
+This Conduct Standard is binding on providers.
+3. General duties of providers
+A provider must -
+(a) at all times act honestly, fairly, with due skill, care and diligence, and in the interests of
+clients and counterparties and the integrity of the financial markets;
+(b) communicate information to clients and counterparties in a way which is clear, fair and
+not misleading;
+(c) at all times manage conflicts of interest fairly, both between itself and its clients and
+counterparties;
+(d) observe proper standards of market conduct;
+(e) conduct itself in such a manner that does not impede the objects of the Act;
+Page 2 of 13
+
+--- PAGE BREAK ---
+
+(f)
+(g)
+maintain knowledge of and comply with all applicable laws, rules and regulations
+governing its activities; and
+engage with the Authority in an open and cooperative way, and disclose to the
+Authority appropriately any material incidence of non-compliance with the Act or
+material operational failure relating to the provider.
+Categorisation of clients and counterparties
+(1)
+A provider must establish, maintain and implement written policies and
+procedures reasonably designed to meet the requirements provided for in subparagraphs (2)
+to (4).
+(2)
+A provider must, prior to entering into an OTC derivatives transaction with a
+person, and with regard to existing clients or counterparties-
+(a)
+determine whether that person is a counterparty as defined;
+(b) in writing notify the person of -
+its categorisation as a counterparty and the basis of such categorisation; and
+(ii) the limitations to the level of client protection a categorisation as a counterparty
+(c)
+entails;
+obtain written confirmation from such person that the person is aware of the
+categorisation as a counterparty and the effect thereof and that the person agrees
+with the basis of such categorisation.
+(3)
+Where a client, other than a natural person, pension fund organisation as
+defined in section 1(1) of the Pension Funds Act, 1956 (Act No. 24 of 1956), a friendly
+society referred to in the Friendly Societies Act, 1956 (Act No. 25 of 1956), a medical
+scheme or the board of trustees of such scheme as defined in section 1(1) of the Medical
+Schemes Act, 1998 (Act No. 131 of 1998) elects to be categorised as a counterparty, the
+provider must determine whether it is appropriate for the client to be categorised as a
+counterparty, as provided for in section 6.
+(4) A provider must request a client that has elected to be categorised as a
+counterparty to provide information regarding its knowledge and experience in financial
+markets and specifically in respect of OTC derivatives, to enable the provider to determine
+whether it is appropriate for the client to be categorised as a counterparty.
+(5)
+If the provider determines that it is appropriate for the client to be categorised
+as a counterparty, the provider must warn the client in writing of the limitations to the level of
+Page 3 of 13
+
+--- PAGE BREAK ---
+
+client protection a categorisation as a counterparty entails and the clearing obligations that
+the client may be subject to.
+(6) If a provider determines, on the basis of the information provided by the client
+that has elected to be categorised as a counterparty, that it would not be appropriate for the
+client to be categorised as a counterparty, the provider must inform the client in writing
+(7) A provider must, when it becomes aware that a counterparty no longer meets
+the requirements for a categorisation as a counterparty, take the appropriate action to re-
+categorise such person as a client and to inform the person accordingly.
+5.
+Appropriateness
+(1)
+A provider must establish, maintain and implement written policies and
+procedures reasonably designed to meet the standards provided for in subparagraphs (2) to
+(9)
+(2)
+A provider must, prior to executing an OTC derivatives transaction with a
+client, request the client to provide appropriate and available information regarding the
+client's financial situation, objectives, knowledge and experience in financial markets and
+specifically in respect of OTC derivatives, to enable the provider to assess whether an OTC
+derivative transaction in a specific product type is appropriate for that client.
+(3) A provider is not required to make an assessment on each occasion of a
+separate transaction in a specific product type, provided that the provider has made an
+assessment of appropriateness in respect of that product type.
+(4) A provider may rely on the information provided by a client, unless the
+provider is aware or should reasonably have been aware that the information is manifestly
+out of date, inaccurate or incomplete.
+If a provider determines, on the basis of the information provided by the client,
+that transactions in OTC derivatives are not appropriate for that client, the provider must
+inform the client in writing.
+(6)
+If a client elects not to provide the information to enable the provider to
+assess appropriateness, or if the client provides insufficient information regarding its
+knowledge and experience, the provider must warn the client, in writing, that the provider is
+unable to determine whether transactions in OTC derivatives are appropriate for that client.
+(7) If a client, despite the warnings by a provider as provided for in
+subparagraphs (5) and (6), elects to execute a transaction or transactions in OTC
+derivatives, the provider may continue with such transaction or transactions.
+(8)
+The provision of warnings required in subparagraphs (5) and (6) does not
+constitute the provision of advice as contemplated in the Financial Advisory and Intermediary
+Services Act, 2002 (Act No. 37 of 2002).
+Page 4 of 13
+
+--- PAGE BREAK ---
+
+(9) The warnings required in paragraphs (5) and (6) may be provided in a
+standardised format.
+6. Disclosure to clients
+A provider must ensure that representations and information provided to a
+client are -
+(a) factually correct;
+(b)
+(c)
+(d)
+(e)
+(f)
+provided in plain language, avoid uncertainty or confusion and not be
+misleading, provided that for purposes of this Conduct Standard, a disclosure
+is in plain language if it is reasonable to conclude that a person or the class of
+persons for whom the disclosure is intended, with average literacy skills and
+experience in dealing with derivative transactions, could be expected to
+understand the content, and importance of the disclosure without undue
+effort;
+adequate and appropriate in the circumstances of the particular transaction or
+service, taking into account the factually established or reasonably assumed
+level of knowledge of the client;
+provided timeously so as to afford the client reasonably sufficient time to
+make an informed decision about the proposed transaction;
+if provided in writing or by means of standard forms, be in a clear and
+readable print size, spacing and format;
+as regards all amounts, sums, values, charges, fees, remuneration or
+monetary obligations mentioned or referred to therein, be reflected in specific
+monetary terms: provided that where any such amount, sum, value, charge,
+fee, remuneration or monetary obligation is not reasonably pre-determinable,
+its basis of calculation must be adequately described
+2)
+Representations and information may be provided orally and must, if the
+client so requests, be confirmed in writing within a reasonable time after such request.
+(3)
+Where there is a material or significant change affecting a client in the
+representations or information previously provided to such a client, or the relevant
+transaction or service renders it necessary, the provider must disclose the changes to the
+client without delay.
+Page 5 of 13
+
+--- PAGE BREAK ---
+
+(4) A provider must provide a general explanation of the nature and material
+terms, including any restrictions or conditions, and risks of a relevant transaction to a client
+so as to enable the client to make an informed decision regarding the transaction.
+7.
+Client and counterparty agreements
+(1) A provider must enter into an agreement in writing or electronically with a
+client or a counterparty conforming to the requirements set out in sub-paragraph (2).
+(2) The agreement must include all terms governing the trading relationship
+between the provider and the client or counterparty, including terms addressing-
+(a) payment obligations;
+(b) netting of payments;
+(c) events of default or other termination events;
+(d) calculation and netting of obligations upon termination, transfer of rights
+obligations;
+and
+(e) the governing law;
+(f) valuation of transactions, collateral and portfolios; and
+(g) dispute resolution.
+(3)
+Despite the minimum requirements provided for in sub-paragraph (2), the
+agreement must make provision for -
+(a) confirmation of OTC derivative transactions in terms of paragraph 8;
+(b) credit support arrangements, which must contain the following:
+Initial and variation margin requirements, if any;
+(ii)
+types of assets that may be used as collateral and collateral valuation
+haircuts, if any; and
+(iii)
+investment and re-hypothecation terms for securities used as collateral for
+non-centrally cleared OTC derivative transactions, if any;
+(C)
+arrangements for safeguarding the funds and securities collected as collateral;
+(d)
+an attestation that the client meets the requirements to be categorised as a
+counterparty, where applicable;
+(e)
+a requirement for notification by the counterparty if
+it
+ceases to meet the
+requirements to be categorised as a counterparty;
+Page 6 of 13
+
+--- PAGE BREAK ---
+
+(f)
+(g)
+consent by the client or counterparty for the provider to report the transactions to a
+licensed trade repository or licensed external trade repository; and
+the process for determining the value of each OTC derivatives transaction at any
+time from execution to the termination, maturity, or expiration of such transaction,
+including whether the valuation OTC derivative transaction will be based on market
+value, the provider's internal model or provided by independent third parties, or other
+objective criteria.
+(4) A provider is not required to disclose to the client or counterparty confidential,
+proprietary information about any model it may use to value an OTC derivative transaction,
+in order to comply with sub-paragraph (3)(g).
+(5) A provider must maintain a record of all agreements and must make them
+available promptly upon request to the Authority.
+8. Timely confirmations
+(1) A provider must establish, maintain and implement written policies and
+procedures reasonably designed to meet the standards provided for in sub-paragraphs (2) to
+(8).
+(2) A provider must use best efforts in accordance with market practice per
+product type to ensure that the transactions are confirmed-
+(a) by the end of the business day following the day of conclusion of the OTC derivative
+transaction, per product class, counterparty and client as set out in Annexure A; and
+(b)
+in respect of complex products, five business days following the day of the
+conclusion of the transaction.
+(3)
+Where the fixed deadline for confirmation has passed, the trade economics of
+the OTC derivative transaction are deemed to be confirmed, provided that the provider and
+client or counterparty have entered into a prior written agreement to that effect.
+(4)
+Where an OTC derivative transaction is concluded after 16.00 local time, or
+with a counterparty or client located in a different time zone which does not allow
+confirmation by timelines provided for in Annexure A, a provider must ensure that the
+confirmation is executed one business day following the timelines prescribed in Annexure A.
+(5) The provisions of this paragraph do not apply to OTC derivative transactions
+governed by a master agreement where a transaction supplement, which includes the
+valuation, margin or collateral call, is sent to a counterparty or client by 14.00 on the first
+business day following the day the OTC derivative transaction was concluded and daily
+thereafter for as long as the OTC derivative transaction remains open.
+Page 7 of 13
+
+--- PAGE BREAK ---
+
+(6) The provisions of this paragraph do not apply to cleared OTC derivative
+transactions, however if an OTC derivative transaction has not been accepted for clearing by
+a clearing house, the provider must ensure the execution of the confirmation, as provided for
+in this Conduct Standard.
+(7) A provider must make and retain a record of -
+(a)
+the date and time of transmission to a counterparty or client of any transaction
+supplement; and
+(b)
+the date and time of transmission to a provider or receipt from a counterparty or client
+of any confirmation.
+(8) A provider must provide the Authority with a monthly report, within 10
+business days of the previous calendar month end which sets out, per product type and
+client or counterparty, the number OTC transactions not confirmed within the timelines set
+out in Annexure A.
+9. Portfolio reconciliation
+(1) A provider must agree in writing or other equivalent electronic means with the
+counterparties or clients on the arrangements under which the portfolios of OTC derivative
+transactions shall be reconciled, before entering into the OTC derivative contract.
+In order to identify at an early stage, any discrepancy in a material term of a
+non-centrally cleared open OTC derivative transaction, including its valuation, a provider
+must establish, maintain and implement written policies and procedures reasonably
+designed to enable it to perform a portfolio reconciliation -
+(a)
+with a counterparty -
+(i)
+daily, where the portfolio consists of 500 or more open OTC derivative
+transactions;
+(ii)
+weekly, where the portfolio consists of between 51 and 499 open OTC
+derivative transactions on any business day during any week; or
+(iii)
+quarterly, where the portfolio consists of between 1 and 50 open OTC
+derivative transactions at any time during a calendar quarter;
+(b)
+with a client -
+(i)
+quarterly, where the portfolio consists of 101 or more open OTC derivative
+transactions; or
+Page 8 of 13
+
+--- PAGE BREAK ---
+
+(II)
+annually, where the portfolio consists of between 1 and 100 open OTC
+derivative transactions.
+(3) The provisions of sub-paragraph (1) do not apply to OTC derivative
+transactions governed by a master agreement where a transaction supplement, which
+includes the valuation, margin or collateral call, is sent to a counterparty or client by 14.00 on
+the first business day following the day the OTC derivative transaction was concluded and
+daily thereafter for as long as the OTC derivative transaction remains open.
+(4) The portfolio reconciliation may be performed on a bilateral basis by the
+provider and its counterparty or client, or by a third party duly mandated to this effect by the
+counterparty or client.
+(5) The policy and procedures, referred to in subparagraph (2), must provide for-
+(a)
+the resolution of any discrepancy in a material term of an OTC derivative transaction
+identified as part of a portfolio reconciliation or otherwise, as soon as possible, but in
+any event within three business days;
+(b)
+the resolution of any discrepancy in a valuation identified as part of a portfolio
+reconciliation or otherwise as soon as possible, but in any event within five business
+days;
+(c)
+the deeming as a dispute, of-
+(i)
+a discrepancy in a material term of an OTC derivative transaction not
+resolved within three business days; and
+(ii)
+a discrepancy in a valuation not resolved within five business days.
+10. Dispute resolution
+(1) A provider must establish, maintain and implement written policies and
+procedures reasonably designed to ensure -
+(a)
+(b)
+(C)
+the identification, recording, and monitoring of disputes relating to -
+(i) the material terms of an OTC derivative transaction; and
+(i)
+the recognition or valuation of the OTC derivative transaction and the exchange
+of collateral between the provider and its counterparty or client;
+the recording of the length of time for which the dispute remains outstanding, the
+counterparty or client and the amount which is disputed;
+the resolution of disputes in a timely manner with a specific process for those
+disputes that are not resolved within five business days.
+Page 9 of 13
+
+--- PAGE BREAK ---
+
+(2) A provider must promptly notify the Authority of any disputes relating to an
+OTC derivative transaction, its valuation or the exchange of collateral, where the value of the
+transaction exceeds R100 million and the dispute is not resolved within 10 business days.
+11. Portfolio compression
+(1)
+In order to reduce its counterparty credit risk, a provider must establish,
+maintain and implement written policies and procedures reasonably designed to ensure that
+it, -
+(a)
+regularly, but at least twice a year, analyse the possibility of conducting a bilateral or
+multilateral portfolio compression exercise, where appropriate and technologically
+possible, in respect of 500 or more non-centrally cleared open OTC derivative
+transactions with other providers; and
+(b)
+terminates fully offsetting non-centrally cleared open OTC derivative transactions
+with its counterparties and clients.
+A provider must make and maintain a complete and accurate record of each
+bilateral offset and each bilateral or multilateral portfolio compression exercise in which it
+participates.
+(3) A provider must ensure that it is able to provide a reasonable and valid
+explanation to the Authority for concluding that a portfolio compression exercise is not
+appropriate.
+12. Safeguarding of collateral
+(1)
+A provider who receives or holds any funds or securities of a client or
+counterparty as collateral, must, with regard to such funds or securities, observe utmost
+good faith, exercise proper care and diligence and deal therewith in the best interests of the
+client or counterparty.
+(2)
+A provider-
+(a)
+must segregate the clients' or counterparties' collateral from its proprietary assets
+and ensure that in its books of account the collateral is identifiable as belonging to
+the client or counterparty or with a third party holder or custodian, or via a legally
+effective arrangement made by the provider;
+(b)
+must within one business day of receipt pay into the account all funds held on behalf
+of clients or counterparties;
+Page 10 of 13
+
+--- PAGE BREAK ---
+
+(c)
+(d)
+must ensure that the separate account only contains funds of clients and
+counterparties and not those of the provider;
+may not cause securities to be registered otherwise than in accordance with the
+instructions given to the provider, in the absence of such instructions, the provider
+may not cause financial products to be registered otherwise than in the name of-
+(i)
+the client or counterparty; or
+(ii)
+a nominee.
+13.
+Arrangements with an intermediary
+Where a provider enters in an arrangement with an intermediary in terms of which the
+intermediary markets and sells OTC derivatives to clients on behalf of the provider, the
+provider must ensure that the intermediary -
+(a)
+(b)
+(C)
+(d)
+is authorised appropriately as a financial services provider in terms of the Financial
+Advisory and Intermediary Services Act, 2002 (Act No. 37 of 2002);
+discloses to the client, in writing, the nature of the arrangement and the relationship
+between the provider and the intermediary, including any fees that will be charged by
+the intermediary;
+performs the disclosure requirements, as provided for in paragraph 6, on behalf of
+the provider; and
+performs the appropriateness test requirements, as provided for in paragraph 5.
+14.
+Advertising or solicitation
+A statement, advertisement, brochure or similar communication by a provider that relates to
+the business of a provider or an OTC derivative must be fair, clear, correct, not misleading or
+contrary to the public interest.
+15.
+Confidentiality and privacy
+A provider may not disclose any information acquired or obtained from a counterparty or
+client, except-
+(a)
+the person to whom the confidential information relates has given consent;
+disclosure is required or permitted in terms of a law or a court order;
+Page 11 of 13
+
+--- PAGE BREAK ---
+
+(d)
+disclosure is necessary to carry out his, her or its functions or in the course of
+performing duties under any law; or
+disclosure is required for the purposes of legal proceedings.
+16.
+Policies and procedures
+The policies and procedures referred to in this Conduct Standard must be approved, in
+writing, by senior management of the provider.
+17.
+Waiver of rights
+A provider may not request or induce in any manner a client or counterparty to waive any
+right or benefit conferred on the client or counterparty by or in terms of this Conduct
+Standard, or recognise, accept or act on any such waiver by the client or counterparty, and
+any such waiver is void.
+18. Legal certainty
+Non-compliance with the provisions of this Conduct Standard will not affect the validity of an
+OTC derivative contract or the possibility for the parties to enforce the provisions of an OTC
+derivative contract.
+19. Transitional arrangement and commencement date
+(1) This Conduct Standard comes into operation on the date of publication.
+A provider must comply with the provisions of this Conduct Standard within
+six months of the date of its authorisation as a provider.
+Page 12 of 13
+
+--- PAGE BREAK ---
+
+Product Class
+Interest Rates
+Credit
+Foreign Exchange
+Equities
+Commodities
+Product Class
+Interest Rates
+Credit
+Foreign Exchange
+Equities
+Commodities
+Annexure A
+Acknowledgement schedule
+Counterparty
+business day
+business day
+first business day
+first business day
+first business day
+Client
+first business day
+first business day
+second business day
+second business day
+second business day
+Confirmation schedule
+Counterparty
+first business day
+first business day
+first business day
+first business day
+first business day
+Client
+second business day
+second business day
+second business day
+second business day
+second business day
+Page 13 of 13
+
+--- PAGE BREAK ---
+

@@ -23,6 +23,7 @@ import { FxRateEngine } from "./fx-sim-rates";
 function makeMockStore() {
   const mockStore = {
     append: vi.fn(),
+    replay: () => [] as unknown[],
   };
   return mockStore as unknown as EventStore & { append: ReturnType<typeof mock> };
 }

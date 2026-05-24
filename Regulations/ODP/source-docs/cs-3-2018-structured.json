@@ -1,0 +1,145 @@
+{
+  "slug": "cs-3-2018",
+  "title": "Conduct Standard 3 of 2018 — Reporting Obligations in respect of Transactions in OTC Derivatives",
+  "shortTitle": "CS 3 of 2018",
+  "regulator": "FSCA",
+  "year": 2018,
+  "enablingLegislation": "Financial Markets Act 19 of 2012, section 58, read with regulation 3 of the FMA Regulations",
+  "gazetteDate": "2018-10-01",
+  "signatory": "Abel Moffat Sithole, for the Financial Sector Conduct Authority",
+  "sourceNote": "FSCA Conduct Standard 3 of 2018 published October 2018 under FMA s.58. Prescribes trade reporting obligations for authorised ODPs and central counterparties — asset classes in scope, reporting entities, report content (Annexure A: 100 data fields), frequency, identifier requirements (LEI, UPI, UTI), and transitional arrangements. Strate (Pty) Ltd is the licensed trade repository (licensed December 2024; live 1 March 2027).",
+  "citationPatterns": ["CS 3/2018", "CS 3 of 2018", "ORG-CS2", "Conduct Standard 3 of 2018"],
+  "priority": 1,
+  "chapters": [
+    {
+      "id": "ch-preamble",
+      "title": "Preamble",
+      "sections": [
+        {
+          "id": "preamble",
+          "sectionNumber": "Preamble",
+          "title": "Enabling authority and publication",
+          "verbatim": true,
+          "text": "The Financial Sector Conduct Authority under section 58 of the Financial Markets Act, 2012 (Act No. 19 of 2012), read with paragraph 3 of the Regulations hereby prescribes reporting obligations in respect of transactions in over-the-counter derivatives.\n\nABEL MOFFAT SITHOLE\nFor THE FINANCIAL SECTOR CONDUCT AUTHORITY\nDate of publication: October 2018"
+        }
+      ]
+    },
+    {
+      "id": "ch-schedule",
+      "title": "Schedule — Reporting Obligations",
+      "sections": [
+        {
+          "id": "s1",
+          "sectionNumber": "1",
+          "title": "Definitions",
+          "verbatim": true,
+          "text": "In this Schedule, \"the Act\" means the Financial Markets Act, 2012 (Act No. 19 of 2012) and \"the Regulations\" means the Regulations prescribed under section 5(1)(a) of the Act, and any word or expression to which a meaning has been assigned in the Act or in the Regulations, bears the meaning so assigned to it; and unless the context otherwise indicates—\n\n\"central counterparty\" means a licensed central counterparty, a licensed external central counterparty;\n\"ISO 8601\" means the international standard for the representation of dates and times;\n\"LEI\" is the legal entity identifier — a 20 character, alpha-numeric code that uniquely identifies the counterparties to the financial transactions; the international standard for the LEI is outlined in ISO 17442:2012 Financial Services-Legal Entity Identifier;\n\"open source\" means critical software and other relevant elements that are defined and made available publicly without any licensing, intellectual property or similar restrictions;\n\"provider\" means an authorised OTC derivative provider;\n\"scalable\" means that the identifier must allow for growth in the volume of identifiers without having to reuse numbers or change the structure;\n\"trade repository\" means a licensed trade repository, a licensed external trade repository;\n\"unique product identifier\" means a code that uniquely identifies and describes the derivative asset class; and\n\"unique transaction identifier\" means a code that identifies the derivative transaction, provided by a trade repository or as identified by the two counterparties, or central counterparty, as the case may be."
+        },
+        {
+          "id": "s2",
+          "sectionNumber": "2",
+          "title": "Application of the Conduct Standard",
+          "verbatim": true,
+          "text": "The reporting obligations set out in this Conduct Standard are binding on providers or central counterparties, where applicable."
+        },
+        {
+          "id": "s3",
+          "sectionNumber": "3",
+          "title": "Reporting obligation: asset classes",
+          "verbatim": true,
+          "text": "A provider must report the details of the OTC derivative transactions, whether confirmed or not, that it has executed or of any modification or termination of the transaction, in the following asset classes to a trade repository:\n(a) Commodity derivatives;\n(b) credit derivatives;\n(c) foreign exchange derivatives;\n(d) equity derivatives; and\n(e) interest rate derivatives."
+        },
+        {
+          "id": "s4",
+          "sectionNumber": "4",
+          "title": "Reporting obligation: reporting entities",
+          "verbatim": true,
+          "text": "(1) Where an OTC derivative transaction is cleared through a central counterparty, the central counterparty must provide the report contemplated in paragraph 5.\n\n(2) Where a counterparty to an OTC derivative transaction is another authorised OTC derivative provider, the obligation to report is on both providers.\n\n(3) A provider or a central counterparty, where applicable, which is subject to the reporting obligation may delegate that obligation."
+        },
+        {
+          "id": "s5",
+          "sectionNumber": "5",
+          "title": "Report",
+          "verbatim": true,
+          "text": "(1) The report must contain at least the information set out in Annexure A.\n\n(2) A provider or central counterparty must ensure that data reported to the trade repository is accurate.\n\n(3) A provider must keep a record of any concluded derivative transaction and any modification thereto for a period of at least five years following the termination of the transaction."
+        },
+        {
+          "id": "s6",
+          "sectionNumber": "6",
+          "title": "Frequency of reporting",
+          "verbatim": true,
+          "text": "(1) A provider must provide the report by the end of the business day following the day of the conclusion, modification or termination of the contract.\n\n(2) A provider must report mark-to-market or mark-to-model valuations of contracts to a trade repository daily based on the relevant closing market data from the previous business day.\n\n(3) Any other reporting elements as set out in item 100 of Annexure A must be reported at least on a daily basis, or as they occur, whatever the case may be."
+        },
+        {
+          "id": "s7",
+          "sectionNumber": "7",
+          "title": "Requirements for identifiers",
+          "verbatim": false,
+          "text": "Section 7 covers three identifier types:\n\ns7.1 — Identification of counterparties and other entities using an LEI: A report must contain an LEI to identify (a) the reporting provider; (b) non-reporting counterparties; (c) the central counterparty, where the trade was cleared.\n\ns7.2 — Identification of derivative instruments: A report must identify a derivative instrument using a unique product identifier (UPI) based on the taxonomy of the derivative which is internationally recognisable, unique, neutral, reliable, open source, scalable, accessible, available at a reasonable cost basis, and subject to an appropriate governance framework. Where international or industry standards for a UPI are not reasonably available, a reporting counterparty must assign a UPI using its own methodology.\n\ns7.3 — Unique transaction identifier (UTI): A report must identify a derivative transaction using a UTI meeting the same nine criteria as the UPI. Where both counterparties are authorised ODPs, the reporting provider allocates the UTI and the non-reporting counterparty adopts the same identifier to avoid duplication. The UTI must be allocated at the earliest possible point in the trade flow. Where the trade is cleared, the central counterparty allocates the UTI."
+        },
+        {
+          "id": "s8",
+          "sectionNumber": "8",
+          "title": "Operational standards for aggregation and comparison of data across trade repositories",
+          "verbatim": true,
+          "text": "The counterparties to a trade must generate a unique transaction identifier for each derivative contract to enable trade repositories to aggregate and compare data across different trade repositories."
+        },
+        {
+          "id": "s9",
+          "sectionNumber": "9",
+          "title": "Reporting start date and transitional arrangements",
+          "verbatim": true,
+          "text": "(1) The obligation to comply with the reporting obligation in accordance with this Conduct Standard by a provider or a central counterparty, as the case may be, commences six months from the effective date of this Standard (the reporting start date).\n\n(2) All transactions entered into 18 months before the reporting start date—\n(a) that are still open on the reporting start date, must be back-loaded within 180 days after the reporting start date; and\n(b) concluded before the reporting start date must be reported to a trade repository within five years of the reporting start date."
+        },
+        {
+          "id": "s10",
+          "sectionNumber": "10",
+          "title": "Commencement date",
+          "verbatim": true,
+          "text": "This Conduct Standard comes into effect on the date determined by the Authority."
+        }
+      ]
+    },
+    {
+      "id": "ch-annexure-a",
+      "title": "Annexure A — Data Fields (100 items)",
+      "sections": [
+        {
+          "id": "annexure-a-counterparty",
+          "sectionNumber": "Annexure A — Counterparty Data (items 1–11)",
+          "title": "Counterparty identification and metadata fields",
+          "verbatim": false,
+          "text": "Items 1–11 cover counterparty data:\n1. Reporting timestamp (ISO 8601 UTC)\n2. Identifier of reporting counterparty (ISO 17442 LEI, or unique client code for individual)\n3. Type of ID of the other counterparty (LEI or CLC)\n4. Nature of the reporting counterparty (F=Financial, N=Non-Financial, C=CCP, O=Other)\n5. Corporate sector of the reporting counterparty\n6. Identifier of non-reporting counterparty (ISO 17442 LEI or BIC)\n7. Broker ID\n8. Country of non-reporting counterparty (ISO 3166 2-char)\n9. Trading capacity of reporting counterparty (principal or agent)\n10. Counterparty side (B=Buyer, S=Seller)\n11. Identity of entity submitting report (ISO 17442 LEI)"
+        },
+        {
+          "id": "annexure-a-product",
+          "sectionNumber": "Annexure A — Product and Transaction Data (items 12–28)",
+          "title": "Product identification and transaction detail fields",
+          "verbatim": false,
+          "text": "Items 12–28 cover product and transaction data:\n12. Unique product identifier\n13. Type of ID of the Beneficiary\n14. Beneficiary ID\n15. Inter-affiliate (intra-group indicator)\n16. Collateralisation (FC=Fully, PC=Partially, OC=One-way, U=Uncollateralised)\n17. Collateral portfolio (Y/N)\n18. Collateral portfolio code\n19. Initial margin posted/received (up to 20 numerical chars; decimal as dot)\n20. Currency of initial margin (ISO 4217)\n21. Variation margin posted or received\n22. Currency of variation margin\n23. Contract or instrument type (CD/FR/FU/FW/OP/SB/SW/ST/OT)\n24. Underlying asset identifier 1 (ISO 6166)\n25. Underlying asset identifier 2 (ISO 6166)\n26. Asset class (IR/CR/CO/CU/Equity)\n27. Unique transaction identifier\n28. Complex trade component identifier"
+        },
+        {
+          "id": "annexure-a-transaction",
+          "sectionNumber": "Annexure A — Transaction Details (items 29–59)",
+          "title": "Dates, terms, clearing and risk mitigation fields",
+          "verbatim": false,
+          "text": "Items 29–59 cover transaction details including:\n29. Electronic trading venue identifier (LEI)\n30. Effective date (ISO 8601 YYYY-MM-DD)\n31. Maturity date\n32. Termination date (early termination)\n33. Settlement date\n34. Master agreement type (free text, up to 50 chars)\n35. Master agreement version (ISO 8601 YYYY)\n36. Payment frequency or dates\n37. Reset frequency or dates\n38. Day count convention\n39. Delivery type (physical or cash)\n40–44. Price 1/2, price notation type 1/2, price multiplier\n45. Notional currency 1 (ISO 4217)\n46. Notional currency 2\n47. Settlement currency\n48. Up-front payment amount\n49. Currency of up-front payment\n50. Embedded option indicator\n51. Confirmation status\n52. Confirmation timestamp\n53. Clearing timestamp\n54. Cleared (Y/N)\n55. Central counterparty (ISO 17442 LEI)\n56. Clearing member name and LEI\n57. Clearing exemption\n58. Intragroup"
+        },
+        {
+          "id": "annexure-a-asset-specific",
+          "sectionNumber": "Annexure A — Asset Class Specific Fields (items 60–92)",
+          "title": "Interest rate, currency, commodity, credit and option specific fields",
+          "verbatim": false,
+          "text": "Items 60–92 cover asset-class specific data:\n\nInterest rate derivatives (items 60–67): fixed rate leg 1/2, floating rate leg 1/2, fixed rate day count convention leg 1/2, fixed/floating leg payment frequency, floating rate reset frequency (MNTH/QURT/MIAN/YEAR).\n\nCurrency derivatives (items 68–71): exchange rate, delivery currency 2, forward exchange rate, exchange rate basis.\n\nCommodity derivatives (items 72–76): sub-asset class, quantity, unit of measure, grade of product, delivery point.\n\nCredit derivatives (items 77–88): counterparty buyer/seller ID and name, reference entity, index attachment/detachment points, payment frequency, calculation basis, index factor, tranche indicator, series number.\n\nOptions (items 89–92): option exercise date, option premium, strike price (cap/floor rate), option exercise style."
+        },
+        {
+          "id": "annexure-a-event-valuation",
+          "sectionNumber": "Annexure A — Event and Valuation Data (items 93–100)",
+          "title": "Action type, execution timestamp, and valuation fields",
+          "verbatim": false,
+          "text": "Items 93–100:\n93. Option type (Put/Call)\n94. Action (N=New, M=Modify, E=Error, C=Early Termination, R=Correction, Z=Compression, V=Valuation update, P=Position component)\n95. Execution timestamp (UTC)\n96. Reporting timestamp (UTC)\n97. Value of the contract (mark-to-market or mark-to-model; for cleared trades use CCP valuation)\n98. Valuation currency\n99. Valuation date\n100. Other details (free text for terms that cannot be effectively reported in prescribed fields)"
+        }
+      ]
+    }
+  ]
+}

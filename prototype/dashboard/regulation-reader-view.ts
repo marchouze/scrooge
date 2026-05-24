@@ -50,8 +50,9 @@ interface RegSection {
 
 interface RegChapter {
   id: string;
-  number: string;
-  heading: string;
+  number?: string;
+  heading?: string;
+  title?: string;
   sections: RegSection[];
 }
 
@@ -164,6 +165,11 @@ const SLUG_TO_FILE: Record<string, string> = {
   js2: "Regulations/Joint-Standards/source-docs/js2-structured.json",
   "fais-gcc": "Regulations/FSCA/source-docs/fais-gcc-structured.json",
   excon: "Regulations/SARB-FinSurv/source-docs/excon-structured.json",
+  "cs-1-2018": "Regulations/ODP/source-docs/cs-1-2018-structured.json",
+  "cs-2-2018": "Regulations/ODP/source-docs/cs-2-2018-structured.json",
+  "cs-3-2018": "Regulations/ODP/source-docs/cs-3-2018-structured.json",
+  "js-2-2020": "Regulations/ODP/source-docs/js-2-2020-structured.json",
+  "jn-2-2024": "Regulations/ODP/source-docs/jn-2-2024-structured.json",
 };
 
 const ALL_SLUGS = [
@@ -175,6 +181,11 @@ const ALL_SLUGS = [
   "js2",
   "fais-gcc",
   "excon",
+  "cs-1-2018",
+  "cs-2-2018",
+  "cs-3-2018",
+  "js-2-2020",
+  "jn-2-2024",
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -407,6 +418,15 @@ function sectionLookupKeys(slug: string, section: RegSection): string[] {
     if (head) keys.push(`${slug}/s${normaliseSectionRef(head)}`);
   }
 
+  // ODP instruments use sectionNumber with dots (e.g. "4.2" → key "s42").
+  // Obligations typically cite the head integer (e.g. "§4"), so also emit
+  // the parent key (e.g. "js-2-2020/s4") so those citations light up here.
+  const ODP_SLUGS = ["cs-1-2018", "cs-2-2018", "cs-3-2018", "js-2-2020", "jn-2-2024"];
+  if (ODP_SLUGS.includes(slug) && section.sectionNumber?.includes(".")) {
+    const head = section.sectionNumber.split(".")[0]?.trim();
+    if (head && /^\d/.test(head)) keys.push(`${slug}/s${normaliseSectionRef(head)}`);
+  }
+
   return keys;
 }
 
@@ -532,8 +552,8 @@ export function buildInstrumentDetailView(
 
   const chapters: ChapterDetail[] = doc.chapters.map((chapter) => ({
     id: chapter.id,
-    number: chapter.number,
-    heading: chapter.heading,
+    number: chapter.number ?? "",
+    heading: chapter.heading ?? chapter.title ?? "",
     sections: chapter.sections.map((section) => {
       const obligations = getObligationsForSection(
         slug,

@@ -55,6 +55,29 @@ const INSTRUMENT_PATTERNS: Array<{ pattern: RegExp; slug: string }> = [
       /Exchange Control|\bExcon\b|Currency and Exchanges Manual|Currency and Exchanges Act|Exchange Control Regulations/i,
     slug: "excon",
   },
+  // ODP instruments — must come before the generic JS2/2024 pattern so that
+  // "Joint Standard 2 of 2020" and "JS 2/2020" are captured by the correct slug.
+  {
+    pattern: /Joint Standard 2 of 2020|JS 2\/2020|JS 2 of 2020|Joint Standard 2\/2020/i,
+    slug: "js-2-2020",
+  },
+  {
+    pattern: /Joint Notice 2 of 2024|JN 2\/2024|JN 2 of 2024|JN2\/2024/i,
+    slug: "jn-2-2024",
+  },
+  {
+    pattern: /Conduct Standard 1 of 2018|CS 1\/2018|CS 1 of 2018|CS1\/2018/i,
+    slug: "cs-1-2018",
+  },
+  {
+    pattern: /Conduct Standard 2 of 2018|CS 2\/2018|CS 2 of 2018|CS2\/2018/i,
+    slug: "cs-2-2018",
+  },
+  {
+    pattern:
+      /FSCA Conduct Standard 3 of 2018|Conduct Standard 3 of 2018|CS 3\/2018|CS 3 of 2018|CS3\/2018/i,
+    slug: "cs-3-2018",
+  },
   {
     pattern: /Joint Standard 2 of 2024|JS 2\/2024|JS 2 of 2024|Joint Standard 2|\bJS2\b/i,
     slug: "js2",

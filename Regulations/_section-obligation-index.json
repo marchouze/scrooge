@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-20T07:52:07.572Z",
+  "generatedAt": "2026-05-24T05:48:43.988Z",
   "obligationCount": 283,
-  "sectionCount": 78,
+  "sectionCount": 98,
   "index": {
     "banks-act": [
       "ORG-PR-01",
@@ -269,8 +269,6 @@
       "ORG-CY-05",
       "ORG-CY-17",
       "ORG-GV-17",
-      "ORG-JS2-001",
-      "ORG-FX-FIN-08",
       "ORG-GV-CRO-INDEPENDENCE",
       "ORG-CY-02-RECON-CRO-INDEPENDENCE",
       "ORG-BNK-CYBER-CONS"
@@ -293,14 +291,81 @@
       "ORG-FX-FIN-13",
       "ORG-FX-FIN-14"
     ],
+    "cs-3-2018/s3": [
+      "ORG-MK-14"
+    ],
+    "cs-3-2018/s4": [
+      "ORG-MK-14",
+      "ORG-CS3-002"
+    ],
+    "cs-3-2018/s5": [
+      "ORG-MK-14",
+      "ORG-CS3-003"
+    ],
+    "cs-3-2018/s6": [
+      "ORG-MK-14",
+      "ORG-CS3-004"
+    ],
+    "cs-3-2018/s7": [
+      "ORG-MK-14",
+      "ORG-CS3-005"
+    ],
+    "cs-3-2018/s8": [
+      "ORG-MK-14",
+      "ORG-CS3-006"
+    ],
+    "cs-3-2018/s9": [
+      "ORG-MK-14",
+      "ORG-CS3-007"
+    ],
     "popia": [
       "ORG-EL-03",
       "ORG-RM-01"
     ],
-    "js2/s4": [
+    "cs-1-2018/s4": [
+      "ORG-CS1-002"
+    ],
+    "cs-1-2018/s5": [
+      "ORG-CS1-003"
+    ],
+    "cs-1-2018/s6": [
+      "ORG-CS1-004"
+    ],
+    "cs-2-2018": [
+      "ORG-CS2-001"
+    ],
+    "cs-3-2018/s10": [
+      "ORG-CS3-008"
+    ],
+    "cs-3-2018/s12": [
+      "ORG-CS3-009"
+    ],
+    "js-2-2020/s4": [
       "ORG-JS2-001"
     ],
-    "js2/s6a": [
+    "js-2-2020/s2": [
+      "ORG-JS2-001",
+      "ORG-FX-FIN-08"
+    ],
+    "js-2-2020/s5": [
+      "ORG-JS2-002"
+    ],
+    "js-2-2020/s6": [
+      "ORG-JS2-003"
+    ],
+    "js-2-2020/s7": [
+      "ORG-JS2-004"
+    ],
+    "js-2-2020/s3": [
+      "ORG-JS2-005"
+    ],
+    "js-2-2020/s8": [
+      "ORG-JS2-006"
+    ],
+    "js-2-2020": [
+      "ORG-JN2-2024"
+    ],
+    "js-2-2020/s6a": [
       "ORG-FX-FIN-08"
     ],
     "fais-act/s8": [

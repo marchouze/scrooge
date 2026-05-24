@@ -1,0 +1,886 @@
+A ESCA
+Financial Sector
+Conduct Authority
+FMA CONDUCT STANDARD 3 OF 2018
+FINANCIAL MARKETS ACT, 19 OF 2012
+CONDUCT STANDARD FOR REPORTING OBLIGATIONS IN RESPECT OF
+TRANSACTIONS IN OVER-THE-COUNTER DERIVATIVES
+The Financial Sector Conduct Authority under section 58 of the Financial Markets Act,
+2012 (Act No. 19 of 2012), read with paragraph 3 of the Regulations hereby prescribes
+reporting obligations in respect of transactions in over-the-counter derivatives.
+Bayite
+ABEL MOFFAT SITHOLE
+For THE FINANCIAL SECTOR CONDUCT AUTHORITY
+Date of publication: L octo
+October 2018
+Page 1 of 20
+
+--- PAGE BREAK ---
+
+SCHEDULE
+1. Definitions
+In this Schedule, "the Act" means the Financial Markets Act, 2012 (Act No. 19 of
+2012) and "the Regulations" means the Regulations prescribed under section 5(1)(a)
+of the Act, and any word or expression to which a meaning has been assigned in the
+Act or in the Regulations, bears the meaning so assigned to it; and unless the context
+otherwise indicates-
+"central counterparty" means a licensed central counterparty, a licensed external
+central counterparty.;
+"ISO 8601" means the international standard for the representation of dates and times
+which describes an internationally accepted manner to represent dates and times using
+numbers;
+"LEI" is the legal entity identifier and means a 20 character, alpha-numeric code that
+uniquely identifies the counterparties to the financial transactions; the international
+standard for the LEI is outlined in ISO 17442:2012 Financial Services-Legal Entity
+Identifier;
+"open source" means critical software and other relevant elements that are defined
+and made available publicly without any licensing, intellectual property or similar
+restrictions;
+"provider" means an authorised OTC derivative provider;
+"scalable" means that the identifier must allow for growth in the volume of identifiers
+without having to reuse numbers or change the structure;
+"trade repository" means a licensed trade repository, a licensed external trade
+repository;
+"unique product identifier" means a code that uniquely identifies and describes the
+derivative asset class; and
+"unique transaction identifier" means a code that identifies the derivative
+transaction, provided by a trade repository or as identified by the two counterparties, or
+central counterparty, as the case may be.
+2.
+Application of the Conduct Standard
+The reporting obligations set out in this Conduct Standard are binding on providers or
+central counterparties, where applicable.
+Page 2 of 20
+
+--- PAGE BREAK ---
+
+3.
+Reporting Obligation: asset classes
+A provider must report the details of the OTC derivative transactions, whether
+confirmed or not, that it has executed or of any modification or termination of the
+transaction, in the following asset classes to a trade repository:
+(a) Commodity derivatives;
+(b) credit derivatives;
+(c) foreign exchange derivatives;
+(d) equity derivatives; and
+(e) interest rate derivatives.
+4.
+Reporting Obligation: reporting entities
+(1)
+Where an OTC derivative transaction is cleared through a central
+counterparty, the central counterparty must provide the report contemplated in
+paragraph 5.
+(2)
+Where a counterparty to an OTC derivative transaction is another
+authorised OTC derivative provider, the obligation to report is on both providers.
+(3)
+A provider or a central counterparty, where applicable, which is subject
+to the reporting obligation may delegate that obligation.
+5.
+Report
+(1)
+The report must contain at least the information set out in Annexure A.
+(2)
+A provider or central counterparty must ensure that data reported to the
+trade repository is accurate.
+(3)
+A provider must keep a record of any concluded derivative transaction
+and any modification thereto for a period of at least five years following the termination
+of the transaction.
+6.
+Frequency of reporting
+(1)
+A provider must provide the report by the end of the business day
+following the day of the conclusion, modification or termination of the contract.
+(2)
+A provider must report mark-to-market or mark-to-model valuations of
+contracts to a trade repository daily based on the relevant closing market data from the
+previous business day.
+(3)
+Any other reporting elements as set out in item 100 of Annexure A must
+be reported at least on a daily basis, or as they occur, whatever the case may be.
+Page 3 of 20
+
+--- PAGE BREAK ---
+
+Requirements for identifiers
+7.1 Identification of counterparties and other entities using an LEI
+A report must contain an LEI to identify-
+(a) the reporting provider;
+(b) non-reporting counterparties;
+(c) the central counterparty, where the trade was cleared.
+7.2 Identification of derivative instruments
+(1) A report must identify a derivative instrument using a unique product
+identifier based on the taxonomy of the derivative which is-
+(a) internationally recognisable;
+(b) unique;
+(c) neutral;
+(d) reliable;
+(e) open source;
+(f) scalable;
+(g) accessible;
+(h) available at a reasonable cost basis; and
+(i) subject to an appropriate governance framework.
+Where international or industry standards for a unique product identifier
+are not reasonably available for a particular sub-type of derivative at the time a report is
+made under this Conduct Standard, a reporting counterparty must assign a unique
+product identifier to the derivative using its own methodology or incorporating a unique
+product identifier previously assigned to the derivative.
+7.3
+Unique transaction identifier
+(1) A report must identify a derivative transaction using a unique transaction
+identifier which is-
+(a)
+unique;
+(b)
+neutral;
+(c) reliable;
+(d) open source;
+(e) scalable;
+(T)
+accessible;
+(g)
+available at a reasonable cost basis; and
+Page 4 of 20
+
+--- PAGE BREAK ---
+
+(h) subject to an appropriate governance framework.
+(2) Where the counterparties to the trade are both authorised OTC
+derivative providers, the reporting provider must allocate the unique transaction
+identifier and the non-reporting counterparty must adopt the same identifier to avoid
+duplication.
+(3)
+The allocation of the unique transaction identifier must occur at the
+earliest possible point in the trade flow.
+(4) Where the trade is cleared, the central counterparty must allocate the
+unique transaction identifier.
+8.
+Operational standards for aggregation and comparison of data across
+trade repositories
+The counterparties to a trade must generate a unique transaction identifier for each
+derivative contract to enable trade repositories to aggregate and compare data across
+different trade repositories.
+9.
+Reporting start date and transitional arrangements
+(1)
+The obligation to comply with the reporting obligation in accordance with
+this Conduct Standard by a provider or a central counterparty, as the case may be,
+commences six months from the effective date of this Standard (the reporting start
+date).
+(2) All transactions entered into 18 months before the reporting start date,-
+(a) that are still open on the reporting start date, must be back-loaded within 180
+days after the reporting start date; and
+(b) concluded before the reporting start date must be reported to a trade repository
+within five years of the reporting start date.
+10. Commencement date
+This Conduct Standard comes into effect on the date determined by the Authority.
+Page 5 of 20
+
+--- PAGE BREAK ---
+
+Item
+2.
+3.
+4.
+5.
+Data field
+Counterparty Data
+Reporting
+timestamp
+Identifier of
+reporting
+counterparty
+Type of ID of
+the other
+counterparty
+Nature of the
+reporting
+counterparty
+Corporate sector of
+the reporting
+counterparty
+Annexure A
+Data Format and Description
+Date and time of reporting to the trade repository
+ISO 8601 date in the format and Coordinated Universal Time
+(UTC) time format YYYY-MM-DDThh:mm:ssZ
+ISO 17442 LEI of the reporting counterparty or, in case of an
+individual, a unique client code issued by the reporting
+counterparty
+"LEI" for ISO 17442 Legal Entity Identifier (LEI)
+"CLC" for Client code
+Indicate if the reporting counterparty is a CCP, a financial,
+non-financial counterparty or other type of counterpartyF =
+Financial Counterparty
+N = Non-Financial Counterparty
+C = Central Counterparty
+O = Other
+Nature of the reporting counterparty's company activities. If
+the Reporting Counterparty is a Financial Counterparty, this
+field shall contain all necessary codes included in the
+Taxonomy for Financial Counterparties and applying to that
+Counterparty. If the Reporting Counterparty is a Non-
+Financial Counterparty, this field shall contain all necessary
+codes included in the Taxonomy for Non-Financial
+Counterparties and applying to that Counterparty. Where
+more than one activity is reported, the codes shall be
+populated in order of the relative importance of the
+corresponding activities
+Page 6 of 20
+
+--- PAGE BREAK ---
+
+Item
+Data field
+Identifier of non-
+reporting
+counterparty
+Broker ID
+8.
+Country of non-
+reporting
+counterparty
+Trading capacity of
+reporting counterparty
+10.
+Counterparty side
+11.
+Identity of entity
+submitting report
+Data Format and Description
+ISO 17442 LEI of the non-reporting counterparty or business
+identifier code if no LEl or, in case of an individual, a unique
+client code issued by the reporting counterparty
+In the case a broker acts as intermediary for the reporting
+counterparty without becoming a counterparty himself, the
+reporting counterparty shall identify this broker by a unique
+code.
+Jurisdiction of non-reporting counterparty - Using ISO 3166
+- 2 character country code
+Identifies whether the reporting counterparty has concluded
+the contract as principal on own account (on own behalf or
+behalf of a client) or as agent for the account of and on behalf
+of a client.
+Indicate whether the reporting counterparty was the buyer or
+seller. In the case of swaps, other than credit default swaps,
+the buyer will represent the payer of leg 1 and the seller will
+be the payer of leg 2
+B= Buyer
+S= Seller
+In the case where the reporting counterparty has delegated
+the submission of the report to a third party or to the other
+counterparty, this entity has to be identified in this field by a
+unique code. Otherwise this field shall be left blank
+ISO 17442 Legal Entity Identifier (LEI) 20 alphanumerical
+character code
+Page 7 of 20
+
+--- PAGE BREAK ---
+
+Item
+12.
+13.
+Data Format and Description
+Unique product identification code based on the taxonomy of
+the product
+Type of the code used to identify the Beneficiary.
+14.
+Data field
+Unique product
+identifier
+Type of ID of the
+Beneficiary
+Beneficiary ID
+15.
+Inter-affiliate
+16.
+Collateralisation
+17.
+Collateral portfolio
+The party subject to the rights and obligations arising from
+the contract. Where the transaction is executed via a
+structure, such as a trust or fund, representing a number of
+beneficiaries, the beneficiary should be identified as that
+structure. Where the beneficiary of the contract is not a
+counterparty to this contract, the reporting counterparty has
+to identify this beneficiary by a unique code or, in case of a
+private individual, by a client code used in a consistent
+manner as assigned by the legal entity used by the private
+individual.
+Indicate whether the derivative is between two affiliated
+entities.
+Indicate whether the derivative is collateralised. Field Values:
+FC=Fully collaterised (initial and variation margin required to
+be posted by both counterparties);
+PC= Partially collaterised (variation only required to be
+posted by both counterparties);
+OC= One-way collaterised (one party will be required to post
+some form of collateral);
+U= Uncollateralised.
+Indicate whether collateralisation of reported transaction was
+performed on a portfolio basis
+Y= Yes
+No = No
+Page 8 of 20
+
+--- PAGE BREAK ---
+
+Item
+18.
+19.
+Data field
+Collateral portfolio
+code
+Initial margin
+posted/received
+Data Format and Description
+20.
+If item 20 is applicable, include a unique code identifying the
+portfolio that is determined by the reporting counterparty
+Value of initial margin posted by the reporting counterparty to
+the other counterparty. Include overall value of initial margin
+posted or received, if received or posted on portfolio basis.
+Up to 20 numerical characters including decimals. The
+decimal mark is not counted as a numerical character. If
+populated, it shall be represented by a dot.
+Specify currency of initial margin
+ISO 4217 Currency Code, 3 alphabetical characters
+21.
+Currency of initial
+margin
+posted/received
+Variation margin
+posted or received
+Value of the variation margin posted/received, including
+cash settled, by the reporting counterparty to the other
+counterparty. Where variation margin is posted/received on
+a portfolio basis, this field should include the overall value of
+variation margin posted/received for the portfolio.
+22.
+Up to 20 numerical characters including decimals. The
+decimal mark is not counted as a numerical character. If
+populated, it shall be represented by a dot.
+ISO 4217 Currency Code, 3 alphabetical characters
+Currency of variation
+margin posted
+Common data - Contract details
+Contract Type
+Page 9 of 20
+
+--- PAGE BREAK ---
+
+Item
+23.
+24.
+25.
+26.
+27.
+Data field
+Data Format and Description
+Contract or instrument
+type
+Underlying asset
+identifier 1
+Underlying asset
+identifier 2
+Asset class
+The name of the contract or instrument type eg:
+CD = Financial contracts for difference
+FR = Forward rate agreements
+FU = Futures
+FW = Forwards
+OP = Option
+SB = Spreadbet
+SW = Swap
+ST = Swaption
+OT = Other
+The unique identifier of the asset referenced in the
+derivative. Using ISO 6166
+The unique identifier of the second asset referenced in the
+derivative, if more than one. Using ISO 6166
+If more than two assets identified in the derivative, report the
+unique identifiers for those additional underlying assets.
+Major asset class of the product -
+IR = Interest Rate
+CR = Credit
+CO= Commodity,
+CU = Currency
+Equity = Equity.
+Details on the transaction
+Unique transaction
+identifier
+The unique transaction identifier as provided by the trade
+repository or the identifier as identified by the two
+counterparties, or central counterparty
+Page 10 of 20
+
+--- PAGE BREAK ---
+
+Item
+28.
+29.
+30.
+31.
+32.
+33.
+Data field
+Complex trade
+component identifier
+Electronic trading
+venue identifier
+Effective date or start
+date
+Maturity date
+Termination date
+Settlement date
+Data Format and Description
+Internal to the reporting firm, to identify and link all the
+reports related to the same derivative contract composed of
+a combination of derivative contracts.
+The code must be unique at the level of the counterparty to
+the group of transaction reports resulting from the derivative
+contract.
+Field applicable only where a firm executes a derivative
+contract composed of two or more derivative contracts and
+where this contract cannot be adequately reported in a single
+report.
+LEI of the electronic trading venue where the transaction was
+executed, if applicable
+The date the derivative becomes effective or starts.
+ISO 8601 date in the format YYYY-MM-DD
+28
+Original date of expiry of the reported contract. An early
+termination shall not be reported in this field.
+ISO 8601 date in the format YYYY-MM-DD
+Termination date in the case of an early termination of the
+reported contract.
+ISO 8601 date in the format YYYY-MM-DD
+Date of settlement of the underlying. If more than one, further
+fields may be used
+ISO 8601 date in the format YYYY-MM-DD
+Page 11 of 20
+
+--- PAGE BREAK ---
+
+Item
+34.
+Data Format and Description
+35.
+36.
+37.
+38.
+39.
+40.
+41.
+42.
+43.
+44.
+Data field
+Master agreement
+type
+Master agreement
+version
+Payment frequency or
+dates
+Reset frequency or
+dates
+Day count convention
+Delivery type
+Price 1
+Price 2
+Price notation type 1
+Price notation type 2
+Price multiplier
+The type of master agreement, if used for the reported
+derivative (ISDA Master Agreement or any other Master
+Agreement).
+Free Text, field of up to 50 characters, identifying the name
+of the Master Agreement used, if any
+Year of the version of the master agreement.
+ISO 8601 date in the format YYYY
+The dates or frequency the derivative requires payments to
+be made (e.g., quarterly, monthly).
+The dates or frequency at which the price resets (e.g.
+quarterly, semi-annually, annually).
+Factor used to calculate the payments (e.g., 30/360,
+actual/360).
+Indicate whether derivative is settled physically or in cash.
+The price, rate, yield, spread, coupon or similar characteristic
+of the derivative. This may not include any premiums such as
+commissions, collateral premiums or accrued interest.
+The price, rate, yield, spread, coupon or similar characteristic
+of the derivative. This may not include any premiums such as
+commissions, collateral premiums or accrued interest.
+The manner in which the price is expressed (e.g.,
+percentage, basis points).
+The manner in which the price is expressed (e.g.,
+percentage, basis points).
+The number of units of the underlying reference entity
+represented by 1 unit of the contract.
+Page 12 of 20
+
+--- PAGE BREAK ---
+
+Item
+45.
+46.
+47.
+48.
+49.
+50.
+51.
+52.
+53.
+54.
+Data field
+Notional currency 11
+Notional currency 2
+Settlement currency
+Data Format and Description
+The currency of the notional amount. In the case of an
+interest rate or currency derivative contract, this will be the
+notional currency of leg 1.
+The other currency of the notional amount. In the case of an
+interest rate or currency derivative contract, this will be the
+notional currency of leg 2.
+The currency used to determine the cash settlement amount.
+Up-front payment
+Amount of any up-front payment.
+Currency or
+The currency or currencies in which any up-front payment is
+currencies of up-front made by one counterparty to another.
+payment
+Embedded option
+Indicate whether the option is an embedded option.
+Risk mitigation/Reporting
+Confirmation
+Confirmation time
+stamp
+Indicate whether the terms of the transaction have been
+confirmed by both counterparties to the derivatives contract.
+Form of confirmation - electronic or non-electronic or not
+confirmed
+Date and time of the confirmation, indicating time zone in
+which the confirmation has taken place.
+"ISO 8601 date format UTC time format (Universal
+Coordinated Time)
+Clearing
+Clearing timestamp
+The time and date when clearing took place using ISO. ISO
+8601 date in the UTC time format YYYY-MM-
+DDThh:mm:ssZ
+Page 13 of 20
+
+--- PAGE BREAK ---
+
+Item
+Data field
+55.
+Cleared
+56.
+Central counterparty
+57.
+58.
+Clearing member
+name and Identifier
+Clearing exemption
+59.
+Intragroup
+C. Additional Asset Information
+(i) Interest rate derivatives
+60.
+Fixed rate leg 1
+Data Format and Description
+Indicate whether a contract has been cleared
+Y = Yes
+N = No
+Name/ISO 17442 LEI of the central counterparty.
+Name of clearing member and ISO 17442 LEI of the clearing
+member, if the reporting counterparty is not the clearing
+member.
+Indicate whether one or more of the counterparties to the
+contract transaction are exempted from a mandatory clearing
+requirement, and specify which party is so exempted
+Y = Yes
+N = No
+These fields are required to be reported for the respective
+types of derivatives set out below, even if the information is
+entered in a Common Data field above.
+The rate used to determine the payment amount for leg 1
+of the derivative.
+Up to 10 numerical characters including decimals
+expressed as percentage where 100% is represented as
+"100". The decimal mark is not counted as a numerical
+character. If populated, it shall be represented by a dot.
+The negative symbol, if populated, is not counted as a
+numerical character.
+Page 14 of 20
+
+--- PAGE BREAK ---
+
+Item
+61.
+62.
+63.
+64.
+65.
+66.
+67.
+Data field
+Fixed rate leg 2
+Floating rate leg 1
+Floating rate leg 2
+Fixed rate day count
+convention leg 1/2
+Fixed leg payment
+frequency or dates
+Floating leg payment
+frequency or dates
+Floating rate reset
+frequency or
+dates
+Data Format and Description
+The rate used to determine the payment amount for leg 2
+of the derivative.
+Up to 10 numerical characters including decimals
+expressed as percentage where 100% is represented as
+"100". The decimal mark is not counted as a numerical
+character. If populated, it shall be represented by a dot.
+The negative symbol, if populated, is not counted as a
+numerical character.
+The floating rate used to determine the payment amount
+for leg 1 of the derivative.
+The floating rate used to determine the payment amount
+for leg 2 of the derivative.
+Factor used to calculate the fixed payer payments (e.g.,
+30/360, actual/360).
+Frequency or dates of payments for the fixed rate leg of
+the derivative (e.g., quarterly, semi-annually, annually).
+Frequency or dates of payments for the floating rate leg of the
+derivative (e.g., quarterly, semi-annually, annually).
+The dates or frequency at which the floating leg of the
+derivative resets (e.g., quarterly, semi-annually,
+annually).
+MNTH = Monthly
+QURT = Quarterly
+MIAN = Semi-annually
+YEAR = Yearly
+Page 15 of 20
+
+--- PAGE BREAK ---
+
+Item
+Data field
+(ii) Currency derivatives
+68.
+Exchange rate
+69.
+Delivery Currency 2
+70.
+71.
+Forward exchange
+rate
+Exchange rate basis
+(ili) Commodity derivatives
+72.
+Sub-asset class
+Data Format and Description
+Contractual rate(s) of exchange of the currencies.-expressed
+as a price of base currency in the quoted currency.
+Cross currency if different from the delivery currency
+The agreed forward exchange rate expressed as a price of
+the base currency in the quoted currency.
+Indicate currency codes for the base currency and quote
+currency
+73.
+Quantity
+74.
+Specific information to identify the type of commodity
+derivative
+Total quantity in the unit of measure of an underlying
+commodity.
+Unit of measure for the quantity of each side of the
+derivative (e.g., barrels, bushels).
+Grade of product being delivered (e.g., grade of oil).
+The delivery location.
+Unit of measure
+75.
+Grade
+76.
+Delivery point
+v) Credit Derivatives
+77..
+Identifier of
+counterparty-buyer
+LEI of the counterparty buying the CDs
+78..
+79.
+Name of counterparty
+Name of the counterparty buying the CDs
+- buyer
+Identifier of
+LEI of the counterparty selling the protection
+counterparty - seller
+Page 16 of 20
+
+--- PAGE BREAK ---
+
+Item
+80.
+81.
+Data field
+Data Format and Description
+82.
+83.
+84.
+85.
+86.
+Name of counterparty
+- seller
+Reference entity
+Name of the counterparty selling the protection
+Identification of the underlying reference entity
+ISO 3166 — 2 character country code or ISO 3166-2 — 2
+character country code followed by dash "." and up to 3
+alphanumeric character country subdivision code or ISO
+17442 Legal Entity Identifier (LEI) 20 alphanumerical
+character code
+Index attachment point The value of the index attachment point at which the level of
+the losses in the underlying portfolio reduces the notional of
+the tranche.
+Index detachment
+point
+Payment frequency
+Calculation basis
+Index factor
+The value of the index detachment point beyond which the
+losses in the underlying portfolio no longer reduce the notional
+of the tranche .
+Frequency of the interest payments
+MNTH = Monthly
+QURT = Quarterly
+MIAN = Semi-annually
+YEAR = Yearly
+Calculation basis of the interest rate -
+Numerator/Denominator where both, Numerator and
+Denominator are numerical characters or alphabetic
+expression "Actual", e.g. 30/360 or Actual/365
+The value/factor that applies to the notional for credit events
+adjustments
+Up to 10 numerical characters including decimals. The
+decimal mark is not counted as a numerical character. If
+populated, it shall be represented by a dot.
+Page 17 of 20
+
+--- PAGE BREAK ---
+
+Item
+Data field
+87.
+Tranche
+88.
+Series Number
+C Options
+89.
+90.
+91.
+92.
+Option exercise
+date
+Option premium
+Strike price
+(cap/floor rate)
+Option exercise style
+Data Format and Description
+Indication of whether the credit derivative contract is tranched
+T= Tranched
+U = Untranched
+The series number for the composition of the index; if
+applicable.
+The date(s) on which the option may be exercised.
+Fixed premium paid by the buyer to the seller.
+The strike price of the option.
+Indicate whether the option can be exercised on a fixed
+date or anytime during the life of the derivative
+Page 18 of 20
+
+--- PAGE BREAK ---
+
+Item
+93.
+94.
+Data field
+Option type
+D. Event Data
+Action
+Data Format and Description
+Put/call or other (if undetermined)
+Indication as to whether the derivative contract is a call (right
+to purchase a specific underlying asset) or a put (right to sell
+a specific underlying asset) or whether it cannot be
+determined whether it is a call or a put at the time of
+execution of the derivative contract.
+- In case of swaptions it shall be:
+- "Put", in case of receiver swaption, in which the buyer has
+the right to enter into a swap as a fixed-rate receiver,
+— "Call", in case of payer swaption, in which the buyer has
+the right to enter into a swap as a fixed-rate payer.
+- In case of Caps and Floors it shall be:
+- "Put", in case of a Floor,
+- "Call", in case of a Cap
+Describes the type of event to the derivative (e.g., new
+transaction, modification or early termination of existing
+derivative, error, correction, compression, valuation update).
+N = New
+M = Modify
+E = Error
+C = Early Termination
+R = Correction
+Z = Compression
+V = Valuation update
+P = Position component
+Page 19 of 20
+
+--- PAGE BREAK ---
+
+Item
+Data field
+95.
+Execution timestamp
+96.
+Reporting timestamp
+E. Valuation data
+97.
+Value of the contract
+calculated by the
+reporting
+counterparty
+Valuation currency
+98.
+99.
+Valuation date
+100.
+F. Other details
+Other details
+Data Format and Description
+The time and date of execution of a transaction on a
+platform.
+The time and date the transaction was submitted to the
+trade repository, expressed using UTC time format
+These fields are required to be reported on a continuing
+basis for all reported derivatives, including reported pre-
+existing derivatives.
+Mark-to-market valuation or mark-to-model valuation of the
+derivative. For a cleared trade, use the CCPs valuation.
+Indicate the currency used when reporting the value of
+the derivative.
+Date of the latest mark-to-market or mark-to-model
+valuation.
+Where the terms of the derivative cannot be effectively
+reported in the above prescribed fields, provide any
+additional information that may be necessary.
+Page 20 of 20
+
+--- PAGE BREAK ---
+
