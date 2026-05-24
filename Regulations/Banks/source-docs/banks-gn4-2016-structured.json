@@ -1,0 +1,61 @@
+{
+  "slug": "banks-gn4-2016",
+  "title": "Banks Act Guidance Note 4/2016 — Instruments Qualifying as High-Quality Liquid Assets",
+  "shortTitle": "GN 4/2016 (HQLA)",
+  "regulator": "Prudential Authority",
+  "year": 2016,
+  "effectiveDate": "2016-01-01",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G4/2016",
+    "Guidance Note 4/2016",
+    "Guidance Note 4 of 2016"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 4/2016 (HQLA)",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Introduction 1.1 It has come to the attention of this Office that various banks are in the process of developing policy frameworks regarding investments in instruments qualifying as HQLA to comply with the LCR. 1.2 Based on the lessons learnt from the global financial crisis that commenced in 2007, the Basel Committee issued a document titled ‘Basel III: the liquidity coverage ratio and liquidity risk monitoring’ in January 2013 in order to strengthen banks’ liquidity management practices. 1.3 Subsequently the Basel Committee also published a document titled ‘Guidance for supervisors on market-based indicators of liquidity’, on 12 January 2014, to assist supervisors in the evaluation of HQLA portfolios held and to ensure greater consistency in the treatment thereof across jurisdictions for the purposes of the LCR.",
+          "text": "2 1.4 This Office is of the opinion that the guidance issued by the Basel Committee to supervisors on market-based indicators of liquidity should also be of assistance to banks in the process to be followed and the information to consider when evaluating the quality and liquidity of instruments potentially qualifying as HQLA.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s1-1-4",
+              "number": "1.4",
+              "text": "This Office is of the opinion that the guidance issued by the Basel Committee to supervisors on market-based indicators of liquidity should also be of assistance to banks in the process to be followed and the information to consider when evaluating the quality and liquidity of instruments potentially qualifying as HQLA.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Banks’ policy frameworks for investment in high quality liquid assets 2.1 In order to facilitate the consistent and effective implementation of matters related to HQLA and the LCR among banks, this Office is of the opinion that the relevant market-based indicators of liquidity set out in the aforesaid document issued by the Basel Committee should be incorporated by banks in their respective internal frameworks that govern investments in assets eligible as HQLA, and in particular for level 2 HQLA held by banks. 2.2 The paper titled ‘Guidance for supervisors on market-based indicators of liquidity’ is available at: http://www.bis.org/publ/bcbs273.pdf.",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "Acknowledgement of receipt 3.1 Two additional copies of this guidance note are enclosed for use by your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to this Office at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks The previous guidance note issued was Guidance Note 3/2016, dated 11 March 2016.",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

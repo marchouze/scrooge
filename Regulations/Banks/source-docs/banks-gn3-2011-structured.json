@@ -1,0 +1,39 @@
+{
+  "slug": "banks-gn3-2011",
+  "title": "Banks Act Guidance Note 3/2011 — Covered Bonds",
+  "shortTitle": "GN 3/2011 (Covered Bonds)",
+  "regulator": "Prudential Authority",
+  "year": 2011,
+  "effectiveDate": "2011-01-01",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G3/2011",
+    "G3/11",
+    "Guidance Note 3/2011",
+    "Guidance Note 3 of 2011"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 3/2011 (Covered Bonds)",
+      "sections": [
+        {
+          "id": "s0",
+          "number": "0",
+          "heading": "Full text",
+          "text": "South African Reserve Bank\nFrom the Office of\nthe Registrar of Banks\nG3/2011\n2011-05-23\nTo: All banks, controlling companies, auditors of banks or controlling\ncompanies and branches of foreign institutions\nGuidance note 3/2011 issued in terms of section 6(5) of the Banks Act, 1990\nCovered bonds\nPO Box 8432 Pretoria 0001\nExecutive summary\nWhen implemented by a bank, a covered bond structure will subordinate the\ninterests of depositors to the interests of the covered bond holders. A covered\nbond structure is regarded as materially inconsistent with the objectives,\nduties and responsibilities imposed on the Office for Banks. The current policy\nof this Office is not to allow banks or branches to issue covered bonds or\nengage in any synthetic or other structured transaction that in substance is\nequivalent to a covered bond structure.\n1.1\n2.1\n2.2\n2.3\nPurpose\nThe purpose of this Guidance Note is to inform all banks, controlling\ncompanies and branches of foreign institutions of this Office's policy not to\nallow the use of covered bonds and similar structures by banks in South\nAfrica.\nCovered bonds\nThe mission of the Bank Supervision Department (BSD) of the South African\nReserve Bank is to promote the soundness of the domestic banking system\nand to minimise systemic risk through the effective and efficient application of\ninternational regulatory and supervisory standards and best practice.\nOn 16 December 2010, as part of the new Basel Ill framework, the Basel\nCommittee issued a document titled \"International framework for liquidity risk\nmeasurement, standards and monitoring\", which contains the details of global\nregulatory standards on bank liquidity.\nThe aforesaid document contains various references to covered bonds.\nNormally the term \"covered bond\" refers to corporate bonds or debt securities\nbacked by cash flows from mortgages or public sector loans. Covered bonds\nare similar in many ways to asset-backed securities created in a securitisation\nscheme. However, in a securitisation scheme the relevant assets or risk are\n370 Church Street Pretoria 0002\nSouth Africa\n• Tel +27 12 3133911/0861 12 7272 • Fax +27 12 3133758\nwww.reservebank.co.za\n\n\n2.4\n2.5\n2.6\n2.7\n2\ntransferred from the balance sheet of the originator to an insolvency remote\ninstitution, whereas covered bond assets remain on the issuer's balance\nsheet.\nAn advantage to an investor investing in a covered bond is that the debt and\nthe underlying asset pool remain on the issuer's balance sheet, and issuers\nhave to ensure that the relevant asset pool consistently backs the covered\nbond. In the event of default, the investor has recourse to both the relevant\nasset pool and the issuer.\nDuring the recent past the BSD received various enquiries regarding the\npossible use of covered bonds by banks in South Africa. The enquiries\npresumably emanate from the use of covered bonds in other jurisdictions and\nmarkets as well as the reference thereto in the Basel Ill framework.\nSince a covered bond structure in terms of which covered bonds are issued by\na bank will in essence subordinate the interests of depositors to the interests\nof the covered bond holders, a covered bond structure is regarded by the BSD\nas possibly being materially inconsistent with the objectives, duties and\nresponsibilities imposed on the BSD in terms of the provisions of the Banks\nAct, 1990 (Act No. 94 of 1990 - the \"Banks Act).\nTherefore, after due consideration, and after taking into account the\n2.8\n3.1\nbanks, controlling companies and branches of foreign institutions that the\ncurrent policy of the BSD is not to allow banks or branches to issue covered\nbonds or engage in any synthetic or other structured transaction that in\nsubstance is equivalent to a covered bond structure.\nIn line with the mission of the BSD, all international regulatory and supervisory\nstandards and best practices are duly considered, and the BSD will continue\nto monitor and appropriately consider all relevant international developments\nrelated to covered bonds.\nAcknowledgement of Receipt\nTwo additional copies of this guidance note are enclosed for the use of your\ninstitution's independent auditors. The attached acknowledgement of receipt,\nduly completed and signed by both the chief executive officer and the said\nauditors, must be returned to this Office at the earliest convenience of the\naforementioned signatories.\nEM Kruger\nRegistrar of Banks\nThe previous guidance note issued was Guidance Note 2/2011, dated 13 May 2011.",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

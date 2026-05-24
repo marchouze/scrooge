@@ -1,0 +1,582 @@
+{
+  "slug": "banks-gn4-2015",
+  "title": "Banks Act Guidance Note 4/2015 — Internal Capital Adequacy Assessment Process (ICAAP)",
+  "shortTitle": "GN 4/2015 (ICAAP)",
+  "regulator": "Prudential Authority",
+  "year": 2015,
+  "effectiveDate": "2015-08-07",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G4/2015",
+    "Guidance Note 4/2015",
+    "Guidance Note 4 of 2015"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 4/2015 (ICAAP)",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Introduction Page 3",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Pillar 2 Page 3",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "High-level requirements for an ICAAP Page 5",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "ICAAP submission Page 18",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s5",
+          "number": "5",
+          "heading": "ICAAP submission: suggested format Annexure A",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s6",
+          "number": "6",
+          "heading": "High-level requirements underpinning sound stress-testing by banks Annexure B",
+          "text": "3",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Introduction 1.1 The Basel II framework 1.1.1 The Basel II framework, published in June 2006, consists of three Pillars. 1.1.2 Pillar 1 sets out the minimum capital requirements that banks are required to meet in respect of credit, market, and operational risk. The requirements with regards to Pillar 1 are largely rules-based. 1.1.3 Pillar 2 prescribes the requirements for ‘ supervisory review’. Banks must assess their capital adequacy relative to their overall risks. In addition, requirements are imposed on the supervisors of banks to review and take appropriate actions in response to such assessments. The requirements with regards to Pillar 2 are largely principles-based. 1.1.4 Pillar 3 describes the requirements for ‘market discipline’. Banks must publish certain details of their risks, capital, and risk management. The aim of these requirements is to strengthen market discipline through transparency and disclosure. 1.1.5 The end result is a more flexible and risk-sensitive framework which imposes more onerous requirements on both banks and supervisors. 1.1.6 The cornerstones of the new framework, encapsulated under Pillar 2, require banks to develop their own ICAAPs and supervisory authorities to review the aforementioned. The aim is to enhance the link between an institution’s risk profile, its risk management, and its capital. 1.1.7 In terms of the Banks Act 94 of 1990 (the Banks Act), banks are obliged to maintain, at all times, sufficient capital levels, which are above the minimum requirements as stipulated by the Registrar. 1.1.8 The adequacy of a bank’s capital must be assessed both by a bank and BSD. Individual capital adequacy standards in terms of Basel II comprise: 1.1.8.1 an ICAAP, which a bank is obliged to carry out; and 1.1.8.2 a supervisory review and evaluation process (SREP), which is conducted by BSD.",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Pillar 2 2.1 Pillar 2 of the Basel II framework consists of four principles. Simplistically, the four principles under Pillar 2 can be categorised as follows: 2.1.1 Banks’ responsibilities 2.1.1.1 Banks should have in place a process for assessing their overall capital adequacy in relation to their risk profile and a strategy for maintaining their capital levels (principle 1). Also refer to regulation 39(16)(b) of the Regulations for more detailed requirements and to regulation 39(16)(a) of the Regulations for board and senior management oversight requirements.",
+          "text": "4 2.1.1.2 Banks should operate above the minimum regulatory capital ratios (principle 3), which is captured in regulation 38(8)(e)(vii) of the Regulations. Furthermore, Pillar 1 capital requirements represent minimum requirements. An appropriate level of capital under Pillar 2 should exceed the minimum Pillar 1 requirement so that all the risks of a bank, both on- and off-balance-sheet, are adequately covered. This will help to ensure that a bank maintains sufficient capital for risks not adequately addressed through Pillar 1 and that it is able to operate effectively throughout a severe and/or prolonged period of financial market stress. The above-mentioned bank responsibilities are generally known as the ICAAP of a bank. This guidance note aims to address banks’ responsibilities in terms of the ICAAP. 2.1.2 Supervisors’ responsibilities 2.1.2.1 Supervisors should review and evaluate a bank’s ICAAP (principle 2). 2.1.2.2 Supervisors should take appropriate action if they are not satisfied with the results of this process (principle 2), which is captured in regulation 38(4) of the Regulations. 2.1.2.3 Supervisors should review and evaluate a bank’s compliance with the regulatory capital ratios (principle 2). 2.1.2.4 Supervisors should be able to require banks to hold capital in excess of the minimum level (principle 3). 2.1.2.5 Supervisors should intervene at an early stage to prevent capital from falling below the minimum level (principle 4). Also refer to Directive 5/2013 in respect of capital conservation ratios that would place limits on discretionary payments. 2.1.2.6 Supervisors should require rapid remedial action if capital is not maintained or restored (principle 4). The above, with the full supervisory cycle, is generally referred to as the SREP.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s2-2-1-2",
+              "number": "2.1.2",
+              "text": "Supervisors’ responsibilities 2.1.2.1 Supervisors should review and evaluate a bank’s ICAAP (principle 2). 2.1.2.2 Supervisors should take appropriate action if they are not satisfied with the results of this process (principle 2), which is captured in regulation 38(4) of the Regulations. 2.1.2.3 Supervisors should review and evaluate a bank’s compliance with the regulatory capital ratios (principle 2). 2.1.2.4 Supervisors should be able to require banks to hold capital in excess of the minimum level (principle 3). 2.1.2.5 Supervisors should intervene at an early stage to prevent capital from falling below the minimum level (principle 4). Also refer to Directive 5/2013 in respect of capital conservation ratios that would place limits on discretionary payments. 2.1.2.6 Supervisors should require rapid remedial action if capital is not maintained or restored (principle 4). The above, with the full supervisory cycle, is generally referred to as the SREP.",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "High-level requirements for an ICAAP 3.1 Scope of application 3.1.1 Each controlling company, on a fully consolidated basis, and the locally registered bank within a banking group should have a combined ICAAP. BSD also expects locally registered branches of foreign institutions to have an ICAAP. Refer to regulations 36(6)(h) and 39(16)(b) of the Regulations. 3.1.2 Each ICAAP should have a process for identifying, measuring, evaluating, monitoring, reporting, controlling, and mitigating material risk exposures. It is recognised that not all risks can be measured precisely, however, a process should be developed to estimate material risks in accordance with regulation 39(16)(b)(ii) of the Regulations.",
+          "text": "5 3.1.3 Regulation 39(3) of the Regulations refers to various risk types that may arise from banking activities, however, at least the following risks or sub risk types should be included in the ICAAP document of banks, if present:  credit risk;  counterparty credit risk;  securitisation risk;  residual risk;  operational risk;  information technology risk (if not separately covered under operational risk)  reputational risk;  market risk;  equity risk in the banking book;  interest-rate risk in the banking book;  liquidity risk;  risk concentrations in respect of assets, liabilities, and/or off-balance-sheet items;  insurance-related risk;  business risk;  strategic risk; and  model risk in respect of banks making use of models. 3.1.4 On a consolidated level, banks should also consider insurance-related risks (if applicable). Furthermore, spill over risks from non-banking activities should be assessed. 3.1.5 Principle 1 of Pillar 2 requires that banks have a process for assessing their overall capital adequacy in relation to their risk profile and a strategy for maintaining their capital levels as required in regulation 39(16)(a)(v)(B) of the Regulations. An obligation therefore rests upon every bank to have an ICAAP for assessing capital relative to its risk profile. 3.2 ICAAP responsibility 3.2.1 Ultimate responsibility for the ICAAP lies with a bank’s board of directors in accordance with regulation 39(16)(a) of the Regulations. In the case of a branch of a foreign institution, this responsibility rests with executive management. Bank management is responsible for ensuring that the formality and sophistication of the risk management processes are appropriate in light of the risk profile and business plan. 3.2.2 A bank’s ICAAP should be reported to the board of directors and senior management to ensure that the ICAAP forms an integral part of the management process and decision-making culture of the bank. 3.2.3 Since a sound risk management process provides the basis for ensuring that a bank maintains adequate capital, the board of directors of a bank shall: 3.2.3.1 set the tolerance level for risk;\n\n\n6 3.2.3.2 ensure that the senior management of the bank: o establishes a risk framework to assess and appropriately manage the various risk exposures of the bank; o develops a system to relate the bank’s risk exposures to its capital and reserve funds; o establishes a method to monitor the bank’s compliance with internal policies; o effectively communicates all relevant policies and procedures throughout the bank; o adopts and supports strong internal controls; o ensures that the bank has appropriate written policies and procedures in place; and 3.2.3.3 as stipulated in regulation 39(16)(a)(v)(E)(viii) of the Regulations, shall ensure that the bank has an appropriate strategic plan in place which, as a minimum, shall outline): o the bank’s capital needs; o the bank’s anticipated capital expenditure; and o the bank’s desired level of capital. 3.3 A written record on the outcome of the ICAAP and a formal submission for supervisory purposes 3.3.1 A bank must produce a written record on the outcome of the ICAAP (duly reported to the board of directors and senior management) 1 . 3.3.2 A bank shall establish and maintain an adequate system to monitor and report the bank’s exposure to risk and to assess the bank’s changing risk profile on its capital position as stipulated in regulation 39(16)(c) of the Regulations. 3.3.3 The board of directors (or a board-appointed committee, such as the risk and capital management committee) shall receive regular reports which shall be sufficiently detailed to allow the board of directors to evaluate the level and trend of material risk exposures and whether the bank maintains adequate capital against the risk exposures. The board of directors shall make timely adjustments to the strategic plan. 3.3.4 The board of directors (or a board-appointed committee, such as the risk and capital management committee) shall, at least once a year, assess and document whether the processes relating to the ICAAP implemented by the bank successfully achieve the objectives determined by the board as prescribed in regulation 39(18)(a) of the Regulations. 1 The written record on the assessment of a bank’s capital adequacy should contain, inter alia, the process of risk identification, risks identified, risks mitigated, risks covered by capital, how the bank intends dealing with those risks, details of the stress tests / scenario analysis, and the resulting financial resources required.\n\n\n7 3.3.5 The board of directors (or a board-appointed committee) shall, at the request of the Registrar, provide the Registrar with a copy of the board- approved report relating to its assessment of the effectiveness of the ICAAP as well as its three-year capital plan (as a minimum, it may be longer) and capital management policy, as prescribed in regulation 39(18)(b) of the Regulations. 3.3.6 Senior management should receive regular reports to evaluate the sensitivity of key assumptions and to assess the bank’s future capital requirements. 3.3.7 Domestic systemically important banks (D-SIBs) should submit, to BSD, capital plans, on a bi-annual basis and in a format as requested by BSD. 3.3.8 The formal submissions included in ICAAP documents, should include the amount and breakdown of the economic and regulatory capital that the bank deems appropriate, and the forward-looking composition of economic and regulatory capital supply and demand should also be addressed. 3.3.9 The supervisor will, after liaising with the bank, determine the ICAAP submission date at the start of the supervisory review and evaluation process cycle. 3.4 An integral part of the management and decision-making culture of a bank 3.4.1 The ICAAP should form an integral part of the management and decision- making culture of a bank. In this regard, it is important to distinguish between more sophisticated and less sophisticated banks. 3.4.2 For more sophisticated banks, the ICAAP should be completely integrated into their management processes. This could range from using the ICAAP to allocate capital to business units, to having it play a role in the individual credit decision process or more general business decisions (e.g. expansion plans) and budgets. 3.4.3 For less sophisticated banks, the ICAAP should be constructed in a way that allows the management body to assess, on an ongoing basis, the risks that are inherent in their activities and material to the institution. 3.4.4 Regulation 39(16)(a)(i) of the Regulations prescribe that the board of directors of a bank shall define and approve the bank’s risk appetite. Furthermore, each bank should have a risk appetite framework (RAF) that is appropriate to the nature, scope, and complexity of its activities. 3.4.5 An effective RAF should: 3.4.5.1 establish a process for communicating the RAF within and across the bank as well as sharing appropriate information with external stakeholders; 3.4.5.2 involve board leadership and management at all levels; 3.4.5.3 be embedded and understood across the bank; 3.4.5.4 facilitate embedding risk appetite into the bank’s risk culture;\n\n\n8 3.4.5.5 evaluate opportunities for appropriate risk-taking and act as defence against excessive risk-taking; 3.4.5.6 allow for the risk appetite statement to be used as a tool to promote robust discussions on risk and challenge management recommendations and decisions; 3.4.5.7 be adaptable to changing business and market conditions so that, subject to approval, opportunities that require an increase in the risk limit of a business line or entity could be met while remaining within the agreed bank-wide risk appetite; and 3.4.5.8 cover activities, operations, and systems of the bank that fall within its risk landscape but are outside of its direct control, including subsidiaries and third- party outsourcing suppliers. 3.4.6 An effective risk appetite statement should: 3.4.6.1 be easy to communicate; 3.4.6.2 be understood by all stakeholders; 3.4.6.3 be directly linked to a bank’s strategy; 3.4.6.4 address material risks under both normal and stressed market and macroeconomic conditions; 3.4.6.5 set clear boundaries and expectations by establishing quantitative limits and qualitative statements (these measures may be expressed in terms of earnings, capital, liquidity, or other appropriate metrics); 3.4.6.6 include key background information and assumptions that informed the bank’s strategic objectives and business plans; 3.4.6.7 be linked to the bank’s short- and long-term strategic, capital, and financial plans, as well as compensation programmes, also refer to regulation 3916(a)(iii) of the Regulations; 3.4.6.8 establish the amount of risk the bank is prepared to accept in pursuit of its strategic objectives and business plans; 3.4.6.9 determine, overall and for each material risk, the maximum level of risk that the institution is willing to tolerate; 3.4.6.10 include the quantitative measures that can be translated into risk limits applicable to business lines and legal entities, as relevant, and at group level, to enable the measurement of the risk profile against risk appetite and risk capacity; 3.4.6.11 include the qualitative statements that clearly motivate for taking or avoiding certain types of risk and establish boundaries and/or indicators to enable the monitoring of these risks;\n\n\n9 3.4.6.12 ensure that the strategy and risk limits of each business line and legal entity, as relevant, align with the bank-wide risk appetite statement, as appropriate; and 3.4.6.13 be forward-looking and, where applicable, be subject to scenario- and stress- testing to ensure that the bank understands which events might push it outside its risk appetite and/or risk capacity. 3.4.7 A RAF should contain risk limits which are measured based on forward- looking assumptions that allocate the risk appetite statement to business lines, legal entities, risk categories, and risk concentrations. Risk limits should: 3.4.7.1 be set at a level to constrain risk-taking within a bank’s risk appetite; 3.4.7.2 be established for business lines and legal entities, as relevant, and generally be expressed relative to earnings, capital, liquidity, or other relevant measures; 3.4.7.3 include material risk concentrations at the bank, group-wide, business line, and legal entity levels, as relevant; 3.4.7.4 although referenced to market best practice and benchmarks, not be strictly based on comparison to peers or default to regulatory limits; 3.4.7.5 not be overly complicated, ambiguous, or subjective; and 3.4.7.6 be monitored regularly. 3.5 Proportionality 3.5.1 The detail and sophistication of a bank’s risk management programmes should be commensurate with the size and complexity of its business and the overall level of risk that the bank accepts. 3.5.2 The ICAAP should therefore be proportional to the nature, scale, and complexity of the activities of the bank. 3.6 Regular and independent review 3.6.1 The ICAAP should be subject to a regular and independent review to ensure that it is comprehensive and proportionate to the nature, scale, and complexity of the bank’s activities so that it accurately reflects the major sources of risk facing the bank. The RAF, the stress-testing process, and the capital-planning process should also be subject to an independent review. In addition, regulation 39(19) of the Regulations prescribes the annual review by the external auditors of a bank, of the process followed by the board of directors in assessing among others, the management of risk and capital. 3.6.2 A bank shall establish and maintain an appropriate internal control structure in order to monitor the bank’s continued compliance with internal policies and procedures.\n\n\n10 3.6.3 As a minimum, a bank shall conduct periodic reviews of its risk-management and stress-testing processes, as prescribed in regulation 39(16)(d)(ii) of the Regulations. 3.7 A sound capital-planning process 3.7.1 The ICAAP should be forward-looking and should thus take into account factors such as strategic plans and macroeconomic circumstances. Constraints in the use of capital should also be addressed. 3.7.2 As a minimum, the management of a bank shall develop and maintain an appropriate strategy which ensures that the bank maintains adequate capital based on the nature, complexity, and risk inherent in the bank’s on- and off- balance-sheet activities, including its activities relating to risk mitigation. In the case of more sophisticated banks, management should indicate how the strategy relates to macroeconomic factors. 3.7.3 Banks shall have an approved and explicit capital plan which states their objectives and the time horizon for achieving those objectives as well as, in broad terms, the capital-planning process and responsibilities for that process. The capital plan shall outline:  the bank’s capital needs;  the bank’s anticipated capital utilisation;  the bank’s capital targets;  limits related to capital; and  a general contingency plan for dealing with divergences and unexpected events (such a plan should not contain the extreme actions that are already included in the recovery and resolution plan). 3.7.4 Banks should have a sound capital-planning process with the following components: 3.7.4.1 Internal control and governance  Banks should produce an internally consistent and coherent view of their current and future capital needs that reflects the input of staff from their business, risk, finance, and treasury departments. There should be a strong link between capital planning, budgeting, and the strategic planning process. Budgets should be realistic (and not overly optimistic).  The more sophisticated banks should have a formal process to identify and escalate situations where competing assumptions are made, for example differences in strategic planning and the capital allocation across the bank. 3.7.4.2 Capital policy and risk capture  The more sophisticated banks should have a capital policy that specifies the principles that management follows in making decisions about deploying a bank’s capital.\n\n\n11  The capital policy should reference a suite of capital- and performance- related metrics against which management monitors the bank’s condition. Regulatory metrics include for example the common equity tier 1 (CET 1) ratio while non-regulatory metrics include for example risk-adjusted return on capital.  The more sophisticated banks use economic capital as a complimentary view of their condition.  All banks should set limits and triggers for each metric as well as a monitoring and escalation process for situations where a limit or trigger is approached and/or breached. An important input to a capital policy is an expression of risk tolerance, approved by the board and renewed annually. 3.7.4.3 Forward-looking view  Stress-testing needs to be an integral component of the capital-planning process to assess the potential impact on earnings and capital from an assumed economic downturn.  The more sophisticated banks should be able to repeat stress-testing and should be capable of performing ad hoc scenarios outside the normal stress-testing procedures.  All banks should at least estimate the impact of a baseline and a downturn scenario. The impact of a scenario should reflect estimated changes to a bank’s revenue loss (at least interest income, fee income, other non- interest income, and impairments), balance-sheet exposure measures, and risk-weighted assets. The impact on capital ratios, the leverage ratio, and surplus tier 1 capital as a result of the minimum leverage ratio requirement should also be reflected. To ensure that all material risks were incorporated, the impact should be reflected in the economic capital plan and in the economic capital buffers. 3.7.4.4 Management framework for preserving capital The board and senior management should ensure that the monitoring and escalation protocols remain relevant. They are responsible for prioritising and quantifying actions available to cushion unexpected events. The management process should allow for plans to be updated swiftly for better decision-making in changing circumstances. 3.8 Risk-based 3.8.1 The board and senior management of banks should have an integrated, firm-wide perspective of the group’s risk exposures in order to support its ability to identify and react to emerging and/or growing risks in a timely and effective manner. A bank’s management information system should provide the board and senior management, in a clear and concise manner, with timely and relevant information concerning their bank’s risk profile. Refer to the document titled Principles for effective risk data aggregation and risk reporting, published by the Basel Committee on Banking Supervision during January 2013.\n\n\n12 3.8.2 The ICAAP shall include all material risk exposures incurred by the bank, for example the risks referred to in regulation 39(3) of the Regulations. At least the following risks or sub risk types should be considered in ICAAP documents:  credit risk;  counterparty credit risk;  securitisation risk;  residual risk;  operational risk;  information technology risk (if not separately covered under operational risk)  reputational risk;  market risk;  equity risk in the banking book;  interest-rate risk in the banking book;  liquidity risk;  risk concentrations in respect of assets, liabilities, and/or off-balance-sheet items;  insurance-related risk;  business risk;  strategic risk; and  model risk in respect of banks making use of models. 3.8.3 Furthermore, spill over risks from non-banking activities should be assessed. 3.8.4 Clear links shall be established between capital and liquidity monitoring considerations. 3.8.5 The ICAAP should focus more on qualitative assessment, risk management, and risk mitigation for risks that are less readily quantifiable. Banks must distinguish between risks where quantitative versus qualitative risk-mitigation measures are indicated. 3.8.6 For risks that are more difficult to quantify, senior management shall discuss and understand the validated assumptions made in the estimation process to ensure that the potential for these to negatively affect a bank is not underestimated (e.g. the application of a model that is unable to capture the embedded risks of a complex portfolio). 3.8.7 On valuation practices, in order to establish and verify valuations for instruments and transactions in which it engages, a bank must have adequate capacity, including during periods of stress. This capacity should be commensurate with the importance, riskiness, and size of exposures in the context of the business profile of the bank. For exposures that represent material risk, a bank is expected to have the capacity to produce valuations using alternative methods in the event that primary inputs and/or approaches become unreliable, unavailable, and/or irrelevant due to market discontinuities and/or illiquidity. Regulation 39(13) of the Regulations prescribe additional requirements for the prudent valuation of instruments, contracts or positions.\n\n\n13 3.9 Stress tests and a scenario analysis 3.9.1 The ICAAP should incorporate stress-testing to complement and help validate other quantitative and qualitative approaches so that the bank has a more complete understanding of its risks and the interaction of those risks under stressed conditions, as stipulated in regulation 39(16)(a)(v)(B)(iii) of the Regulations. 3.9.2 Banks should carefully analyse their capital instruments and performance during times of stress. 3.9.3 As part of the ICAAP, the management of a bank shall, as a minimum, conduct relevant stress tests on a periodic basis, particularly in respect of the bank’s main risk exposures, in order to identify events or changes in market conditions that may have an adverse impact on the bank. 3.9.3.1 Management should also consider scenarios where shocks originate from non- banking entities or parent groups, where applicable. 3.9.4 Stress-testing needs to be an integral part of the overall governance and risk management culture of a bank. The results of stress tests should contribute to strategic decision-making and the capital-planning process. Furthermore, regulation 39(16)(a)(v)(E)(i) of the Regulations prescribes that stress test results be considered during strategic decision making and when risk appetite and tolerance levels are specified. 3.9.5 A large part of managing a bank is based on an understanding of the expected outcomes of its business operations and the normal variations about these expected outcomes. To gain a comprehensive view of the risks being faced by a bank, an analysis of extreme events is also needed. Such an analysis may take the form of stress tests and scenario analyses. For example, a bank may normally expect interest rates to increase or decrease by 1 or 2 percentage points due to normal variations in economic conditions. However, in extreme circumstances, interest rates may change by a much greater extent. The use of stress tests and scenario analyses can give a bank’s management a better understanding of that bank’s true exposure in extreme circumstances.  Banks should undertake both stress tests and scenario analyses to further a better understanding of the vulnerabilities they face under extreme conditions. These are based on the impact analysis of unlikely but not impossible events. These events can be financial, operational, and/or legal, and can relate to any other risk that might have an economic impact on the bank.  As part of carrying out stress tests and scenario analyses, banks shall take reasonable steps to identify an appropriate range of realistic circumstances and events in which a risk would crystallise. In particular, banks need to carry out stress tests and scenario analyses only in so far as the circumstances or events are reasonably foreseeable, that is to say, only if their occurrence is not too remote a possibility.\n\n\n14 3.9.6 The purpose of stress tests and scenario analyses is to test the adequacy of a bank’s overall financial resources. Scenarios need to be identified and their impact needs to be assessed only in so far as this facilitates that purpose. In particular, the nature, depth, and detail of the analysis depends, in part, on a bank’s capital strength and the robustness of its risk-prevention and risk- mitigation measures. 3.9.7 Both stress tests and scenario analyses are prospective analysis techniques which seek to anticipate the possible losses that might occur if an identified risk crystallises. In applying them, a bank needs to decide how far forward to look. This depends on:  how quickly it would be able to identify events a n d / or changes in circumstances that might lead to a risk crystallising, resulting in a loss; and  after identifying the event and/or change in circumstances, how quickly and effectively it could act to prevent or mitigate any loss resulting from the risk crystallising and to reduce exposure to any further adverse event a n d / or change in circumstances. 3.9.8 The time horizon over which stress tests and scenario analyses would need to be carried out for the market risk (arising from the holding of investments) , for example, shall depend on:  the extent to which there is a regular, open, and transparent market in those assets, which would allow for the fluctuations in the value of the investment to be more readily and quickly identified; and  the extent to which the market in those assets is liquid (and would remain liquid in the changed circumstances contemplated in the stress test or scenario analysis), which would allow the bank, if needed, to sell its holding so as to prevent or reduce exposure to future price fluctuations. 3.9.9 In identifying scenarios, and assessing their impact, a bank shall take into account, where material, how changes in circumstances might impact on:  the nature, scale, and/or mix of its future activities; and  the behaviour of counterparties and of the bank itself, including the exercise of choices (e.g. t h e options embedded in financial instruments or contracts of insurance). 3.9.10 In determining whether it would have adequate financial resources in the event of each identified realistic adverse scenario, a bank shall:  include only the financial resources that could reasonably be relied upon as being available in the circumstances of the identified scenario; and  take account of any legal or other restriction on the use of these financial resources. 3.9.11 Banks’ stress-testing frameworks must be granular in risk representation and in the range of risks considered.\n\n\n15 3.9.12 Banks should also consider:  constantly reviewing scenarios and looking for new ones;  examining new products to identify potential risks;  improving the identification and aggregation of correlated risks across portfolios as well as the interactions between market, credit, and liquidity risk; and  evaluating appropriate time horizons and feedback effects. 3.9.13 The extent of a stress-testing framework should be commensurate with the size and complexity of a bank's business and the overall level of risk that it accepts. 3.9.14 Specific high-level principles in terms of stress-testing have been set out in Annexure B. 3.10 Risk aggregation and diversification benefits 3.10.1 Banks could take into account diversification benefits in their risk aggregation frameworks (along organisational lines and risk types). However, banks should consider the appropriateness of diversification benefits in the overall assessment of their ICAAPs due to the following:  the lack of the validation of models (in respect of inter-risk diversification);  the use of expert judgment, where applicable in determining the overall level of economic capital;  the fact that aggregation methodologies may underestimate the overall risk even if no diversification assumptions are used since individual risk components are typically estimated without much regard for the interactions between risks;  the fact that harmonisation of the measurement horizon for different types of risk is difficult (for example market risk and credit risk); and  the scaling of one confidence interval in respect of different risks measured at different confidence intervals, where applicable. 3.10.2 It is the responsibility of the bank to persuade This Office that it supports, empirically and analytically, any further diversification benefits to be claimed 2 . 3.10.3 Banks claiming diversification benefits must show that:  They have fully evaluated the risks they face, including those that arise by virtue of being part of a wider group (reputational risk in a group).  Capital is freely transferable within a group, even when the group is under financial stress. (Cross-border issues need to be considered as well.)  They can break down their group-level ICAAP so that BSD can assess the extent to which diversification benefits have been incorporated into the underlying assumptions on a group level. 2 The calibration of Basel II is based on a well-diversified, internationally active bank.\n\n\n16 3.11 Risk concentrations 3.11.1 Generally, it is expected that, especially in South Africa, most banks would be required to carry additional capital to reflect the risk arising from concentrated portfolios. 3.11.2 A risk concentration is any single exposure or a group of similar exposures (e.g. to the same borrower or counterparty, including protection providers, a geographical area, industry or other risk factors) with the potential to produce (i) losses large enough (relative to a bank’s earnings, capital, total assets, or overall risk level) to threaten a bank’s creditworthiness and/or ability to maintain its core operations, or (ii) a material change in a bank’s risk profile. Unmanaged risk concentrations are arguably the single most important cause of major problems in banks. 3.11.3 Risk concentrations should be viewed in the context of a single or a set of closely related risk drivers that may have different impacts on a bank. These concentrations should be integrated when assessing a bank’s overall risk exposure. 3.11.4 A bank should be able to identify, aggregate, and report similar risk exposures across the banking asset types, including across legal entities (e.g. loans, derivatives, and structured products), risk areas, and geographical regions. Typical situations in which risk concentrations can arise include:  exposures to a single counterparty, borrower, or a group of connected counterparties or borrowers;  industry or economic sectors, including exposures to both regulated and non-regulated financial institutions such as hedge funds and private equity firms;  geographical regions;  exposures arising from credit mitigation techniques, including exposures to similar collateral types or a single or closely related credit protection provider;  trading exposures (market risk);  exposures to counterparties (e.g. hedge funds and hedge counterparties) through the execution or processing of transactions (either product or service);  funding sources;  assets held in the banking book or the trading book, such as loans, derivatives, and structured products; and  off-balance-sheet exposures, including guarantees, liquidity lines, and other commitments. 3.11.5 An appropriate level of capital for risk concentrations should be quantified and incorporated in a bank’s ICAAP. 3.11.6 Furthermore, regulation 36(14) of the Regulations prescribes minimum requirements in respect of credit concentration risk and related matters.\n\n\n17 3.12 Economic capital models 3.12.1 Economic capital models are the methods and practices which allow banks to consistently assess risk and attribute capital to cover the economic effects of risk-taking activities. Therefore, these models need to reliably and accurately measure risk in a relative sense (the single measure of risk), with less importance attached to the measurement of the overall level of risk or capital (i.e. whether overall economic capital is higher than regulatory capital or whether overall economic capital requirements show the bank is overly capitalised). 3.12.2 There is not a prescribed approach as to how a bank should develop its economic capital model, but a more sophisticated and more complex bank shall be able to demonstrate, among others: 3.12.2.1 the confidence levels set, and whether these are linked to the bank’s strategy or risk appetite; 3.12.2.2 the extent of historical data used and the back-testing carried out; 3.12.2.3 the fact that the bank has a process in place to verify the robustness of the model’s outputs; 3.12.2.4 the fact that the economic capital models are independently validated, before it is used by the bank, at least in respect of areas that differ from the regulatory models (e.g. correlations); and 3.12.2.5 the fact that the bank has the skills and resources to develop, operate, and maintain models. 3.12.3 Material risks that are difficult to quantify in an economic capital framework should be captured in some form of compensating controls (e.g. a scenario analysis). 3.12.4 The viability and usefulness of a bank’s economic capital processes depend critically on the existence of a credible commitment or buy-in on the part of senior management. It is therefore necessary for senior management to recognise the importance of using economic capital measures in conducting the bank’s business. In addition, adequate resources are required to ensure the existence of a strong, credible infrastructure to support the economic capital process. Moreover, senior management needs to take measures to help ensure the meaningfulness and integrity of economic capital measures. 3.12.4.1 Banks with economic capital models should be able to demonstrate how its economic capital model has been integrated into the business decision-making process in order to assess the potential impact on incentives affecting the bank’s strategic decisions about the mix and direction of its inherent risks. 3.12.4.2 Banks use economic capital (a common measurement of risks) to measure their business unit-level portfolio, analyse pricing profitability, and measure enterprise-wide relative performance.\n\n\n18",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s3-3-1-3",
+              "number": "3.1.3",
+              "text": "Regulation 39(3) of the Regulations refers to various risk types that may arise from banking activities, however, at least the following risks or sub risk types should be included in the ICAAP document of banks, if present:  credit risk;  counterparty credit risk;  securitisation risk;  residual risk;  operational risk;  information technology risk (if not separately covered under operational risk)  reputational risk;  market risk;  equity risk in the banking book;  interest-rate risk in the banking book;  liquidity risk;  risk concentrations in respect of assets, liabilities, and/or off-balance-sheet items;  insurance-related risk;  business risk;  strategic risk; and  model risk in respect of banks making use of models.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-1-4",
+              "number": "3.1.4",
+              "text": "On a consolidated level, banks should also consider insurance-related risks (if applicable). Furthermore, spill over risks from non-banking activities should be assessed.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-1-5",
+              "number": "3.1.5",
+              "text": "Principle 1 of Pillar 2 requires that banks have a process for assessing their overall capital adequacy in relation to their risk profile and a strategy for maintaining their capital levels as required in regulation 39(16)(a)(v)(B) of the Regulations. An obligation therefore rests upon every bank to have an ICAAP for assessing capital relative to its risk profile.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-2",
+              "number": "3.2",
+              "text": "ICAAP responsibility",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-2-1",
+              "number": "3.2.1",
+              "text": "Ultimate responsibility for the ICAAP lies with a bank’s board of directors in accordance with regulation 39(16)(a) of the Regulations. In the case of a branch of a foreign institution, this responsibility rests with executive management. Bank management is responsible for ensuring that the formality and sophistication of the risk management processes are appropriate in light of the risk profile and business plan.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-2-2",
+              "number": "3.2.2",
+              "text": "A bank’s ICAAP should be reported to the board of directors and senior management to ensure that the ICAAP forms an integral part of the management process and decision-making culture of the bank.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-2-3",
+              "number": "3.2.3",
+              "text": "Since a sound risk management process provides the basis for ensuring that a bank maintains adequate capital, the board of directors of a bank shall: 3.2.3.1 set the tolerance level for risk;\n\n\n6 3.2.3.2 ensure that the senior management of the bank: o establishes a risk framework to assess and appropriately manage the various risk exposures of the bank; o develops a system to relate the bank’s risk exposures to its capital and reserve funds; o establishes a method to monitor the bank’s compliance with internal policies; o effectively communicates all relevant policies and procedures throughout the bank; o adopts and supports strong internal controls; o ensures that the bank has appropriate written policies and procedures in place; and 3.2.3.3 as stipulated in regulation 39(16)(a)(v)(E)(viii) of the Regulations, shall ensure that the bank has an appropriate strategic plan in place which, as a minimum, shall outline): o the bank’s capital needs; o the bank’s anticipated capital expenditure; and o the bank’s desired level of capital.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3",
+              "number": "3.3",
+              "text": "A written record on the outcome of the ICAAP and a formal submission for supervisory purposes",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-1",
+              "number": "3.3.1",
+              "text": "A bank must produce a written record on the outcome of the ICAAP (duly reported to the board of directors and senior management) 1 .",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-2",
+              "number": "3.3.2",
+              "text": "A bank shall establish and maintain an adequate system to monitor and report the bank’s exposure to risk and to assess the bank’s changing risk profile on its capital position as stipulated in regulation 39(16)(c) of the Regulations.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-3",
+              "number": "3.3.3",
+              "text": "The board of directors (or a board-appointed committee, such as the risk and capital management committee) shall receive regular reports which shall be sufficiently detailed to allow the board of directors to evaluate the level and trend of material risk exposures and whether the bank maintains adequate capital against the risk exposures. The board of directors shall make timely adjustments to the strategic plan.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-4",
+              "number": "3.3.4",
+              "text": "The board of directors (or a board-appointed committee, such as the risk and capital management committee) shall, at least once a year, assess and document whether the processes relating to the ICAAP implemented by the bank successfully achieve the objectives determined by the board as prescribed in regulation 39(18)(a) of the Regulations. 1 The written record on the assessment of a bank’s capital adequacy should contain, inter alia, the process of risk identification, risks identified, risks mitigated, risks covered by capital, how the bank intends dealing with those risks, details of the stress tests / scenario analysis, and the resulting financial resources required.\n\n\n7",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-5",
+              "number": "3.3.5",
+              "text": "The board of directors (or a board-appointed committee) shall, at the request of the Registrar, provide the Registrar with a copy of the board- approved report relating to its assessment of the effectiveness of the ICAAP as well as its three-year capital plan (as a minimum, it may be longer) and capital management policy, as prescribed in regulation 39(18)(b) of the Regulations.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-6",
+              "number": "3.3.6",
+              "text": "Senior management should receive regular reports to evaluate the sensitivity of key assumptions and to assess the bank’s future capital requirements.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-7",
+              "number": "3.3.7",
+              "text": "Domestic systemically important banks (D-SIBs) should submit, to BSD, capital plans, on a bi-annual basis and in a format as requested by BSD.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-8",
+              "number": "3.3.8",
+              "text": "The formal submissions included in ICAAP documents, should include the amount and breakdown of the economic and regulatory capital that the bank deems appropriate, and the forward-looking composition of economic and regulatory capital supply and demand should also be addressed.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-3-9",
+              "number": "3.3.9",
+              "text": "The supervisor will, after liaising with the bank, determine the ICAAP submission date at the start of the supervisory review and evaluation process cycle.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4",
+              "number": "3.4",
+              "text": "An integral part of the management and decision-making culture of a bank",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4-1",
+              "number": "3.4.1",
+              "text": "The ICAAP should form an integral part of the management and decision- making culture of a bank. In this regard, it is important to distinguish between more sophisticated and less sophisticated banks.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4-2",
+              "number": "3.4.2",
+              "text": "For more sophisticated banks, the ICAAP should be completely integrated into their management processes. This could range from using the ICAAP to allocate capital to business units, to having it play a role in the individual credit decision process or more general business decisions (e.g. expansion plans) and budgets.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4-3",
+              "number": "3.4.3",
+              "text": "For less sophisticated banks, the ICAAP should be constructed in a way that allows the management body to assess, on an ongoing basis, the risks that are inherent in their activities and material to the institution.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4-4",
+              "number": "3.4.4",
+              "text": "Regulation 39(16)(a)(i) of the Regulations prescribe that the board of directors of a bank shall define and approve the bank’s risk appetite. Furthermore, each bank should have a risk appetite framework (RAF) that is appropriate to the nature, scope, and complexity of its activities.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4-5",
+              "number": "3.4.5",
+              "text": "An effective RAF should: 3.4.5.1 establish a process for communicating the RAF within and across the bank as well as sharing appropriate information with external stakeholders; 3.4.5.2 involve board leadership and management at all levels; 3.4.5.3 be embedded and understood across the bank; 3.4.5.4 facilitate embedding risk appetite into the bank’s risk culture;\n\n\n8 3.4.5.5 evaluate opportunities for appropriate risk-taking and act as defence against excessive risk-taking; 3.4.5.6 allow for the risk appetite statement to be used as a tool to promote robust discussions on risk and challenge management recommendations and decisions; 3.4.5.7 be adaptable to changing business and market conditions so that, subject to approval, opportunities that require an increase in the risk limit of a business line or entity could be met while remaining within the agreed bank-wide risk appetite; and 3.4.5.8 cover activities, operations, and systems of the bank that fall within its risk landscape but are outside of its direct control, including subsidiaries and third- party outsourcing suppliers.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4-6",
+              "number": "3.4.6",
+              "text": "An effective risk appetite statement should: 3.4.6.1 be easy to communicate; 3.4.6.2 be understood by all stakeholders; 3.4.6.3 be directly linked to a bank’s strategy; 3.4.6.4 address material risks under both normal and stressed market and macroeconomic conditions; 3.4.6.5 set clear boundaries and expectations by establishing quantitative limits and qualitative statements (these measures may be expressed in terms of earnings, capital, liquidity, or other appropriate metrics); 3.4.6.6 include key background information and assumptions that informed the bank’s strategic objectives and business plans; 3.4.6.7 be linked to the bank’s short- and long-term strategic, capital, and financial plans, as well as compensation programmes, also refer to regulation 3916(a)(iii) of the Regulations; 3.4.6.8 establish the amount of risk the bank is prepared to accept in pursuit of its strategic objectives and business plans; 3.4.6.9 determine, overall and for each material risk, the maximum level of risk that the institution is willing to tolerate; 3.4.6.10 include the quantitative measures that can be translated into risk limits applicable to business lines and legal entities, as relevant, and at group level, to enable the measurement of the risk profile against risk appetite and risk capacity; 3.4.6.11 include the qualitative statements that clearly motivate for taking or avoiding certain types of risk and establish boundaries and/or indicators to enable the monitoring of these risks;\n\n\n9 3.4.6.12 ensure that the strategy and risk limits of each business line and legal entity, as relevant, align with the bank-wide risk appetite statement, as appropriate; and 3.4.6.13 be forward-looking and, where applicable, be subject to scenario- and stress- testing to ensure that the bank understands which events might push it outside its risk appetite and/or risk capacity.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-4-7",
+              "number": "3.4.7",
+              "text": "A RAF should contain risk limits which are measured based on forward- looking assumptions that allocate the risk appetite statement to business lines, legal entities, risk categories, and risk concentrations. Risk limits should: 3.4.7.1 be set at a level to constrain risk-taking within a bank’s risk appetite; 3.4.7.2 be established for business lines and legal entities, as relevant, and generally be expressed relative to earnings, capital, liquidity, or other relevant measures; 3.4.7.3 include material risk concentrations at the bank, group-wide, business line, and legal entity levels, as relevant; 3.4.7.4 although referenced to market best practice and benchmarks, not be strictly based on comparison to peers or default to regulatory limits; 3.4.7.5 not be overly complicated, ambiguous, or subjective; and 3.4.7.6 be monitored regularly.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-5",
+              "number": "3.5",
+              "text": "Proportionality",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-5-1",
+              "number": "3.5.1",
+              "text": "The detail and sophistication of a bank’s risk management programmes should be commensurate with the size and complexity of its business and the overall level of risk that the bank accepts.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-5-2",
+              "number": "3.5.2",
+              "text": "The ICAAP should therefore be proportional to the nature, scale, and complexity of the activities of the bank.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-6",
+              "number": "3.6",
+              "text": "Regular and independent review",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-6-1",
+              "number": "3.6.1",
+              "text": "The ICAAP should be subject to a regular and independent review to ensure that it is comprehensive and proportionate to the nature, scale, and complexity of the bank’s activities so that it accurately reflects the major sources of risk facing the bank. The RAF, the stress-testing process, and the capital-planning process should also be subject to an independent review. In addition, regulation 39(19) of the Regulations prescribes the annual review by the external auditors of a bank, of the process followed by the board of directors in assessing among others, the management of risk and capital.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-6-2",
+              "number": "3.6.2",
+              "text": "A bank shall establish and maintain an appropriate internal control structure in order to monitor the bank’s continued compliance with internal policies and procedures.\n\n\n10",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-6-3",
+              "number": "3.6.3",
+              "text": "As a minimum, a bank shall conduct periodic reviews of its risk-management and stress-testing processes, as prescribed in regulation 39(16)(d)(ii) of the Regulations.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-7",
+              "number": "3.7",
+              "text": "A sound capital-planning process",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-7-1",
+              "number": "3.7.1",
+              "text": "The ICAAP should be forward-looking and should thus take into account factors such as strategic plans and macroeconomic circumstances. Constraints in the use of capital should also be addressed.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-7-2",
+              "number": "3.7.2",
+              "text": "As a minimum, the management of a bank shall develop and maintain an appropriate strategy which ensures that the bank maintains adequate capital based on the nature, complexity, and risk inherent in the bank’s on- and off- balance-sheet activities, including its activities relating to risk mitigation. In the case of more sophisticated banks, management should indicate how the strategy relates to macroeconomic factors.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-7-3",
+              "number": "3.7.3",
+              "text": "Banks shall have an approved and explicit capital plan which states their objectives and the time horizon for achieving those objectives as well as, in broad terms, the capital-planning process and responsibilities for that process. The capital plan shall outline:  the bank’s capital needs;  the bank’s anticipated capital utilisation;  the bank’s capital targets;  limits related to capital; and  a general contingency plan for dealing with divergences and unexpected events (such a plan should not contain the extreme actions that are already included in the recovery and resolution plan).",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-7-4",
+              "number": "3.7.4",
+              "text": "Banks should have a sound capital-planning process with the following components: 3.7.4.1 Internal control and governance  Banks should produce an internally consistent and coherent view of their current and future capital needs that reflects the input of staff from their business, risk, finance, and treasury departments. There should be a strong link between capital planning, budgeting, and the strategic planning process. Budgets should be realistic (and not overly optimistic).  The more sophisticated banks should have a formal process to identify and escalate situations where competing assumptions are made, for example differences in strategic planning and the capital allocation across the bank. 3.7.4.2 Capital policy and risk capture  The more sophisticated banks should have a capital policy that specifies the principles that management follows in making decisions about deploying a bank’s capital.\n\n\n11  The capital policy should reference a suite of capital- and performance- related metrics against which management monitors the bank’s condition. Regulatory metrics include for example the common equity tier 1 (CET 1) ratio while non-regulatory metrics include for example risk-adjusted return on capital.  The more sophisticated banks use economic capital as a complimentary view of their condition.  All banks should set limits and triggers for each metric as well as a monitoring and escalation process for situations where a limit or trigger is approached and/or breached. An important input to a capital policy is an expression of risk tolerance, approved by the board and renewed annually. 3.7.4.3 Forward-looking view  Stress-testing needs to be an integral component of the capital-planning process to assess the potential impact on earnings and capital from an assumed economic downturn.  The more sophisticated banks should be able to repeat stress-testing and should be capable of performing ad hoc scenarios outside the normal stress-testing procedures.  All banks should at least estimate the impact of a baseline and a downturn scenario. The impact of a scenario should reflect estimated changes to a bank’s revenue loss (at least interest income, fee income, other non- interest income, and impairments), balance-sheet exposure measures, and risk-weighted assets. The impact on capital ratios, the leverage ratio, and surplus tier 1 capital as a result of the minimum leverage ratio requirement should also be reflected. To ensure that all material risks were incorporated, the impact should be reflected in the economic capital plan and in the economic capital buffers. 3.7.4.4 Management framework for preserving capital The board and senior management should ensure that the monitoring and escalation protocols remain relevant. They are responsible for prioritising and quantifying actions available to cushion unexpected events. The management process should allow for plans to be updated swiftly for better decision-making in changing circumstances.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8",
+              "number": "3.8",
+              "text": "Risk-based",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8-1",
+              "number": "3.8.1",
+              "text": "The board and senior management of banks should have an integrated, firm-wide perspective of the group’s risk exposures in order to support its ability to identify and react to emerging and/or growing risks in a timely and effective manner. A bank’s management information system should provide the board and senior management, in a clear and concise manner, with timely and relevant information concerning their bank’s risk profile. Refer to the document titled Principles for effective risk data aggregation and risk reporting, published by the Basel Committee on Banking Supervision during January 2013.\n\n\n12",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8-2",
+              "number": "3.8.2",
+              "text": "The ICAAP shall include all material risk exposures incurred by the bank, for example the risks referred to in regulation 39(3) of the Regulations. At least the following risks or sub risk types should be considered in ICAAP documents:  credit risk;  counterparty credit risk;  securitisation risk;  residual risk;  operational risk;  information technology risk (if not separately covered under operational risk)  reputational risk;  market risk;  equity risk in the banking book;  interest-rate risk in the banking book;  liquidity risk;  risk concentrations in respect of assets, liabilities, and/or off-balance-sheet items;  insurance-related risk;  business risk;  strategic risk; and  model risk in respect of banks making use of models.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8-3",
+              "number": "3.8.3",
+              "text": "Furthermore, spill over risks from non-banking activities should be assessed.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8-4",
+              "number": "3.8.4",
+              "text": "Clear links shall be established between capital and liquidity monitoring considerations.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8-5",
+              "number": "3.8.5",
+              "text": "The ICAAP should focus more on qualitative assessment, risk management, and risk mitigation for risks that are less readily quantifiable. Banks must distinguish between risks where quantitative versus qualitative risk-mitigation measures are indicated.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8-6",
+              "number": "3.8.6",
+              "text": "For risks that are more difficult to quantify, senior management shall discuss and understand the validated assumptions made in the estimation process to ensure that the potential for these to negatively affect a bank is not underestimated (e.g. the application of a model that is unable to capture the embedded risks of a complex portfolio).",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-8-7",
+              "number": "3.8.7",
+              "text": "On valuation practices, in order to establish and verify valuations for instruments and transactions in which it engages, a bank must have adequate capacity, including during periods of stress. This capacity should be commensurate with the importance, riskiness, and size of exposures in the context of the business profile of the bank. For exposures that represent material risk, a bank is expected to have the capacity to produce valuations using alternative methods in the event that primary inputs and/or approaches become unreliable, unavailable, and/or irrelevant due to market discontinuities and/or illiquidity. Regulation 39(13) of the Regulations prescribe additional requirements for the prudent valuation of instruments, contracts or positions.\n\n\n13",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9",
+              "number": "3.9",
+              "text": "Stress tests and a scenario analysis",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-1",
+              "number": "3.9.1",
+              "text": "The ICAAP should incorporate stress-testing to complement and help validate other quantitative and qualitative approaches so that the bank has a more complete understanding of its risks and the interaction of those risks under stressed conditions, as stipulated in regulation 39(16)(a)(v)(B)(iii) of the Regulations.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-2",
+              "number": "3.9.2",
+              "text": "Banks should carefully analyse their capital instruments and performance during times of stress.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-3",
+              "number": "3.9.3",
+              "text": "As part of the ICAAP, the management of a bank shall, as a minimum, conduct relevant stress tests on a periodic basis, particularly in respect of the bank’s main risk exposures, in order to identify events or changes in market conditions that may have an adverse impact on the bank. 3.9.3.1 Management should also consider scenarios where shocks originate from non- banking entities or parent groups, where applicable.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-4",
+              "number": "3.9.4",
+              "text": "Stress-testing needs to be an integral part of the overall governance and risk management culture of a bank. The results of stress tests should contribute to strategic decision-making and the capital-planning process. Furthermore, regulation 39(16)(a)(v)(E)(i) of the Regulations prescribes that stress test results be considered during strategic decision making and when risk appetite and tolerance levels are specified.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-5",
+              "number": "3.9.5",
+              "text": "A large part of managing a bank is based on an understanding of the expected outcomes of its business operations and the normal variations about these expected outcomes. To gain a comprehensive view of the risks being faced by a bank, an analysis of extreme events is also needed. Such an analysis may take the form of stress tests and scenario analyses. For example, a bank may normally expect interest rates to increase or decrease by 1 or 2 percentage points due to normal variations in economic conditions. However, in extreme circumstances, interest rates may change by a much greater extent. The use of stress tests and scenario analyses can give a bank’s management a better understanding of that bank’s true exposure in extreme circumstances.  Banks should undertake both stress tests and scenario analyses to further a better understanding of the vulnerabilities they face under extreme conditions. These are based on the impact analysis of unlikely but not impossible events. These events can be financial, operational, and/or legal, and can relate to any other risk that might have an economic impact on the bank.  As part of carrying out stress tests and scenario analyses, banks shall take reasonable steps to identify an appropriate range of realistic circumstances and events in which a risk would crystallise. In particular, banks need to carry out stress tests and scenario analyses only in so far as the circumstances or events are reasonably foreseeable, that is to say, only if their occurrence is not too remote a possibility.\n\n\n14",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-6",
+              "number": "3.9.6",
+              "text": "The purpose of stress tests and scenario analyses is to test the adequacy of a bank’s overall financial resources. Scenarios need to be identified and their impact needs to be assessed only in so far as this facilitates that purpose. In particular, the nature, depth, and detail of the analysis depends, in part, on a bank’s capital strength and the robustness of its risk-prevention and risk- mitigation measures.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-7",
+              "number": "3.9.7",
+              "text": "Both stress tests and scenario analyses are prospective analysis techniques which seek to anticipate the possible losses that might occur if an identified risk crystallises. In applying them, a bank needs to decide how far forward to look. This depends on:  how quickly it would be able to identify events a n d / or changes in circumstances that might lead to a risk crystallising, resulting in a loss; and  after identifying the event and/or change in circumstances, how quickly and effectively it could act to prevent or mitigate any loss resulting from the risk crystallising and to reduce exposure to any further adverse event a n d / or change in circumstances.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-8",
+              "number": "3.9.8",
+              "text": "The time horizon over which stress tests and scenario analyses would need to be carried out for the market risk (arising from the holding of investments) , for example, shall depend on:  the extent to which there is a regular, open, and transparent market in those assets, which would allow for the fluctuations in the value of the investment to be more readily and quickly identified; and  the extent to which the market in those assets is liquid (and would remain liquid in the changed circumstances contemplated in the stress test or scenario analysis), which would allow the bank, if needed, to sell its holding so as to prevent or reduce exposure to future price fluctuations.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-9",
+              "number": "3.9.9",
+              "text": "In identifying scenarios, and assessing their impact, a bank shall take into account, where material, how changes in circumstances might impact on:  the nature, scale, and/or mix of its future activities; and  the behaviour of counterparties and of the bank itself, including the exercise of choices (e.g. t h e options embedded in financial instruments or contracts of insurance).",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-10",
+              "number": "3.9.10",
+              "text": "In determining whether it would have adequate financial resources in the event of each identified realistic adverse scenario, a bank shall:  include only the financial resources that could reasonably be relied upon as being available in the circumstances of the identified scenario; and  take account of any legal or other restriction on the use of these financial resources.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-11",
+              "number": "3.9.11",
+              "text": "Banks’ stress-testing frameworks must be granular in risk representation and in the range of risks considered.\n\n\n15",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-12",
+              "number": "3.9.12",
+              "text": "Banks should also consider:  constantly reviewing scenarios and looking for new ones;  examining new products to identify potential risks;  improving the identification and aggregation of correlated risks across portfolios as well as the interactions between market, credit, and liquidity risk; and  evaluating appropriate time horizons and feedback effects.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-13",
+              "number": "3.9.13",
+              "text": "The extent of a stress-testing framework should be commensurate with the size and complexity of a bank's business and the overall level of risk that it accepts.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-9-14",
+              "number": "3.9.14",
+              "text": "Specific high-level principles in terms of stress-testing have been set out in Annexure B.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-10",
+              "number": "3.10",
+              "text": "Risk aggregation and diversification benefits",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-10-1",
+              "number": "3.10.1",
+              "text": "Banks could take into account diversification benefits in their risk aggregation frameworks (along organisational lines and risk types). However, banks should consider the appropriateness of diversification benefits in the overall assessment of their ICAAPs due to the following:  the lack of the validation of models (in respect of inter-risk diversification);  the use of expert judgment, where applicable in determining the overall level of economic capital;  the fact that aggregation methodologies may underestimate the overall risk even if no diversification assumptions are used since individual risk components are typically estimated without much regard for the interactions between risks;  the fact that harmonisation of the measurement horizon for different types of risk is difficult (for example market risk and credit risk); and  the scaling of one confidence interval in respect of different risks measured at different confidence intervals, where applicable.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-10-2",
+              "number": "3.10.2",
+              "text": "It is the responsibility of the bank to persuade This Office that it supports, empirically and analytically, any further diversification benefits to be claimed 2 .",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-10-3",
+              "number": "3.10.3",
+              "text": "Banks claiming diversification benefits must show that:  They have fully evaluated the risks they face, including those that arise by virtue of being part of a wider group (reputational risk in a group).  Capital is freely transferable within a group, even when the group is under financial stress. (Cross-border issues need to be considered as well.)  They can break down their group-level ICAAP so that BSD can assess the extent to which diversification benefits have been incorporated into the underlying assumptions on a group level. 2 The calibration of Basel II is based on a well-diversified, internationally active bank.\n\n\n16",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-11",
+              "number": "3.11",
+              "text": "Risk concentrations",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-11-1",
+              "number": "3.11.1",
+              "text": "Generally, it is expected that, especially in South Africa, most banks would be required to carry additional capital to reflect the risk arising from concentrated portfolios.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-11-2",
+              "number": "3.11.2",
+              "text": "A risk concentration is any single exposure or a group of similar exposures (e.g. to the same borrower or counterparty, including protection providers, a geographical area, industry or other risk factors) with the potential to produce (i) losses large enough (relative to a bank’s earnings, capital, total assets, or overall risk level) to threaten a bank’s creditworthiness and/or ability to maintain its core operations, or (ii) a material change in a bank’s risk profile. Unmanaged risk concentrations are arguably the single most important cause of major problems in banks.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-11-3",
+              "number": "3.11.3",
+              "text": "Risk concentrations should be viewed in the context of a single or a set of closely related risk drivers that may have different impacts on a bank. These concentrations should be integrated when assessing a bank’s overall risk exposure.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-11-4",
+              "number": "3.11.4",
+              "text": "A bank should be able to identify, aggregate, and report similar risk exposures across the banking asset types, including across legal entities (e.g. loans, derivatives, and structured products), risk areas, and geographical regions. Typical situations in which risk concentrations can arise include:  exposures to a single counterparty, borrower, or a group of connected counterparties or borrowers;  industry or economic sectors, including exposures to both regulated and non-regulated financial institutions such as hedge funds and private equity firms;  geographical regions;  exposures arising from credit mitigation techniques, including exposures to similar collateral types or a single or closely related credit protection provider;  trading exposures (market risk);  exposures to counterparties (e.g. hedge funds and hedge counterparties) through the execution or processing of transactions (either product or service);  funding sources;  assets held in the banking book or the trading book, such as loans, derivatives, and structured products; and  off-balance-sheet exposures, including guarantees, liquidity lines, and other commitments.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-11-5",
+              "number": "3.11.5",
+              "text": "An appropriate level of capital for risk concentrations should be quantified and incorporated in a bank’s ICAAP.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-11-6",
+              "number": "3.11.6",
+              "text": "Furthermore, regulation 36(14) of the Regulations prescribes minimum requirements in respect of credit concentration risk and related matters.\n\n\n17",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-12",
+              "number": "3.12",
+              "text": "Economic capital models",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-12-1",
+              "number": "3.12.1",
+              "text": "Economic capital models are the methods and practices which allow banks to consistently assess risk and attribute capital to cover the economic effects of risk-taking activities. Therefore, these models need to reliably and accurately measure risk in a relative sense (the single measure of risk), with less importance attached to the measurement of the overall level of risk or capital (i.e. whether overall economic capital is higher than regulatory capital or whether overall economic capital requirements show the bank is overly capitalised).",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-12-2",
+              "number": "3.12.2",
+              "text": "There is not a prescribed approach as to how a bank should develop its economic capital model, but a more sophisticated and more complex bank shall be able to demonstrate, among others: 3.12.2.1 the confidence levels set, and whether these are linked to the bank’s strategy or risk appetite; 3.12.2.2 the extent of historical data used and the back-testing carried out; 3.12.2.3 the fact that the bank has a process in place to verify the robustness of the model’s outputs; 3.12.2.4 the fact that the economic capital models are independently validated, before it is used by the bank, at least in respect of areas that differ from the regulatory models (e.g. correlations); and 3.12.2.5 the fact that the bank has the skills and resources to develop, operate, and maintain models.",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-12-3",
+              "number": "3.12.3",
+              "text": "Material risks that are difficult to quantify in an economic capital framework should be captured in some form of compensating controls (e.g. a scenario analysis).",
+              "verbatim": true
+            },
+            {
+              "id": "s3-3-12-4",
+              "number": "3.12.4",
+              "text": "The viability and usefulness of a bank’s economic capital processes depend critically on the existence of a credible commitment or buy-in on the part of senior management. It is therefore necessary for senior management to recognise the importance of using economic capital measures in conducting the bank’s business. In addition, adequate resources are required to ensure the existence of a strong, credible infrastructure to support the economic capital process. Moreover, senior management needs to take measures to help ensure the meaningfulness and integrity of economic capital measures. 3.12.4.1 Banks with economic capital models should be able to demonstrate how its economic capital model has been integrated into the business decision-making process in order to assess the potential impact on incentives affecting the bank’s strategic decisions about the mix and direction of its inherent risks. 3.12.4.2 Banks use economic capital (a common measurement of risks) to measure their business unit-level portfolio, analyse pricing profitability, and measure enterprise-wide relative performance.\n\n\n18",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "ICAAP submission 4.1 Banks must formally submit their Board approved ICAAPs for BSD’s review, when requested to do so. In order to structure the process, BSD suggests the submission format contained in Annexure A.",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s5",
+          "number": "5",
+          "heading": "Acknowledgement of receipt 5.1 Two additional copies of this guidance note are enclosed for the use of your institution’s independent auditors. The attached acknowledgement of receipt, completed and signed by both the chief executive officer (CEO) of your institution and the said auditors, should be returned to BSD at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks Encl. 2 The previous guidance note issued was Guidance Note 3/2015, dated 9 February 2015.",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

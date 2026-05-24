@@ -1,0 +1,47 @@
+{
+  "slug": "banks-gn1-2008",
+  "title": "Banks Act Guidance Note 1/2008 — Status of Previously Issued Guidance Notes",
+  "shortTitle": "GN 1/2008 (Status Note)",
+  "regulator": "Prudential Authority",
+  "year": 2008,
+  "effectiveDate": "2008-05-07",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G1/2008",
+    "G1/08",
+    "Guidance Note 1/2008",
+    "Guidance Note 1 of 2008"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 1/2008 (Status Note)",
+      "sections": [
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Process",
+          "text": "In terms of section 6(5) of the Banks Act this Office may from time to time by means of a\nguidance note furnish banks, controlling companies, eligible institutions, or auditors of banks or\ncontrolling companies with information in respect of market practices or market- or industry\nBanks and controlling companies are therefore informed that the first\npreviously issued guidance notes will remain effective for the ensuing year.\nPO Box 8432 Pretoria 0001\n• 370 Church Street Pretoria 0002\nSouth Africa\nTel +27 12 3133911/0861 12 7272\nFax +27 12 3133758\nwww.reservebank.co.za\n\n\n2",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "Acknowledgement of receipt",
+          "text": "Two additional copies of this guidance note are enclosed for the use of your institution's\nindependent auditors. The attached acknowledgement of receipt, duly completed and signed by\nboth the chief executive officer of the institution and the said auditors, should be returned to this\nOffice at the earliest convenience of the aforementioned signatories.\nEM Kruger\nRegistrar of Banks",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

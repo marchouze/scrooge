@@ -1,0 +1,229 @@
+{
+  "slug": "banks-gn1-2026",
+  "title": "Banks Act Guidance Note 1/2026 — Status of Previously Issued Guidance Notes",
+  "shortTitle": "GN 1/2026 (Status Note)",
+  "regulator": "Prudential Authority",
+  "year": 2026,
+  "effectiveDate": "2026-01-01",
+  "enablingLegislation": "Section 6(5) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "guidance",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "G1/2026",
+    "Guidance Note 1/2026",
+    "Guidance Note 1 of 2026"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "GN 1/2026 (Status Note)",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Introduction 1.1 All previously issued guidance notes are deemed to be withdrawn, terminated or replaced, except if such a guidance note is to remain effective and is then accordingly confirmed in Guidance Note 1 of that year. The guidance notes that remain effective will retain their original numbers and dates.",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Effective guidance notes The guidance notes listed below remain effective. Accordingly, banks, controlling companies, eligible institutions and auditors of a bank or controlling company are hereby requested to retain copies of these guidance notes. Guidance Note Brief details 2.1 Banks Act Guidance Note 1/2008 Status of previously issued guidance notes 2.2 Banks Act Guidance Note 2/2008 Position statement on personal account trading 2.3 Banks Act Guidance Note 5/2008 Electronic communications with the office",
+          "text": "2 2.4 Banks Act Guidance Note 7/2008 Development programme for directors of banks 2.5 Banks Act Guidance Note 8/2008 Financial Action Task Force’s call for enhanced scrutiny of transactions within certain jurisdictions, and United Nations sanctions in relation to proliferation of weapons of mass destruction 2.6 Banks Act Guidance Note 9/2008 Stress testing 2.7 Banks Act Guidance Note 3/2010 Performing market risk hypothetical back-testing by internal models approach (IMA) banks 2.8 Banks Act Guidance Note 3/2011 Covered bonds 2.9 Banks Act Guidance Note 5/2013 Foreign exchange settlement risk 2.10 Banks Act Guidance Note 3/2014 Effective risk data aggregation and risk reporting 2.11 Banks Act Guidance Note 4/2014 Application process in respect of the proposed adoption of the internal ratings-based approach for the measurement of banks’ credit risk exposure in respect of positions held in the banking book 2.12 Banks Act Guidance Note 5/2014 Outsourcing of functions within banks 2.13 Banks Act Guidance Note 4/2015 This guidance note outlines Expectations of the Bank Supervision Department (BSD) of the South African Reserve Bank (the Bank) with respect to the internal capital adequacy assessment process (ICAAP) of banks, controlling companies and branches of foreign institutions – hereinafter referred to as ‘banks’ 2.14 Banks Act Guidance Note 3/2016 Credit risk and accounting for expected credit losses 2.15 Banks Act Guidance Note 4/2016 Instruments qualifying as high-quality liquid assets 2.16 Banks Act Guidance Note 5/2016 Corporate governance principles for banks 2.17 Banks Act Guidance Note 7/2016 Capital arbitrage transactions 2.18 Banks Act Guidance Note 3/2017 Audit implications of the expected credit loss model for the auditors of banks 2.19 Banks Act Guidance Note 5/2018 Cloud computing and the offshoring of data\n\n\n3 2.20 Banks Act Guidance Note 8/2020 Continued provision of a committed liquidity facility and the introduction of a restricted-use committed liquidity facility by the South African Reserve Bank 2.21 Banks Act Guidance Note 5/2022 Supervisory guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering or other unlawful activity (Effective implementation of group controls) 2.22 Banks Act Guidance Note 6/2022 Supervisory guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering or other unlawful activity (Business risk assessment) 2.23 Banks Act Guidance Note 7/2022 Guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering or other unlawful activity in respect of correspondent banking relationships 2.24 Banks Act Guidance Note 9/2022 Matters related to the credit risk models of banks using the internal ratings-based (IRB) approach (IRB banks) to calculate minimum required capital and reserve funds for their credit risk exposures 2.25 Banks Act Guidance Note 10/2022 Supervisory guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering, terrorist financing or other unlawful activity 2.26 Banks Act Guidance Note 12/2022 Guidelines related to risk management practices concerning proliferation financing risk 2.27 Banks Act Guidance Note 4/2023 Matters on the use of terrorist financing or other unlawful activity 2.28 Banks Act Guidance Note 2/2024 Guidance no climate-related governance and risk practices for banks 2.29 Banks Act Guidance Note 4/2024 Criteria for identifying outlier banks in relation to interest rate risk in the banking book 2.30 Banks Act Guidance Note 5/2024 Supervisory guidance for matters related to business risk assessment and assessment for money laundering, terrorist financing and other unlawful activities 2.31 Banks Act Guidance Note 2/2025 Guidance on the internal ratings-based approach for credit risk\n\n\n4 2.32 Banks Act Guidance Note 3/2025 Guidance on climate-related disclosures for banks",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s2-2-4",
+              "number": "2.4",
+              "text": "Banks Act Guidance Note 7/2008 Development programme for directors of banks",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-5",
+              "number": "2.5",
+              "text": "Banks Act Guidance Note 8/2008 Financial Action Task Force’s call for enhanced scrutiny of transactions within certain jurisdictions, and United Nations sanctions in relation to proliferation of weapons of mass destruction",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-6",
+              "number": "2.6",
+              "text": "Banks Act Guidance Note 9/2008 Stress testing",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-7",
+              "number": "2.7",
+              "text": "Banks Act Guidance Note 3/2010 Performing market risk hypothetical back-testing by internal models approach (IMA) banks",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-8",
+              "number": "2.8",
+              "text": "Banks Act Guidance Note 3/2011 Covered bonds",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-9",
+              "number": "2.9",
+              "text": "Banks Act Guidance Note 5/2013 Foreign exchange settlement risk",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-10",
+              "number": "2.10",
+              "text": "Banks Act Guidance Note 3/2014 Effective risk data aggregation and risk reporting",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-11",
+              "number": "2.11",
+              "text": "Banks Act Guidance Note 4/2014 Application process in respect of the proposed adoption of the internal ratings-based approach for the measurement of banks’ credit risk exposure in respect of positions held in the banking book",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-12",
+              "number": "2.12",
+              "text": "Banks Act Guidance Note 5/2014 Outsourcing of functions within banks",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-13",
+              "number": "2.13",
+              "text": "Banks Act Guidance Note 4/2015 This guidance note outlines Expectations of the Bank Supervision Department (BSD) of the South African Reserve Bank (the Bank) with respect to the internal capital adequacy assessment process (ICAAP) of banks, controlling companies and branches of foreign institutions – hereinafter referred to as ‘banks’",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-14",
+              "number": "2.14",
+              "text": "Banks Act Guidance Note 3/2016 Credit risk and accounting for expected credit losses",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-15",
+              "number": "2.15",
+              "text": "Banks Act Guidance Note 4/2016 Instruments qualifying as high-quality liquid assets",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-16",
+              "number": "2.16",
+              "text": "Banks Act Guidance Note 5/2016 Corporate governance principles for banks",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-17",
+              "number": "2.17",
+              "text": "Banks Act Guidance Note 7/2016 Capital arbitrage transactions",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-18",
+              "number": "2.18",
+              "text": "Banks Act Guidance Note 3/2017 Audit implications of the expected credit loss model for the auditors of banks",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-19",
+              "number": "2.19",
+              "text": "Banks Act Guidance Note 5/2018 Cloud computing and the offshoring of data\n\n\n3",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-20",
+              "number": "2.20",
+              "text": "Banks Act Guidance Note 8/2020 Continued provision of a committed liquidity facility and the introduction of a restricted-use committed liquidity facility by the South African Reserve Bank",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-21",
+              "number": "2.21",
+              "text": "Banks Act Guidance Note 5/2022 Supervisory guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering or other unlawful activity (Effective implementation of group controls)",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-22",
+              "number": "2.22",
+              "text": "Banks Act Guidance Note 6/2022 Supervisory guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering or other unlawful activity (Business risk assessment)",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-23",
+              "number": "2.23",
+              "text": "Banks Act Guidance Note 7/2022 Guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering or other unlawful activity in respect of correspondent banking relationships",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-24",
+              "number": "2.24",
+              "text": "Banks Act Guidance Note 9/2022 Matters related to the credit risk models of banks using the internal ratings-based (IRB) approach (IRB banks) to calculate minimum required capital and reserve funds for their credit risk exposures",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-25",
+              "number": "2.25",
+              "text": "Banks Act Guidance Note 10/2022 Supervisory guidelines for matters related to the prevention of banks or controlling companies being used for any money laundering, terrorist financing or other unlawful activity",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-26",
+              "number": "2.26",
+              "text": "Banks Act Guidance Note 12/2022 Guidelines related to risk management practices concerning proliferation financing risk",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-27",
+              "number": "2.27",
+              "text": "Banks Act Guidance Note 4/2023 Matters on the use of terrorist financing or other unlawful activity",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-28",
+              "number": "2.28",
+              "text": "Banks Act Guidance Note 2/2024 Guidance no climate-related governance and risk practices for banks",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-29",
+              "number": "2.29",
+              "text": "Banks Act Guidance Note 4/2024 Criteria for identifying outlier banks in relation to interest rate risk in the banking book",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-30",
+              "number": "2.30",
+              "text": "Banks Act Guidance Note 5/2024 Supervisory guidance for matters related to business risk assessment and assessment for money laundering, terrorist financing and other unlawful activities",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-31",
+              "number": "2.31",
+              "text": "Banks Act Guidance Note 2/2025 Guidance on the internal ratings-based approach for credit risk\n\n\n4",
+              "verbatim": true
+            },
+            {
+              "id": "s2-2-32",
+              "number": "2.32",
+              "text": "Banks Act Guidance Note 3/2025 Guidance on climate-related disclosures for banks",
+              "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this guidance note is made available to your institution’s auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Guidance Note 3/2025 dated 7 October 2025.",
+          "text": "",
+          "verbatim": true,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

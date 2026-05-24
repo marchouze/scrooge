@@ -1,0 +1,741 @@
+--- Page 1 ---
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+G5/2014
+2014-07-08
+To all banks, branches of foreign institutions, controlling companies, eligible
+institutions and auditors of banks or controlling companies
+Guidance Note 5/2014 issued in terms of section 6(5) of the Banks Act, 1990
+Outsourcing of functions within banks
+Executive summary
+This guidance note replaces Guidance Note 3/2008 titled "Outsourcing of
+Functions within Banks"
+Regulation 39 of the Regulations relating to Banks (the Regulations) requires
+banks, controlling companies and branches of foreign institutions (hereinafter
+collectively referred to as 'banks') to establish and maintain an appropriate
+process of corporate governance. This process includes the maintenance of
+effective risk management processes by a bank. These responsibilities include
+the continuing management of risk arising from the outsourcing of material
+business activities and functions.
+The purpose of this guidance note is to inform all banks of the potential risks
+arising from the use of service providers and to provide guidelines on
+assessing and managing risks pertaining to outsourcing relationships. These
+guidelines also include the highlighting of the elements of an appropriate risk
+management programme for service providers.
+This Office requires that all outsourcing arrangements involving material
+business activities and functions entered into by banks be subject to
+appropriate due diligence, approval and ongoing monitoring by the bank. The
+risks associated with an outsourcing relationship should be appropriately
+managed in order to ensure delivery by the bank on its financial and service
+obligations. The ultimate responsibility for ensuring that the risk surrounding
+outsourcing relationships are duly managed vests with the relevant bank's
+board of directors.
+PO Box 8432 Pretoria 0001
+370 Helen Joseph Street Pretoria 0002
+South Africa
+Tel +27 12 3133911/0861 12 7272
+Fax +27 12 3133758
+www.reservebank.co.za
+
+--- Page 2 ---
+2
+1. Introduction
+1.1
+This Office recognises that,
+in general, the outsourcing of certain functions
+and processes could be beneficial to banks in order to meet the challenges of
+technological innovation, increased specialisation, cost control, and intensified
+competition. It is, however, of concern to this Office that the use of service
+providers may reduce management's direct control over important banking
+functions, which in turn may increase the risk profile of the bank. The number,
+interconnectedness,
+and complexity of outsourcing relationships with both
+foreign and domestic third parties may increase the risks introduced by these
+relationships. Furthermore, outsourcing arrangements could also impair this
+Office's ability to exercise its powers under the Banks Act, 1990 (Act No. 94 of
+1990 - the Banks Act), especially when the relevant service-level agreements
+(SLAs) do not specifically cater therefor.
+1.2
+Present sevent nok
+The use of service providers to perform operational banking functions may
+present several risks to the bank; some inherent to the outsourced activity
+itself, whereas others are introduced through the use of a service provider.
+These risks have to be managed effectively in order not to impact negatively
+on the bank itself and to reduce any potential impact on the South African
+banking industry as a whole. The risks may be varied in nature and banks
+should consider risks such as compliance risk, concentration risk, country risk,
+credit risk, legal risk, operational risk, reputational risk and strategic risk before
+entering into and while managing outsourcing arrangements. It is important
+that the quality of risk management over outsourcing relationships should
+keep pace with the level of risk and complexity of these relationships. Banks
+have the flexibility to configure their operations in the way most suited to
+achieving their corporate objectives; however, it is reiterated that banks' board
+of directors retains ultimate accountability for all outsourced activities.
+Furthermore, this Office's supervisory powers should not be constrained,
+irrespective of whether an activity is conducted in-house, outsourced, or
+otherwise obtained from a service provider.
+Definitions
+2.1 For purposes of this guidance note 'outsourcing' is defined as the use of a
+service provider, whether it is an affiliate within a corporate group or a third
+party, to perform on a continuing basis a business activity, service, function, or
+process, which could be undertaken by the bank, on behalf of the bank.
+2.2
+It is important to note that for purposes of this guidance note outsourcing
+includes the provision of information technology (IT) systems or other IT
+services.
+2.3
+In instances where functions and activities are outsourced within a particular
+group of institutions which forms part of a single banking group, it will for
+purposes of this guidance note be referred to as 'insourcing'.
+2.4
+For the purposes of this guidance note, 'offshoring' refers to the outsourcing
+by a bank of a material business activity or function associated with its South
+African business to a service provider who conducts the outsourced activity
+outside the borders of South Africa. In other words, the service provider may
+
+--- Page 3 ---
+3
+be a registered entity in South Africa, but if the activity is conducted outside of
+South African borders, it will be seen as offshoring. The opposite also holds
+true in that an entity not registered in South Africa, but performing the activity
+in South Africa, such activity is not seen as offshoring. Banks should at all
+times adhere to all country-specific legislation, both local and foreign, where
+the outsourcing arrangement crosses international borders, for example with
+regard to data privacy. Offshoring should not impact on this Office being able
+to perform its regulatory activities such as on-site reviews of the service
+provider's operations. In addition, banks should consider that offshoring may
+grant foreign country supervisors the authority or ability to gain access to the
+bank's customer information and the implication of such access should be
+borne in mind while considering offshoring.
+2.5
+For purposes of this guidance note critical functions include activities
+performed for third parties where failure of such an activity would, directly or
+indirectly, have a negative impact on the functioning of the real economy and
+financial stability.
+2.6
+For purposes of this guidance note critical shared services include any
+activities, whether performed internally, insourced or outsourced, that supports
+the bank's critical functions and where failure of such a service would lead to a
+failure or disruption of those critical functions.
+3. Applicability of this guidance note
+3.1 This guidance note applies to the outsourcing of material business activities
+and functions at a bank. A 'material business activity or function' is defined as
+one that has the potential to have a significant impact on the bank's business
+operations or its ability to manage risks effectively should it be disrupted. The
+following factors should be considered in determining the materiality of a
+business activity or function:
+a. The financial and operational impact should the business activity or
+function be interrupted.
+b.
+The extent to which the business activity or function has the potential to
+have an important influence, whether quantitative or qualitative, on a
+significant line of business of the bank.
+C.
+The reputational impact should the service provider fail to perform over
+a given period of time.
+d.
+The cost of the outsourcing arrangement as a percentage of total
+expenses.
+e.
+The degree of difficulty, including the time taken, in finding an
+alternative service provider or bringing the business activity or function
+in-house.
+f.
+The bank's ability to meet regulatory requirements if there are problems
+with the service provider.
+g.
+Multiple outsourcing agreements are held with one service provider
+which in totality may be deemed as material to the bank.
+h.
+The business activity or function affects the supervisory processes
+followed by this Office.
+i.
+The bank's strategic objectives may be hampered by a service provider
+failure.
+
+--- Page 4 ---
+4
+j.
+The potential losses to the bank's customers and other affected
+persons in the event of a service provider failure.
+The affiliation or other relationship between the bank and the service
+provider.
+3.2 All outsourcing arrangements should be measured against the materiality
+criteria set out in the above paragraph. Where a material business activity or
+function is outsourced the outsourcing arrangement is deemed to be material.
+This Office acknowledges that outsourcing arrangements will have varying
+degrees of materiality and expects that the robustness of a bank's
+management of the outsourcing risk would be in line with the materiality of the
+arrangement. Material outsourcing arrangements
+should adhere to all the
+criteria as set out below in the summary of key requirements in paragraph 5 of
+this guidance note while also taking into account whether the outsourcing
+arrangement involves insourcing and/or offshoring.
+3.3
+3.4
+4.
+4.1
+4.2
+4.3
+In general, this Office expects that a bank will design a sufficiently robust risk
+management programme that applies to all its outsourcing arrangements. The
+programme
+should be scalable to the materiality of an outsourcing
+arrangement and able to apply different requirements depending on the type
+of outsourcing arrangement. The mitigating controls employed under this
+programme should be appropriate to the particular outsourcing arrangement.
+Significant changes in the volume or the nature of business conducted should
+cause the bank to reassess its outsourcing arrangements' materiality for
+compliance with requirements of this guidance note.
+Material business activities and functions
+It is expected that banks will have various and numerous material business
+activities and functions based on the scope of their business activities and
+complexity. This guidance note in general expects banks to identify and
+manage the risks surrounding these material business activities and functions.
+This Office views management oversight, governance and risk management
+as material business functions and does not support the outsourcing of these
+functions.
+This Office views internal audit as a material business function and would not
+generally support the outsourcing of this function. In certain circumstances,
+however, this Office may consider applications for prior written approval of the
+outsourcing of the internal audit function (for example, when the head office of
+a branch of a foreign bank undertakes the internal audit function or where a
+bank does not have IT audit resources). This Office will consider submissions
+for approval of outsourcing arrangements of the internal audit function or parts
+thereof on a case-by-case basis. Where audit activities are outsourced, senior
+management should consider the effectiveness of the underlying
+arrangements and whether it is suitable to rely on an outsourced audit
+function. A bank is required to have an internal audit function that is
+independent from the external audit function. Outsourcing internal audit to the
+current external auditor is therefore not permissible.
+
+--- Page 5 ---
+5
+4.4
+It is expected that the IT systems employed by banks in pursuit of achieving
+their strategic objectives will be wide and varied. This Office views core
+banking IT systems as well as a bank's financial reporting IT system as
+material business functions and would prefer that as far as possible these
+systems not be outsourced. There are, however, circumstances under which
+this Office would consider applications for prior written approval for the
+outsourcing of these material business functions on a case-by-case basis.
+4.5 This Office would like to emphasise that banks should realise the significance
+of cloud computing initiatives and offshoring of material IT business activities
+and functions. Banks should notify this Office prior to offshoring material
+business activities.
+4.6
+This Office views critical functions and critical shared services, as defined
+above and set out in the respective bank's recovery plan, as material business
+activities for purposes of this guidance note.
+5.
+Key requirements for outsourcing of material business activities and
+functions
+5.1 This Office's key requirements are summarised below and include:
+a.
+Have a board-approved outsourcing policy in place, dealing specifically
+with the outsourcing of material business activities and functions.
+b.
+Have a plan for outsourcing activities, including performing risk
+assessments surrounding the outsourcing of material business activities
+and functions.
+C.
+Have due diligence processes in place for the selection of service
+providers.
+d.
+Have a legal contract in place for all outsourcing of material business
+activities and functions with third parties.
+e.
+Have a monitoring process in place to manage outsourced material
+f.
+business activities and functions.
+Establish an effective control environment at the bank and ensuring one
+at the service provider.
+g.
+h.
+Develop viable contingency and business continuity plans.
+Have administrative measures and reporting in place that facilitate
+oversight, accountability, monitoring and risk management.
+i.
+Be in a position to demonstrate to this Office when requested the steps
+taken with regard to the verification of a service provider's performance
+levels.
+j.
+Obtain written approval from this Office before outsourcing internal audit
+as required in regulation 48(1)(c)(i) of the Regulations, core banking IT
+systems, or the financial reporting IT system.
+K.
+Notify this Office at least 20 working days prior to entering into
+agreements to outsource material business activities or functions other
+than those requiring prior written approval.
+5.2
+As part of the engagements with this Office banks are expected to provide a
+comprehensive risk assessment and the risk mitigation strategies in place to
+address the risks identified. This would typically include an assessment of the
+specific arrangements underlying the services offered, the service provider,
+
+--- Page 6 ---
+6
+the location from which the services are to be provided and the criticality and
+sensitivity of the assets involved. The risks should be periodically reassessed
+in line with the bank's risk management framework. This Office may request
+additional information where it considers it necessary in order to further
+assess the impact of the outsourcing arrangement on the bank's risk profile.
+5.3
+In accordance with the provision of regulation 38(4)(e) of the Regulations, if, in
+this Office's view, an outsourcing agreement involves risks that the bank is not
+managing appropriately, this Office may require the bank to make alternate
+arrangements for the outsourced activity or function as soon as reasonably
+possible. This Office acknowledges that the activities necessary to implement
+an effective outsourcing risk management programme can vary based on the
+scope and nature of a bank's outsourced activities.
+5.4
+As part of this Office's requirements related to recovery plans, banks must
+provide detail and guidance in its recovery plan on:
+a. the outsourcing of material business activities;
+the effect of recovery on the outsourced material business activities;
+the effect of the outsourced material business activities on recovery;
+and
+d.
+the actions to be taken to facilitate the continuation of the outsourced
+material business activities during recovery of the bank or the failure of
+the service provider
+6. Additional guidance surrounding key requirements
+6.1 Board and senior management oversight and other related responsibilities
+6.1.1 As prescribed in regulation 39(1) of the Regulations the board of directors of a
+bank is ultimately responsible for establishing corporate governance within the
+bank and they may appoint supporting committees to assist it with its
+responsibilities. In line with regulation 39(3) of the Regulations these
+responsibilities include the continuing management of risks such as risk
+arising from the outsourcing of material business activities and functions as
+specified in regulation 39(3)(p) of the Regulations. In accordance with
+regulation 39(4) of the Regulations the bank must have comprehensive risk
+management processes, practices and procedures, as well as board approved
+policies in place.
+6.1.2
+The board retains ultimate responsibility for the outsourcing of a material
+business activity or function undertaken. Although outsourcing a business
+activity or function may result in the
+service provider having day-to-day
+managerial responsibility for the activity, the bank is responsible for complying
+with all prudential requirements that relate to the outsourced business activity
+or function. The use of service providers also does not relieve the board of
+directors and senior management of their responsibility to ensure that
+outsourced activities are conducted in a safe and sound manner and in
+compliance with other applicable legislation.
+
+--- Page 7 ---
+7
+6.1.3 In its assessment of a proposed outsourcing arrangement, the management of
+a bank should analyse the impact of such an arrangement and take into
+account the factors that determine the scope of the arrangement. The board
+should approve contracts with third parties that involve material business
+activities or functions.
+6.1.4 Banks' senior management is responsible for ensuring that the outsourcing of
+material activities and functions is appropriately executed, including
+overseeing the development and implementation of an appropriate risk
+management and reporting programme. Senior management should ensure
+ongoing monitoring of service providers, respond to issues when identified,
+and escalate significant issues to the board. Outsourcing arrangements that
+ensure that this Office and other persons, such as the banks' external
+auditors, will have access to required information to enable them to exercise
+their duties under the Banks Act and other relevant legislation.
+6.2
+Outsourcing policy
+6.2.1 The summary of key requirements listed in paragraph 5 of this guidance note
+does not constitute a complete list of considerations for all outsourcing
+arrangements, but only what is included in this Office's key requirements for
+the outsourcing of material business activities and functions.
+Banks'
+management should, however, be satisfied that when business activities are
+outsourced, all decisions and information flows pertaining to such outsourced
+activities are covered by an overarching internal policy which has been
+approved by the board. In line with regulation 39(4) of the Regulations the
+outsourcing policy should govern how banks identify, assess, manage,
+mitigate and report on risks associated with outsourcing to ensure that it can
+meet its respective financial and service obligations. The policy should also
+address proper structures, controls and systems, and other necessary factors
+to ensure that the standard of outsourced activities or functions is of a similar
+standard as activities or functions that are performed internally. Furthermore
+the policy should address different forms of outsourcing, specifically offshoring
+and insourcing, as well as the materiality assessment for outsourcing
+arrangements,
+including processes for determining materiality and the
+materiality factors. Banks should disseminate the policy to all relevant
+business units, and should verify compliance thereto.
+6.2.2 The outsourcing policy should establish an outsourcing risk management
+programme that addresses risk assessments and due diligence, standards for
+contract provisions and considerations,
+ongoing monitoring of service
+providers, and business continuity and contingency planning. The programme
+should include a statement of principles on the bank's outsourcing philosophy,
+the basis for decision making, and the parameters for controlling outsourcing
+risks. The programme should address integration of outsourcing arrangements
+within the bank, the importance and adequacy of internal expertise and
+management frameworks to oversee and manage the outsourced activity and
+the relationship with the service
+provider, and the business case for
+outsourcing a significant business activity or function.
+
+--- Page 8 ---
+8
+6.3 Planning and risk assessments
+6.3.1 Before entering into an outsourcing relationship, senior management should
+develop a plan to manage the relationship. The management plan should be
+proportionate to the level of risk and complexity of the service provider
+relationship. The plan should, amongst others,
+discuss the risks inherent in the
+business activity or function, outline the strategic purposes in outsourcing,
+assess the complexity of the arrangement, include a cost versus benefit
+analysis, consider the impact on other strategic initiatives, consider the impact
+on customers, consider potential information security implications, include the
+bank's contingency plans and assess the legislative requirements involved.
+6.3.2 Risk assessment of a business activity or function and the implications of
+performing the activity in-house or having the activity performed by a service
+provider are fundamental to the decision on whether or not to outsource. The
+bank should consider whether qualified and experienced service providers are
+available to perform the service on an ongoing basis. Additionally,
+management should consider the bank's ability and expertise to provide
+appropriate oversight and management of the relationship with the service
+provider. The risk assessment should be updated as part of monitoring and
+managing the outsourcing relationship. The bank should update its risk
+mitigation plans, where appropriate, based on the results of the risk
+assessment.
+6.4 Due diligence and selection
+6.4.1 The management of a bank should ensure that the particular service provider
+is committed to providing, and is able to provide, the required service at
+agreed levels for the duration of the arrangement. A bank should conduct an
+evaluation of and perform the necessary due diligence on a prospective
+service provider prior to entering into an outsourcing agreement. Factors in
+considering the depth and formality of the due diligence performed include the
+risks involved, scope, complexity, and materiality of the business activity or
+function, and the reputation and industry standing of the service provider.
+6.4.2
+Technical experts and key stakeholders should be engaged throughout the
+due diligence process and should be included in the review and approval
+process as needed. Service provider factors to be considered during a due
+diligence exercise include:
+a.
+b.
+C.
+d.
+e.
+f.
+g.
+h.
+i.
+k.
+Business background and reputation.
+Conflicting contractual arrangements with other persons.
+Strategy and goals.
+Fee structure and incentives.
+Financial performance and condition.
+Human resource management.
+Incident reporting and management programmes.
+Information security.
+Insurance coverage.
+Jurisdictional issues and sovereign risks (cross border activities).
+Legal and regulatory compliance.
+
+--- Page 9 ---
+9
+I.
+m.
+n.
+0.
+p.
+q.
+r.
+Management of information systems.
+Operations and internal controls.
+Physical security.
+Qualifications, backgrounds, and reputations of company principals.
+Reliance on subcontractors.
+Resilience.
+Risk management.
+6.4.3 A bank should be able to demonstrate to this Office that in assessing its
+outsourcing options for a material business activity or function it has done the
+following:
+a.
+Prepared and considered an appropriate business case.
+Undertaken a tender or other selection process for service providers.
+C.
+d.
+Undertaken a due diligence review of the chosen service provider.
+Involved the board, board subcommittee, or senior manager with
+delegated authority from the board in approving the agreement.
+e.
+f.
+Considered all the matters for inclusion in the outsourcing contract.
+Established procedures for
+monitoring performance
+under the
+outsourcing agreement on a continuing basis.
+g.
+Addressed the renewal process for outsourcing agreements and how
+the renewal will be conducted.
+h.
+Developed contingency plans that would enable the outsourced
+business activity or function to be provided by an alternative service
+provider or brought in-house if required.
+6.4.4 A bank should be able to demonstrate to this Office that, in assessing its
+insourcing options, it has taken into account the following:
+a. The changes to the risk profile of the business activity or function that
+arises from insourcing the activity and how this changed risk profile is
+addressed within the bank's risk management framework.
+b.
+That the insourcing service provider has the ability to conduct the
+business activity of function on an ongoing basis.
+C.
+The required monitoring procedures to ensure that the insourcing
+service provider is performing effectively and how potential inadequate
+performance would be addressed.
+d.
+Contingency and business continuity management issues should the
+insourced activity need to be brought in-house.
+e.
+Considered all relevant matters for inclusion in an insourcing contract.
+6.5
+Outsourcing contract
+6.5.1 The importance of a comprehensive outsourcing agreement, including SLAs
+cannot be overemphasised and all outsourcing arrangements should be
+contained in a documented, legally binding agreement or contract. The
+contract and SLAs should be reviewed by the bank's legal counsel before
+being signed and the outsourcing agreement may not start before the contract
+is signed by all parties. The management of the bank should ensure that
+written agreements exist for all outsourced functions and activities.
+
+--- Page 10 ---
+10
+6.5.2 The contract and SLAs should, at a minimum, include the following aspects:
+a.
+b.
+C.
+d.
+e.
+f.
+g
+h.
+i.
+J.
+K.
+I.
+m.
+n.
+0.
+p.
+q.
+r.
+S.
+t.
+u.
+V.
+W.
+X.
+y.
+Z.
+Access to assets.
+Audit (including right to audit) and monitoring procedures.
+Business disruption and contingency plans.
+Commencement and end dates.
+Confidentiality, integrity, privacy and security of information.
+Customer complaints.
+Default arrangements and termination provisions.
+Dispute resolution arrangements.
+Establishment and monitoring of performance standards.
+Foreign based services.
+Incentive compensation review.
+Indemnification.
+Insurance.
+Limits and liability.
+Notification of financial difficulty, catastrophic events, and significant
+incidents.
+Offshoring arrangements.
+Ownership and license issues.
+Pricing and fee structure.
+Provisions for amendment.
+Provisions for periodic reviews.
+Remedies (including early-exit options) for non-performance.
+Reporting requirements.
+Responsibilities for providing, receiving, and retaining information.
+Responsibility for compliance with applicable laws and regulations.
+Review provisions.
+Rights of regulatory and supervisory authorities, including unrestricted
+access to information.
+aa.
+Roles, rights and responsibilities.
+bb.
+Scope
+and nature of the arrangement and services to be
+supplied.
+CC.
+dd.
+Service levels and performance requirements.
+Subcontracting.
+6.5.3 A bank that outsources a material business activity or function must ensure
+that its outsourcing agreement includes an indemnity to the effect that any
+subcontracting by a third-party service provider of the outsourced function will
+be the responsibility of the third-party service provider, including liability for
+any failure on the part of the sub-contractor. Some of the aspects listed above
+may not be applicable in all circumstances; however, banks are expected to
+address all issues relevant to managing the risks associated with each
+outsourcing arrangement to a feasible and reasonable extent. All legal
+documents should be stored in accordance with the bank's legal document
+management procedures.
+6.5.4 A bank that outsources a material business activity or function must further
+ensure that the outsourcing agreement, specifically any default clause, does
+not entitle the service provider to unilaterally cancel the agreement in the
+event that a recovery or resolution action is taken.
+
+--- Page 11 ---
+11
+6.6
+Managing and monitoring the relationship
+6.6.1 Banks should ensure they have sufficient and appropriate resources to
+manage and monitor the outsourcing relationship at all times. The type and
+extent of resources required will depend on the materiality of the outsourced
+business activity or function. Personnel with oversight and management
+responsibilities for service providers should have the appropriate level of
+expertise and stature to manage the outsourcing arrangement. The monitoring
+approach, including the level and frequency of management reporting, should
+be risk-based. Monitoring should be ongoing for the duration of the
+outsourcing relationship and should be an essential component of the bank's
+risk management process. Because both the level and types of risks may
+change over the lifetime of outsourcing relationships, a bank should ensure
+that its ongoing monitoring is adapted accordingly.
+6.6.2 Monitoring activities, at a minimum, should include the following:
+a.
+b.
+C.
+d.
+Verifying that the integrity of the systems and controls of the service
+provider are maintained.
+Remaining aware of any problems,
+including financial concerns,
+encountered with a service provider.
+Maintaining appropriate levels of regular contact with the service
+provider, ranging from daily operational contact to senior management
+involvement.
+Regular monitoring of performance under the agreement.
+Escalation of issues identified.
+6.7 Contingency planning and business continuity
+6.7.1 Outsourcing of any function always carries a risk that the service provider may
+fail or may fail to deliver fully in terms of the outsourcing agreement. This
+could result either in non-performance of the outsourced business activity or
+function; or potentially the premature cancellation of the outsourcing
+agreement. Banks' management should accordingly put in place contingency
+plans to ensure business continuity in the event that a service provider fails to
+perform the business activity or function. Contingency plans pertaining to
+outsourced activities should be reviewed regularly, but not less frequently than
+once a year.
+6.7.2 When preparing contingency plans, banks should do the following:
+a.
+C.
+d.
+Consider the availability of alternative service providers and hand-over
+procedures to new service providers.
+Determine the procedures that need to be in place to ensure minimum
+disruption to business when an alternative service provider is sought.
+Ensure that the bank has in its possession, or can readily obtain, all
+records necessary to allow it to sustain business operations, meet its
+statutory obligations, and provide all information necessary for the bank
+to meet its mandate.
+Ensure that a disaster recovery and business continuity plan is in place
+for the contracted services and products.
+
+--- Page 12 ---
+12
+e.
+f.
+g.
+i.
+Assess the adequacy and effectiveness of a service provider's disaster
+recovery and business continuity plan and its alignment to their own
+plan.
+Document the roles and responsibilities for maintaining and testing the
+service provider's business continuity and contingency plans.
+Periodically obtain evidence of testing that the service provider's
+business continuity and contingency plans are adequate and effective.
+Maintain an exit strategy, including a pool of comparable service
+providers, in the event that a contracted service provider is unable to
+perform.
+Consider requirements should the bank wish to or need to reinstate an
+outsourced function or activity in-house.
+6.8 Documentation and reporting
+6.8.1 Banks should properly document and report on their outsourcing risk
+management processes. The documentation and reporting should facilitate
+the accountability, monitoring, and risk management associated with service
+providers and should include the following:
+b.
+C.
+d.
+e.
+f.
+g.
+h.
+An up-to-date inventory of all outsourcing relationships which allows
+different views of the relationships, for instance per business unit or
+function, materiality or monetary value of the relationship.
+Approved plans for the use of third-party relationships.
+Due diligence results, findings, and recommendations.
+Analysis of costs
+associated with each outsourcing arrangement,
+including any indirect costs assumed by the bank.
+Executed contracts.
+Regular risk management and performance reports required and
+received from the service provider.
+Regular reports to the board and senior management on the results of
+internal control testing and ongoing monitoring of service providers
+performing material business activities or functions.
+Regular reports to the board and senior management on the results of
+independent reviews of the bank's overall risk management process.
+6.9
+Supervisory access to information
+6.9.1 It is of critical importance that a bank's management ensures that the
+contracts and/or SLAs are structured in such a way as to ensure that the bank
+is able at all times to provide this Office with the necessary information on the
+outsourced material business activities or functions regardless of whether the
+activity or function is outsourced, offshored or insourced. The outsourcing
+agreement should include the right for this Office to access information, which
+includes conducting on-site visits at the service provider should this Office
+consider it necessary in its role as prudential supervisor. Should management
+become aware of any possible restriction on the provision of information
+relating to the outsourced function, this Office has to be informed thereof.
+
+--- Page 13 ---
+13
+6.10 Assessments of outsourcing
+6.10.1 The management of a bank should ensure that the bank has processes in
+place to identify and deal with any weakness in
+a service provider's
+performance that may have an adverse impact on the service provided to the
+bank. This may include access to the service provider by the bank's internal
+and external auditors, as well as access by external persons conducting
+independent reviews
+for assessment by management. The bank's
+management should ensure that there is capacity to address problems that
+arise from investigations conducted at the service provider and that
+appropriate actions are taken when required.
+6.10.2 A bank's internal audit function should review the bank's material outsourcing
+business activities to verify that it is in line with its outsourcing policy and
+should report these results to the board or board audit committee. This Office
+may request a bank's external auditor, or an appropriate external expert, to
+provide an assessment of the risk management processes in place with
+respect to an arrangement to outsource a material business
+activity or
+function. Such an assessment could cover areas such as IT systems, data
+security, internal control frameworks and business continuity plans. Such
+reports will be paid for by the bank and are to be made available to this Office
+if and when required.
+7. Acknowledgement of receipt
+Two additional copies of this guidance note are enclosed for use by your
+institution's independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer of the institution
+and the said auditors, should be returned to this Office at the earliest
+convenience of the aforementioned signatories.
+René van Wyk
+Registrar of Banks
+The previous guidance
+18 February 2014.
+note
+issued was Guidance Note 4/2014, dated
