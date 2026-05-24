@@ -94,7 +94,7 @@ function* findStructuredJsonFiles(dir: string): Generator<string> {
 // ---------------------------------------------------------------------------
 
 function needsDecimalFix(doc: StructuredDoc, jsonPath: string): boolean {
-  if (doc.instrumentType === "guidance") return true;
+  if (doc.instrumentType === "guidance" || doc.instrumentType === "circular") return true;
 
   // Fall back: check if the .txt counterpart is compact (PDF-extracted)
   const txtPath = jsonPath.replace(/-structured\.json$/, ".txt");
