@@ -15,7 +15,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 
-import { EventStore, type ArchivePartitionRow, type ReplayOpts } from "./store";
+import { type ArchivePartitionRow, EventStore, type ReplayOpts } from "./store";
 import type { Event } from "./types";
 
 export class PartitionedEventStore {

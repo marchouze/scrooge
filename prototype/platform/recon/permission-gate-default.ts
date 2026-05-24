@@ -217,6 +217,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-325-LCR; P4-SECURITY-DESIGNED-IN.
   "platform/reporting/ba-325-lcr.test.ts",
+  // Cold archive partitioning (D-EVENT-STORE-SCALING-PHASE-5). Opens archive
+  // SQLite files as read-only EventStore instances for replay. These are
+  // immutable archive stores — not the live hot store — and the gate
+  // wrapping is a no-op here (gate intercepts append; these stores are
+  // replayed, never appended to in steady state). Authority:
+  // D-EVENT-STORE-SCALING-PHASE-5.
+  "platform/event-store/partitioned-store.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

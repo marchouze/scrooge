@@ -15,14 +15,14 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { mkdtempSync, rmSync, truncateSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { BANK_ZA_001, newEventId, nowUtc } from "../platform/core/types";
-import { EventStore } from "../platform/event-store/store";
 import { PartitionedEventStore } from "../platform/event-store/partitioned-store";
+import { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
 
 // ---------------------------------------------------------------------------
@@ -86,11 +86,11 @@ describe("EventStore.archiveEventsOlderThan()", () => {
     // archive_partitions row should be registered.
     const partitions = store.listArchivePartitions();
     expect(partitions.length).toBe(1);
-    expect(partitions[0]!.partition_id).toBe(result.partitionId);
-    expect(partitions[0]!.min_sequence).toBe(1);
-    expect(partitions[0]!.max_sequence).toBe(3);
-    expect(partitions[0]!.event_count).toBe(3);
-    expect(partitions[0]!.sha256_hash).toBe(result.sha256Hash);
+    expect(partitions[0]?.partition_id).toBe(result.partitionId);
+    expect(partitions[0]?.min_sequence).toBe(1);
+    expect(partitions[0]?.max_sequence).toBe(3);
+    expect(partitions[0]?.event_count).toBe(3);
+    expect(partitions[0]?.sha256_hash).toBe(result.sha256Hash);
 
     store.close();
   });
@@ -108,11 +108,11 @@ describe("EventStore.archiveEventsOlderThan()", () => {
     const archivedIds = [...archiveStore.replay()].map((e) => e.event_id);
     archiveStore.close();
 
-    expect(archivedIds).toEqual([ids[0], ids[1]]);
+    expect(archivedIds).toEqual(ids.slice(0, 2));
 
     // Hot store should still have the last two.
     const hotIds = [...store.replay()].map((e) => e.event_id);
-    expect(hotIds).toEqual([ids[2], ids[3]]);
+    expect(hotIds).toEqual(ids.slice(2));
 
     store.close();
   });
@@ -254,8 +254,8 @@ describe("PartitionedEventStore.verifyArchiveIntegrity()", () => {
     const results = pStore.verifyArchiveIntegrity();
 
     expect(results.length).toBe(1);
-    expect(results[0]!.ok).toBe(true);
-    expect(results[0]!.error).toBeUndefined();
+    expect(results[0]?.ok).toBe(true);
+    expect(results[0]?.error).toBeUndefined();
 
     pStore.close();
   });
@@ -272,8 +272,8 @@ describe("PartitionedEventStore.verifyArchiveIntegrity()", () => {
     const results = pStore.verifyArchiveIntegrity();
 
     expect(results.length).toBe(1);
-    expect(results[0]!.ok).toBe(false);
-    expect(results[0]!.error).toContain("SHA-256 mismatch");
+    expect(results[0]?.ok).toBe(false);
+    expect(results[0]?.error).toContain("SHA-256 mismatch");
 
     pStore.close();
   });
@@ -290,8 +290,8 @@ describe("PartitionedEventStore.verifyArchiveIntegrity()", () => {
     const results = pStore.verifyArchiveIntegrity();
 
     expect(results.length).toBe(1);
-    expect(results[0]!.ok).toBe(false);
-    expect(results[0]!.error).toContain("not found");
+    expect(results[0]?.ok).toBe(false);
+    expect(results[0]?.error).toContain("not found");
 
     pStore.close();
   });
@@ -356,8 +356,8 @@ describe("EventStore.listArchivePartitions()", () => {
 
     const partitions = store.listArchivePartitions();
     expect(partitions.length).toBe(2);
-    expect(partitions[0]!.min_sequence).toBe(1);
-    expect(partitions[1]!.min_sequence).toBe(3);
+    expect(partitions[0]?.min_sequence).toBe(1);
+    expect(partitions[1]?.min_sequence).toBe(3);
 
     store.close();
   });

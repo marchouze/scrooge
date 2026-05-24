@@ -23,8 +23,8 @@
 //
 // Author: Atlas
 
-import { mkdirSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { Database } from "bun:sqlite";
@@ -822,7 +822,6 @@ export class EventStore {
       );
     }
     // Prevent overwriting an existing archive.
-    const { existsSync, unlinkSync } = require("node:fs") as typeof import("node:fs");
     if (existsSync(archivePath)) {
       throw new Error(
         `EventStore.archiveEventsOlderThan: archive file already exists at "${archivePath}" — refusing to overwrite (D-EVENT-STORE-SCALING-PHASE-5)`,
@@ -830,11 +829,10 @@ export class EventStore {
     }
 
     // Step 2 — open archive DB with the same DDL.
-    mkdirSync(require("node:path").dirname(archivePath), { recursive: true });
+    mkdirSync(dirname(archivePath), { recursive: true });
     const archiveDb = new Database(archivePath);
     archiveDb.exec(DDL);
 
-    let archiveResult: ArchiveResult | undefined;
     try {
       // Step 3 — copy cold events transactionally into archive DB.
       const coldRows = this.db
@@ -901,9 +899,17 @@ export class EventStore {
       const sha256Hash = hasher.digest("hex");
 
       // Step 6 — insert archive_partitions row.
+      // coldRows is guaranteed non-empty (checked above), so index access is safe.
       const partitionId = randomUUID();
-      const minSeq = coldRows[0]!.sequence;
-      const maxSeq = coldRows[coldRows.length - 1]!.sequence;
+      const firstRow = coldRows[0];
+      const lastRow = coldRows[coldRows.length - 1];
+      if (!firstRow || !lastRow) {
+        throw new Error(
+          "EventStore.archiveEventsOlderThan: unexpected empty coldRows after count check (D-EVENT-STORE-SCALING-PHASE-5)",
+        );
+      }
+      const minSeq: number = firstRow.sequence;
+      const maxSeq: number = lastRow.sequence;
       const eventCount = coldRows.length;
 
       this.db
@@ -920,7 +926,8 @@ export class EventStore {
       });
       deleteTx();
 
-      archiveResult = { partitionId, minSeq, maxSeq, eventCount, sha256Hash };
+      // Step 8 — return metadata.
+      return { partitionId, minSeq, maxSeq, eventCount, sha256Hash };
     } catch (err) {
       // Cleanup on partial failure — remove archive file if it exists.
       try {
@@ -930,9 +937,6 @@ export class EventStore {
       }
       throw err;
     }
-
-    // Step 8 — return metadata.
-    return archiveResult;
   }
 
   /**

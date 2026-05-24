@@ -64,8 +64,6 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
-import { EventStore } from "../event-store/store";
-import { PartitionedEventStore } from "../event-store/partitioned-store";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "event-store-append-only";
@@ -296,7 +294,22 @@ export function ratchetBaseline(
 // ---------------------------------------------------------------------------
 
 /**
- * Run the two archive-specific recon checks:
+ * Raw row shape for archive_partitions (read via readonly Database).
+ */
+interface ArchivePartitionRaw {
+  partition_id: string;
+  path: string;
+  min_sequence: number;
+  max_sequence: number;
+  event_count: number;
+  sha256_hash: string;
+  archived_at: string;
+}
+
+/**
+ * Run the two archive-specific recon checks using a readonly raw Database
+ * connection. Using raw Database (not EventStore) avoids running DDL
+ * migrations against test databases that use minimal schemas.
  *
  *  (D) No-gap check — if archive partitions exist, the hot store's
  *      MIN(sequence) must equal max(partitions.max_sequence) + 1.
@@ -307,51 +320,70 @@ export function ratchetBaseline(
  *      the stored sha256_hash. A mismatch means the archive file was
  *      tampered with or corrupted after archival.
  *
- * Opens the EventStore in read-write mode (required to run DDL migrations
- * on open) but performs no writes. Closes the store before returning.
- *
  * Authority: D-EVENT-STORE-SCALING-PHASE-5.
  */
 function runArchiveChecks(eventDbPath: string): ReconViolation[] {
   const violations: ReconViolation[] = [];
-  let store: EventStore | undefined;
-  let partitionedStore: PartitionedEventStore | undefined;
+  let db: InstanceType<typeof Database> | undefined;
   try {
-    store = new EventStore(eventDbPath);
-    const partitions = store.listArchivePartitions();
+    db = new Database(eventDbPath, { readonly: true });
 
-    if (partitions.length > 0) {
-      // Check (D) — no-gap between last partition and hot store floor.
-      const maxPartitionSeq = Math.max(...partitions.map((p) => p.max_sequence));
-      const hotMin = store.minSequence();
-      const expectedHotMin = maxPartitionSeq + 1;
-      if (hotMin !== 0 && hotMin !== expectedHotMin) {
+    // Check whether the archive_partitions table exists.
+    // Absent on pre-Phase-5 stores and test databases with minimal schemas.
+    const tableRow = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='archive_partitions'")
+      .get();
+    if (!tableRow) return [];
+
+    const partitions = db
+      .prepare("SELECT * FROM archive_partitions ORDER BY min_sequence ASC")
+      .all() as ArchivePartitionRaw[];
+
+    if (partitions.length === 0) return [];
+
+    // Check (D) — no-gap between last partition and hot store floor.
+    const maxPartitionSeq = Math.max(...partitions.map((p) => p.max_sequence));
+    const hotMinRow = db.prepare("SELECT MIN(sequence) AS m FROM events").get() as {
+      m: number | null;
+    };
+    const hotMin = hotMinRow.m ?? 0;
+    const expectedHotMin = maxPartitionSeq + 1;
+    if (hotMin !== 0 && hotMin !== expectedHotMin) {
+      violations.push({
+        subject: "archive_partitions:sequence-gap",
+        message: `Sequence boundary mismatch between archive partitions and hot store. Last partition max_sequence=${maxPartitionSeq}; hot store MIN(sequence)=${hotMin}. Expected hot floor at ${expectedHotMin}. Gap or overlap indicates events were lost or duplicated during archival. Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+        severity: "fail",
+      });
+    }
+
+    // Check (E) — hash integrity of each archive file.
+    for (const partition of partitions) {
+      if (!existsSync(partition.path)) {
         violations.push({
-          subject: "archive_partitions:sequence-gap",
-          message:
-            `Sequence boundary mismatch between archive partitions and hot store. ` +
-            `Last partition max_sequence=${maxPartitionSeq}; hot store MIN(sequence)=${hotMin}. ` +
-            `Expected hot floor at ${expectedHotMin}. ` +
-            `Gap or overlap indicates events were lost or duplicated during archival. ` +
-            `Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+          subject: `archive_partitions:hash-integrity:${partition.partition_id}`,
+          message: `Archive partition ${partition.partition_id} file not found at path "${partition.path}". The archive file may have been deleted or moved after archival. Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
           severity: "fail",
         });
+        continue;
       }
-
-      // Check (E) — hash integrity of each archive file.
-      partitionedStore = new PartitionedEventStore(store);
-      const integrityResults = partitionedStore.verifyArchiveIntegrity();
-      for (const result of integrityResults) {
-        if (!result.ok) {
+      try {
+        const fileBytes = readFileSync(partition.path);
+        const hasher = new Bun.CryptoHasher("sha256");
+        hasher.update(fileBytes);
+        const actualHash = hasher.digest("hex");
+        if (actualHash !== partition.sha256_hash) {
           violations.push({
-            subject: `archive_partitions:hash-integrity:${result.partitionId}`,
-            message:
-              `Archive partition ${result.partitionId} failed SHA-256 integrity check: ${result.error ?? "unknown error"}. ` +
-              `The archive file may have been tampered with or corrupted after archival. ` +
-              `Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+            subject: `archive_partitions:hash-integrity:${partition.partition_id}`,
+            message: `Archive partition ${partition.partition_id} failed SHA-256 integrity check: stored=${partition.sha256_hash} actual=${actualHash}. The archive file may have been tampered with or corrupted after archival. Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
             severity: "fail",
           });
         }
+      } catch (hashErr) {
+        violations.push({
+          subject: `archive_partitions:hash-integrity:${partition.partition_id}`,
+          message: `Error hashing archive partition ${partition.partition_id} at "${partition.path}": ${hashErr instanceof Error ? hashErr.message : String(hashErr)}. Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+          severity: "fail",
+        });
       }
     }
   } catch (err) {
@@ -361,11 +393,10 @@ function runArchiveChecks(eventDbPath: string): ReconViolation[] {
       severity: "warn",
     });
   } finally {
-    // partitionedStore.close() also closes the hot store, so only call one.
-    if (partitionedStore) {
-      try { partitionedStore.close(); } catch { /* best-effort */ }
-    } else if (store) {
-      try { store.close(); } catch { /* best-effort */ }
+    try {
+      db?.close();
+    } catch {
+      /* best-effort */
     }
   }
   return violations;
