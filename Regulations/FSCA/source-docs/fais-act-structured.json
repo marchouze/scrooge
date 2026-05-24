@@ -174,9 +174,26 @@
                                       "id": "s1-1.d.ii.c.c.c.b",
                                       "number": "b",
                                       "heading": "s1-1.d.ii.c.c.c.b",
-                                      "text": "with a view to— (i) buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested; (ii) collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                                      "text": "with a view to—",
                                       "verbatim": true,
-                                      "subsections": []
+                                      "subsections": [
+                                        {
+                                          "id": "s1-1.d.ii.c.c.c.b.i",
+                                          "number": "i",
+                                          "heading": "s1-1.d.ii.c.c.c.b.i",
+                                          "text": "buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested",
+                                          "verbatim": true,
+                                          "subsections": []
+                                        },
+                                        {
+                                          "id": "s1-1.d.ii.c.c.c.b.ii",
+                                          "number": "ii",
+                                          "heading": "s1-1.d.ii.c.c.c.b.ii",
+                                          "text": "collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                                          "verbatim": true,
+                                          "subsections": []
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
