@@ -5,7 +5,12 @@
   "regulator": "FSCA",
   "year": 2002,
   "sourceNote": "Act 37 of 2002 as enacted. Note: FAIS Act has been amended by Financial Sector Regulation Act 9 of 2017 which transferred supervisory functions to the FSCA.",
-  "citationPatterns": ["FAIS Act", "FAIS Act 37", "FAIS s.", "FAIS §"],
+  "citationPatterns": [
+    "FAIS Act",
+    "FAIS Act 37",
+    "FAIS s.",
+    "FAIS §"
+  ],
   "priority": 2,
   "chapters": [
     {
@@ -76,7 +81,33 @@
           "number": "3",
           "heading": "General provisions concerning registrar",
           "verbatim": true,
-          "text": "(1) Subject to the provisions of this Act, any notice given, approval or exemption granted, determination made, requirement or condition determined or imposed, or any other decision taken by the registrar under an enabling provision of this Act, is valid only if it is reduced to a durable written or printed form or, where communicated electronically, has been correctly transmitted in a legible form. (2) Whenever the performance of any act contemplated in subsection (1) is sought by a person under this Act or any other law, application therefor must, subject to any other specific provision of this Act, be made in writing to the registrar and the application must— (a) be made in the form and manner determined by or in terms of this Act, or any other law, or as otherwise required by the registrar; (b) be accompanied by— (i) the fees payable in terms of this Act; and (ii) the information or documents required by the registrar. (3) The registrar must in connection with the application of any provision of this Act to or in respect of any financial product or financial service, consult with any regulatory or supervisory authority in the Republic, including the Registrar of Medical Schemes, referred to in section 42, who is by law empowered to perform a regulatory or supervisory function in respect of such product or service."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s3.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Subject to the provisions of this Act, any notice given, approval or exemption granted, determination made, requirement or condition determined or imposed, or any other decision taken by the registrar under an enabling provision of this Act, is valid only if it is reduced to a durable written or printed form or, where communicated electronically, has been correctly transmitted in a legible form.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) Whenever the performance of any act contemplated in subsection (1) is sought by a person under this Act or any other law, application therefor must, subject to any other specific provision of this Act, be made in writing to the registrar and the application must— (a) be made in the form and manner determined by or in terms of this Act, or any other law, or as otherwise required by the registrar; (b) be accompanied by— (i) the fees payable in terms of this Act; and (ii) the information or documents required by the registrar.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) The registrar must in connection with the application of any provision of this Act to or in respect of any financial product or financial service, consult with any regulatory or supervisory authority in the Republic, including the Registrar of Medical Schemes, referred to in section 42, who is by law empowered to perform a regulatory or supervisory function in respect of such product or service.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
@@ -118,21 +149,155 @@
           "number": "8",
           "heading": "Application for authorisation",
           "verbatim": true,
-          "text": "(1) An application for an authorisation referred to in section 7(1), including an application by an applicant not domiciled in the Republic, must be submitted to the registrar in the form and manner determined by the registrar by notice in the Gazette, and be accompanied by information to satisfy the registrar that the applicant complies with the requirements for fit and proper financial services providers or categories of providers, determined by the registrar by notice in the Gazette, after consultation with the Advisory Committee, in respect of— (a) personal character qualities of honesty and integrity; (b) the competence and operational ability of the applicant to fulfil the responsibilities imposed by this Act; and (c) the applicant's financial soundness: Provided that where the applicant is a partnership, a trust or a corporate or unincorporated body, the applicant must, in addition, so satisfy the registrar that any key individual in respect of the applicant complies with the said requirements in respect of— (i) personal character qualities of honesty and integrity; and (ii) operational and competence ability, to the extent required in order for such key individual to fulfil the responsibilities imposed on the key individual by this Act. (2) The registrar may— (a) require an applicant to furnish such additional information, or require such information to be verified, as the registrar may deem necessary; and (b) take into consideration any other information regarding the applicant, derived from whatever source, including the Ombud and any other regulatory or supervisory authority, if such information is disclosed to the applicant and the latter is given a reasonable opportunity to respond thereto. (3) The registrar must after consideration of an application— (a) if satisfied that an applicant complies with the requirements of this Act, grant the application; or (b) if not so satisfied, refuse the application. (4)(a) Where an application is granted, the registrar may impose such conditions and restrictions on the exercise of the authority granted by the licence, and to be included in the licence, as are necessary, having regard to— (i) all facts and information available to the registrar pertaining to the applicant and any key individual of the applicant; (ii) the category of financial services which the applicant could appropriately render or wishes to render; (iii) the category of financial services providers in which the applicant will be classified in relation to the fit and proper requirements mentioned in subsection (1); and (iv) any guidelines provided to the registrar by the Advisory Committee or the Board. (b) Conditions and restrictions contemplated in paragraph (a) may include a condition that where after the date of granting of the licence— (i) any key individual in respect of the licensee's business is replaced by a new key individual; or (ii) any new key individual is appointed or assumes office; or (iii) any change occurs in the personal circumstances of a key individual which affects the fit and proper requirements mentioned in subsection (1) and renders or may render such person to be no longer a fit and proper person, no such person may be permitted to take part in the conduct or management or oversight of the licensee's business in relation to the rendering of financial services, unless such person has on application been approved by the registrar in the manner and in accordance with a procedure determined, after consultation with the Advisory Committee, by the registrar by notice in the Gazette. (5)(a) Where an application is granted, the registrar must issue to the applicant— (i) a licence authorising the applicant to act as a financial services provider, in the form determined by the registrar by notice in the Gazette; and (ii) such number of certified copies of the licence as may be requested by the applicant. (b) The registrar may at any time after the issue of a licence— (i) on application by the licensee or on own initiative withdraw or amend any condition or restriction in respect of the licence, after having given the licensee a reasonable opportunity to make submissions on the proposed withdrawal or amendment and having considered those submissions, if the registrar is satisfied that any such withdrawal or amendment is justified and will not prejudice the interests of clients of the licensee; or (ii) pursuant to an evaluation of a new key individual, or a change in the personal circumstances of a key individual, referred to in subsection (4), impose new conditions on the licensee after having given the licensee a reasonable opportunity to be heard and having furnished the licensee with reasons, and must in every such case issue an appropriately amended licence to the licensee, and such number of certified copies of the amended licence as may be requested by the licensee. (6) Where an application referred to in subsection (1) is refused, the registrar must— (a) notify the applicant thereof; and (b) furnish reasons for the refusal. (8) A licensee must— (a) display a certified copy of the licence in a prominent and durable manner within every business premises of the licensee; (b) ensure that a reference to the fact that such a licence is held is contained in all business documentation, advertisements and other promotional material; (c) ensure that the licence is at all times immediately or within a reasonable time available for production to any person requesting proof of licensed status under authority of a law or for the purpose of entering into a business relationship with the licensee. (9) A person may not in any manner make use of any licence or copy thereof for business purposes where the licence has lapsed or has been withdrawn or, subject to section 9(2), during any time when the licensee is under provisional or final suspension contemplated in section 9."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s8.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) An application for an authorisation referred to in section 7(1), including an application by an applicant not domiciled in the Republic, must be submitted to the registrar in the form and manner determined by the registrar by notice in the Gazette, and be accompanied by information to satisfy the registrar that the applicant complies with the requirements for fit and proper financial services providers or categories of providers, determined by the registrar by notice in the Gazette, after consultation with the Advisory Committee, in respect of— (a) personal character qualities of honesty and integrity; (b) the competence and operational ability of the applicant to fulfil the responsibilities imposed by this Act; and (c) the applicant's financial soundness: Provided that where the applicant is a partnership, a trust or a corporate or unincorporated body, the applicant must, in addition, so satisfy the registrar that any key individual in respect of the applicant complies with the said requirements in respect of— (i) personal character qualities of honesty and integrity; and (ii) operational and competence ability, to the extent required in order for such key individual to fulfil the responsibilities imposed on the key individual by this Act.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The registrar may— (a) require an applicant to furnish such additional information, or require such information to be verified, as the registrar may deem necessary; and (b) take into consideration any other information regarding the applicant, derived from whatever source, including the Ombud and any other regulatory or supervisory authority, if such information is disclosed to the applicant and the latter is given a reasonable opportunity to respond thereto.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) The registrar must after consideration of an application— (a) if satisfied that an applicant complies with the requirements of this Act, grant the application; or (b) if not so satisfied, refuse the application.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4)(a) Where an application is granted, the registrar may impose such conditions and restrictions on the exercise of the authority granted by the licence, and to be included in the licence, as are necessary, having regard to— (i) all facts and information available to the registrar pertaining to the applicant and any key individual of the applicant; (ii) the category of financial services which the applicant could appropriately render or wishes to render; (iii) the category of financial services providers in which the applicant will be classified in relation to the fit and proper requirements mentioned in subsection (1); and (iv) any guidelines provided to the registrar by the Advisory Committee or the Board. (b) Conditions and restrictions contemplated in paragraph (a) may include a condition that where after the date of granting of the licence— (i) any key individual in respect of the licensee's business is replaced by a new key individual; or (ii) any new key individual is appointed or assumes office; or (iii) any change occurs in the personal circumstances of a key individual which affects the fit and proper requirements mentioned in subsection (1) and renders or may render such person to be no longer a fit and proper person, no such person may be permitted to take part in the conduct or management or oversight of the licensee's business in relation to the rendering of financial services, unless such person has on application been approved by the registrar in the manner and in accordance with a procedure determined, after consultation with the Advisory Committee, by the registrar by notice in the Gazette.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5)(a) Where an application is granted, the registrar must issue to the applicant— (i) a licence authorising the applicant to act as a financial services provider, in the form determined by the registrar by notice in the Gazette; and (ii) such number of certified copies of the licence as may be requested by the applicant. (b) The registrar may at any time after the issue of a licence— (i) on application by the licensee or on own initiative withdraw or amend any condition or restriction in respect of the licence, after having given the licensee a reasonable opportunity to make submissions on the proposed withdrawal or amendment and having considered those submissions, if the registrar is satisfied that any such withdrawal or amendment is justified and will not prejudice the interests of clients of the licensee; or (ii) pursuant to an evaluation of a new key individual, or a change in the personal circumstances of a key individual, referred to in subsection (4), impose new conditions on the licensee after having given the licensee a reasonable opportunity to be heard and having furnished the licensee with reasons, and must in every such case issue an appropriately amended licence to the licensee, and such number of certified copies of the amended licence as may be requested by the licensee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8.6",
+              "number": "6",
+              "heading": "(6)",
+              "text": "(6) Where an application referred to in subsection (1) is refused, the registrar must— (a) notify the applicant thereof; and (b) furnish reasons for the refusal.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8.8",
+              "number": "8",
+              "heading": "(8)",
+              "text": "(8) A licensee must— (a) display a certified copy of the licence in a prominent and durable manner within every business premises of the licensee; (b) ensure that a reference to the fact that such a licence is held is contained in all business documentation, advertisements and other promotional material; (c) ensure that the licence is at all times immediately or within a reasonable time available for production to any person requesting proof of licensed status under authority of a law or for the purpose of entering into a business relationship with the licensee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8.9",
+              "number": "9",
+              "heading": "(9)",
+              "text": "(9) A person may not in any manner make use of any licence or copy thereof for business purposes where the licence has lapsed or has been withdrawn or, subject to section 9(2), during any time when the licensee is under provisional or final suspension contemplated in section 9.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s9",
           "number": "9",
           "heading": "Suspension of authorisation",
           "verbatim": true,
-          "text": "(1) The registrar may, subject to subsection (2), at any time suspend any licence if satisfied on the basis of available facts and information, that the licensee no longer meets the requirements contemplated in section 8, and irrespective of whether the registrar has taken or followed, or is taking or following, any step or procedure referred to in section 4. (2)(a) Before suspending any licence, the registrar must inform the licensee of— (i) the intention to suspend and the grounds therefor; (ii) the intended period of the suspension; and (iii) any terms to be attached to the suspension, including— (aa) a prohibition on concluding any new business by the licensee as from the effective date of the suspension and, in relation to unconcluded business, such measures as the registrar may determine for the protection of the interests of clients of the licensee; and (bb) terms designed to facilitate the lifting of the suspension, and must give the licensee a reasonable opportunity to make a submission in response thereto. (b) The registrar must consider any such response, and may thereafter decide to suspend, or not to suspend the licence, and must notify the licensee of the decision. (c) Where the licence is suspended, the registrar must make known the terms of the suspension or subsequent lifting thereof, by notice in the Gazette and, if necessary, by means of any other appropriate public media announcement. (3) Despite the provisions of subsection (2), the registrar may under urgent circumstances where the registrar is satisfied on reasonable grounds that substantial prejudice to clients or the general public may occur— (a) provisionally suspend a licence, and inform the licensee of the— (i) grounds therefor; (ii) period of the suspension; and (iii) terms referred to in subsection (2)(a)(iii) attached to the suspension, and give the licensee a reasonable opportunity to respond thereto and to provide reasons why the provisional suspension should be lifted or why the period and terms should be changed; and (b) make known such provisional suspension by notice in the Gazette and, if necessary, by means of any other appropriate public media announcement. (4)(a) The registrar must within a reasonable time after receipt of any response contemplated in subsection (3)(a) consider the response, and may thereafter decide to— (i) lift the provisional suspension; or (ii) render the suspension final, and must inform the licensee accordingly. (b) The registrar must make known the terms of any such final suspension, or the lifting thereof, by notice in the Gazette and, if necessary, in any other appropriate public media announcement. (5) During any period of suspension, whether provisional or final, the licensee concerned is for the purposes of this Act regarded as a person who is not authorised to act as a financial services provider."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s9.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The registrar may, subject to subsection (2), at any time suspend any licence if satisfied on the basis of available facts and information, that the licensee no longer meets the requirements contemplated in section 8, and irrespective of whether the registrar has taken or followed, or is taking or following, any step or procedure referred to in section 4.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2)(a) Before suspending any licence, the registrar must inform the licensee of— (i) the intention to suspend and the grounds therefor; (ii) the intended period of the suspension; and (iii) any terms to be attached to the suspension, including— (aa) a prohibition on concluding any new business by the licensee as from the effective date of the suspension and, in relation to unconcluded business, such measures as the registrar may determine for the protection of the interests of clients of the licensee; and (bb) terms designed to facilitate the lifting of the suspension, and must give the licensee a reasonable opportunity to make a submission in response thereto. (b) The registrar must consider any such response, and may thereafter decide to suspend, or not to suspend the licence, and must notify the licensee of the decision. (c) Where the licence is suspended, the registrar must make known the terms of the suspension or subsequent lifting thereof, by notice in the Gazette and, if necessary, by means of any other appropriate public media announcement.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Despite the provisions of subsection (2), the registrar may under urgent circumstances where the registrar is satisfied on reasonable grounds that substantial prejudice to clients or the general public may occur— (a) provisionally suspend a licence, and inform the licensee of the— (i) grounds therefor; (ii) period of the suspension; and (iii) terms referred to in subsection (2)(a)(iii) attached to the suspension, and give the licensee a reasonable opportunity to respond thereto and to provide reasons why the provisional suspension should be lifted or why the period and terms should be changed; and (b) make known such provisional suspension by notice in the Gazette and, if necessary, by means of any other appropriate public media announcement.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4)(a) The registrar must within a reasonable time after receipt of any response contemplated in subsection (3)(a) consider the response, and may thereafter decide to— (i) lift the provisional suspension; or (ii) render the suspension final, and must inform the licensee accordingly. (b) The registrar must make known the terms of any such final suspension, or the lifting thereof, by notice in the Gazette and, if necessary, in any other appropriate public media announcement.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) During any period of suspension, whether provisional or final, the licensee concerned is for the purposes of this Act regarded as a person who is not authorised to act as a financial services provider.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s10",
           "number": "10",
           "heading": "Withdrawal of authorisation",
           "verbatim": true,
-          "text": "(1) The registrar may at any time withdraw any licence (including the licence of a licensee under provisional or final suspension in terms of section 9), if satisfied on the basis of available facts and information that the licensee— (a) did not, when applying for the licence, make a full disclosure of all relevant information to the registrar, or furnished false or misleading information; or (b) has since such issue contravened or failed to comply with any provision of this Act in a material manner. (2) The provisions of— (a) section 9(2), regarding a decision to suspend an authorisation (excluding such provisions relating to periods and terms); and (b) section 9(3) and (4), regarding a provisional suspension followed by a decision to lift or to finalise it, as the case may be, apply with the necessary changes to a withdrawal of a licence contemplated in subsection (1). (3)(a) A person whose licence has been withdrawn under this section is debarred for a period specified by the registrar from applying for a new licence. (b) The registrar may, on good cause shown, vary any such period."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s10.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The registrar may at any time withdraw any licence (including the licence of a licensee under provisional or final suspension in terms of section 9), if satisfied on the basis of available facts and information that the licensee— (a) did not, when applying for the licence, make a full disclosure of all relevant information to the registrar, or furnished false or misleading information; or (b) has since such issue contravened or failed to comply with any provision of this Act in a material manner.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The provisions of— (a) section 9(2), regarding a decision to suspend an authorisation (excluding such provisions relating to periods and terms); and (b) section 9(3) and (4), regarding a provisional suspension followed by a decision to lift or to finalise it, as the case may be, apply with the necessary changes to a withdrawal of a licence contemplated in subsection (1).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3)(a) A person whose licence has been withdrawn under this section is debarred for a period specified by the registrar from applying for a new licence. (b) The registrar may, on good cause shown, vary any such period.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s11",
@@ -160,14 +325,90 @@
           "number": "13",
           "heading": "Qualifications of representatives and duties of authorised financial services providers",
           "verbatim": true,
-          "text": "(1) A person may not— (a) carry on business by rendering financial services to clients for or on behalf of any person who— (i) is not authorised as a financial services provider; and (ii) is not exempted from the application of this Act relating to the rendering of a financial service; or (b) act as a representative of an authorised financial services provider, unless such person— (i) is able to provide confirmation, certified by the provider, to clients— (aa) that a service contract or other mandatory agreement, to represent the provider, exists; and (bb) that the provider accepts responsibility for those activities of the representative performed within the scope of, or in the course of implementing, any such contract or agreement; and (ii) if debarred as contemplated in section 14, complies with the requirements determined by the registrar, after consultation with the Advisory Committee, by notice in the Gazette, for the reappointment of a debarred person as a representative. (2) An authorised financial services provider must— (a) at all times be satisfied that the provider's representatives, and key individuals of such representatives, are, when rendering a financial service on behalf of the provider, competent to act, taking into consideration requirements similar to those contemplated in paragraphs (a) and (b) of section 8(1) and subsection (1)(b)(ii) of this section, where applicable; and (b) take such steps as may be reasonable in the circumstances to ensure that representatives comply with any applicable code of conduct as well as with other applicable laws on conduct of business. (3) The authorised financial services provider must maintain a register of representatives, and key individuals of such representatives, which must be regularly updated and be available to the registrar for reference or inspection purposes. (4) Such register must— (a) contain every representative's or key individual's name and business address, and state whether the representative acts for the provider as employee or as mandatory; and (b) specify the categories in which such representatives are competent to render financial services. (5) The registrar may require information from the authorised financial services provider so as to enable the registrar to maintain and continuously update a central register of all representatives and key individuals. (6) A person who on the date contemplated in section 7(1) complies with the requirements of this Act for a representative and on such date acts as employee or mandatory for any person who on or after such date becomes an authorised financial services provider, is, for the purposes of this Act, but subject to the provisions of this Act relating to representatives, regarded as a representative."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s13.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) A person may not— (a) carry on business by rendering financial services to clients for or on behalf of any person who— (i) is not authorised as a financial services provider; and (ii) is not exempted from the application of this Act relating to the rendering of a financial service; or (b) act as a representative of an authorised financial services provider, unless such person— (i) is able to provide confirmation, certified by the provider, to clients— (aa) that a service contract or other mandatory agreement, to represent the provider, exists; and (bb) that the provider accepts responsibility for those activities of the representative performed within the scope of, or in the course of implementing, any such contract or agreement; and (ii) if debarred as contemplated in section 14, complies with the requirements determined by the registrar, after consultation with the Advisory Committee, by notice in the Gazette, for the reappointment of a debarred person as a representative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) An authorised financial services provider must— (a) at all times be satisfied that the provider's representatives, and key individuals of such representatives, are, when rendering a financial service on behalf of the provider, competent to act, taking into consideration requirements similar to those contemplated in paragraphs (a) and (b) of section 8(1) and subsection (1)(b)(ii) of this section, where applicable; and (b) take such steps as may be reasonable in the circumstances to ensure that representatives comply with any applicable code of conduct as well as with other applicable laws on conduct of business.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) The authorised financial services provider must maintain a register of representatives, and key individuals of such representatives, which must be regularly updated and be available to the registrar for reference or inspection purposes.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) Such register must— (a) contain every representative's or key individual's name and business address, and state whether the representative acts for the provider as employee or as mandatory; and (b) specify the categories in which such representatives are competent to render financial services.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) The registrar may require information from the authorised financial services provider so as to enable the registrar to maintain and continuously update a central register of all representatives and key individuals.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.6",
+              "number": "6",
+              "heading": "(6)",
+              "text": "(6) A person who on the date contemplated in section 7(1) complies with the requirements of this Act for a representative and on such date acts as employee or mandatory for any person who on or after such date becomes an authorised financial services provider, is, for the purposes of this Act, but subject to the provisions of this Act relating to representatives, regarded as a representative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s14",
           "number": "14",
           "heading": "Debarment of representatives",
           "verbatim": true,
-          "text": "(1) An authorised financial services provider must ensure that any representative of the provider who no longer complies with the requirements referred to in section 13(2)(a), is prohibited by such provider from rendering any new financial service by withdrawing any authority to act on behalf of the provider, and that the representative's name, and the names of the key individuals of the representative, are removed from the register referred to in section 13(3): Provided that any such provider must immediately take steps to ensure that the debarment does not prejudice the interests of clients of the representative, and that any unconcluded business of the representative is properly concluded. (2) For the purposes of the imposition of a prohibition contemplated in subsection (1), the authorised financial services provider must have regard to— (a) information regarding the conduct of the representative as provided by the registrar, the Ombud or any other interested person; and (b) any contravention of, or failure to comply with, any relevant provision of this Act by the representative. (3) The authorised financial services provider must within a period of 30 days after the removal of the names of a representative and key individuals from the register as contemplated in subsection (1), inform the registrar in writing thereof."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s14.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) An authorised financial services provider must ensure that any representative of the provider who no longer complies with the requirements referred to in section 13(2)(a), is prohibited by such provider from rendering any new financial service by withdrawing any authority to act on behalf of the provider, and that the representative's name, and the names of the key individuals of the representative, are removed from the register referred to in section 13(3): Provided that any such provider must immediately take steps to ensure that the debarment does not prejudice the interests of clients of the representative, and that any unconcluded business of the representative is properly concluded.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s14.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) For the purposes of the imposition of a prohibition contemplated in subsection (1), the authorised financial services provider must have regard to— (a) information regarding the conduct of the representative as provided by the registrar, the Ombud or any other interested person; and (b) any contravention of, or failure to comply with, any relevant provision of this Act by the representative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s14.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) The authorised financial services provider must within a period of 30 days after the removal of the names of a representative and key individuals from the register as contemplated in subsection (1), inform the registrar in writing thereof.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -181,14 +422,58 @@
           "number": "15",
           "heading": "Publication of codes of conduct",
           "verbatim": true,
-          "text": "(1)(a) The registrar must, after consultation with the Advisory Committee and with representative bodies of the financial services industry and client and consumer bodies determined by the Advisory Committee, draft a code of conduct for authorised financial services providers. (b) The code must, after consultation, be published by notice in the Gazette, and, on any such publication, becomes binding on all authorised financial services providers and representatives referred to therein. (2)(a) Different codes of conduct may be so drafted in respect of different categories of authorised financial services providers and their operations in different sectors of the financial services industry, and different categories of representatives. (b) A code of conduct must be drafted for the rendering of a financial service in respect of a deposit referred to in paragraph (f) of the definition of \"financial product\" in section 1(1) with a term not exceeding 12 months by a provider which is a bank as defined in the Banks Act, 1990 (Act No. 94 of 1990), or a mutual bank as defined in the Mutual Banks Act, 1993 (Act No. 124 of 1993). (3) Such codes of conduct may from time to time be amended or replaced in accordance with the procedure set out in subsection (1)."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s15.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1)(a) The registrar must, after consultation with the Advisory Committee and with representative bodies of the financial services industry and client and consumer bodies determined by the Advisory Committee, draft a code of conduct for authorised financial services providers. (b) The code must, after consultation, be published by notice in the Gazette, and, on any such publication, becomes binding on all authorised financial services providers and representatives referred to therein.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2)(a) Different codes of conduct may be so drafted in respect of different categories of authorised financial services providers and their operations in different sectors of the financial services industry, and different categories of representatives. (b) A code of conduct must be drafted for the rendering of a financial service in respect of a deposit referred to in paragraph (f) of the definition of \"financial product\" in section 1(1) with a term not exceeding 12 months by a provider which is a bank as defined in the Banks Act, 1990 (Act No. 94 of 1990), or a mutual bank as defined in the Mutual Banks Act, 1993 (Act No. 124 of 1993).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Such codes of conduct may from time to time be amended or replaced in accordance with the procedure set out in subsection (1).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s16",
           "number": "16",
           "heading": "Principles of codes of conduct",
           "verbatim": true,
-          "text": "(1) A code of conduct must be drafted in such a manner as to ensure that the clients being rendered financial services will be able to make informed decisions, that their reasonable financial needs regarding financial products will be appropriately and suitably satisfied and that for those purposes authorised financial services providers, and their representatives, are obliged by the provisions of such code to— (a) act honestly and fairly, and with due skill, care and diligence, in the interests of clients and the integrity of the financial services industry; (b) have and employ effectively the resources, procedures and appropriate technological systems for the proper performance of professional activities; (c) seek from clients appropriate and available information regarding their financial situations, financial product experience and objectives in connection with the financial service required; (d) act with circumspection and treat clients fairly in a situation of conflicting interests; and (e) comply with all applicable statutory or common law requirements applicable to the conduct of business. (2) A code of conduct must in particular contain provisions relating to— (a) the making of adequate disclosures of relevant material information, including disclosures of actual or potential own interests, in relation to dealings with clients; (b) adequate and appropriate record-keeping; (c) avoidance of fraudulent and misleading advertising, canvassing and marketing; (d) proper safe-keeping, separation and protection of funds and transaction documentation of clients; (e) where appropriate, suitable guarantees or professional indemnity or fidelity insurance cover, and mechanisms for adjustments of such guarantees or cover by the registrar in any particular case; and (f) any other matter which is necessary or expedient to be regulated in such code for the better achievement of the objects of this Act."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s16.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) A code of conduct must be drafted in such a manner as to ensure that the clients being rendered financial services will be able to make informed decisions, that their reasonable financial needs regarding financial products will be appropriately and suitably satisfied and that for those purposes authorised financial services providers, and their representatives, are obliged by the provisions of such code to— (a) act honestly and fairly, and with due skill, care and diligence, in the interests of clients and the integrity of the financial services industry; (b) have and employ effectively the resources, procedures and appropriate technological systems for the proper performance of professional activities; (c) seek from clients appropriate and available information regarding their financial situations, financial product experience and objectives in connection with the financial service required; (d) act with circumspection and treat clients fairly in a situation of conflicting interests; and (e) comply with all applicable statutory or common law requirements applicable to the conduct of business.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) A code of conduct must in particular contain provisions relating to— (a) the making of adequate disclosures of relevant material information, including disclosures of actual or potential own interests, in relation to dealings with clients; (b) adequate and appropriate record-keeping; (c) avoidance of fraudulent and misleading advertising, canvassing and marketing; (d) proper safe-keeping, separation and protection of funds and transaction documentation of clients; (e) where appropriate, suitable guarantees or professional indemnity or fidelity insurance cover, and mechanisms for adjustments of such guarantees or cover by the registrar in any particular case; and (f) any other matter which is necessary or expedient to be regulated in such code for the better achievement of the objects of this Act.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -202,7 +487,49 @@
           "number": "17",
           "heading": "Compliance officers and compliance arrangements",
           "verbatim": true,
-          "text": "(1)(a) Any authorised financial services provider with more than one key individual or one or more representatives must, subject to section 35(1)(c), appoint one or more compliance officers to monitor compliance with this Act by the provider and such representative or representatives, particularly in accordance with the procedures contemplated in subsection (3), and to take responsibility for liaison with the registrar. (b) Such person may be a director, member, auditor, trustee, principal officer, public officer or company secretary of any such provider, or any other person with suitable qualifications and experience determined by the registrar by notice in the Gazette, after consultation with the Advisory Committee. (c) The provisions of section 19(5) and (6), relating to an auditor of an authorised financial services provider, apply with the necessary changes to a compliance officer. (2) A compliance officer must be approved by the registrar in accordance with the criteria and guidelines determined by the Advisory Committee. (3) An authorised financial services provider must establish and maintain procedures to be followed by the provider and any representative concerned, in order to ensure compliance with this Act. (4) A compliance officer or, in the absence of such officer, the authorised financial services provider concerned, must submit reports to the registrar in the manner and regarding the matters, as from time to time determined by the registrar by notice in the Gazette for different categories of compliance officers, after consultation with the Advisory Committee. (5) The provisions of subsections (3) and (4) apply with the necessary changes to any authorised financial services provider who carries on a business with only one key individual or without any representative."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s17.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1)(a) Any authorised financial services provider with more than one key individual or one or more representatives must, subject to section 35(1)(c), appoint one or more compliance officers to monitor compliance with this Act by the provider and such representative or representatives, particularly in accordance with the procedures contemplated in subsection (3), and to take responsibility for liaison with the registrar. (b) Such person may be a director, member, auditor, trustee, principal officer, public officer or company secretary of any such provider, or any other person with suitable qualifications and experience determined by the registrar by notice in the Gazette, after consultation with the Advisory Committee. (c) The provisions of section 19(5) and (6), relating to an auditor of an authorised financial services provider, apply with the necessary changes to a compliance officer.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) A compliance officer must be approved by the registrar in accordance with the criteria and guidelines determined by the Advisory Committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) An authorised financial services provider must establish and maintain procedures to be followed by the provider and any representative concerned, in order to ensure compliance with this Act.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) A compliance officer or, in the absence of such officer, the authorised financial services provider concerned, must submit reports to the registrar in the manner and regarding the matters, as from time to time determined by the registrar by notice in the Gazette for different categories of compliance officers, after consultation with the Advisory Committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) The provisions of subsections (3) and (4) apply with the necessary changes to any authorised financial services provider who carries on a business with only one key individual or without any representative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s18",
@@ -216,7 +543,57 @@
           "number": "19",
           "heading": "Accounting and audit requirements",
           "verbatim": true,
-          "text": "(1) Except to the extent exempted by the registrar, an authorised financial services provider must, in respect of the business carried on by the provider as authorised under the provider's licence— (a) maintain full and proper accounting records on a continual basis, brought up to date monthly; (b) annually prepare, in respect of the relevant financial year of the provider, financial statements reflecting, with suitable particulars, the financial position of the business as at the last day of the financial year in question, and the results of the operations and cash flow information for the period then ended. (2)(a) An authorised financial services provider must cause the statements referred to in subsection (1)(b) to be audited and reported on by an external auditor approved by the registrar, in order to produce— (i) an audited balance sheet, including such notes thereon or documents attached thereto as may be necessary; (ii) an audited income statement, including such notes thereon or documents attached thereto as may be necessary; and (iii) an audited statement of the source and application of funds. (b) The financial statements must— (i) be prepared in conformity with generally accepted accounting practice; (ii) fairly represent the state of affairs of the provider's business; (iii) refer to any material matter which has affected or is likely to affect the financial affairs of the provider; and (iv) be submitted by the authorised financial services provider to the registrar not later than six months after the end of the provider's financial year or such longer period as may be allowed by the registrar. (3) The authorised financial services provider must maintain records in accordance with subsection (1)(a) in respect of money and assets held on behalf of clients, and must, in addition to and simultaneously with the financial statements referred to in subsection (2), submit to the registrar a report, by the auditor who performed the audit, which confirms, in the form and manner determined by the registrar by notice in the Gazette for different categories of financial services providers— (a) the amount of money and assets at year end held by the provider on behalf of clients; (b) that such money and assets were throughout the financial year kept separate from those of the business of the authorised financial services provider and, in the case of non-compliance, the extent thereof; and (c) any other information required by the registrar. (4) Despite anything to the contrary contained in any law, the auditor of an authorised financial services provider must report to and inform the registrar in writing of any irregularity or suspected irregularity in the conduct or the affairs of the authorised financial services provider concerned of which the auditor became aware in performing functions as auditor and which, in the opinion of the auditor, is material. (5) If the appointment of an auditor of an authorised financial services provider is terminated— (a) the auditor must submit to the registrar a statement of what the auditor believes to be the reasons for that termination; and (b) if the auditor would, but for that termination, have had reason to submit to the registrar a report contemplated in subsection (3), the auditor must submit such a report to the registrar. (6)(a) The registrar may by notice require an authorised financial services provider to terminate the appointment of an auditor of that provider, if the auditor concerned no longer complies with the requirements considered when the auditor was approved by the registrar in terms of subsection (2)(a) or otherwise fails to comply with any provision of this section in a material manner. (b) A notice contemplated in paragraph (a) takes effect on a date specified in such notice and may only be sent out after the registrar— (i) has given the authorised financial services provider and the auditor concerned the reasons why the notice is to be issued; and (ii) has given the authorised financial services provider and the auditor concerned a reasonable opportunity to be heard; and (iii) has considered any submissions made by or on behalf of the authorised financial services provider or the auditor concerned."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s19.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Except to the extent exempted by the registrar, an authorised financial services provider must, in respect of the business carried on by the provider as authorised under the provider's licence— (a) maintain full and proper accounting records on a continual basis, brought up to date monthly; (b) annually prepare, in respect of the relevant financial year of the provider, financial statements reflecting, with suitable particulars, the financial position of the business as at the last day of the financial year in question, and the results of the operations and cash flow information for the period then ended.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s19.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2)(a) An authorised financial services provider must cause the statements referred to in subsection (1)(b) to be audited and reported on by an external auditor approved by the registrar, in order to produce— (i) an audited balance sheet, including such notes thereon or documents attached thereto as may be necessary; (ii) an audited income statement, including such notes thereon or documents attached thereto as may be necessary; and (iii) an audited statement of the source and application of funds. (b) The financial statements must— (i) be prepared in conformity with generally accepted accounting practice; (ii) fairly represent the state of affairs of the provider's business; (iii) refer to any material matter which has affected or is likely to affect the financial affairs of the provider; and (iv) be submitted by the authorised financial services provider to the registrar not later than six months after the end of the provider's financial year or such longer period as may be allowed by the registrar.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s19.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) The authorised financial services provider must maintain records in accordance with subsection (1)(a) in respect of money and assets held on behalf of clients, and must, in addition to and simultaneously with the financial statements referred to in subsection (2), submit to the registrar a report, by the auditor who performed the audit, which confirms, in the form and manner determined by the registrar by notice in the Gazette for different categories of financial services providers— (a) the amount of money and assets at year end held by the provider on behalf of clients; (b) that such money and assets were throughout the financial year kept separate from those of the business of the authorised financial services provider and, in the case of non-compliance, the extent thereof; and (c) any other information required by the registrar.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s19.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) Despite anything to the contrary contained in any law, the auditor of an authorised financial services provider must report to and inform the registrar in writing of any irregularity or suspected irregularity in the conduct or the affairs of the authorised financial services provider concerned of which the auditor became aware in performing functions as auditor and which, in the opinion of the auditor, is material.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s19.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) If the appointment of an auditor of an authorised financial services provider is terminated— (a) the auditor must submit to the registrar a statement of what the auditor believes to be the reasons for that termination; and (b) if the auditor would, but for that termination, have had reason to submit to the registrar a report contemplated in subsection (3), the auditor must submit such a report to the registrar.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s19.6",
+              "number": "6",
+              "heading": "(6)",
+              "text": "(6)(a) The registrar may by notice require an authorised financial services provider to terminate the appointment of an auditor of that provider, if the auditor concerned no longer complies with the requirements considered when the auditor was approved by the registrar in terms of subsection (2)(a) or otherwise fails to comply with any provision of this section in a material manner. (b) A notice contemplated in paragraph (a) takes effect on a date specified in such notice and may only be sent out after the registrar— (i) has given the authorised financial services provider and the auditor concerned the reasons why the notice is to be issued; and (ii) has given the authorised financial services provider and the auditor concerned a reasonable opportunity to be heard; and (iii) has considered any submissions made by or on behalf of the authorised financial services provider or the auditor concerned.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -321,7 +698,73 @@
           "number": "33",
           "heading": "Civil remedies",
           "verbatim": true,
-          "text": "(1) The registrar may, when satisfied on the basis of available facts and information that a person has contravened or not complied with any provision of this Act, or is likely so to contravene or not to comply, apply to a Court for an order restraining such person from continuing to commit any such act or omission or from committing it in future, and requiring the person to take such remedial steps as the Court deems necessary to rectify the consequences of the act or omission, including consequences which prejudiced or may prejudice any client. (2) The registrar may institute action in a Court against any person who has contravened or not complied with any provision of this Act, for payment of— (a) an amount determined by the Court as compensation for losses suffered by any other person in consequence of such contravention or non-compliance; (b) a penalty for punitive purposes in a sum determined in the discretion of the Court but not exceeding three times the amount of any profit or gain which may have accrued to the person involved as a direct result of any such act or omission; (c) interest; and (d) costs of suit on such scale as may be determined by the Court. (3) Any amount recovered by the registrar in terms of subsection (2) must be deposited by the registrar directly into a specially designated trust account established by the registrar with an appropriate financial institution, and thereupon— (a) the registrar is, as a first charge against the trust account, entitled to reimbursement of all expenses reasonably incurred in bringing proceedings under subsection (2) and in administering the distributions made to persons in terms of subsection (5); (b) the balance, if any (hereinafter referred to as the \"distributable balance\") must be distributed by the registrar to the persons referred to in subsection (5), any funds remaining, accruing to the registrar in the registrar's official capacity. (4) Any amount not claimed within three years from the date of the first distribution of payments, accrues to the registrar in the registrar's official capacity. (5) The distributable balance must be distributed on a pro rata basis to all persons who are affected by the occurrences referred to in subsection (2), and who prove to the reasonable satisfaction of the registrar that they are persons contemplated in that subsection: Provided that no money may be distributed to a person who has contravened or failed to comply with any provision of this Act. (6) A Court issuing any order under this section must order it to be published in the Gazette and by such other appropriate public media announcement as the Court considers appropriate. (7) The registrar may withdraw, abandon or compromise any civil proceedings instituted under this section, but any agreement or compromise must be made an order of Court and the amount of any payment made in terms of any such compromise must be published in the Gazette and by such other public media announcement as the Court considers appropriate. (8) Where civil proceedings have not been instituted, any agreement or settlement (if any) may, on application to the Court by the registrar after due notice to the other party, be made an order of Court and must be published in the Gazette and by such other public media announcement as the Court considers appropriate."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s33.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The registrar may, when satisfied on the basis of available facts and information that a person has contravened or not complied with any provision of this Act, or is likely so to contravene or not to comply, apply to a Court for an order restraining such person from continuing to commit any such act or omission or from committing it in future, and requiring the person to take such remedial steps as the Court deems necessary to rectify the consequences of the act or omission, including consequences which prejudiced or may prejudice any client.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s33.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The registrar may institute action in a Court against any person who has contravened or not complied with any provision of this Act, for payment of— (a) an amount determined by the Court as compensation for losses suffered by any other person in consequence of such contravention or non-compliance; (b) a penalty for punitive purposes in a sum determined in the discretion of the Court but not exceeding three times the amount of any profit or gain which may have accrued to the person involved as a direct result of any such act or omission; (c) interest; and (d) costs of suit on such scale as may be determined by the Court.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s33.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Any amount recovered by the registrar in terms of subsection (2) must be deposited by the registrar directly into a specially designated trust account established by the registrar with an appropriate financial institution, and thereupon— (a) the registrar is, as a first charge against the trust account, entitled to reimbursement of all expenses reasonably incurred in bringing proceedings under subsection (2) and in administering the distributions made to persons in terms of subsection (5); (b) the balance, if any (hereinafter referred to as the \"distributable balance\") must be distributed by the registrar to the persons referred to in subsection (5), any funds remaining, accruing to the registrar in the registrar's official capacity.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s33.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) Any amount not claimed within three years from the date of the first distribution of payments, accrues to the registrar in the registrar's official capacity.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s33.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) The distributable balance must be distributed on a pro rata basis to all persons who are affected by the occurrences referred to in subsection (2), and who prove to the reasonable satisfaction of the registrar that they are persons contemplated in that subsection: Provided that no money may be distributed to a person who has contravened or failed to comply with any provision of this Act.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s33.6",
+              "number": "6",
+              "heading": "(6)",
+              "text": "(6) A Court issuing any order under this section must order it to be published in the Gazette and by such other appropriate public media announcement as the Court considers appropriate.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s33.7",
+              "number": "7",
+              "heading": "(7)",
+              "text": "(7) The registrar may withdraw, abandon or compromise any civil proceedings instituted under this section, but any agreement or compromise must be made an order of Court and the amount of any payment made in terms of any such compromise must be published in the Gazette and by such other public media announcement as the Court considers appropriate.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s33.8",
+              "number": "8",
+              "heading": "(8)",
+              "text": "(8) Where civil proceedings have not been instituted, any agreement or settlement (if any) may, on application to the Court by the registrar after due notice to the other party, be made an order of Court and must be published in the Gazette and by such other public media announcement as the Court considers appropriate.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s34",
@@ -335,7 +778,33 @@
           "number": "35",
           "heading": "Regulations",
           "verbatim": true,
-          "text": "(1) The Minister may by notice in the Gazette, after consultation with the registrar and the Advisory Committee, make regulations relating to— (a) any matter which is required or permitted to be prescribed under this Act; (b) a prohibition on— (i) canvassing for, or marketing or advertising (whether within or outside the Republic) of any business relating to the rendering of financial services by any person who is not an authorised financial services provider or a representative of such a provider; (ii) the publication by any person, who is not an authorised financial services provider or a representative of such a provider, of any advertisement, communication or announcement directed to clients and which indicates that such person is an authorised financial services provider or a representative of such a provider; and (iii) the use by any person who is not an authorised financial provider or a representative of any such provider, of any name, title or designation indicating that the person is an authorised financial services provider or a representative of such a provider; (c) compliance arrangements, compliance monitoring systems and keeping of records; (d) powers of the registrar to call for information from any person to which this Act applies, including the powers of the Court to issue orders, on application by the registrar, to enforce obligations in that regard; and (e) generally, any matter which it is expedient or necessary to prescribe for the better achievement of the objects of this Act, the generality of this provision not being restricted by the provisions of any foregoing paragraph. (2) The regulations may provide for offences in cases of contravention or non-compliance with the provisions thereof, and for penalties not exceeding a fine of R500 000 or imprisonment for a period not exceeding five years or to both such fine and such imprisonment. (3) Different regulations may be made in respect of different matters or categories of persons."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s35.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The Minister may by notice in the Gazette, after consultation with the registrar and the Advisory Committee, make regulations relating to— (a) any matter which is required or permitted to be prescribed under this Act; (b) a prohibition on— (i) canvassing for, or marketing or advertising (whether within or outside the Republic) of any business relating to the rendering of financial services by any person who is not an authorised financial services provider or a representative of such a provider; (ii) the publication by any person, who is not an authorised financial services provider or a representative of such a provider, of any advertisement, communication or announcement directed to clients and which indicates that such person is an authorised financial services provider or a representative of such a provider; and (iii) the use by any person who is not an authorised financial provider or a representative of any such provider, of any name, title or designation indicating that the person is an authorised financial services provider or a representative of such a provider; (c) compliance arrangements, compliance monitoring systems and keeping of records; (d) powers of the registrar to call for information from any person to which this Act applies, including the powers of the Court to issue orders, on application by the registrar, to enforce obligations in that regard; and (e) generally, any matter which it is expedient or necessary to prescribe for the better achievement of the objects of this Act, the generality of this provision not being restricted by the provisions of any foregoing paragraph.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s35.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The regulations may provide for offences in cases of contravention or non-compliance with the provisions thereof, and for penalties not exceeding a fine of R500 000 or imprisonment for a period not exceeding five years or to both such fine and such imprisonment.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s35.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Different regulations may be made in respect of different matters or categories of persons.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s36",
@@ -405,7 +874,49 @@
           "number": "44",
           "heading": "Exemptions by registrar and Minister",
           "verbatim": true,
-          "text": "(1) The registrar may on or after the commencement of this Act, but prior to the date determined by the Minister in terms of section 7(1), exempt any person or category of persons from the provisions of that section if the registrar is satisfied that— (a) the rendering of any financial service by the applicant is already partially or wholly regulated by any other law; or (b) the application of the said section to the applicant will cause the applicant or clients of the applicant financial or other hardship or prejudice; and (c) the granting of the exemption will not— (i) conflict with the public interest; (ii) prejudice the interests of clients; and (iii) frustrate the achievement of the objects of this Act. (2) The registrar— (a) having regard to the factors mentioned in subsection (1), may attach to any exemption so granted reasonable requirements or impose reasonable conditions with which the applicant must comply either before or after the effective date of the exemption in the manner and during the period specified by the registrar; and (b) must determine the period for which the exemption will be valid. (3) An exemption in respect of which a person has to comply with requirements or conditions, lapses whenever the person contravenes or fails to comply with any such requirement or condition: Provided that the registrar may on application condone any such contravention or failure and determine reasonable requirements or conditions with which the applicant must comply on or after resumption of the exemption as if such requirements or conditions had been attached or imposed on the first granting of the exemption. (4)(a) The registrar may in any case not provided for in this Act, on reasonable grounds, on application or on the registrar's own initiative by notice in the Gazette, exempt any person or category of persons from any provision of this Act. (b) The provisions of subsections (1), (2) and (3) apply with the necessary changes in respect of any exemption contemplated in paragraph (a). (5) The Minister, after consultation with the registrar, may, on such conditions as the Minister may determine, by notice in the Gazette exempt a financial services provider or representative, or category of financial services providers or representatives, from any provision of the Policyholder Protection Rules made under section 62 of the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and section 55 of the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s44.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The registrar may on or after the commencement of this Act, but prior to the date determined by the Minister in terms of section 7(1), exempt any person or category of persons from the provisions of that section if the registrar is satisfied that— (a) the rendering of any financial service by the applicant is already partially or wholly regulated by any other law; or (b) the application of the said section to the applicant will cause the applicant or clients of the applicant financial or other hardship or prejudice; and (c) the granting of the exemption will not— (i) conflict with the public interest; (ii) prejudice the interests of clients; and (iii) frustrate the achievement of the objects of this Act.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s44.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The registrar— (a) having regard to the factors mentioned in subsection (1), may attach to any exemption so granted reasonable requirements or impose reasonable conditions with which the applicant must comply either before or after the effective date of the exemption in the manner and during the period specified by the registrar; and (b) must determine the period for which the exemption will be valid.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s44.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) An exemption in respect of which a person has to comply with requirements or conditions, lapses whenever the person contravenes or fails to comply with any such requirement or condition: Provided that the registrar may on application condone any such contravention or failure and determine reasonable requirements or conditions with which the applicant must comply on or after resumption of the exemption as if such requirements or conditions had been attached or imposed on the first granting of the exemption.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s44.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4)(a) The registrar may in any case not provided for in this Act, on reasonable grounds, on application or on the registrar's own initiative by notice in the Gazette, exempt any person or category of persons from any provision of this Act. (b) The provisions of subsections (1), (2) and (3) apply with the necessary changes in respect of any exemption contemplated in paragraph (a).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s44.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) The Minister, after consultation with the registrar, may, on such conditions as the Minister may determine, by notice in the Gazette exempt a financial services provider or representative, or category of financial services providers or representatives, from any provision of the Policyholder Protection Rules made under section 62 of the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and section 55 of the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s45",

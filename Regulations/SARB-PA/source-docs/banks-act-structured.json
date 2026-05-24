@@ -5,7 +5,14 @@
   "regulator": "SARB Prudential Authority",
   "year": 1990,
   "sourceNote": "Consolidated text as at Banks Amendment Act 2003 (Act No. 19 of 2003). Note: FSR Act 9 of 2017 subsequently transferred functions of 'Registrar of Banks' to the Prudential Authority and made other supervisory changes. FSLA Act 23 of 2021 introduced further amendments relating to resolution and deposit insurance.",
-  "citationPatterns": ["Banks Act", "Banks Act 94", "Banks Act 94/1990", "Banks Act s.", "Banks Act §", "Banks Act ss."],
+  "citationPatterns": [
+    "Banks Act",
+    "Banks Act 94",
+    "Banks Act 94/1990",
+    "Banks Act s.",
+    "Banks Act §",
+    "Banks Act ss."
+  ],
   "priority": 1,
   "chapters": [
     {
@@ -59,15 +66,91 @@
           "id": "s6",
           "number": "6",
           "heading": "Powers of inspection of, and guidelines by, Registrar",
-          "text": "(1) In addition to the powers and duties conferred or imposed upon him or her by this Act, the Registrar shall, for the purposes of the performance of his or her functions under this Act, have powers and duties in all respects corresponding to the powers and duties conferred or imposed by the Inspection of Financial Institutions Act, 1998 (Act No. 80 of 1998), upon a registrar contemplated in the last-mentioned Act. (2) Any reference in this Act to an inspection or investigation made under this section shall be construed as a reference to an inspection made in accordance with the provisions of the Inspection of Financial Institutions Act, 1998. (3) Neither the provisions of this section nor any other provision of this Act shall be construed as prohibiting the Registrar from holding discussions, from time to time, with the chief executive officer of any bank, or with any executive officer or employee designated by such chief executive officer, of (a) that bank; (b) any subsidiary or controlling company of that bank, or any other subsidiary of such controlling company; (c) any juristic person which would have been a subsidiary of that bank or of its controlling company had such juristic person been a company; (d) any juristic person of which the board of directors or, in the case where such juristic person is not a company, of which the governing body is accustomed to act in accordance with the directions or instructions of that bank or its controlling company; or (e) any trust controlled directly or indirectly by that bank or its controlling company, with a view to achieving effective supervision by the Registrar, on an individual or a consolidated basis, of that group or the group of banks of which that bank is a member. (4) The Registrar may from time to time by means of a circular furnish banks with guide-lines regarding the application and interpretation of the provisions of this Act or provide banks with any other information.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s6.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) In addition to the powers and duties conferred or imposed upon him or her by this Act, the Registrar shall, for the purposes of the performance of his or her functions under this Act, have powers and duties in all respects corresponding to the powers and duties conferred or imposed by the Inspection of Financial Institutions Act, 1998 (Act No. 80 of 1998), upon a registrar contemplated in the last-mentioned Act.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) Any reference in this Act to an inspection or investigation made under this section shall be construed as a reference to an inspection made in accordance with the provisions of the Inspection of Financial Institutions Act, 1998.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Neither the provisions of this section nor any other provision of this Act shall be construed as prohibiting the Registrar from holding discussions, from time to time, with the chief executive officer of any bank, or with any executive officer or employee designated by such chief executive officer, of (a) that bank; (b) any subsidiary or controlling company of that bank, or any other subsidiary of such controlling company; (c) any juristic person which would have been a subsidiary of that bank or of its controlling company had such juristic person been a company; (d) any juristic person of which the board of directors or, in the case where such juristic person is not a company, of which the governing body is accustomed to act in accordance with the directions or instructions of that bank or its controlling company; or (e) any trust controlled directly or indirectly by that bank or its controlling company, with a view to achieving effective supervision by the Registrar, on an individual or a consolidated basis, of that group or the group of banks of which that bank is a member.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) The Registrar may from time to time by means of a circular furnish banks with guide-lines regarding the application and interpretation of the provisions of this Act or provide banks with any other information.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7",
           "number": "7",
           "heading": "Furnishing of information by banks",
-          "text": "(1) The Registrar may by notice in writing (a) direct a bank or a controlling company or a subsidiary of a bank or controlling company to furnish the Registrar, at such time or times or at such intervals or in respect of such period or periods as may be specified in the notice, with such information as may be specified in the notice and as the Registrar may reasonably require for the performance of his or her functions under this Act; or (b) direct such bank, controlling company or subsidiary to furnish the Registrar with a report by a public accountant as defined in section 1 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), or by any other person with appropriate professional skill, on any matter, or any aspect of any matter, about which the Registrar has directed or may direct under paragraph (a) the bank, controlling company or subsidiary to furnish information. (1A) A report required by the Registrar under paragraph (b) shall be drawn up at the reasonable expense of the bank, controlling company or subsidiary in question. (2) The public accountant or other person appointed by a bank, controlling company or subsidiary to make a report required under subsection (1)(b), shall be a person designated or approved by the Registrar, and the Registrar may require the relevant report to be in such form as may be specified in the notice referred to in subsection (1). (3) No due diligence audit of the financial condition of any bank shall be conducted without the Registrar first having been notified in writing of the intention to do so. (4) The person at whose request a due diligence audit of the financial condition of a bank has been conducted shall furnish the Registrar with a copy of the audit report. (5) No person shall without the written consent of the Registrar disclose to any other person, except to the bank whose financial condition was the subject of the due diligence audit, any information contained in a report referred to in subsection (4).",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The Registrar may by notice in writing (a) direct a bank or a controlling company or a subsidiary of a bank or controlling company to furnish the Registrar, at such time or times or at such intervals or in respect of such period or periods as may be specified in the notice, with such information as may be specified in the notice and as the Registrar may reasonably require for the performance of his or her functions under this Act; or (b) direct such bank, controlling company or subsidiary to furnish the Registrar with a report by a public accountant as defined in section 1 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), or by any other person with appropriate professional skill, on any matter, or any aspect of any matter, about which the Registrar has directed or may direct under paragraph (a) the bank, controlling company or subsidiary to furnish information. (1A) A report required by the Registrar under paragraph (b) shall be drawn up at the reasonable expense of the bank, controlling company or subsidiary in question.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The public accountant or other person appointed by a bank, controlling company or subsidiary to make a report required under subsection (1)(b), shall be a person designated or approved by the Registrar, and the Registrar may require the relevant report to be in such form as may be specified in the notice referred to in subsection (1).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) No due diligence audit of the financial condition of any bank shall be conducted without the Registrar first having been notified in writing of the intention to do so.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) The person at whose request a due diligence audit of the financial condition of a bank has been conducted shall furnish the Registrar with a copy of the audit report.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) No person shall without the written consent of the Registrar disclose to any other person, except to the bank whose financial condition was the subject of the due diligence audit, any information contained in a report referred to in subsection (4).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8",
@@ -80,8 +163,34 @@
           "id": "s9",
           "number": "9",
           "heading": "Review of decisions of Registrar",
-          "text": "(1) Any person aggrieved by a decision taken by the Registrar under a provision of this Act may within the prescribed period and in the prescribed manner and upon payment of the prescribed fees apply for a review of that decision by the board of review established by subsection (2). (2) For the purposes of this Act there is hereby established a board of review which shall consist of three members, appointed by the Minister and of whom (a) one shall be appointed on account of his or her knowledge of law and shall be the chairperson; (b) one shall be a person who in the opinion of the Minister has wide experience of, and is knowledgeable about the latest developments in, the banking industry; and (c) one shall be a person registered as an accountant and auditor under section 23 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), and who in the opinion of the Minister has wide experience of, and is knowledgeable about the latest developments in, the accountants' and auditors' profession. (2A) In any review under subsection (1), the board of review is, subject to the provisions of subsection (8), confined to establishing whether or not, in the taking of the relevant decision, the Registrar exercised his or her discretion properly and in good faith. (10) The board of review may after the review confirm, set aside or vary the relevant decision of the Registrar.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s9.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Any person aggrieved by a decision taken by the Registrar under a provision of this Act may within the prescribed period and in the prescribed manner and upon payment of the prescribed fees apply for a review of that decision by the board of review established by subsection (2).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) For the purposes of this Act there is hereby established a board of review which shall consist of three members, appointed by the Minister and of whom (a) one shall be appointed on account of his or her knowledge of law and shall be the chairperson; (b) one shall be a person who in the opinion of the Minister has wide experience of, and is knowledgeable about the latest developments in, the banking industry; and (c) one shall be a person registered as an accountant and auditor under section 23 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), and who in the opinion of the Minister has wide experience of, and is knowledgeable about the latest developments in, the accountants' and auditors' profession. (2A) In any review under subsection (1), the board of review is, subject to the provisions of subsection (8), confined to establishing whether or not, in the taking of the relevant decision, the Registrar exercised his or her discretion properly and in good faith.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.10",
+              "number": "10",
+              "heading": "(10)",
+              "text": "(10) The board of review may after the review confirm, set aside or vary the relevant decision of the Registrar.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s10",
@@ -115,8 +224,34 @@
           "id": "s13",
           "number": "13",
           "heading": "Granting or refusal of application for authorization",
-          "text": "(1) Subject to the provisions of subsection (2), the Registrar may, after considering all information, documents and reports furnished to him or her for the purposes of an application under section 12, grant or refuse the relevant application or grant the application subject to such conditions as he or she may determine. (2) The Registrar shall not grant an application made under section 12 unless he or she is satisfied (a) that the establishment of the proposed bank will be in the public interest; (b) that the business the applicant proposes to conduct, is that of a bank; (c) that the applicant will conduct the proposed business of a bank in the capacity of a public company incorporated and registered under the Companies Act; (d) that the applicant will be able to establish itself successfully as a bank; (e) that the applicant will have the financial means to comply, in the capacity of a bank, with the requirements of this Act; (f) that the business of the proposed bank will be conducted in a prudent manner; (fA) that every person who is to be a director or an executive officer of the proposed bank is, as far as can reasonably be ascertained, a fit and proper person to hold the office of such director or executive officer; (g) that every person who is to be an executive officer of the proposed bank has sufficient experience of the management of the kind of business it is intended to conduct; and (h) that the composition of the board of directors of the proposed bank will be appropriate having regard to the nature and scale of the business it is intended to conduct. (3) When the Registrar grants or refuses an application made under section 12, he or she shall give written notice of that fact to the applicant concerned.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s13.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Subject to the provisions of subsection (2), the Registrar may, after considering all information, documents and reports furnished to him or her for the purposes of an application under section 12, grant or refuse the relevant application or grant the application subject to such conditions as he or she may determine.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The Registrar shall not grant an application made under section 12 unless he or she is satisfied (a) that the establishment of the proposed bank will be in the public interest; (b) that the business the applicant proposes to conduct, is that of a bank; (c) that the applicant will conduct the proposed business of a bank in the capacity of a public company incorporated and registered under the Companies Act; (d) that the applicant will be able to establish itself successfully as a bank; (e) that the applicant will have the financial means to comply, in the capacity of a bank, with the requirements of this Act; (f) that the business of the proposed bank will be conducted in a prudent manner; (fA) that every person who is to be a director or an executive officer of the proposed bank is, as far as can reasonably be ascertained, a fit and proper person to hold the office of such director or executive officer; (g) that every person who is to be an executive officer of the proposed bank has sufficient experience of the management of the kind of business it is intended to conduct; and (h) that the composition of the board of directors of the proposed bank will be appropriate having regard to the nature and scale of the business it is intended to conduct.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) When the Registrar grants or refuses an application made under section 12, he or she shall give written notice of that fact to the applicant concerned.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s14",
@@ -283,8 +418,42 @@
           "id": "s60",
           "number": "60",
           "heading": "Directors of bank or controlling company",
-          "text": "(1) Each director, chief executive officer and executive officer of a bank owes a fiduciary duty and a duty of care and skill to the bank of which such person is a director, chief executive officer or executive officer. (1A) Each director, chief executive officer and executive officer of a bank owes a duty towards the bank to (a) act bona fide for the benefit of the bank; (b) avoid any conflict between the bank's interests and the interests of such a director, chief executive officer or executive officer, as the case may be; (c) possess and maintain the knowledge and skill that may reasonably be expected of a person holding a similar appointment and carrying out similar functions as are carried out by the director, chief executive officer or executive officer of that bank; and (d) exercise such care in the carrying out of his or her functions in relation to that bank as may reasonably be expected of a diligent person who holds the same appointment under similar circumstances, and who possesses both the knowledge and skill mentioned in paragraph (c) and any such additional knowledge and skill as the director, chief executive officer or executive officer in question may have. (2) Without derogating from the provisions of subsections (1) and (1A), a director, chief executive officer or executive officer of a bank shall in the performance of his or her functions in respect of that bank, observe such guidelines and comply with such requirements as may be prescribed under section 90(1)(b). (3) Notwithstanding anything to the contrary in any law or the common law or in any agreement contained, not more than 49 per cent, rounded off to the next lower integral number, of the directors of (a) a bank shall be employees of that bank or of any of its subsidiaries, or of such bank's controlling company or of any of such controlling company's subsidiaries; (b) a controlling company shall be employees of that company or of any bank in respect of which that company is registered as a controlling company: Provided that in respect of any matter put to the vote at a meeting of the board of directors of a bank or of a controlling company, as the case may be, such directors who are employees of that bank or that controlling company, as the case may be, shall together not have a vote in excess of 49 per cent of the total vote cast by all the directors present and voting at that meeting. (5)(a)(i) Every bank shall give the Registrar written notice of the nomination of any person for appointment as a non-executive member of its board of directors by furnishing the Registrar with the prescribed information in respect of the nominee. (ii) The notice shall reach the Registrar at least 30 days prior to the proposed date of appointment. (iii) The Registrar may object to the proposed appointment by means of a written notice, stating the grounds for the objection, given to the chairperson of the board of directors of the bank and to the nominee, within 20 days of receipt of the notice. (b)(i) Every bank shall give the Registrar written notice of the appointment of a chief executive officer, executive director or executive officer by furnishing the Registrar with the prescribed information in respect of the appointee. (ii) The Registrar may object to the appointment by means of a written notice, stating the grounds for the objection, given to the chief executive officer of the bank and to the appointee, within 20 working days of receipt of the notice. (iii) If the Registrar objects to the appointment in terms of subparagraph (ii), the appointment shall be terminated within 14 working days of receipt of the Registrar's notice of objection by the bank.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s60.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Each director, chief executive officer and executive officer of a bank owes a fiduciary duty and a duty of care and skill to the bank of which such person is a director, chief executive officer or executive officer. (1A) Each director, chief executive officer and executive officer of a bank owes a duty towards the bank to (a) act bona fide for the benefit of the bank; (b) avoid any conflict between the bank's interests and the interests of such a director, chief executive officer or executive officer, as the case may be; (c) possess and maintain the knowledge and skill that may reasonably be expected of a person holding a similar appointment and carrying out similar functions as are carried out by the director, chief executive officer or executive officer of that bank; and (d) exercise such care in the carrying out of his or her functions in relation to that bank as may reasonably be expected of a diligent person who holds the same appointment under similar circumstances, and who possesses both the knowledge and skill mentioned in paragraph (c) and any such additional knowledge and skill as the director, chief executive officer or executive officer in question may have.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s60.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) Without derogating from the provisions of subsections (1) and (1A), a director, chief executive officer or executive officer of a bank shall in the performance of his or her functions in respect of that bank, observe such guidelines and comply with such requirements as may be prescribed under section 90(1)(b).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s60.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Notwithstanding anything to the contrary in any law or the common law or in any agreement contained, not more than 49 per cent, rounded off to the next lower integral number, of the directors of (a) a bank shall be employees of that bank or of any of its subsidiaries, or of such bank's controlling company or of any of such controlling company's subsidiaries; (b) a controlling company shall be employees of that company or of any bank in respect of which that company is registered as a controlling company: Provided that in respect of any matter put to the vote at a meeting of the board of directors of a bank or of a controlling company, as the case may be, such directors who are employees of that bank or that controlling company, as the case may be, shall together not have a vote in excess of 49 per cent of the total vote cast by all the directors present and voting at that meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s60.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5)(a)(i) Every bank shall give the Registrar written notice of the nomination of any person for appointment as a non-executive member of its board of directors by furnishing the Registrar with the prescribed information in respect of the nominee. (ii) The notice shall reach the Registrar at least 30 days prior to the proposed date of appointment. (iii) The Registrar may object to the proposed appointment by means of a written notice, stating the grounds for the objection, given to the chairperson of the board of directors of the bank and to the nominee, within 20 days of receipt of the notice. (b)(i) Every bank shall give the Registrar written notice of the appointment of a chief executive officer, executive director or executive officer by furnishing the Registrar with the prescribed information in respect of the appointee. (ii) The Registrar may object to the appointment by means of a written notice, stating the grounds for the objection, given to the chief executive officer of the bank and to the appointee, within 20 working days of receipt of the notice. (iii) If the Registrar objects to the appointment in terms of subparagraph (ii), the appointment shall be terminated within 14 working days of receipt of the Registrar's notice of objection by the bank.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s60A",
@@ -297,8 +466,34 @@
           "id": "s60B",
           "number": "60B",
           "heading": "Corporate Governance",
-          "text": "(1) Notwithstanding anything to the contrary in any law, the board of directors and executive officers of a bank shall establish and maintain an adequate and effective process of corporate governance, which shall be consistent with the nature, complexity and risks inherent in the activities and the business of the bank concerned. (2) The process of corporate governance shall be established with the objective of achieving the bank's strategic and business objectives efficiently, effectively, ethically and equitably (within acceptable risk parameters), to ensure (a) compliance with the strategic framework and guidelines established for the bank or controlling company; (b) commitment by the executive officers of the bank or controlling company to adhere to corporate behaviour that is universally recognised and accepted as correct and proper; (c) a balance of interests of the shareholders and other interested persons who may be affected by the conduct of directors or executive officers of the bank or controlling company within a framework of effective accountability; (d) that mechanisms and procedures are established and maintained to minimize or avoid potential conflicts of interests between the business interests of the bank or controlling company and the personal interests of directors or executive officers of the bank or controlling company; (e) responsible conduct by the directors and executive officers of the bank or controlling company; (f) the achievement of the maximum level of efficiency and profitability of the bank within an acceptable risk profile for the bank or controlling company; (g) the timely, accurate and meaningful disclosure of matters that are material to the business of the bank or controlling company or the interests of the shareholders of or other persons having an interest in the bank or controlling company; (h) that the board retains control over the strategic and business direction of the bank or controlling company, whilst enabling its executives to manage the bank's or controlling company's operations and the achievement of the agreed strategic and business objectives; and (i) compliance with all applicable laws and regulations. (3) A bank shall establish and maintain the process of corporate governance in accordance with any requirements that may be prescribed in the Regulations relating to Banks.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s60B.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Notwithstanding anything to the contrary in any law, the board of directors and executive officers of a bank shall establish and maintain an adequate and effective process of corporate governance, which shall be consistent with the nature, complexity and risks inherent in the activities and the business of the bank concerned.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s60B.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The process of corporate governance shall be established with the objective of achieving the bank's strategic and business objectives efficiently, effectively, ethically and equitably (within acceptable risk parameters), to ensure (a) compliance with the strategic framework and guidelines established for the bank or controlling company; (b) commitment by the executive officers of the bank or controlling company to adhere to corporate behaviour that is universally recognised and accepted as correct and proper; (c) a balance of interests of the shareholders and other interested persons who may be affected by the conduct of directors or executive officers of the bank or controlling company within a framework of effective accountability; (d) that mechanisms and procedures are established and maintained to minimize or avoid potential conflicts of interests between the business interests of the bank or controlling company and the personal interests of directors or executive officers of the bank or controlling company; (e) responsible conduct by the directors and executive officers of the bank or controlling company; (f) the achievement of the maximum level of efficiency and profitability of the bank within an acceptable risk profile for the bank or controlling company; (g) the timely, accurate and meaningful disclosure of matters that are material to the business of the bank or controlling company or the interests of the shareholders of or other persons having an interest in the bank or controlling company; (h) that the board retains control over the strategic and business direction of the bank or controlling company, whilst enabling its executives to manage the bank's or controlling company's operations and the achievement of the agreed strategic and business objectives; and (i) compliance with all applicable laws and regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s60B.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) A bank shall establish and maintain the process of corporate governance in accordance with any requirements that may be prescribed in the Regulations relating to Banks.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s61",
@@ -311,22 +506,92 @@
           "id": "s64",
           "number": "64",
           "heading": "Audit committee",
-          "text": "(1) Subject to the provisions of subsections (3) and (4), the board of directors of a bank shall appoint at least three of its members to form an audit committee. (2) The functions of the audit committee shall be to (a) assist the board of directors in its evaluation of the adequacy and efficiency of the internal control systems, accounting practices, information systems and auditing processes applied within that bank in the day-to-day management of its business; (b) facilitate and promote communication, regarding the matters referred to in paragraph (a) or any other related matter, between the board of directors and the executive officers of, the auditor appointed under section 61 or 62 for, and the employee charged with the internal auditing of the transactions of, the bank; (c) introduce such measures as in the committee's opinion may serve to enhance the credibility and objectivity of financial statements and reports prepared with reference to the affairs of the bank; and (d) perform such further functions as may be prescribed. (3) All of the members of the audit committee may be, and the majority of such members, including the chairperson of the audit committee, shall be, persons who are not employees of the bank nor of any of its subsidiaries, its controlling company or any subsidiary of its controlling company: Provided that the chairperson of the board of directors of the bank shall not be appointed as a member of the audit committee. (4) The board of directors of a bank shall be exempt from the duty to appoint an audit committee if such bank is a member of a group of companies in respect of which group annual financial statements are required to be made out in terms of section 288(1) of the Companies Act, provided an audit committee has been appointed for the holding company in that group and such audit committee has assumed the responsibilities of an audit committee in respect of all the banks in that group.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s64.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Subject to the provisions of subsections (3) and (4), the board of directors of a bank shall appoint at least three of its members to form an audit committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s64.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The functions of the audit committee shall be to (a) assist the board of directors in its evaluation of the adequacy and efficiency of the internal control systems, accounting practices, information systems and auditing processes applied within that bank in the day-to-day management of its business; (b) facilitate and promote communication, regarding the matters referred to in paragraph (a) or any other related matter, between the board of directors and the executive officers of, the auditor appointed under section 61 or 62 for, and the employee charged with the internal auditing of the transactions of, the bank; (c) introduce such measures as in the committee's opinion may serve to enhance the credibility and objectivity of financial statements and reports prepared with reference to the affairs of the bank; and (d) perform such further functions as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s64.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) All of the members of the audit committee may be, and the majority of such members, including the chairperson of the audit committee, shall be, persons who are not employees of the bank nor of any of its subsidiaries, its controlling company or any subsidiary of its controlling company: Provided that the chairperson of the board of directors of the bank shall not be appointed as a member of the audit committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s64.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) The board of directors of a bank shall be exempt from the duty to appoint an audit committee if such bank is a member of a group of companies in respect of which group annual financial statements are required to be made out in terms of section 288(1) of the Companies Act, provided an audit committee has been appointed for the holding company in that group and such audit committee has assumed the responsibilities of an audit committee in respect of all the banks in that group.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s64A",
           "number": "64A",
           "heading": "Risk committee",
-          "text": "(1) The board of directors of a bank shall appoint at least three of its members, of which at least two are non-executive directors, to form a risk committee. (2) The functions of the risk committee shall be to (a) assist the board in its evaluation of the adequacy and efficiency of the risk policies, procedures, practices and controls applied within that bank in the day-to-day management of its business; (b) assist the board in the identification of the build up and concentration of the various risks to which the bank is exposed; (c) assist the board in developing a risk mitigation strategy to ensure that the bank manages the risks in an optimal manner; (d) assist the board in ensuring that a formal risk assessment is undertaken at least annually; (e) assist the board in identifying and regularly monitoring all key risks and key performance indicators to ensure that its decision-making capability and accuracy of its reporting is maintained at a high level; (f) facilitate and promote communication, through reporting structures regarding the matters referred to in paragraph (a) or any other related matter, between the board and the executive officers of the bank; (g) ensure the establishment of an independent risk management function, and in the case where the bank forms part of a group, a group risk management function, the head of which shall act as the reference point for all aspects relating to risk management within the bank, including the responsibility to arrange training of members of the board in the different risk areas to which that bank is exposed; (h) introduce such measures as may serve to enhance the adequacy and efficiency of the risk management policies, procedures, practices and controls applied within that bank; (i) co-ordinate the monitoring of risk management on a globalised basis; and (j) perform such further functions as may be prescribed.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s64A.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The board of directors of a bank shall appoint at least three of its members, of which at least two are non-executive directors, to form a risk committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s64A.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The functions of the risk committee shall be to (a) assist the board in its evaluation of the adequacy and efficiency of the risk policies, procedures, practices and controls applied within that bank in the day-to-day management of its business; (b) assist the board in the identification of the build up and concentration of the various risks to which the bank is exposed; (c) assist the board in developing a risk mitigation strategy to ensure that the bank manages the risks in an optimal manner; (d) assist the board in ensuring that a formal risk assessment is undertaken at least annually; (e) assist the board in identifying and regularly monitoring all key risks and key performance indicators to ensure that its decision-making capability and accuracy of its reporting is maintained at a high level; (f) facilitate and promote communication, through reporting structures regarding the matters referred to in paragraph (a) or any other related matter, between the board and the executive officers of the bank; (g) ensure the establishment of an independent risk management function, and in the case where the bank forms part of a group, a group risk management function, the head of which shall act as the reference point for all aspects relating to risk management within the bank, including the responsibility to arrange training of members of the board in the different risk areas to which that bank is exposed; (h) introduce such measures as may serve to enhance the adequacy and efficiency of the risk management policies, procedures, practices and controls applied within that bank; (i) co-ordinate the monitoring of risk management on a globalised basis; and (j) perform such further functions as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s64B",
           "number": "64B",
           "heading": "Directors' affairs committee",
-          "text": "(1) The board of directors of a bank shall establish a directors' affairs committee, consisting only of non-executive directors of the bank. (2) The functions of the directors' affairs committee shall be to (a) assist the board of directors in its determination and evaluation of the adequacy, efficiency and appropriateness of the corporate governance structure and practices of the bank; (b) establish and maintain a board directorship continuity programme entailing (i) a review of performance of and planning for successors to the executive directors; (ii) measures to ensure continuity of non-executive directors; (iii) a regular review of the composition of skills, experience and other qualities required for the effectiveness of the board; and (iv) an annual self-assessment of the board as a whole and of the contribution of each individual director; (c) assist the board in the nomination of successors to the key positions in the bank in order to ensure that a management succession plan is in place; (d) assist the board in determining whether the services of any director should be terminated; (e) assist the board in ensuring that the bank is at all times in compliance with all applicable laws, regulations and codes of conduct and practices; and (f) perform such further functions as may be prescribed.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s64B.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The board of directors of a bank shall establish a directors' affairs committee, consisting only of non-executive directors of the bank.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s64B.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The functions of the directors' affairs committee shall be to (a) assist the board of directors in its determination and evaluation of the adequacy, efficiency and appropriateness of the corporate governance structure and practices of the bank; (b) establish and maintain a board directorship continuity programme entailing (i) a review of performance of and planning for successors to the executive directors; (ii) measures to ensure continuity of non-executive directors; (iii) a regular review of the composition of skills, experience and other qualities required for the effectiveness of the board; and (iv) an annual self-assessment of the board as a whole and of the contribution of each individual director; (c) assist the board in the nomination of successors to the key positions in the bank in order to ensure that a management succession plan is in place; (d) assist the board in determining whether the services of any director should be terminated; (e) assist the board in ensuring that the bank is at all times in compliance with all applicable laws, regulations and codes of conduct and practices; and (f) perform such further functions as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s66",
@@ -367,15 +632,51 @@
           "id": "s70",
           "number": "70",
           "heading": "Minimum share capital and unimpaired reserve funds",
-          "text": "(1) For the purposes of this Act \"allocated capital and reserve funds\" means such amount of qualifying capital and reserve funds as may be approved and assigned by the board of directors of a bank as capital and reserve funds designated to provide for the risks pertaining to the particular nature of such bank's business as contemplated in subsection (2), (2A) or (2B), as the case may be; \"qualifying capital and reserve funds\" means the net sum of capital and reserve funds required to be held by a bank, calculated and determined in accordance with the provisions of subsection (2), (2A) or (2B), as the case may be having regard to the nature of such bank's business. (2)(a) A bank of which the business does not include trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital and its primary and secondary unimpaired reserve funds in the Republic does not at any time amount to less than the greater of (i) R250 000 000 or, in the case of such a bank which immediately prior to the date of commencement of this Act was registered as a banking institution or a building society under a law repealed by this Act, R1 000 000; or (ii) an amount which represents a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75) of such different categories of (aa) assets; and (bb) other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures. (2A)(a) A bank of which the business consists solely of trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such a bank's risk exposures in the conduct of its business as may be so prescribed. (2B)(a) A bank of which the business includes trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of (aa) a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75), of such different categories of assets and other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures; and (bb) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such of the bank's risk exposures in the conduct of its business of trading in financial instruments as may be so prescribed.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s70.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) For the purposes of this Act \"allocated capital and reserve funds\" means such amount of qualifying capital and reserve funds as may be approved and assigned by the board of directors of a bank as capital and reserve funds designated to provide for the risks pertaining to the particular nature of such bank's business as contemplated in subsection (2), (2A) or (2B), as the case may be; \"qualifying capital and reserve funds\" means the net sum of capital and reserve funds required to be held by a bank, calculated and determined in accordance with the provisions of subsection (2), (2A) or (2B), as the case may be having regard to the nature of such bank's business.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s70.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2)(a) A bank of which the business does not include trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital and its primary and secondary unimpaired reserve funds in the Republic does not at any time amount to less than the greater of (i) R250 000 000 or, in the case of such a bank which immediately prior to the date of commencement of this Act was registered as a banking institution or a building society under a law repealed by this Act, R1 000 000; or (ii) an amount which represents a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75) of such different categories of (aa) assets; and (bb) other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures. (2A)(a) A bank of which the business consists solely of trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such a bank's risk exposures in the conduct of its business as may be so prescribed. (2B)(a) A bank of which the business includes trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of (aa) a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75), of such different categories of assets and other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures; and (bb) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such of the bank's risk exposures in the conduct of its business of trading in financial instruments as may be so prescribed.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s70A",
           "number": "70A",
           "heading": "Minimum capital and reserve funds in respect of a banking group",
-          "text": "(1) Notwithstanding the provisions of section 70(2), (2A) and (2B), a controlling company shall manage its affairs in such a way that, subject to the provisions of subsection (2), the sum of the capital and reserve funds of the banking group structured under such controlling company does not at any time amount to less than the sum of the amounts of the required capital and reserve funds determined, in respect of the respective entities constituting such banking group, in accordance with the rules and regulations of the respective regulators responsible for the supervision of those entities, plus such amount as may be prescribed by the Registrar in respect of entities that are included in such banking group but are not subject to the supervision of a regulator. (2) Notwithstanding the provisions of subsection (1), the sum of the banking group's capital and reserve funds shall, in the calculation of the aggregate amount that the banking group is in terms of subsection (1) required to maintain, be calculated by deducting from the amount thereof such amounts as may be prescribed.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s70A.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Notwithstanding the provisions of section 70(2), (2A) and (2B), a controlling company shall manage its affairs in such a way that, subject to the provisions of subsection (2), the sum of the capital and reserve funds of the banking group structured under such controlling company does not at any time amount to less than the sum of the amounts of the required capital and reserve funds determined, in respect of the respective entities constituting such banking group, in accordance with the rules and regulations of the respective regulators responsible for the supervision of those entities, plus such amount as may be prescribed by the Registrar in respect of entities that are included in such banking group but are not subject to the supervision of a regulator.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s70A.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) Notwithstanding the provisions of subsection (1), the sum of the banking group's capital and reserve funds shall, in the calculation of the aggregate amount that the banking group is in terms of subsection (1) required to maintain, be calculated by deducting from the amount thereof such amounts as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s71",
@@ -388,29 +689,157 @@
           "id": "s72",
           "number": "72",
           "heading": "Minimum liquid assets",
-          "text": "(1) A bank shall hold in the Republic liquid assets to a value which does not amount to less than the sum of amounts, calculated as prescribed percentages, but which in no instance may exceed 20 per cent, of such different categories of its liabilities as may be specified by regulation with reference to the time when such liabilities fall due or with reference to any other aspect pertaining to such liabilities. (2) The amounts of the liquid assets and of the liabilities referred to in subsection (1) shall be calculated in such manner and be determined at such times as may be prescribed. (3) A bank shall not pledge or otherwise encumber any portion of the liquid assets held by it in compliance with the provisions of subsection (1): Provided that the Registrar may exempt a bank from the prohibition contained in this subsection on such conditions and to such an extent and for such a period as the Registrar may determine. (4) For the purposes of this section securities which constitute 'liquid assets' as defined in section 1 shall be valued as prescribed.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s72.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) A bank shall hold in the Republic liquid assets to a value which does not amount to less than the sum of amounts, calculated as prescribed percentages, but which in no instance may exceed 20 per cent, of such different categories of its liabilities as may be specified by regulation with reference to the time when such liabilities fall due or with reference to any other aspect pertaining to such liabilities.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s72.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The amounts of the liquid assets and of the liabilities referred to in subsection (1) shall be calculated in such manner and be determined at such times as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s72.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) A bank shall not pledge or otherwise encumber any portion of the liquid assets held by it in compliance with the provisions of subsection (1): Provided that the Registrar may exempt a bank from the prohibition contained in this subsection on such conditions and to such an extent and for such a period as the Registrar may determine.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s72.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) For the purposes of this section securities which constitute 'liquid assets' as defined in section 1 shall be valued as prescribed.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s73",
           "number": "73",
           "heading": "Large exposures",
-          "text": "(1) A bank, controlling company, branch or branch of a bank (a) shall not make investments with or grant loans or advances or other credit to any person, to an aggregate amount exceeding 10 per cent of such amount of its capital and reserves as may be prescribed, without first having obtained the permission of its board of directors, or of a committee appointed for such purpose (for the composition of which committee the prior written approval of the Registrar has to be obtained), to make such investments or to grant such loans, advances or other credit; and (b) shall in the event of the aggregate amount of investments, loans, advances and other credit contemplated in paragraph (a), relating to any private sector non-bank person, exceeding 800 per cent of such an amount of its capital and reserves as may be prescribed, be subject to such additional capital requirements as may be prescribed. (2) Notwithstanding anything to the contrary contained in this Act, a bank, controlling company, branch or branch of a bank (a) shall not without the prior written approval of the Registrar make an investment with or grant a loan, advance or other credit to any private sector non-bank person, which transaction, either alone or together with any previous transaction or transactions entered into by it with that private sector non-bank person, results in the bank, controlling company, branch or branch of a bank being exposed to that private sector non-bank person to an amount exceeding 25 per cent of a prescribed amount; (b) shall in such manner and on such a form as may be prescribed report to the Registrar whenever it makes an investment with or grants a loan or advance or other credit to any person other than a private sector non-bank person, which transaction, either alone or together with any previous transaction or transactions entered into by it with that other person, results in the bank, controlling company, branch or branch of a bank being exposed to that other person up to an amount exceeding 25 per cent of a prescribed amount; and (c) shall, in the event of the Registrar granting such written approval as contemplated in paragraph (a), be subject to such additional capital requirements as may be prescribed. (3) For the purposes of this section (a) 'person' includes (i) two or more persons, whether natural or juristic persons, the respective exposures to whom constitute a single exposure because of the fact that one of them directly or indirectly exercises control over the other or others; and (ii) two or more persons, whether natural or juristic persons, between whom there exists no relationship of control as contemplated in subparagraph (i), but the respective exposures to whom are to be regarded as a single exposure because of the fact that they are so interconnected that should one of them experience financial difficulties, another one or all of them would be likely to experience a lack of liquidity; and (b) 'private sector non-bank person' means a person as defined in paragraph (a) but does not include (i) the central government or other public sector bodies; (ii) a bank; (iii) a mutual bank; (iv) a branch of a bank; (v) a branch; (vi) a foreign institution that, under an authorisation referred to in section 18A, conducts the business of a bank by means of a branch in the Republic; (vii) a controlling company; or (viii) any other person designated by the Registrar.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s73.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) A bank, controlling company, branch or branch of a bank (a) shall not make investments with or grant loans or advances or other credit to any person, to an aggregate amount exceeding 10 per cent of such amount of its capital and reserves as may be prescribed, without first having obtained the permission of its board of directors, or of a committee appointed for such purpose (for the composition of which committee the prior written approval of the Registrar has to be obtained), to make such investments or to grant such loans, advances or other credit; and (b) shall in the event of the aggregate amount of investments, loans, advances and other credit contemplated in paragraph (a), relating to any private sector non-bank person, exceeding 800 per cent of such an amount of its capital and reserves as may be prescribed, be subject to such additional capital requirements as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s73.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) Notwithstanding anything to the contrary contained in this Act, a bank, controlling company, branch or branch of a bank (a) shall not without the prior written approval of the Registrar make an investment with or grant a loan, advance or other credit to any private sector non-bank person, which transaction, either alone or together with any previous transaction or transactions entered into by it with that private sector non-bank person, results in the bank, controlling company, branch or branch of a bank being exposed to that private sector non-bank person to an amount exceeding 25 per cent of a prescribed amount; (b) shall in such manner and on such a form as may be prescribed report to the Registrar whenever it makes an investment with or grants a loan or advance or other credit to any person other than a private sector non-bank person, which transaction, either alone or together with any previous transaction or transactions entered into by it with that other person, results in the bank, controlling company, branch or branch of a bank being exposed to that other person up to an amount exceeding 25 per cent of a prescribed amount; and (c) shall, in the event of the Registrar granting such written approval as contemplated in paragraph (a), be subject to such additional capital requirements as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s73.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) For the purposes of this section (a) 'person' includes (i) two or more persons, whether natural or juristic persons, the respective exposures to whom constitute a single exposure because of the fact that one of them directly or indirectly exercises control over the other or others; and (ii) two or more persons, whether natural or juristic persons, between whom there exists no relationship of control as contemplated in subparagraph (i), but the respective exposures to whom are to be regarded as a single exposure because of the fact that they are so interconnected that should one of them experience financial difficulties, another one or all of them would be likely to experience a lack of liquidity; and (b) 'private sector non-bank person' means a person as defined in paragraph (a) but does not include (i) the central government or other public sector bodies; (ii) a bank; (iii) a mutual bank; (iv) a branch of a bank; (v) a branch; (vi) a foreign institution that, under an authorisation referred to in section 18A, conducts the business of a bank by means of a branch in the Republic; (vii) a controlling company; or (viii) any other person designated by the Registrar.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s74",
           "number": "74",
           "heading": "Failure or inability to comply with prudential requirements",
-          "text": "(1) If a bank fails to comply with a provision of section 70 or 72, or is unable to comply with any such provision, it shall forthwith in writing report its failure or inability to the Registrar, stating the reasons for such failure or inability. (2) The Registrar may summarily take action under this Act against a bank referred to in subsection (1) or, if in the circumstances the Registrar deems it fit to do so, condone the failure or inability and afford the bank concerned an opportunity, subject to such conditions as the Registrar may determine, to comply with the relevant provision within a specified period. (3) Irrespective of whether criminal proceedings in terms of this Act have been or may be instituted against a bank in respect of any failure or inability referred to in subsection (1), the Registrar may, subject to any condonation granted under subsection (2), by way of a written notice impose upon that bank, in respect of such failure or inability, a fine (a) in the case of any failure or inability to comply with the provisions of section 70, not exceeding one-tenth of one per cent of the amount of the shortfall for each day on which such failure or inability continues; or (b) in the case of any failure or inability to comply with the provisions of section 72, not exceeding three per cent of the amount of the shortfall. (4) A fine imposed under subsection (3) shall be paid to the Registrar within such period as may be specified in the relevant notice, and if the bank concerned fails to pay the fine within the specified period the Registrar may by way of civil action in a competent court recover from that bank the amount of the fine or any portion thereof which the Registrar may in the circumstances consider justified.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s74.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) If a bank fails to comply with a provision of section 70 or 72, or is unable to comply with any such provision, it shall forthwith in writing report its failure or inability to the Registrar, stating the reasons for such failure or inability.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s74.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) The Registrar may summarily take action under this Act against a bank referred to in subsection (1) or, if in the circumstances the Registrar deems it fit to do so, condone the failure or inability and afford the bank concerned an opportunity, subject to such conditions as the Registrar may determine, to comply with the relevant provision within a specified period.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s74.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Irrespective of whether criminal proceedings in terms of this Act have been or may be instituted against a bank in respect of any failure or inability referred to in subsection (1), the Registrar may, subject to any condonation granted under subsection (2), by way of a written notice impose upon that bank, in respect of such failure or inability, a fine (a) in the case of any failure or inability to comply with the provisions of section 70, not exceeding one-tenth of one per cent of the amount of the shortfall for each day on which such failure or inability continues; or (b) in the case of any failure or inability to comply with the provisions of section 72, not exceeding three per cent of the amount of the shortfall.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s74.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) A fine imposed under subsection (3) shall be paid to the Registrar within such period as may be specified in the relevant notice, and if the bank concerned fails to pay the fine within the specified period the Registrar may by way of civil action in a competent court recover from that bank the amount of the fine or any portion thereof which the Registrar may in the circumstances consider justified.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s75",
           "number": "75",
           "heading": "Returns",
-          "text": "(1) A bank shall, in order to enable the Registrar to determine (a) whether the bank is complying with the provisions of (i) sections 70 and 72; or (ii) section 10 of the South African Reserve Bank Act, 1989 (Act No. 90 of 1989); or (b) the nature and amounts of the bank's assets, liabilities and contingent liabilities, furnish the Registrar, subject to the provisions of subsection (3A), with returns. (3) A bank shall, in addition to the returns referred to in subsection (1), furnish the Registrar, subject to the provisions of subsection (3A), with the prescribed returns, including returns relating to the extent and management of risk exposures in the conduct of its business. (3A) The returns referred to in subsections (1) and (3) shall be prepared in conformity with generally accepted accounting practice and shall be furnished to the Registrar in respect of such period, at such times and on such a form as may be prescribed. (5) A bank shall furnish the Registrar, in respect of those of the respective returns referred to in subsections (1) and (3) which most nearly coincide with the end of the financial year of the bank, with a report by the auditor of the bank in which is stated whether or not those returns fairly and in conformity with generally accepted accounting practice present those affairs of the bank to which the returns relate. (6) A bank shall, at such times as may be prescribed, furnish the Registrar with such further prescribed information as the Registrar may require.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s75.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) A bank shall, in order to enable the Registrar to determine (a) whether the bank is complying with the provisions of (i) sections 70 and 72; or (ii) section 10 of the South African Reserve Bank Act, 1989 (Act No. 90 of 1989); or (b) the nature and amounts of the bank's assets, liabilities and contingent liabilities, furnish the Registrar, subject to the provisions of subsection (3A), with returns.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s75.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) A bank shall, in addition to the returns referred to in subsection (1), furnish the Registrar, subject to the provisions of subsection (3A), with the prescribed returns, including returns relating to the extent and management of risk exposures in the conduct of its business. (3A) The returns referred to in subsections (1) and (3) shall be prepared in conformity with generally accepted accounting practice and shall be furnished to the Registrar in respect of such period, at such times and on such a form as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s75.5",
+              "number": "5",
+              "heading": "(5)",
+              "text": "(5) A bank shall furnish the Registrar, in respect of those of the respective returns referred to in subsections (1) and (3) which most nearly coincide with the end of the financial year of the bank, with a report by the auditor of the bank in which is stated whether or not those returns fairly and in conformity with generally accepted accounting practice present those affairs of the bank to which the returns relate.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s75.6",
+              "number": "6",
+              "heading": "(6)",
+              "text": "(6) A bank shall, at such times as may be prescribed, furnish the Registrar with such further prescribed information as the Registrar may require.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -472,15 +901,59 @@
           "id": "s82",
           "number": "82",
           "heading": "Registrar's power to exact information from unregistered persons",
-          "text": "(1) If the Registrar has reason to suspect that any person who is neither registered as a bank nor authorized in terms of the provisions of section 18A(1) to carry on the business of a bank is carrying on the business of a bank, the Registrar may by notice in writing direct that person to submit to the Registrar such document or to furnish the Registrar with such information, relating to the affairs of that person, as the Registrar may specify in the notice and as may be available to that person. (2) A document or information referred to in subsection (1) shall be submitted or furnished within such period as the Registrar may specify in the relevant notice or within such extended period as the Registrar may allow on application made by the person concerned before the expiration of the period initially specified in the notice. (3) Any person who refuses to comply, or fails to comply within the specified or extended period referred to in subsection (2), with a direction issued by the Registrar under subsection (1) shall be guilty of an offence.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s82.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) If the Registrar has reason to suspect that any person who is neither registered as a bank nor authorized in terms of the provisions of section 18A(1) to carry on the business of a bank is carrying on the business of a bank, the Registrar may by notice in writing direct that person to submit to the Registrar such document or to furnish the Registrar with such information, relating to the affairs of that person, as the Registrar may specify in the notice and as may be available to that person.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s82.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) A document or information referred to in subsection (1) shall be submitted or furnished within such period as the Registrar may specify in the relevant notice or within such extended period as the Registrar may allow on application made by the person concerned before the expiration of the period initially specified in the notice.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s82.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Any person who refuses to comply, or fails to comply within the specified or extended period referred to in subsection (2), with a direction issued by the Registrar under subsection (1) shall be guilty of an offence.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s83",
           "number": "83",
           "heading": "Repayment of money unlawfully obtained",
-          "text": "(1) If as a result of an inspection conducted under section 12 of the South African Reserve Bank Act, 1989 (Act No. 90 of 1989), the Registrar is satisfied that any person has obtained money by carrying on the business of a bank without being registered as a bank or without being authorized, in terms of the provisions of section 18A(1), to carry on the business of a bank, the Registrar may in writing direct that person to repay, subject to the provisions of section 84 and in accordance with such requirements and within such period as may be specified in the direction, all money so obtained by that person in so far as such money has not yet been repaid, including any interest or any other amounts owing by that person in respect of such money. (3)(a) Any person who refuses or fails to comply with a direction under subsection (1) shall be guilty of an offence; and (b) shall for the purposes of any law relating to the winding-up of juristic persons or to the sequestration of insolvent estates, be deemed not to be able to pay the debts owed by such person or to have committed an act of insolvency, as the case may be, and the Registrar shall, notwithstanding anything to the contrary contained in any law, be competent to apply for the winding-up of such a juristic person or for the sequestration of the estate of such a person.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s83.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) If as a result of an inspection conducted under section 12 of the South African Reserve Bank Act, 1989 (Act No. 90 of 1989), the Registrar is satisfied that any person has obtained money by carrying on the business of a bank without being registered as a bank or without being authorized, in terms of the provisions of section 18A(1), to carry on the business of a bank, the Registrar may in writing direct that person to repay, subject to the provisions of section 84 and in accordance with such requirements and within such period as may be specified in the direction, all money so obtained by that person in so far as such money has not yet been repaid, including any interest or any other amounts owing by that person in respect of such money.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s83.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3)(a) Any person who refuses or fails to comply with a direction under subsection (1) shall be guilty of an offence; and (b) shall for the purposes of any law relating to the winding-up of juristic persons or to the sequestration of insolvent estates, be deemed not to be able to pay the debts owed by such person or to have committed an act of insolvency, as the case may be, and the Registrar shall, notwithstanding anything to the contrary contained in any law, be competent to apply for the winding-up of such a juristic person or for the sequestration of the estate of such a person.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s84",
@@ -535,15 +1008,59 @@
           "id": "s90",
           "number": "90",
           "heading": "Regulations",
-          "text": "(1) The Minister may make regulations (a) as to any matter which is required or permitted to be prescribed by regulation under this Act; (b) subject to the provisions of the Companies Act, providing guidelines relating to the conduct of, and prescribing requirements to be complied with by, a member of the board of directors of a bank in the performance of the functions of such a director; (c) prescribing matters in addition to those contemplated in any other provision of this Act, in respect of which fees shall be payable, and the fee payable in respect of each such matter; (d) prescribing the manner in which any payment in terms of this Act shall be made to the Registrar; (e) prescribing such further returns as the Minister may deem expedient, in addition to those contemplated in any other provision of this Act, to be furnished by banks to the Registrar; (f) prescribing that the financial statements of a bank shall be prepared in conformity with generally accepted accounting practice; (g) prescribing the amount of the fee payable in respect of a licence referred to in section 35 or the basis on which such amount shall be calculated; or (i) prescribing, generally, any matter which the Minister may deem it necessary or expedient to prescribe in order that the objects and purposes of this Act may be better achieved. (3) A regulation made under subsection (1) may in respect of any contravention thereof or failure to comply therewith prescribe a penalty not exceeding a fine of R2 000 or imprisonment for a period of six months.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s90.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The Minister may make regulations (a) as to any matter which is required or permitted to be prescribed by regulation under this Act; (b) subject to the provisions of the Companies Act, providing guidelines relating to the conduct of, and prescribing requirements to be complied with by, a member of the board of directors of a bank in the performance of the functions of such a director; (c) prescribing matters in addition to those contemplated in any other provision of this Act, in respect of which fees shall be payable, and the fee payable in respect of each such matter; (d) prescribing the manner in which any payment in terms of this Act shall be made to the Registrar; (e) prescribing such further returns as the Minister may deem expedient, in addition to those contemplated in any other provision of this Act, to be furnished by banks to the Registrar; (f) prescribing that the financial statements of a bank shall be prepared in conformity with generally accepted accounting practice; (g) prescribing the amount of the fee payable in respect of a licence referred to in section 35 or the basis on which such amount shall be calculated; or (i) prescribing, generally, any matter which the Minister may deem it necessary or expedient to prescribe in order that the objects and purposes of this Act may be better achieved.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s90.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) A regulation made under subsection (1) may in respect of any contravention thereof or failure to comply therewith prescribe a penalty not exceeding a fine of R2 000 or imprisonment for a period of six months.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s91",
           "number": "91",
           "heading": "Offences and penalties",
-          "text": "(1) Any person who (a) fails to comply with a direction under section 7; (aA) in the completion of any questionnaire contemplated in section 1(1A)(c) or in the furnishing of any prescribed information contemplated in section 60(5) furnishes the Registrar with any information which to the knowledge of such person is untrue or misleading in any material respect; or (b) contravenes or fails to comply with a provision of section 7(3), (4) or (5), 34, 35, 37(1), 38(1), 39, 41, 42(1), 52(1) or (4), 53, 55, 58, 59, 60(5)(a)(i), 60(5)(b)(i), 61(2), 65, 66, 67, 70(2), (2A) or (2B), 70A, 72, 73, 75, 76, 77, 78(1) or (3), 79, 80 or 84(2), shall be guilty of an offence. (4) Any person convicted of an offence in terms of (a) Section 1(1A)(d), 11(2), 18A(7), 22(4) or 60(5)(a)(i) or (b)(i) read with subsection (1)(b) of this section, shall be liable to a fine or to imprisonment for a period not exceeding ten years or to both a fine and such imprisonment; (b) section 17(6), 21, 22(3) or (8), 32(4)(a), 69A(14), 78(2), 82(3), 83(3)(a), 84(8) or subsection (1), (2) or (3) of this section (excluding the offence in terms of subsection (1)(b), referred to in paragraph (a)), shall be liable to a fine or to imprisonment for a period not exceeding five years or to both a fine and such imprisonment; or (c) any other provision of this Act in respect of which no specific penalty has been prescribed shall be liable to a fine or to imprisonment for a period not exceeding five years or to both a fine and such imprisonment. (6) If any person fails to submit to the Registrar or to furnish the Registrar with any return, statement, report or other document or information in accordance with a requirement of this Act within the period determined by or under this Act or, if that period has been extended by the Registrar under section 8(2)(a), within the extended period, the Registrar may impose upon such person by way of a notice in writing a fine not exceeding R1000 for every day during which such failure continues.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s91.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Any person who (a) fails to comply with a direction under section 7; (aA) in the completion of any questionnaire contemplated in section 1(1A)(c) or in the furnishing of any prescribed information contemplated in section 60(5) furnishes the Registrar with any information which to the knowledge of such person is untrue or misleading in any material respect; or (b) contravenes or fails to comply with a provision of section 7(3), (4) or (5), 34, 35, 37(1), 38(1), 39, 41, 42(1), 52(1) or (4), 53, 55, 58, 59, 60(5)(a)(i), 60(5)(b)(i), 61(2), 65, 66, 67, 70(2), (2A) or (2B), 70A, 72, 73, 75, 76, 77, 78(1) or (3), 79, 80 or 84(2), shall be guilty of an offence.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s91.4",
+              "number": "4",
+              "heading": "(4)",
+              "text": "(4) Any person convicted of an offence in terms of (a) Section 1(1A)(d), 11(2), 18A(7), 22(4) or 60(5)(a)(i) or (b)(i) read with subsection (1)(b) of this section, shall be liable to a fine or to imprisonment for a period not exceeding ten years or to both a fine and such imprisonment; (b) section 17(6), 21, 22(3) or (8), 32(4)(a), 69A(14), 78(2), 82(3), 83(3)(a), 84(8) or subsection (1), (2) or (3) of this section (excluding the offence in terms of subsection (1)(b), referred to in paragraph (a)), shall be liable to a fine or to imprisonment for a period not exceeding five years or to both a fine and such imprisonment; or (c) any other provision of this Act in respect of which no specific penalty has been prescribed shall be liable to a fine or to imprisonment for a period not exceeding five years or to both a fine and such imprisonment.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s91.6",
+              "number": "6",
+              "heading": "(6)",
+              "text": "(6) If any person fails to submit to the Registrar or to furnish the Registrar with any return, statement, report or other document or information in accordance with a requirement of this Act within the period determined by or under this Act or, if that period has been extended by the Registrar under section 8(2)(a), within the extended period, the Registrar may impose upon such person by way of a notice in writing a fine not exceeding R1000 for every day during which such failure continues.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s92",
