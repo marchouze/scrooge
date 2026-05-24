@@ -186,9 +186,106 @@
               "id": "s2-1.17",
               "number": "17",
               "heading": "financial institution",
-              "text": "'financial institution', notwithstanding the definition of 'financial institution' in the Act, for the purpose of this Joint Standard means – (a) a bank, a branch, a branch of a bank and a controlling company as respectively defined section 1 of the Banks Act, 1990 (Act No. 94 of 1990); (b) a mutual bank as defined in section 1 of the Mutual Banks Act, 1993 (Act No. 24 of 1993); (c) an insurer and a controlling company as defined in section 1 of the Insurance Act, 2017 (Act No. 18 of 2017); (d) a manager as defined in section 1 of the Collective Investment Scheme Control Act, 2002 (Act No. 45 of 2002); (e) a market infrastructure as defined in section 1 of the Financial Markets Act 2012 (Act No. 19 of 2012); (f) a discretionary FSP as defined in Chapter II of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003; (g) a Category I FSP as contemplated in section 3(a) of the Determination of Fit and Proper Requirements for Financial Services Providers, 2017, that provides investment fund administration services; (h) an administrative FSP as defined in Chapter I of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003; (i) a pension fund registered under the Pension Funds Act, 1956 (Act No. 24 of 1956); (j) an OTC derivative provider as defined in the Financial Markets Act Regulations; (k) an administrator approved in terms of section 13B of the Pension Funds Act, 1956 (Act No 24 of 1956); and (l) a registered credit rating agency as defined in section 1 of the Credit Rating Services Act, 2012 (Act No 24 of 2012);",
+              "text": "'financial institution', notwithstanding the definition of 'financial institution' in the Act, for the purpose of this Joint Standard means –",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1.17.a",
+                  "number": "a",
+                  "heading": "s2-1.17.a",
+                  "text": "a bank, a branch, a branch of a bank and a controlling company as respectively defined section 1 of the Banks Act, 1990 (Act No. 94 of 1990);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.b",
+                  "number": "b",
+                  "heading": "s2-1.17.b",
+                  "text": "a mutual bank as defined in section 1 of the Mutual Banks Act, 1993 (Act No. 24 of 1993);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.c",
+                  "number": "c",
+                  "heading": "s2-1.17.c",
+                  "text": "an insurer and a controlling company as defined in section 1 of the Insurance Act, 2017 (Act No. 18 of 2017);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.d",
+                  "number": "d",
+                  "heading": "s2-1.17.d",
+                  "text": "a manager as defined in section 1 of the Collective Investment Scheme Control Act, 2002 (Act No. 45 of 2002);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.e",
+                  "number": "e",
+                  "heading": "s2-1.17.e",
+                  "text": "a market infrastructure as defined in section 1 of the Financial Markets Act 2012 (Act No. 19 of 2012);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.f",
+                  "number": "f",
+                  "heading": "s2-1.17.f",
+                  "text": "a discretionary FSP as defined in Chapter II of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.g",
+                  "number": "g",
+                  "heading": "s2-1.17.g",
+                  "text": "a Category I FSP as contemplated in section 3(a) of the Determination of Fit and Proper Requirements for Financial Services Providers, 2017, that provides investment fund administration services;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.h",
+                  "number": "h",
+                  "heading": "s2-1.17.h",
+                  "text": "an administrative FSP as defined in Chapter I of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.i",
+                  "number": "i",
+                  "heading": "s2-1.17.i",
+                  "text": "a pension fund registered under the Pension Funds Act, 1956 (Act No. 24 of 1956);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.j",
+                  "number": "j",
+                  "heading": "s2-1.17.j",
+                  "text": "an OTC derivative provider as defined in the Financial Markets Act Regulations;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.k",
+                  "number": "k",
+                  "heading": "s2-1.17.k",
+                  "text": "an administrator approved in terms of section 13B of the Pension Funds Act, 1956 (Act No 24 of 1956); and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.17.l",
+                  "number": "l",
+                  "heading": "s2-1.17.l",
+                  "text": "a registered credit rating agency as defined in section 1 of the Credit Rating Services Act, 2012 (Act No 24 of 2012);",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s2-1.18",

@@ -118,9 +118,26 @@
                   "id": "s1.j.b",
                   "number": "b",
                   "heading": "s1.j.b",
-                  "text": "includes–\n(i) in respect of legal persons, each natural person contemplated in section 21B(2)(a);\n(ii) in respect of a partnership, each natural person contemplated in section 21B(3)(b); and\n(iii) in respect of a trust, each natural person contemplated in section 21B(4)(c),(d) and (e);\n\"business relationship\" means an arrangement between a client and an accountable institution for the purpose of concluding transactions on a regular basis;\n\"cash\" means–\n(a) coin and paper money of the Republic or of another country that is designated as legal tender and that circulates as, and is customarily used and accepted as, a medium of exchange in the country of issue;\n(b) travellers' cheques;\n\"Centre\" means the Financial Intelligence Centre established by section 2;\n\"client\", in relation to an accountable institution, means a person who has entered into a business relationship or a single transaction with an accountable institution;\n\"Director\" means the Director of the Centre appointed in terms of section 6;\n\"domestic politically exposed person\" means a person referred to in Schedule 3A;\n\"entity\" has a corresponding meaning with the definition in section 1 of the Protection of Constitutional Democracy against Terrorist and Related Activities Act, 2004;\n\"foreign politically exposed person\" means a person referred to in Schedule 3B;\n\"inspector\" means a person appointed in terms of section 45A;\n\"investigating authority\" means an authority that in terms of national legislation may investigate unlawful activities;\n\"legal person\" means any person, other than a natural person, that establishes a business relationship or enters into a single transaction, with an accountable institution, and includes a person incorporated as a company, close corporation, foreign company or any other form of corporate arrangement or association, but excludes a trust, partnership or sole proprietor;\n\"Minister\" means the Minister of Finance;\n\"money laundering\" or \"money laundering activity\" means an activity which has or is likely to have the effect of concealing or disguising the nature, source, location, disposition or movement of the proceeds of unlawful activities or any interest which anyone has in such proceeds, and includes any activity which constitutes an offence in terms of section 64 of this Act or section 4, 5 or 6 of the Prevention Act;\n\"non-compliance\" means any act or omission that constitutes a failure to comply with a provision of this Act or any order, determination or directive made in terms of this Act and which does not constitute an offence in terms of this Act, and 'fails to comply', 'failure to comply', 'non-compliant' and 'not complying' have a corresponding meaning;\n\"offence relating to the financing of terrorist and related activities\" means an offence under section 4 of the Protection of Constitutional Democracy against Terrorist and Related Activities Act, 2004 (Act No. 33 of 2004);\n\"prescribed\" means prescribed by the Minister by regulation in terms of section 77;\n\"Prevention Act\" means the Prevention of Organised Crime Act, 1998 (Act No. 121 of 1998);\n\"proceeds of unlawful activities\" has the meaning attributed to that term in section 1 of the Prevention Act;\n\"proliferation financing\" or \"proliferation financing activity\" means an activity which has or is likely to have the effect of providing property, a financial or other service or economic support to a non-State actor, that may be used to finance the manufacture, acquisition, possessing, development, transport, transfer or use of nuclear, chemical or biological weapons and their means of delivery, and includes any activity which constitutes an offence in terms of section 49A;\n\"prominent influential person\" means a person referred to in Schedule 3C;\n\"property\" has the meaning attributed to that term in section 1 of the Prevention Act;\n\"reporting institution\" means a person referred to in Schedule 3;\n\"Risk Management and Compliance Programme\" means the programme contemplated in section 42(1);\n\"single transaction\" means a transaction–\n(a) other than a transaction concluded in the course of a business relationship; and\n(b) where the value of the transaction is not less than the amount prescribed, except in the case of section 20A;\n\"supervisory body\" means a functionary or institution referred to in Schedule 2;\n\"terrorist and related activities\" has the meaning assigned to it in section 1 of the Protection of Constitutional Democracy Against Terrorist and Related Activities Act. 2004 (Act No. 33 of 2004);\n\"this Act\" includes any regulation made or exemption given under this Act;\n\"trust\" means a trust defined in section 1 of the Trust Property Control Act, 1988 (Act No. 57 of 1988), other than a trust established–\n(a) by virtue of a testamentary disposition;\n(b) by virtue of a court order;",
+                  "text": "includes–\n(i) in respect of legal persons, each natural person contemplated in section 21B(2)(a);\n(ii) in respect of a partnership, each natural person contemplated in section 21B(3)(b); and\n(iii) in respect of a trust, each natural person contemplated in section 21B(4)(c),(d) and (e);\n\"business relationship\" means an arrangement between a client and an accountable institution for the purpose of concluding transactions on a regular basis;\n\"cash\" means–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.j.b.a",
+                      "number": "a",
+                      "heading": "s1.j.b.a",
+                      "text": "coin and paper money of the Republic or of another country that is designated as legal tender and that circulates as, and is customarily used and accepted as, a medium of exchange in the country of issue;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.b.b",
+                      "number": "b",
+                      "heading": "s1.j.b.b",
+                      "text": "travellers' cheques;\n\"Centre\" means the Financial Intelligence Centre established by section 2;\n\"client\", in relation to an accountable institution, means a person who has entered into a business relationship or a single transaction with an accountable institution;\n\"Director\" means the Director of the Centre appointed in terms of section 6;\n\"domestic politically exposed person\" means a person referred to in Schedule 3A;\n\"entity\" has a corresponding meaning with the definition in section 1 of the Protection of Constitutional Democracy against Terrorist and Related Activities Act, 2004;\n\"foreign politically exposed person\" means a person referred to in Schedule 3B;\n\"inspector\" means a person appointed in terms of section 45A;\n\"investigating authority\" means an authority that in terms of national legislation may investigate unlawful activities;\n\"legal person\" means any person, other than a natural person, that establishes a business relationship or enters into a single transaction, with an accountable institution, and includes a person incorporated as a company, close corporation, foreign company or any other form of corporate arrangement or association, but excludes a trust, partnership or sole proprietor;\n\"Minister\" means the Minister of Finance;\n\"money laundering\" or \"money laundering activity\" means an activity which has or is likely to have the effect of concealing or disguising the nature, source, location, disposition or movement of the proceeds of unlawful activities or any interest which anyone has in such proceeds, and includes any activity which constitutes an offence in terms of section 64 of this Act or section 4, 5 or 6 of the Prevention Act;\n\"non-compliance\" means any act or omission that constitutes a failure to comply with a provision of this Act or any order, determination or directive made in terms of this Act and which does not constitute an offence in terms of this Act, and 'fails to comply', 'failure to comply', 'non-compliant' and 'not complying' have a corresponding meaning;\n\"offence relating to the financing of terrorist and related activities\" means an offence under section 4 of the Protection of Constitutional Democracy against Terrorist and Related Activities Act, 2004 (Act No. 33 of 2004);\n\"prescribed\" means prescribed by the Minister by regulation in terms of section 77;\n\"Prevention Act\" means the Prevention of Organised Crime Act, 1998 (Act No. 121 of 1998);\n\"proceeds of unlawful activities\" has the meaning attributed to that term in section 1 of the Prevention Act;\n\"proliferation financing\" or \"proliferation financing activity\" means an activity which has or is likely to have the effect of providing property, a financial or other service or economic support to a non-State actor, that may be used to finance the manufacture, acquisition, possessing, development, transport, transfer or use of nuclear, chemical or biological weapons and their means of delivery, and includes any activity which constitutes an offence in terms of section 49A;\n\"prominent influential person\" means a person referred to in Schedule 3C;\n\"property\" has the meaning attributed to that term in section 1 of the Prevention Act;\n\"reporting institution\" means a person referred to in Schedule 3;\n\"Risk Management and Compliance Programme\" means the programme contemplated in section 42(1);\n\"single transaction\" means a transaction–\n(a) other than a transaction concluded in the course of a business relationship; and\n(b) where the value of the transaction is not less than the amount prescribed, except in the case of section 20A;\n\"supervisory body\" means a functionary or institution referred to in Schedule 2;\n\"terrorist and related activities\" has the meaning assigned to it in section 1 of the Protection of Constitutional Democracy Against Terrorist and Related Activities Act. 2004 (Act No. 33 of 2004);\n\"this Act\" includes any regulation made or exemption given under this Act;\n\"trust\" means a trust defined in section 1 of the Trust Property Control Act, 1988 (Act No. 57 of 1988), other than a trust established–\n(a) by virtue of a testamentary disposition;\n(b) by virtue of a court order;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s1.j.c",
@@ -134,9 +151,26 @@
                   "id": "s1.j.d",
                   "number": "d",
                   "heading": "s1.j.d",
-                  "text": "by the trustees of a retirement fund in respect of benefits payable to the beneficiaries of that retirement fund,\nand includes a similar arrangement established outside the Republic;\n\"unlawful activity\" has the meaning attributed to that term in section 1 of the Prevention Act.\n(2) For the purposes of this Act a person has knowledge of a fact if–\n(a) the person has actual knowledge of that fact; or\n(b) the court is satisfied that–\n(i) the person believes that there is a reasonable possibility of the existence of that fact; and\n(ii) the person fails to obtain information to confirm or refute the existence of that fact.\n(3) For the purposes of this Act a person ought reasonably to have known or suspected a fact if the conclusions that he or she ought to have reached, are those which would have been reached by a reasonably diligent and vigilant person having both–\n(a) the general knowledge, skill, training and experience that may reasonably be expected of a person in his or her position; and\n(b) the general knowledge, skill, training and experience that he or she in fact has.",
+                  "text": "by the trustees of a retirement fund in respect of benefits payable to the beneficiaries of that retirement fund,\nand includes a similar arrangement established outside the Republic;\n\"unlawful activity\" has the meaning attributed to that term in section 1 of the Prevention Act.\n(2) For the purposes of this Act a person has knowledge of a fact if–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.j.d.a",
+                      "number": "a",
+                      "heading": "s1.j.d.a",
+                      "text": "the person has actual knowledge of that fact; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.d.b",
+                      "number": "b",
+                      "heading": "s1.j.d.b",
+                      "text": "the court is satisfied that–\n(i) the person believes that there is a reasonable possibility of the existence of that fact; and\n(ii) the person fails to obtain information to confirm or refute the existence of that fact.\n(3) For the purposes of this Act a person ought reasonably to have known or suspected a fact if the conclusions that he or she ought to have reached, are those which would have been reached by a reasonably diligent and vigilant person having both–\n(a) the general knowledge, skill, training and experience that may reasonably be expected of a person in his or her position; and\n(b) the general knowledge, skill, training and experience that he or she in fact has.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }
@@ -539,9 +573,26 @@
                   "id": "s21B.b.b",
                   "number": "b",
                   "heading": "s21B.b.b",
-                  "text": "take reasonable steps to verify the identity of the beneficial owner of the client, so that the accountable institution is satisfied that it knows who the beneficial owner is.\n(3) If a person, in entering into a single transaction or establishing a business relationship as contemplated in section 21, is acting on behalf of a partnership, an accountable institution must, in addition to the steps required under sections 21 and 21A and in accordance with its Risk Management and Compliance Programme–\n(a) establish the identifying name of the partnership, if applicable;\n(b) establish the identity of–\n(i) every partner, including every member of a partnership en commandite, an anonymous partnership or any similar partnership;\n(ii) if a partner in the partnership is a legal person or a natural person acting on behalf of a partnership or in pursuance of the provisions of a trust agreement, the beneficial owner of that legal person, partnership or trust;\n(iii) the natural person who exercises executive control over the partnership; and\n(iv) each natural person who purports to be authorised to enter into a single transaction or establish a business relationship with the accountable institution on behalf of the partnership; and",
+                  "text": "take reasonable steps to verify the identity of the beneficial owner of the client, so that the accountable institution is satisfied that it knows who the beneficial owner is.\n(3) If a person, in entering into a single transaction or establishing a business relationship as contemplated in section 21, is acting on behalf of a partnership, an accountable institution must, in addition to the steps required under sections 21 and 21A and in accordance with its Risk Management and Compliance Programme–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s21B.b.b.a",
+                      "number": "a",
+                      "heading": "s21B.b.b.a",
+                      "text": "establish the identifying name of the partnership, if applicable;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s21B.b.b.b",
+                      "number": "b",
+                      "heading": "s21B.b.b.b",
+                      "text": "establish the identity of–\n(i) every partner, including every member of a partnership en commandite, an anonymous partnership or any similar partnership;\n(ii) if a partner in the partnership is a legal person or a natural person acting on behalf of a partnership or in pursuance of the provisions of a trust agreement, the beneficial owner of that legal person, partnership or trust;\n(iii) the natural person who exercises executive control over the partnership; and\n(iv) each natural person who purports to be authorised to enter into a single transaction or establish a business relationship with the accountable institution on behalf of the partnership; and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -1098,9 +1149,34 @@
               "id": "s26C.e",
               "number": "e",
               "heading": "s26C.e",
-              "text": "make a payment due to a person or entity affected by a prohibition under section 26B by virtue of a contract, agreement or other obligation made before the date on which the person or entity was identified by the Security Council of the United Nations: Provided that the payment is not directly or indirectly being received by that person or entity.\n(3) The Minister may permit the provision of financial services or the dealing with property under subsection (1) on his or her own initiative or at the request of a person affected by a prohibition under section 26B.\n(4) The Director must, by appropriate means of publication, give notice of the Minister's permission of the provision of financial services or the dealing with property under subsection (1).\n(5)(a) The Minister may, in writing, delegate any power conferred in terms of this section, to the Director.\n(b) A delegation in terms of paragraph (a)–\n(i) is subject to any limitations or conditions that the Minister may impose;\n(ii) does not divest the Minister of the responsibility concerning the exercise of the delegated power or the performance of the assigned duty.\n(c) The Minister may vary or revoke any decision taken by the Director as a result of a delegation in terms of paragraph (a), subject to any rights that may have vested as a consequence of the decision.",
+              "text": "make a payment due to a person or entity affected by a prohibition under section 26B by virtue of a contract, agreement or other obligation made before the date on which the person or entity was identified by the Security Council of the United Nations: Provided that the payment is not directly or indirectly being received by that person or entity.\n(3) The Minister may permit the provision of financial services or the dealing with property under subsection (1) on his or her own initiative or at the request of a person affected by a prohibition under section 26B.\n(4) The Director must, by appropriate means of publication, give notice of the Minister's permission of the provision of financial services or the dealing with property under subsection (1).\n(5)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s26C.e.a",
+                  "number": "a",
+                  "heading": "s26C.e.a",
+                  "text": "The Minister may, in writing, delegate any power conferred in terms of this section, to the Director.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s26C.e.b",
+                  "number": "b",
+                  "heading": "s26C.e.b",
+                  "text": "A delegation in terms of paragraph (a)–\n(i) is subject to any limitations or conditions that the Minister may impose;\n(ii) does not divest the Minister of the responsibility concerning the exercise of the delegated power or the performance of the assigned duty.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s26C.e.c",
+                  "number": "c",
+                  "heading": "s26C.e.c",
+                  "text": "The Minister may vary or revoke any decision taken by the Director as a result of a delegation in terms of paragraph (a), subject to any rights that may have vested as a consequence of the decision.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -1692,9 +1768,42 @@
                   "id": "s45C.e.e",
                   "number": "e",
                   "heading": "s45C.e.e",
-                  "text": "a financial penalty not exceeding R10 million in respect of natural persons and R50 million in respect of any legal person.\n(4) The Centre or supervisory body may–\n(a) in addition to the imposition of an administrative sanction, make recommendations to the relevant institution or person in respect of compliance with this Act or any order, determination or directive made in terms of this Act;\n(b) direct that a financial penalty must be paid by a natural person or persons for whose actions the relevant institution is accountable in law, if that person or persons was or were personally responsible for the non-compliance;\n(c) suspend any part of an administrative sanction on any condition the Centre or the supervisory body deems appropriate for a period not exceeding five years.\n(5) Before imposing an administrative sanction, the Centre or supervisory body must give the institution or person reasonable notice in writing–\n(a) of the nature of the alleged non-compliance;\n(b) of the intention to impose an administrative sanction;\n(c) of the amount or particulars of the intended administrative sanction; and\n(d) that the institution or person may, in writing, within a period specified in the notice, make representations as to why the administrative sanction should not be imposed.\n(6)(a) After considering any representations and the factors referred to in subsection (2), the Centre, subject to paragraph (c), or supervisory body may impose an administrative sanction the Centre or supervisory body considers appropriate.\n(b) Upon imposing the administrative sanction the Centre or supervisory body must, in writing, notify the institution or person–\n(i) of the decision and the reasons therefor; and\n(ii) of the right to appeal against the decision in accordance with section 45D.\n(c) The Centre must, prior to taking a decision contemplated in paragraph (a), consult the relevant supervisory body, if applicable.\n(7)(a) Any financial penalty imposed must be paid into the National Revenue Fund within the period and in the manner as may be specified in the relevant notice.\n(b) If the institution or person fails to pay the financial penalty within the specified period and an appeal has not been lodged within the required period, the Centre or supervisory body may forthwith file with the clerk or registrar of a competent court a certified copy of the notice contemplated in subsection (6)(b), and the notice thereupon has the effect of a civil judgment lawfully given in that court in favour of the Centre or supervisory body.\n(8) An administrative sanction contemplated in this section may not be imposed if the respondent has been charged with a criminal offence in respect of the same set of facts.\n(9) If a court assesses the penalty to be imposed on a person convicted of an offence in terms of this Act, the court must take into account any administrative sanction imposed under this section in respect of the same set of facts.\n(10) An administrative sanction imposed in terms of this Act does not constitute a previous conviction as contemplated in Chapter 27 of the Criminal Procedure Act, 1977 (Act No. 51 of 1977).\n(11) Unless the Director or supervisory body is of the opinion that there are exceptional circumstances present that justify the preservation of the confidentiality of a decision the Director or supervisory body must make public the decision and the nature of any sanction imposed if–\n(a) an institution or person does not appeal against a decision of the Centre or supervisory body within the required period; or\n(b) the appeal board confirms the decision of the Centre or supervisory body.",
+                  "text": "a financial penalty not exceeding R10 million in respect of natural persons and R50 million in respect of any legal person.\n(4) The Centre or supervisory body may–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s45C.e.e.a",
+                      "number": "a",
+                      "heading": "s45C.e.e.a",
+                      "text": "in addition to the imposition of an administrative sanction, make recommendations to the relevant institution or person in respect of compliance with this Act or any order, determination or directive made in terms of this Act;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s45C.e.e.b",
+                      "number": "b",
+                      "heading": "s45C.e.e.b",
+                      "text": "direct that a financial penalty must be paid by a natural person or persons for whose actions the relevant institution is accountable in law, if that person or persons was or were personally responsible for the non-compliance;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s45C.e.e.c",
+                      "number": "c",
+                      "heading": "s45C.e.e.c",
+                      "text": "suspend any part of an administrative sanction on any condition the Centre or the supervisory body deems appropriate for a period not exceeding five years.\n(5) Before imposing an administrative sanction, the Centre or supervisory body must give the institution or person reasonable notice in writing–\n(a) of the nature of the alleged non-compliance;\n(b) of the intention to impose an administrative sanction;\n(c) of the amount or particulars of the intended administrative sanction; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s45C.e.e.d",
+                      "number": "d",
+                      "heading": "s45C.e.e.d",
+                      "text": "that the institution or person may, in writing, within a period specified in the notice, make representations as to why the administrative sanction should not be imposed.\n(6)(a) After considering any representations and the factors referred to in subsection (2), the Centre, subject to paragraph (c), or supervisory body may impose an administrative sanction the Centre or supervisory body considers appropriate.\n(b) Upon imposing the administrative sanction the Centre or supervisory body must, in writing, notify the institution or person–\n(i) of the decision and the reasons therefor; and\n(ii) of the right to appeal against the decision in accordance with section 45D.\n(c) The Centre must, prior to taking a decision contemplated in paragraph (a), consult the relevant supervisory body, if applicable.\n(7)(a) Any financial penalty imposed must be paid into the National Revenue Fund within the period and in the manner as may be specified in the relevant notice.\n(b) If the institution or person fails to pay the financial penalty within the specified period and an appeal has not been lodged within the required period, the Centre or supervisory body may forthwith file with the clerk or registrar of a competent court a certified copy of the notice contemplated in subsection (6)(b), and the notice thereupon has the effect of a civil judgment lawfully given in that court in favour of the Centre or supervisory body.\n(8) An administrative sanction contemplated in this section may not be imposed if the respondent has been charged with a criminal offence in respect of the same set of facts.\n(9) If a court assesses the penalty to be imposed on a person convicted of an offence in terms of this Act, the court must take into account any administrative sanction imposed under this section in respect of the same set of facts.\n(10) An administrative sanction imposed in terms of this Act does not constitute a previous conviction as contemplated in Chapter 27 of the Criminal Procedure Act, 1977 (Act No. 51 of 1977).\n(11) Unless the Director or supervisory body is of the opinion that there are exceptional circumstances present that justify the preservation of the confidentiality of a decision the Director or supervisory body must make public the decision and the nature of any sanction imposed if–\n(a) an institution or person does not appeal against a decision of the Centre or supervisory body within the required period; or\n(b) the appeal board confirms the decision of the Centre or supervisory body.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }

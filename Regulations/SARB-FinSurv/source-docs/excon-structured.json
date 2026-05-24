@@ -904,9 +904,26 @@
               "id": "excon-reg14.2",
               "number": "2",
               "heading": "excon-reg14.2",
-              "text": "(2) (a) Any person who holds, possesses or has in his custody any controlled securities shall submit such securities to an authorised dealer within thirty days from the date of commencement of this regulation or within thirty days from the date on which he becomes the holder of such securities or on which such securities come into his possession or are placed in his custody whichever is the later date.\n(b) The securities submitted in terms of paragraph (a) must be accompanied by a list giving the following particulars:\n(i) Full name and country of residence of owner or person interested in the securities, together with a signed declaration by the holder that to the best of his knowledge, the owner or interested person is actually resident in the country stated.\n(ii) Name of company or body which issued the securities.\n(iii) Total number of securities.\n(iv) Full name and residential address of person in possession of the securities or who has the securities in his custody.\nFor the purpose of facilitating identification of controlled securities the Treasury may direct authorised dealers to affix to the securities so submitted to them their stamp together with such endorsement as the Treasury may determine.",
+              "text": "(2)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "excon-reg14.2.a",
+                  "number": "a",
+                  "heading": "excon-reg14.2.a",
+                  "text": "Any person who holds, possesses or has in his custody any controlled securities shall submit such securities to an authorised dealer within thirty days from the date of commencement of this regulation or within thirty days from the date on which he becomes the holder of such securities or on which such securities come into his possession or are placed in his custody whichever is the later date.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg14.2.b",
+                  "number": "b",
+                  "heading": "excon-reg14.2.b",
+                  "text": "The securities submitted in terms of paragraph (a) must be accompanied by a list giving the following particulars:\n(i) Full name and country of residence of owner or person interested in the securities, together with a signed declaration by the holder that to the best of his knowledge, the owner or interested person is actually resident in the country stated.\n(ii) Name of company or body which issued the securities.\n(iii) Total number of securities.\n(iv) Full name and residential address of person in possession of the securities or who has the securities in his custody.\nFor the purpose of facilitating identification of controlled securities the Treasury may direct authorised dealers to affix to the securities so submitted to them their stamp together with such endorsement as the Treasury may determine.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "excon-reg14.3",

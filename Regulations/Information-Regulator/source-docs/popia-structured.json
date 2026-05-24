@@ -22,8 +22,82 @@
           "id": "s1",
           "number": "1",
           "heading": "Definitions",
-          "text": "In this Act, unless the context indicates otherwise—\n'biometrics' means a technique of personal identification that is based on physical, physiological or behavioural characterisation including blood typing, fingerprinting, DNA analysis, retinal scanning and voice recognition;\n'child' means a natural person under the age of 18 years who is not legally competent, without the assistance of a competent person, to take any action or decision in respect of any matter concerning him- or herself;\n'code of conduct' means a code of conduct issued in terms of Chapter 7;\n'competent person' means any person who is legally competent to consent to any action or decision being taken in respect of any matter concerning a child;\n'consent' means any voluntary, specific and informed expression of will in terms of which permission is given for the processing of personal information;\n'Constitution' means the Constitution of the Republic of South Africa, 1996;\n'data subject' means the person to whom personal information relates;\n'de-identify', in relation to personal information of a data subject, means to delete any information that—(a) identifies the data subject; (b) can be used or manipulated by a reasonably foreseeable method to identify the data subject; or (c) can be linked by a reasonably foreseeable method to other information that identifies the data subject, and 'de-identified' has a corresponding meaning;\n'direct marketing' means to approach a data subject, either in person or by mail or electronic communication, for the direct or indirect purpose of—(a) promoting or offering to supply, in the ordinary course of business, any goods or services to the data subject; or (b) requesting the data subject to make a donation of any kind for any reason;\n'electronic communication' means any text, voice, sound or image message sent over an electronic communications network which is stored in the network or in the recipient's terminal equipment until it is collected by the recipient;\n'enforcement notice' means a notice issued in terms of section 95;\n'filing system' means any structured set of personal information, whether centralised, decentralised or dispersed on a functional or geographical basis, which is accessible according to specific criteria;\n'information matching programme' means the comparison, whether manually or by means of any electronic or other device, of any document that contains personal information about ten or more data subjects with one or more documents that contain personal information of ten or more data subjects, for the purpose of producing or verifying information that may be used for the purpose of taking any action in regard to an identifiable data subject;\n'information officer' of, or in relation to, a—(a) public body means an information officer or deputy information officer as contemplated in terms of section 1 or 17; or (b) private body means the head of a private body as contemplated in section 1, of the Promotion of Access to Information Act;\n'Minister' means the Cabinet member responsible for the administration of justice;\n'operator' means a person who processes personal information for a responsible party in terms of a contract or mandate, without coming under the direct authority of that party;\n'person' means a natural person or a juristic person;\n'personal information' means information relating to an identifiable, living, natural person, and where it is applicable, an identifiable, existing juristic person, including, but not limited to—(a) information relating to the race, gender, sex, pregnancy, marital status, national, ethnic or social origin, colour, sexual orientation, age, physical or mental health, well-being, disability, religion, conscience, belief, culture, language and birth of the person; (b) information relating to the education or the medical, financial, criminal or employment history of the person; (c) any identifying number, symbol, e-mail address, physical address, telephone number, location information, online identifier or other particular assignment to the person; (d) the biometric information of the person; (e) the personal opinions, views or preferences of the person; (f) correspondence sent by the person that is implicitly or explicitly of a private or confidential nature or further correspondence that would reveal the contents of the original correspondence; (g) the views or opinions of another individual about the person; and (h) the name of the person if it appears with other personal information relating to the person or if the disclosure of the name itself would reveal information about the person;\n'prescribed' means prescribed by regulation or by a code of conduct;\n'private body' means—(a) a natural person who carries or has carried on any trade, business or profession, but only in such capacity; (b) a partnership which carries or has carried on any trade, business or profession; or (c) any former or existing juristic person, but excludes a public body;\n'processing' means any operation or activity or any set of operations, whether or not by automatic means, concerning personal information, including—(a) the collection, receipt, recording, organisation, collation, storage, updating or modification, retrieval, alteration, consultation or use; (b) dissemination by means of transmission, distribution or making available in any other form; or (c) merging, linking, as well as restriction, degradation, erasure or destruction of information;\n'professional legal adviser' means any legally qualified person, whether in private practice or not, who lawfully provides a client, at his or her or its request, with independent, confidential legal advice;\n'Promotion of Access to Information Act' means the Promotion of Access to Information Act, 2000 (Act 2 of 2000);\n'public body' means—(a) any department of state or administration in the national or provincial sphere of government or any municipality in the local sphere of government; or (b) any other functionary or institution when—(i) exercising a power or performing a duty in terms of the Constitution or a provincial constitution; or (ii) exercising a public power or performing a public function in terms of any legislation;\n'public record' means a record that is accessible in the public domain and which is in the possession of or under the control of a public body, whether or not it was created by that public body;\n'record' means any recorded information—(a) regardless of form or medium, including any of the following: (i) Writing on any material; (ii) information produced, recorded or stored by means of any tape-recorder, computer equipment, whether hardware or software or both, or other device, and any material subsequently derived from information so produced, recorded or stored; (iii) label, marking or other writing that identifies or describes any thing of which it forms part, or to which it is attached by any means; (iv) book, map, plan, graph or drawing; (v) photograph, film, negative, tape or other device in which one or more visual images are embodied so as to be capable, with or without the aid of some other equipment, of being reproduced; (b) in the possession or under the control of a responsible party; (c) whether or not it was created by a responsible party; and (d) regardless of when it came into existence;\n'Regulator' means the Information Regulator established in terms of section 39;\n're-identify', in relation to personal information of a data subject, means to resurrect any information that has been de-identified, that—(a) identifies the data subject; (b) can be used or manipulated by a reasonably foreseeable method to identify the data subject; or (c) can be linked by a reasonably foreseeable method to other information that identifies the data subject, and 're-identified' has a corresponding meaning;\n'Republic' means the Republic of South Africa;\n'responsible party' means a public or private body or any other person which, alone or in conjunction with others, determines the purpose of and means for processing personal information;\n'restriction' means to withhold from circulation, use or publication any personal information that forms part of a filing system, but not to delete or destroy such information;\n'special personal information' means personal information as referred to in section 26;\n'this Act' includes any regulation or code of conduct made under this Act; and\n'unique identifier' means any identifier that is assigned to a data subject and is used by a responsible party for the purposes of the operations of that responsible party and that uniquely identifies that data subject in relation to that responsible party.",
-          "verbatim": true
+          "text": "In this Act, unless the context indicates otherwise—\n'biometrics' means a technique of personal identification that is based on physical, physiological or behavioural characterisation including blood typing, fingerprinting, DNA analysis, retinal scanning and voice recognition;\n'child' means a natural person under the age of 18 years who is not legally competent, without the assistance of a competent person, to take any action or decision in respect of any matter concerning him- or herself;\n'code of conduct' means a code of conduct issued in terms of Chapter 7;\n'competent person' means any person who is legally competent to consent to any action or decision being taken in respect of any matter concerning a child;\n'consent' means any voluntary, specific and informed expression of will in terms of which permission is given for the processing of personal information;\n'Constitution' means the Constitution of the Republic of South Africa, 1996;\n'data subject' means the person to whom personal information relates;\n'de-identify', in relation to personal information of a data subject, means to delete any information that—",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s1.a",
+              "number": "a",
+              "heading": "s1.a",
+              "text": "identifies the data subject;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.b",
+              "number": "b",
+              "heading": "s1.b",
+              "text": "can be used or manipulated by a reasonably foreseeable method to identify the data subject; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.c",
+              "number": "c",
+              "heading": "s1.c",
+              "text": "can be linked by a reasonably foreseeable method to other information that identifies the data subject, and 'de-identified' has a corresponding meaning;\n'direct marketing' means to approach a data subject, either in person or by mail or electronic communication, for the direct or indirect purpose of—(a) promoting or offering to supply, in the ordinary course of business, any goods or services to the data subject; or (b) requesting the data subject to make a donation of any kind for any reason;\n'electronic communication' means any text, voice, sound or image message sent over an electronic communications network which is stored in the network or in the recipient's terminal equipment until it is collected by the recipient;\n'enforcement notice' means a notice issued in terms of section 95;\n'filing system' means any structured set of personal information, whether centralised, decentralised or dispersed on a functional or geographical basis, which is accessible according to specific criteria;\n'information matching programme' means the comparison, whether manually or by means of any electronic or other device, of any document that contains personal information about ten or more data subjects with one or more documents that contain personal information of ten or more data subjects, for the purpose of producing or verifying information that may be used for the purpose of taking any action in regard to an identifiable data subject;\n'information officer' of, or in relation to, a—(a) public body means an information officer or deputy information officer as contemplated in terms of section 1 or 17; or (b) private body means the head of a private body as contemplated in section 1, of the Promotion of Access to Information Act;\n'Minister' means the Cabinet member responsible for the administration of justice;\n'operator' means a person who processes personal information for a responsible party in terms of a contract or mandate, without coming under the direct authority of that party;\n'person' means a natural person or a juristic person;\n'personal information' means information relating to an identifiable, living, natural person, and where it is applicable, an identifiable, existing juristic person, including, but not limited to—(a) information relating to the race, gender, sex, pregnancy, marital status, national, ethnic or social origin, colour, sexual orientation, age, physical or mental health, well-being, disability, religion, conscience, belief, culture, language and birth of the person; (b) information relating to the education or the medical, financial, criminal or employment history of the person; (c) any identifying number, symbol, e-mail address, physical address, telephone number, location information, online identifier or other particular assignment to the person;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.d",
+              "number": "d",
+              "heading": "s1.d",
+              "text": "the biometric information of the person;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.e",
+              "number": "e",
+              "heading": "s1.e",
+              "text": "the personal opinions, views or preferences of the person;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.f",
+              "number": "f",
+              "heading": "s1.f",
+              "text": "correspondence sent by the person that is implicitly or explicitly of a private or confidential nature or further correspondence that would reveal the contents of the original correspondence;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.g",
+              "number": "g",
+              "heading": "s1.g",
+              "text": "the views or opinions of another individual about the person; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.h",
+              "number": "h",
+              "heading": "s1.h",
+              "text": "the name of the person if it appears with other personal information relating to the person or if the disclosure of the name itself would reveal information about the person;\n'prescribed' means prescribed by regulation or by a code of conduct;\n'private body' means—(a) a natural person who carries or has carried on any trade, business or profession, but only in such capacity; (b) a partnership which carries or has carried on any trade, business or profession; or (c) any former or existing juristic person, but excludes a public body;\n'processing' means any operation or activity or any set of operations, whether or not by automatic means, concerning personal information, including—(a) the collection, receipt, recording, organisation, collation, storage, updating or modification, retrieval, alteration, consultation or use; (b) dissemination by means of transmission, distribution or making available in any other form; or (c) merging, linking, as well as restriction, degradation, erasure or destruction of information;\n'professional legal adviser' means any legally qualified person, whether in private practice or not, who lawfully provides a client, at his or her or its request, with independent, confidential legal advice;\n'Promotion of Access to Information Act' means the Promotion of Access to Information Act, 2000 (Act 2 of 2000);\n'public body' means—(a) any department of state or administration in the national or provincial sphere of government or any municipality in the local sphere of government; or (b) any other functionary or institution when—",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.i",
+              "number": "i",
+              "heading": "s1.i",
+              "text": "exercising a power or performing a duty in terms of the Constitution or a provincial constitution; or (ii) exercising a public power or performing a public function in terms of any legislation;\n'public record' means a record that is accessible in the public domain and which is in the possession of or under the control of a public body, whether or not it was created by that public body;\n'record' means any recorded information—(a) regardless of form or medium, including any of the following: (i) Writing on any material; (ii) information produced, recorded or stored by means of any tape-recorder, computer equipment, whether hardware or software or both, or other device, and any material subsequently derived from information so produced, recorded or stored; (iii) label, marking or other writing that identifies or describes any thing of which it forms part, or to which it is attached by any means; (iv) book, map, plan, graph or drawing; (v) photograph, film, negative, tape or other device in which one or more visual images are embodied so as to be capable, with or without the aid of some other equipment, of being reproduced; (b) in the possession or under the control of a responsible party; (c) whether or not it was created by a responsible party; and (d) regardless of when it came into existence;\n'Regulator' means the Information Regulator established in terms of section 39;\n're-identify', in relation to personal information of a data subject, means to resurrect any information that has been de-identified, that—(a) identifies the data subject; (b) can be used or manipulated by a reasonably foreseeable method to identify the data subject; or (c) can be linked by a reasonably foreseeable method to other information that identifies the data subject, and 're-identified' has a corresponding meaning;\n'Republic' means the Republic of South Africa;\n'responsible party' means a public or private body or any other person which, alone or in conjunction with others, determines the purpose of and means for processing personal information;\n'restriction' means to withhold from circulation, use or publication any personal information that forms part of a filing system, but not to delete or destroy such information;\n'special personal information' means personal information as referred to in section 26;\n'this Act' includes any regulation or code of conduct made under this Act; and\n'unique identifier' means any identifier that is assigned to a data subject and is used by a responsible party for the purposes of the operations of that responsible party and that uniquely identifies that data subject in relation to that responsible party.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s2",
@@ -92,9 +166,26 @@
               "id": "s3.b",
               "number": "b",
               "heading": "s3.b",
-              "text": "where the responsible party is—(i) domiciled in the Republic; or (ii) not domiciled in the Republic, but makes use of automated or non-automated means in the Republic, unless those means are used only to forward personal information through the Republic.\n(2)(a) This Act applies, subject to paragraph (b), to the exclusion of any provision of any other legislation that regulates the processing of personal information and that is materially inconsistent with an object, or a specific provision, of this Act. (b) If any other legislation provides for conditions for the lawful processing of personal information that are more extensive than those set out in Chapter 3, the extensive conditions prevail.\n(3) This Act must be interpreted in a manner that—(a) gives effect to the purpose of the Act set out in section 2; and (b) does not prevent any public or private body from exercising or performing its powers, duties and functions in terms of the law as far as such powers, duties and functions relate to the processing of personal information and such processing is in accordance with this Act or any other legislation, as referred to in subsection (2), that regulates the processing of personal information.\n(4) 'Automated means', for the purposes of this section, means any equipment capable of operating automatically in response to instructions given for the purpose of processing information.",
+              "text": "where the responsible party is—(i) domiciled in the Republic; or (ii) not domiciled in the Republic, but makes use of automated or non-automated means in the Republic, unless those means are used only to forward personal information through the Republic.\n(2)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3.b.a",
+                  "number": "a",
+                  "heading": "s3.b.a",
+                  "text": "This Act applies, subject to paragraph (b), to the exclusion of any provision of any other legislation that regulates the processing of personal information and that is materially inconsistent with an object, or a specific provision, of this Act.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3.b.b",
+                  "number": "b",
+                  "heading": "s3.b.b",
+                  "text": "If any other legislation provides for conditions for the lawful processing of personal information that are more extensive than those set out in Chapter 3, the extensive conditions prevail.\n(3) This Act must be interpreted in a manner that—(a) gives effect to the purpose of the Act set out in section 2; and (b) does not prevent any public or private body from exercising or performing its powers, duties and functions in terms of the law as far as such powers, duties and functions relate to the processing of personal information and such processing is in accordance with this Act or any other legislation, as referred to in subsection (2), that regulates the processing of personal information.\n(4) 'Automated means', for the purposes of this section, means any equipment capable of operating automatically in response to instructions given for the purpose of processing information.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -165,9 +256,26 @@
               "id": "s4.h",
               "number": "h",
               "heading": "s4.h",
-              "text": "'Data subject participation', as referred to in sections 23 to 25.\n(2) The conditions, as referred to in subsection (1), are not applicable to the processing of personal information to the extent that such processing is—(a) excluded, in terms of section 6 or 7, from the operation of this Act; or (b) exempted in terms of section 37 or 38, from one or more of the conditions concerned in relation to such processing.\n(3) The processing of the special personal information of a data subject is prohibited in terms of section 26, unless the—(a) provisions of sections 27 to 33 are applicable; or (b) Regulator has granted an authorisation in terms of section 27(2), in which case, subject to section 37 or 38, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(4) The processing of the personal information of a child is prohibited in terms of section 34, unless the—(a) provisions of section 35(1) are applicable; or (b) Regulator has granted an authorisation in terms of section 35(2), in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(5) The processing of the special personal information of a child is prohibited in terms of sections 26 and 34 unless the provisions of sections 27 and 35 are applicable in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(6) The conditions for the lawful processing of personal information by or for a responsible party for the purpose of direct marketing by any means are reflected in Chapter 3, read with section 69 insofar as that section relates to direct marketing by means of unsolicited electronic communications.\n(7) Sections 60 to 68 provide for the development, in appropriate circumstances, of codes of conduct for purposes of clarifying how the conditions referred to in subsection (1), subject to any exemptions which may have been granted in terms of section 37, are to be applied, or are to be complied with within a particular sector.",
+              "text": "'Data subject participation', as referred to in sections 23 to 25.\n(2) The conditions, as referred to in subsection (1), are not applicable to the processing of personal information to the extent that such processing is—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4.h.a",
+                  "number": "a",
+                  "heading": "s4.h.a",
+                  "text": "excluded, in terms of section 6 or 7, from the operation of this Act; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.h.b",
+                  "number": "b",
+                  "heading": "s4.h.b",
+                  "text": "exempted in terms of section 37 or 38, from one or more of the conditions concerned in relation to such processing.\n(3) The processing of the special personal information of a data subject is prohibited in terms of section 26, unless the—(a) provisions of sections 27 to 33 are applicable; or (b) Regulator has granted an authorisation in terms of section 27(2), in which case, subject to section 37 or 38, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(4) The processing of the personal information of a child is prohibited in terms of section 34, unless the—(a) provisions of section 35(1) are applicable; or (b) Regulator has granted an authorisation in terms of section 35(2), in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(5) The processing of the special personal information of a child is prohibited in terms of sections 26 and 34 unless the provisions of sections 27 and 35 are applicable in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(6) The conditions for the lawful processing of personal information by or for a responsible party for the purpose of direct marketing by any means are reflected in Chapter 3, read with section 69 insofar as that section relates to direct marketing by means of unsolicited electronic communications.\n(7) Sections 60 to 68 provide for the development, in appropriate circumstances, of codes of conduct for purposes of clarifying how the conditions referred to in subsection (1), subject to any exemptions which may have been granted in terms of section 37, are to be applied, or are to be complied with within a particular sector.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -305,8 +413,50 @@
           "id": "s7",
           "number": "7",
           "heading": "Exclusion for journalistic, literary or artistic purposes",
-          "text": "(1) This Act does not apply to the processing of personal information solely for the purpose of journalistic, literary or artistic expression to the extent that such an exclusion is necessary to reconcile, as a matter of public interest, the right to privacy with the right to freedom of expression.\n(2) Where a responsible party who processes personal information for exclusively journalistic purposes is, by virtue of office, employment or profession, subject to a code of ethics that provides adequate safeguards for the protection of personal information, such code will apply to the processing concerned to the exclusion of this Act and any alleged interference with the protection of the personal information of a data subject that may arise as a result of such processing must be adjudicated as provided for in terms of that code.\n(3) In the event that a dispute may arise in respect of whether adequate safeguards have been provided for in a code as required in terms of subsection (2) or not, regard may be had to—(a) the special importance of the public interest in freedom of expression; (b) domestic and international standards balancing the—(i) public interest in allowing for the free flow of information to the public through the media in recognition of the right of the public to be informed; and (ii) public interest in safeguarding the protection of personal information of data subjects; (c) the need to secure the integrity of personal information; (d) domestic and international standards of professional integrity for journalists; and (e) the nature and ambit of self-regulatory forms of supervision provided by the profession.",
-          "verbatim": true
+          "text": "(1) This Act does not apply to the processing of personal information solely for the purpose of journalistic, literary or artistic expression to the extent that such an exclusion is necessary to reconcile, as a matter of public interest, the right to privacy with the right to freedom of expression.\n(2) Where a responsible party who processes personal information for exclusively journalistic purposes is, by virtue of office, employment or profession, subject to a code of ethics that provides adequate safeguards for the protection of personal information, such code will apply to the processing concerned to the exclusion of this Act and any alleged interference with the protection of the personal information of a data subject that may arise as a result of such processing must be adjudicated as provided for in terms of that code.\n(3) In the event that a dispute may arise in respect of whether adequate safeguards have been provided for in a code as required in terms of subsection (2) or not, regard may be had to—",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7.a",
+              "number": "a",
+              "heading": "s7.a",
+              "text": "the special importance of the public interest in freedom of expression;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.b",
+              "number": "b",
+              "heading": "s7.b",
+              "text": "domestic and international standards balancing the—(i) public interest in allowing for the free flow of information to the public through the media in recognition of the right of the public to be informed; and (ii) public interest in safeguarding the protection of personal information of data subjects;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.c",
+              "number": "c",
+              "heading": "s7.c",
+              "text": "the need to secure the integrity of personal information;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.d",
+              "number": "d",
+              "heading": "s7.d",
+              "text": "domestic and international standards of professional integrity for journalists; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.e",
+              "number": "e",
+              "heading": "s7.e",
+              "text": "the nature and ambit of self-regulatory forms of supervision provided by the profession.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -482,9 +632,42 @@
               "id": "s14.d",
               "number": "d",
               "heading": "s14.d",
-              "text": "the data subject or a competent person where the data subject is a child has consented to the retention of the record.\n(2) Records of personal information may be retained for periods in excess of those contemplated in subsection (1) for historical, statistical or research purposes if the responsible party has established appropriate safeguards against the records being used for any other purposes.\n(3) A responsible party that has used a record of personal information of a data subject to make a decision about the data subject, must—(a) retain the record for such period as may be required or prescribed by law or a code of conduct; or (b) if there is no law or code of conduct prescribing a retention period, retain the record for a period which will afford the data subject a reasonable opportunity, taking all considerations relating to the use of the personal information into account, to request access to the record.\n(4) A responsible party must destroy or delete a record of personal information or de-identify it as soon as reasonably practicable after the responsible party is no longer authorised to retain the record in terms of subsection (1) or (2).\n(5) The destruction or deletion of a record of personal information in terms of subsection (4) must be done in a manner that prevents its reconstruction in an intelligible form.\n(6) The responsible party must restrict processing of personal information if—(a) its accuracy is contested by the data subject, for a period enabling the responsible party to verify the accuracy of the information; (b) the responsible party no longer needs the personal information for achieving the purpose for which the information was collected or subsequently processed, but it has to be maintained for purposes of proof; (c) the processing is unlawful and the data subject opposes its destruction or deletion and requests the restriction of its use instead; or (d) the data subject requests to transmit the personal data into another automated processing system.\n(7) Personal information referred to in subsection (6) may, with the exception of storage, only be processed for purposes of proof, or with the data subject's consent, or with the consent of a competent person in respect of a child, or for the protection of the rights of another natural or legal person or if such processing is in the public interest.\n(8) Where processing of personal information is restricted pursuant to subsection (6), the responsible party must inform the data subject before lifting the restriction on processing.",
+              "text": "the data subject or a competent person where the data subject is a child has consented to the retention of the record.\n(2) Records of personal information may be retained for periods in excess of those contemplated in subsection (1) for historical, statistical or research purposes if the responsible party has established appropriate safeguards against the records being used for any other purposes.\n(3) A responsible party that has used a record of personal information of a data subject to make a decision about the data subject, must—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s14.d.a",
+                  "number": "a",
+                  "heading": "s14.d.a",
+                  "text": "retain the record for such period as may be required or prescribed by law or a code of conduct; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s14.d.b",
+                  "number": "b",
+                  "heading": "s14.d.b",
+                  "text": "if there is no law or code of conduct prescribing a retention period, retain the record for a period which will afford the data subject a reasonable opportunity, taking all considerations relating to the use of the personal information into account, to request access to the record.\n(4) A responsible party must destroy or delete a record of personal information or de-identify it as soon as reasonably practicable after the responsible party is no longer authorised to retain the record in terms of subsection (1) or (2).\n(5) The destruction or deletion of a record of personal information in terms of subsection (4) must be done in a manner that prevents its reconstruction in an intelligible form.\n(6) The responsible party must restrict processing of personal information if—(a) its accuracy is contested by the data subject, for a period enabling the responsible party to verify the accuracy of the information; (b) the responsible party no longer needs the personal information for achieving the purpose for which the information was collected or subsequently processed, but it has to be maintained for purposes of proof;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s14.d.c",
+                  "number": "c",
+                  "heading": "s14.d.c",
+                  "text": "the processing is unlawful and the data subject opposes its destruction or deletion and requests the restriction of its use instead; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s14.d.d",
+                  "number": "d",
+                  "heading": "s14.d.d",
+                  "text": "the data subject requests to transmit the personal data into another automated processing system.\n(7) Personal information referred to in subsection (6) may, with the exception of storage, only be processed for purposes of proof, or with the data subject's consent, or with the consent of a competent person in respect of a child, or for the protection of the rights of another natural or legal person or if such processing is in the public interest.\n(8) Where processing of personal information is restricted pursuant to subsection (6), the responsible party must inform the data subject before lifting the restriction on processing.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -492,8 +675,58 @@
           "id": "s15",
           "number": "15",
           "heading": "Further processing to be compatible with purpose of collection",
-          "text": "(1) Further processing of personal information must be in accordance or compatible with the purpose for which it was collected in terms of section 13.\n(2) To assess whether further processing is compatible with the purpose of collection, the responsible party must take account of—(a) the relationship between the purpose of the intended further processing and the purpose for which the information has been collected; (b) the nature of the information concerned; (c) the consequences of the intended further processing for the data subject; (d) the manner in which the information has been collected; and (e) any contractual rights and obligations between the parties.\n(3) The further processing of personal information is not incompatible with the purpose of collection if—(a) the data subject or a competent person where the data subject is a child has consented to the further processing of the information; (b) the information is available in or derived from a public record or has deliberately been made public by the data subject; (c) further processing is necessary—(i) to avoid prejudice to the maintenance of the law by any public body including the prevention, detection, investigation, prosecution and punishment of offences; (ii) to comply with an obligation imposed by law or to enforce legislation concerning the collection of revenue as defined in section 1 of the South African Revenue Service Act, 1997 (Act 34 of 1997); (iii) for the conduct of proceedings in any court or tribunal that have commenced or are reasonably contemplated; or (iv) in the interests of national security; (d) the further processing of the information is necessary to prevent or mitigate a serious and imminent threat to—(i) public health or public safety; or (ii) the life or health of the data subject or another individual; (e) the information is used for historical, statistical or research purposes and the responsible party ensures that the further processing is carried out solely for such purposes and will not be published in an identifiable form; or (f) the further processing of the information is in accordance with an exemption granted under section 37.",
-          "verbatim": true
+          "text": "(1) Further processing of personal information must be in accordance or compatible with the purpose for which it was collected in terms of section 13.\n(2) To assess whether further processing is compatible with the purpose of collection, the responsible party must take account of—",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s15.a",
+              "number": "a",
+              "heading": "s15.a",
+              "text": "the relationship between the purpose of the intended further processing and the purpose for which the information has been collected;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.b",
+              "number": "b",
+              "heading": "s15.b",
+              "text": "the nature of the information concerned;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.c",
+              "number": "c",
+              "heading": "s15.c",
+              "text": "the consequences of the intended further processing for the data subject;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.d",
+              "number": "d",
+              "heading": "s15.d",
+              "text": "the manner in which the information has been collected; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.e",
+              "number": "e",
+              "heading": "s15.e",
+              "text": "any contractual rights and obligations between the parties.\n(3) The further processing of personal information is not incompatible with the purpose of collection if—(a) the data subject or a competent person where the data subject is a child has consented to the further processing of the information; (b) the information is available in or derived from a public record or has deliberately been made public by the data subject; (c) further processing is necessary—(i) to avoid prejudice to the maintenance of the law by any public body including the prevention, detection, investigation, prosecution and punishment of offences; (ii) to comply with an obligation imposed by law or to enforce legislation concerning the collection of revenue as defined in section 1 of the South African Revenue Service Act, 1997 (Act 34 of 1997); (iii) for the conduct of proceedings in any court or tribunal that have commenced or are reasonably contemplated; or (iv) in the interests of national security; (d) the further processing of the information is necessary to prevent or mitigate a serious and imminent threat to—(i) public health or public safety; or (ii) the life or health of the data subject or another individual; (e) the information is used for historical, statistical or research purposes and the responsible party ensures that the further processing is carried out solely for such purposes and will not be published in an identifiable form; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.f",
+              "number": "f",
+              "heading": "s15.f",
+              "text": "the further processing of the information is in accordance with an exemption granted under section 37.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s16",
@@ -576,9 +809,58 @@
               "id": "s18.h",
               "number": "h",
               "heading": "s18.h",
-              "text": "any further information such as the—(i) recipient or category of recipients of the information; (ii) nature or category of the information; (iii) existence of the right of access to and the right to rectify the information collected; (iv) existence of the right to object to the processing of personal information as referred to in section 11(3); and (v) right to lodge a complaint to the Information Regulator and the contact details of the Information Regulator, which is necessary, having regard to the specific circumstances in which the information is or is not to be processed, to enable processing in respect of the data subject to be reasonable.\n(2) The steps referred to in subsection (1) must be taken—(a) if the personal information is collected directly from the data subject, before the information is collected, unless the data subject is already aware of the information referred to in that subsection; or (b) in any other case, before the information is collected or as soon as reasonably practicable after it has been collected.\n(3) A responsible party that has previously taken the steps referred to in subsection (1) complies with subsection (1) in relation to the subsequent collection from the data subject of the same information or information of the same kind if the purpose of collection of the information remains the same.\n(4) It is not necessary for a responsible party to comply with subsection (1) if—(a) the data subject or a competent person where the data subject is a child has provided consent for the non-compliance; (b) non-compliance would not prejudice the legitimate interests of the data subject as set out in terms of this Act; (c) non-compliance is necessary—(i) to avoid prejudice to the maintenance of the law by any public body, including the prevention, detection, investigation, prosecution and punishment of offences; (ii) to comply with an obligation imposed by law or to enforce legislation concerning the collection of revenue as defined in section 1 of the South African Revenue Service Act, 1997 (Act 34 of 1997); (iii) for the conduct of proceedings in any court or tribunal that have been commenced or are reasonably contemplated; or (iv) in the interests of national security; (d) compliance would prejudice a lawful purpose of the collection; (e) compliance is not reasonably practicable in the circumstances of the particular case; or (f) the information will—(i) not be used in a form in which the data subject may be identified; or (ii) be used for historical, statistical or research purposes.",
+              "text": "any further information such as the—(i) recipient or category of recipients of the information; (ii) nature or category of the information; (iii) existence of the right of access to and the right to rectify the information collected; (iv) existence of the right to object to the processing of personal information as referred to in section 11(3); and (v) right to lodge a complaint to the Information Regulator and the contact details of the Information Regulator, which is necessary, having regard to the specific circumstances in which the information is or is not to be processed, to enable processing in respect of the data subject to be reasonable.\n(2) The steps referred to in subsection (1) must be taken—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s18.h.a",
+                  "number": "a",
+                  "heading": "s18.h.a",
+                  "text": "if the personal information is collected directly from the data subject, before the information is collected, unless the data subject is already aware of the information referred to in that subsection; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s18.h.b",
+                  "number": "b",
+                  "heading": "s18.h.b",
+                  "text": "in any other case, before the information is collected or as soon as reasonably practicable after it has been collected.\n(3) A responsible party that has previously taken the steps referred to in subsection (1) complies with subsection (1) in relation to the subsequent collection from the data subject of the same information or information of the same kind if the purpose of collection of the information remains the same.\n(4) It is not necessary for a responsible party to comply with subsection (1) if—(a) the data subject or a competent person where the data subject is a child has provided consent for the non-compliance; (b) non-compliance would not prejudice the legitimate interests of the data subject as set out in terms of this Act;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s18.h.c",
+                  "number": "c",
+                  "heading": "s18.h.c",
+                  "text": "non-compliance is necessary—(i) to avoid prejudice to the maintenance of the law by any public body, including the prevention, detection, investigation, prosecution and punishment of offences; (ii) to comply with an obligation imposed by law or to enforce legislation concerning the collection of revenue as defined in section 1 of the South African Revenue Service Act, 1997 (Act 34 of 1997); (iii) for the conduct of proceedings in any court or tribunal that have been commenced or are reasonably contemplated; or (iv) in the interests of national security;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s18.h.d",
+                  "number": "d",
+                  "heading": "s18.h.d",
+                  "text": "compliance would prejudice a lawful purpose of the collection;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s18.h.e",
+                  "number": "e",
+                  "heading": "s18.h.e",
+                  "text": "compliance is not reasonably practicable in the circumstances of the particular case; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s18.h.f",
+                  "number": "f",
+                  "heading": "s18.h.f",
+                  "text": "the information will—(i) not be used in a form in which the data subject may be identified; or (ii) be used for historical, statistical or research purposes.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -663,9 +945,26 @@
               "id": "s23.b",
               "number": "b",
               "heading": "s23.b",
-              "text": "request from a responsible party the record or a description of the personal information about the data subject held by the responsible party, including information about the identity of all third parties, or categories of third parties, who have, or have had, access to the information—(i) within a reasonable time; (ii) at a prescribed fee, if any; (iii) in a reasonable manner and format; and (iv) in a form that is generally understandable.\n(2) If, in response to a request in terms of subsection (1), personal information is communicated to a data subject, the data subject must be advised of the right in terms of section 24 to request the correction of information.\n(3) If a data subject is required by a responsible party to pay a fee for services provided to the data subject in terms of subsection (1)(b) to enable the responsible party to respond to a request, the responsible party—(a) must give the applicant a written estimate of the fee before providing the services; and (b) may require the applicant to pay a deposit for all or part of the fee.\n(4)(a) A responsible party may or must refuse, as the case may be, to disclose any information requested in terms of subsection (1) to which the grounds for refusal of access to records set out in the applicable sections of Chapter 4 of Part 2 and Chapter 4 of Part 3 of the Promotion of Access to Information Act apply. (b) The provisions of sections 30 and 61 of the Promotion of Access to Information Act are applicable in respect of access to health or other records.\n(5) If a request for access to personal information is made to a responsible party and part of that information may or must be refused in terms of subsection (4)(a), every other part must be disclosed.",
+              "text": "request from a responsible party the record or a description of the personal information about the data subject held by the responsible party, including information about the identity of all third parties, or categories of third parties, who have, or have had, access to the information—(i) within a reasonable time; (ii) at a prescribed fee, if any; (iii) in a reasonable manner and format; and (iv) in a form that is generally understandable.\n(2) If, in response to a request in terms of subsection (1), personal information is communicated to a data subject, the data subject must be advised of the right in terms of section 24 to request the correction of information.\n(3) If a data subject is required by a responsible party to pay a fee for services provided to the data subject in terms of subsection (1)(b) to enable the responsible party to respond to a request, the responsible party—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s23.b.a",
+                  "number": "a",
+                  "heading": "s23.b.a",
+                  "text": "must give the applicant a written estimate of the fee before providing the services; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s23.b.b",
+                  "number": "b",
+                  "heading": "s23.b.b",
+                  "text": "may require the applicant to pay a deposit for all or part of the fee.\n(4)(a) A responsible party may or must refuse, as the case may be, to disclose any information requested in terms of subsection (1) to which the grounds for refusal of access to records set out in the applicable sections of Chapter 4 of Part 2 and Chapter 4 of Part 3 of the Promotion of Access to Information Act apply. (b) The provisions of sections 30 and 61 of the Promotion of Access to Information Act are applicable in respect of access to health or other records.\n(5) If a request for access to personal information is made to a responsible party and part of that information may or must be refused in terms of subsection (4)(a), every other part must be disclosed.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -688,9 +987,42 @@
               "id": "s24.b",
               "number": "b",
               "heading": "s24.b",
-              "text": "destroy or delete a record of personal information about the data subject that the responsible party is no longer authorised to retain in terms of section 14.\n(2) On receipt of a request in terms of subsection (1) a responsible party must, as soon as reasonably practicable—(a) correct the information; (b) destroy or delete the information; (c) provide the data subject, to his or her satisfaction, with credible evidence in support of the information; or (d) where agreement cannot be reached between the responsible party and the data subject, and if the data subject so requests, take such steps as are reasonable in the circumstances, to attach to the information in such a manner that it will always be read with the information, an indication that a correction of the information has been requested but has not been made.\n(3) If the responsible party has taken steps under subsection (2) that result in a change to the information and the changed information has an impact on decisions that have been or will be taken in respect of the data subject in question, the responsible party must, if reasonably practicable, inform each person or body or responsible party to whom the personal information has been disclosed of those steps.\n(4) The responsible party must notify a data subject, who has made a request in terms of subsection (1), of the action taken as a result of the request.",
+              "text": "destroy or delete a record of personal information about the data subject that the responsible party is no longer authorised to retain in terms of section 14.\n(2) On receipt of a request in terms of subsection (1) a responsible party must, as soon as reasonably practicable—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s24.b.a",
+                  "number": "a",
+                  "heading": "s24.b.a",
+                  "text": "correct the information;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s24.b.b",
+                  "number": "b",
+                  "heading": "s24.b.b",
+                  "text": "destroy or delete the information;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s24.b.c",
+                  "number": "c",
+                  "heading": "s24.b.c",
+                  "text": "provide the data subject, to his or her satisfaction, with credible evidence in support of the information; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s24.b.d",
+                  "number": "d",
+                  "heading": "s24.b.d",
+                  "text": "where agreement cannot be reached between the responsible party and the data subject, and if the data subject so requests, take such steps as are reasonable in the circumstances, to attach to the information in such a manner that it will always be read with the information, an indication that a correction of the information has been requested but has not been made.\n(3) If the responsible party has taken steps under subsection (2) that result in a change to the information and the changed information has an impact on decisions that have been or will be taken in respect of the data subject in question, the responsible party must, if reasonably practicable, inform each person or body or responsible party to whom the personal information has been disclosed of those steps.\n(4) The responsible party must notify a data subject, who has made a request in terms of subsection (1), of the action taken as a result of the request.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -833,9 +1165,42 @@
               "id": "s35.e",
               "number": "e",
               "heading": "s35.e",
-              "text": "of personal information which has deliberately been made public by the child with the consent of a competent person.\n(2) The Regulator may, notwithstanding the prohibition referred to in section 34, but subject to subsection (3), upon application by a responsible party and by notice in the Gazette, authorise a responsible party to process the personal information of children if the processing is in the public interest and appropriate safeguards have been put in place to protect the personal information of the child.\n(3) The Regulator may impose reasonable conditions in respect of any authorisation granted under subsection (2), including conditions with regard to how a responsible party must—(a) upon request of a competent person provide a reasonable means for that person to—(i) review the personal information processed; and (ii) refuse to permit its further processing; (b) provide notice—(i) regarding the nature of the personal information of children that is processed; (ii) how such information is processed; and (iii) regarding any further processing practices; (c) refrain from any action that is intended to encourage or persuade a child to disclose more personal information about him- or herself than is reasonably necessary given the purpose for which it is intended; and (d) establish and maintain reasonable procedures to protect the integrity and confidentiality of the personal information collected from children.",
+              "text": "of personal information which has deliberately been made public by the child with the consent of a competent person.\n(2) The Regulator may, notwithstanding the prohibition referred to in section 34, but subject to subsection (3), upon application by a responsible party and by notice in the Gazette, authorise a responsible party to process the personal information of children if the processing is in the public interest and appropriate safeguards have been put in place to protect the personal information of the child.\n(3) The Regulator may impose reasonable conditions in respect of any authorisation granted under subsection (2), including conditions with regard to how a responsible party must—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s35.e.a",
+                  "number": "a",
+                  "heading": "s35.e.a",
+                  "text": "upon request of a competent person provide a reasonable means for that person to—(i) review the personal information processed; and (ii) refuse to permit its further processing;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s35.e.b",
+                  "number": "b",
+                  "heading": "s35.e.b",
+                  "text": "provide notice—(i) regarding the nature of the personal information of children that is processed; (ii) how such information is processed; and (iii) regarding any further processing practices;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s35.e.c",
+                  "number": "c",
+                  "heading": "s35.e.c",
+                  "text": "refrain from any action that is intended to encourage or persuade a child to disclose more personal information about him- or herself than is reasonably necessary given the purpose for which it is intended; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s35.e.d",
+                  "number": "d",
+                  "heading": "s35.e.d",
+                  "text": "establish and maintain reasonable procedures to protect the integrity and confidentiality of the personal information collected from children.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         }
@@ -875,8 +1240,58 @@
           "id": "s37",
           "number": "37",
           "heading": "Regulator may exempt processing of personal information",
-          "text": "(1) The Regulator may, by notice in the Gazette, grant an exemption to a responsible party to process personal information, even if that processing is in breach of a condition for the processing of such information, or any measure that gives effect to such condition, if the Regulator is satisfied that, in the circumstances of the case—(a) the public interest in the processing outweighs, to a substantial degree, any interference with the privacy of the data subject that could result from such processing; or (b) the processing involves a clear benefit to the data subject or a third party that outweighs, to a substantial degree, any interference with the privacy of the data subject or third party that could result from such processing.\n(2) The public interest referred to in subsection (1) includes—(a) the interests of national security; (b) the prevention, detection and prosecution of offences; (c) important economic and financial interests of a public body; (d) fostering compliance with legal provisions established in the interests referred to under paragraphs (b) and (c); (e) historical, statistical or research activity; or (f) the special importance of the interest in freedom of expression.\n(3) The Regulator may impose reasonable conditions in respect of any exemption granted under subsection (1).",
-          "verbatim": true
+          "text": "(1) The Regulator may, by notice in the Gazette, grant an exemption to a responsible party to process personal information, even if that processing is in breach of a condition for the processing of such information, or any measure that gives effect to such condition, if the Regulator is satisfied that, in the circumstances of the case—",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s37.a",
+              "number": "a",
+              "heading": "s37.a",
+              "text": "the public interest in the processing outweighs, to a substantial degree, any interference with the privacy of the data subject that could result from such processing; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.b",
+              "number": "b",
+              "heading": "s37.b",
+              "text": "the processing involves a clear benefit to the data subject or a third party that outweighs, to a substantial degree, any interference with the privacy of the data subject or third party that could result from such processing.\n(2) The public interest referred to in subsection (1) includes—(a) the interests of national security; (b) the prevention, detection and prosecution of offences;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.c",
+              "number": "c",
+              "heading": "s37.c",
+              "text": "important economic and financial interests of a public body;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.d",
+              "number": "d",
+              "heading": "s37.d",
+              "text": "fostering compliance with legal provisions established in the interests referred to under paragraphs (b) and (c);",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.e",
+              "number": "e",
+              "heading": "s37.e",
+              "text": "historical, statistical or research activity; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.f",
+              "number": "f",
+              "heading": "s37.f",
+              "text": "the special importance of the interest in freedom of expression.\n(3) The Regulator may impose reasonable conditions in respect of any exemption granted under subsection (1).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s38",
@@ -1081,9 +1496,34 @@
               "id": "s69.b",
               "number": "b",
               "heading": "s69.b",
-              "text": "is, subject to subsection (3), a customer of the responsible party.\n(2)(a) A responsible party may approach a data subject—(i) whose consent is required in terms of subsection (1)(a); and (ii) who has not previously withheld such consent, only once in order to request the consent of that data subject. (b) The data subject's consent must be requested in the prescribed manner and form.\n(3) A responsible party may only process the personal information of a data subject who is a customer of the responsible party in terms of subsection (1)(b)—(a) if the responsible party has obtained the contact details of the data subject in the context of the sale of a product or service; (b) for the purpose of direct marketing of the responsible party's own similar products or services; and (c) if the data subject has been given a reasonable opportunity to object, free of charge and in a manner free of unnecessary formality, to such use of his, her or its electronic details—(i) at the time when the information was collected; and (ii) on the occasion of each communication with the data subject for the purpose of marketing if the data subject has not initially refused such use.\n(4) Any communication for the purpose of direct marketing must contain—(a) details of the identity of the sender or the person on whose behalf the communication has been sent; and (b) an address or other contact details to which the recipient may send a request that such communications cease.\n(5) 'Automatic calling machine', for purposes of subsection (1), means a machine that is able to do automated calls without human intervention.",
+              "text": "is, subject to subsection (3), a customer of the responsible party.\n(2)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s69.b.a",
+                  "number": "a",
+                  "heading": "s69.b.a",
+                  "text": "A responsible party may approach a data subject—(i) whose consent is required in terms of subsection (1)(a); and (ii) who has not previously withheld such consent, only once in order to request the consent of that data subject.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s69.b.b",
+                  "number": "b",
+                  "heading": "s69.b.b",
+                  "text": "The data subject's consent must be requested in the prescribed manner and form.\n(3) A responsible party may only process the personal information of a data subject who is a customer of the responsible party in terms of subsection (1)(b)—(a) if the responsible party has obtained the contact details of the data subject in the context of the sale of a product or service; (b) for the purpose of direct marketing of the responsible party's own similar products or services; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s69.b.c",
+                  "number": "c",
+                  "heading": "s69.b.c",
+                  "text": "if the data subject has been given a reasonable opportunity to object, free of charge and in a manner free of unnecessary formality, to such use of his, her or its electronic details—(i) at the time when the information was collected; and (ii) on the occasion of each communication with the data subject for the purpose of marketing if the data subject has not initially refused such use.\n(4) Any communication for the purpose of direct marketing must contain—(a) details of the identity of the sender or the person on whose behalf the communication has been sent; and (b) an address or other contact details to which the recipient may send a request that such communications cease.\n(5) 'Automatic calling machine', for purposes of subsection (1), means a machine that is able to do automated calls without human intervention.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -1091,8 +1531,26 @@
           "id": "s71",
           "number": "71",
           "heading": "Automated decision making",
-          "text": "(1) Subject to subsection (2), a data subject may not be subject to a decision which results in legal consequences for him, her or it, or which affects him, her or it to a substantial degree, which is based solely on the basis of the automated processing of personal information intended to provide a profile of such person including his or her performance at work, or his, her or its credit worthiness, reliability, location, health, personal preferences or conduct.\n(2) The provisions of subsection (1) do not apply if the decision—(a) has been taken in connection with the conclusion or execution of a contract, and—(i) the request of the data subject in terms of the contract has been met; or (ii) appropriate measures have been taken to protect the data subject's legitimate interests; or (b) is governed by a law or code of conduct in which appropriate measures are specified for protecting the legitimate interests of data subjects.\n(3) The appropriate measures, referred to in subsection (2)(a)(ii), must—(a) provide an opportunity for a data subject to make representations about a decision referred to in subsection (1); and (b) require a responsible party to provide a data subject with sufficient information about the underlying logic of the automated processing of the information relating to him or her to enable him or her to make representations in terms of paragraph (a).",
-          "verbatim": true
+          "text": "(1) Subject to subsection (2), a data subject may not be subject to a decision which results in legal consequences for him, her or it, or which affects him, her or it to a substantial degree, which is based solely on the basis of the automated processing of personal information intended to provide a profile of such person including his or her performance at work, or his, her or its credit worthiness, reliability, location, health, personal preferences or conduct.\n(2) The provisions of subsection (1) do not apply if the decision—",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s71.a",
+              "number": "a",
+              "heading": "s71.a",
+              "text": "has been taken in connection with the conclusion or execution of a contract, and—(i) the request of the data subject in terms of the contract has been met; or (ii) appropriate measures have been taken to protect the data subject's legitimate interests; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s71.b",
+              "number": "b",
+              "heading": "s71.b",
+              "text": "is governed by a law or code of conduct in which appropriate measures are specified for protecting the legitimate interests of data subjects.\n(3) The appropriate measures, referred to in subsection (2)(a)(ii), must—(a) provide an opportunity for a data subject to make representations about a decision referred to in subsection (1); and (b) require a responsible party to provide a data subject with sufficient information about the underlying logic of the automated processing of the information relating to him or her to enable him or her to make representations in terms of paragraph (a).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -1186,8 +1644,74 @@
           "id": "s109",
           "number": "109",
           "heading": "Administrative fines",
-          "text": "(1) If a responsible party is alleged to have committed an offence in terms of this Act, the Regulator may cause to be delivered by hand to that person (hereinafter referred to as the infringer) an infringement notice which must contain the particulars contemplated in subsection (2).\n(2) A notice referred to in subsection (1) must—(a) specify the name and address of the infringer; (b) specify the particulars of the alleged offence; (c) specify the amount of the administrative fine payable, which amount may, subject to subsection (10), not exceed R10 million; (d) inform the infringer that, not later than 30 days after the date of service of the infringement notice, the infringer may—(i) pay the administrative fine; (ii) make arrangements with the Regulator to pay the administrative fine in instalments; or (iii) elect to be tried in court on a charge of having committed the alleged offence referred to in terms of this Act; and (e) state that a failure to comply with the requirements of the notice within the time permitted, will result in the administrative fine becoming recoverable as contemplated in subsection (5).\n(3) When determining an appropriate fine, the Regulator must consider the following factors: (a) The nature of the personal information involved; (b) the duration and extent of the contravention; (c) the number of data subjects affected or potentially affected by the contravention; (d) whether or not the contravention raises an issue of public importance; (e) the likelihood of substantial damage or distress, including injury to feelings or anxiety suffered by data subjects; (f) whether the responsible party or a third party could have prevented the contravention from occurring; (g) any failure to carry out a risk assessment or a failure to operate good policies, procedures and practices to protect personal information; and (h) whether the responsible party has previously committed an offence in terms of this Act.\n(10) The Minister may, from time to time and after consultation with the Regulator, by notice in the Gazette, adjust the amount referred to in subsection (2)(c) in accordance with the average of the consumer price index, as published from time to time in the Gazette, for the immediately preceding period of 12 months multiplied by the number of years that the amount referred to in subsection (2)(c) has remained the same.",
-          "verbatim": true
+          "text": "(1) If a responsible party is alleged to have committed an offence in terms of this Act, the Regulator may cause to be delivered by hand to that person (hereinafter referred to as the infringer) an infringement notice which must contain the particulars contemplated in subsection (2).\n(2) A notice referred to in subsection (1) must—",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s109.a",
+              "number": "a",
+              "heading": "s109.a",
+              "text": "specify the name and address of the infringer;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s109.b",
+              "number": "b",
+              "heading": "s109.b",
+              "text": "specify the particulars of the alleged offence;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s109.c",
+              "number": "c",
+              "heading": "s109.c",
+              "text": "specify the amount of the administrative fine payable, which amount may, subject to subsection (10), not exceed R10 million;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s109.d",
+              "number": "d",
+              "heading": "s109.d",
+              "text": "inform the infringer that, not later than 30 days after the date of service of the infringement notice, the infringer may—(i) pay the administrative fine; (ii) make arrangements with the Regulator to pay the administrative fine in instalments; or (iii) elect to be tried in court on a charge of having committed the alleged offence referred to in terms of this Act; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s109.e",
+              "number": "e",
+              "heading": "s109.e",
+              "text": "state that a failure to comply with the requirements of the notice within the time permitted, will result in the administrative fine becoming recoverable as contemplated in subsection (5).\n(3) When determining an appropriate fine, the Regulator must consider the following factors: (a) The nature of the personal information involved; (b) the duration and extent of the contravention; (c) the number of data subjects affected or potentially affected by the contravention; (d) whether or not the contravention raises an issue of public importance; (e) the likelihood of substantial damage or distress, including injury to feelings or anxiety suffered by data subjects;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s109.f",
+              "number": "f",
+              "heading": "s109.f",
+              "text": "whether the responsible party or a third party could have prevented the contravention from occurring;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s109.g",
+              "number": "g",
+              "heading": "s109.g",
+              "text": "any failure to carry out a risk assessment or a failure to operate good policies, procedures and practices to protect personal information; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s109.h",
+              "number": "h",
+              "heading": "s109.h",
+              "text": "whether the responsible party has previously committed an offence in terms of this Act.\n(10) The Minister may, from time to time and after consultation with the Regulator, by notice in the Gazette, adjust the amount referred to in subsection (2)(c) in accordance with the average of the consumer price index, as published from time to time in the Gazette, for the immediately preceding period of 12 months multiplied by the number of years that the amount referred to in subsection (2)(c) has remained the same.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }
