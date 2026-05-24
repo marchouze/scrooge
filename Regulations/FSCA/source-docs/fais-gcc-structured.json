@@ -468,9 +468,50 @@
                       "id": "gcc7.1.c.iii",
                       "number": "iii",
                       "heading": "gcc7.1.c.iii",
-                      "text": "where the financial product is marketed or positioned as an investment or as having an investment component: (aa) concise details of the manner in which the value of the investment is determined, including concise details of any underlying assets or other financial instruments; (bb) separate disclosure (and not mere disclosure of an all inclusive fee or charge) of any charges and fees to be levied against the product, including (A) the amount and frequency thereof; (B) the identity of the recipient; (C) the services or other purpose for which each fee or charge is levied; (D) where any charges or fees are to be levied in respect of investment performance, details of the frequency, performance measurement period (including any part of the period prior to the client's particular investment) and performance benchmarks or other criteria applicable to such charges or fees; and (E) where the specific structure of the product entails other underlying financial products, disclosure must be made in such a manner as to enable the client to determine the net investment amount ultimately invested for the benefit of the client; and (cc) on request, information concerning the past investment performance of the product over periods and at intervals which are reasonable with regard to the type of product involved including a warning that past performances are not necessarily indicative of future performances; (dd) any rebate arrangements and thereafter on a regular basis (but not less frequently than annually): Provided that where the rebate arrangement is initially disclosed in percentage terms, an example using actual monetary amounts must be given and disclosure in specific monetary terms must be made at the earliest reasonable opportunity thereafter: Provided further that for the purposes of this subparagraph, \"rebate\" means a discount on the administration, management or any other fee that is passed through to the client, whether by reduced fees, the purchase of additional investments or direct payment, and that the term \"rebate\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition; (ee) any platform fee arrangements, which may be disclosed by informing the client that a platform fee of up to a stated percentage may be paid by the product supplier to the administrative financial services provider concerned, rather than disclosing the actual monetary amount: Provided that for the purposes of this sub-paragraph, \"platform fee\" means a payment by a product supplier to an administrative financial services provider for the administration and/or distribution and/or marketing cost savings represented by the distribution opportunity presented by the administrative platform, and may be structured as a stipulated monetary amount or a volume based percentage of assets held on the platform, and that the term \"platform fee\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition.",
+                      "text": "where the financial product is marketed or positioned as an investment or as having an investment component:",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "gcc7.1.c.iii.aa",
+                          "number": "aa",
+                          "heading": "gcc7.1.c.iii.aa",
+                          "text": "concise details of the manner in which the value of the investment is determined, including concise details of any underlying assets or other financial instruments;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc7.1.c.iii.bb",
+                          "number": "bb",
+                          "heading": "gcc7.1.c.iii.bb",
+                          "text": "separate disclosure (and not mere disclosure of an all inclusive fee or charge) of any charges and fees to be levied against the product, including (A) the amount and frequency thereof; (B) the identity of the recipient; (C) the services or other purpose for which each fee or charge is levied; (D) where any charges or fees are to be levied in respect of investment performance, details of the frequency, performance measurement period (including any part of the period prior to the client's particular investment) and performance benchmarks or other criteria applicable to such charges or fees; and (E) where the specific structure of the product entails other underlying financial products, disclosure must be made in such a manner as to enable the client to determine the net investment amount ultimately invested for the benefit of the client; and",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc7.1.c.iii.cc",
+                          "number": "cc",
+                          "heading": "gcc7.1.c.iii.cc",
+                          "text": "on request, information concerning the past investment performance of the product over periods and at intervals which are reasonable with regard to the type of product involved including a warning that past performances are not necessarily indicative of future performances;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc7.1.c.iii.dd",
+                          "number": "dd",
+                          "heading": "gcc7.1.c.iii.dd",
+                          "text": "any rebate arrangements and thereafter on a regular basis (but not less frequently than annually): Provided that where the rebate arrangement is initially disclosed in percentage terms, an example using actual monetary amounts must be given and disclosure in specific monetary terms must be made at the earliest reasonable opportunity thereafter: Provided further that for the purposes of this subparagraph, \"rebate\" means a discount on the administration, management or any other fee that is passed through to the client, whether by reduced fees, the purchase of additional investments or direct payment, and that the term \"rebate\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc7.1.c.iii.ee",
+                          "number": "ee",
+                          "heading": "gcc7.1.c.iii.ee",
+                          "text": "any platform fee arrangements, which may be disclosed by informing the client that a platform fee of up to a stated percentage may be paid by the product supplier to the administrative financial services provider concerned, rather than disclosing the actual monetary amount: Provided that for the purposes of this sub-paragraph, \"platform fee\" means a payment by a product supplier to an administrative financial services provider for the administration and/or distribution and/or marketing cost savings represented by the distribution opportunity presented by the administrative platform, and may be structured as a stipulated monetary amount or a volume based percentage of assets held on the platform, and that the term \"platform fee\" must be used in the disclosure concerned, to describe any arrangement complying with this definition, and the disclosure must include an explanation of the arrangement in line with this definition.",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     },
                     {
                       "id": "gcc7.1.c.iv",
@@ -885,9 +926,26 @@
                   "id": "gcc9.1.d",
                   "number": "d",
                   "heading": "gcc9.1.d",
-                  "text": "where the financial product or products recommended is a replacement product as contemplated in section 8(1)(d) – (aa) the comparison of fees, charges, special terms and conditions, exclusions of liability, waiting periods, loadings, penalties, excesses, restrictions or circumstances in which benefits will not be provided, between the terminated product and the replacement product; and (bb) the reasons why the replacement product was considered to be more suitable to the client's needs than retaining or modifying the terminated product.",
+                  "text": "where the financial product or products recommended is a replacement product as contemplated in section 8(1)(d) –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc9.1.d.aa",
+                      "number": "aa",
+                      "heading": "gcc9.1.d.aa",
+                      "text": "the comparison of fees, charges, special terms and conditions, exclusions of liability, waiting periods, loadings, penalties, excesses, restrictions or circumstances in which benefits will not be provided, between the terminated product and the replacement product; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc9.1.d.bb",
+                      "number": "bb",
+                      "heading": "gcc9.1.d.bb",
+                      "text": "the reasons why the replacement product was considered to be more suitable to the client's needs than retaining or modifying the terminated product.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -1058,9 +1116,34 @@
                       "id": "gcc14.1.b.ii",
                       "number": "ii",
                       "heading": "gcc14.1.b.ii",
-                      "text": "illustrations, forecasts or hypothetical data (aa) contain support in the form of clearly stated basic assumptions (including but not limited to any relevant assumptions in respect of performance, returns, costs and charges) with a reasonable prospect of being met under current circumstances; (bb) make it clear that they are not guaranteed and are provided for illustrative purposes only; and (cc) also contain, where returns or benefits are dependent on the performance of underlying assets or other variable market factors, clear indications of such dependence",
+                      "text": "illustrations, forecasts or hypothetical data",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "gcc14.1.b.ii.aa",
+                          "number": "aa",
+                          "heading": "gcc14.1.b.ii.aa",
+                          "text": "contain support in the form of clearly stated basic assumptions (including but not limited to any relevant assumptions in respect of performance, returns, costs and charges) with a reasonable prospect of being met under current circumstances;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc14.1.b.ii.bb",
+                          "number": "bb",
+                          "heading": "gcc14.1.b.ii.bb",
+                          "text": "make it clear that they are not guaranteed and are provided for illustrative purposes only; and",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc14.1.b.ii.cc",
+                          "number": "cc",
+                          "heading": "gcc14.1.b.ii.cc",
+                          "text": "also contain, where returns or benefits are dependent on the performance of underlying assets or other variable market factors, clear indications of such dependence",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     },
                     {
                       "id": "gcc14.1.b.iii",
@@ -1165,9 +1248,58 @@
                       "id": "gcc15.2.b.iii",
                       "number": "iii",
                       "heading": "gcc15.2.b.iii",
-                      "text": "the following details in respect of the product: (aa) Name, class or type of financial product concerned; (bb) Nature and extent of benefits to be provided; (cc) Manner in which such benefits are derived or calculated, with specific reference to the underlying assets of any investment component and the manner in which the value of such investment component is determined; (dd) Monetary obligations assumed by the client as well as manner of payment; (ee) Whether cooling off rights are offered and, if so, procedures for the exercise of such rights; (ff) Any material investment or other risks associated with the product;",
+                      "text": "the following details in respect of the product:",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "gcc15.2.b.iii.aa",
+                          "number": "aa",
+                          "heading": "gcc15.2.b.iii.aa",
+                          "text": "Name, class or type of financial product concerned;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc15.2.b.iii.bb",
+                          "number": "bb",
+                          "heading": "gcc15.2.b.iii.bb",
+                          "text": "Nature and extent of benefits to be provided;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc15.2.b.iii.cc",
+                          "number": "cc",
+                          "heading": "gcc15.2.b.iii.cc",
+                          "text": "Manner in which such benefits are derived or calculated, with specific reference to the underlying assets of any investment component and the manner in which the value of such investment component is determined;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc15.2.b.iii.dd",
+                          "number": "dd",
+                          "heading": "gcc15.2.b.iii.dd",
+                          "text": "Monetary obligations assumed by the client as well as manner of payment;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc15.2.b.iii.ee",
+                          "number": "ee",
+                          "heading": "gcc15.2.b.iii.ee",
+                          "text": "Whether cooling off rights are offered and, if so, procedures for the exercise of such rights;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "gcc15.2.b.iii.ff",
+                          "number": "ff",
+                          "heading": "gcc15.2.b.iii.ff",
+                          "text": "Any material investment or other risks associated with the product;",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 },

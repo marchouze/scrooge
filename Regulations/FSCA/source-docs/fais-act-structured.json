@@ -128,9 +128,26 @@
                       "id": "s1-3.a.iii",
                       "number": "iii",
                       "heading": "s1-3.a.iii",
-                      "text": "advice given by— (aa) the board of management, or any board member, of any pension fund organisation or friendly society referred to in paragraph (d) of the definition of \"financial product\" in subsection (1) to the members of the organisation or society on benefits enjoyed or to be enjoyed by such members; or (bb) the board of trustees of any medical scheme referred to in paragraph (g) of the said definition of \"financial product\", or any board member, to the members of the medical scheme, on health care benefits enjoyed or to be enjoyed by such members; or",
+                      "text": "advice given by—",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s1-3.a.iii.aa",
+                          "number": "aa",
+                          "heading": "s1-3.a.iii.aa",
+                          "text": "the board of management, or any board member, of any pension fund organisation or friendly society referred to in paragraph (d) of the definition of \"financial product\" in subsection (1) to the members of the organisation or society on benefits enjoyed or to be enjoyed by such members; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1-3.a.iii.bb",
+                          "number": "bb",
+                          "heading": "s1-3.a.iii.bb",
+                          "text": "the board of trustees of any medical scheme referred to in paragraph (g) of the said definition of \"financial product\", or any board member, to the members of the medical scheme, on health care benefits enjoyed or to be enjoyed by such members; or",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     },
                     {
                       "id": "s1-3.a.iv",
@@ -146,9 +163,26 @@
                   "id": "s1-3.b",
                   "number": "b",
                   "heading": "s1-3.b",
-                  "text": "intermediary service does not include— (i) the rendering by a bank or mutual bank of a service contemplated in paragraph (b)(ii) of the definition of \"intermediary service\" where the bank or mutual bank acts merely as a conduit between a client and another product supplier; (ii) an intermediary service rendered by a product supplier— (aa) who is authorised under a particular law to conduct business as a financial institution; and (bb) where the rendering of such service is regulated by or under such law; (iii) any other service exempted from the provisions of this Act by the registrar, after consultation with the Advisory Committee, by notice in the Gazette.",
+                  "text": "intermediary service does not include— (i) the rendering by a bank or mutual bank of a service contemplated in paragraph (b)(ii) of the definition of \"intermediary service\" where the bank or mutual bank acts merely as a conduit between a client and another product supplier; (ii) an intermediary service rendered by a product supplier—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1-3.b.aa",
+                      "number": "aa",
+                      "heading": "s1-3.b.aa",
+                      "text": "who is authorised under a particular law to conduct business as a financial institution; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1-3.b.bb",
+                      "number": "bb",
+                      "heading": "s1-3.b.bb",
+                      "text": "where the rendering of such service is regulated by or under such law; (iii) any other service exempted from the provisions of this Act by the registrar, after consultation with the Advisory Committee, by notice in the Gazette.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -454,9 +488,26 @@
                   "id": "s9.2.a",
                   "number": "a",
                   "heading": "s9.2.a",
-                  "text": "Before suspending any licence, the registrar must inform the licensee of— (i) the intention to suspend and the grounds therefor; (ii) the intended period of the suspension; and (iii) any terms to be attached to the suspension, including— (aa) a prohibition on concluding any new business by the licensee as from the effective date of the suspension and, in relation to unconcluded business, such measures as the registrar may determine for the protection of the interests of clients of the licensee; and (bb) terms designed to facilitate the lifting of the suspension, and must give the licensee a reasonable opportunity to make a submission in response thereto.",
+                  "text": "Before suspending any licence, the registrar must inform the licensee of— (i) the intention to suspend and the grounds therefor; (ii) the intended period of the suspension; and (iii) any terms to be attached to the suspension, including—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s9.2.a.aa",
+                      "number": "aa",
+                      "heading": "s9.2.a.aa",
+                      "text": "a prohibition on concluding any new business by the licensee as from the effective date of the suspension and, in relation to unconcluded business, such measures as the registrar may determine for the protection of the interests of clients of the licensee; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s9.2.a.bb",
+                      "number": "bb",
+                      "heading": "s9.2.a.bb",
+                      "text": "terms designed to facilitate the lifting of the suspension, and must give the licensee a reasonable opportunity to make a submission in response thereto.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s9.2.b",
@@ -608,9 +659,26 @@
                   "id": "s13.1.ii",
                   "number": "ii",
                   "heading": "s13.1.ii",
-                  "text": "is not exempted from the application of this Act relating to the rendering of a financial service; or (b) act as a representative of an authorised financial services provider, unless such person— (i) is able to provide confirmation, certified by the provider, to clients— (aa) that a service contract or other mandatory agreement, to represent the provider, exists; and (bb) that the provider accepts responsibility for those activities of the representative performed within the scope of, or in the course of implementing, any such contract or agreement; and (ii) if debarred as contemplated in section 14, complies with the requirements determined by the registrar, after consultation with the Advisory Committee, by notice in the Gazette, for the reappointment of a debarred person as a representative.",
+                  "text": "is not exempted from the application of this Act relating to the rendering of a financial service; or (b) act as a representative of an authorised financial services provider, unless such person— (i) is able to provide confirmation, certified by the provider, to clients—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s13.1.ii.aa",
+                      "number": "aa",
+                      "heading": "s13.1.ii.aa",
+                      "text": "that a service contract or other mandatory agreement, to represent the provider, exists; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s13.1.ii.bb",
+                      "number": "bb",
+                      "heading": "s13.1.ii.bb",
+                      "text": "that the provider accepts responsibility for those activities of the representative performed within the scope of, or in the course of implementing, any such contract or agreement; and (ii) if debarred as contemplated in section 14, complies with the requirements determined by the registrar, after consultation with the Advisory Committee, by notice in the Gazette, for the reappointment of a debarred person as a representative.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
