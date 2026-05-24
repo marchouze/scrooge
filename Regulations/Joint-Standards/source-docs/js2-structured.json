@@ -5,7 +5,13 @@
   "regulator": "SARB PA / FSCA",
   "year": 2024,
   "sourceNote": "Joint Standard 2 of 2024 on Cybersecurity and Cyber Resilience Requirements for Financial Institutions, jointly issued by the SARB Prudential Authority and FSCA under section 107 of the Financial Sector Regulation Act 9 of 2017.",
-  "citationPatterns": ["JS2", "Joint Standard 2", "Joint Standard 2 of 2024", "JS 2/2024", "JS 2 of 2024"],
+  "citationPatterns": [
+    "JS2",
+    "Joint Standard 2",
+    "Joint Standard 2 of 2024",
+    "JS 2/2024",
+    "JS 2 of 2024"
+  ],
   "priority": 2,
   "chapters": [
     {
@@ -45,8 +51,362 @@
           "id": "s2-1",
           "number": "2.1",
           "heading": "Definitions",
-          "text": "In this Joint Standard, 'the Act' means the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017) and any word or expression to which a meaning has been assigned in the Act bears the meaning assigned to it, and unless the context indicates otherwise 'attack surface' means the sum of an IT system's characteristics in the broad categories (software, hardware, network, processes and human) which allows an attacker to probe, enter, attack or maintain a presence in the system and potentially cause damage to a financial institution;\n'Authorities' means the Prudential Authority as established in terms of section 32 of the Act and the Financial Sector Conduct Authority as established in terms of section 56 of the Act;\n'black box testing' means testing by testers that have no information about the environment they are testing;\n'compromise' means the violation of the security of an IT system or information asset;\n'critical or criticality' means a measure of the degree to which an organisation depends on the IT system or information asset for the success of a mission or of a business function;\n'cryptography' means the discipline that embodies the principles, means, and methods for the transformation of data in order to hide their semantic content, prevent their unauthorised use, or prevent their undetected modification;\n'cyber' means relating to, within, or through the medium of the interconnected information infrastructure of interactions among persons, processes, data and IT systems;\n'cyber-related information' includes cyber incident, cyber threat intelligence and information on system vulnerabilities;\n'cybersecurity' means the preservation of confidentiality, integrity and availability of information and/or IT systems through the cyber medium. In addition, other properties, such as authenticity, accountability, non-repudiation and reliability can also be involved;\n'cyber event' means any observable occurrence in an IT system. Cyber events sometimes provide indication that a cyber incident is occurring;\n'cyber incident' means a cyber event that – (a) jeopardises the cybersecurity of an IT system or the information processed, retrieved, stored or transmitted by the system; or (b) violates the security policies, security procedures or acceptable use policies, whether resulting from malicious activity or not;\n'cyber resilience' means the ability of a financial institution to continue to carry out its mission by anticipating and adapting to cyber threats and other relevant changes in the environment and by withstanding, containing and rapidly recovering from cyber incidents. It involves people, process and technology;\n'cyber risk' means the combination of the probability of cyber incidents occurring and their impact;\n'cyber threat' means a cyber event with the potential to exploit one or more vulnerabilities that adversely affect cybersecurity;\n'data' means electronic representations of information in any form as defined in section 1 of the Electronic Communications and Transactions Act, 2002 (Act No. 25 of 2002);\n'defence-in-depth' means a security strategy integrating people, processes and technology to establish a variety of barriers across multiple layers and dimensions of a financial institution;\n'financial institution', notwithstanding the definition of 'financial institution' in the Act, for the purpose of this Joint Standard means – (a) a bank, a branch, a branch of a bank and a controlling company as respectively defined section 1 of the Banks Act, 1990 (Act No. 94 of 1990); (b) a mutual bank as defined in section 1 of the Mutual Banks Act, 1993 (Act No. 24 of 1993); (c) an insurer and a controlling company as defined in section 1 of the Insurance Act, 2017 (Act No. 18 of 2017); (d) a manager as defined in section 1 of the Collective Investment Scheme Control Act, 2002 (Act No. 45 of 2002); (e) a market infrastructure as defined in section 1 of the Financial Markets Act 2012 (Act No. 19 of 2012); (f) a discretionary FSP as defined in Chapter II of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003; (g) a Category I FSP as contemplated in section 3(a) of the Determination of Fit and Proper Requirements for Financial Services Providers, 2017, that provides investment fund administration services; (h) an administrative FSP as defined in Chapter I of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003; (i) a pension fund registered under the Pension Funds Act, 1956 (Act No. 24 of 1956); (j) an OTC derivative provider as defined in the Financial Markets Act Regulations; (k) an administrator approved in terms of section 13B of the Pension Funds Act, 1956 (Act No 24 of 1956); and (l) a registered credit rating agency as defined in section 1 of the Credit Rating Services Act, 2012 (Act No 24 of 2012);\n'grey box testing' means testing where the testers have limited information about the environment they are testing;\n'independent review' means a review conducted by an internal or external audit function or an independent control function;\n'indicators of compromise' means indicators used for identifying signs that a cyber incident may have occurred or may be currently occurring;\n'information asset' means any piece of data, device or other component of the environment that supports information-related activities. In the context of this Joint Standard, information assets include IT asset and excludes paper-based information;\n'information security' means protecting information and information systems from unauthorised access, use, disclosure, disruption, modification, or destruction in order to provide— (a) integrity, which means guarding against improper information modification or destruction, and includes ensuring information nonrepudiation and authenticity; (b) confidentiality, which means preserving authorised restrictions on access and disclosure, including the protection of personal privacy and proprietary information; and (c) availability, which means ensuring timely and reliable access to and use of information;\n'investment fund administration services' means, read in the context of paragraph (b)(i) of the definition of \"intermediary service\" as defined in the Financial Advisory and Intermediary Services Act, 2002 (Act No. 37 of 2002), any act other than the furnishing of advice, performed by a financial services provider for or on behalf of a client or product supplier with a view to administering, maintaining or servicing a collective investment scheme or hedge fund purchased by a client from a product supplier or in which the client has invested;\n'IT' means information technology;\n'IT asset' means an asset including software, hardware, internal and external-facing network system that are found in the business environment;\n'IT environment' means the IT components which comprise IT assets, operations and human elements of a financial institution;\n'IT systems' means the integration of IT assets within the IT environment;\n'material incident' means a disruption of a business activity, process or function which has, or is likely to have, a severe and widespread impact on the financial institution's operations, services to its customers, or the broader financial system and economy;\n'penetration testing' means a test methodology in which assessors, using all available documentation such as system design, source code, manuals and working under specific constraints, attempt to circumvent the security features of an IT system;\n'privileged account' means a user account with approved authorisations of a privileged user. It also includes access to set \"access rights\" for users on a given system. Sometimes referred to as system or network administrative accounts;\n'privileged user' means a user that is authorised (and, therefore, trusted) to perform security-relevant functions that ordinary users are not authorised to perform;\n'responsible authority' means the responsible authority for a financial sector law as defined in section 1 of the Act;\n'RPO' means the recovery point objective and refers to the acceptable amount of data loss for an IT system, should a disaster or system disruption occur;\n'RTO' means the recovery time objective and means the duration of time, from the point of disruption, within which a system should be restored;\n'security' means both cyber and information security;\n'security controls' means a prevention, detection or response measure to reduce the likelihood or impact of a cyber event or cyber incident;\n'senior management' means – (a) the chief executive officer or the person who is in charge of a financial institution; (b) a person, other than a director or a head of a control function (i) who makes or participates in making decisions that (aa) affect the whole or a substantial part of the business of a financial institution; (bb) has the capacity to significantly affect the financial standing of a financial institution; and (ii) who oversees the enforcement of policies and the implementation of strategies approved, or adopted, by the governing body;\n'sensitive information' means information or data where loss, misuse, unlawful disclosure or unauthorised access to or modification of could adversely affect the public interest or a financial institution or the privacy to which persons are entitled;\n'sensitivity' means a measure of the importance assigned to information by its owner, for the purpose of denoting its need for protection;\n'threat intelligence' means threat information that has been aggregated, transformed, analysed, interpreted or enriched to provide the necessary context for decision-making processes;\n'user' means a financial institution's employees, contractors, consultants and third-party service providers with access to an IT system or information asset;\n'vulnerability' means a weakness in an information asset or security control that could be exploited to compromise cybersecurity;\n'vulnerability assessment' means a systematic examination of an IT system, and its controls and processes, to determine the adequacy of security measures, identify security deficiencies, provide data from which to predict the effectiveness of proposed security measures and confirm the adequacy of such measures after implementation; and\n'white box testing' means testing where the testers are provided with relevant information about the environment they are testing.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s2-1.1",
+              "number": "1",
+              "heading": "1",
+              "text": "In this Joint Standard, 'the Act' means the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017) and any word or expression to which a meaning has been assigned in the Act bears the meaning assigned to it, and unless the context indicates otherwise 'attack surface' means the sum of an IT system's characteristics in the broad categories (software, hardware, network, processes and human) which allows an attacker to probe, enter, attack or maintain a presence in the system and potentially cause damage to a financial institution;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.2",
+              "number": "2",
+              "heading": "Authorities",
+              "text": "'Authorities' means the Prudential Authority as established in terms of section 32 of the Act and the Financial Sector Conduct Authority as established in terms of section 56 of the Act;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.3",
+              "number": "3",
+              "heading": "black box testing",
+              "text": "'black box testing' means testing by testers that have no information about the environment they are testing;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.4",
+              "number": "4",
+              "heading": "compromise",
+              "text": "'compromise' means the violation of the security of an IT system or information asset;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.5",
+              "number": "5",
+              "heading": "critical or criticality",
+              "text": "'critical or criticality' means a measure of the degree to which an organisation depends on the IT system or information asset for the success of a mission or of a business function;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.6",
+              "number": "6",
+              "heading": "cryptography",
+              "text": "'cryptography' means the discipline that embodies the principles, means, and methods for the transformation of data in order to hide their semantic content, prevent their unauthorised use, or prevent their undetected modification;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.7",
+              "number": "7",
+              "heading": "cyber",
+              "text": "'cyber' means relating to, within, or through the medium of the interconnected information infrastructure of interactions among persons, processes, data and IT systems;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.8",
+              "number": "8",
+              "heading": "cyber-related information",
+              "text": "'cyber-related information' includes cyber incident, cyber threat intelligence and information on system vulnerabilities;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.9",
+              "number": "9",
+              "heading": "cybersecurity",
+              "text": "'cybersecurity' means the preservation of confidentiality, integrity and availability of information and/or IT systems through the cyber medium. In addition, other properties, such as authenticity, accountability, non-repudiation and reliability can also be involved;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.10",
+              "number": "10",
+              "heading": "cyber event",
+              "text": "'cyber event' means any observable occurrence in an IT system. Cyber events sometimes provide indication that a cyber incident is occurring;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.11",
+              "number": "11",
+              "heading": "cyber incident",
+              "text": "'cyber incident' means a cyber event that – (a) jeopardises the cybersecurity of an IT system or the information processed, retrieved, stored or transmitted by the system; or (b) violates the security policies, security procedures or acceptable use policies, whether resulting from malicious activity or not;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.12",
+              "number": "12",
+              "heading": "cyber resilience",
+              "text": "'cyber resilience' means the ability of a financial institution to continue to carry out its mission by anticipating and adapting to cyber threats and other relevant changes in the environment and by withstanding, containing and rapidly recovering from cyber incidents. It involves people, process and technology;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.13",
+              "number": "13",
+              "heading": "cyber risk",
+              "text": "'cyber risk' means the combination of the probability of cyber incidents occurring and their impact;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.14",
+              "number": "14",
+              "heading": "cyber threat",
+              "text": "'cyber threat' means a cyber event with the potential to exploit one or more vulnerabilities that adversely affect cybersecurity;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.15",
+              "number": "15",
+              "heading": "data",
+              "text": "'data' means electronic representations of information in any form as defined in section 1 of the Electronic Communications and Transactions Act, 2002 (Act No. 25 of 2002);",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.16",
+              "number": "16",
+              "heading": "defence-in-depth",
+              "text": "'defence-in-depth' means a security strategy integrating people, processes and technology to establish a variety of barriers across multiple layers and dimensions of a financial institution;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.17",
+              "number": "17",
+              "heading": "financial institution",
+              "text": "'financial institution', notwithstanding the definition of 'financial institution' in the Act, for the purpose of this Joint Standard means – (a) a bank, a branch, a branch of a bank and a controlling company as respectively defined section 1 of the Banks Act, 1990 (Act No. 94 of 1990); (b) a mutual bank as defined in section 1 of the Mutual Banks Act, 1993 (Act No. 24 of 1993); (c) an insurer and a controlling company as defined in section 1 of the Insurance Act, 2017 (Act No. 18 of 2017); (d) a manager as defined in section 1 of the Collective Investment Scheme Control Act, 2002 (Act No. 45 of 2002); (e) a market infrastructure as defined in section 1 of the Financial Markets Act 2012 (Act No. 19 of 2012); (f) a discretionary FSP as defined in Chapter II of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003; (g) a Category I FSP as contemplated in section 3(a) of the Determination of Fit and Proper Requirements for Financial Services Providers, 2017, that provides investment fund administration services; (h) an administrative FSP as defined in Chapter I of the Notice on Codes of Conduct for Administrative and Discretionary FSPs, 2003; (i) a pension fund registered under the Pension Funds Act, 1956 (Act No. 24 of 1956); (j) an OTC derivative provider as defined in the Financial Markets Act Regulations; (k) an administrator approved in terms of section 13B of the Pension Funds Act, 1956 (Act No 24 of 1956); and (l) a registered credit rating agency as defined in section 1 of the Credit Rating Services Act, 2012 (Act No 24 of 2012);",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.18",
+              "number": "18",
+              "heading": "grey box testing",
+              "text": "'grey box testing' means testing where the testers have limited information about the environment they are testing;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.19",
+              "number": "19",
+              "heading": "independent review",
+              "text": "'independent review' means a review conducted by an internal or external audit function or an independent control function;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.20",
+              "number": "20",
+              "heading": "indicators of compromise",
+              "text": "'indicators of compromise' means indicators used for identifying signs that a cyber incident may have occurred or may be currently occurring;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.21",
+              "number": "21",
+              "heading": "information asset",
+              "text": "'information asset' means any piece of data, device or other component of the environment that supports information-related activities. In the context of this Joint Standard, information assets include IT asset and excludes paper-based information;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.22",
+              "number": "22",
+              "heading": "information security",
+              "text": "'information security' means protecting information and information systems from unauthorised access, use, disclosure, disruption, modification, or destruction in order to provide— (a) integrity, which means guarding against improper information modification or destruction, and includes ensuring information nonrepudiation and authenticity; (b) confidentiality, which means preserving authorised restrictions on access and disclosure, including the protection of personal privacy and proprietary information; and (c) availability, which means ensuring timely and reliable access to and use of information;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.23",
+              "number": "23",
+              "heading": "investment fund administration services",
+              "text": "'investment fund administration services' means, read in the context of paragraph (b)(i) of the definition of \"intermediary service\" as defined in the Financial Advisory and Intermediary Services Act, 2002 (Act No. 37 of 2002), any act other than the furnishing of advice, performed by a financial services provider for or on behalf of a client or product supplier with a view to administering, maintaining or servicing a collective investment scheme or hedge fund purchased by a client from a product supplier or in which the client has invested;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.24",
+              "number": "24",
+              "heading": "IT",
+              "text": "'IT' means information technology;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.25",
+              "number": "25",
+              "heading": "IT asset",
+              "text": "'IT asset' means an asset including software, hardware, internal and external-facing network system that are found in the business environment;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.26",
+              "number": "26",
+              "heading": "IT environment",
+              "text": "'IT environment' means the IT components which comprise IT assets, operations and human elements of a financial institution;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.27",
+              "number": "27",
+              "heading": "IT systems",
+              "text": "'IT systems' means the integration of IT assets within the IT environment;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.28",
+              "number": "28",
+              "heading": "material incident",
+              "text": "'material incident' means a disruption of a business activity, process or function which has, or is likely to have, a severe and widespread impact on the financial institution's operations, services to its customers, or the broader financial system and economy;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.29",
+              "number": "29",
+              "heading": "penetration testing",
+              "text": "'penetration testing' means a test methodology in which assessors, using all available documentation such as system design, source code, manuals and working under specific constraints, attempt to circumvent the security features of an IT system;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.30",
+              "number": "30",
+              "heading": "privileged account",
+              "text": "'privileged account' means a user account with approved authorisations of a privileged user. It also includes access to set \"access rights\" for users on a given system. Sometimes referred to as system or network administrative accounts;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.31",
+              "number": "31",
+              "heading": "privileged user",
+              "text": "'privileged user' means a user that is authorised (and, therefore, trusted) to perform security-relevant functions that ordinary users are not authorised to perform;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.32",
+              "number": "32",
+              "heading": "responsible authority",
+              "text": "'responsible authority' means the responsible authority for a financial sector law as defined in section 1 of the Act;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.33",
+              "number": "33",
+              "heading": "RPO",
+              "text": "'RPO' means the recovery point objective and refers to the acceptable amount of data loss for an IT system, should a disaster or system disruption occur;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.34",
+              "number": "34",
+              "heading": "RTO",
+              "text": "'RTO' means the recovery time objective and means the duration of time, from the point of disruption, within which a system should be restored;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.35",
+              "number": "35",
+              "heading": "security",
+              "text": "'security' means both cyber and information security;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.36",
+              "number": "36",
+              "heading": "security controls",
+              "text": "'security controls' means a prevention, detection or response measure to reduce the likelihood or impact of a cyber event or cyber incident;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.37",
+              "number": "37",
+              "heading": "senior management",
+              "text": "'senior management' means – (a) the chief executive officer or the person who is in charge of a financial institution; (b) a person, other than a director or a head of a control function (i) who makes or participates in making decisions that (aa) affect the whole or a substantial part of the business of a financial institution; (bb) has the capacity to significantly affect the financial standing of a financial institution; and (ii) who oversees the enforcement of policies and the implementation of strategies approved, or adopted, by the governing body;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.38",
+              "number": "38",
+              "heading": "sensitive information",
+              "text": "'sensitive information' means information or data where loss, misuse, unlawful disclosure or unauthorised access to or modification of could adversely affect the public interest or a financial institution or the privacy to which persons are entitled;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.39",
+              "number": "39",
+              "heading": "sensitivity",
+              "text": "'sensitivity' means a measure of the importance assigned to information by its owner, for the purpose of denoting its need for protection;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.40",
+              "number": "40",
+              "heading": "threat intelligence",
+              "text": "'threat intelligence' means threat information that has been aggregated, transformed, analysed, interpreted or enriched to provide the necessary context for decision-making processes;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.41",
+              "number": "41",
+              "heading": "user",
+              "text": "'user' means a financial institution's employees, contractors, consultants and third-party service providers with access to an IT system or information asset;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.42",
+              "number": "42",
+              "heading": "vulnerability",
+              "text": "'vulnerability' means a weakness in an information asset or security control that could be exploited to compromise cybersecurity;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.43",
+              "number": "43",
+              "heading": "vulnerability assessment",
+              "text": "'vulnerability assessment' means a systematic examination of an IT system, and its controls and processes, to determine the adequacy of security measures, identify security deficiencies, provide data from which to predict the effectiveness of proposed security measures and confirm the adequacy of such measures after implementation; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1.44",
+              "number": "44",
+              "heading": "white box testing",
+              "text": "'white box testing' means testing where the testers are provided with relevant information about the environment they are testing.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -171,22 +531,116 @@
           "id": "s7-1",
           "number": "7.1",
           "heading": "Identification",
-          "text": "7.1.1 A financial institution must –\n(a) identify business processes and information assets that support business and delivery of services, including those managed by third-party service providers;\n(b) in reference to item (a) above, classify the business processes and information assets in terms of criticality and sensitivity, which in turn must guide the prioritisation of its protective, detective, response and recovery efforts;\n(c) carry out security risk assessments on its critical operations and information assets to ensure that they are protected against compromise; and\n(d) maintain an inventory of all its information assets which includes location, ownership, the roles and responsibilities of managing the information assets.\n\n7.1.2 The inventory, referred to in subparagraph 7.1.1(d) above must be updated when changes are required and reviewed regularly but at least biennially.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-1.1",
+              "number": "1",
+              "heading": "7.1.1",
+              "text": "7.1.1 A financial institution must –\n(a) identify business processes and information assets that support business and delivery of services, including those managed by third-party service providers;\n(b) in reference to item (a) above, classify the business processes and information assets in terms of criticality and sensitivity, which in turn must guide the prioritisation of its protective, detective, response and recovery efforts;\n(c) carry out security risk assessments on its critical operations and information assets to ensure that they are protected against compromise; and\n(d) maintain an inventory of all its information assets which includes location, ownership, the roles and responsibilities of managing the information assets.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-1.2",
+              "number": "2",
+              "heading": "7.1.2",
+              "text": "7.1.2 The inventory, referred to in subparagraph 7.1.1(d) above must be updated when changes are required and reviewed regularly but at least biennially.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7-2",
           "number": "7.2",
           "heading": "Protection",
-          "text": "7.2.1 A financial institution must implement appropriate and effective cyber resilience capabilities and cybersecurity practices to prevent, limit and/or contain the impact of a potential cyber event or cyber incident.\n\n7.2.2 Identity and access management:\n(a) A financial institution must –\n(i) ensure that access to information assets and associated facilities is limited to users, processes, and devices authorised by the financial institution;\n(ii) ensure that access to information assets and associated facilities is managed commensurate with the assessed risk of unauthorised access;\n(iii) establish identity management and access control mechanisms to provide effective and consistent user administration, accountability and authentication;\n(iv) establish security and access control policies and procedures;\n(v) ensure remote access to information assets is only allowed from devices or connections that have been secured according to the financial institution's security standards; and\n(vi) ensure that strong authentication is implemented for users performing remote access to safeguard against unauthorised access to the financial institution's IT environment.\n\n7.2.3 Data security\n(a) A financial institution must –\n(i) develop comprehensive data loss prevention policies for its sensitive information whether in motion, at rest or in use;\n(ii) implement appropriate measures to prevent and detect unauthorised access to data, modification, copying, transmission as well as data theft in systems and endpoint devices;\n(iii) ensure that information assets managed by third-party service providers are accorded the same level of protection and subject to security standards that are commensurate to information assets' sensitivity and criticality;\n(iv) ensure that sensitive information stored in systems and endpoint devices is encrypted or protected by access control mechanisms commensurate to the risk exposure. Based on the nature, scale, complexity and risk profile of the financial institution the responsible authority may require that stored sensitive information is encrypted;\n(v) ensure that only authorised IT systems, endpoint devices and data storage mediums, are used to process, retrieve, communicate, transmit or store sensitive information;\n(vi) ensure that security controls are implemented to prevent and detect the use of unauthorised internet services which allow users to communicate or store sensitive data;\n(vii) ensure that the use of sensitive information in non-production environments is restricted, unless equivalent controls to the production environment are in place. In exceptional situations where production data needs to be used in non-production environments, adequate processes and safeguards must be in place for the data request and approval must be obtained from senior management;\n(viii) ensure appropriate controls are implemented in production and non-production environments to manage the access and removal of sensitive information to prevent data leakages. Where possible, such data must be masked in the production and non-production environments;\n(ix) ensure sensitive information is permanently deleted from storage media, IT systems and endpoint devices before it is disposed of or redeployed;\n(x) have an agreement in place for the secure return or transfer of data in instances where the contract, including a contract with a third-party service provider, is terminated and data must be returned. If return is impossible, there must also be processes in place for the permanent deletion of all copies of the financial institution's information as well as the secure destruction of storage media containing the financial institution's information. Where data is required to be retained for a period of time in accordance with the requirements of legislation, the data may be retained, but must be destroyed immediately upon the expiration of the retention period; and\n(xi) have appropriate non-disclosure or confidentiality provisions included in the relevant agreements in place with users.\n\n7.2.4 Application and system security\n(a) A financial institution must –\n(i) implement security-by-design approach which refers to building security in every phase of software development in order to minimise system vulnerabilities and reduce the attack surface;\n(ii) determine the acceptable level of security required to meet its business needs and assess the potential threats and risks related to the applications and systems;\n(iii) ensure that security requirements relating to system access control, authentication, transaction authorisation, data integrity, system activity logging, audit trail, security event tracking and exception handling are clearly specified at the initial stages of system development/acquisition; and\n(iv) ensure that changes to business-critical applications are reviewed and tested to ensure that there is no adverse impact on operations or security.\n\n7.2.5 Network security\n(a) A financial institution must –\n(i) install network security devices to secure the network between the financial institution and the internet, as well as connections with third-party service providers;\n(ii) deploy network intrusion detection or prevention systems to detect and block malicious traffic;\n(iii) review its network architecture, including the network security design; as well as systems and network interconnections on a periodic basis to identify potential vulnerabilities;\n(iv) implement network access controls to detect and prevent unauthorised devices from connecting to its network. Network access mechanisms must be reviewed regularly, but at least annually, to ensure they are kept up-to-date;\n(v) review firewall rules on a periodic basis and test network perimeter controls and posture at least annually;\n(vi) isolate internet web browsing activities from its sensitive IT systems through the use of physical or logical segregation, or implement equivalent controls, to reduce exposure of its IT systems to cyber-attacks; and\n(vii) encrypt remote connections to prevent data leakages through network sniffing and eavesdropping.\n\n7.2.6 Cryptography\n(a) Where a financial institution uses cryptography, it must –\n(i) establish cryptographic key management policies, standards and procedures covering key generation, distribution, installation, renewal, revocation, recovery and expiry;\n(ii) adopt cryptographic algorithms from well-established international standards;\n(iii) ensure cryptographic keys are securely generated and protected from unauthorised disclosure in hardened and tamper resistant systems. Any cryptographic key or sensitive information used to generate or derive the keys must also be protected or securely destroyed after the key is generated;\n(iv) use a secure key destruction method to ensure the keys are not recoverable when cryptographic keys have expired or have been revoked;\n(v) determine the appropriate lifespan of each cryptographic key based on factors, such as the sensitivity of the data, the criticality of the system to be protected, and the threats and risks that the data or system may be exposed to. The cryptographic key must be securely replaced, before it expires at the end of its lifespan;\n(vi) maintain backups of cryptographic keys for recovery purposes and accord them a high level of protection since cryptographic keys can be corrupted or unintentionally deleted; and\n(vii) ensure all cryptographic algorithms used have been subject to rigorous testing or vetting to meet the identified security objectives and requirements.\n\n7.2.7 Cybersecurity awareness and training\n(a) A financial institution must –\n(i) establish a comprehensive cybersecurity awareness training programme to maintain a high level of awareness among all users in the financial institution;\n(ii) ensure that user refresher training is conducted at least annually and training on new content is done regularly in consideration of the evolving risks;\n(iii) ensure that the governing body undergo training to raise their awareness on risks associated with the use of technology and enhance their understanding of cyber risk management practices; and\n(iv) ensure that the training programme is reviewed periodically to ensure its contents remain current and relevant. The review must take into consideration changes in the financial institution's security policies, prevalent and emerging risks, and the evolving threat landscape.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-2.1",
+              "number": "1",
+              "heading": "7.2.1",
+              "text": "7.2.1 A financial institution must implement appropriate and effective cyber resilience capabilities and cybersecurity practices to prevent, limit and/or contain the impact of a potential cyber event or cyber incident.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-2.2",
+              "number": "2",
+              "heading": "7.2.2",
+              "text": "7.2.2 Identity and access management:\n(a) A financial institution must –\n(i) ensure that access to information assets and associated facilities is limited to users, processes, and devices authorised by the financial institution;\n(ii) ensure that access to information assets and associated facilities is managed commensurate with the assessed risk of unauthorised access;\n(iii) establish identity management and access control mechanisms to provide effective and consistent user administration, accountability and authentication;\n(iv) establish security and access control policies and procedures;\n(v) ensure remote access to information assets is only allowed from devices or connections that have been secured according to the financial institution's security standards; and\n(vi) ensure that strong authentication is implemented for users performing remote access to safeguard against unauthorised access to the financial institution's IT environment.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-2.3",
+              "number": "3",
+              "heading": "7.2.3",
+              "text": "7.2.3 Data security\n(a) A financial institution must –\n(i) develop comprehensive data loss prevention policies for its sensitive information whether in motion, at rest or in use;\n(ii) implement appropriate measures to prevent and detect unauthorised access to data, modification, copying, transmission as well as data theft in systems and endpoint devices;\n(iii) ensure that information assets managed by third-party service providers are accorded the same level of protection and subject to security standards that are commensurate to information assets' sensitivity and criticality;\n(iv) ensure that sensitive information stored in systems and endpoint devices is encrypted or protected by access control mechanisms commensurate to the risk exposure. Based on the nature, scale, complexity and risk profile of the financial institution the responsible authority may require that stored sensitive information is encrypted;\n(v) ensure that only authorised IT systems, endpoint devices and data storage mediums, are used to process, retrieve, communicate, transmit or store sensitive information;\n(vi) ensure that security controls are implemented to prevent and detect the use of unauthorised internet services which allow users to communicate or store sensitive data;\n(vii) ensure that the use of sensitive information in non-production environments is restricted, unless equivalent controls to the production environment are in place. In exceptional situations where production data needs to be used in non-production environments, adequate processes and safeguards must be in place for the data request and approval must be obtained from senior management;\n(viii) ensure appropriate controls are implemented in production and non-production environments to manage the access and removal of sensitive information to prevent data leakages. Where possible, such data must be masked in the production and non-production environments;\n(ix) ensure sensitive information is permanently deleted from storage media, IT systems and endpoint devices before it is disposed of or redeployed;\n(x) have an agreement in place for the secure return or transfer of data in instances where the contract, including a contract with a third-party service provider, is terminated and data must be returned. If return is impossible, there must also be processes in place for the permanent deletion of all copies of the financial institution's information as well as the secure destruction of storage media containing the financial institution's information. Where data is required to be retained for a period of time in accordance with the requirements of legislation, the data may be retained, but must be destroyed immediately upon the expiration of the retention period; and\n(xi) have appropriate non-disclosure or confidentiality provisions included in the relevant agreements in place with users.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-2.4",
+              "number": "4",
+              "heading": "7.2.4",
+              "text": "7.2.4 Application and system security\n(a) A financial institution must –\n(i) implement security-by-design approach which refers to building security in every phase of software development in order to minimise system vulnerabilities and reduce the attack surface;\n(ii) determine the acceptable level of security required to meet its business needs and assess the potential threats and risks related to the applications and systems;\n(iii) ensure that security requirements relating to system access control, authentication, transaction authorisation, data integrity, system activity logging, audit trail, security event tracking and exception handling are clearly specified at the initial stages of system development/acquisition; and\n(iv) ensure that changes to business-critical applications are reviewed and tested to ensure that there is no adverse impact on operations or security.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-2.5",
+              "number": "5",
+              "heading": "7.2.5",
+              "text": "7.2.5 Network security\n(a) A financial institution must –\n(i) install network security devices to secure the network between the financial institution and the internet, as well as connections with third-party service providers;\n(ii) deploy network intrusion detection or prevention systems to detect and block malicious traffic;\n(iii) review its network architecture, including the network security design; as well as systems and network interconnections on a periodic basis to identify potential vulnerabilities;\n(iv) implement network access controls to detect and prevent unauthorised devices from connecting to its network. Network access mechanisms must be reviewed regularly, but at least annually, to ensure they are kept up-to-date;\n(v) review firewall rules on a periodic basis and test network perimeter controls and posture at least annually;\n(vi) isolate internet web browsing activities from its sensitive IT systems through the use of physical or logical segregation, or implement equivalent controls, to reduce exposure of its IT systems to cyber-attacks; and\n(vii) encrypt remote connections to prevent data leakages through network sniffing and eavesdropping.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-2.6",
+              "number": "6",
+              "heading": "7.2.6",
+              "text": "7.2.6 Cryptography\n(a) Where a financial institution uses cryptography, it must –\n(i) establish cryptographic key management policies, standards and procedures covering key generation, distribution, installation, renewal, revocation, recovery and expiry;\n(ii) adopt cryptographic algorithms from well-established international standards;\n(iii) ensure cryptographic keys are securely generated and protected from unauthorised disclosure in hardened and tamper resistant systems. Any cryptographic key or sensitive information used to generate or derive the keys must also be protected or securely destroyed after the key is generated;\n(iv) use a secure key destruction method to ensure the keys are not recoverable when cryptographic keys have expired or have been revoked;\n(v) determine the appropriate lifespan of each cryptographic key based on factors, such as the sensitivity of the data, the criticality of the system to be protected, and the threats and risks that the data or system may be exposed to. The cryptographic key must be securely replaced, before it expires at the end of its lifespan;\n(vi) maintain backups of cryptographic keys for recovery purposes and accord them a high level of protection since cryptographic keys can be corrupted or unintentionally deleted; and\n(vii) ensure all cryptographic algorithms used have been subject to rigorous testing or vetting to meet the identified security objectives and requirements.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-2.7",
+              "number": "7",
+              "heading": "7.2.7",
+              "text": "7.2.7 Cybersecurity awareness and training\n(a) A financial institution must –\n(i) establish a comprehensive cybersecurity awareness training programme to maintain a high level of awareness among all users in the financial institution;\n(ii) ensure that user refresher training is conducted at least annually and training on new content is done regularly in consideration of the evolving risks;\n(iii) ensure that the governing body undergo training to raise their awareness on risks associated with the use of technology and enhance their understanding of cyber risk management practices; and\n(iv) ensure that the training programme is reviewed periodically to ensure its contents remain current and relevant. The review must take into consideration changes in the financial institution's security policies, prevalent and emerging risks, and the evolving threat landscape.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7-3",
           "number": "7.3",
           "heading": "Detection",
-          "text": "7.3.1 A financial institution must maintain effective cyber resilience capabilities to –\n(a) systemically monitor and detect cyber events and cyber incidents on IT systems, information assets and business services as well as effectively respond to attacks;\n(b) periodically evaluate the effectiveness of identified controls, including through network monitoring, testing and audits;\n(c) establish security monitoring capabilities such as a security operations centre (or similar) or acquire managed security services in order to facilitate continuous monitoring and analysis of cyber events as well as prompt detection and response to cyber incidents; and\n(d) define processes, roles and responsibilities for security operations.\n\n7.3.2 A financial institution, when implementing the requirements in subparagraph 7.3.1(a) above, must consider –\n(a) establishing a process to collect, review and retain IT system logs to facilitate security monitoring operations. These logs must be protected against unauthorised access, editing, and deletion;\n(b) configuring IT system events or alerts to provide an early indication of issues that may affect its security. Security events or alerts must be actively monitored so that prompt measures can be taken to address the issues early;\n(c) performing correlation of multiple events registered on IT system logs to identify suspicious or anomalous activity patterns; and\n(d) establishing a process for timely escalation to relevant stakeholders regarding suspicious or anomalous system activities or user behaviour.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-3.1",
+              "number": "1",
+              "heading": "7.3.1",
+              "text": "7.3.1 A financial institution must maintain effective cyber resilience capabilities to –\n(a) systemically monitor and detect cyber events and cyber incidents on IT systems, information assets and business services as well as effectively respond to attacks;\n(b) periodically evaluate the effectiveness of identified controls, including through network monitoring, testing and audits;\n(c) establish security monitoring capabilities such as a security operations centre (or similar) or acquire managed security services in order to facilitate continuous monitoring and analysis of cyber events as well as prompt detection and response to cyber incidents; and\n(d) define processes, roles and responsibilities for security operations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-3.2",
+              "number": "2",
+              "heading": "7.3.2",
+              "text": "7.3.2 A financial institution, when implementing the requirements in subparagraph 7.3.1(a) above, must consider –\n(a) establishing a process to collect, review and retain IT system logs to facilitate security monitoring operations. These logs must be protected against unauthorised access, editing, and deletion;\n(b) configuring IT system events or alerts to provide an early indication of issues that may affect its security. Security events or alerts must be actively monitored so that prompt measures can be taken to address the issues early;\n(c) performing correlation of multiple events registered on IT system logs to identify suspicious or anomalous activity patterns; and\n(d) establishing a process for timely escalation to relevant stakeholders regarding suspicious or anomalous system activities or user behaviour.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7-4",
@@ -206,15 +660,83 @@
           "id": "s7-6",
           "number": "7.6",
           "heading": "Situational awareness",
-          "text": "7.6.1 A financial institution must understand the threat landscape and its implications in an environment within which it operates as well as the adequacy of its cyber risk mitigation measures.\n\n7.6.2 Threat intelligence and information sharing\n(a) A financial institution must –\n(i) establish a process to collect and analyse cyber-related information for its relevance to and potential impact on the business and IT environment in order to maintain good cyber situational awareness;\n(ii) implement cyber intelligence monitoring capabilities for both internal and external threats; and\n(iii) participate in cyber threat information-sharing arrangements with trusted external parties to –\n(a) share reliable, actionable cybersecurity information regarding threats, vulnerabilities, and incidents to enhance defences; and\n(b) receive timely and actionable cyber threat information.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-6.1",
+              "number": "1",
+              "heading": "7.6.1",
+              "text": "7.6.1 A financial institution must understand the threat landscape and its implications in an environment within which it operates as well as the adequacy of its cyber risk mitigation measures.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-6.2",
+              "number": "2",
+              "heading": "7.6.2",
+              "text": "7.6.2 Threat intelligence and information sharing\n(a) A financial institution must –\n(i) establish a process to collect and analyse cyber-related information for its relevance to and potential impact on the business and IT environment in order to maintain good cyber situational awareness;\n(ii) implement cyber intelligence monitoring capabilities for both internal and external threats; and\n(iii) participate in cyber threat information-sharing arrangements with trusted external parties to –\n(a) share reliable, actionable cybersecurity information regarding threats, vulnerabilities, and incidents to enhance defences; and\n(b) receive timely and actionable cyber threat information.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7-7",
           "number": "7.7",
           "heading": "Testing",
-          "text": "7.7.1 Testing control effectiveness\n(a) A financial institution must test all elements of its cyber resilience capacity and security controls to determine the overall effectiveness, whether it is implemented correctly, operating as intended and producing desired outcomes.\n(b) The nature and frequency of the testing must be commensurate with –\n(i) the rate at which the vulnerabilities and threats change;\n(ii) the criticality and sensitivity of IT systems and information assets;\n(iii) the consequences of a cyber incident;\n(iv) the risks associated with exposure to environments where a financial institution is unable to enforce its security policies; and\n(v) the materiality and frequency of change to IT systems and information assets.\n(c) Where a financial institution's IT systems or information assets are managed by a third-party service provider, and a financial institution is reliant on that party's information security control testing, the financial institution must be satisfied that the nature and frequency of testing of controls in respect of those IT systems or information assets is commensurate with items (a)(i) to (v) above.\n(d) A financial institution must –\n(i) ensure that security control assurance is provided by personnel appropriately skilled in providing such assurance;\n(ii) escalate and report to the governing body any testing results that identify security control deficiencies that cannot be remediated in a timely manner; and\n(iii) ensure that a remediation plan, with timelines is followed to address identified control deficiencies.\n\n7.7.2 Vulnerability assessment\n(a) A financial institution must –\n(i) establish a process to conduct regular vulnerability assessments on its IT systems and information assets to identify security vulnerabilities and ensure that vulnerabilities are addressed in a timely manner; and\n(ii) ensure that the frequency of vulnerability assessments is commensurate with the criticality of the IT system and information assets and the security risk to which it is exposed.\n\n7.7.3 Penetration testing\n(a) A financial institution must –\n(i) carry out penetration testing on critical IT systems and information assets to obtain an in-depth evaluation of its cybersecurity defences. The responsible authority may, based on the nature, scale, complexity and risk profile of the financial institution specify that a black box, grey box and white box testing or a combination thereof be conducted for critical IT systems and information assets;\n(ii) ensure that the frequency of penetration testing is determined based on factors such as criticality and exposure to cyber risks; and\n(iii) conduct penetration testing to validate the adequacy of the security controls for IT systems and information assets that are directly accessible from the internet, whenever such IT systems and information assets undergo major changes or updates. If no major changes or updates are made, penetration testing must be conducted at least annually.\n\n7.7.4 Simulation exercises\n(a) A financial institution must –\n(i) carry out regular scenario-based simulation exercises to validate the financial institution's response and recovery capabilities, as well as communication plans against prevalent cyber threats. The simulation exercise must include, but is not limited to, an adversarial attack and defence simulation exercise; and\n(ii) design the scenario-based simulation exercise by using threat intelligence that is relevant to the financial institution's IT environment in order to identify –\n(aa) threat actors who are most likely to pose a threat to the financial institution; and\n(bb) the tactics, techniques and procedures most likely to be used in such attacks.\n\n7.7.5 Application security testing\n(a) A financial institution must –\n(i) carry out testing of security functionality on web-based and critical applications during the development and implementation in a robust manner to ensure that they satisfy business policies or rules of the financial institution as well as regulatory and legal requirements;\n(ii) adopt standards on secure coding, source code review and application security testing to minimise the bugs and vulnerabilities in its software;\n(iii) establish a policy and procedure on the use and update of third-party and open-source software code to ensure these codes are subject to review and testing before they are integrated into the financial institution's software; and\n(iv) ensure that the policy and procedures are reviewed regularly.\n\n7.7.6 Remediation management\n(a) A financial institution must establish a comprehensive remediation process to track and resolve issues identified from the cybersecurity testing or exercises, third-party assessments, self-assessments as well as findings from internal and external assurance.\n(b) The remediation process referred to in item (a) above must at a minimum –\n(i) include the following:\n(aa) severity assessments and classification of issues;\n(bb) prioritisation of issues based on the risk posed;\n(cc) timeframes to remediate issues of different severity;\n(dd) risk assessments where appropriate; and\n(ee) mitigation strategies to manage deviations from the cybersecurity framework;\n(ii) ensure all issues identified from cybersecurity testing or exercises, as well as software defects discovered from source code review and application security testing, are tracked. Known major issues and security flaws must be remediated before production deployment; and\n(iii) keep track of updates and reported vulnerabilities on in-house developed, third-party and open-source software that are utilised by the financial institutions in order to facilitate the remediation of vulnerabilities in a timely manner.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-7.1",
+              "number": "1",
+              "heading": "7.7.1",
+              "text": "7.7.1 Testing control effectiveness\n(a) A financial institution must test all elements of its cyber resilience capacity and security controls to determine the overall effectiveness, whether it is implemented correctly, operating as intended and producing desired outcomes.\n(b) The nature and frequency of the testing must be commensurate with –\n(i) the rate at which the vulnerabilities and threats change;\n(ii) the criticality and sensitivity of IT systems and information assets;\n(iii) the consequences of a cyber incident;\n(iv) the risks associated with exposure to environments where a financial institution is unable to enforce its security policies; and\n(v) the materiality and frequency of change to IT systems and information assets.\n(c) Where a financial institution's IT systems or information assets are managed by a third-party service provider, and a financial institution is reliant on that party's information security control testing, the financial institution must be satisfied that the nature and frequency of testing of controls in respect of those IT systems or information assets is commensurate with items (a)(i) to (v) above.\n(d) A financial institution must –\n(i) ensure that security control assurance is provided by personnel appropriately skilled in providing such assurance;\n(ii) escalate and report to the governing body any testing results that identify security control deficiencies that cannot be remediated in a timely manner; and\n(iii) ensure that a remediation plan, with timelines is followed to address identified control deficiencies.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-7.2",
+              "number": "2",
+              "heading": "7.7.2",
+              "text": "7.7.2 Vulnerability assessment\n(a) A financial institution must –\n(i) establish a process to conduct regular vulnerability assessments on its IT systems and information assets to identify security vulnerabilities and ensure that vulnerabilities are addressed in a timely manner; and\n(ii) ensure that the frequency of vulnerability assessments is commensurate with the criticality of the IT system and information assets and the security risk to which it is exposed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-7.3",
+              "number": "3",
+              "heading": "7.7.3",
+              "text": "7.7.3 Penetration testing\n(a) A financial institution must –\n(i) carry out penetration testing on critical IT systems and information assets to obtain an in-depth evaluation of its cybersecurity defences. The responsible authority may, based on the nature, scale, complexity and risk profile of the financial institution specify that a black box, grey box and white box testing or a combination thereof be conducted for critical IT systems and information assets;\n(ii) ensure that the frequency of penetration testing is determined based on factors such as criticality and exposure to cyber risks; and\n(iii) conduct penetration testing to validate the adequacy of the security controls for IT systems and information assets that are directly accessible from the internet, whenever such IT systems and information assets undergo major changes or updates. If no major changes or updates are made, penetration testing must be conducted at least annually.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-7.4",
+              "number": "4",
+              "heading": "7.7.4",
+              "text": "7.7.4 Simulation exercises\n(a) A financial institution must –\n(i) carry out regular scenario-based simulation exercises to validate the financial institution's response and recovery capabilities, as well as communication plans against prevalent cyber threats. The simulation exercise must include, but is not limited to, an adversarial attack and defence simulation exercise; and\n(ii) design the scenario-based simulation exercise by using threat intelligence that is relevant to the financial institution's IT environment in order to identify –\n(aa) threat actors who are most likely to pose a threat to the financial institution; and\n(bb) the tactics, techniques and procedures most likely to be used in such attacks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-7.5",
+              "number": "5",
+              "heading": "7.7.5",
+              "text": "7.7.5 Application security testing\n(a) A financial institution must –\n(i) carry out testing of security functionality on web-based and critical applications during the development and implementation in a robust manner to ensure that they satisfy business policies or rules of the financial institution as well as regulatory and legal requirements;\n(ii) adopt standards on secure coding, source code review and application security testing to minimise the bugs and vulnerabilities in its software;\n(iii) establish a policy and procedure on the use and update of third-party and open-source software code to ensure these codes are subject to review and testing before they are integrated into the financial institution's software; and\n(iv) ensure that the policy and procedures are reviewed regularly.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-7.6",
+              "number": "6",
+              "heading": "7.7.6",
+              "text": "7.7.6 Remediation management\n(a) A financial institution must establish a comprehensive remediation process to track and resolve issues identified from the cybersecurity testing or exercises, third-party assessments, self-assessments as well as findings from internal and external assurance.\n(b) The remediation process referred to in item (a) above must at a minimum –\n(i) include the following:\n(aa) severity assessments and classification of issues;\n(bb) prioritisation of issues based on the risk posed;\n(cc) timeframes to remediate issues of different severity;\n(dd) risk assessments where appropriate; and\n(ee) mitigation strategies to manage deviations from the cybersecurity framework;\n(ii) ensure all issues identified from cybersecurity testing or exercises, as well as software defects discovered from source code review and application security testing, are tracked. Known major issues and security flaws must be remediated before production deployment; and\n(iii) keep track of updates and reported vulnerabilities on in-house developed, third-party and open-source software that are utilised by the financial institutions in order to facilitate the remediation of vulnerabilities in a timely manner.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7-8",

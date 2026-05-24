@@ -464,9 +464,26 @@
           "id": "s1",
           "number": "1",
           "heading": "Name (a) The name of the Co-operative is.",
-          "text": "Name (a) The name of the Co-operative is.……………………………………………… Co-operative Financial Institution Limited/Co-operative Bank Limited (hereinafter referred to as the Co-operative) (Delete and amend as applicable) (b) The abbreviated name is …………………………………………………………… CFI Ltd/Co-operative Bank Ltd (Delete not applicable)",
+          "text": "Name",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s1.a",
+              "number": "1a",
+              "heading": "(a)",
+              "text": "(a) The name of the Co-operative is.……………………………………………… Co-operative Financial Institution Limited/Co-operative Bank Limited (hereinafter referred to as the Co-operative) (Delete and amend as applicable)",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1.b",
+              "number": "1b",
+              "heading": "(b)",
+              "text": "(b) The abbreviated name is …………………………………………………………… CFI Ltd/Co-operative Bank Ltd (Delete not applicable)",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s2",
@@ -480,25 +497,116 @@
           "id": "s3",
           "number": "3",
           "heading": "Interpretation of terms",
-          "text": "Interpretation of terms (a) In this Constitution, unless the context indicates otherwise, a word or expression to which a meaning is attached to in the Financial Sector Regulation Act 9 of 2017, the Co-operatives Act No 14 of 2005 as amended and the Co-operatives Banks Act 40 of 2007 shall have a similar meaning and - Additional Membership Shares means a share issued, in addition to Membership Shares on which no interest is payable without the written approval of the Authority, which may also referred to as voluntary shares, which may not be redeemed for more than their nominal value; Audit Committee means the committee appointed in accordance with the Co-operative Banks Act 40 of 2007; Authority means the Prudential Authority, a juristic person operating within the administration of the South African Reserve Bank and established in terms of section 32 of the Financial Sector Regulation Act; Board means the Board of directors of the Co-operative; Common bond means common Membership in an association or organisation, including a business, religious, social, co-operative, labour or educational group; or reside within the same defined community or geographical area in order to meet their common economic and social objectives and aspirations together; Constitution means this Constitution including any annexures and any amendments thereto; Co-operative means a Co-operative Financial Institution or a Co-operative Bank Page 4 of 25 Co-operatives Act means the Co-operatives Act 14 of 2005 as amended; Co-operative Banks Act means the Co-operative Banks Act 40 of 2007; Co-operative Bank means the Co-operative Bank as defined in the Co-operative Banks Act; Co-operative Financial Institution means the Co-operative Financial Institution as defined in the Co-operative Banks Act; CIPC means the Companies and Intellectual Property Commission established by section 185 of the Companies Act 71 of 2008; Financial Co-operative means a Financial Co-operative as defined in the Co-operatives Act; Financial Sector Regulation Act means the Financial Sector Regulation Act 9 of 2017; Governance Committee means the subcommittee of the Board established in terms of section 13(2)(a) of the Co-operative Banks Act 40 of 2007; Investment Shares means shares acquired in terms of clause 28(b) of this Constitution; Managing Director means the most senior person appointed by the Board for the purposes of ensuring the efficient operations of the Co-operative, whose job description might refer to them as Manager, General Managing Director or Administrator; Member means a Member of the Co-operative by virtue of clause 7; Member in good standing means a member who has complied with the constitution and Board policies and is not delinquent in any way with the Co-operative; Membership Shares means shares issued to a members of the Co-operative as a requirement for membership of the Co-operative on which no interest may be paid without the written approval of the Authority and which may also be referred to as mandatory shares, which may not be redeemed for more than their nominal value; Nominal value means only the value on the face of the share and does not include any other value such as reserves and retained earnings; Ordinary resolution means a resolution passed at a general meeting of the Co-operative where the majority of the members were present; Page 5 of 25 Paid up Member means a member who has paid the required entrance fee and minimum share and any other payments as may be determined by the Board; Patronage Proportion means the proportion in which the value of the transactions conducted by a Member during any particular period with or through the Co-operative bears to the value of the transactions conducted by all the Members during the same period with or through the Co-operative; Patronage Refund means a refund to members of the Patronage proportion provided that the minimum capital requirements of the Co-operative can be met after the said refund has been made; Person means a natural person; Registrar means the Registrar of Co-operatives at the CIPC; Standards means the Standards issued in terms of section 46(1) and 44(4)(b) of the Co-operative Banks Act 40 of 2007 read with sections 105 and 108 of the Financial Sector Regulation Act 9 of 2017 as well as the Regulations and Rules issued in terms of the Co-operative Banks Act 40 of 2007. (b) A reference in this Constitution to the masculine gender shall also include the feminine gender and vice versa; and the singular shall include the plural and vice versa;",
+          "text": "Interpretation of terms",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s3.a",
+              "number": "3a",
+              "heading": "(a)",
+              "text": "(a) In this Constitution, unless the context indicates otherwise, a word or expression to which a meaning is attached to in the Financial Sector Regulation Act 9 of 2017, the Co-operatives Act No 14 of 2005 as amended and the Co-operatives Banks Act 40 of 2007 shall have a similar meaning and - Additional Membership Shares means a share issued, in addition to Membership Shares on which no interest is payable without the written approval of the Authority, which may also referred to as voluntary shares, which may not be redeemed for more than their nominal value; Audit Committee means the committee appointed in accordance with the Co-operative Banks Act 40 of 2007; Authority means the Prudential Authority, a juristic person operating within the administration of the South African Reserve Bank and established in terms of section 32 of the Financial Sector Regulation Act; Board means the Board of directors of the Co-operative; Common bond means common Membership in an association or organisation, including a business, religious, social, co-operative, labour or educational group; or reside within the same defined community or geographical area in order to meet their common economic and social objectives and aspirations together; Constitution means this Constitution including any annexures and any amendments thereto; Co-operative means a Co-operative Financial Institution or a Co-operative Bank Page 4 of 25 Co-operatives Act means the Co-operatives Act 14 of 2005 as amended; Co-operative Banks Act means the Co-operative Banks Act 40 of 2007; Co-operative Bank means the Co-operative Bank as defined in the Co-operative Banks Act; Co-operative Financial Institution means the Co-operative Financial Institution as defined in the Co-operative Banks Act; CIPC means the Companies and Intellectual Property Commission established by section 185 of the Companies Act 71 of 2008; Financial Co-operative means a Financial Co-operative as defined in the Co-operatives Act; Financial Sector Regulation Act means the Financial Sector Regulation Act 9 of 2017; Governance Committee means the subcommittee of the Board established in terms of section 13(2)(a) of the Co-operative Banks Act 40 of 2007; Investment Shares means shares acquired in terms of clause 28(b) of this Constitution; Managing Director means the most senior person appointed by the Board for the purposes of ensuring the efficient operations of the Co-operative, whose job description might refer to them as Manager, General Managing Director or Administrator; Member means a Member of the Co-operative by virtue of clause 7; Member in good standing means a member who has complied with the constitution and Board policies and is not delinquent in any way with the Co-operative; Membership Shares means shares issued to a members of the Co-operative as a requirement for membership of the Co-operative on which no interest may be paid without the written approval of the Authority and which may also be referred to as mandatory shares, which may not be redeemed for more than their nominal value; Nominal value means only the value on the face of the share and does not include any other value such as reserves and retained earnings; Ordinary resolution means a resolution passed at a general meeting of the Co-operative where the majority of the members were present; Page 5 of 25 Paid up Member means a member who has paid the required entrance fee and minimum share and any other payments as may be determined by the Board; Patronage Proportion means the proportion in which the value of the transactions conducted by a Member during any particular period with or through the Co-operative bears to the value of the transactions conducted by all the Members during the same period with or through the Co-operative; Patronage Refund means a refund to members of the Patronage proportion provided that the minimum capital requirements of the Co-operative can be met after the said refund has been made; Person means a natural person; Registrar means the Registrar of Co-operatives at the CIPC; Standards means the Standards issued in terms of section 46(1) and 44(4)",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.b",
+              "number": "3b",
+              "heading": "(b)",
+              "text": "(b) of the Co-operative Banks Act 40 of 2007 read with sections 105 and 108 of the Financial Sector Regulation Act 9 of 2017 as well as the Regulations and Rules issued in terms of the Co-operative Banks Act 40 of 2007. (b) A reference in this Constitution to the masculine gender shall also include the feminine gender and vice versa; and the singular shall include the plural and vice versa;",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
           "number": "4",
           "heading": "Place of business",
-          "text": "Place of business (a) The main place of business of the Co-operative is situated at: Physical Address: ....................................................................................................................................... ....................................................................................................................................... ....................................................................................................................................... ....................................................................................................................................... ....................................................................................................................................... District: ....................................................................................................................................... Province: ....................................................................................................................................... (b) The contact details of the Co-operative are as follows: Postal Address: …………………………………………………………………………………………………. ………………………………………………………………………………………………….. .………………………………………………………………………………………………… E-mail: ………………………………………………………………………………………… Tel: …………………………………………………………………………………………….. Fax number: ………………………………………………………………………………….. Page 6 of 25 (c) The registrar and the Authority shall be notified of any change of situation of the main place of business of the registered Co-operative.",
+          "text": "Place of business",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4.a",
+              "number": "4a",
+              "heading": "(a)",
+              "text": "(a) The main place of business of the Co-operative is situated at: Physical Address: ....................................................................................................................................... ....................................................................................................................................... ....................................................................................................................................... ....................................................................................................................................... ....................................................................................................................................... District: ....................................................................................................................................... Province: .......................................................................................................................................",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.b",
+              "number": "4b",
+              "heading": "(b)",
+              "text": "(b) The contact details of the Co-operative are as follows: Postal Address: …………………………………………………………………………………………………. ………………………………………………………………………………………………….. .………………………………………………………………………………………………… E-mail: ………………………………………………………………………………………… Tel: …………………………………………………………………………………………….. Fax number: ………………………………………………………………………………….. Page 6 of 25",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.c",
+              "number": "4c",
+              "heading": "(c)",
+              "text": "(c) The registrar and the Authority shall be notified of any change of situation of the main place of business of the registered Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s5",
           "number": "5",
           "heading": "Objectives",
-          "text": "Objectives (a) To promote and advance the social and economic welfare of its Members by enhancing access to financial services under sustainable conditions by providing banking services in accordance with the provisions of the Co-operative Banks Act, 2007, as amended from time to time. (b) To encourage savings by providing a means by which such savings may receive a competitive rate of interest. (c) ………………………………………………………………………………………………….. (d) ..………………………………………………………………………………………………… (e) ..………………………………………………………………………………………………… (f) ..…………………………………………………………………………………………………",
+          "text": "Objectives",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5.a",
+              "number": "5a",
+              "heading": "(a)",
+              "text": "(a) To promote and advance the social and economic welfare of its Members by enhancing access to financial services under sustainable conditions by providing banking services in accordance with the provisions of the Co-operative Banks Act, 2007, as amended from time to time.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.b",
+              "number": "5b",
+              "heading": "(b)",
+              "text": "(b) To encourage savings by providing a means by which such savings may receive a competitive rate of interest.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.c",
+              "number": "5c",
+              "heading": "(c)",
+              "text": "(c) …………………………………………………………………………………………………..",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.d",
+              "number": "5d",
+              "heading": "(d)",
+              "text": "(d) ..…………………………………………………………………………………………………",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.e",
+              "number": "5e",
+              "heading": "(e)",
+              "text": "(e) ..…………………………………………………………………………………………………",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.f",
+              "number": "5f",
+              "heading": "(f)",
+              "text": "(f) ..…………………………………………………………………………………………………",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s6",
@@ -512,9 +620,106 @@
           "id": "s7",
           "number": "7",
           "heading": "Membership",
-          "text": "Membership (a) Membership shall be limited to persons who qualify for Membership to this Co-operative, whose Members must meet at least one of the criteria as listed below: (i) Persons who are employed by common employer(s) or who are employed within the same business district; (ii) Have common membership in an association or organisation, including religious, social, co-operative, labour or educational group; and (iii) Reside within the same defined community, rural or urban district, and which group receives funds from Members against the issue of Membership Shares or by means of the subscription of Members. Page 7 of 25 (b) The qualifying criteria for membership to this Co-operative shall be: ………………………………………………………………………………………………….. ………………………………………………………………………………………………….. ………………………………………………………………………………………………….. as contemplated in terms of clause 7(a)(i) to (iii). (c) No discrimination will be allowed along the lines of race, political affiliation, gender or religion. (d) Minors may become Members, if duly assisted by their parents / legal guardians. Minors will, however, have no voting rights if under the age of 18 years. (e) Every applicant for Membership shall complete the prescribed \"Application for Membership\" form in accordance with the co-operative principles. (f) Entities, such as societies, associations, clubs, partnerships comprising individuals who in their own right are eligible to become Members of the Co-operative may be admitted as Members in the same manner and under the same conditions as individual Members. (g) An applicant shall be admitted to Membership on being approved by a majority vote of the Board but shall not qualify for the rights and privileges of Membership until he/she has paid an entrance fee of R__________ and contributed R_____________ to acquire the minimum of ……………………… Membership Shares as determined by the Board from time to time. The entrance fee is non-refundable and the share contribution may not be withdrawn on demand. (h) Every Member shall receive a monthly statement or a record book and/or will be issued with transaction receipts which shall record his/her Membership Shares, deposits and loan transactions with the Co-operative. The statement or other receipt shall constitute a certificate of shareholdings, unless it is proved otherwise. (i) Every Member shall be registered on the Co-operative’s Members database, whose details will include the name, surname, Identification Number (ID), and date joined. (j) Every Member shall nominate in writing at a minimum one person to whom, upon his/her death, his/her Membership Shares and Additional Membership Shares and any amount due to such Member shall be transferred. The Member shall have the power to change the name of the nominee/s. The name shall be entered into the Member database, with the original document securely kept by the Co-operative. The Member shall sign any alteration of a nominee/s. If not admitted to Membership, the nominee shall be paid in full the nominal value of the Membership Shares and Additional Membership Shares and/or assets less any sum due from the deceased Member to the Co-operative. Such payment shall be made as soon as possible but, subject to clause 28, not later than six months after the death of the Member. (k) The Co-operative, shall at all times, keep an updated register of all its Members. (l) All Members of the Co-operative should have a copy of the current Constitution or unrestricted access thereto. Page 8 of 25",
+          "text": "Membership",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s7.a",
+              "number": "7a",
+              "heading": "(a)",
+              "text": "(a) Membership shall be limited to persons who qualify for Membership to this Co-operative, whose Members must meet at least one of the criteria as listed below: (i) Persons who are employed by common employer(s) or who are employed within the same business district; (ii) Have common membership in an association or organisation, including religious, social, co-operative, labour or educational group; and (iii) Reside within the same defined community, rural or urban district, and which group receives funds from Members against the issue of Membership Shares or by means of the subscription of Members. Page 7 of 25",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.b",
+              "number": "7b",
+              "heading": "(b)",
+              "text": "(b) The qualifying criteria for membership to this Co-operative shall be: ………………………………………………………………………………………………….. ………………………………………………………………………………………………….. ………………………………………………………………………………………………….. as contemplated in terms of clause 7(a)(i) to (iii).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.c",
+              "number": "7c",
+              "heading": "(c)",
+              "text": "(c) No discrimination will be allowed along the lines of race, political affiliation, gender or religion.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.d",
+              "number": "7d",
+              "heading": "(d)",
+              "text": "(d) Minors may become Members, if duly assisted by their parents / legal guardians. Minors will, however, have no voting rights if under the age of 18 years.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.e",
+              "number": "7e",
+              "heading": "(e)",
+              "text": "(e) Every applicant for Membership shall complete the prescribed \"Application for Membership\" form in accordance with the co-operative principles.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.f",
+              "number": "7f",
+              "heading": "(f)",
+              "text": "(f) Entities, such as societies, associations, clubs, partnerships comprising individuals who in their own right are eligible to become Members of the Co-operative may be admitted as Members in the same manner and under the same conditions as individual Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.g",
+              "number": "7g",
+              "heading": "(g)",
+              "text": "(g) An applicant shall be admitted to Membership on being approved by a majority vote of the Board but shall not qualify for the rights and privileges of Membership until he/she has paid an entrance fee of R__________ and contributed R_____________ to acquire the minimum of ……………………… Membership Shares as determined by the Board from time to time. The entrance fee is non-refundable and the share contribution may not be withdrawn on demand.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.h",
+              "number": "7h",
+              "heading": "(h)",
+              "text": "(h) Every Member shall receive a monthly statement or a record book and/or will be issued with transaction receipts which shall record his/her Membership Shares, deposits and loan transactions with the Co-operative. The statement or other receipt shall constitute a certificate of shareholdings, unless it is proved otherwise.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.i",
+              "number": "7i",
+              "heading": "(i)",
+              "text": "(i) Every Member shall be registered on the Co-operative’s Members database, whose details will include the name, surname, Identification Number (ID), and date joined.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.j",
+              "number": "7j",
+              "heading": "(j)",
+              "text": "(j) Every Member shall nominate in writing at a minimum one person to whom, upon his/her death, his/her Membership Shares and Additional Membership Shares and any amount due to such Member shall be transferred. The Member shall have the power to change the name of the nominee/s. The name shall be entered into the Member database, with the original document securely kept by the Co-operative. The Member shall sign any alteration of a nominee/s. If not admitted to Membership, the nominee shall be paid in full the nominal value of the Membership Shares and Additional Membership Shares and/or assets less any sum due from the deceased Member to the Co-operative. Such payment shall be made as soon as possible but, subject to clause 28, not later than six months after the death of the Member.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.k",
+              "number": "7k",
+              "heading": "(k)",
+              "text": "(k) The Co-operative, shall at all times, keep an updated register of all its Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.l",
+              "number": "7l",
+              "heading": "(l)",
+              "text": "(l) All Members of the Co-operative should have a copy of the current Constitution or unrestricted access thereto. Page 8 of 25",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8",
@@ -528,73 +733,586 @@
           "id": "s9",
           "number": "9",
           "heading": "Termination of membership",
-          "text": "Termination of membership (a) Membership shall cease upon: (i) Death of the Member; (ii) receipt by the Co-operative of voluntary termination of Membership in writing, subject to a three month notice period; or (iii) expulsion from the Co-operative. The expelled Member may still avail himself/herself of a dispute resolution procedure. (b) Upon termination of Membership, a Member shall be entitled to receive the full amount standing to his/her savings less the amount of any loans, interest and fines payable, as funds become available, but not later than …. months from the date of receipt of the written notice of withdrawal by the Co-operative, subject to the conditions of the product. Fixed term obligations shall be repaid with accrued interest (less penalties for early withdrawal) upon termination of Membership. (c) Membership Shares and Additional Membership Shares may not be redeemed at their nominal value if there are reasonable grounds for believing that the realizable value of the Co-operative’s assets is less than the total of its liabilities and book value of such shares and reserves. In such cases, the member must either leave such shares in the Co-operative if there is a chance that they can be redeemed at 100% of nominal value or accept a repayment based on the net worth of such shares at the time. (d) Membership Shares and Additional Membership Shares may not be redeemed for more than their nominal value and exclude any reserves and retained earnings. (e) If the Co-operative determines that the repayment of any member’s Membership Shares and Additional Membership Shares upon withdrawal will result in the Co- operative not meeting its statutory capital requirements, the Co-operative may defer such payment for a period not exceeding two years. (f) Any deferral in terms of (e) above must immediately be reported to the Authority. (g) Upon the death of the Member, his/her Membership Shares, Additional Membership Shares and savings will be transferred to the nominated beneficiary as entered by the Member.",
+          "text": "Termination of membership",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s9.a",
+              "number": "9a",
+              "heading": "(a)",
+              "text": "(a) Membership shall cease upon: (i) Death of the Member; (ii) receipt by the Co-operative of voluntary termination of Membership in writing, subject to a three month notice period; or (iii) expulsion from the Co-operative. The expelled Member may still avail himself/herself of a dispute resolution procedure.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.b",
+              "number": "9b",
+              "heading": "(b)",
+              "text": "(b) Upon termination of Membership, a Member shall be entitled to receive the full amount standing to his/her savings less the amount of any loans, interest and fines payable, as funds become available, but not later than …. months from the date of receipt of the written notice of withdrawal by the Co-operative, subject to the conditions of the product. Fixed term obligations shall be repaid with accrued interest (less penalties for early withdrawal) upon termination of Membership.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.c",
+              "number": "9c",
+              "heading": "(c)",
+              "text": "(c) Membership Shares and Additional Membership Shares may not be redeemed at their nominal value if there are reasonable grounds for believing that the realizable value of the Co-operative’s assets is less than the total of its liabilities and book value of such shares and reserves. In such cases, the member must either leave such shares in the Co-operative if there is a chance that they can be redeemed at 100% of nominal value or accept a repayment based on the net worth of such shares at the time.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.d",
+              "number": "9d",
+              "heading": "(d)",
+              "text": "(d) Membership Shares and Additional Membership Shares may not be redeemed for more than their nominal value and exclude any reserves and retained earnings.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.e",
+              "number": "9e",
+              "heading": "(e)",
+              "text": "(e) If the Co-operative determines that the repayment of any member’s Membership Shares and Additional Membership Shares upon withdrawal will result in the Co- operative not meeting its statutory capital requirements, the Co-operative may defer such payment for a period not exceeding two years.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.f",
+              "number": "9f",
+              "heading": "(f)",
+              "text": "(f) Any deferral in terms of (e) above must immediately be reported to the Authority.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.g",
+              "number": "9g",
+              "heading": "(g)",
+              "text": "(g) Upon the death of the Member, his/her Membership Shares, Additional Membership Shares and savings will be transferred to the nominated beneficiary as entered by the Member.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s10",
           "number": "10",
           "heading": "Transfer of Membership, loans from Members and Membership Shares",
-          "text": "Transfer of Membership, loans from Members, Membership Shares and additional Membership Shares Page 9 of 25 (a) Membership, loans from Member (external borrowings), Membership Shares and Additional Membership Shares may be transferred, with Board approval, from one member to another. (b) Membership, loans from Member (external borrowings) and Membership Shares may be transferred from the Co-operative to another registered Co-operative, subject to Board approval and the approval of the Authority.",
+          "text": "Transfer of Membership, loans from Members, Membership Shares and additional Membership Shares",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s10.a",
+              "number": "10a",
+              "heading": "(a)",
+              "text": "(a) Membership, loans from Member (external borrowings), Membership Shares and Additional Membership Shares may be transferred, with Board approval, from one member to another.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10.b",
+              "number": "10b",
+              "heading": "(b)",
+              "text": "(b) Membership, loans from Member (external borrowings) and Membership Shares may be transferred from the Co-operative to another registered Co-operative, subject to Board approval and the approval of the Authority.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s11",
           "number": "11",
           "heading": "Suspension/expulsion of a member",
-          "text": "Suspension/expulsion of a member (a) A Member may be suspended if he/she does not comply with this Constitution, any rules of the Co-operative and/or failure to pay on due dates or arranged extensions on any due dates any amounts owing by the Member to the Co-operative. (b) A Member, whose accounts are more than 180 days dormant, may be suspended once the Board has been officially notified. (c) The Board, by majority vote, may recommend a Member for expulsion and may then suspend the Member and by so doing deprive him from any benefits of the Co-operative until such time as the sis voted on at a general meeting. (d) Prior to a decision on expulsion the Members shall be afforded an opportunity to be heard at the general meeting. If the general meeting ratifies such expulsion by a special resolution, it shall be effective from the date of suspension. If the general meeting does not ratify the expulsion by the required majority, the suspension shall be immediately removed and the Member treated as if no such suspension had been imposed. (e) A Member expelled in terms of these provisions shall forfeit all rights to share in the surplus or other benefits of the Co-operative.",
+          "text": "Suspension/expulsion of a member",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s11.a",
+              "number": "11a",
+              "heading": "(a)",
+              "text": "(a) A Member may be suspended if he/she does not comply with this Constitution, any rules of the Co-operative and/or failure to pay on due dates or arranged extensions on any due dates any amounts owing by the Member to the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s11.b",
+              "number": "11b",
+              "heading": "(b)",
+              "text": "(b) A Member, whose accounts are more than 180 days dormant, may be suspended once the Board has been officially notified.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s11.c",
+              "number": "11c",
+              "heading": "(c)",
+              "text": "(c) The Board, by majority vote, may recommend a Member for expulsion and may then suspend the Member and by so doing deprive him from any benefits of the Co-operative until such time as the sis voted on at a general meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s11.d",
+              "number": "11d",
+              "heading": "(d)",
+              "text": "(d) Prior to a decision on expulsion the Members shall be afforded an opportunity to be heard at the general meeting. If the general meeting ratifies such expulsion by a special resolution, it shall be effective from the date of suspension. If the general meeting does not ratify the expulsion by the required majority, the suspension shall be immediately removed and the Member treated as if no such suspension had been imposed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s11.e",
+              "number": "11e",
+              "heading": "(e)",
+              "text": "(e) A Member expelled in terms of these provisions shall forfeit all rights to share in the surplus or other benefits of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s12",
           "number": "12",
           "heading": "Annual General Meeting (AGM)",
-          "text": "Annual General Meeting (AGM) (a) The authority of the Co-operative emanates from properly convened general meetings of Members. (b) The Co-operative must convene its first AGM within 18 months of registration. (c) Subsequent AGMs must be convened within six months after the end of the preceding financial year and notify the Authority. (d) At least 21 days before the date of any AGM or extraordinary general meeting of Members, the secretary shall provide written notice, including the agenda, to each Member and must post notice of the meeting at the place of business of the Co-operative and other noticeable places where it may be read by the Members. (e) The order of business at an AGM shall be: (i) Ascertainment that a quorum is met; (ii) Reading and approval of the minutes of the last meeting; (iii) Report of the Board, including the Activity Plan that summarizes the operational and financial objectives of the Co-operative for the next financial year; (iv) Report of the treasurer; (v) Report of the Audit/Supervisory Committee; (vi) Report of the credit committee; (vii) Reports of other committees; Page 10 of 25 (viii) The consideration of the audit report and annual financial statements and appropriation of surplus; (ix) Consideration of any inspection report made by or on behalf of the Authority; (x) The presentation and consideration of the budget statement; (xi) Election of directors and Members of the audit committee; (xii) Appointment of an auditor (xiii) Remuneration and other benefits of directors, including the Managing Director; and (xiv) Any other business. (f) The Members assembled at any AGM may defer the above order of business upon a two third vote of the Members present at the meeting. (g) The Minutes, the annual accounts, the report of the Board and audit committee and a statement of the number of Members at the end of year and any available documents issued pursuant to the agenda shall be displayed at the office of the Co-operative at least 14 days before the AGM. (h) Written resolutions to be considered at a General Meeting shall be supported by at least 10% of Members and deposited with the Secretary not less than 21 days before the meeting and displayed at the office of the Co-operative prior to the meeting. Resolutions requiring the approval of the AGM and which would affect operating costs shall be accompanied by a statement from the Board as to the financial implications of such resolutions. (i) A Resolution may be withdrawn at any time before voting commences. (j) If a resolution to be considered at a general meeting and which has been displayed is withdrawn and the secretary notified in writing, notice of such withdrawal shall forthwith be displayed at the office of the Co-operative.",
+          "text": "Annual General Meeting (AGM)",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s12.a",
+              "number": "12a",
+              "heading": "(a)",
+              "text": "(a) The authority of the Co-operative emanates from properly convened general meetings of Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.b",
+              "number": "12b",
+              "heading": "(b)",
+              "text": "(b) The Co-operative must convene its first AGM within 18 months of registration.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.c",
+              "number": "12c",
+              "heading": "(c)",
+              "text": "(c) Subsequent AGMs must be convened within six months after the end of the preceding financial year and notify the Authority.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.d",
+              "number": "12d",
+              "heading": "(d)",
+              "text": "(d) At least 21 days before the date of any AGM or extraordinary general meeting of Members, the secretary shall provide written notice, including the agenda, to each Member and must post notice of the meeting at the place of business of the Co-operative and other noticeable places where it may be read by the Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.e",
+              "number": "12e",
+              "heading": "(e)",
+              "text": "(e) The order of business at an AGM shall be: (i) Ascertainment that a quorum is met; (ii) Reading and approval of the minutes of the last meeting; (iii) Report of the Board, including the Activity Plan that summarizes the operational and financial objectives of the Co-operative for the next financial year; (iv) Report of the treasurer; (v) Report of the Audit/Supervisory Committee; (vi) Report of the credit committee; (vii) Reports of other committees; Page 10 of 25 (viii) The consideration of the audit report and annual financial statements and appropriation of surplus; (ix) Consideration of any inspection report made by or on behalf of the Authority; (x) The presentation and consideration of the budget statement; (xi) Election of directors and Members of the audit committee; (xii) Appointment of an auditor (xiii) Remuneration and other benefits of directors, including the Managing Director; and (xiv) Any other business.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.f",
+              "number": "12f",
+              "heading": "(f)",
+              "text": "(f) The Members assembled at any AGM may defer the above order of business upon a two third vote of the Members present at the meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.g",
+              "number": "12g",
+              "heading": "(g)",
+              "text": "(g) The Minutes, the annual accounts, the report of the Board and audit committee and a statement of the number of Members at the end of year and any available documents issued pursuant to the agenda shall be displayed at the office of the Co-operative at least 14 days before the AGM.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.h",
+              "number": "12h",
+              "heading": "(h)",
+              "text": "(h) Written resolutions to be considered at a General Meeting shall be supported by at least 10% of Members and deposited with the Secretary not less than 21 days before the meeting and displayed at the office of the Co-operative prior to the meeting. Resolutions requiring the approval of the AGM and which would affect operating costs shall be accompanied by a statement from the Board as to the financial implications of such resolutions.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.i",
+              "number": "12i",
+              "heading": "(i)",
+              "text": "(i) A Resolution may be withdrawn at any time before voting commences.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.j",
+              "number": "12j",
+              "heading": "(j)",
+              "text": "(j) If a resolution to be considered at a general meeting and which has been displayed is withdrawn and the secretary notified in writing, notice of such withdrawal shall forthwith be displayed at the office of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s13",
           "number": "13",
           "heading": "Extraordinary General Meetings",
-          "text": "Extraordinary General Meetings (a) Extraordinary General Meetings may be called by the Board on their own initiative and shall be called at the request of the audit committee, or upon a written petition signed by at least ______% (percent) of Members. Notice of any Extraordinary General Meeting shall state the purpose for which it is to be held and no business other than that related to this purpose shall be discussed at the meeting. (b) The audit committee may at any time request the Board to summon an Extraordinary General Meeting in such manner and at such time and place as the Board may direct, and must specify what matters shall be discussed at any such meeting. (c) Notice of an Extraordinary General Meeting must be communicated and be received by the Authority at least 10 business days prior to such meeting. Page 11 of 25",
+          "text": "Extraordinary General Meetings",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s13.a",
+              "number": "13a",
+              "heading": "(a)",
+              "text": "(a) Extraordinary General Meetings may be called by the Board on their own initiative and shall be called at the request of the audit committee, or upon a written petition signed by at least ______% (percent) of Members. Notice of any Extraordinary General Meeting shall state the purpose for which it is to be held and no business other than that related to this purpose shall be discussed at the meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.b",
+              "number": "13b",
+              "heading": "(b)",
+              "text": "(b) The audit committee may at any time request the Board to summon an Extraordinary General Meeting in such manner and at such time and place as the Board may direct, and must specify what matters shall be discussed at any such meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.c",
+              "number": "13c",
+              "heading": "(c)",
+              "text": "(c) Notice of an Extraordinary General Meeting must be communicated and be received by the Authority at least 10 business days prior to such meeting. Page 11 of 25",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s14",
           "number": "14",
           "heading": "Quorum",
-          "text": "Quorum (a) A quorum for an AGM or Extraordinary General Meeting shall be constituted by at least one tenth of the Members of the Co-operative plus at least 1% of the Members of the Co-operative in excess of 200 Members. (b) If a quorum is not secured within one hour of the opening of the general meeting, the meeting shall: (i) if convened as an Extraordinary General Meeting (in terms of clause 13(a)),be deemed to be cancelled; or (ii) if otherwise convened, subsequent to an announcement to the Members, be adjourned and reconvened on the same day in the next week at the same time and place, or, if that day is a public holiday, to the next day which is not a statutory holiday; provided that no additional item shall be included on the agenda of the reconvened meeting. (c) If no quorum is present within one hour at a meeting reconvened in terms of clause 13(b) the Members present, being not less than five, shall constitute a quorum. No decisions requiring a special resolution shall be taken at such a meeting. (d) Every matter submitted to a general meeting for resolution, except for a matter requiring a special resolution, shall be determined by a majority of votes recorded at the meeting. (e) Inactive or dormant members, as determined and approved by the Board, may be deducted from the total number of members when determining a quorum.",
+          "text": "Quorum",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s14.a",
+              "number": "14a",
+              "heading": "(a)",
+              "text": "(a) A quorum for an AGM or Extraordinary General Meeting shall be constituted by at least one tenth of the Members of the Co-operative plus at least 1% of the Members of the Co-operative in excess of 200 Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s14.b",
+              "number": "14b",
+              "heading": "(b)",
+              "text": "(b) If a quorum is not secured within one hour of the opening of the general meeting, the meeting shall: (i) if convened as an Extraordinary General Meeting (in terms of clause 13(a)),be deemed to be cancelled; or (ii) if otherwise convened, subsequent to an announcement to the Members, be adjourned and reconvened on the same day in the next week at the same time and place, or, if that day is a public holiday, to the next day which is not a statutory holiday; provided that no additional item shall be included on the agenda of the reconvened meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s14.c",
+              "number": "14c",
+              "heading": "(c)",
+              "text": "(c) If no quorum is present within one hour at a meeting reconvened in terms of clause 13(b) the Members present, being not less than five, shall constitute a quorum. No decisions requiring a special resolution shall be taken at such a meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s14.d",
+              "number": "14d",
+              "heading": "(d)",
+              "text": "(d) Every matter submitted to a general meeting for resolution, except for a matter requiring a special resolution, shall be determined by a majority of votes recorded at the meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s14.e",
+              "number": "14e",
+              "heading": "(e)",
+              "text": "(e) Inactive or dormant members, as determined and approved by the Board, may be deducted from the total number of members when determining a quorum.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s15",
           "number": "15",
           "heading": "Meeting procedures",
-          "text": "Meeting procedures (a) The chairperson of the Board, or, in his/her absence, the vice chairperson or, in the absence of both, any other director elected during the meeting, shall act as chairperson of any AGM or of an Extraordinary General Meeting. (b) Minutes of all Meetings of Members shall be kept by the Secretary, and shall be entered into a Minutes Book, which shall be kept at the registered office of the Co-operative, within two months of the Meeting. The Minutes shall then be submitted, in the case of Minutes of an AGM, to the next AGM, and, in the case of Minutes of all other general meetings, to the next general meeting. Such minutes shall be signed by the Chairperson and secretary of the Meeting where they were approved and shall be kept in the Minutes Book. (c) The minutes must contain: (i) The number and names of Members present at the meeting, the names of presiding officers and confirmation that a quorum was present; and (ii) The time, place and date of the meeting and a record of all decisions made.",
+          "text": "Meeting procedures",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s15.a",
+              "number": "15a",
+              "heading": "(a)",
+              "text": "(a) The chairperson of the Board, or, in his/her absence, the vice chairperson or, in the absence of both, any other director elected during the meeting, shall act as chairperson of any AGM or of an Extraordinary General Meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.b",
+              "number": "15b",
+              "heading": "(b)",
+              "text": "(b) Minutes of all Meetings of Members shall be kept by the Secretary, and shall be entered into a Minutes Book, which shall be kept at the registered office of the Co-operative, within two months of the Meeting. The Minutes shall then be submitted, in the case of Minutes of an AGM, to the next AGM, and, in the case of Minutes of all other general meetings, to the next general meeting. Such minutes shall be signed by the Chairperson and secretary of the Meeting where they were approved and shall be kept in the Minutes Book.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.c",
+              "number": "15c",
+              "heading": "(c)",
+              "text": "(c) The minutes must contain: (i) The number and names of Members present at the meeting, the names of presiding officers and confirmation that a quorum was present; and (ii) The time, place and date of the meeting and a record of all decisions made.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s16",
           "number": "16",
           "heading": "Elections (a) Every Member shall have one vote only.",
-          "text": "Elections (a) Every Member shall have one vote only. (b) There shall be no voting by proxy. Voting electronically (email, fax or cell phone) or by letter is permitted. Page 12 of 25 (c) The Board shall, at least 30 days prior to each AGM, appoint a nominating committee of not less than three Members. It shall be the duty of the nominating committee to nominate one or more nominees for each vacancy to be filled by the elections. (d) No Person shall hold the office of director or audit committee Member if such person: (i) was convicted in the Republic or elsewhere of theft, fraud, forgery or uttering a forged document, perjury, an offence under the Prevention and Combating of Corrupt Activities Act 12 of 2004 , an offence under the Financial Intelligence Centre Act 38 of 2001, or any offence involving dishonesty and a period of 10 years has not expired since that conviction; (ii) has been convicted of an offence committed after the Constitution of the Republic of South Africa, 1996, took effect, and sentenced to imprisonment without the option of a fine; (iii) has contravened provisions of a law the object of which is the protection of the public against financial loss; (iv) whilst a director or executive officer of a financial co-operative (as defined in the Cooperatives Act) or any other financial co-operative institution contributed to an inability of that financial co-operative or other financial co-operative institution to pay its debts; and (v) Took part in business practices which were deceitful, prejudicial, or otherwise improper (whether unlawful or not) or which otherwise brought discredit to that person’s methods of conducting business. (e) A Member who is two or more months in arrears on loan payments shall not qualify for nomination. (f) It shall be the duty of the nominating committee to ensure that all nominees proposed for election are Members in good standing who qualify for election in accordance with this Constitution. (g) After the nominating committee has placed before the Members the names of candidates proposed, the chairperson shall call for voting from the floor. When voting is closed, tellers shall be appointed by the chairperson to distribute and tally the ballots and announce the results. (h) All elections shall be determined by plurality vote of Members present and shall be by ballot except where there is only one nominee for the office, in which case such nominee shall automatically be appointed without the process of requesting votes. (i) A declaration by the Chairperson that a resolution has, on a show of hands or by ballot, been carried, or carried unanimously or by a particular majority, or lost, and an entry to that effect in the minutes of the proceedings of the meeting, shall be conclusive proof thereof, without evidence as to the number or proportion of votes recorded for or against such resolution. (j) If no objection is raised against the validity of any vote cast at the meeting, either by show of hands or by ballot, every vote cast which has not been disallowed shall for all purposes be deemed to be valid. (k) Nominations shall be in the following order: (i) Nominations for directors; and (ii) Nominations for the audit committee Members. (l) In the case of an equality of votes, the chairperson shall have a casting vote.",
+          "text": "Elections",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s16.a",
+              "number": "16a",
+              "heading": "(a)",
+              "text": "(a) Every Member shall have one vote only.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.b",
+              "number": "16b",
+              "heading": "(b)",
+              "text": "(b) There shall be no voting by proxy. Voting electronically (email, fax or cell phone) or by letter is permitted. Page 12 of 25",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.c",
+              "number": "16c",
+              "heading": "(c)",
+              "text": "(c) The Board shall, at least 30 days prior to each AGM, appoint a nominating committee of not less than three Members. It shall be the duty of the nominating committee to nominate one or more nominees for each vacancy to be filled by the elections.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.d",
+              "number": "16d",
+              "heading": "(d)",
+              "text": "(d) No Person shall hold the office of director or audit committee Member if such person: (i) was convicted in the Republic or elsewhere of theft, fraud, forgery or uttering a forged document, perjury, an offence under the Prevention and Combating of Corrupt Activities Act 12 of 2004 , an offence under the Financial Intelligence Centre Act 38 of 2001, or any offence involving dishonesty and a period of 10 years has not expired since that conviction; (ii) has been convicted of an offence committed after the Constitution of the Republic of South Africa, 1996, took effect, and sentenced to imprisonment without the option of a fine; (iii) has contravened provisions of a law the object of which is the protection of the public against financial loss; (iv) whilst a director or executive officer of a financial co-operative (as defined in the Cooperatives Act) or any other financial co-operative institution contributed to an inability of that financial co-operative or other financial co-operative institution to pay its debts; and (v) Took part in business practices which were deceitful, prejudicial, or otherwise improper (whether unlawful or not) or which otherwise brought discredit to that person’s methods of conducting business.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.e",
+              "number": "16e",
+              "heading": "(e)",
+              "text": "(e) A Member who is two or more months in arrears on loan payments shall not qualify for nomination.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.f",
+              "number": "16f",
+              "heading": "(f)",
+              "text": "(f) It shall be the duty of the nominating committee to ensure that all nominees proposed for election are Members in good standing who qualify for election in accordance with this Constitution.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.g",
+              "number": "16g",
+              "heading": "(g)",
+              "text": "(g) After the nominating committee has placed before the Members the names of candidates proposed, the chairperson shall call for voting from the floor. When voting is closed, tellers shall be appointed by the chairperson to distribute and tally the ballots and announce the results.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.h",
+              "number": "16h",
+              "heading": "(h)",
+              "text": "(h) All elections shall be determined by plurality vote of Members present and shall be by ballot except where there is only one nominee for the office, in which case such nominee shall automatically be appointed without the process of requesting votes.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.i",
+              "number": "16i",
+              "heading": "(i)",
+              "text": "(i) A declaration by the Chairperson that a resolution has, on a show of hands or by ballot, been carried, or carried unanimously or by a particular majority, or lost, and an entry to that effect in the minutes of the proceedings of the meeting, shall be conclusive proof thereof, without evidence as to the number or proportion of votes recorded for or against such resolution.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.j",
+              "number": "16j",
+              "heading": "(j)",
+              "text": "(j) If no objection is raised against the validity of any vote cast at the meeting, either by show of hands or by ballot, every vote cast which has not been disallowed shall for all purposes be deemed to be valid.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.k",
+              "number": "16k",
+              "heading": "(k)",
+              "text": "(k) Nominations shall be in the following order: (i) Nominations for directors; and (ii) Nominations for the audit committee Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s16.l",
+              "number": "16l",
+              "heading": "(l)",
+              "text": "(l) In the case of an equality of votes, the chairperson shall have a casting vote.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s17",
           "number": "17",
           "heading": "Board of directors",
-          "text": "Board of directors Page 13 of 25 (a) Directorship shall only be given to the Members of the Co-operative and must include the Managing Director in an ex-officio capacity with no voting rights. None of the directors, other than Managing Director may be employees of the Co-operative. (b) This Board shall consist of ______ Members. The number of voting directors may be changed by resolution of the AGM to any odd number which shall not be fewer than 9 and not more than 15. (c) A majority of all the directors (50% + 1) shall constitute a quorum for any meeting of the Board. (d) All elected, appointed or co-opted officers and Members of the Board shall sign an acceptance of office and affirm that they will implement the provisions of this Constitution as well as abide by a code of conduct as determined by the Board, carry out their fiduciary duties faithfully and treat all information submitted by Members in connection with the Co-operative transactions confidential. (e) The Board shall within 10 days after each AGM of the Co-operative, elect as officers from their own number a Chairperson, a Vice Chairperson, acting Chairperson, a Treasurer, a Secretary and one other. These persons shall form the Governance Committee and shall serve as officers of the Co-operative. (f) Each Director will have a specific functional area for which he has to accept responsibility and an alternate Member to accept that responsibility in his or her absence. (g) Directors shall hold office until the election and qualification of their successors. The regular term of office shall be 3 years with one third of the positions being open for election each year. At the first AGM, three directors shall be elected to serve for three years, three directors shall be elected to serve for two years and three directors shall be elected to serve for one year. Thereafter elections shall be for three years. (h) Board meetings shall be held each month. (i) The chairperson or, in his/her absence, the vice chairperson may call special meetings of the Board at any time, or upon written request of any three directors. (j) Any vacancy on the Board, credit committee, and audit committee shall be filled by vote of a majority of the directors then holding office. Directors or audit committee Members so appointed shall hold office only until the next AGM, at which time the unexpired term shall be filled by vote through the election process. (k) The office of a director or credit committee Member may be declared vacant by the Board and the vacancy filled as herein provided if a director or a credit committee Member: (i) fails to attend regular meetings of the Board or credit committee for more than four consecutive meetings, (ii) fails to perform any of the duties expected of him as a director or a credit committee Member; (iii) contravenes the loan policy; or (iv) contravenes the rules of the Co-operative. Page 14 of 25 (l) A director may, after due notice, be relieved of his/her office by resolution of a general meeting before the expiry of his/her term of office and another qualified person may be elected in his/her place at that meeting. Nominations for the election of such a director shall be made at the meeting. If that meeting does not fill the vacancy it shall be regarded as a casual vacancy. A director so appointed or elected shall not hold office for a period longer than the unexpired portion of the period of office of the vacating director. (m) Minutes of all meetings of the Board, credit committee, audit committee and all other committees that might have been established shall be maintained in line with the provisions of the Co-operatives Act and Co-operative Banks Act and verified by the recorders and presiding officers of the meetings. Such minutes shall contain the names of Members present, the date, time and place of meeting; and a record of all decisions made. Such minutes shall become a part of the permanent record of the Co-operative. (n) A director of a Co-operative who is in arrears for more than three months with any amount or type of debt payable to the Co-operative will be disqualified from continuing as a director and must vacate his or her office immediately upon being notified. (o) Directors may not serve more than two consecutive terms of office. (p) The Board may, in instances where it is necessary to comply with legislation or where the Authority requires so in the exercise of its legislative powers, pass a resolution by round robin. Such resolution shall be submitted for noting at the next meeting of the Board.",
+          "text": "Board of directors",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s17.a",
+              "number": "17a",
+              "heading": "(a)",
+              "text": "(a) Directorship shall only be given to the Members of the Co-operative and must include the Managing Director in an ex-officio capacity with no voting rights. None of the directors, other than Managing Director may be employees of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.b",
+              "number": "17b",
+              "heading": "(b)",
+              "text": "(b) This Board shall consist of ______ Members. The number of voting directors may be changed by resolution of the AGM to any odd number which shall not be fewer than 9 and not more than 15.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.c",
+              "number": "17c",
+              "heading": "(c)",
+              "text": "(c) A majority of all the directors (50% + 1) shall constitute a quorum for any meeting of the Board.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.d",
+              "number": "17d",
+              "heading": "(d)",
+              "text": "(d) All elected, appointed or co-opted officers and Members of the Board shall sign an acceptance of office and affirm that they will implement the provisions of this Constitution as well as abide by a code of conduct as determined by the Board, carry out their fiduciary duties faithfully and treat all information submitted by Members in connection with the Co-operative transactions confidential.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.e",
+              "number": "17e",
+              "heading": "(e)",
+              "text": "(e) The Board shall within 10 days after each AGM of the Co-operative, elect as officers from their own number a Chairperson, a Vice Chairperson, acting Chairperson, a Treasurer, a Secretary and one other. These persons shall form the Governance Committee and shall serve as officers of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.f",
+              "number": "17f",
+              "heading": "(f)",
+              "text": "(f) Each Director will have a specific functional area for which he has to accept responsibility and an alternate Member to accept that responsibility in his or her absence.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.g",
+              "number": "17g",
+              "heading": "(g)",
+              "text": "(g) Directors shall hold office until the election and qualification of their successors. The regular term of office shall be 3 years with one third of the positions being open for election each year. At the first AGM, three directors shall be elected to serve for three years, three directors shall be elected to serve for two years and three directors shall be elected to serve for one year. Thereafter elections shall be for three years.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.h",
+              "number": "17h",
+              "heading": "(h)",
+              "text": "(h) Board meetings shall be held each month.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.i",
+              "number": "17i",
+              "heading": "(i)",
+              "text": "(i) The chairperson or, in his/her absence, the vice chairperson may call special meetings of the Board at any time, or upon written request of any three directors.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.j",
+              "number": "17j",
+              "heading": "(j)",
+              "text": "(j) Any vacancy on the Board, credit committee, and audit committee shall be filled by vote of a majority of the directors then holding office. Directors or audit committee Members so appointed shall hold office only until the next AGM, at which time the unexpired term shall be filled by vote through the election process.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.k",
+              "number": "17k",
+              "heading": "(k)",
+              "text": "(k) The office of a director or credit committee Member may be declared vacant by the Board and the vacancy filled as herein provided if a director or a credit committee Member: (i) fails to attend regular meetings of the Board or credit committee for more than four consecutive meetings, (ii) fails to perform any of the duties expected of him as a director or a credit committee Member; (iii) contravenes the loan policy; or (iv) contravenes the rules of the Co-operative. Page 14 of 25",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.l",
+              "number": "17l",
+              "heading": "(l)",
+              "text": "(l) A director may, after due notice, be relieved of his/her office by resolution of a general meeting before the expiry of his/her term of office and another qualified person may be elected in his/her place at that meeting. Nominations for the election of such a director shall be made at the meeting. If that meeting does not fill the vacancy it shall be regarded as a casual vacancy. A director so appointed or elected shall not hold office for a period longer than the unexpired portion of the period of office of the vacating director.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.m",
+              "number": "17m",
+              "heading": "(m)",
+              "text": "(m) Minutes of all meetings of the Board, credit committee, audit committee and all other committees that might have been established shall be maintained in line with the provisions of the Co-operatives Act and Co-operative Banks Act and verified by the recorders and presiding officers of the meetings. Such minutes shall contain the names of Members present, the date, time and place of meeting; and a record of all decisions made. Such minutes shall become a part of the permanent record of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.n",
+              "number": "17n",
+              "heading": "(n)",
+              "text": "(n) A director of a Co-operative who is in arrears for more than three months with any amount or type of debt payable to the Co-operative will be disqualified from continuing as a director and must vacate his or her office immediately upon being notified.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.o",
+              "number": "17o",
+              "heading": "(o)",
+              "text": "(o) Directors may not serve more than two consecutive terms of office.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s17.p",
+              "number": "17p",
+              "heading": "(p)",
+              "text": "(p) The Board may, in instances where it is necessary to comply with legislation or where the Authority requires so in the exercise of its legislative powers, pass a resolution by round robin. Such resolution shall be submitted for noting at the next meeting of the Board.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s18",
@@ -608,17 +1326,75 @@
           "id": "s19",
           "number": "19",
           "heading": "Co-operative managing director",
-          "text": "Co-operative managing director (a) The Co-operative Managing Director should be: (i) respected and trusted; (ii) matriculated; (iii) able to perform the operational functions of the Co-operative after training has been received, if necessary; (iv) able to fulfil the criteria set by the Board; (v) able to perform other reasonable duties as the Members may from time to time require. (b) Any of the following persons shall be disqualified from being appointed as Managing Director: (i) A juristic person; Page 16 of 25 (ii) A minor or any person under legal disability; and (iii) A person that would have been disqualified for meeting the criteria as a director in terms of clause 16(d).",
+          "text": "Co-operative managing director",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s19.a",
+              "number": "19a",
+              "heading": "(a)",
+              "text": "(a) The Co-operative Managing Director should be: (i) respected and trusted; (ii) matriculated; (iii) able to perform the operational functions of the Co-operative after training has been received, if necessary; (iv) able to fulfil the criteria set by the Board; (v) able to perform other reasonable duties as the Members may from time to time require.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s19.b",
+              "number": "19b",
+              "heading": "(b)",
+              "text": "(b) Any of the following persons shall be disqualified from being appointed as Managing Director: (i) A juristic person; Page 16 of 25 (ii) A minor or any person under legal disability; and (iii) A person that would have been disqualified for meeting the criteria as a director in terms of clause 16(d).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s20",
           "number": "20",
           "heading": "Disclosure of interest",
-          "text": "Disclosure of interest (a) A director or Managing Director of the Co-operative must on an ongoing basis and in writing, disclose to the Co-operative in accordance with section 37 of the Co-operatives Act. (i) the nature and extent of any interest that he or she has in a contract or transaction, or a proposed transaction, with the Co-operative; and (ii) any material change to such interest. (b) It is up to the discretion of the other sitting Members of the Board or sitting committee to determine whether or not the Member must excuse herself/himself from the meeting while the matter is being discussed or be allowed to participate in the discussion of the matter (c) Any disclosure must be recorded in the minutes of the meeting of directors (d) The Board must, in accordance with the Co-operatives Act keep a register of directors and Managing Directors interests in contracts or undertakings containing full particulars of every disclosure of interest made. (e) A director or Managing Director of a Co-operative who fails to comply with this section is subject to disqualification.",
+          "text": "Disclosure of interest",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s20.a",
+              "number": "20a",
+              "heading": "(a)",
+              "text": "(a) A director or Managing Director of the Co-operative must on an ongoing basis and in writing, disclose to the Co-operative in accordance with section 37 of the Co-operatives Act. (i) the nature and extent of any interest that he or she has in a contract or transaction, or a proposed transaction, with the Co-operative; and (ii) any material change to such interest.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s20.b",
+              "number": "20b",
+              "heading": "(b)",
+              "text": "(b) It is up to the discretion of the other sitting Members of the Board or sitting committee to determine whether or not the Member must excuse herself/himself from the meeting while the matter is being discussed or be allowed to participate in the discussion of the matter",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s20.c",
+              "number": "20c",
+              "heading": "(c)",
+              "text": "(c) Any disclosure must be recorded in the minutes of the meeting of directors",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s20.d",
+              "number": "20d",
+              "heading": "(d)",
+              "text": "(d) The Board must, in accordance with the Co-operatives Act keep a register of directors and Managing Directors interests in contracts or undertakings containing full particulars of every disclosure of interest made.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s20.e",
+              "number": "20e",
+              "heading": "(e)",
+              "text": "(e) A director or Managing Director of a Co-operative who fails to comply with this section is subject to disqualification.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s21",
@@ -632,49 +1408,303 @@
           "id": "s22",
           "number": "22",
           "heading": "Governance committee",
-          "text": "Governance committee (a) The governance committee of the Co-operative shall be the chairperson, vice chairperson, treasurer and the secretary. The Managing Director will serve on this committee. (b) The chairperson shall preside at all meetings of the Members and at all meetings of the Board, unless disqualified as set out in this Constitution and together with the treasurer shall sign all conveyance of property. (c) The vice chairperson shall exercise the powers, authority, and duties of the chairperson in his/her absence. (d) The treasurer or where applicable, the Managing Director of the Co-operative shall subject to such limitation and control as may be imposed by the Board, have custody Page 17 of 25 of all funds, securities, valuable papers and other assets of the Co-operative . He/she shall sign all negotiable instruments and other obligations of the Co-operative. He/she shall provide and maintain full and complete records of all assets and liabilities of this Co-operative. Within 15 days after the close of each month, he/she shall prepare and submit to the Board a financial and statistical report showing the condition of this Co- operative as of the end of each month. (e) The Board may authorise the Governance Committee to approve applications for Membership. No executive committee Member or Membership officer shall be compensated as such. (f) The secretary shall give or cause to be given, in the manner provided in this Constitution, proper notice of all meetings of the Members and the Board.",
+          "text": "Governance committee",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s22.a",
+              "number": "22a",
+              "heading": "(a)",
+              "text": "(a) The governance committee of the Co-operative shall be the chairperson, vice chairperson, treasurer and the secretary. The Managing Director will serve on this committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s22.b",
+              "number": "22b",
+              "heading": "(b)",
+              "text": "(b) The chairperson shall preside at all meetings of the Members and at all meetings of the Board, unless disqualified as set out in this Constitution and together with the treasurer shall sign all conveyance of property.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s22.c",
+              "number": "22c",
+              "heading": "(c)",
+              "text": "(c) The vice chairperson shall exercise the powers, authority, and duties of the chairperson in his/her absence.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s22.d",
+              "number": "22d",
+              "heading": "(d)",
+              "text": "(d) The treasurer or where applicable, the Managing Director of the Co-operative shall subject to such limitation and control as may be imposed by the Board, have custody Page 17 of 25 of all funds, securities, valuable papers and other assets of the Co-operative . He/she shall sign all negotiable instruments and other obligations of the Co-operative. He/she shall provide and maintain full and complete records of all assets and liabilities of this Co-operative. Within 15 days after the close of each month, he/she shall prepare and submit to the Board a financial and statistical report showing the condition of this Co- operative as of the end of each month.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s22.e",
+              "number": "22e",
+              "heading": "(e)",
+              "text": "(e) The Board may authorise the Governance Committee to approve applications for Membership. No executive committee Member or Membership officer shall be compensated as such.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s22.f",
+              "number": "22f",
+              "heading": "(f)",
+              "text": "(f) The secretary shall give or cause to be given, in the manner provided in this Constitution, proper notice of all meetings of the Members and the Board.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s23",
           "number": "23",
           "heading": "Standing committees",
-          "text": "Standing committees (a) The Board may appoint standing committees under the control of particular directors for the following functional responsibilities: (i) Marketing and Promotion Committee which shall be responsible for the promotion of new Members, products and services. (ii) Education Committee which shall be responsible for the continuing education of the Members of the Co-operative. All new Members may be required to participate in education programmes to acquaint themselves with their rights and responsibilities as Members. (iii) Security Committee. (iv) Any other committee as may be deemed necessary for the smooth running of the Co-operative. (b) The Board must appoint a Credit Committee whose terms must include those as identified in clause 24. (c) The terms of reference of each committee must be clearly stipulated.",
+          "text": "Standing committees",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s23.a",
+              "number": "23a",
+              "heading": "(a)",
+              "text": "(a) The Board may appoint standing committees under the control of particular directors for the following functional responsibilities: (i) Marketing and Promotion Committee which shall be responsible for the promotion of new Members, products and services. (ii) Education Committee which shall be responsible for the continuing education of the Members of the Co-operative. All new Members may be required to participate in education programmes to acquaint themselves with their rights and responsibilities as Members. (iii) Security Committee. (iv) Any other committee as may be deemed necessary for the smooth running of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s23.b",
+              "number": "23b",
+              "heading": "(b)",
+              "text": "(b) The Board must appoint a Credit Committee whose terms must include those as identified in clause 24.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s23.c",
+              "number": "23c",
+              "heading": "(c)",
+              "text": "(c) The terms of reference of each committee must be clearly stipulated.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s24",
           "number": "24",
           "heading": "Credit committee",
-          "text": "Credit committee (a) The credit committee shall consist of not less than three but not more than five Members appointed by the Board. The term of office of each Member shall be three years with the term of office of one third of the committee Members expiring each year. (b) The credit committee shall meet as often as necessary (at least once a month) to promptly process Members’ applications for loans. The committee shall be convened by the chairperson or at the request of any two Members of the committee. (c) Approval of a loan must be by unanimous decision of the committee. A committee meeting must have a quorum to act. A quorum shall consist of a majority of its Members. (d) The credit committee shall maintain a permanent Register of Loans considered by the committee. The Register shall contain the names of committee Members present at each meeting held. For each loan application considered, the Register of Loans shall show the membership number and name of the loan applicant, the amount applied for and the action taken by the committee. For approved loans, the record shall show the Page 18 of 25 amount approved and any conditions attached to the approval. If declined or deferred, the reasons for such action shall be recorded and conveyed to the applying Member. Credit committee Members in attendance at the meeting shall sign the register at the end of each meeting. (e) The credit committee shall report to the Board at the monthly Board meeting and shall strictly adhere to the loan policy established by the Board.",
+          "text": "Credit committee",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s24.a",
+              "number": "24a",
+              "heading": "(a)",
+              "text": "(a) The credit committee shall consist of not less than three but not more than five Members appointed by the Board. The term of office of each Member shall be three years with the term of office of one third of the committee Members expiring each year.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s24.b",
+              "number": "24b",
+              "heading": "(b)",
+              "text": "(b) The credit committee shall meet as often as necessary (at least once a month) to promptly process Members’ applications for loans. The committee shall be convened by the chairperson or at the request of any two Members of the committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s24.c",
+              "number": "24c",
+              "heading": "(c)",
+              "text": "(c) Approval of a loan must be by unanimous decision of the committee. A committee meeting must have a quorum to act. A quorum shall consist of a majority of its Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s24.d",
+              "number": "24d",
+              "heading": "(d)",
+              "text": "(d) The credit committee shall maintain a permanent Register of Loans considered by the committee. The Register shall contain the names of committee Members present at each meeting held. For each loan application considered, the Register of Loans shall show the membership number and name of the loan applicant, the amount applied for and the action taken by the committee. For approved loans, the record shall show the Page 18 of 25 amount approved and any conditions attached to the approval. If declined or deferred, the reasons for such action shall be recorded and conveyed to the applying Member. Credit committee Members in attendance at the meeting shall sign the register at the end of each meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s24.e",
+              "number": "24e",
+              "heading": "(e)",
+              "text": "(e) The credit committee shall report to the Board at the monthly Board meeting and shall strictly adhere to the loan policy established by the Board.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s25",
           "number": "25",
           "heading": "Audit / supervisory committee",
-          "text": "Audit / supervisory committee (a) The audit committee shall consist of three Members, who are not members of the board of directors, elected at the AGM. The term of office of each Member shall be three years with the term of office of one expiring each year. (b) At least one Member of the committee shall attest the financial statements which the treasurer/chief accounting officer and/or the Managing Director is required to prepare each month. The audit committee should meet at least once a quarter. (c) The audit committee shall review the adequacy and efficiency of internal control systems, accounting practices, information systems and auditing processes within the Co-operative and make appropriate recommendations to the Board. (d) The audit committee shall facilitate and promote communication regarding the matters referred to in (c) or any other related matter between the Members, Board of directors, executive officers, auditor and the employee charged with the internal auditing of the transactions of the Co-operative. (e) The audit committee shall introduce measures that in the committee’s opinion may serve to enhance the credibility and objectivity of financial statements and reports prepared with reference to the affairs of the co-operative. (f) The audit committee must meet at least quarterly and a majority of Members shall form a quorum at such meetings. (g) By unanimous vote, if deemed necessary for the proper conduct of the business of the Co-operative, the committee may recommend to the Board the suspension of any officer, Board or committee Member. The Board shall call an extraordinary general meeting within 30 days thereafter to present a report and recommendation to the Members concerning such actions. Such action will be reported to the Authority. (h) The audit committee shall receive and investigate any complaint by Members concerning the operations of the Co-operative. (i) The audit committee shall provide a report of each meeting and all actions taken to the next regular meeting of the Board. (j) The audit committee shall provide a report of each meeting and all actions taken to the Authority. (k) Any actions taken against any director or committee Member by the audit committee must be reported to the Authority.",
+          "text": "Audit / supervisory committee",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s25.a",
+              "number": "25a",
+              "heading": "(a)",
+              "text": "(a) The audit committee shall consist of three Members, who are not members of the board of directors, elected at the AGM. The term of office of each Member shall be three years with the term of office of one expiring each year.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.b",
+              "number": "25b",
+              "heading": "(b)",
+              "text": "(b) At least one Member of the committee shall attest the financial statements which the treasurer/chief accounting officer and/or the Managing Director is required to prepare each month. The audit committee should meet at least once a quarter.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.c",
+              "number": "25c",
+              "heading": "(c)",
+              "text": "(c) The audit committee shall review the adequacy and efficiency of internal control systems, accounting practices, information systems and auditing processes within the Co-operative and make appropriate recommendations to the Board.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.d",
+              "number": "25d",
+              "heading": "(d)",
+              "text": "(d) The audit committee shall facilitate and promote communication regarding the matters referred to in (c) or any other related matter between the Members, Board of directors, executive officers, auditor and the employee charged with the internal auditing of the transactions of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.e",
+              "number": "25e",
+              "heading": "(e)",
+              "text": "(e) The audit committee shall introduce measures that in the committee’s opinion may serve to enhance the credibility and objectivity of financial statements and reports prepared with reference to the affairs of the co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.f",
+              "number": "25f",
+              "heading": "(f)",
+              "text": "(f) The audit committee must meet at least quarterly and a majority of Members shall form a quorum at such meetings.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.g",
+              "number": "25g",
+              "heading": "(g)",
+              "text": "(g) By unanimous vote, if deemed necessary for the proper conduct of the business of the Co-operative, the committee may recommend to the Board the suspension of any officer, Board or committee Member. The Board shall call an extraordinary general meeting within 30 days thereafter to present a report and recommendation to the Members concerning such actions. Such action will be reported to the Authority.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.h",
+              "number": "25h",
+              "heading": "(h)",
+              "text": "(h) The audit committee shall receive and investigate any complaint by Members concerning the operations of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.i",
+              "number": "25i",
+              "heading": "(i)",
+              "text": "(i) The audit committee shall provide a report of each meeting and all actions taken to the next regular meeting of the Board.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.j",
+              "number": "25j",
+              "heading": "(j)",
+              "text": "(j) The audit committee shall provide a report of each meeting and all actions taken to the Authority.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s25.k",
+              "number": "25k",
+              "heading": "(k)",
+              "text": "(k) Any actions taken against any director or committee Member by the audit committee must be reported to the Authority.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s26",
           "number": "26",
           "heading": "Investment committee",
-          "text": "Investment committee (a) The Investment committee plays a central governance role for all investment related activities. This committee will usually comprise of the treasurer, two Board members and the manager. The function of this committee is to manage the investment portfolio Page 19 of 25 of the Co-operative in accordance with the conditions laid down in the investment policy as approved by the Board of directors. (b) The investment committee shall consist of not less than three members but not more than five members appointed by the Board. The term of office of each member shall be three years with the term of office of one third of the committee members expiring each year. (c) The investment committee shall meet as often as necessary (at least four times a year) to manage the investment portfolio of the Co-operative in accordance with the conditions laid down in the investment policy as approved by the Board of directors.",
+          "text": "Investment committee",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s26.a",
+              "number": "26a",
+              "heading": "(a)",
+              "text": "(a) The Investment committee plays a central governance role for all investment related activities. This committee will usually comprise of the treasurer, two Board members and the manager. The function of this committee is to manage the investment portfolio Page 19 of 25 of the Co-operative in accordance with the conditions laid down in the investment policy as approved by the Board of directors.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s26.b",
+              "number": "26b",
+              "heading": "(b)",
+              "text": "(b) The investment committee shall consist of not less than three members but not more than five members appointed by the Board. The term of office of each member shall be three years with the term of office of one third of the committee members expiring each year.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s26.c",
+              "number": "26c",
+              "heading": "(c)",
+              "text": "(c) The investment committee shall meet as often as necessary (at least four times a year) to manage the investment portfolio of the Co-operative in accordance with the conditions laid down in the investment policy as approved by the Board of directors.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s27",
           "number": "27",
           "heading": "Equity and reserves",
-          "text": "Equity and reserves (a) The Co-operative’s own capital/equity includes share capital, reserves and retained earnings that may be appropriated to reserves. The objective of increasing equity is to provide for working capital and generally for strengthening the financial position of the co-operative, including the provision for unexpected losses that may be suffered by the Co-operative in its operations. (b) The Co-operative shall maintain sufficient non-distributable reserves (retained earnings) to meet the prudential requirements; and (c) The Co-operative must report fully on the use of its reserves in its annual financial statements.",
+          "text": "Equity and reserves",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s27.a",
+              "number": "27a",
+              "heading": "(a)",
+              "text": "(a) The Co-operative’s own capital/equity includes share capital, reserves and retained earnings that may be appropriated to reserves. The objective of increasing equity is to provide for working capital and generally for strengthening the financial position of the co-operative, including the provision for unexpected losses that may be suffered by the Co-operative in its operations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s27.b",
+              "number": "27b",
+              "heading": "(b)",
+              "text": "(b) The Co-operative shall maintain sufficient non-distributable reserves (retained earnings) to meet the prudential requirements; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s27.c",
+              "number": "27c",
+              "heading": "(c)",
+              "text": "(c) The Co-operative must report fully on the use of its reserves in its annual financial statements.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s28",
@@ -688,25 +1718,116 @@
           "id": "s29",
           "number": "29",
           "heading": "Share capital",
-          "text": "Share capital (a) The minimum capital adequacy ratio of the Co-operative is determined by the provisions of prevailing financial sector laws. (b) Subject to written approval from the Authority, a Member shall be entitled to acquire Investment Shares in the Co-operative. (c) The liability of a Member for the debts of the Co-operative shall be limited to the nominal value of his/her Membership Shares, Additional Membership Shares and Investment Shares in the Co-operative. (d) The repayment of Membership Shares and Additional Membership Shares may be deferred for a period not exceeding two years after the effective date of the notice of voluntary withdrawal or the death of the Member. Page 20 of 25",
+          "text": "Share capital",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s29.a",
+              "number": "29a",
+              "heading": "(a)",
+              "text": "(a) The minimum capital adequacy ratio of the Co-operative is determined by the provisions of prevailing financial sector laws.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s29.b",
+              "number": "29b",
+              "heading": "(b)",
+              "text": "(b) Subject to written approval from the Authority, a Member shall be entitled to acquire Investment Shares in the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s29.c",
+              "number": "29c",
+              "heading": "(c)",
+              "text": "(c) The liability of a Member for the debts of the Co-operative shall be limited to the nominal value of his/her Membership Shares, Additional Membership Shares and Investment Shares in the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s29.d",
+              "number": "29d",
+              "heading": "(d)",
+              "text": "(d) The repayment of Membership Shares and Additional Membership Shares may be deferred for a period not exceeding two years after the effective date of the notice of voluntary withdrawal or the death of the Member. Page 20 of 25",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s30",
           "number": "30",
           "heading": "Asset and liability management",
-          "text": "Asset and liability management (a) The Co-operative shall ensure that the funds of Members are held in safe and secure investments by investing or depositing funds in such instruments as prescribed through section 14 of the Co-operative Banks Act; (b) All monies and valuables kept on the premises of the Co-operative must be kept in a safe. (c) All payments and investments must be authorised by the Board, unless the Board has delegated this authority. (d) The cash float of the Co-operative will be determined on a weekly basis, based on the expected cash flows during the week under consideration. (e) The co-operative is required, at a minimum, to complete monthly reconciliations on all bank accounts",
+          "text": "Asset and liability management",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s30.a",
+              "number": "30a",
+              "heading": "(a)",
+              "text": "(a) The Co-operative shall ensure that the funds of Members are held in safe and secure investments by investing or depositing funds in such instruments as prescribed through section 14 of the Co-operative Banks Act;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s30.b",
+              "number": "30b",
+              "heading": "(b)",
+              "text": "(b) All monies and valuables kept on the premises of the Co-operative must be kept in a safe.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s30.c",
+              "number": "30c",
+              "heading": "(c)",
+              "text": "(c) All payments and investments must be authorised by the Board, unless the Board has delegated this authority.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s30.d",
+              "number": "30d",
+              "heading": "(d)",
+              "text": "(d) The cash float of the Co-operative will be determined on a weekly basis, based on the expected cash flows during the week under consideration.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s30.e",
+              "number": "30e",
+              "heading": "(e)",
+              "text": "(e) The co-operative is required, at a minimum, to complete monthly reconciliations on all bank accounts",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s31",
           "number": "31",
           "heading": "Use of funds",
-          "text": "Use of funds (a) Funds of the Co-operative may be applied to any purpose authorised by Members at an AGM that is consistent with the objectives as defined in this Constitution, and subject to the provisions of applicable legislation such as the Co-operatives Act, the Co-operative Banks Act and the Standards. (b) No funds will be committed to investments, projects or any other enterprise outside the usual business of the Co-operative.",
+          "text": "Use of funds",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s31.a",
+              "number": "31a",
+              "heading": "(a)",
+              "text": "(a) Funds of the Co-operative may be applied to any purpose authorised by Members at an AGM that is consistent with the objectives as defined in this Constitution, and subject to the provisions of applicable legislation such as the Co-operatives Act, the Co-operative Banks Act and the Standards.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s31.b",
+              "number": "31b",
+              "heading": "(b)",
+              "text": "(b) No funds will be committed to investments, projects or any other enterprise outside the usual business of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s32",
@@ -728,65 +1849,313 @@
           "id": "s34",
           "number": "34",
           "heading": "Accounts and records",
-          "text": "Accounts and records (a) The Managing Director appointed by the Board will be delegated authority to issue receipts for all monies received and to acquire receipts for all monies paid out. (b) Cheques drawn, cash withdrawals or transfers made on behalf of the Co-operative shall require two signatures from a panel of signatories as approved by the Board. The panel of signatories shall be made up of no more than five Directors, the Managing Director and employees. (c) The Co-operative’s accounts shall be reconciled monthly to bank records. Page 21 of 25",
+          "text": "Accounts and records",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s34.a",
+              "number": "34a",
+              "heading": "(a)",
+              "text": "(a) The Managing Director appointed by the Board will be delegated authority to issue receipts for all monies received and to acquire receipts for all monies paid out.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s34.b",
+              "number": "34b",
+              "heading": "(b)",
+              "text": "(b) Cheques drawn, cash withdrawals or transfers made on behalf of the Co-operative shall require two signatures from a panel of signatories as approved by the Board. The panel of signatories shall be made up of no more than five Directors, the Managing Director and employees.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s34.c",
+              "number": "34c",
+              "heading": "(c)",
+              "text": "(c) The Co-operative’s accounts shall be reconciled monthly to bank records. Page 21 of 25",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s35",
           "number": "35",
           "heading": "Accounts and audits",
-          "text": "Accounts and audits (a) An independent auditor shall be appointed by the Co-operative at each AGM for the next financial year. (b) The Co-operative Managing Director shall prepare a monthly statement of the Co-operative accounts, which shall be presented to the Board. (c) All books of account and other records of this Co-operative shall at all times be available to the directors and audit committee Members of this Co-operative.",
+          "text": "Accounts and audits",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s35.a",
+              "number": "35a",
+              "heading": "(a)",
+              "text": "(a) An independent auditor shall be appointed by the Co-operative at each AGM for the next financial year.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s35.b",
+              "number": "35b",
+              "heading": "(b)",
+              "text": "(b) The Co-operative Managing Director shall prepare a monthly statement of the Co-operative accounts, which shall be presented to the Board.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s35.c",
+              "number": "35c",
+              "heading": "(c)",
+              "text": "(c) All books of account and other records of this Co-operative shall at all times be available to the directors and audit committee Members of this Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s36",
           "number": "36",
           "heading": "Loans",
-          "text": "Loans (a) Loans granted to Members by the Co-operative shall be made in accordance with the Loan policy and procedure of the Co-operative as formulated by the Board from time to time. (b) The maximum amount, which may be lent to a Member or group of Members with joint liability toward a loan to the Co-operative, shall be subject to the provisions of the Co- operatives Act, Co-operative Banks Act and Standards. (c) All applications for loans and reports of the credit committee shall be filed as a permanent record of the Co-operative. (d) Members of the Board and of any committee Member applying for loans shall have their applications approved by either the majority of the other Members at a joint meeting of the Board, credit committee, and supervisory committee or a special committee set up for this purpose from the Board, credit and supervisory committees. The borrowing Member shall not be in attendance at the meeting when his/her loan is being considered. (e) All loans granted to Staff or Directors of the Co-operative and the supervisory committee must be specifically mentioned in the prescribed manner in the annual report to the Members. (f) The aggregate of all loans extended to staff and the Directors of the Co-operative shall not exceed the prescribed percentage of the aggregate of total loans to Members.",
+          "text": "Loans",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s36.a",
+              "number": "36a",
+              "heading": "(a)",
+              "text": "(a) Loans granted to Members by the Co-operative shall be made in accordance with the Loan policy and procedure of the Co-operative as formulated by the Board from time to time.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s36.b",
+              "number": "36b",
+              "heading": "(b)",
+              "text": "(b) The maximum amount, which may be lent to a Member or group of Members with joint liability toward a loan to the Co-operative, shall be subject to the provisions of the Co- operatives Act, Co-operative Banks Act and Standards.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s36.c",
+              "number": "36c",
+              "heading": "(c)",
+              "text": "(c) All applications for loans and reports of the credit committee shall be filed as a permanent record of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s36.d",
+              "number": "36d",
+              "heading": "(d)",
+              "text": "(d) Members of the Board and of any committee Member applying for loans shall have their applications approved by either the majority of the other Members at a joint meeting of the Board, credit committee, and supervisory committee or a special committee set up for this purpose from the Board, credit and supervisory committees. The borrowing Member shall not be in attendance at the meeting when his/her loan is being considered.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s36.e",
+              "number": "36e",
+              "heading": "(e)",
+              "text": "(e) All loans granted to Staff or Directors of the Co-operative and the supervisory committee must be specifically mentioned in the prescribed manner in the annual report to the Members.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s36.f",
+              "number": "36f",
+              "heading": "(f)",
+              "text": "(f) The aggregate of all loans extended to staff and the Directors of the Co-operative shall not exceed the prescribed percentage of the aggregate of total loans to Members.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s37",
           "number": "37",
           "heading": "Amendment of constitution",
-          "text": "Amendment of constitution (a) Amendments to this Constitution shall be made at the AGM or an extraordinary general meeting. (b) A special resolution will be required to amend the Constitution of the Co-operative. (c) Notice of proposed amendments shall be provided in writing with the notice of the meeting concerned. (d) At least______% of Members (not less than 10%) who consider an amendment to the Constitution to be desirable shall submit their proposal to the secretary of the Board. The proposals shall be placed on the agenda of the next Board meeting and the views of the Board shall be communicated to the Members within 42 days of the proposal being received. If the proposal submitted by the Members is accepted by the Board, it shall be placed on the agenda of the next general meeting to be passed by special resolution at such meeting. Page 22 of 25 (e) If the Board rejects the proposal submitted by the Members, Members may request an extraordinary general meeting to be called specifically for the purpose of consideration of such proposal by all Members of the Co-operative. (f) Proposed amendments to the Constitution shall be circulated by the Board to Members at least 21 days in advance of the annual or extraordinary general meeting at which they are to be discussed. (g) Any amendment to the Constitution shall only come into operation once approved by the Authority and registered by the Registrar of Co-operatives.",
+          "text": "Amendment of constitution",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s37.a",
+              "number": "37a",
+              "heading": "(a)",
+              "text": "(a) Amendments to this Constitution shall be made at the AGM or an extraordinary general meeting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.b",
+              "number": "37b",
+              "heading": "(b)",
+              "text": "(b) A special resolution will be required to amend the Constitution of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.c",
+              "number": "37c",
+              "heading": "(c)",
+              "text": "(c) Notice of proposed amendments shall be provided in writing with the notice of the meeting concerned.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.d",
+              "number": "37d",
+              "heading": "(d)",
+              "text": "(d) At least______% of Members (not less than 10%) who consider an amendment to the Constitution to be desirable shall submit their proposal to the secretary of the Board. The proposals shall be placed on the agenda of the next Board meeting and the views of the Board shall be communicated to the Members within 42 days of the proposal being received. If the proposal submitted by the Members is accepted by the Board, it shall be placed on the agenda of the next general meeting to be passed by special resolution at such meeting. Page 22 of 25",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.e",
+              "number": "37e",
+              "heading": "(e)",
+              "text": "(e) If the Board rejects the proposal submitted by the Members, Members may request an extraordinary general meeting to be called specifically for the purpose of consideration of such proposal by all Members of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.f",
+              "number": "37f",
+              "heading": "(f)",
+              "text": "(f) Proposed amendments to the Constitution shall be circulated by the Board to Members at least 21 days in advance of the annual or extraordinary general meeting at which they are to be discussed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s37.g",
+              "number": "37g",
+              "heading": "(g)",
+              "text": "(g) Any amendment to the Constitution shall only come into operation once approved by the Authority and registered by the Registrar of Co-operatives.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s38",
           "number": "38",
           "heading": "Confidentiality",
-          "text": "Confidentiality (a) The officers, directors, Members of the committees and employees of this Co-operative shall hold in strictest confidence all transactions of this Co-operative with its Members, except to the extent deemed necessary by the Board in connection with the making of loans and collection thereof. (b) Individual Members’ accounts shall be accessible only to Officers of the Co-operative, the audit committee and the Auditors. Members shall be entitled to inspect their own accounts at any time during the business hours of the Co-operative.",
+          "text": "Confidentiality",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s38.a",
+              "number": "38a",
+              "heading": "(a)",
+              "text": "(a) The officers, directors, Members of the committees and employees of this Co-operative shall hold in strictest confidence all transactions of this Co-operative with its Members, except to the extent deemed necessary by the Board in connection with the making of loans and collection thereof.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s38.b",
+              "number": "38b",
+              "heading": "(b)",
+              "text": "(b) Individual Members’ accounts shall be accessible only to Officers of the Co-operative, the audit committee and the Auditors. Members shall be entitled to inspect their own accounts at any time during the business hours of the Co-operative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s39",
           "number": "39",
           "heading": "General provisions",
-          "text": "General provisions (a) All power, authority and functions of the Members of the Board, committees and officers of the Co-operative pursuant to the provisions of this Constitution shall be exercised in strict conformity with the relevant provisions of this Constitution and its adopted policies. (b) Notwithstanding any other provisions in this Constitution, any director, or committee Member of the Co-operative may be removed from the office by the affirmative vote of two thirds of the Members present at a general meeting of which proper notice has been given but only after an opportunity has been given to him/her to be heard. (c) This Constitution sets the standard procedures and structures required for registration. (d) The amendment to the Constitution shall only be implemented after it has been approved by the Authority and registered by the Registrar of Co-operatives.",
+          "text": "General provisions",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s39.a",
+              "number": "39a",
+              "heading": "(a)",
+              "text": "(a) All power, authority and functions of the Members of the Board, committees and officers of the Co-operative pursuant to the provisions of this Constitution shall be exercised in strict conformity with the relevant provisions of this Constitution and its adopted policies.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s39.b",
+              "number": "39b",
+              "heading": "(b)",
+              "text": "(b) Notwithstanding any other provisions in this Constitution, any director, or committee Member of the Co-operative may be removed from the office by the affirmative vote of two thirds of the Members present at a general meeting of which proper notice has been given but only after an opportunity has been given to him/her to be heard.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s39.c",
+              "number": "39c",
+              "heading": "(c)",
+              "text": "(c) This Constitution sets the standard procedures and structures required for registration.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s39.d",
+              "number": "39d",
+              "heading": "(d)",
+              "text": "(d) The amendment to the Constitution shall only be implemented after it has been approved by the Authority and registered by the Registrar of Co-operatives.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s40",
           "number": "40",
           "heading": "Disputes",
-          "text": "Disputes (a) In the case of a dispute between members of the Co-operative, the Co-operative and any of its Members or any complaints against any Member or officer which is not related to a debt owed by the Member to the Co-operative, an application shall be made to the Board through the secretary for redress, but should the party not be satisfied, an appeal may be made to the audit committee. (b) The provisions of the Constitution do not preclude the Members from referring disputes to a resolution mechanism as established for this purpose.",
+          "text": "Disputes",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s40.a",
+              "number": "40a",
+              "heading": "(a)",
+              "text": "(a) In the case of a dispute between members of the Co-operative, the Co-operative and any of its Members or any complaints against any Member or officer which is not related to a debt owed by the Member to the Co-operative, an application shall be made to the Board through the secretary for redress, but should the party not be satisfied, an appeal may be made to the audit committee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s40.b",
+              "number": "40b",
+              "heading": "(b)",
+              "text": "(b) The provisions of the Constitution do not preclude the Members from referring disputes to a resolution mechanism as established for this purpose.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s41",
           "number": "41",
           "heading": "Dissolution and amalgamation",
-          "text": "Dissolution and amalgamation Page 23 of 25 (a) The Co-operative may be dissolved by special resolution passed by three-fourths of the total number of Members voting at a special meeting called specifically for that purpose. (b) At least 21 days written notice of such a meeting shall be given to all Members. Upon dissolution and in terms of the provisions of the Co-operatives Act, the assets of the Co-operative shall be realised, all liabilities shall be paid, all savings shall be refunded to Members and any surplus thereafter be apportioned to Members in proportion to the patronage proportion of each Member determined for a period of 5 years. (c) By special resolution passed by three-fourths of the Members present and voting at a special meeting called specifically for that purpose, the Members may resolve that the Co-operative amalgamate with another Co-operative, provided further that all the Members of the amalgamated Co-operative meet the same criteria as a Co-operative as specified in this Constitution and as in accordance with the provisions of the Co- operatives Act and the Co-operative Banks Act with regard to amalgamations. Attachment 1 Page 24 of 25 NOTE: This page must be signed by ALL Founder Members. FULL NAMES AND SURNAMES OF APPLICANTS FOR MEMBERSHIP SIGNATURES OF APPLICANTS 1. ..……………………………………………….. …………………………………………………….. 1. ……………………………………….. 2. ..……………………………………………….. …………………………………………………….. 2. ………………………………………. 3. ..……………………………………………….. …………………………………………………….. 3. ………………………………………. 4. ..……………………………………………….. …………………………………………………….. 4. ………………………………………. 5. ..……………………………………………….. …………………………………………………….. 5. ………………………………………. 6. ..……………………………………………….. …………………………………………………….. 6. ………………………………………. 7. ..……………………………………………….. …………………………………………………….. 7. ………………………………………. 8. ..……………………………………………….. …………………………………………………….. 8. ……………………………………… 9. ..……………………………………………….. …………………………………………………….. 9. ……………………………………… 10. ..……………………………………………….. …………………………………………………….. 10. …………………………………….. Page 25 of 25 11. ..……………………………………………….. …………………………………………………….. 11. …………………………………….. 12. ..……………………………………………….. …………………………………………………….. 12. …………………………………….. Page 1 of 3 Attachment 2 Amendments made to the previous version of the Model Constitution issued by the CBDA Section Amendment",
+          "text": "Dissolution and amalgamation",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s41.a",
+              "number": "41a",
+              "heading": "(a)",
+              "text": "(a) The Co-operative may be dissolved by special resolution passed by three-fourths of the total number of Members voting at a special meeting called specifically for that purpose.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s41.b",
+              "number": "41b",
+              "heading": "(b)",
+              "text": "(b) At least 21 days written notice of such a meeting shall be given to all Members. Upon dissolution and in terms of the provisions of the Co-operatives Act, the assets of the Co-operative shall be realised, all liabilities shall be paid, all savings shall be refunded to Members and any surplus thereafter be apportioned to Members in proportion to the patronage proportion of each Member determined for a period of 5 years.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s41.c",
+              "number": "41c",
+              "heading": "(c)",
+              "text": "(c) By special resolution passed by three-fourths of the Members present and voting at a special meeting called specifically for that purpose, the Members may resolve that the Co-operative amalgamate with another Co-operative, provided further that all the Members of the amalgamated Co-operative meet the same criteria as a Co-operative as specified in this Constitution and as in accordance with the provisions of the Co- operatives Act and the Co-operative Banks Act with regard to amalgamations. Attachment 1 Page 24 of 25 NOTE: This page must be signed by ALL Founder Members. FULL NAMES AND SURNAMES OF APPLICANTS FOR MEMBERSHIP SIGNATURES OF APPLICANTS 1. ..……………………………………………….. …………………………………………………….. 1. ……………………………………….. 2. ..……………………………………………….. …………………………………………………….. 2. ………………………………………. 3. ..……………………………………………….. …………………………………………………….. 3. ………………………………………. 4. ..……………………………………………….. …………………………………………………….. 4. ………………………………………. 5. ..……………………………………………….. …………………………………………………….. 5. ………………………………………. 6. ..……………………………………………….. …………………………………………………….. 6. ………………………………………. 7. ..……………………………………………….. …………………………………………………….. 7. ………………………………………. 8. ..……………………………………………….. …………………………………………………….. 8. ……………………………………… 9. ..……………………………………………….. …………………………………………………….. 9. ……………………………………… 10. ..……………………………………………….. …………………………………………………….. 10. …………………………………….. Page 25 of 25 11. ..……………………………………………….. …………………………………………………….. 11. …………………………………….. 12. ..……………………………………………….. …………………………………………………….. 12. …………………………………….. Page 1 of 3 Attachment 2 Amendments made to the previous version of the Model Constitution issued by the CBDA Section Amendment",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s2",
@@ -968,9 +2337,26 @@
           "id": "s29",
           "number": "29",
           "heading": "Share capital Paragraph",
-          "text": "Share capital Paragraph (a) to (c) replaced with: (a) The minimum capital adequacy ratio of the Co-operative is determined by the provisions of prevailing financial sector laws. (b) Subject to written approval from the Authority, a Member shall be entitled to acquire Investment Shares in the Co- operative.",
+          "text": "Share capital Paragraph",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s29.a",
+              "number": "29a",
+              "heading": "(a)",
+              "text": "(a) to (c) replaced with: (a) The minimum capital adequacy ratio of the Co-operative is determined by the provisions of prevailing financial sector laws.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s29.b",
+              "number": "29b",
+              "heading": "(b)",
+              "text": "(b) Subject to written approval from the Authority, a Member shall be entitled to acquire Investment Shares in the Co- operative.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s30",
