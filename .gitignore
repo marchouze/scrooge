@@ -20,3 +20,7 @@ prototype/.data/
 
 # Build-phase local secrets — never commit
 .local/
+
+# Regulation outline fixer artifacts
+*-structured.json.bak
+*-reformatted.txt

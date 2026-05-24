@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction Page 3",
-          "text": "",
+          "text": "Introduction Page 3",
           "verbatim": true,
           "subsections": []
         },
@@ -36,7 +36,7 @@
           "id": "s2",
           "number": "2",
           "heading": "Pillar 2 Page 3",
-          "text": "",
+          "text": "Pillar 2 Page 3",
           "verbatim": true,
           "subsections": []
         },
@@ -44,7 +44,7 @@
           "id": "s3",
           "number": "3",
           "heading": "High-level requirements for an ICAAP Page 5",
-          "text": "",
+          "text": "High-level requirements for an ICAAP Page 5",
           "verbatim": true,
           "subsections": []
         },
@@ -52,7 +52,7 @@
           "id": "s4",
           "number": "4",
           "heading": "ICAAP submission Page 18",
-          "text": "",
+          "text": "ICAAP submission Page 18",
           "verbatim": true,
           "subsections": []
         },
@@ -60,25 +60,105 @@
           "id": "s5",
           "number": "5",
           "heading": "ICAAP submission: suggested format Annexure A",
-          "text": "",
+          "text": "ICAAP submission: suggested format Annexure A",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s6",
           "number": "6",
-          "heading": "High-level requirements underpinning sound stress-testing by banks Annexure B",
-          "text": "3",
+          "heading": "High-level requirements underpinning sound stress-testing by banks Annexure B 3",
+          "text": "High-level requirements underpinning sound stress-testing by banks Annexure B 3",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s1",
           "number": "1",
-          "heading": "Introduction 1.1 The Basel II framework 1.1.1 The Basel II framework, published in June 2006, consists of three Pillars. 1.1.2 Pillar 1 sets out the minimum capital requirements that banks are required to meet in respect of credit, market, and operational risk. The requirements with regards to Pillar 1 are largely rules-based. 1.1.3 Pillar 2 prescribes the requirements for ‘ supervisory review’. Banks must assess their capital adequacy relative to their overall risks. In addition, requirements are imposed on the supervisors of banks to review and take appropriate actions in response to such assessments. The requirements with regards to Pillar 2 are largely principles-based. 1.1.4 Pillar 3 describes the requirements for ‘market discipline’. Banks must publish certain details of their risks, capital, and risk management. The aim of these requirements is to strengthen market discipline through transparency and disclosure. 1.1.5 The end result is a more flexible and risk-sensitive framework which imposes more onerous requirements on both banks and supervisors. 1.1.6 The cornerstones of the new framework, encapsulated under Pillar 2, require banks to develop their own ICAAPs and supervisory authorities to review the aforementioned. The aim is to enhance the link between an institution’s risk profile, its risk management, and its capital. 1.1.7 In terms of the Banks Act 94 of 1990 (the Banks Act), banks are obliged to maintain, at all times, sufficient capital levels, which are above the minimum requirements as stipulated by the Registrar. 1.1.8 The adequacy of a bank’s capital must be assessed both by a bank and BSD. Individual capital adequacy standards in terms of Basel II comprise: 1.1.8.1 an ICAAP, which a bank is obliged to carry out; and 1.1.8.2 a supervisory review and evaluation process (SREP), which is conducted by BSD.",
-          "text": "",
+          "heading": "Introduction",
+          "text": "Introduction",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s1-1",
+              "number": "1.1",
+              "text": "The Basel II framework",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s1-1-1",
+                  "number": "1.1.1",
+                  "text": "The Basel II framework, published in June 2006, consists of three Pillars.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-2",
+                  "number": "1.1.2",
+                  "text": "Pillar 1 sets out the minimum capital requirements that banks are required to meet in respect of credit, market, and operational risk. The requirements with regards to Pillar 1 are largely rules-based.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-3",
+                  "number": "1.1.3",
+                  "text": "Pillar 2 prescribes the requirements for ‘ supervisory review’. Banks must assess their capital adequacy relative to their overall risks. In addition, requirements are imposed on the supervisors of banks to review and take appropriate actions in response to such assessments. The requirements with regards to Pillar 2 are largely principles-based.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-4",
+                  "number": "1.1.4",
+                  "text": "Pillar 3 describes the requirements for ‘market discipline’. Banks must publish certain details of their risks, capital, and risk management. The aim of these requirements is to strengthen market discipline through transparency and disclosure.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-5",
+                  "number": "1.1.5",
+                  "text": "The end result is a more flexible and risk-sensitive framework which imposes more onerous requirements on both banks and supervisors.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-6",
+                  "number": "1.1.6",
+                  "text": "The cornerstones of the new framework, encapsulated under Pillar 2, require banks to develop their own ICAAPs and supervisory authorities to review the aforementioned. The aim is to enhance the link between an institution’s risk profile, its risk management, and its capital.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-7",
+                  "number": "1.1.7",
+                  "text": "In terms of the Banks Act 94 of 1990 (the Banks Act), banks are obliged to maintain, at all times, sufficient capital levels, which are above the minimum requirements as stipulated by the Registrar.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-8",
+                  "number": "1.1.8",
+                  "text": "The adequacy of a bank’s capital must be assessed both by a bank and BSD. Individual capital adequacy standards in terms of Basel II comprise:",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s1-1-8-1",
+                      "number": "1.1.8.1",
+                      "text": "an ICAAP, which a bank is obliged to carry out; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1-1-8-2",
+                      "number": "1.1.8.2",
+                      "text": "a supervisory review and evaluation process (SREP), which is conducted by BSD.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s2",
@@ -563,18 +643,34 @@
         {
           "id": "s4",
           "number": "4",
-          "heading": "ICAAP submission 4.1 Banks must formally submit their Board approved ICAAPs for BSD’s review, when requested to do so. In order to structure the process, BSD suggests the submission format contained in Annexure A.",
-          "text": "",
+          "heading": "ICAAP submission",
+          "text": "ICAAP submission",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "Banks must formally submit their Board approved ICAAPs for BSD’s review, when requested to do so. In order to structure the process, BSD suggests the submission format contained in Annexure A.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Acknowledgement of receipt 5.1 Two additional copies of this guidance note are enclosed for the use of your institution’s independent auditors. The attached acknowledgement of receipt, completed and signed by both the chief executive officer (CEO) of your institution and the said auditors, should be returned to BSD at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks Encl. 2 The previous guidance note issued was Guidance Note 3/2015, dated 9 February 2015.",
-          "text": "",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5-1",
+              "number": "5.1",
+              "text": "Two additional copies of this guidance note are enclosed for the use of your institution’s independent auditors. The attached acknowledgement of receipt, completed and signed by both the chief executive officer (CEO) of your institution and the said auditors, should be returned to BSD at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks Encl. 2 The previous guidance note issued was Guidance Note 3/2015, dated 9 February 2015.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }

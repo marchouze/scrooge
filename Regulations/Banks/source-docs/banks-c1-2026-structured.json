@@ -1,0 +1,696 @@
+{
+  "slug": "banks-c1-2026",
+  "title": "Banks Act Circular 1/2026 — Status of Previously Issued Circulars and Directives",
+  "shortTitle": "C1/2026 (Status Note)",
+  "regulator": "Prudential Authority",
+  "year": 2026,
+  "publicationDate": "2026-03-06",
+  "effectiveDate": "2026-03-06",
+  "enablingLegislation": "Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "circular",
+  "reference": "15/8/1/1",
+  "signatory": "Fundi Tshazibana, Chief Executive Officer",
+  "sourceUrl": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/prudential-authority/pa-deposit-takers/banks-circulars/2026/C1-2026",
+  "sourceNote": "Annual status circular confirming which previously issued PA circulars and directives remain effective for 2026. Contains 18 effective circulars (s.2) and 69 effective directives (s.3). Directives under s.6(6) of the Banks Act remain effective until formally withdrawn; they are not subject to the annual confirmation process that applies to circulars.",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "eligible institutions",
+    "auditors of banks or controlling companies"
+  ],
+  "citationPatterns": [
+    "C1/2026",
+    "Circular 1/2026",
+    "Circular 1 of 2026",
+    "Banks Act Circular 1/2026"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-main",
+      "title": "C1/2026 (Circular and Directive Status Note)",
+      "sections": [
+        {
+          "id": "s1",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "Introduction",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s1-1",
+              "number": "1.1",
+              "text": "All previously issued Banks Act circulars are deemed to be withdrawn, terminated or replaced, except if such a circular is to remain effective and is then accordingly confirmed in Circular 1 of that year. The circulars that remain effective will retain their original numbers and dates.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Effective circulars issued in terms of the Banks Act The circulars listed below remain effective.",
+          "text": "Effective circulars issued in terms of the Banks Act The circulars listed below remain effective. Accordingly, banks, controlling companies, eligible institutions and auditors of banks or controlling companies are requested to retain a copy of these circulars. Circular Brief details",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "text": "Banks Act Circular 3/2013 Interpretation and application of criteria relating to effective maturity",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-2",
+              "number": "2.2",
+              "text": "Banks Act Circular 4/2013 Treatment of investments in banking, financial, securities, insurance and commercial entities",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-3",
+              "number": "2.3",
+              "text": "Banks Act Circular 5/2013 Reporting of items subject to thresholds that do not constitute a full deduction from qualifying capital and reserve funds",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-4",
+              "number": "2.4",
+              "text": "Banks Act Circular 2/2014 Interpretation of definition of default as outlined in regulation 67 of the Regulations relating to Banks",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-5",
+              "number": "2.5",
+              "text": "Banks Act Circular 7/2014 External auditors of newly acquired or established entities 2",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-6",
+              "number": "2.6",
+              "text": "Banks Act Circular 4/2015 Matters related to banks' compliance with the prescribed requirements related to the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA)",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-7",
+              "number": "2.7",
+              "text": "Banks Act Circular 5/2015 Matters related to the use of support in a bank's credit risk rating process",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-8",
+              "number": "2.8",
+              "text": "Banks Act Circular 8/2015 Countercyclical capital buffer for South Africa based on the Basel III framework",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-9",
+              "number": "2.9",
+              "text": "Banks Act Circular 4/2016 Matters relating to the implementation of the capital conservation buffer",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-10",
+              "number": "2.10",
+              "text": "Banks Act Circular 5/2016 Matters of interpretation relating to the liquidity coverage ratio",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-11",
+              "number": "2.11",
+              "text": "Banks Act Circular 7/2016 Matters related to specified minority interests, that is, non-controlling interests, in shares and/or instruments qualifying as capital",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-12",
+              "number": "2.12",
+              "text": "Banks Act Circular 2/2018 Requirements related to a due diligence audit of the financial condition of a bank",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-13",
+              "number": "2.13",
+              "text": "Banks Act Circular 2/2020 Classification of the Land and Agricultural Development Bank of South Africa (Land Bank) bills under the liquidity coverage ratio framework",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-14",
+              "number": "2.14",
+              "text": "Banks Act Circular 3/2020 Disclosure of capital-related matters",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-15",
+              "number": "2.15",
+              "text": "Banks Act Circular 2/2023 Matters related to the fitness and propriety assessment",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-16",
+              "number": "2.16",
+              "text": "Banks Act Circular 3/2023 Eligibility of a Sukuk bond issuance",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-17",
+              "number": "2.17",
+              "text": "Banks Act Circular 3/2025 Interpretation and application of criteria relating to the granularity for retail exposures",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-18",
+              "number": "2.18",
+              "text": "Banks Act Circular 4/2025 Basel III post-crisis reforms reporting",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "Effective directives issued in terms of the Banks Act Section 6(6)(a) of the Banks Act prescribes that the PA may,",
+          "text": "Effective directives issued in terms of the Banks Act Section 6(6)(a) of the Banks Act prescribes that the PA may, following consultation with the relevant bank, controlling company, eligible institution or auditor of a bank or controlling company, issue a directive to such a bank, controlling company, eligible institution or auditor of a bank or controlling company, either individually or collectively, regarding the application of the Banks Act. The PA issued a number of directives in terms of section 6(6)(a) of the Banks Act. It is hereby confirmed that all such issued directives will remain effective until such time as they are withdrawn in writing by the PA in terms of section 6(6)(c) of the Banks Act. The directives listed below are effective: Directive Brief details",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "text": "Directive 1/2008 Use of divisional names",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-2",
+              "number": "3.2",
+              "text": "Directive 2/2008 Procedure to be followed in respect of applications in terms of the provisions of sections 37, 52 and/or 54 of the Banks Act, 1990 (Act No. 94 of 1990)",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-3",
+              "number": "3.3",
+              "text": "Directive 3/2008 Appointment of directors or executive officers, and completion of form BA 020",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-4",
+              "number": "3.4",
+              "text": "Directive 4/2008 Disclosure of repurchase and resale agreements and similar transactions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-5",
+              "number": "3.5",
+              "text": "Directive 6/2008 Auditor rotation",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-6",
+              "number": "3.6",
+              "text": "Directive 2/2011 Reporting daily value-at-risk amounts for market risk using specified items of the form BA 325",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-7",
+              "number": "3.7",
+              "text": "Directive 5/2011 Exemption from certain minimum disclosure requirements pertaining to branches of foreign institutions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-8",
+              "number": "3.8",
+              "text": "Directive 1/2012 Information to be included in applications in terms of the Securitisation Notice – Designation of an activity not falling within the meaning of 'the business of a bank' (Securitisation Notice)",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-9",
+              "number": "3.9",
+              "text": "Directive 9/2013 Investments, and loans and advances by controlling companies: section 50 of the Banks Act, 1990 (Act No. 94 of 1990)",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-10",
+              "number": "3.10",
+              "text": "Directive 10/2013 Limit in respect of effective net open foreign currency position, and matters related to the unencumbered assets to be held by branches of foreign institutions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-11",
+              "number": "3.11",
+              "text": "Directive 13/2013 Clarification of the requirements for approval of the acquisition of 'an interest' outside the Republic as provided for in section 52(1)(c) of the Banks Act, 1990 (Act No. 94 of 1990) 4",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-12",
+              "number": "3.12",
+              "text": "Directive 2/2014 Matters related to changes to internal rating systems used to calculate the minimum required capital for credit risk",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-13",
+              "number": "3.13",
+              "text": "Directive 8/2014 Matters related to compliance with the liquidity coverage ratio",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-14",
+              "number": "3.14",
+              "text": "Directive 1/2015 Minimum requirements for the recovery plans of banks, controlling companies and branches of foreign institutions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-15",
+              "number": "3.15",
+              "text": "Directive 2/2015 Effective risk data aggregation and risk reporting",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-16",
+              "number": "3.16",
+              "text": "Directive 4/2015 Amendments to the Regulations relating to Banks, and matters related thereto",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-17",
+              "number": "3.17",
+              "text": "Directive 7/2015 Restructured credit exposures",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-18",
+              "number": "3.18",
+              "text": "Directive 10/2015 Matters related to changes to the AMA operational risk management and measurement system used for the calculation of required capital for operational risk",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-19",
+              "number": "3.19",
+              "text": "Directive 5/2016 Compliance with principles for effective risk data aggregation and risk reporting",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-20",
+              "number": "3.20",
+              "text": "Directive 7/2016 Assessment of instruments issued by domestic systemically important banks and controlling companies (D-SIBs) for capital and funding purposes",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-21",
+              "number": "3.21",
+              "text": "Directive 8/2016 Reporting requirements relating to material outsourced service providers and critical third-party service providers",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-22",
+              "number": "3.22",
+              "text": "Directive 1/2017 Matters related to qualifying capital instruments issued by subsidiaries of banks or controlling companies",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-23",
+              "number": "3.23",
+              "text": "Directive 2/2017 Matters relating to the communication of key audit matters in the independent auditor's report",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-24",
+              "number": "3.24",
+              "text": "Directive 3/2017 Assets lodged or pledged to secure liabilities",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-25",
+              "number": "3.25",
+              "text": "Directive 4/2017 Matters related to securitisation vehicles",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-26",
+              "number": "3.26",
+              "text": "Directive 6/2017 Process in terms of specific capital issuances and redemptions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-27",
+              "number": "3.27",
+              "text": "Directive 2/2018 Materiality threshold in respect of exposure to a foreign jurisdiction in applying jurisdictional reciprocity in the countercyclical capital buffer calculation",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-28",
+              "number": "3.28",
+              "text": "Directive 3/2018 Cloud computing and the offshoring of data",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-29",
+              "number": "3.29",
+              "text": "Directive 2/2019 Reporting of material information technology and/or cyber incidents",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-30",
+              "number": "3.30",
+              "text": "Directive 5/2020 Prudent Valuation Adjustments Framework 5",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-31",
+              "number": "3.31",
+              "text": "Directive 7/2020 Calculation of derivative exposure amount for the purposes of determining the leverage ratio",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-32",
+              "number": "3.32",
+              "text": "Directive 2/2021 Matters related to the issuance of additional tier 1 capital instruments that contain contingent 'must-pay' clauses",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-33",
+              "number": "3.33",
+              "text": "Directive 4/2021 Externally facilitated liquidity stress simulations",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-34",
+              "number": "3.34",
+              "text": "Directive 5/2021 Capital framework for South Africa based on the Basel III framework",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-35",
+              "number": "3.35",
+              "text": "Directive 6/2021 Matters related to the use of credit risk models to calculate minimum required capital and reserve funds for specialised lending exposures relating to project finance portfolios",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-36",
+              "number": "3.36",
+              "text": "Directive 9/2021 Principles for the sound management of operational risk",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-37",
+              "number": "3.37",
+              "text": "Directive 1/2022 Liquidity coverage ratio: scope of application and matters related to calculation and disclosure",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-38",
+              "number": "3.38",
+              "text": "Directive 2/2022 Requirements for conducting the business of a representative office of a foreign banking institution conducting business in South Africa, and of a representative office of a South African bank conducting business outside South Africa",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-39",
+              "number": "3.39",
+              "text": "Directive 4/2022 Requirement to submit anti-money laundering and counter-financing of terrorism risk returns to the Prudential Authority on a periodic basis",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-40",
+              "number": "3.40",
+              "text": "Directive 5/2022 Matters relating to liquidity risk",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-41",
+              "number": "3.41",
+              "text": "Directive 6/2022 Matters related to fit-and-proper assessment requirements pertaining to beneficial owners",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-42",
+              "number": "3.42",
+              "text": "Directive 7/2022 Matters related to fit-and-proper assessment requirements pertaining to directors and executive officers",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-43",
+              "number": "3.43",
+              "text": "Directive 9/2022 Matters relating to domestic money or value transfer services",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-44",
+              "number": "3.44",
+              "text": "Directive 10/2022 Matters related to the criteria for identifying simple, transparent and comparable term and short-term securitisations",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-45",
+              "number": "3.45",
+              "text": "Directive 11/2022 National discretion related to the liquidity coverage ratio",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-46",
+              "number": "3.46",
+              "text": "Directive 1/2023 Matters related to the net stable funding ratio",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-47",
+              "number": "3.47",
+              "text": "Directive 2/2023 Directive for the completion of the form BA 330 and public comments received on the proposed Directive",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-48",
+              "number": "3.48",
+              "text": "Directive 3/2023 Regulatory treatment of accounting provisions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-49",
+              "number": "3.49",
+              "text": "Directive 4/2023 Directive on operational resilience 6",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-50",
+              "number": "3.50",
+              "text": "Directive 7/2023 Directive on matters relating to eligible external credit assessment institutions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-51",
+              "number": "3.51",
+              "text": "Directive 1/2024 Pillar 3 disclosure requirements for interest rate risk in the banking book",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-52",
+              "number": "3.52",
+              "text": "Directive 2/2024 Reporting requirements in terms of regulation 46 of the Regulations relating to Banks",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-53",
+              "number": "3.53",
+              "text": "Directive 3/2024 Minimum regulatory requirements relating to the deposits covered by the Corporation for Deposit Insurance and banks' fund liquidity contributions",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-54",
+              "number": "3.54",
+              "text": "Directive 5/2024 Loss absorbency requirements for additional tier 1 and tier 2 capital instruments",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-55",
+              "number": "3.55",
+              "text": "Directive 6/2024 Implementation of a positive cycle-neutral countercyclical capital buffer",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-56",
+              "number": "3.56",
+              "text": "Directive 2/2025 Matters related to the capital treatment of significant investments in insurance entities",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-57",
+              "number": "3.57",
+              "text": "Directive 3/2025 Matters related to the leverage ratio buffer requirement for domestic systematically important banks",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-58",
+              "number": "3.58",
+              "text": "Directive 4/2025 Completion of regulatory return: form BA 701",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-59",
+              "number": "3.59",
+              "text": "Directive 5/2025 Returns to be submitted to the Prudential Authority",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-60",
+              "number": "3.60",
+              "text": "Directive 6/2025 Returns to be submitted to the Prudential Authority with effect from 1 July 2025",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-61",
+              "number": "3.61",
+              "text": "Directive 7/2025 South African domestic systemically important banks to submit consolidated information",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-62",
+              "number": "3.62",
+              "text": "Directive 8/2025 Threshold amounts related to the revised standardised and internal ratings-based approaches for credit risk, liquidity risk and interest rate risk in the banking book frameworks",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-63",
+              "number": "3.63",
+              "text": "Directive 9/2025 Prudential treatment of credit exposures secured by forest and agricultural land",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-64",
+              "number": "3.64",
+              "text": "Directive 10/2025 Matters related to Pillar 3 disclosure requirements in terms of regulation 43 of the Regulations relating to Banks",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-65",
+              "number": "3.65",
+              "text": "Directive 11/2025 Prudential treatment of distressed restructured credit exposures",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-66",
+              "number": "3.66",
+              "text": "Directive 12/2025 Implementation roadmap for the Basel III post-crisis reforms and the Directive on distressed restructured credit exposures",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-67",
+              "number": "3.67",
+              "text": "Directive 13/2025 Appointment of auditors in terms of section 61(2) of the Banks Act, 1990 (Act No. 94 of 1990) 7",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-68",
+              "number": "3.68",
+              "text": "Directive 14/2025 Composition of the committee appointed by the Board of Directors to approve large exposures and matters related to the requirements for measuring and controlling large exposures",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-69",
+              "number": "3.69",
+              "text": "Directive 1/2026 Matters related to the promotion of sound corporate governance, particularly in relation to the appointment of directors and executive officers",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

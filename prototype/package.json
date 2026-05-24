@@ -56,6 +56,7 @@
     "backfill:policy-documents": "bun run scripts/backfill-document-registered-2026-05-12.ts && bun run scripts/backfill-document-registered-2026-05-14.ts && bun run scripts/backfill-document-registered-2026-05-22.ts && bun run scripts/backfill-document-registered-2026-05-22b.ts",
     "backfill:rms-recordfiled-manifest": "bun run scripts/backfill/rms-recordfiled-manifest.ts",
     "rms:backfill-documents": "bun run scripts/backfill-document-register.ts",
+    "fix-outline": "bun run scripts/fix-regulation-outline.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
     "mtm:run": "bun run scripts/mtm-run.ts",
     "recon:spread-benchmarking": "bun run platform/recon/spread-benchmarking.ts",
