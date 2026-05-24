@@ -1,0 +1,201 @@
+{
+  "slug": "cs-1-2018",
+  "title": "Conduct Standard 1 of 2018 — Criteria for Authorisation of OTC Derivatives Providers",
+  "shortTitle": "CS 1 of 2018",
+  "regulator": "FSCA",
+  "year": 2018,
+  "enablingLegislation": "Financial Markets Act 19 of 2012, section 6(8)(a)",
+  "gazetteDate": "2018-07-27",
+  "signatory": "Abel Moffat Sithole, for the Financial Sector Conduct Authority",
+  "sourceNote": "FSCA Conduct Standard 1 of 2018 published 27 July 2018 under FMA s.6(8)(a). Sets out the criteria an applicant must satisfy to be authorised as an OTC derivative provider (ODP), and the ongoing obligations of an authorised ODP. Applies to all categories of ODP applicant; banks apply via Application Index 1.",
+  "citationPatterns": ["CS 1/2018", "CS 1 of 2018", "ORG-CS1", "Conduct Standard 1 of 2018"],
+  "priority": 1,
+  "chapters": [
+    {
+      "id": "ch-preamble",
+      "title": "Preamble",
+      "sections": [
+        {
+          "id": "preamble",
+          "sectionNumber": "Preamble",
+          "title": "Enabling authority and publication",
+          "verbatim": true,
+          "text": "The Financial Sector Conduct Authority, hereby under section 6(8)(a) of the Financial Markets Act, 2012 (Act No. 19 of 2012), prescribe criteria for authorisation as an OTC derivative provider as set out in the Schedule.\n\nABEL MOFFAT SITHOLE\nFor THE FINANCIAL SECTOR CONDUCT AUTHORITY\nDate of publication: 27 July 2018"
+        }
+      ]
+    },
+    {
+      "id": "ch-schedule",
+      "title": "Schedule — Criteria for Authorisation",
+      "sections": [
+        {
+          "id": "s1",
+          "sectionNumber": "1",
+          "title": "Definitions",
+          "verbatim": true,
+          "text": "In this Schedule, \"the Act\" means the Financial Markets Act, 2012 (Act No. 19 of 2012), and \"the Regulations\" means the Regulations prescribed under the Act, and any word or expression to which a meaning has been assigned in the Act or the Regulations bears the meaning so assigned to it, and unless the context otherwise indicates—\n\n\"provider\" has the same meaning as \"authorised OTC derivative provider\"; and\n\n\"senior manager\" means a member of senior management or the person in charge of the unit or division that carries on the business of the provider."
+        },
+        {
+          "id": "s2",
+          "sectionNumber": "2",
+          "title": "Application",
+          "verbatim": true,
+          "text": "(1) A juristic person may apply to the Authority to be authorised as a provider.\n\n(2) An applicant for authorisation as a provider must submit a written application on Form FM 6 accompanied by the information—\n(a) specified in Annexure 1 to Form FM 6; and\n(b) required in respect of members of the controlling body and every senior manager of the provider specified in Annexure 2 to Form FM 6.\n\nAddress\nApplications must be submitted to:\nThe Financial Sector Conduct Authority\nPO Box 35655, Menlo Park, 0102\nRiverwalk Office Park, Block B\n41 Matroosberg Road, Ashlea Gardens Ext 6, 0081\nEmail: authorisationofODPs@fsca.co.za"
+        },
+        {
+          "id": "s4",
+          "sectionNumber": "4",
+          "title": "Criteria for authorisation",
+          "verbatim": false,
+          "text": "Section 4 sets out four main criteria categories that every applicant and provider must satisfy on an ongoing basis."
+        },
+        {
+          "id": "s4-1",
+          "sectionNumber": "4.1",
+          "title": "Operational capital requirements",
+          "verbatim": true,
+          "text": "(1) An applicant and a provider must—\n(a) maintain capital, together with retained earnings and reserves proportional to the risks relating to the business of the provider in the Republic of South Africa;\n(b) hold sufficient capital and liquid net assets funded by equity in the Republic of South Africa to cover potential general business losses to ensure—\n(i) that the applicant and the provider are adequately protected against operational, legal, custody, and investment risks so that it can continue providing services as a going concern; and\n(ii) an orderly wind-up or reorganisation of the applicant and the provider's critical operations and services over an appropriate time period of at least six months under a range of stress scenarios;\n(c) hold equity capital in the Republic of South Africa—\n(i) which reflects a strong cash, cash-equivalent, or securities position to allow the provider to meet its current and projected operating expenses under a range of scenarios; provided that cash equivalents and securities consist of high-quality and sufficiently liquid assets that can easily be converted into cash at little or no loss of value, even in adverse market conditions;\n(ii) which, at a minimum, is equal to six months of operating expenses, provided that the provider considers whether resources are required beyond that amount, taking into account its general business risk profile; and\n(iii) which is permanently available for the provider to absorb operating expenses or losses on an ongoing basis;\n(d) safeguard its assets—\n(i) to minimise the risk of loss or delay in access to these assets; and\n(ii) by holding the assets at supervised and regulated entities that have robust accounting practices, safekeeping procedures, and internal controls that fully protect these assets; and\n(e) have a viable plan, approved by its controlling body and updated regularly for raising additional equity should the equity fall below the amount required to cover all its operating expenses.\n\n(2)(a) A provider must furnish the Authority with a quarterly report detailing the calculation of the required liquid net assets, calculated in terms of this Standard and the measures taken to obtain additional funding, if necessary.\n\n(b) If the Authority is not satisfied that such liquid net assets are sufficient to cover the risks involved, the Authority may require a provider to obtain additional liquid assets funded by equity over a time period as determined by the Authority."
+        },
+        {
+          "id": "s4-2",
+          "sectionNumber": "4.2",
+          "title": "Fit and Proper Requirements",
+          "verbatim": true,
+          "text": "An applicant and a provider must satisfy the Authority that it complies with the following fit and proper requirements:"
+        },
+        {
+          "id": "s4-2-1",
+          "sectionNumber": "4.2.1",
+          "title": "Honesty and integrity",
+          "verbatim": true,
+          "text": "(1) A member of the controlling body and every senior manager of an applicant and a provider must be a person who is honest and has integrity.\n\n(2) In determining whether a member of the controlling body or a senior manager of an applicant and a provider complies with subparagraph (1), the Authority may refer to any information in possession of the Authority or brought to the Authority's attention.\n\n(3) Without limiting the generality of subparagraphs (2), any of the following factors constitutes prima facie evidence that the person does not qualify in terms of subparagraph (1), namely that the person—\n(a) has within a period of five years preceding the date of application been found guilty in any civil or criminal proceedings by a court of law (whether in the Republic of South Africa or elsewhere) of having acted fraudulently, dishonestly, unprofessionally, dishonourably or in breach of a fiduciary duty;\n(b) has within a period of five years preceding the date of application been found guilty by any professional or financial services industry body (whether in the Republic of South Africa or elsewhere) of an act of dishonesty, negligence, incompetence or mismanagement;\n(c) has within a period of five years preceding the date of application been denied membership of any body referred to in sub-paragraph (b) on account of an act of dishonesty, negligence, incompetence or mismanagement;\n(d) has within a period of five years preceding the date of application—\n(i) been found guilty by any regulatory or supervisory body (whether in the Republic of South Africa or elsewhere), or\n(ii) had its authorisation to carry on business refused, suspended or withdrawn by any such body, on account of an act of dishonesty, negligence, incompetence or mismanagement;\n(e) has within a period of five years preceding the date of application, had any licence granted by any regulatory or supervisory body referred to in subparagraph (d) suspended or withdrawn by such body on account of an act of dishonesty, negligence, incompetence or mismanagement; or\n(f) has at any time prior to the date of application been disqualified or prohibited by any court of law (whether in the Republic of South Africa or elsewhere) from taking part in the management of any company or other statutorily created, recognised or regulated body, irrespective whether such disqualification has since been lifted or not.\n\n(4) An applicant, and a member of the controlling body or a senior manager of an applicant must in the application be candid and accurate and must of own accord disclose all facts or information at the disposal of, or which may be accessible to the applicant, a member of the controlling body or a senior manager and which may be relevant for purposes of a decision by the Authority whether the provider, the members of the controlling body or the senior manager complies with subparagraph (1).\n\n(5) A provider must submit its application with completed Annexure B and C Forms in respect of each of the members of the controlling body and senior managers."
+        },
+        {
+          "id": "s4-2-2",
+          "sectionNumber": "4.2.2",
+          "title": "Competency",
+          "verbatim": true,
+          "text": "(1) An applicant and a provider must satisfy the Authority that the members of the controlling body or senior managers have the competency to undertake the relevant duties and functions of the provider, and where appropriate, detailed knowledge of the structure, purpose and risks of the OTC derivatives associated with the duty or function.\n\n(2) To demonstrate competence, a member of the controlling body or a senior manager involved in carrying out the applicable duties and functions must act in a knowledgeable, professional and efficient manner.\n\n(3) Without limiting the generality of subparagraph (1), in determining a person's competence, the Authority may have regard to the following matters:\n(a) the person's past performance or expertise in the nature of the business being conducted;\n(b) the person's skills and experience to understand, operate and manage the regulated activities and financial affairs; and\n(c) the person's technical knowledge and ability to perform prescribed duties for which he or she is engaged, including recognised professional qualifications and membership of relevant professional institutions.\n\n(4) A provider must, in addition to any conditions imposed by the Authority to the authorisation of the provider—\n(a) maintain an updated register of members of the controlling body and senior managers;\n(b) promptly inform the Authority when an appointment of a member of the controlling body or a senior manager is terminated, and the reason for the termination;\n(c) complete Annexure B when a new member of the controlling body or senior manager is appointed, and promptly submit it to the Authority;\n(d) annually submit a written statement to the Authority wherein continued compliance with this Standard with respect to each member of the controlling body and senior manager is confirmed."
+        },
+        {
+          "id": "s4-2-3",
+          "sectionNumber": "4.2.3",
+          "title": "Operational ability",
+          "verbatim": true,
+          "text": "An applicant and a provider must have and be able to maintain the operational ability to fulfil the responsibilities imposed by the Act, including the following—\n(a) a fixed business address in the Republic of South Africa;\n(b) adequate access to communication facilities, including a full-time telephone or cell phone service, and administrative facilities, including electronic, typing and document duplication facilities;\n(c) adequate storage and filing systems for the safe-keeping of records, business communications and correspondence; and\n(d) an account with a registered bank in the Republic of South Africa."
+        },
+        {
+          "id": "s4-2-4",
+          "sectionNumber": "4.2.4",
+          "title": "Financial soundness of the provider",
+          "verbatim": true,
+          "text": "(1) An applicant and a provider may not be in liquidation or in provisional liquidation, or subject to business rescue proceedings as contemplated in the Companies Act, or have made arrangements with creditors, or filed for winding-up.\n\n(2) The assets of the applicant and the provider (excluding goodwill and other intangible assets) must exceed its liabilities (excluding loans validly subordinated in favour of all other creditors).\n\n(3) A provider—\n(a) must maintain current assets which are at least sufficient to meet current liabilities; and\n(b) may not be subject to any judgment debt or award that remains outstanding or has not been satisfied within a reasonable period."
+        },
+        {
+          "id": "s4-2-5",
+          "sectionNumber": "4.2.5",
+          "title": "Financial soundness of members of the controlling body or senior managers",
+          "verbatim": true,
+          "text": "A member of the controlling body or senior manager of a provider may not be—\n(a) an unrehabilitated insolvent or subject to debt review as contemplated by the National Credit Act, 2005 (Act No. 34 of 2005); and\n(b) subject to any judgment debt or award that remains outstanding or has not been satisfied within a reasonable period."
+        },
+        {
+          "id": "s4-3",
+          "sectionNumber": "4.3",
+          "title": "Risk management and internal control",
+          "verbatim": true,
+          "text": "(1) A provider must organise and control its affairs responsibly and effectively, with—\n(a) sound risk management principles, that takes into account—\n(i) its risk appetite, risk profile, market and macroeconomic conditions; and\n(ii) the risk of a significant deterioration in market liquidity; and\n(b) prudent policies and processes, systems and resources, approved by its controlling body, to identify, measure, evaluate, monitor, report and control or mitigate risks on a timely basis.\n\n(2) The provider's controlling body is responsible to oversee management of the provider in such a way that ensures that the policies and processes are implemented effectively and fully integrated into the provider's management process.\n\n(3) The policies and processes of the provider must be formulated and designed to ensure that the controlling body and senior management of the provider are able to—\n(a) identify, quantify and manage the risk exposures of the provider, which includes—\n(i) effective information systems for accurate and timely identification, aggregation, monitoring and reporting of risk exposures to the provider's controlling body and senior management;\n(ii) appropriate risk limits consistent with the provider's risk appetite and risk profile, and which are understood by and regularly communicated to relevant staff;\n(iii) exceptions tracking and reporting processes that ensure prompt action at the appropriate level of the provider's senior management or controlling body, where necessary; and\n(iv) adequate structures, processes systems and controls in respect of instruments, contracts or positions measured at fair value;\n(b) ensure that the model is validated by a function independent of the relevant risk-taking business units, not less frequent than once per year, to the extent that the provider relies on modelling for the purposes of valuation;\n(c) monitor the performance of the business of the provider; and\n(d) monitor the quality of the provider's assets and the control of its liabilities.\n\n(4) The system of internal control employed by the applicant and a provider must be designed to ensure that—\n(a) financial and other information used or provided by the provider is reliable;\n(b) all transactions and financial commitments entered into are recorded and are within the scope of authority of the provider or an employee acting on behalf of the provider;\n(c) there are procedures to safeguard the assets of the provider and assets belonging to any other person for which the provider is accountable; and\n(d) there are measures, so far as is reasonably practicable, to minimise the risk of loss to the provider or the counterparties or clients of the provider from any irregularity, fraud or error.\n\n(5) A provider must conduct a regular review to ensure that it maintains adequate policies, procedures and controls.\n\n(6) A provider must take reasonable steps to document all material systems and controls and the relevant documentation must be kept up to date, and be signed off by the controlling body annually.\n\n(7) An applicant and a provider must be able to describe and demonstrate the objectives and operation of its risk management procedures and its systems and controls to the Authority.\n\n(8) The Authority may request an additional capital amount to be held if the provider fails to satisfy the condition stipulated in sub-paragraph 4(d) to the satisfaction of the Authority or fails to demonstrate that the provider has a sufficient number of sufficiently skilled staff in the provider's trading area, risk control, audit or independent review function, or the back-office.\n\n(9) A provider must conduct an appropriate independent review of the provider's risk measurement system at regular intervals but not less frequent than once a year."
+        },
+        {
+          "id": "s4-4",
+          "sectionNumber": "4.4",
+          "title": "Compliance function",
+          "verbatim": true,
+          "text": "A provider must—\n(a) establish and maintain effective systems and controls to promote and monitor compliance with its regulatory obligations;\n(b) establish a compliance function, which must—\n(i) form part of the overall risk management framework of the business of the provider;\n(ii) be staffed with an appropriate number of competent individuals, as determined by the nature, size and complexity of the provider's business; and\n(iii) be sufficiently independent from the business activities it monitors;\n(c) appoint a head of compliance with the responsibility for—\n(i) the compliance function;\n(ii) oversight of the provider's compliance with the Act;\n(iii) reporting to the provider's controlling body regarding compliance matters; and\n(iv) reporting to the Authority, on an annual basis in respect of the provider's compliance with its regulatory obligations; and on an ad hoc basis, on—\n(aa) any non-compliance instances;\n(bb) any material irregularities encountered during the monitoring; and\n(cc) any matter deemed necessary to be brought to the attention of the Authority; and\n(d) notify the Authority of the appointment of the Head of Compliance."
+        },
+        {
+          "id": "s4-5",
+          "sectionNumber": "4.5",
+          "title": "Business continuity planning",
+          "verbatim": true,
+          "text": "An applicant and a provider must—\n(a) maintain a business continuity plan which adequately identifies and mitigates material business continuity risks faced by the provider; and\n(b) regularly test the effectiveness of the continuity plan and address any deficiencies."
+        },
+        {
+          "id": "s4-6",
+          "sectionNumber": "4.6",
+          "title": "Record keeping and data retention",
+          "verbatim": true,
+          "text": "An applicant and a provider—\n(a) must maintain proper, complete, accurate and secure records;\n(b) must have appropriate procedures and systems in place to store and retrieve in a manner safe from destruction records of all—\n(i) instructions relating to an OTC derivative transaction with a client, or counterparty, including verbal instructions given by the client or counterparty to the provider; and\n(ii) documentation relating to the contractual arrangement between the provider and the client or counterparty;\n(c) may keep records in electronic or voice recorded format;\n(d) may keep records at a third-party, provided that the records must be made available for inspection within seven days; and\n(e) must keep a record referred to in—\n(i) sub-item (b)(i) for a period of at least six months after the instruction has been given;\n(ii) sub-item (b)(ii) for a period of at least five years after the contractual relationship has been terminated."
+        },
+        {
+          "id": "s5",
+          "sectionNumber": "5",
+          "title": "Suspension and termination of authorisation",
+          "verbatim": false,
+          "text": "Section 5 covers both involuntary termination (s5.1 — Authority-initiated on grounds of non-compliance, cessation, false information, or failure to comply) and voluntary termination (s5.2 — provider-initiated, 30 days prior notice). Involuntary process requires notice, opportunity to respond, and Authority decision. Urgent provisional suspension available where substantial prejudice to clients or the public may occur."
+        },
+        {
+          "id": "s5-1",
+          "sectionNumber": "5.1",
+          "title": "Involuntary termination",
+          "verbatim": true,
+          "text": "(1) The Authority may suspend or terminate the authorisation of a provider if satisfied, on the basis of available facts and information, that the provider—\n(a) has ceased to exist;\n(b) no longer meets the requirements contemplated in this Standard;\n(c) has failed to make a full disclosure of all relevant information to the Authority, or furnished false or misleading information in its application for authorisation; or\n(d) has failed to comply with any other provision of this Standard or the Act.\n\n(2) Before suspending or terminating any authorisation, the Authority must—\n(a) inform the provider of the intention to suspend or terminate such authorisation and the grounds for suspension or termination; and\n(b) give the provider a reasonable opportunity to make a submission in response.\n\n(5) Despite the provisions of sub-paragraph (2), the Authority may under urgent circumstances, where the Authority is satisfied on reasonable grounds that substantial prejudice to clients or the general public may occur, provisionally suspend the authorisation of a provider.\n\n(8) A person whose authorisation has been terminated under this section is prohibited from carrying on the business of an OTC derivative provider for a period specified by the Authority and from applying for a new authorisation."
+        },
+        {
+          "id": "s5-2",
+          "sectionNumber": "5.2",
+          "title": "Voluntary termination",
+          "verbatim": true,
+          "text": "(1) A provider may voluntarily terminate its authorisation by making a submission to the Authority at least 30 days prior to such termination.\n\n(2) The Authority may—\n(a) accept such termination unconditionally; or\n(b) terminate the authorisation subject to such measures as the Authority may determine for the protection of the interests of clients of the provider."
+        },
+        {
+          "id": "s6",
+          "sectionNumber": "6",
+          "title": "Commencement and short title",
+          "verbatim": true,
+          "text": "This Standard comes into operation on the date of publication and is called the Criteria for authorisation for OTC derivative providers."
+        }
+      ]
+    },
+    {
+      "id": "ch-forms",
+      "title": "Form FM6 and Annexures",
+      "sections": [
+        {
+          "id": "form-fm6",
+          "sectionNumber": "Form FM 6",
+          "title": "Application form for authorisation as an OTC derivative provider",
+          "verbatim": false,
+          "text": "Form FM 6 is the standard application form submitted by the CEO of the applicant entity under FMA s.6(8)(a). Must be accompanied by Annexure 1 (entity and operational information) and Annexure 2 (controlling body member information)."
+        },
+        {
+          "id": "annexure-1",
+          "sectionNumber": "Annexure 1 to Form FM 6",
+          "title": "Information required in an application for authorisation as an OTC derivative provider",
+          "verbatim": false,
+          "text": "Requires: (1) administrative information — addresses, contact numbers, persons exercising control, controlling body list, bank/auditor/attorney details; (2) copy of founding documents; (3) adequacy of financial resources — audited AFS, 3-year budgets, funding arrangements; (4) adequacy of management and human resources — org structure, CVs, staffing projections; (5) business plan — IT systems, risk management approach, market integrity, security procedures, corporate governance; (6) auditor report on systems and procedures; (7) additional ODP-specific information including services, asset classes, trade repository details, settlement arrangements, valuation arrangements, governance arrangements."
+        },
+        {
+          "id": "annexure-2",
+          "sectionNumber": "Annexure 2 to Form FM 6",
+          "title": "Information required in respect of members of controlling body",
+          "verbatim": false,
+          "text": "Requires per controlling body member: CV with qualifications and experience, criminal/disciplinary history, involvement in business rescue/liquidation, sequestration history, bar from any profession, and disclosure of any pending proceedings."
+        },
+        {
+          "id": "annexure-b",
+          "sectionNumber": "Annexure B",
+          "title": "Questionnaire to be completed by members of controlling body or senior managers",
+          "verbatim": false,
+          "text": "Personal details questionnaire covering: personal identification, residential history, nationality, qualifications, investment history, and specific fit-and-proper test covering 11 questions about criminal convictions, professional sanctions, licence suspensions, insolvency, debt review, judgment debts, and involvement in entities under business rescue or liquidation."
+        },
+        {
+          "id": "annexure-c",
+          "sectionNumber": "Annexure C",
+          "title": "Questionnaire to be completed by the provider entity",
+          "verbatim": false,
+          "text": "Entity-level questionnaire: entity name, registration number, registered address, bank and auditor details, confirmation of communication and filing facilities, and financial soundness declaration — assets exceed liabilities, current assets meet current liabilities, no outstanding judgment debts, no liquidation or business rescue."
+        }
+      ]
+    }
+  ]
+}

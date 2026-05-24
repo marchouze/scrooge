@@ -1,0 +1,1019 @@
+                                                                                File ref no. 15/8
+
+
+                                   JOINT STANDARD 2 OF 2020
+
+
+                       FINANCIAL SECTOR REGULATION ACT, 2017
+
+
+     MARGIN REQUIREMENTS FOR NON-CENTRALLY CLEARED OVER THE COUNTER
+                                   DERIVATIVE TRANSACTIONS
+
+
+The Financial Sector Conduct Authority and the Prudential Authority, acting with the concurrence
+of the Reserve Bank, hereby, under section 107, read with sections 106(1)(a), 106(2)(a) and (e)
+and 109(2), of the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017), publish the margin
+requirements for non-centrally cleared over the counter derivative transactions as set out in the
+Joint Standard.
+
+
+
+
+FINANCIAL SECTOR CONDUCT AUTHORITY                              PRUDENTIAL AUTHORITY
+
+
+Date of publication: 2 June 2020
+
+
+
+
+                                                                                    Page 1 of 24
+V2
+                                                                    SCHEDULE
+
+
+                                              Financial Sector Regulation Act, 2017
+                                                         Joint Standard 2 of 2020
+                               Margin requirements for non-centrally cleared over the
+                                                   counter derivative transactions
+
+
+                                                                 As amended by:
+Joint Standard Amendment 1 of 2023: Amendments to Margin Requirements for non-centrally cleared OTC
+                                                         derivative transactions, 2023
+                                                       [with effect from 09 June 2023]]
+
+1.         Definitions
+
+
+In this Joint Standard, “the Act” means the Financial Sector Regulation Act, 2017 (Act No. 9 of
+2017), and any word or expression to which a meaning has been assigned in the Act bears the
+meaning so assigned to it, and unless the context indicates otherwise-
+
+“authorised user” means an authorised user as defined in the Financial Markets Act;
+
+“Authorities” means the Financial Sector Conduct Authority and the Prudential Authority;
+
+“central counterparty” means a licensed central counterparty as defined in the Financial Markets
+Act;
+
+“clearing house” means a licensed clearing house as defined in the Financial Markets Act;
+
+“clearing member” means a clearing member as defined in the Financial Markets Act;
+
+“counterparty” means the following:
+
+     (a)    an authorised user;
+     (b)    a bank, bank controlling company or branch as defined in terms of the Banks Act;
+     (c)    a financial services provider authorised to provide financial services in derivative
+            instruments 1 as contemplated in the Financial Advisory Intermediary Services Act;
+     (d)    an insurer licensed or deemed to be licensed to conduct life insurance business in terms of
+            the Insurance Act;
+     (e)    an insurer licensed or deemed to be licensed to conduct non-life insurance business in
+            terms of the Insurance Act;
+     (f)    an investment fund;
+     (g)    a provider;
+
+
+
+1 The FAIS Act definition of financial products includes securities as defined in the FMA, which definition includes derivative instruments.
+
+                                                                                                                                         Page 2 of 24
+V2
+     (h)    any other person as may be determined by the Financial Sector Conduct Authority, with the
+            concurrence of the Prudential Authority, to be a counterparty;
+
+
+ [Paragraph (h) of the definition of “counterparty” substituted by paragraph 2(1) of Joint Standard Amendment 1 of
+ 2023: Amendments to Margin Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09
+                                                   June 2023]
+
+
+“FMA Regulations” means the Financial Markets Act Regulations as published in Government
+Gazette No. 41433 on 9 February 2018;
+
+“foreign counterparty” means a person outside the Republic of South Africa who-
+
+      (a) is authorised by a supervisory authority to perform a service or services similar to one of
+            more of the services referred to in the definition of a provider or the services performed by
+            an authorised user; or
+
+      (b) is registered, licensed, recognised, approved or otherwise authorised to conduct the
+            business of a bank or of an institution referred to in paragraphs (d),(e), or (f), of the definition
+            of “counterparty” by a supervisory authority with functions similar to those of the Financial
+            Sector Conduct Authority or the Prudential Authority referred to in the legislation listed in
+            paragraph (b),(d),or (e) of the definition of “counterparty” or the Collective Investment
+            Schemes Control Act, 2002 (Act No. 45 of 2002);
+
+“group” means a group of companies as defined in the Companies Act;
+
+“Insurance Act” means the Insurance Act, 2017 (Act No. 18 of 2017);
+
+“Investment fund” includes a portfolio of a collective investment scheme administered by a
+manager registered in terms of the Collective Investment Schemes Control Act, 2002 (Act No. 45
+of 2002) and a private equity fund;
+
+“netting set” means a group of derivative transactions between a provider and a counterparty or
+foreign counterparty that are subject to a single legally enforceable bilateral netting agreement;
+
+“OTC derivative” means an OTC derivative as defined in the FMA Regulations;
+
+“private equity fund” means a managed pool of capital that-
+
+(a)        has as its principal business the making of equity, equity orientated or equity related
+           investments primarily in unlisted companies or ventures to earn income or capital gains;
+(b)        is managed or advised by a member of the South African Venture Capital and Private Equity
+           Association or other equivalent private equity and venture capital industry body; and
+(c)        is not open or offered to the public as an investment;
+
+
+“provider” means an authorised OTC derivative provider as defined in the FMA Regulations; and
+                                                                                                       Page 3 of 24
+V2
+“sovereign” means the central government and includes the central government in the Republic
+of South Africa as constituted by the national sphere of government, excluding any national public
+entity or national government business enterprise as defined in the Public Finance Management
+Act, 1999 (Act No.1 of 1990).
+
+
+2.     Application and exclusions
+
+
+2.1     General application
+        (1)    The Joint Standard applies to -
+               (a)     a provider entering into non-centrally cleared OTC derivative transactions with a
+                       counterparty or a foreign counterparty; and
+               (b)     for purposes of paragraph 6A, a financial institution that is a counterparty.
+
+
+     [Paragraph 2.1(1) amended by paragraph 2(2) of Joint Standard Amendment 1 of 2023: Amendments to Margin
+              Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+        (2)    The Joint Standard does not apply to:
+               (a)    sovereigns;
+               (b)    central banks;
+               (c)    multilateral development banks;
+               (d)    the Bank for International Settlements;
+               (e)    transactions such as repurchase agreements and security lending transactions
+                      that are not derivatives but share some attributes with derivative instruments; and
+               (f)    indirectly cleared OTC derivative transactions that are intermediated through a
+                      clearing member on behalf of a non-member client, if-
+                      (i)     the non-member client is subject to the margin requirements of the relevant
+                              clearing house; or
+                       (ii)   the non-member client provides margin, consistent with the margin
+                              requirements of the relevant corresponding clearing house.
+        (3)    The margin requirements set out in this Joint Standard apply to all non-centrally cleared
+               OTC derivative transactions, including intra-group and cross-border transactions as
+               contemplated in paragraph 2.2 and 2.3 respectively, after the thresholds set out in
+               paragraphs 4.2 or 5(3) are met.
+        (4)    Physically settled foreign exchange forward contracts and foreign exchange swaps are
+               excluded from the initial and variation margin requirements.
+        (5)    In the case of cross-currency swaps, the initial margin requirements do not apply to any
+               fixed physically settled foreign exchange transaction associated with the exchange of
+               principal, that is, for a cross-currency swap, any payment associated with the exchange
+                                                                                                        Page 4 of 24
+V2
+            of principal in respect of a fixed physically settled foreign exchange transaction, which
+            has the same characteristics as a foreign exchange forward contract, is excluded from
+            the requirements for initial margin, provided that-
+            (a)   the provider must ensure that all other risks that affect the cross-currency swap
+                  transaction are duly considered in the calculation of the initial margin amount,
+                  that is, all payments or cash flows, including interest, that occur during the life of
+                  the swap, other than a payment associated with the exchange of principal in
+                  respect of a fixed physically settled foreign exchange transaction, shall be subject
+                  to the relevant specified requirements for initial margin; and
+            (b)   the variation margin requirements set out in this Joint Standard apply to all
+                  relevant components of a cross-currency swap transaction.
+
+
+2.2   Treatment of intra-group transactions
+      (1)   Subject to sub-paragraphs (2) and (3), the margin requirements set out in this Joint
+            Standard do not apply to non-centrally cleared OTC derivative transactions entered into
+            between a provider and a counterparty or foreign counterparty in the same group.
+      (2)   Non-centrally cleared OTC derivative transactions between a provider and a
+            counterparty or foreign counterparty in the same group are not subject to any margin
+            requirements as set out in this Joint Standard, provided that –
+            (a)   the aggregate outstanding gross notional amount of the non-centrally cleared
+                  OTC derivative transactions between the provider and the counterparty or foreign
+                  counterparty in the group is below R100 billion at the close of business on each
+                  relevant day, or such alternative threshold as may be determined by the
+                  Authorities from time to time;
+            (b)   both parties to the transaction are subject to appropriate centralised risk
+                  evaluation, measurement and control procedures;
+            (c)   the risk management procedures of both parties to the transactions are
+                  adequately sound, robust and consistent with the level of complexity of the
+                  respective derivative transactions between them; and
+            (d)   the parties to the transactions comply with any further conditions as may be
+                  specified in writing by the Authorities.
+      (3)   Despite sub-paragraph (2), the Authorities may require a provider to exchange variation
+            margin or post or collect initial margin with a counterparty or foreign counterparty in the
+            same group, when deemed appropriate by the Authorities.
+
+
+
+
+2.3   Cross-border transactions
+
+                                                                                          Page 5 of 24
+V2
+     (1)   When a provider enters into a non-centrally cleared OTC derivative transaction with a
+           foreign counterparty, the provider is deemed to comply with the Joint Standard provided
+           that the provider has the necessary documentary evidence in place to satisfy itself that-
+           (a)   the relevant foreign jurisdiction has implemented margin requirements based on
+                 the Basel Committee on Banking Supervision and the International Organisation
+                 of Securities Commissions (BCBS-IOSCO) Margin Requirements for Non-
+                 Centrally Cleared Derivatives Framework;
+           (b)   the foreign counterparty is directly subject to the margin requirements of the
+                 foreign jurisdiction; and
+           (c)   the provider is required to comply with, or is subject to, the margin requirements
+                 in the foreign jurisdiction.
+     (2)   The Authorities may require the provider to furnish the Authorities with the documentary
+           evidence, or such further information as the Authorities may deem necessary.
+     (3)   (a)   A provider that enters into an OTC derivative transaction with a foreign
+                 counterparty in a foreign jurisdiction of which the relevant legal framework does
+                 not permit or recognise the enforceability of a netting agreement upon the
+                 insolvency of the counterparty or the enforceability of a collateral agreement upon
+                 the default of the counterparty (“non-netting jurisdictions”), is not required to post
+                 or collect initial margin or exchange variation margin in respect of such
+                 transaction if-
+                 (i)    the aggregate outstanding gross notional amount of transactions between
+                        the provider and the foreign counterparty do not exceed 2.5% of the total
+                        portfolio of derivatives contracts of the provider on a consolidated basis;
+                        and
+                 (ii)   a legal opinion confirms that the netting agreement or the exchange of
+                        collateral is not legally enforceable at all times.
+           (b)   If the aggregate outstanding gross notional amount of transactions between the
+                 provider and the foreign counterparty is above the threshold set out sub-
+                 paragraph (3)(a)(i), the provider must obtain the prior written approval of the
+                 Financial Sector Conduct Authority, acting with the concurrence of the Prudential
+                 Authority, to proceed with any further transactions, provided that the provider has
+                 submitted a legal opinion to the Authorities confirming that the netting agreement
+                 or the collateral agreement between the provider and the foreign counterparty
+                 may not be enforceable in the foreign jurisdiction and any other information as
+                 may be requested by the Authorities.
+           (c)   The legal opinion referred to in sub-paragraph (3) must be in written form and
+                 must be obtained from an external legal counsel but may include jurisdictional
+
+                                                                                         Page 6 of 24
+V2
+                opinions obtained on an industry-wide basis by recognised industry associations
+                from external independent legal counsel.
+          (d)   The Financial Sector Conduct Authority, with the concurrence of the Prudential
+                Authority, may grant approval to the provider to proceed with further transactions
+                between the provider and the foreign counterparty, subject to such conditions as
+                may be further specified in writing by the Financial Sector Conduct Authority,
+                including a requirement to post or collect initial margin or exchange variation
+                margin.
+          (e)   In all cases as outlined in subparagraphs (a) and (b) above, the provider must put
+                in place appropriate internal limits and risk management policies and procedures
+                commensurate to its risk appetite to monitor and control the risks of relevant
+                exposures arising from transactions in non-netting jurisdictions.
+
+
+3.     General requirements
+     (1) Subject to paragraph 2, in order to mitigate the potential systemic risk that may arise
+          from, and to promote effective and sound risk management in respect of, a provider’s
+          transactions in non-centrally cleared OTC derivative transactions, a provider must -
+          (a)   based on the relevant amount of counterparty credit risk exposure arising from
+                its non-centrally cleared OTC derivative transactions, calculate and exchange-
+                (i)     initial margin in accordance with the relevant requirements specified in
+                        paragraph 4; and
+                (ii)    variation margin in accordance with the relevant requirements specified in
+                        paragraph 5;
+          (b)   have in place sufficiently robust processes, procedures and board-approved
+                policies in respect of the provider’s non-centrally cleared OTC derivative
+                transactions, to ensure, among other things, that-
+                (i)     all relevant transactions between the provider and counterparty are subject
+                        to and comply with all the relevant requirements specified in the legal and
+                        regulatory frameworks of each relevant jurisdiction;
+                (ii)    subject to sub-paragraph 2.3(3), all relevant netting agreements are
+                        effective under the laws of the relevant jurisdictions, and supported by
+                        periodically updated legal opinions;
+                (iii)   subject to sub-paragraph 2.3(3), all relevant collateral arrangements in
+                        place are effective under the relevant laws and are supported by
+                        periodically updated legal opinions;
+                (iv)    the provider that engages in OTC derivative transactions, exchange initial
+                        and variation margin on a bilateral basis or to a third-party custodian, where
+
+                                                                                        Page 7 of 24
+V2
+                        applicable, as envisaged in and in accordance with the relevant
+                        requirements specified in this Joint Standard;
+                 (v)    procyclicality impacts are appropriately mitigated, that is-
+                        (aa) large discrete calls for additional initial margin due to “cliff-edge”
+                                triggers, for example, are discouraged; and
+                        (bb) margin levels are sufficiently conservative, even during periods of low
+                                market volatility;
+                 (vi)   initial margin is provided and collected by no later than the business day
+                        following the execution of a non-centrally cleared OTC derivative
+                        transaction, and thereafter collected on a routine and consistent basis upon
+                        changes in the measured potential future exposure;
+                 (vii) the build-up of any additional initial margin is gradual, and managed over
+                        time;
+                 (viii) in case of variation margin-
+                        (aa) the full amount necessary to fully collateralise the relevant mark-to-
+                                market exposure of the OTC derivative transaction is exchanged;
+                        (bb) the relevant amount of variation margin for OTC derivative
+                                transactions, subject to a single, legally enforceable netting
+                                agreement, is calculated and exchanged on a daily basis;
+                 (ix)   the provider complies with the relevant requirements specified in paragraph
+                        6, which relates to eligible collateral.
+
+
+     (2)   A provider must have in place rigorous and robust dispute resolution procedures with
+           its relevant counterparties involved in non-centrally cleared OTC derivative
+           transactions, before the onset of any relevant transaction, provided that, as a minimum-
+           (a)   in order to reduce the risk of any potential dispute, the provider must ensure, for
+                 example, that the specific method and parameters that will be used to calculate
+                 initial margin are agreed and recorded at the onset of all relevant transactions;
+           (b)   whenever a margin dispute or dispute over the value of eligible collateral arises,
+                 the provider must make all necessary, reasonable and appropriate efforts,
+                 including the timely initiation of dispute resolution protocols, to resolve the dispute
+                 and exchange the relevant required amount of initial or variation margin in a
+                 timely manner.
+
+
+     (3)   All margin transfers as contemplated in this Joint Standard may be subject to a
+           minimum transfer amount of which the aggregate or sum of the initial margin and
+           variation margin does not exceed R5 million.
+
+                                                                                          Page 8 of 24
+V2
+4.    Initial margin
+
+
+4.1   General
+      (1)    Initial margin aims to protect the provider and the counterparty from the potential future
+             exposure that may arise from future changes in the mark-to-market value of the
+             derivative contract during the time it takes to close out and replace the position in the
+             event that one or more of the counterparties to the contract default.
+      (2)    The amount of initial margin reflects the size of the potential future exposure and
+             depends on a variety of factors, including how often the contract is revalued and
+             variation margin exchanged, the volatility of the underlying instrument, and the
+             expected duration of the contract closeout and replacement period, and may change
+             over time, particularly where it is calculated on a portfolio basis and transactions are
+             added to or removed from the portfolio on a continuous basis.
+      (3)    (a)    In order to sufficiently protect market participants with large gross derivatives
+                    exposures to each other arising from non-centrally cleared OTC derivative
+                    transactions from counterparty default or a counterparty becoming subject to an
+                    insolvency proceeding, the provider and counterparty must on a bilateral basis,
+                    based on the relevant gross amounts, that is, without any netting of amounts
+                    collected or to be collected by each relevant person, calculate and exchange
+                    initial margin.
+             (b)    The requirement to calculate and exchange initial margin on a bilateral basis must
+                    in all cases be subject to an initial margin threshold amount, not to exceed R500
+                    million.
+             (c)    The threshold amount referred in sub-paragraph 4.1(3)(b) relates to the
+                    aggregate amount of all relevant transactions in non-centrally cleared OTC
+                    derivatives between the provider on a consolidated basis and the relevant
+                    consolidated counterparty group.
+
+
+[Paragraph 4.1(3)(c) amended by paragraph 2(3)(a) of Joint Standard Amendment 1 of 2023: Amendments to: Margin
+            Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+             (d)    An investment fund must for purposes of this Joint Standard be regarded as a
+                    distinct entity that has to be treated separately when applying the threshold
+                    amount as long as it is proven to the satisfaction of the Financial Sector Conduct
+                    Authority that the fund is a distinct legal entity that is not collateralised by, or
+                    otherwise guaranteed or supported by, another investment fund in the event of
+                    an insolvency proceeding.
+                                                                                                      Page 9 of 24
+V2
+4.2   Phasing in of initial margin requirements
+      (1)    From the effective date of this Joint Standard to 31 August 2021, any provider belonging
+             to a group of which the aggregate month-end average gross notional amount of OTC
+             derivatives for March, April, and May 2020 exceeded R30 trillion must comply with the
+             margin requirements when transacting with a counterparty belonging to a group that
+             also meets the condition related to the aggregate month-end average gross notional
+             amount of OTC derivatives for March, April, and May 2020 exceeding R30 trillion.
+
+
+ [Paragraph 4.2(1) amended by paragraph 2(3)(b) of Joint Standard Amendment 1 of 2023: Amendments to Margin
+            Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+      (2)    From 1 September 2021 to 31 August 2022, a provider belonging to a group of which
+             the aggregate month-end average gross notional amount of OTC derivatives for March,
+             April, and May 2021 exceeded R23 trillion, must comply with the margin requirements
+             when transacting with a counterparty belonging to a group that also meets the condition
+             related to the aggregate month-end average gross notional amount of OTC derivatives
+             for March, April, and May 2021 exceeding R23 trillion.
+
+
+ [Paragraph 4.2(2) amended by paragraph 2(3)(c) of Joint Standard Amendment 1 of 2023: Amendments to Margin
+            Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+      (3)    From 1 September 2023 to 31 August 2024, a provider belonging to a group of which
+             the aggregate month-end average gross notional amount of OTC derivatives for March,
+             April, and May 2023 exceeded R15 trillion must comply with the margin requirements
+             when transacting with a counterparty belonging to a group that also meets the condition
+             related to the aggregate month-end average gross notional amount of OTC derivatives
+             for March, April, and May 2023 exceeding R15 trillion.
+
+
+ [Paragraph 4.2(3) amended by paragraph 2(3)(d) of Joint Standard Amendment 1 of 2023: Amendments to Margin
+            Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+      (4)    From 1 September 2024 to 31 August 2025, a provider belonging to a group of which
+             the aggregate month-end average gross notional amount of OTC derivatives for March,
+             April, and May 2024 exceeded R8 trillion must comply with the margin requirements
+             when transacting with a counterparty belonging to a group that also meets the condition
+             related to the aggregate month-end average gross notional amount of OTC derivatives
+             for March, April, and May 2024 exceeding R8 trillion.
+
+                                                                                                     Page 10 of 24
+V2
+ [Paragraph 4.2(4) amended by paragraph 2(3)(e) of Joint Standard Amendment 1 of 2023: Amendments to Margin
+           Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+     (5)    On a permanent basis, that is from 1 September 2025, onwards, any provider belonging
+            to a group of which the aggregate month-end average gross notional amount of OTC
+            derivatives for March, April, and May 2025 exceeded R100 billion must comply with
+            the margin requirements during the one-year period from 1 September of that year to
+            31 August of the following the year when transacting with a counterparty belonging to
+            a group that also meet this condition, provided that any provider or counterparty that
+            belonging to a group of which the aggregate month-end average gross notional amount
+            of OTC derivatives for March, April, and May of the year is less than R100 billion shall
+            not be subject to the initial margin requirements envisaged in this Joint Standard.
+
+
+ [Paragraph 4.2(5) amended by paragraph 2(3)(f) of Joint Standard Amendment 1 of 2023: Amendments to Margin
+           Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+     (6)    For the purposes of calculating the group aggregate month-end average gross notional
+            amount referred to in sub-paragraphs (1) to (5) to determine whether a provider or
+            counterparty is subject to the initial margin requirements specified in this paragraph, all
+            of the relevant group’s transactions in OTC derivative instruments, including any
+            physically settled foreign exchange forwards and swaps, must be included.
+
+     (7)    The requirement to calculate and exchange initial margin on a bilateral basis applies to
+            all new contracts entered into during the relevant periods envisaged in sub-paragraphs
+            (1) to (5), that is, the initial margin requirements specified in this Joint Standard do not
+            apply to existing derivatives contracts up to the relevant specified point, provided that-
+            (a)    bona fide amendments to existing derivatives contracts shall for purposes of this
+                   Joint Standard not be regarded as a new derivatives contract;
+            (b)    any amendment to a contract that is intended to extend an existing derivatives
+                   contract to avoid margin requirements shall for purposes of this Joint Standard
+                   be considered a new derivatives contract.
+
+
+     (8)    When the initial margin amount to be exchanged between the provider and
+            counterparty -
+            (a)    is less than the threshold amount of R500 million, the provider may, at its
+                   discretion, decide whether or not to collect the initial margin amount;
+            (b)    is equal to or exceeds the threshold amount of R500 million, the provider must
+
+                                                                                                    Page 11 of 24
+V2
+                   collect at least the difference between the relevant required initial margin amount
+                   and the threshold amount, that is when the relevant required initial margin amount
+                   for a particular OTC derivatives portfolio, for example, is R550 million, the
+                   provider must, as a minimum, collect R50 million initial margin from its relevant
+                   counterparty, or such a higher amount as the provider may decide, in accordance
+                   with the provider’s relevant risk management principles and policies approved by
+                   the board or equivalent structure.
+
+4.3   Collateral
+      (1)   Any cash or non-cash collateral collected as initial margin may be rehypothecated,
+            re-pledged or re-used (collectively referred to as re-hypothecated, unless
+            specifically otherwise stated) only once by the initial margin collector, in
+            accordance with the relevant requirements and conditions specified below:
+
+            (a)    cash or non-cash collateral that is collected as initial margin may be
+                   rehypothecated to a third party only for purposes of hedging the initial margin
+                   collector's derivatives position arising from derivatives transactions for which
+                   initial margin was collected, provided that -
+
+                   (i)   all the relevant transactions, agreements or arrangements must be
+                         subject to conditions that protect the initial margin provider's rights in the
+                         collateral, to the extent permitted by relevant national legislation;
+
+                   (ii) for the purposes of this paragraph (1), the initial margin provider Includes
+                         only buy-side financial entities as well as non-financial entities, but does
+                         not Include entitles that regularly hold themselves out as making a market
+                         in derivatives, routinely quote bid and offer prices on derivatives contracts
+                         and routinely respond to requests for bid or offer prices on derivatives
+                         contracts;
+
+            (b)    in all cases, once initial margin collected has been rehypothecated to a third
+                   party in accordance with the relevant requirements specified in this Joint
+                   Standard, no further re-hypothecation of the initial margin by the third party
+                   is permitted;
+
+            (c)    when the initial margin collector rehypothecates initial margin, the agreement
+                   between the initial margin collector and the third party recipient of the
+                   collateral must explicitly prohibit the third party from rehypothecating the
+                   collateral;
+
+            (d)    in all cases, the initial margin collected may be rehypothecated as set out in
+
+                                                                                         Page 12 of 24
+V2
+           this Joint Standard only if the following conditions are met:
+
+           (i)    the initial margin provider, must, as part of its contractual agreement
+                  with the initial margin collector, and after disclosure by the initial
+                  margin collector of-
+
+                  (aa) its right not to permit rehypothecation; and
+
+                  (bb) the risks associated with the nature of the initial margin provider's
+                        claim to the rehypothecated collateral in the event of the
+                        insolvency of the initial margin collector or the third party,
+
+                  give express consent in writing to the re-hypothecation of its collateral;
+
+           (ii)   the initial margin collector must be subject to regulation of liquidity risk;
+
+           (iii) the initial margin collected must be treated as the initial margin provider's
+                  asset, and must be segregated from the initial margin collector's
+                  proprietary    assets,    until   rehypothecated,     provided     that     once
+                  rehypothecated, the third party must segregate it from the third party's
+                  proprietary assets;
+
+     (e)   in all cases, the collateral of counterparties that have consented to the
+           rehypothecation of their collateral must be segregated from that of
+           counterparties that have not consented;
+
+     (f)   when initial margin has been individually segregated and subsequently
+           rehypothecated, the initial margin collector must require and obtain written
+           confirmation from the third party that the collateral has been segregated from
+           the assets of the third party's other customers, counterparties and its own
+           proprietary assets;
+
+     (g)   legally enforceable protection must be given to the initial margin provider from
+           the risk of loss of initial margin In the event that either the Initial margin collector
+           or the third party become insolvent:
+
+     (h)   when collateral is rehypothecated, the initial margin collector must -
+
+           (i)    notify the Initial margin provider of that fact;
+
+           (ii)   upon request by the initial margin provider and where the initial margin
+                  provider has opted for individual segregation, notify the initial margin
+                  provider of the amount of cash collateral end the value of non-cash
+                  collateral that has been re-hypothecated;
+
+     (i)   the initial margin collector must have in place sufficiently robust processes
+                                                                                    Page 13 of 24
+V2
+                  and procedures to-
+
+                  (i)     ensure that collateral is only rehypothecated to, and held by, en entity
+                          that is regulated in a Jurisdiction that complies with all the specific
+                          conditions specified in this paragraph, end in which the specific
+                          conditions may be duly enforced by the initial margin collector;
+
+                  (ii)    ensure at all times that the initial margin provider end the third party are
+                          not within the same group;
+
+                  (iii)   demonstrate to the satisfaction of the Prudential Authority that
+                          appropriate records are maintained by the initial margin collector and the
+                          relevant third party to ensure compliance with all the relevant conditions
+                          specified in this paragraph;
+
+                  (Iv)    report the level and volume of rehypothecation to the Prudential Authority
+                          whenever required or requested.
+
+       (2) (a)    lnitial margin must be held in such a manner that it is immediately available to the
+                  parson that collected the initial margin in the event of the counterparty's default;
+                  and must be subject to arrangements under applicable law that fully protect the
+                  parson that posted the relevant amount, to the extent possible, In the event that
+                  an Insolvency proceeding is commenced against the person that collected the
+                  amount.
+
+            (b)   The collected collateral must be segregated from the initial margin collector's
+                  proprietary assets.
+
+            (c)   The initial margin collector must give the initial margin provider the option to
+                  segregate the collateral that it posts from the assets of all the initial margin
+                  collector's other customers and counterparties (i.e. individual segregation).
+
+
+4.4   Alternative measurement methodologies
+      (1)   For the calculation of the relevant required amount of initial margin related to OTC
+            derivative transactions, a provider must, at its discretion, use one of the alternative
+            methodologies specified below:
+            (a)   the less risk sensitive standardised margin schedule approach specified in
+                  paragraph 4.5; or
+            (b)   subject to the prior written approval of, and to such conditions as may be imposed
+                  in writing by the Financial Sector Conduct Authority, with the concurrence of the
+                  Prudential Authority, the more risk sensitive quantitative portfolio margin model
+                  approach specified in paragraph 4.6.
+                                                                                          Page 14 of 24
+V2
+      (2)   A provider must consistently apply one of the methodologies referred to in sub-
+            paragraph (1) over time, that is the provider -
+            (a)   must consistently apply either the standardised schedule-based initial margin
+                  approach or the quantitative portfolio margin model approach, over time, in
+                  respect of all derivative transactions within the same well-defined asset class;
+            (b)   may not switch between model-based and standardised schedule-based margin
+                  calculations.
+
+
+      (3)   A provider need not restrict itself to a model-based approach or to a standardised
+            schedule-based approach for the entirety of all its derivatives activities, that is, the
+            provider may use a model-based initial margin calculation for one class of derivatives
+            in which it commonly deals and a standardised schedule-based initial margin
+            calculation in the case of a seldom traded derivative asset class.
+
+
+4.5   Standardised method
+      A provider that wishes to adopt the standardised initial margin schedule approach for the
+      calculation of the relevant required amount of initial margin related to the potential future
+      exposure of all relevant non-centrally cleared OTC derivatives-
+      (a)   must firstly calculate the relevant required gross initial margin amount by multiplying
+            the relevant gross notional exposure of each relevant derivative contract with the initial
+            margin rates specified in Table 1 below:
+                                                        Table 1
+                                    Asset class                Initial margin requirement
+                                                                (% of notional exposure)
+                        Credit:
+                          0–2 year duration                                 2%
+                          2–5 year duration                                 5%
+                          5+ year duration                                 10%
+                        Commodity                                          15%
+                        Equity                                             15%
+                        Foreign exchange                                    6%
+                        Interest rate:
+                          0–2 year duration                                 1%
+                          2–5 year duration                                 2%
+                          5+ year duration                                  4%
+                        Other                                              15%
+
+
+                                                                                        Page 15 of 24
+V2
+      (b)   must directly following the calculation of the relevant gross initial margin amount
+            envisaged above, adjust the gross initial margin amount by the net-to-gross ratio (NGR)
+            pertaining to all derivative instruments in the relevant legally enforceable netting set, in
+            accordance with the formula specified below, or such formula as may be specified from
+            time to time by the Prudential Authority:
+
+
+            Net standardised initial margin =
+            0.4 * Gross initial margin + 0.6 * NGR * Gross initial margin
+
+
+            where:
+
+
+            NGR is the ratio of the net current replacement cost to gross current replacement cost
+            for transactions subject to the relevant legally enforceable netting agreement, where
+            the net replacement cost is the maximum of the zero and the sum of current market
+            values of all OTC derivative transaction in the netting set;
+
+
+      (c)   may consider an inflation swap contract, which transfers inflation risk between the
+            relevant counterparties, as part of the interest rate asset class for purposes of
+            calculating the relevant initial margin requirement;
+
+
+      (d)   must finally calculate the total required amount of initial margin by aggregating the
+            calculated net standardised initial margin amounts of all derivative instruments in the
+            provider’s relevant portfolio of derivative contracts.
+
+
+4.6   Quantitative portfolio margin model
+      A provider that wishes to adopt the quantitative portfolio margin model approach for the
+      calculation of the relevant required amount of initial margin related to the potential future
+      exposure of all relevant OTC derivative instruments, must-
+      (a)   obtain the prior written approval of and comply with such conditions as may be specified
+            in writing by the Prudential Authority, with the concurrence of the Financial Sector
+            Conduct Authority, in addition to the relevant requirements specified in this Joint
+            Standard;
+      (b)   implement and maintain a sufficiently robust quantitative portfolio margin model, which
+            model may either be developed internally or sourced from relevant counterparties or
+            third-party vendors, that calculates an extreme but plausible estimate of an increase in
+            the value of the instrument that is consistent with a one-tailed 99% confidence interval
+            over a 10-day horizon, based on historical data not exceeding five years, provided that-
+
+                                                                                         Page 16 of 24
+V2
+     (i)     the 10-day horizon applies only when variation margin is exchanged on a daily
+             basis;
+     (ii)    when variation margin is exchanged less frequently than on a daily basis, the
+             minimum horizon must be equal to 10 days plus the number of days in between
+             variation margin exchanges;
+     (iii)   the threshold amount of R500 million specified in this Joint Standard must in all
+             cases be unrelated to the frequency with which variation margin is exchanged;
+     (iv)    the data must contain a period of significant financial stress which must be
+             identified and applied separately for each relevant broad asset class for which
+             the relevant required portfolio margining amount is calculated;
+     (v)     when the provider wishes to use a third party-provided model for the calculation
+             of initial margin, the provider must clearly state in its application to the Prudential
+             Authority each relevant jurisdiction and each relevant institution in respect of
+             which the provider wishes to use that model, that is, there shall be no presumption
+             that approval by any supervisor in the case of one or more institutions implies
+             approval for a wider set of jurisdictions or institutions;
+     (vi)    the quantitative initial margin model must be subject to a robust internal
+             governance process that continuously-
+             (aa) ensures that the model produces appropriately risk-sensitive assessments
+                   of potential future exposure;
+             (bb) assesses the value of the model’s risk assessments;
+             (cc) tests the model’s assessments against realised data and experience;
+             (dd) validates the applicability of the model to the derivatives for which it is being
+                   used;
+             (ee) takes into account the complexity of the products covered, such as barrier
+                   options or other more complex structures;
+     (vii) the quantitative initial margin model-
+             (aa) may account for risk on a portfolio basis;
+             (bb) may consider all of the relevant derivatives that are approved for model use
+                   and that are subject to a single legally enforceable netting agreement, that
+                   is, derivative transactions between the provider and a relevant counterparty
+                   that are not subject to the same legally enforceable netting agreement shall
+                   not be included in the same initial margin calculation;
+             (cc) may, subject to the explicit prior written approval of and such conditions as
+                   may be specified in writing by the Prudential Authority, with the concurrence
+                   of the Financial Sector Conduct Authority, account for diversification,
+                   hedging and risk offsets within well-defined asset classes, such as
+
+                                                                                     Page 17 of 24
+V2
+                             currency/rates, equity, credit, or commodities, but in no case across such
+                             asset classes, provided that-
+                             (AA) in all cases, the relevant instruments must be covered by the same
+                                   legally enforceable netting agreement;
+                             (BB) the relevant initial margin requirement for currency and interest rate
+                                   derivative instruments may be calculated on a portfolio basis, that is,
+                                   the relevant initial margin requirement for an interest rate swap and a
+                                   currency option, for example, may be calculated on a portfolio basis,
+                                   as part of a single asset class; and
+                             (CC) an inflation swap contract, which transfers inflation risk between the
+                                   relevant counterparties, may be considered as part of the
+                                   currency/rates asset class;
+                       (dd) must calculate the relevant required initial margin for derivatives in distinct
+                             asset classes without any regard to derivatives in other asset classes, that
+                             is, the initial margin requirement on a credit derivative instrument, for
+                             example, must be calculated separately from the initial margin requirement
+                             on a commodity derivative, and the total initial margin requirement for the
+                             provider’s derivative portfolio must be equal to the sum of the relevant
+                             individually calculated initial margin amounts;
+              (viii)   the data within the identified period referred to in paragraph 4.6(b) must be
+                       equally weighted for calibration purposes.
+
+
+     [Paragraph 4.6(b) amended by paragraph 2(3)(g) – (i) of Joint Standard Amendment 1 of 2023: Amendments to
+         Margin Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+5.      Variation margin
+        (1) Variation margin aims to protect the provider and the counterparty from the current
+              exposure that arises from changes in the mark-to-market value of the contract after the
+              transaction between the provider and the counterparty has been executed.
+        (2)   The amount of variation margin reflects the size of the current exposure and depends
+              on the mark-to-market value of the derivative contract at any point in time, and as such
+              changes over time.
+        (3)   A provider that engages in transactions in non-centrally cleared OTC derivative
+              transactions with a counterparty must on a daily and bilateral basis calculate and
+              exchange the relevant amount of variation margin necessary to fully collateralise the
+              relevant mark-to-market exposure in respect of the non-centrally cleared OTC
+              derivatives, without the application of any threshold amount, provided that-
+              (a)      from the effective date of this Joint Standard, any provider belonging to a group
+                                                                                                     Page 18 of 24
+V2
+                   of which the aggregate month-end average gross notional amount of OTC
+                   derivative instruments for March, April and May of 2020 exceeded R30 trillion
+                   must exchange variation margin when transacting with a counterparty belonging
+                   to a group that also meets the condition related to the aggregate month-end
+                   average gross notional amount of OTC derivative instruments for March, April
+                   and May of 2020 exceeding R30 trillion, provided that-
+                   (i)    the requirement to calculate and exchange variation margin between the
+                          provider and counterparty only applies to new contracts entered into after
+                          the effective date of this Joint Standard; and
+                   (ii)   the exchange of variation margin on all other relevant contracts must be
+                          subject to bilateral agreement;
+     (b)   subject to sub-paragraph (a), from 6 months after the effective date of this Joint
+           Standard, a provider that engages in transactions in non-centrally cleared OTC
+           derivative transactions with a counterparty must exchange variation margin in
+           accordance with the relevant requirements specified in this Joint Standard, provided
+           that-
+           (i)     the requirement to exchange variation margin only applies to new contracts
+                   entered into after 6 months from the effective date of this Joint Standard; and
+           (ii)    the exchange of variation margin on all other relevant contracts is subject to a
+                   bilateral agreement;
+     (c)   any cash and non-cash collateral collected as variation margin may be rehypothecated,
+           re-pledged or re-used.
+
+
+6.   Eligible collateral
+     (1)   In order to ensure that assets or instruments collected or posted as collateral for
+           purposes of initial or variation margin may be liquidated in time to generate proceeds
+           that sufficiently protect the provider and all other relevant collecting or counterparty or
+           persons envisaged in this Joint Standard from losses in respect of derivatives
+           transactions not cleared through a central counterparty in the event of a counterparty
+           default, a provider must have in place sufficiently robust processes and procedures,
+           and board-approved policies, to ensure, among other things, that-
+           (a)     the provider only accepts as collateral for purposes of initial and variation margin,
+                   eligible assets or instruments envisaged in sub-paragraph (2);
+           (b)     as a minimum, the provider applies to the value of the assets or instruments
+                   collected as collateral the higher of-
+                   (i)    the haircuts specified in writing by the Prudential Authority, in concurrence
+                          with the Financial Sector Conduct Authority; or
+
+                                                                                         Page 19 of 24
+V2
+                 (ii)    such haircut percentages as may be determined by the provider in
+                         accordance with the relevant requirements specified in sub-paragraph (5);
+           (c)   the provider’s portfolio of eligible collateral for purposes of initial and variation
+                 margin is reasonably diversified, that is, the collateral collected must not be overly
+                 concentrated in terms of any individual issuer, issuer type or asset or instrument
+                 type;
+           (d)   assets or instruments collected as eligible collateral are not exposed to excessive
+                 credit, market or foreign exchange risk, including in respect of differences
+                 between the currency of the collateral asset or instruments and the currency of
+                 settlement;
+           (e)   when a counterparty that posted collateral to satisfy margin requirements at some
+                 point in time before the end of the derivatives contract requests that the collateral
+                 be returned for some particular reason or purpose, such collateral is substituted
+                 or exchanged for alternative collateral only if-
+                 (i)     both parties agree to the substitution;
+                 (ii)    the substitution or exchange of collateral is made on the terms applicable
+                         to the original agreement between the provider and its relevant
+                         counterparty that originally posted the collateral;
+                 (iii)   the alternative collateral meets all the relevant requirements specified in
+                         this Joint Standard;
+                 (iv)    the value of the alternative collateral, after the application of any relevant
+                         haircut, is sufficient to meet the relevant margin requirement;
+           (f)   collateral is in all material respects sufficient to cover the provider’s relevant
+                 margin needs in a time of financial stress;
+           (g)   there is not a high degree of correlation between the value of the collateral and
+                 the creditworthiness of the counterparty or the value of the underlying OTC
+                 derivatives portfolio, in a manner that undermines the effectiveness of the
+                 protection offered by the margin collected, that is-
+                 (i)     the provider must ensure that it is duly protected against so-called “wrong
+                         way risk”;
+                 (ii)    securities issued by the counterparty to a derivative transaction not cleared
+                         through a central counterparty, or its related entities, shall in no case
+                         constitute eligible collateral.
+     (2)   For the purposes of this Joint Standard, the following assets or instruments constitute
+           eligible collateral for purposes of a provider’s relevant required calculations of initial and
+           variation margin:
+           (a)   cash;
+
+                                                                                           Page 20 of 24
+V2
+                (b)    gold;
+                (c)    such high-quality government and central bank debt securities as may be
+                       determined by the Authorities;
+                (d)    such high-quality corporate bonds as may be determined by the Authorities;
+                (e)    such equities included in major indices as may be determined by the Authorities;
+                       and
+                (f)    such other assets or instruments as may be determined by the Authorities.
+
+
+[Paragraph 6(2) amended by paragraph 2(4)(a) – (d) of Joint Standard Amendment 1 of 2023: Amendments to Margin
+               Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+         (2A) When determining eligible collateral as referred to in sub-paragraph (2)(c) – (f), the
+                Authorities –
+                (a)      must publish the determination by notice on the websites of the Authorities; and
+                 (b)     may make the use of the specified collateral subject to such conditions as the
+                         Authorities may specify in the determination, in order to give effect to the
+                         necessary risk management, internal control requirements and assurances
+                         referred to in subparagraph (1).
+
+
+     [Paragraph 6(2A) inserted by paragraph 2(4)(e) of Joint Standard Amendment 1 of 2023: Amendments to: Margin
+               Requirements for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+
+
+         (3)     Eligible collateral may be denominated in either the currency in which payment
+                obligations under the relevant OTC derivative transaction may be made, or in highly
+                liquid foreign currencies, and the provider must ensure that, in all cases, appropriately
+                conservative haircuts are applied to the relevant value of the collateral to duly reflect
+                any inherent foreign exchange risk.
+         (4)    A provider must in all cases apply to the value of the assets or instruments collected as
+                collateral the higher of the haircut percentage specified in writing by the Authorities or
+                such haircut percentage as may be determined by the provider in accordance with the
+                relevant requirements specified in sub-paragraph (5).
+         (5)    The following matters related to haircuts must be applied to the value of eligible
+                collateral:
+                (a)    In order to determine the appropriate haircut to be applied to the value of eligible
+                       collateral, a provider may, at the discretion of the provider, use one of the
+                       following alternative methodologies:
+                       (i)     the standardised schedule-based haircut approach envisaged in sub-
+                               paragraph (d) or
+                                                                                                        Page 21 of 24
+V2
+           (ii)     subject to the prior written approval of and such conditions as may be
+                    specified in writing by the Prudential Authority, with the concurrence of the
+                    Financial Sector conduct Authority, the internal or third-party risk-sensitive
+                    quantitative model-based haircut approach envisaged in sub-paragraph
+                    (e).
+     (b)   A provider must consistently apply either the standardised schedule-based
+           haircut approach or the risk-sensitive quantitative model-based haircut approach,
+           over time, in respect of all eligible collateral within the same well defined asset
+           class.
+     (c)   A provider may not switch between model-based and standardised schedule-
+           based haircut calculations.
+     (d)   A provider that wishes to adopt the schedule-based haircut approach must apply
+           to the relevant market value of eligible collateral the relevant standardised haircut
+           percentage specified in Table 2:
+
+
+                                                        Table 2
+                                         Asset class                       Haircut
+                                                                        (% of market
+                                                                            value)
+                    Cash in same currency                                      0%
+                    High-quality government and central bank
+                    debt securities specified in writing by the
+                    Authorities:
+                      - residual maturity less than or equal to
+                                                                              0.5%
+                           one year
+                      - residual maturity greater than one year
+                                                                               2%
+                           and less than or equal to five years
+                      - residual maturity greater than five years              4%
+                    High-quality corporate bonds specified in
+                    writing by the Authorities:
+                      - residual maturity less than or equal to
+                                                                               1%
+                           one year
+                      - residual maturity greater than one year
+                                                                               4%
+                           and less than or equal to five years
+                      - residual maturity greater than five years              8%
+                    Equities included in major stock indices                   15%
+                    Gold                                                       15%
+                                                                                     Page 22 of 24
+V2
+                               Additional (additive) haircut on asset in
+                               which the currency of the derivatives
+                                                                                                   8%
+                               obligation differs from that of the collateral
+                               asset
+
+
+              (e)     A provider that wishes to adopt the risk-sensitive quantitative model-based
+                      haircut approach must-
+                      (i)      obtain the prior written approval of and comply with such conditions as may
+                               be specified in writing by the Prudential Authority, with the concurrence of
+                               the Financial Sector Conduct Authority in addition to the relevant
+                               requirements specified in this Joint Standard;
+                      (ii)     implement and maintain a sufficiently robust quantitative model, which
+                               model may either be developed internally or sourced from relevant third-
+                               party vendors, that, as a minimum, determines haircuts-
+                               (aa) that are risk-based and appropriately calibrated to reflect all material
+                                       underlying risks that affect the value of eligible collateral, such as
+                                       market price volatility, liquidity, credit risk and foreign exchange
+                                       volatility, during both normal and stressed market conditions; and
+                               (bb) that are sufficiently conservative to avoid procyclicality;
+                      (iii)    have in place sufficiently robust processes, procedures and board-
+                               approved policies to ensure that the model is at all times subject to robust
+                               internal governance standards.
+
+
+6A.      Reporting Requirements
+
+        (1)         A provider that enters into a non-centrally cleared OTC derivative transaction with
+                    a counterparty or a foreign counterparty, and a financial institution that is a
+                    counterparty, must report such information related to the requirements in this
+                    Joint Standard to the Authorities, as may be determined by the Authorities;
+
+
+        (2)         For purposes of subparagraph (1), the Authorities –
+                    (a)       must publish the determination by notice on the websites of the
+                              Authorities; and
+                    (b)       may determine the form, manner, content and period of reporting by
+                              notice on the websites of the Authorities.
+
+
+[Paragraph 6A inserted by paragraph 2(5) of Joint Standard Amendment 1 of 2023: Amendments Margin Requirements
+                     for non-centrally cleared OTC derivative transactions, 2023 w.e.f. 09 June 2023]
+
+                                                                                                        Page 23 of 24
+V2
+     7. Commencement and short title
+
+
+     This Joint Standard is called the Margin requirements for non-centrally cleared OTC derivative
+     transactions and comes into effect on a date to be determined by the Authorities.
+
+
+
+
+                                                                                       Page 24 of 24
+V2
+

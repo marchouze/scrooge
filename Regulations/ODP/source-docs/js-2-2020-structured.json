@@ -1,0 +1,141 @@
+{
+  "slug": "js-2-2020",
+  "title": "Joint Standard 2 of 2020 — Margin Requirements for Non-Centrally Cleared OTC Derivative Transactions (as amended by Joint Standard Amendment 1 of 2023)",
+  "shortTitle": "JS 2 of 2020",
+  "regulator": "FSCA and Prudential Authority (joint), with concurrence of the Reserve Bank",
+  "year": 2020,
+  "amendedDate": "2023-06-09",
+  "enablingLegislation": "Financial Sector Regulation Act 9 of 2017, section 107, read with sections 106(1)(a), 106(2)(a) and (e) and 109(2)",
+  "gazetteDate": "2020-06-02",
+  "signatory": "Financial Sector Conduct Authority and Prudential Authority",
+  "sourceNote": "Joint Standard 2 of 2020 published 2 June 2020 (V2 incorporating Amendment 1 of 2023, effective 9 June 2023). Sets out margin requirements for non-centrally cleared OTC derivative transactions. Covers initial margin (phased by group AANA), variation margin, eligible collateral, minimum transfer amounts (aggregate ≤ R5m), segregation, and dispute resolution. Based on BCBS-IOSCO Margin Framework. Regulatory reporting under this Standard is governed by Joint Notice 2 of 2024 (Umoja portal, effective 1 April 2025).",
+  "citationPatterns": ["JS 2/2020", "JS 2 of 2020", "ORG-JS2", "Joint Standard 2 of 2020"],
+  "priority": 1,
+  "chapters": [
+    {
+      "id": "ch-s1",
+      "title": "Section 1 — Definitions",
+      "sections": [
+        {
+          "id": "s1",
+          "sectionNumber": "1",
+          "title": "Definitions",
+          "verbatim": true,
+          "text": "Key defined terms:\n\n\"counterparty\" means: (a) an authorised user; (b) a bank, bank controlling company or branch as defined in the Banks Act; (c) a financial services provider authorised to provide financial services in derivative instruments as contemplated in FAIS; (d) an insurer licensed to conduct life insurance business; (e) an insurer licensed to conduct non-life insurance business; (f) an investment fund; (g) a provider; (h) any other person as may be determined by the FSCA with the concurrence of the PA. [paragraph (h) substituted by Amendment 1 of 2023]\n\n\"foreign counterparty\" means a person outside the Republic of South Africa who is authorised by a supervisory authority to perform a service similar to a provider or authorised user, or is registered/licensed to conduct banking or insurance business by a supervisory authority with functions similar to the FSCA or PA.\n\n\"group\" means a group of companies as defined in the Companies Act.\n\n\"netting set\" means a group of derivative transactions between a provider and a counterparty that are subject to a single legally enforceable bilateral netting agreement.\n\n\"provider\" means an authorised OTC derivative provider as defined in the FMA Regulations.\n\n\"sovereign\" means the central government, including the national sphere of government of South Africa, excluding national public entities or government business enterprises."
+        }
+      ]
+    },
+    {
+      "id": "ch-s2",
+      "title": "Section 2 — Application and Exclusions",
+      "sections": [
+        {
+          "id": "s2-1",
+          "sectionNumber": "2.1",
+          "title": "General application",
+          "verbatim": true,
+          "text": "(1) The Joint Standard applies to—\n(a) a provider entering into non-centrally cleared OTC derivative transactions with a counterparty or a foreign counterparty; and\n(b) for purposes of paragraph 6A, a financial institution that is a counterparty.\n\n(2) The Joint Standard does not apply to: (a) sovereigns; (b) central banks; (c) multilateral development banks; (d) the Bank for International Settlements; (e) transactions such as repurchase agreements and security lending transactions that are not derivatives but share some attributes with derivative instruments; and (f) indirectly cleared OTC derivative transactions intermediated through a clearing member on behalf of a non-member client, if the non-member client is subject to clearing house margin requirements.\n\n(3) The margin requirements apply to all non-centrally cleared OTC derivative transactions, including intra-group and cross-border transactions, after the thresholds set out in paragraphs 4.2 or 5(3) are met.\n\n(4) Physically settled foreign exchange forward contracts and foreign exchange swaps are excluded from the initial and variation margin requirements.\n\n(5) For cross-currency swaps, initial margin requirements do not apply to any fixed physically settled foreign exchange transaction associated with the exchange of principal, provided that all other risks (including interest payments) remain subject to initial margin requirements, and variation margin requirements apply to all components."
+        },
+        {
+          "id": "s2-2",
+          "sectionNumber": "2.2",
+          "title": "Treatment of intra-group transactions",
+          "verbatim": true,
+          "text": "(1) Subject to sub-paragraphs (2) and (3), the margin requirements set out in this Joint Standard do not apply to non-centrally cleared OTC derivative transactions entered into between a provider and a counterparty or foreign counterparty in the same group.\n\n(2) Intra-group transactions are not subject to margin requirements provided that—\n(a) the aggregate outstanding gross notional amount of the non-centrally cleared OTC derivative transactions between the provider and the counterparty or foreign counterparty in the group is below R100 billion at close of business on each relevant day;\n(b) both parties are subject to appropriate centralised risk evaluation, measurement and control procedures;\n(c) the risk management procedures of both parties are adequately sound, robust and consistent with the level of complexity of the derivative transactions; and\n(d) the parties comply with any further conditions as may be specified by the Authorities."
+        },
+        {
+          "id": "s2-3",
+          "sectionNumber": "2.3",
+          "title": "Cross-border transactions",
+          "verbatim": true,
+          "text": "(1) When a provider enters into a non-centrally cleared OTC derivative transaction with a foreign counterparty, the provider is deemed to comply with the Joint Standard provided that the provider has documentary evidence that—\n(a) the relevant foreign jurisdiction has implemented margin requirements based on the BCBS-IOSCO Margin Requirements for Non-Centrally Cleared Derivatives Framework;\n(b) the foreign counterparty is directly subject to the margin requirements of the foreign jurisdiction; and\n(c) the provider is required to comply with, or is subject to, the margin requirements in the foreign jurisdiction.\n\n(3)(a) A provider transacting with a foreign counterparty in a non-netting jurisdiction is not required to post or collect initial margin or exchange variation margin if—\n(i) the aggregate outstanding gross notional amount of transactions between the provider and the foreign counterparty does not exceed 2.5% of the total portfolio of derivatives contracts of the provider on a consolidated basis; and\n(ii) a legal opinion confirms that the netting agreement or the exchange of collateral is not legally enforceable at all times."
+        }
+      ]
+    },
+    {
+      "id": "ch-s3",
+      "title": "Section 3 — General Requirements",
+      "sections": [
+        {
+          "id": "s3",
+          "sectionNumber": "3",
+          "title": "General requirements",
+          "verbatim": true,
+          "text": "(1) Subject to paragraph 2, a provider must—\n(a) calculate and exchange—\n(i) initial margin in accordance with paragraph 4; and\n(ii) variation margin in accordance with paragraph 5;\n(b) have in place sufficiently robust processes, procedures and board-approved policies, to ensure among other things that—\n(i) all relevant transactions between the provider and counterparty comply with all relevant requirements in the legal and regulatory frameworks of each relevant jurisdiction;\n(ii) all relevant netting agreements are effective under the laws of the relevant jurisdictions, and supported by periodically updated legal opinions;\n(iii) all relevant collateral arrangements are effective under the relevant laws and supported by periodically updated legal opinions;\n(iv) the provider exchanges initial and variation margin on a bilateral basis or to a third-party custodian;\n(v) procyclicality impacts are appropriately mitigated — large discrete calls for additional initial margin due to 'cliff-edge' triggers are discouraged, and margin levels are sufficiently conservative even during periods of low market volatility;\n(vi) initial margin is provided and collected by no later than the business day following execution of a non-centrally cleared OTC derivative transaction;\n(viii) variation margin — the full amount necessary to fully collateralise the mark-to-market exposure is exchanged; calculated and exchanged on a daily basis for transactions subject to a single legally enforceable netting agreement;\n(ix) the provider complies with eligible collateral requirements in paragraph 6.\n\n(2) A provider must have in place rigorous and robust dispute resolution procedures with its relevant counterparties before the onset of any relevant transaction.\n\n(3) All margin transfers may be subject to a minimum transfer amount of which the aggregate or sum of the initial margin and variation margin does not exceed R5 million."
+        }
+      ]
+    },
+    {
+      "id": "ch-s4",
+      "title": "Section 4 — Initial Margin",
+      "sections": [
+        {
+          "id": "s4-1",
+          "sectionNumber": "4.1",
+          "title": "General initial margin requirements",
+          "verbatim": true,
+          "text": "(1) Initial margin aims to protect the provider and the counterparty from the potential future exposure that may arise from future changes in the mark-to-market value of the derivative contract during the time it takes to close out and replace the position in the event that one or more of the counterparties default.\n\n(3)(a) A provider and counterparty must on a bilateral basis, based on the relevant gross amounts, calculate and exchange initial margin.\n(b) The requirement to calculate and exchange initial margin must in all cases be subject to an initial margin threshold amount, not to exceed R500 million.\n(c) The threshold amount relates to the aggregate amount of all relevant transactions in non-centrally cleared OTC derivatives between the provider on a consolidated basis and the relevant consolidated counterparty group."
+        },
+        {
+          "id": "s4-2",
+          "sectionNumber": "4.2",
+          "title": "Phasing in of initial margin requirements",
+          "verbatim": true,
+          "text": "Initial margin phasing schedule (AANA = aggregate month-end average gross notional amount for March/April/May of the reference year, including physically settled FX forwards and swaps):\n\nPhase 1 (effective date to 31 Aug 2021): AANA > R30 trillion.\nPhase 2 (1 Sep 2021 to 31 Aug 2022): AANA > R23 trillion.\nPhase 3 (1 Sep 2023 to 31 Aug 2024): AANA > R15 trillion.\nPhase 4 (1 Sep 2024 to 31 Aug 2025): AANA > R8 trillion.\nPhase 5 — permanent (from 1 Sep 2025): AANA > R100 billion. Any provider or counterparty in a group with AANA < R100 billion is not subject to initial margin requirements.\n\nAll phases amended by Amendment 1 of 2023 (w.e.f. 09 June 2023). Initial margin requirements apply to new contracts entered into during the relevant period; existing contracts are not affected."
+        }
+      ]
+    },
+    {
+      "id": "ch-s5",
+      "title": "Section 5 — Variation Margin",
+      "sections": [
+        {
+          "id": "s5",
+          "sectionNumber": "5",
+          "title": "Variation margin requirements",
+          "verbatim": false,
+          "text": "Section 5 requires providers to calculate and exchange variation margin (VM) to fully collateralise the mark-to-market exposure of non-centrally cleared OTC derivative transactions on a daily basis. VM is exchanged on a per-netting-set basis. The provision includes threshold conditions for VM applicability and addresses the timing of VM exchange. All margin transfers are subject to the aggregate MTA of R5m (paragraph 3(3))."
+        }
+      ]
+    },
+    {
+      "id": "ch-s6",
+      "title": "Section 6 — Eligible Collateral",
+      "sections": [
+        {
+          "id": "s6",
+          "sectionNumber": "6",
+          "title": "Eligible collateral and haircuts",
+          "verbatim": false,
+          "text": "Section 6 sets out eligible collateral for initial and variation margin. Eligible collateral includes: cash (ZAR and major foreign currencies), South African government bonds (SAGBs), gold, investment-grade sovereign bonds, high-quality corporate bonds, equities included in major indices, and collective investment scheme units meeting specified criteria. Each collateral type is subject to a regulatory haircut to account for market risk and liquidity. Collateral must be highly liquid, with a minimal loss of value during liquidation in stressed conditions."
+        }
+      ]
+    },
+    {
+      "id": "ch-s6a",
+      "title": "Section 6A — Regulatory Reporting",
+      "sections": [
+        {
+          "id": "s6a",
+          "sectionNumber": "6A",
+          "title": "Regulatory reporting",
+          "verbatim": false,
+          "text": "Section 6A (inserted by Amendment 1 of 2023) requires providers and financial institutions that are counterparties to submit regulatory reports to the Authorities. The content, form, manner and frequency of reporting is determined by the Authorities via a joint notice (currently Joint Notice 2 of 2024). Reporting is via the Prudential Authority's Umoja portal, on a daily T+1 basis by 16:00 South African time, effective 1 April 2025."
+        }
+      ]
+    },
+    {
+      "id": "ch-s7",
+      "title": "Section 7 — Segregation Requirements",
+      "sections": [
+        {
+          "id": "s7",
+          "sectionNumber": "7",
+          "title": "Segregation of initial margin",
+          "verbatim": false,
+          "text": "Section 7 requires initial margin to be segregated from the proprietary assets of the collecting party. Segregation must be achieved in a manner that makes the initial margin immediately available upon counterparty default. Third-party custodians or legally effective arrangements must be used. Re-hypothecation of initial margin collateral is restricted."
+        }
+      ]
+    }
+  ]
+}
