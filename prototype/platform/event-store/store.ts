@@ -83,6 +83,29 @@ CREATE INDEX IF NOT EXISTS idx_snapshots_stream_asof
   ON snapshots(stream_key, as_of);
 CREATE INDEX IF NOT EXISTS idx_snapshots_stream_seq
   ON snapshots(stream_key, upto_sequence);
+
+-- Scaling indexes (D-EVENT-STORE-SCALING-PHASE-1).
+-- Covering index for recon type-filtered sequential scans.
+CREATE INDEX IF NOT EXISTS idx_events_type_seq
+  ON events(type, sequence);
+-- Delta-replay boundary: entity + time-bound (projection fold).
+CREATE INDEX IF NOT EXISTS idx_events_entity_asof
+  ON events(entity, as_of);
+-- Aggregate replay covering index.
+CREATE INDEX IF NOT EXISTS idx_events_agg_seq
+  ON events(aggregate_id, sequence);
+-- Partial index: makes softTagUntaggedEvents() startup scan O(untagged) not O(total).
+CREATE INDEX IF NOT EXISTS idx_events_provenance_null
+  ON events(sequence) WHERE provenance IS NULL;
+
+-- D-EVENT-STORE-SCALING-PHASE-1 — incremental recon cursors.
+-- Each recon pipeline stores its last-processed sequence here so
+-- subsequent runs replay only new events (O(delta) not O(total)).
+CREATE TABLE IF NOT EXISTS recon_cursors (
+  pipeline_id   TEXT    PRIMARY KEY,
+  last_sequence INTEGER NOT NULL DEFAULT 0,
+  updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
 `;
 
 export interface ReplayOpts {
@@ -178,6 +201,21 @@ export class EventStore {
       mkdirSync(dirname(path), { recursive: true });
     }
     this.db = new Database(path);
+    // D-EVENT-STORE-SCALING-PHASE-1 — SQLite performance PRAGMAs.
+    // Applied only to file-backed stores; :memory: is already optimal.
+    // WAL + NORMAL is durability-safe: a crash loses at most the last
+    // uncommitted write, which the UNIQUE event_id constraint detects on
+    // retry. busy_timeout lets concurrent agents queue rather than error.
+    if (path !== ":memory:") {
+      this.db.exec(`
+        PRAGMA journal_mode = WAL;
+        PRAGMA synchronous  = NORMAL;
+        PRAGMA mmap_size    = 268435456;
+        PRAGMA cache_size   = -65536;
+        PRAGMA temp_store   = MEMORY;
+        PRAGMA busy_timeout = 5000;
+      `);
+    }
     this.db.exec(DDL);
     // D-DATA-PROVENANCE-SUBSTRATE Slice 1 — additive column migration for
     // pre-Slice-1 stores opened in place. CREATE TABLE IF NOT EXISTS does
@@ -571,7 +609,32 @@ export class EventStore {
          RETURNING id, stream_key, as_of, upto_sequence, payload, recorded_at`,
       )
       .get(opts.streamKey, opts.asOf, opts.uptoSequence, opts.payload) as SnapshotRowShape;
+    this.pruneSnapshots(opts.streamKey);
     return rowToSnapshot(inserted);
+  }
+
+  /**
+   * Evict old snapshots for {streamKey}, retaining the {keepN} most
+   * recent by `upto_sequence`. Keeps the snapshots table bounded as
+   * streams accumulate history. Default keepN = 5 retains enough
+   * history for concurrent as-of queries without unbounded growth.
+   *
+   * Authority: D-EVENT-STORE-SCALING-PHASE-1 (snapshot pruning).
+   */
+  pruneSnapshots(streamKey: string, keepN = 5): number {
+    const result = this.db
+      .prepare(
+        `DELETE FROM snapshots
+          WHERE stream_key = ?
+            AND id NOT IN (
+              SELECT id FROM snapshots
+               WHERE stream_key = ?
+               ORDER BY upto_sequence DESC
+               LIMIT ?
+            )`,
+      )
+      .run(streamKey, streamKey, keepN);
+    return result.changes;
   }
 
   /**
@@ -733,6 +796,53 @@ export class EventStore {
       .prepare("SELECT COUNT(*) AS n FROM events WHERE sequence > ?")
       .get(fromSequence) as { n: number };
     return r.n;
+  }
+
+  // --------------------------------------------------------------------
+  // D-EVENT-STORE-SCALING-PHASE-1 — incremental recon cursors.
+  //
+  // Recon pipelines call getReconCursor() at the start of each run to
+  // resume from where they left off, then advanceReconCursor() after
+  // emitting findings. First-run returns 0 (full scan); subsequent
+  // runs process only the delta. Cursors are advisory — deleting a
+  // row resets the pipeline to a full scan without data loss.
+  // --------------------------------------------------------------------
+
+  /**
+   * Returns the last processed sequence for {pipelineId}, or 0 when
+   * no cursor exists (first run → full scan).
+   */
+  getReconCursor(pipelineId: string): number {
+    const row = this.db
+      .prepare("SELECT last_sequence FROM recon_cursors WHERE pipeline_id = ?")
+      .get(pipelineId) as { last_sequence: number } | null;
+    return row?.last_sequence ?? 0;
+  }
+
+  /**
+   * Advance the cursor for {pipelineId} to {sequence}. Only moves
+   * forward — calling with a lower sequence than the current cursor
+   * is a no-op (prevents accidental regression on re-entrant runs).
+   */
+  advanceReconCursor(pipelineId: string, sequence: number): void {
+    if (sequence <= 0) return;
+    this.db
+      .prepare(
+        `INSERT INTO recon_cursors (pipeline_id, last_sequence, updated_at)
+         VALUES (?, ?, datetime('now'))
+         ON CONFLICT(pipeline_id) DO UPDATE
+           SET last_sequence = MAX(last_sequence, excluded.last_sequence),
+               updated_at    = excluded.updated_at`,
+      )
+      .run(pipelineId, sequence);
+  }
+
+  /**
+   * Reset the cursor for {pipelineId} to 0, forcing a full scan on
+   * the next run. Safe to call at any time; no events are lost.
+   */
+  resetReconCursor(pipelineId: string): void {
+    this.db.prepare("DELETE FROM recon_cursors WHERE pipeline_id = ?").run(pipelineId);
   }
 
   close(): void {
