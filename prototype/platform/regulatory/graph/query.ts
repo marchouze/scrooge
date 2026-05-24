@@ -482,6 +482,61 @@ export function findEquivalentObligations(obligationId: string): GraphNode[] {
 }
 
 // ---------------------------------------------------------------------------
+// getObligationsForProvision
+// ---------------------------------------------------------------------------
+
+export function getObligationsForProvision(provisionId: string, asOf?: string): GraphNode[] {
+  const db = getDb();
+  const temporalFilter = asOf ? `AND ${temporalClause("n", asOf)}` : "";
+  return (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.to_id = n.id
+         WHERE e.from_id = ? AND e.edge_type = 'EXPRESSES'
+           AND n.node_type = 'Obligation' ${temporalFilter}`,
+      )
+      .all(provisionId) as NodeRow[]
+  ).map(rowToNode);
+}
+
+// ---------------------------------------------------------------------------
+// getProvisionsByTheme
+// ---------------------------------------------------------------------------
+
+export function getProvisionsByTheme(themeId: string): GraphNode[] {
+  const db = getDb();
+  return (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.from_id = n.id
+         WHERE e.to_id = ? AND e.edge_type = 'ADDRESSES_THEME'
+           AND n.node_type = 'Provision'`,
+      )
+      .all(themeId) as NodeRow[]
+  ).map(rowToNode);
+}
+
+// ---------------------------------------------------------------------------
+// getObligationCountForDocument
+// ---------------------------------------------------------------------------
+
+export function getObligationCountForDocument(docId: string): number {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `SELECT COUNT(DISTINCT e2.to_id) AS n
+       FROM graph_edges e1
+       JOIN graph_edges e2 ON e2.from_id = e1.to_id
+       WHERE e1.from_id = ? AND e1.edge_type = 'CONTAINS'
+         AND e2.edge_type = 'EXPRESSES'`,
+    )
+    .get(docId) as { n: number } | null;
+  return row?.n ?? 0;
+}
+
+// ---------------------------------------------------------------------------
 // getGraphStats
 // ---------------------------------------------------------------------------
 

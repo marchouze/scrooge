@@ -18,7 +18,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
-import { normaliseSectionRef } from "../scripts/generate-section-obligation-index";
+import { getDb } from "../platform/regulatory/graph/db";
+import { getObligationCountForDocument } from "../platform/regulatory/graph/query";
+
+/** Normalise a section reference: lowercase + dots stripped. */
+const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
 
 // ---------------------------------------------------------------------------
 // Structured regulation JSON types
@@ -65,17 +69,6 @@ interface RegStructuredDoc {
   citationPatterns: string[];
   priority: number;
   chapters: RegChapter[];
-}
-
-// ---------------------------------------------------------------------------
-// Section-obligation index
-// ---------------------------------------------------------------------------
-
-interface SectionObligationIndex {
-  generatedAt: string;
-  obligationCount: number;
-  sectionCount: number;
-  index: Record<string, string[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -203,18 +196,6 @@ function loadStructuredDoc(repoRoot: string, slug: string): RegStructuredDoc | n
     return JSON.parse(readFileSync(path, "utf-8")) as RegStructuredDoc;
   } catch {
     return null;
-  }
-}
-
-function loadSectionIndex(repoRoot: string): SectionObligationIndex {
-  const path = resolve(repoRoot, "Regulations", "_section-obligation-index.json");
-  if (!existsSync(path)) {
-    return { generatedAt: "", obligationCount: 0, sectionCount: 0, index: {} };
-  }
-  try {
-    return JSON.parse(readFileSync(path, "utf-8")) as SectionObligationIndex;
-  } catch {
-    return { generatedAt: "", obligationCount: 0, sectionCount: 0, index: {} };
   }
 }
 
@@ -367,12 +348,12 @@ function resolveObligationPolicy(fulfilment: string, repoRoot: string): Resolved
  */
 function numberFromSection(section: RegSection): string | null {
   if (section.number?.trim() && !/^preamble/i.test(section.number)) {
-    return normaliseSectionRef(section.number.trim());
+    return normSectionRef(section.number.trim());
   }
 
   if (section.sectionNumber) {
     const m = section.sectionNumber.match(/(\d+[A-Za-z]?(?:\.\d+)?)/);
-    if (m?.[1]) return normaliseSectionRef(m[1]);
+    if (m?.[1]) return normSectionRef(m[1]);
   }
 
   // Strip known instrument-specific id prefixes.
@@ -383,103 +364,38 @@ function numberFromSection(section: RegSection): string | null {
     .replace(/^gcc/i, "")
     .replace(/^s/i, "");
   if (stripped !== id && /^\d/.test(stripped)) {
-    return normaliseSectionRef(stripped);
+    return normSectionRef(stripped);
   }
   return null;
-}
-
-/**
- * Build the lookup keys that should attach an obligation to this section.
- *
- * For most instruments a single canonical key suffices, e.g.
- *   - banks-act:  section.number "60"  → ["banks-act/s60"]
- *   - rrb:        section.id "reg27"   → ["rrb/s27"]
- *   - fais-gcc:   section.id "gcc11"   → ["fais-gcc/s11"]
- *   - excon:      section.id "excon-reg2" → ["excon/s2"]
- *
- * For JS2 the structured JSON splits each Standard into compound sections
- * (`s3-1`, `s3-2`, …, `s3-6` with `section.number` = "3.1", "3.2", …).
- * Citations in the obligations register reference `§3` to mean Standard 3 as
- * a whole. We therefore ALSO emit a `js2/s${prefix}` key where `prefix` is
- * the head integer (e.g. "3"). The index entry `js2/s3` then lights up
- * every section under Standard 3.
- */
-function sectionLookupKeys(slug: string, section: RegSection): string[] {
-  const num = numberFromSection(section);
-  if (!num) return [];
-
-  const keys = [`${slug}/s${num}`];
-
-  // JS2 compound: section.number = "3.1" → already normalised to "31" by
-  // `normaliseSectionRef` (dots stripped). Also light up the head-integer
-  // form so a `§3` / `Standard 3` citation attaches to all `3.x` sections.
-  if (slug === "js2" && section.number?.includes(".")) {
-    const head = section.number.split(".")[0]?.trim();
-    if (head) keys.push(`${slug}/s${normaliseSectionRef(head)}`);
-  }
-
-  // ODP instruments use sectionNumber with dots (e.g. "4.2" → key "s42").
-  // Obligations typically cite the head integer (e.g. "§4"), so also emit
-  // the parent key (e.g. "js-2-2020/s4") so those citations light up here.
-  const ODP_SLUGS = ["cs-1-2018", "cs-2-2018", "cs-3-2018", "js-2-2020", "jn-2-2024"];
-  if (ODP_SLUGS.includes(slug) && section.sectionNumber?.includes(".")) {
-    const head = section.sectionNumber.split(".")[0]?.trim();
-    if (head && /^\d/.test(head)) keys.push(`${slug}/s${normaliseSectionRef(head)}`);
-  }
-
-  return keys;
 }
 
 function getObligationsForSection(
   slug: string,
   section: RegSection,
-  sectionIndex: SectionObligationIndex,
   obligationsMap: Record<string, ObligationRow>,
   repoRoot: string,
 ): ObligationOnSection[] {
-  // Bug 1 fix: do NOT fan instrument-root obligations into per-section
-  // payloads. They are surfaced in a dedicated `instrumentWideObligations`
-  // field on the InstrumentDetailView; the section payload carries only
-  // citations that anchor to *this* section.
-  //
-  // Cross-instrument fix: the index keys use canonical section *numbers*
-  // (`s${normaliseSectionRef(number)}`); the structured JSON `section.id`
-  // uses instrument-specific prefixes. Derive the key from section.number
-  // (with a JS2 prefix-match) — see `sectionLookupKeys`.
-  const keys = sectionLookupKeys(slug, section);
-  if (keys.length === 0) return [];
+  const raw = numberFromSection(section);
+  if (!raw) return [];
 
-  const seen = new Set<string>();
-  const result: ObligationOnSection[] = [];
-  for (const key of keys) {
-    const ids = sectionIndex.index[key] ?? [];
-    for (const id of ids) {
-      if (seen.has(id)) continue;
-      seen.add(id);
-      const obl = obligationsMap[id];
-      if (!obl) continue;
-      const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
-      result.push({
-        id: obl.id,
-        requirement: obl.requirement.slice(0, 400),
-        status: obl.status,
-        policy,
-      });
-    }
-  }
-  return result;
-}
+  const normSect = normSectionRef(raw);
+  const provisionId = `PROV-${slug.toUpperCase()}-s${normSect}`;
 
-function getInstrumentWideObligations(
-  slug: string,
-  sectionIndex: SectionObligationIndex,
-  obligationsMap: Record<string, ObligationRow>,
-  repoRoot: string,
-): ObligationOnSection[] {
-  const ids = sectionIndex.index[slug] ?? [];
+  const db = getDb();
+  const oblRows = db
+    .prepare(
+      `SELECT n.* FROM graph_nodes n
+       JOIN graph_edges e ON e.to_id = n.id
+       WHERE e.from_id = ? AND e.edge_type = 'EXPRESSES'
+         AND n.node_type = 'Obligation'`,
+    )
+    .all(provisionId) as Array<{ id: string; metadata: string | null }>;
+
   const result: ObligationOnSection[] = [];
-  for (const id of ids) {
-    const obl = obligationsMap[id];
+  for (const row of oblRows) {
+    const meta = row.metadata ? (JSON.parse(row.metadata) as Record<string, unknown>) : {};
+    const oblId = (meta.obligationId as string | undefined) ?? row.id.replace(/^OBL-/, "");
+    const obl = obligationsMap[oblId];
     if (!obl) continue;
     const policy = resolveObligationPolicy(obl.fulfilment, repoRoot);
     result.push({
@@ -492,32 +408,34 @@ function getInstrumentWideObligations(
   return result;
 }
 
+function getInstrumentWideObligations(
+  _slug: string,
+  _obligationsMap: Record<string, ObligationRow>,
+  _repoRoot: string,
+): ObligationOnSection[] {
+  // Obligations with no section anchor were a workaround for the static regex matcher.
+  // With the graph backend, all obligations link via EXPRESSES edges to Provision nodes.
+  // Instrument-wide display is no longer needed — return empty.
+  return [];
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 export function buildInstrumentsListView(repoRoot: string): InstrumentsListView {
-  const sectionIndex = loadSectionIndex(repoRoot);
-
   const instruments: InstrumentSummary[] = [];
 
   for (const slug of ALL_SLUGS) {
     const doc = loadStructuredDoc(repoRoot, slug);
     if (!doc) continue;
 
-    // Count sections
     let sectionCount = 0;
     for (const chapter of doc.chapters) {
       sectionCount += chapter.sections.length;
     }
 
-    // Count obligations that mention this instrument
-    const oblIds = new Set<string>();
-    for (const [key, ids] of Object.entries(sectionIndex.index)) {
-      if (key === slug || key.startsWith(`${slug}/`)) {
-        for (const id of ids) oblIds.add(id);
-      }
-    }
+    const obligationCount = getObligationCountForDocument(`DOC-${slug.toUpperCase()}`);
 
     instruments.push({
       slug: doc.slug,
@@ -526,14 +444,13 @@ export function buildInstrumentsListView(repoRoot: string): InstrumentsListView 
       regulator: doc.regulator,
       year: doc.year,
       priority: doc.priority,
-      obligationCount: oblIds.size,
+      obligationCount,
       sectionCount,
       hasFullText: doc.chapters.some((ch) => ch.sections.some((s) => s.verbatim)),
     });
   }
 
   instruments.sort((a, b) => a.priority - b.priority);
-
   return { instruments };
 }
 
@@ -544,7 +461,6 @@ export function buildInstrumentDetailView(
   const doc = loadStructuredDoc(repoRoot, slug);
   if (!doc) return null;
 
-  const sectionIndex = loadSectionIndex(repoRoot);
   const obligationsMap = loadObligationsMap(repoRoot);
 
   // Reset policy cache per call (so tests can override repoRoot)
@@ -554,28 +470,13 @@ export function buildInstrumentDetailView(
     id: chapter.id,
     number: chapter.number ?? "",
     heading: chapter.heading ?? chapter.title ?? "",
-    sections: chapter.sections.map((section) => {
-      const obligations = getObligationsForSection(
-        slug,
-        section,
-        sectionIndex,
-        obligationsMap,
-        repoRoot,
-      );
-
-      return {
-        ...section,
-        obligations,
-      };
-    }),
+    sections: chapter.sections.map((section) => ({
+      ...section,
+      obligations: getObligationsForSection(slug, section, obligationsMap, repoRoot),
+    })),
   }));
 
-  const instrumentWideObligations = getInstrumentWideObligations(
-    slug,
-    sectionIndex,
-    obligationsMap,
-    repoRoot,
-  );
+  const instrumentWideObligations = getInstrumentWideObligations(slug, obligationsMap, repoRoot);
 
   // Count total unique obligations: section-anchored + instrument-wide
   const allOblIds = new Set<string>();
