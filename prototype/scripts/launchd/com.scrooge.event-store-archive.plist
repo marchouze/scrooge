@@ -16,8 +16,8 @@
   Authority: D-EVENT-STORE-SCALING-PHASE-5
   Author: Atlas (Core banking platform architect, engineering)
 
-  TEMPLATE — install.sh substitutes __BUN_PATH__, __WORKING_DIRECTORY__,
-  __LOG_DIR__, and __ENVIRONMENT_VARIABLES__ at install time.
+  - TEMPLATE: install.sh substitutes `__BUN_PATH__`, `__WORKING_DIRECTORY__`,
+  - `__LOG_DIR__`, and `__ENVIRONMENT_VARIABLES__` at install time.
 -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
