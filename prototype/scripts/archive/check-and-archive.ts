@@ -98,10 +98,11 @@ async function main() {
 
   // Check whether archiveEventsOlderThan is available (requires PR #778).
   // When absent, warn and exit cleanly — the daemon will try again next tick.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const archiveFn = (eventStore as any).archiveEventsOlderThan as
-    | ((cutoff: number, archivePath: string) => Promise<unknown>)
-    | undefined;
+  const archiveFn = (
+    eventStore as unknown as {
+      archiveEventsOlderThan?: (cutoff: number, archivePath: string) => Promise<unknown>;
+    }
+  ).archiveEventsOlderThan;
 
   if (typeof archiveFn !== "function") {
     logger.warn({
