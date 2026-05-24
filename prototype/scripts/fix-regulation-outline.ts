@@ -318,8 +318,7 @@ function reformatTxt(txtPath: string, _topSections: string[]): string {
     const isAllDigits = parts.every((p) => /^\d+$/.test(p));
     const isBareNoTrailingDot = parts.length === 1 && !num.endsWith(".");
     const before = text.slice(Math.max(0, sm.index - 20), sm.index).toLowerCase();
-    const isPrecededByKeyword =
-      /regulation\s*$/.test(before) || /\bsection\s*$/.test(before);
+    const isPrecededByKeyword = /regulation\s*$/.test(before) || /\bsection\s*$/.test(before);
 
     if (isAllDigits && !isBareNoTrailingDot && !isPrecededByKeyword) {
       result.push(text.slice(last, sm.index));
@@ -331,7 +330,10 @@ function reformatTxt(txtPath: string, _topSections: string[]): string {
   }
   result.push(text.slice(last));
 
-  return result.join("").replace(/\n{3,}/g, "\n\n").trim();
+  return result
+    .join("")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -433,7 +435,9 @@ const skipped = reports.filter((r) => r.skipped);
 
 console.log("Results:");
 for (const r of processed) {
-  console.log(`  [${r.slug}] sections=${r.sections} subsections_extracted=${r.subsectionsExtracted}`);
+  console.log(
+    `  [${r.slug}] sections=${r.sections} subsections_extracted=${r.subsectionsExtracted}`,
+  );
 }
 
 if (skipped.length > 0) {
