@@ -180,6 +180,25 @@
 </div>`;
   }
 
+  function renderSubsection(sub, depth) {
+    const indent = depth * 16;
+    const borderColor = depth === 1 ? "var(--color-border)" : "var(--color-border-muted, #e5e7eb)";
+    const summaryText = sub.summary || (!sub.verbatim ? sub.text : null);
+    const bodyHtml = sub.verbatim
+      ? `<span class="rr-section-text verbatim" style="display:block;margin-top:var(--space-1)">${esc(sub.text)}</span>`
+      : summaryText
+        ? `<span class="rr-section-text" style="display:block;margin-top:var(--space-1);font-style:italic;color:var(--color-text-muted)">${esc(summaryText)}</span>`
+        : "";
+    const childrenHtml = sub.subsections && sub.subsections.length > 0
+      ? sub.subsections.map((child) => renderSubsection(child, depth + 1)).join("")
+      : "";
+    return `<div style="margin-top:var(--space-2);padding-left:${indent}px;border-left:2px solid ${borderColor}">
+      <span style="font-weight:600;color:var(--color-text-muted);font-size:0.85em">${esc(sub.number)}</span>
+      ${bodyHtml}
+      ${childrenHtml}
+    </div>`;
+  }
+
   function renderSections(chapters) {
     return chapters
       .map((chapter) => {
@@ -189,23 +208,22 @@
               ? `<div class="rr-section-text verbatim" style="margin-bottom:var(--space-2)">${esc(section.verbatimOpening)}</div>
                  <div class="rr-summary-note" style="margin-bottom:var(--space-2)">Opening subregulations above are verbatim. Full regulation summarised below.</div>`
               : "";
+            // When a section has structured subsections, its text field is typically the
+            // full aggregated body (a large blob). Suppress it and let subsections speak.
+            // Only show the parent text when: no subsections, OR text is a short intro (≤300 chars).
+            const hasSubsections = section.subsections && section.subsections.length > 0;
+            const textIsIntro = !section.text || section.text.length <= 300;
             const summaryText = section.summary || (!section.verbatim ? section.text : null);
-            const bodyHtml = section.verbatim
-              ? `<div class="rr-section-text verbatim">${esc(section.text)}</div>`
-              : summaryText
-                ? `${verbatimOpeningHtml}<div class="rr-section-text" style="font-style:italic;color:var(--color-text-muted)">${esc(summaryText)}</div>`
-                : `<div class="rr-section-text" style="color:var(--color-text-muted)">Full text not reproduced.</div>`;
+            const bodyHtml = hasSubsections && !textIsIntro
+              ? ""
+              : section.verbatim
+                ? `<div class="rr-section-text verbatim">${esc(section.text)}</div>`
+                : summaryText
+                  ? `${verbatimOpeningHtml}<div class="rr-section-text" style="font-style:italic;color:var(--color-text-muted)">${esc(summaryText)}</div>`
+                  : `<div class="rr-section-text" style="color:var(--color-text-muted)">Full text not reproduced.</div>`;
             const subsectionsHtml =
               section.subsections && section.subsections.length > 0
-                ? section.subsections
-                    .map(
-                      (sub) =>
-                        `<div style="margin-top:var(--space-2);padding-left:var(--space-3);border-left:2px solid var(--color-border)">
-                        <span style="font-weight:600;color:var(--color-text-muted);font-size:0.85em">${esc(sub.number)}</span>
-                        <span class="rr-section-text${sub.verbatim ? " verbatim" : ""}" style="display:block;margin-top:var(--space-1)">${esc(sub.text)}</span>
-                      </div>`,
-                    )
-                    .join("")
+                ? section.subsections.map((sub) => renderSubsection(sub, 1)).join("")
                 : "";
 
             const obligationsHtml = renderObligations(section.obligations);
