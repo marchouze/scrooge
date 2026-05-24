@@ -170,8 +170,58 @@
             {
               "id": "s2-2-1-2",
               "number": "2.1.2",
-              "text": "Supervisors’ responsibilities 2.1.2.1 Supervisors should review and evaluate a bank’s ICAAP (principle 2). 2.1.2.2 Supervisors should take appropriate action if they are not satisfied with the results of this process (principle 2), which is captured in regulation 38(4) of the Regulations. 2.1.2.3 Supervisors should review and evaluate a bank’s compliance with the regulatory capital ratios (principle 2). 2.1.2.4 Supervisors should be able to require banks to hold capital in excess of the minimum level (principle 3). 2.1.2.5 Supervisors should intervene at an early stage to prevent capital from falling below the minimum level (principle 4). Also refer to Directive 5/2013 in respect of capital conservation ratios that would place limits on discretionary payments. 2.1.2.6 Supervisors should require rapid remedial action if capital is not maintained or restored (principle 4). The above, with the full supervisory cycle, is generally referred to as the SREP.",
-              "verbatim": true
+              "text": "Supervisors’ responsibilities",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s2-2-1-2.1",
+                  "number": "2.1.2.1",
+                  "heading": "2.1.2.1",
+                  "text": "Supervisors should review and evaluate a bank’s ICAAP (principle 2).",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-1-2.2",
+                  "number": "2.1.2.2",
+                  "heading": "2.1.2.2",
+                  "text": "Supervisors should take appropriate action if they are not satisfied with the results of this process (principle 2), which is captured in regulation 38(4) of the Regulations.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-1-2.3",
+                  "number": "2.1.2.3",
+                  "heading": "2.1.2.3",
+                  "text": "Supervisors should review and evaluate a bank’s compliance with the regulatory capital ratios (principle 2).",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-1-2.4",
+                  "number": "2.1.2.4",
+                  "heading": "2.1.2.4",
+                  "text": "Supervisors should be able to require banks to hold capital in excess of the minimum level (principle 3).",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-1-2.5",
+                  "number": "2.1.2.5",
+                  "heading": "2.1.2.5",
+                  "text": "Supervisors should intervene at an early stage to prevent capital from falling below the minimum level (principle 4). Also refer to Directive 5/2013 in respect of capital conservation ratios that would place limits on discretionary payments.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-1-2.6",
+                  "number": "2.1.2.6",
+                  "heading": "2.1.2.6",
+                  "text": "Supervisors should require rapid remedial action if capital is not maintained or restored (principle 4). The above, with the full supervisory cycle, is generally referred to as the SREP.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -221,8 +271,34 @@
             {
               "id": "s3-3-2-3",
               "number": "3.2.3",
-              "text": "Since a sound risk management process provides the basis for ensuring that a bank maintains adequate capital, the board of directors of a bank shall: 3.2.3.1 set the tolerance level for risk;\n\n\n6 3.2.3.2 ensure that the senior management of the bank: o establishes a risk framework to assess and appropriately manage the various risk exposures of the bank; o develops a system to relate the bank’s risk exposures to its capital and reserve funds; o establishes a method to monitor the bank’s compliance with internal policies; o effectively communicates all relevant policies and procedures throughout the bank; o adopts and supports strong internal controls; o ensures that the bank has appropriate written policies and procedures in place; and 3.2.3.3 as stipulated in regulation 39(16)(a)(v)(E)(viii) of the Regulations, shall ensure that the bank has an appropriate strategic plan in place which, as a minimum, shall outline): o the bank’s capital needs; o the bank’s anticipated capital expenditure; and o the bank’s desired level of capital.",
-              "verbatim": true
+              "text": "Since a sound risk management process provides the basis for ensuring that a bank maintains adequate capital, the board of directors of a bank shall:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-2-3.1",
+                  "number": "3.2.3.1",
+                  "heading": "3.2.3.1",
+                  "text": "set the tolerance level for risk;\n\n\n6",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-2-3.2",
+                  "number": "3.2.3.2",
+                  "heading": "3.2.3.2",
+                  "text": "ensure that the senior management of the bank: o establishes a risk framework to assess and appropriately manage the various risk exposures of the bank; o develops a system to relate the bank’s risk exposures to its capital and reserve funds; o establishes a method to monitor the bank’s compliance with internal policies; o effectively communicates all relevant policies and procedures throughout the bank; o adopts and supports strong internal controls; o ensures that the bank has appropriate written policies and procedures in place; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-2-3.3",
+                  "number": "3.2.3.3",
+                  "heading": "3.2.3.3",
+                  "text": "as stipulated in regulation 39(16)(a)(v)(E)(viii) of the Regulations, shall ensure that the bank has an appropriate strategic plan in place which, as a minimum, shall outline): o the bank’s capital needs; o the bank’s anticipated capital expenditure; and o the bank’s desired level of capital.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-3",
@@ -317,20 +393,242 @@
             {
               "id": "s3-3-4-5",
               "number": "3.4.5",
-              "text": "An effective RAF should: 3.4.5.1 establish a process for communicating the RAF within and across the bank as well as sharing appropriate information with external stakeholders; 3.4.5.2 involve board leadership and management at all levels; 3.4.5.3 be embedded and understood across the bank; 3.4.5.4 facilitate embedding risk appetite into the bank’s risk culture;\n\n\n8 3.4.5.5 evaluate opportunities for appropriate risk-taking and act as defence against excessive risk-taking; 3.4.5.6 allow for the risk appetite statement to be used as a tool to promote robust discussions on risk and challenge management recommendations and decisions; 3.4.5.7 be adaptable to changing business and market conditions so that, subject to approval, opportunities that require an increase in the risk limit of a business line or entity could be met while remaining within the agreed bank-wide risk appetite; and 3.4.5.8 cover activities, operations, and systems of the bank that fall within its risk landscape but are outside of its direct control, including subsidiaries and third- party outsourcing suppliers.",
-              "verbatim": true
+              "text": "An effective RAF should:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-4-5.1",
+                  "number": "3.4.5.1",
+                  "heading": "3.4.5.1",
+                  "text": "establish a process for communicating the RAF within and across the bank as well as sharing appropriate information with external stakeholders",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-5.2",
+                  "number": "3.4.5.2",
+                  "heading": "3.4.5.2",
+                  "text": "involve board leadership and management at all levels",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-5.3",
+                  "number": "3.4.5.3",
+                  "heading": "3.4.5.3",
+                  "text": "be embedded and understood across the bank",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-5.4",
+                  "number": "3.4.5.4",
+                  "heading": "3.4.5.4",
+                  "text": "facilitate embedding risk appetite into the bank’s risk culture;\n\n\n8",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-5.5",
+                  "number": "3.4.5.5",
+                  "heading": "3.4.5.5",
+                  "text": "evaluate opportunities for appropriate risk-taking and act as defence against excessive risk-taking",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-5.6",
+                  "number": "3.4.5.6",
+                  "heading": "3.4.5.6",
+                  "text": "allow for the risk appetite statement to be used as a tool to promote robust discussions on risk and challenge management recommendations and decisions",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-5.7",
+                  "number": "3.4.5.7",
+                  "heading": "3.4.5.7",
+                  "text": "be adaptable to changing business and market conditions so that, subject to approval, opportunities that require an increase in the risk limit of a business line or entity could be met while remaining within the agreed bank-wide risk appetite; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-5.8",
+                  "number": "3.4.5.8",
+                  "heading": "3.4.5.8",
+                  "text": "cover activities, operations, and systems of the bank that fall within its risk landscape but are outside of its direct control, including subsidiaries and third- party outsourcing suppliers.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-4-6",
               "number": "3.4.6",
-              "text": "An effective risk appetite statement should: 3.4.6.1 be easy to communicate; 3.4.6.2 be understood by all stakeholders; 3.4.6.3 be directly linked to a bank’s strategy; 3.4.6.4 address material risks under both normal and stressed market and macroeconomic conditions; 3.4.6.5 set clear boundaries and expectations by establishing quantitative limits and qualitative statements (these measures may be expressed in terms of earnings, capital, liquidity, or other appropriate metrics); 3.4.6.6 include key background information and assumptions that informed the bank’s strategic objectives and business plans; 3.4.6.7 be linked to the bank’s short- and long-term strategic, capital, and financial plans, as well as compensation programmes, also refer to regulation 3916(a)(iii) of the Regulations; 3.4.6.8 establish the amount of risk the bank is prepared to accept in pursuit of its strategic objectives and business plans; 3.4.6.9 determine, overall and for each material risk, the maximum level of risk that the institution is willing to tolerate; 3.4.6.10 include the quantitative measures that can be translated into risk limits applicable to business lines and legal entities, as relevant, and at group level, to enable the measurement of the risk profile against risk appetite and risk capacity; 3.4.6.11 include the qualitative statements that clearly motivate for taking or avoiding certain types of risk and establish boundaries and/or indicators to enable the monitoring of these risks;\n\n\n9 3.4.6.12 ensure that the strategy and risk limits of each business line and legal entity, as relevant, align with the bank-wide risk appetite statement, as appropriate; and 3.4.6.13 be forward-looking and, where applicable, be subject to scenario- and stress- testing to ensure that the bank understands which events might push it outside its risk appetite and/or risk capacity.",
-              "verbatim": true
+              "text": "An effective risk appetite statement should:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-4-6.1",
+                  "number": "3.4.6.1",
+                  "heading": "3.4.6.1",
+                  "text": "be easy to communicate",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.2",
+                  "number": "3.4.6.2",
+                  "heading": "3.4.6.2",
+                  "text": "be understood by all stakeholders",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.3",
+                  "number": "3.4.6.3",
+                  "heading": "3.4.6.3",
+                  "text": "be directly linked to a bank’s strategy",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.4",
+                  "number": "3.4.6.4",
+                  "heading": "3.4.6.4",
+                  "text": "address material risks under both normal and stressed market and macroeconomic conditions",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.5",
+                  "number": "3.4.6.5",
+                  "heading": "3.4.6.5",
+                  "text": "set clear boundaries and expectations by establishing quantitative limits and qualitative statements (these measures may be expressed in terms of earnings, capital, liquidity, or other appropriate metrics)",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.6",
+                  "number": "3.4.6.6",
+                  "heading": "3.4.6.6",
+                  "text": "include key background information and assumptions that informed the bank’s strategic objectives and business plans",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.7",
+                  "number": "3.4.6.7",
+                  "heading": "3.4.6.7",
+                  "text": "be linked to the bank’s short- and long-term strategic, capital, and financial plans, as well as compensation programmes, also refer to regulation 3916(a)(iii) of the Regulations",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.8",
+                  "number": "3.4.6.8",
+                  "heading": "3.4.6.8",
+                  "text": "establish the amount of risk the bank is prepared to accept in pursuit of its strategic objectives and business plans",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.9",
+                  "number": "3.4.6.9",
+                  "heading": "3.4.6.9",
+                  "text": "determine, overall and for each material risk, the maximum level of risk that the institution is willing to tolerate",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.10",
+                  "number": "3.4.6.10",
+                  "heading": "3.4.6.10",
+                  "text": "include the quantitative measures that can be translated into risk limits applicable to business lines and legal entities, as relevant, and at group level, to enable the measurement of the risk profile against risk appetite and risk capacity",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.11",
+                  "number": "3.4.6.11",
+                  "heading": "3.4.6.11",
+                  "text": "include the qualitative statements that clearly motivate for taking or avoiding certain types of risk and establish boundaries and/or indicators to enable the monitoring of these risks;\n\n\n9",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.12",
+                  "number": "3.4.6.12",
+                  "heading": "3.4.6.12",
+                  "text": "ensure that the strategy and risk limits of each business line and legal entity, as relevant, align with the bank-wide risk appetite statement, as appropriate; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-6.13",
+                  "number": "3.4.6.13",
+                  "heading": "3.4.6.13",
+                  "text": "be forward-looking and, where applicable, be subject to scenario- and stress- testing to ensure that the bank understands which events might push it outside its risk appetite and/or risk capacity.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-4-7",
               "number": "3.4.7",
-              "text": "A RAF should contain risk limits which are measured based on forward- looking assumptions that allocate the risk appetite statement to business lines, legal entities, risk categories, and risk concentrations. Risk limits should: 3.4.7.1 be set at a level to constrain risk-taking within a bank’s risk appetite; 3.4.7.2 be established for business lines and legal entities, as relevant, and generally be expressed relative to earnings, capital, liquidity, or other relevant measures; 3.4.7.3 include material risk concentrations at the bank, group-wide, business line, and legal entity levels, as relevant; 3.4.7.4 although referenced to market best practice and benchmarks, not be strictly based on comparison to peers or default to regulatory limits; 3.4.7.5 not be overly complicated, ambiguous, or subjective; and 3.4.7.6 be monitored regularly.",
-              "verbatim": true
+              "text": "A RAF should contain risk limits which are measured based on forward- looking assumptions that allocate the risk appetite statement to business lines, legal entities, risk categories, and risk concentrations. Risk limits should:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-4-7.1",
+                  "number": "3.4.7.1",
+                  "heading": "3.4.7.1",
+                  "text": "be set at a level to constrain risk-taking within a bank’s risk appetite",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-7.2",
+                  "number": "3.4.7.2",
+                  "heading": "3.4.7.2",
+                  "text": "be established for business lines and legal entities, as relevant, and generally be expressed relative to earnings, capital, liquidity, or other relevant measures",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-7.3",
+                  "number": "3.4.7.3",
+                  "heading": "3.4.7.3",
+                  "text": "include material risk concentrations at the bank, group-wide, business line, and legal entity levels, as relevant",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-7.4",
+                  "number": "3.4.7.4",
+                  "heading": "3.4.7.4",
+                  "text": "although referenced to market best practice and benchmarks, not be strictly based on comparison to peers or default to regulatory limits",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-7.5",
+                  "number": "3.4.7.5",
+                  "heading": "3.4.7.5",
+                  "text": "not be overly complicated, ambiguous, or subjective; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-4-7.6",
+                  "number": "3.4.7.6",
+                  "heading": "3.4.7.6",
+                  "text": "be monitored regularly.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-5",
@@ -401,8 +699,42 @@
             {
               "id": "s3-3-7-4",
               "number": "3.7.4",
-              "text": "Banks should have a sound capital-planning process with the following components: 3.7.4.1 Internal control and governance  Banks should produce an internally consistent and coherent view of their current and future capital needs that reflects the input of staff from their business, risk, finance, and treasury departments. There should be a strong link between capital planning, budgeting, and the strategic planning process. Budgets should be realistic (and not overly optimistic).  The more sophisticated banks should have a formal process to identify and escalate situations where competing assumptions are made, for example differences in strategic planning and the capital allocation across the bank. 3.7.4.2 Capital policy and risk capture  The more sophisticated banks should have a capital policy that specifies the principles that management follows in making decisions about deploying a bank’s capital.\n\n\n11  The capital policy should reference a suite of capital- and performance- related metrics against which management monitors the bank’s condition. Regulatory metrics include for example the common equity tier 1 (CET 1) ratio while non-regulatory metrics include for example risk-adjusted return on capital.  The more sophisticated banks use economic capital as a complimentary view of their condition.  All banks should set limits and triggers for each metric as well as a monitoring and escalation process for situations where a limit or trigger is approached and/or breached. An important input to a capital policy is an expression of risk tolerance, approved by the board and renewed annually. 3.7.4.3 Forward-looking view  Stress-testing needs to be an integral component of the capital-planning process to assess the potential impact on earnings and capital from an assumed economic downturn.  The more sophisticated banks should be able to repeat stress-testing and should be capable of performing ad hoc scenarios outside the normal stress-testing procedures.  All banks should at least estimate the impact of a baseline and a downturn scenario. The impact of a scenario should reflect estimated changes to a bank’s revenue loss (at least interest income, fee income, other non- interest income, and impairments), balance-sheet exposure measures, and risk-weighted assets. The impact on capital ratios, the leverage ratio, and surplus tier 1 capital as a result of the minimum leverage ratio requirement should also be reflected. To ensure that all material risks were incorporated, the impact should be reflected in the economic capital plan and in the economic capital buffers. 3.7.4.4 Management framework for preserving capital The board and senior management should ensure that the monitoring and escalation protocols remain relevant. They are responsible for prioritising and quantifying actions available to cushion unexpected events. The management process should allow for plans to be updated swiftly for better decision-making in changing circumstances.",
-              "verbatim": true
+              "text": "Banks should have a sound capital-planning process with the following components:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-7-4.1",
+                  "number": "3.7.4.1",
+                  "heading": "3.7.4.1",
+                  "text": "Internal control and governance  Banks should produce an internally consistent and coherent view of their current and future capital needs that reflects the input of staff from their business, risk, finance, and treasury departments. There should be a strong link between capital planning, budgeting, and the strategic planning process. Budgets should be realistic (and not overly optimistic).  The more sophisticated banks should have a formal process to identify and escalate situations where competing assumptions are made, for example differences in strategic planning and the capital allocation across the bank.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-7-4.2",
+                  "number": "3.7.4.2",
+                  "heading": "3.7.4.2",
+                  "text": "Capital policy and risk capture  The more sophisticated banks should have a capital policy that specifies the principles that management follows in making decisions about deploying a bank’s capital.\n\n\n11  The capital policy should reference a suite of capital- and performance- related metrics against which management monitors the bank’s condition. Regulatory metrics include for example the common equity tier 1 (CET 1) ratio while non-regulatory metrics include for example risk-adjusted return on capital.  The more sophisticated banks use economic capital as a complimentary view of their condition.  All banks should set limits and triggers for each metric as well as a monitoring and escalation process for situations where a limit or trigger is approached and/or breached. An important input to a capital policy is an expression of risk tolerance, approved by the board and renewed annually.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-7-4.3",
+                  "number": "3.7.4.3",
+                  "heading": "3.7.4.3",
+                  "text": "Forward-looking view  Stress-testing needs to be an integral component of the capital-planning process to assess the potential impact on earnings and capital from an assumed economic downturn.  The more sophisticated banks should be able to repeat stress-testing and should be capable of performing ad hoc scenarios outside the normal stress-testing procedures.  All banks should at least estimate the impact of a baseline and a downturn scenario. The impact of a scenario should reflect estimated changes to a bank’s revenue loss (at least interest income, fee income, other non- interest income, and impairments), balance-sheet exposure measures, and risk-weighted assets. The impact on capital ratios, the leverage ratio, and surplus tier 1 capital as a result of the minimum leverage ratio requirement should also be reflected. To ensure that all material risks were incorporated, the impact should be reflected in the economic capital plan and in the economic capital buffers.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-7-4.4",
+                  "number": "3.7.4.4",
+                  "heading": "3.7.4.4",
+                  "text": "Management framework for preserving capital The board and senior management should ensure that the monitoring and escalation protocols remain relevant. They are responsible for prioritising and quantifying actions available to cushion unexpected events. The management process should allow for plans to be updated swiftly for better decision-making in changing circumstances.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-8",
@@ -581,8 +913,26 @@
             {
               "id": "s3-3-11-2",
               "number": "3.11.2",
-              "text": "A risk concentration is any single exposure or a group of similar exposures (e.g. to the same borrower or counterparty, including protection providers, a geographical area, industry or other risk factors) with the potential to produce (i) losses large enough (relative to a bank’s earnings, capital, total assets, or overall risk level) to threaten a bank’s creditworthiness and/or ability to maintain its core operations, or (ii) a material change in a bank’s risk profile. Unmanaged risk concentrations are arguably the single most important cause of major problems in banks.",
-              "verbatim": true
+              "text": "A risk concentration is any single exposure or a group of similar exposures (e.g. to the same borrower or counterparty, including protection providers, a geographical area, industry or other risk factors) with the potential to produce",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-11-2.i",
+                  "number": "i",
+                  "heading": "s3-3-11-2.i",
+                  "text": "losses large enough (relative to a bank’s earnings, capital, total assets, or overall risk level) to threaten a bank’s creditworthiness and/or ability to maintain its core operations, or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-11-2.ii",
+                  "number": "ii",
+                  "heading": "s3-3-11-2.ii",
+                  "text": "a material change in a bank’s risk profile. Unmanaged risk concentrations are arguably the single most important cause of major problems in banks.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-11-3",
@@ -623,8 +973,50 @@
             {
               "id": "s3-3-12-2",
               "number": "3.12.2",
-              "text": "There is not a prescribed approach as to how a bank should develop its economic capital model, but a more sophisticated and more complex bank shall be able to demonstrate, among others: 3.12.2.1 the confidence levels set, and whether these are linked to the bank’s strategy or risk appetite; 3.12.2.2 the extent of historical data used and the back-testing carried out; 3.12.2.3 the fact that the bank has a process in place to verify the robustness of the model’s outputs; 3.12.2.4 the fact that the economic capital models are independently validated, before it is used by the bank, at least in respect of areas that differ from the regulatory models (e.g. correlations); and 3.12.2.5 the fact that the bank has the skills and resources to develop, operate, and maintain models.",
-              "verbatim": true
+              "text": "There is not a prescribed approach as to how a bank should develop its economic capital model, but a more sophisticated and more complex bank shall be able to demonstrate, among others:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-12-2.1",
+                  "number": "3.12.2.1",
+                  "heading": "3.12.2.1",
+                  "text": "the confidence levels set, and whether these are linked to the bank’s strategy or risk appetite",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-12-2.2",
+                  "number": "3.12.2.2",
+                  "heading": "3.12.2.2",
+                  "text": "the extent of historical data used and the back-testing carried out",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-12-2.3",
+                  "number": "3.12.2.3",
+                  "heading": "3.12.2.3",
+                  "text": "the fact that the bank has a process in place to verify the robustness of the model’s outputs",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-12-2.4",
+                  "number": "3.12.2.4",
+                  "heading": "3.12.2.4",
+                  "text": "the fact that the economic capital models are independently validated, before it is used by the bank, at least in respect of areas that differ from the regulatory models (e.g. correlations); and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-12-2.5",
+                  "number": "3.12.2.5",
+                  "heading": "3.12.2.5",
+                  "text": "the fact that the bank has the skills and resources to develop, operate, and maintain models.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-12-3",
@@ -635,8 +1027,26 @@
             {
               "id": "s3-3-12-4",
               "number": "3.12.4",
-              "text": "The viability and usefulness of a bank’s economic capital processes depend critically on the existence of a credible commitment or buy-in on the part of senior management. It is therefore necessary for senior management to recognise the importance of using economic capital measures in conducting the bank’s business. In addition, adequate resources are required to ensure the existence of a strong, credible infrastructure to support the economic capital process. Moreover, senior management needs to take measures to help ensure the meaningfulness and integrity of economic capital measures. 3.12.4.1 Banks with economic capital models should be able to demonstrate how its economic capital model has been integrated into the business decision-making process in order to assess the potential impact on incentives affecting the bank’s strategic decisions about the mix and direction of its inherent risks. 3.12.4.2 Banks use economic capital (a common measurement of risks) to measure their business unit-level portfolio, analyse pricing profitability, and measure enterprise-wide relative performance.\n\n\n18",
-              "verbatim": true
+              "text": "The viability and usefulness of a bank’s economic capital processes depend critically on the existence of a credible commitment or buy-in on the part of senior management. It is therefore necessary for senior management to recognise the importance of using economic capital measures in conducting the bank’s business. In addition, adequate resources are required to ensure the existence of a strong, credible infrastructure to support the economic capital process. Moreover, senior management needs to take measures to help ensure the meaningfulness and integrity of economic capital measures.",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-12-4.1",
+                  "number": "3.12.4.1",
+                  "heading": "3.12.4.1",
+                  "text": "Banks with economic capital models should be able to demonstrate how its economic capital model has been integrated into the business decision-making process in order to assess the potential impact on incentives affecting the bank’s strategic decisions about the mix and direction of its inherent risks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-12-4.2",
+                  "number": "3.12.4.2",
+                  "heading": "3.12.4.2",
+                  "text": "Banks use economic capital (a common measurement of risks) to measure their business unit-level portfolio, analyse pricing profitability, and measure enterprise-wide relative performance.\n\n\n18",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

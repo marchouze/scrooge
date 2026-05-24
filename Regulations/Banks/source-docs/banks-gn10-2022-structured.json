@@ -41,9 +41,26 @@
             {
               "id": "s1-2",
               "number": "1.2",
-              "text": "FATF Recommendation 15 of the FATF Recommendations 3 specifically mentions that: Financial institutions should identify and assess the money laundering or terrorist financing risks that may arise in relation to (a) the development of new products and new business practices, including new delivery mechanisms, and (b) the use of new or developing technologies for both new and pre-existing products. In the case of financial institutions, such a risk assessment should take place prior to the launch of the new products, business practices or the use of new or developing technologies. They should take appropriate measures to manage and mitigate those risks.",
+              "text": "FATF Recommendation 15 of the FATF Recommendations 3 specifically mentions that: Financial institutions should identify and assess the money laundering or terrorist financing risks that may arise in relation to",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-2.a",
+                  "number": "a",
+                  "heading": "s1-2.a",
+                  "text": "the development of new products and new business practices, including new delivery mechanisms, and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-2.b",
+                  "number": "b",
+                  "heading": "s1-2.b",
+                  "text": "the use of new or developing technologies for both new and pre-existing products. In the case of financial institutions, such a risk assessment should take place prior to the launch of the new products, business practices or the use of new or developing technologies. They should take appropriate measures to manage and mitigate those risks.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s1-3",

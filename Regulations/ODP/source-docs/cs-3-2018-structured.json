@@ -8,7 +8,12 @@
   "gazetteDate": "2018-10-01",
   "signatory": "Abel Moffat Sithole, for the Financial Sector Conduct Authority",
   "sourceNote": "FSCA Conduct Standard 3 of 2018 published October 2018 under FMA s.58. Prescribes trade reporting obligations for authorised ODPs and central counterparties — asset classes in scope, reporting entities, report content (Annexure A: 100 data fields), frequency, identifier requirements (LEI, UPI, UTI), and transitional arrangements. Strate (Pty) Ltd is the licensed trade repository (licensed December 2024; live 1 March 2027).",
-  "citationPatterns": ["CS 3/2018", "CS 3 of 2018", "ORG-CS2", "Conduct Standard 3 of 2018"],
+  "citationPatterns": [
+    "CS 3/2018",
+    "CS 3 of 2018",
+    "ORG-CS2",
+    "Conduct Standard 3 of 2018"
+  ],
   "priority": 1,
   "chapters": [
     {
@@ -54,28 +59,132 @@
           "sectionNumber": "4",
           "title": "Reporting obligation: reporting entities",
           "verbatim": true,
-          "text": "(1) Where an OTC derivative transaction is cleared through a central counterparty, the central counterparty must provide the report contemplated in paragraph 5.\n\n(2) Where a counterparty to an OTC derivative transaction is another authorised OTC derivative provider, the obligation to report is on both providers.\n\n(3) A provider or a central counterparty, where applicable, which is subject to the reporting obligation may delegate that obligation."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s4.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) Where an OTC derivative transaction is cleared through a central counterparty, the central counterparty must provide the report contemplated in paragraph 5.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) Where a counterparty to an OTC derivative transaction is another authorised OTC derivative provider, the obligation to report is on both providers.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) A provider or a central counterparty, where applicable, which is subject to the reporting obligation may delegate that obligation.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s5",
           "sectionNumber": "5",
           "title": "Report",
           "verbatim": true,
-          "text": "(1) The report must contain at least the information set out in Annexure A.\n\n(2) A provider or central counterparty must ensure that data reported to the trade repository is accurate.\n\n(3) A provider must keep a record of any concluded derivative transaction and any modification thereto for a period of at least five years following the termination of the transaction."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s5.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The report must contain at least the information set out in Annexure A.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) A provider or central counterparty must ensure that data reported to the trade repository is accurate.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) A provider must keep a record of any concluded derivative transaction and any modification thereto for a period of at least five years following the termination of the transaction.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s6",
           "sectionNumber": "6",
           "title": "Frequency of reporting",
           "verbatim": true,
-          "text": "(1) A provider must provide the report by the end of the business day following the day of the conclusion, modification or termination of the contract.\n\n(2) A provider must report mark-to-market or mark-to-model valuations of contracts to a trade repository daily based on the relevant closing market data from the previous business day.\n\n(3) Any other reporting elements as set out in item 100 of Annexure A must be reported at least on a daily basis, or as they occur, whatever the case may be."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s6.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) A provider must provide the report by the end of the business day following the day of the conclusion, modification or termination of the contract.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) A provider must report mark-to-market or mark-to-model valuations of contracts to a trade repository daily based on the relevant closing market data from the previous business day.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.3",
+              "number": "3",
+              "heading": "(3)",
+              "text": "(3) Any other reporting elements as set out in item 100 of Annexure A must be reported at least on a daily basis, or as they occur, whatever the case may be.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7",
           "sectionNumber": "7",
           "title": "Requirements for identifiers",
           "verbatim": false,
-          "text": "Section 7 covers three identifier types:\n\ns7.1 — Identification of counterparties and other entities using an LEI: A report must contain an LEI to identify (a) the reporting provider; (b) non-reporting counterparties; (c) the central counterparty, where the trade was cleared.\n\ns7.2 — Identification of derivative instruments: A report must identify a derivative instrument using a unique product identifier (UPI) based on the taxonomy of the derivative which is internationally recognisable, unique, neutral, reliable, open source, scalable, accessible, available at a reasonable cost basis, and subject to an appropriate governance framework. Where international or industry standards for a UPI are not reasonably available, a reporting counterparty must assign a UPI using its own methodology.\n\ns7.3 — Unique transaction identifier (UTI): A report must identify a derivative transaction using a UTI meeting the same nine criteria as the UPI. Where both counterparties are authorised ODPs, the reporting provider allocates the UTI and the non-reporting counterparty adopts the same identifier to avoid duplication. The UTI must be allocated at the earliest possible point in the trade flow. Where the trade is cleared, the central counterparty allocates the UTI."
+          "text": "Section 7 covers three identifier types:\n\ns7.1 — Identification of counterparties and other entities using an LEI: A report must contain an LEI to identify",
+          "subsections": [
+            {
+              "id": "s7.a",
+              "number": "a",
+              "heading": "s7.a",
+              "text": "the reporting provider;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.b",
+              "number": "b",
+              "heading": "s7.b",
+              "text": "non-reporting counterparties;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.c",
+              "number": "c",
+              "heading": "s7.c",
+              "text": "the central counterparty, where the trade was cleared.\n\ns7.2 — Identification of derivative instruments: A report must identify a derivative instrument using a unique product identifier (UPI) based on the taxonomy of the derivative which is internationally recognisable, unique, neutral, reliable, open source, scalable, accessible, available at a reasonable cost basis, and subject to an appropriate governance framework. Where international or industry standards for a UPI are not reasonably available, a reporting counterparty must assign a UPI using its own methodology.\n\ns7.3 — Unique transaction identifier (UTI): A report must identify a derivative transaction using a UTI meeting the same nine criteria as the UPI. Where both counterparties are authorised ODPs, the reporting provider allocates the UTI and the non-reporting counterparty adopts the same identifier to avoid duplication. The UTI must be allocated at the earliest possible point in the trade flow. Where the trade is cleared, the central counterparty allocates the UTI.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8",
@@ -89,7 +198,25 @@
           "sectionNumber": "9",
           "title": "Reporting start date and transitional arrangements",
           "verbatim": true,
-          "text": "(1) The obligation to comply with the reporting obligation in accordance with this Conduct Standard by a provider or a central counterparty, as the case may be, commences six months from the effective date of this Standard (the reporting start date).\n\n(2) All transactions entered into 18 months before the reporting start date—\n(a) that are still open on the reporting start date, must be back-loaded within 180 days after the reporting start date; and\n(b) concluded before the reporting start date must be reported to a trade repository within five years of the reporting start date."
+          "text": "",
+          "subsections": [
+            {
+              "id": "s9.1",
+              "number": "1",
+              "heading": "(1)",
+              "text": "(1) The obligation to comply with the reporting obligation in accordance with this Conduct Standard by a provider or a central counterparty, as the case may be, commences six months from the effective date of this Standard (the reporting start date).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9.2",
+              "number": "2",
+              "heading": "(2)",
+              "text": "(2) All transactions entered into 18 months before the reporting start date—\n(a) that are still open on the reporting start date, must be back-loaded within 180 days after the reporting start date; and\n(b) concluded before the reporting start date must be reported to a trade repository within five years of the reporting start date.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s10",

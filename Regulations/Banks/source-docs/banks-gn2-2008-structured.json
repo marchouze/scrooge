@@ -110,9 +110,34 @@
           "id": "s5",
           "number": "5",
           "heading": "Definitions",
-          "text": "Definitions In this guidance note the words hereunder shall bear the meaning so assigned thereto and, unless the context otherwise indicates- Connected person means- i. a spouse or partner; ii. minor children; ili. any person in a business or profit-sharing relationship with the employee, including partners in an investment club; iv. a trust of which the employee or any person mentioned in (i) or (ii) is a beneficiary; a company in which the employee or any person mentioned in (i), (ii) or (iv) is a shareholder; vi. a pension fund (other than a pension fund managed by the bank) of which the employee or any person mentioned in (i), (il) and (iii) is a beneficiary; or vii. any other accounts from which the person has a direct or indirect benefit. Employee means- i. alens son employed by the bank, including persons dealing on behalf of the bank or its il. any person who is privy to confidential or proprietary information that could result in a conflict of interest if the employee, including a person on secondment or contract and a connected person, were to use the information to his/her advantage. Rules means- the personal account trading rules that are enforced by the bank from time to time and which comply with the minimum standards set out in this guidance note. Securities includes- \"securities and financial instruments\" as defined in the Financial Markets Control Act, 1989 (Act No. 55 of 1989), and the Stock Exchanges Control Act, 1985 (Act No. 1 of 1985), respectively, and any unlisted instruments such as bonds, futures, options, forward rate agreements, swaps, equities and derivatives of any of these, but excludes all unit trusts other than unit trusts listed on a recognised exchange or with assets under management by the bank.",
+          "text": "Definitions In this guidance note the words hereunder shall bear the meaning so assigned thereto and, unless the context otherwise indicates- Connected person means- i. a spouse or partner; ii. minor children; ili. any person in a business or profit-sharing relationship with the employee, including partners in an investment club; iv. a trust of which the employee or any person mentioned in",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5.i",
+              "number": "i",
+              "heading": "s5.i",
+              "text": "or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.ii",
+              "number": "ii",
+              "heading": "s5.ii",
+              "text": "is a beneficiary; a company in which the employee or any person mentioned in (i), (ii) or (iv) is a shareholder; vi. a pension fund (other than a pension fund managed by the bank) of which the employee or any person mentioned in (i), (il) and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5.iii",
+              "number": "iii",
+              "heading": "s5.iii",
+              "text": "is a beneficiary; or vii. any other accounts from which the person has a direct or indirect benefit. Employee means- i. alens son employed by the bank, including persons dealing on behalf of the bank or its il. any person who is privy to confidential or proprietary information that could result in a conflict of interest if the employee, including a person on secondment or contract and a connected person, were to use the information to his/her advantage. Rules means- the personal account trading rules that are enforced by the bank from time to time and which comply with the minimum standards set out in this guidance note. Securities includes- \"securities and financial instruments\" as defined in the Financial Markets Control Act, 1989 (Act No. 55 of 1989), and the Stock Exchanges Control Act, 1985 (Act No. 1 of 1985), respectively, and any unlisted instruments such as bonds, futures, options, forward rate agreements, swaps, equities and derivatives of any of these, but excludes all unit trusts other than unit trusts listed on a recognised exchange or with assets under management by the bank.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s6",

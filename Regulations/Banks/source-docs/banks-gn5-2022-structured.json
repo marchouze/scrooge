@@ -62,9 +62,26 @@
             {
               "id": "s1-5",
               "number": "1.5",
-              "text": "Regulation 38(4) of the Regulations states, among others, when the Authority is of the opinion that a bank’s policies, processes and procedures relating to its risk assessment or internal control systems are inadequate, the Authority may require the bank, among others- (i) to strengthen the bank’s risk management policies, processes or procedures; or (ii) to strengthen the bank’s internal control systems.",
+              "text": "Regulation 38(4) of the Regulations states, among others, when the Authority is of the opinion that a bank’s policies, processes and procedures relating to its risk assessment or internal control systems are inadequate, the Authority may require the bank, among others-",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-5.i",
+                  "number": "i",
+                  "heading": "s1-5.i",
+                  "text": "to strengthen the bank’s risk management policies, processes or procedures; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-5.ii",
+                  "number": "ii",
+                  "heading": "s1-5.ii",
+                  "text": "to strengthen the bank’s internal control systems.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -206,16 +223,58 @@
             {
               "id": "s3-7",
               "number": "3.7",
-              "text": "Within South Africa, in terms of section 37 of the FIC Act, no duty of secrecy or confidentiality or any other restriction on the disclosure of information, whether imposed by legislation or arising from the common law or agreement, affects compliance by an accountable institution (bank) or supervisory body as it relates to: (i) reporting duties and access to information; (ii) measures to promote compliance by accountable institutions; and (iii) compliance and enforcement.",
+              "text": "Within South Africa, in terms of section 37 of the FIC Act, no duty of secrecy or confidentiality or any other restriction on the disclosure of information, whether imposed by legislation or arising from the common law or agreement, affects compliance by an accountable institution (bank) or supervisory body as it relates to:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3-7.i",
+                  "number": "i",
+                  "heading": "s3-7.i",
+                  "text": "reporting duties and access to information",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-7.ii",
+                  "number": "ii",
+                  "heading": "s3-7.ii",
+                  "text": "measures to promote compliance by accountable institutions; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-7.iii",
+                  "number": "iii",
+                  "heading": "s3-7.iii",
+                  "text": "compliance and enforcement.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-8",
               "number": "3.8",
-              "text": "In South Africa, section 38 of the Protection of Personal Information Act 4 of 2013 (POPIA) provides for an exemption in respect of certain functions, in particular, any function conferred on any person in terms of the law, which is performed with the view to protect members of the public against: (i) Financial loss due to dishonesty, malpractice, or other seriously improper conduct by, or the unfitness or incompetence of, persons concerned in the provision of banking, insurance, investment or other financial services or in the management of bodies corporate; or (ii) Dishonesty, malpractice or other seriously improper conduct by, or the unfitness or incompetence of, persons authorised to carry on any profession or other activity.",
+              "text": "In South Africa, section 38 of the Protection of Personal Information Act 4 of 2013 (POPIA) provides for an exemption in respect of certain functions, in particular, any function conferred on any person in terms of the law, which is performed with the view to protect members of the public against:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3-8.i",
+                  "number": "i",
+                  "heading": "s3-8.i",
+                  "text": "Financial loss due to dishonesty, malpractice, or other seriously improper conduct by, or the unfitness or incompetence of, persons concerned in the provision of banking, insurance, investment or other financial services or in the management of bodies corporate; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-8.ii",
+                  "number": "ii",
+                  "heading": "s3-8.ii",
+                  "text": "Dishonesty, malpractice or other seriously improper conduct by, or the unfitness or incompetence of, persons authorised to carry on any profession or other activity.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-9",

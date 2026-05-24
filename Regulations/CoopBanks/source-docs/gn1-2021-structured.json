@@ -89,8 +89,67 @@
             {
               "id": "s2-2-2-1",
               "number": "2.2.1",
-              "text": "Mark the middle column with a clear “X” when the attachment referred to is attached to the application form (FORM 001). (a) Attach to the application form a certified copy of the registration certificate issued by the Registrar of Co-operatives in terms of the Co-operatives Act. (b) Form CR1, application form (the list and signatures of founder members must correspond with last page of the constitution); (c) Form CR4, appointment of auditors (attach a letter from an auditor of consent of appointment) or Form CR8, Exemption from full compliance with auditing requirements; (d) Form CR5 , Reservation of name (the name must include the terms: ‘Financial Co-operative, Financial Services Co-operative, Credit Union or Savings and Credit Co-operative’); (a) Attach a copy of the completed PA Form 002 reflecting the total members of the proposed CFI. (b) For each member, record the following:  Name and surname  South African identity document or passport  Date of membership/Date Joined  Value of share purchased (c) The member share register should have at least 200 members listed, with all their details as per 2 (b) above. Mr Mrs Ms :Full Name : … Irene M tini ……… Position:… Chairperson ……….... Tel No: n/a ………...Cell No:… 083 964 7647 ……Email: … mtini@abccfi.co.za Mr Mrs Ms :Full Name : … Paul Xaba ……… Position:… Secretary ……….... Tel No: n/a ………...Cell No:… 08 1 9 73 6739 ……Email: … pxaba @abccfi.co.za The following documents are attached to this application: Attached (Mark with an X)",
-              "verbatim": true
+              "text": "Mark the middle column with a clear “X” when the attachment referred to is attached to the application form (FORM 001).",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s2-2-2-1.a",
+                  "number": "a",
+                  "heading": "s2-2-2-1.a",
+                  "text": "Attach to the application form a certified copy of the registration certificate issued by the Registrar of Co-operatives in terms of the Co-operatives Act.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-2-1.b",
+                  "number": "b",
+                  "heading": "s2-2-2-1.b",
+                  "text": "Form CR1, application form (the list and signatures of founder members must correspond with last page of the constitution);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-2-1.c",
+                  "number": "c",
+                  "heading": "s2-2-2-1.c",
+                  "text": "Form CR4, appointment of auditors (attach a letter from an auditor of consent of appointment) or Form CR8, Exemption from full compliance with auditing requirements;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-2-1.d",
+                  "number": "d",
+                  "heading": "s2-2-2-1.d",
+                  "text": "Form CR5 , Reservation of name (the name must include the terms: ‘Financial Co-operative, Financial Services Co-operative, Credit Union or Savings and Credit Co-operative’);",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s2-2-2-1.d.a",
+                      "number": "a",
+                      "heading": "s2-2-2-1.d.a",
+                      "text": "Attach a copy of the completed PA Form 002 reflecting the total members of the proposed CFI.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-2-2-1.d.b",
+                      "number": "b",
+                      "heading": "s2-2-2-1.d.b",
+                      "text": "For each member, record the following:  Name and surname  South African identity document or passport  Date of membership/Date Joined  Value of share purchased",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-2-2-1.d.c",
+                      "number": "c",
+                      "heading": "s2-2-2-1.d.c",
+                      "text": "The member share register should have at least 200 members listed, with all their details as per 2 (b) above. Mr Mrs Ms :Full Name : … Irene M tini ……… Position:… Chairperson ……….... Tel No: n/a ………...Cell No:… 083 964 7647 ……Email: … mtini@abccfi.co.za Mr Mrs Ms :Full Name : … Paul Xaba ……… Position:… Secretary ……….... Tel No: n/a ………...Cell No:… 08 1 9 73 6739 ……Email: … pxaba @abccfi.co.za The following documents are attached to this application: Attached (Mark with an X)",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -106,9 +165,75 @@
           "id": "s2",
           "number": "2",
           "heading": "Member Share Register (PA Form 002) with a minimum of 200 fully paid up members",
-          "text": "Member Share Register (PA Form 002) with a minimum of 200 fully paid up members × 5 (a) Attach two certified copies of the constitution of the proposed CFI. (b) Refer to Guidance Note 1 of 2020 on the model CFI constitution. (c) The applicant co-operative should discuss the constitution with its members prior to submission. (d) Approval of the constitution will be given in writing by the Prudential Authority. Such approval, if granted, may be subject to further amendments to the constitution of the applicant and subject to the subsequent adoption or ratification by the members of the CFI. (e) If approved by the Prudential Authority, the applicant must submit the constitution of the CFI, including the written approval granted by the Prudential Authority, to the Registrar of Co-operatives for registration purposes. The constitution of the CFI may only come into operation on the date that it is registered by the Registrar of Co-operatives. (a) Provide certified copies of the identity documents of all the founder members of the applicant .Founder members are all those members who attended the initial formation meeting. (a) Submit a certified copy of bank statements in the name of the applicant and/or a club account for the applicant. (b) The statement should reflect a minimum balance of R100,000 (c) Bank statement should not be more than three (3) months old. (a) Members who attend the formation meeting must make a resolution to establish the CFI and apply for registration with the PA. (b) The resolution must be captured in the form of minutes, which are duly signed by the chairperson of the meeting. (a) Please refer to Guidance Note 2 of 2019 on the contents of the savings policy",
+          "text": "Member Share Register (PA Form 002) with a minimum of 200 fully paid up members × 5",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s2.a",
+              "number": "a",
+              "heading": "s2.a",
+              "text": "Attach two certified copies of the constitution of the proposed CFI.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.b",
+              "number": "b",
+              "heading": "s2.b",
+              "text": "Refer to Guidance Note 1 of 2020 on the model CFI constitution.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.c",
+              "number": "c",
+              "heading": "s2.c",
+              "text": "The applicant co-operative should discuss the constitution with its members prior to submission.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.d",
+              "number": "d",
+              "heading": "s2.d",
+              "text": "Approval of the constitution will be given in writing by the Prudential Authority. Such approval, if granted, may be subject to further amendments to the constitution of the applicant and subject to the subsequent adoption or ratification by the members of the CFI.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.e",
+              "number": "e",
+              "heading": "s2.e",
+              "text": "If approved by the Prudential Authority, the applicant must submit the constitution of the CFI, including the written approval granted by the Prudential Authority, to the Registrar of Co-operatives for registration purposes. The constitution of the CFI may only come into operation on the date that it is registered by the Registrar of Co-operatives.",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s2.e.a",
+                  "number": "a",
+                  "heading": "s2.e.a",
+                  "text": "Provide certified copies of the identity documents of all the founder members of the applicant .Founder members are all those members who attended the initial formation meeting. (a) Submit a certified copy of bank statements in the name of the applicant and/or a club account for the applicant.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.e.b",
+                  "number": "b",
+                  "heading": "s2.e.b",
+                  "text": "The statement should reflect a minimum balance of R100,000",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.e.c",
+                  "number": "c",
+                  "heading": "s2.e.c",
+                  "text": "Bank statement should not be more than three (3) months old. (a) Members who attend the formation meeting must make a resolution to establish the CFI and apply for registration with the PA. (b) The resolution must be captured in the form of minutes, which are duly signed by the chairperson of the meeting. (a) Please refer to Guidance Note 2 of 2019 on the contents of the savings policy",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s3",
@@ -146,9 +271,26 @@
           "id": "s7",
           "number": "7",
           "heading": "Savings Plan × 6",
-          "text": "Savings Plan × 6 (a) Please refer to guidance note 2 of 2019 on contents of the loans policy (a) Only required if the applicant intends to issue loans to its members. (a) If the prospective CFI is a member of a representative body, duly registered in terms of section 33 of the Co-operative Banks Act. (a) Attach a detailed business plan in respect of a specified time period, setting out the applicant’s common economic and social objectives and aspirations, short and long term strategies for achieving those needs, the market strategy, the scope and nature of the business (including the types of products to be offered), the expected volume of deposits and the details of lending and investment objectives. The applicant should ensure that the proposed services to be provided by the CFI are compliant with the Co-operative Banks Act. (b) Please refer to Guidance Note 2 of 2019 on the minimum contents of the business plan.",
+          "text": "Savings Plan × 6",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s7.a",
+              "number": "a",
+              "heading": "s7.a",
+              "text": "Please refer to guidance note 2 of 2019 on contents of the loans policy (a) Only required if the applicant intends to issue loans to its members. (a) If the prospective CFI is a member of a representative body, duly registered in terms of section 33 of the Co-operative Banks Act. (a) Attach a detailed business plan in respect of a specified time period, setting out the applicant’s common economic and social objectives and aspirations, short and long term strategies for achieving those needs, the market strategy, the scope and nature of the business (including the types of products to be offered), the expected volume of deposits and the details of lending and investment objectives. The applicant should ensure that the proposed services to be provided by the CFI are compliant with the Co-operative Banks Act.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.b",
+              "number": "b",
+              "heading": "s7.b",
+              "text": "Please refer to Guidance Note 2 of 2019 on the minimum contents of the business plan.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8",
