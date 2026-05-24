@@ -113,6 +113,7 @@
     "event-store:sync": "bun run scripts/event-store-sync.ts",
     "registry:sync": "bun run scripts/agent-registry-sync.ts",
     "scheduler:tick": "bun run scripts/scheduler-tick.ts",
+    "archive:check": "bun run scripts/archive/check-and-archive.ts",
     "substrate:scheduler": "bun run scripts/substrate-scheduler.ts",
     "bus:tick": "bun run scripts/bus-tick.ts",
     "graph:seed": "bun run platform/regulatory/graph/run-seed.ts",
