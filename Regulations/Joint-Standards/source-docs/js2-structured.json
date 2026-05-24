@@ -483,9 +483,26 @@
                   "id": "s2-1.37.b",
                   "number": "b",
                   "heading": "s2-1.37.b",
-                  "text": "a person, other than a director or a head of a control function (i) who makes or participates in making decisions that (aa) affect the whole or a substantial part of the business of a financial institution; (bb) has the capacity to significantly affect the financial standing of a financial institution; and (ii) who oversees the enforcement of policies and the implementation of strategies approved, or adopted, by the governing body;",
+                  "text": "a person, other than a director or a head of a control function",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s2-1.37.b.i",
+                      "number": "i",
+                      "heading": "s2-1.37.b.i",
+                      "text": "who makes or participates in making decisions that (aa) affect the whole or a substantial part of the business of a financial institution; (bb) has the capacity to significantly affect the financial standing of a financial institution; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-1.37.b.ii",
+                      "number": "ii",
+                      "heading": "s2-1.37.b.ii",
+                      "text": "who oversees the enforcement of policies and the implementation of strategies approved, or adopted, by the governing body;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },

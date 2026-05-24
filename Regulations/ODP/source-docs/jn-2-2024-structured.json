@@ -63,9 +63,26 @@
               "id": "s3.c",
               "number": "c",
               "heading": "s3.c",
-              "text": "Machine-to-machine submission using the Umoja portal's application programming interface.\n\n3.2 For the use of methods referred to in sub-paragraphs (a) and (b) above, the submission template is available on the Umoja portal. For the use of the method referred to in sub-paragraph (c), the relevant specifications may be found on the Umoja portal webpage as set out in Appendix A.\n\n3.3 A provider and counterparty must submit the regulatory reporting return in the manner set out in paragraph 3.1 on a daily T+1 basis by no later than 16:00 South African time. In the case of public holidays, the return must be submitted on the first business day immediately following the relevant public holiday.",
+              "text": "Machine-to-machine submission using the Umoja portal's application programming interface.\n\n3.2 For the use of methods referred to in sub-paragraphs",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3.c.a",
+                  "number": "a",
+                  "heading": "s3.c.a",
+                  "text": "and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3.c.b",
+                  "number": "b",
+                  "heading": "s3.c.b",
+                  "text": "above, the submission template is available on the Umoja portal. For the use of the method referred to in sub-paragraph (c), the relevant specifications may be found on the Umoja portal webpage as set out in Appendix A.\n\n3.3 A provider and counterparty must submit the regulatory reporting return in the manner set out in paragraph 3.1 on a daily T+1 basis by no later than 16:00 South African time. In the case of public holidays, the return must be submitted on the first business day immediately following the relevant public holiday.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

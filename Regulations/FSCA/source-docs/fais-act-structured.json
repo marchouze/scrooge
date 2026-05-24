@@ -96,9 +96,34 @@
                           "id": "s1-1.d.ii.c",
                           "number": "c",
                           "heading": "s1-1.d.ii.c",
-                          "text": "has treated the complainant unfairly; \"compliance officer\" means a compliance officer for an authorised financial services provider referred to in section 17; \"Court\" means any court having jurisdiction; \"exempt\" means to exempt, on application by a person or on the registrar's own initiative, on any of the grounds mentioned in section 44(1)(a), (b) or (c) and (4)(a); \"financial product\" means, subject to subsection (2)— (a) securities and instruments, including shares in a company other than a \"share block company\" as defined in the Share Blocks Control Act, 1980 (Act No. 59 of 1980); debentures and securitised debt; any money-market instrument; any warrant, certificate, and other instrument acknowledging, conferring or creating rights to subscribe to, acquire, dispose of, or convert securities and instruments referred to in subparagraphs (i), (ii) and (iii); any \"securities\" as defined in section 1 of the Securities Services Act, 2002; a participatory interest in one or more collective investment schemes; a long-term or a short-term insurance contract or policy, referred to in the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively; a benefit provided by (i) a pension fund organisation as defined in section 1(1) of the Pension Funds Act, 1956 (Act No. 24 of 1956), to the members of the organisation by virtue of membership; or (ii) a friendly society referred to in the Friendly Societies Act, 1956 (Act No. 25 of 1956), to the members of the society by virtue of membership; a foreign currency denominated investment instrument, including a foreign currency deposit; a deposit as defined in section 1(1) of the Banks Act, 1990 (Act No. 94 of 1990); a health service benefit provided by a medical scheme as defined in section 1(1) of the Medical Schemes Act, 1998 (Act No. 131 of 1998); any other product similar in nature to any financial product referred to in paragraphs (a) to (g), inclusive, declared by the registrar, after consultation with the Advisory Committee, by notice in the Gazette to be a financial product for the purposes of this Act; any combined product containing one or more of the financial products referred to in paragraphs (a) to (h), inclusive; any financial product issued by any foreign product supplier and marketed in the Republic and which in nature and character is essentially similar or corresponding to a financial product referred to in paragraphs (a) to (i), inclusive; \"financial service\" means any service contemplated in paragraph (a), (b) or (c) of the definition of \"financial services provider\", including any category of such services; \"Financial Services Board Act\" means the Financial Services Board Act, 1990 (Act No. 97 of 1990); \"financial services provider\" means any person, other than a representative, who as a regular feature of the business of such person— (a) furnishes advice; or (b) furnishes advice and renders any intermediary service; or (c) renders an intermediary service; \"intermediary service\" means, subject to subsection (3)(b), any act other than the furnishing of advice, performed by a person for or on behalf of a client or product supplier— (a) the result of which is that a client may enter into, offers to enter into or enters into any transaction in respect of a financial product with a product supplier; or (b) with a view to— (i) buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested; (ii) collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                          "text": "has treated the complainant unfairly; \"compliance officer\" means a compliance officer for an authorised financial services provider referred to in section 17; \"Court\" means any court having jurisdiction; \"exempt\" means to exempt, on application by a person or on the registrar's own initiative, on any of the grounds mentioned in section 44(1)(a), (b) or (c) and (4)(a); \"financial product\" means, subject to subsection (2)—",
                           "verbatim": true,
-                          "subsections": []
+                          "subsections": [
+                            {
+                              "id": "s1-1.d.ii.c.a",
+                              "number": "a",
+                              "heading": "s1-1.d.ii.c.a",
+                              "text": "securities and instruments, including shares in a company other than a \"share block company\" as defined in the Share Blocks Control Act, 1980 (Act No. 59 of 1980); debentures and securitised debt; any money-market instrument; any warrant, certificate, and other instrument acknowledging, conferring or creating rights to subscribe to, acquire, dispose of, or convert securities and instruments referred to in subparagraphs (i), (ii) and (iii); any \"securities\" as defined in section 1 of the Securities Services Act, 2002; a participatory interest in one or more collective investment schemes; a long-term or a short-term insurance contract or policy, referred to in the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively; a benefit provided by (i) a pension fund organisation as defined in section 1(1) of the Pension Funds Act, 1956 (Act No. 24 of 1956), to the members of the organisation by virtue of membership; or (ii) a friendly society referred to in the Friendly Societies Act, 1956 (Act No. 25 of 1956), to the members of the society by virtue of membership; a foreign currency denominated investment instrument, including a foreign currency deposit; a deposit as defined in section 1(1) of the Banks Act, 1990 (Act No. 94 of 1990); a health service benefit provided by a medical scheme as defined in section 1(1) of the Medical Schemes Act, 1998 (Act No. 131 of 1998); any other product similar in nature to any financial product referred to in paragraphs (a) to (g), inclusive, declared by the registrar, after consultation with the Advisory Committee, by notice in the Gazette to be a financial product for the purposes of this Act; any combined product containing one or more of the financial products referred to in paragraphs (a) to (h), inclusive; any financial product issued by any foreign product supplier and marketed in the Republic and which in nature and character is essentially similar or corresponding to a financial product referred to in paragraphs (a) to (i), inclusive; \"financial service\" means any service contemplated in paragraph (a),",
+                              "verbatim": true,
+                              "subsections": []
+                            },
+                            {
+                              "id": "s1-1.d.ii.c.b",
+                              "number": "b",
+                              "heading": "s1-1.d.ii.c.b",
+                              "text": "or",
+                              "verbatim": true,
+                              "subsections": []
+                            },
+                            {
+                              "id": "s1-1.d.ii.c.c",
+                              "number": "c",
+                              "heading": "s1-1.d.ii.c.c",
+                              "text": "of the definition of \"financial services provider\", including any category of such services; \"Financial Services Board Act\" means the Financial Services Board Act, 1990 (Act No. 97 of 1990); \"financial services provider\" means any person, other than a representative, who as a regular feature of the business of such person— (a) furnishes advice; or (b) furnishes advice and renders any intermediary service; or (c) renders an intermediary service; \"intermediary service\" means, subject to subsection (3)(b), any act other than the furnishing of advice, performed by a person for or on behalf of a client or product supplier— (a) the result of which is that a client may enter into, offers to enter into or enters into any transaction in respect of a financial product with a product supplier; or (b) with a view to— (i) buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested; (ii) collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                              "verbatim": true,
+                              "subsections": []
+                            }
+                          ]
                         }
                       ]
                     },
@@ -121,17 +146,51 @@
                           "id": "s1-1.d.iii.b",
                           "number": "b",
                           "heading": "s1-1.d.iii.b",
-                          "text": "a corporate body or trust consisting of only one natural person as member, director, shareholder or trustee, means any such natural person; \"licence\" means a licence contemplated in section 7(1); \"licensee\" means a financial services provider to whom a licence has been issued under section 8; \"Minister\" means the Minister of Finance; \"Office\" means the Office of the Ombud established by section 20(1); \"Ombud\" means— (a) the Ombud for Financial Services Providers appointed in terms of section 21(1); and (b) for the purposes of sections 27, 28, 31 and 39, includes a deputy ombud; \"person\" means any natural person, partnership or trust, and includes— (a) any organ of state as defined in section 239 of the Constitution of the Republic of South Africa, 1996 (Act No. 108 of 1996); (b) any company incorporated or registered as such under any law;",
+                          "text": "a corporate body or trust consisting of only one natural person as member, director, shareholder or trustee, means any such natural person; \"licence\" means a licence contemplated in section 7(1); \"licensee\" means a financial services provider to whom a licence has been issued under section 8; \"Minister\" means the Minister of Finance; \"Office\" means the Office of the Ombud established by section 20(1); \"Ombud\" means—",
                           "verbatim": true,
-                          "subsections": []
+                          "subsections": [
+                            {
+                              "id": "s1-1.d.iii.b.a",
+                              "number": "a",
+                              "heading": "s1-1.d.iii.b.a",
+                              "text": "the Ombud for Financial Services Providers appointed in terms of section 21(1); and",
+                              "verbatim": true,
+                              "subsections": []
+                            },
+                            {
+                              "id": "s1-1.d.iii.b.b",
+                              "number": "b",
+                              "heading": "s1-1.d.iii.b.b",
+                              "text": "for the purposes of sections 27, 28, 31 and 39, includes a deputy ombud; \"person\" means any natural person, partnership or trust, and includes— (a) any organ of state as defined in section 239 of the Constitution of the Republic of South Africa, 1996 (Act No. 108 of 1996); (b) any company incorporated or registered as such under any law;",
+                              "verbatim": true,
+                              "subsections": []
+                            }
+                          ]
                         },
                         {
                           "id": "s1-1.d.iii.c",
                           "number": "c",
                           "heading": "s1-1.d.iii.c",
-                          "text": "any body of persons corporate or unincorporate; \"prescribe\" means prescribe by regulation; \"product supplier\" means any person who issues a financial product by virtue of an authority, approval or right granted to such person under any law, including the Companies Act, 1973 (Act No. 61 of 1973); \"registrar\" means the registrar or deputy registrar of financial services providers referred to in section 2; \"regulation\" means a regulation made under section 35; \"representative\" means any person who renders a financial service to a client for or on behalf of a financial services provider, in terms of conditions of employment or any other mandatory agreement, but excludes a person rendering clerical, technical, administrative, legal, accounting or other service in a subsidiary or subordinate capacity, which service— (a) does not require judgment on the part of the latter person; or (b) does not lead a client to any specific transaction in respect of a financial product in response to general enquiries; \"rule\" means a rule made by the Board under section 26; \"this Act\" includes any regulation, rule or code of conduct, and any notice given, approval or exemption granted, determination made, requirement or condition determined or imposed, or any other decision referred to in section 3(1).",
+                          "text": "any body of persons corporate or unincorporate; \"prescribe\" means prescribe by regulation; \"product supplier\" means any person who issues a financial product by virtue of an authority, approval or right granted to such person under any law, including the Companies Act, 1973 (Act No. 61 of 1973); \"registrar\" means the registrar or deputy registrar of financial services providers referred to in section 2; \"regulation\" means a regulation made under section 35; \"representative\" means any person who renders a financial service to a client for or on behalf of a financial services provider, in terms of conditions of employment or any other mandatory agreement, but excludes a person rendering clerical, technical, administrative, legal, accounting or other service in a subsidiary or subordinate capacity, which service—",
                           "verbatim": true,
-                          "subsections": []
+                          "subsections": [
+                            {
+                              "id": "s1-1.d.iii.c.a",
+                              "number": "a",
+                              "heading": "s1-1.d.iii.c.a",
+                              "text": "does not require judgment on the part of the latter person; or",
+                              "verbatim": true,
+                              "subsections": []
+                            },
+                            {
+                              "id": "s1-1.d.iii.c.b",
+                              "number": "b",
+                              "heading": "s1-1.d.iii.c.b",
+                              "text": "does not lead a client to any specific transaction in respect of a financial product in response to general enquiries; \"rule\" means a rule made by the Board under section 26; \"this Act\" includes any regulation, rule or code of conduct, and any notice given, approval or exemption granted, determination made, requirement or condition determined or imposed, or any other decision referred to in section 3(1).",
+                              "verbatim": true,
+                              "subsections": []
+                            }
+                          ]
                         }
                       ]
                     }

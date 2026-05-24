@@ -82,9 +82,26 @@
                   "id": "excon-reg2.2.b",
                   "number": "b",
                   "heading": "excon-reg2.2.b",
-                  "text": "The Treasury may, in its discretion, by order prohibit all authorised dealers or any one or more of them –\n(i) from selling, lending or delivering to, or buying, borrowing or receiving from, any specified person, fund or foreign government any foreign currency or gold; or\n(ii) from so selling, lending, delivering, buying, borrowing or receiving any foreign currency or gold for any specified purpose or except for such purposes or on such conditions as the Treasury may determine.",
+                  "text": "The Treasury may, in its discretion, by order prohibit all authorised dealers or any one or more of them –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "excon-reg2.2.b.i",
+                      "number": "i",
+                      "heading": "excon-reg2.2.b.i",
+                      "text": "from selling, lending or delivering to, or buying, borrowing or receiving from, any specified person, fund or foreign government any foreign currency or gold; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg2.2.b.ii",
+                      "number": "ii",
+                      "heading": "excon-reg2.2.b.ii",
+                      "text": "from so selling, lending, delivering, buying, borrowing or receiving any foreign currency or gold for any specified purpose or except for such purposes or on such conditions as the Treasury may determine.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },

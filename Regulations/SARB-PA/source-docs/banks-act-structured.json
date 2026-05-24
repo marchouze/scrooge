@@ -39,25 +39,100 @@
               "id": "s1.b",
               "number": "b",
               "heading": "s1.b",
-              "text": "which persons are so interconnected that should one of them experience financial difficulties, another one or all of them would likely be adversely affected, irrespective of whether any of those persons is domiciled in the same country as any of the others; \"branch\" means an institution that is not a public company as contemplated in section 11(1), but by means of which a foreign institution conducts the business of a bank in the Republic under an authorization referred to in section 18A; \"branch of a bank\" means an institution by means of which a bank conducts the business of a bank outside the Republic; \"board of review\" means the board of review established by section 9(2); \"chief executive officer\", in relation to a bank, means a person who, either alone or jointly with one or more other persons, is responsible under the direct authority of the board of directors of the bank for the conduct of the business of the bank; \"chief representative officer\" means the person in charge of a representative office; \"close relative\", in relation to any person, means (a) a spouse; (b) a child, stepchild, parent or stepparent;",
+              "text": "which persons are so interconnected that should one of them experience financial difficulties, another one or all of them would likely be adversely affected, irrespective of whether any of those persons is domiciled in the same country as any of the others; \"branch\" means an institution that is not a public company as contemplated in section 11(1), but by means of which a foreign institution conducts the business of a bank in the Republic under an authorization referred to in section 18A; \"branch of a bank\" means an institution by means of which a bank conducts the business of a bank outside the Republic; \"board of review\" means the board of review established by section 9(2); \"chief executive officer\", in relation to a bank, means a person who, either alone or jointly with one or more other persons, is responsible under the direct authority of the board of directors of the bank for the conduct of the business of the bank; \"chief representative officer\" means the person in charge of a representative office; \"close relative\", in relation to any person, means",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1.b.a",
+                  "number": "a",
+                  "heading": "s1.b.a",
+                  "text": "a spouse;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.b.b",
+                  "number": "b",
+                  "heading": "s1.b.b",
+                  "text": "a child, stepchild, parent or stepparent;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s1.c",
               "number": "c",
               "heading": "s1.c",
-              "text": "the spouse of any of the persons mentioned in paragraph (b); \"Companies Act\" means the Companies Act, 1973 (Act No. 61 of 1973); \"company\" means a company under the Companies Act; \"controlling company\" means a public company registered in terms of this Act as a controlling company in respect of a bank; \"co-operative\" means a co-operative incorporated in terms of the Co-operatives Act, 1981 (Act No. 91 of 1981), and includes a co-operative society or co-operative company deemed in terms of section 2 of that Act to be incorporated in terms of the said Act; \"corporate governance\", in relation to the management of a bank or a controlling company, includes all structures, processes, policies, systems and procedures whereby the bank or controlling company is governed; \"deposit\", when used as a noun, means an amount of money paid by one person to another person subject to an agreement in terms of which (a) an equal amount or any part thereof will be conditionally or unconditionally repaid, either by the person to whom the money has been so paid or by any other person, with or without a premium, on demand or at specified or unspecified dates or in circumstances agreed to by or on behalf of the person making the payment and the person receiving it; and (b) no interest will be payable on the amount so paid or interest will be payable thereon at specified intervals or otherwise, notwithstanding that such payment is limited to a fixed amount or that a transferable or non-transferable certificate or other instrument providing for the repayment of such amount mutatis mutandis as contemplated in paragraph (a) or for the payment of interest on such amount mutatis mutandis as contemplated in paragraph (b) is issued in respect of such amount; but does not include an amount of money (i) paid as an advance, or as part payment, in terms of a contract for the sale, letting and hiring or other provision of movable or immovable property or of services, and which is repayable only in the event of (aa) that property or those services not in fact being sold, let and hired or otherwise provided; (bb) the fulfilment of a resolutive condition forming part of that contract; or (cc) the non-fulfilment of a suspensive condition forming part of that contract; (ii) paid as security for the performance of a contract or as security in respect of any loss which may result from the non-performance of a contract; (iii) without derogating from the provisions of paragraph (ii), paid as security for the delivery up or return of any movable or immovable property, whether in a particular state of repair or otherwise; (iv) paid by a holding company to its subsidiary, or by a subsidiary to its holding company, or by one subsidiary to another subsidiary of the same holding company; (v) paid by a person who, at the time of such payment (aa) is a close relative of the person to whom such money is paid; (bb) is a director or executive officer of the person to whom such money is paid; or (cc) is a close relative of a director or executive officer of the person to whom such money is paid; (vi) paid by any person to a registered insurer as defined in section 1(1) of the Insurance Act, 1943 (Act No. 27 of 1943), as a premium in respect of any kind of policy defined or referred to in that section; (vii) paid to a fund registered or provisionally registered under section 4 of the Pension Funds Act, 1956 (Act No. 24 of 1956), as a contribution by or on behalf of a member of that fund; or (viii) paid to a benefit fund, as defined in section 1 of the Income Tax Act, 1962 (Act No. 58 of 1962), as a contribution or a subscription by or on behalf of a member of that fund; and \"deposit\" when used as a verb, or any derivative thereof, has a corresponding meaning; \"director\", includes an executive director and a non-executive director, unless expressly stated otherwise; \"domestic shareholder\", in relation to a bank or controlling company, means a shareholder of the bank or controlling company (a) who is resident in the Republic; (b) which is a company controlled, mutatis mutandis as contemplated in paragraph (a), (b) or (c) of the definition of \"controlling company\" in section 1 of the Companies Act, by a person or persons who is or are resident in the Republic or, in the case of a juristic person or persons, was or were formed, established or incorporated by or under a law of the Republic; (c) which is a juristic person other than a company and was formed, established or incorporated by or under a law of the Republic, excluding a pension fund registered in terms of the Pension Funds Act, 1956 (Act No. 24 of 1956), where the head office of the association which carried on the business of that fund, is outside the Republic; or",
+              "text": "the spouse of any of the persons mentioned in paragraph (b); \"Companies Act\" means the Companies Act, 1973 (Act No. 61 of 1973); \"company\" means a company under the Companies Act; \"controlling company\" means a public company registered in terms of this Act as a controlling company in respect of a bank; \"co-operative\" means a co-operative incorporated in terms of the Co-operatives Act, 1981 (Act No. 91 of 1981), and includes a co-operative society or co-operative company deemed in terms of section 2 of that Act to be incorporated in terms of the said Act; \"corporate governance\", in relation to the management of a bank or a controlling company, includes all structures, processes, policies, systems and procedures whereby the bank or controlling company is governed; \"deposit\", when used as a noun, means an amount of money paid by one person to another person subject to an agreement in terms of which",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1.c.a",
+                  "number": "a",
+                  "heading": "s1.c.a",
+                  "text": "an equal amount or any part thereof will be conditionally or unconditionally repaid, either by the person to whom the money has been so paid or by any other person, with or without a premium, on demand or at specified or unspecified dates or in circumstances agreed to by or on behalf of the person making the payment and the person receiving it; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.c.b",
+                  "number": "b",
+                  "heading": "s1.c.b",
+                  "text": "no interest will be payable on the amount so paid or interest will be payable thereon at specified intervals or otherwise, notwithstanding that such payment is limited to a fixed amount or that a transferable or non-transferable certificate or other instrument providing for the repayment of such amount mutatis mutandis as contemplated in paragraph (a) or for the payment of interest on such amount mutatis mutandis as contemplated in paragraph (b) is issued in respect of such amount; but does not include an amount of money (i) paid as an advance, or as part payment, in terms of a contract for the sale, letting and hiring or other provision of movable or immovable property or of services, and which is repayable only in the event of (aa) that property or those services not in fact being sold, let and hired or otherwise provided; (bb) the fulfilment of a resolutive condition forming part of that contract; or (cc) the non-fulfilment of a suspensive condition forming part of that contract; (ii) paid as security for the performance of a contract or as security in respect of any loss which may result from the non-performance of a contract; (iii) without derogating from the provisions of paragraph (ii), paid as security for the delivery up or return of any movable or immovable property, whether in a particular state of repair or otherwise; (iv) paid by a holding company to its subsidiary, or by a subsidiary to its holding company, or by one subsidiary to another subsidiary of the same holding company; (v) paid by a person who, at the time of such payment (aa) is a close relative of the person to whom such money is paid; (bb) is a director or executive officer of the person to whom such money is paid; or (cc) is a close relative of a director or executive officer of the person to whom such money is paid; (vi) paid by any person to a registered insurer as defined in section 1(1) of the Insurance Act, 1943 (Act No. 27 of 1943), as a premium in respect of any kind of policy defined or referred to in that section; (vii) paid to a fund registered or provisionally registered under section 4 of the Pension Funds Act, 1956 (Act No. 24 of 1956), as a contribution by or on behalf of a member of that fund; or (viii) paid to a benefit fund, as defined in section 1 of the Income Tax Act, 1962 (Act No. 58 of 1962), as a contribution or a subscription by or on behalf of a member of that fund; and \"deposit\" when used as a verb, or any derivative thereof, has a corresponding meaning; \"director\", includes an executive director and a non-executive director, unless expressly stated otherwise; \"domestic shareholder\", in relation to a bank or controlling company, means a shareholder of the bank or controlling company (a) who is resident in the Republic; (b) which is a company controlled, mutatis mutandis as contemplated in paragraph (a), (b) or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.c.c",
+                  "number": "c",
+                  "heading": "s1.c.c",
+                  "text": "of the definition of \"controlling company\" in section 1 of the Companies Act, by a person or persons who is or are resident in the Republic or, in the case of a juristic person or persons, was or were formed, established or incorporated by or under a law of the Republic; (c) which is a juristic person other than a company and was formed, established or incorporated by or under a law of the Republic, excluding a pension fund registered in terms of the Pension Funds Act, 1956 (Act No. 24 of 1956), where the head office of the association which carried on the business of that fund, is outside the Republic; or",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s1.d",
               "number": "d",
               "heading": "s1.d",
-              "text": "that is a person belonging to a category of persons recognized by the Registrar as domestic shareholders for the purposes of this Act; \"employee in charge of a risk management function\", in relation to a bank, means that employee of the bank who is ultimately responsible for the management of one or more of the following types of risk to which the bank is exposed, namely solvency risk; liquidity risk; credit risk; currency risk; market risk (position risk); interest rate risk; counterparty risk; technological risk; operational risk; compliance risk; or any other risk regarded as material by that bank; \"executive officer\", in relation to any institution (a) that is not a bank, includes any manager, the compliance officer, the secretary of the company and any director who is also an employee of such an institution; (c) that is a bank, includes any employee who is a director or who is in charge of a risk management function of the bank, the compliance officer, the secretary of the company or any manager of the bank who is responsible, or reports, directly to the chief executive officer of the bank; \"fellow subsidiary\", in relation to a company, means any other company which is a subsidiary of the holding company of which the first-mentioned company is a subsidiary; \"financial statements\" means annual financial statements referred to in sections 286 and 288 of the Companies Act; \"foreign shareholder\", in relation to a bank or controlling company, means a shareholder of such bank or controlling company that is not a domestic shareholder; \"general public\" does not include a bank; \"group of banks\" means a group consisting of two or more banks which have the same holding company, and such holding company; \"holding company\" means a holding company as defined in section 1(4) of the Companies Act; \"Land Bank\" means the Land and Agricultural Bank of South Africa; \"liquid assets\" means (a) Reserve Bank notes, subsidiary coin (excluding such notes or coin to the extent to which it is taken into account in the calculation of the minimum reserve balance a bank is required to maintain in an account with the South African Reserve Bank in terms of section 10 of the South African Reserve Bank Act, 1989 (Act No. 90 of 1989)), gold coin and bullion; (b) any credit balance in a clearing account with the Reserve Bank; (c) deleted; (d) treasury bills of the Republic;",
+              "text": "that is a person belonging to a category of persons recognized by the Registrar as domestic shareholders for the purposes of this Act; \"employee in charge of a risk management function\", in relation to a bank, means that employee of the bank who is ultimately responsible for the management of one or more of the following types of risk to which the bank is exposed, namely solvency risk; liquidity risk; credit risk; currency risk; market risk (position risk); interest rate risk; counterparty risk; technological risk; operational risk; compliance risk; or any other risk regarded as material by that bank; \"executive officer\", in relation to any institution",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1.d.a",
+                  "number": "a",
+                  "heading": "s1.d.a",
+                  "text": "that is not a bank, includes any manager, the compliance officer, the secretary of the company and any director who is also an employee of such an institution; (c) that is a bank, includes any employee who is a director or who is in charge of a risk management function of the bank, the compliance officer, the secretary of the company or any manager of the bank who is responsible, or reports, directly to the chief executive officer of the bank; \"fellow subsidiary\", in relation to a company, means any other company which is a subsidiary of the holding company of which the first-mentioned company is a subsidiary; \"financial statements\" means annual financial statements referred to in sections 286 and 288 of the Companies Act; \"foreign shareholder\", in relation to a bank or controlling company, means a shareholder of such bank or controlling company that is not a domestic shareholder; \"general public\" does not include a bank; \"group of banks\" means a group consisting of two or more banks which have the same holding company, and such holding company; \"holding company\" means a holding company as defined in section 1(4) of the Companies Act; \"Land Bank\" means the Land and Agricultural Bank of South Africa; \"liquid assets\" means (a) Reserve Bank notes, subsidiary coin (excluding such notes or coin to the extent to which it is taken into account in the calculation of the minimum reserve balance a bank is required to maintain in an account with the South African Reserve Bank in terms of section 10 of the South African Reserve Bank Act, 1989 (Act No. 90 of 1989)), gold coin and bullion;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.d.b",
+                  "number": "b",
+                  "heading": "s1.d.b",
+                  "text": "any credit balance in a clearing account with the Reserve Bank;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.d.c",
+                  "number": "c",
+                  "heading": "s1.d.c",
+                  "text": "deleted;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.d.d",
+                  "number": "d",
+                  "heading": "s1.d.d",
+                  "text": "treasury bills of the Republic;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s1.e",
@@ -79,9 +154,26 @@
               "id": "s1.g",
               "number": "g",
               "heading": "s1.g",
-              "text": "bills issued by the Land Bank for purposes of extending short-term financing (i) to an agricultural co-operative or a special farmers' co-operative formed and incorporated under the Co-operatives Act, 1981 (Act No. 91 of 1981), for the purchase of agricultural products from farmers and of agricultural implements, equipment and other means of production for resale to farmers for the production of agricultural products; or (ii) to a control board established under the Marketing Act, 1968 (Act No. 59 of 1968), for the purchase of agricultural products;",
+              "text": "bills issued by the Land Bank for purposes of extending short-term financing",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1.g.i",
+                  "number": "i",
+                  "heading": "s1.g.i",
+                  "text": "to an agricultural co-operative or a special farmers' co-operative formed and incorporated under the Co-operatives Act, 1981 (Act No. 91 of 1981), for the purchase of agricultural products from farmers and of agricultural implements, equipment and other means of production for resale to farmers for the production of agricultural products; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.g.ii",
+                  "number": "ii",
+                  "heading": "s1.g.ii",
+                  "text": "to a control board established under the Marketing Act, 1968 (Act No. 59 of 1968), for the purchase of agricultural products;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s1.h",
@@ -103,9 +195,50 @@
               "id": "s1.j",
               "number": "j",
               "heading": "s1.j",
-              "text": "securities of the Reserve Bank with a maturity of not more than three years to the last redemption date thereof; \"Minister\" means the Minister of Finance; \"mutual bank\" means a mutual bank as defined in section 1(1) of the Mutual Banks Act, 1993 (Act No. 124 of 1993); \"person\" includes any partnership; \"prescribed\" means prescribed by regulation; \"primary share capital\" means capital obtained through the issue of ordinary shares, non-redeemable non-cumulative preference shares or prescribed categories of preferred securities, excluding such ordinary shares, non-redeemable non-cumulative preference shares or prescribed categories of preferred securities issued in pursuance of the capitalization of reserves resulting from a revaluation of assets; \"primary unimpaired reserve funds\" means funds obtained from actual earnings or by way of recoveries, premiums on the issue of ordinary or non-redeemable non-cumulative preference shares or a surplus on the realization of capital assets, and which have been set aside as a general or special reserve, are disclosed as such a reserve in the financial statements of the bank concerned and are available for the purpose of meeting liabilities of or losses suffered by the bank, but does not include any fund required to be maintained in terms of any other law; \"public\" includes a juristic person; \"Registrar\" means the Registrar of Banks designated under section 4; \"Registrar of Companies\" means the Registrar of Companies appointed under section 7 of the Companies Act; \"regulation\" means a regulation made under section 90; \"Regulations relating to Banks\" means the Regulations relating to Banks as amended or re-enacted from time to time under section 90; \"Regulations relating to Banks' Financial Instrument Trading\" means the Regulations relating to Banks' Financial Instrument Trading as published by Government Notice No. R.1058 of 21 August 1998, and as amended from time to time; \"Regulations relating to branches\" means the Regulations titled 'Conditions for the conducting of the business of a bank by a foreign institution by means of a branch in the Republic' as published by Government Notice No. R. 1414 of 28 December 2000, and amended from time to time; \"representative office\", in relation to (a) a foreign institution referred to in section 34(1), means premises situated within the Republic and from which the business referred to in the said section 34(1) and conducted by such foreign institution in the other country referred to in that section, is promoted or assisted in any way; or (b) the establishment by a bank of a representative office outside the Republic as contemplated in section 52(1)(e), means premises situated outside the Republic and from which the business conducted by such bank within the Republic in terms of this Act is promoted or assisted in any way; \"Republic\", for the purposes of the definition of \"domestic shareholder\", includes any state the territory of which formerly formed part of the Republic; \"Reserve Bank\" means the South African Reserve Bank; \"secondary capital\" means a prescribed percentage of capital obtained through the issue, with prior written approval of the Registrar and in accordance with conditions approved by the Registrar in writing and on such further conditions, if any, as may be prescribed, of (a) cumulative preference shares; (b) ordinary shares, or preference shares other than cumulative preference shares, issued in pursuance of the capitalization of reserves resulting from a revaluation of assets; and (c) prescribed categories of debt instruments; \"secondary unimpaired reserve funds\" means (a) such funds, obtained from actual earning or by way of recoveries, as may be prescribed and which have been set aside, but which are not disclosed as a general or special reserve in the financial statements of the bank concerned; (b) a prescribed percentage of the amount of any surplus resulting from a revaluation of assets and determined as prescribed; (c) a prescribed amount of general provisions held against unidentified and unforeseen losses; and (d) funds obtained by way of premiums on the issue of cumulative preference shares or debt instruments issued in accordance with the prescribed conditions, whether or not such funds are disclosed as a general or special reserve in the financial statements of the bank concerned, but does not include any fund required to be maintained in terms of any other law; \"subsidiary\" means a subsidiary as defined in section 1(3) of the Companies Act; \"tertiary capital\" means (a) accrued current-period uncapitalized net profits derived from trading activities; or (b) capital obtained by means of unsecured subordinated loans negotiated, subject to such conditions as may be prescribed; \"the business of a bank\" means (a) the acceptance of deposits from the general public (including persons in the employ of the person so accepting deposits) as a regular feature of the business in question; (b) the soliciting of or advertising for deposits; (c) the utilization of money, or of the interest or other income earned on money, accepted by way of deposit as contemplated in paragraph (a) (i) for the granting by any person, acting as lender in such person's own name or through the medium of a trust or a nominee, of loans to other persons; (ii) for investment by any person, acting as investor in such person's own name or through the medium of a trust or a nominee; or (iii) for the financing, wholly or to any material extent, by any person of any other business activity conducted by such person in his or her own name or through the medium of a trust or a nominee; (d) the obtaining, as a regular feature of the business in question of money through the sale of an asset, to any person other than a bank, subject to an agreement in terms of which the seller undertakes to purchase from the buyer at a future date the asset so sold or any other asset; or (e) any other activity which the Registrar has, after consultation with the Governor of the Reserve Bank, by notice in the Gazette declared to be the business of a bank, but does not include (aa) the acceptance of a deposit by a person who does not purport to accept deposits on a regular basis and who has not advertised for or solicited such deposit: Provided that (i) the person accepting deposits as contemplated in this paragraph shall not at any time hold deposits from more than twenty persons or deposits amounting in the aggregate to more than R500 000; and (ii) a person and any person controlled directly or indirectly by the first-mentioned person (whether such control is through shareholding or otherwise) or managed by such first-mentioned person, and a subsidiary of such last-mentioned person, who accepts deposits as contemplated in this paragraph shall for the purposes of subparagraph (i) of this proviso be deemed to be one person; (bb) the borrowing of money from its members by a co-operative subject to such conditions as may be prescribed; (cc) any activity of a public sector, governmental or other institution, or of any person or category of persons, designated by the Registrar, with the approval of the Minister, by notice in the Gazette, provided such activity is performed in accordance with such conditions as the Registrar may with the approval of the Minister determine in the relevant notice; (dd) any activity contemplated in paragraph (a), (b) or (c) (i) performed by any institution registered or established in terms of, by or under any other Act of Parliament and designated by the Minister by notice in the Gazette; or (ii) performed in terms of any scheme authorized and controlled by, and conducted in accordance with the provisions of, any other Act of Parliament and so designated by the Minister, provided such activity is performed in accordance with such conditions as the Minister may determine in the relevant notice; \"this Act\" includes the regulations; \"undesirable practice\" means any act prohibited, or any failure to perform any act enjoined, by section 78(1), and, in relation to a particular bank or banks specified in a notice referred to in section 78(2)(b) or all banks, includes any act which in terms of a notice referred to in section 78(2) constitutes an undesirable practice for such particular bank, such specified banks, or all banks, as the case may be; \"wholly owned subsidiary\" means a wholly owned subsidiary as defined in section 1 of the Companies Act. (1A)(a) In order to determine, for the purposes of this Act, whether a particular person is a fit and proper person to hold the office of a director or an executive officer of a bank or a controlling company, the Registrar shall have regard to the following qualities, in so far as they are reasonably determinable, of the person concerned: (i) The general probity of that person; (ii) the competence and soundness of judgement of that person for the fulfilment of the responsibilities of the office in question; and (iii) the diligence with which the person concerned is likely to fulfil those responsibilities. (b) For the purpose of and without prejudice to the generality of the provisions of paragraph (a), the Registrar may have regard to the previous conduct and activities of the person concerned in business or financial matters and, in particular, to any evidence that such person (i) was convicted of the offence of fraud or any other offence of which dishonesty, or the commission of violence, was an element; (ii) had contravened the provisions of any law appearing to the Registrar to be designed for protecting members of the public against financial loss due to the dishonesty or incompetence of, or malpractices by, persons engaged in the provision of banking, insurance, investment or other financial services, or the management of juristic persons, or against financial loss due to activities relating to insolvency; (iii) was a director who had been indicated, as contemplated in section 421(2) of the Companies Act, as the effective cause of a particular company having been unable to pay its debts; (iv) had taken part in any business practices that, in the opinion of the Registrar, were deceitful, prejudicial or otherwise improper (whether unlawful or not) or which otherwise brought discredit on that person's methods of conducting business; or (v) had taken part in or been associated with any such other business practices as would, or had otherwise conducted himself or herself in such a way as to, cast doubt on his or her competence and soundness of judgement. (c) The Registrar shall be entitled, at any time, to request any person to complete a questionnaire that is designed to enable, and such person shall provide the Registrar with such information as may be necessary to enable, the Registrar to form an opinion, as contemplated in this subsection, regarding the qualities of that person. (d) Any person who refuses or fails to comply with a request addressed to that person by the Registrar under paragraph (c) shall be guilty of an offence.",
+              "text": "securities of the Reserve Bank with a maturity of not more than three years to the last redemption date thereof; \"Minister\" means the Minister of Finance; \"mutual bank\" means a mutual bank as defined in section 1(1) of the Mutual Banks Act, 1993 (Act No. 124 of 1993); \"person\" includes any partnership; \"prescribed\" means prescribed by regulation; \"primary share capital\" means capital obtained through the issue of ordinary shares, non-redeemable non-cumulative preference shares or prescribed categories of preferred securities, excluding such ordinary shares, non-redeemable non-cumulative preference shares or prescribed categories of preferred securities issued in pursuance of the capitalization of reserves resulting from a revaluation of assets; \"primary unimpaired reserve funds\" means funds obtained from actual earnings or by way of recoveries, premiums on the issue of ordinary or non-redeemable non-cumulative preference shares or a surplus on the realization of capital assets, and which have been set aside as a general or special reserve, are disclosed as such a reserve in the financial statements of the bank concerned and are available for the purpose of meeting liabilities of or losses suffered by the bank, but does not include any fund required to be maintained in terms of any other law; \"public\" includes a juristic person; \"Registrar\" means the Registrar of Banks designated under section 4; \"Registrar of Companies\" means the Registrar of Companies appointed under section 7 of the Companies Act; \"regulation\" means a regulation made under section 90; \"Regulations relating to Banks\" means the Regulations relating to Banks as amended or re-enacted from time to time under section 90; \"Regulations relating to Banks' Financial Instrument Trading\" means the Regulations relating to Banks' Financial Instrument Trading as published by Government Notice No. R.1058 of 21 August 1998, and as amended from time to time; \"Regulations relating to branches\" means the Regulations titled 'Conditions for the conducting of the business of a bank by a foreign institution by means of a branch in the Republic' as published by Government Notice No. R. 1414 of 28 December 2000, and amended from time to time; \"representative office\", in relation to",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1.j.a",
+                  "number": "a",
+                  "heading": "s1.j.a",
+                  "text": "a foreign institution referred to in section 34(1), means premises situated within the Republic and from which the business referred to in the said section 34(1) and conducted by such foreign institution in the other country referred to in that section, is promoted or assisted in any way; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.j.b",
+                  "number": "b",
+                  "heading": "s1.j.b",
+                  "text": "the establishment by a bank of a representative office outside the Republic as contemplated in section 52(1)(e), means premises situated outside the Republic and from which the business conducted by such bank within the Republic in terms of this Act is promoted or assisted in any way; \"Republic\", for the purposes of the definition of \"domestic shareholder\", includes any state the territory of which formerly formed part of the Republic; \"Reserve Bank\" means the South African Reserve Bank; \"secondary capital\" means a prescribed percentage of capital obtained through the issue, with prior written approval of the Registrar and in accordance with conditions approved by the Registrar in writing and on such further conditions, if any, as may be prescribed, of (a) cumulative preference shares; (b) ordinary shares, or preference shares other than cumulative preference shares, issued in pursuance of the capitalization of reserves resulting from a revaluation of assets; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.j.c",
+                  "number": "c",
+                  "heading": "s1.j.c",
+                  "text": "prescribed categories of debt instruments; \"secondary unimpaired reserve funds\" means (a) such funds, obtained from actual earning or by way of recoveries, as may be prescribed and which have been set aside, but which are not disclosed as a general or special reserve in the financial statements of the bank concerned; (b) a prescribed percentage of the amount of any surplus resulting from a revaluation of assets and determined as prescribed; (c) a prescribed amount of general provisions held against unidentified and unforeseen losses; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.j.d",
+                  "number": "d",
+                  "heading": "s1.j.d",
+                  "text": "funds obtained by way of premiums on the issue of cumulative preference shares or debt instruments issued in accordance with the prescribed conditions, whether or not such funds are disclosed as a general or special reserve in the financial statements of the bank concerned, but does not include any fund required to be maintained in terms of any other law; \"subsidiary\" means a subsidiary as defined in section 1(3) of the Companies Act; \"tertiary capital\" means (a) accrued current-period uncapitalized net profits derived from trading activities; or (b) capital obtained by means of unsecured subordinated loans negotiated, subject to such conditions as may be prescribed; \"the business of a bank\" means (a) the acceptance of deposits from the general public (including persons in the employ of the person so accepting deposits) as a regular feature of the business in question; (b) the soliciting of or advertising for deposits; (c) the utilization of money, or of the interest or other income earned on money, accepted by way of deposit as contemplated in paragraph (a) (i) for the granting by any person, acting as lender in such person's own name or through the medium of a trust or a nominee, of loans to other persons; (ii) for investment by any person, acting as investor in such person's own name or through the medium of a trust or a nominee; or (iii) for the financing, wholly or to any material extent, by any person of any other business activity conducted by such person in his or her own name or through the medium of a trust or a nominee; (d) the obtaining, as a regular feature of the business in question of money through the sale of an asset, to any person other than a bank, subject to an agreement in terms of which the seller undertakes to purchase from the buyer at a future date the asset so sold or any other asset; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.j.e",
+                  "number": "e",
+                  "heading": "s1.j.e",
+                  "text": "any other activity which the Registrar has, after consultation with the Governor of the Reserve Bank, by notice in the Gazette declared to be the business of a bank, but does not include (aa) the acceptance of a deposit by a person who does not purport to accept deposits on a regular basis and who has not advertised for or solicited such deposit: Provided that (i) the person accepting deposits as contemplated in this paragraph shall not at any time hold deposits from more than twenty persons or deposits amounting in the aggregate to more than R500 000; and (ii) a person and any person controlled directly or indirectly by the first-mentioned person (whether such control is through shareholding or otherwise) or managed by such first-mentioned person, and a subsidiary of such last-mentioned person, who accepts deposits as contemplated in this paragraph shall for the purposes of subparagraph (i) of this proviso be deemed to be one person; (bb) the borrowing of money from its members by a co-operative subject to such conditions as may be prescribed; (cc) any activity of a public sector, governmental or other institution, or of any person or category of persons, designated by the Registrar, with the approval of the Minister, by notice in the Gazette, provided such activity is performed in accordance with such conditions as the Registrar may with the approval of the Minister determine in the relevant notice; (dd) any activity contemplated in paragraph (a), (b) or (c) (i) performed by any institution registered or established in terms of, by or under any other Act of Parliament and designated by the Minister by notice in the Gazette; or (ii) performed in terms of any scheme authorized and controlled by, and conducted in accordance with the provisions of, any other Act of Parliament and so designated by the Minister, provided such activity is performed in accordance with such conditions as the Minister may determine in the relevant notice; \"this Act\" includes the regulations; \"undesirable practice\" means any act prohibited, or any failure to perform any act enjoined, by section 78(1), and, in relation to a particular bank or banks specified in a notice referred to in section 78(2)(b) or all banks, includes any act which in terms of a notice referred to in section 78(2) constitutes an undesirable practice for such particular bank, such specified banks, or all banks, as the case may be; \"wholly owned subsidiary\" means a wholly owned subsidiary as defined in section 1 of the Companies Act. (1A)(a) In order to determine, for the purposes of this Act, whether a particular person is a fit and proper person to hold the office of a director or an executive officer of a bank or a controlling company, the Registrar shall have regard to the following qualities, in so far as they are reasonably determinable, of the person concerned: (i) The general probity of that person; (ii) the competence and soundness of judgement of that person for the fulfilment of the responsibilities of the office in question; and (iii) the diligence with which the person concerned is likely to fulfil those responsibilities. (b) For the purpose of and without prejudice to the generality of the provisions of paragraph (a), the Registrar may have regard to the previous conduct and activities of the person concerned in business or financial matters and, in particular, to any evidence that such person (i) was convicted of the offence of fraud or any other offence of which dishonesty, or the commission of violence, was an element; (ii) had contravened the provisions of any law appearing to the Registrar to be designed for protecting members of the public against financial loss due to the dishonesty or incompetence of, or malpractices by, persons engaged in the provision of banking, insurance, investment or other financial services, or the management of juristic persons, or against financial loss due to activities relating to insolvency; (iii) was a director who had been indicated, as contemplated in section 421(2) of the Companies Act, as the effective cause of a particular company having been unable to pay its debts; (iv) had taken part in any business practices that, in the opinion of the Registrar, were deceitful, prejudicial or otherwise improper (whether unlawful or not) or which otherwise brought discredit on that person's methods of conducting business; or (v) had taken part in or been associated with any such other business practices as would, or had otherwise conducted himself or herself in such a way as to, cast doubt on his or her competence and soundness of judgement. (c) The Registrar shall be entitled, at any time, to request any person to complete a questionnaire that is designed to enable, and such person shall provide the Registrar with such information as may be necessary to enable, the Registrar to form an opinion, as contemplated in this subsection, regarding the qualities of that person. (d) Any person who refuses or fails to comply with a request addressed to that person by the Registrar under paragraph (c) shall be guilty of an offence.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -128,9 +261,66 @@
               "id": "s2.b",
               "number": "b",
               "heading": "s2.b",
-              "text": "in the lawful carrying on of the business of a bank, shall not apply to (i) the Reserve Bank; (ii) the Land Bank; (iii) the Development Bank of Southern Africa; (iv) the Corporation for Public Deposits established by section 2 of the Corporation for Public Deposits Act, 1984 (Act No. 46 of 1984); (v) the Public Investment Commissioners referred to in section 2 of the Public Investment Commissioners Act, 1984 (Act No. 45 of 1984); (vi) any mutual bank; or (vii) any other institution or body designated by the Minister by notice in the Gazette.",
+              "text": "in the lawful carrying on of the business of a bank, shall not apply to",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2.b.i",
+                  "number": "i",
+                  "heading": "s2.b.i",
+                  "text": "the Reserve Bank",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.b.ii",
+                  "number": "ii",
+                  "heading": "s2.b.ii",
+                  "text": "the Land Bank",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.b.iii",
+                  "number": "iii",
+                  "heading": "s2.b.iii",
+                  "text": "the Development Bank of Southern Africa",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.b.iv",
+                  "number": "iv",
+                  "heading": "s2.b.iv",
+                  "text": "the Corporation for Public Deposits established by section 2 of the Corporation for Public Deposits Act, 1984 (Act No. 46 of 1984)",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.b.v",
+                  "number": "v",
+                  "heading": "s2.b.v",
+                  "text": "the Public Investment Commissioners referred to in section 2 of the Public Investment Commissioners Act, 1984 (Act No. 45 of 1984)",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.b.vi",
+                  "number": "vi",
+                  "heading": "s2.b.vi",
+                  "text": "any mutual bank; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.b.vii",
+                  "number": "vii",
+                  "heading": "s2.b.vii",
+                  "text": "any other institution or body designated by the Minister by notice in the Gazette.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         }
@@ -288,9 +478,26 @@
                   "id": "s7.1.b",
                   "number": "b",
                   "heading": "s7.1.b",
-                  "text": "direct such bank, controlling company or subsidiary to furnish the Registrar with a report by a public accountant as defined in section 1 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), or by any other person with appropriate professional skill, on any matter, or any aspect of any matter, about which the Registrar has directed or may direct under paragraph (a) the bank, controlling company or subsidiary to furnish information. (1A) A report required by the Registrar under paragraph (b) shall be drawn up at the reasonable expense of the bank, controlling company or subsidiary in question.",
+                  "text": "direct such bank, controlling company or subsidiary to furnish the Registrar with a report by a public accountant as defined in section 1 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), or by any other person with appropriate professional skill, on any matter, or any aspect of any matter, about which the Registrar has directed or may direct under paragraph",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s7.1.b.a",
+                      "number": "a",
+                      "heading": "s7.1.b.a",
+                      "text": "the bank, controlling company or subsidiary to furnish information. (1A) A report required by the Registrar under paragraph",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s7.1.b.b",
+                      "number": "b",
+                      "heading": "s7.1.b.b",
+                      "text": "shall be drawn up at the reasonable expense of the bank, controlling company or subsidiary in question.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -451,9 +658,26 @@
               "id": "s12.b",
               "number": "b",
               "heading": "s12.b",
-              "text": "shall be accompanied by a statement containing the information prescribed by the Regulations relating to Banks. (3) The Registrar may require an applicant contemplated in subsection (1) to furnish him or her with (a) such information or documents, in addition to information and documents furnished by the applicant in terms of subsection (2); or (b) a report by a public accountant as defined in section 1 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), or by any other knowledgeable person approved by the Registrar, on such aspects relating to the application in question, as the Registrar may deem necessary.",
+              "text": "shall be accompanied by a statement containing the information prescribed by the Regulations relating to Banks. (3) The Registrar may require an applicant contemplated in subsection (1) to furnish him or her with",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s12.b.a",
+                  "number": "a",
+                  "heading": "s12.b.a",
+                  "text": "such information or documents, in addition to information and documents furnished by the applicant in terms of subsection (2); or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.b.b",
+                  "number": "b",
+                  "heading": "s12.b.b",
+                  "text": "a report by a public accountant as defined in section 1 of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991), or by any other knowledgeable person approved by the Registrar, on such aspects relating to the application in question, as the Registrar may deem necessary.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -850,9 +1074,34 @@
                   "id": "s60.5.iii",
                   "number": "iii",
                   "heading": "s60.5.iii",
-                  "text": "The Registrar may object to the proposed appointment by means of a written notice, stating the grounds for the objection, given to the chairperson of the board of directors of the bank and to the nominee, within 20 days of receipt of the notice. (b)(i) Every bank shall give the Registrar written notice of the appointment of a chief executive officer, executive director or executive officer by furnishing the Registrar with the prescribed information in respect of the appointee. (ii) The Registrar may object to the appointment by means of a written notice, stating the grounds for the objection, given to the chief executive officer of the bank and to the appointee, within 20 working days of receipt of the notice. (iii) If the Registrar objects to the appointment in terms of subparagraph (ii), the appointment shall be terminated within 14 working days of receipt of the Registrar's notice of objection by the bank.",
+                  "text": "The Registrar may object to the proposed appointment by means of a written notice, stating the grounds for the objection, given to the chairperson of the board of directors of the bank and to the nominee, within 20 days of receipt of the notice. (b)",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s60.5.iii.i",
+                      "number": "i",
+                      "heading": "s60.5.iii.i",
+                      "text": "Every bank shall give the Registrar written notice of the appointment of a chief executive officer, executive director or executive officer by furnishing the Registrar with the prescribed information in respect of the appointee.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s60.5.iii.ii",
+                      "number": "ii",
+                      "heading": "s60.5.iii.ii",
+                      "text": "The Registrar may object to the appointment by means of a written notice, stating the grounds for the objection, given to the chief executive officer of the bank and to the appointee, within 20 working days of receipt of the notice.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s60.5.iii.iii",
+                      "number": "iii",
+                      "heading": "s60.5.iii.iii",
+                      "text": "If the Registrar objects to the appointment in terms of subparagraph (ii), the appointment shall be terminated within 14 working days of receipt of the Registrar's notice of objection by the bank.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }
@@ -1210,9 +1459,42 @@
                   "id": "s64B.2.b",
                   "number": "b",
                   "heading": "s64B.2.b",
-                  "text": "establish and maintain a board directorship continuity programme entailing (i) a review of performance of and planning for successors to the executive directors; (ii) measures to ensure continuity of non-executive directors; (iii) a regular review of the composition of skills, experience and other qualities required for the effectiveness of the board; and (iv) an annual self-assessment of the board as a whole and of the contribution of each individual director;",
+                  "text": "establish and maintain a board directorship continuity programme entailing",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s64B.2.b.i",
+                      "number": "i",
+                      "heading": "s64B.2.b.i",
+                      "text": "a review of performance of and planning for successors to the executive directors",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s64B.2.b.ii",
+                      "number": "ii",
+                      "heading": "s64B.2.b.ii",
+                      "text": "measures to ensure continuity of non-executive directors",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s64B.2.b.iii",
+                      "number": "iii",
+                      "heading": "s64B.2.b.iii",
+                      "text": "a regular review of the composition of skills, experience and other qualities required for the effectiveness of the board; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s64B.2.b.iv",
+                      "number": "iv",
+                      "heading": "s64B.2.b.iv",
+                      "text": "an annual self-assessment of the board as a whole and of the contribution of each individual director;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s64B.2.c",
@@ -1319,9 +1601,26 @@
                   "id": "s70.2.ii",
                   "number": "ii",
                   "heading": "s70.2.ii",
-                  "text": "an amount which represents a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75) of such different categories of (aa) assets; and (bb) other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures. (2A)(a) A bank of which the business consists solely of trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such a bank's risk exposures in the conduct of its business as may be so prescribed. (2B)(a) A bank of which the business includes trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of (aa) a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75), of such different categories of assets and other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures; and (bb) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such of the bank's risk exposures in the conduct of its business of trading in financial instruments as may be so prescribed.",
+                  "text": "an amount which represents a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75) of such different categories of (aa) assets; and (bb) other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures. (2A)(a) A bank of which the business consists solely of trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s70.2.ii.i",
+                      "number": "i",
+                      "heading": "s70.2.ii.i",
+                      "text": "R250 000 000; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s70.2.ii.ii",
+                      "number": "ii",
+                      "heading": "s70.2.ii.ii",
+                      "text": "an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such a bank's risk exposures in the conduct of its business as may be so prescribed. (2B)(a) A bank of which the business includes trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of (aa) a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75), of such different categories of assets and other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures; and (bb) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such of the bank's risk exposures in the conduct of its business of trading in financial instruments as may be so prescribed.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }
@@ -1476,17 +1775,99 @@
                   "id": "s73.3.a",
                   "number": "a",
                   "heading": "s73.3.a",
-                  "text": "'person' includes (i) two or more persons, whether natural or juristic persons, the respective exposures to whom constitute a single exposure because of the fact that one of them directly or indirectly exercises control over the other or others; and (ii) two or more persons, whether natural or juristic persons, between whom there exists no relationship of control as contemplated in subparagraph (i), but the respective exposures to whom are to be regarded as a single exposure because of the fact that they are so interconnected that should one of them experience financial difficulties, another one or all of them would be likely to experience a lack of liquidity; and",
+                  "text": "'person' includes",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s73.3.a.i",
+                      "number": "i",
+                      "heading": "s73.3.a.i",
+                      "text": "two or more persons, whether natural or juristic persons, the respective exposures to whom constitute a single exposure because of the fact that one of them directly or indirectly exercises control over the other or others; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.a.ii",
+                      "number": "ii",
+                      "heading": "s73.3.a.ii",
+                      "text": "two or more persons, whether natural or juristic persons, between whom there exists no relationship of control as contemplated in subparagraph (i), but the respective exposures to whom are to be regarded as a single exposure because of the fact that they are so interconnected that should one of them experience financial difficulties, another one or all of them would be likely to experience a lack of liquidity; and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s73.3.b",
                   "number": "b",
                   "heading": "s73.3.b",
-                  "text": "'private sector non-bank person' means a person as defined in paragraph (a) but does not include (i) the central government or other public sector bodies; (ii) a bank; (iii) a mutual bank; (iv) a branch of a bank; (v) a branch; (vi) a foreign institution that, under an authorisation referred to in section 18A, conducts the business of a bank by means of a branch in the Republic; (vii) a controlling company; or (viii) any other person designated by the Registrar.",
+                  "text": "'private sector non-bank person' means a person as defined in paragraph (a) but does not include",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s73.3.b.i",
+                      "number": "i",
+                      "heading": "s73.3.b.i",
+                      "text": "the central government or other public sector bodies",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.b.ii",
+                      "number": "ii",
+                      "heading": "s73.3.b.ii",
+                      "text": "a bank",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.b.iii",
+                      "number": "iii",
+                      "heading": "s73.3.b.iii",
+                      "text": "a mutual bank",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.b.iv",
+                      "number": "iv",
+                      "heading": "s73.3.b.iv",
+                      "text": "a branch of a bank",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.b.v",
+                      "number": "v",
+                      "heading": "s73.3.b.v",
+                      "text": "a branch",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.b.vi",
+                      "number": "vi",
+                      "heading": "s73.3.b.vi",
+                      "text": "a foreign institution that, under an authorisation referred to in section 18A, conducts the business of a bank by means of a branch in the Republic",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.b.vii",
+                      "number": "vii",
+                      "heading": "s73.3.b.vii",
+                      "text": "a controlling company; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s73.3.b.viii",
+                      "number": "viii",
+                      "heading": "s73.3.b.viii",
+                      "text": "any other person designated by the Registrar.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }
@@ -1736,9 +2117,34 @@
               "id": "s81.b",
               "number": "b",
               "heading": "s81.b",
-              "text": "has so contravened the provisions of section 11(1) or 18A(6) or has contravened the provisions of section 22(4) or (5), or that such a contravention is likely to be continued or repeated, the Registrar may apply to a division of the High Court having jurisdiction for an order (i) prohibiting the anticipated contravention referred to in paragraph (a); (ii) prohibiting the continuation or repetition of a contravention referred to in paragraph (b); or (iii) prohibiting the person concerned from disposing of or otherwise dealing with any of the assets of that person while the contravention suspected of having been committed or of being continued is investigated.",
+              "text": "has so contravened the provisions of section 11(1) or 18A(6) or has contravened the provisions of section 22(4) or (5), or that such a contravention is likely to be continued or repeated, the Registrar may apply to a division of the High Court having jurisdiction for an order",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s81.b.i",
+                  "number": "i",
+                  "heading": "s81.b.i",
+                  "text": "prohibiting the anticipated contravention referred to in paragraph (a)",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s81.b.ii",
+                  "number": "ii",
+                  "heading": "s81.b.ii",
+                  "text": "prohibiting the continuation or repetition of a contravention referred to in paragraph (b); or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s81.b.iii",
+                  "number": "iii",
+                  "heading": "s81.b.iii",
+                  "text": "prohibiting the person concerned from disposing of or otherwise dealing with any of the assets of that person while the contravention suspected of having been committed or of being continued is investigated.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

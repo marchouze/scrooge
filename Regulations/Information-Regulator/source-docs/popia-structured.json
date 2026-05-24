@@ -60,9 +60,26 @@
                   "id": "s1.c.b",
                   "number": "b",
                   "heading": "s1.c.b",
-                  "text": "requesting the data subject to make a donation of any kind for any reason;\n'electronic communication' means any text, voice, sound or image message sent over an electronic communications network which is stored in the network or in the recipient's terminal equipment until it is collected by the recipient;\n'enforcement notice' means a notice issued in terms of section 95;\n'filing system' means any structured set of personal information, whether centralised, decentralised or dispersed on a functional or geographical basis, which is accessible according to specific criteria;\n'information matching programme' means the comparison, whether manually or by means of any electronic or other device, of any document that contains personal information about ten or more data subjects with one or more documents that contain personal information of ten or more data subjects, for the purpose of producing or verifying information that may be used for the purpose of taking any action in regard to an identifiable data subject;\n'information officer' of, or in relation to, a—(a) public body means an information officer or deputy information officer as contemplated in terms of section 1 or 17; or (b) private body means the head of a private body as contemplated in section 1, of the Promotion of Access to Information Act;\n'Minister' means the Cabinet member responsible for the administration of justice;\n'operator' means a person who processes personal information for a responsible party in terms of a contract or mandate, without coming under the direct authority of that party;\n'person' means a natural person or a juristic person;\n'personal information' means information relating to an identifiable, living, natural person, and where it is applicable, an identifiable, existing juristic person, including, but not limited to—(a) information relating to the race, gender, sex, pregnancy, marital status, national, ethnic or social origin, colour, sexual orientation, age, physical or mental health, well-being, disability, religion, conscience, belief, culture, language and birth of the person; (b) information relating to the education or the medical, financial, criminal or employment history of the person;",
+                  "text": "requesting the data subject to make a donation of any kind for any reason;\n'electronic communication' means any text, voice, sound or image message sent over an electronic communications network which is stored in the network or in the recipient's terminal equipment until it is collected by the recipient;\n'enforcement notice' means a notice issued in terms of section 95;\n'filing system' means any structured set of personal information, whether centralised, decentralised or dispersed on a functional or geographical basis, which is accessible according to specific criteria;\n'information matching programme' means the comparison, whether manually or by means of any electronic or other device, of any document that contains personal information about ten or more data subjects with one or more documents that contain personal information of ten or more data subjects, for the purpose of producing or verifying information that may be used for the purpose of taking any action in regard to an identifiable data subject;\n'information officer' of, or in relation to, a—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.c.b.a",
+                      "number": "a",
+                      "heading": "s1.c.b.a",
+                      "text": "public body means an information officer or deputy information officer as contemplated in terms of section 1 or 17; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.c.b.b",
+                      "number": "b",
+                      "heading": "s1.c.b.b",
+                      "text": "private body means the head of a private body as contemplated in section 1, of the Promotion of Access to Information Act;\n'Minister' means the Cabinet member responsible for the administration of justice;\n'operator' means a person who processes personal information for a responsible party in terms of a contract or mandate, without coming under the direct authority of that party;\n'person' means a natural person or a juristic person;\n'personal information' means information relating to an identifiable, living, natural person, and where it is applicable, an identifiable, existing juristic person, including, but not limited to—(a) information relating to the race, gender, sex, pregnancy, marital status, national, ethnic or social origin, colour, sexual orientation, age, physical or mental health, well-being, disability, religion, conscience, belief, culture, language and birth of the person; (b) information relating to the education or the medical, financial, criminal or employment history of the person;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s1.c.c",
@@ -133,9 +150,34 @@
                   "id": "s1.h.c",
                   "number": "c",
                   "heading": "s1.h.c",
-                  "text": "any former or existing juristic person, but excludes a public body;\n'processing' means any operation or activity or any set of operations, whether or not by automatic means, concerning personal information, including—(a) the collection, receipt, recording, organisation, collation, storage, updating or modification, retrieval, alteration, consultation or use; (b) dissemination by means of transmission, distribution or making available in any other form; or (c) merging, linking, as well as restriction, degradation, erasure or destruction of information;\n'professional legal adviser' means any legally qualified person, whether in private practice or not, who lawfully provides a client, at his or her or its request, with independent, confidential legal advice;\n'Promotion of Access to Information Act' means the Promotion of Access to Information Act, 2000 (Act 2 of 2000);\n'public body' means—(a) any department of state or administration in the national or provincial sphere of government or any municipality in the local sphere of government; or (b) any other functionary or institution when—",
+                  "text": "any former or existing juristic person, but excludes a public body;\n'processing' means any operation or activity or any set of operations, whether or not by automatic means, concerning personal information, including—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.h.c.a",
+                      "number": "a",
+                      "heading": "s1.h.c.a",
+                      "text": "the collection, receipt, recording, organisation, collation, storage, updating or modification, retrieval, alteration, consultation or use;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.h.c.b",
+                      "number": "b",
+                      "heading": "s1.h.c.b",
+                      "text": "dissemination by means of transmission, distribution or making available in any other form; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.h.c.c",
+                      "number": "c",
+                      "heading": "s1.h.c.c",
+                      "text": "merging, linking, as well as restriction, degradation, erasure or destruction of information;\n'professional legal adviser' means any legally qualified person, whether in private practice or not, who lawfully provides a client, at his or her or its request, with independent, confidential legal advice;\n'Promotion of Access to Information Act' means the Promotion of Access to Information Act, 2000 (Act 2 of 2000);\n'public body' means—(a) any department of state or administration in the national or provincial sphere of government or any municipality in the local sphere of government; or (b) any other functionary or institution when—",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -436,9 +478,26 @@
                       "id": "s4.h.b.b",
                       "number": "b",
                       "heading": "s4.h.b.b",
-                      "text": "Regulator has granted an authorisation in terms of section 27(2), in which case, subject to section 37 or 38, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(4) The processing of the personal information of a child is prohibited in terms of section 34, unless the—(a) provisions of section 35(1) are applicable; or (b) Regulator has granted an authorisation in terms of section 35(2), in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(5) The processing of the special personal information of a child is prohibited in terms of sections 26 and 34 unless the provisions of sections 27 and 35 are applicable in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(6) The conditions for the lawful processing of personal information by or for a responsible party for the purpose of direct marketing by any means are reflected in Chapter 3, read with section 69 insofar as that section relates to direct marketing by means of unsolicited electronic communications.\n(7) Sections 60 to 68 provide for the development, in appropriate circumstances, of codes of conduct for purposes of clarifying how the conditions referred to in subsection (1), subject to any exemptions which may have been granted in terms of section 37, are to be applied, or are to be complied with within a particular sector.",
+                      "text": "Regulator has granted an authorisation in terms of section 27(2), in which case, subject to section 37 or 38, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(4) The processing of the personal information of a child is prohibited in terms of section 34, unless the—",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s4.h.b.b.a",
+                          "number": "a",
+                          "heading": "s4.h.b.b.a",
+                          "text": "provisions of section 35(1) are applicable; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s4.h.b.b.b",
+                          "number": "b",
+                          "heading": "s4.h.b.b.b",
+                          "text": "Regulator has granted an authorisation in terms of section 35(2), in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(5) The processing of the special personal information of a child is prohibited in terms of sections 26 and 34 unless the provisions of sections 27 and 35 are applicable in which case, subject to section 37, the conditions for the lawful processing of personal information as referred to in Chapter 3 must be complied with.\n(6) The conditions for the lawful processing of personal information by or for a responsible party for the purpose of direct marketing by any means are reflected in Chapter 3, read with section 69 insofar as that section relates to direct marketing by means of unsolicited electronic communications.\n(7) Sections 60 to 68 provide for the development, in appropriate circumstances, of codes of conduct for purposes of clarifying how the conditions referred to in subsection (1), subject to any exemptions which may have been granted in terms of section 37, are to be applied, or are to be complied with within a particular sector.",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 }

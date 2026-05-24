@@ -404,9 +404,58 @@
                   "id": "s3.1.b",
                   "number": "b",
                   "heading": "s3.1.b",
-                  "text": "have in place sufficiently robust processes, procedures and board-approved policies, to ensure among other things that—\n(i) all relevant transactions between the provider and counterparty comply with all relevant requirements in the legal and regulatory frameworks of each relevant jurisdiction;\n(ii) all relevant netting agreements are effective under the laws of the relevant jurisdictions, and supported by periodically updated legal opinions;\n(iii) all relevant collateral arrangements are effective under the relevant laws and supported by periodically updated legal opinions;\n(iv) the provider exchanges initial and variation margin on a bilateral basis or to a third-party custodian;\n(v) procyclicality impacts are appropriately mitigated — large discrete calls for additional initial margin due to 'cliff-edge' triggers are discouraged, and margin levels are sufficiently conservative even during periods of low market volatility;\n(vi) initial margin is provided and collected by no later than the business day following execution of a non-centrally cleared OTC derivative transaction;\n(viii) variation margin — the full amount necessary to fully collateralise the mark-to-market exposure is exchanged; calculated and exchanged on a daily basis for transactions subject to a single legally enforceable netting agreement;\n(ix) the provider complies with eligible collateral requirements in paragraph 6.",
+                  "text": "have in place sufficiently robust processes, procedures and board-approved policies, to ensure among other things that—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s3.1.b.i",
+                      "number": "i",
+                      "heading": "s3.1.b.i",
+                      "text": "all relevant transactions between the provider and counterparty comply with all relevant requirements in the legal and regulatory frameworks of each relevant jurisdiction",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3.1.b.ii",
+                      "number": "ii",
+                      "heading": "s3.1.b.ii",
+                      "text": "all relevant netting agreements are effective under the laws of the relevant jurisdictions, and supported by periodically updated legal opinions",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3.1.b.iii",
+                      "number": "iii",
+                      "heading": "s3.1.b.iii",
+                      "text": "all relevant collateral arrangements are effective under the relevant laws and supported by periodically updated legal opinions",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3.1.b.iv",
+                      "number": "iv",
+                      "heading": "s3.1.b.iv",
+                      "text": "the provider exchanges initial and variation margin on a bilateral basis or to a third-party custodian",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3.1.b.v",
+                      "number": "v",
+                      "heading": "s3.1.b.v",
+                      "text": "procyclicality impacts are appropriately mitigated — large discrete calls for additional initial margin due to 'cliff-edge' triggers are discouraged, and margin levels are sufficiently conservative even during periods of low market volatility",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3.1.b.vi",
+                      "number": "vi",
+                      "heading": "s3.1.b.vi",
+                      "text": "initial margin is provided and collected by no later than the business day following execution of a non-centrally cleared OTC derivative transaction;\n(viii) variation margin — the full amount necessary to fully collateralise the mark-to-market exposure is exchanged; calculated and exchanged on a daily basis for transactions subject to a single legally enforceable netting agreement;\n(ix) the provider complies with eligible collateral requirements in paragraph 6.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
