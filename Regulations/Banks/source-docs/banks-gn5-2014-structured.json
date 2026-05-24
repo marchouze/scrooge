@@ -40,8 +40,65 @@
             {
               "id": "s1-1-2",
               "number": "1.2",
-              "text": "Present sevent nok\nThe use of service providers to perform operational banking functions may\npresent several risks to the bank; some inherent to the outsourced activity\nitself, whereas others are introduced through the use of a service provider.\nThese risks have to be managed effectively in order not to impact negatively\non the bank itself and to reduce any potential impact on the South African\nbanking industry as a whole. The risks may be varied in nature and banks\nshould consider risks such as compliance risk, concentration risk, country risk,\ncredit risk, legal risk, operational risk, reputational risk and strategic risk before\nentering into and while managing outsourcing arrangements. It is important\nthat the quality of risk management over outsourcing relationships should\nkeep pace with the level of risk and complexity of these relationships. Banks\nhave the flexibility to configure their operations in the way most suited to\nachieving their corporate objectives; however, it is reiterated that banks' board\nof directors retains ultimate accountability for all outsourced activities.\nFurthermore, this Office's supervisory powers should not be constrained,\nirrespective of whether an activity is conducted in-house, outsourced, or\notherwise obtained from a service provider.\nDefinitions\n2.1 For purposes of this guidance note 'outsourcing' is defined as the use of a\nservice provider, whether it is an affiliate within a corporate group or a third\nparty, to perform on a continuing basis a business activity, service, function, or\nprocess, which could be undertaken by the bank, on behalf of the bank.\n2.2\nIt is important to note that for purposes of this guidance note outsourcing\nincludes the provision of information technology (IT) systems or other IT\nservices.\n2.3\nIn instances where functions and activities are outsourced within a particular\ngroup of institutions which forms part of a single banking group, it will for\npurposes of this guidance note be referred to as 'insourcing'.\n2.4\nFor the purposes of this guidance note, 'offshoring' refers to the outsourcing\nby a bank of a material business activity or function associated with its South\nAfrican business to a service provider who conducts the outsourced activity\noutside the borders of South Africa. In other words, the service provider may\n\n\n3\nbe a registered entity in South Africa, but if the activity is conducted outside of\nSouth African borders, it will be seen as offshoring. The opposite also holds\ntrue in that an entity not registered in South Africa, but performing the activity\nin South Africa, such activity is not seen as offshoring. Banks should at all\ntimes adhere to all country-specific legislation, both local and foreign, where\nthe outsourcing arrangement crosses international borders, for example with\nregard to data privacy. Offshoring should not impact on this Office being able\nto perform its regulatory activities such as on-site reviews of the service\nprovider's operations. In addition, banks should consider that offshoring may\ngrant foreign country supervisors the authority or ability to gain access to the\nbank's customer information and the implication of such access should be\nborne in mind while considering offshoring.\n2.5\nFor purposes of this guidance note critical functions include activities\nperformed for third parties where failure of such an activity would, directly or\nindirectly, have a negative impact on the functioning of the real economy and\nfinancial stability.\n2.6\nFor purposes of this guidance note critical shared services include any\nactivities, whether performed internally, insourced or outsourced, that supports\nthe bank's critical functions and where failure of such a service would lead to a\nfailure or disruption of those critical functions.",
+              "text": "The use of service providers to perform operational banking functions may\npresent several risks to the bank; some inherent to the outsourced activity\nitself, whereas others are introduced through the use of a service provider.\nThese risks have to be managed effectively in order not to impact negatively\non the bank itself and to reduce any potential impact on the South African\nbanking industry as a whole. The risks may be varied in nature and banks\nshould consider risks such as compliance risk, concentration risk, country risk,\ncredit risk, legal risk, operational risk, reputational risk and strategic risk before\nentering into and while managing outsourcing arrangements. It is important\nthat the quality of risk management over outsourcing relationships should\nkeep pace with the level of risk and complexity of these relationships. Banks\nhave the flexibility to configure their operations in the way most suited to\nachieving their corporate objectives; however, it is reiterated that banks' board\nof directors retains ultimate accountability for all outsourced activities.\nFurthermore, this Office's supervisory powers should not be constrained,\nirrespective of whether an activity is conducted in-house, outsourced, or\notherwise obtained from a service provider.",
               "verbatim": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Definitions",
+          "text": "Definitions",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s2.1",
+              "number": "2.1",
+              "heading": "2.1",
+              "text": "For purposes of this guidance note 'outsourcing' is defined as the use of a service provider, whether it is an affiliate within a corporate group or a third party, to perform on a continuing basis a business activity, service, function, or process, which could be undertaken by the bank, on behalf of the bank.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.2",
+              "number": "2.2",
+              "heading": "2.2",
+              "text": "It is important to note that for purposes of this guidance note outsourcing includes the provision of information technology (IT) systems or other IT services.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.3",
+              "number": "2.3",
+              "heading": "2.3",
+              "text": "In instances where functions and activities are outsourced within a particular group of institutions which forms part of a single banking group, it will for purposes of this guidance note be referred to as 'insourcing'.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.4",
+              "number": "2.4",
+              "heading": "2.4",
+              "text": "For the purposes of this guidance note, 'offshoring' refers to the outsourcing by a bank of a material business activity or function associated with its South African business to a service provider who conducts the outsourced activity outside the borders of South Africa. In other words, the service provider may be a registered entity in South Africa, but if the activity is conducted outside of South African borders, it will be seen as offshoring. The opposite also holds true in that an entity not registered in South Africa, but performing the activity in South Africa, such activity is not seen as offshoring. Banks should at all times adhere to all country-specific legislation, both local and foreign, where the outsourcing arrangement crosses international borders, for example with regard to data privacy. Offshoring should not impact on this Office being able to perform its regulatory activities such as on-site reviews of the service provider's operations. In addition, banks should consider that offshoring may grant foreign country supervisors the authority or ability to gain access to the bank's customer information and the implication of such access should be borne in mind while considering offshoring.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.5",
+              "number": "2.5",
+              "heading": "2.5",
+              "text": "For purposes of this guidance note critical functions include activities performed for third parties where failure of such an activity would, directly or indirectly, have a negative impact on the functioning of the real economy and financial stability.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2.6",
+              "number": "2.6",
+              "heading": "2.6",
+              "text": "For purposes of this guidance note critical shared services include any activities, whether performed internally, insourced or outsourced, that supports the bank's critical functions and where failure of such a service would lead to a failure or disruption of those critical functions.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
@@ -151,8 +208,81 @@
             {
               "id": "s3-3-2",
               "number": "3.2",
-              "text": "All outsourcing arrangements should be measured against the materiality\ncriteria set out in the above paragraph. Where a material business activity or\nfunction is outsourced the outsourcing arrangement is deemed to be material.\nThis Office acknowledges that outsourcing arrangements will have varying\ndegrees of materiality and expects that the robustness of a bank's\nmanagement of the outsourcing risk would be in line with the materiality of the\narrangement. Material outsourcing arrangements\nshould adhere to all the\ncriteria as set out below in the summary of key requirements in paragraph 5 of\nthis guidance note while also taking into account whether the outsourcing\narrangement involves insourcing and/or offshoring.\n3.3\n3.4\n4.\n4.1\n4.2\n4.3\nIn general, this Office expects that a bank will design a sufficiently robust risk\nmanagement programme that applies to all its outsourcing arrangements. The\nprogramme\nshould be scalable to the materiality of an outsourcing\narrangement and able to apply different requirements depending on the type\nof outsourcing arrangement. The mitigating controls employed under this\nprogramme should be appropriate to the particular outsourcing arrangement.\nSignificant changes in the volume or the nature of business conducted should\ncause the bank to reassess its outsourcing arrangements' materiality for\ncompliance with requirements of this guidance note.\nMaterial business activities and functions\nIt is expected that banks will have various and numerous material business\nactivities and functions based on the scope of their business activities and\ncomplexity. This guidance note in general expects banks to identify and\nmanage the risks surrounding these material business activities and functions.\nThis Office views management oversight, governance and risk management\nas material business functions and does not support the outsourcing of these\nfunctions.\nThis Office views internal audit as a material business function and would not\ngenerally support the outsourcing of this function. In certain circumstances,\nhowever, this Office may consider applications for prior written approval of the\noutsourcing of the internal audit function (for example, when the head office of\na branch of a foreign bank undertakes the internal audit function or where a\nbank does not have IT audit resources). This Office will consider submissions\nfor approval of outsourcing arrangements of the internal audit function or parts\nthereof on a case-by-case basis. Where audit activities are outsourced, senior\nmanagement should consider the effectiveness of the underlying\narrangements and whether it is suitable to rely on an outsourced audit\nfunction. A bank is required to have an internal audit function that is\nindependent from the external audit function. Outsourcing internal audit to the\ncurrent external auditor is therefore not permissible.\n\n\n5\n4.4\nIt is expected that the IT systems employed by banks in pursuit of achieving\ntheir strategic objectives will be wide and varied. This Office views core\nbanking IT systems as well as a bank's financial reporting IT system as\nmaterial business functions and would prefer that as far as possible these\nsystems not be outsourced. There are, however, circumstances under which\nthis Office would consider applications for prior written approval for the\noutsourcing of these material business functions on a case-by-case basis.\n4.5 This Office would like to emphasise that banks should realise the significance\nof cloud computing initiatives and offshoring of material IT business activities\nand functions. Banks should notify this Office prior to offshoring material\nbusiness activities.\n4.6\nThis Office views critical functions and critical shared services, as defined\nabove and set out in the respective bank's recovery plan, as material business\nactivities for purposes of this guidance note.",
+              "text": "All outsourcing arrangements should be measured against the materiality criteria set out in the above paragraph. Where a material business activity or function is outsourced the outsourcing arrangement is deemed to be material. This Office acknowledges that outsourcing arrangements will have varying degrees of materiality and expects that the robustness of a bank's management of the outsourcing risk would be in line with the materiality of the arrangement. Material outsourcing arrangements should adhere to all the criteria as set out below in the summary of key requirements in paragraph 5 of this guidance note while also taking into account whether the outsourcing arrangement involves insourcing and/or offshoring.",
               "verbatim": true
+            },
+            {
+              "id": "s3.3",
+              "number": "3.3",
+              "heading": "3.3",
+              "text": "In general, this Office expects that a bank will design a sufficiently robust risk management programme that applies to all its outsourcing arrangements. The programme should be scalable to the materiality of an outsourcing arrangement and able to apply different requirements depending on the type of outsourcing arrangement. The mitigating controls employed under this programme should be appropriate to the particular outsourcing arrangement.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.4",
+              "number": "3.4",
+              "heading": "3.4",
+              "text": "Significant changes in the volume or the nature of business conducted should cause the bank to reassess its outsourcing arrangements' materiality for compliance with requirements of this guidance note.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "Material business activities and functions",
+          "text": "Material business activities and functions",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s4.1",
+              "number": "4.1",
+              "heading": "4.1",
+              "text": "It is expected that banks will have various and numerous material business activities and functions based on the scope of their business activities and complexity. This guidance note in general expects banks to identify and manage the risks surrounding these material business activities and functions.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.2",
+              "number": "4.2",
+              "heading": "4.2",
+              "text": "This Office views management oversight, governance and risk management as material business functions and does not support the outsourcing of these functions.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.3",
+              "number": "4.3",
+              "heading": "4.3",
+              "text": "This Office views internal audit as a material business function and would not generally support the outsourcing of this function. In certain circumstances, however, this Office may consider applications for prior written approval of the outsourcing of the internal audit function (for example, when the head office of a branch of a foreign bank undertakes the internal audit function or where a bank does not have IT audit resources). This Office will consider submissions for approval of outsourcing arrangements of the internal audit function or parts thereof on a case-by-case basis. Where audit activities are outsourced, senior management should consider the effectiveness of the underlying arrangements and whether it is suitable to rely on an outsourced audit function. A bank is required to have an internal audit function that is independent from the external audit function. Outsourcing internal audit to the current external auditor is therefore not permissible.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.4",
+              "number": "4.4",
+              "heading": "4.4",
+              "text": "It is expected that the IT systems employed by banks in pursuit of achieving their strategic objectives will be wide and varied. This Office views core banking IT systems as well as a bank's financial reporting IT system as material business functions and would prefer that as far as possible these systems not be outsourced. There are, however, circumstances under which this Office would consider applications for prior written approval for the outsourcing of these material business functions on a case-by-case basis.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.5",
+              "number": "4.5",
+              "heading": "4.5",
+              "text": "This Office would like to emphasise that banks should realise the significance of cloud computing initiatives and offshoring of material IT business activities and functions. Banks should notify this Office prior to offshoring material business activities.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4.6",
+              "number": "4.6",
+              "heading": "4.6",
+              "text": "This Office views critical functions and critical shared services, as defined above and set out in the respective bank's recovery plan, as material business activities for purposes of this guidance note.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
