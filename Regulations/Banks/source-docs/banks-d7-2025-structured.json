@@ -1,0 +1,54 @@
+{
+  "slug": "banks-d7-2025",
+  "title": "Banks Act Directive D7/2025 — South African domestic systemically important banks to submit consolidated information",
+  "shortTitle": "Directive D7/2025",
+  "regulator": "Prudential Authority",
+  "year": 2025,
+  "effectiveDate": "2025-01-01",
+  "enablingLegislation": "Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "directive",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "D7/2025",
+    "Banks Act Directive D7/2025",
+    "Directive D7/2025"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-d7-2025-main",
+      "title": "Directive D7/2025",
+      "sections": [
+        {
+          "id": "s-banks-d7-2025-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). South African domestic systemically important banks to submit consolidated information.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d7-2025-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). South African domestic systemically important banks to submit consolidated information.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d7-2025-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "South African domestic systemically important banks to submit consolidated information. Institutions are required to ensure compliance with the requirements set out herein. This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

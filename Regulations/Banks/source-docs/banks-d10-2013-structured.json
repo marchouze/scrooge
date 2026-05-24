@@ -1,0 +1,54 @@
+{
+  "slug": "banks-d10-2013",
+  "title": "Banks Act Directive D10/2013 — Limit in respect of effective net open foreign currency position, and matters related to the unencumbered assets to be held by branches of foreign institutions",
+  "shortTitle": "Directive D10/2013",
+  "regulator": "Prudential Authority",
+  "year": 2013,
+  "effectiveDate": "2013-01-01",
+  "enablingLegislation": "Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "directive",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "D10/2013",
+    "Banks Act Directive D10/2013",
+    "Directive D10/2013"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-d10-2013-main",
+      "title": "Directive D10/2013",
+      "sections": [
+        {
+          "id": "s-banks-d10-2013-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). Limit in respect of effective net open foreign currency position, and matters related to the unencumbered assets to be held by branches of foreign institutions.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d10-2013-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Limit in respect of effective net open foreign currency position, and matters related to the unencumbered assets to be held by branches of foreign institutions.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d10-2013-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Limit in respect of effective net open foreign currency position, and matters related to the unencumbered assets to be held by branches of foreign institutions. Institutions are required to ensure compliance with the requirements set out herein. This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

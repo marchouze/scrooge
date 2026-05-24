@@ -1,0 +1,54 @@
+{
+  "slug": "banks-c4-2015",
+  "title": "Banks Act Circular C4/2015 — Matters related to banks' compliance with the prescribed requirements related to the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA)",
+  "shortTitle": "Circular C4/2015",
+  "regulator": "Prudential Authority",
+  "year": 2015,
+  "effectiveDate": "2015-01-01",
+  "enablingLegislation": "Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "circular",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "C4/2015",
+    "Banks Act Circular C4/2015",
+    "Circular C4/2015"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-c4-2015-main",
+      "title": "Circular C4/2015",
+      "sections": [
+        {
+          "id": "s-banks-c4-2015-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). Matters related to banks' compliance with the prescribed requirements related to the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA).",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c4-2015-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Matters related to banks' compliance with the prescribed requirements related to the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA).",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c4-2015-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Matters related to banks' compliance with the prescribed requirements related to the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA). Institutions are required to ensure compliance with the requirements set out herein. This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

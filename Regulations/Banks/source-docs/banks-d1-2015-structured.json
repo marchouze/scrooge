@@ -1,0 +1,54 @@
+{
+  "slug": "banks-d1-2015",
+  "title": "Banks Act Directive D1/2015 — Minimum requirements for the recovery plans of banks, controlling companies and branches of foreign institutions",
+  "shortTitle": "Directive D1/2015",
+  "regulator": "Prudential Authority",
+  "year": 2015,
+  "effectiveDate": "2015-01-01",
+  "enablingLegislation": "Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "directive",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "D1/2015",
+    "Banks Act Directive D1/2015",
+    "Directive D1/2015"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-d1-2015-main",
+      "title": "Directive D1/2015",
+      "sections": [
+        {
+          "id": "s-banks-d1-2015-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). Minimum requirements for the recovery plans of banks, controlling companies and branches of foreign institutions.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d1-2015-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Minimum requirements for the recovery plans of banks, controlling companies and branches of foreign institutions.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d1-2015-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Minimum requirements for the recovery plans of banks, controlling companies and branches of foreign institutions. Institutions are required to ensure compliance with the requirements set out herein. This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

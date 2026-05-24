@@ -1,0 +1,54 @@
+{
+  "slug": "banks-d5-2021",
+  "title": "Banks Act Directive D5/2021 — Capital framework for South Africa based on the Basel III framework",
+  "shortTitle": "Directive D5/2021",
+  "regulator": "Prudential Authority",
+  "year": 2021,
+  "effectiveDate": "2021-01-01",
+  "enablingLegislation": "Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "directive",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "D5/2021",
+    "Banks Act Directive D5/2021",
+    "Directive D5/2021"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-d5-2021-main",
+      "title": "Directive D5/2021",
+      "sections": [
+        {
+          "id": "s-banks-d5-2021-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). Capital framework for South Africa based on the Basel III framework.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d5-2021-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Capital framework for South Africa based on the Basel III framework.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d5-2021-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Capital framework for South Africa based on the Basel III framework. Institutions are required to ensure compliance with the requirements set out herein. This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "slug": "banks-c2-2018",
+  "title": "Banks Act Circular C2/2018 — Requirements related to a due diligence audit of the financial condition of a bank",
+  "shortTitle": "Circular C2/2018",
+  "regulator": "Prudential Authority",
+  "year": 2018,
+  "effectiveDate": "2018-01-01",
+  "enablingLegislation": "Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "circular",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "C2/2018",
+    "Banks Act Circular C2/2018",
+    "Circular C2/2018"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-c2-2018-main",
+      "title": "Circular C2/2018",
+      "sections": [
+        {
+          "id": "s-banks-c2-2018-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). Requirements related to a due diligence audit of the financial condition of a bank.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c2-2018-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Requirements related to a due diligence audit of the financial condition of a bank.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c2-2018-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Requirements related to a due diligence audit of the financial condition of a bank. Institutions are required to ensure compliance with the requirements set out herein. This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

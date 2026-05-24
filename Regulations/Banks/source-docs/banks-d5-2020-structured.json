@@ -1,0 +1,54 @@
+{
+  "slug": "banks-d5-2020",
+  "title": "Banks Act Directive D5/2020 — Prudent Valuation Adjustments Framework",
+  "shortTitle": "Directive D5/2020",
+  "regulator": "Prudential Authority",
+  "year": 2020,
+  "effectiveDate": "2020-01-01",
+  "enablingLegislation": "Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "directive",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "D5/2020",
+    "Banks Act Directive D5/2020",
+    "Directive D5/2020"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-d5-2020-main",
+      "title": "Directive D5/2020",
+      "sections": [
+        {
+          "id": "s-banks-d5-2020-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). Prudent Valuation Adjustments Framework.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d5-2020-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Prudent Valuation Adjustments Framework.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d5-2020-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Prudent Valuation Adjustments Framework. Institutions are required to ensure compliance with the requirements set out herein. This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}
