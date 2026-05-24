@@ -73,17 +73,67 @@
                       "id": "s1-1.d.ii",
                       "number": "ii",
                       "heading": "s1-1.d.ii",
-                      "text": "results in any such purchase, investment, transaction, variation, replacement or termination, as the case may be, being effected; \"Advisory Committee\" means the Advisory Committee on Financial Services Providers referred to in section 5; \"application\", in relation to the performance of any act by the registrar, means, except where in a specific case other specific provision is made, an application referred to in section 3(2); \"auditor\" means an auditor registered in terms of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991); \"authorised financial services provider\" or \"provider\" means a person who has been granted an authorisation as a financial services provider by the issue to that person of a licence under section 8; \"Board\" means the Financial Services Board established by section 2 of the Financial Services Board Act; \"board of appeal\" means the board of appeal established by section 26(1) of the Financial Services Board Act; \"client\" means a specific person or group of persons, excluding the general public, who is or may become the subject to whom a financial service is rendered intentionally, or is the successor in title of such person or the beneficiary of such service; \"code of conduct\" means any published code of conduct contemplated in section 15; \"collective investment scheme\" means a collective investment scheme as defined in the Collective Investment Schemes Control Act, 2002; \"complainant\" means, subject to section 26(1)(a)(ii), a specific client who submits a complaint to the Ombud; \"complaint\" means, subject to section 26(1)(a)(iii), a specific complaint relating to a financial service rendered by a financial services provider or representative to the complainant on or after the date of commencement of this Act, and in which complaint it is alleged that the provider or representative— (a) has contravened or failed to comply with a provision of this Act and that as a result thereof the complainant has suffered or is likely to suffer financial prejudice or damage; (b) has wilfully or negligently rendered a financial service to the complainant which has caused prejudice or damage to the complainant or which is likely to result in such prejudice or damage; or (c) has treated the complainant unfairly; \"compliance officer\" means a compliance officer for an authorised financial services provider referred to in section 17; \"Court\" means any court having jurisdiction; \"exempt\" means to exempt, on application by a person or on the registrar's own initiative, on any of the grounds mentioned in section 44(1)(a), (b) or (c) and (4)(a); \"financial product\" means, subject to subsection (2)— (a) securities and instruments, including shares in a company other than a \"share block company\" as defined in the Share Blocks Control Act, 1980 (Act No. 59 of 1980); debentures and securitised debt; any money-market instrument; any warrant, certificate, and other instrument acknowledging, conferring or creating rights to subscribe to, acquire, dispose of, or convert securities and instruments referred to in subparagraphs (i), (ii) and (iii); any \"securities\" as defined in section 1 of the Securities Services Act, 2002; a participatory interest in one or more collective investment schemes; a long-term or a short-term insurance contract or policy, referred to in the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively; a benefit provided by (i) a pension fund organisation as defined in section 1(1) of the Pension Funds Act, 1956 (Act No. 24 of 1956), to the members of the organisation by virtue of membership; or (ii) a friendly society referred to in the Friendly Societies Act, 1956 (Act No. 25 of 1956), to the members of the society by virtue of membership; a foreign currency denominated investment instrument, including a foreign currency deposit; a deposit as defined in section 1(1) of the Banks Act, 1990 (Act No. 94 of 1990); a health service benefit provided by a medical scheme as defined in section 1(1) of the Medical Schemes Act, 1998 (Act No. 131 of 1998); any other product similar in nature to any financial product referred to in paragraphs (a) to (g), inclusive, declared by the registrar, after consultation with the Advisory Committee, by notice in the Gazette to be a financial product for the purposes of this Act; any combined product containing one or more of the financial products referred to in paragraphs (a) to (h), inclusive; any financial product issued by any foreign product supplier and marketed in the Republic and which in nature and character is essentially similar or corresponding to a financial product referred to in paragraphs (a) to (i), inclusive; \"financial service\" means any service contemplated in paragraph (a), (b) or (c) of the definition of \"financial services provider\", including any category of such services; \"Financial Services Board Act\" means the Financial Services Board Act, 1990 (Act No. 97 of 1990); \"financial services provider\" means any person, other than a representative, who as a regular feature of the business of such person— (a) furnishes advice; or (b) furnishes advice and renders any intermediary service; or (c) renders an intermediary service; \"intermediary service\" means, subject to subsection (3)(b), any act other than the furnishing of advice, performed by a person for or on behalf of a client or product supplier— (a) the result of which is that a client may enter into, offers to enter into or enters into any transaction in respect of a financial product with a product supplier; or (b) with a view to— (i) buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested; (ii) collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                      "text": "results in any such purchase, investment, transaction, variation, replacement or termination, as the case may be, being effected; \"Advisory Committee\" means the Advisory Committee on Financial Services Providers referred to in section 5; \"application\", in relation to the performance of any act by the registrar, means, except where in a specific case other specific provision is made, an application referred to in section 3(2); \"auditor\" means an auditor registered in terms of the Public Accountants' and Auditors' Act, 1991 (Act No. 80 of 1991); \"authorised financial services provider\" or \"provider\" means a person who has been granted an authorisation as a financial services provider by the issue to that person of a licence under section 8; \"Board\" means the Financial Services Board established by section 2 of the Financial Services Board Act; \"board of appeal\" means the board of appeal established by section 26(1) of the Financial Services Board Act; \"client\" means a specific person or group of persons, excluding the general public, who is or may become the subject to whom a financial service is rendered intentionally, or is the successor in title of such person or the beneficiary of such service; \"code of conduct\" means any published code of conduct contemplated in section 15; \"collective investment scheme\" means a collective investment scheme as defined in the Collective Investment Schemes Control Act, 2002; \"complainant\" means, subject to section 26(1)(a)(ii), a specific client who submits a complaint to the Ombud; \"complaint\" means, subject to section 26(1)(a)(iii), a specific complaint relating to a financial service rendered by a financial services provider or representative to the complainant on or after the date of commencement of this Act, and in which complaint it is alleged that the provider or representative—",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s1-1.d.ii.a",
+                          "number": "a",
+                          "heading": "s1-1.d.ii.a",
+                          "text": "has contravened or failed to comply with a provision of this Act and that as a result thereof the complainant has suffered or is likely to suffer financial prejudice or damage;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1-1.d.ii.b",
+                          "number": "b",
+                          "heading": "s1-1.d.ii.b",
+                          "text": "has wilfully or negligently rendered a financial service to the complainant which has caused prejudice or damage to the complainant or which is likely to result in such prejudice or damage; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1-1.d.ii.c",
+                          "number": "c",
+                          "heading": "s1-1.d.ii.c",
+                          "text": "has treated the complainant unfairly; \"compliance officer\" means a compliance officer for an authorised financial services provider referred to in section 17; \"Court\" means any court having jurisdiction; \"exempt\" means to exempt, on application by a person or on the registrar's own initiative, on any of the grounds mentioned in section 44(1)(a), (b) or (c) and (4)(a); \"financial product\" means, subject to subsection (2)— (a) securities and instruments, including shares in a company other than a \"share block company\" as defined in the Share Blocks Control Act, 1980 (Act No. 59 of 1980); debentures and securitised debt; any money-market instrument; any warrant, certificate, and other instrument acknowledging, conferring or creating rights to subscribe to, acquire, dispose of, or convert securities and instruments referred to in subparagraphs (i), (ii) and (iii); any \"securities\" as defined in section 1 of the Securities Services Act, 2002; a participatory interest in one or more collective investment schemes; a long-term or a short-term insurance contract or policy, referred to in the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively; a benefit provided by (i) a pension fund organisation as defined in section 1(1) of the Pension Funds Act, 1956 (Act No. 24 of 1956), to the members of the organisation by virtue of membership; or (ii) a friendly society referred to in the Friendly Societies Act, 1956 (Act No. 25 of 1956), to the members of the society by virtue of membership; a foreign currency denominated investment instrument, including a foreign currency deposit; a deposit as defined in section 1(1) of the Banks Act, 1990 (Act No. 94 of 1990); a health service benefit provided by a medical scheme as defined in section 1(1) of the Medical Schemes Act, 1998 (Act No. 131 of 1998); any other product similar in nature to any financial product referred to in paragraphs (a) to (g), inclusive, declared by the registrar, after consultation with the Advisory Committee, by notice in the Gazette to be a financial product for the purposes of this Act; any combined product containing one or more of the financial products referred to in paragraphs (a) to (h), inclusive; any financial product issued by any foreign product supplier and marketed in the Republic and which in nature and character is essentially similar or corresponding to a financial product referred to in paragraphs (a) to (i), inclusive; \"financial service\" means any service contemplated in paragraph (a), (b) or (c) of the definition of \"financial services provider\", including any category of such services; \"Financial Services Board Act\" means the Financial Services Board Act, 1990 (Act No. 97 of 1990); \"financial services provider\" means any person, other than a representative, who as a regular feature of the business of such person— (a) furnishes advice; or (b) furnishes advice and renders any intermediary service; or (c) renders an intermediary service; \"intermediary service\" means, subject to subsection (3)(b), any act other than the furnishing of advice, performed by a person for or on behalf of a client or product supplier— (a) the result of which is that a client may enter into, offers to enter into or enters into any transaction in respect of a financial product with a product supplier; or (b) with a view to— (i) buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested; (ii) collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     },
                     {
                       "id": "s1-1.d.iii",
                       "number": "iii",
                       "heading": "s1-1.d.iii",
-                      "text": "receiving, submitting or processing the claims of a client against a product supplier; \"key individual\", in relation to an authorised financial services provider, or a representative, carrying on business as— (a) a corporate or unincorporated body, a trust or a partnership, means any natural person responsible for managing or overseeing, either alone or together with other so responsible persons, the activities of the body, trust or partnership relating to the rendering of any financial service; or (b) a corporate body or trust consisting of only one natural person as member, director, shareholder or trustee, means any such natural person; \"licence\" means a licence contemplated in section 7(1); \"licensee\" means a financial services provider to whom a licence has been issued under section 8; \"Minister\" means the Minister of Finance; \"Office\" means the Office of the Ombud established by section 20(1); \"Ombud\" means— (a) the Ombud for Financial Services Providers appointed in terms of section 21(1); and (b) for the purposes of sections 27, 28, 31 and 39, includes a deputy ombud; \"person\" means any natural person, partnership or trust, and includes— (a) any organ of state as defined in section 239 of the Constitution of the Republic of South Africa, 1996 (Act No. 108 of 1996); (b) any company incorporated or registered as such under any law; (c) any body of persons corporate or unincorporate; \"prescribe\" means prescribe by regulation; \"product supplier\" means any person who issues a financial product by virtue of an authority, approval or right granted to such person under any law, including the Companies Act, 1973 (Act No. 61 of 1973); \"registrar\" means the registrar or deputy registrar of financial services providers referred to in section 2; \"regulation\" means a regulation made under section 35; \"representative\" means any person who renders a financial service to a client for or on behalf of a financial services provider, in terms of conditions of employment or any other mandatory agreement, but excludes a person rendering clerical, technical, administrative, legal, accounting or other service in a subsidiary or subordinate capacity, which service— (a) does not require judgment on the part of the latter person; or (b) does not lead a client to any specific transaction in respect of a financial product in response to general enquiries; \"rule\" means a rule made by the Board under section 26; \"this Act\" includes any regulation, rule or code of conduct, and any notice given, approval or exemption granted, determination made, requirement or condition determined or imposed, or any other decision referred to in section 3(1).",
+                      "text": "receiving, submitting or processing the claims of a client against a product supplier; \"key individual\", in relation to an authorised financial services provider, or a representative, carrying on business as—",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s1-1.d.iii.a",
+                          "number": "a",
+                          "heading": "s1-1.d.iii.a",
+                          "text": "a corporate or unincorporated body, a trust or a partnership, means any natural person responsible for managing or overseeing, either alone or together with other so responsible persons, the activities of the body, trust or partnership relating to the rendering of any financial service; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1-1.d.iii.b",
+                          "number": "b",
+                          "heading": "s1-1.d.iii.b",
+                          "text": "a corporate body or trust consisting of only one natural person as member, director, shareholder or trustee, means any such natural person; \"licence\" means a licence contemplated in section 7(1); \"licensee\" means a financial services provider to whom a licence has been issued under section 8; \"Minister\" means the Minister of Finance; \"Office\" means the Office of the Ombud established by section 20(1); \"Ombud\" means— (a) the Ombud for Financial Services Providers appointed in terms of section 21(1); and (b) for the purposes of sections 27, 28, 31 and 39, includes a deputy ombud; \"person\" means any natural person, partnership or trust, and includes— (a) any organ of state as defined in section 239 of the Constitution of the Republic of South Africa, 1996 (Act No. 108 of 1996); (b) any company incorporated or registered as such under any law;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1-1.d.iii.c",
+                          "number": "c",
+                          "heading": "s1-1.d.iii.c",
+                          "text": "any body of persons corporate or unincorporate; \"prescribe\" means prescribe by regulation; \"product supplier\" means any person who issues a financial product by virtue of an authority, approval or right granted to such person under any law, including the Companies Act, 1973 (Act No. 61 of 1973); \"registrar\" means the registrar or deputy registrar of financial services providers referred to in section 2; \"regulation\" means a regulation made under section 35; \"representative\" means any person who renders a financial service to a client for or on behalf of a financial services provider, in terms of conditions of employment or any other mandatory agreement, but excludes a person rendering clerical, technical, administrative, legal, accounting or other service in a subsidiary or subordinate capacity, which service— (a) does not require judgment on the part of the latter person; or (b) does not lead a client to any specific transaction in respect of a financial product in response to general enquiries; \"rule\" means a rule made by the Board under section 26; \"this Act\" includes any regulation, rule or code of conduct, and any notice given, approval or exemption granted, determination made, requirement or condition determined or imposed, or any other decision referred to in section 3(1).",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 }
@@ -239,9 +289,26 @@
               "id": "s3.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) Whenever the performance of any act contemplated in subsection (1) is sought by a person under this Act or any other law, application therefor must, subject to any other specific provision of this Act, be made in writing to the registrar and the application must— (a) be made in the form and manner determined by or in terms of this Act, or any other law, or as otherwise required by the registrar; (b) be accompanied by— (i) the fees payable in terms of this Act; and (ii) the information or documents required by the registrar.",
+              "text": "(2) Whenever the performance of any act contemplated in subsection (1) is sought by a person under this Act or any other law, application therefor must, subject to any other specific provision of this Act, be made in writing to the registrar and the application must—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3.2.a",
+                  "number": "a",
+                  "heading": "s3.2.a",
+                  "text": "be made in the form and manner determined by or in terms of this Act, or any other law, or as otherwise required by the registrar;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3.2.b",
+                  "number": "b",
+                  "heading": "s3.2.b",
+                  "text": "be accompanied by— (i) the fees payable in terms of this Act; and (ii) the information or documents required by the registrar.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3.3",
@@ -322,9 +389,26 @@
                   "id": "s8.1.c",
                   "number": "c",
                   "heading": "s8.1.c",
-                  "text": "the applicant's financial soundness: Provided that where the applicant is a partnership, a trust or a corporate or unincorporated body, the applicant must, in addition, so satisfy the registrar that any key individual in respect of the applicant complies with the said requirements in respect of— (i) personal character qualities of honesty and integrity; and (ii) operational and competence ability, to the extent required in order for such key individual to fulfil the responsibilities imposed on the key individual by this Act.",
+                  "text": "the applicant's financial soundness: Provided that where the applicant is a partnership, a trust or a corporate or unincorporated body, the applicant must, in addition, so satisfy the registrar that any key individual in respect of the applicant complies with the said requirements in respect of—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s8.1.c.i",
+                      "number": "i",
+                      "heading": "s8.1.c.i",
+                      "text": "personal character qualities of honesty and integrity; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s8.1.c.ii",
+                      "number": "ii",
+                      "heading": "s8.1.c.ii",
+                      "text": "operational and competence ability, to the extent required in order for such key individual to fulfil the responsibilities imposed on the key individual by this Act.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -332,9 +416,26 @@
               "id": "s8.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) The registrar may— (a) require an applicant to furnish such additional information, or require such information to be verified, as the registrar may deem necessary; and (b) take into consideration any other information regarding the applicant, derived from whatever source, including the Ombud and any other regulatory or supervisory authority, if such information is disclosed to the applicant and the latter is given a reasonable opportunity to respond thereto.",
+              "text": "(2) The registrar may—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s8.2.a",
+                  "number": "a",
+                  "heading": "s8.2.a",
+                  "text": "require an applicant to furnish such additional information, or require such information to be verified, as the registrar may deem necessary; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s8.2.b",
+                  "number": "b",
+                  "heading": "s8.2.b",
+                  "text": "take into consideration any other information regarding the applicant, derived from whatever source, including the Ombud and any other regulatory or supervisory authority, if such information is disclosed to the applicant and the latter is given a reasonable opportunity to respond thereto.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s8.3",
@@ -355,9 +456,42 @@
                   "id": "s8.4.a",
                   "number": "a",
                   "heading": "s8.4.a",
-                  "text": "Where an application is granted, the registrar may impose such conditions and restrictions on the exercise of the authority granted by the licence, and to be included in the licence, as are necessary, having regard to— (i) all facts and information available to the registrar pertaining to the applicant and any key individual of the applicant; (ii) the category of financial services which the applicant could appropriately render or wishes to render; (iii) the category of financial services providers in which the applicant will be classified in relation to the fit and proper requirements mentioned in subsection (1); and (iv) any guidelines provided to the registrar by the Advisory Committee or the Board.",
+                  "text": "Where an application is granted, the registrar may impose such conditions and restrictions on the exercise of the authority granted by the licence, and to be included in the licence, as are necessary, having regard to—",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s8.4.a.i",
+                      "number": "i",
+                      "heading": "s8.4.a.i",
+                      "text": "all facts and information available to the registrar pertaining to the applicant and any key individual of the applicant",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s8.4.a.ii",
+                      "number": "ii",
+                      "heading": "s8.4.a.ii",
+                      "text": "the category of financial services which the applicant could appropriately render or wishes to render",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s8.4.a.iii",
+                      "number": "iii",
+                      "heading": "s8.4.a.iii",
+                      "text": "the category of financial services providers in which the applicant will be classified in relation to the fit and proper requirements mentioned in subsection (1); and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s8.4.a.iv",
+                      "number": "iv",
+                      "heading": "s8.4.a.iv",
+                      "text": "any guidelines provided to the registrar by the Advisory Committee or the Board.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s8.4.b",
@@ -448,9 +582,34 @@
               "id": "s8.8",
               "number": "8",
               "heading": "(8)",
-              "text": "(8) A licensee must— (a) display a certified copy of the licence in a prominent and durable manner within every business premises of the licensee; (b) ensure that a reference to the fact that such a licence is held is contained in all business documentation, advertisements and other promotional material; (c) ensure that the licence is at all times immediately or within a reasonable time available for production to any person requesting proof of licensed status under authority of a law or for the purpose of entering into a business relationship with the licensee.",
+              "text": "(8) A licensee must—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s8.8.a",
+                  "number": "a",
+                  "heading": "s8.8.a",
+                  "text": "display a certified copy of the licence in a prominent and durable manner within every business premises of the licensee;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s8.8.b",
+                  "number": "b",
+                  "heading": "s8.8.b",
+                  "text": "ensure that a reference to the fact that such a licence is held is contained in all business documentation, advertisements and other promotional material;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s8.8.c",
+                  "number": "c",
+                  "heading": "s8.8.c",
+                  "text": "ensure that the licence is at all times immediately or within a reasonable time available for production to any person requesting proof of licensed status under authority of a law or for the purpose of entering into a business relationship with the licensee.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s8.9",
@@ -531,17 +690,51 @@
               "id": "s9.3",
               "number": "3",
               "heading": "(3)",
-              "text": "(3) Despite the provisions of subsection (2), the registrar may under urgent circumstances where the registrar is satisfied on reasonable grounds that substantial prejudice to clients or the general public may occur— (a) provisionally suspend a licence, and inform the licensee of the— (i) grounds therefor; (ii) period of the suspension; and (iii) terms referred to in subsection (2)(a)(iii) attached to the suspension, and give the licensee a reasonable opportunity to respond thereto and to provide reasons why the provisional suspension should be lifted or why the period and terms should be changed; and (b) make known such provisional suspension by notice in the Gazette and, if necessary, by means of any other appropriate public media announcement.",
+              "text": "(3) Despite the provisions of subsection (2), the registrar may under urgent circumstances where the registrar is satisfied on reasonable grounds that substantial prejudice to clients or the general public may occur—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s9.3.a",
+                  "number": "a",
+                  "heading": "s9.3.a",
+                  "text": "provisionally suspend a licence, and inform the licensee of the— (i) grounds therefor; (ii) period of the suspension; and (iii) terms referred to in subsection (2)(a)(iii) attached to the suspension, and give the licensee a reasonable opportunity to respond thereto and to provide reasons why the provisional suspension should be lifted or why the period and terms should be changed; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s9.3.b",
+                  "number": "b",
+                  "heading": "s9.3.b",
+                  "text": "make known such provisional suspension by notice in the Gazette and, if necessary, by means of any other appropriate public media announcement.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s9.4",
               "number": "4",
               "heading": "(4)",
-              "text": "(4)(a) The registrar must within a reasonable time after receipt of any response contemplated in subsection (3)(a) consider the response, and may thereafter decide to— (i) lift the provisional suspension; or (ii) render the suspension final, and must inform the licensee accordingly. (b) The registrar must make known the terms of any such final suspension, or the lifting thereof, by notice in the Gazette and, if necessary, in any other appropriate public media announcement.",
+              "text": "(4)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s9.4.a",
+                  "number": "a",
+                  "heading": "s9.4.a",
+                  "text": "The registrar must within a reasonable time after receipt of any response contemplated in subsection (3)(a) consider the response, and may thereafter decide to— (i) lift the provisional suspension; or (ii) render the suspension final, and must inform the licensee accordingly.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s9.4.b",
+                  "number": "b",
+                  "heading": "s9.4.b",
+                  "text": "The registrar must make known the terms of any such final suspension, or the lifting thereof, by notice in the Gazette and, if necessary, in any other appropriate public media announcement.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s9.5",
@@ -564,9 +757,26 @@
               "id": "s10.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) The registrar may at any time withdraw any licence (including the licence of a licensee under provisional or final suspension in terms of section 9), if satisfied on the basis of available facts and information that the licensee— (a) did not, when applying for the licence, make a full disclosure of all relevant information to the registrar, or furnished false or misleading information; or (b) has since such issue contravened or failed to comply with any provision of this Act in a material manner.",
+              "text": "(1) The registrar may at any time withdraw any licence (including the licence of a licensee under provisional or final suspension in terms of section 9), if satisfied on the basis of available facts and information that the licensee—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s10.1.a",
+                  "number": "a",
+                  "heading": "s10.1.a",
+                  "text": "did not, when applying for the licence, make a full disclosure of all relevant information to the registrar, or furnished false or misleading information; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s10.1.b",
+                  "number": "b",
+                  "heading": "s10.1.b",
+                  "text": "has since such issue contravened or failed to comply with any provision of this Act in a material manner.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s10.2",
@@ -624,7 +834,25 @@
           "number": "12",
           "heading": "Exemptions in respect of product suppliers",
           "verbatim": true,
-          "text": "(1) The registrar may exempt a product supplier who is authorised or approved under a particular law to conduct business as a financial institution, and who is required to apply for authorisation under section 8, from submitting some or all of the information otherwise required from an applicant: Provided that the product supplier— (a) applies for exemption when submitting the application; and (b) complies with the requirements of the registrar with regard to information still required. (2) Authorisation granted to a product supplier contemplated in subsection (1) is supplementary to, but separate from, the supplier's authorisation or approval under a particular law as a financial institution."
+          "text": "(1) The registrar may exempt a product supplier who is authorised or approved under a particular law to conduct business as a financial institution, and who is required to apply for authorisation under section 8, from submitting some or all of the information otherwise required from an applicant: Provided that the product supplier—",
+          "subsections": [
+            {
+              "id": "s12.a",
+              "number": "a",
+              "heading": "s12.a",
+              "text": "applies for exemption when submitting the application; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12.b",
+              "number": "b",
+              "heading": "s12.b",
+              "text": "complies with the requirements of the registrar with regard to information still required. (2) Authorisation granted to a product supplier contemplated in subsection (1) is supplementary to, but separate from, the supplier's authorisation or approval under a particular law as a financial institution.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -686,9 +914,26 @@
               "id": "s13.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) An authorised financial services provider must— (a) at all times be satisfied that the provider's representatives, and key individuals of such representatives, are, when rendering a financial service on behalf of the provider, competent to act, taking into consideration requirements similar to those contemplated in paragraphs (a) and (b) of section 8(1) and subsection (1)(b)(ii) of this section, where applicable; and (b) take such steps as may be reasonable in the circumstances to ensure that representatives comply with any applicable code of conduct as well as with other applicable laws on conduct of business.",
+              "text": "(2) An authorised financial services provider must—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s13.2.a",
+                  "number": "a",
+                  "heading": "s13.2.a",
+                  "text": "at all times be satisfied that the provider's representatives, and key individuals of such representatives, are, when rendering a financial service on behalf of the provider, competent to act, taking into consideration requirements similar to those contemplated in paragraphs (a) and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s13.2.b",
+                  "number": "b",
+                  "heading": "s13.2.b",
+                  "text": "of section 8(1) and subsection (1)(b)(ii) of this section, where applicable; and (b) take such steps as may be reasonable in the circumstances to ensure that representatives comply with any applicable code of conduct as well as with other applicable laws on conduct of business.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s13.3",
@@ -775,17 +1020,51 @@
               "id": "s15.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1)(a) The registrar must, after consultation with the Advisory Committee and with representative bodies of the financial services industry and client and consumer bodies determined by the Advisory Committee, draft a code of conduct for authorised financial services providers. (b) The code must, after consultation, be published by notice in the Gazette, and, on any such publication, becomes binding on all authorised financial services providers and representatives referred to therein.",
+              "text": "(1)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s15.1.a",
+                  "number": "a",
+                  "heading": "s15.1.a",
+                  "text": "The registrar must, after consultation with the Advisory Committee and with representative bodies of the financial services industry and client and consumer bodies determined by the Advisory Committee, draft a code of conduct for authorised financial services providers.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s15.1.b",
+                  "number": "b",
+                  "heading": "s15.1.b",
+                  "text": "The code must, after consultation, be published by notice in the Gazette, and, on any such publication, becomes binding on all authorised financial services providers and representatives referred to therein.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s15.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2)(a) Different codes of conduct may be so drafted in respect of different categories of authorised financial services providers and their operations in different sectors of the financial services industry, and different categories of representatives. (b) A code of conduct must be drafted for the rendering of a financial service in respect of a deposit referred to in paragraph (f) of the definition of \"financial product\" in section 1(1) with a term not exceeding 12 months by a provider which is a bank as defined in the Banks Act, 1990 (Act No. 94 of 1990), or a mutual bank as defined in the Mutual Banks Act, 1993 (Act No. 124 of 1993).",
+              "text": "(2)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s15.2.a",
+                  "number": "a",
+                  "heading": "s15.2.a",
+                  "text": "Different codes of conduct may be so drafted in respect of different categories of authorised financial services providers and their operations in different sectors of the financial services industry, and different categories of representatives.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s15.2.b",
+                  "number": "b",
+                  "heading": "s15.2.b",
+                  "text": "A code of conduct must be drafted for the rendering of a financial service in respect of a deposit referred to in paragraph (f) of the definition of \"financial product\" in section 1(1) with a term not exceeding 12 months by a provider which is a bank as defined in the Banks Act, 1990 (Act No. 94 of 1990), or a mutual bank as defined in the Mutual Banks Act, 1993 (Act No. 124 of 1993).",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s15.3",
@@ -857,9 +1136,58 @@
               "id": "s16.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) A code of conduct must in particular contain provisions relating to— (a) the making of adequate disclosures of relevant material information, including disclosures of actual or potential own interests, in relation to dealings with clients; (b) adequate and appropriate record-keeping; (c) avoidance of fraudulent and misleading advertising, canvassing and marketing; (d) proper safe-keeping, separation and protection of funds and transaction documentation of clients; (e) where appropriate, suitable guarantees or professional indemnity or fidelity insurance cover, and mechanisms for adjustments of such guarantees or cover by the registrar in any particular case; and (f) any other matter which is necessary or expedient to be regulated in such code for the better achievement of the objects of this Act.",
+              "text": "(2) A code of conduct must in particular contain provisions relating to—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s16.2.a",
+                  "number": "a",
+                  "heading": "s16.2.a",
+                  "text": "the making of adequate disclosures of relevant material information, including disclosures of actual or potential own interests, in relation to dealings with clients;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.2.b",
+                  "number": "b",
+                  "heading": "s16.2.b",
+                  "text": "adequate and appropriate record-keeping;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.2.c",
+                  "number": "c",
+                  "heading": "s16.2.c",
+                  "text": "avoidance of fraudulent and misleading advertising, canvassing and marketing;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.2.d",
+                  "number": "d",
+                  "heading": "s16.2.d",
+                  "text": "proper safe-keeping, separation and protection of funds and transaction documentation of clients;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.2.e",
+                  "number": "e",
+                  "heading": "s16.2.e",
+                  "text": "where appropriate, suitable guarantees or professional indemnity or fidelity insurance cover, and mechanisms for adjustments of such guarantees or cover by the registrar in any particular case; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.2.f",
+                  "number": "f",
+                  "heading": "s16.2.f",
+                  "text": "any other matter which is necessary or expedient to be regulated in such code for the better achievement of the objects of this Act.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         }
@@ -881,9 +1209,34 @@
               "id": "s17.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1)(a) Any authorised financial services provider with more than one key individual or one or more representatives must, subject to section 35(1)(c), appoint one or more compliance officers to monitor compliance with this Act by the provider and such representative or representatives, particularly in accordance with the procedures contemplated in subsection (3), and to take responsibility for liaison with the registrar. (b) Such person may be a director, member, auditor, trustee, principal officer, public officer or company secretary of any such provider, or any other person with suitable qualifications and experience determined by the registrar by notice in the Gazette, after consultation with the Advisory Committee. (c) The provisions of section 19(5) and (6), relating to an auditor of an authorised financial services provider, apply with the necessary changes to a compliance officer.",
+              "text": "(1)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s17.1.a",
+                  "number": "a",
+                  "heading": "s17.1.a",
+                  "text": "Any authorised financial services provider with more than one key individual or one or more representatives must, subject to section 35(1)(c), appoint one or more compliance officers to monitor compliance with this Act by the provider and such representative or representatives, particularly in accordance with the procedures contemplated in subsection (3), and to take responsibility for liaison with the registrar.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s17.1.b",
+                  "number": "b",
+                  "heading": "s17.1.b",
+                  "text": "Such person may be a director, member, auditor, trustee, principal officer, public officer or company secretary of any such provider, or any other person with suitable qualifications and experience determined by the registrar by notice in the Gazette, after consultation with the Advisory Committee.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s17.1.c",
+                  "number": "c",
+                  "heading": "s17.1.c",
+                  "text": "The provisions of section 19(5) and (6), relating to an auditor of an authorised financial services provider, apply with the necessary changes to a compliance officer.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s17.2",
@@ -924,7 +1277,49 @@
           "number": "18",
           "heading": "Maintenance of records",
           "verbatim": true,
-          "text": "An authorised financial services provider must, except to the extent exempted by the registrar, maintain records for a minimum period of five years regarding— (a) known premature cancellations of transactions or financial products by clients of the provider; (b) complaints received together with an indication whether or not any such complaint has been resolved; (c) the continued compliance with the requirements referred to in section 8; (d) cases of non-compliance with this Act, and the reasons for such non-compliance; and (e) the continued compliance by representatives with the requirements referred to in section 13(1) and (2)."
+          "text": "An authorised financial services provider must, except to the extent exempted by the registrar, maintain records for a minimum period of five years regarding—",
+          "subsections": [
+            {
+              "id": "s18.a",
+              "number": "a",
+              "heading": "s18.a",
+              "text": "known premature cancellations of transactions or financial products by clients of the provider;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.b",
+              "number": "b",
+              "heading": "s18.b",
+              "text": "complaints received together with an indication whether or not any such complaint has been resolved;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.c",
+              "number": "c",
+              "heading": "s18.c",
+              "text": "the continued compliance with the requirements referred to in section 8;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.d",
+              "number": "d",
+              "heading": "s18.d",
+              "text": "cases of non-compliance with this Act, and the reasons for such non-compliance; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s18.e",
+              "number": "e",
+              "heading": "s18.e",
+              "text": "the continued compliance by representatives with the requirements referred to in section 13(1) and (2).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s19",
@@ -937,9 +1332,26 @@
               "id": "s19.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) Except to the extent exempted by the registrar, an authorised financial services provider must, in respect of the business carried on by the provider as authorised under the provider's licence— (a) maintain full and proper accounting records on a continual basis, brought up to date monthly; (b) annually prepare, in respect of the relevant financial year of the provider, financial statements reflecting, with suitable particulars, the financial position of the business as at the last day of the financial year in question, and the results of the operations and cash flow information for the period then ended.",
+              "text": "(1) Except to the extent exempted by the registrar, an authorised financial services provider must, in respect of the business carried on by the provider as authorised under the provider's licence—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s19.1.a",
+                  "number": "a",
+                  "heading": "s19.1.a",
+                  "text": "maintain full and proper accounting records on a continual basis, brought up to date monthly;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s19.1.b",
+                  "number": "b",
+                  "heading": "s19.1.b",
+                  "text": "annually prepare, in respect of the relevant financial year of the provider, financial statements reflecting, with suitable particulars, the financial position of the business as at the last day of the financial year in question, and the results of the operations and cash flow information for the period then ended.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s19.2",
@@ -1003,9 +1415,34 @@
               "id": "s19.3",
               "number": "3",
               "heading": "(3)",
-              "text": "(3) The authorised financial services provider must maintain records in accordance with subsection (1)(a) in respect of money and assets held on behalf of clients, and must, in addition to and simultaneously with the financial statements referred to in subsection (2), submit to the registrar a report, by the auditor who performed the audit, which confirms, in the form and manner determined by the registrar by notice in the Gazette for different categories of financial services providers— (a) the amount of money and assets at year end held by the provider on behalf of clients; (b) that such money and assets were throughout the financial year kept separate from those of the business of the authorised financial services provider and, in the case of non-compliance, the extent thereof; and (c) any other information required by the registrar.",
+              "text": "(3) The authorised financial services provider must maintain records in accordance with subsection (1)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s19.3.a",
+                  "number": "a",
+                  "heading": "s19.3.a",
+                  "text": "in respect of money and assets held on behalf of clients, and must, in addition to and simultaneously with the financial statements referred to in subsection (2), submit to the registrar a report, by the auditor who performed the audit, which confirms, in the form and manner determined by the registrar by notice in the Gazette for different categories of financial services providers— (a) the amount of money and assets at year end held by the provider on behalf of clients;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s19.3.b",
+                  "number": "b",
+                  "heading": "s19.3.b",
+                  "text": "that such money and assets were throughout the financial year kept separate from those of the business of the authorised financial services provider and, in the case of non-compliance, the extent thereof; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s19.3.c",
+                  "number": "c",
+                  "heading": "s19.3.c",
+                  "text": "any other information required by the registrar.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s19.4",
@@ -1019,9 +1456,26 @@
               "id": "s19.5",
               "number": "5",
               "heading": "(5)",
-              "text": "(5) If the appointment of an auditor of an authorised financial services provider is terminated— (a) the auditor must submit to the registrar a statement of what the auditor believes to be the reasons for that termination; and (b) if the auditor would, but for that termination, have had reason to submit to the registrar a report contemplated in subsection (3), the auditor must submit such a report to the registrar.",
+              "text": "(5) If the appointment of an auditor of an authorised financial services provider is terminated—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s19.5.a",
+                  "number": "a",
+                  "heading": "s19.5.a",
+                  "text": "the auditor must submit to the registrar a statement of what the auditor believes to be the reasons for that termination; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s19.5.b",
+                  "number": "b",
+                  "heading": "s19.5.b",
+                  "text": "if the auditor would, but for that termination, have had reason to submit to the registrar a report contemplated in subsection (3), the auditor must submit such a report to the registrar.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s19.6",
@@ -1070,14 +1524,50 @@
           "number": "20",
           "heading": "Office of Ombud for Financial Services Providers",
           "verbatim": true,
-          "text": "(1) There is an office to be known as the Office of the Ombud for Financial Services Providers. (2) The functions of the Office are performed by the Ombud for Financial Services Providers. (3) The objective of the Ombud is to consider and dispose of complaints in a procedurally fair, informal, economical and expeditious manner and by reference to what is equitable in all the circumstances, with due regard to— (a) the contractual arrangement or other legal relationship between the complainant and any other party to the complaint; and (b) the provisions of this Act. (4) When dealing with complaints in terms of sections 27 and 28 the Ombud is independent and must be impartial."
+          "text": "(1) There is an office to be known as the Office of the Ombud for Financial Services Providers. (2) The functions of the Office are performed by the Ombud for Financial Services Providers. (3) The objective of the Ombud is to consider and dispose of complaints in a procedurally fair, informal, economical and expeditious manner and by reference to what is equitable in all the circumstances, with due regard to—",
+          "subsections": [
+            {
+              "id": "s20.a",
+              "number": "a",
+              "heading": "s20.a",
+              "text": "the contractual arrangement or other legal relationship between the complainant and any other party to the complaint; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s20.b",
+              "number": "b",
+              "heading": "s20.b",
+              "text": "the provisions of this Act. (4) When dealing with complaints in terms of sections 27 and 28 the Ombud is independent and must be impartial.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s21",
           "number": "21",
           "heading": "Appointment of Ombud and deputy ombuds",
           "verbatim": true,
-          "text": "(1) The Board, after consultation with the Advisory Committee— (a) must appoint as Ombud a person qualified in law and who possesses adequate knowledge of the rendering of financial services; (b) may appoint one or more persons qualified in law and who possess adequate knowledge of the rendering of financial services, as deputy ombud. (2) The remuneration and other terms of appointment of the Ombud and a deputy ombud must be determined by the Board. (3) The Ombud or deputy ombud may at any time resign by submitting a written resignation to the Board at least three calendar months prior to the intended date of vacation of office, unless the Board allows a shorter period. (4) The Board may on good cause shown, after consultation with the Advisory Committee, remove the Ombud or a deputy ombud from office on the ground of misbehaviour, incapacity or incompetence, after affording the person concerned a reasonable opportunity to be heard."
+          "text": "(1) The Board, after consultation with the Advisory Committee—",
+          "subsections": [
+            {
+              "id": "s21.a",
+              "number": "a",
+              "heading": "s21.a",
+              "text": "must appoint as Ombud a person qualified in law and who possesses adequate knowledge of the rendering of financial services;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s21.b",
+              "number": "b",
+              "heading": "s21.b",
+              "text": "may appoint one or more persons qualified in law and who possess adequate knowledge of the rendering of financial services, as deputy ombud. (2) The remuneration and other terms of appointment of the Ombud and a deputy ombud must be determined by the Board. (3) The Ombud or deputy ombud may at any time resign by submitting a written resignation to the Board at least three calendar months prior to the intended date of vacation of office, unless the Board allows a shorter period. (4) The Board may on good cause shown, after consultation with the Advisory Committee, remove the Ombud or a deputy ombud from office on the ground of misbehaviour, incapacity or incompetence, after affording the person concerned a reasonable opportunity to be heard.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s22",
@@ -1175,17 +1665,67 @@
               "id": "s33.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) The registrar may institute action in a Court against any person who has contravened or not complied with any provision of this Act, for payment of— (a) an amount determined by the Court as compensation for losses suffered by any other person in consequence of such contravention or non-compliance; (b) a penalty for punitive purposes in a sum determined in the discretion of the Court but not exceeding three times the amount of any profit or gain which may have accrued to the person involved as a direct result of any such act or omission; (c) interest; and (d) costs of suit on such scale as may be determined by the Court.",
+              "text": "(2) The registrar may institute action in a Court against any person who has contravened or not complied with any provision of this Act, for payment of—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s33.2.a",
+                  "number": "a",
+                  "heading": "s33.2.a",
+                  "text": "an amount determined by the Court as compensation for losses suffered by any other person in consequence of such contravention or non-compliance;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s33.2.b",
+                  "number": "b",
+                  "heading": "s33.2.b",
+                  "text": "a penalty for punitive purposes in a sum determined in the discretion of the Court but not exceeding three times the amount of any profit or gain which may have accrued to the person involved as a direct result of any such act or omission;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s33.2.c",
+                  "number": "c",
+                  "heading": "s33.2.c",
+                  "text": "interest; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s33.2.d",
+                  "number": "d",
+                  "heading": "s33.2.d",
+                  "text": "costs of suit on such scale as may be determined by the Court.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s33.3",
               "number": "3",
               "heading": "(3)",
-              "text": "(3) Any amount recovered by the registrar in terms of subsection (2) must be deposited by the registrar directly into a specially designated trust account established by the registrar with an appropriate financial institution, and thereupon— (a) the registrar is, as a first charge against the trust account, entitled to reimbursement of all expenses reasonably incurred in bringing proceedings under subsection (2) and in administering the distributions made to persons in terms of subsection (5); (b) the balance, if any (hereinafter referred to as the \"distributable balance\") must be distributed by the registrar to the persons referred to in subsection (5), any funds remaining, accruing to the registrar in the registrar's official capacity.",
+              "text": "(3) Any amount recovered by the registrar in terms of subsection (2) must be deposited by the registrar directly into a specially designated trust account established by the registrar with an appropriate financial institution, and thereupon—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s33.3.a",
+                  "number": "a",
+                  "heading": "s33.3.a",
+                  "text": "the registrar is, as a first charge against the trust account, entitled to reimbursement of all expenses reasonably incurred in bringing proceedings under subsection (2) and in administering the distributions made to persons in terms of subsection (5);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s33.3.b",
+                  "number": "b",
+                  "heading": "s33.3.b",
+                  "text": "the balance, if any (hereinafter referred to as the \"distributable balance\") must be distributed by the registrar to the persons referred to in subsection (5), any funds remaining, accruing to the registrar in the registrar's official capacity.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s33.4",
@@ -1340,7 +1880,25 @@
           "number": "36",
           "heading": "Offences and penalties",
           "verbatim": true,
-          "text": "Any person who— (a) contravenes or fails to comply with a provision of section 7(1), 8(8), 13(1), 14(1), 18, 19(2) or 34(4) or (6); or (b) in any application in terms of this Act, deliberately makes a misleading, false or deceptive statement, or conceals any material fact, is guilty of an offence and is on conviction liable to a fine not exceeding R1 000 000 or to imprisonment for a period not exceeding 10 years, or to both such fine and such imprisonment."
+          "text": "Any person who—",
+          "subsections": [
+            {
+              "id": "s36.a",
+              "number": "a",
+              "heading": "s36.a",
+              "text": "contravenes or fails to comply with a provision of section 7(1), 8(8), 13(1), 14(1), 18, 19(2) or 34(4) or (6); or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s36.b",
+              "number": "b",
+              "heading": "s36.b",
+              "text": "in any application in terms of this Act, deliberately makes a misleading, false or deceptive statement, or conceals any material fact, is guilty of an offence and is on conviction liable to a fine not exceeding R1 000 000 or to imprisonment for a period not exceeding 10 years, or to both such fine and such imprisonment.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s37",
@@ -1427,17 +1985,59 @@
               "id": "s44.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) The registrar may on or after the commencement of this Act, but prior to the date determined by the Minister in terms of section 7(1), exempt any person or category of persons from the provisions of that section if the registrar is satisfied that— (a) the rendering of any financial service by the applicant is already partially or wholly regulated by any other law; or (b) the application of the said section to the applicant will cause the applicant or clients of the applicant financial or other hardship or prejudice; and (c) the granting of the exemption will not— (i) conflict with the public interest; (ii) prejudice the interests of clients; and (iii) frustrate the achievement of the objects of this Act.",
+              "text": "(1) The registrar may on or after the commencement of this Act, but prior to the date determined by the Minister in terms of section 7(1), exempt any person or category of persons from the provisions of that section if the registrar is satisfied that—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s44.1.a",
+                  "number": "a",
+                  "heading": "s44.1.a",
+                  "text": "the rendering of any financial service by the applicant is already partially or wholly regulated by any other law; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s44.1.b",
+                  "number": "b",
+                  "heading": "s44.1.b",
+                  "text": "the application of the said section to the applicant will cause the applicant or clients of the applicant financial or other hardship or prejudice; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s44.1.c",
+                  "number": "c",
+                  "heading": "s44.1.c",
+                  "text": "the granting of the exemption will not— (i) conflict with the public interest; (ii) prejudice the interests of clients; and (iii) frustrate the achievement of the objects of this Act.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s44.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) The registrar— (a) having regard to the factors mentioned in subsection (1), may attach to any exemption so granted reasonable requirements or impose reasonable conditions with which the applicant must comply either before or after the effective date of the exemption in the manner and during the period specified by the registrar; and (b) must determine the period for which the exemption will be valid.",
+              "text": "(2) The registrar—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s44.2.a",
+                  "number": "a",
+                  "heading": "s44.2.a",
+                  "text": "having regard to the factors mentioned in subsection (1), may attach to any exemption so granted reasonable requirements or impose reasonable conditions with which the applicant must comply either before or after the effective date of the exemption in the manner and during the period specified by the registrar; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s44.2.b",
+                  "number": "b",
+                  "heading": "s44.2.b",
+                  "text": "must determine the period for which the exemption will be valid.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s44.3",

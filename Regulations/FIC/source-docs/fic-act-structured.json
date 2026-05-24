@@ -110,9 +110,26 @@
                   "id": "s1.j.a",
                   "number": "a",
                   "heading": "s1.j.a",
-                  "text": "means a natural person who directly or indirectly–\n(i) ultimately owns or exercises effective control of–\n(aa) a client of an accountable institution; or\n(bb) a legal person, partnership or trust that owns or exercises effective control of, as the case may be, a client of an accountable institution; or\n(ii) exercises control of a client of an accountable institution on whose behalf a transaction is being conducted; and",
+                  "text": "means a natural person who directly or indirectly–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.j.a.i",
+                      "number": "i",
+                      "heading": "s1.j.a.i",
+                      "text": "ultimately owns or exercises effective control of–\n(aa) a client of an accountable institution; or\n(bb) a legal person, partnership or trust that owns or exercises effective control of, as the case may be, a client of an accountable institution; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.a.ii",
+                      "number": "ii",
+                      "heading": "s1.j.a.ii",
+                      "text": "exercises control of a client of an accountable institution on whose behalf a transaction is being conducted; and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s1.j.b",
@@ -375,9 +392,26 @@
                       "id": "s1.j.d.b",
                       "number": "b",
                       "heading": "s1.j.d.b",
-                      "text": "the court is satisfied that–\n(i) the person believes that there is a reasonable possibility of the existence of that fact; and\n(ii) the person fails to obtain information to confirm or refute the existence of that fact.\n(3) For the purposes of this Act a person ought reasonably to have known or suspected a fact if the conclusions that he or she ought to have reached, are those which would have been reached by a reasonably diligent and vigilant person having both–\n(a) the general knowledge, skill, training and experience that may reasonably be expected of a person in his or her position; and\n(b) the general knowledge, skill, training and experience that he or she in fact has.",
+                      "text": "the court is satisfied that–\n(i) the person believes that there is a reasonable possibility of the existence of that fact; and\n(ii) the person fails to obtain information to confirm or refute the existence of that fact.\n(3) For the purposes of this Act a person ought reasonably to have known or suspected a fact if the conclusions that he or she ought to have reached, are those which would have been reached by a reasonably diligent and vigilant person having both–",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s1.j.d.b.a",
+                          "number": "a",
+                          "heading": "s1.j.d.b.a",
+                          "text": "the general knowledge, skill, training and experience that may reasonably be expected of a person in his or her position; and",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.d.b.b",
+                          "number": "b",
+                          "heading": "s1.j.d.b.b",
+                          "text": "the general knowledge, skill, training and experience that he or she in fact has.",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 }
@@ -572,9 +606,98 @@
               "id": "s4.b",
               "number": "b",
               "heading": "s4.b",
-              "text": "inform, advise and co-operate with–\n(i) an investigating authority;\n(ii) the National Prosecuting Authority;\n(iii) an intelligence service;\n(iv) the South African Revenue Service;\n(v) the Independent Police Investigative Directorate;\n(vi) the Intelligence Division of the National Defence Force;\n(vii) a Special Investigating Unit;\n(viii) the Public Protector;\n(ix) an investigative division in a national department;\n(x) a supervisory body; or\n(xi) the investigative division of the Auditor-General;",
+              "text": "inform, advise and co-operate with–",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4.b.i",
+                  "number": "i",
+                  "heading": "s4.b.i",
+                  "text": "an investigating authority",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.ii",
+                  "number": "ii",
+                  "heading": "s4.b.ii",
+                  "text": "the National Prosecuting Authority",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.iii",
+                  "number": "iii",
+                  "heading": "s4.b.iii",
+                  "text": "an intelligence service",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.iv",
+                  "number": "iv",
+                  "heading": "s4.b.iv",
+                  "text": "the South African Revenue Service",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.v",
+                  "number": "v",
+                  "heading": "s4.b.v",
+                  "text": "the Independent Police Investigative Directorate",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.vi",
+                  "number": "vi",
+                  "heading": "s4.b.vi",
+                  "text": "the Intelligence Division of the National Defence Force",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.vii",
+                  "number": "vii",
+                  "heading": "s4.b.vii",
+                  "text": "a Special Investigating Unit",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.viii",
+                  "number": "viii",
+                  "heading": "s4.b.viii",
+                  "text": "the Public Protector",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.ix",
+                  "number": "ix",
+                  "heading": "s4.b.ix",
+                  "text": "an investigative division in a national department",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.x",
+                  "number": "x",
+                  "heading": "s4.b.x",
+                  "text": "a supervisory body; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.b.xi",
+                  "number": "xi",
+                  "heading": "s4.b.xi",
+                  "text": "the investigative division of the Auditor-General;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4.c",
@@ -612,9 +735,26 @@
               "id": "s4.g",
               "number": "g",
               "heading": "s4.g",
-              "text": "supervise and enforce compliance with this Act or any directive made in terms of this Act by accountable institutions, reporting institutions and other persons to whom the provisions of this Act apply that–\n(i) are not supervised by a supervisory body in terms of this Act;\n(ii) are supervised by a supervisory body in terms of this Act, if that supervisory body fails to enforce compliance despite any recommendation of the Centre made in terms of section 44(b).",
+              "text": "supervise and enforce compliance with this Act or any directive made in terms of this Act by accountable institutions, reporting institutions and other persons to whom the provisions of this Act apply that–",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4.g.i",
+                  "number": "i",
+                  "heading": "s4.g.i",
+                  "text": "are not supervised by a supervisory body in terms of this Act",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.g.ii",
+                  "number": "ii",
+                  "heading": "s4.g.ii",
+                  "text": "are supervised by a supervisory body in terms of this Act, if that supervisory body fails to enforce compliance despite any recommendation of the Centre made in terms of section 44(b).",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -911,9 +1051,42 @@
                       "id": "s21B.b.b.b",
                       "number": "b",
                       "heading": "s21B.b.b.b",
-                      "text": "establish the identity of–\n(i) every partner, including every member of a partnership en commandite, an anonymous partnership or any similar partnership;\n(ii) if a partner in the partnership is a legal person or a natural person acting on behalf of a partnership or in pursuance of the provisions of a trust agreement, the beneficial owner of that legal person, partnership or trust;\n(iii) the natural person who exercises executive control over the partnership; and\n(iv) each natural person who purports to be authorised to enter into a single transaction or establish a business relationship with the accountable institution on behalf of the partnership; and",
+                      "text": "establish the identity of–",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s21B.b.b.b.i",
+                          "number": "i",
+                          "heading": "s21B.b.b.b.i",
+                          "text": "every partner, including every member of a partnership en commandite, an anonymous partnership or any similar partnership",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s21B.b.b.b.ii",
+                          "number": "ii",
+                          "heading": "s21B.b.b.b.ii",
+                          "text": "if a partner in the partnership is a legal person or a natural person acting on behalf of a partnership or in pursuance of the provisions of a trust agreement, the beneficial owner of that legal person, partnership or trust",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s21B.b.b.b.iii",
+                          "number": "iii",
+                          "heading": "s21B.b.b.b.iii",
+                          "text": "the natural person who exercises executive control over the partnership; and",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s21B.b.b.b.iv",
+                          "number": "iv",
+                          "heading": "s21B.b.b.b.iv",
+                          "text": "each natural person who purports to be authorised to enter into a single transaction or establish a business relationship with the accountable institution on behalf of the partnership; and",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 }
@@ -956,17 +1129,51 @@
               "id": "s21B.d",
               "number": "d",
               "heading": "s21B.d",
-              "text": "in respect of the trustees of the trust, establish the identity of–\n(i) each trustee;\n(iA) if a trustee is a legal person or a person acting on behalf of a partnership, the beneficial owner of that legal person or partnership; and\n(ii) each natural person who purports to be authorised to enter into a single transaction or establish a business relationship with the accountable institution on behalf of the trust, whether such a person is appointed as a trustee of the trust or not;",
+              "text": "in respect of the trustees of the trust, establish the identity of–",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s21B.d.i",
+                  "number": "i",
+                  "heading": "s21B.d.i",
+                  "text": "each trustee;\n(iA) if a trustee is a legal person or a person acting on behalf of a partnership, the beneficial owner of that legal person or partnership; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s21B.d.ii",
+                  "number": "ii",
+                  "heading": "s21B.d.ii",
+                  "text": "each natural person who purports to be authorised to enter into a single transaction or establish a business relationship with the accountable institution on behalf of the trust, whether such a person is appointed as a trustee of the trust or not;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s21B.e",
               "number": "e",
               "heading": "s21B.e",
-              "text": "in respect of the beneficiaries of the trust, establish–\n(i) the identity of each beneficiary referred to by name in the trust instrument or other founding instrument in terms of which the trust is created;\n(iA) if a beneficiary referred to by name in the trust instrument is a legal person or a person acting on behalf of a partnership or in pursuance of the provisions of a trust agreement, the beneficial owner of that legal person, partnership or trust; and\n(ii) if beneficiaries are not referred to by name in the trust instrument or other founding instrument in terms of which the trust is created, the particulars of how the beneficiaries of the trust are determined;",
+              "text": "in respect of the beneficiaries of the trust, establish–",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s21B.e.i",
+                  "number": "i",
+                  "heading": "s21B.e.i",
+                  "text": "the identity of each beneficiary referred to by name in the trust instrument or other founding instrument in terms of which the trust is created;\n(iA) if a beneficiary referred to by name in the trust instrument is a legal person or a person acting on behalf of a partnership or in pursuance of the provisions of a trust agreement, the beneficial owner of that legal person, partnership or trust; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s21B.e.ii",
+                  "number": "ii",
+                  "heading": "s21B.e.ii",
+                  "text": "if beneficiaries are not referred to by name in the trust instrument or other founding instrument in terms of which the trust is created, the particulars of how the beneficiaries of the trust are determined;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s21B.f",
@@ -997,9 +1204,26 @@
               "id": "s21C.a",
               "number": "a",
               "heading": "s21C.a",
-              "text": "monitoring of transactions undertaken throughout the course of the relationship, including, where necessary–\n(i) the source of funds, to ensure that the transactions are consistent with the accountable institution's knowledge of the client and the client's business and risk profile; and\n(ii) the background and purpose of all complex, unusual large transactions, and all unusual patterns of transactions, which have no apparent business or lawful purpose; and",
+              "text": "monitoring of transactions undertaken throughout the course of the relationship, including, where necessary–",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s21C.a.i",
+                  "number": "i",
+                  "heading": "s21C.a.i",
+                  "text": "the source of funds, to ensure that the transactions are consistent with the accountable institution's knowledge of the client and the client's business and risk profile; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s21C.a.ii",
+                  "number": "ii",
+                  "heading": "s21C.a.ii",
+                  "text": "the background and purpose of all complex, unusual large transactions, and all unusual patterns of transactions, which have no apparent business or lawful purpose; and",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s21C.b",
@@ -1063,9 +1287,34 @@
               "id": "s21E.c",
               "number": "c",
               "heading": "s21E.c",
-              "text": "conduct ongoing due diligence as contemplated in section 21C,\nthe institution–\n(i) may not establish a business relationship or conclude a single transaction with a client;\n(ii) may not conclude a transaction in the course of a business relationship, or perform any act to give effect to a single transaction; or\n(iii) must terminate, in accordance with its Risk Management and Compliance Programme, an existing business relationship with a client,\nas the case may be, and consider making a report under section 29 of this Act.",
+              "text": "conduct ongoing due diligence as contemplated in section 21C,\nthe institution–",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s21E.c.i",
+                  "number": "i",
+                  "heading": "s21E.c.i",
+                  "text": "may not establish a business relationship or conclude a single transaction with a client",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s21E.c.ii",
+                  "number": "ii",
+                  "heading": "s21E.c.ii",
+                  "text": "may not conclude a transaction in the course of a business relationship, or perform any act to give effect to a single transaction; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s21E.c.iii",
+                  "number": "iii",
+                  "heading": "s21E.c.iii",
+                  "text": "must terminate, in accordance with its Risk Management and Compliance Programme, an existing business relationship with a client,\nas the case may be, and consider making a report under section 29 of this Act.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -1397,9 +1646,26 @@
                   "id": "s26B.e.b",
                   "number": "b",
                   "heading": "s26B.e.b",
-                  "text": "acting on behalf of or at the direction of a person or entity contemplated in paragraph (a).\n(3) No person who knows or ought reasonably to have known or suspected that property is property referred to in subsection (1), may enter into, or become concerned in, an arrangement which in any way has or is likely to have the effect of–\n(a) making it possible for a person or an entity identified pursuant to a resolution of the Security Council of the United Nations contemplated in section 26A(1) to retain or control the property;\n(b) converting the property;",
+                  "text": "acting on behalf of or at the direction of a person or entity contemplated in paragraph (a).\n(3) No person who knows or ought reasonably to have known or suspected that property is property referred to in subsection (1), may enter into, or become concerned in, an arrangement which in any way has or is likely to have the effect of–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s26B.e.b.a",
+                      "number": "a",
+                      "heading": "s26B.e.b.a",
+                      "text": "making it possible for a person or an entity identified pursuant to a resolution of the Security Council of the United Nations contemplated in section 26A(1) to retain or control the property;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s26B.e.b.b",
+                      "number": "b",
+                      "heading": "s26B.e.b.b",
+                      "text": "converting the property;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s26B.e.c",
@@ -1570,9 +1836,26 @@
                   "id": "s28A.c.b",
                   "number": "b",
                   "heading": "s28A.c.b",
-                  "text": "any change in the circumstances concerning the accountable institution's possession or control of that property.\n(3) An accountable institution must upon–\n(a) . . .\n(b) notice being given by the Director under section 26A(3),\nscrutinise its information concerning clients with whom the accountable institution has business relationships in order to determine whether any such client is a person or entity mentioned in the proclamation by the President or the notice by the Director.",
+                  "text": "any change in the circumstances concerning the accountable institution's possession or control of that property.\n(3) An accountable institution must upon–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s28A.c.b.a",
+                      "number": "a",
+                      "heading": "s28A.c.b.a",
+                      "text": ". . .",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s28A.c.b.b",
+                      "number": "b",
+                      "heading": "s28A.c.b.b",
+                      "text": "notice being given by the Director under section 26A(3),\nscrutinise its information concerning clients with whom the accountable institution has business relationships in order to determine whether any such client is a person or entity mentioned in the proclamation by the President or the notice by the Director.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }
@@ -1597,9 +1880,58 @@
               "id": "s29.b",
               "number": "b",
               "heading": "s29.b",
-              "text": "a transaction or series of transactions to which the business is a party–\n(i) facilitated or is likely to facilitate the transfer of the proceeds of unlawful activities or property which is connected to an offence relating to the financing of terrorist and related activities;\n(ii) has no apparent business or lawful purpose;\n(iii) is conducted for the purpose of avoiding giving rise to a reporting duty under this Act; or\n(iv) may be relevant to the investigation of an evasion or attempted evasion of a duty to pay any tax, duty or levy imposed by legislation administered by the Commissioner for the South African Revenue Service;\n(v) relates to an offence relating to the financing of terrorist and related activities; or\n(vi) relates to the contravention of a prohibition under section 26B; or",
+              "text": "a transaction or series of transactions to which the business is a party–",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s29.b.i",
+                  "number": "i",
+                  "heading": "s29.b.i",
+                  "text": "facilitated or is likely to facilitate the transfer of the proceeds of unlawful activities or property which is connected to an offence relating to the financing of terrorist and related activities",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s29.b.ii",
+                  "number": "ii",
+                  "heading": "s29.b.ii",
+                  "text": "has no apparent business or lawful purpose",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s29.b.iii",
+                  "number": "iii",
+                  "heading": "s29.b.iii",
+                  "text": "is conducted for the purpose of avoiding giving rise to a reporting duty under this Act; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s29.b.iv",
+                  "number": "iv",
+                  "heading": "s29.b.iv",
+                  "text": "may be relevant to the investigation of an evasion or attempted evasion of a duty to pay any tax, duty or levy imposed by legislation administered by the Commissioner for the South African Revenue Service",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s29.b.v",
+                  "number": "v",
+                  "heading": "s29.b.v",
+                  "text": "relates to an offence relating to the financing of terrorist and related activities; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s29.b.vi",
+                  "number": "vi",
+                  "heading": "s29.b.vi",
+                  "text": "relates to the contravention of a prohibition under section 26B; or",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s29.c",
@@ -1847,9 +2179,42 @@
                   "id": "s42.q.iv",
                   "number": "iv",
                   "heading": "s42.q.iv",
-                  "text": "taking into consideration the level of risk of the host country, the institution will apply appropriate additional measures to manage the risks if the host country does not permit the implementation of measures required under this Act;\n(qA) provide for the manner in which and the processes by which group-wide programmes of an accountable institution for all its branches and majority-owned subsidiaries situated in the Republic is implemented so as to enable the institution to–\n(i) comply with its obligations under this Act;\n(ii) exchange information with its branches or subsidiaries relating to the customer due diligence requirements in terms of this Act;\n(iii) exchange information with its branches or subsidiaries relating to the analysis of transactions or activities which the institution suspects to be suspicious or unusual as contemplated in section 29; and\n(iv) have adequate safeguards to protect the confidentiality of information exchanged in accordance with this paragraph and this Act;",
+                  "text": "taking into consideration the level of risk of the host country, the institution will apply appropriate additional measures to manage the risks if the host country does not permit the implementation of measures required under this Act;\n(qA) provide for the manner in which and the processes by which group-wide programmes of an accountable institution for all its branches and majority-owned subsidiaries situated in the Republic is implemented so as to enable the institution to–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s42.q.iv.i",
+                      "number": "i",
+                      "heading": "s42.q.iv.i",
+                      "text": "comply with its obligations under this Act",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s42.q.iv.ii",
+                      "number": "ii",
+                      "heading": "s42.q.iv.ii",
+                      "text": "exchange information with its branches or subsidiaries relating to the customer due diligence requirements in terms of this Act",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s42.q.iv.iii",
+                      "number": "iii",
+                      "heading": "s42.q.iv.iii",
+                      "text": "exchange information with its branches or subsidiaries relating to the analysis of transactions or activities which the institution suspects to be suspicious or unusual as contemplated in section 29; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s42.q.iv.iv",
+                      "number": "iv",
+                      "heading": "s42.q.iv.iv",
+                      "text": "have adequate safeguards to protect the confidentiality of information exchanged in accordance with this paragraph and this Act;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -2147,9 +2512,34 @@
                       "id": "s45C.e.e.c",
                       "number": "c",
                       "heading": "s45C.e.e.c",
-                      "text": "suspend any part of an administrative sanction on any condition the Centre or the supervisory body deems appropriate for a period not exceeding five years.\n(5) Before imposing an administrative sanction, the Centre or supervisory body must give the institution or person reasonable notice in writing–\n(a) of the nature of the alleged non-compliance;\n(b) of the intention to impose an administrative sanction;\n(c) of the amount or particulars of the intended administrative sanction; and",
+                      "text": "suspend any part of an administrative sanction on any condition the Centre or the supervisory body deems appropriate for a period not exceeding five years.\n(5) Before imposing an administrative sanction, the Centre or supervisory body must give the institution or person reasonable notice in writing–",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s45C.e.e.c.a",
+                          "number": "a",
+                          "heading": "s45C.e.e.c.a",
+                          "text": "of the nature of the alleged non-compliance;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s45C.e.e.c.b",
+                          "number": "b",
+                          "heading": "s45C.e.e.c.b",
+                          "text": "of the intention to impose an administrative sanction;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s45C.e.e.c.c",
+                          "number": "c",
+                          "heading": "s45C.e.e.c.c",
+                          "text": "of the amount or particulars of the intended administrative sanction; and",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     },
                     {
                       "id": "s45C.e.e.d",
@@ -2170,9 +2560,26 @@
                           "id": "s45C.e.e.d.ii",
                           "number": "ii",
                           "heading": "s45C.e.e.d.ii",
-                          "text": "of the right to appeal against the decision in accordance with section 45D.\n(c) The Centre must, prior to taking a decision contemplated in paragraph (a), consult the relevant supervisory body, if applicable.\n(7)(a) Any financial penalty imposed must be paid into the National Revenue Fund within the period and in the manner as may be specified in the relevant notice.\n(b) If the institution or person fails to pay the financial penalty within the specified period and an appeal has not been lodged within the required period, the Centre or supervisory body may forthwith file with the clerk or registrar of a competent court a certified copy of the notice contemplated in subsection (6)(b), and the notice thereupon has the effect of a civil judgment lawfully given in that court in favour of the Centre or supervisory body.\n(8) An administrative sanction contemplated in this section may not be imposed if the respondent has been charged with a criminal offence in respect of the same set of facts.\n(9) If a court assesses the penalty to be imposed on a person convicted of an offence in terms of this Act, the court must take into account any administrative sanction imposed under this section in respect of the same set of facts.\n(10) An administrative sanction imposed in terms of this Act does not constitute a previous conviction as contemplated in Chapter 27 of the Criminal Procedure Act, 1977 (Act No. 51 of 1977).\n(11) Unless the Director or supervisory body is of the opinion that there are exceptional circumstances present that justify the preservation of the confidentiality of a decision the Director or supervisory body must make public the decision and the nature of any sanction imposed if–\n(a) an institution or person does not appeal against a decision of the Centre or supervisory body within the required period; or\n(b) the appeal board confirms the decision of the Centre or supervisory body.",
+                          "text": "of the right to appeal against the decision in accordance with section 45D.\n(c) The Centre must, prior to taking a decision contemplated in paragraph (a), consult the relevant supervisory body, if applicable.\n(7)(a) Any financial penalty imposed must be paid into the National Revenue Fund within the period and in the manner as may be specified in the relevant notice.\n(b) If the institution or person fails to pay the financial penalty within the specified period and an appeal has not been lodged within the required period, the Centre or supervisory body may forthwith file with the clerk or registrar of a competent court a certified copy of the notice contemplated in subsection (6)(b), and the notice thereupon has the effect of a civil judgment lawfully given in that court in favour of the Centre or supervisory body.\n(8) An administrative sanction contemplated in this section may not be imposed if the respondent has been charged with a criminal offence in respect of the same set of facts.\n(9) If a court assesses the penalty to be imposed on a person convicted of an offence in terms of this Act, the court must take into account any administrative sanction imposed under this section in respect of the same set of facts.\n(10) An administrative sanction imposed in terms of this Act does not constitute a previous conviction as contemplated in Chapter 27 of the Criminal Procedure Act, 1977 (Act No. 51 of 1977).\n(11) Unless the Director or supervisory body is of the opinion that there are exceptional circumstances present that justify the preservation of the confidentiality of a decision the Director or supervisory body must make public the decision and the nature of any sanction imposed if–",
                           "verbatim": true,
-                          "subsections": []
+                          "subsections": [
+                            {
+                              "id": "s45C.e.e.d.ii.a",
+                              "number": "a",
+                              "heading": "s45C.e.e.d.ii.a",
+                              "text": "an institution or person does not appeal against a decision of the Centre or supervisory body within the required period; or",
+                              "verbatim": true,
+                              "subsections": []
+                            },
+                            {
+                              "id": "s45C.e.e.d.ii.b",
+                              "number": "b",
+                              "heading": "s45C.e.e.d.ii.b",
+                              "text": "the appeal board confirms the decision of the Centre or supervisory body.",
+                              "verbatim": true,
+                              "subsections": []
+                            }
+                          ]
                         }
                       ]
                     }

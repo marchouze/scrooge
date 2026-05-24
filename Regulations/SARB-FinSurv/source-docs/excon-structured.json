@@ -67,9 +67,26 @@
               "id": "excon-reg2.2",
               "number": "2",
               "heading": "excon-reg2.2",
-              "text": "(2) (a) An authorised dealer shall not buy, borrow or receive or sell, lend or deliver any foreign currency or gold except for such purposes or on such conditions as the Treasury may determine.\n(b) The Treasury may, in its discretion, by order prohibit all authorised dealers or any one or more of them –\n(i) from selling, lending or delivering to, or buying, borrowing or receiving from, any specified person, fund or foreign government any foreign currency or gold; or\n(ii) from so selling, lending, delivering, buying, borrowing or receiving any foreign currency or gold for any specified purpose or except for such purposes or on such conditions as the Treasury may determine.",
+              "text": "(2)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "excon-reg2.2.a",
+                  "number": "a",
+                  "heading": "excon-reg2.2.a",
+                  "text": "An authorised dealer shall not buy, borrow or receive or sell, lend or deliver any foreign currency or gold except for such purposes or on such conditions as the Treasury may determine.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg2.2.b",
+                  "number": "b",
+                  "heading": "excon-reg2.2.b",
+                  "text": "The Treasury may, in its discretion, by order prohibit all authorised dealers or any one or more of them –\n(i) from selling, lending or delivering to, or buying, borrowing or receiving from, any specified person, fund or foreign government any foreign currency or gold; or\n(ii) from so selling, lending, delivering, buying, borrowing or receiving any foreign currency or gold for any specified purpose or except for such purposes or on such conditions as the Treasury may determine.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "excon-reg2.3",
@@ -145,9 +162,26 @@
                   "id": "excon-reg3.1.d",
                   "number": "d",
                   "heading": "excon-reg3.1.d",
-                  "text": "draw or negotiate any bill of exchange or promissory note, transfer any security or acknowledge any debt, so that a right (whether actual or contingent) on the part of such person or any other person to receive a payment in the Republic is created or transferred as consideration –\n(i) for the receiving by such person or any other person of a payment or the acquisition by such person or any other person of property, outside the Republic; or\n(ii) for a right (whether actual or contingent) on the part of such person or any other person to receive a payment or acquire property outside the Republic; or make or receive any payment as such consideration; or",
+                  "text": "draw or negotiate any bill of exchange or promissory note, transfer any security or acknowledge any debt, so that a right (whether actual or contingent) on the part of such person or any other person to receive a payment in the Republic is created or transferred as consideration –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "excon-reg3.1.d.i",
+                      "number": "i",
+                      "heading": "excon-reg3.1.d.i",
+                      "text": "for the receiving by such person or any other person of a payment or the acquisition by such person or any other person of property, outside the Republic; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg3.1.d.ii",
+                      "number": "ii",
+                      "heading": "excon-reg3.1.d.ii",
+                      "text": "for a right (whether actual or contingent) on the part of such person or any other person to receive a payment or acquire property outside the Republic; or make or receive any payment as such consideration; or",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "excon-reg3.1.e",
@@ -389,9 +423,26 @@
               "id": "excon-reg5.2",
               "number": "2",
               "heading": "excon-reg5.2",
-              "text": "(2) (a) The provisions of sub-regulation (1) of this regulation shall not impose upon any person an obligation to offer any gold for sale or to cause any gold to be offered for sale, if he is, in respect of that gold, exempted from this regulation by the Treasury or by a person so authorised.\n(b) The Treasury or a person so authorised may withdraw any exemption granted in terms of paragraph (a) of this sub-regulation.",
+              "text": "(2)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "excon-reg5.2.a",
+                  "number": "a",
+                  "heading": "excon-reg5.2.a",
+                  "text": "The provisions of sub-regulation (1) of this regulation shall not impose upon any person an obligation to offer any gold for sale or to cause any gold to be offered for sale, if he is, in respect of that gold, exempted from this regulation by the Treasury or by a person so authorised.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg5.2.b",
+                  "number": "b",
+                  "heading": "excon-reg5.2.b",
+                  "text": "The Treasury or a person so authorised may withdraw any exemption granted in terms of paragraph (a) of this sub-regulation.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         }
@@ -509,9 +560,34 @@
               "id": "excon-reg6.10",
               "number": "10",
               "heading": "excon-reg6.10",
-              "text": "(10) (a) Subject to any exemption which may be granted by the Treasury, no person shall export goods from the Republic, unless the relative bill of entry export in respect of such goods is duly completed and signed by the consignor or a person duly authorised by the consignor.\n(b) The Treasury may direct that the said bill of entry export shall be completed in respect of any commodity or article, irrespective of its value.\n(c) For the purposes of this sub regulation \"value\" shall mean –\n(i) for customs purposes, the value as defined in section seventy two of the Customs and Excise Act, 1964 (Act No. 91 of 1964); and\n(ii) for the purposes of an authorised dealer, the full proceeds of the goods exported.",
+              "text": "(10)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "excon-reg6.10.a",
+                  "number": "a",
+                  "heading": "excon-reg6.10.a",
+                  "text": "Subject to any exemption which may be granted by the Treasury, no person shall export goods from the Republic, unless the relative bill of entry export in respect of such goods is duly completed and signed by the consignor or a person duly authorised by the consignor.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg6.10.b",
+                  "number": "b",
+                  "heading": "excon-reg6.10.b",
+                  "text": "The Treasury may direct that the said bill of entry export shall be completed in respect of any commodity or article, irrespective of its value.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg6.10.c",
+                  "number": "c",
+                  "heading": "excon-reg6.10.c",
+                  "text": "For the purposes of this sub regulation \"value\" shall mean –\n(i) for customs purposes, the value as defined in section seventy two of the Customs and Excise Act, 1964 (Act No. 91 of 1964); and\n(ii) for the purposes of an authorised dealer, the full proceeds of the goods exported.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         }
@@ -681,9 +757,34 @@
                   "id": "excon-reg10.1.a",
                   "number": "a",
                   "heading": "excon-reg10.1.a",
-                  "text": "export from the Republic during any period of twelve months a total quantity of goods which exceeds in value twenty rand or such greater amount as the Treasury may determine, if –\n(i) no payment for such goods has been or is to be received in the Republic from a person outside the Republic; or\n(ii) such goods are exported at a price which is less than the value thereof; or\n(iii) the period within which payment for such goods is to be made exceeds six months from the date of shipment from the Republic or such shorter period as an authorised dealer may determine in respect of such goods;",
+                  "text": "export from the Republic during any period of twelve months a total quantity of goods which exceeds in value twenty rand or such greater amount as the Treasury may determine, if –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "excon-reg10.1.a.i",
+                      "number": "i",
+                      "heading": "excon-reg10.1.a.i",
+                      "text": "no payment for such goods has been or is to be received in the Republic from a person outside the Republic; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg10.1.a.ii",
+                      "number": "ii",
+                      "heading": "excon-reg10.1.a.ii",
+                      "text": "such goods are exported at a price which is less than the value thereof; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "excon-reg10.1.a.iii",
+                      "number": "iii",
+                      "heading": "excon-reg10.1.a.iii",
+                      "text": "the period within which payment for such goods is to be made exceeds six months from the date of shipment from the Republic or such shorter period as an authorised dealer may determine in respect of such goods;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "excon-reg10.1.b",
@@ -1067,9 +1168,26 @@
               "id": "excon-reg15.6",
               "number": "6",
               "heading": "excon-reg15.6",
-              "text": "(6) (a) The Treasury or a person authorised by the Treasury may grant exemptions from the provisions of sub-regulations (1), (2) and (3).\n(b) The provisions of sub-regulation (5) shall apply mutatis mutandis in respect of applications for exemptions under paragraph (a) of this sub-regulation relating to bearer securities or to dividend or interest coupons issued in respect of such bearer securities.",
+              "text": "(6)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "excon-reg15.6.a",
+                  "number": "a",
+                  "heading": "excon-reg15.6.a",
+                  "text": "The Treasury or a person authorised by the Treasury may grant exemptions from the provisions of sub-regulations (1), (2) and (3).",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg15.6.b",
+                  "number": "b",
+                  "heading": "excon-reg15.6.b",
+                  "text": "The provisions of sub-regulation (5) shall apply mutatis mutandis in respect of applications for exemptions under paragraph (a) of this sub-regulation relating to bearer securities or to dividend or interest coupons issued in respect of such bearer securities.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "excon-reg15.7",
@@ -1301,25 +1419,100 @@
                       "id": "excon-reg22A.1.a.ii",
                       "number": "ii",
                       "heading": "excon-reg22A.1.a.ii",
-                      "text": "any money or goods, notwithstanding the person in whose possession it is –\n(aa) which the Treasury on reasonable grounds suspects to be involved in a contravention of any provision of these regulations or in a failure to comply with any such provision, or which the Treasury on reasonable grounds suspects to be involved in any act or omission which the Treasury so suspects to constitute a contravention of any such provision or a failure to comply with any such provision;\n(bb) which have been obtained by any person or are due to him, whether by virtue of any personal right or otherwise, and which would not have been obtained by him or would not have been due to him if any such contravention or failure or any such act or omission had not been committed;\n(cc) by which any person has been benefited or enriched as a result of any such contravention or failure or any such act or omission,\nor, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is held in credit in that account",
+                      "text": "any money or goods, notwithstanding the person in whose possession it is –",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "excon-reg22A.1.a.ii.aa",
+                          "number": "aa",
+                          "heading": "excon-reg22A.1.a.ii.aa",
+                          "text": "which the Treasury on reasonable grounds suspects to be involved in a contravention of any provision of these regulations or in a failure to comply with any such provision, or which the Treasury on reasonable grounds suspects to be involved in any act or omission which the Treasury so suspects to constitute a contravention of any such provision or a failure to comply with any such provision;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg22A.1.a.ii.bb",
+                          "number": "bb",
+                          "heading": "excon-reg22A.1.a.ii.bb",
+                          "text": "which have been obtained by any person or are due to him, whether by virtue of any personal right or otherwise, and which would not have been obtained by him or would not have been due to him if any such contravention or failure or any such act or omission had not been committed;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg22A.1.a.ii.cc",
+                          "number": "cc",
+                          "heading": "excon-reg22A.1.a.ii.cc",
+                          "text": "by which any person has been benefited or enriched as a result of any such contravention or failure or any such act or omission,\nor, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is held in credit in that account",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     },
                     {
                       "id": "excon-reg22A.1.a.iii",
                       "number": "iii",
                       "heading": "excon-reg22A.1.a.iii",
-                      "text": "any money or goods, notwithstanding the person in whose possession it may be, into which money or goods referred to in subparagraph (i) or (ii) have been transformed, including any personal right obtained with money or goods referred to in subparagraph (i) or (ii), or, in the case of such money or any part thereof which has been deposited into any account, an equal amount of money which is held in credit in that account",
+                      "text": "any money or goods, notwithstanding the person in whose possession it may be, into which money or goods referred to in subparagraph",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "excon-reg22A.1.a.iii.i",
+                          "number": "i",
+                          "heading": "excon-reg22A.1.a.iii.i",
+                          "text": "or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg22A.1.a.iii.ii",
+                          "number": "ii",
+                          "heading": "excon-reg22A.1.a.iii.ii",
+                          "text": "have been transformed, including any personal right obtained with money or goods referred to in subparagraph (i) or (ii), or, in the case of such money or any part thereof which has been deposited into any account, an equal amount of money which is held in credit in that account",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     },
                     {
                       "id": "excon-reg22A.1.a.iv",
                       "number": "iv",
                       "heading": "excon-reg22A.1.a.iv",
-                      "text": "any money which is held in a blocked account referred to in regulation 4 and which the Treasury on reasonable grounds suspects to be money –\n(aa) in respect of which a contravention or act or omission referred to in subparagraph (i) has been committed;\n(bb) which has been involved in a contravention or failure or act or omission referred to in subparagraph (ii)(aa);\n(cc) which has been obtained by any person or is due to him as referred to in subparagraph (ii)(bb);\n(dd) by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc);",
+                      "text": "any money which is held in a blocked account referred to in regulation 4 and which the Treasury on reasonable grounds suspects to be money –",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "excon-reg22A.1.a.iv.aa",
+                          "number": "aa",
+                          "heading": "excon-reg22A.1.a.iv.aa",
+                          "text": "in respect of which a contravention or act or omission referred to in subparagraph (i) has been committed;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg22A.1.a.iv.bb",
+                          "number": "bb",
+                          "heading": "excon-reg22A.1.a.iv.bb",
+                          "text": "which has been involved in a contravention or failure or act or omission referred to in subparagraph (ii)(aa);",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg22A.1.a.iv.cc",
+                          "number": "cc",
+                          "heading": "excon-reg22A.1.a.iv.cc",
+                          "text": "which has been obtained by any person or is due to him as referred to in subparagraph (ii)(bb);",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg22A.1.a.iv.dd",
+                          "number": "dd",
+                          "heading": "excon-reg22A.1.a.iv.dd",
+                          "text": "by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc);",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 },
@@ -1429,9 +1622,34 @@
               "id": "excon-reg22B.2",
               "number": "2",
               "heading": "excon-reg22B.2",
-              "text": "(2) The Treasury may, if it is on reasonable grounds satisfied that money or goods attached under paragraph (a) of regulation 22A(1) or in respect of which an order has been issued or made under paragraph (b) or (c) of that regulation are not money or goods as referred to in those paragraphs, return such money or goods, including money or goods accrued therefrom, to the person in whose possession such money or goods have been found or to any person otherwise entitled thereto, or cancel the relevant order.",
+              "text": "(2) The Treasury may, if it is on reasonable grounds satisfied that money or goods attached under paragraph",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "excon-reg22B.2.a",
+                  "number": "a",
+                  "heading": "excon-reg22B.2.a",
+                  "text": "of regulation 22A(1) or in respect of which an order has been issued or made under paragraph",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg22B.2.b",
+                  "number": "b",
+                  "heading": "excon-reg22B.2.b",
+                  "text": "or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "excon-reg22B.2.c",
+                  "number": "c",
+                  "heading": "excon-reg22B.2.c",
+                  "text": "of that regulation are not money or goods as referred to in those paragraphs, return such money or goods, including money or goods accrued therefrom, to the person in whose possession such money or goods have been found or to any person otherwise entitled thereto, or cancel the relevant order.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "excon-reg22B.3",
@@ -1680,9 +1898,42 @@
                       "id": "excon-reg24.2.c.iii",
                       "number": "iii",
                       "heading": "excon-reg24.2.c.iii",
-                      "text": "submit, in respect of the market value, in the foreign currency of that foreign asset, as at such date as may be prescribed –\n(aa) a valuation certificate by a valuator of the country where that foreign asset is located; and/or\n(bb) a valuation by a sphere of government of the country where that foreign asset is located; and/or\n(cc) where the asset constitutes a financial instrument, an original or certified copy of a statement of account indicating the balance or market value; and/or\n(dd) any other form of proof of value of that foreign asset as the Treasury may on good cause shown allow to be submitted; and",
+                      "text": "submit, in respect of the market value, in the foreign currency of that foreign asset, as at such date as may be prescribed –",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "excon-reg24.2.c.iii.aa",
+                          "number": "aa",
+                          "heading": "excon-reg24.2.c.iii.aa",
+                          "text": "a valuation certificate by a valuator of the country where that foreign asset is located; and/or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg24.2.c.iii.bb",
+                          "number": "bb",
+                          "heading": "excon-reg24.2.c.iii.bb",
+                          "text": "a valuation by a sphere of government of the country where that foreign asset is located; and/or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg24.2.c.iii.cc",
+                          "number": "cc",
+                          "heading": "excon-reg24.2.c.iii.cc",
+                          "text": "where the asset constitutes a financial instrument, an original or certified copy of a statement of account indicating the balance or market value; and/or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "excon-reg24.2.c.iii.dd",
+                          "number": "dd",
+                          "heading": "excon-reg24.2.c.iii.dd",
+                          "text": "any other form of proof of value of that foreign asset as the Treasury may on good cause shown allow to be submitted; and",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 },

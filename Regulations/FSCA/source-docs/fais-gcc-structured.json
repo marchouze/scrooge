@@ -51,9 +51,26 @@
                   "id": "gcc1.2.ii",
                   "number": "ii",
                   "heading": "gcc1.2.ii",
-                  "text": "as being in addition to any other law not inconsistent with its provisions and not as replacing any such law. (b) In the case of any inconsistency or conflict between (i) a provision of this Code and a provision of any other specific Code drafted under section 15 of the Act, the last mentioned provision shall prevail; and (ii) a provision of this Code and a provision of any other law specifically regulating market conduct in the rendering of financial services in respect of one or more specific financial products, the last mentioned provision, unless inconsistent or in conflict with the Act, shall prevail.",
+                  "text": "as being in addition to any other law not inconsistent with its provisions and not as replacing any such law. (b) In the case of any inconsistency or conflict between",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc1.2.ii.i",
+                      "number": "i",
+                      "heading": "gcc1.2.ii.i",
+                      "text": "a provision of this Code and a provision of any other specific Code drafted under section 15 of the Act, the last mentioned provision shall prevail; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc1.2.ii.ii",
+                      "number": "ii",
+                      "heading": "gcc1.2.ii.ii",
+                      "text": "a provision of this Code and a provision of any other law specifically regulating market conduct in the rendering of financial services in respect of one or more specific financial products, the last mentioned provision, unless inconsistent or in conflict with the Act, shall prevail.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -213,9 +230,34 @@
                   "id": "gcc3.2.a",
                   "number": "a",
                   "heading": "gcc3.2.a",
-                  "text": "A provider must have appropriate procedures and systems in place to (i) record such verbal and written communications relating to a financial service rendered to a client as are contemplated in the Act, this Code or any other Code drafted in terms of section 15 of the Act; (ii) store and retrieve such records and any other material documentation relating to the client or financial service rendered to the client; and (iii) keep such client records and documentation safe from destruction.",
+                  "text": "A provider must have appropriate procedures and systems in place to",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc3.2.a.i",
+                      "number": "i",
+                      "heading": "gcc3.2.a.i",
+                      "text": "record such verbal and written communications relating to a financial service rendered to a client as are contemplated in the Act, this Code or any other Code drafted in terms of section 15 of the Act",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.2.a.ii",
+                      "number": "ii",
+                      "heading": "gcc3.2.a.ii",
+                      "text": "store and retrieve such records and any other material documentation relating to the client or financial service rendered to the client; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc3.2.a.iii",
+                      "number": "iii",
+                      "heading": "gcc3.2.a.iii",
+                      "text": "keep such client records and documentation safe from destruction.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc3.2.b",
@@ -286,9 +328,26 @@
                   "id": "gcc4.1.ii",
                   "number": "ii",
                   "heading": "gcc4.1.ii",
-                  "text": "names and contact details of the relevant compliance and complaints departments of the product supplier. (c) the existence of any conditions or restrictions imposed by the product supplier with regard to the types of financial products or services that may be provided or rendered by the provider; and (d) where applicable, the fact that the provider – (i) directly or indirectly holds more than 10% of the relevant product supplier's shares, or has any equivalent substantial financial interest in the product supplier; (ii) during the preceding 12 month period received more than 30% of total remuneration, including commission, from the product supplier, and the provider must convey any changes thereafter in regard to such information at the earliest opportunity to the client.",
+                  "text": "names and contact details of the relevant compliance and complaints departments of the product supplier. (c) the existence of any conditions or restrictions imposed by the product supplier with regard to the types of financial products or services that may be provided or rendered by the provider; and (d) where applicable, the fact that the provider –",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc4.1.ii.i",
+                      "number": "i",
+                      "heading": "gcc4.1.ii.i",
+                      "text": "directly or indirectly holds more than 10% of the relevant product supplier's shares, or has any equivalent substantial financial interest in the product supplier",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc4.1.ii.ii",
+                      "number": "ii",
+                      "heading": "gcc4.1.ii.ii",
+                      "text": "during the preceding 12 month period received more than 30% of total remuneration, including commission, from the product supplier, and the provider must convey any changes thereafter in regard to such information at the earliest opportunity to the client.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -1008,17 +1067,75 @@
                   "id": "gcc10.1.d",
                   "number": "d",
                   "heading": "gcc10.1.d",
-                  "text": "open and maintain a separate account, designated for client funds, at a bank and (i) must within one business day of receipt pay into the account all funds held on behalf of clients; (ii) ensure that the separate account only contains funds of clients and not those of the provider; (iii) pay all bank charges in respect of the separate account except that bank charges specifically relating to a deposit or withdrawal of the funds of the client are for the client's own account; and (iv) ensure that any interest accruing to the funds in the separate account is payable to the client or the owner of the funds;",
+                  "text": "open and maintain a separate account, designated for client funds, at a bank and",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc10.1.d.i",
+                      "number": "i",
+                      "heading": "gcc10.1.d.i",
+                      "text": "must within one business day of receipt pay into the account all funds held on behalf of clients",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc10.1.d.ii",
+                      "number": "ii",
+                      "heading": "gcc10.1.d.ii",
+                      "text": "ensure that the separate account only contains funds of clients and not those of the provider",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc10.1.d.iii",
+                      "number": "iii",
+                      "heading": "gcc10.1.d.iii",
+                      "text": "pay all bank charges in respect of the separate account except that bank charges specifically relating to a deposit or withdrawal of the funds of the client are for the client's own account; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc10.1.d.iv",
+                      "number": "iv",
+                      "heading": "gcc10.1.d.iv",
+                      "text": "ensure that any interest accruing to the funds in the separate account is payable to the client or the owner of the funds;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc10.1.e",
                   "number": "e",
                   "heading": "gcc10.1.e",
-                  "text": "take reasonable steps to ensure– (i) that at all times such financial products or funds are dealt with strictly in accordance with the mandate given to the provider; (ii) that client financial products or funds are readily discernible from private assets or funds of the provider; and (iii) that, subject to any applicable contractual or statutory provisions, a client has ready access to any amount paid into the separate account, less any deductions which are authorised, and charges and fees required or authorised to be paid by law.",
+                  "text": "take reasonable steps to ensure–",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc10.1.e.i",
+                      "number": "i",
+                      "heading": "gcc10.1.e.i",
+                      "text": "that at all times such financial products or funds are dealt with strictly in accordance with the mandate given to the provider",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc10.1.e.ii",
+                      "number": "ii",
+                      "heading": "gcc10.1.e.ii",
+                      "text": "that client financial products or funds are readily discernible from private assets or funds of the provider; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc10.1.e.iii",
+                      "number": "iii",
+                      "heading": "gcc10.1.e.iii",
+                      "text": "that, subject to any applicable contractual or statutory provisions, a client has ready access to any amount paid into the separate account, less any deductions which are authorised, and charges and fees required or authorised to be paid by law.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             },
@@ -1058,8 +1175,34 @@
           "id": "gcc12",
           "number": "12",
           "heading": "Specific control objectives",
-          "text": "A provider, excluding a representative, must, without limiting the generality of section 11, structure the internal control procedures concerned so as to provide reasonable assurance that (a) the relevant business can be carried on in an orderly and efficient manner; (b) financial and other information used or provided by the provider will be reliable; and (c) all applicable laws are complied with.",
-          "verbatim": true
+          "text": "A provider, excluding a representative, must, without limiting the generality of section 11, structure the internal control procedures concerned so as to provide reasonable assurance that",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "gcc12.a",
+              "number": "a",
+              "heading": "gcc12.a",
+              "text": "the relevant business can be carried on in an orderly and efficient manner;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc12.b",
+              "number": "b",
+              "heading": "gcc12.b",
+              "text": "financial and other information used or provided by the provider will be reliable; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc12.c",
+              "number": "c",
+              "heading": "gcc12.c",
+              "text": "all applicable laws are complied with.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "gcc13",
@@ -1177,9 +1320,34 @@
               "id": "gcc14.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) Where a provider advertises a financial service by telephone (a) an electronic, voice-logged record of all communications must be maintained. Where no financial service is rendered as a result of the advertisement, such record need not be maintained for a period exceeding 45 days; (b) a copy of all such records must be provided on request by the client or the registrar within seven days of the request; (c) all the information required by sections 4(1)(a) and (c) and 5(a) and (c) shall not be required: Provided that the client is provided with basic details (such as business name and telephone number or address) of the provider or relevant product supplier, and of their relevant compliance departments: Provided further that, if the promotion results in the rendering of a financial service, the full details required by those sections are provided to the client in writing within 30 days of the relevant interaction with the client.",
+              "text": "(2) Where a provider advertises a financial service by telephone",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "gcc14.2.a",
+                  "number": "a",
+                  "heading": "gcc14.2.a",
+                  "text": "an electronic, voice-logged record of all communications must be maintained. Where no financial service is rendered as a result of the advertisement, such record need not be maintained for a period exceeding 45 days;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc14.2.b",
+                  "number": "b",
+                  "heading": "gcc14.2.b",
+                  "text": "a copy of all such records must be provided on request by the client or the registrar within seven days of the request;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc14.2.c",
+                  "number": "c",
+                  "heading": "gcc14.2.c",
+                  "text": "all the information required by sections 4(1)(a) and (c) and 5(a) and (c) shall not be required: Provided that the client is provided with basic details (such as business name and telephone number or address) of the provider or relevant product supplier, and of their relevant compliance departments: Provided further that, if the promotion results in the rendering of a financial service, the full details required by those sections are provided to the client in writing within 30 days of the relevant interaction with the client.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "gcc14.3",
@@ -1202,9 +1370,50 @@
               "id": "gcc15.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) A direct marketer must, when rendering a financial service to or on behalf of a client, at the earliest reasonable opportunity furnish the client with the following particulars: (a) the business or trade name of the direct marketer; (b) confirmation whether the direct marketer is a licensed financial service provider and details of the financial services which the direct marketer is authorised to provide in terms of the relevant license and any conditions or restrictions applicable thereto; (c) telephone contact details of direct marketer (unless the contact was initiated by the client); (d) telephone contact details of the compliance department of the direct marketer; (e) whether the direct marketer holds professional and indemnity insurance; Provided that where the direct marketer is a representative, the information contemplated in sub-paragraphs (a) to (c) above must be provided in respect of the provider to which the representative is contracted.",
+              "text": "(1) A direct marketer must, when rendering a financial service to or on behalf of a client, at the earliest reasonable opportunity furnish the client with the following particulars:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "gcc15.1.a",
+                  "number": "a",
+                  "heading": "gcc15.1.a",
+                  "text": "the business or trade name of the direct marketer;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc15.1.b",
+                  "number": "b",
+                  "heading": "gcc15.1.b",
+                  "text": "confirmation whether the direct marketer is a licensed financial service provider and details of the financial services which the direct marketer is authorised to provide in terms of the relevant license and any conditions or restrictions applicable thereto;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc15.1.c",
+                  "number": "c",
+                  "heading": "gcc15.1.c",
+                  "text": "telephone contact details of direct marketer (unless the contact was initiated by the client);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc15.1.d",
+                  "number": "d",
+                  "heading": "gcc15.1.d",
+                  "text": "telephone contact details of the compliance department of the direct marketer;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc15.1.e",
+                  "number": "e",
+                  "heading": "gcc15.1.e",
+                  "text": "whether the direct marketer holds professional and indemnity insurance; Provided that where the direct marketer is a representative, the information contemplated in sub-paragraphs (a) to (c) above must be provided in respect of the provider to which the representative is contracted.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "gcc15.2",
@@ -1470,9 +1679,50 @@
               "id": "gcc16.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) A provider must (a) request that any client who has a complaint against the provider must lodge such complaint in writing; (b) maintain a record of such complaints for a period of five years; (c) handle complaints from clients in a timely and fair manner; (d) take steps to investigate and respond promptly to such complaints; and (e) where such a complaint is not resolved to the client's satisfaction, advise the client of any further steps which may be available to the client in terms of the Act or any other law.",
+              "text": "(2) A provider must",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "gcc16.2.a",
+                  "number": "a",
+                  "heading": "gcc16.2.a",
+                  "text": "request that any client who has a complaint against the provider must lodge such complaint in writing;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc16.2.b",
+                  "number": "b",
+                  "heading": "gcc16.2.b",
+                  "text": "maintain a record of such complaints for a period of five years;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc16.2.c",
+                  "number": "c",
+                  "heading": "gcc16.2.c",
+                  "text": "handle complaints from clients in a timely and fair manner;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc16.2.d",
+                  "number": "d",
+                  "heading": "gcc16.2.d",
+                  "text": "take steps to investigate and respond promptly to such complaints; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "gcc16.2.e",
+                  "number": "e",
+                  "heading": "gcc16.2.e",
+                  "text": "where such a complaint is not resolved to the client's satisfaction, advise the client of any further steps which may be available to the client in terms of the Act or any other law.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -1480,15 +1730,91 @@
           "id": "gcc17",
           "number": "17",
           "heading": "Basic principles of systems and procedures",
-          "text": "A provider, excluding a representative must maintain an internal complaint resolution system and procedures based on the following: (a) Maintenance of a comprehensive complaints policy outlining the provider's commitment to, and system and procedures for, internal resolution of complaints; (b) transparency and visibility: ensuring that clients have full knowledge of the procedures for resolution of their complaints; (c) accessibility of facilities: ensuring the existence of easy access to such procedures at any office or branch of the provider open to clients, or through ancillary postal, fax, telephone or electronic helpdesk support; and (d) fairness: ensuring that a resolution of a complaint can during and by means of the resolution process be effected which is fair to both clients and the provider and its staff.",
-          "verbatim": true
+          "text": "A provider, excluding a representative must maintain an internal complaint resolution system and procedures based on the following:",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "gcc17.a",
+              "number": "a",
+              "heading": "gcc17.a",
+              "text": "Maintenance of a comprehensive complaints policy outlining the provider's commitment to, and system and procedures for, internal resolution of complaints;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc17.b",
+              "number": "b",
+              "heading": "gcc17.b",
+              "text": "transparency and visibility: ensuring that clients have full knowledge of the procedures for resolution of their complaints;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc17.c",
+              "number": "c",
+              "heading": "gcc17.c",
+              "text": "accessibility of facilities: ensuring the existence of easy access to such procedures at any office or branch of the provider open to clients, or through ancillary postal, fax, telephone or electronic helpdesk support; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc17.d",
+              "number": "d",
+              "heading": "gcc17.d",
+              "text": "fairness: ensuring that a resolution of a complaint can during and by means of the resolution process be effected which is fair to both clients and the provider and its staff.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "gcc18",
           "number": "18",
           "heading": "Resolution of complaints",
-          "text": "The internal complaint resolution system and procedures of the provider excluding a representative must be designed to ensure the existence and maintenance of at least the following for purposes of effective and fair resolution of complaints: (a) availability of adequate manpower and other resources; (b) adequate training of all relevant staff, including imparting and ensuring full knowledge of the provisions of the Act, the Rules and this Code with regard to resolution of complaints; (c) ensure that responsibilities and mandates are delegated to facilitate complaints resolution of a routine nature; (d) ensure that there is provision for the escalation of non-routine serious complaints and the handling thereof by staff with adequate expertise; (e) internal follow-up procedures to ensure avoidance of occurrences giving rise to complaints, or to improve services and complaint systems and procedures where necessary.",
-          "verbatim": true
+          "text": "The internal complaint resolution system and procedures of the provider excluding a representative must be designed to ensure the existence and maintenance of at least the following for purposes of effective and fair resolution of complaints:",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "gcc18.a",
+              "number": "a",
+              "heading": "gcc18.a",
+              "text": "availability of adequate manpower and other resources;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc18.b",
+              "number": "b",
+              "heading": "gcc18.b",
+              "text": "adequate training of all relevant staff, including imparting and ensuring full knowledge of the provisions of the Act, the Rules and this Code with regard to resolution of complaints;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc18.c",
+              "number": "c",
+              "heading": "gcc18.c",
+              "text": "ensure that responsibilities and mandates are delegated to facilitate complaints resolution of a routine nature;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc18.d",
+              "number": "d",
+              "heading": "gcc18.d",
+              "text": "ensure that there is provision for the escalation of non-routine serious complaints and the handling thereof by staff with adequate expertise;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "gcc18.e",
+              "number": "e",
+              "heading": "gcc18.e",
+              "text": "internal follow-up procedures to ensure avoidance of occurrences giving rise to complaints, or to improve services and complaint systems and procedures where necessary.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "gcc19",
@@ -1508,9 +1834,34 @@
                   "id": "gcc19.1.a",
                   "number": "a",
                   "heading": "gcc19.1.a",
-                  "text": "must (i) reduce the details of the internal complaint resolution system and procedures of the provider, including all subsequent updating or upgrading thereof, to writing; (ii) provide that access to the procedures is at all times available to clients at any relevant office or branch of the provider, or by electronic medium, and that such availability is appropriately made known by public press or electronic announcements or separate business communications to existing clients; (iii) include in the details envisaged in subparagraph (i), a reference to the duties of the provider and the rights of a client set out in Rule 6(a) and",
+                  "text": "must",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "gcc19.1.a.i",
+                      "number": "i",
+                      "heading": "gcc19.1.a.i",
+                      "text": "reduce the details of the internal complaint resolution system and procedures of the provider, including all subsequent updating or upgrading thereof, to writing",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc19.1.a.ii",
+                      "number": "ii",
+                      "heading": "gcc19.1.a.ii",
+                      "text": "provide that access to the procedures is at all times available to clients at any relevant office or branch of the provider, or by electronic medium, and that such availability is appropriately made known by public press or electronic announcements or separate business communications to existing clients",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "gcc19.1.a.iii",
+                      "number": "iii",
+                      "heading": "gcc19.1.a.iii",
+                      "text": "include in the details envisaged in subparagraph (i), a reference to the duties of the provider and the rights of a client set out in Rule 6(a) and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "gcc19.1.b",

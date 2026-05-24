@@ -32,9 +32,74 @@
               "id": "s1.1",
               "number": "1",
               "heading": "\"counterparty\"",
-              "text": "\"counterparty\" means: (a) an authorised user; (b) a bank, bank controlling company or branch as defined in the Banks Act; (c) a financial services provider authorised to provide financial services in derivative instruments as contemplated in FAIS; (d) an insurer licensed to conduct life insurance business; (e) an insurer licensed to conduct non-life insurance business; (f) an investment fund; (g) a provider; (h) any other person as may be determined by the FSCA with the concurrence of the PA. [paragraph (h) substituted by Amendment 1 of 2023]",
+              "text": "\"counterparty\" means:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1.1.a",
+                  "number": "a",
+                  "heading": "s1.1.a",
+                  "text": "an authorised user;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.1.b",
+                  "number": "b",
+                  "heading": "s1.1.b",
+                  "text": "a bank, bank controlling company or branch as defined in the Banks Act;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.1.c",
+                  "number": "c",
+                  "heading": "s1.1.c",
+                  "text": "a financial services provider authorised to provide financial services in derivative instruments as contemplated in FAIS;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.1.d",
+                  "number": "d",
+                  "heading": "s1.1.d",
+                  "text": "an insurer licensed to conduct life insurance business;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.1.e",
+                  "number": "e",
+                  "heading": "s1.1.e",
+                  "text": "an insurer licensed to conduct non-life insurance business;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.1.f",
+                  "number": "f",
+                  "heading": "s1.1.f",
+                  "text": "an investment fund;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.1.g",
+                  "number": "g",
+                  "heading": "s1.1.g",
+                  "text": "a provider;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1.1.h",
+                  "number": "h",
+                  "heading": "s1.1.h",
+                  "text": "any other person as may be determined by the FSCA with the concurrence of the PA. [paragraph (h) substituted by Amendment 1 of 2023]",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s1.2",
@@ -103,9 +168,58 @@
               "id": "s2-1.2",
               "number": "2",
               "heading": "",
-              "text": "(2) The Joint Standard does not apply to: (a) sovereigns; (b) central banks; (c) multilateral development banks; (d) the Bank for International Settlements; (e) transactions such as repurchase agreements and security lending transactions that are not derivatives but share some attributes with derivative instruments; and (f) indirectly cleared OTC derivative transactions intermediated through a clearing member on behalf of a non-member client, if the non-member client is subject to clearing house margin requirements.",
+              "text": "(2) The Joint Standard does not apply to:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1.2.a",
+                  "number": "a",
+                  "heading": "s2-1.2.a",
+                  "text": "sovereigns;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.2.b",
+                  "number": "b",
+                  "heading": "s2-1.2.b",
+                  "text": "central banks;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.2.c",
+                  "number": "c",
+                  "heading": "s2-1.2.c",
+                  "text": "multilateral development banks;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.2.d",
+                  "number": "d",
+                  "heading": "s2-1.2.d",
+                  "text": "the Bank for International Settlements;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.2.e",
+                  "number": "e",
+                  "heading": "s2-1.2.e",
+                  "text": "transactions such as repurchase agreements and security lending transactions that are not derivatives but share some attributes with derivative instruments; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1.2.f",
+                  "number": "f",
+                  "heading": "s2-1.2.f",
+                  "text": "indirectly cleared OTC derivative transactions intermediated through a clearing member on behalf of a non-member client, if the non-member client is subject to clearing house margin requirements.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s2-1.3",
@@ -152,9 +266,42 @@
               "id": "s2-2.2",
               "number": "2",
               "heading": "",
-              "text": "(2) Intra-group transactions are not subject to margin requirements provided that—\n(a) the aggregate outstanding gross notional amount of the non-centrally cleared OTC derivative transactions between the provider and the counterparty or foreign counterparty in the group is below R100 billion at close of business on each relevant day;\n(b) both parties are subject to appropriate centralised risk evaluation, measurement and control procedures;\n(c) the risk management procedures of both parties are adequately sound, robust and consistent with the level of complexity of the derivative transactions; and\n(d) the parties comply with any further conditions as may be specified by the Authorities.",
+              "text": "(2) Intra-group transactions are not subject to margin requirements provided that—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-2.2.a",
+                  "number": "a",
+                  "heading": "s2-2.2.a",
+                  "text": "the aggregate outstanding gross notional amount of the non-centrally cleared OTC derivative transactions between the provider and the counterparty or foreign counterparty in the group is below R100 billion at close of business on each relevant day;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2.2.b",
+                  "number": "b",
+                  "heading": "s2-2.2.b",
+                  "text": "both parties are subject to appropriate centralised risk evaluation, measurement and control procedures;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2.2.c",
+                  "number": "c",
+                  "heading": "s2-2.2.c",
+                  "text": "the risk management procedures of both parties are adequately sound, robust and consistent with the level of complexity of the derivative transactions; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2.2.d",
+                  "number": "d",
+                  "heading": "s2-2.2.d",
+                  "text": "the parties comply with any further conditions as may be specified by the Authorities.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -169,17 +316,59 @@
               "id": "s2-3.1",
               "number": "1",
               "heading": "",
-              "text": "(1) When a provider enters into a non-centrally cleared OTC derivative transaction with a foreign counterparty, the provider is deemed to comply with the Joint Standard provided that the provider has documentary evidence that—\n(a) the relevant foreign jurisdiction has implemented margin requirements based on the BCBS-IOSCO Margin Requirements for Non-Centrally Cleared Derivatives Framework;\n(b) the foreign counterparty is directly subject to the margin requirements of the foreign jurisdiction; and\n(c) the provider is required to comply with, or is subject to, the margin requirements in the foreign jurisdiction.",
+              "text": "(1) When a provider enters into a non-centrally cleared OTC derivative transaction with a foreign counterparty, the provider is deemed to comply with the Joint Standard provided that the provider has documentary evidence that—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-3.1.a",
+                  "number": "a",
+                  "heading": "s2-3.1.a",
+                  "text": "the relevant foreign jurisdiction has implemented margin requirements based on the BCBS-IOSCO Margin Requirements for Non-Centrally Cleared Derivatives Framework;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-3.1.b",
+                  "number": "b",
+                  "heading": "s2-3.1.b",
+                  "text": "the foreign counterparty is directly subject to the margin requirements of the foreign jurisdiction; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-3.1.c",
+                  "number": "c",
+                  "heading": "s2-3.1.c",
+                  "text": "the provider is required to comply with, or is subject to, the margin requirements in the foreign jurisdiction.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s2-3.3",
               "number": "3",
               "heading": "",
-              "text": "(3)(a) A provider transacting with a foreign counterparty in a non-netting jurisdiction is not required to post or collect initial margin or exchange variation margin if—\n(i) the aggregate outstanding gross notional amount of transactions between the provider and the foreign counterparty does not exceed 2.5% of the total portfolio of derivatives contracts of the provider on a consolidated basis; and\n(ii) a legal opinion confirms that the netting agreement or the exchange of collateral is not legally enforceable at all times.",
+              "text": "(3)(a) A provider transacting with a foreign counterparty in a non-netting jurisdiction is not required to post or collect initial margin or exchange variation margin if—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-3.3.i",
+                  "number": "i",
+                  "heading": "s2-3.3.i",
+                  "text": "the aggregate outstanding gross notional amount of transactions between the provider and the foreign counterparty does not exceed 2.5% of the total portfolio of derivatives contracts of the provider on a consolidated basis; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-3.3.ii",
+                  "number": "ii",
+                  "heading": "s2-3.3.ii",
+                  "text": "a legal opinion confirms that the netting agreement or the exchange of collateral is not legally enforceable at all times.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         }
@@ -200,9 +389,26 @@
               "id": "s3.1",
               "number": "1",
               "heading": "",
-              "text": "(1) Subject to paragraph 2, a provider must—\n(a) calculate and exchange—\n(i) initial margin in accordance with paragraph 4; and\n(ii) variation margin in accordance with paragraph 5;\n(b) have in place sufficiently robust processes, procedures and board-approved policies, to ensure among other things that—\n(i) all relevant transactions between the provider and counterparty comply with all relevant requirements in the legal and regulatory frameworks of each relevant jurisdiction;\n(ii) all relevant netting agreements are effective under the laws of the relevant jurisdictions, and supported by periodically updated legal opinions;\n(iii) all relevant collateral arrangements are effective under the relevant laws and supported by periodically updated legal opinions;\n(iv) the provider exchanges initial and variation margin on a bilateral basis or to a third-party custodian;\n(v) procyclicality impacts are appropriately mitigated — large discrete calls for additional initial margin due to 'cliff-edge' triggers are discouraged, and margin levels are sufficiently conservative even during periods of low market volatility;\n(vi) initial margin is provided and collected by no later than the business day following execution of a non-centrally cleared OTC derivative transaction;\n(viii) variation margin — the full amount necessary to fully collateralise the mark-to-market exposure is exchanged; calculated and exchanged on a daily basis for transactions subject to a single legally enforceable netting agreement;\n(ix) the provider complies with eligible collateral requirements in paragraph 6.",
+              "text": "(1) Subject to paragraph 2, a provider must—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3.1.a",
+                  "number": "a",
+                  "heading": "s3.1.a",
+                  "text": "calculate and exchange—\n(i) initial margin in accordance with paragraph 4; and\n(ii) variation margin in accordance with paragraph 5;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3.1.b",
+                  "number": "b",
+                  "heading": "s3.1.b",
+                  "text": "have in place sufficiently robust processes, procedures and board-approved policies, to ensure among other things that—\n(i) all relevant transactions between the provider and counterparty comply with all relevant requirements in the legal and regulatory frameworks of each relevant jurisdiction;\n(ii) all relevant netting agreements are effective under the laws of the relevant jurisdictions, and supported by periodically updated legal opinions;\n(iii) all relevant collateral arrangements are effective under the relevant laws and supported by periodically updated legal opinions;\n(iv) the provider exchanges initial and variation margin on a bilateral basis or to a third-party custodian;\n(v) procyclicality impacts are appropriately mitigated — large discrete calls for additional initial margin due to 'cliff-edge' triggers are discouraged, and margin levels are sufficiently conservative even during periods of low market volatility;\n(vi) initial margin is provided and collected by no later than the business day following execution of a non-centrally cleared OTC derivative transaction;\n(viii) variation margin — the full amount necessary to fully collateralise the mark-to-market exposure is exchanged; calculated and exchanged on a daily basis for transactions subject to a single legally enforceable netting agreement;\n(ix) the provider complies with eligible collateral requirements in paragraph 6.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3.2",
@@ -247,9 +453,34 @@
               "id": "s4-1.3",
               "number": "3",
               "heading": "",
-              "text": "(3)(a) A provider and counterparty must on a bilateral basis, based on the relevant gross amounts, calculate and exchange initial margin.\n(b) The requirement to calculate and exchange initial margin must in all cases be subject to an initial margin threshold amount, not to exceed R500 million.\n(c) The threshold amount relates to the aggregate amount of all relevant transactions in non-centrally cleared OTC derivatives between the provider on a consolidated basis and the relevant consolidated counterparty group.",
+              "text": "(3)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-1.3.a",
+                  "number": "a",
+                  "heading": "s4-1.3.a",
+                  "text": "A provider and counterparty must on a bilateral basis, based on the relevant gross amounts, calculate and exchange initial margin.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1.3.b",
+                  "number": "b",
+                  "heading": "s4-1.3.b",
+                  "text": "The requirement to calculate and exchange initial margin must in all cases be subject to an initial margin threshold amount, not to exceed R500 million.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1.3.c",
+                  "number": "c",
+                  "heading": "s4-1.3.c",
+                  "text": "The threshold amount relates to the aggregate amount of all relevant transactions in non-centrally cleared OTC derivatives between the provider on a consolidated basis and the relevant consolidated counterparty group.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

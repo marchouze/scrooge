@@ -913,8 +913,26 @@
             {
               "id": "s3-3-11-2",
               "number": "3.11.2",
-              "text": "A risk concentration is any single exposure or a group of similar exposures (e.g. to the same borrower or counterparty, including protection providers, a geographical area, industry or other risk factors) with the potential to produce (i) losses large enough (relative to a bank’s earnings, capital, total assets, or overall risk level) to threaten a bank’s creditworthiness and/or ability to maintain its core operations, or (ii) a material change in a bank’s risk profile. Unmanaged risk concentrations are arguably the single most important cause of major problems in banks.",
-              "verbatim": true
+              "text": "A risk concentration is any single exposure or a group of similar exposures (e.g. to the same borrower or counterparty, including protection providers, a geographical area, industry or other risk factors) with the potential to produce",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-11-2.i",
+                  "number": "i",
+                  "heading": "s3-3-11-2.i",
+                  "text": "losses large enough (relative to a bank’s earnings, capital, total assets, or overall risk level) to threaten a bank’s creditworthiness and/or ability to maintain its core operations, or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-11-2.ii",
+                  "number": "ii",
+                  "heading": "s3-3-11-2.ii",
+                  "text": "a material change in a bank’s risk profile. Unmanaged risk concentrations are arguably the single most important cause of major problems in banks.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s3-3-11-3",

@@ -55,9 +55,34 @@
             {
               "id": "s2-2",
               "number": "2.2",
-              "text": "Specifically, section 1 of the Co-operatives Banks Act defines a “co-operative bank” as a co-operative or a co-operative financial institution registered as a co-operative bank in terms of the Co-operative Banks Act whose members- (a) are employed by a common employer or who are employed within the same business district; or (b) have common membership in an association or organisation, including a religious, social, co-operative, labour or educational group; or (c) reside within the same defined community or geographical area.",
+              "text": "Specifically, section 1 of the Co-operatives Banks Act defines a “co-operative bank” as a co-operative or a co-operative financial institution registered as a co-operative bank in terms of the Co-operative Banks Act whose members-",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-2.a",
+                  "number": "a",
+                  "heading": "s2-2.a",
+                  "text": "are employed by a common employer or who are employed within the same business district; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2.b",
+                  "number": "b",
+                  "heading": "s2-2.b",
+                  "text": "have common membership in an association or organisation, including a religious, social, co-operative, labour or educational group; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2.c",
+                  "number": "c",
+                  "heading": "s2-2.c",
+                  "text": "reside within the same defined community or geographical area.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s2-3",

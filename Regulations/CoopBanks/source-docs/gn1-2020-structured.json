@@ -612,9 +612,66 @@
           "id": "s6",
           "number": "6",
           "heading": "Services to members",
-          "text": "Services to members (a) The Co-operative may only provide the following financial services to its Members: (i) Solicit and accept money from Members; (ii) Open savings accounts for its Members, in the name of each Member, into which that Member may deposit or withdraw money and from which that Member may instruct the Co-operative to transfer or pay money; (iii) Borrow money from other organisations including government agencies and banking institutions up to a percentage of the assets held by it as prescribed by the Authority; (iv) Open a savings account or cheque account in the name of the Co-operative with any bank registered in terms of the Banks Act,1990 or as approved by the Authority in writing; (v) Grant secured and unsecured loans to Members to a maximum aggregate value prescribed by the Authority; (vi) Conduct any additional services as may be prescribed by the Authority; and (vii) Invest money from its Members in investments prescribed by the Authority.",
+          "text": "Services to members (a) The Co-operative may only provide the following financial services to its Members:",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s6.i",
+              "number": "i",
+              "heading": "s6.i",
+              "text": "Solicit and accept money from Members",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.ii",
+              "number": "ii",
+              "heading": "s6.ii",
+              "text": "Open savings accounts for its Members, in the name of each Member, into which that Member may deposit or withdraw money and from which that Member may instruct the Co-operative to transfer or pay money",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.iii",
+              "number": "iii",
+              "heading": "s6.iii",
+              "text": "Borrow money from other organisations including government agencies and banking institutions up to a percentage of the assets held by it as prescribed by the Authority",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.iv",
+              "number": "iv",
+              "heading": "s6.iv",
+              "text": "Open a savings account or cheque account in the name of the Co-operative with any bank registered in terms of the Banks Act,1990 or as approved by the Authority in writing",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.v",
+              "number": "v",
+              "heading": "s6.v",
+              "text": "Grant secured and unsecured loans to Members to a maximum aggregate value prescribed by the Authority",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.vi",
+              "number": "vi",
+              "heading": "s6.vi",
+              "text": "Conduct any additional services as may be prescribed by the Authority; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6.vii",
+              "number": "vii",
+              "heading": "s6.vii",
+              "text": "Invest money from its Members in investments prescribed by the Authority.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7",
@@ -627,9 +684,34 @@
               "id": "s7.a",
               "number": "7a",
               "heading": "(a)",
-              "text": "(a) Membership shall be limited to persons who qualify for Membership to this Co-operative, whose Members must meet at least one of the criteria as listed below: (i) Persons who are employed by common employer(s) or who are employed within the same business district; (ii) Have common membership in an association or organisation, including religious, social, co-operative, labour or educational group; and (iii) Reside within the same defined community, rural or urban district, and which group receives funds from Members against the issue of Membership Shares or by means of the subscription of Members. Page 7 of 25",
+              "text": "(a) Membership shall be limited to persons who qualify for Membership to this Co-operative, whose Members must meet at least one of the criteria as listed below:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7.a.i",
+                  "number": "i",
+                  "heading": "s7.a.i",
+                  "text": "Persons who are employed by common employer(s) or who are employed within the same business district",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.a.ii",
+                  "number": "ii",
+                  "heading": "s7.a.ii",
+                  "text": "Have common membership in an association or organisation, including religious, social, co-operative, labour or educational group; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.a.iii",
+                  "number": "iii",
+                  "heading": "s7.a.iii",
+                  "text": "Reside within the same defined community, rural or urban district, and which group receives funds from Members against the issue of Membership Shares or by means of the subscription of Members. Page 7 of 25",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s7.b",
@@ -911,9 +993,122 @@
               "id": "s12.e",
               "number": "12e",
               "heading": "(e)",
-              "text": "(e) The order of business at an AGM shall be: (i) Ascertainment that a quorum is met; (ii) Reading and approval of the minutes of the last meeting; (iii) Report of the Board, including the Activity Plan that summarizes the operational and financial objectives of the Co-operative for the next financial year; (iv) Report of the treasurer; (v) Report of the Audit/Supervisory Committee; (vi) Report of the credit committee; (vii) Reports of other committees; Page 10 of 25 (viii) The consideration of the audit report and annual financial statements and appropriation of surplus; (ix) Consideration of any inspection report made by or on behalf of the Authority; (x) The presentation and consideration of the budget statement; (xi) Election of directors and Members of the audit committee; (xii) Appointment of an auditor (xiii) Remuneration and other benefits of directors, including the Managing Director; and (xiv) Any other business.",
+              "text": "(e) The order of business at an AGM shall be:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s12.e.i",
+                  "number": "i",
+                  "heading": "s12.e.i",
+                  "text": "Ascertainment that a quorum is met",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.ii",
+                  "number": "ii",
+                  "heading": "s12.e.ii",
+                  "text": "Reading and approval of the minutes of the last meeting",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.iii",
+                  "number": "iii",
+                  "heading": "s12.e.iii",
+                  "text": "Report of the Board, including the Activity Plan that summarizes the operational and financial objectives of the Co-operative for the next financial year",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.iv",
+                  "number": "iv",
+                  "heading": "s12.e.iv",
+                  "text": "Report of the treasurer",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.v",
+                  "number": "v",
+                  "heading": "s12.e.v",
+                  "text": "Report of the Audit/Supervisory Committee",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.vi",
+                  "number": "vi",
+                  "heading": "s12.e.vi",
+                  "text": "Report of the credit committee",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.vii",
+                  "number": "vii",
+                  "heading": "s12.e.vii",
+                  "text": "Reports of other committees; Page 10 of 25",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.viii",
+                  "number": "viii",
+                  "heading": "s12.e.viii",
+                  "text": "The consideration of the audit report and annual financial statements and appropriation of surplus",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.ix",
+                  "number": "ix",
+                  "heading": "s12.e.ix",
+                  "text": "Consideration of any inspection report made by or on behalf of the Authority",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.x",
+                  "number": "x",
+                  "heading": "s12.e.x",
+                  "text": "The presentation and consideration of the budget statement",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.xi",
+                  "number": "xi",
+                  "heading": "s12.e.xi",
+                  "text": "Election of directors and Members of the audit committee",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.xii",
+                  "number": "xii",
+                  "heading": "s12.e.xii",
+                  "text": "Appointment of an auditor",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.xiii",
+                  "number": "xiii",
+                  "heading": "s12.e.xiii",
+                  "text": "Remuneration and other benefits of directors, including the Managing Director; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.e.xiv",
+                  "number": "xiv",
+                  "heading": "s12.e.xiv",
+                  "text": "Any other business.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s12.f",
@@ -1009,9 +1204,26 @@
               "id": "s14.b",
               "number": "14b",
               "heading": "(b)",
-              "text": "(b) If a quorum is not secured within one hour of the opening of the general meeting, the meeting shall: (i) if convened as an Extraordinary General Meeting (in terms of clause 13(a)),be deemed to be cancelled; or (ii) if otherwise convened, subsequent to an announcement to the Members, be adjourned and reconvened on the same day in the next week at the same time and place, or, if that day is a public holiday, to the next day which is not a statutory holiday; provided that no additional item shall be included on the agenda of the reconvened meeting.",
+              "text": "(b) If a quorum is not secured within one hour of the opening of the general meeting, the meeting shall:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s14.b.i",
+                  "number": "i",
+                  "heading": "s14.b.i",
+                  "text": "if convened as an Extraordinary General Meeting (in terms of clause 13(a)),be deemed to be cancelled; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s14.b.ii",
+                  "number": "ii",
+                  "heading": "s14.b.ii",
+                  "text": "if otherwise convened, subsequent to an announcement to the Members, be adjourned and reconvened on the same day in the next week at the same time and place, or, if that day is a public holiday, to the next day which is not a statutory holiday; provided that no additional item shall be included on the agenda of the reconvened meeting.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s14.c",
@@ -1107,9 +1319,50 @@
               "id": "s16.d",
               "number": "16d",
               "heading": "(d)",
-              "text": "(d) No Person shall hold the office of director or audit committee Member if such person: (i) was convicted in the Republic or elsewhere of theft, fraud, forgery or uttering a forged document, perjury, an offence under the Prevention and Combating of Corrupt Activities Act 12 of 2004 , an offence under the Financial Intelligence Centre Act 38 of 2001, or any offence involving dishonesty and a period of 10 years has not expired since that conviction; (ii) has been convicted of an offence committed after the Constitution of the Republic of South Africa, 1996, took effect, and sentenced to imprisonment without the option of a fine; (iii) has contravened provisions of a law the object of which is the protection of the public against financial loss; (iv) whilst a director or executive officer of a financial co-operative (as defined in the Cooperatives Act) or any other financial co-operative institution contributed to an inability of that financial co-operative or other financial co-operative institution to pay its debts; and (v) Took part in business practices which were deceitful, prejudicial, or otherwise improper (whether unlawful or not) or which otherwise brought discredit to that person’s methods of conducting business.",
+              "text": "(d) No Person shall hold the office of director or audit committee Member if such person:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s16.d.i",
+                  "number": "i",
+                  "heading": "s16.d.i",
+                  "text": "was convicted in the Republic or elsewhere of theft, fraud, forgery or uttering a forged document, perjury, an offence under the Prevention and Combating of Corrupt Activities Act 12 of 2004 , an offence under the Financial Intelligence Centre Act 38 of 2001, or any offence involving dishonesty and a period of 10 years has not expired since that conviction",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.d.ii",
+                  "number": "ii",
+                  "heading": "s16.d.ii",
+                  "text": "has been convicted of an offence committed after the Constitution of the Republic of South Africa, 1996, took effect, and sentenced to imprisonment without the option of a fine",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.d.iii",
+                  "number": "iii",
+                  "heading": "s16.d.iii",
+                  "text": "has contravened provisions of a law the object of which is the protection of the public against financial loss",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.d.iv",
+                  "number": "iv",
+                  "heading": "s16.d.iv",
+                  "text": "whilst a director or executive officer of a financial co-operative (as defined in the Cooperatives Act) or any other financial co-operative institution contributed to an inability of that financial co-operative or other financial co-operative institution to pay its debts; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s16.d.v",
+                  "number": "v",
+                  "heading": "s16.d.v",
+                  "text": "Took part in business practices which were deceitful, prejudicial, or otherwise improper (whether unlawful or not) or which otherwise brought discredit to that person’s methods of conducting business.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s16.e",
@@ -1268,9 +1521,42 @@
               "id": "s17.k",
               "number": "17k",
               "heading": "(k)",
-              "text": "(k) The office of a director or credit committee Member may be declared vacant by the Board and the vacancy filled as herein provided if a director or a credit committee Member: (i) fails to attend regular meetings of the Board or credit committee for more than four consecutive meetings, (ii) fails to perform any of the duties expected of him as a director or a credit committee Member; (iii) contravenes the loan policy; or (iv) contravenes the rules of the Co-operative. Page 14 of 25",
+              "text": "(k) The office of a director or credit committee Member may be declared vacant by the Board and the vacancy filled as herein provided if a director or a credit committee Member:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s17.k.i",
+                  "number": "i",
+                  "heading": "s17.k.i",
+                  "text": "fails to attend regular meetings of the Board or credit committee for more than four consecutive meetings,",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s17.k.ii",
+                  "number": "ii",
+                  "heading": "s17.k.ii",
+                  "text": "fails to perform any of the duties expected of him as a director or a credit committee Member",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s17.k.iii",
+                  "number": "iii",
+                  "heading": "s17.k.iii",
+                  "text": "contravenes the loan policy; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s17.k.iv",
+                  "number": "iv",
+                  "heading": "s17.k.iv",
+                  "text": "contravenes the rules of the Co-operative. Page 14 of 25",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s17.l",
@@ -1673,9 +1959,42 @@
               "id": "s23.a",
               "number": "23a",
               "heading": "(a)",
-              "text": "(a) The Board may appoint standing committees under the control of particular directors for the following functional responsibilities: (i) Marketing and Promotion Committee which shall be responsible for the promotion of new Members, products and services. (ii) Education Committee which shall be responsible for the continuing education of the Members of the Co-operative. All new Members may be required to participate in education programmes to acquaint themselves with their rights and responsibilities as Members. (iii) Security Committee. (iv) Any other committee as may be deemed necessary for the smooth running of the Co-operative.",
+              "text": "(a) The Board may appoint standing committees under the control of particular directors for the following functional responsibilities:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s23.a.i",
+                  "number": "i",
+                  "heading": "s23.a.i",
+                  "text": "Marketing and Promotion Committee which shall be responsible for the promotion of new Members, products and services.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s23.a.ii",
+                  "number": "ii",
+                  "heading": "s23.a.ii",
+                  "text": "Education Committee which shall be responsible for the continuing education of the Members of the Co-operative. All new Members may be required to participate in education programmes to acquaint themselves with their rights and responsibilities as Members.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s23.a.iii",
+                  "number": "iii",
+                  "heading": "s23.a.iii",
+                  "text": "Security Committee.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s23.a.iv",
+                  "number": "iv",
+                  "heading": "s23.a.iv",
+                  "text": "Any other committee as may be deemed necessary for the smooth running of the Co-operative.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s23.b",
@@ -1911,9 +2230,42 @@
           "id": "s28",
           "number": "28",
           "heading": "Distribution of surplus",
-          "text": "Distribution of surplus (a) The surplus of the Co-operative shall, by resolution of Members at the AGM, be distributed annually in the following manner and in the following order: (i) The appropriation to reserves to meet prudential requirements; (ii) To appropriation to special and contingency reserves, if any; (iii) The Board thereafter may, subject to written approval from the Authority, recommend interest to be paid on Membership Shares and Additional Membership Shares. (iv) An amount remaining may be divided among the Members as a Patronage Refund.",
+          "text": "Distribution of surplus (a) The surplus of the Co-operative shall, by resolution of Members at the AGM, be distributed annually in the following manner and in the following order:",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s28.i",
+              "number": "i",
+              "heading": "s28.i",
+              "text": "The appropriation to reserves to meet prudential requirements",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s28.ii",
+              "number": "ii",
+              "heading": "s28.ii",
+              "text": "To appropriation to special and contingency reserves, if any",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s28.iii",
+              "number": "iii",
+              "heading": "s28.iii",
+              "text": "The Board thereafter may, subject to written approval from the Authority, recommend interest to be paid on Membership Shares and Additional Membership Shares.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s28.iv",
+              "number": "iv",
+              "heading": "s28.iv",
+              "text": "An amount remaining may be divided among the Members as a Patronage Refund.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s29",

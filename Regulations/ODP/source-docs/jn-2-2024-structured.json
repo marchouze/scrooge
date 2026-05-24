@@ -41,8 +41,33 @@
           "sectionNumber": "3",
           "title": "Manner and frequency of submission",
           "verbatim": true,
-          "text": "3.1 A provider and a financial institution that is a counterparty must submit the completed regulatory returns via the Prudential Authority's Umoja portal using one of the following transmission protocols:\n(a) Excel upload;\n(b) In-portal submission; or\n(c) Machine-to-machine submission using the Umoja portal's application programming interface.\n\n3.2 For the use of methods referred to in sub-paragraphs (a) and (b) above, the submission template is available on the Umoja portal. For the use of the method referred to in sub-paragraph (c), the relevant specifications may be found on the Umoja portal webpage as set out in Appendix A.\n\n3.3 A provider and counterparty must submit the regulatory reporting return in the manner set out in paragraph 3.1 on a daily T+1 basis by no later than 16:00 South African time. In the case of public holidays, the return must be submitted on the first business day immediately following the relevant public holiday.",
-          "subsections": []
+          "text": "3.1 A provider and a financial institution that is a counterparty must submit the completed regulatory returns via the Prudential Authority's Umoja portal using one of the following transmission protocols:",
+          "subsections": [
+            {
+              "id": "s3.a",
+              "number": "a",
+              "heading": "s3.a",
+              "text": "Excel upload;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.b",
+              "number": "b",
+              "heading": "s3.b",
+              "text": "In-portal submission; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.c",
+              "number": "c",
+              "heading": "s3.c",
+              "text": "Machine-to-machine submission using the Umoja portal's application programming interface.\n\n3.2 For the use of methods referred to in sub-paragraphs (a) and (b) above, the submission template is available on the Umoja portal. For the use of the method referred to in sub-paragraph (c), the relevant specifications may be found on the Umoja portal webpage as set out in Appendix A.\n\n3.3 A provider and counterparty must submit the regulatory reporting return in the manner set out in paragraph 3.1 on a daily T+1 basis by no later than 16:00 South African time. In the case of public holidays, the return must be submitted on the first business day immediately following the relevant public holiday.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
