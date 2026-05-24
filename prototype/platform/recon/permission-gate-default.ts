@@ -160,6 +160,15 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Gate is a no-op on replay. Citation: D-URN-CANONICAL-VOCABULARY,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/urn-shape.ts",
+  // PartitionedEventStore — substrate class that opens cold archive SQLite
+  // databases for read-only replay; no appends; gate is a no-op on replay.
+  // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.
+  "platform/event-store/partitioned-store.ts",
+  // event-store-append-only archive checks — runArchiveChecks() opens the hot
+  // store in read-only mode to verify archive partition integrity; no appends;
+  // gate is a no-op on the read path.
+  // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/event-store-append-only.ts",
   // M2 Slice 2 — period-close handler unit tests. Co-located with the module
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.
