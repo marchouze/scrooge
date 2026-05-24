@@ -154,6 +154,31 @@ const FRAMEWORK_APPLICABILITY: Record<string, DocumentApplicabilityStatus> = {
 // Helpers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Local helpers
+// ---------------------------------------------------------------------------
+
+/** Normalise a section reference: lowercase + dots stripped. */
+const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
+
+/** Maps canonical instrument IDs to the slug used in Provision node IDs. */
+const INSTRUMENT_ID_TO_SLUG: Record<string, string> = {
+  "BANKS-ACT-94-1990": "banks-act",
+  "REGS-RELATING-TO-BANKS": "rrb",
+  "REGULATIONS-RELATING-TO-BANKS": "rrb",
+  "FAIS-ACT-37-2002": "fais-act",
+  "FIC-ACT-38-2001": "fic-act",
+  "POPIA-4-2013": "popia",
+  "FAIS-GCC": "fais-gcc",
+  "JS-2-2024": "js2",
+  EXCON: "excon",
+  "CS-1-2018": "cs-1-2018",
+  "CS-2-2018": "cs-2-2018",
+  "CS-3-2018": "cs-3-2018",
+  "JS-2-2020": "js-2-2020",
+  "JN-2-2024": "jn-2-2024",
+};
+
 let _edgeSeq = 0;
 function edgeId(prefix: string): string {
   return `${prefix}-${++_edgeSeq}`;
@@ -487,7 +512,10 @@ export async function runSeed(): Promise<SeedStats> {
       applicabilityScore: number;
     };
 
-    const nodeId = `PROV-${p.sectionId.replace(/:/g, "-")}`;
+    const [rawInstr, rawSect] = p.sectionId.split(":");
+    const sectNum = (rawSect ?? "").replace(/^s/i, "");
+    const provSlug = INSTRUMENT_ID_TO_SLUG[rawInstr ?? ""] ?? (rawInstr ?? "").toLowerCase();
+    const nodeId = `PROV-${provSlug.toUpperCase()}-s${normSectionRef(sectNum)}`;
     const node: GraphNode = {
       id: nodeId,
       nodeType: "Provision",
@@ -512,6 +540,115 @@ export async function runSeed(): Promise<SeedStats> {
       confidenceScore: 1.0,
       extractedAt: now,
     });
+  }
+
+  // ── Step 5b: Provision nodes from structured JSONs ────────────────────────
+  //
+  // Seeds one Provision node per section in every *-structured.json under
+  // Regulations/*/source-docs/. Uses slug-based IDs so the regulation-reader
+  // view can query by slug+section without an instrumentId lookup.
+
+  const structuredJsonPaths: string[] = readdirSync(repoPath("Regulations"), {
+    encoding: "utf-8",
+  }).flatMap((sub) => {
+    const sourceDocsDir = repoPath("Regulations", sub, "source-docs");
+    try {
+      return readdirSync(sourceDocsDir, { encoding: "utf-8" })
+        .filter((f) => f.endsWith("-structured.json"))
+        .map((f) => join(sourceDocsDir, f));
+    } catch {
+      return [] as string[];
+    }
+  });
+
+  for (const jsonPath of structuredJsonPaths) {
+    let doc: {
+      slug: string;
+      title: string;
+      regulator?: string;
+      year?: number;
+      chapters: Array<{
+        sections: Array<{
+          number?: string;
+          sectionNumber?: string;
+          id: string;
+          heading?: string;
+          title?: string;
+        }>;
+      }>;
+    };
+    try {
+      doc = JSON.parse(readFileSync(jsonPath, "utf-8")) as typeof doc;
+    } catch {
+      continue;
+    }
+
+    const slug = doc.slug;
+    const slugUpper = slug.toUpperCase();
+    const docNodeId = `DOC-${slugUpper}`;
+
+    // Upsert Document node (may already exist from event store; idempotent)
+    upsertNode({
+      id: docNodeId,
+      nodeType: "Document",
+      label: doc.title,
+      metadata: {
+        slug,
+        regulator: doc.regulator ?? null,
+        year: doc.year ?? null,
+        applicabilityStatus: getApplicabilityStatus(slugUpper),
+      },
+    });
+
+    for (const chapter of doc.chapters ?? []) {
+      for (const section of chapter.sections ?? []) {
+        const raw = section.number ?? section.sectionNumber ?? section.id;
+        if (!raw) continue;
+        // Strip non-alphanumeric prefix (e.g. "reg27" → "27", "gcc11" → "11")
+        const numPart = raw.replace(/^[a-z-]+/i, "").trim() || raw.trim();
+        const normSect = normSectionRef(numPart);
+        if (!normSect) continue;
+
+        const provisionId = `PROV-${slugUpper}-s${normSect}`;
+        const provNode: GraphNode = {
+          id: provisionId,
+          nodeType: "Provision",
+          label: section.heading ?? section.title ?? `${slug} §${numPart}`,
+          metadata: { slug, sectionRef: numPart },
+        };
+        upsertNode(provNode);
+        provisionNodes.set(`${slug}:s${normSect}`, provNode); // slug-keyed for EXPRESSES lookup
+
+        upsertEdge({
+          id: edgeId("CONTAINS"),
+          fromId: docNodeId,
+          toId: provisionId,
+          edgeType: "CONTAINS",
+          extractionMethod: "rule-based",
+          confidenceScore: 1.0,
+          extractedAt: now,
+        });
+      }
+    }
+  }
+
+  // ── Step 5c: RegulatoryTheme nodes ─────────────────────────────────────────
+
+  const CORE_THEMES = [
+    { id: "THEME-margin-requirements", label: "Margin Requirements" },
+    { id: "THEME-trade-reporting", label: "Trade Reporting" },
+    { id: "THEME-counterparty-risk", label: "Counterparty Risk" },
+    { id: "THEME-authorisation", label: "ODP Authorisation" },
+    { id: "THEME-conduct", label: "Conduct Standards" },
+    { id: "THEME-capital-adequacy", label: "Capital Adequacy" },
+    { id: "THEME-record-keeping", label: "Record Keeping" },
+    { id: "THEME-aml-cft", label: "AML / CFT" },
+    { id: "THEME-data-privacy", label: "Data Privacy" },
+    { id: "THEME-cybersecurity", label: "Cybersecurity" },
+  ];
+
+  for (const theme of CORE_THEMES) {
+    upsertNode({ id: theme.id, nodeType: "RegulatoryTheme", label: theme.label, metadata: {} });
   }
 
   // ── Step 6: Obligation nodes from register ───────────────────────────────
@@ -584,8 +721,11 @@ export async function runSeed(): Promise<SeedStats> {
       let provisionNode = provisionNodes.get(sectionId);
       if (!provisionNode) {
         // Create a stub provision node for the citation
-        const nodeId = `PROV-${sectionId.replace(/:/g, "-")}`;
-        const instrumentId = sectionId.split(":")[0] ?? sectionId;
+        const [rawInstr2, rawSect2] = sectionId.split(":");
+        const sectNum2 = (rawSect2 ?? "").replace(/^s/i, "");
+        const provSlug2 = INSTRUMENT_ID_TO_SLUG[rawInstr2 ?? ""] ?? (rawInstr2 ?? "").toLowerCase();
+        const nodeId = `PROV-${provSlug2.toUpperCase()}-s${normSectionRef(sectNum2)}`;
+        const instrumentId = rawInstr2 ?? sectionId;
         provisionNode = {
           id: nodeId,
           nodeType: "Provision",
@@ -713,6 +853,44 @@ export async function runSeed(): Promise<SeedStats> {
     }
   }
 
+  // ── Step 8c: ADDRESSES_THEME edges ──────────────────────────────────────────
+  // Map obligation risk taxonomy tags to RegulatoryTheme nodes.
+
+  const RISK_TO_THEME: Record<string, string> = {
+    "RT-MR": "THEME-margin-requirements",
+    "RT-CR": "THEME-counterparty-risk",
+    "RT-OR.REP": "THEME-trade-reporting",
+    "RT-OR.COMP": "THEME-conduct",
+    "RT-OR.CYBER": "THEME-cybersecurity",
+    "RT-PR": "THEME-data-privacy",
+    "RT-AML": "THEME-aml-cft",
+    "RT-CAP": "THEME-capital-adequacy",
+  };
+
+  for (const row of extendedRows) {
+    const obligationNode = obligationNodes.get(row.id);
+    if (!obligationNode) continue;
+    const riskCodes = row.riskTaxonomy
+      .split("|")
+      .map((s) => s.trim())
+      .filter((s) => s.startsWith("RT-"));
+    const seen = new Set<string>();
+    for (const code of riskCodes) {
+      const themeId = RISK_TO_THEME[code];
+      if (!themeId || seen.has(themeId)) continue;
+      seen.add(themeId);
+      upsertEdge({
+        id: edgeId("ADDRESSES_THEME"),
+        fromId: obligationNode.id,
+        toId: themeId,
+        edgeType: "ADDRESSES_THEME",
+        extractionMethod: "register",
+        confidenceScore: 0.9,
+        extractedAt: now,
+      });
+    }
+  }
+
   // ── Step 8b: Rich derivations from RegulatoryConceptExtracted events ─────
   //
   // The Step-5 loop seeds Provision nodes + CONTAINS edges but only reads 4
@@ -747,7 +925,10 @@ export async function runSeed(): Promise<SeedStats> {
       };
     };
 
-    const provisionNodeId = `PROV-${p.sectionId.replace(/:/g, "-")}`;
+    const [rawInstrB, rawSectB] = p.sectionId.split(":");
+    const sectNumB = (rawSectB ?? "").replace(/^s/i, "");
+    const provSlugB = INSTRUMENT_ID_TO_SLUG[rawInstrB ?? ""] ?? (rawInstrB ?? "").toLowerCase();
+    const provisionNodeId = `PROV-${provSlugB.toUpperCase()}-s${normSectionRef(sectNumB)}`;
 
     // APPLIES_TO_ACTIVITY: Provision → Activity (one edge per ACT-* code).
     // Lazy-upsert if the code isn't in the register — LLM vocabulary

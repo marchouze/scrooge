@@ -138,6 +138,16 @@ const INSTRUMENT_PATTERNS: Array<[RegExp, string]> = [
   [/\bPOPIA\b|\bProtection of Personal Information Act\s+4[\s/of]*2013\b/i, "POPIA-4-2013"],
   // Securities Transfer Tax Act 25/2007
   [/\bSecurities\s+Transfer\s+Tax\s+Act\s+25[\s/of]*2007\b/i, "STT-ACT-25-2007"],
+  // ODP instruments
+  [/\bConduct\s+Standard\s+1\s+of\s+2018\b|\bCS\s*1\s*[/of]+\s*2018\b/i, "CS-1-2018"],
+  [/\bConduct\s+Standard\s+2\s+of\s+2018\b|\bCS\s*2\s*[/of]+\s*2018\b/i, "CS-2-2018"],
+  [/\b(?:FSCA\s+)?Conduct\s+Standard\s+3\s+of\s+2018\b|\bCS\s*3\s*[/of]+\s*2018\b/i, "CS-3-2018"],
+  [/\bJoint\s+Standard\s+2\s+of\s+2020\b|\bJS\s*2\s*[/of]+\s*2020\b/i, "JS-2-2020"],
+  [/\bJoint\s+Notice\s+2\s+of\s+2024\b|\bJN\s*2\s*[/of]+\s*2024\b/i, "JN-2-2024"],
+  // Other known instruments
+  [/\bJoint\s+Standard\s+2\s+of\s+2024\b|\bJS\s*2\s*[/of]+\s*2024\b/i, "JS-2-2024"],
+  [/\bFAIS\s+General\s+Code\b|\bGeneral\s+Code\s+of\s+Conduct\b|\bGCC\b/i, "FAIS-GCC"],
+  [/\bExchange\s+Control\s+Reg|\bExcon\s+Reg|\bECR\b/i, "EXCON"],
   // General pattern: "{Word} Act {number}/{year}" → "{WORD}-ACT-{number}-{year}"
   [
     /\b([A-Za-z][A-Za-z\s]+?)\s+Act\s+(\d+)[\s/of]*(\d{4})\b/i,
@@ -228,7 +238,7 @@ export function normaliseCitationToSectionId(citation: string): string | null {
   // Handles both "s." and "§" section designators.
   // Captures: (instrument name) (section marker) (section number + optional letter) (optional subsections)
   const m = citation.match(
-    /^([\w\s()./,]+?)\s+(?:s\.|§\s*)(\d+[A-Za-z]?)(\([^)]*\)(?:\([^)]*\))*)?\s*(?:\+.*)?$/,
+    /^([\w\s()./,]+?)\s+(?:s\.|§\s*)(\d+(?:\.\d+)?[A-Za-z]?)(\([^)]*\)(?:\([^)]*\))*)?\s*(?:\+.*)?$/,
   );
 
   if (m) {
@@ -241,7 +251,7 @@ export function normaliseCitationToSectionId(citation: string): string | null {
   }
 
   // Try alternate form: "ss.16–19" ranges
-  const rangeM = citation.match(/^([\w\s()./,]+?)\s+ss\.(\d+[A-Za-z]?)[–\-]\d+/);
+  const rangeM = citation.match(/^([\w\s()./,]+?)\s+ss\.(\d+(?:\.\d+)?[A-Za-z]?)[–\-]\d+/);
   if (rangeM) {
     const instrumentName = (rangeM[1] ?? "").trim();
     const sectionNum = rangeM[2] ?? "";

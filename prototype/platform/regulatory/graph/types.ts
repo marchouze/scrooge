@@ -25,7 +25,8 @@ export type GraphNodeType =
   | "EffectivePeriod"
   | "Policy"
   | "Procedure"
-  | "ProductInstrument";
+  | "ProductInstrument"
+  | "RegulatoryTheme";
 
 export type GraphEdgeType =
   // Structural
@@ -58,7 +59,8 @@ export type GraphEdgeType =
   // Bank-internal (Principle 2 extension)
   | "IMPLEMENTS"
   | "CLOSES"
-  | "GOVERNS";
+  | "GOVERNS"
+  | "ADDRESSES_THEME";
 
 /**
  * Applicability status for Document and Framework nodes.
