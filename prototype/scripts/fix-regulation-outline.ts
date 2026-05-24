@@ -159,7 +159,7 @@ function buildTree(flat: Array<{ number: string; text: string }>): Subsection[] 
 
   // Build tree: a node is a child of another if the parent's number is a prefix
   function isChildOf(childNum: string, parentNum: string): boolean {
-    return childNum.startsWith(parentNum + ".");
+    return childNum.startsWith(`${parentNum}.`);
   }
 
   function makeSubsection(entry: { number: string; text: string }): Subsection {
@@ -224,10 +224,11 @@ function fixSection(section: Section): FixResult {
 
   // Find all subsection starts
   const matches: Array<{ number: string; index: number }> = [];
-  let m: RegExpExecArray | null;
   pattern.lastIndex = 0;
-  while ((m = pattern.exec(raw)) !== null) {
+  let m = pattern.exec(raw);
+  while (m !== null) {
     matches.push({ number: m[1], index: m.index });
+    m = pattern.exec(raw);
   }
 
   if (matches.length === 0) {
@@ -294,7 +295,7 @@ function cleanHeading(blob: string, _sectionNumber: string): string {
 // Reformat .txt file: insert newlines at section boundaries
 // ---------------------------------------------------------------------------
 
-function reformatTxt(txtPath: string, topSections: string[]): string {
+function reformatTxt(txtPath: string, _topSections: string[]): string {
   const raw = readFileSync(txtPath, "utf8");
   let text = raw.replace(/--- Page \d+ ---\s*/g, " ").replace(/\n+/g, " ").trim();
 
@@ -304,25 +305,24 @@ function reformatTxt(txtPath: string, topSections: string[]): string {
 
   const result: string[] = [];
   let last = 0;
-  let sm: RegExpExecArray | null;
   SECTION_RE.lastIndex = 0;
-  while ((sm = SECTION_RE.exec(text)) !== null) {
+  let sm = SECTION_RE.exec(text);
+  while (sm !== null) {
     const num = sm[1];
-    // Only split on numbers that look like actual section refs
     const parts = num.replace(/\.$/, "").split(".");
     const isAllDigits = parts.every((p) => /^\d+$/.test(p));
-    if (!isAllDigits) continue;
-
-    // Avoid splitting on things like "5 of 2024" (bare single number without dot)
-    if (parts.length === 1 && !num.endsWith(".")) continue;
-
-    // Don't split if preceded by "regulation", "section", "reg."
+    const isBareNoTrailingDot = parts.length === 1 && !num.endsWith(".");
     const before = text.slice(Math.max(0, sm.index - 20), sm.index).toLowerCase();
-    if (/regulation\s*$/.test(before) || /\bsection\s*$/.test(before)) continue;
+    const isPrecededByKeyword =
+      /regulation\s*$/.test(before) || /\bsection\s*$/.test(before);
 
-    result.push(text.slice(last, sm.index));
-    result.push("\n");
-    last = sm.index;
+    if (isAllDigits && !isBareNoTrailingDot && !isPrecededByKeyword) {
+      result.push(text.slice(last, sm.index));
+      result.push("\n");
+      last = sm.index;
+    }
+
+    sm = SECTION_RE.exec(text);
   }
   result.push(text.slice(last));
 
