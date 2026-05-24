@@ -163,6 +163,14 @@ const SLUG_TO_FILE: Record<string, string> = {
   "cs-3-2018": "Regulations/ODP/source-docs/cs-3-2018-structured.json",
   "js-2-2020": "Regulations/ODP/source-docs/js-2-2020-structured.json",
   "jn-2-2024": "Regulations/ODP/source-docs/jn-2-2024-structured.json",
+  // ── PA Co-operative Banks / CFI Guidance Notes & Directives ──────────────
+  "gn1-2019": "Regulations/CoopBanks/source-docs/gn1-2019-structured.json",
+  "gn2-2019": "Regulations/CoopBanks/source-docs/gn2-2019-structured.json",
+  "gn1-2020": "Regulations/CoopBanks/source-docs/gn1-2020-structured.json",
+  "gn2-2020": "Regulations/CoopBanks/source-docs/gn2-2020-structured.json",
+  "gn1-2021": "Regulations/CoopBanks/source-docs/gn1-2021-structured.json",
+  "d1-2023": "Regulations/CoopBanks/source-docs/d1-2023-structured.json",
+  "gn1-2026": "Regulations/CoopBanks/source-docs/gn1-2026-structured.json",
 };
 
 const ALL_SLUGS = [
@@ -179,6 +187,13 @@ const ALL_SLUGS = [
   "cs-3-2018",
   "js-2-2020",
   "jn-2-2024",
+  "gn1-2019",
+  "gn2-2019",
+  "gn1-2020",
+  "gn2-2020",
+  "gn1-2021",
+  "d1-2023",
+  "gn1-2026",
 ] as const;
 
 // ---------------------------------------------------------------------------
