@@ -52,7 +52,65 @@
           "sectionNumber": "3",
           "title": "General duties of providers",
           "verbatim": true,
-          "text": "A provider must—\n(a) at all times act honestly, fairly, with due skill, care and diligence, and in the interests of clients and counterparties and the integrity of the financial markets;\n(b) communicate information to clients and counterparties in a way which is clear, fair and not misleading;\n(c) at all times manage conflicts of interest fairly, both between itself and its clients and counterparties;\n(d) observe proper standards of market conduct;\n(e) conduct itself in such a manner that does not impede the objects of the Act;\n(f) maintain knowledge of and comply with all applicable laws, rules and regulations governing its activities; and\n(g) engage with the Authority in an open and cooperative way, and disclose to the Authority appropriately any material incidence of non-compliance with the Act or material operational failure relating to the provider."
+          "text": "A provider must—",
+          "subsections": [
+            {
+              "id": "s3.a",
+              "number": "a",
+              "heading": "s3.a",
+              "text": "at all times act honestly, fairly, with due skill, care and diligence, and in the interests of clients and counterparties and the integrity of the financial markets;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.b",
+              "number": "b",
+              "heading": "s3.b",
+              "text": "communicate information to clients and counterparties in a way which is clear, fair and not misleading;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.c",
+              "number": "c",
+              "heading": "s3.c",
+              "text": "at all times manage conflicts of interest fairly, both between itself and its clients and counterparties;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.d",
+              "number": "d",
+              "heading": "s3.d",
+              "text": "observe proper standards of market conduct;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.e",
+              "number": "e",
+              "heading": "s3.e",
+              "text": "conduct itself in such a manner that does not impede the objects of the Act;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.f",
+              "number": "f",
+              "heading": "s3.f",
+              "text": "maintain knowledge of and comply with all applicable laws, rules and regulations governing its activities; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3.g",
+              "number": "g",
+              "heading": "s3.g",
+              "text": "engage with the Authority in an open and cooperative way, and disclose to the Authority appropriately any material incidence of non-compliance with the Act or material operational failure relating to the provider.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
@@ -73,9 +131,34 @@
               "id": "s4.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) A provider must, prior to entering into an OTC derivatives transaction with a person, and with regard to existing clients or counterparties—\n(a) determine whether that person is a counterparty as defined;\n(b) in writing notify the person of—\n(i) its categorisation as a counterparty and the basis of such categorisation; and\n(ii) the limitations to the level of client protection a categorisation as a counterparty entails;\n(c) obtain written confirmation from such person that the person is aware of the categorisation as a counterparty and the effect thereof and that the person agrees with the basis of such categorisation.",
+              "text": "(2) A provider must, prior to entering into an OTC derivatives transaction with a person, and with regard to existing clients or counterparties—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4.2.a",
+                  "number": "a",
+                  "heading": "s4.2.a",
+                  "text": "determine whether that person is a counterparty as defined;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.2.b",
+                  "number": "b",
+                  "heading": "s4.2.b",
+                  "text": "in writing notify the person of—\n(i) its categorisation as a counterparty and the basis of such categorisation; and\n(ii) the limitations to the level of client protection a categorisation as a counterparty entails;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4.2.c",
+                  "number": "c",
+                  "heading": "s4.2.c",
+                  "text": "obtain written confirmation from such person that the person is aware of the categorisation as a counterparty and the effect thereof and that the person agrees with the basis of such categorisation.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4.3",
@@ -179,9 +262,58 @@
               "id": "s6.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) A provider must ensure that representations and information provided to a client are—\n(a) factually correct;\n(b) provided in plain language, avoid uncertainty or confusion and not be misleading;\n(c) adequate and appropriate in the circumstances of the particular transaction or service, taking into account the factually established or reasonably assumed level of knowledge of the client;\n(d) provided timeously so as to afford the client reasonably sufficient time to make an informed decision about the proposed transaction;\n(e) if provided in writing or by means of standard forms, be in a clear and readable print size, spacing and format;\n(f) as regards all amounts, sums, values, charges, fees, remuneration or monetary obligations mentioned or referred to therein, be reflected in specific monetary terms.",
+              "text": "(1) A provider must ensure that representations and information provided to a client are—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s6.1.a",
+                  "number": "a",
+                  "heading": "s6.1.a",
+                  "text": "factually correct;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6.1.b",
+                  "number": "b",
+                  "heading": "s6.1.b",
+                  "text": "provided in plain language, avoid uncertainty or confusion and not be misleading;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6.1.c",
+                  "number": "c",
+                  "heading": "s6.1.c",
+                  "text": "adequate and appropriate in the circumstances of the particular transaction or service, taking into account the factually established or reasonably assumed level of knowledge of the client;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6.1.d",
+                  "number": "d",
+                  "heading": "s6.1.d",
+                  "text": "provided timeously so as to afford the client reasonably sufficient time to make an informed decision about the proposed transaction;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6.1.e",
+                  "number": "e",
+                  "heading": "s6.1.e",
+                  "text": "if provided in writing or by means of standard forms, be in a clear and readable print size, spacing and format;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6.1.f",
+                  "number": "f",
+                  "heading": "s6.1.f",
+                  "text": "as regards all amounts, sums, values, charges, fees, remuneration or monetary obligations mentioned or referred to therein, be reflected in specific monetary terms.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s6.2",
@@ -228,17 +360,131 @@
               "id": "s7.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) The agreement must include all terms governing the trading relationship between the provider and the client or counterparty, including terms addressing—\n(a) payment obligations;\n(b) netting of payments;\n(c) events of default or other termination events;\n(d) calculation and netting of obligations upon termination, transfer of rights and obligations;\n(e) the governing law;\n(f) valuation of transactions, collateral and portfolios; and\n(g) dispute resolution.",
+              "text": "(2) The agreement must include all terms governing the trading relationship between the provider and the client or counterparty, including terms addressing—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7.2.a",
+                  "number": "a",
+                  "heading": "s7.2.a",
+                  "text": "payment obligations;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.2.b",
+                  "number": "b",
+                  "heading": "s7.2.b",
+                  "text": "netting of payments;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.2.c",
+                  "number": "c",
+                  "heading": "s7.2.c",
+                  "text": "events of default or other termination events;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.2.d",
+                  "number": "d",
+                  "heading": "s7.2.d",
+                  "text": "calculation and netting of obligations upon termination, transfer of rights and obligations;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.2.e",
+                  "number": "e",
+                  "heading": "s7.2.e",
+                  "text": "the governing law;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.2.f",
+                  "number": "f",
+                  "heading": "s7.2.f",
+                  "text": "valuation of transactions, collateral and portfolios; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.2.g",
+                  "number": "g",
+                  "heading": "s7.2.g",
+                  "text": "dispute resolution.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s7.3",
               "number": "3",
               "heading": "(3)",
-              "text": "(3) Despite the minimum requirements provided for in sub-paragraph (2), the agreement must make provision for—\n(a) confirmation of OTC derivative transactions in terms of paragraph 8;\n(b) credit support arrangements, which must contain the following:\n(i) initial and variation margin requirements, if any;\n(ii) types of assets that may be used as collateral and collateral valuation haircuts, if any; and\n(iii) investment and re-hypothecation terms for securities used as collateral for non-centrally cleared OTC derivative transactions, if any;\n(c) arrangements for safeguarding the funds and securities collected as collateral;\n(d) an attestation that the client meets the requirements to be categorised as a counterparty, where applicable;\n(e) a requirement for notification by the counterparty if it ceases to meet the requirements to be categorised as a counterparty;\n(f) consent by the client or counterparty for the provider to report the transactions to a licensed trade repository or licensed external trade repository; and\n(g) the process for determining the value of each OTC derivatives transaction at any time from execution to the termination, maturity, or expiration of such transaction.",
+              "text": "(3) Despite the minimum requirements provided for in sub-paragraph (2), the agreement must make provision for—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7.3.a",
+                  "number": "a",
+                  "heading": "s7.3.a",
+                  "text": "confirmation of OTC derivative transactions in terms of paragraph 8;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.3.b",
+                  "number": "b",
+                  "heading": "s7.3.b",
+                  "text": "credit support arrangements, which must contain the following:\n(i) initial and variation margin requirements, if any;\n(ii) types of assets that may be used as collateral and collateral valuation haircuts, if any; and\n(iii) investment and re-hypothecation terms for securities used as collateral for non-centrally cleared OTC derivative transactions, if any;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.3.c",
+                  "number": "c",
+                  "heading": "s7.3.c",
+                  "text": "arrangements for safeguarding the funds and securities collected as collateral;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.3.d",
+                  "number": "d",
+                  "heading": "s7.3.d",
+                  "text": "an attestation that the client meets the requirements to be categorised as a counterparty, where applicable;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.3.e",
+                  "number": "e",
+                  "heading": "s7.3.e",
+                  "text": "a requirement for notification by the counterparty if it ceases to meet the requirements to be categorised as a counterparty;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.3.f",
+                  "number": "f",
+                  "heading": "s7.3.f",
+                  "text": "consent by the client or counterparty for the provider to report the transactions to a licensed trade repository or licensed external trade repository; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7.3.g",
+                  "number": "g",
+                  "heading": "s7.3.g",
+                  "text": "the process for determining the value of each OTC derivatives transaction at any time from execution to the termination, maturity, or expiration of such transaction.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s7.5",
@@ -269,9 +515,26 @@
               "id": "s8.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) A provider must use best efforts in accordance with market practice per product type to ensure that the transactions are confirmed—\n(a) by the end of the business day following the day of conclusion of the OTC derivative transaction, per product class, counterparty and client as set out in Annexure A; and\n(b) in respect of complex products, five business days following the day of the conclusion of the transaction.",
+              "text": "(2) A provider must use best efforts in accordance with market practice per product type to ensure that the transactions are confirmed—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s8.2.a",
+                  "number": "a",
+                  "heading": "s8.2.a",
+                  "text": "by the end of the business day following the day of conclusion of the OTC derivative transaction, per product class, counterparty and client as set out in Annexure A; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s8.2.b",
+                  "number": "b",
+                  "heading": "s8.2.b",
+                  "text": "in respect of complex products, five business days following the day of the conclusion of the transaction.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s8.3",
@@ -326,17 +589,59 @@
               "id": "s9.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) In order to identify at an early stage, any discrepancy in a material term of a non-centrally cleared open OTC derivative transaction, including its valuation, a provider must establish, maintain and implement written policies and procedures reasonably designed to enable it to perform a portfolio reconciliation—\n(a) with a counterparty—\n(i) daily, where the portfolio consists of 500 or more open OTC derivative transactions;\n(ii) weekly, where the portfolio consists of between 51 and 499 open OTC derivative transactions on any business day during any week; or\n(iii) quarterly, where the portfolio consists of between 1 and 50 open OTC derivative transactions at any time during a calendar quarter;\n(b) with a client—\n(i) quarterly, where the portfolio consists of 101 or more open OTC derivative transactions; or\n(ii) annually, where the portfolio consists of between 1 and 100 open OTC derivative transactions.",
+              "text": "(2) In order to identify at an early stage, any discrepancy in a material term of a non-centrally cleared open OTC derivative transaction, including its valuation, a provider must establish, maintain and implement written policies and procedures reasonably designed to enable it to perform a portfolio reconciliation—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s9.2.a",
+                  "number": "a",
+                  "heading": "s9.2.a",
+                  "text": "with a counterparty—\n(i) daily, where the portfolio consists of 500 or more open OTC derivative transactions;\n(ii) weekly, where the portfolio consists of between 51 and 499 open OTC derivative transactions on any business day during any week; or\n(iii) quarterly, where the portfolio consists of between 1 and 50 open OTC derivative transactions at any time during a calendar quarter;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s9.2.b",
+                  "number": "b",
+                  "heading": "s9.2.b",
+                  "text": "with a client—\n(i) quarterly, where the portfolio consists of 101 or more open OTC derivative transactions; or\n(ii) annually, where the portfolio consists of between 1 and 100 open OTC derivative transactions.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s9.5",
               "number": "5",
               "heading": "(5)",
-              "text": "(5) The policy and procedures must provide for—\n(a) the resolution of any discrepancy in a material term of an OTC derivative transaction identified as part of a portfolio reconciliation or otherwise, as soon as possible, but in any event within three business days;\n(b) the resolution of any discrepancy in a valuation identified as part of a portfolio reconciliation or otherwise as soon as possible, but in any event within five business days;\n(c) the deeming as a dispute, of—\n(i) a discrepancy in a material term of an OTC derivative transaction not resolved within three business days; and\n(ii) a discrepancy in a valuation not resolved within five business days.",
+              "text": "(5) The policy and procedures must provide for—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s9.5.a",
+                  "number": "a",
+                  "heading": "s9.5.a",
+                  "text": "the resolution of any discrepancy in a material term of an OTC derivative transaction identified as part of a portfolio reconciliation or otherwise, as soon as possible, but in any event within three business days;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s9.5.b",
+                  "number": "b",
+                  "heading": "s9.5.b",
+                  "text": "the resolution of any discrepancy in a valuation identified as part of a portfolio reconciliation or otherwise as soon as possible, but in any event within five business days;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s9.5.c",
+                  "number": "c",
+                  "heading": "s9.5.c",
+                  "text": "the deeming as a dispute, of—\n(i) a discrepancy in a material term of an OTC derivative transaction not resolved within three business days; and\n(ii) a discrepancy in a valuation not resolved within five business days.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -351,9 +656,34 @@
               "id": "s10.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) A provider must establish, maintain and implement written policies and procedures reasonably designed to ensure—\n(a) the identification, recording, and monitoring of disputes relating to—\n(i) the material terms of an OTC derivative transaction; and\n(ii) the recognition or valuation of the OTC derivative transaction and the exchange of collateral between the provider and its counterparty or client;\n(b) the recording of the length of time for which the dispute remains outstanding, the counterparty or client and the amount which is disputed;\n(c) the resolution of disputes in a timely manner with a specific process for those disputes that are not resolved within five business days.",
+              "text": "(1) A provider must establish, maintain and implement written policies and procedures reasonably designed to ensure—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s10.1.a",
+                  "number": "a",
+                  "heading": "s10.1.a",
+                  "text": "the identification, recording, and monitoring of disputes relating to—\n(i) the material terms of an OTC derivative transaction; and\n(ii) the recognition or valuation of the OTC derivative transaction and the exchange of collateral between the provider and its counterparty or client;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s10.1.b",
+                  "number": "b",
+                  "heading": "s10.1.b",
+                  "text": "the recording of the length of time for which the dispute remains outstanding, the counterparty or client and the amount which is disputed;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s10.1.c",
+                  "number": "c",
+                  "heading": "s10.1.c",
+                  "text": "the resolution of disputes in a timely manner with a specific process for those disputes that are not resolved within five business days.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s10.2",
@@ -376,9 +706,26 @@
               "id": "s11.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) In order to reduce its counterparty credit risk, a provider must establish, maintain and implement written policies and procedures reasonably designed to ensure that it—\n(a) regularly, but at least twice a year, analyse the possibility of conducting a bilateral or multilateral portfolio compression exercise, where appropriate and technologically possible, in respect of 500 or more non-centrally cleared open OTC derivative transactions with other providers; and\n(b) terminates fully offsetting non-centrally cleared open OTC derivative transactions with its counterparties and clients.",
+              "text": "(1) In order to reduce its counterparty credit risk, a provider must establish, maintain and implement written policies and procedures reasonably designed to ensure that it—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s11.1.a",
+                  "number": "a",
+                  "heading": "s11.1.a",
+                  "text": "regularly, but at least twice a year, analyse the possibility of conducting a bilateral or multilateral portfolio compression exercise, where appropriate and technologically possible, in respect of 500 or more non-centrally cleared open OTC derivative transactions with other providers; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s11.1.b",
+                  "number": "b",
+                  "heading": "s11.1.b",
+                  "text": "terminates fully offsetting non-centrally cleared open OTC derivative transactions with its counterparties and clients.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s11.2",
@@ -417,9 +764,42 @@
               "id": "s12.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) A provider—\n(a) must segregate the clients' or counterparties' collateral from its proprietary assets and ensure that in its books of account the collateral is identifiable as belonging to the client or counterparty or with a third party holder or custodian, or via a legally effective arrangement made by the provider;\n(b) must within one business day of receipt pay into the account all funds held on behalf of clients or counterparties;\n(c) must ensure that the separate account only contains funds of clients and counterparties and not those of the provider;\n(d) may not cause securities to be registered otherwise than in accordance with the instructions given to the provider.",
+              "text": "(2) A provider—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s12.2.a",
+                  "number": "a",
+                  "heading": "s12.2.a",
+                  "text": "must segregate the clients' or counterparties' collateral from its proprietary assets and ensure that in its books of account the collateral is identifiable as belonging to the client or counterparty or with a third party holder or custodian, or via a legally effective arrangement made by the provider;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.2.b",
+                  "number": "b",
+                  "heading": "s12.2.b",
+                  "text": "must within one business day of receipt pay into the account all funds held on behalf of clients or counterparties;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.2.c",
+                  "number": "c",
+                  "heading": "s12.2.c",
+                  "text": "must ensure that the separate account only contains funds of clients and counterparties and not those of the provider;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s12.2.d",
+                  "number": "d",
+                  "heading": "s12.2.d",
+                  "text": "may not cause securities to be registered otherwise than in accordance with the instructions given to the provider.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -428,7 +808,41 @@
           "sectionNumber": "13",
           "title": "Arrangements with an intermediary",
           "verbatim": true,
-          "text": "Where a provider enters in an arrangement with an intermediary in terms of which the intermediary markets and sells OTC derivatives to clients on behalf of the provider, the provider must ensure that the intermediary—\n(a) is authorised appropriately as a financial services provider in terms of the Financial Advisory and Intermediary Services Act, 2002 (Act No. 37 of 2002);\n(b) discloses to the client, in writing, the nature of the arrangement and the relationship between the provider and the intermediary, including any fees that will be charged by the intermediary;\n(c) performs the disclosure requirements, as provided for in paragraph 6, on behalf of the provider; and\n(d) performs the appropriateness test requirements, as provided for in paragraph 5."
+          "text": "Where a provider enters in an arrangement with an intermediary in terms of which the intermediary markets and sells OTC derivatives to clients on behalf of the provider, the provider must ensure that the intermediary—",
+          "subsections": [
+            {
+              "id": "s13.a",
+              "number": "a",
+              "heading": "s13.a",
+              "text": "is authorised appropriately as a financial services provider in terms of the Financial Advisory and Intermediary Services Act, 2002 (Act No. 37 of 2002);",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.b",
+              "number": "b",
+              "heading": "s13.b",
+              "text": "discloses to the client, in writing, the nature of the arrangement and the relationship between the provider and the intermediary, including any fees that will be charged by the intermediary;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.c",
+              "number": "c",
+              "heading": "s13.c",
+              "text": "performs the disclosure requirements, as provided for in paragraph 6, on behalf of the provider; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13.d",
+              "number": "d",
+              "heading": "s13.d",
+              "text": "performs the appropriateness test requirements, as provided for in paragraph 5.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s14",
@@ -442,7 +856,41 @@
           "sectionNumber": "15",
           "title": "Confidentiality and privacy",
           "verbatim": true,
-          "text": "A provider may not disclose any information acquired or obtained from a counterparty or client, except—\n(a) the person to whom the confidential information relates has given consent;\n(b) disclosure is required or permitted in terms of a law or a court order;\n(c) disclosure is necessary to carry out his, her or its functions or in the course of performing duties under any law; or\n(d) disclosure is required for the purposes of legal proceedings."
+          "text": "A provider may not disclose any information acquired or obtained from a counterparty or client, except—",
+          "subsections": [
+            {
+              "id": "s15.a",
+              "number": "a",
+              "heading": "s15.a",
+              "text": "the person to whom the confidential information relates has given consent;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.b",
+              "number": "b",
+              "heading": "s15.b",
+              "text": "disclosure is required or permitted in terms of a law or a court order;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.c",
+              "number": "c",
+              "heading": "s15.c",
+              "text": "disclosure is necessary to carry out his, her or its functions or in the course of performing duties under any law; or",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s15.d",
+              "number": "d",
+              "heading": "s15.d",
+              "text": "disclosure is required for the purposes of legal proceedings.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s16",

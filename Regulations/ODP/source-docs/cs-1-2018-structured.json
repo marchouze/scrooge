@@ -59,9 +59,26 @@
               "id": "s2.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2) An applicant for authorisation as a provider must submit a written application on Form FM 6 accompanied by the information—\n(a) specified in Annexure 1 to Form FM 6; and\n(b) required in respect of members of the controlling body and every senior manager of the provider specified in Annexure 2 to Form FM 6.\n\nAddress\nApplications must be submitted to:\nThe Financial Sector Conduct Authority\nPO Box 35655, Menlo Park, 0102\nRiverwalk Office Park, Block B\n41 Matroosberg Road, Ashlea Gardens Ext 6, 0081\nEmail: authorisationofODPs@fsca.co.za",
+              "text": "(2) An applicant for authorisation as a provider must submit a written application on Form FM 6 accompanied by the information—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2.2.a",
+                  "number": "a",
+                  "heading": "s2.2.a",
+                  "text": "specified in Annexure 1 to Form FM 6; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2.2.b",
+                  "number": "b",
+                  "heading": "s2.2.b",
+                  "text": "required in respect of members of the controlling body and every senior manager of the provider specified in Annexure 2 to Form FM 6.\n\nAddress\nApplications must be submitted to:\nThe Financial Sector Conduct Authority\nPO Box 35655, Menlo Park, 0102\nRiverwalk Office Park, Block B\n41 Matroosberg Road, Ashlea Gardens Ext 6, 0081\nEmail: authorisationofODPs@fsca.co.za",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -83,17 +100,117 @@
               "id": "s4-1.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) An applicant and a provider must—\n(a) maintain capital, together with retained earnings and reserves proportional to the risks relating to the business of the provider in the Republic of South Africa;\n(b) hold sufficient capital and liquid net assets funded by equity in the Republic of South Africa to cover potential general business losses to ensure—\n(i) that the applicant and the provider are adequately protected against operational, legal, custody, and investment risks so that it can continue providing services as a going concern; and\n(ii) an orderly wind-up or reorganisation of the applicant and the provider's critical operations and services over an appropriate time period of at least six months under a range of stress scenarios;\n(c) hold equity capital in the Republic of South Africa—\n(i) which reflects a strong cash, cash-equivalent, or securities position to allow the provider to meet its current and projected operating expenses under a range of scenarios; provided that cash equivalents and securities consist of high-quality and sufficiently liquid assets that can easily be converted into cash at little or no loss of value, even in adverse market conditions;\n(ii) which, at a minimum, is equal to six months of operating expenses, provided that the provider considers whether resources are required beyond that amount, taking into account its general business risk profile; and\n(iii) which is permanently available for the provider to absorb operating expenses or losses on an ongoing basis;\n(d) safeguard its assets—\n(i) to minimise the risk of loss or delay in access to these assets; and\n(ii) by holding the assets at supervised and regulated entities that have robust accounting practices, safekeeping procedures, and internal controls that fully protect these assets; and\n(e) have a viable plan, approved by its controlling body and updated regularly for raising additional equity should the equity fall below the amount required to cover all its operating expenses.",
+              "text": "(1) An applicant and a provider must—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-1.1.a",
+                  "number": "a",
+                  "heading": "s4-1.1.a",
+                  "text": "maintain capital, together with retained earnings and reserves proportional to the risks relating to the business of the provider in the Republic of South Africa;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1.1.b",
+                  "number": "b",
+                  "heading": "s4-1.1.b",
+                  "text": "hold sufficient capital and liquid net assets funded by equity in the Republic of South Africa to cover potential general business losses to ensure—",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s4-1.1.b.i",
+                      "number": "i",
+                      "heading": "s4-1.1.b.i",
+                      "text": "that the applicant and the provider are adequately protected against operational, legal, custody, and investment risks so that it can continue providing services as a going concern; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1.1.b.ii",
+                      "number": "ii",
+                      "heading": "s4-1.1.b.ii",
+                      "text": "an orderly wind-up or reorganisation of the applicant and the provider's critical operations and services over an appropriate time period of at least six months under a range of stress scenarios;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s4-1.1.c",
+                  "number": "c",
+                  "heading": "s4-1.1.c",
+                  "text": "hold equity capital in the Republic of South Africa—",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s4-1.1.c.i",
+                      "number": "i",
+                      "heading": "s4-1.1.c.i",
+                      "text": "which reflects a strong cash, cash-equivalent, or securities position to allow the provider to meet its current and projected operating expenses under a range of scenarios; provided that cash equivalents and securities consist of high-quality and sufficiently liquid assets that can easily be converted into cash at little or no loss of value, even in adverse market conditions",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1.1.c.ii",
+                      "number": "ii",
+                      "heading": "s4-1.1.c.ii",
+                      "text": "which, at a minimum, is equal to six months of operating expenses, provided that the provider considers whether resources are required beyond that amount, taking into account its general business risk profile; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1.1.c.iii",
+                      "number": "iii",
+                      "heading": "s4-1.1.c.iii",
+                      "text": "which is permanently available for the provider to absorb operating expenses or losses on an ongoing basis;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s4-1.1.d",
+                  "number": "d",
+                  "heading": "s4-1.1.d",
+                  "text": "safeguard its assets—\n(i) to minimise the risk of loss or delay in access to these assets; and\n(ii) by holding the assets at supervised and regulated entities that have robust accounting practices, safekeeping procedures, and internal controls that fully protect these assets; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1.1.e",
+                  "number": "e",
+                  "heading": "s4-1.1.e",
+                  "text": "have a viable plan, approved by its controlling body and updated regularly for raising additional equity should the equity fall below the amount required to cover all its operating expenses.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4-1.2",
               "number": "2",
               "heading": "(2)",
-              "text": "(2)(a) A provider must furnish the Authority with a quarterly report detailing the calculation of the required liquid net assets, calculated in terms of this Standard and the measures taken to obtain additional funding, if necessary.\n\n(b) If the Authority is not satisfied that such liquid net assets are sufficient to cover the risks involved, the Authority may require a provider to obtain additional liquid assets funded by equity over a time period as determined by the Authority.",
+              "text": "(2)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-1.2.a",
+                  "number": "a",
+                  "heading": "s4-1.2.a",
+                  "text": "A provider must furnish the Authority with a quarterly report detailing the calculation of the required liquid net assets, calculated in terms of this Standard and the measures taken to obtain additional funding, if necessary.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1.2.b",
+                  "number": "b",
+                  "heading": "s4-1.2.b",
+                  "text": "If the Authority is not satisfied that such liquid net assets are sufficient to cover the risks involved, the Authority may require a provider to obtain additional liquid assets funded by equity over a time period as determined by the Authority.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -131,9 +248,58 @@
               "id": "s4-2-1.3",
               "number": "3",
               "heading": "(3)",
-              "text": "(3) Without limiting the generality of subparagraphs (2), any of the following factors constitutes prima facie evidence that the person does not qualify in terms of subparagraph (1), namely that the person—\n(a) has within a period of five years preceding the date of application been found guilty in any civil or criminal proceedings by a court of law (whether in the Republic of South Africa or elsewhere) of having acted fraudulently, dishonestly, unprofessionally, dishonourably or in breach of a fiduciary duty;\n(b) has within a period of five years preceding the date of application been found guilty by any professional or financial services industry body (whether in the Republic of South Africa or elsewhere) of an act of dishonesty, negligence, incompetence or mismanagement;\n(c) has within a period of five years preceding the date of application been denied membership of any body referred to in sub-paragraph (b) on account of an act of dishonesty, negligence, incompetence or mismanagement;\n(d) has within a period of five years preceding the date of application—\n(i) been found guilty by any regulatory or supervisory body (whether in the Republic of South Africa or elsewhere), or\n(ii) had its authorisation to carry on business refused, suspended or withdrawn by any such body, on account of an act of dishonesty, negligence, incompetence or mismanagement;\n(e) has within a period of five years preceding the date of application, had any licence granted by any regulatory or supervisory body referred to in subparagraph (d) suspended or withdrawn by such body on account of an act of dishonesty, negligence, incompetence or mismanagement; or\n(f) has at any time prior to the date of application been disqualified or prohibited by any court of law (whether in the Republic of South Africa or elsewhere) from taking part in the management of any company or other statutorily created, recognised or regulated body, irrespective whether such disqualification has since been lifted or not.",
+              "text": "(3) Without limiting the generality of subparagraphs (2), any of the following factors constitutes prima facie evidence that the person does not qualify in terms of subparagraph (1), namely that the person—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-2-1.3.a",
+                  "number": "a",
+                  "heading": "s4-2-1.3.a",
+                  "text": "has within a period of five years preceding the date of application been found guilty in any civil or criminal proceedings by a court of law (whether in the Republic of South Africa or elsewhere) of having acted fraudulently, dishonestly, unprofessionally, dishonourably or in breach of a fiduciary duty;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-1.3.b",
+                  "number": "b",
+                  "heading": "s4-2-1.3.b",
+                  "text": "has within a period of five years preceding the date of application been found guilty by any professional or financial services industry body (whether in the Republic of South Africa or elsewhere) of an act of dishonesty, negligence, incompetence or mismanagement;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-1.3.c",
+                  "number": "c",
+                  "heading": "s4-2-1.3.c",
+                  "text": "has within a period of five years preceding the date of application been denied membership of any body referred to in sub-paragraph (b) on account of an act of dishonesty, negligence, incompetence or mismanagement;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-1.3.d",
+                  "number": "d",
+                  "heading": "s4-2-1.3.d",
+                  "text": "has within a period of five years preceding the date of application—\n(i) been found guilty by any regulatory or supervisory body (whether in the Republic of South Africa or elsewhere), or\n(ii) had its authorisation to carry on business refused, suspended or withdrawn by any such body, on account of an act of dishonesty, negligence, incompetence or mismanagement;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-1.3.e",
+                  "number": "e",
+                  "heading": "s4-2-1.3.e",
+                  "text": "has within a period of five years preceding the date of application, had any licence granted by any regulatory or supervisory body referred to in subparagraph (d) suspended or withdrawn by such body on account of an act of dishonesty, negligence, incompetence or mismanagement; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-1.3.f",
+                  "number": "f",
+                  "heading": "s4-2-1.3.f",
+                  "text": "has at any time prior to the date of application been disqualified or prohibited by any court of law (whether in the Republic of South Africa or elsewhere) from taking part in the management of any company or other statutorily created, recognised or regulated body, irrespective whether such disqualification has since been lifted or not.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4-2-1.4",
@@ -180,17 +346,75 @@
               "id": "s4-2-2.3",
               "number": "3",
               "heading": "(3)",
-              "text": "(3) Without limiting the generality of subparagraph (1), in determining a person's competence, the Authority may have regard to the following matters:\n(a) the person's past performance or expertise in the nature of the business being conducted;\n(b) the person's skills and experience to understand, operate and manage the regulated activities and financial affairs; and\n(c) the person's technical knowledge and ability to perform prescribed duties for which he or she is engaged, including recognised professional qualifications and membership of relevant professional institutions.",
+              "text": "(3) Without limiting the generality of subparagraph (1), in determining a person's competence, the Authority may have regard to the following matters:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-2-2.3.a",
+                  "number": "a",
+                  "heading": "s4-2-2.3.a",
+                  "text": "the person's past performance or expertise in the nature of the business being conducted;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-2.3.b",
+                  "number": "b",
+                  "heading": "s4-2-2.3.b",
+                  "text": "the person's skills and experience to understand, operate and manage the regulated activities and financial affairs; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-2.3.c",
+                  "number": "c",
+                  "heading": "s4-2-2.3.c",
+                  "text": "the person's technical knowledge and ability to perform prescribed duties for which he or she is engaged, including recognised professional qualifications and membership of relevant professional institutions.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4-2-2.4",
               "number": "4",
               "heading": "(4)",
-              "text": "(4) A provider must, in addition to any conditions imposed by the Authority to the authorisation of the provider—\n(a) maintain an updated register of members of the controlling body and senior managers;\n(b) promptly inform the Authority when an appointment of a member of the controlling body or a senior manager is terminated, and the reason for the termination;\n(c) complete Annexure B when a new member of the controlling body or senior manager is appointed, and promptly submit it to the Authority;\n(d) annually submit a written statement to the Authority wherein continued compliance with this Standard with respect to each member of the controlling body and senior manager is confirmed.",
+              "text": "(4) A provider must, in addition to any conditions imposed by the Authority to the authorisation of the provider—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-2-2.4.a",
+                  "number": "a",
+                  "heading": "s4-2-2.4.a",
+                  "text": "maintain an updated register of members of the controlling body and senior managers;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-2.4.b",
+                  "number": "b",
+                  "heading": "s4-2-2.4.b",
+                  "text": "promptly inform the Authority when an appointment of a member of the controlling body or a senior manager is terminated, and the reason for the termination;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-2.4.c",
+                  "number": "c",
+                  "heading": "s4-2-2.4.c",
+                  "text": "complete Annexure B when a new member of the controlling body or senior manager is appointed, and promptly submit it to the Authority;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-2.4.d",
+                  "number": "d",
+                  "heading": "s4-2-2.4.d",
+                  "text": "annually submit a written statement to the Authority wherein continued compliance with this Standard with respect to each member of the controlling body and senior manager is confirmed.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -199,7 +423,41 @@
           "sectionNumber": "4.2.3",
           "title": "Operational ability",
           "verbatim": true,
-          "text": "An applicant and a provider must have and be able to maintain the operational ability to fulfil the responsibilities imposed by the Act, including the following—\n(a) a fixed business address in the Republic of South Africa;\n(b) adequate access to communication facilities, including a full-time telephone or cell phone service, and administrative facilities, including electronic, typing and document duplication facilities;\n(c) adequate storage and filing systems for the safe-keeping of records, business communications and correspondence; and\n(d) an account with a registered bank in the Republic of South Africa."
+          "text": "An applicant and a provider must have and be able to maintain the operational ability to fulfil the responsibilities imposed by the Act, including the following—",
+          "subsections": [
+            {
+              "id": "s4-2-3.a",
+              "number": "a",
+              "heading": "s4-2-3.a",
+              "text": "a fixed business address in the Republic of South Africa;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-2-3.b",
+              "number": "b",
+              "heading": "s4-2-3.b",
+              "text": "adequate access to communication facilities, including a full-time telephone or cell phone service, and administrative facilities, including electronic, typing and document duplication facilities;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-2-3.c",
+              "number": "c",
+              "heading": "s4-2-3.c",
+              "text": "adequate storage and filing systems for the safe-keeping of records, business communications and correspondence; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-2-3.d",
+              "number": "d",
+              "heading": "s4-2-3.d",
+              "text": "an account with a registered bank in the Republic of South Africa.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4-2-4",
@@ -252,9 +510,26 @@
               "id": "s4-3.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) A provider must organise and control its affairs responsibly and effectively, with—\n(a) sound risk management principles, that takes into account—\n(i) its risk appetite, risk profile, market and macroeconomic conditions; and\n(ii) the risk of a significant deterioration in market liquidity; and\n(b) prudent policies and processes, systems and resources, approved by its controlling body, to identify, measure, evaluate, monitor, report and control or mitigate risks on a timely basis.",
+              "text": "(1) A provider must organise and control its affairs responsibly and effectively, with—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-3.1.a",
+                  "number": "a",
+                  "heading": "s4-3.1.a",
+                  "text": "sound risk management principles, that takes into account—\n(i) its risk appetite, risk profile, market and macroeconomic conditions; and\n(ii) the risk of a significant deterioration in market liquidity; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-3.1.b",
+                  "number": "b",
+                  "heading": "s4-3.1.b",
+                  "text": "prudent policies and processes, systems and resources, approved by its controlling body, to identify, measure, evaluate, monitor, report and control or mitigate risks on a timely basis.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4-3.2",
@@ -268,17 +543,116 @@
               "id": "s4-3.3",
               "number": "3",
               "heading": "(3)",
-              "text": "(3) The policies and processes of the provider must be formulated and designed to ensure that the controlling body and senior management of the provider are able to—\n(a) identify, quantify and manage the risk exposures of the provider, which includes—\n(i) effective information systems for accurate and timely identification, aggregation, monitoring and reporting of risk exposures to the provider's controlling body and senior management;\n(ii) appropriate risk limits consistent with the provider's risk appetite and risk profile, and which are understood by and regularly communicated to relevant staff;\n(iii) exceptions tracking and reporting processes that ensure prompt action at the appropriate level of the provider's senior management or controlling body, where necessary; and\n(iv) adequate structures, processes systems and controls in respect of instruments, contracts or positions measured at fair value;\n(b) ensure that the model is validated by a function independent of the relevant risk-taking business units, not less frequent than once per year, to the extent that the provider relies on modelling for the purposes of valuation;\n(c) monitor the performance of the business of the provider; and\n(d) monitor the quality of the provider's assets and the control of its liabilities.",
+              "text": "(3) The policies and processes of the provider must be formulated and designed to ensure that the controlling body and senior management of the provider are able to—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-3.3.a",
+                  "number": "a",
+                  "heading": "s4-3.3.a",
+                  "text": "identify, quantify and manage the risk exposures of the provider, which includes—",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s4-3.3.a.i",
+                      "number": "i",
+                      "heading": "s4-3.3.a.i",
+                      "text": "effective information systems for accurate and timely identification, aggregation, monitoring and reporting of risk exposures to the provider's controlling body and senior management",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3.3.a.ii",
+                      "number": "ii",
+                      "heading": "s4-3.3.a.ii",
+                      "text": "appropriate risk limits consistent with the provider's risk appetite and risk profile, and which are understood by and regularly communicated to relevant staff",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3.3.a.iii",
+                      "number": "iii",
+                      "heading": "s4-3.3.a.iii",
+                      "text": "exceptions tracking and reporting processes that ensure prompt action at the appropriate level of the provider's senior management or controlling body, where necessary; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3.3.a.iv",
+                      "number": "iv",
+                      "heading": "s4-3.3.a.iv",
+                      "text": "adequate structures, processes systems and controls in respect of instruments, contracts or positions measured at fair value;",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s4-3.3.b",
+                  "number": "b",
+                  "heading": "s4-3.3.b",
+                  "text": "ensure that the model is validated by a function independent of the relevant risk-taking business units, not less frequent than once per year, to the extent that the provider relies on modelling for the purposes of valuation;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-3.3.c",
+                  "number": "c",
+                  "heading": "s4-3.3.c",
+                  "text": "monitor the performance of the business of the provider; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-3.3.d",
+                  "number": "d",
+                  "heading": "s4-3.3.d",
+                  "text": "monitor the quality of the provider's assets and the control of its liabilities.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4-3.4",
               "number": "4",
               "heading": "(4)",
-              "text": "(4) The system of internal control employed by the applicant and a provider must be designed to ensure that—\n(a) financial and other information used or provided by the provider is reliable;\n(b) all transactions and financial commitments entered into are recorded and are within the scope of authority of the provider or an employee acting on behalf of the provider;\n(c) there are procedures to safeguard the assets of the provider and assets belonging to any other person for which the provider is accountable; and\n(d) there are measures, so far as is reasonably practicable, to minimise the risk of loss to the provider or the counterparties or clients of the provider from any irregularity, fraud or error.",
+              "text": "(4) The system of internal control employed by the applicant and a provider must be designed to ensure that—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-3.4.a",
+                  "number": "a",
+                  "heading": "s4-3.4.a",
+                  "text": "financial and other information used or provided by the provider is reliable;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-3.4.b",
+                  "number": "b",
+                  "heading": "s4-3.4.b",
+                  "text": "all transactions and financial commitments entered into are recorded and are within the scope of authority of the provider or an employee acting on behalf of the provider;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-3.4.c",
+                  "number": "c",
+                  "heading": "s4-3.4.c",
+                  "text": "there are procedures to safeguard the assets of the provider and assets belonging to any other person for which the provider is accountable; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-3.4.d",
+                  "number": "d",
+                  "heading": "s4-3.4.d",
+                  "text": "there are measures, so far as is reasonably practicable, to minimise the risk of loss to the provider or the counterparties or clients of the provider from any irregularity, fraud or error.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s4-3.5",
@@ -327,7 +701,74 @@
           "sectionNumber": "4.4",
           "title": "Compliance function",
           "verbatim": true,
-          "text": "A provider must—\n(a) establish and maintain effective systems and controls to promote and monitor compliance with its regulatory obligations;\n(b) establish a compliance function, which must—\n(i) form part of the overall risk management framework of the business of the provider;\n(ii) be staffed with an appropriate number of competent individuals, as determined by the nature, size and complexity of the provider's business; and\n(iii) be sufficiently independent from the business activities it monitors;\n(c) appoint a head of compliance with the responsibility for—\n(i) the compliance function;\n(ii) oversight of the provider's compliance with the Act;\n(iii) reporting to the provider's controlling body regarding compliance matters; and\n(iv) reporting to the Authority, on an annual basis in respect of the provider's compliance with its regulatory obligations; and on an ad hoc basis, on—\n(aa) any non-compliance instances;\n(bb) any material irregularities encountered during the monitoring; and\n(cc) any matter deemed necessary to be brought to the attention of the Authority; and\n(d) notify the Authority of the appointment of the Head of Compliance."
+          "text": "A provider must—",
+          "subsections": [
+            {
+              "id": "s4-4.a",
+              "number": "a",
+              "heading": "s4-4.a",
+              "text": "establish and maintain effective systems and controls to promote and monitor compliance with its regulatory obligations;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-4.b",
+              "number": "b",
+              "heading": "s4-4.b",
+              "text": "establish a compliance function, which must—\n(i) form part of the overall risk management framework of the business of the provider;\n(ii) be staffed with an appropriate number of competent individuals, as determined by the nature, size and complexity of the provider's business; and\n(iii) be sufficiently independent from the business activities it monitors;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-4.c",
+              "number": "c",
+              "heading": "s4-4.c",
+              "text": "appoint a head of compliance with the responsibility for—",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-4.c.i",
+                  "number": "i",
+                  "heading": "s4-4.c.i",
+                  "text": "the compliance function",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-4.c.ii",
+                  "number": "ii",
+                  "heading": "s4-4.c.ii",
+                  "text": "oversight of the provider's compliance with the Act",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-4.c.iii",
+                  "number": "iii",
+                  "heading": "s4-4.c.iii",
+                  "text": "reporting to the provider's controlling body regarding compliance matters; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-4.c.iv",
+                  "number": "iv",
+                  "heading": "s4-4.c.iv",
+                  "text": "reporting to the Authority, on an annual basis in respect of the provider's compliance with its regulatory obligations; and on an ad hoc basis, on—\n(aa) any non-compliance instances;\n(bb) any material irregularities encountered during the monitoring; and\n(cc) any matter deemed necessary to be brought to the attention of the Authority; and",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s4-4.d",
+              "number": "d",
+              "heading": "s4-4.d",
+              "text": "notify the Authority of the appointment of the Head of Compliance.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4-5",
@@ -341,7 +782,66 @@
           "sectionNumber": "4.6",
           "title": "Record keeping and data retention",
           "verbatim": true,
-          "text": "An applicant and a provider—\n(a) must maintain proper, complete, accurate and secure records;\n(b) must have appropriate procedures and systems in place to store and retrieve in a manner safe from destruction records of all—\n(i) instructions relating to an OTC derivative transaction with a client, or counterparty, including verbal instructions given by the client or counterparty to the provider; and\n(ii) documentation relating to the contractual arrangement between the provider and the client or counterparty;\n(c) may keep records in electronic or voice recorded format;\n(d) may keep records at a third-party, provided that the records must be made available for inspection within seven days; and\n(e) must keep a record referred to in—\n(i) sub-item (b)(i) for a period of at least six months after the instruction has been given;\n(ii) sub-item (b)(ii) for a period of at least five years after the contractual relationship has been terminated."
+          "text": "An applicant and a provider—",
+          "subsections": [
+            {
+              "id": "s4-6.a",
+              "number": "a",
+              "heading": "s4-6.a",
+              "text": "must maintain proper, complete, accurate and secure records;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-6.b",
+              "number": "b",
+              "heading": "s4-6.b",
+              "text": "must have appropriate procedures and systems in place to store and retrieve in a manner safe from destruction records of all—",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-6.b.i",
+                  "number": "i",
+                  "heading": "s4-6.b.i",
+                  "text": "instructions relating to an OTC derivative transaction with a client, or counterparty, including verbal instructions given by the client or counterparty to the provider; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-6.b.ii",
+                  "number": "ii",
+                  "heading": "s4-6.b.ii",
+                  "text": "documentation relating to the contractual arrangement between the provider and the client or counterparty;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s4-6.c",
+              "number": "c",
+              "heading": "s4-6.c",
+              "text": "may keep records in electronic or voice recorded format;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-6.d",
+              "number": "d",
+              "heading": "s4-6.d",
+              "text": "may keep records at a third-party, provided that the records must be made available for inspection within seven days; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-6.e",
+              "number": "e",
+              "heading": "s4-6.e",
+              "text": "must keep a record referred to in—\n(i) sub-item (b)(i) for a period of at least six months after the instruction has been given;\n(ii) sub-item (b)(ii) for a period of at least five years after the contractual relationship has been terminated.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s5",
@@ -361,9 +861,42 @@
               "id": "s5-1.1",
               "number": "1",
               "heading": "(1)",
-              "text": "(1) The Authority may suspend or terminate the authorisation of a provider if satisfied, on the basis of available facts and information, that the provider—\n(a) has ceased to exist;\n(b) no longer meets the requirements contemplated in this Standard;\n(c) has failed to make a full disclosure of all relevant information to the Authority, or furnished false or misleading information in its application for authorisation; or\n(d) has failed to comply with any other provision of this Standard or the Act.",
+              "text": "(1) The Authority may suspend or terminate the authorisation of a provider if satisfied, on the basis of available facts and information, that the provider—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s5-1.1.a",
+                  "number": "a",
+                  "heading": "s5-1.1.a",
+                  "text": "has ceased to exist;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-1.1.b",
+                  "number": "b",
+                  "heading": "s5-1.1.b",
+                  "text": "no longer meets the requirements contemplated in this Standard;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-1.1.c",
+                  "number": "c",
+                  "heading": "s5-1.1.c",
+                  "text": "has failed to make a full disclosure of all relevant information to the Authority, or furnished false or misleading information in its application for authorisation; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-1.1.d",
+                  "number": "d",
+                  "heading": "s5-1.1.d",
+                  "text": "has failed to comply with any other provision of this Standard or the Act.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s5-1.2",

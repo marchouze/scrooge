@@ -158,7 +158,33 @@
           "sectionNumber": "7",
           "title": "Requirements for identifiers",
           "verbatim": false,
-          "text": "Section 7 covers three identifier types:\n\ns7.1 — Identification of counterparties and other entities using an LEI: A report must contain an LEI to identify (a) the reporting provider; (b) non-reporting counterparties; (c) the central counterparty, where the trade was cleared.\n\ns7.2 — Identification of derivative instruments: A report must identify a derivative instrument using a unique product identifier (UPI) based on the taxonomy of the derivative which is internationally recognisable, unique, neutral, reliable, open source, scalable, accessible, available at a reasonable cost basis, and subject to an appropriate governance framework. Where international or industry standards for a UPI are not reasonably available, a reporting counterparty must assign a UPI using its own methodology.\n\ns7.3 — Unique transaction identifier (UTI): A report must identify a derivative transaction using a UTI meeting the same nine criteria as the UPI. Where both counterparties are authorised ODPs, the reporting provider allocates the UTI and the non-reporting counterparty adopts the same identifier to avoid duplication. The UTI must be allocated at the earliest possible point in the trade flow. Where the trade is cleared, the central counterparty allocates the UTI."
+          "text": "Section 7 covers three identifier types:\n\ns7.1 — Identification of counterparties and other entities using an LEI: A report must contain an LEI to identify",
+          "subsections": [
+            {
+              "id": "s7.a",
+              "number": "a",
+              "heading": "s7.a",
+              "text": "the reporting provider;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.b",
+              "number": "b",
+              "heading": "s7.b",
+              "text": "non-reporting counterparties;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7.c",
+              "number": "c",
+              "heading": "s7.c",
+              "text": "the central counterparty, where the trade was cleared.\n\ns7.2 — Identification of derivative instruments: A report must identify a derivative instrument using a unique product identifier (UPI) based on the taxonomy of the derivative which is internationally recognisable, unique, neutral, reliable, open source, scalable, accessible, available at a reasonable cost basis, and subject to an appropriate governance framework. Where international or industry standards for a UPI are not reasonably available, a reporting counterparty must assign a UPI using its own methodology.\n\ns7.3 — Unique transaction identifier (UTI): A report must identify a derivative transaction using a UTI meeting the same nine criteria as the UPI. Where both counterparties are authorised ODPs, the reporting provider allocates the UTI and the non-reporting counterparty adopts the same identifier to avoid duplication. The UTI must be allocated at the earliest possible point in the trade flow. Where the trade is cleared, the central counterparty allocates the UTI.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8",
