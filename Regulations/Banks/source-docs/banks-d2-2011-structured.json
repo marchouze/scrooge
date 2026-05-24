@@ -1,0 +1,54 @@
+{
+  "slug": "banks-d2-2011",
+  "title": "Banks Act Directive D2/2011 — Reporting daily value-at-risk amounts for market risk using specified items of the form BA 325",
+  "shortTitle": "Directive D2/2011",
+  "regulator": "Prudential Authority",
+  "year": 2011,
+  "effectiveDate": "2011-01-01",
+  "enablingLegislation": "Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "directive",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "D2/2011",
+    "Banks Act Directive D2/2011",
+    "Directive D2/2011"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-d2-2011-main",
+      "title": "Directive D2/2011",
+      "sections": [
+        {
+          "id": "s-banks-d2-2011-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). Reporting daily value-at-risk amounts for market risk using specified items of the form BA 325.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d2-2011-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Reporting daily value-at-risk amounts for market risk using specified items of the form BA 325.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d2-2011-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Reporting daily value-at-risk amounts for market risk using specified items of the form BA 325. Institutions are required to ensure compliance with the requirements set out herein. This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

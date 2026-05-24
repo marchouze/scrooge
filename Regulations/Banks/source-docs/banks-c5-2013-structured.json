@@ -1,0 +1,54 @@
+{
+  "slug": "banks-c5-2013",
+  "title": "Banks Act Circular C5/2013 — Reporting of items subject to thresholds that do not constitute a full deduction from qualifying capital and reserve funds",
+  "shortTitle": "Circular C5/2013",
+  "regulator": "Prudential Authority",
+  "year": 2013,
+  "effectiveDate": "2013-01-01",
+  "enablingLegislation": "Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "circular",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "C5/2013",
+    "Banks Act Circular C5/2013",
+    "Circular C5/2013"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-c5-2013-main",
+      "title": "Circular C5/2013",
+      "sections": [
+        {
+          "id": "s-banks-c5-2013-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). Reporting of items subject to thresholds that do not constitute a full deduction from qualifying capital and reserve funds.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c5-2013-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Reporting of items subject to thresholds that do not constitute a full deduction from qualifying capital and reserve funds.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c5-2013-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Reporting of items subject to thresholds that do not constitute a full deduction from qualifying capital and reserve funds. Institutions are required to ensure compliance with the requirements set out herein. This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

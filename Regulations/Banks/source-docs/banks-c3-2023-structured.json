@@ -1,0 +1,54 @@
+{
+  "slug": "banks-c3-2023",
+  "title": "Banks Act Circular C3/2023 — Eligibility of a Sukuk bond issuance",
+  "shortTitle": "Circular C3/2023",
+  "regulator": "Prudential Authority",
+  "year": 2023,
+  "effectiveDate": "2023-01-01",
+  "enablingLegislation": "Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "circular",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "C3/2023",
+    "Banks Act Circular C3/2023",
+    "Circular C3/2023"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-c3-2023-main",
+      "title": "Circular C3/2023",
+      "sections": [
+        {
+          "id": "s-banks-c3-2023-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). Eligibility of a Sukuk bond issuance.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c3-2023-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Eligibility of a Sukuk bond issuance.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-c3-2023-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Eligibility of a Sukuk bond issuance. Institutions are required to ensure compliance with the requirements set out herein. This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}

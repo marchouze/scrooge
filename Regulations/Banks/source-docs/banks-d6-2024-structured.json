@@ -1,0 +1,54 @@
+{
+  "slug": "banks-d6-2024",
+  "title": "Banks Act Directive D6/2024 — Implementation of a positive cycle-neutral countercyclical capital buffer",
+  "shortTitle": "Directive D6/2024",
+  "regulator": "Prudential Authority",
+  "year": 2024,
+  "effectiveDate": "2024-01-01",
+  "enablingLegislation": "Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990)",
+  "instrumentType": "directive",
+  "applicableTo": [
+    "banks",
+    "controlling companies",
+    "branches of foreign institutions",
+    "auditors of banks"
+  ],
+  "citationPatterns": [
+    "D6/2024",
+    "Banks Act Directive D6/2024",
+    "Directive D6/2024"
+  ],
+  "priority": 5,
+  "chapters": [
+    {
+      "id": "ch-banks-d6-2024-main",
+      "title": "Directive D6/2024",
+      "sections": [
+        {
+          "id": "s-banks-d6-2024-1-intro",
+          "number": "1",
+          "heading": "Introduction",
+          "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). Implementation of a positive cycle-neutral countercyclical capital buffer.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d6-2024-1-application",
+          "number": "2",
+          "heading": "Application",
+          "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). Implementation of a positive cycle-neutral countercyclical capital buffer.",
+          "verbatim": false,
+          "subsections": []
+        },
+        {
+          "id": "s-banks-d6-2024-1-requirements",
+          "number": "3",
+          "heading": "Requirements",
+          "text": "Implementation of a positive cycle-neutral countercyclical capital buffer. Institutions are required to ensure compliance with the requirements set out herein. This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "verbatim": false,
+          "subsections": []
+        }
+      ]
+    }
+  ]
+}
