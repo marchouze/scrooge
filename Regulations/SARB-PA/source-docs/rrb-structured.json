@@ -81,9 +81,26 @@
               "id": "reg2.1",
               "number": "1",
               "heading": "reg2.1",
-              "text": "(1) Unless expressly otherwise provided in the Act or these Regulations, all the prescribed returns shall reflect the management accounts presented to the management and/or board of directors of a bank or controlling company in the sense that the said returns—\n(a) shall be prepared using the same principles used in the preparation of such management accounts and/or board reports;\n(b) shall be easily reconcilable to such management accounts and/or board reports.",
+              "text": "(1) Unless expressly otherwise provided in the Act or these Regulations, all the prescribed returns shall reflect the management accounts presented to the management and/or board of directors of a bank or controlling company in the sense that the said returns—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "reg2.1.a",
+                  "number": "a",
+                  "heading": "reg2.1.a",
+                  "text": "shall be prepared using the same principles used in the preparation of such management accounts and/or board reports;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg2.1.b",
+                  "number": "b",
+                  "heading": "reg2.1.b",
+                  "text": "shall be easily reconcilable to such management accounts and/or board reports.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "reg2.2",
@@ -122,9 +139,26 @@
               "id": "reg3.2",
               "number": "2",
               "heading": "reg3.2",
-              "text": "(2) Unless—\n(a) specifically otherwise provided in these Regulations; or\n(b) on prior application, the Registrar authorised a deviation from such policy,\nthe same accounting policy applied by a bank or controlling company in the compilation of its annual financial statements shall be applied by such bank or controlling company in the compilation of the prescribed returns required to be furnished to the Registrar in terms of the Act and these Regulations.",
+              "text": "(2) Unless—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "reg3.2.a",
+                  "number": "a",
+                  "heading": "reg3.2.a",
+                  "text": "specifically otherwise provided in these Regulations; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg3.2.b",
+                  "number": "b",
+                  "heading": "reg3.2.b",
+                  "text": "on prior application, the Registrar authorised a deviation from such policy,\nthe same accounting policy applied by a bank or controlling company in the compilation of its annual financial statements shall be applied by such bank or controlling company in the compilation of the prescribed returns required to be furnished to the Registrar in terms of the Act and these Regulations.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "reg3.3",
@@ -138,9 +172,42 @@
               "id": "reg3.4",
               "number": "4",
               "heading": "reg3.4",
-              "text": "(4) When a bank or controlling company, in accordance with the relevant requirements contained in Financial Reporting Standards issued from time to time, wishes to implement or adopt any fair value option or approach in respect of financial instruments, the said bank or controlling company—\n(a) shall have in place robust risk management systems and board approved policies, procedures and controls prior to the initial application of the said fair value option for a particular activity, instrument or purpose, and on an ongoing basis, in order to ensure, amongst other things, that—\n(i) sound risk management objectives consistent with the risk management framework and overall risk appetite approved by the bank or controlling company's board of directors, or a relevant committee of the board, are met when the fair value option or approach is applied;\n(ii) the bank or controlling company applies appropriate valuation methods;\n(iii) fair values are reliable for all instruments included in the fair value option category;\n(iv) relevant risk management and control policies pertaining to the use of the fair value option and related valuation methodologies are consistently applied and complied with; and\n(v) appropriate information is periodically provided to the bank or controlling company's relevant senior management and board of directors, or a relevant committee of the board, about the use of the fair value option, and the impact thereof on the bank's financial condition and performance;\n(b) shall at all times, in form and in substance, comply with any relevant criteria or requirements contained in the relevant Financial Reporting Standard;\n(c) shall duly document its application of the fair value option or approach and all relevant or related matters;\n(d) shall ensure that all relevant assets and liabilities designated as at fair value under the fair value option are duly captured in the relevant risk measurement systems and that the resulting exposure amounts are included in all relevant internal reports that compare actual overall exposure to approved overall risk management limits,\nprovided that—\n(i) no bank or controlling company shall for the purposes of these Regulations apply any fair value option or approach to instruments in respect of which it is unable to reliably estimate fair values;\n(ii) the Registrar may in writing require a bank or controlling company—\n(A) to provide supplemental information regarding its application of the fair value option or approach in order to, amongst other things, assess the impact thereof on the bank or controlling company's overall risk profile, capital adequacy position, earnings and volatility in earnings, net interest margin, profit and loss position, and credit risk and related allowances for loss;\n(B) to exclude from its qualifying amount of capital and reserve funds any gains or losses arising from changes in its own credit risk due to the application of the fair value option to financial liabilities, or any unrealised gains or losses on items designated as at fair value through profit and loss when such treatment gives rise to safety and soundness concerns;\n(iii) the relevant fair values of assets and liabilities designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit independent from the relevant business unit(s), with the same frequency that the fair values of any related assets or liabilities are independently verified;\n(iv) all relevant models used to value items designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit as part of the bank or controlling company's regular cycle of model validation;\n(v) staff independent from those responsible for the origination of transactions shall monitor the application of the fair value option, amongst others, for conformity with all relevant Financial Reporting Standards, including all relevant accounting and disclosure requirements;\n(vi) based on its risk assessment, the appropriateness of a bank or controlling company's use of the fair value option shall periodically be subject to review by internal audit.",
+              "text": "(4) When a bank or controlling company, in accordance with the relevant requirements contained in Financial Reporting Standards issued from time to time, wishes to implement or adopt any fair value option or approach in respect of financial instruments, the said bank or controlling company—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "reg3.4.a",
+                  "number": "a",
+                  "heading": "reg3.4.a",
+                  "text": "shall have in place robust risk management systems and board approved policies, procedures and controls prior to the initial application of the said fair value option for a particular activity, instrument or purpose, and on an ongoing basis, in order to ensure, amongst other things, that—\n(i) sound risk management objectives consistent with the risk management framework and overall risk appetite approved by the bank or controlling company's board of directors, or a relevant committee of the board, are met when the fair value option or approach is applied;\n(ii) the bank or controlling company applies appropriate valuation methods;\n(iii) fair values are reliable for all instruments included in the fair value option category;\n(iv) relevant risk management and control policies pertaining to the use of the fair value option and related valuation methodologies are consistently applied and complied with; and\n(v) appropriate information is periodically provided to the bank or controlling company's relevant senior management and board of directors, or a relevant committee of the board, about the use of the fair value option, and the impact thereof on the bank's financial condition and performance;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg3.4.b",
+                  "number": "b",
+                  "heading": "reg3.4.b",
+                  "text": "shall at all times, in form and in substance, comply with any relevant criteria or requirements contained in the relevant Financial Reporting Standard;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg3.4.c",
+                  "number": "c",
+                  "heading": "reg3.4.c",
+                  "text": "shall duly document its application of the fair value option or approach and all relevant or related matters;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg3.4.d",
+                  "number": "d",
+                  "heading": "reg3.4.d",
+                  "text": "shall ensure that all relevant assets and liabilities designated as at fair value under the fair value option are duly captured in the relevant risk measurement systems and that the resulting exposure amounts are included in all relevant internal reports that compare actual overall exposure to approved overall risk management limits,\nprovided that—\n(i) no bank or controlling company shall for the purposes of these Regulations apply any fair value option or approach to instruments in respect of which it is unable to reliably estimate fair values;\n(ii) the Registrar may in writing require a bank or controlling company—\n(A) to provide supplemental information regarding its application of the fair value option or approach in order to, amongst other things, assess the impact thereof on the bank or controlling company's overall risk profile, capital adequacy position, earnings and volatility in earnings, net interest margin, profit and loss position, and credit risk and related allowances for loss;\n(B) to exclude from its qualifying amount of capital and reserve funds any gains or losses arising from changes in its own credit risk due to the application of the fair value option to financial liabilities, or any unrealised gains or losses on items designated as at fair value through profit and loss when such treatment gives rise to safety and soundness concerns;\n(iii) the relevant fair values of assets and liabilities designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit independent from the relevant business unit(s), with the same frequency that the fair values of any related assets or liabilities are independently verified;\n(iv) all relevant models used to value items designated as at fair value under the fair value option shall be independently verified by an appropriately qualified unit as part of the bank or controlling company's regular cycle of model validation;\n(v) staff independent from those responsible for the origination of transactions shall monitor the application of the fair value option, amongst others, for conformity with all relevant Financial Reporting Standards, including all relevant accounting and disclosure requirements;\n(vi) based on its risk assessment, the appropriateness of a bank or controlling company's use of the fair value option shall periodically be subject to review by internal audit.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -500,25 +567,324 @@
               "id": "reg39.3",
               "number": "3",
               "heading": "reg39.3",
-              "text": "(3) The conduct of the business of a bank entails the ongoing management of risks, which may arise from the bank's on-balance sheet or off-balance sheet activities and which may include, among others, the following types of risk:\n(a) capital risk;\n(b) compliance risk;\n(c) concentration risk;\n(d) counterparty risk;\n(e) country risk and transfer risk;\n(f) credit risk, and in particular risks arising from impaired or problem assets and the bank's related impairments, provisions or reserves;\n(g) currency risk;\n(h) detection and prevention of criminal activities;\n(i) equity risk arising from positions held in the bank's banking book;\n(j) interest-rate risk;\n(k) liquidity risk;\n(l) market risk (position risk) in respect of positions held in the bank's trading book;\n(m) operational risk;\n(n) reputational risk;\n(o) risk arising from exposure to a related person;\n(p) risk arising from the outsourcing of material tasks or functions;\n(q) risk arising from all relevant payment and settlement services, processes or systems;\n(r) risk relating to procyclicality;\n(s) risks arising from or related to inappropriate compensation practices for directors and executive officers;\n(t) risks related to securitisation or resecuritisation structures;\n(u) risks related to stress testing;\n(v) risks related to the inappropriate valuation of instruments, assets or liabilities;\n(w) solvency risk;\n(x) strategic risk;\n(y) technological risk;\n(z) translation risk;\n(aa) any other risk regarded as material by the bank.",
+              "text": "(3) The conduct of the business of a bank entails the ongoing management of risks, which may arise from the bank's on-balance sheet or off-balance sheet activities and which may include, among others, the following types of risk:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "reg39.3.a",
+                  "number": "a",
+                  "heading": "reg39.3.a",
+                  "text": "capital risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.b",
+                  "number": "b",
+                  "heading": "reg39.3.b",
+                  "text": "compliance risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.c",
+                  "number": "c",
+                  "heading": "reg39.3.c",
+                  "text": "concentration risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.d",
+                  "number": "d",
+                  "heading": "reg39.3.d",
+                  "text": "counterparty risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.e",
+                  "number": "e",
+                  "heading": "reg39.3.e",
+                  "text": "country risk and transfer risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.f",
+                  "number": "f",
+                  "heading": "reg39.3.f",
+                  "text": "credit risk, and in particular risks arising from impaired or problem assets and the bank's related impairments, provisions or reserves;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.g",
+                  "number": "g",
+                  "heading": "reg39.3.g",
+                  "text": "currency risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.h",
+                  "number": "h",
+                  "heading": "reg39.3.h",
+                  "text": "detection and prevention of criminal activities;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.i",
+                  "number": "i",
+                  "heading": "reg39.3.i",
+                  "text": "equity risk arising from positions held in the bank's banking book;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.j",
+                  "number": "j",
+                  "heading": "reg39.3.j",
+                  "text": "interest-rate risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.k",
+                  "number": "k",
+                  "heading": "reg39.3.k",
+                  "text": "liquidity risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.l",
+                  "number": "l",
+                  "heading": "reg39.3.l",
+                  "text": "market risk (position risk) in respect of positions held in the bank's trading book;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.m",
+                  "number": "m",
+                  "heading": "reg39.3.m",
+                  "text": "operational risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.n",
+                  "number": "n",
+                  "heading": "reg39.3.n",
+                  "text": "reputational risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.o",
+                  "number": "o",
+                  "heading": "reg39.3.o",
+                  "text": "risk arising from exposure to a related person;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.p",
+                  "number": "p",
+                  "heading": "reg39.3.p",
+                  "text": "risk arising from the outsourcing of material tasks or functions;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.q",
+                  "number": "q",
+                  "heading": "reg39.3.q",
+                  "text": "risk arising from all relevant payment and settlement services, processes or systems;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.r",
+                  "number": "r",
+                  "heading": "reg39.3.r",
+                  "text": "risk relating to procyclicality;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.s",
+                  "number": "s",
+                  "heading": "reg39.3.s",
+                  "text": "risks arising from or related to inappropriate compensation practices for directors and executive officers;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.t",
+                  "number": "t",
+                  "heading": "reg39.3.t",
+                  "text": "risks related to securitisation or resecuritisation structures;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.u",
+                  "number": "u",
+                  "heading": "reg39.3.u",
+                  "text": "risks related to stress testing;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.v",
+                  "number": "v",
+                  "heading": "reg39.3.v",
+                  "text": "risks related to the inappropriate valuation of instruments, assets or liabilities;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.w",
+                  "number": "w",
+                  "heading": "reg39.3.w",
+                  "text": "solvency risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.x",
+                  "number": "x",
+                  "heading": "reg39.3.x",
+                  "text": "strategic risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.y",
+                  "number": "y",
+                  "heading": "reg39.3.y",
+                  "text": "technological risk;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.3.z",
+                  "number": "z",
+                  "heading": "reg39.3.z",
+                  "text": "translation risk;\n(aa) any other risk regarded as material by the bank.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "reg39.4",
               "number": "4",
               "heading": "reg39.4",
-              "text": "(4) In order to achieve the objective relating to the maintenance of effective risk management and capital management envisaged in subregulation (2), every bank shall have in place comprehensive risk-management processes, practices and procedures, and board-approved policies—\n(a) to identify;\n(b) to measure;\n(c) to monitor;\n(d) to control;\n(e) to appropriately price;\n(f) to appropriately mitigate; and\n(g) to appropriately communicate or report,\namong other things, the risks referred to in subregulation (3).",
+              "text": "(4) In order to achieve the objective relating to the maintenance of effective risk management and capital management envisaged in subregulation (2), every bank shall have in place comprehensive risk-management processes, practices and procedures, and board-approved policies—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "reg39.4.a",
+                  "number": "a",
+                  "heading": "reg39.4.a",
+                  "text": "to identify;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.4.b",
+                  "number": "b",
+                  "heading": "reg39.4.b",
+                  "text": "to measure;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.4.c",
+                  "number": "c",
+                  "heading": "reg39.4.c",
+                  "text": "to monitor;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.4.d",
+                  "number": "d",
+                  "heading": "reg39.4.d",
+                  "text": "to control;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.4.e",
+                  "number": "e",
+                  "heading": "reg39.4.e",
+                  "text": "to appropriately price;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.4.f",
+                  "number": "f",
+                  "heading": "reg39.4.f",
+                  "text": "to appropriately mitigate; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.4.g",
+                  "number": "g",
+                  "heading": "reg39.4.g",
+                  "text": "to appropriately communicate or report,\namong other things, the risks referred to in subregulation (3).",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "reg39.5",
               "number": "5",
               "heading": "reg39.5",
-              "text": "(5) As a minimum, the risk management processes, practices, procedures and policies referred to in subregulation (4)—\n(a) shall be adequate for the size and nature of the activities of the bank, including the bank's activities relating to risk mitigation, trading and exposure to counterparty credit risk, and shall periodically be adjusted in the light of the changing risk profile or financial strength of the bank, financial innovation or external market developments;\n(b) shall be duly aligned with, and, where appropriate, provide specific guidance for the successful implementation of and the continued adherence to, the business strategy, goals and objectives, and the risk appetite or tolerance for risk, of the bank;\n(c) shall duly specify relevant limits and allocated capital relating to the bank's various risk exposures;\n(d) shall be sufficiently robust to: (i) determine and monitor the total indebtedness of any person to whom the bank granted credit; (ii) ensure that the bank raises appropriate and timely credit impairments and maintains adequate allowances or reserves for potential losses in respect of its loans or advances; (iii) identify and manage material interrelationships between the bank's relevant risk exposures; (iv) ensure the bank's continued compliance with the relevant documented set of internal policies, controls and procedures; (v) ensure that the bank captures the economic substance and not merely the legal form of the bank's various exposures to risk; (vi) ensure that the bank conducts sufficiently robust and independent due diligence in respect of the bank's respective investment in or exposure to instruments, products or markets; (vii) ensure that the bank regularly conducts appropriate stress-testing or scenario analysis; (viii) ensure that the bank maintains sufficient liquidity and capital adequacy buffers to remain solvent during prolonged periods of financial market stress and illiquidity; (ix) clearly delineate accountability and all relevant lines of authority across the bank's various business units, lines or activities; (x) ensure that all relevant risk management, control and business units or lines appropriately review and assess proposed new activities, investment in new instruments or the introduction of new products; (xi) ensure that the bank is able to appropriately aggregate or consolidate all relevant risks or exposure to risk; (xii) ensure ongoing, accurate, appropriate and timely communication or reporting of the bank's relevant risk exposures and any material deviation from approved policies, processes or procedures to the senior management and the board of directors; (xiii) ensure that the bank's board of directors and senior management receive timely and appropriate information regarding the condition of the bank's respective asset portfolios, including matters related to the relevant classification of credit exposure, the level of impairment or provisioning, and major problem assets; (xiv) enable the proactive management of all relevant risks; (xv) ensure that any breach of an internal limit is duly escalated and addressed.",
+              "text": "(5) As a minimum, the risk management processes, practices, procedures and policies referred to in subregulation (4)—",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "reg39.5.a",
+                  "number": "a",
+                  "heading": "reg39.5.a",
+                  "text": "shall be adequate for the size and nature of the activities of the bank, including the bank's activities relating to risk mitigation, trading and exposure to counterparty credit risk, and shall periodically be adjusted in the light of the changing risk profile or financial strength of the bank, financial innovation or external market developments;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.5.b",
+                  "number": "b",
+                  "heading": "reg39.5.b",
+                  "text": "shall be duly aligned with, and, where appropriate, provide specific guidance for the successful implementation of and the continued adherence to, the business strategy, goals and objectives, and the risk appetite or tolerance for risk, of the bank;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.5.c",
+                  "number": "c",
+                  "heading": "reg39.5.c",
+                  "text": "shall duly specify relevant limits and allocated capital relating to the bank's various risk exposures;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "reg39.5.d",
+                  "number": "d",
+                  "heading": "reg39.5.d",
+                  "text": "shall be sufficiently robust to: (i) determine and monitor the total indebtedness of any person to whom the bank granted credit; (ii) ensure that the bank raises appropriate and timely credit impairments and maintains adequate allowances or reserves for potential losses in respect of its loans or advances; (iii) identify and manage material interrelationships between the bank's relevant risk exposures; (iv) ensure the bank's continued compliance with the relevant documented set of internal policies, controls and procedures; (v) ensure that the bank captures the economic substance and not merely the legal form of the bank's various exposures to risk; (vi) ensure that the bank conducts sufficiently robust and independent due diligence in respect of the bank's respective investment in or exposure to instruments, products or markets; (vii) ensure that the bank regularly conducts appropriate stress-testing or scenario analysis; (viii) ensure that the bank maintains sufficient liquidity and capital adequacy buffers to remain solvent during prolonged periods of financial market stress and illiquidity; (ix) clearly delineate accountability and all relevant lines of authority across the bank's various business units, lines or activities; (x) ensure that all relevant risk management, control and business units or lines appropriately review and assess proposed new activities, investment in new instruments or the introduction of new products; (xi) ensure that the bank is able to appropriately aggregate or consolidate all relevant risks or exposure to risk; (xii) ensure ongoing, accurate, appropriate and timely communication or reporting of the bank's relevant risk exposures and any material deviation from approved policies, processes or procedures to the senior management and the board of directors; (xiii) ensure that the bank's board of directors and senior management receive timely and appropriate information regarding the condition of the bank's respective asset portfolios, including matters related to the relevant classification of credit exposure, the level of impairment or provisioning, and major problem assets; (xiv) enable the proactive management of all relevant risks; (xv) ensure that any breach of an internal limit is duly escalated and addressed.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

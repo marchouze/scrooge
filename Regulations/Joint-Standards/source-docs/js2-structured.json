@@ -538,9 +538,42 @@
               "id": "s7-1.1",
               "number": "1",
               "heading": "7.1.1",
-              "text": "7.1.1 A financial institution must –\n(a) identify business processes and information assets that support business and delivery of services, including those managed by third-party service providers;\n(b) in reference to item (a) above, classify the business processes and information assets in terms of criticality and sensitivity, which in turn must guide the prioritisation of its protective, detective, response and recovery efforts;\n(c) carry out security risk assessments on its critical operations and information assets to ensure that they are protected against compromise; and\n(d) maintain an inventory of all its information assets which includes location, ownership, the roles and responsibilities of managing the information assets.",
+              "text": "7.1.1 A financial institution must –",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7-1.1.a",
+                  "number": "a",
+                  "heading": "s7-1.1.a",
+                  "text": "identify business processes and information assets that support business and delivery of services, including those managed by third-party service providers;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-1.1.b",
+                  "number": "b",
+                  "heading": "s7-1.1.b",
+                  "text": "in reference to item (a) above, classify the business processes and information assets in terms of criticality and sensitivity, which in turn must guide the prioritisation of its protective, detective, response and recovery efforts;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-1.1.c",
+                  "number": "c",
+                  "heading": "s7-1.1.c",
+                  "text": "carry out security risk assessments on its critical operations and information assets to ensure that they are protected against compromise; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-1.1.d",
+                  "number": "d",
+                  "heading": "s7-1.1.d",
+                  "text": "maintain an inventory of all its information assets which includes location, ownership, the roles and responsibilities of managing the information assets.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s7-1.2",
@@ -628,17 +661,83 @@
               "id": "s7-3.1",
               "number": "1",
               "heading": "7.3.1",
-              "text": "7.3.1 A financial institution must maintain effective cyber resilience capabilities to –\n(a) systemically monitor and detect cyber events and cyber incidents on IT systems, information assets and business services as well as effectively respond to attacks;\n(b) periodically evaluate the effectiveness of identified controls, including through network monitoring, testing and audits;\n(c) establish security monitoring capabilities such as a security operations centre (or similar) or acquire managed security services in order to facilitate continuous monitoring and analysis of cyber events as well as prompt detection and response to cyber incidents; and\n(d) define processes, roles and responsibilities for security operations.",
+              "text": "7.3.1 A financial institution must maintain effective cyber resilience capabilities to –",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7-3.1.a",
+                  "number": "a",
+                  "heading": "s7-3.1.a",
+                  "text": "systemically monitor and detect cyber events and cyber incidents on IT systems, information assets and business services as well as effectively respond to attacks;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-3.1.b",
+                  "number": "b",
+                  "heading": "s7-3.1.b",
+                  "text": "periodically evaluate the effectiveness of identified controls, including through network monitoring, testing and audits;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-3.1.c",
+                  "number": "c",
+                  "heading": "s7-3.1.c",
+                  "text": "establish security monitoring capabilities such as a security operations centre (or similar) or acquire managed security services in order to facilitate continuous monitoring and analysis of cyber events as well as prompt detection and response to cyber incidents; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-3.1.d",
+                  "number": "d",
+                  "heading": "s7-3.1.d",
+                  "text": "define processes, roles and responsibilities for security operations.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s7-3.2",
               "number": "2",
               "heading": "7.3.2",
-              "text": "7.3.2 A financial institution, when implementing the requirements in subparagraph 7.3.1(a) above, must consider –\n(a) establishing a process to collect, review and retain IT system logs to facilitate security monitoring operations. These logs must be protected against unauthorised access, editing, and deletion;\n(b) configuring IT system events or alerts to provide an early indication of issues that may affect its security. Security events or alerts must be actively monitored so that prompt measures can be taken to address the issues early;\n(c) performing correlation of multiple events registered on IT system logs to identify suspicious or anomalous activity patterns; and\n(d) establishing a process for timely escalation to relevant stakeholders regarding suspicious or anomalous system activities or user behaviour.",
+              "text": "7.3.2 A financial institution, when implementing the requirements in subparagraph 7.3.1(a) above, must consider –",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7-3.2.a",
+                  "number": "a",
+                  "heading": "s7-3.2.a",
+                  "text": "establishing a process to collect, review and retain IT system logs to facilitate security monitoring operations. These logs must be protected against unauthorised access, editing, and deletion;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-3.2.b",
+                  "number": "b",
+                  "heading": "s7-3.2.b",
+                  "text": "configuring IT system events or alerts to provide an early indication of issues that may affect its security. Security events or alerts must be actively monitored so that prompt measures can be taken to address the issues early;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-3.2.c",
+                  "number": "c",
+                  "heading": "s7-3.2.c",
+                  "text": "performing correlation of multiple events registered on IT system logs to identify suspicious or anomalous activity patterns; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-3.2.d",
+                  "number": "d",
+                  "heading": "s7-3.2.d",
+                  "text": "establishing a process for timely escalation to relevant stakeholders regarding suspicious or anomalous system activities or user behaviour.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -646,15 +745,99 @@
           "id": "s7-4",
           "number": "7.4",
           "heading": "Response and recovery",
-          "text": "7.4.1 A financial institution must –\n(a) implement capabilities to rapidly respond and recover from cyber-attacks as well as mitigate the potential systemic risks;\n(b) establish effective cyber incident management policies and processes that will help to improve resilience, support business continuity, improve customer and stakeholder confidence and potentially reduce any impact;\n(c) establish data backup strategy, and develop a plan to perform regular backups and testing so that IT systems and data can be recovered in the event of a cyber incident or when data is corrupted or deleted;\n(d) ensure any sensitive information stored in the backup media is secured (e.g. encrypted). Backup media must be stored offline or at an offsite location (including cloud storage);\n(e) implement a clear communication strategy to financial customers impacted by cyber-attacks, including details on any recourse available to financial customers; and\n(f) sets its RPO and RTO based on its nature, scale, complexity, and risk profile.",
-          "verbatim": true
+          "text": "7.4.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-4.a",
+              "number": "a",
+              "heading": "s7-4.a",
+              "text": "implement capabilities to rapidly respond and recover from cyber-attacks as well as mitigate the potential systemic risks;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-4.b",
+              "number": "b",
+              "heading": "s7-4.b",
+              "text": "establish effective cyber incident management policies and processes that will help to improve resilience, support business continuity, improve customer and stakeholder confidence and potentially reduce any impact;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-4.c",
+              "number": "c",
+              "heading": "s7-4.c",
+              "text": "establish data backup strategy, and develop a plan to perform regular backups and testing so that IT systems and data can be recovered in the event of a cyber incident or when data is corrupted or deleted;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-4.d",
+              "number": "d",
+              "heading": "s7-4.d",
+              "text": "ensure any sensitive information stored in the backup media is secured (e.g. encrypted). Backup media must be stored offline or at an offsite location (including cloud storage);",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-4.e",
+              "number": "e",
+              "heading": "s7-4.e",
+              "text": "implement a clear communication strategy to financial customers impacted by cyber-attacks, including details on any recourse available to financial customers; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-4.f",
+              "number": "f",
+              "heading": "s7-4.f",
+              "text": "sets its RPO and RTO based on its nature, scale, complexity, and risk profile.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7-5",
           "number": "7.5",
           "heading": "Incident response and management",
-          "text": "7.5.1 A financial institution must –\n(a) establish a cyber incident response and management plan to swiftly isolate and neutralise a cyber incident and to securely resume affected services. The plan must describe communication, coordination, and response procedures to address plausible cyber threat scenarios;\n(b) as part of the plan, establish a process to investigate and identify the security control deficiencies that resulted in the compromise. The investigation must also evaluate the full extent of the impact to the financial institution;\n(c) ensure that information from cyber intelligence and lessons learnt from cyber incidents is used to enhance the existing security controls or improve the cyber incident response and management plan; and\n(d) ensure that the cyber incident response and management plan is tested to address all plausible cyber threats, including the latest cyber threats and is aligned to the set RPO and RTO requirements.",
-          "verbatim": true
+          "text": "7.5.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-5.a",
+              "number": "a",
+              "heading": "s7-5.a",
+              "text": "establish a cyber incident response and management plan to swiftly isolate and neutralise a cyber incident and to securely resume affected services. The plan must describe communication, coordination, and response procedures to address plausible cyber threat scenarios;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-5.b",
+              "number": "b",
+              "heading": "s7-5.b",
+              "text": "as part of the plan, establish a process to investigate and identify the security control deficiencies that resulted in the compromise. The investigation must also evaluate the full extent of the impact to the financial institution;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-5.c",
+              "number": "c",
+              "heading": "s7-5.c",
+              "text": "ensure that information from cyber intelligence and lessons learnt from cyber incidents is used to enhance the existing security controls or improve the cyber incident response and management plan; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-5.d",
+              "number": "d",
+              "heading": "s7-5.d",
+              "text": "ensure that the cyber incident response and management plan is tested to address all plausible cyber threats, including the latest cyber threats and is aligned to the set RPO and RTO requirements.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7-6",
@@ -675,9 +858,26 @@
               "id": "s7-6.2",
               "number": "2",
               "heading": "7.6.2",
-              "text": "7.6.2 Threat intelligence and information sharing\n(a) A financial institution must –\n(i) establish a process to collect and analyse cyber-related information for its relevance to and potential impact on the business and IT environment in order to maintain good cyber situational awareness;\n(ii) implement cyber intelligence monitoring capabilities for both internal and external threats; and\n(iii) participate in cyber threat information-sharing arrangements with trusted external parties to –\n(a) share reliable, actionable cybersecurity information regarding threats, vulnerabilities, and incidents to enhance defences; and\n(b) receive timely and actionable cyber threat information.",
+              "text": "7.6.2 Threat intelligence and information sharing",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7-6.2.a",
+                  "number": "a",
+                  "heading": "s7-6.2.a",
+                  "text": "A financial institution must –\n(i) establish a process to collect and analyse cyber-related information for its relevance to and potential impact on the business and IT environment in order to maintain good cyber situational awareness;\n(ii) implement cyber intelligence monitoring capabilities for both internal and external threats; and\n(iii) participate in cyber threat information-sharing arrangements with trusted external parties to –\n(a) share reliable, actionable cybersecurity information regarding threats, vulnerabilities, and incidents to enhance defences; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-6.2.b",
+                  "number": "b",
+                  "heading": "s7-6.2.b",
+                  "text": "receive timely and actionable cyber threat information.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -692,9 +892,42 @@
               "id": "s7-7.1",
               "number": "1",
               "heading": "7.7.1",
-              "text": "7.7.1 Testing control effectiveness\n(a) A financial institution must test all elements of its cyber resilience capacity and security controls to determine the overall effectiveness, whether it is implemented correctly, operating as intended and producing desired outcomes.\n(b) The nature and frequency of the testing must be commensurate with –\n(i) the rate at which the vulnerabilities and threats change;\n(ii) the criticality and sensitivity of IT systems and information assets;\n(iii) the consequences of a cyber incident;\n(iv) the risks associated with exposure to environments where a financial institution is unable to enforce its security policies; and\n(v) the materiality and frequency of change to IT systems and information assets.\n(c) Where a financial institution's IT systems or information assets are managed by a third-party service provider, and a financial institution is reliant on that party's information security control testing, the financial institution must be satisfied that the nature and frequency of testing of controls in respect of those IT systems or information assets is commensurate with items (a)(i) to (v) above.\n(d) A financial institution must –\n(i) ensure that security control assurance is provided by personnel appropriately skilled in providing such assurance;\n(ii) escalate and report to the governing body any testing results that identify security control deficiencies that cannot be remediated in a timely manner; and\n(iii) ensure that a remediation plan, with timelines is followed to address identified control deficiencies.",
+              "text": "7.7.1 Testing control effectiveness",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7-7.1.a",
+                  "number": "a",
+                  "heading": "s7-7.1.a",
+                  "text": "A financial institution must test all elements of its cyber resilience capacity and security controls to determine the overall effectiveness, whether it is implemented correctly, operating as intended and producing desired outcomes.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-7.1.b",
+                  "number": "b",
+                  "heading": "s7-7.1.b",
+                  "text": "The nature and frequency of the testing must be commensurate with –\n(i) the rate at which the vulnerabilities and threats change;\n(ii) the criticality and sensitivity of IT systems and information assets;\n(iii) the consequences of a cyber incident;\n(iv) the risks associated with exposure to environments where a financial institution is unable to enforce its security policies; and\n(v) the materiality and frequency of change to IT systems and information assets.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-7.1.c",
+                  "number": "c",
+                  "heading": "s7-7.1.c",
+                  "text": "Where a financial institution's IT systems or information assets are managed by a third-party service provider, and a financial institution is reliant on that party's information security control testing, the financial institution must be satisfied that the nature and frequency of testing of controls in respect of those IT systems or information assets is commensurate with items (a)(i) to (v) above.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-7.1.d",
+                  "number": "d",
+                  "heading": "s7-7.1.d",
+                  "text": "A financial institution must –\n(i) ensure that security control assurance is provided by personnel appropriately skilled in providing such assurance;\n(ii) escalate and report to the governing body any testing results that identify security control deficiencies that cannot be remediated in a timely manner; and\n(iii) ensure that a remediation plan, with timelines is followed to address identified control deficiencies.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
               "id": "s7-7.2",
@@ -732,9 +965,26 @@
               "id": "s7-7.6",
               "number": "6",
               "heading": "7.7.6",
-              "text": "7.7.6 Remediation management\n(a) A financial institution must establish a comprehensive remediation process to track and resolve issues identified from the cybersecurity testing or exercises, third-party assessments, self-assessments as well as findings from internal and external assurance.\n(b) The remediation process referred to in item (a) above must at a minimum –\n(i) include the following:\n(aa) severity assessments and classification of issues;\n(bb) prioritisation of issues based on the risk posed;\n(cc) timeframes to remediate issues of different severity;\n(dd) risk assessments where appropriate; and\n(ee) mitigation strategies to manage deviations from the cybersecurity framework;\n(ii) ensure all issues identified from cybersecurity testing or exercises, as well as software defects discovered from source code review and application security testing, are tracked. Known major issues and security flaws must be remediated before production deployment; and\n(iii) keep track of updates and reported vulnerabilities on in-house developed, third-party and open-source software that are utilised by the financial institutions in order to facilitate the remediation of vulnerabilities in a timely manner.",
+              "text": "7.7.6 Remediation management",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7-7.6.a",
+                  "number": "a",
+                  "heading": "s7-7.6.a",
+                  "text": "A financial institution must establish a comprehensive remediation process to track and resolve issues identified from the cybersecurity testing or exercises, third-party assessments, self-assessments as well as findings from internal and external assurance.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-7.6.b",
+                  "number": "b",
+                  "heading": "s7-7.6.b",
+                  "text": "The remediation process referred to in item (a) above must at a minimum –\n(i) include the following:\n(aa) severity assessments and classification of issues;\n(bb) prioritisation of issues based on the risk posed;\n(cc) timeframes to remediate issues of different severity;\n(dd) risk assessments where appropriate; and\n(ee) mitigation strategies to manage deviations from the cybersecurity framework;\n(ii) ensure all issues identified from cybersecurity testing or exercises, as well as software defects discovered from source code review and application security testing, are tracked. Known major issues and security flaws must be remediated before production deployment; and\n(iii) keep track of updates and reported vulnerabilities on in-house developed, third-party and open-source software that are utilised by the financial institutions in order to facilitate the remediation of vulnerabilities in a timely manner.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -742,8 +992,34 @@
           "id": "s7-8",
           "number": "7.8",
           "heading": "Learning and evolving",
-          "text": "7.8.1 A financial institution must –\n(a) Implement an adaptive cyber resilience capability that learns and evolves with the dynamic nature of cyber risks and allows the institution to identify, assess and manage security threats and vulnerabilities; systematically identify and distil key lessons from cyber incidents that have occurred within and outside the institution in order to advance resilience capabilities;\n(b) actively monitor technological developments and keep abreast of new cyber risk management processes that can effectively counter existing and newly developed forms of cyber-attack; and\n(c) ensure that cyber risk management practices go beyond reactive controls and include proactive protection against future cyber events.",
-          "verbatim": true
+          "text": "7.8.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s7-8.a",
+              "number": "a",
+              "heading": "s7-8.a",
+              "text": "Implement an adaptive cyber resilience capability that learns and evolves with the dynamic nature of cyber risks and allows the institution to identify, assess and manage security threats and vulnerabilities; systematically identify and distil key lessons from cyber incidents that have occurred within and outside the institution in order to advance resilience capabilities;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-8.b",
+              "number": "b",
+              "heading": "s7-8.b",
+              "text": "actively monitor technological developments and keep abreast of new cyber risk management processes that can effectively counter existing and newly developed forms of cyber-attack; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-8.c",
+              "number": "c",
+              "heading": "s7-8.c",
+              "text": "ensure that cyber risk management practices go beyond reactive controls and include proactive protection against future cyber events.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -756,50 +1032,280 @@
           "id": "s8-1",
           "number": "8.1",
           "heading": "Access management",
-          "text": "8.1.1 A financial institution must –\n(a) establish a security access control policy and a process to enforce strong password security controls for users' access to IT systems and information assets;\n(b) ensure that the security access control policy is reviewed regularly;\n(c) establish a user access management process to provision, change and revoke access rights to IT systems and information assets;\n(d) apply the principles of 'segregation of duties' and 'least privilege' when granting user access to IT systems and information assets. Access rights and privileges must be granted according to the roles and responsibilities of the user;\n(e) ensure appropriate parties such as IT systems and information assets owners perform periodic user access reviews to verify the appropriateness of privileges that are granted to users; and\n(f) subject its third-party service providers and contractors who are given access to the financial institution's IT systems and information assets, to the same monitoring and access restrictions as the financial institution's employees.",
-          "verbatim": true
+          "text": "8.1.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s8-1.a",
+              "number": "a",
+              "heading": "s8-1.a",
+              "text": "establish a security access control policy and a process to enforce strong password security controls for users' access to IT systems and information assets;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-1.b",
+              "number": "b",
+              "heading": "s8-1.b",
+              "text": "ensure that the security access control policy is reviewed regularly;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-1.c",
+              "number": "c",
+              "heading": "s8-1.c",
+              "text": "establish a user access management process to provision, change and revoke access rights to IT systems and information assets;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-1.d",
+              "number": "d",
+              "heading": "s8-1.d",
+              "text": "apply the principles of 'segregation of duties' and 'least privilege' when granting user access to IT systems and information assets. Access rights and privileges must be granted according to the roles and responsibilities of the user;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-1.e",
+              "number": "e",
+              "heading": "s8-1.e",
+              "text": "ensure appropriate parties such as IT systems and information assets owners perform periodic user access reviews to verify the appropriateness of privileges that are granted to users; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-1.f",
+              "number": "f",
+              "heading": "s8-1.f",
+              "text": "subject its third-party service providers and contractors who are given access to the financial institution's IT systems and information assets, to the same monitoring and access restrictions as the financial institution's employees.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8-2",
           "number": "8.2",
           "heading": "Privileged access management",
-          "text": "8.2.1 A financial institution must –\n(a) ensure that every administrative account in respect of any operating system, database, application, security appliance, network device, cloud tenant or authentication system is secured to prevent any unauthorised access to or use of such account;\n(b) grant access to privileged accounts on a need-to-use basis; activities of these accounts must be logged and reviewed as part of the financial institution's ongoing monitoring; and\n(c) establish a process to manage and monitor the use of IT systems, information assets and service accounts for suspicious or unauthorised activities.",
-          "verbatim": true
+          "text": "8.2.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s8-2.a",
+              "number": "a",
+              "heading": "s8-2.a",
+              "text": "ensure that every administrative account in respect of any operating system, database, application, security appliance, network device, cloud tenant or authentication system is secured to prevent any unauthorised access to or use of such account;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-2.b",
+              "number": "b",
+              "heading": "s8-2.b",
+              "text": "grant access to privileged accounts on a need-to-use basis; activities of these accounts must be logged and reviewed as part of the financial institution's ongoing monitoring; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-2.c",
+              "number": "c",
+              "heading": "s8-2.c",
+              "text": "establish a process to manage and monitor the use of IT systems, information assets and service accounts for suspicious or unauthorised activities.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8-3",
           "number": "8.3",
           "heading": "Multi-factor authentication (MFA)",
-          "text": "8.3.1 A financial institution must –\n(a) ensure that MFA is implemented for users with access to critical system functions;\n(b) ensure that MFA or at least privilege access management mechanisms are implemented for all administrative and privileged accounts;\n(c) ensure that MFA is implemented for all user accounts utilised to access applications containing sensitive information through the internet.",
-          "verbatim": true
+          "text": "8.3.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s8-3.a",
+              "number": "a",
+              "heading": "s8-3.a",
+              "text": "ensure that MFA is implemented for users with access to critical system functions;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-3.b",
+              "number": "b",
+              "heading": "s8-3.b",
+              "text": "ensure that MFA or at least privilege access management mechanisms are implemented for all administrative and privileged accounts;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-3.c",
+              "number": "c",
+              "heading": "s8-3.c",
+              "text": "ensure that MFA is implemented for all user accounts utilised to access applications containing sensitive information through the internet.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8-4",
           "number": "8.4",
           "heading": "Network perimeter defence",
-          "text": "8.4.1 A financial institution must –\n(a) ensure that the network is protected from unauthorised access and disruption;\n(b) implement security controls at its network perimeter to restrict all unauthorised network traffic; and\n(c) adopt a 'defence in depth' approach or implement multiple layers and types of controls to ensure that if one security control fails, other controls limit the impact of a security compromise.",
-          "verbatim": true
+          "text": "8.4.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s8-4.a",
+              "number": "a",
+              "heading": "s8-4.a",
+              "text": "ensure that the network is protected from unauthorised access and disruption;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-4.b",
+              "number": "b",
+              "heading": "s8-4.b",
+              "text": "implement security controls at its network perimeter to restrict all unauthorised network traffic; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-4.c",
+              "number": "c",
+              "heading": "s8-4.c",
+              "text": "adopt a 'defence in depth' approach or implement multiple layers and types of controls to ensure that if one security control fails, other controls limit the impact of a security compromise.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8-5",
           "number": "8.5",
           "heading": "Vulnerability and patch management",
-          "text": "8.5.1 A financial institution must ensure that–\n(a) security patches are applied to address vulnerabilities to every IT asset, by applying such security patches or other mitigating controls as possible within a timeframe that is commensurate with the risks posed by each vulnerability;\n(b) compensating security controls are instituted to reduce any risk posed where there is no security patch available to address vulnerabilities identified;\n(c) security patches are tested before they are applied to the IT assets in the production environment to ensure compatibility with existing IT assets or such patches do not introduce problems to the IT environment; and\n(d) where patches are not compatible with existing IT systems or such patches introduce problems to the IT environment, ensure that mitigating controls are in place and a remediation plan, with timelines is implemented to address identified control deficiencies.",
-          "verbatim": true
+          "text": "8.5.1 A financial institution must ensure that–",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s8-5.a",
+              "number": "a",
+              "heading": "s8-5.a",
+              "text": "security patches are applied to address vulnerabilities to every IT asset, by applying such security patches or other mitigating controls as possible within a timeframe that is commensurate with the risks posed by each vulnerability;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-5.b",
+              "number": "b",
+              "heading": "s8-5.b",
+              "text": "compensating security controls are instituted to reduce any risk posed where there is no security patch available to address vulnerabilities identified;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-5.c",
+              "number": "c",
+              "heading": "s8-5.c",
+              "text": "security patches are tested before they are applied to the IT assets in the production environment to ensure compatibility with existing IT assets or such patches do not introduce problems to the IT environment; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-5.d",
+              "number": "d",
+              "heading": "s8-5.d",
+              "text": "where patches are not compatible with existing IT systems or such patches introduce problems to the IT environment, ensure that mitigating controls are in place and a remediation plan, with timelines is implemented to address identified control deficiencies.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8-6",
           "number": "8.6",
           "heading": "Secure configurations",
-          "text": "8.6.1 A financial institution must –\n(a) ensure that there is a written set of security standards for hardware and software;\n(b) ensure that the security standards must outline the configurations that will minimise the financial institution's exposure to cyber threats;\n(c) ensure that security standards are reviewed periodically for relevance and effectiveness;\n(d) establish a process to verify that the security standards are applied uniformly and to identify deviations from the security standards; and\n(e) ensure that controls are instituted to reduce any risk posed where there is non-conformity to the security standards.",
-          "verbatim": true
+          "text": "8.6.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s8-6.a",
+              "number": "a",
+              "heading": "s8-6.a",
+              "text": "ensure that there is a written set of security standards for hardware and software;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-6.b",
+              "number": "b",
+              "heading": "s8-6.b",
+              "text": "ensure that the security standards must outline the configurations that will minimise the financial institution's exposure to cyber threats;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-6.c",
+              "number": "c",
+              "heading": "s8-6.c",
+              "text": "ensure that security standards are reviewed periodically for relevance and effectiveness;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-6.d",
+              "number": "d",
+              "heading": "s8-6.d",
+              "text": "establish a process to verify that the security standards are applied uniformly and to identify deviations from the security standards; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-6.e",
+              "number": "e",
+              "heading": "s8-6.e",
+              "text": "ensure that controls are instituted to reduce any risk posed where there is non-conformity to the security standards.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8-7",
           "number": "8.7",
           "heading": "Malware protection",
-          "text": "8.7.1 A financial institution must –\n(a) implement endpoint protection to protect a financial institution from malware infection and address common delivery channels of malware, such as malicious links, websites, email attachments or infected removable storage media;\n(b) ensure that anti-malware signatures are kept up-to-date and the IT systems and information assets are regularly scanned for malicious files or anomalous activities; and\n(c) implement detection and response mechanisms to perform scanning for indicators of compromise in a timely manner, and proactively monitor systems', including endpoint devices', processes for anomalies and suspicious activities in order to facilitate early detection and prompt remediation of suspicious or malicious activities.",
-          "verbatim": true
+          "text": "8.7.1 A financial institution must –",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s8-7.a",
+              "number": "a",
+              "heading": "s8-7.a",
+              "text": "implement endpoint protection to protect a financial institution from malware infection and address common delivery channels of malware, such as malicious links, websites, email attachments or infected removable storage media;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-7.b",
+              "number": "b",
+              "heading": "s8-7.b",
+              "text": "ensure that anti-malware signatures are kept up-to-date and the IT systems and information assets are regularly scanned for malicious files or anomalous activities; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-7.c",
+              "number": "c",
+              "heading": "s8-7.c",
+              "text": "implement detection and response mechanisms to perform scanning for indicators of compromise in a timely manner, and proactively monitor systems', including endpoint devices', processes for anomalies and suspicious activities in order to facilitate early detection and prompt remediation of suspicious or malicious activities.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
