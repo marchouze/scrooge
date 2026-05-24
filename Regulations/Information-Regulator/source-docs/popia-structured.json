@@ -75,9 +75,26 @@
                       "id": "s1.c.b.b",
                       "number": "b",
                       "heading": "s1.c.b.b",
-                      "text": "private body means the head of a private body as contemplated in section 1, of the Promotion of Access to Information Act;\n'Minister' means the Cabinet member responsible for the administration of justice;\n'operator' means a person who processes personal information for a responsible party in terms of a contract or mandate, without coming under the direct authority of that party;\n'person' means a natural person or a juristic person;\n'personal information' means information relating to an identifiable, living, natural person, and where it is applicable, an identifiable, existing juristic person, including, but not limited to—(a) information relating to the race, gender, sex, pregnancy, marital status, national, ethnic or social origin, colour, sexual orientation, age, physical or mental health, well-being, disability, religion, conscience, belief, culture, language and birth of the person; (b) information relating to the education or the medical, financial, criminal or employment history of the person;",
+                      "text": "private body means the head of a private body as contemplated in section 1, of the Promotion of Access to Information Act;\n'Minister' means the Cabinet member responsible for the administration of justice;\n'operator' means a person who processes personal information for a responsible party in terms of a contract or mandate, without coming under the direct authority of that party;\n'person' means a natural person or a juristic person;\n'personal information' means information relating to an identifiable, living, natural person, and where it is applicable, an identifiable, existing juristic person, including, but not limited to—",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s1.c.b.b.a",
+                          "number": "a",
+                          "heading": "s1.c.b.b.a",
+                          "text": "information relating to the race, gender, sex, pregnancy, marital status, national, ethnic or social origin, colour, sexual orientation, age, physical or mental health, well-being, disability, religion, conscience, belief, culture, language and birth of the person;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.c.b.b.b",
+                          "number": "b",
+                          "heading": "s1.c.b.b.b",
+                          "text": "information relating to the education or the medical, financial, criminal or employment history of the person;",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 },
@@ -173,9 +190,26 @@
                       "id": "s1.h.c.c",
                       "number": "c",
                       "heading": "s1.h.c.c",
-                      "text": "merging, linking, as well as restriction, degradation, erasure or destruction of information;\n'professional legal adviser' means any legally qualified person, whether in private practice or not, who lawfully provides a client, at his or her or its request, with independent, confidential legal advice;\n'Promotion of Access to Information Act' means the Promotion of Access to Information Act, 2000 (Act 2 of 2000);\n'public body' means—(a) any department of state or administration in the national or provincial sphere of government or any municipality in the local sphere of government; or (b) any other functionary or institution when—",
+                      "text": "merging, linking, as well as restriction, degradation, erasure or destruction of information;\n'professional legal adviser' means any legally qualified person, whether in private practice or not, who lawfully provides a client, at his or her or its request, with independent, confidential legal advice;\n'Promotion of Access to Information Act' means the Promotion of Access to Information Act, 2000 (Act 2 of 2000);\n'public body' means—",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s1.h.c.c.a",
+                          "number": "a",
+                          "heading": "s1.h.c.c.a",
+                          "text": "any department of state or administration in the national or provincial sphere of government or any municipality in the local sphere of government; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.h.c.c.b",
+                          "number": "b",
+                          "heading": "s1.h.c.c.b",
+                          "text": "any other functionary or institution when—",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
                     }
                   ]
                 }

@@ -79,9 +79,43 @@
                   "id": "s1.c.b",
                   "number": "b",
                   "heading": "s1.c.b",
-                  "text": "no interest will be payable on the amount so paid or interest will be payable thereon at specified intervals or otherwise, notwithstanding that such payment is limited to a fixed amount or that a transferable or non-transferable certificate or other instrument providing for the repayment of such amount mutatis mutandis as contemplated in paragraph (a) or for the payment of interest on such amount mutatis mutandis as contemplated in paragraph (b) is issued in respect of such amount; but does not include an amount of money (i) paid as an advance, or as part payment, in terms of a contract for the sale, letting and hiring or other provision of movable or immovable property or of services, and which is repayable only in the event of (aa) that property or those services not in fact being sold, let and hired or otherwise provided; (bb) the fulfilment of a resolutive condition forming part of that contract; or (cc) the non-fulfilment of a suspensive condition forming part of that contract; (ii) paid as security for the performance of a contract or as security in respect of any loss which may result from the non-performance of a contract; (iii) without derogating from the provisions of paragraph (ii), paid as security for the delivery up or return of any movable or immovable property, whether in a particular state of repair or otherwise; (iv) paid by a holding company to its subsidiary, or by a subsidiary to its holding company, or by one subsidiary to another subsidiary of the same holding company; (v) paid by a person who, at the time of such payment (aa) is a close relative of the person to whom such money is paid; (bb) is a director or executive officer of the person to whom such money is paid; or (cc) is a close relative of a director or executive officer of the person to whom such money is paid; (vi) paid by any person to a registered insurer as defined in section 1(1) of the Insurance Act, 1943 (Act No. 27 of 1943), as a premium in respect of any kind of policy defined or referred to in that section; (vii) paid to a fund registered or provisionally registered under section 4 of the Pension Funds Act, 1956 (Act No. 24 of 1956), as a contribution by or on behalf of a member of that fund; or (viii) paid to a benefit fund, as defined in section 1 of the Income Tax Act, 1962 (Act No. 58 of 1962), as a contribution or a subscription by or on behalf of a member of that fund; and \"deposit\" when used as a verb, or any derivative thereof, has a corresponding meaning; \"director\", includes an executive director and a non-executive director, unless expressly stated otherwise; \"domestic shareholder\", in relation to a bank or controlling company, means a shareholder of the bank or controlling company (a) who is resident in the Republic; (b) which is a company controlled, mutatis mutandis as contemplated in paragraph (a), (b) or",
+                  "text": "no interest will be payable on the amount so paid or interest will be payable thereon at specified intervals or otherwise, notwithstanding that such payment is limited to a fixed amount or that a transferable or non-transferable certificate or other instrument providing for the repayment of such amount mutatis mutandis as contemplated in paragraph",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.c.b.a",
+                      "number": "a",
+                      "heading": "s1.c.b.a",
+                      "text": "or for the payment of interest on such amount mutatis mutandis as contemplated in paragraph",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.c.b.b",
+                      "number": "b",
+                      "heading": "s1.c.b.b",
+                      "text": "is issued in respect of such amount; but does not include an amount of money (i) paid as an advance, or as part payment, in terms of a contract for the sale, letting and hiring or other provision of movable or immovable property or of services, and which is repayable only in the event of (aa) that property or those services not in fact being sold, let and hired or otherwise provided; (bb) the fulfilment of a resolutive condition forming part of that contract; or (cc) the non-fulfilment of a suspensive condition forming part of that contract; (ii) paid as security for the performance of a contract or as security in respect of any loss which may result from the non-performance of a contract; (iii) without derogating from the provisions of paragraph (ii), paid as security for the delivery up or return of any movable or immovable property, whether in a particular state of repair or otherwise; (iv) paid by a holding company to its subsidiary, or by a subsidiary to its holding company, or by one subsidiary to another subsidiary of the same holding company; (v) paid by a person who, at the time of such payment (aa) is a close relative of the person to whom such money is paid; (bb) is a director or executive officer of the person to whom such money is paid; or (cc) is a close relative of a director or executive officer of the person to whom such money is paid; (vi) paid by any person to a registered insurer as defined in section 1(1) of the Insurance Act, 1943 (Act No. 27 of 1943), as a premium in respect of any kind of policy defined or referred to in that section; (vii) paid to a fund registered or provisionally registered under section 4 of the Pension Funds Act, 1956 (Act No. 24 of 1956), as a contribution by or on behalf of a member of that fund; or (viii) paid to a benefit fund, as defined in section 1 of the Income Tax Act, 1962 (Act No. 58 of 1962), as a contribution or a subscription by or on behalf of a member of that fund; and \"deposit\" when used as a verb, or any derivative thereof, has a corresponding meaning; \"director\", includes an executive director and a non-executive director, unless expressly stated otherwise; \"domestic shareholder\", in relation to a bank or controlling company, means a shareholder of the bank or controlling company",
+                      "verbatim": true,
+                      "subsections": [
+                        {
+                          "id": "s1.c.b.b.a",
+                          "number": "a",
+                          "heading": "s1.c.b.b.a",
+                          "text": "who is resident in the Republic;",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.c.b.b.b",
+                          "number": "b",
+                          "heading": "s1.c.b.b.b",
+                          "text": "which is a company controlled, mutatis mutandis as contemplated in paragraph (a), (b) or",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   "id": "s1.c.c",
@@ -210,33 +244,232 @@
                   "id": "s1.j.b",
                   "number": "b",
                   "heading": "s1.j.b",
-                  "text": "the establishment by a bank of a representative office outside the Republic as contemplated in section 52(1)(e), means premises situated outside the Republic and from which the business conducted by such bank within the Republic in terms of this Act is promoted or assisted in any way; \"Republic\", for the purposes of the definition of \"domestic shareholder\", includes any state the territory of which formerly formed part of the Republic; \"Reserve Bank\" means the South African Reserve Bank; \"secondary capital\" means a prescribed percentage of capital obtained through the issue, with prior written approval of the Registrar and in accordance with conditions approved by the Registrar in writing and on such further conditions, if any, as may be prescribed, of (a) cumulative preference shares; (b) ordinary shares, or preference shares other than cumulative preference shares, issued in pursuance of the capitalization of reserves resulting from a revaluation of assets; and",
+                  "text": "the establishment by a bank of a representative office outside the Republic as contemplated in section 52(1)(e), means premises situated outside the Republic and from which the business conducted by such bank within the Republic in terms of this Act is promoted or assisted in any way; \"Republic\", for the purposes of the definition of \"domestic shareholder\", includes any state the territory of which formerly formed part of the Republic; \"Reserve Bank\" means the South African Reserve Bank; \"secondary capital\" means a prescribed percentage of capital obtained through the issue, with prior written approval of the Registrar and in accordance with conditions approved by the Registrar in writing and on such further conditions, if any, as may be prescribed, of",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.j.b.a",
+                      "number": "a",
+                      "heading": "s1.j.b.a",
+                      "text": "cumulative preference shares;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.b.b",
+                      "number": "b",
+                      "heading": "s1.j.b.b",
+                      "text": "ordinary shares, or preference shares other than cumulative preference shares, issued in pursuance of the capitalization of reserves resulting from a revaluation of assets; and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s1.j.c",
                   "number": "c",
                   "heading": "s1.j.c",
-                  "text": "prescribed categories of debt instruments; \"secondary unimpaired reserve funds\" means (a) such funds, obtained from actual earning or by way of recoveries, as may be prescribed and which have been set aside, but which are not disclosed as a general or special reserve in the financial statements of the bank concerned; (b) a prescribed percentage of the amount of any surplus resulting from a revaluation of assets and determined as prescribed; (c) a prescribed amount of general provisions held against unidentified and unforeseen losses; and",
+                  "text": "prescribed categories of debt instruments; \"secondary unimpaired reserve funds\" means",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.j.c.a",
+                      "number": "a",
+                      "heading": "s1.j.c.a",
+                      "text": "such funds, obtained from actual earning or by way of recoveries, as may be prescribed and which have been set aside, but which are not disclosed as a general or special reserve in the financial statements of the bank concerned;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.c.b",
+                      "number": "b",
+                      "heading": "s1.j.c.b",
+                      "text": "a prescribed percentage of the amount of any surplus resulting from a revaluation of assets and determined as prescribed;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.c.c",
+                      "number": "c",
+                      "heading": "s1.j.c.c",
+                      "text": "a prescribed amount of general provisions held against unidentified and unforeseen losses; and",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s1.j.d",
                   "number": "d",
                   "heading": "s1.j.d",
-                  "text": "funds obtained by way of premiums on the issue of cumulative preference shares or debt instruments issued in accordance with the prescribed conditions, whether or not such funds are disclosed as a general or special reserve in the financial statements of the bank concerned, but does not include any fund required to be maintained in terms of any other law; \"subsidiary\" means a subsidiary as defined in section 1(3) of the Companies Act; \"tertiary capital\" means (a) accrued current-period uncapitalized net profits derived from trading activities; or (b) capital obtained by means of unsecured subordinated loans negotiated, subject to such conditions as may be prescribed; \"the business of a bank\" means (a) the acceptance of deposits from the general public (including persons in the employ of the person so accepting deposits) as a regular feature of the business in question; (b) the soliciting of or advertising for deposits; (c) the utilization of money, or of the interest or other income earned on money, accepted by way of deposit as contemplated in paragraph (a) (i) for the granting by any person, acting as lender in such person's own name or through the medium of a trust or a nominee, of loans to other persons; (ii) for investment by any person, acting as investor in such person's own name or through the medium of a trust or a nominee; or (iii) for the financing, wholly or to any material extent, by any person of any other business activity conducted by such person in his or her own name or through the medium of a trust or a nominee; (d) the obtaining, as a regular feature of the business in question of money through the sale of an asset, to any person other than a bank, subject to an agreement in terms of which the seller undertakes to purchase from the buyer at a future date the asset so sold or any other asset; or",
+                  "text": "funds obtained by way of premiums on the issue of cumulative preference shares or debt instruments issued in accordance with the prescribed conditions, whether or not such funds are disclosed as a general or special reserve in the financial statements of the bank concerned, but does not include any fund required to be maintained in terms of any other law; \"subsidiary\" means a subsidiary as defined in section 1(3) of the Companies Act; \"tertiary capital\" means",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.j.d.a",
+                      "number": "a",
+                      "heading": "s1.j.d.a",
+                      "text": "accrued current-period uncapitalized net profits derived from trading activities; or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.d.b",
+                      "number": "b",
+                      "heading": "s1.j.d.b",
+                      "text": "capital obtained by means of unsecured subordinated loans negotiated, subject to such conditions as may be prescribed; \"the business of a bank\" means (a) the acceptance of deposits from the general public (including persons in the employ of the person so accepting deposits) as a regular feature of the business in question; (b) the soliciting of or advertising for deposits;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.d.c",
+                      "number": "c",
+                      "heading": "s1.j.d.c",
+                      "text": "the utilization of money, or of the interest or other income earned on money, accepted by way of deposit as contemplated in paragraph (a)",
+                      "verbatim": true,
+                      "subsections": [
+                        {
+                          "id": "s1.j.d.c.i",
+                          "number": "i",
+                          "heading": "s1.j.d.c.i",
+                          "text": "for the granting by any person, acting as lender in such person's own name or through the medium of a trust or a nominee, of loans to other persons",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.d.c.ii",
+                          "number": "ii",
+                          "heading": "s1.j.d.c.ii",
+                          "text": "for investment by any person, acting as investor in such person's own name or through the medium of a trust or a nominee; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.d.c.iii",
+                          "number": "iii",
+                          "heading": "s1.j.d.c.iii",
+                          "text": "for the financing, wholly or to any material extent, by any person of any other business activity conducted by such person in his or her own name or through the medium of a trust or a nominee;",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "s1.j.d.d",
+                      "number": "d",
+                      "heading": "s1.j.d.d",
+                      "text": "the obtaining, as a regular feature of the business in question of money through the sale of an asset, to any person other than a bank, subject to an agreement in terms of which the seller undertakes to purchase from the buyer at a future date the asset so sold or any other asset; or",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 },
                 {
                   "id": "s1.j.e",
                   "number": "e",
                   "heading": "s1.j.e",
-                  "text": "any other activity which the Registrar has, after consultation with the Governor of the Reserve Bank, by notice in the Gazette declared to be the business of a bank, but does not include (aa) the acceptance of a deposit by a person who does not purport to accept deposits on a regular basis and who has not advertised for or solicited such deposit: Provided that (i) the person accepting deposits as contemplated in this paragraph shall not at any time hold deposits from more than twenty persons or deposits amounting in the aggregate to more than R500 000; and (ii) a person and any person controlled directly or indirectly by the first-mentioned person (whether such control is through shareholding or otherwise) or managed by such first-mentioned person, and a subsidiary of such last-mentioned person, who accepts deposits as contemplated in this paragraph shall for the purposes of subparagraph (i) of this proviso be deemed to be one person; (bb) the borrowing of money from its members by a co-operative subject to such conditions as may be prescribed; (cc) any activity of a public sector, governmental or other institution, or of any person or category of persons, designated by the Registrar, with the approval of the Minister, by notice in the Gazette, provided such activity is performed in accordance with such conditions as the Registrar may with the approval of the Minister determine in the relevant notice; (dd) any activity contemplated in paragraph (a), (b) or (c) (i) performed by any institution registered or established in terms of, by or under any other Act of Parliament and designated by the Minister by notice in the Gazette; or (ii) performed in terms of any scheme authorized and controlled by, and conducted in accordance with the provisions of, any other Act of Parliament and so designated by the Minister, provided such activity is performed in accordance with such conditions as the Minister may determine in the relevant notice; \"this Act\" includes the regulations; \"undesirable practice\" means any act prohibited, or any failure to perform any act enjoined, by section 78(1), and, in relation to a particular bank or banks specified in a notice referred to in section 78(2)(b) or all banks, includes any act which in terms of a notice referred to in section 78(2) constitutes an undesirable practice for such particular bank, such specified banks, or all banks, as the case may be; \"wholly owned subsidiary\" means a wholly owned subsidiary as defined in section 1 of the Companies Act. (1A)(a) In order to determine, for the purposes of this Act, whether a particular person is a fit and proper person to hold the office of a director or an executive officer of a bank or a controlling company, the Registrar shall have regard to the following qualities, in so far as they are reasonably determinable, of the person concerned: (i) The general probity of that person; (ii) the competence and soundness of judgement of that person for the fulfilment of the responsibilities of the office in question; and (iii) the diligence with which the person concerned is likely to fulfil those responsibilities. (b) For the purpose of and without prejudice to the generality of the provisions of paragraph (a), the Registrar may have regard to the previous conduct and activities of the person concerned in business or financial matters and, in particular, to any evidence that such person (i) was convicted of the offence of fraud or any other offence of which dishonesty, or the commission of violence, was an element; (ii) had contravened the provisions of any law appearing to the Registrar to be designed for protecting members of the public against financial loss due to the dishonesty or incompetence of, or malpractices by, persons engaged in the provision of banking, insurance, investment or other financial services, or the management of juristic persons, or against financial loss due to activities relating to insolvency; (iii) was a director who had been indicated, as contemplated in section 421(2) of the Companies Act, as the effective cause of a particular company having been unable to pay its debts; (iv) had taken part in any business practices that, in the opinion of the Registrar, were deceitful, prejudicial or otherwise improper (whether unlawful or not) or which otherwise brought discredit on that person's methods of conducting business; or (v) had taken part in or been associated with any such other business practices as would, or had otherwise conducted himself or herself in such a way as to, cast doubt on his or her competence and soundness of judgement. (c) The Registrar shall be entitled, at any time, to request any person to complete a questionnaire that is designed to enable, and such person shall provide the Registrar with such information as may be necessary to enable, the Registrar to form an opinion, as contemplated in this subsection, regarding the qualities of that person. (d) Any person who refuses or fails to comply with a request addressed to that person by the Registrar under paragraph (c) shall be guilty of an offence.",
+                  "text": "any other activity which the Registrar has, after consultation with the Governor of the Reserve Bank, by notice in the Gazette declared to be the business of a bank, but does not include (aa) the acceptance of a deposit by a person who does not purport to accept deposits on a regular basis and who has not advertised for or solicited such deposit: Provided that (i) the person accepting deposits as contemplated in this paragraph shall not at any time hold deposits from more than twenty persons or deposits amounting in the aggregate to more than R500 000; and (ii) a person and any person controlled directly or indirectly by the first-mentioned person (whether such control is through shareholding or otherwise) or managed by such first-mentioned person, and a subsidiary of such last-mentioned person, who accepts deposits as contemplated in this paragraph shall for the purposes of subparagraph (i) of this proviso be deemed to be one person; (bb) the borrowing of money from its members by a co-operative subject to such conditions as may be prescribed; (cc) any activity of a public sector, governmental or other institution, or of any person or category of persons, designated by the Registrar, with the approval of the Minister, by notice in the Gazette, provided such activity is performed in accordance with such conditions as the Registrar may with the approval of the Minister determine in the relevant notice; (dd) any activity contemplated in paragraph (a), (b) or (c) (i) performed by any institution registered or established in terms of, by or under any other Act of Parliament and designated by the Minister by notice in the Gazette; or (ii) performed in terms of any scheme authorized and controlled by, and conducted in accordance with the provisions of, any other Act of Parliament and so designated by the Minister, provided such activity is performed in accordance with such conditions as the Minister may determine in the relevant notice; \"this Act\" includes the regulations; \"undesirable practice\" means any act prohibited, or any failure to perform any act enjoined, by section 78(1), and, in relation to a particular bank or banks specified in a notice referred to in section 78(2)(b) or all banks, includes any act which in terms of a notice referred to in section 78(2) constitutes an undesirable practice for such particular bank, such specified banks, or all banks, as the case may be; \"wholly owned subsidiary\" means a wholly owned subsidiary as defined in section 1 of the Companies Act. (1A)",
                   "verbatim": true,
-                  "subsections": []
+                  "subsections": [
+                    {
+                      "id": "s1.j.e.a",
+                      "number": "a",
+                      "heading": "s1.j.e.a",
+                      "text": "In order to determine, for the purposes of this Act, whether a particular person is a fit and proper person to hold the office of a director or an executive officer of a bank or a controlling company, the Registrar shall have regard to the following qualities, in so far as they are reasonably determinable, of the person concerned:",
+                      "verbatim": true,
+                      "subsections": [
+                        {
+                          "id": "s1.j.e.a.i",
+                          "number": "i",
+                          "heading": "s1.j.e.a.i",
+                          "text": "The general probity of that person",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.e.a.ii",
+                          "number": "ii",
+                          "heading": "s1.j.e.a.ii",
+                          "text": "the competence and soundness of judgement of that person for the fulfilment of the responsibilities of the office in question; and",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.e.a.iii",
+                          "number": "iii",
+                          "heading": "s1.j.e.a.iii",
+                          "text": "the diligence with which the person concerned is likely to fulfil those responsibilities.",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "s1.j.e.b",
+                      "number": "b",
+                      "heading": "s1.j.e.b",
+                      "text": "For the purpose of and without prejudice to the generality of the provisions of paragraph (a), the Registrar may have regard to the previous conduct and activities of the person concerned in business or financial matters and, in particular, to any evidence that such person",
+                      "verbatim": true,
+                      "subsections": [
+                        {
+                          "id": "s1.j.e.b.i",
+                          "number": "i",
+                          "heading": "s1.j.e.b.i",
+                          "text": "was convicted of the offence of fraud or any other offence of which dishonesty, or the commission of violence, was an element",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.e.b.ii",
+                          "number": "ii",
+                          "heading": "s1.j.e.b.ii",
+                          "text": "had contravened the provisions of any law appearing to the Registrar to be designed for protecting members of the public against financial loss due to the dishonesty or incompetence of, or malpractices by, persons engaged in the provision of banking, insurance, investment or other financial services, or the management of juristic persons, or against financial loss due to activities relating to insolvency",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.e.b.iii",
+                          "number": "iii",
+                          "heading": "s1.j.e.b.iii",
+                          "text": "was a director who had been indicated, as contemplated in section 421(2) of the Companies Act, as the effective cause of a particular company having been unable to pay its debts",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.e.b.iv",
+                          "number": "iv",
+                          "heading": "s1.j.e.b.iv",
+                          "text": "had taken part in any business practices that, in the opinion of the Registrar, were deceitful, prejudicial or otherwise improper (whether unlawful or not) or which otherwise brought discredit on that person's methods of conducting business; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s1.j.e.b.v",
+                          "number": "v",
+                          "heading": "s1.j.e.b.v",
+                          "text": "had taken part in or been associated with any such other business practices as would, or had otherwise conducted himself or herself in such a way as to, cast doubt on his or her competence and soundness of judgement.",
+                          "verbatim": true,
+                          "subsections": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "s1.j.e.c",
+                      "number": "c",
+                      "heading": "s1.j.e.c",
+                      "text": "The Registrar shall be entitled, at any time, to request any person to complete a questionnaire that is designed to enable, and such person shall provide the Registrar with such information as may be necessary to enable, the Registrar to form an opinion, as contemplated in this subsection, regarding the qualities of that person.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s1.j.e.d",
+                      "number": "d",
+                      "heading": "s1.j.e.d",
+                      "text": "Any person who refuses or fails to comply with a request addressed to that person by the Registrar under paragraph (c) shall be guilty of an offence.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
                 }
               ]
             }
@@ -1616,9 +1849,43 @@
                       "id": "s70.2.ii.ii",
                       "number": "ii",
                       "heading": "s70.2.ii.ii",
-                      "text": "an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such a bank's risk exposures in the conduct of its business as may be so prescribed. (2B)(a) A bank of which the business includes trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of (i) R250 000 000; or (ii) an amount which represents the sum of (aa) a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75), of such different categories of assets and other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures; and (bb) an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such of the bank's risk exposures in the conduct of its business of trading in financial instruments as may be so prescribed.",
+                      "text": "an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such a bank's risk exposures in the conduct of its business as may be so prescribed. (2B)(a) A bank of which the business includes trading in financial instruments shall manage its affairs in such a way that, subject to the provisions of paragraph (b), the sum of its primary and secondary capital, its primary and secondary unimpaired reserve funds and its tertiary capital in the Republic does not at any time amount to less than the greater of",
                       "verbatim": true,
-                      "subsections": []
+                      "subsections": [
+                        {
+                          "id": "s70.2.ii.ii.i",
+                          "number": "i",
+                          "heading": "s70.2.ii.ii.i",
+                          "text": "R250 000 000; or",
+                          "verbatim": true,
+                          "subsections": []
+                        },
+                        {
+                          "id": "s70.2.ii.ii.ii",
+                          "number": "ii",
+                          "heading": "s70.2.ii.ii.ii",
+                          "text": "an amount which represents the sum of",
+                          "verbatim": true,
+                          "subsections": [
+                            {
+                              "id": "s70.2.ii.ii.ii.aa",
+                              "number": "aa",
+                              "heading": "s70.2.ii.ii.ii.aa",
+                              "text": "a prescribed percentage of the sum of amounts calculated by multiplying the average of the amounts (as shown in the returns furnished to the Registrar in terms of section 75), of such different categories of assets and other risk exposures in the conduct of its business, as may be prescribed in the Regulations relating to Banks, by the risk weights, expressed as percentages, so prescribed in respect of such different categories of assets and other risk exposures; and",
+                              "verbatim": true,
+                              "subsections": []
+                            },
+                            {
+                              "id": "s70.2.ii.ii.ii.bb",
+                              "number": "bb",
+                              "heading": "s70.2.ii.ii.ii.bb",
+                              "text": "an amount which represents the sum of amounts prescribed in the Regulations relating to Banks' Financial Instrument Trading in respect of such of the bank's risk exposures in the conduct of its business of trading in financial instruments as may be so prescribed.",
+                              "verbatim": true,
+                              "subsections": []
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }

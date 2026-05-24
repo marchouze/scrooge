@@ -103,9 +103,26 @@
                               "id": "s1-1.d.ii.c.a",
                               "number": "a",
                               "heading": "s1-1.d.ii.c.a",
-                              "text": "securities and instruments, including shares in a company other than a \"share block company\" as defined in the Share Blocks Control Act, 1980 (Act No. 59 of 1980); debentures and securitised debt; any money-market instrument; any warrant, certificate, and other instrument acknowledging, conferring or creating rights to subscribe to, acquire, dispose of, or convert securities and instruments referred to in subparagraphs (i), (ii) and (iii); any \"securities\" as defined in section 1 of the Securities Services Act, 2002; a participatory interest in one or more collective investment schemes; a long-term or a short-term insurance contract or policy, referred to in the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively; a benefit provided by (i) a pension fund organisation as defined in section 1(1) of the Pension Funds Act, 1956 (Act No. 24 of 1956), to the members of the organisation by virtue of membership; or (ii) a friendly society referred to in the Friendly Societies Act, 1956 (Act No. 25 of 1956), to the members of the society by virtue of membership; a foreign currency denominated investment instrument, including a foreign currency deposit; a deposit as defined in section 1(1) of the Banks Act, 1990 (Act No. 94 of 1990); a health service benefit provided by a medical scheme as defined in section 1(1) of the Medical Schemes Act, 1998 (Act No. 131 of 1998); any other product similar in nature to any financial product referred to in paragraphs (a) to (g), inclusive, declared by the registrar, after consultation with the Advisory Committee, by notice in the Gazette to be a financial product for the purposes of this Act; any combined product containing one or more of the financial products referred to in paragraphs (a) to (h), inclusive; any financial product issued by any foreign product supplier and marketed in the Republic and which in nature and character is essentially similar or corresponding to a financial product referred to in paragraphs (a) to (i), inclusive; \"financial service\" means any service contemplated in paragraph (a),",
+                              "text": "securities and instruments, including shares in a company other than a \"share block company\" as defined in the Share Blocks Control Act, 1980 (Act No. 59 of 1980); debentures and securitised debt; any money-market instrument; any warrant, certificate, and other instrument acknowledging, conferring or creating rights to subscribe to, acquire, dispose of, or convert securities and instruments referred to in subparagraphs (i), (ii) and (iii); any \"securities\" as defined in section 1 of the Securities Services Act, 2002; a participatory interest in one or more collective investment schemes; a long-term or a short-term insurance contract or policy, referred to in the Long-term Insurance Act, 1998 (Act No. 52 of 1998), and the Short-term Insurance Act, 1998 (Act No. 53 of 1998), respectively; a benefit provided by",
                               "verbatim": true,
-                              "subsections": []
+                              "subsections": [
+                                {
+                                  "id": "s1-1.d.ii.c.a.i",
+                                  "number": "i",
+                                  "heading": "s1-1.d.ii.c.a.i",
+                                  "text": "a pension fund organisation as defined in section 1(1) of the Pension Funds Act, 1956 (Act No. 24 of 1956), to the members of the organisation by virtue of membership; or",
+                                  "verbatim": true,
+                                  "subsections": []
+                                },
+                                {
+                                  "id": "s1-1.d.ii.c.a.ii",
+                                  "number": "ii",
+                                  "heading": "s1-1.d.ii.c.a.ii",
+                                  "text": "a friendly society referred to in the Friendly Societies Act, 1956 (Act No. 25 of 1956), to the members of the society by virtue of membership; a foreign currency denominated investment instrument, including a foreign currency deposit; a deposit as defined in section 1(1) of the Banks Act, 1990 (Act No. 94 of 1990); a health service benefit provided by a medical scheme as defined in section 1(1) of the Medical Schemes Act, 1998 (Act No. 131 of 1998); any other product similar in nature to any financial product referred to in paragraphs (a) to (g), inclusive, declared by the registrar, after consultation with the Advisory Committee, by notice in the Gazette to be a financial product for the purposes of this Act; any combined product containing one or more of the financial products referred to in paragraphs (a) to (h), inclusive; any financial product issued by any foreign product supplier and marketed in the Republic and which in nature and character is essentially similar or corresponding to a financial product referred to in paragraphs (a) to (i), inclusive; \"financial service\" means any service contemplated in paragraph (a),",
+                                  "verbatim": true,
+                                  "subsections": []
+                                }
+                              ]
                             },
                             {
                               "id": "s1-1.d.ii.c.b",
@@ -119,9 +136,51 @@
                               "id": "s1-1.d.ii.c.c",
                               "number": "c",
                               "heading": "s1-1.d.ii.c.c",
-                              "text": "of the definition of \"financial services provider\", including any category of such services; \"Financial Services Board Act\" means the Financial Services Board Act, 1990 (Act No. 97 of 1990); \"financial services provider\" means any person, other than a representative, who as a regular feature of the business of such person— (a) furnishes advice; or (b) furnishes advice and renders any intermediary service; or (c) renders an intermediary service; \"intermediary service\" means, subject to subsection (3)(b), any act other than the furnishing of advice, performed by a person for or on behalf of a client or product supplier— (a) the result of which is that a client may enter into, offers to enter into or enters into any transaction in respect of a financial product with a product supplier; or (b) with a view to— (i) buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested; (ii) collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                              "text": "of the definition of \"financial services provider\", including any category of such services; \"Financial Services Board Act\" means the Financial Services Board Act, 1990 (Act No. 97 of 1990); \"financial services provider\" means any person, other than a representative, who as a regular feature of the business of such person—",
                               "verbatim": true,
-                              "subsections": []
+                              "subsections": [
+                                {
+                                  "id": "s1-1.d.ii.c.c.a",
+                                  "number": "a",
+                                  "heading": "s1-1.d.ii.c.c.a",
+                                  "text": "furnishes advice; or",
+                                  "verbatim": true,
+                                  "subsections": []
+                                },
+                                {
+                                  "id": "s1-1.d.ii.c.c.b",
+                                  "number": "b",
+                                  "heading": "s1-1.d.ii.c.c.b",
+                                  "text": "furnishes advice and renders any intermediary service; or",
+                                  "verbatim": true,
+                                  "subsections": []
+                                },
+                                {
+                                  "id": "s1-1.d.ii.c.c.c",
+                                  "number": "c",
+                                  "heading": "s1-1.d.ii.c.c.c",
+                                  "text": "renders an intermediary service; \"intermediary service\" means, subject to subsection (3)(b), any act other than the furnishing of advice, performed by a person for or on behalf of a client or product supplier—",
+                                  "verbatim": true,
+                                  "subsections": [
+                                    {
+                                      "id": "s1-1.d.ii.c.c.c.a",
+                                      "number": "a",
+                                      "heading": "s1-1.d.ii.c.c.c.a",
+                                      "text": "the result of which is that a client may enter into, offers to enter into or enters into any transaction in respect of a financial product with a product supplier; or",
+                                      "verbatim": true,
+                                      "subsections": []
+                                    },
+                                    {
+                                      "id": "s1-1.d.ii.c.c.c.b",
+                                      "number": "b",
+                                      "heading": "s1-1.d.ii.c.c.c.b",
+                                      "text": "with a view to— (i) buying, selling or otherwise dealing in (whether on a discretionary or non-discretionary basis), managing, administering, keeping in safe custody, maintaining or servicing a financial product purchased by a client from a product supplier or in which the client has invested; (ii) collecting or accounting for premiums or other moneys payable by the client to a product supplier in respect of a financial product; or",
+                                      "verbatim": true,
+                                      "subsections": []
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         }
