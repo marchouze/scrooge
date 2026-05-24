@@ -22,7 +22,7 @@
 //   bun run scripts/fix-regulation-outline.ts --instrument banks-gn9-2022
 //
 
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 
 // ---------------------------------------------------------------------------
@@ -119,7 +119,10 @@ function stripPageNumbers(text: string): string {
   // Strip bare page numbers: start-of-string or after >=2 newlines
   t = t.replace(/(?:^|\n{2,})\s*\d{1,3}\s+(?=[A-Z])/g, " ");
   // Collapse multiple spaces/newlines into single space
-  t = t.replace(/\n+/g, " ").replace(/\s{2,}/g, " ").trim();
+  t = t
+    .replace(/\n+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
   return t;
 }
 
@@ -234,8 +237,7 @@ function fixSection(section: Section): FixResult {
   if (matches.length === 0) {
     // No subsections — just clean up the heading
     const dot = raw.indexOf(".");
-    const heading =
-      dot > 0 && dot < 80 ? raw.slice(0, dot + 1).trim() : raw.slice(0, 120).trim();
+    const heading = dot > 0 && dot < 80 ? raw.slice(0, dot + 1).trim() : raw.slice(0, 120).trim();
     return {
       heading: cleanHeading(heading, section.number),
       text: raw,
@@ -297,7 +299,10 @@ function cleanHeading(blob: string, _sectionNumber: string): string {
 
 function reformatTxt(txtPath: string, _topSections: string[]): string {
   const raw = readFileSync(txtPath, "utf8");
-  let text = raw.replace(/--- Page \d+ ---\s*/g, " ").replace(/\n+/g, " ").trim();
+  const text = raw
+    .replace(/--- Page \d+ ---\s*/g, " ")
+    .replace(/\n+/g, " ")
+    .trim();
 
   // Insert \n before each top-level section and each known decimal subsection
   // Pattern: a number like "1.", "2.5.", "2.5.1." followed by space + capital
