@@ -27,122 +27,754 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "The disclosure of climate-related risks and opportunities promotes market discipline through the provision of meaningful information to stakeholders on a consistent and comparable basis. Climate risk management is a developing area, and approaches will evolve and mature over time. It is important that banks build the necessary capacity and capabilities to identify, assess, manage and disclose climate-related risks and opportunities within their existing risk management and governance frameworks, including any metrics or targets developed by the banks. This Guidance Note replaces Guidance Note 3 of 2024.",
-          "text": "",
+          "heading": "The disclosure of climate-related risks and opportunities promotes market discipline through the provision of",
+          "text": "The disclosure of climate-related risks and opportunities promotes market discipline through the provision of meaningful information to stakeholders on a consistent and comparable basis. Climate risk management is a developing area, and approaches will evolve and mature over time. It is important that banks build the necessary capacity and capabilities to identify, assess, manage and disclose climate-related risks and opportunities within their existing risk management and governance frameworks, including any metrics or targets developed by the banks. This Guidance Note replaces Guidance Note 3 of 2024.",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s1",
           "number": "1",
-          "heading": "Introduction 1.1. Climate change and the transition to a low-carbon climate-resilient economy can affect the safety and soundness of financial institutions and the stability of the financial system. South Africa is highly susceptible to climate-related physical risks such as droughts, floods and wildfires as well as transition risks given, among other factors, its reliance on fossil fuels for electricity, export revenues and as a key sector for employment. These climate-related risks leave the South African financial sector exposed to financial and non-financial impacts through the location of assets and liabilities in climate-vulnerable regions and through exposure to businesses and",
-          "text": "2 investments in transition-sensitive sectors. 1 1.2. The disclosure of climate-related risks and opportunities promotes market discipline through the provision of meaningful information to stakeholders on a consistent and comparable basis. An essential function of financial markets is to price risk to support informed, efficient capital allocation decisions. The disclosure of relevant information enhances how climate-related risks are assessed, priced and managed nationally and internationally. 1.3. This Guidance Note builds on domestic and international initiatives on climate- related disclosures, specifically the standards developed by the IFRS, which were built on the recommendations from the Task Force on Climate-related Financial Disclosures (TCFD). Guidance Note 3 of 2024 was published on 10 May 2024. This updated Guidance Note incorporates the BCBS’s framework for the voluntary disclosures of climate-related financial risks 2 , which was published in June 2025. 1.4. This Guidance Note replaces Guidance Note 3 of 2024.",
+          "heading": "Introduction",
+          "text": "Introduction",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s1-1",
+              "number": "1.1",
+              "text": "Climate change and the transition to a low-carbon climate-resilient economy can affect the safety and soundness of financial institutions and the stability of the financial system. South Africa is highly susceptible to climate-related physical risks such as droughts, floods and wildfires as well as transition risks given, among other factors, its reliance on fossil fuels for electricity, export revenues and as a key sector for employment. These climate-related risks leave the South African financial sector exposed to financial and non-financial impacts through the location of assets and liabilities in climate-vulnerable regions and through exposure to businesses and 2 investments in transition-sensitive sectors. 1",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-2",
+              "number": "1.2",
+              "text": "The disclosure of climate-related risks and opportunities promotes market discipline through the provision of meaningful information to stakeholders on a consistent and comparable basis. An essential function of financial markets is to price risk to support informed, efficient capital allocation decisions. The disclosure of relevant information enhances how climate-related risks are assessed, priced and managed nationally and internationally.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-3",
+              "number": "1.3",
+              "text": "This Guidance Note builds on domestic and international initiatives on climate- related disclosures, specifically the standards developed by the IFRS, which were built on the recommendations from the Task Force on Climate-related Financial Disclosures (TCFD). Guidance Note 3 of 2024 was published on 10 May 2024. This updated Guidance Note incorporates the BCBS’s framework for the voluntary disclosures of climate-related financial risks 2 , which was published in June 2025.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-4",
+              "number": "1.4",
+              "text": "This Guidance Note replaces Guidance Note 3 of 2024.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s2",
           "number": "2",
-          "heading": "Principles and conceptual foundations for disclosures 2.1. The disclosure of climate-related risks and opportunities continues to evolve as methodologies are being developed and improved. Without being prescriptive of the methodologies, the following principles and conceptual foundations usually form the basis for the disclosure of climate-related risks and opportunities: 2.1.1. Banks should use all reasonable and supportable information that is available to them at the reporting date without undue cost or effort, including information about past events, current conditions and future conditions. 2.1.2. Disclosures should focus on relevant and material information. Information is material if omitting, misstating or obscuring that information can reasonably be expected to influence decisions that are made based on those reports by the primary users. Materiality is a bank-specific aspect of relevance, based on the nature and/or magnitude of the information in relation to the bank’s context. 2.1.3. Disclosures should be complete, objective and accurate. Any material limitations of the data, the assumptions and/or the estimations used should be disclosed. 2.1.4. Disclosures should be clear, balanced and understandable to a wide audience. 2.1.5. Disclosures should provide consistency to the extent possible over time. Any changes in approach should be described where necessary to enable stakeholders to understand the reasons for any differences. 1 See the South African Reserve Bank (SARB) working paper titled ‘Transition and systemic risk in the South African banking sector: assessment and macroprudential options’, available at https://www.resbank.co.za/content/dam/sarb/publications/working-papers/2024/transition-and-systemic-risk- in-the-south-african-banking-sector-assessment-and-macroprudential-options.pdf , and the results of the SARB Climate Risk Stress Test in the 2025 Financial Stability Review , 1st edition, available at https://www.resbank.co.za/content/dam/sarb/publications/reviews/finstab-review/2025/financial-stability- review/First%20Edition%202025%20Financial%20Stability%20Review.pdf . 2 Published on 13 June 2025, available at https://www.bis.org/bcbs/publ/d597.htm .",
-          "text": "3 2.1.6. Disclosures should be timely and produced within appropriate time periods. 2.1.7. Disclosures should provide information relevant to current decisions and be future- focused. 2.1.8. Disclosures should be for the same reporting entity and reporting period as the bank’s financial statements. Connected information within and across disclosures should be clear and cross-referenced where required to avoid duplication and facilitate accessibility.",
+          "heading": "Principles and conceptual foundations for disclosures",
+          "text": "Principles and conceptual foundations for disclosures",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "text": "The disclosure of climate-related risks and opportunities continues to evolve as methodologies are being developed and improved. Without being prescriptive of the methodologies, the following principles and conceptual foundations usually form the basis for the disclosure of climate-related risks and opportunities:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "Banks should use all reasonable and supportable information that is available to them at the reporting date without undue cost or effort, including information about past events, current conditions and future conditions.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-2",
+                  "number": "2.1.2",
+                  "text": "Disclosures should focus on relevant and material information. Information is material if omitting, misstating or obscuring that information can reasonably be expected to influence decisions that are made based on those reports by the primary users. Materiality is a bank-specific aspect of relevance, based on the nature and/or magnitude of the information in relation to the bank’s context.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-3",
+                  "number": "2.1.3",
+                  "text": "Disclosures should be complete, objective and accurate. Any material limitations of the data, the assumptions and/or the estimations used should be disclosed.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-4",
+                  "number": "2.1.4",
+                  "text": "Disclosures should be clear, balanced and understandable to a wide audience.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-5",
+                  "number": "2.1.5",
+                  "text": "Disclosures should provide consistency to the extent possible over time. Any changes in approach should be described where necessary to enable stakeholders to understand the reasons for any differences. 1 See the South African Reserve Bank (SARB) working paper titled ‘Transition and systemic risk in the South African banking sector: assessment and macroprudential options’, available at https://www.resbank.co.za/content/dam/sarb/publications/working-papers/2024/transition-and-systemic-risk- in-the-south-african-banking-sector-assessment-and-macroprudential-options.pdf , and the results of the SARB Climate Risk Stress Test in the 2025 Financial Stability Review , 1st edition, available at https://www.resbank.co.za/content/dam/sarb/publications/reviews/finstab-review/2025/financial-stability- review/First%20Edition%202025%20Financial%20Stability%20Review.pdf . 2 Published on 13 June 2025, available at https://www.bis.org/bcbs/publ/d597.htm . 3",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-6",
+                  "number": "2.1.6",
+                  "text": "Disclosures should be timely and produced within appropriate time periods.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-7",
+                  "number": "2.1.7",
+                  "text": "Disclosures should provide information relevant to current decisions and be future- focused.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-8",
+                  "number": "2.1.8",
+                  "text": "Disclosures should be for the same reporting entity and reporting period as the bank’s financial statements. Connected information within and across disclosures should be clear and cross-referenced where required to avoid duplication and facilitate accessibility.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s3",
           "number": "3",
-          "heading": "Supervisory expectations 3.1. As a minimum, banks should produce climate-related disclosure reports that reasonably satisfy the principles above as well as relevant supervisory expectations. 3.2. Banks should produce high-quality and decision-useful disclosures in order to increase transparency and confidence about a bank’s approach to climate-related risks and opportunities. Section 1: Qualitative information on climate-related financial risks and opportunities – governance, strategy and risk management",
-          "text": "",
+          "heading": "Supervisory expectations",
+          "text": "Supervisory expectations",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "text": "As a minimum, banks should produce climate-related disclosure reports that reasonably satisfy the principles above as well as relevant supervisory expectations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-2",
+              "number": "3.2",
+              "text": "Banks should produce high-quality and decision-useful disclosures in order to increase transparency and confidence about a bank’s approach to climate-related risks and opportunities. Section 1: Qualitative information on climate-related financial risks and opportunities – governance, strategy and risk management",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Governance 4.1. Banks should disclose the governance practices, processes, controls and procedures in maintaining appropriate oversight over climate-related risks and opportunities. Banks should disclose how these identified climate-related risks and opportunities impact on their business model, strategy and decision-making. Banks should provide sufficient detail on: 4.1.1. the governance structure 3 responsible for the oversight of climate-related risks and opportunities, including how responsibilities for climate-related risks and opportunities are reflected in the terms of reference, mandates, role descriptions and other related policies; 4.1.2. how the Board of Directors (Board) ensures that the appropriate skills and competencies are available to oversee the strategies designed to respond to material climate-related risks and opportunities; 4.1.3. how and how often the Board and its relevant committees are apprised of material climate-related risks and opportunities; 4.1.4. how the Board and its relevant committees consider material climate-related risks and opportunities when overseeing the bank’s strategy, its decisions on major transactions, risk management processes and related policies, including how trade- offs associated with those risks have been considered; and 3 A governance structure can include a Board of Directors (Board), a Board committee or an equivalent body charged with governance. The term ‘Board’ is used in this document to refer to all relevant governance structures.",
-          "text": "4 4.1.5. how the Board oversees the setting of targets related to material climate-related risks and how it monitors progress against these targets for addressing climate- related risks and opportunities, including whether and how related performance metrics are included in remuneration policies. 4.2. Banks should disclose the role of management in the governance processes, controls and procedures used to monitor, manage and oversee material climate- related risks and opportunities, including information about: 4.2.1. whether the role is delegated to specific management-level positions or committees; 4.2.2. how oversight is exercised over that position or committee; and 4.2.3. whether dedicated controls and procedures are applied to the management of climate-related risks and opportunities, and, if so, how they are integrated with other internal functions.",
+          "heading": "Governance",
+          "text": "Governance",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "Banks should disclose the governance practices, processes, controls and procedures in maintaining appropriate oversight over climate-related risks and opportunities. Banks should disclose how these identified climate-related risks and opportunities impact on their business model, strategy and decision-making. Banks should provide sufficient detail on:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-1-1",
+                  "number": "4.1.1",
+                  "text": "the governance structure 3 responsible for the oversight of climate-related risks and opportunities, including how responsibilities for climate-related risks and opportunities are reflected in the terms of reference, mandates, role descriptions and other related policies;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-2",
+                  "number": "4.1.2",
+                  "text": "how the Board of Directors (Board) ensures that the appropriate skills and competencies are available to oversee the strategies designed to respond to material climate-related risks and opportunities;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-3",
+                  "number": "4.1.3",
+                  "text": "how and how often the Board and its relevant committees are apprised of material climate-related risks and opportunities;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-4",
+                  "number": "4.1.4",
+                  "text": "how the Board and its relevant committees consider material climate-related risks and opportunities when overseeing the bank’s strategy, its decisions on major transactions, risk management processes and related policies, including how trade- offs associated with those risks have been considered; and 3 A governance structure can include a Board of Directors (Board), a Board committee or an equivalent body charged with governance. The term ‘Board’ is used in this document to refer to all relevant governance structures. 4",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-5",
+                  "number": "4.1.5",
+                  "text": "how the Board oversees the setting of targets related to material climate-related risks and how it monitors progress against these targets for addressing climate- related risks and opportunities, including whether and how related performance metrics are included in remuneration policies.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s4-2",
+              "number": "4.2",
+              "text": "Banks should disclose the role of management in the governance processes, controls and procedures used to monitor, manage and oversee material climate- related risks and opportunities, including information about:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-2-1",
+                  "number": "4.2.1",
+                  "text": "whether the role is delegated to specific management-level positions or committees;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-2",
+                  "number": "4.2.2",
+                  "text": "how oversight is exercised over that position or committee; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-3",
+                  "number": "4.2.3",
+                  "text": "whether dedicated controls and procedures are applied to the management of climate-related risks and opportunities, and, if so, how they are integrated with other internal functions.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Strategy 5.1. Banks should disclose climate-related financial risks that could reasonably be expected to materially affect the bank’s prospects, including: 5.1.1. For each climate-related risk that the bank has identified, the bank should explain whether it considers the risk to be a climate-related physical risk or climate-related transition risk. 5.1.2. For each climate-related risk identified, the bank should specify the time horizons – short, medium or long term – over which the effects of each material climate-related financial risk could reasonably be expected to occur. 5.1.3. The bank should define short, medium and long term, and indicate how these definitions are linked to the planning horizons used for strategic decision-making. 5.2. Banks should describe the current and anticipated effects of climate-related risks and opportunities on the bank’s business model and value chain. Specifically, banks should disclose: 5.2.1. the current and anticipated effects of material climate-related risks and opportunities on the bank’s business model and risk profile; and 5.2.2. a description of where in the bank’s business model material climate-related risks and opportunities are concentrated, for example geographical areas, sectors, facilities and types of assets. 5.3. Banks should describe the effects of material climate-related risks and opportunities on the bank’s strategy and decision-making as well as its plans to respond to material climate-related financial risks. Specifically, banks should disclose information about:",
-          "text": "5 5.3.1. the current and anticipated changes to the bank’s business model, including resource allocations to address climate-related financial risks and opportunities; 5.3.2. the current and anticipated indirect mitigation and adaptation efforts; 5.3.3. how the bank is resourcing, and plans to resource, the activities disclosed; and 5.3.4. the quantitative and qualitative information about the progress of plans disclosed in prior reporting periods. 5.4. Banks should disclose information about the bank’s transition plan, if one has been publicly disclosed voluntarily or in response to law or regulation, including information about the key assumptions used in developing the plan, the dependencies on which the plan relies as well as consistency with the bank’s broader strategy and risk appetite framework. 5.5. Banks should disclose whether and how the bank uses climate-related scenario analysis to inform its strategic decision-making, targets and transition plans, including: 5.5.1. which climate scenarios were used and the sources of those scenarios; 5.5.2. whether the climate-related scenarios used for the analysis are associated with climate-related transition risks or climate-related physical risks; 5.5.3. whether the chosen scenarios are aligned to the latest international agreement on climate change; 5.5.4. the time horizons used in the analysis; and 5.5.5. the scope of operations used in the analysis (e.g. the operating locations and business units). 5.6. Banks should describe the effects of material climate-related risks and opportunities on the bank’s financial position, financial performance and cash flows for the reporting period. This description should also indicate the bank’s anticipated effects over the short, medium and long term, taking into consideration how those climate- related risks and opportunities have been factored into the bank’s financial planning.",
+          "heading": "Strategy",
+          "text": "Strategy",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5-1",
+              "number": "5.1",
+              "text": "Banks should disclose climate-related financial risks that could reasonably be expected to materially affect the bank’s prospects, including:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s5-1-1",
+                  "number": "5.1.1",
+                  "text": "For each climate-related risk that the bank has identified, the bank should explain whether it considers the risk to be a climate-related physical risk or climate-related transition risk.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-1-2",
+                  "number": "5.1.2",
+                  "text": "For each climate-related risk identified, the bank should specify the time horizons – short, medium or long term – over which the effects of each material climate-related financial risk could reasonably be expected to occur.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-1-3",
+                  "number": "5.1.3",
+                  "text": "The bank should define short, medium and long term, and indicate how these definitions are linked to the planning horizons used for strategic decision-making.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s5-2",
+              "number": "5.2",
+              "text": "Banks should describe the current and anticipated effects of climate-related risks and opportunities on the bank’s business model and value chain. Specifically, banks should disclose:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s5-2-1",
+                  "number": "5.2.1",
+                  "text": "the current and anticipated effects of material climate-related risks and opportunities on the bank’s business model and risk profile; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-2-2",
+                  "number": "5.2.2",
+                  "text": "a description of where in the bank’s business model material climate-related risks and opportunities are concentrated, for example geographical areas, sectors, facilities and types of assets.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s5-3",
+              "number": "5.3",
+              "text": "Banks should describe the effects of material climate-related risks and opportunities on the bank’s strategy and decision-making as well as its plans to respond to material climate-related financial risks. Specifically, banks should disclose information about: 5",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s5-3-1",
+                  "number": "5.3.1",
+                  "text": "the current and anticipated changes to the bank’s business model, including resource allocations to address climate-related financial risks and opportunities;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-3-2",
+                  "number": "5.3.2",
+                  "text": "the current and anticipated indirect mitigation and adaptation efforts;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-3-3",
+                  "number": "5.3.3",
+                  "text": "how the bank is resourcing, and plans to resource, the activities disclosed; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-3-4",
+                  "number": "5.3.4",
+                  "text": "the quantitative and qualitative information about the progress of plans disclosed in prior reporting periods.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s5-4",
+              "number": "5.4",
+              "text": "Banks should disclose information about the bank’s transition plan, if one has been publicly disclosed voluntarily or in response to law or regulation, including information about the key assumptions used in developing the plan, the dependencies on which the plan relies as well as consistency with the bank’s broader strategy and risk appetite framework.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-5",
+              "number": "5.5",
+              "text": "Banks should disclose whether and how the bank uses climate-related scenario analysis to inform its strategic decision-making, targets and transition plans, including:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s5-5-1",
+                  "number": "5.5.1",
+                  "text": "which climate scenarios were used and the sources of those scenarios;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-5-2",
+                  "number": "5.5.2",
+                  "text": "whether the climate-related scenarios used for the analysis are associated with climate-related transition risks or climate-related physical risks;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-5-3",
+                  "number": "5.5.3",
+                  "text": "whether the chosen scenarios are aligned to the latest international agreement on climate change;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-5-4",
+                  "number": "5.5.4",
+                  "text": "the time horizons used in the analysis; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s5-5-5",
+                  "number": "5.5.5",
+                  "text": "the scope of operations used in the analysis (e.g. the operating locations and business units).",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s5-6",
+              "number": "5.6",
+              "text": "Banks should describe the effects of material climate-related risks and opportunities on the bank’s financial position, financial performance and cash flows for the reporting period. This description should also indicate the bank’s anticipated effects over the short, medium and long term, taking into consideration how those climate- related risks and opportunities have been factored into the bank’s financial planning.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s6",
           "number": "6",
-          "heading": "Risk management 6.1. Banks should describe the resilience of the bank’s strategy and business model to material climate-related changes, developments and uncertainties. 6.2. Banks should disclose the processes and related policies that the bank uses to identify, assess, prioritise and monitor climate-related risks, including information about: 6.2.1. the input parameters it uses (e.g. data sources and the scope of operations covered in the processes);",
-          "text": "6 6.2.2. whether and how the bank uses climate-related scenario analysis to inform its identification of climate-related risks; 6.2.3. how the bank assesses the nature, likelihood and magnitude of the effects of those risks (e.g. whether the bank considers qualitative factors, quantitative thresholds or other criteria); 6.2.4. whether and how the bank prioritises climate-related financial risks relative to other types of risks; 6.2.5. how the bank monitors climate-related financial risks; and 6.2.6. whether the bank has changed the processes it uses from the previous reporting period. 6.3. Banks should describe the extent to which, and how, processes for identifying, assessing, prioritising, managing, mitigating and monitoring climate-related risks are integrated into and inform the bank’s overall risk management. 6.4. Banks should disclose any climate-related targets that the bank has voluntarily set or that the bank is required to meet by law or regulation, if those targets materially affect or are anticipated to materially affect the bank’s business strategy and decision-making, including: 6.4.1. the objective(s) of the target(s); 6.4.2. the part of the bank to which the target applies (e.g. whether it applies to the bank in its entirety or only to a part of the bank, such as a specific business unit or specific geographical region); 6.4.3. the period over which the target applies and the base period for which progress is measured; 6.4.4. any milestone and interim target; 6.4.5. whether the target and the methodology for setting the target have been validated by a third party; 6.4.6. any actions taken or planned to achieve any material targets, including the intended use of carbon offsets; and 6.4.7. the processes in place to review these targets. Section 2: Qualitative information on climate-related financial risks – transition risk, physical risk and concentration risk",
+          "heading": "Risk management",
+          "text": "Risk management",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s6-1",
+              "number": "6.1",
+              "text": "Banks should describe the resilience of the bank’s strategy and business model to material climate-related changes, developments and uncertainties.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6-2",
+              "number": "6.2",
+              "text": "Banks should disclose the processes and related policies that the bank uses to identify, assess, prioritise and monitor climate-related risks, including information about:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s6-2-1",
+                  "number": "6.2.1",
+                  "text": "the input parameters it uses (e.g. data sources and the scope of operations covered in the processes); 6",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-2-2",
+                  "number": "6.2.2",
+                  "text": "whether and how the bank uses climate-related scenario analysis to inform its identification of climate-related risks;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-2-3",
+                  "number": "6.2.3",
+                  "text": "how the bank assesses the nature, likelihood and magnitude of the effects of those risks (e.g. whether the bank considers qualitative factors, quantitative thresholds or other criteria);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-2-4",
+                  "number": "6.2.4",
+                  "text": "whether and how the bank prioritises climate-related financial risks relative to other types of risks;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-2-5",
+                  "number": "6.2.5",
+                  "text": "how the bank monitors climate-related financial risks; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-2-6",
+                  "number": "6.2.6",
+                  "text": "whether the bank has changed the processes it uses from the previous reporting period.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s6-3",
+              "number": "6.3",
+              "text": "Banks should describe the extent to which, and how, processes for identifying, assessing, prioritising, managing, mitigating and monitoring climate-related risks are integrated into and inform the bank’s overall risk management.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6-4",
+              "number": "6.4",
+              "text": "Banks should disclose any climate-related targets that the bank has voluntarily set or that the bank is required to meet by law or regulation, if those targets materially affect or are anticipated to materially affect the bank’s business strategy and decision-making, including:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s6-4-1",
+                  "number": "6.4.1",
+                  "text": "the objective(s) of the target(s);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-4-2",
+                  "number": "6.4.2",
+                  "text": "the part of the bank to which the target applies (e.g. whether it applies to the bank in its entirety or only to a part of the bank, such as a specific business unit or specific geographical region);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-4-3",
+                  "number": "6.4.3",
+                  "text": "the period over which the target applies and the base period for which progress is measured;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-4-4",
+                  "number": "6.4.4",
+                  "text": "any milestone and interim target;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-4-5",
+                  "number": "6.4.5",
+                  "text": "whether the target and the methodology for setting the target have been validated by a third party;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-4-6",
+                  "number": "6.4.6",
+                  "text": "any actions taken or planned to achieve any material targets, including the intended use of carbon offsets; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-4-7",
+                  "number": "6.4.7",
+                  "text": "the processes in place to review these targets. Section 2: Qualitative information on climate-related financial risks – transition risk, physical risk and concentration risk",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s7",
           "number": "7",
-          "heading": "In relation to transition risk, banks should provide details of the methodology used to determine which exposures are subject to the impact of material transition risk, comprising:",
-          "text": "7 7.1. the underlying criteria used to determine the impact of the transition across sectors; 7.2. the time horizons and approaches (e.g. scenario analysis) used to assess transition risks; and 7.3. qualitative information that reflects the extent to which the bank’s financing is supporting clients in climate change mitigation and adaptation.",
+          "heading": "In relation to transition risk, banks should provide details of the methodology used to determine which exposures are",
+          "text": "In relation to transition risk, banks should provide details of the methodology used to determine which exposures are subject to the impact of material transition risk, comprising: 7",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s7-1",
+              "number": "7.1",
+              "text": "the underlying criteria used to determine the impact of the transition across sectors;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-2",
+              "number": "7.2",
+              "text": "the time horizons and approaches (e.g. scenario analysis) used to assess transition risks; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s7-3",
+              "number": "7.3",
+              "text": "qualitative information that reflects the extent to which the bank’s financing is supporting clients in climate change mitigation and adaptation.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s8",
           "number": "8",
-          "heading": "In relation to physical risk, banks should provide details of the methodology used to determine which exposures are subject to the impact of material physical risk, comprising: 8.1. a description of selected material climate-related chronic and acute events, together with the motivation for selecting those events (e.g. instances of flooding, subsidence, coastal erosion, rising sea levels, hurricanes and wildfires) based on the bank’s business model; 8.2. the underlying criteria used to determine the geographical breakdown/granularity to assess the physical risk stemming from each material climate-related event; 8.3. the sectoral considerations made in line with the bank’s portfolio; 8.4. the time horizons and scenarios used to assess the material physical risks; and 8.5. the considerations taken to assign the exposure subject to material physical risks based on the geographical location of the activity of the counterparty.",
-          "text": "",
+          "heading": "In relation to physical risk, banks should provide details of the methodology used to determine which exposures are",
+          "text": "In relation to physical risk, banks should provide details of the methodology used to determine which exposures are subject to the impact of material physical risk, comprising:",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s8-1",
+              "number": "8.1",
+              "text": "a description of selected material climate-related chronic and acute events, together with the motivation for selecting those events (e.g. instances of flooding, subsidence, coastal erosion, rising sea levels, hurricanes and wildfires) based on the bank’s business model;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-2",
+              "number": "8.2",
+              "text": "the underlying criteria used to determine the geographical breakdown/granularity to assess the physical risk stemming from each material climate-related event;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-3",
+              "number": "8.3",
+              "text": "the sectoral considerations made in line with the bank’s portfolio;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-4",
+              "number": "8.4",
+              "text": "the time horizons and scenarios used to assess the material physical risks; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s8-5",
+              "number": "8.5",
+              "text": "the considerations taken to assign the exposure subject to material physical risks based on the geographical location of the activity of the counterparty.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s9",
           "number": "9",
-          "heading": "In relation to concentration risk, banks should disclose: 9.1. the potential effects of exposures to counterparties associated with material transition or physical risks on the bank’s overall risk and financial performance; 9.2. the process(es) for identifying vulnerable concentrated exposures and assessing the likelihood of and effects associated with such risks (e.g. the qualitative factors, quantitative indicators and other criteria used); 9.3. whether and how the bank is monitoring material concentration of exposures within sectors or geolocations; and 9.4. the effects of material climate-related concentration risks on the bank’s strategy and decision-making, including how the bank is responding to and mitigating climate- related concentration risks. Section 3: Quantitative information on physical and transition risk exposures, including financed emissions",
-          "text": "",
+          "heading": "In relation to concentration risk, banks should disclose:",
+          "text": "In relation to concentration risk, banks should disclose:",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s9-1",
+              "number": "9.1",
+              "text": "the potential effects of exposures to counterparties associated with material transition or physical risks on the bank’s overall risk and financial performance;",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9-2",
+              "number": "9.2",
+              "text": "the process(es) for identifying vulnerable concentrated exposures and assessing the likelihood of and effects associated with such risks (e.g. the qualitative factors, quantitative indicators and other criteria used);",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9-3",
+              "number": "9.3",
+              "text": "whether and how the bank is monitoring material concentration of exposures within sectors or geolocations; and",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s9-4",
+              "number": "9.4",
+              "text": "the effects of material climate-related concentration risks on the bank’s strategy and decision-making, including how the bank is responding to and mitigating climate- related concentration risks. Section 3: Quantitative information on physical and transition risk exposures, including financed emissions",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s10",
           "number": "10",
-          "heading": "Banks should disclose quantitative information on physical and transition risks as per the templates provided by the BCBS 4 and attached hereto as Annexure 1 for 4 Published on 13 June 2025, available at https://www.bis.org/bcbs/publ/d597.htm .",
-          "text": "8 reference. This includes: 10.1. transition risk – exposures and financed emissions by sector: Banks should provide an overview of the bank’s gross carrying values by sector, together with associated financed emissions, credit quality and maturity ladder. Banks should also provide supplementary information on off-balance sheet items by sector. 10.2. sector classification: Banks should disclose material sectors as per the 18 sectors defined by the TCFD. 5 While these 18 sectors are based on the Global Industry Classification Standard (GICS), banks may use the Standard Industrial Classification (SIC). Banks are encouraged to disclose further disaggregated information if needed (following the respective materiality assessment). Sectoral split should be based on the principal activity of the counterparty. When a counterparty is a holding company, banks should consider the sector of the specific obligor under the holding company (if different than the holding company itself) which receives the funding. 10.3. physical risk – exposures subject to physical risks: Banks should provide an overview of the bank’s gross carrying values subject to climate change physical risks, including both chronic and acute events, split by geographical region or location subject to climate change physical risks. 10.4. geographical region or location subject to climate change physical risks: This should be done at a provincial level as a start, and work towards more granular reporting over time. Geographical split should be based on the geographical location of the principal activity of the counterparty. When a counterparty is a holding company, banks should consider the geographical area of the specific obligor under the holding company (if different than the holding company itself) which receives the funding. 10.5. transition risk – emission intensity per physical output and by sector: Banks should provide information on the bank’s financed greenhouse gas (GHG) emission intensity per physical output for those sectors where the bank has set targets. 10.6. transition risk – real estate exposures in the mortgage portfolio by energy efficiency level: This should be a bank’s gross carrying values by level of energy efficiency of the underlying collateral.",
+          "heading": "Banks should disclose quantitative information on physical and transition risks as per the templates provided by the",
+          "text": "Banks should disclose quantitative information on physical and transition risks as per the templates provided by the BCBS 4 and attached hereto as Annexure 1 for 4 Published on 13 June 2025, available at https://www.bis.org/bcbs/publ/d597.htm . 8 reference. This includes:",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s10-1",
+              "number": "10.1",
+              "text": "transition risk – exposures and financed emissions by sector: Banks should provide an overview of the bank’s gross carrying values by sector, together with associated financed emissions, credit quality and maturity ladder. Banks should also provide supplementary information on off-balance sheet items by sector.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10-2",
+              "number": "10.2",
+              "text": "sector classification: Banks should disclose material sectors as per the 18 sectors defined by the TCFD. 5 While these 18 sectors are based on the Global Industry Classification Standard (GICS), banks may use the Standard Industrial Classification (SIC). Banks are encouraged to disclose further disaggregated information if needed (following the respective materiality assessment). Sectoral split should be based on the principal activity of the counterparty. When a counterparty is a holding company, banks should consider the sector of the specific obligor under the holding company (if different than the holding company itself) which receives the funding.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10-3",
+              "number": "10.3",
+              "text": "physical risk – exposures subject to physical risks: Banks should provide an overview of the bank’s gross carrying values subject to climate change physical risks, including both chronic and acute events, split by geographical region or location subject to climate change physical risks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10-4",
+              "number": "10.4",
+              "text": "geographical region or location subject to climate change physical risks: This should be done at a provincial level as a start, and work towards more granular reporting over time. Geographical split should be based on the geographical location of the principal activity of the counterparty. When a counterparty is a holding company, banks should consider the geographical area of the specific obligor under the holding company (if different than the holding company itself) which receives the funding.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10-5",
+              "number": "10.5",
+              "text": "transition risk – emission intensity per physical output and by sector: Banks should provide information on the bank’s financed greenhouse gas (GHG) emission intensity per physical output for those sectors where the bank has set targets.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s10-6",
+              "number": "10.6",
+              "text": "transition risk – real estate exposures in the mortgage portfolio by energy efficiency level: This should be a bank’s gross carrying values by level of energy efficiency of the underlying collateral.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s11",
           "number": "11",
-          "heading": "Additional considerations 11.1. Where relevant, disclosures should describe whether and how scenarios considered South Africa-specific context and transition pathways. 11.2. Where appropriate, targets on banks’ financing activities that are environmentally sustainable should reference the South African green finance taxonomy. 6 5 See the Task Force on Climate-related Financial Disclosures’ (TCFD) Recommendations of the Task Force on Climate-related Financial Disclosures (specifically Box 2), published in June 2017, available at assets.bbhub.io/company/sites/60/2021/10/FINAL-2017-TCFD-Report.pdf 6 See https://sustainablefinanceinitiative.org.za/working-groups/taxonomy-working-group/ .",
-          "text": "9",
+          "heading": "Additional considerations",
+          "text": "Additional considerations",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s11-1",
+              "number": "11.1",
+              "text": "Where relevant, disclosures should describe whether and how scenarios considered South Africa-specific context and transition pathways.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s11-2",
+              "number": "11.2",
+              "text": "Where appropriate, targets on banks’ financing activities that are environmentally sustainable should reference the South African green finance taxonomy. 6 5 See the Task Force on Climate-related Financial Disclosures’ (TCFD) Recommendations of the Task Force on Climate-related Financial Disclosures (specifically Box 2), published in June 2017, available at assets.bbhub.io/company/sites/60/2021/10/FINAL-2017-TCFD-Report.pdf 6 See https://sustainablefinanceinitiative.org.za/working-groups/taxonomy-working-group/ . 9",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s12",
           "number": "12",
-          "heading": "Assurance requirements 12.1. The Prudential Authority (PA) does not require these disclosures to be subjected to independent external assurance at this time, but banks should work towards a future state in which external assurance is expected. 12.2. To ensure data quality, these disclosures should be subjected to internal governance processes and controls, as used for financial reporting.",
-          "text": "",
+          "heading": "Assurance requirements",
+          "text": "Assurance requirements",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s12-1",
+              "number": "12.1",
+              "text": "The Prudential Authority (PA) does not require these disclosures to be subjected to independent external assurance at this time, but banks should work towards a future state in which external assurance is expected.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s12-2",
+              "number": "12.2",
+              "text": "To ensure data quality, these disclosures should be subjected to internal governance processes and controls, as used for financial reporting.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s13",
           "number": "13",
-          "heading": "Implementation 13.1. The PA encourages banks to be proactive in their climate-related risk management and disclosures, and not wait for regulation to be issued or be compliance-driven. Climate risk management is a developing area, and approaches will evolve and mature over time; however, the expectation of future improvements and developments in approach is not a justification for delayed implementation. Climate- related disclosures are expected to become mandatory over time. 13.2. The timeline of mandatory disclosures will be determined by numerous factors, including, but not limited to, non-financial corporate sector disclosure requirements and international standard-setting bodies. Financial institutions’ progress in addressing climate-related risks relies on the non-financial corporate sector making similar progress, including in the areas of firm-level disclosures, addressing data gaps and transition plans.",
-          "text": "",
+          "heading": "Implementation",
+          "text": "Implementation",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s13-1",
+              "number": "13.1",
+              "text": "The PA encourages banks to be proactive in their climate-related risk management and disclosures, and not wait for regulation to be issued or be compliance-driven. Climate risk management is a developing area, and approaches will evolve and mature over time; however, the expectation of future improvements and developments in approach is not a justification for delayed implementation. Climate- related disclosures are expected to become mandatory over time.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s13-2",
+              "number": "13.2",
+              "text": "The timeline of mandatory disclosures will be determined by numerous factors, including, but not limited to, non-financial corporate sector disclosure requirements and international standard-setting bodies. Financial institutions’ progress in addressing climate-related risks relies on the non-financial corporate sector making similar progress, including in the areas of firm-level disclosures, addressing data gaps and transition plans.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s14",
           "number": "14",
-          "heading": "Acknowledgement of receipt 14.1. Kindly ensure that a copy of this Guidance Note, including the Annexure, is made available to your bank’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the bank and said auditors, should be returned to the PA at the earliest convenience. Fundi Tshazibana Chief Executive Officer Date: The previous Guidance Note issued was Guidance Note G2/2025, dated 24 June 2025.",
-          "text": "",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s14-1",
+              "number": "14.1",
+              "text": "Kindly ensure that a copy of this Guidance Note, including the Annexure, is made available to your bank’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the bank and said auditors, should be returned to the PA at the earliest convenience. Fundi Tshazibana Chief Executive Officer Date: The previous Guidance Note issued was Guidance Note G2/2025, dated 24 June 2025.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }

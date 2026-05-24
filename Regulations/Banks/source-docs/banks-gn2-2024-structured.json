@@ -27,42 +27,512 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Introduction 1.1. Climate change may result in physical 1 and transition 2 risks that could affect the safety and soundness of banks and have broader financial stability implications for the financial sector. To this effect, it is imperative that banks take active steps to address climate-related risks. 1.2. The Prudential Authority (PA) has developed this guidance note to strengthen and improve risk management practices related to climate-related risks with the purpose of enhancing financial soundness and stability. This guidance note is intended to be applied on a proportionate basis considering the size, nature and complexity of the institution and the overall level of risk that each institution is willing to accept. 1 Physical risks can be categorised as either acute – if they arise from climate and weather-related events – or chronic – if they arise from progressive shifts in climate and weather patterns. Physical risks include the economic costs and financial losses resulting from the increasing severity and frequency of extreme climate change-related weather events (such as heat waves, droughts, landslides, floods, wildfires, and storms), as well as longer-term progressive shifts in the climate (such as ocean acidification, rising sea levels and average temperatures). 2 Transition risks are financial risks which can result from the process of adjustment towards a lower-carbon and more circular economy, prompted, for example, by changes in climate and environmental policy, technology, or market sentiment.",
-          "text": "2",
+          "heading": "Introduction",
+          "text": "Introduction",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s1-1",
+              "number": "1.1",
+              "text": "Climate change may result in physical 1 and transition 2 risks that could affect the safety and soundness of banks and have broader financial stability implications for the financial sector. To this effect, it is imperative that banks take active steps to address climate-related risks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-2",
+              "number": "1.2",
+              "text": "The Prudential Authority (PA) has developed this guidance note to strengthen and improve risk management practices related to climate-related risks with the purpose of enhancing financial soundness and stability. This guidance note is intended to be applied on a proportionate basis considering the size, nature and complexity of the institution and the overall level of risk that each institution is willing to accept. 1 Physical risks can be categorised as either acute – if they arise from climate and weather-related events – or chronic – if they arise from progressive shifts in climate and weather patterns. Physical risks include the economic costs and financial losses resulting from the increasing severity and frequency of extreme climate change-related weather events (such as heat waves, droughts, landslides, floods, wildfires, and storms), as well as longer-term progressive shifts in the climate (such as ocean acidification, rising sea levels and average temperatures). 2 Transition risks are financial risks which can result from the process of adjustment towards a lower-carbon and more circular economy, prompted, for example, by changes in climate and environmental policy, technology, or market sentiment. 2",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s2",
           "number": "2",
-          "heading": "Governance 2.1. Good governance is the foundation of prudent business management. Strong governance arrangements should be supported by the banks corporate culture. 2.2. The Board of Directors are responsible for the effective and successful oversight and management of climate-related risks. The Board of Directors may delegate the management of climate-related risks and has the responsibility to monitor the exercise of the delegated functions and activities. The delegation arrangements should include a clear assignment of the delegated responsibilities, and mechanisms for monitoring the exercise of the delegated authority. The Board of Directors should be able to evidence their ongoing oversight of these risks. 2.3. The reference to the Board of Directors and senior management throughout this guidance should be understood in accordance with their respective roles and responsibilities. 2.4. The Board of Directors and senior management should clearly identify and assign responsibilities throughout the bank’s organisational structure for managing climate- related risks. The bank may either establish an internal risk committee or expand the scope of existing risk committees for identifying the changing risk landscape and responding to climate-related risks. 2.5. The Board of Directors and senior management should develop comprehensive policies and processes that will assist in identifying climate-related risk drivers and assessing the potential impacts thereof on the bank and the environment in which they conduct business. 2.6. The Board of Directors and senior management should identify climate-related risks that are material to its business model over various time horizons, and incorporate the identified risks into its risk profile, risk management policies and practices, as well as overall business strategy and financial planning process. 2.7. The Board of Directors and senior management should have an adequate understanding of climate-related risks and be equipped with the appropriate skills and experience to respectively provide oversight and manage these risks. Banks should build capacity and train the Board of Directors, senior management and relevant staff on climate-related topics relevant to the bank. 2.8. The Board of Directors and senior management should ensure that their internal strategies and risk appetite statements are consistent with any publicly communicated climate-related strategies and commitments. These should be regularly reviewed given the evolving nature of climate-related risks.",
-          "text": "",
+          "heading": "Governance",
+          "text": "Governance",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "text": "Good governance is the foundation of prudent business management. Strong governance arrangements should be supported by the banks corporate culture.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-2",
+              "number": "2.2",
+              "text": "The Board of Directors are responsible for the effective and successful oversight and management of climate-related risks. The Board of Directors may delegate the management of climate-related risks and has the responsibility to monitor the exercise of the delegated functions and activities. The delegation arrangements should include a clear assignment of the delegated responsibilities, and mechanisms for monitoring the exercise of the delegated authority. The Board of Directors should be able to evidence their ongoing oversight of these risks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-3",
+              "number": "2.3",
+              "text": "The reference to the Board of Directors and senior management throughout this guidance should be understood in accordance with their respective roles and responsibilities.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-4",
+              "number": "2.4",
+              "text": "The Board of Directors and senior management should clearly identify and assign responsibilities throughout the bank’s organisational structure for managing climate- related risks. The bank may either establish an internal risk committee or expand the scope of existing risk committees for identifying the changing risk landscape and responding to climate-related risks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-5",
+              "number": "2.5",
+              "text": "The Board of Directors and senior management should develop comprehensive policies and processes that will assist in identifying climate-related risk drivers and assessing the potential impacts thereof on the bank and the environment in which they conduct business.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-6",
+              "number": "2.6",
+              "text": "The Board of Directors and senior management should identify climate-related risks that are material to its business model over various time horizons, and incorporate the identified risks into its risk profile, risk management policies and practices, as well as overall business strategy and financial planning process.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-7",
+              "number": "2.7",
+              "text": "The Board of Directors and senior management should have an adequate understanding of climate-related risks and be equipped with the appropriate skills and experience to respectively provide oversight and manage these risks. Banks should build capacity and train the Board of Directors, senior management and relevant staff on climate-related topics relevant to the bank.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-8",
+              "number": "2.8",
+              "text": "The Board of Directors and senior management should ensure that their internal strategies and risk appetite statements are consistent with any publicly communicated climate-related strategies and commitments. These should be regularly reviewed given the evolving nature of climate-related risks.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s3",
           "number": "3",
-          "heading": "Risk Management 3.1. An integrated approach 3.1.1. The bank could be potentially affected by climate-related risks irrespective of the size, business model and complexity of the bank. The multifaceted nature of climate-",
-          "text": "3 related risk requires that banks incorporate and integrate this risk into their established risk frameworks. 3.1.2. The nature, extent and impact of climate-related risks warrants an integrated and holistic approach that is not restricted to reputational risk considerations but a sustained focus on the impact of climate-related risks on the banks business model and strategy, including their capital resources and liquidity positions. 3.1.3. The bank should be able to demonstrate that climate-related risks have been considered under relevant traditional risk categories such as credit, market, operational and liquidity risks. 3.2. Risk management process 3.2.1. The bank should identify, measure, monitor and report on exposures to climate- related risk. Banks should ensure that these exposures to climate-related risk are embedded in the Enterprise Risk Management or similar framework. 3.2.2. The bank’s risk appetite and risk management policies should include climate- related risks. 3.2.3. Climate-related risk can have wide-ranging impacts in terms of the sectors and geographies it affects. Banks should consider potential transmission channels, the complexity of the impact on the economy and financial sector, uncertainty related to climate change and potential interactions between physical and transition risks. 3.2.4. The risk management function is expected to develop appropriate quantitative and qualitative methods and metrics to be used in monitoring progress relative to its strategy and risk appetite as this relates to the assessment of climate-related risk. Where appropriate, banks should consider risk mitigation measures such as, but not limited to, establishing internal limits for the various types of material climate-related financial risks to which they are exposed, e.g. in their credit, market, liquidity and operational risk profiles. 3.2.5. The bank should develop processes to evaluate the solvency impact of climate- related risks that may materialise within their capital planning horizons. 3.2.6. The risk management function is expected to provide the Board of Directors and its subcommittees with reports on exposures to climate-related risks to enable the Board of Directors to discuss, challenge and make decisions relating to the bank’s management of climate-related risks. 3.2.7. The risk management function should ensure that the bank and their Board of Directors remain cognisant of direct legal action against banks for failing to manage climate-related risks. The risk management function should maintain a register tracking climate-related litigation and continually test the banks resilience to such litigation risk. The risk management function should ensure that climate-related litigation drivers are well understood within the bank and adequately captured in the risk management framework. 3.2.8. The specialist nature of climate-related risk may require a unique skill set. These skills may be procured through capacity building or through the insourcing of specialist skills adept at addressing the nuances of climate-related risks. 3.2.9. The bank should adapt their internal policies and implement appropriate training programs to ensure that there is sufficient understanding of the impact of climate- related risk on the risk profiles of the bank. Banks should ensure that persons performing such functions possess the necessary experience in understanding climate-related risk. 3.2.10. The bank may designate specific persons or a specific dedicated unit to maintain\n\n\n4 primary responsibility for climate-related aspects and to ensure that climate-related risks remain in scope and integrated into all relevant parts of the bank’s business. 3.3. Compliance function 3.3.1. The compliance function should ensure that climate-related risks are identified and accounted for in the compliance management framework. 3.3.2. The compliance function should ensure that internal policies and controls are compliant with relevant regulatory and supervisory frameworks as these relate to climate-related risks. Relevant international frameworks should be considered where the bank conducts business within international jurisdictions. 3.3.3. The compliance function should on a continual basis assess compliance-related climate risk drivers. 3.4. Internal audit function 3.4.1. The risk management process that applies to climate-related risks should be reviewed by the internal audit function to ensure the adequacy and effectiveness of the process. Where climate-related risk is material, the internal audit function should assess the impact of the risk on the bank’s resilience and consider the appropriateness of mitigation measures if avoidance of these risks is not possible. Material risks should be reported on and disclosed in the bank’s annual reporting. 3.5. Outsourcing 3.5.1. Outsourcing material activities and functions is an inherent part of the activities of a bank. The bank should therefore ensure that there is continuity of the outsourced functions in the event of failure of an outsourcing service provider. 3.5.2. The bank should ensure that business continuity plans account for physical risks that may disrupt the operations of the outsourced service provider. 3.5.3. Business continuity plans should therefore reflect climate-related risks where such risks are deemed material. 3.5.4. The bank may consider utilising physical risk scenarios in assessing the climate- related risk associated with outsourced service providers. 3.6. Transition planning 3.6.1. Transition plans, and the process of transition planning, are an important tool to manage climate-related risks and achieve commitments to climate targets. There is an emerging consensus on the general concept of transition plans as an articulation of a bank’s forward-looking approach to the transition to a low carbon economy and the increasing physical effects of climate change. 3.6.2. As part of climate risk management, the bank should undertake transition planning and consider compiling transition plans in proportion to their size, business model and complexity. 3.6.3. Transition planning should support practices to test the resilience of a bank’s strategy and understand and manage the risks associated with various transition pathways and potential changes in business models. Transition planning should consider geopolitical considerations, government policy and the structural changes required in the real economy. International frameworks should be considered where applicable.\n\n\n5",
+          "heading": "Risk Management",
+          "text": "Risk Management",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "text": "An integrated approach",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-1-1",
+                  "number": "3.1.1",
+                  "text": "The bank could be potentially affected by climate-related risks irrespective of the size, business model and complexity of the bank. The multifaceted nature of climate- 3 related risk requires that banks incorporate and integrate this risk into their established risk frameworks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-2",
+                  "number": "3.1.2",
+                  "text": "The nature, extent and impact of climate-related risks warrants an integrated and holistic approach that is not restricted to reputational risk considerations but a sustained focus on the impact of climate-related risks on the banks business model and strategy, including their capital resources and liquidity positions.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-3",
+                  "number": "3.1.3",
+                  "text": "The bank should be able to demonstrate that climate-related risks have been considered under relevant traditional risk categories such as credit, market, operational and liquidity risks.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-2",
+              "number": "3.2",
+              "text": "Risk management process",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-2-1",
+                  "number": "3.2.1",
+                  "text": "The bank should identify, measure, monitor and report on exposures to climate- related risk. Banks should ensure that these exposures to climate-related risk are embedded in the Enterprise Risk Management or similar framework.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-2",
+                  "number": "3.2.2",
+                  "text": "The bank’s risk appetite and risk management policies should include climate- related risks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-3",
+                  "number": "3.2.3",
+                  "text": "Climate-related risk can have wide-ranging impacts in terms of the sectors and geographies it affects. Banks should consider potential transmission channels, the complexity of the impact on the economy and financial sector, uncertainty related to climate change and potential interactions between physical and transition risks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-4",
+                  "number": "3.2.4",
+                  "text": "The risk management function is expected to develop appropriate quantitative and qualitative methods and metrics to be used in monitoring progress relative to its strategy and risk appetite as this relates to the assessment of climate-related risk. Where appropriate, banks should consider risk mitigation measures such as, but not limited to, establishing internal limits for the various types of material climate-related financial risks to which they are exposed, e.g. in their credit, market, liquidity and operational risk profiles.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-5",
+                  "number": "3.2.5",
+                  "text": "The bank should develop processes to evaluate the solvency impact of climate- related risks that may materialise within their capital planning horizons.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-6",
+                  "number": "3.2.6",
+                  "text": "The risk management function is expected to provide the Board of Directors and its subcommittees with reports on exposures to climate-related risks to enable the Board of Directors to discuss, challenge and make decisions relating to the bank’s management of climate-related risks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-7",
+                  "number": "3.2.7",
+                  "text": "The risk management function should ensure that the bank and their Board of Directors remain cognisant of direct legal action against banks for failing to manage climate-related risks. The risk management function should maintain a register tracking climate-related litigation and continually test the banks resilience to such litigation risk. The risk management function should ensure that climate-related litigation drivers are well understood within the bank and adequately captured in the risk management framework.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-8",
+                  "number": "3.2.8",
+                  "text": "The specialist nature of climate-related risk may require a unique skill set. These skills may be procured through capacity building or through the insourcing of specialist skills adept at addressing the nuances of climate-related risks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-9",
+                  "number": "3.2.9",
+                  "text": "The bank should adapt their internal policies and implement appropriate training programs to ensure that there is sufficient understanding of the impact of climate- related risk on the risk profiles of the bank. Banks should ensure that persons performing such functions possess the necessary experience in understanding climate-related risk.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-10",
+                  "number": "3.2.10",
+                  "text": "The bank may designate specific persons or a specific dedicated unit to maintain 4 primary responsibility for climate-related aspects and to ensure that climate-related risks remain in scope and integrated into all relevant parts of the bank’s business.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-3",
+              "number": "3.3",
+              "text": "Compliance function",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-1",
+                  "number": "3.3.1",
+                  "text": "The compliance function should ensure that climate-related risks are identified and accounted for in the compliance management framework.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-2",
+                  "number": "3.3.2",
+                  "text": "The compliance function should ensure that internal policies and controls are compliant with relevant regulatory and supervisory frameworks as these relate to climate-related risks. Relevant international frameworks should be considered where the bank conducts business within international jurisdictions.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-3",
+                  "number": "3.3.3",
+                  "text": "The compliance function should on a continual basis assess compliance-related climate risk drivers.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-4",
+              "number": "3.4",
+              "text": "Internal audit function",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-4-1",
+                  "number": "3.4.1",
+                  "text": "The risk management process that applies to climate-related risks should be reviewed by the internal audit function to ensure the adequacy and effectiveness of the process. Where climate-related risk is material, the internal audit function should assess the impact of the risk on the bank’s resilience and consider the appropriateness of mitigation measures if avoidance of these risks is not possible. Material risks should be reported on and disclosed in the bank’s annual reporting.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-5",
+              "number": "3.5",
+              "text": "Outsourcing",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-5-1",
+                  "number": "3.5.1",
+                  "text": "Outsourcing material activities and functions is an inherent part of the activities of a bank. The bank should therefore ensure that there is continuity of the outsourced functions in the event of failure of an outsourcing service provider.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-5-2",
+                  "number": "3.5.2",
+                  "text": "The bank should ensure that business continuity plans account for physical risks that may disrupt the operations of the outsourced service provider.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-5-3",
+                  "number": "3.5.3",
+                  "text": "Business continuity plans should therefore reflect climate-related risks where such risks are deemed material.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-5-4",
+                  "number": "3.5.4",
+                  "text": "The bank may consider utilising physical risk scenarios in assessing the climate- related risk associated with outsourced service providers.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-6",
+              "number": "3.6",
+              "text": "Transition planning",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-6-1",
+                  "number": "3.6.1",
+                  "text": "Transition plans, and the process of transition planning, are an important tool to manage climate-related risks and achieve commitments to climate targets. There is an emerging consensus on the general concept of transition plans as an articulation of a bank’s forward-looking approach to the transition to a low carbon economy and the increasing physical effects of climate change.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-6-2",
+                  "number": "3.6.2",
+                  "text": "As part of climate risk management, the bank should undertake transition planning and consider compiling transition plans in proportion to their size, business model and complexity.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-6-3",
+                  "number": "3.6.3",
+                  "text": "Transition planning should support practices to test the resilience of a bank’s strategy and understand and manage the risks associated with various transition pathways and potential changes in business models. Transition planning should consider geopolitical considerations, government policy and the structural changes required in the real economy. International frameworks should be considered where applicable. 5",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Internal Capital Adequacy Assessment Process (ICAAP) 4.1. General 4.1.1. Climate-related risks may have an impact on institutions regardless of their size, complexity, or business model. As a result of the exposure to climate-related risk, the regulatory capital framework places increased emphasis on risk management and banks are required to employ suitable process, procedures, and systems to ensure capital adequacy commensurate with their risk profile to safeguard against these risks. It is therefore imperative for banks to consider climate-related risks in the bank’s ICAAP to ensure adequate coverage of these potential risk exposures. 4.1.2. The bank should have risk analysis capabilities by identifying relevant climate- related risk drivers that may materially impair their financial condition. 4.1.3. Adequate key risk indicators and metrics should be developed to quantify exposures to climate-related risks. 4.1.4. The bank should assess the links between climate-related risks and traditional financial risk types such as credit and liquidity risks. These analyses should consider physical and transition risks as drivers of credit, market, operational and liquidity risks over a range of relevant time horizons. 4.2. Stress testing and scenario analysis 4.2.1. Scenario analysis and stress testing may serve numerous objectives and can be used as a supplementary risk and capital tool for risk identification, monitoring and assessment. 4.2.2. Scenario analysis may help the bank understand the potential impact of climate- related risks on its business model and strategy and assist in determining and quantifying the potential exposure to physical and transition risks. 4.2.3. Whilst scenario analysis and stress testing in respect of climate-related risk is evolving, banks are expected to align the objectives of these analyses with the bank’s risk appetite and risk management framework. This may relate to informing capital and liquidity planning or to their role as an integral element of sound risk management. 4.2.4. The bank should have written policies in place governing the scenario analysis and stress testing methodologies and their objectives in the bank’s risk management framework and capital and liquidity planning process; 4.2.5. Develop a forward-looking view of climate-related risks through scenario analysis and stress testing as part of the ICAAP; 4.2.6. Include results of forward-looking stress tests for a minimum of 3 years and ideally 5 years or longer when evaluating the bank’s capital adequacy. These should be based on sufficiently severe but plausible circumstances; 4.2.7. Perform comprehensive and rigorous stress tests to identify possible events or market changes that may have serious adverse effects or significant impact on the bank’s capital and operations; and 4.2.8. Incorporate quantitative and qualitative techniques in stress testing and scenario analysis to assess the impact on the banks’ exposures to specific events. 4.2.9. Stress-testing and scenario analysis should be designed such that the output can be used for decision-making at the appropriate management and strategic levels.",
-          "text": "6 4.3. Reporting requirements in respect of an ICAAP 4.3.1. The following should be documented and explained in the ICAAP documentation to allow for supervisory review: 4.3.1.1. The methodologies used to identify, assess/measure, monitor and report climate- related risks; 4.3.1.2. The climate-related risks identified including their transmission channels and the treatment of correlation among risks; 4.3.1.3. The impact these identified climate-related risks could have on the determination of total internal capital; 4.3.1.4. The type and nature of the scenario analysis and stress tests adopted to assess climate-related risks; 4.3.1.5. Risk management and risk mitigation strategies to mitigate and manage these risks; 4.3.1.6. Contingency plans to deal with divergence and unexpected events; and 4.3.1.7. Details on the challenges identified in the process of assessing climate-related risks and how these could be addressed in future.",
+          "heading": "Internal Capital Adequacy Assessment Process (ICAAP)",
+          "text": "Internal Capital Adequacy Assessment Process (ICAAP)",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "General",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-1-1",
+                  "number": "4.1.1",
+                  "text": "Climate-related risks may have an impact on institutions regardless of their size, complexity, or business model. As a result of the exposure to climate-related risk, the regulatory capital framework places increased emphasis on risk management and banks are required to employ suitable process, procedures, and systems to ensure capital adequacy commensurate with their risk profile to safeguard against these risks. It is therefore imperative for banks to consider climate-related risks in the bank’s ICAAP to ensure adequate coverage of these potential risk exposures.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-2",
+                  "number": "4.1.2",
+                  "text": "The bank should have risk analysis capabilities by identifying relevant climate- related risk drivers that may materially impair their financial condition.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-3",
+                  "number": "4.1.3",
+                  "text": "Adequate key risk indicators and metrics should be developed to quantify exposures to climate-related risks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-4",
+                  "number": "4.1.4",
+                  "text": "The bank should assess the links between climate-related risks and traditional financial risk types such as credit and liquidity risks. These analyses should consider physical and transition risks as drivers of credit, market, operational and liquidity risks over a range of relevant time horizons.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s4-2",
+              "number": "4.2",
+              "text": "Stress testing and scenario analysis",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-2-1",
+                  "number": "4.2.1",
+                  "text": "Scenario analysis and stress testing may serve numerous objectives and can be used as a supplementary risk and capital tool for risk identification, monitoring and assessment.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-2",
+                  "number": "4.2.2",
+                  "text": "Scenario analysis may help the bank understand the potential impact of climate- related risks on its business model and strategy and assist in determining and quantifying the potential exposure to physical and transition risks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-3",
+                  "number": "4.2.3",
+                  "text": "Whilst scenario analysis and stress testing in respect of climate-related risk is evolving, banks are expected to align the objectives of these analyses with the bank’s risk appetite and risk management framework. This may relate to informing capital and liquidity planning or to their role as an integral element of sound risk management.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-4",
+                  "number": "4.2.4",
+                  "text": "The bank should have written policies in place governing the scenario analysis and stress testing methodologies and their objectives in the bank’s risk management framework and capital and liquidity planning process;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-5",
+                  "number": "4.2.5",
+                  "text": "Develop a forward-looking view of climate-related risks through scenario analysis and stress testing as part of the ICAAP;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-6",
+                  "number": "4.2.6",
+                  "text": "Include results of forward-looking stress tests for a minimum of 3 years and ideally 5 years or longer when evaluating the bank’s capital adequacy. These should be based on sufficiently severe but plausible circumstances;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-7",
+                  "number": "4.2.7",
+                  "text": "Perform comprehensive and rigorous stress tests to identify possible events or market changes that may have serious adverse effects or significant impact on the bank’s capital and operations; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-8",
+                  "number": "4.2.8",
+                  "text": "Incorporate quantitative and qualitative techniques in stress testing and scenario analysis to assess the impact on the banks’ exposures to specific events.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-2-9",
+                  "number": "4.2.9",
+                  "text": "Stress-testing and scenario analysis should be designed such that the output can be used for decision-making at the appropriate management and strategic levels. 6",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s4-3",
+              "number": "4.3",
+              "text": "Reporting requirements in respect of an ICAAP",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-3-1",
+                  "number": "4.3.1",
+                  "text": "The following should be documented and explained in the ICAAP documentation to allow for supervisory review:",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s4-3-1-1",
+                      "number": "4.3.1.1",
+                      "text": "The methodologies used to identify, assess/measure, monitor and report climate- related risks;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3-1-2",
+                      "number": "4.3.1.2",
+                      "text": "The climate-related risks identified including their transmission channels and the treatment of correlation among risks;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3-1-3",
+                      "number": "4.3.1.3",
+                      "text": "The impact these identified climate-related risks could have on the determination of total internal capital;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3-1-4",
+                      "number": "4.3.1.4",
+                      "text": "The type and nature of the scenario analysis and stress tests adopted to assess climate-related risks;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3-1-5",
+                      "number": "4.3.1.5",
+                      "text": "Risk management and risk mitigation strategies to mitigate and manage these risks;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3-1-6",
+                      "number": "4.3.1.6",
+                      "text": "Contingency plans to deal with divergence and unexpected events; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-3-1-7",
+                      "number": "4.3.1.7",
+                      "text": "Details on the challenges identified in the process of assessing climate-related risks and how these could be addressed in future.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Acknowledgement of receipt 5.1. Kindly ensure that a copy of this guidance note is made available to your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Banks Act Guidance note 1/2024, dated 27 February 2024.",
-          "text": "",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5-1",
+              "number": "5.1",
+              "text": "Kindly ensure that a copy of this guidance note is made available to your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Banks Act Guidance note 1/2024, dated 27 February 2024.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }

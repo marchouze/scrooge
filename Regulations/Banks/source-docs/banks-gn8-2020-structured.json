@@ -27,58 +27,297 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Introduction 1.1 The Basel III LCR framework 1 makes provision for jurisdictions with an insufficient supply of High Quality Liquid Assets (HQLA) in their domestic currency to meet the aggregate demand of banks in domestic currency to provide a committed liquidity facility by the central bank for a fee. 1.2 Since 2012, the SARB has made available a CLF in order to assist banks to comply with the requirements related to the LCR. 1.3 This Guidance Note contains revised guidelines and conditions relating to the continued provision of the CLF, specifically in respect of the period 1 December 2020 to 30 November 2021 and confirms that the CLF will be fully phased out by 1 December 2021. 1.4 This Guidance Note also contains guidelines and conditions relating to the RCLF that will be made available to all banks from 1 December 2020 onwards. 1 Available online at Basel III LCR framework",
-          "text": "2 PO Box 8432 Pretoria 0001  370 Helen Joseph Street Pretoria 0002  South Africa  Tel +27 12 313 3911 / 0861 12 7272  Fax +27 12 313 3758  www.resbank.co.za",
+          "heading": "Introduction",
+          "text": "Introduction",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s1-1",
+              "number": "1.1",
+              "text": "The Basel III LCR framework 1 makes provision for jurisdictions with an insufficient supply of High Quality Liquid Assets (HQLA) in their domestic currency to meet the aggregate demand of banks in domestic currency to provide a committed liquidity facility by the central bank for a fee.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-2",
+              "number": "1.2",
+              "text": "Since 2012, the SARB has made available a CLF in order to assist banks to comply with the requirements related to the LCR.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-3",
+              "number": "1.3",
+              "text": "This Guidance Note contains revised guidelines and conditions relating to the continued provision of the CLF, specifically in respect of the period 1 December 2020 to 30 November 2021 and confirms that the CLF will be fully phased out by 1 December 2021.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-4",
+              "number": "1.4",
+              "text": "This Guidance Note also contains guidelines and conditions relating to the RCLF that will be made available to all banks from 1 December 2020 onwards. 1 Available online at Basel III LCR framework 2 PO Box 8432 Pretoria 0001  370 Helen Joseph Street Pretoria 0002  South Africa  Tel +27 12 313 3911 / 0861 12 7272  Fax +27 12 313 3758  www.resbank.co.za",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s2",
           "number": "2",
-          "heading": "Eligible collateral for the CLF and the RCLF 2.1 No changes are made to the eligible collateral that was previously published for the CLF. 2.2 Eligible collateral for RCLF will be the same as for the CLF. 2.3 In the case of banks that wish to pledge commercial mortgages as collateral for the CLF or the RCLF, the SARB may consider internally rated commercial mortgage backed structures on a case by case basis. 2.4 Detailed information on the collateral requirements is available in the Addendum to the Operational Notice of the Financial Markets Department of the SARB, which is available on the SARB’s website 2 . 2.5 Eligible collateral for a facility that has been granted, but which has not yet been lodged with the SARB at the beginning of the CLF or RCLF contracting period, shall be subject to the SARB’s final approval prior to the lodging thereof. 2.6 Banks must ensure that the collateral lodged in respect of the CLF or RCLF is and continues to be eligible throughout the CLF or RCLF contract period. 2.7 Banks must indicate explicitly their intention (if any and as the case may be) to top-up their collateral during the CLF or RCLF’s contract period as part of their application.",
-          "text": "",
+          "heading": "Eligible collateral for the CLF and the RCLF",
+          "text": "Eligible collateral for the CLF and the RCLF",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "text": "No changes are made to the eligible collateral that was previously published for the CLF.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-2",
+              "number": "2.2",
+              "text": "Eligible collateral for RCLF will be the same as for the CLF.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-3",
+              "number": "2.3",
+              "text": "In the case of banks that wish to pledge commercial mortgages as collateral for the CLF or the RCLF, the SARB may consider internally rated commercial mortgage backed structures on a case by case basis.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-4",
+              "number": "2.4",
+              "text": "Detailed information on the collateral requirements is available in the Addendum to the Operational Notice of the Financial Markets Department of the SARB, which is available on the SARB’s website 2 .",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-5",
+              "number": "2.5",
+              "text": "Eligible collateral for a facility that has been granted, but which has not yet been lodged with the SARB at the beginning of the CLF or RCLF contracting period, shall be subject to the SARB’s final approval prior to the lodging thereof.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-6",
+              "number": "2.6",
+              "text": "Banks must ensure that the collateral lodged in respect of the CLF or RCLF is and continues to be eligible throughout the CLF or RCLF contract period.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-7",
+              "number": "2.7",
+              "text": "Banks must indicate explicitly their intention (if any and as the case may be) to top-up their collateral during the CLF or RCLF’s contract period as part of their application.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s3",
           "number": "3",
-          "heading": "Capital and reporting requirements for SPI structures for CLF and RCLF purposes 3.1 The look-through principle must be applied for assets transferred into a special- purpose institution (SPI) for the calculation of minimum required capital and reserve funds. This means that , with regard to credit risk, the amount of capital that banks are required to maintain must be equal to the capital requirement had the assets not been transferred to the SPI for CLF or RCLF purposes. 3.2 Banks must report assets that have been transferred to the SPI for CLF or RCLF purposes in the original asset class (for example, residential mortgage advances) on the form BA 200. This means that a bank may not derecognise these assets. 3.3 Banks are required to complete the form BA 200 for the SPI on a quarterly basis based on the underlying assets in the SPI. The form BA 200 of the SPI must be verified by the bank’s internal audit function prior to being signed off. 3.4 The aforesaid verification process must be based on a control-based audit to verify the accuracy and completeness of the reporting of assets maintained in the SPI and to ensure that reasonable control measures are in place for the transfer of assets in and out of the SPI. The risk management controls in place for the SPI must be commensurate with those that are in place in a relevant business unit of the bank. 2 http://www.resbank.co.za/Lists/News%20and%20Publications/Attachments/7514/CLFOperational%20NoticeAdd endum_August2016.pdf",
-          "text": "3 PO Box 8432 Pretoria 0001  370 Helen Joseph Street Pretoria 0002  South Africa  Tel +27 12 313 3911 / 0861 12 7272  Fax +27 12 313 3758  www.resbank.co.za",
+          "heading": "Capital and reporting requirements for SPI structures for CLF and RCLF purposes",
+          "text": "Capital and reporting requirements for SPI structures for CLF and RCLF purposes",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "text": "The look-through principle must be applied for assets transferred into a special- purpose institution (SPI) for the calculation of minimum required capital and reserve funds. This means that , with regard to credit risk, the amount of capital that banks are required to maintain must be equal to the capital requirement had the assets not been transferred to the SPI for CLF or RCLF purposes.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-2",
+              "number": "3.2",
+              "text": "Banks must report assets that have been transferred to the SPI for CLF or RCLF purposes in the original asset class (for example, residential mortgage advances) on the form BA 200. This means that a bank may not derecognise these assets.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-3",
+              "number": "3.3",
+              "text": "Banks are required to complete the form BA 200 for the SPI on a quarterly basis based on the underlying assets in the SPI. The form BA 200 of the SPI must be verified by the bank’s internal audit function prior to being signed off.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-4",
+              "number": "3.4",
+              "text": "The aforesaid verification process must be based on a control-based audit to verify the accuracy and completeness of the reporting of assets maintained in the SPI and to ensure that reasonable control measures are in place for the transfer of assets in and out of the SPI. The risk management controls in place for the SPI must be commensurate with those that are in place in a relevant business unit of the bank. 2 http://www.resbank.co.za/Lists/News%20and%20Publications/Attachments/7514/CLFOperational%20NoticeAdd endum_August2016.pdf 3 PO Box 8432 Pretoria 0001  370 Helen Joseph Street Pretoria 0002  South Africa  Tel +27 12 313 3911 / 0861 12 7272  Fax +27 12 313 3758  www.resbank.co.za",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Pricing 4.1 On granting of the CLF, a commitment fee is payable to the SARB, regardless of whether the facility is utilised. The commitment fee for the facility for the period 1 December 2020 to 30 November 2021 will remain unchanged at 58 basis points. The commitment fee is determined on an annual basis. 4.2 On granting of the RCLF, a commitment fee is payable to the SARB, regardless of whether the facility is utilised. The commitment fee is specified in regulation 26(12)(b)(iii)(D)(iii)(bb)(i) of the Regulations relating to Banks (the Regulations) as a minimum of 75 basis points. The commitment fee for the RCLF facility period of 1 December 2020 to 30 November 2021 will be set at 75 basis points. 4.3 On drawing down on the CLF or RCLF, a drawdown rate equal to the SARB’s repo rate plus 100 basis points is payable. 4.4 Any drawdown of funds will be limited to a 31 calendar-day period.",
-          "text": "",
+          "heading": "Pricing",
+          "text": "Pricing",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "On granting of the CLF, a commitment fee is payable to the SARB, regardless of whether the facility is utilised. The commitment fee for the facility for the period 1 December 2020 to 30 November 2021 will remain unchanged at 58 basis points. The commitment fee is determined on an annual basis.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-2",
+              "number": "4.2",
+              "text": "On granting of the RCLF, a commitment fee is payable to the SARB, regardless of whether the facility is utilised. The commitment fee is specified in regulation 26(12)(b)(iii)(D)(iii)(bb)(i) of the Regulations relating to Banks (the Regulations) as a minimum of 75 basis points. The commitment fee for the RCLF facility period of 1 December 2020 to 30 November 2021 will be set at 75 basis points.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-3",
+              "number": "4.3",
+              "text": "On drawing down on the CLF or RCLF, a drawdown rate equal to the SARB’s repo rate plus 100 basis points is payable.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-4",
+              "number": "4.4",
+              "text": "Any drawdown of funds will be limited to a 31 calendar-day period.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Phasing out of CLF 5.1 As communicated in Guidance Note 5/2017, the shortage of HQLA within the South African environment has continued to decrease, to such an extent that the continued provision of the CLF is unlikely to comply with the qualifying criteria set out in the Basel III LCR framework. 5.2 As such, the SARB has decided to phase out the CLF over a period of three years. Over the phase-out period, the size of the facility will be limited as follows: Period Cap as % of HQLA requirement 1 December 2018 – 30 November 2019 40% 1 December 2019 – 30 November 2020 30% 1 December 2020 – 30 November 2021 20% 1 December 2021 onwards No longer available 5.3 In the event that market conditions change, the SARB may re-evaluate its decision to phase-out the CLF. 5.4 The provision of the CLF is not limited to banks that can demonstrate a shortage of HQLA for their LCR needs, but is available to all banks that wish to apply for the CLF. However, the CLF will only be granted to applicant banks that are able to fulfil all the relevant qualifying conditions related to the CLF. 5.5 Only banks that meet the Level 1 HQLA requirement of the LCR may apply for the CLF. 5.6 The amount of the CLF that can be recognised for LCR purposes and that may be drawn down in periods of stress will at all times be limited to the lesser of the amount of eligible collateral that is lodged with the SARB, after haircuts, and the size of the facility that has been granted.",
-          "text": "4 PO Box 8432 Pretoria 0001  370 Helen Joseph Street Pretoria 0002  South Africa  Tel +27 12 313 3911 / 0861 12 7272  Fax +27 12 313 3758  www.resbank.co.za",
+          "heading": "Phasing out of CLF",
+          "text": "Phasing out of CLF",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5-1",
+              "number": "5.1",
+              "text": "As communicated in Guidance Note 5/2017, the shortage of HQLA within the South African environment has continued to decrease, to such an extent that the continued provision of the CLF is unlikely to comply with the qualifying criteria set out in the Basel III LCR framework.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-2",
+              "number": "5.2",
+              "text": "As such, the SARB has decided to phase out the CLF over a period of three years. Over the phase-out period, the size of the facility will be limited as follows: Period Cap as % of HQLA requirement 1 December 2018 – 30 November 2019 40% 1 December 2019 – 30 November 2020 30% 1 December 2020 – 30 November 2021 20% 1 December 2021 onwards No longer available",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-3",
+              "number": "5.3",
+              "text": "In the event that market conditions change, the SARB may re-evaluate its decision to phase-out the CLF.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-4",
+              "number": "5.4",
+              "text": "The provision of the CLF is not limited to banks that can demonstrate a shortage of HQLA for their LCR needs, but is available to all banks that wish to apply for the CLF. However, the CLF will only be granted to applicant banks that are able to fulfil all the relevant qualifying conditions related to the CLF.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-5",
+              "number": "5.5",
+              "text": "Only banks that meet the Level 1 HQLA requirement of the LCR may apply for the CLF.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-6",
+              "number": "5.6",
+              "text": "The amount of the CLF that can be recognised for LCR purposes and that may be drawn down in periods of stress will at all times be limited to the lesser of the amount of eligible collateral that is lodged with the SARB, after haircuts, and the size of the facility that has been granted. 4 PO Box 8432 Pretoria 0001  370 Helen Joseph Street Pretoria 0002  South Africa  Tel +27 12 313 3911 / 0861 12 7272  Fax +27 12 313 3758  www.resbank.co.za",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s6",
           "number": "6",
-          "heading": "Operational arrangements 6.1 A complete list of the operational arrangements is contained in the Addendum to the Operational Notice of the Financial Markets Department of the SARB, which is available on the SARB’s website. 6.2 The CLF and the RCLF will be granted for a 12 month period respectively, that is, from 1 December 2020 to 30 November 2021. All applications are required to be submitted by no later than 30 September 2020. As noted in paragraph 5.2 above, the 12 month period specified hereinbefore is the last year of the CLF and it is being replaced by the RCLF. The RCLF will continue to be available on an annual basis from 1 December 2020 onwards. 6.3 Specific reporting requirements relating to the RCLF are specified in regulation 26(12)(b)(iii)(D)of the Regulations, including, inter alia, the following: 6.3.1 That the RCLF is included in level 2B HQLA. 6.3.2 That the RCLF forms part of the overall limit of 15% of level 2B HQLA. 6.3.3 That the RCLF forms part of the overall limit of 40% of level 2 HQLA. 6.4 Any questions regarding this Guidance Note may be directed to Dr Nicola Brink, Head: Resolution Planning, at 012 313 3614 or nicola.brink@resbank.co.za, or Mr Wessel Mostert, Manager: Asset and Liability Management, at 012 313 4652 or wessel.mostert@resbank.co.za.",
-          "text": "",
+          "heading": "Operational arrangements",
+          "text": "Operational arrangements",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s6-1",
+              "number": "6.1",
+              "text": "A complete list of the operational arrangements is contained in the Addendum to the Operational Notice of the Financial Markets Department of the SARB, which is available on the SARB’s website.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6-2",
+              "number": "6.2",
+              "text": "The CLF and the RCLF will be granted for a 12 month period respectively, that is, from 1 December 2020 to 30 November 2021. All applications are required to be submitted by no later than 30 September 2020. As noted in paragraph 5.2 above, the 12 month period specified hereinbefore is the last year of the CLF and it is being replaced by the RCLF. The RCLF will continue to be available on an annual basis from 1 December 2020 onwards.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s6-3",
+              "number": "6.3",
+              "text": "Specific reporting requirements relating to the RCLF are specified in regulation 26(12)(b)(iii)(D)of the Regulations, including, inter alia, the following:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s6-3-1",
+                  "number": "6.3.1",
+                  "text": "That the RCLF is included in level 2B HQLA.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-3-2",
+                  "number": "6.3.2",
+                  "text": "That the RCLF forms part of the overall limit of 15% of level 2B HQLA.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-3-3",
+                  "number": "6.3.3",
+                  "text": "That the RCLF forms part of the overall limit of 40% of level 2 HQLA.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s6-4",
+              "number": "6.4",
+              "text": "Any questions regarding this Guidance Note may be directed to Dr Nicola Brink, Head: Resolution Planning, at 012 313 3614 or nicola.brink@resbank.co.za, or Mr Wessel Mostert, Manager: Asset and Liability Management, at 012 313 4652 or wessel.mostert@resbank.co.za.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s7",
           "number": "7",
-          "heading": "Acknowledgement of receipt 7.1 Kindly ensure that a copy of this Guidance Note is made available to your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: The previous guidance note issued was Guidance Note 7/2020, dated 24 June 2020. 2020-09-09",
-          "text": "",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s7-1",
+              "number": "7.1",
+              "text": "Kindly ensure that a copy of this Guidance Note is made available to your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: The previous guidance note issued was Guidance Note 7/2020, dated 24 June 2020. 2020-09-09",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }

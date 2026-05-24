@@ -26,10 +26,18 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Introduction 1.1 All previously issued guidance notes are deemed to be withdrawn, terminated or replaced, except if such a guidance note is to remain effective and is then accordingly confirmed in Guidance Note 1 of that year. The guidance notes that remain effective will retain their original numbers and dates.",
-          "text": "",
+          "heading": "Introduction",
+          "text": "Introduction",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s1-1",
+              "number": "1.1",
+              "text": "All previously issued guidance notes are deemed to be withdrawn, terminated or replaced, except if such a guidance note is to remain effective and is then accordingly confirmed in Guidance Note 1 of that year. The guidance notes that remain effective will retain their original numbers and dates.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s2",
@@ -61,18 +69,34 @@
         {
           "id": "s3",
           "number": "3",
-          "heading": "Effective directives Section 48 (1) of the Co-operative Banks Act prescribes that the PA may, in order to ensure the implementation and administration of the Co-operative Banks Act or to protect members and the public in general, issue a directive to a co-operative bank or a CFI. The PA issued a directive in terms of section 48(1) of the Co-operative Banks Act. It is hereby confirmed that the below directive remains effective until being cancelled or revoked by the PA in terms of section 48(6) of the Co-operative Banks Act. The directive listed below is effective. Directive Brief details Applicable to 3.1 Directive 1/2023 Statement by individuals who are holding, or are proposing to hold, the office of a director, managing director or executive officer of a co-operative financial institution CFIs",
-          "text": "",
+          "heading": "Effective directives Section 48 (1) of the Co-operative Banks Act prescribes that the PA may, in order to ensure the",
+          "text": "Effective directives Section 48 (1) of the Co-operative Banks Act prescribes that the PA may, in order to ensure the implementation and administration of the Co-operative Banks Act or to protect members and the public in general, issue a directive to a co-operative bank or a CFI. The PA issued a directive in terms of section 48(1) of the Co-operative Banks Act. It is hereby confirmed that the below directive remains effective until being cancelled or revoked by the PA in terms of section 48(6) of the Co-operative Banks Act. The directive listed below is effective. Directive Brief details Applicable to",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "text": "Directive 1/2023 Statement by individuals who are holding, or are proposing to hold, the office of a director, managing director or executive officer of a co-operative financial institution CFIs",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Acknowledgement of receipt 4.1 Kindly ensure that a copy of this guidance note is made available to your institution’s auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Guidance Note 1/2022 dated 11 March 2022.",
-          "text": "",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "Kindly ensure that a copy of this guidance note is made available to your institution’s auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Guidance Note 1/2022 dated 11 March 2022.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }

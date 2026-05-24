@@ -9,7 +9,11 @@
   "signatory": "Unathi Kamlana (FSCA Commissioner) and Fundi Tshazibana (PA Chief Executive Officer)",
   "enablingLegislation": "Financial Sector Regulation Act 9 of 2017; paragraphs 6A(1) and (2) of Joint Standard 2 of 2020",
   "sourceNote": "Joint Notice 2 of 2024 signed 11 December 2024, effective 1 April 2025. Determines the content, format, manner and frequency of regulatory reporting under JS 2 of 2020 (margin requirements for non-centrally cleared OTC derivatives). Reporting is via the Prudential Authority's Umoja portal, on a daily T+1 basis by 16:00 SAST. Applies regardless of whether JS 2 of 2020 margin thresholds are met. Schema specification at SARB website (MR Version 1 Schema definitions and formsets.zip).",
-  "citationPatterns": ["JN 2/2024", "JN 2 of 2024", "Joint Notice 2 of 2024"],
+  "citationPatterns": [
+    "JN 2/2024",
+    "JN 2 of 2024",
+    "Joint Notice 2 of 2024"
+  ],
   "priority": 2,
   "chapters": [
     {
@@ -21,28 +25,32 @@
           "sectionNumber": "1",
           "title": "Definitions",
           "verbatim": true,
-          "text": "In this Notice, \"the Act\" means the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017) and \"Joint Standard\" means Joint Standard 2 of 2020: Margin requirements for non-centrally cleared OTC derivative transactions (as amended), and any word or expression to which a meaning has been assigned in the Joint Standard bears the meaning so assigned to it, and unless the context indicates otherwise, and –\n\n\"Umoja portal\" means the secure website portal for electronic submission available on the Prudential Authority's website."
+          "text": "In this Notice, \"the Act\" means the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017) and \"Joint Standard\" means Joint Standard 2 of 2020: Margin requirements for non-centrally cleared OTC derivative transactions (as amended), and any word or expression to which a meaning has been assigned in the Joint Standard bears the meaning so assigned to it, and unless the context indicates otherwise, and –\n\n\"Umoja portal\" means the secure website portal for electronic submission available on the Prudential Authority's website.",
+          "subsections": []
         },
         {
           "id": "s2",
           "sectionNumber": "2",
           "title": "Determination of information, content and format of regulatory reporting",
           "verbatim": true,
-          "text": "2.1 The regulatory reporting return to be submitted to the Authorities by a provider that enters into a non-centrally cleared OTC derivative transaction with a counterparty or a foreign counterparty, and a financial institution that is a counterparty in terms of paragraphs 6A(1) and (2) of the Joint Standard is determined as the regulatory reporting metrics set out in Appendix A of this Notice.\n\n2.2 The reporting determined in this notice applies to a provider that enters into a non-centrally cleared OTC derivative transaction with a counterparty or a foreign counterparty, and a financial institution that is a counterparty regardless of the applicability of the relevant thresholds and minimum transfer amounts prescribed in paragraph 3(3) of the Joint Standard."
+          "text": "2.1 The regulatory reporting return to be submitted to the Authorities by a provider that enters into a non-centrally cleared OTC derivative transaction with a counterparty or a foreign counterparty, and a financial institution that is a counterparty in terms of paragraphs 6A(1) and (2) of the Joint Standard is determined as the regulatory reporting metrics set out in Appendix A of this Notice.\n\n2.2 The reporting determined in this notice applies to a provider that enters into a non-centrally cleared OTC derivative transaction with a counterparty or a foreign counterparty, and a financial institution that is a counterparty regardless of the applicability of the relevant thresholds and minimum transfer amounts prescribed in paragraph 3(3) of the Joint Standard.",
+          "subsections": []
         },
         {
           "id": "s3",
           "sectionNumber": "3",
           "title": "Manner and frequency of submission",
           "verbatim": true,
-          "text": "3.1 A provider and a financial institution that is a counterparty must submit the completed regulatory returns via the Prudential Authority's Umoja portal using one of the following transmission protocols:\n(a) Excel upload;\n(b) In-portal submission; or\n(c) Machine-to-machine submission using the Umoja portal's application programming interface.\n\n3.2 For the use of methods referred to in sub-paragraphs (a) and (b) above, the submission template is available on the Umoja portal. For the use of the method referred to in sub-paragraph (c), the relevant specifications may be found on the Umoja portal webpage as set out in Appendix A.\n\n3.3 A provider and counterparty must submit the regulatory reporting return in the manner set out in paragraph 3.1 on a daily T+1 basis by no later than 16:00 South African time. In the case of public holidays, the return must be submitted on the first business day immediately following the relevant public holiday."
+          "text": "3.1 A provider and a financial institution that is a counterparty must submit the completed regulatory returns via the Prudential Authority's Umoja portal using one of the following transmission protocols:\n(a) Excel upload;\n(b) In-portal submission; or\n(c) Machine-to-machine submission using the Umoja portal's application programming interface.\n\n3.2 For the use of methods referred to in sub-paragraphs (a) and (b) above, the submission template is available on the Umoja portal. For the use of the method referred to in sub-paragraph (c), the relevant specifications may be found on the Umoja portal webpage as set out in Appendix A.\n\n3.3 A provider and counterparty must submit the regulatory reporting return in the manner set out in paragraph 3.1 on a daily T+1 basis by no later than 16:00 South African time. In the case of public holidays, the return must be submitted on the first business day immediately following the relevant public holiday.",
+          "subsections": []
         },
         {
           "id": "s4",
           "sectionNumber": "4",
           "title": "Short title and commencement",
           "verbatim": true,
-          "text": "4.1 This Notice is called the Determination of regulatory reporting in terms of Joint Standard 2 of 2020 and takes effect on 1 April 2025."
+          "text": "4.1 This Notice is called the Determination of regulatory reporting in terms of Joint Standard 2 of 2020 and takes effect on 1 April 2025.",
+          "subsections": []
         }
       ]
     },
@@ -55,7 +63,8 @@
           "sectionNumber": "Appendix A",
           "title": "Regulatory reporting metrics specification",
           "verbatim": false,
-          "text": "The full schematic representation of regulatory reporting metrics (MR Version 1 Schema definitions and formsets) is available via the SARB website. The schema defines the specific data fields and format required for margin reporting submissions through the Umoja portal.\n\nThe metrics specification covers: initial margin posted/received; variation margin posted/received; counterparty identification; netting set information; and other margin-related data elements required under JS 2 of 2020.\n\nSchema URL: https://www.resbank.co.za/content/dam/sarb/what-we-do/prudential-regulation/transformation-programme/2024/api-document-2/MR%20Version%201%20Schema%20definitions%20and%20formsets.zip\n\nReporting entities must use the API specifications on the Umoja portal for machine-to-machine (M2M) submission. Three transmission methods are available: (1) Excel upload using the template on the Umoja portal; (2) in-portal submission via the secure website; (3) M2M via the Umoja portal API."
+          "text": "The full schematic representation of regulatory reporting metrics (MR Version 1 Schema definitions and formsets) is available via the SARB website. The schema defines the specific data fields and format required for margin reporting submissions through the Umoja portal.\n\nThe metrics specification covers: initial margin posted/received; variation margin posted/received; counterparty identification; netting set information; and other margin-related data elements required under JS 2 of 2020.\n\nSchema URL: https://www.resbank.co.za/content/dam/sarb/what-we-do/prudential-regulation/transformation-programme/2024/api-document-2/MR%20Version%201%20Schema%20definitions%20and%20formsets.zip\n\nReporting entities must use the API specifications on the Umoja portal for machine-to-machine (M2M) submission. Three transmission methods are available: (1) Excel upload using the template on the Umoja portal; (2) in-portal submission via the secure website; (3) M2M via the Umoja portal API.",
+          "subsections": []
         }
       ]
     }

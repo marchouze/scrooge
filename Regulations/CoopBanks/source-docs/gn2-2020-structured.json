@@ -41,10 +41,46 @@
         {
           "id": "s2",
           "number": "2",
-          "heading": "Introduction 2.1 Co-operative financial institutions (CFIs) and co-operative banks in South Africa are restricted from taking deposits from the general public due to licence limitations that only permit them to serve a membership that is characterised by a ‘common bond’, which is founded on a pre-existing social connection, such as belonging to a particular community, industrial or geographic group. The common bond is considered an explicit characteristic which distinguishes the co-operative banking model from other financial institutions. 2.2 Specifically, section 1 of the Co-operatives Banks Act defines a “co-operative bank” as a co-operative or a co-operative financial institution registered as a co-operative bank in terms of the Co-operative Banks Act whose members- (a) are employed by a common employer or who are employed within the same business district; or (b) have common membership in an association or organisation, including a religious, social, co-operative, labour or educational group; or (c) reside within the same defined community or geographical area. 2.3 The objective of this Guidance Note 2/2020 (Guidance Note) is to provide guidance on the common bond to assist prospective and registered CFIs and co-operative banks in meeting and continue meeting the requirements for registration. An extensive discussion of the common bond was published by the Co-operative Banks Development Agency (CBDA) in 2013. The document can be found on the website of the CBDA by following the link below: http://www.treasury.gov.za/coopbank/supervisory%20CFIs/guidancenotes/Briefing %20note%20on%20common%20bond.pdf 2.4 ‘TCFI-01 Form 001 Application for registration’ requires that an applicant provide the Prudential Authority (PA) with the common bond description. 2.5 Prospective and registered CFIs and co-operative banks are also required to provide a description of their common bond adopted by its members, in their constitutions.",
-          "text": "",
+          "heading": "Introduction",
+          "text": "Introduction",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "text": "Co-operative financial institutions (CFIs) and co-operative banks in South Africa are restricted from taking deposits from the general public due to licence limitations that only permit them to serve a membership that is characterised by a ‘common bond’, which is founded on a pre-existing social connection, such as belonging to a particular community, industrial or geographic group. The common bond is considered an explicit characteristic which distinguishes the co-operative banking model from other financial institutions.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-2",
+              "number": "2.2",
+              "text": "Specifically, section 1 of the Co-operatives Banks Act defines a “co-operative bank” as a co-operative or a co-operative financial institution registered as a co-operative bank in terms of the Co-operative Banks Act whose members- (a) are employed by a common employer or who are employed within the same business district; or (b) have common membership in an association or organisation, including a religious, social, co-operative, labour or educational group; or (c) reside within the same defined community or geographical area.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-3",
+              "number": "2.3",
+              "text": "The objective of this Guidance Note 2/2020 (Guidance Note) is to provide guidance on the common bond to assist prospective and registered CFIs and co-operative banks in meeting and continue meeting the requirements for registration. An extensive discussion of the common bond was published by the Co-operative Banks Development Agency (CBDA) in 2013. The document can be found on the website of the CBDA by following the link below: http://www.treasury.gov.za/coopbank/supervisory%20CFIs/guidancenotes/Briefing %20note%20on%20common%20bond.pdf",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-4",
+              "number": "2.4",
+              "text": "‘TCFI-01 Form 001 Application for registration’ requires that an applicant provide the Prudential Authority (PA) with the common bond description.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-5",
+              "number": "2.5",
+              "text": "Prospective and registered CFIs and co-operative banks are also required to provide a description of their common bond adopted by its members, in their constitutions.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s3",
@@ -88,34 +124,138 @@
         {
           "id": "s4",
           "number": "4",
-          "heading": "Assessment of common bond by the Prudential Authority 4.1 A prospective CFI and co-operative bank will need to demonstrate to the PA that it has: 4.1.1 adequately engaged with the potential members of its chosen common bond in order to ascertain that the common bond is indeed established; 4.1.2 it is from the identified common bond that the CFI or co-operative bank will be drawing its membership; and 4.1.3 the common bond makes for a compelling business case for the establishment of a viable and sustainable entity. 4.2 The following table provides examples of acceptable common bonds for each of the common bonds types mentioned in paragraphs 2 and 3 and examples of the expected level of engagement with prospective members.",
-          "text": "4 Type Description Engagement Common employer or employed within the same district - employees of the “Name” company Pty Ltd and “Name 2” company Pty Ltd. Adding additional common employer(s) should be read in conjunction with paragraph 5 below. - employees working in the “Name” business district, town centre or an (singular) industrial area of a town or city. A prospective CFI or co-operative bank should at a minimum be able to provide to the Prudential Authority the comfort that it engaged the common employer company and the employees and has adequate employee commitment to establish a viable and sustainable CFI or co-operative bank. Common membership in an association or organisation, including a religious, social, co- operative, labour or educational group - members of the “Name” trade union, “Name” parish, employees and students of the “Name” FET 1 or university, members of the “Name” co-operative or staff and volunteers of the “Name” society. The associations must be registered with an appropriate body and within itself be reflective of a defined membership with a common interest that can be verified by the Prudential Authority. The applicant CFIs or co- operative bank should at a minimum be able to provide to the Prudential Authority the comfort that it engaged the host association and its members and has members’ commitment to establish a viable and sustainable CFI or co-operative bank. Persons residing within the same defined community or geographical area - all residents who live and work in the “Name” village; and - all the residents of the “Name” suburb/township. The Prudential Authority’s interpretation of persons residing within the same defined community or geographical area requires that applicants include the specific (defined) district community, which could be either rural or urban. The Prudential Authority will not focus on the geographical boundaries classified by provincial or An applicant CFI or co-operative bank should at a minimum be able to provide to the Prudential Authority the comfort that it engaged and consulted the community or geographical area in which it proposes to operate. Evidence should be provided from community members, leaders and / or officials that shows commitment to establish a viable and sustainable CFI or co- operative bank. 1 FET – Further Education and Training Institutions\n\n\n5 national legislation per se, but on what attributes define the proposed community and the bond amongst residents. Metropolis and cities are not considered communities nor are residential districts as they are amalgamations and mergers of municipalities and districts.",
+          "heading": "Assessment of common bond by the Prudential Authority",
+          "text": "Assessment of common bond by the Prudential Authority",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "A prospective CFI and co-operative bank will need to demonstrate to the PA that it has:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s4-1-1",
+                  "number": "4.1.1",
+                  "text": "adequately engaged with the potential members of its chosen common bond in order to ascertain that the common bond is indeed established;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-2",
+                  "number": "4.1.2",
+                  "text": "it is from the identified common bond that the CFI or co-operative bank will be drawing its membership; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-3",
+                  "number": "4.1.3",
+                  "text": "the common bond makes for a compelling business case for the establishment of a viable and sustainable entity.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s4-2",
+              "number": "4.2",
+              "text": "The following table provides examples of acceptable common bonds for each of the common bonds types mentioned in paragraphs 2 and 3 and examples of the expected level of engagement with prospective members. 4 Type Description Engagement Common employer or employed within the same district - employees of the “Name” company Pty Ltd and “Name 2” company Pty Ltd. Adding additional common employer(s) should be read in conjunction with paragraph 5 below. - employees working in the “Name” business district, town centre or an (singular) industrial area of a town or city. A prospective CFI or co-operative bank should at a minimum be able to provide to the Prudential Authority the comfort that it engaged the common employer company and the employees and has adequate employee commitment to establish a viable and sustainable CFI or co-operative bank. Common membership in an association or organisation, including a religious, social, co- operative, labour or educational group - members of the “Name” trade union, “Name” parish, employees and students of the “Name” FET 1 or university, members of the “Name” co-operative or staff and volunteers of the “Name” society. The associations must be registered with an appropriate body and within itself be reflective of a defined membership with a common interest that can be verified by the Prudential Authority. The applicant CFIs or co- operative bank should at a minimum be able to provide to the Prudential Authority the comfort that it engaged the host association and its members and has members’ commitment to establish a viable and sustainable CFI or co-operative bank. Persons residing within the same defined community or geographical area - all residents who live and work in the “Name” village; and - all the residents of the “Name” suburb/township. The Prudential Authority’s interpretation of persons residing within the same defined community or geographical area requires that applicants include the specific (defined) district community, which could be either rural or urban. The Prudential Authority will not focus on the geographical boundaries classified by provincial or An applicant CFI or co-operative bank should at a minimum be able to provide to the Prudential Authority the comfort that it engaged and consulted the community or geographical area in which it proposes to operate. Evidence should be provided from community members, leaders and / or officials that shows commitment to establish a viable and sustainable CFI or co- operative bank. 1 FET – Further Education and Training Institutions 5 national legislation per se, but on what attributes define the proposed community and the bond amongst residents. Metropolis and cities are not considered communities nor are residential districts as they are amalgamations and mergers of municipalities and districts.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Applications to extend common bonds 5.1 CFIs or co-operative banks must apply to the PA to extend their common bonds a s they become saturated or seek to extend the membership of their initial common bond. 5.2 In such cases CFIs or co-operative banks must apply to “open” their bonds of association. Typically this would initially be to allow family members to join, thereafter expand into a geographic area, or alternatively to allow additional employer or associational groups to join/merge with an existing CFI or co-operative bank. 5.3 The regulatory effect of an open bond may attract higher capital and prudential requirements. This is as a result of increased risk as the CFI’s or co-operative bank’s reliance on the mutuality relationship predominant in ‘closed bond’ CFIs or co-operative bank is replaced by a need for skills in credit and other risk appraisals. In other words, common bond restrictions are assumed to reduce the cost of gathering credit information, thereby minimizing exposure of individual CFIs or co-operative bank to bad debt losses. 5.4 In considering whether to approve the opening of a common bond, the PA will assess the potential increase in risk, and the necessary features that need to be put in place to mitigate such risk. 5.5 The PA may also require additional capital to be held by the CFI based on its risk assessment.",
-          "text": "",
+          "heading": "Applications to extend common bonds",
+          "text": "Applications to extend common bonds",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5-1",
+              "number": "5.1",
+              "text": "CFIs or co-operative banks must apply to the PA to extend their common bonds a s they become saturated or seek to extend the membership of their initial common bond.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-2",
+              "number": "5.2",
+              "text": "In such cases CFIs or co-operative banks must apply to “open” their bonds of association. Typically this would initially be to allow family members to join, thereafter expand into a geographic area, or alternatively to allow additional employer or associational groups to join/merge with an existing CFI or co-operative bank.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-3",
+              "number": "5.3",
+              "text": "The regulatory effect of an open bond may attract higher capital and prudential requirements. This is as a result of increased risk as the CFI’s or co-operative bank’s reliance on the mutuality relationship predominant in ‘closed bond’ CFIs or co-operative bank is replaced by a need for skills in credit and other risk appraisals. In other words, common bond restrictions are assumed to reduce the cost of gathering credit information, thereby minimizing exposure of individual CFIs or co-operative bank to bad debt losses.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-4",
+              "number": "5.4",
+              "text": "In considering whether to approve the opening of a common bond, the PA will assess the potential increase in risk, and the necessary features that need to be put in place to mitigate such risk.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s5-5",
+              "number": "5.5",
+              "text": "The PA may also require additional capital to be held by the CFI based on its risk assessment.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s6",
           "number": "6",
-          "heading": "Contact 6.1 A prospective or registered CFI or co-operative bank requiring assistance with their common bond may contact: 6.1.1 The CBDA by sending an e-mail to: CBDA@treasury.co.za; or 6.1.2 The PA by sending an e-mail to SARB-PA@resbank.co.za with the subject line: CFI/Co-op Bank – Registration Assistance.",
-          "text": "6",
+          "heading": "Contact",
+          "text": "Contact",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s6-1",
+              "number": "6.1",
+              "text": "A prospective or registered CFI or co-operative bank requiring assistance with their common bond may contact:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s6-1-1",
+                  "number": "6.1.1",
+                  "text": "The CBDA by sending an e-mail to: CBDA@treasury.co.za; or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s6-1-2",
+                  "number": "6.1.2",
+                  "text": "The PA by sending an e-mail to SARB-PA@resbank.co.za with the subject line: CFI/Co-op Bank – Registration Assistance. 6",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "s7",
           "number": "7",
-          "heading": "Acknowledgement of receipt 7.1 Kindly ensure that a copy of this guidance note is made available to your institution’s board of directors, and where applicable, external auditor. The attached acknowledgement of receipt, duly completed and signed by at least two directors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: 25 June 2020 The previous guidance note issued was Guidance Note 1/2020, dated 2 March 2020.",
-          "text": "",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s7-1",
+              "number": "7.1",
+              "text": "Kindly ensure that a copy of this guidance note is made available to your institution’s board of directors, and where applicable, external auditor. The attached acknowledgement of receipt, duly completed and signed by at least two directors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: 25 June 2020 The previous guidance note issued was Guidance Note 1/2020, dated 2 March 2020.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }

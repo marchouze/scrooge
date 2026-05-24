@@ -63,88 +63,304 @@
         {
           "id": "s3",
           "number": "3",
-          "heading": "PF client risk assessment 3.1. PF client risk should be identified and assessed in accordance with the processes, procedures and methodology outlined in banks’ risk management and compliance programmes. 3.2. In assessing PF client risk, banks should 14 14 : 3.2.1. scrutinise all clients at on-boarding to ensure that the client is not a sanctioned person/entity; 3.2.2. assess whether the client is connected or situated in a country that is subject to relevant UN sanctions; 3.2.3. assess the type of business the client engages in, particularly businesses dealing in dual-use goods or goods subject to export control or complex transactions; 14 https://www.fatf-gafi.org/media/fatf/documents/reports/Guidance-Proliferation-Financing-Risk-Assessment- Mitigation.pdf",
-          "text": "7 3.2.4. consider that a client who lists a dual-use good as being traded may have a legitimate purpose for the dual-use good and would need to apply to the appropriate authority (such as the Non-proliferation Council) for a permit to obtain authorisation to trade therein and that where such permit is produced may be a contributing factor for consideration in the overall risk assessment of the client; 3.2.5. consider that proliferators may not openly indicate that they wish to trade in controlled goods and may also seek to trade in goods that have specifications that are slightly below the specifications of controlled goods and may modify/upgrade/process goods further down the line to the controlled specifications as per their requirements for use in proliferation activities; 3.2.6. assess whether the client’s duration of the business accords with the knowledge and transactional activity of the client; 3.2.7. consider how the geographic proximity to jurisdictions that are vulnerable to PF of WMD risk may impact it; 3.2.8. consider if the client is diplomatic personnel or linked to any embassy or diplomatic personnel from high-risk countries with high PF and/or WMD proliferation concerns; 3.2.9. consider if higher PF and/or WMD proliferation risks may be present where there are active ports and potential PF transit/transhipment routes (South Africa has large and active ports in Africa); 3.2.10. consider the cross-border financial and trade flow with high-risk jurisdictions (e.g., linked to mineral products/iron, steel, machinery, chemicals, vehicles, aircraft and vessels for North Korea or relate to copper and precious metals for Iran but strong fluctuations in flows; 3.2.11. assess the level of disclosure or proposed trading activities by clients during on- boarding or the vagueness of such disclosure when requested to do so; 3.2.12. assess whether clients have the requisite technical knowledge/skill to align to the stated business activity that they wish to conduct; 3.2.13. assess whether the utilisation of numerous third parties and/or complex trade-based activities are aligned to the business profile held in respect of the client at onboarding or during the client relationship; 3.3. ensure that where trade finance transactions are concerned in respect of clients, that they thoroughly understand the activities of their clients with regards to the trade finance transactions being engaged in, including the beneficial owners, the parties to the transaction and the flow of funds in terms of geographical areas, with increased scrutiny being applied where heightened risk is identified. 3.3.1. assess whether the originator and/or beneficiary of a transaction is a person or entity resident or domiciled in a country of PF or diversion concern; and/or 3.3.2. consider additional factors such as the purpose of the relationship, corporate structure and volume of anticipated transactions which may be indicators of increased potential for PF risk.\n\n\n8 3.4. When assessing the shipment of goods (import, transit, transhipment and/or export transactions), banks may consider the following: 3.4.1. goods are shipped with inconsistent and unconventional geographic patterns; 3.4.2. goods are shipped via countries with weak implementation of UNSCR obligations; 3.4.3. the export controls in the countries of trade and the implementation thereof; 3.4.4. the shipping cost of goods is high in comparison to the declared value of the goods; 3.4.5. a freight forwarding firm is listed as the final destination of the product; 3.4.6. the importer’s location and the destination of the shipment do not align; and/or 3.4.7. the application of an enhanced due diligence approach to obtain full information of all the trade documents and financial flows would assist in understanding the potential PF risks at all levels of the transactions regarding trade-based finance transactions. 3.5. Banks should ensure that all monitoring, mitigation, and management of their PF risk at a client level are diligently and accurately recorded and that this is able to be evidenced.",
+          "heading": "PF client risk assessment",
+          "text": "PF client risk assessment",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "text": "PF client risk should be identified and assessed in accordance with the processes, procedures and methodology outlined in banks’ risk management and compliance programmes.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s3-2",
+              "number": "3.2",
+              "text": "In assessing PF client risk, banks should 14 14 :",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-2-1",
+                  "number": "3.2.1",
+                  "text": "scrutinise all clients at on-boarding to ensure that the client is not a sanctioned person/entity;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-2",
+                  "number": "3.2.2",
+                  "text": "assess whether the client is connected or situated in a country that is subject to relevant UN sanctions;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-3",
+                  "number": "3.2.3",
+                  "text": "assess the type of business the client engages in, particularly businesses dealing in dual-use goods or goods subject to export control or complex transactions; 14 https://www.fatf-gafi.org/media/fatf/documents/reports/Guidance-Proliferation-Financing-Risk-Assessment- Mitigation.pdf 7",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-4",
+                  "number": "3.2.4",
+                  "text": "consider that a client who lists a dual-use good as being traded may have a legitimate purpose for the dual-use good and would need to apply to the appropriate authority (such as the Non-proliferation Council) for a permit to obtain authorisation to trade therein and that where such permit is produced may be a contributing factor for consideration in the overall risk assessment of the client;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-5",
+                  "number": "3.2.5",
+                  "text": "consider that proliferators may not openly indicate that they wish to trade in controlled goods and may also seek to trade in goods that have specifications that are slightly below the specifications of controlled goods and may modify/upgrade/process goods further down the line to the controlled specifications as per their requirements for use in proliferation activities;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-6",
+                  "number": "3.2.6",
+                  "text": "assess whether the client’s duration of the business accords with the knowledge and transactional activity of the client;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-7",
+                  "number": "3.2.7",
+                  "text": "consider how the geographic proximity to jurisdictions that are vulnerable to PF of WMD risk may impact it;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-8",
+                  "number": "3.2.8",
+                  "text": "consider if the client is diplomatic personnel or linked to any embassy or diplomatic personnel from high-risk countries with high PF and/or WMD proliferation concerns;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-9",
+                  "number": "3.2.9",
+                  "text": "consider if higher PF and/or WMD proliferation risks may be present where there are active ports and potential PF transit/transhipment routes (South Africa has large and active ports in Africa);",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-10",
+                  "number": "3.2.10",
+                  "text": "consider the cross-border financial and trade flow with high-risk jurisdictions (e.g., linked to mineral products/iron, steel, machinery, chemicals, vehicles, aircraft and vessels for North Korea or relate to copper and precious metals for Iran but strong fluctuations in flows;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-11",
+                  "number": "3.2.11",
+                  "text": "assess the level of disclosure or proposed trading activities by clients during on- boarding or the vagueness of such disclosure when requested to do so;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-12",
+                  "number": "3.2.12",
+                  "text": "assess whether clients have the requisite technical knowledge/skill to align to the stated business activity that they wish to conduct;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-13",
+                  "number": "3.2.13",
+                  "text": "assess whether the utilisation of numerous third parties and/or complex trade-based activities are aligned to the business profile held in respect of the client at onboarding or during the client relationship;",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-3",
+              "number": "3.3",
+              "text": "ensure that where trade finance transactions are concerned in respect of clients, that they thoroughly understand the activities of their clients with regards to the trade finance transactions being engaged in, including the beneficial owners, the parties to the transaction and the flow of funds in terms of geographical areas, with increased scrutiny being applied where heightened risk is identified.",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-3-1",
+                  "number": "3.3.1",
+                  "text": "assess whether the originator and/or beneficiary of a transaction is a person or entity resident or domiciled in a country of PF or diversion concern; and/or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-3-2",
+                  "number": "3.3.2",
+                  "text": "consider additional factors such as the purpose of the relationship, corporate structure and volume of anticipated transactions which may be indicators of increased potential for PF risk. 8",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-4",
+              "number": "3.4",
+              "text": "When assessing the shipment of goods (import, transit, transhipment and/or export transactions), banks may consider the following:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s3-4-1",
+                  "number": "3.4.1",
+                  "text": "goods are shipped with inconsistent and unconventional geographic patterns;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-4-2",
+                  "number": "3.4.2",
+                  "text": "goods are shipped via countries with weak implementation of UNSCR obligations;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-4-3",
+                  "number": "3.4.3",
+                  "text": "the export controls in the countries of trade and the implementation thereof;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-4-4",
+                  "number": "3.4.4",
+                  "text": "the shipping cost of goods is high in comparison to the declared value of the goods;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-4-5",
+                  "number": "3.4.5",
+                  "text": "a freight forwarding firm is listed as the final destination of the product;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-4-6",
+                  "number": "3.4.6",
+                  "text": "the importer’s location and the destination of the shipment do not align; and/or",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-4-7",
+                  "number": "3.4.7",
+                  "text": "the application of an enhanced due diligence approach to obtain full information of all the trade documents and financial flows would assist in understanding the potential PF risks at all levels of the transactions regarding trade-based finance transactions.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s3-5",
+              "number": "3.5",
+              "text": "Banks should ensure that all monitoring, mitigation, and management of their PF risk at a client level are diligently and accurately recorded and that this is able to be evidenced.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Typologies 4.1. ‘Typologies’ refer to the various techniques used to finance the proliferation of WMD .15 15 , which can assist banks, controlling companies, branches of foreign institutions, and auditors of banks or controlling companies in identifying PF risks. 4.2. Examples of different typologies linked to PF risks identification are set out in Annexure A of this Guidance Note.",
-          "text": "",
+          "heading": "Typologies",
+          "text": "Typologies",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "text": "‘Typologies’ refer to the various techniques used to finance the proliferation of WMD .15 15 , which can assist banks, controlling companies, branches of foreign institutions, and auditors of banks or controlling companies in identifying PF risks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s4-2",
+              "number": "4.2",
+              "text": "Examples of different typologies linked to PF risks identification are set out in Annexure A of this Guidance Note.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Acknowledgment of receipt 5.1. Kindly ensure that a copy of this proposed guidance is made available to your institution’s independent auditors. The attached acknowledgment of receipt duly completed and signed by both the chief executive officer of the institution and the said auditors should be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: Encl. 1 15 Battelle Memorial Institute RA Weise, G Hund and G Carr 2018 Export controls and counter-proliferation finance: Two sides of the same underlying illegal weapons of mass destruction (WMD) activities available at: https://www.tandfonline.com/doi/full/10.1080/10736700.2018.1473107",
-          "text": "9 The previous Guidance Note issued was Guidance Note 11/2022 dated 23 September 2022.\n\n\n10 Annexure A Typologies The following are a few examples of typologies linked to PF risk abuses to which banks could be exposed. It should be noted that the understanding of the underlying procurement process of goods is critical. It is more likely that individual goods or components will be shipped rather than off-the- shelf weapons. 16 Typologies No.Type of technique Description",
+          "heading": "Acknowledgment of receipt",
+          "text": "Acknowledgment of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s5-1",
+              "number": "5.1",
+              "text": "Kindly ensure that a copy of this proposed guidance is made available to your institution’s independent auditors. The attached acknowledgment of receipt duly completed and signed by both the chief executive officer of the institution and the said auditors should be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: Encl. 1 15 Battelle Memorial Institute RA Weise, G Hund and G Carr 2018 Export controls and counter-proliferation finance: Two sides of the same underlying illegal weapons of mass destruction (WMD) activities available at: https://www.tandfonline.com/doi/full/10.1080/10736700.2018.1473107 9 The previous Guidance Note issued was Guidance Note 11/2022 dated 23 September 2022. Annexure A Typologies The following are a few examples of typologies linked to PF risk abuses to which banks could be exposed. It should be noted that the understanding of the underlying procurement process of goods is critical. It is more likely that individual goods or components will be shipped rather than off-the- shelf weapons. 16 Typologies No.Type of technique Description",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s1",
           "number": "1",
-          "heading": "Front companies (procurement) The procurement network used by Pakistan mostly operates through front companies. Different front companies may use the same address, the same phone numbers and the same managers, and may issue identical requests for quotations to multiple suppliers over long periods of time (e.g., six months to two years). 17 Front companies have also been used by Syria as a procurement method. The Syrian Scientific Studies and Research Centre (SSRC) was believed to be a significant entity developing Syria’s chemical weapons and ballistic missile programme, but piloted procurement programmes (before 2011) by ordering goods from foreign suppliers via front companies. 18",
-          "text": "",
+          "heading": "Front companies (procurement) The procurement network used by Pakistan mostly operates through front companies.",
+          "text": "Front companies (procurement) The procurement network used by Pakistan mostly operates through front companies. Different front companies may use the same address, the same phone numbers and the same managers, and may issue identical requests for quotations to multiple suppliers over long periods of time (e.g., six months to two years). 17 Front companies have also been used by Syria as a procurement method. The Syrian Scientific Studies and Research Centre (SSRC) was believed to be a significant entity developing Syria’s chemical weapons and ballistic missile programme, but piloted procurement programmes (before 2011) by ordering goods from foreign suppliers via front companies. 18",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s2",
           "number": "2",
-          "heading": "Individual goods and component parts (the ‘nuts and bolts’) ‘Nuts and bolts’ were exported by a Dutch shipping company to Iran through a network of companies in Malaysia. The beneficial owner of the companies acted as a broker between two individuals and the Iranian buyers. The broker had a contract to procure and supply Iranian aviation firms with parts and components for planes and helicopters. 19",
-          "text": "",
+          "heading": "Individual goods and component parts (the ‘nuts and bolts’) ‘Nuts and bolts’ were exported by a Dutch shipping company",
+          "text": "Individual goods and component parts (the ‘nuts and bolts’) ‘Nuts and bolts’ were exported by a Dutch shipping company to Iran through a network of companies in Malaysia. The beneficial owner of the companies acted as a broker between two individuals and the Iranian buyers. The broker had a contract to procure and supply Iranian aviation firms with parts and components for planes and helicopters. 19",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s3",
           "number": "3",
-          "heading": "Cybercrime (Theft and extortion via the use of code used in the malicious software deployed) On 4 February 2016, hackers targeted the Bangladesh Central Bank with the aim of effecting fraudulent transfers totalling as much as US$951 million from the Bangladesh Central Bank’s account at the Federal Reserve Bank of New York. Most of the attempted transfers were blocked, but US$81 million was routed to accounts in the Philippines and diverted to casinos, and most of these funds are still missing.20 20 16 Centre for a New American Security Brewer, J January 2018, The Financing of Nuclear and other Weapons of Mass Destruction Proliferation, Centre for a New American Security (CNAS) available at: https://www.cnas.org/publications/reports/the-financing-of-nuclear-and-other-weapons-of-mass-destruction-p roliferation. 17 J Brewer, October 2017, Project Alpha: Final Report of the Study of Typologies of Financing of WMD Proliferation , Kings College London, available at https://www.kcl.ac.uk/alpha/assets/pdfs/FoP-13-October-2017-Final.pdf, and comments made to the author by officials of an EU member state during the course of this study. 18 Centre for a New American Security and Brewer, J January 2018, The Financing of Nuclear and other Weapons of Mass Destruction Proliferation,Centre for a New American Security (CNAS) available at: https://www.cnas.org/publications/reports/the-financing-of-nuclear-and-other- weapons-of-mass-destruction-proliferation 19 Centre for a New American Security and J Brewer January 2018, The Financing of Nuclear and other Weapons of Mass Destruction Proliferation, Centre for a New American Security (CNAS) available at: https://www.cnas.org/publications/reports/the-financing-of-nuclear-and-other-weapons-of-mass-destruction- proliferation 20 Centre for a New American Security and J Brewer - Kings College London October 2017, Project Alpha: Final Report of the Study of Typologies of Financing of Weapons of Mass Destruction Proliferation available at: https://www.cnas.org/publications/reports/the- financing-of-nuclear-and-other-weapons-of-mass-destruction-proliferation.",
-          "text": "11 Typologies No.Type of technique Description",
+          "heading": "Cybercrime (Theft and extortion via the use of code used in the malicious software deployed) On 4 February 2016,",
+          "text": "Cybercrime (Theft and extortion via the use of code used in the malicious software deployed) On 4 February 2016, hackers targeted the Bangladesh Central Bank with the aim of effecting fraudulent transfers totalling as much as US$951 million from the Bangladesh Central Bank’s account at the Federal Reserve Bank of New York. Most of the attempted transfers were blocked, but US$81 million was routed to accounts in the Philippines and diverted to casinos, and most of these funds are still missing.20 20 16 Centre for a New American Security Brewer, J January 2018, The Financing of Nuclear and other Weapons of Mass Destruction Proliferation, Centre for a New American Security (CNAS) available at: https://www.cnas.org/publications/reports/the-financing-of-nuclear-and-other-weapons-of-mass-destruction-p roliferation. 17 J Brewer, October 2017, Project Alpha: Final Report of the Study of Typologies of Financing of WMD Proliferation , Kings College London, available at https://www.kcl.ac.uk/alpha/assets/pdfs/FoP-13-October-2017-Final.pdf, and comments made to the author by officials of an EU member state during the course of this study. 18 Centre for a New American Security and Brewer, J January 2018, The Financing of Nuclear and other Weapons of Mass Destruction Proliferation,Centre for a New American Security (CNAS) available at: https://www.cnas.org/publications/reports/the-financing-of-nuclear-and-other- weapons-of-mass-destruction-proliferation 19 Centre for a New American Security and J Brewer January 2018, The Financing of Nuclear and other Weapons of Mass Destruction Proliferation, Centre for a New American Security (CNAS) available at: https://www.cnas.org/publications/reports/the-financing-of-nuclear-and-other-weapons-of-mass-destruction- proliferation 20 Centre for a New American Security and J Brewer - Kings College London October 2017, Project Alpha: Final Report of the Study of Typologies of Financing of Weapons of Mass Destruction Proliferation available at: https://www.cnas.org/publications/reports/the- financing-of-nuclear-and-other-weapons-of-mass-destruction-proliferation. 11 Typologies No.Type of technique Description",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Entity without a website or stated business purpose In 2017, the US Department of Justice brought a civil asset forfeiture complaint for the US$1.9 million associated with Mingzheng, a Hong Kong-based company that sent and received wires in US dollars on behalf of a foreign trade bank that was involved in the DPRK’s WMD programme. 21",
-          "text": "",
+          "heading": "Entity without a website or stated business purpose In 2017, the US Department of Justice brought a civil asset",
+          "text": "Entity without a website or stated business purpose In 2017, the US Department of Justice brought a civil asset forfeiture complaint for the US$1.9 million associated with Mingzheng, a Hong Kong-based company that sent and received wires in US dollars on behalf of a foreign trade bank that was involved in the DPRK’s WMD programme. 21",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Diplomatic cover A preferred method used by the DPRK is the use of diplomatic cover in proliferation-related procurement and fundraising. The UN’s Panel of Experts on the DPRK 2019 confirmed a persistent trend by DPRK diplomats stationed overseas acting as procurement agents for their country’s WMD programme and using their bank accounts in developing countries to pay for goods. 22",
-          "text": "",
+          "heading": "Diplomatic cover A preferred method used by the DPRK is the use of diplomatic cover in proliferation-related",
+          "text": "Diplomatic cover A preferred method used by the DPRK is the use of diplomatic cover in proliferation-related procurement and fundraising. The UN’s Panel of Experts on the DPRK 2019 confirmed a persistent trend by DPRK diplomats stationed overseas acting as procurement agents for their country’s WMD programme and using their bank accounts in developing countries to pay for goods. 22",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s6",
           "number": "6",
-          "heading": "Sanctions evasion (Falsifying documents) Gradually, more shipping companies and vessels are used prominently in sanctions evasion. For example, the DPRK and Iran falsify documents, reflag vessels, and switch off automatic identification systems to avoid being discovered in the process of illicit transfers of goods. 23",
-          "text": "",
+          "heading": "Sanctions evasion (Falsifying documents) Gradually, more shipping companies and vessels are used prominently in",
+          "text": "Sanctions evasion (Falsifying documents) Gradually, more shipping companies and vessels are used prominently in sanctions evasion. For example, the DPRK and Iran falsify documents, reflag vessels, and switch off automatic identification systems to avoid being discovered in the process of illicit transfers of goods. 23",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s7",
           "number": "7",
-          "heading": "Misrepresenting: price, quality and/or quantity of goods (under-, over- and/or multiple invoicing, including short-, over- and phantom-shipping) The techniques of misrepresenting the price, quality and/or quantity of goods and/or the shipping thereof rely on collusion between the seller, buyer and/or broker. Another example is the procurement of goods under the threshold limit. 24 Such arrangements aim to obtain a benefit in excess of what would be expected from an arm’s length transaction. Such a relationship may arise as both parties could be controlled by the same person(s). 25 It is not feasible to try and determine whether cases of over- invoicing or under-invoicing exist based on the trade documents alone. 26 However, FIs could use unit pricing to determine whether it appears manifestly unusual, which could prompt an enquiry to be made. As such, an FI’s risk-based approach 2 7 should provide the steps to be taken in respect of individual clients or transactions based on that FI’s analysis of the risk(s) in relation to the parties 21 United States (US) Department of Justice, 15 June 2017, United States Files Complaint to Forfeit More Than $1.9 Million from China-Based Company Accused of Acting as a Front for Sanctioned North Korean Bank , available at: https://www.justice.gov/usao-dc/pr/united-states-files-complaint-forfeitmore-19-million-china-based-company-accused- acting 22 United Nations Security Council (UNSC), March 2019, UNSC – S/2019/171, available at: https://ww.undocs.org/S/2019/171, 52 to 53. 23 Association of Certified Anti-Money Laundering Specialist ACAMS “Proliferation Financing: What Financial Institutions Should Know and What They Can Do?” September 2019 available at: https://www.acamstoday.org/proliferation- financing-what-financial-institutions-should-know-and- what-they-can-do/ and ACAMS March 2019 “2019 UN North Korea Panel of Experts report: Takeaways for Financial Institutions” – Togzhan Kassenova https://www.acamstoday.org/2019-u-n-north-korea-panel-of-expers-report-takeaways-for-financial-insitutions-2 24 Association of Certified Anti-Money Laundering Specialist ACAMS “Proliferation Financing: What Financial Institutions Should Know and What They Can Do?” September 2019 available at: https://www.acamstoday.org/proliferation- financing-what-financial-institutions-should-know-and- what-they-can-do/. 25 The Wolfsberg Group: ‘The Wolfsberg Group, International Chamber of Commerce (ICC) and Bankers Association for Finance and Trade (BAFT) Trade Finance Principles’, Wolfberg Group 2017, available at: http://www.wolfsberg- principles. com/pdf/home/Trade-Finance- Principles-Wolfsberg-Group-ICC-and-the-BAFT-2017.pdf. 26 The Wolfsberg Group: ‘The Wolfsberg Group, International Chamber of Commerce (ICC) and Bankers Association for Finance and Trade (BAFT) Trade Finance Principles’, Wolfberg Group 2017, available at: http://www.wolfsberg- principles. com/pdf/home/Trade-Finance- Principles-Wolfsberg-Group-ICC-and-the-BAFT-2017.pdf 27 The Wolfsberg Group has issued general guidance on a Risk-Based Approach (RBA) 12 in relation to trade finance, available at http://www.wolfsberg-principles.com/pdf/standards/Wolfsberg_RBA_Guidance (2006).pdf.",
-          "text": "12 Typologies No.Type of technique Description involved, the type of transaction(s), the monetary value of the transaction(s), and any other factors that may either increase or reduce the risk of financial crime in any given transaction. 28",
+          "heading": "Misrepresenting: price, quality and/or quantity of goods (under-, over- and/or multiple invoicing, including short-,",
+          "text": "Misrepresenting: price, quality and/or quantity of goods (under-, over- and/or multiple invoicing, including short-, over- and phantom-shipping) The techniques of misrepresenting the price, quality and/or quantity of goods and/or the shipping thereof rely on collusion between the seller, buyer and/or broker. Another example is the procurement of goods under the threshold limit. 24 Such arrangements aim to obtain a benefit in excess of what would be expected from an arm’s length transaction. Such a relationship may arise as both parties could be controlled by the same person(s). 25 It is not feasible to try and determine whether cases of over- invoicing or under-invoicing exist based on the trade documents alone. 26 However, FIs could use unit pricing to determine whether it appears manifestly unusual, which could prompt an enquiry to be made. As such, an FI’s risk-based approach 2 7 should provide the steps to be taken in respect of individual clients or transactions based on that FI’s analysis of the risk(s) in relation to the parties 21 United States (US) Department of Justice, 15 June 2017, United States Files Complaint to Forfeit More Than $1.9 Million from China-Based Company Accused of Acting as a Front for Sanctioned North Korean Bank , available at: https://www.justice.gov/usao-dc/pr/united-states-files-complaint-forfeitmore-19-million-china-based-company-accused- acting 22 United Nations Security Council (UNSC), March 2019, UNSC – S/2019/171, available at: https://ww.undocs.org/S/2019/171, 52 to 53. 23 Association of Certified Anti-Money Laundering Specialist ACAMS “Proliferation Financing: What Financial Institutions Should Know and What They Can Do?” September 2019 available at: https://www.acamstoday.org/proliferation- financing-what-financial-institutions-should-know-and- what-they-can-do/ and ACAMS March 2019 “2019 UN North Korea Panel of Experts report: Takeaways for Financial Institutions” – Togzhan Kassenova https://www.acamstoday.org/2019-u-n-north-korea-panel-of-expers-report-takeaways-for-financial-insitutions-2 24 Association of Certified Anti-Money Laundering Specialist ACAMS “Proliferation Financing: What Financial Institutions Should Know and What They Can Do?” September 2019 available at: https://www.acamstoday.org/proliferation- financing-what-financial-institutions-should-know-and- what-they-can-do/. 25 The Wolfsberg Group: ‘The Wolfsberg Group, International Chamber of Commerce (ICC) and Bankers Association for Finance and Trade (BAFT) Trade Finance Principles’, Wolfberg Group 2017, available at: http://www.wolfsberg- principles. com/pdf/home/Trade-Finance- Principles-Wolfsberg-Group-ICC-and-the-BAFT-2017.pdf. 26 The Wolfsberg Group: ‘The Wolfsberg Group, International Chamber of Commerce (ICC) and Bankers Association for Finance and Trade (BAFT) Trade Finance Principles’, Wolfberg Group 2017, available at: http://www.wolfsberg- principles. com/pdf/home/Trade-Finance- Principles-Wolfsberg-Group-ICC-and-the-BAFT-2017.pdf 27 The Wolfsberg Group has issued general guidance on a Risk-Based Approach (RBA) 12 in relation to trade finance, available at http://www.wolfsberg-principles.com/pdf/standards/Wolfsberg_RBA_Guidance (2006).pdf. 12 Typologies No.Type of technique Description involved, the type of transaction(s), the monetary value of the transaction(s), and any other factors that may either increase or reduce the risk of financial crime in any given transaction. 28",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s8",
           "number": "8",
-          "heading": "Government oversight and licensing Another method used by proliferates is to pretend that they are ordering goods for a domestic company (i.e., supplier companies do not have to apply for licences); in this way they avoid government oversight and/or licensing requirements. 29 28 The Wolfsberg Group: ‘The Wolfsberg Group, International Chamber of Commerce (ICC) and Bankers Association for Finance and Trade (BAFT) Trade Finance Principles’, Wolfberg Group 2017, available at: http://www.wolfsberg- principles. com/pdf/home/Trade-Finance- Principles-Wolfsberg-Group-ICC-and-the-BAFT-2017.pdf. 29 Association of Certified Anti-Money Laundering Specialist ACAMS “Proliferation Financing: What Financial Institutions Should Know and What They Can Do?” September 2019 https://www.acamstoday.org/proliferation-financing-what- financial-institutions-should-know-and-what-they- can-do/.",
-          "text": "",
+          "heading": "Government oversight and licensing Another method used by proliferates is to pretend that they are ordering goods for a",
+          "text": "Government oversight and licensing Another method used by proliferates is to pretend that they are ordering goods for a domestic company (i.e., supplier companies do not have to apply for licences); in this way they avoid government oversight and/or licensing requirements. 29 28 The Wolfsberg Group: ‘The Wolfsberg Group, International Chamber of Commerce (ICC) and Bankers Association for Finance and Trade (BAFT) Trade Finance Principles’, Wolfberg Group 2017, available at: http://www.wolfsberg- principles. com/pdf/home/Trade-Finance- Principles-Wolfsberg-Group-ICC-and-the-BAFT-2017.pdf. 29 Association of Certified Anti-Money Laundering Specialist ACAMS “Proliferation Financing: What Financial Institutions Should Know and What They Can Do?” September 2019 https://www.acamstoday.org/proliferation-financing-what- financial-institutions-should-know-and-what-they- can-do/.",
           "verbatim": true,
           "subsections": []
         }

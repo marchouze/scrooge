@@ -42,18 +42,41 @@
         {
           "id": "s2",
           "number": "2",
-          "heading": "Banks’ policy frameworks for investment in high quality liquid assets 2.1 In order to facilitate the consistent and effective implementation of matters related to HQLA and the LCR among banks, this Office is of the opinion that the relevant market-based indicators of liquidity set out in the aforesaid document issued by the Basel Committee should be incorporated by banks in their respective internal frameworks that govern investments in assets eligible as HQLA, and in particular for level 2 HQLA held by banks. 2.2 The paper titled ‘Guidance for supervisors on market-based indicators of liquidity’ is available at: http://www.bis.org/publ/bcbs273.pdf.",
-          "text": "",
+          "heading": "Banks’ policy frameworks for investment in high quality liquid assets",
+          "text": "Banks’ policy frameworks for investment in high quality liquid assets",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "text": "In order to facilitate the consistent and effective implementation of matters related to HQLA and the LCR among banks, this Office is of the opinion that the relevant market-based indicators of liquidity set out in the aforesaid document issued by the Basel Committee should be incorporated by banks in their respective internal frameworks that govern investments in assets eligible as HQLA, and in particular for level 2 HQLA held by banks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-2",
+              "number": "2.2",
+              "text": "The paper titled ‘Guidance for supervisors on market-based indicators of liquidity’ is available at: http://www.bis.org/publ/bcbs273.pdf.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "s3",
           "number": "3",
-          "heading": "Acknowledgement of receipt 3.1 Two additional copies of this guidance note are enclosed for use by your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to this Office at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks The previous guidance note issued was Guidance Note 3/2016, dated 11 March 2016.",
-          "text": "",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
           "verbatim": true,
-          "subsections": []
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "text": "Two additional copies of this guidance note are enclosed for use by your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to this Office at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks The previous guidance note issued was Guidance Note 3/2016, dated 11 March 2016.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }
