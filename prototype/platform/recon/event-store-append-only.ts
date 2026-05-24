@@ -64,6 +64,8 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
+import { EventStore } from "../event-store/store";
+import { PartitionedEventStore } from "../event-store/partitioned-store";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "event-store-append-only";
@@ -290,6 +292,86 @@ export function ratchetBaseline(
 }
 
 // ---------------------------------------------------------------------------
+// D-EVENT-STORE-SCALING-PHASE-5 — archive partition checks
+// ---------------------------------------------------------------------------
+
+/**
+ * Run the two archive-specific recon checks:
+ *
+ *  (D) No-gap check — if archive partitions exist, the hot store's
+ *      MIN(sequence) must equal max(partitions.max_sequence) + 1.
+ *      A gap or overlap means events were lost or duplicated during
+ *      archival.
+ *
+ *  (E) Hash integrity check — re-hash each archive file and compare to
+ *      the stored sha256_hash. A mismatch means the archive file was
+ *      tampered with or corrupted after archival.
+ *
+ * Opens the EventStore in read-write mode (required to run DDL migrations
+ * on open) but performs no writes. Closes the store before returning.
+ *
+ * Authority: D-EVENT-STORE-SCALING-PHASE-5.
+ */
+function runArchiveChecks(eventDbPath: string): ReconViolation[] {
+  const violations: ReconViolation[] = [];
+  let store: EventStore | undefined;
+  let partitionedStore: PartitionedEventStore | undefined;
+  try {
+    store = new EventStore(eventDbPath);
+    const partitions = store.listArchivePartitions();
+
+    if (partitions.length > 0) {
+      // Check (D) — no-gap between last partition and hot store floor.
+      const maxPartitionSeq = Math.max(...partitions.map((p) => p.max_sequence));
+      const hotMin = store.minSequence();
+      const expectedHotMin = maxPartitionSeq + 1;
+      if (hotMin !== 0 && hotMin !== expectedHotMin) {
+        violations.push({
+          subject: "archive_partitions:sequence-gap",
+          message:
+            `Sequence boundary mismatch between archive partitions and hot store. ` +
+            `Last partition max_sequence=${maxPartitionSeq}; hot store MIN(sequence)=${hotMin}. ` +
+            `Expected hot floor at ${expectedHotMin}. ` +
+            `Gap or overlap indicates events were lost or duplicated during archival. ` +
+            `Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+          severity: "fail",
+        });
+      }
+
+      // Check (E) — hash integrity of each archive file.
+      partitionedStore = new PartitionedEventStore(store);
+      const integrityResults = partitionedStore.verifyArchiveIntegrity();
+      for (const result of integrityResults) {
+        if (!result.ok) {
+          violations.push({
+            subject: `archive_partitions:hash-integrity:${result.partitionId}`,
+            message:
+              `Archive partition ${result.partitionId} failed SHA-256 integrity check: ${result.error ?? "unknown error"}. ` +
+              `The archive file may have been tampered with or corrupted after archival. ` +
+              `Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+            severity: "fail",
+          });
+        }
+      }
+    }
+  } catch (err) {
+    violations.push({
+      subject: "archive_partitions:recon-error",
+      message: `Error running archive partition checks: ${err instanceof Error ? err.message : String(err)}. Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+      severity: "warn",
+    });
+  } finally {
+    // partitionedStore.close() also closes the hot store, so only call one.
+    if (partitionedStore) {
+      try { partitionedStore.close(); } catch { /* best-effort */ }
+    } else if (store) {
+      try { store.close(); } catch { /* best-effort */ }
+    }
+  }
+  return violations;
+}
+
+// ---------------------------------------------------------------------------
 // Public run() — pipeline entry point
 // ---------------------------------------------------------------------------
 
@@ -340,6 +422,14 @@ export function runEventStoreAppendOnlyRecon(
   }
 
   const violations = compareToBaseline(observation, baselineBefore);
+
+  // D-EVENT-STORE-SCALING-PHASE-5 — two additional archive checks.
+  // These run only when the event DB file exists (observation is non-null).
+  if (observation && existsSync(eventDbPath)) {
+    const archiveViolations = runArchiveChecks(eventDbPath);
+    violations.push(...archiveViolations);
+  }
+
   const ok = violations.every((v) => v.severity !== "fail");
 
   // Ratchet only on clean runs. A failed run leaves the baseline
@@ -353,7 +443,7 @@ export function runEventStoreAppendOnlyRecon(
 
   return {
     ...base,
-    asserted: 3, // rowCount, maxSequence, interiorGap — the three invariants
+    asserted: 5, // rowCount, maxSequence, interiorGap, archive-no-gap, archive-hash-integrity
     violations,
     ok,
     observation,

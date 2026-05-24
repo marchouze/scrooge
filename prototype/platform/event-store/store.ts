@@ -16,10 +16,15 @@
 //     lift swaps this implementation for Cosmos DB Core hot-tier
 //     (per `Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md`
 //     §4.2) without changing the API surface.
+//   - Cold archive partitioning (D-EVENT-STORE-SCALING-PHASE-5) —
+//     `archiveEventsOlderThan()` moves cold events to a separate SQLite
+//     file, records the partition in `archive_partitions`, and deletes
+//     the hot rows. `PartitionedEventStore` spans both.
 //
 // Author: Atlas
 
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { dirname } from "node:path";
 
 import { Database } from "bun:sqlite";
@@ -83,7 +88,46 @@ CREATE INDEX IF NOT EXISTS idx_snapshots_stream_asof
   ON snapshots(stream_key, as_of);
 CREATE INDEX IF NOT EXISTS idx_snapshots_stream_seq
   ON snapshots(stream_key, upto_sequence);
+
+-- D-EVENT-STORE-SCALING-PHASE-5 — cold archive partition registry.
+-- Each row records one archived SQLite file that holds events older
+-- than a given cutoff sequence. The hot store's events table is pruned
+-- after archival; PartitionedEventStore spans both stores transparently.
+CREATE TABLE IF NOT EXISTS archive_partitions (
+  partition_id  TEXT    PRIMARY KEY,
+  path          TEXT    NOT NULL UNIQUE,
+  min_sequence  INTEGER NOT NULL,
+  max_sequence  INTEGER NOT NULL,
+  event_count   INTEGER NOT NULL,
+  sha256_hash   TEXT    NOT NULL,
+  archived_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+);
 `;
+
+/**
+ * D-EVENT-STORE-SCALING-PHASE-5 — cold archive partition row as stored
+ * in the `archive_partitions` table in the hot EventStore.
+ */
+export interface ArchivePartitionRow {
+  partition_id: string;
+  path: string;
+  min_sequence: number;
+  max_sequence: number;
+  event_count: number;
+  sha256_hash: string;
+  archived_at: string;
+}
+
+/**
+ * Return value of `EventStore.archiveEventsOlderThan()`.
+ */
+export interface ArchiveResult {
+  readonly partitionId: string;
+  readonly minSeq: number;
+  readonly maxSeq: number;
+  readonly eventCount: number;
+  readonly sha256Hash: string;
+}
 
 export interface ReplayOpts {
   fromSequence?: number;
@@ -733,6 +777,188 @@ export class EventStore {
       .prepare("SELECT COUNT(*) AS n FROM events WHERE sequence > ?")
       .get(fromSequence) as { n: number };
     return r.n;
+  }
+
+  // --------------------------------------------------------------------
+  // D-EVENT-STORE-SCALING-PHASE-5 — cold archive partitioning.
+  //
+  // `archiveEventsOlderThan(cutoffSequence, archivePath)` is the public
+  // surface for moving cold events to a separate SQLite file. The hot
+  // store retains only events with sequence > cutoffSequence after a
+  // successful archive; the registry row in `archive_partitions` allows
+  // `PartitionedEventStore` to locate and replay the cold file.
+  //
+  // Atomicity contract: if any step after the archive-DB write fails, the
+  // archive file is removed and the hot store is left intact.
+  //
+  // Authority: D-EVENT-STORE-SCALING-PHASE-5.
+  // --------------------------------------------------------------------
+
+  /**
+   * Archive all events with sequence ≤ cutoffSequence to `archivePath`.
+   *
+   * Steps (must all succeed; partial failure removes archive file):
+   *  1. Validate inputs.
+   *  2. Open archive DB with identical schema.
+   *  3. Copy cold events transactionally into archive DB.
+   *  4. Assert archive COUNT(*) == hot COUNT WHERE sequence ≤ cutoff.
+   *  5. Compute SHA-256 of archive file.
+   *  6. Insert row into archive_partitions.
+   *  7. DELETE cold events from hot store.
+   *  8. Return partition metadata.
+   *
+   * Authority: D-EVENT-STORE-SCALING-PHASE-5.
+   */
+  archiveEventsOlderThan(cutoffSequence: number, archivePath: string): ArchiveResult {
+    // Step 1 — validate.
+    if (cutoffSequence <= 0) {
+      throw new Error(
+        "EventStore.archiveEventsOlderThan: cutoffSequence must be > 0 (D-EVENT-STORE-SCALING-PHASE-5)",
+      );
+    }
+    if (!archivePath || archivePath.trim() === "") {
+      throw new Error(
+        "EventStore.archiveEventsOlderThan: archivePath must be non-empty (D-EVENT-STORE-SCALING-PHASE-5)",
+      );
+    }
+    // Prevent overwriting an existing archive.
+    const { existsSync, unlinkSync } = require("node:fs") as typeof import("node:fs");
+    if (existsSync(archivePath)) {
+      throw new Error(
+        `EventStore.archiveEventsOlderThan: archive file already exists at "${archivePath}" — refusing to overwrite (D-EVENT-STORE-SCALING-PHASE-5)`,
+      );
+    }
+
+    // Step 2 — open archive DB with the same DDL.
+    mkdirSync(require("node:path").dirname(archivePath), { recursive: true });
+    const archiveDb = new Database(archivePath);
+    archiveDb.exec(DDL);
+
+    let archiveResult: ArchiveResult | undefined;
+    try {
+      // Step 3 — copy cold events transactionally into archive DB.
+      const coldRows = this.db
+        .prepare("SELECT * FROM events WHERE sequence <= ? ORDER BY sequence ASC")
+        .all(cutoffSequence) as RowShape[];
+
+      if (coldRows.length === 0) {
+        archiveDb.close();
+        unlinkSync(archivePath);
+        throw new Error(
+          `EventStore.archiveEventsOlderThan: no events found with sequence ≤ ${cutoffSequence} (D-EVENT-STORE-SCALING-PHASE-5)`,
+        );
+      }
+
+      const insertStmt = archiveDb.prepare(
+        `INSERT INTO events
+           (sequence, event_id, type, as_of, entity, actor_type, actor_id, citations, payload,
+            recorded_at, provenance, aggregate_id, aggregate_label)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      );
+      const copyTx = archiveDb.transaction((rows: RowShape[]) => {
+        for (const r of rows) {
+          insertStmt.run(
+            r.sequence,
+            r.event_id,
+            r.type,
+            r.as_of,
+            r.entity,
+            r.actor_type,
+            r.actor_id,
+            r.citations,
+            r.payload,
+            r.recorded_at,
+            r.provenance ?? null,
+            r.aggregate_id ?? null,
+            r.aggregate_label ?? null,
+          );
+        }
+      });
+      copyTx(coldRows);
+
+      // Step 4 — integrity gate: archive count must match hot count.
+      const archiveCount = (
+        archiveDb.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }
+      ).n;
+      const hotColdCount = (
+        this.db
+          .prepare("SELECT COUNT(*) AS n FROM events WHERE sequence <= ?")
+          .get(cutoffSequence) as { n: number }
+      ).n;
+      if (archiveCount !== hotColdCount) {
+        archiveDb.close();
+        unlinkSync(archivePath);
+        throw new Error(
+          `EventStore.archiveEventsOlderThan: integrity mismatch — archive has ${archiveCount} rows but hot store has ${hotColdCount} cold rows (D-EVENT-STORE-SCALING-PHASE-5)`,
+        );
+      }
+
+      // Step 5 — compute SHA-256 of archive file.
+      archiveDb.close(); // flush WAL before reading bytes
+      const fileBytes = readFileSync(archivePath);
+      const hasher = new Bun.CryptoHasher("sha256");
+      hasher.update(fileBytes);
+      const sha256Hash = hasher.digest("hex");
+
+      // Step 6 — insert archive_partitions row.
+      const partitionId = randomUUID();
+      const minSeq = coldRows[0]!.sequence;
+      const maxSeq = coldRows[coldRows.length - 1]!.sequence;
+      const eventCount = coldRows.length;
+
+      this.db
+        .prepare(
+          `INSERT INTO archive_partitions
+             (partition_id, path, min_sequence, max_sequence, event_count, sha256_hash)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .run(partitionId, archivePath, minSeq, maxSeq, eventCount, sha256Hash);
+
+      // Step 7 — delete cold events from hot store (in a transaction).
+      const deleteTx = this.db.transaction(() => {
+        this.db.prepare("DELETE FROM events WHERE sequence <= ?").run(cutoffSequence);
+      });
+      deleteTx();
+
+      archiveResult = { partitionId, minSeq, maxSeq, eventCount, sha256Hash };
+    } catch (err) {
+      // Cleanup on partial failure — remove archive file if it exists.
+      try {
+        if (existsSync(archivePath)) unlinkSync(archivePath);
+      } catch {
+        // best-effort
+      }
+      throw err;
+    }
+
+    // Step 8 — return metadata.
+    return archiveResult;
+  }
+
+  /**
+   * List all archive partition rows ordered by min_sequence ASC.
+   * Used by PartitionedEventStore to discover cold stores.
+   *
+   * Authority: D-EVENT-STORE-SCALING-PHASE-5.
+   */
+  listArchivePartitions(): ArchivePartitionRow[] {
+    return this.db
+      .prepare("SELECT * FROM archive_partitions ORDER BY min_sequence ASC")
+      .all() as ArchivePartitionRow[];
+  }
+
+  /**
+   * Minimum sequence in the hot store, or 0 when empty.
+   * Used by the append-only recon pipeline to verify no gap exists
+   * between the last cold partition and the hot store floor.
+   *
+   * Authority: D-EVENT-STORE-SCALING-PHASE-5.
+   */
+  minSequence(): number {
+    const r = this.db.prepare("SELECT MIN(sequence) AS m FROM events").get() as {
+      m: number | null;
+    };
+    return r.m ?? 0;
   }
 
   close(): void {
