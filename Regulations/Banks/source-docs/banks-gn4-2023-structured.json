@@ -229,8 +229,8 @@
         {
           "id": "s4",
           "number": "4",
-          "heading": "Mitigation of TF Risks The following areas, when given sufficient attention, aid in mitigating TF risk:",
-          "text": "Mitigation of TF Risks The following areas, when given sufficient attention, aid in mitigating TF risk:",
+          "heading": "Mitigation of TF Risks",
+          "text": "Mitigation of TF Risks",
           "verbatim": true,
           "subsections": [
             {
@@ -462,8 +462,8 @@
         {
           "id": "s5",
           "number": "5",
-          "heading": "Mitigation of TFS Risks The following areas, when given sufficient attention, aid in mitigating TFS risk:",
-          "text": "Mitigation of TFS Risks The following areas, when given sufficient attention, aid in mitigating TFS risk:",
+          "heading": "Mitigation of TFS Risks",
+          "text": "Mitigation of TFS Risks",
           "verbatim": true,
           "subsections": [
             {

@@ -62,6 +62,137 @@
           ]
         },
         {
+          "id": "s2",
+          "number": "2",
+          "heading": "Introduction",
+          "text": "Introduction",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "verbatim": true,
+              "text": "Prudential Standard - TCFI-01 stipulates the requirements for registration of a co-operative financial institution (CFI) with the Prudential Authority in terms of the provisions of the Co-operative Banks Act. This guidance note is issued to assist prospective and registered CFIs to complete the application process for registration with the Prudential Authority.",
+              "subsections": []
+            },
+            {
+              "id": "s2-2",
+              "number": "2.2",
+              "verbatim": true,
+              "text": "Registered CFIs have until 1 August 2019 to apply for registration with the Prudential Authority. Registered CFIs that have failed to register under the Co-operative Banks Act after 1 August 2019 and continue to conduct the business of a CFI will be committing an offence in terms of the Co-operative Banks Act.",
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "number": "3",
+          "heading": "Minimum requirements for registration as a co-operative financial institution",
+          "text": "Minimum requirements for registration as a co-operative financial institution",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s3-1",
+              "number": "3.1",
+              "verbatim": true,
+              "text": "Section 40B of the Co-operative Banks Act provides that to qualify for registration, or to continue to be registered, a CFI must demonstrate to the satisfaction of the Prudential Authority that it: has the requisite experience, knowledge, qualification and competence to give effect to its obligations; has sufficient human, financial and operational capacity to function efficiently and competently; meets any prescribed threshold requirements in respect of membership, membership shares and deposits held; and meets any other applicable prescribed requirements.",
+              "subsections": []
+            },
+            {
+              "id": "s3-2",
+              "number": "3.2",
+              "verbatim": true,
+              "text": "Based on the above-mentioned section of the Co-operative Banks Act and the other legislation and regulatory instrument cited in paragraph 1.1, a prospective or registered CFI must satisfy the following minimum requirements to be considered for registration: a minimum of 200 members; R100,000 or more in share capital; be solvent; comply with the common bond requirement; comply with the co-operative principles.",
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "number": "4",
+          "heading": "Registration with the CIPC",
+          "text": "Registration with the CIPC",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s4-1",
+              "number": "4.1",
+              "verbatim": true,
+              "text": "This section is applicable to prospective CFIs only.",
+              "subsections": []
+            },
+            {
+              "id": "s4-2",
+              "number": "4.2",
+              "verbatim": true,
+              "text": "Before a prospective CFI can apply to register as a co-operative, it requires a conditional approval to be registered as a CFI (deposit-taking) from the Prudential Authority.",
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "number": "5",
+          "heading": "Registration requirements for prospective co-operative financial institutions with the Prudential Authority",
+          "text": "Registration requirements for prospective co-operative financial institutions with the Prudential Authority",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s5-1",
+              "number": "5.1",
+              "verbatim": true,
+              "text": "This section outlines the requirements that must be complied with by a prospective CFI in order for the Prudential Authority to register it as a CFI.",
+              "subsections": []
+            },
+            {
+              "id": "s5-2",
+              "number": "5.2",
+              "verbatim": true,
+              "text": "To register a CFI, the following must be submitted to Prudential Authority: Form PA 001 application form; Form CR1; Form CR4/CR8; Form CR5; Form PA 002 membership register confirming 200 fully paid up members and at least R100,000 in shares; 2 certified copies of the constitution; certified copies of all founder members identity documents; latest certified copies of bank statement; member resolution to register with the PA; copy of savings policy; copy of credit/loan policy; copy of National Credit Regulator certificate; business plan.",
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s6",
+          "number": "6",
+          "heading": "Registered co-operative financial institutions and registration with the Prudential Authority",
+          "text": "Registered co-operative financial institutions and registration with the Prudential Authority",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s6-1",
+              "number": "6.1",
+              "verbatim": true,
+              "text": "This section outlines the requirements for registered CFIs to apply to the Prudential Authority for registration in terms of the Co-operative Banks Act.",
+              "subsections": []
+            },
+            {
+              "id": "s6-2",
+              "number": "6.2",
+              "verbatim": true,
+              "text": "To register a CFI with the Prudential Authority the following must be submitted: completed Form PA 001; copies of annual financial statements for the last financial year; copy of the latest version of constitution; copy of the latest version of the savings policy; copy of the latest version of the credit/loan policy if providing loans; copy of National Credit Regulator certificate if the CFI is providing loans; copy of certificate of registration to a registered representative body; copy of the latest version of the business plan.",
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s9",
+          "number": "9",
+          "heading": "Fees",
+          "text": "Fees",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s9-1",
+              "number": "9.1",
+              "verbatim": true,
+              "text": "Currently, no applications fees are payable to the Prudential Authority. Fees for CFIs will be determined once Chapter 16 of the FSR Act is in effect.",
+              "subsections": []
+            }
+          ]
+        },
+        {
           "id": "s10",
           "number": "10",
           "heading": "Co-operative Bank Development Agency guidelines",
@@ -121,7 +252,7 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Voluntary and Open Membership Cooperatives are voluntary organisations, open to all persons able to use their services",
+          "heading": "Voluntary and Open Membership",
           "text": "Voluntary and Open Membership Cooperatives are voluntary organisations, open to all persons able to use their services and willing to accept the responsibilities of membership, without gender, social, racial, political or religious discrimination.",
           "verbatim": true,
           "subsections": []
@@ -129,23 +260,39 @@
         {
           "id": "s2",
           "number": "2",
-          "heading": "Democratic Member Control Cooperatives are democratic organisations controlled by their members, who actively",
+          "heading": "Democratic Member Control",
           "text": "Democratic Member Control Cooperatives are democratic organisations controlled by their members, who actively participate in setting their policies and making decisions. Men and women serving as elected representatives are accountable to the membership. In primary cooperatives members have equal voting rights one member, one vote) and cooperatives at other levels are also organised in a democratic manner. Member Economic Participation Members contribute equitably to, and democratically control, the capital of their cooperative. At least part of that capital is usually the common property of the cooperative. Members usually receive limited compensation, if any, on capital subscribed as a condition of membership. Members allocate surpluses for any or all of the following purposes: developing their cooperative, possibly by setting up reserves, part of which at least would be indivisible; benefiting members in proportion to their transactions with the cooperative; and supporting other activities approved by the membership.",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s3-principle",
+          "number": "3",
+          "heading": "Member Economic Participation",
+          "text": "Members contribute equitably to, and democratically control, the capital of their cooperative. At least part of that capital is usually the common property of the cooperative. Members usually receive limited compensation, if any, on capital subscribed as a condition of membership. Members allocate surpluses for any or all of the following purposes: developing their cooperative, possibly by setting up reserves, part of which at least would be indivisible; benefiting members in proportion to their transactions with the cooperative; and supporting other activities approved by the membership.",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Autonomy and Independence Cooperatives are autonomous, self-help organisations controlled by their members.",
+          "heading": "Autonomy and Independence",
           "text": "Autonomy and Independence Cooperatives are autonomous, self-help organisations controlled by their members. If they enter into agreements with other organisations, including governments, or raise capital from external sources, they do so on terms that ensure democratic control by their members and maintain their cooperative autonomy. Education, Training, and Information Co-operatives provide education and training for their members, elected representatives, managers, and employees so they can contribute effectively to the development of their co-operatives. They inform the general public - particularly young people and opinion leaders - about the nature and benefits of co-operation. Page 1 of 2",
+          "verbatim": true,
+          "subsections": []
+        },
+        {
+          "id": "s5-principle",
+          "number": "5",
+          "heading": "Education, Training, and Information",
+          "text": "Co-operatives provide education and training for their members, elected representatives, managers, and employees so they can contribute effectively to the development of their co-operatives. They inform the general public - particularly young people and opinion leaders - about the nature and benefits of co-operation.",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s6",
           "number": "6",
-          "heading": "Cooperation among Cooperatives Cooperatives serve their members most effectively and strengthen the cooperative",
+          "heading": "Cooperation among Cooperatives",
           "text": "Cooperation among Cooperatives Cooperatives serve their members most effectively and strengthen the cooperative movement by working together through local, national, regional and international structures.",
           "verbatim": true,
           "subsections": []
@@ -153,7 +300,7 @@
         {
           "id": "s7",
           "number": "7",
-          "heading": "Concern for Community Cooperatives work for the sustainable development of their communities Page 2 of 2 Attachment 2 -",
+          "heading": "Concern for Community",
           "text": "Concern for Community Cooperatives work for the sustainable development of their communities Page 2 of 2 Attachment 2 - Companies and Intellectual Property Commission processes Source: Companies and Intellectual Property Commission (Adapted for CFS)",
           "verbatim": true,
           "subsections": []
