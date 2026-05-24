@@ -5,7 +5,12 @@
   "regulator": "SARB Financial Surveillance",
   "year": 1961,
   "sourceNote": "Exchange Control Regulations, 1961 (Government Notice R1111 of 1 December 1961), issued under section 9 of the Currency and Exchanges Act 9 of 1933, as amended up to Government Notice No. R.445 in Government Gazette No. 35430 of 8 June 2012. Administered by the Financial Surveillance Department (FinSurv) of the South African Reserve Bank.",
-  "citationPatterns": ["Excon", "Exchange Control Regulations", "Excon Reg", "ECR"],
+  "citationPatterns": [
+    "Excon",
+    "Exchange Control Regulations",
+    "Excon Reg",
+    "ECR"
+  ],
   "priority": 2,
   "chapters": [
     {
@@ -29,8 +34,50 @@
           "id": "excon-reg2",
           "sectionNumber": "Regulation 2",
           "title": "Restriction on Purchase, Sale and Loan of Foreign Currency and Gold",
-          "text": "(1) Except with permission granted by the Treasury, and in accordance with such conditions as the Treasury may impose no person other than an authorised dealer shall buy or borrow any foreign currency or any gold from, or sell or lend any foreign currency or any gold to any person not being an authorised dealer.\n\n(2) (a) An authorised dealer shall not buy, borrow or receive or sell, lend or deliver any foreign currency or gold except for such purposes or on such conditions as the Treasury may determine.\n(b) The Treasury may, in its discretion, by order prohibit all authorised dealers or any one or more of them –\n(i) from selling, lending or delivering to, or buying, borrowing or receiving from, any specified person, fund or foreign government any foreign currency or gold; or\n(ii) from so selling, lending, delivering, buying, borrowing or receiving any foreign currency or gold for any specified purpose or except for such purposes or on such conditions as the Treasury may determine.\n\n(3) Every person other than an authorised dealer desiring to buy or borrow or sell or lend foreign currency or gold shall make application to an authorised dealer and shall furnish such information and submit such documents as the authorised dealer may require for the purpose of ensuring compliance with any conditions determined under sub-regulation (2) of this regulation.\n\n(4) No person other than an authorised dealer shall –\n(a) use or apply any foreign currency or gold acquired from an authorised dealer for or to any purpose other than that stated in his application to be the purpose for which it was required; or\n(b) do any act calculated to lead to the use or application of such foreign currency or gold for or to any purpose other than that so stated.\n\n(5) If a person has, as a result of an application in terms of sub-regulation (3) of this regulation, obtained from an authorised dealer any gold or foreign currency and no longer requires all or any part of such gold or foreign currency for the purpose stated in his application, he shall forthwith offer for sale to the Treasury or an authorised dealer that gold or foreign currency which is not so required, which may be repurchased at the price at which it was sold to him or such other price as the Treasury may determine.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg2.1",
+              "number": "1",
+              "heading": "excon-reg2.1",
+              "text": "(1) Except with permission granted by the Treasury, and in accordance with such conditions as the Treasury may impose no person other than an authorised dealer shall buy or borrow any foreign currency or any gold from, or sell or lend any foreign currency or any gold to any person not being an authorised dealer.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg2.2",
+              "number": "2",
+              "heading": "excon-reg2.2",
+              "text": "(2) (a) An authorised dealer shall not buy, borrow or receive or sell, lend or deliver any foreign currency or gold except for such purposes or on such conditions as the Treasury may determine.\n(b) The Treasury may, in its discretion, by order prohibit all authorised dealers or any one or more of them –\n(i) from selling, lending or delivering to, or buying, borrowing or receiving from, any specified person, fund or foreign government any foreign currency or gold; or\n(ii) from so selling, lending, delivering, buying, borrowing or receiving any foreign currency or gold for any specified purpose or except for such purposes or on such conditions as the Treasury may determine.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg2.3",
+              "number": "3",
+              "heading": "excon-reg2.3",
+              "text": "(3) Every person other than an authorised dealer desiring to buy or borrow or sell or lend foreign currency or gold shall make application to an authorised dealer and shall furnish such information and submit such documents as the authorised dealer may require for the purpose of ensuring compliance with any conditions determined under sub-regulation (2) of this regulation.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg2.4",
+              "number": "4",
+              "heading": "excon-reg2.4",
+              "text": "(4) No person other than an authorised dealer shall –\n(a) use or apply any foreign currency or gold acquired from an authorised dealer for or to any purpose other than that stated in his application to be the purpose for which it was required; or\n(b) do any act calculated to lead to the use or application of such foreign currency or gold for or to any purpose other than that so stated.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg2.5",
+              "number": "5",
+              "heading": "excon-reg2.5",
+              "text": "(5) If a person has, as a result of an application in terms of sub-regulation (3) of this regulation, obtained from an authorised dealer any gold or foreign currency and no longer requires all or any part of such gold or foreign currency for the purpose stated in his application, he shall forthwith offer for sale to the Treasury or an authorised dealer that gold or foreign currency which is not so required, which may be repurchased at the price at which it was sold to him or such other price as the Treasury may determine.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -42,8 +89,50 @@
           "id": "excon-reg3",
           "sectionNumber": "Regulation 3",
           "title": "Restriction on the Export of Currency, Gold, Securities, etc., and the Import of South African Bank Notes",
-          "text": "(1) Subject to any exemption which may be granted by the Treasury or a person authorised by the Treasury, no person shall, without permission granted by the Treasury or a person authorised by the Treasury and in accordance with such conditions as the Treasury or such authorised person may impose –\n(a) take or send out of the Republic any bank notes, gold, securities or foreign currency, or transfer any securities from the Republic elsewhere; or\n(b) send, consign or deliver any bank notes, gold, securities or foreign currency to any person for the purpose of taking, sending or removing such bank notes, gold, securities or foreign currency out of the Republic; or\n(b) bis take any South African bank notes into the Republic or send or consign any such notes to the Republic; or\n(c) make any payment to, or in favour, or on behalf of a person resident outside the Republic, or place any sum to the credit of such person; or\n(d) draw or negotiate any bill of exchange or promissory note, transfer any security or acknowledge any debt, so that a right (whether actual or contingent) on the part of such person or any other person to receive a payment in the Republic is created or transferred as consideration –\n(i) for the receiving by such person or any other person of a payment or the acquisition by such person or any other person of property, outside the Republic; or\n(ii) for a right (whether actual or contingent) on the part of such person or any other person to receive a payment or acquire property outside the Republic; or make or receive any payment as such consideration; or\n(e) grant any financial assistance to any person in the Republic, where as security for such financial assistance, the person granting the financial assistance in turn relies on any security, guarantee, undertaking or financial assistance, directly or indirectly furnished by –\n(i) any person resident outside the Republic; or\n(ii) an affected person;\n(f) grant any financial assistance to any person in the Republic, where such person –\n(i) is not resident in the Republic; or\n(ii) is an affected person.\n\n(2) Nothing in sub-regulation (1) contained shall prohibit the doing by a person authorised by the Treasury of anything within the scope of his authority.\n\n(3) Every person who is about to leave the Republic and every person in any port or other place recognised as a place of departure from the Republic, who is requested to do so by the appropriate officer shall –\n(a) declare whether or not he has with him any bank notes, gold, securities or foreign currency; and\n(b) produce any bank notes, gold, securities or foreign currency which he has with him;\nand the appropriate officer and any person acting under his directions may search such person and examine or search any article which such person has with him, for the purpose of ascertaining whether he has with him any bank notes, gold, securities or foreign currency, and may seize any bank notes, gold, securities or foreign currency produced or found upon such examination or search unless either –\n(i) the appropriate officer is satisfied that such person is, in respect of any bank notes, gold, securities or foreign currency which he has with him, exempt from the prohibition imposed by sub-regulation (1); or\n(ii) such person produces to the appropriate officer a certificate granted by the Treasury which shows that the exportation by such person of any bank notes, gold, securities or foreign currency which he has with him does not involve a contravention of that sub-regulation.\nNo female shall be searched in pursuance of this sub-regulation except by a female.\n\n(5) All bank notes, gold, securities and foreign currency seized under sub-regulation (3) or (4) shall be forfeited for the benefit of the National Revenue Fund: Provided that the Treasury may, in its discretion, direct that any bank notes, gold, securities or foreign currency so seized, be refunded or returned, in whole or in part, to the person from whom they were taken, or who was entitled to have the custody or possession of them at the time when they were seized.\n\n(9) For the purposes of sub-regulation (1)(a), documents of title relating to securities shall be deemed to be securities, and any reference to securities in sub-regulations (3), (4) and (5) shall be construed as including references to such documents of title.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg3.1",
+              "number": "1",
+              "heading": "excon-reg3.1",
+              "text": "(1) Subject to any exemption which may be granted by the Treasury or a person authorised by the Treasury, no person shall, without permission granted by the Treasury or a person authorised by the Treasury and in accordance with such conditions as the Treasury or such authorised person may impose –\n(a) take or send out of the Republic any bank notes, gold, securities or foreign currency, or transfer any securities from the Republic elsewhere; or\n(b) send, consign or deliver any bank notes, gold, securities or foreign currency to any person for the purpose of taking, sending or removing such bank notes, gold, securities or foreign currency out of the Republic; or\n(b) bis take any South African bank notes into the Republic or send or consign any such notes to the Republic; or\n(c) make any payment to, or in favour, or on behalf of a person resident outside the Republic, or place any sum to the credit of such person; or\n(d) draw or negotiate any bill of exchange or promissory note, transfer any security or acknowledge any debt, so that a right (whether actual or contingent) on the part of such person or any other person to receive a payment in the Republic is created or transferred as consideration –\n(i) for the receiving by such person or any other person of a payment or the acquisition by such person or any other person of property, outside the Republic; or\n(ii) for a right (whether actual or contingent) on the part of such person or any other person to receive a payment or acquire property outside the Republic; or make or receive any payment as such consideration; or\n(e) grant any financial assistance to any person in the Republic, where as security for such financial assistance, the person granting the financial assistance in turn relies on any security, guarantee, undertaking or financial assistance, directly or indirectly furnished by –\n(i) any person resident outside the Republic; or\n(ii) an affected person;\n(f) grant any financial assistance to any person in the Republic, where such person –\n(i) is not resident in the Republic; or\n(ii) is an affected person.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg3.2",
+              "number": "2",
+              "heading": "excon-reg3.2",
+              "text": "(2) Nothing in sub-regulation (1) contained shall prohibit the doing by a person authorised by the Treasury of anything within the scope of his authority.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg3.3",
+              "number": "3",
+              "heading": "excon-reg3.3",
+              "text": "(3) Every person who is about to leave the Republic and every person in any port or other place recognised as a place of departure from the Republic, who is requested to do so by the appropriate officer shall –\n(a) declare whether or not he has with him any bank notes, gold, securities or foreign currency; and\n(b) produce any bank notes, gold, securities or foreign currency which he has with him;\nand the appropriate officer and any person acting under his directions may search such person and examine or search any article which such person has with him, for the purpose of ascertaining whether he has with him any bank notes, gold, securities or foreign currency, and may seize any bank notes, gold, securities or foreign currency produced or found upon such examination or search unless either –\n(i) the appropriate officer is satisfied that such person is, in respect of any bank notes, gold, securities or foreign currency which he has with him, exempt from the prohibition imposed by sub-regulation (1); or\n(ii) such person produces to the appropriate officer a certificate granted by the Treasury which shows that the exportation by such person of any bank notes, gold, securities or foreign currency which he has with him does not involve a contravention of that sub-regulation.\nNo female shall be searched in pursuance of this sub-regulation except by a female.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg3.5",
+              "number": "5",
+              "heading": "excon-reg3.5",
+              "text": "(5) All bank notes, gold, securities and foreign currency seized under sub-regulation (3) or (4) shall be forfeited for the benefit of the National Revenue Fund: Provided that the Treasury may, in its discretion, direct that any bank notes, gold, securities or foreign currency so seized, be refunded or returned, in whole or in part, to the person from whom they were taken, or who was entitled to have the custody or possession of them at the time when they were seized.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg3.9",
+              "number": "9",
+              "heading": "excon-reg3.9",
+              "text": "(9) For the purposes of sub-regulation (1)(a), documents of title relating to securities shall be deemed to be securities, and any reference to securities in sub-regulations (3), (4) and (5) shall be construed as including references to such documents of title.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -55,8 +144,74 @@
           "id": "excon-reg4",
           "sectionNumber": "Regulation 4",
           "title": "Blocked Accounts",
-          "text": "(1) In this regulation \"blocked account\" means an account opened with an authorised dealer for the purposes specified in the succeeding sub-regulations.\n\n(2) Whenever a person in the Republic is under a legal obligation to make a payment to a person outside the Republic but is precluded from effecting the payment as a result of any restrictions imposed by or under these regulations, the Treasury may order such person to make the payment to a blocked account.\n\n(3) The Treasury may by notice in the Gazette direct, in respect of –\n(a) persons resident in a particular country; or\n(b) any particular person whom the Treasury has reasonable grounds to suspect of having contravened any provision of these regulations relating to foreign exchange,\nthat all sums due by any other persons to persons referred to in (a) or (b) (hereinafter referred to as a \"creditor\") shall be paid into a blocked account.\n\n(4) Whenever such direction has been given –\n(a) any person who holds or may thereafter hold moneys on behalf of any creditor (as defined in sub-regulation (3)), or who is or may thereafter become indebted to such creditor, shall forthwith, or as the case may be, on the date upon which such moneys become due or such debt becomes payable, pay the said moneys or the sum representing such debt into the said blocked account;\n(b) no person shall, without permission of the Treasury and in accordance with such conditions as the Treasury may impose, make any payment on behalf of any creditor as defined in sub-regulation (3);\n(c) any person who owes money to such creditor but is not under a legal obligation to make a payment, unless called upon by his creditor to do so, shall forthwith report to the Treasury, in writing, the amount of his indebtedness to the said creditor and the conditions on which the amount will become payable. The Treasury may thereupon, if the amount is payable at call, order him to pay the amount forthwith into a blocked account, or, if the amount is payable within a specified period after notice, order him to pay the amount into a blocked account within such period;\n(d) no person shall, without the permission of the Treasury and in accordance with such conditions as the Treasury may impose, undertake any transaction in respect of property or assets belonging to or directly or indirectly controlled by any creditor as defined in sub-regulation (3), or take any action whereby any moneys which would otherwise have accrued to such creditor, cease to become due to him or whereby any obligation resting upon such person to pay any moneys due or payable to such creditor into a blocked account would otherwise be evaded.\n\n(5) Any payment made to a blocked account in terms of this regulation shall, to the extent of the sum paid, operate as a valid discharge to the person making payment.\n\n(6) Where the liability to make the payment is a liability to make the payment in currency other than Republic currency, the amount of the liability in Republic currency and the extent of the discharge shall be ascertained by converting the amount into Republic currency at a rate fixed by the Treasury.\n\n(7) No sum standing to the credit of a blocked account shall be dealt with in any way except with permission granted by the Treasury or a person authorised by the Treasury and in accordance with such conditions as the Treasury or such authorised person may impose.\n\n(8) The Treasury may grant exemptions from the provisions of this regulation and may authorise the refund to any person of moneys paid by him into a blocked account. To the extent of such refund no payment shall be deemed to have been made for the purposes of sub-regulation (5).",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg4.1",
+              "number": "1",
+              "heading": "excon-reg4.1",
+              "text": "(1) In this regulation \"blocked account\" means an account opened with an authorised dealer for the purposes specified in the succeeding sub-regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg4.2",
+              "number": "2",
+              "heading": "excon-reg4.2",
+              "text": "(2) Whenever a person in the Republic is under a legal obligation to make a payment to a person outside the Republic but is precluded from effecting the payment as a result of any restrictions imposed by or under these regulations, the Treasury may order such person to make the payment to a blocked account.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg4.3",
+              "number": "3",
+              "heading": "excon-reg4.3",
+              "text": "(3) The Treasury may by notice in the Gazette direct, in respect of –\n(a) persons resident in a particular country; or\n(b) any particular person whom the Treasury has reasonable grounds to suspect of having contravened any provision of these regulations relating to foreign exchange,\nthat all sums due by any other persons to persons referred to in (a) or (b) (hereinafter referred to as a \"creditor\") shall be paid into a blocked account.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg4.4",
+              "number": "4",
+              "heading": "excon-reg4.4",
+              "text": "(4) Whenever such direction has been given –\n(a) any person who holds or may thereafter hold moneys on behalf of any creditor (as defined in sub-regulation (3)), or who is or may thereafter become indebted to such creditor, shall forthwith, or as the case may be, on the date upon which such moneys become due or such debt becomes payable, pay the said moneys or the sum representing such debt into the said blocked account;\n(b) no person shall, without permission of the Treasury and in accordance with such conditions as the Treasury may impose, make any payment on behalf of any creditor as defined in sub-regulation (3);\n(c) any person who owes money to such creditor but is not under a legal obligation to make a payment, unless called upon by his creditor to do so, shall forthwith report to the Treasury, in writing, the amount of his indebtedness to the said creditor and the conditions on which the amount will become payable. The Treasury may thereupon, if the amount is payable at call, order him to pay the amount forthwith into a blocked account, or, if the amount is payable within a specified period after notice, order him to pay the amount into a blocked account within such period;\n(d) no person shall, without the permission of the Treasury and in accordance with such conditions as the Treasury may impose, undertake any transaction in respect of property or assets belonging to or directly or indirectly controlled by any creditor as defined in sub-regulation (3), or take any action whereby any moneys which would otherwise have accrued to such creditor, cease to become due to him or whereby any obligation resting upon such person to pay any moneys due or payable to such creditor into a blocked account would otherwise be evaded.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg4.5",
+              "number": "5",
+              "heading": "excon-reg4.5",
+              "text": "(5) Any payment made to a blocked account in terms of this regulation shall, to the extent of the sum paid, operate as a valid discharge to the person making payment.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg4.6",
+              "number": "6",
+              "heading": "excon-reg4.6",
+              "text": "(6) Where the liability to make the payment is a liability to make the payment in currency other than Republic currency, the amount of the liability in Republic currency and the extent of the discharge shall be ascertained by converting the amount into Republic currency at a rate fixed by the Treasury.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg4.7",
+              "number": "7",
+              "heading": "excon-reg4.7",
+              "text": "(7) No sum standing to the credit of a blocked account shall be dealt with in any way except with permission granted by the Treasury or a person authorised by the Treasury and in accordance with such conditions as the Treasury or such authorised person may impose.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg4.8",
+              "number": "8",
+              "heading": "excon-reg4.8",
+              "text": "(8) The Treasury may grant exemptions from the provisions of this regulation and may authorise the refund to any person of moneys paid by him into a blocked account. To the extent of such refund no payment shall be deemed to have been made for the purposes of sub-regulation (5).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -68,8 +223,26 @@
           "id": "excon-reg5",
           "sectionNumber": "Regulation 5",
           "title": "Acquisition by Treasury of Gold",
-          "text": "(1) Every person resident in the Republic who becomes entitled to sell or to procure the sale of any gold shall, within thirty days after becoming so entitled, offer that gold or cause it to be offered, for sale to the Treasury or to a person authorised by the Treasury to act under this regulation; and the Treasury or a person so authorised may purchase that gold at such price as the Treasury may fix, being a price which, in the opinion of the Treasury, is not less than the market value of the gold on the day of purchase.\n\n(2) (a) The provisions of sub-regulation (1) of this regulation shall not impose upon any person an obligation to offer any gold for sale or to cause any gold to be offered for sale, if he is, in respect of that gold, exempted from this regulation by the Treasury or by a person so authorised.\n(b) The Treasury or a person so authorised may withdraw any exemption granted in terms of paragraph (a) of this sub-regulation.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg5.1",
+              "number": "1",
+              "heading": "excon-reg5.1",
+              "text": "(1) Every person resident in the Republic who becomes entitled to sell or to procure the sale of any gold shall, within thirty days after becoming so entitled, offer that gold or cause it to be offered, for sale to the Treasury or to a person authorised by the Treasury to act under this regulation; and the Treasury or a person so authorised may purchase that gold at such price as the Treasury may fix, being a price which, in the opinion of the Treasury, is not less than the market value of the gold on the day of purchase.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg5.2",
+              "number": "2",
+              "heading": "excon-reg5.2",
+              "text": "(2) (a) The provisions of sub-regulation (1) of this regulation shall not impose upon any person an obligation to offer any gold for sale or to cause any gold to be offered for sale, if he is, in respect of that gold, exempted from this regulation by the Treasury or by a person so authorised.\n(b) The Treasury or a person so authorised may withdraw any exemption granted in terms of paragraph (a) of this sub-regulation.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -81,8 +254,90 @@
           "id": "excon-reg6",
           "sectionNumber": "Regulation 6",
           "title": "Acquisition by the Treasury of Foreign Currency",
-          "text": "(1) Every person resident in the Republic who becomes entitled to sell or to procure the sale of any foreign currency, shall within thirty days after becoming so entitled, make or cause to be made, a declaration in writing of such foreign currency to the Treasury or to an authorised dealer.\n\n(2) Every person resident in the Republic who becomes entitled to assign or to procure the assignment of any right to receive outside the Republic, in respect of any credit or of any balance at a bank, payment of any amount in a foreign currency shall, within thirty days after becoming so entitled, make or cause to be made, a declaration in writing of such right to the Treasury or to an authorised dealer.\n\n(3) Any person who has, in terms of sub-regulation (1) or (2), made a declaration in writing to the Treasury or to an authorised dealer, shall be deemed to have offered such foreign currency or such right, as the case may be, for sale to the Treasury or to such authorised dealer and the Treasury or such authorised dealer may purchase such foreign currency or such right at a price which, in the case of foreign currency, shall not be less than the market value of that currency on the day of purchase and, in the case of a right, shall be such as the Treasury may fix.\n\n(4) Any person from whom the Treasury or an authorised dealer purchases foreign currency or a right in terms of this regulation shall do all things necessary for the purpose of transferring that foreign currency or assigning that right to the Treasury or to such authorised dealer.\n\n(5) No person who is entitled (whether actually or contingently) to receive a payment in a foreign currency shall, except with permission granted by or on behalf of the Treasury and in accordance with such conditions as may be imposed by the Treasury or on its behalf do, or refrain from doing, any act with intent to secure that –\n(a) the receipt by him of the whole or any part of the payment in such currency is delayed;\n(b) the payment ceases, in whole or in part, to be receivable by him or receivable in that currency;\n(c) the contingency on which the right to receive payment as aforesaid is dependent (including the declaration of a dividend or profit by a company in which such person has an interest), does not eventuate.\n\n(6) Any foreign currency or any right in respect of which a declaration has been made in terms of sub-regulation (1) or (2) but which has not been purchased by the Treasury or by a person authorised by the Treasury to act under this regulation shall not be sold, transferred or otherwise disposed of without the permission of the Treasury and in accordance with such conditions as the Treasury may impose.\n\n(7) The provisions of sub-regulations (3), (4) and (6) shall not impose upon any person an obligation in respect of any foreign currency or any right if he is, in respect of that currency or that right, as the case may be, exempted from this regulation by the Treasury.\n\n(8) The Treasury may withdraw any exemption granted in terms of sub-regulation (7).\n\n(9) For the purposes of this regulation any person who has at any time since the commencement of these regulations been in the Republic shall be deemed, until the contrary is proved, to have been and still to be resident in the Republic.\n\n(10) (a) Subject to any exemption which may be granted by the Treasury, no person shall export goods from the Republic, unless the relative bill of entry export in respect of such goods is duly completed and signed by the consignor or a person duly authorised by the consignor.\n(b) The Treasury may direct that the said bill of entry export shall be completed in respect of any commodity or article, irrespective of its value.\n(c) For the purposes of this sub regulation \"value\" shall mean –\n(i) for customs purposes, the value as defined in section seventy two of the Customs and Excise Act, 1964 (Act No. 91 of 1964); and\n(ii) for the purposes of an authorised dealer, the full proceeds of the goods exported.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg6.1",
+              "number": "1",
+              "heading": "excon-reg6.1",
+              "text": "(1) Every person resident in the Republic who becomes entitled to sell or to procure the sale of any foreign currency, shall within thirty days after becoming so entitled, make or cause to be made, a declaration in writing of such foreign currency to the Treasury or to an authorised dealer.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.2",
+              "number": "2",
+              "heading": "excon-reg6.2",
+              "text": "(2) Every person resident in the Republic who becomes entitled to assign or to procure the assignment of any right to receive outside the Republic, in respect of any credit or of any balance at a bank, payment of any amount in a foreign currency shall, within thirty days after becoming so entitled, make or cause to be made, a declaration in writing of such right to the Treasury or to an authorised dealer.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.3",
+              "number": "3",
+              "heading": "excon-reg6.3",
+              "text": "(3) Any person who has, in terms of sub-regulation (1) or (2), made a declaration in writing to the Treasury or to an authorised dealer, shall be deemed to have offered such foreign currency or such right, as the case may be, for sale to the Treasury or to such authorised dealer and the Treasury or such authorised dealer may purchase such foreign currency or such right at a price which, in the case of foreign currency, shall not be less than the market value of that currency on the day of purchase and, in the case of a right, shall be such as the Treasury may fix.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.4",
+              "number": "4",
+              "heading": "excon-reg6.4",
+              "text": "(4) Any person from whom the Treasury or an authorised dealer purchases foreign currency or a right in terms of this regulation shall do all things necessary for the purpose of transferring that foreign currency or assigning that right to the Treasury or to such authorised dealer.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.5",
+              "number": "5",
+              "heading": "excon-reg6.5",
+              "text": "(5) No person who is entitled (whether actually or contingently) to receive a payment in a foreign currency shall, except with permission granted by or on behalf of the Treasury and in accordance with such conditions as may be imposed by the Treasury or on its behalf do, or refrain from doing, any act with intent to secure that –\n(a) the receipt by him of the whole or any part of the payment in such currency is delayed;\n(b) the payment ceases, in whole or in part, to be receivable by him or receivable in that currency;\n(c) the contingency on which the right to receive payment as aforesaid is dependent (including the declaration of a dividend or profit by a company in which such person has an interest), does not eventuate.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.6",
+              "number": "6",
+              "heading": "excon-reg6.6",
+              "text": "(6) Any foreign currency or any right in respect of which a declaration has been made in terms of sub-regulation (1) or (2) but which has not been purchased by the Treasury or by a person authorised by the Treasury to act under this regulation shall not be sold, transferred or otherwise disposed of without the permission of the Treasury and in accordance with such conditions as the Treasury may impose.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.7",
+              "number": "7",
+              "heading": "excon-reg6.7",
+              "text": "(7) The provisions of sub-regulations (3), (4) and (6) shall not impose upon any person an obligation in respect of any foreign currency or any right if he is, in respect of that currency or that right, as the case may be, exempted from this regulation by the Treasury.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.8",
+              "number": "8",
+              "heading": "excon-reg6.8",
+              "text": "(8) The Treasury may withdraw any exemption granted in terms of sub-regulation (7).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.9",
+              "number": "9",
+              "heading": "excon-reg6.9",
+              "text": "(9) For the purposes of this regulation any person who has at any time since the commencement of these regulations been in the Republic shall be deemed, until the contrary is proved, to have been and still to be resident in the Republic.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg6.10",
+              "number": "10",
+              "heading": "excon-reg6.10",
+              "text": "(10) (a) Subject to any exemption which may be granted by the Treasury, no person shall export goods from the Republic, unless the relative bill of entry export in respect of such goods is duly completed and signed by the consignor or a person duly authorised by the consignor.\n(b) The Treasury may direct that the said bill of entry export shall be completed in respect of any commodity or article, irrespective of its value.\n(c) For the purposes of this sub regulation \"value\" shall mean –\n(i) for customs purposes, the value as defined in section seventy two of the Customs and Excise Act, 1964 (Act No. 91 of 1964); and\n(ii) for the purposes of an authorised dealer, the full proceeds of the goods exported.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -94,8 +349,50 @@
           "id": "excon-reg7",
           "sectionNumber": "Regulation 7",
           "title": "Declaration of Foreign Assets and Liabilities",
-          "text": "(1) Every person resident in the Republic who is, or becomes, entitled to sell or to procure the sale of any foreign asset, shall within thirty days after becoming so entitled, make or cause to be made, a declaration in writing in the form prescribed by the Treasury of such foreign asset to the Treasury or to an authorised dealer. Such declaration shall state when and how such foreign asset was acquired, where it is held and whether and to what extent it is held in cover for or in respect of any foreign liability.\n\n(2) Any foreign asset in respect of which a declaration has been made in terms of sub regulation (1) of this regulation shall not be sold, transferred or otherwise disposed of without the permission of the Treasury, and in accordance with such conditions as the Treasury may impose.\n\n(3) The provisions of sub-regulation (2) of this regulation shall not impose upon any person an obligation in respect of any foreign asset if he is, in respect of that asset, exempted from this regulation by the Treasury.\n\n(4) The Treasury may withdraw any exemption granted in terms of sub-regulation (3) of this regulation.\n\n(5) For the purposes of this regulation any person who has at any time since the date of publication thereof been in the Republic shall be deemed, until the contrary is proved, to have been and still to be resident in the Republic.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg7.1",
+              "number": "1",
+              "heading": "excon-reg7.1",
+              "text": "(1) Every person resident in the Republic who is, or becomes, entitled to sell or to procure the sale of any foreign asset, shall within thirty days after becoming so entitled, make or cause to be made, a declaration in writing in the form prescribed by the Treasury of such foreign asset to the Treasury or to an authorised dealer. Such declaration shall state when and how such foreign asset was acquired, where it is held and whether and to what extent it is held in cover for or in respect of any foreign liability.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg7.2",
+              "number": "2",
+              "heading": "excon-reg7.2",
+              "text": "(2) Any foreign asset in respect of which a declaration has been made in terms of sub regulation (1) of this regulation shall not be sold, transferred or otherwise disposed of without the permission of the Treasury, and in accordance with such conditions as the Treasury may impose.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg7.3",
+              "number": "3",
+              "heading": "excon-reg7.3",
+              "text": "(3) The provisions of sub-regulation (2) of this regulation shall not impose upon any person an obligation in respect of any foreign asset if he is, in respect of that asset, exempted from this regulation by the Treasury.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg7.4",
+              "number": "4",
+              "heading": "excon-reg7.4",
+              "text": "(4) The Treasury may withdraw any exemption granted in terms of sub-regulation (3) of this regulation.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg7.5",
+              "number": "5",
+              "heading": "excon-reg7.5",
+              "text": "(5) For the purposes of this regulation any person who has at any time since the date of publication thereof been in the Republic shall be deemed, until the contrary is proved, to have been and still to be resident in the Republic.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -107,8 +404,34 @@
           "id": "excon-reg8",
           "sectionNumber": "Regulation 8",
           "title": "Power to Prescribe Currencies in respect of Certain Transactions",
-          "text": "(1) The Treasury may from time to time prescribe, by notice in the Gazette or by instructions to authorised dealers, the currency or currencies or the manner in which payment may or may not be made in connection with imports or exports or other transactions involving payments between persons in the Republic and persons outside the Republic, and no person shall, except with the permission of the Treasury, and in accordance with such conditions as the Treasury may impose, make or receive payment otherwise than in the currency or currencies or in the manner so prescribed.\n\n(2) Without prejudice to the generality of the provisions of sub-regulation (1), any notice and any instructions under the said sub-regulation may relate to payments (including any particular payment) –\n(a) in connection with the import or export of any commodity specified in the notice or instructions –\n(i) to or from all countries; or\n(ii) to or from all countries except any country specified in the notice or instructions; or\n(iii) to or from any country so specified; or\n(b) in connection with any particular transaction.\n\n(3) The provisions of sub-regulation (10) of Regulation 6 shall apply mutatis mutandis to the export from the Republic of any commodity to a country in connection with the export of which commodity to that country the Treasury has in terms of sub-regulation (2) above prescribed the currency or currencies or the manner in which payment may or may not be made.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg8.1",
+              "number": "1",
+              "heading": "excon-reg8.1",
+              "text": "(1) The Treasury may from time to time prescribe, by notice in the Gazette or by instructions to authorised dealers, the currency or currencies or the manner in which payment may or may not be made in connection with imports or exports or other transactions involving payments between persons in the Republic and persons outside the Republic, and no person shall, except with the permission of the Treasury, and in accordance with such conditions as the Treasury may impose, make or receive payment otherwise than in the currency or currencies or in the manner so prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg8.2",
+              "number": "2",
+              "heading": "excon-reg8.2",
+              "text": "(2) Without prejudice to the generality of the provisions of sub-regulation (1), any notice and any instructions under the said sub-regulation may relate to payments (including any particular payment) –\n(a) in connection with the import or export of any commodity specified in the notice or instructions –\n(i) to or from all countries; or\n(ii) to or from all countries except any country specified in the notice or instructions; or\n(iii) to or from any country so specified; or\n(b) in connection with any particular transaction.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg8.3",
+              "number": "3",
+              "heading": "excon-reg8.3",
+              "text": "(3) The provisions of sub-regulation (10) of Regulation 6 shall apply mutatis mutandis to the export from the Republic of any commodity to a country in connection with the export of which commodity to that country the Treasury has in terms of sub-regulation (2) above prescribed the currency or currencies or the manner in which payment may or may not be made.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -120,8 +443,26 @@
           "id": "excon-reg9",
           "sectionNumber": "Regulation 9",
           "title": "Limitation of Optional Ports of Destination",
-          "text": "(1) No person may, except with permission granted by the Treasury and in accordance with such conditions as the Treasury may impose, consign any goods to any destination other than that specified in the Declaration in regard to Foreign Exchange Proceeds of Exports prescribed in terms of sub-regulation (10)(a) of Regulation 6, unless the other destination is in the same monetary area, or give or accept instructions after the despatch of the goods for the diversion thereof to any other destination unless such other destination is in the same monetary area.\n\n(2) If in any criminal proceedings under this regulation it is proved that goods have been diverted to a country other than that designated as the destination of such goods on the prescribed documents submitted to and accepted by the Republic authorities to cover the outward consignment of such goods, then it shall be presumed, until the contrary is proved, that the goods were consigned to and received in such other country and not the country designated on such documents.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg9.1",
+              "number": "1",
+              "heading": "excon-reg9.1",
+              "text": "(1) No person may, except with permission granted by the Treasury and in accordance with such conditions as the Treasury may impose, consign any goods to any destination other than that specified in the Declaration in regard to Foreign Exchange Proceeds of Exports prescribed in terms of sub-regulation (10)(a) of Regulation 6, unless the other destination is in the same monetary area, or give or accept instructions after the despatch of the goods for the diversion thereof to any other destination unless such other destination is in the same monetary area.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg9.2",
+              "number": "2",
+              "heading": "excon-reg9.2",
+              "text": "(2) If in any criminal proceedings under this regulation it is proved that goods have been diverted to a country other than that designated as the destination of such goods on the prescribed documents submitted to and accepted by the Republic authorities to cover the outward consignment of such goods, then it shall be presumed, until the contrary is proved, that the goods were consigned to and received in such other country and not the country designated on such documents.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -133,8 +474,42 @@
           "id": "excon-reg10",
           "sectionNumber": "Regulation 10",
           "title": "Restriction on Export of Capital",
-          "text": "(1) No person shall, except with permission granted by the Treasury and in accordance with such conditions as the Treasury may impose –\n(a) export from the Republic during any period of twelve months a total quantity of goods which exceeds in value twenty rand or such greater amount as the Treasury may determine, if –\n(i) no payment for such goods has been or is to be received in the Republic from a person outside the Republic; or\n(ii) such goods are exported at a price which is less than the value thereof; or\n(iii) the period within which payment for such goods is to be made exceeds six months from the date of shipment from the Republic or such shorter period as an authorised dealer may determine in respect of such goods;\n(b) take out of the Republic goods, including personal apparel, household effects, and jewellery which have a value in excess of six hundred rand or of such greater amount as the Treasury may determine;\n(c) enter into any transaction whereby capital or any right to capital is directly or indirectly exported from the Republic.\n\n(2) The provisions of sub-regulation (3), (4) and (5) of Regulation 3 shall apply mutatis mutandis to goods referred to in sub-regulation (1)(b) of this regulation.\n\n(3) For the purposes of this regulation \"value\" shall mean the value for customs purposes as defined in section one hundred and eight of the Customs Act, 1955 (No. 55 of 1955).\n\n(4) For the purposes of sub-regulation (1)(c) –\n(a) 'capital' shall include, without derogating from the generality of that term, any intellectual property right, whether registered or unregistered; and\n(b) 'exported from the Republic' shall include, without derogating from the generality of that term, the cession of, the creation of a hypothetic or other form of security over, or the assignment or transfer of any intellectual property right, to or in favour of a person who is not resident in the Republic.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg10.1",
+              "number": "1",
+              "heading": "excon-reg10.1",
+              "text": "(1) No person shall, except with permission granted by the Treasury and in accordance with such conditions as the Treasury may impose –\n(a) export from the Republic during any period of twelve months a total quantity of goods which exceeds in value twenty rand or such greater amount as the Treasury may determine, if –\n(i) no payment for such goods has been or is to be received in the Republic from a person outside the Republic; or\n(ii) such goods are exported at a price which is less than the value thereof; or\n(iii) the period within which payment for such goods is to be made exceeds six months from the date of shipment from the Republic or such shorter period as an authorised dealer may determine in respect of such goods;\n(b) take out of the Republic goods, including personal apparel, household effects, and jewellery which have a value in excess of six hundred rand or of such greater amount as the Treasury may determine;\n(c) enter into any transaction whereby capital or any right to capital is directly or indirectly exported from the Republic.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg10.2",
+              "number": "2",
+              "heading": "excon-reg10.2",
+              "text": "(2) The provisions of sub-regulation (3), (4) and (5) of Regulation 3 shall apply mutatis mutandis to goods referred to in sub-regulation (1)(b) of this regulation.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg10.3",
+              "number": "3",
+              "heading": "excon-reg10.3",
+              "text": "(3) For the purposes of this regulation \"value\" shall mean the value for customs purposes as defined in section one hundred and eight of the Customs Act, 1955 (No. 55 of 1955).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg10.4",
+              "number": "4",
+              "heading": "excon-reg10.4",
+              "text": "(4) For the purposes of sub-regulation (1)(c) –\n(a) 'capital' shall include, without derogating from the generality of that term, any intellectual property right, whether registered or unregistered; and\n(b) 'exported from the Republic' shall include, without derogating from the generality of that term, the cession of, the creation of a hypothetic or other form of security over, or the assignment or transfer of any intellectual property right, to or in favour of a person who is not resident in the Republic.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -146,8 +521,26 @@
           "id": "excon-reg11",
           "sectionNumber": "Regulation 11",
           "title": "Assignment to Treasury of Right to Exported Goods",
-          "text": "(1) Whenever a person has exported goods from the Republic and has failed to sell such goods within six months from the date of shipment from the Republic, or within such shorter period as may have been determined in terms of sub-regulation (1)(a)(iii) of Regulation 10, without having permission in terms of sub-regulation (1) of Regulation 10 aforesaid to export such goods without sale, or without payment within the period mentioned by sub-regulation (1)(a)(iii) aforesaid, then in such event such person shall within fourteen days from the date of expiry of the said period report in writing to the Treasury or to an authorised dealer that the said goods have not been sold, and the Treasury may thereupon order such person to assign to the Treasury or to a person authorised by the Treasury his right to the said goods.\nThe sum payable as consideration for any assignment in terms of this regulation shall be such sum as may be determined by or on behalf of the Treasury, but shall not be less than the amount realised by the Treasury after deduction of the cost of realisation.\n\n(2) After the date on which this regulation comes into force, no person shall export any goods on conditions which would preclude him from giving effect to an order issued in terms of sub-regulation (1).",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg11.1",
+              "number": "1",
+              "heading": "excon-reg11.1",
+              "text": "(1) Whenever a person has exported goods from the Republic and has failed to sell such goods within six months from the date of shipment from the Republic, or within such shorter period as may have been determined in terms of sub-regulation (1)(a)(iii) of Regulation 10, without having permission in terms of sub-regulation (1) of Regulation 10 aforesaid to export such goods without sale, or without payment within the period mentioned by sub-regulation (1)(a)(iii) aforesaid, then in such event such person shall within fourteen days from the date of expiry of the said period report in writing to the Treasury or to an authorised dealer that the said goods have not been sold, and the Treasury may thereupon order such person to assign to the Treasury or to a person authorised by the Treasury his right to the said goods.\nThe sum payable as consideration for any assignment in terms of this regulation shall be such sum as may be determined by or on behalf of the Treasury, but shall not be less than the amount realised by the Treasury after deduction of the cost of realisation.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg11.2",
+              "number": "2",
+              "heading": "excon-reg11.2",
+              "text": "(2) After the date on which this regulation comes into force, no person shall export any goods on conditions which would preclude him from giving effect to an order issued in terms of sub-regulation (1).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -159,8 +552,26 @@
           "id": "excon-reg12",
           "sectionNumber": "Regulation 12",
           "title": "Goods Purchased Outside the Republic",
-          "text": "(1) Whenever a person in the Republic has purchased goods in any country outside the Republic and has paid for or made a payment on account of such goods, but the said goods have not been consigned to the Republic within four months from the date on which such payment was made, such person shall within fourteen days from the date of expiry of the said period of four months report in writing to the Treasury or to an authorised dealer that the goods have not been consigned to the Republic and the Treasury may thereupon order such person to assign to the Treasury or to a person authorised by the Treasury his right to the said goods.\nThe sum payable in consideration for any assignment made in accordance with this regulation shall be such as the Treasury may fix but shall not be less than the amount realised by the Treasury after deduction of the cost of realisation.\n\n(2) After the date on which this regulation comes into force no person shall purchase any goods on conditions which would preclude him from giving effect to an order issued in terms of sub-regulation (1).",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg12.1",
+              "number": "1",
+              "heading": "excon-reg12.1",
+              "text": "(1) Whenever a person in the Republic has purchased goods in any country outside the Republic and has paid for or made a payment on account of such goods, but the said goods have not been consigned to the Republic within four months from the date on which such payment was made, such person shall within fourteen days from the date of expiry of the said period of four months report in writing to the Treasury or to an authorised dealer that the goods have not been consigned to the Republic and the Treasury may thereupon order such person to assign to the Treasury or to a person authorised by the Treasury his right to the said goods.\nThe sum payable in consideration for any assignment made in accordance with this regulation shall be such as the Treasury may fix but shall not be less than the amount realised by the Treasury after deduction of the cost of realisation.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg12.2",
+              "number": "2",
+              "heading": "excon-reg12.2",
+              "text": "(2) After the date on which this regulation comes into force no person shall purchase any goods on conditions which would preclude him from giving effect to an order issued in terms of sub-regulation (1).",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -172,8 +583,34 @@
           "id": "excon-reg13",
           "sectionNumber": "Regulation 13",
           "title": "Prohibition of Export of Goods Imported from Countries outside the Sterling Area",
-          "text": "(1) No person shall, except with permission granted by the Treasury, and in accordance with such conditions as the Treasury may impose, export from the Republic any article imported from any country outside the sterling area.\n\n(2) For the purposes of this regulation an article manufactured in the Republic in whole or in part from imported products, materials or parts, shall be deemed to be of South African origin and be deemed not to have been imported from a country outside the sterling area.\n\n(3) In this regulation \"manufactured\" includes processed or assembled.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg13.1",
+              "number": "1",
+              "heading": "excon-reg13.1",
+              "text": "(1) No person shall, except with permission granted by the Treasury, and in accordance with such conditions as the Treasury may impose, export from the Republic any article imported from any country outside the sterling area.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg13.2",
+              "number": "2",
+              "heading": "excon-reg13.2",
+              "text": "(2) For the purposes of this regulation an article manufactured in the Republic in whole or in part from imported products, materials or parts, shall be deemed to be of South African origin and be deemed not to have been imported from a country outside the sterling area.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg13.3",
+              "number": "3",
+              "heading": "excon-reg13.3",
+              "text": "(3) In this regulation \"manufactured\" includes processed or assembled.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -185,8 +622,34 @@
           "id": "excon-reg14",
           "sectionNumber": "Regulation 14",
           "title": "Restriction on Dealings in Securities Belonging to Non-Residents",
-          "text": "(1) No person shall, without permission granted by the Treasury or a person authorised by the Treasury and in accordance with such conditions as the Treasury or such authorised person may impose –\n(a) acquire or dispose of in any way any controlled security;\n(b) act as nominee for a non-resident or appoint a non-resident as nominee in respect of any dealings in securities;\n(c) make any entry in a security register which involves the transfer of a security into or out of the name of a non-resident;\n(d) change an address of a non-resident in any security register except a change to an address in the same monetary area as that currently recorded in the register;\n(e) enter in a security register or do any act with intent to secure the entry in such register of an address in the Republic if he knows or has reason to believe that the purchaser of the security is a non-resident or that a non-resident has an interest in the security;\n(f) transfer a security owned by a non-resident or in which a non-resident has an interest from a United Kingdom register or from the London section of a register to a South African register or section of a South African register.\n\n(2) (a) Any person who holds, possesses or has in his custody any controlled securities shall submit such securities to an authorised dealer within thirty days from the date of commencement of this regulation or within thirty days from the date on which he becomes the holder of such securities or on which such securities come into his possession or are placed in his custody whichever is the later date.\n(b) The securities submitted in terms of paragraph (a) must be accompanied by a list giving the following particulars:\n(i) Full name and country of residence of owner or person interested in the securities, together with a signed declaration by the holder that to the best of his knowledge, the owner or interested person is actually resident in the country stated.\n(ii) Name of company or body which issued the securities.\n(iii) Total number of securities.\n(iv) Full name and residential address of person in possession of the securities or who has the securities in his custody.\nFor the purpose of facilitating identification of controlled securities the Treasury may direct authorised dealers to affix to the securities so submitted to them their stamp together with such endorsement as the Treasury may determine.\n\n(3) For the purposes of this regulation –\n(a) \"controlled security\" means –\n(i) any security which is registered in the name of a non-resident, or of which a non-resident is the owner, or in which a non-resident has an interest;\n(ii) any security acquired from a non-resident or acquired outside the Republic, by any person, irrespective of the residence of such person;\n(b) \"non-resident\" means a person resident outside the Republic;\n(c) \"nominee\" means a person through whose agency all or any of the rights of the owner of a security are exercised.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg14.1",
+              "number": "1",
+              "heading": "excon-reg14.1",
+              "text": "(1) No person shall, without permission granted by the Treasury or a person authorised by the Treasury and in accordance with such conditions as the Treasury or such authorised person may impose –\n(a) acquire or dispose of in any way any controlled security;\n(b) act as nominee for a non-resident or appoint a non-resident as nominee in respect of any dealings in securities;\n(c) make any entry in a security register which involves the transfer of a security into or out of the name of a non-resident;\n(d) change an address of a non-resident in any security register except a change to an address in the same monetary area as that currently recorded in the register;\n(e) enter in a security register or do any act with intent to secure the entry in such register of an address in the Republic if he knows or has reason to believe that the purchaser of the security is a non-resident or that a non-resident has an interest in the security;\n(f) transfer a security owned by a non-resident or in which a non-resident has an interest from a United Kingdom register or from the London section of a register to a South African register or section of a South African register.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg14.2",
+              "number": "2",
+              "heading": "excon-reg14.2",
+              "text": "(2) (a) Any person who holds, possesses or has in his custody any controlled securities shall submit such securities to an authorised dealer within thirty days from the date of commencement of this regulation or within thirty days from the date on which he becomes the holder of such securities or on which such securities come into his possession or are placed in his custody whichever is the later date.\n(b) The securities submitted in terms of paragraph (a) must be accompanied by a list giving the following particulars:\n(i) Full name and country of residence of owner or person interested in the securities, together with a signed declaration by the holder that to the best of his knowledge, the owner or interested person is actually resident in the country stated.\n(ii) Name of company or body which issued the securities.\n(iii) Total number of securities.\n(iv) Full name and residential address of person in possession of the securities or who has the securities in his custody.\nFor the purpose of facilitating identification of controlled securities the Treasury may direct authorised dealers to affix to the securities so submitted to them their stamp together with such endorsement as the Treasury may determine.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg14.3",
+              "number": "3",
+              "heading": "excon-reg14.3",
+              "text": "(3) For the purposes of this regulation –\n(a) \"controlled security\" means –\n(i) any security which is registered in the name of a non-resident, or of which a non-resident is the owner, or in which a non-resident has an interest;\n(ii) any security acquired from a non-resident or acquired outside the Republic, by any person, irrespective of the residence of such person;\n(b) \"non-resident\" means a person resident outside the Republic;\n(c) \"nominee\" means a person through whose agency all or any of the rights of the owner of a security are exercised.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -198,8 +661,74 @@
           "id": "excon-reg15",
           "sectionNumber": "Regulation 15",
           "title": "Prohibition of Dealings in Bearer Securities and Bearer Options",
-          "text": "(1) No person shall pay any dividend or interest coupon issued in respect of any bearer security irrespective of whether such coupon became payable before or becomes payable after the commencement of this regulation.\n\n(2) No person shall issue any bearer option or extend the currency period of any existing bearer option.\n\n(3) No person shall dispose of, acquire or otherwise deal in –\n(a) any bearer security;\n(b) any bearer option issued after the date of publication of this Proclamation in the Gazette.\n\n(4) The owner of any bearer security may with the permission of the Treasury and in accordance with such conditions as the Treasury may impose, convert such security into a registered security.\n\n(5) Application for permission to convert any bearer security into any registered security shall be accompanied by a sworn declaration in such form as the Treasury may prescribe, duly completed by the owner of the security or his authorised agent.\n\n(6) (a) The Treasury or a person authorised by the Treasury may grant exemptions from the provisions of sub-regulations (1), (2) and (3).\n(b) The provisions of sub-regulation (5) shall apply mutatis mutandis in respect of applications for exemptions under paragraph (a) of this sub-regulation relating to bearer securities or to dividend or interest coupons issued in respect of such bearer securities.\n\n(7) The provisions of this regulation shall apply in respect of all bearer securities and bearer options irrespective of whether such securities or options were or are issued inside or outside the Republic.\n\n(8) For the purposes of this regulation \"option\" means the right to subscribe for or take up the whole or any part of an issue of capital.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg15.1",
+              "number": "1",
+              "heading": "excon-reg15.1",
+              "text": "(1) No person shall pay any dividend or interest coupon issued in respect of any bearer security irrespective of whether such coupon became payable before or becomes payable after the commencement of this regulation.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg15.2",
+              "number": "2",
+              "heading": "excon-reg15.2",
+              "text": "(2) No person shall issue any bearer option or extend the currency period of any existing bearer option.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg15.3",
+              "number": "3",
+              "heading": "excon-reg15.3",
+              "text": "(3) No person shall dispose of, acquire or otherwise deal in –\n(a) any bearer security;\n(b) any bearer option issued after the date of publication of this Proclamation in the Gazette.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg15.4",
+              "number": "4",
+              "heading": "excon-reg15.4",
+              "text": "(4) The owner of any bearer security may with the permission of the Treasury and in accordance with such conditions as the Treasury may impose, convert such security into a registered security.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg15.5",
+              "number": "5",
+              "heading": "excon-reg15.5",
+              "text": "(5) Application for permission to convert any bearer security into any registered security shall be accompanied by a sworn declaration in such form as the Treasury may prescribe, duly completed by the owner of the security or his authorised agent.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg15.6",
+              "number": "6",
+              "heading": "excon-reg15.6",
+              "text": "(6) (a) The Treasury or a person authorised by the Treasury may grant exemptions from the provisions of sub-regulations (1), (2) and (3).\n(b) The provisions of sub-regulation (5) shall apply mutatis mutandis in respect of applications for exemptions under paragraph (a) of this sub-regulation relating to bearer securities or to dividend or interest coupons issued in respect of such bearer securities.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg15.7",
+              "number": "7",
+              "heading": "excon-reg15.7",
+              "text": "(7) The provisions of this regulation shall apply in respect of all bearer securities and bearer options irrespective of whether such securities or options were or are issued inside or outside the Republic.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg15.8",
+              "number": "8",
+              "heading": "excon-reg15.8",
+              "text": "(8) For the purposes of this regulation \"option\" means the right to subscribe for or take up the whole or any part of an issue of capital.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -211,8 +740,26 @@
           "id": "excon-reg16",
           "sectionNumber": "Regulation 16",
           "title": "Control of Capital Issues",
-          "text": "(1) Except with the consent of the Treasury and in accordance with such conditions as the Treasury may impose, no person shall during any period of twelve months –\n(a) make in the Republic an issue or issues of capital which amount in the aggregate to more than ten thousand rand; or\n(b) renew or postpone the date of maturity of securities maturing for repayment in the Republic which amount in the aggregate to more than ten thousand rand.\n\n(2) The Treasury may from time to time by notice in the Gazette –\n(a) exempt particular classes of issuers of capital, either generally, or in respect of particular classes of issues of capital, from the operation of sub-regulation (1); or\n(b) increase, either generally or in respect of particular classes of issues or issuers of capital, the aggregate exemption limit of ten thousand rand prescribed in sub-regulation (1);\nand may by similar notice withdraw any such aforementioned notice or reduce to not less than ten thousand rand any exemption limit prescribed in any such aforementioned notice as the case may be.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg16.1",
+              "number": "1",
+              "heading": "excon-reg16.1",
+              "text": "(1) Except with the consent of the Treasury and in accordance with such conditions as the Treasury may impose, no person shall during any period of twelve months –\n(a) make in the Republic an issue or issues of capital which amount in the aggregate to more than ten thousand rand; or\n(b) renew or postpone the date of maturity of securities maturing for repayment in the Republic which amount in the aggregate to more than ten thousand rand.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg16.2",
+              "number": "2",
+              "heading": "excon-reg16.2",
+              "text": "(2) The Treasury may from time to time by notice in the Gazette –\n(a) exempt particular classes of issuers of capital, either generally, or in respect of particular classes of issues of capital, from the operation of sub-regulation (1); or\n(b) increase, either generally or in respect of particular classes of issues or issuers of capital, the aggregate exemption limit of ten thousand rand prescribed in sub-regulation (1);\nand may by similar notice withdraw any such aforementioned notice or reduce to not less than ten thousand rand any exemption limit prescribed in any such aforementioned notice as the case may be.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -237,8 +784,26 @@
           "id": "excon-reg18",
           "sectionNumber": "Regulation 18",
           "title": "Provision of Security",
-          "text": "(1) The Treasury or a person authorised by the Treasury, may order any person to provide security, in such form and in such amount as the Treasury may determine, that he will comply, either generally or in respect of any particular transaction, with the provisions of any of these regulations specified by the Treasury or by a person authorised by the Treasury.\n\n(2) Where any person who has provided security in terms of this regulation, has failed to comply with the provisions of the regulations in respect of which the security has been provided, the Treasury may direct that the said security shall be forfeited for the benefit of the National Revenue Fund.\nThe forfeiture of such security shall not prevent any other action against the person concerned for his failure to comply with the provisions of these regulations.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg18.1",
+              "number": "1",
+              "heading": "excon-reg18.1",
+              "text": "(1) The Treasury or a person authorised by the Treasury, may order any person to provide security, in such form and in such amount as the Treasury may determine, that he will comply, either generally or in respect of any particular transaction, with the provisions of any of these regulations specified by the Treasury or by a person authorised by the Treasury.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg18.2",
+              "number": "2",
+              "heading": "excon-reg18.2",
+              "text": "(2) Where any person who has provided security in terms of this regulation, has failed to comply with the provisions of the regulations in respect of which the security has been provided, the Treasury may direct that the said security shall be forfeited for the benefit of the National Revenue Fund.\nThe forfeiture of such security shall not prevent any other action against the person concerned for his failure to comply with the provisions of these regulations.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -250,8 +815,26 @@
           "id": "excon-reg19",
           "sectionNumber": "Regulation 19",
           "title": "Furnishing of Information",
-          "text": "(1) The Treasury, or any person authorised by the Treasury, may order any person to furnish any information at such person's disposal which the Treasury or such authorised person deems necessary for the purposes of these regulations and any person generally or specifically appointed by the Treasury for the purpose may enter the residential or business premises of a person so ordered and may inspect any books or documents belonging to, or under the control of such person.\n\n(2) If any person makes any statement in any information furnished in compliance with such an order which is in conflict with any other statement previously made by him in giving information required in connection with the subject matter of such order, he shall be deemed to have made an incorrect statement in terms of Regulation 22 and may, on an indictment, summons or charge alleging that he made the two conflicting statements, be convicted of making an incorrect statement in contravention of the said Regulation 22 upon proof of the two statements in question and without proof as to which of the said statements was incorrect, unless he proves that when he made each statement he believed it to be true.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg19.1",
+              "number": "1",
+              "heading": "excon-reg19.1",
+              "text": "(1) The Treasury, or any person authorised by the Treasury, may order any person to furnish any information at such person's disposal which the Treasury or such authorised person deems necessary for the purposes of these regulations and any person generally or specifically appointed by the Treasury for the purpose may enter the residential or business premises of a person so ordered and may inspect any books or documents belonging to, or under the control of such person.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg19.2",
+              "number": "2",
+              "heading": "excon-reg19.2",
+              "text": "(2) If any person makes any statement in any information furnished in compliance with such an order which is in conflict with any other statement previously made by him in giving information required in connection with the subject matter of such order, he shall be deemed to have made an incorrect statement in terms of Regulation 22 and may, on an indictment, summons or charge alleging that he made the two conflicting statements, be convicted of making an incorrect statement in contravention of the said Regulation 22 upon proof of the two statements in question and without proof as to which of the said statements was incorrect, unless he proves that when he made each statement he believed it to be true.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -296,15 +879,67 @@
           "id": "excon-reg22A",
           "sectionNumber": "Regulation 22A",
           "title": "Attachment of Certain Money and Goods, and Blocking of Certain Accounts",
-          "text": "(1) Subject to the provisions of the proviso to subparagraph (i) of paragraph (b) of section 9(2) of the Act, the Treasury may in such manner as it may deem fit –\n(a) attach –\n(i) any money or goods, notwithstanding the person in whose possession it is, in respect of which a contravention of any provision of these regulations has been committed or in respect of which an act or omission has been committed which the Treasury on reasonable grounds suspects to constitute any such contravention, or, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is kept in credit in that account, and shall, in the case of money attached, deposit such money in an account opened by the Treasury with an authorised dealer for such purpose, and may, in the case of goods attached, leave such goods, subject to an order issued or made under paragraph (c), in the possession of the person in whose possession such goods have been found or shall otherwise keep or cause it to be kept in custody in such manner and at such place as it may deem fit;\n(ii) any money or goods, notwithstanding the person in whose possession it is –\n(aa) which the Treasury on reasonable grounds suspects to be involved in a contravention of any provision of these regulations or in a failure to comply with any such provision, or which the Treasury on reasonable grounds suspects to be involved in any act or omission which the Treasury so suspects to constitute a contravention of any such provision or a failure to comply with any such provision;\n(bb) which have been obtained by any person or are due to him, whether by virtue of any personal right or otherwise, and which would not have been obtained by him or would not have been due to him if any such contravention or failure or any such act or omission had not been committed;\n(cc) by which any person has been benefited or enriched as a result of any such contravention or failure or any such act or omission,\nor, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is held in credit in that account;\n(iii) any money or goods, notwithstanding the person in whose possession it may be, into which money or goods referred to in subparagraph (i) or (ii) have been transformed, including any personal right obtained with money or goods referred to in subparagraph (i) or (ii), or, in the case of such money or any part thereof which has been deposited into any account, an equal amount of money which is held in credit in that account;\n(iv) any money which is held in a blocked account referred to in regulation 4 and which the Treasury on reasonable grounds suspects to be money –\n(aa) in respect of which a contravention or act or omission referred to in subparagraph (i) has been committed;\n(bb) which has been involved in a contravention or failure or act or omission referred to in subparagraph (ii)(aa);\n(cc) which has been obtained by any person or is due to him as referred to in subparagraph (ii)(bb);\n(dd) by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc);\n(b) if the Treasury on reasonable grounds suspects that money referred to in paragraph (a) has been deposited in any account and if it has not been attached under the said paragraph (a), issue or make an order in such manner as it may deem fit in or by which any person is prohibited to withdraw or cause to be withdrawn, without the permission of the Treasury and in accordance with such conditions (if any) as may be imposed by the Treasury, any money in that account or not more than an amount determined by the Treasury, or to appropriate in any manner any credit or balance in that account, notwithstanding who may be the holder thereof;\n(c) in the case of goods referred to in paragraph (a) which have been left in the possession of the person concerned, issue or make an order in such manner as it may deem fit in or by which any person is prohibited to deal, without the permission of the Treasury and in accordance with such conditions (if any) as may be imposed by the Treasury, in any manner determined by the Treasury with the goods attached or any part thereof.\n\n(2) When any immovable goods are attached under paragraph (a) of subregulation (1) or when an order is issued or made in respect of immovable property under paragraph (c) of that subregulation –\n(a) the Treasury shall notify the registrar of the deeds registry where such goods are registered in writing of such attachment or order and furnish to that registrar such particulars in connection with such goods as that registrar may require;\n(b) such registrar shall free of charge note particulars of such attachment or order against the title deed of such immovable property.\n\n(3) The Treasury shall –\n(a) return any money or goods attached under paragraph (a) of subregulation (1), including any money or goods accrued therefrom, to the person in whose possession it has been found or the person entitled thereto, on a date not later than the period referred to in paragraph (g) of section 9(2) of the Act as from the date on which such money or goods have been attached;\n(b) cancel any order issued or made under paragraph (b) or (c) of subregulation (1), on such a date,\nunless such money or goods or money or goods to which such order relates are forfeited under regulation 22B before that date.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg22A.1",
+              "number": "1",
+              "heading": "excon-reg22A.1",
+              "text": "(1) Subject to the provisions of the proviso to subparagraph (i) of paragraph (b) of section 9(2) of the Act, the Treasury may in such manner as it may deem fit –\n(a) attach –\n(i) any money or goods, notwithstanding the person in whose possession it is, in respect of which a contravention of any provision of these regulations has been committed or in respect of which an act or omission has been committed which the Treasury on reasonable grounds suspects to constitute any such contravention, or, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is kept in credit in that account, and shall, in the case of money attached, deposit such money in an account opened by the Treasury with an authorised dealer for such purpose, and may, in the case of goods attached, leave such goods, subject to an order issued or made under paragraph (c), in the possession of the person in whose possession such goods have been found or shall otherwise keep or cause it to be kept in custody in such manner and at such place as it may deem fit;\n(ii) any money or goods, notwithstanding the person in whose possession it is –\n(aa) which the Treasury on reasonable grounds suspects to be involved in a contravention of any provision of these regulations or in a failure to comply with any such provision, or which the Treasury on reasonable grounds suspects to be involved in any act or omission which the Treasury so suspects to constitute a contravention of any such provision or a failure to comply with any such provision;\n(bb) which have been obtained by any person or are due to him, whether by virtue of any personal right or otherwise, and which would not have been obtained by him or would not have been due to him if any such contravention or failure or any such act or omission had not been committed;\n(cc) by which any person has been benefited or enriched as a result of any such contravention or failure or any such act or omission,\nor, in the case of such money or any part thereof which has been deposited in any account, an equal amount of money which is held in credit in that account;\n(iii) any money or goods, notwithstanding the person in whose possession it may be, into which money or goods referred to in subparagraph (i) or (ii) have been transformed, including any personal right obtained with money or goods referred to in subparagraph (i) or (ii), or, in the case of such money or any part thereof which has been deposited into any account, an equal amount of money which is held in credit in that account;\n(iv) any money which is held in a blocked account referred to in regulation 4 and which the Treasury on reasonable grounds suspects to be money –\n(aa) in respect of which a contravention or act or omission referred to in subparagraph (i) has been committed;\n(bb) which has been involved in a contravention or failure or act or omission referred to in subparagraph (ii)(aa);\n(cc) which has been obtained by any person or is due to him as referred to in subparagraph (ii)(bb);\n(dd) by which any person has been benefited or enriched as referred to in subparagraph (ii)(cc);\n(b) if the Treasury on reasonable grounds suspects that money referred to in paragraph (a) has been deposited in any account and if it has not been attached under the said paragraph (a), issue or make an order in such manner as it may deem fit in or by which any person is prohibited to withdraw or cause to be withdrawn, without the permission of the Treasury and in accordance with such conditions (if any) as may be imposed by the Treasury, any money in that account or not more than an amount determined by the Treasury, or to appropriate in any manner any credit or balance in that account, notwithstanding who may be the holder thereof;\n(c) in the case of goods referred to in paragraph (a) which have been left in the possession of the person concerned, issue or make an order in such manner as it may deem fit in or by which any person is prohibited to deal, without the permission of the Treasury and in accordance with such conditions (if any) as may be imposed by the Treasury, in any manner determined by the Treasury with the goods attached or any part thereof.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg22A.2",
+              "number": "2",
+              "heading": "excon-reg22A.2",
+              "text": "(2) When any immovable goods are attached under paragraph (a) of subregulation (1) or when an order is issued or made in respect of immovable property under paragraph (c) of that subregulation –\n(a) the Treasury shall notify the registrar of the deeds registry where such goods are registered in writing of such attachment or order and furnish to that registrar such particulars in connection with such goods as that registrar may require;\n(b) such registrar shall free of charge note particulars of such attachment or order against the title deed of such immovable property.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg22A.3",
+              "number": "3",
+              "heading": "excon-reg22A.3",
+              "text": "(3) The Treasury shall –\n(a) return any money or goods attached under paragraph (a) of subregulation (1), including any money or goods accrued therefrom, to the person in whose possession it has been found or the person entitled thereto, on a date not later than the period referred to in paragraph (g) of section 9(2) of the Act as from the date on which such money or goods have been attached;\n(b) cancel any order issued or made under paragraph (b) or (c) of subregulation (1), on such a date,\nunless such money or goods or money or goods to which such order relates are forfeited under regulation 22B before that date.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "excon-reg22B",
           "sectionNumber": "Regulation 22B",
           "title": "Forfeiture and Disposal of Money or Goods Attached or in respect of which Orders have been Issued or Made",
-          "text": "(1) Subject to the provisions of subregulation (3), the Treasury may issue an order in writing in which it forfeits to the State any money or goods referred to in paragraph (a), (b) or (c) of regulation 22A(1), including any money or goods accrued therefrom, and shall –\n(a) in the case of money, deposit such money into the National Revenue Fund; and\n(b) in the case of goods, realise such goods in such manner as it may deem fit as if it is the owner or holder thereof, and may transfer such goods to the purchaser and give a valid title thereto and, in the case of immovable goods, without submitting to the registrar of deeds the title deeds thereof, provided it is certified by the Treasury that the Treasury has been unable to obtain those title deeds.\n\n(2) The Treasury may, if it is on reasonable grounds satisfied that money or goods attached under paragraph (a) of regulation 22A(1) or in respect of which an order has been issued or made under paragraph (b) or (c) of that regulation are not money or goods as referred to in those paragraphs, return such money or goods, including money or goods accrued therefrom, to the person in whose possession such money or goods have been found or to any person otherwise entitled thereto, or cancel the relevant order.\n\n(3) The Treasury shall not forfeit to the State any money or goods referred to in paragraph (a), (b) or (c) of regulation 22A(1), unless it –\n(a) has published a notice in the Gazette in which –\n(i) notice is given of any decision to forfeit to the State money or goods specified in such notice;\n(ii) particulars are furnished of the manner in which such forfeited money or goods will be disposed of; and\n(iii) the date (which may be the date of the notice) on which the money or goods are forfeited is indicated; and\n(b) has simultaneously with the publication of the notice aforesaid sent a like notice by registered post to the person who in the opinion of the Treasury is affected by that decision or, if his address is not known, to his last known address,\nand the Treasury shall not dispose of any goods forfeited to the State under subregulation (1), unless a period of 90 days as from the date of publication of such notice in the Gazette has expired or, if any proceedings has been instituted in a court of law in connection with any such decision, final judgement has been given in such proceedings.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg22B.1",
+              "number": "1",
+              "heading": "excon-reg22B.1",
+              "text": "(1) Subject to the provisions of subregulation (3), the Treasury may issue an order in writing in which it forfeits to the State any money or goods referred to in paragraph (a), (b) or (c) of regulation 22A(1), including any money or goods accrued therefrom, and shall –\n(a) in the case of money, deposit such money into the National Revenue Fund; and\n(b) in the case of goods, realise such goods in such manner as it may deem fit as if it is the owner or holder thereof, and may transfer such goods to the purchaser and give a valid title thereto and, in the case of immovable goods, without submitting to the registrar of deeds the title deeds thereof, provided it is certified by the Treasury that the Treasury has been unable to obtain those title deeds.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg22B.2",
+              "number": "2",
+              "heading": "excon-reg22B.2",
+              "text": "(2) The Treasury may, if it is on reasonable grounds satisfied that money or goods attached under paragraph (a) of regulation 22A(1) or in respect of which an order has been issued or made under paragraph (b) or (c) of that regulation are not money or goods as referred to in those paragraphs, return such money or goods, including money or goods accrued therefrom, to the person in whose possession such money or goods have been found or to any person otherwise entitled thereto, or cancel the relevant order.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg22B.3",
+              "number": "3",
+              "heading": "excon-reg22B.3",
+              "text": "(3) The Treasury shall not forfeit to the State any money or goods referred to in paragraph (a), (b) or (c) of regulation 22A(1), unless it –\n(a) has published a notice in the Gazette in which –\n(i) notice is given of any decision to forfeit to the State money or goods specified in such notice;\n(ii) particulars are furnished of the manner in which such forfeited money or goods will be disposed of; and\n(iii) the date (which may be the date of the notice) on which the money or goods are forfeited is indicated; and\n(b) has simultaneously with the publication of the notice aforesaid sent a like notice by registered post to the person who in the opinion of the Treasury is affected by that decision or, if his address is not known, to his last known address,\nand the Treasury shall not dispose of any goods forfeited to the State under subregulation (1), unless a period of 90 days as from the date of publication of such notice in the Gazette has expired or, if any proceedings has been instituted in a court of law in connection with any such decision, final judgement has been given in such proceedings.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "excon-reg22C",
@@ -324,8 +959,26 @@
           "id": "excon-reg22E",
           "sectionNumber": "Regulation 22E",
           "title": "Delegation of Powers",
-          "text": "(1) The Minister of Finance may delegate to any person any power or function conferred upon the Treasury by any provision of these regulations or assign to any such person a duty imposed thereunder to the Treasury.\n\n(2) The Treasury shall not be divested of any power or function or duty delegated to any person under subregulation (1) and may at any time withdraw or amend any decision taken by any such person in the exercise or performance of the power or function or duty in question.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg22E.1",
+              "number": "1",
+              "heading": "excon-reg22E.1",
+              "text": "(1) The Minister of Finance may delegate to any person any power or function conferred upon the Treasury by any provision of these regulations or assign to any such person a duty imposed thereunder to the Treasury.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg22E.2",
+              "number": "2",
+              "heading": "excon-reg22E.2",
+              "text": "(2) The Treasury shall not be divested of any power or function or duty delegated to any person under subregulation (1) and may at any time withdraw or amend any decision taken by any such person in the exercise or performance of the power or function or duty in question.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     },
@@ -337,15 +990,83 @@
           "id": "excon-reg23",
           "sectionNumber": "Regulation 23",
           "title": "Withdrawal of Regulations",
-          "text": "(1) The regulations published under Government Notices Nos. 2800 of 2nd November, 1951, 797 of the 6th June, 1958, 194 of 6th February, 1959 and Extraordinary Government Gazette Notice No. 84 of 16th June, 1961, are hereby withdrawn.\n\n(2) Any certificate issued, exemption, permission or consent granted, order given, period fixed, return, declaration, report, or appointment rendered or made, security provided, information furnished or act done under or in terms of the provisions of any regulation withdrawn by this regulation, shall be deemed to have been issued, granted, given, fixed, rendered, made, provided, furnished or done under or in terms of the corresponding provisions of these regulations; provided that the provisions of this sub-regulation shall not apply in respect of any power or function, vested in the Treasury by any regulation so withdrawn, which the Treasury exercised through the medium of a notice in the Gazette.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg23.1",
+              "number": "1",
+              "heading": "excon-reg23.1",
+              "text": "(1) The regulations published under Government Notices Nos. 2800 of 2nd November, 1951, 797 of the 6th June, 1958, 194 of 6th February, 1959 and Extraordinary Government Gazette Notice No. 84 of 16th June, 1961, are hereby withdrawn.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg23.2",
+              "number": "2",
+              "heading": "excon-reg23.2",
+              "text": "(2) Any certificate issued, exemption, permission or consent granted, order given, period fixed, return, declaration, report, or appointment rendered or made, security provided, information furnished or act done under or in terms of the provisions of any regulation withdrawn by this regulation, shall be deemed to have been issued, granted, given, fixed, rendered, made, provided, furnished or done under or in terms of the corresponding provisions of these regulations; provided that the provisions of this sub-regulation shall not apply in respect of any power or function, vested in the Treasury by any regulation so withdrawn, which the Treasury exercised through the medium of a notice in the Gazette.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         },
         {
           "id": "excon-reg24",
           "sectionNumber": "Regulation 24",
           "title": "Administrative Relief",
-          "text": "(1) The Treasury, or a person authorised by the Treasury, may authorise the regularisation of any contravention of these Regulations by allowing a person who has so contravened, to disclose such contravention to the Treasury, or such authorised person, in accordance with the provisions and in the manner set forth in this regulation 24.\n\n(2) The regularisation of any contravention of these Regulations, by a person who is subject to these Regulations, shall take place on the basis that the Treasury, or a person authorised by the Treasury, may on written notice allow for certain types of contraventions to be regularised on application and by the making of a sworn affidavit or solemn declaration, in writing, of the contravention during the period prescribed, at the address and in the form and manner prescribed, on the basis that –\n(a) the affidavit or declaration made by such person must be made voluntarily; and\n(b) the affidavit or declaration must be in respect of a contravention by such person of these Regulations prior to the date prescribed; and\n(c) such person, when making application in terms of this regulation in respect of any foreign asset, must –\n(i) disclose the market value of that foreign asset in the foreign currency of the country in which the foreign asset is situated; and\n(ii) include a description of the identifying characteristics and location of that foreign asset; and\n(iii) submit, in respect of the market value, in the foreign currency of that foreign asset, as at such date as may be prescribed –\n(aa) a valuation certificate by a valuator of the country where that foreign asset is located; and/or\n(bb) a valuation by a sphere of government of the country where that foreign asset is located; and/or\n(cc) where the asset constitutes a financial instrument, an original or certified copy of a statement of account indicating the balance or market value; and/or\n(dd) any other form of proof of value of that foreign asset as the Treasury may on good cause shown allow to be submitted; and\n(d) such person, when making application in terms of this regulation in respect of any contravention of these Regulations, must provide such additional information relating to such contravention, as may be prescribed.\n\n(3) The provisions of this regulation 24 shall not apply to persons where, on the date on which they are afforded the opportunity to regularise any contravention of the Regulations –\n(a) there is a pending investigation by the Treasury, or any person authorised by the Treasury, into the affairs of such person; or\n(b) an investigation by the Treasury, or any person authorised by the Treasury, into the affairs of such person has commenced as at the date of an application made, or caused to be made, by such person.\n\n(7) Subject to the provisions of these Regulations and the exclusion in subregulation (3), if any application for the regularisation of a contravention of these Regulations is lodged in terms of this regulation 24 the Treasury, or any person authorised by the Treasury, shall in respect of such person and in respect of the specific contravention set out in such application, not pursue any criminal prosecution, but may –\n(a) grant to such person 100 per cent relief in respect of any levy payable by such person resulting from the contravention of the provisions of these Regulations; and/or\n(b) grant a credit in respect of the unutilised portion of the foreign invest allowance of such person; and/or\n(c) impose a levy in respect of contraventions of the provisions of these Regulations as provided for in subregulation (13); and/or\n(d) impose any other conditions as may be prescribed.\n\n(13) Any person who has made application in terms of this regulation 24 and whose application has been approved may be required to pay a levy, as prescribed, on the market value, as at the prescribed date, of the foreign asset disclosed or the amount involved in the contravention of the provisions of these Regulations.\n\n(18) Any contravention of the Regulations and which has been regularised in terms of this regulation 24 shall, subject to compliance with regulation 24, be deemed not to have been a contravention of these Regulations.",
-          "verbatim": true
+          "text": "",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "excon-reg24.1",
+              "number": "1",
+              "heading": "excon-reg24.1",
+              "text": "(1) The Treasury, or a person authorised by the Treasury, may authorise the regularisation of any contravention of these Regulations by allowing a person who has so contravened, to disclose such contravention to the Treasury, or such authorised person, in accordance with the provisions and in the manner set forth in this regulation 24.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg24.2",
+              "number": "2",
+              "heading": "excon-reg24.2",
+              "text": "(2) The regularisation of any contravention of these Regulations, by a person who is subject to these Regulations, shall take place on the basis that the Treasury, or a person authorised by the Treasury, may on written notice allow for certain types of contraventions to be regularised on application and by the making of a sworn affidavit or solemn declaration, in writing, of the contravention during the period prescribed, at the address and in the form and manner prescribed, on the basis that –\n(a) the affidavit or declaration made by such person must be made voluntarily; and\n(b) the affidavit or declaration must be in respect of a contravention by such person of these Regulations prior to the date prescribed; and\n(c) such person, when making application in terms of this regulation in respect of any foreign asset, must –\n(i) disclose the market value of that foreign asset in the foreign currency of the country in which the foreign asset is situated; and\n(ii) include a description of the identifying characteristics and location of that foreign asset; and\n(iii) submit, in respect of the market value, in the foreign currency of that foreign asset, as at such date as may be prescribed –\n(aa) a valuation certificate by a valuator of the country where that foreign asset is located; and/or\n(bb) a valuation by a sphere of government of the country where that foreign asset is located; and/or\n(cc) where the asset constitutes a financial instrument, an original or certified copy of a statement of account indicating the balance or market value; and/or\n(dd) any other form of proof of value of that foreign asset as the Treasury may on good cause shown allow to be submitted; and\n(d) such person, when making application in terms of this regulation in respect of any contravention of these Regulations, must provide such additional information relating to such contravention, as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg24.3",
+              "number": "3",
+              "heading": "excon-reg24.3",
+              "text": "(3) The provisions of this regulation 24 shall not apply to persons where, on the date on which they are afforded the opportunity to regularise any contravention of the Regulations –\n(a) there is a pending investigation by the Treasury, or any person authorised by the Treasury, into the affairs of such person; or\n(b) an investigation by the Treasury, or any person authorised by the Treasury, into the affairs of such person has commenced as at the date of an application made, or caused to be made, by such person.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg24.7",
+              "number": "7",
+              "heading": "excon-reg24.7",
+              "text": "(7) Subject to the provisions of these Regulations and the exclusion in subregulation (3), if any application for the regularisation of a contravention of these Regulations is lodged in terms of this regulation 24 the Treasury, or any person authorised by the Treasury, shall in respect of such person and in respect of the specific contravention set out in such application, not pursue any criminal prosecution, but may –\n(a) grant to such person 100 per cent relief in respect of any levy payable by such person resulting from the contravention of the provisions of these Regulations; and/or\n(b) grant a credit in respect of the unutilised portion of the foreign invest allowance of such person; and/or\n(c) impose a levy in respect of contraventions of the provisions of these Regulations as provided for in subregulation (13); and/or\n(d) impose any other conditions as may be prescribed.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg24.13",
+              "number": "13",
+              "heading": "excon-reg24.13",
+              "text": "(13) Any person who has made application in terms of this regulation 24 and whose application has been approved may be required to pay a levy, as prescribed, on the market value, as at the prescribed date, of the foreign asset disclosed or the amount involved in the contravention of the provisions of these Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "excon-reg24.18",
+              "number": "18",
+              "heading": "excon-reg24.18",
+              "text": "(18) Any contravention of the Regulations and which has been regularised in terms of this regulation 24 shall, subject to compliance with regulation 24, be deemed not to have been a contravention of these Regulations.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
         }
       ]
     }
