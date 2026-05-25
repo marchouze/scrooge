@@ -120,21 +120,40 @@
           text: "GL COA fix — duplicate ACC-3100-001/002 resolved; posting imbalance and blank account names fixed",
           ref: "PR #707",
         },
+        {
+          text: "Reporting-capability M2–M3 build — all slices complete (M2 Slices 1–11, M3 Slices 4–10, conduct events, period-close, IFRS statements, BA 300/310/320/325/350/600/700 projections)",
+          ref: "PRs #436–#481 WS-REPORTING-M2-M3",
+        },
+        {
+          text: "T-12 sub-agent PermissionPolicy substrate — handler + coverage recon + seed; ACCEPTED_NO_POLICY_ACTORS carve-out closed",
+          ref: "PRs #512 #516 #529",
+        },
+        {
+          text: "Event-store scaling — WAL + composite indexes + snapshot pruning + recon cursors (Phase 1); cold archive partitioning + PartitionedEventStore (Phase 5)",
+          ref: "PRs #777 #779 D-EVENT-STORE-SCALING",
+        },
+        {
+          text: "Reg knowledge graph wired to ODP obligations — regulation reader feeds graph; 664+ nodes, 373+ edges",
+          ref: "PR #774",
+        },
+        {
+          text: "Reg structural extraction — 349 blobs → 30 (92% reduction); 4,664 total sections extracted across 10+ regulation JSONs",
+          ref: "PR #786",
+        },
+        {
+          text: "buildRmsRegistersFold race condition closed — asOf passed to all non-decisions projections",
+          ref: "commit 43d006e1",
+        },
+        {
+          text: "Liquidity substrate gaps closed — buildPhaseProvider deleted; settlement outflows derived from TradeBooked.settlementDate",
+          ref: "PRs #788 #789",
+        },
       ],
       inflight: [
         {
           text: "Product-construction substrate gap closure — six items (pricing-model registration, RWA-delta engine, trade-confirmation generators)",
           ref: "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
         },
-        {
-          text: "Event-store scaling design build — sequencing pending",
-          ref: "D-EVENT-STORE-SCALING",
-        },
-        {
-          text: "Reporting-capability M2–M3 build (Atlas + Anya + Bea)",
-          ref: "WS-REPORTING-M2-M3",
-        },
-        { text: "T-12 sub-agent PermissionPolicy substrate" },
       ],
       todo: [
         {
@@ -209,18 +228,28 @@
           text: "Dispatch sync primitive — reviewer→decider gate; recon:dispatch-sync-integrity pipeline; D-DISPATCH-SYNC-PRIMITIVE approved",
           ref: "D-DISPATCH-SYNC-PRIMITIVE",
         },
-      ],
-      inflight: [
         {
-          text: "Persona agent-spec upgrades — sections 6–17 backfill on legacy character-sheet personas",
+          text: "Persona agent-spec upgrades — sections 6–17 backfill complete; all 31 persona files have §16 substrate-gaps section confirmed",
+          ref: "PRs #117 #119–#125 #491 7c904629",
         },
-        { text: "Internal Audit Charter + first audit plan (Thandiwe)", ref: "WS-IA-CHARTER" },
         {
-          text: "RAS recalibration for AI-driven bank — substrate / coherence / supply-chain risks (Helena)",
-          ref: "WS-RAS-RECALIBRATION",
+          text: "Internal Audit Charter v1 + first risk-based audit plan v1 (Thandiwe) — IIA IPPF + BCBS 223 + AI-native scope",
+          ref: "PRs #257 #402",
         },
-        { text: "~30 PLANNED procedures still to be drafted across all domains" },
+        {
+          text: "RAS recalibration v2 — all 8 sections complete; capital / liquidity / market risk / AI-agent / concentration / Pillar 2A (Helena)",
+          ref: "archive/owner-inbox/2026-05-12_helena_ras-recalibration-v2.md",
+        },
+        {
+          text: "Zero PLANNED procedures — all ~30 PLANNED procedures promoted to POPULATED or SCAFFOLD across Batches A–K and follow-on",
+          ref: "PRs #407–#423 #470 2026-05-15",
+        },
+        {
+          text: "Bank strategy v1 — Hoz Bank institutional strategy (D-BANK-STRATEGY-V1) filed",
+          ref: "PR #790 D-BANK-STRATEGY-V1",
+        },
       ],
+      inflight: [],
       todo: [
         {
           text: "CEO decision on D-HIRE-SIX-SEATS-PACK — approve batched six-role hire pack; unblocks 18 months of recruitment lead time",
@@ -233,9 +262,6 @@
         {
           text: "S3 decision — thin-human-layer composition and timing for licence-day (Owen)",
           ref: "S3",
-        },
-        {
-          text: "Vera Wave-4 #10 — agent-spec-integrity recon pipeline (asserts sections 6–17 on all persona files)",
         },
       ],
     },
@@ -291,10 +317,9 @@
         },
       ],
       inflight: [
-        { text: "~60 instrument analyses (Mira)", ref: "WS-INSTRUMENT-ANALYSES" },
         {
-          text: "~30 procedures still PLANNED → target POPULATED, prioritised by markets-bank profile",
-          ref: "WS-PROCEDURES-DRAFTING",
+          text: "~45 instrument analyses remaining — [citation: TBC] markers open; citation resolution in progress (Mira)",
+          ref: "WS-INSTRUMENT-ANALYSES",
         },
         {
           text: "POPIA IO designation finalisation — Marc interim, real human at licence-day (Iris)",
@@ -307,7 +332,7 @@
           ref: "D-NEW-PRODUCT-APPROVAL-POLICY",
         },
         {
-          text: "Complete instrument analyses — drive ~60 → 0; each unlocks obligations register rows",
+          text: "Complete instrument analyses — drive ~45 → 0; each unlocks obligations register rows",
         },
         {
           text: "Drive procedures backlog — ~103 populated → ~80 identified total, prioritised by profile",
@@ -436,19 +461,20 @@
           text: "D-FINANCIAL-INSTRUMENT-ENTITY Slice 12 — bond lifecycle events wired into GL posting engine (PR-BOND-001/001T/EIR/002/MAT/SALE)",
           ref: "PR #752",
         },
-      ],
-      inflight: [
-        { text: "Markets franchise design proposal (Saskia)", ref: "WS-MARKETS-FRANCHISE" },
-        { text: "Product-construction substrate slices 4+ (Atlas + Kai + Saskia)" },
         {
-          text: "Market risk procedures (WS-MARKET-RISK-PROCEDURES) — scenario Wave-2 build; BA-325 return; daily P&L + GL projection",
-          ref: "WS-MARKET-RISK-PROCEDURES",
+          text: "IPV breach recalibration — D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22 approved; two-tier tolerance schedule wired in ipv-tolerance.ts",
+          ref: "PRs #718 #720 #721 D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22",
         },
         {
-          text: "IPV breach recalibration — 4/6 pairs in breach post inverse-pair fix; Helena tolerance brief candidate",
-          ref: "PR #695",
+          text: "Markets franchise design proposal v1 — bank-strategy-v1.md filed; institutional global-markets strategy approved",
+          ref: "PR #790 D-BANK-STRATEGY-V1",
+        },
+        {
+          text: "Market risk procedures Wave-2 — BA-325 + daily P&L + GL projection scenarios; SicrTriggered fixture (WS-MARKET-RISK-PROCEDURES)",
+          ref: "PR #663",
         },
       ],
+      inflight: [{ text: "Product-construction substrate slices 4+ (Atlas + Kai + Saskia)" }],
       todo: [
         {
           text: "CEO decide NPA Policy v1.0 — gates first product through approval (cross-ref Workstream C)",
