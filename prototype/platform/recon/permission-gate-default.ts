@@ -277,6 +277,11 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // no production access path.
   // Citation: D-MARKETS-SCHEMA-FOUNDATION, P4-SECURITY-DESIGNED-IN.
   "platform/simulation/env-sim/",
+  // Liquidity projection unit tests — per-module fixture stores for multi-horizon
+  // LCR/NSFR scenario assertion (empty-store baseline, SAGB HQLA, provider caching).
+  // T-01 carve-out; no production access path.
+  // Citation: D-TREASURY-GAPS-WAVE1, BA-325, BA-326, P4-SECURITY-DESIGNED-IN.
+  "platform/liquidity/__tests__/",
 ];
 
 // T-12 mitigation COMPLETE (2026-05-17, Atlas):
