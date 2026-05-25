@@ -108,17 +108,38 @@
         {
           "id": "s-banks-d3-2025-2",
           "number": "2",
-          "heading": "Directive",
-          "text": "2.     Directive\n\n2.1   Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n      Banks Act, 1990 (Act No. 94 of 1990), banks and controlling companies designated\n      as a D-SIBs are hereby directed as follows:\n\n2.1.1 To maintain a leverage buffer equal to 50% of the HLA requirement imposed on CET1\n      capital, in addition to the minimum leverage ratio requirement specified in regulation\n      38(15)(b)(iv) of the Regulations.\n\n2.1.2 Ensure that the leverage ratio buffer requirement is met fully by tier 1 capital and\n      reserve funds and is based on 50% of the HLA requirements imposed on CET1\n      capital.\n\n2.1.3 Apply the capital distribution constraints specified in Table 1 below when the bank or\n      controlling company’s leverage ratio declines below the minimum specified\n      requirement. The capital distribution constraints will be undertaken in a manner that\n      is aligned to the approach followed for the utilisation of the capital conservation buffer\n      range in respect of the bank’s risk-based capital ratios.\n\n\n\n\n                                                                                              3\n\nTable 1: Minimum capital conservation requirement imposed on D-SIBs’ leverage\nbuffer.\n\n                                                                                           Minimum capital\n                                                                                          conservation ratio\n Common equity tier 1                                                                      (expressed as a\n (including other fully loss                        Tier 1 leverage ratio2                  percentage of\n absorbing capital)1                                                                          earnings)\n Within first quartile of the buffer    4% to (4% + 12.5% of HLA)                                   100%\n Within second quartile of the buffer > (4% + 12.5% of HLA) to (4% + 25% of HLA)                    80%\n Within third quartile of the buffer    > (4% + 25% of HLA) to (4% + 37.5% of HLA)                  60%\n Within fourth quartile of the buffer   > (4% + 37.5% of HLA) to (4% + 50% of HLA)                  40%\n Above the top of the buffer            > 4% + 50% of HLA                                           0%",
+          "heading": "Directive 2. Directive",
+          "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d3-2025-2-1",
+              "id": "s2-1",
               "number": "2.1",
-              "heading": "Based on the aforesaid, and in accordance with the provisions of section 6(6) of the",
-              "text": "2.1   Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n      Banks Act, 1990 (Act No. 94 of 1990), banks and controlling companies designated\n      as a D-SIBs are hereby directed as follows:\n\n2.1.1 To maintain a leverage buffer equal to 50% of the HLA requirement imposed on CET1\n      capital, in addition to the minimum leverage ratio requirement specified in regulation\n      38(15)(b)(iv) of the Regulations.\n\n2.1.2 Ensure that the leverage ratio buffer requirement is met fully by tier 1 capital and\n      reserve funds and is based on 50% of the HLA requirements imposed on CET1\n      capital.\n\n2.1.3 Apply the capital distribution constraints specified in Table 1 below when the bank or\n      controlling company’s leverage ratio declines below the minimum specified\n      requirement. The capital distribution constraints will be undertaken in a manner that\n      is aligned to the approach followed for the utilisation of the capital conservation buffer\n      range in respect of the bank’s risk-based capital ratios.\n\n\n\n\n                                                                                              3\n\nTable 1: Minimum capital conservation requirement imposed on D-SIBs’ leverage\nbuffer.\n\n                                                                                           Minimum capital\n                                                                                          conservation ratio\n Common equity tier 1                                                                      (expressed as a\n (including other fully loss                        Tier 1 leverage ratio2                  percentage of\n absorbing capital)1                                                                          earnings)\n Within first quartile of the buffer    4% to (4% + 12.5% of HLA)                                   100%\n Within second quartile of the buffer > (4% + 12.5% of HLA) to (4% + 25% of HLA)                    80%\n Within third quartile of the buffer    > (4% + 25% of HLA) to (4% + 37.5% of HLA)                  60%\n Within fourth quartile of the buffer   > (4% + 37.5% of HLA) to (4% + 50% of HLA)                  40%\n Above the top of the buffer            > 4% + 50% of HLA                                           0%",
+              "text": "Based on the aforesaid, and in accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act No. 94 of 1990), banks and controlling companies designated as a D-SIBs are hereby directed as follows:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "To maintain a leverage buffer equal to 50% of the HLA requirement imposed on CET1 capital, in addition to the minimum leverage ratio requirement specified in regulation 38(15)(b)(iv) of the Regulations.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-2",
+                  "number": "2.1.2",
+                  "text": "Ensure that the leverage ratio buffer requirement is met fully by tier 1 capital and reserve funds and is based on 50% of the HLA requirements imposed on CET1 capital.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-3",
+                  "number": "2.1.3",
+                  "text": "Apply the capital distribution constraints specified in Table 1 below when the bank or controlling company’s leverage ratio declines below the minimum specified requirement. The capital distribution constraints will be undertaken in a manner that is aligned to the approach followed for the utilisation of the capital conservation buffer range in respect of the bank’s risk-based capital ratios. Table 1: Minimum capital conservation requirement imposed on D-SIBs’ leverage buffer. Minimum capital conservation ratio Common equity tier 1 (expressed as a (including other fully loss Tier 1 leverage ratio2 percentage of absorbing capital)1 earnings) Within first quartile of the buffer 4% to (4% + 12.5% of HLA) 100% Within second quartile of the buffer > (4% + 12.5% of HLA) to (4% + 25% of HLA) 80% Within third quartile of the buffer > (4% + 25% of HLA) to (4% + 37.5% of HLA) 60% Within fourth quartile of the buffer > (4% + 37.5% of HLA) to (4% + 50% of HLA) 40% Above the top of the buffer > 4% + 50% of HLA 0%",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -126,7 +147,7 @@
           "id": "s-banks-d3-2025-1",
           "number": "1",
           "heading": "Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1.",
-          "text": "Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement",
+          "text": "Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement",
           "verbatim": true,
           "subsections": []
         },
@@ -134,7 +155,7 @@
           "id": "s-banks-d3-2025-2",
           "number": "2",
           "heading": "Concomitant tier 1 leverage requirement 2.",
-          "text": "Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement",
+          "text": "Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement",
           "verbatim": true,
           "subsections": []
         },

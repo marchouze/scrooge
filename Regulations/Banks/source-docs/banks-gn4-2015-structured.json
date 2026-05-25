@@ -115,60 +115,61 @@
         {
           "id": "s2",
           "number": "2",
-          "heading": "Pillar 2",
-          "text": "4 2.1.1.2 Banks should operate above the minimum regulatory capital ratios (principle 3), which is captured in regulation 38(8)(e)(vii) of the Regulations. Furthermore, Pillar 1 capital requirements represent minimum requirements. An appropriate level of capital under Pillar 2 should exceed the minimum Pillar 1 requirement so that all the risks of a bank, both on- and off-balance-sheet, are adequately covered. This will help to ensure that a bank maintains sufficient capital for risks not adequately addressed through Pillar 1 and that it is able to operate effectively throughout a severe and/or prolonged period of financial market stress. The above-mentioned bank responsibilities are generally known as the ICAAP of a bank. This guidance note aims to address banks’ responsibilities in terms of the ICAAP. 2.1.2 Supervisors’ responsibilities 2.1.2.1 Supervisors should review and evaluate a bank’s ICAAP (principle 2). 2.1.2.2 Supervisors should take appropriate action if they are not satisfied with the results of this process (principle 2), which is captured in regulation 38(4) of the Regulations. 2.1.2.3 Supervisors should review and evaluate a bank’s compliance with the regulatory capital ratios (principle 2). 2.1.2.4 Supervisors should be able to require banks to hold capital in excess of the minimum level (principle 3). 2.1.2.5 Supervisors should intervene at an early stage to prevent capital from falling below the minimum level (principle 4). Also refer to Directive 5/2013 in respect of capital conservation ratios that would place limits on discretionary payments. 2.1.2.6 Supervisors should require rapid remedial action if capital is not maintained or restored (principle 4). The above, with the full supervisory cycle, is generally referred to as the SREP.",
+          "heading": "Pillar 2 4",
+          "text": "Pillar 2 4",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s2-2-1-2",
+              "id": "s2-1-1-2",
+              "number": "2.1.1.2",
+              "text": "Banks should operate above the minimum regulatory capital ratios (principle 3), which is captured in regulation 38(8)(e)(vii) of the Regulations. Furthermore, Pillar 1 capital requirements represent minimum requirements. An appropriate level of capital under Pillar 2 should exceed the minimum Pillar 1 requirement so that all the risks of a bank, both on- and off-balance-sheet, are adequately covered. This will help to ensure that a bank maintains sufficient capital for risks not adequately addressed through Pillar 1 and that it is able to operate effectively throughout a severe and/or prolonged period of financial market stress. The above-mentioned bank responsibilities are generally known as the ICAAP of a bank. This guidance note aims to address banks’ responsibilities in terms of the ICAAP.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s2-1-2",
               "number": "2.1.2",
               "text": "Supervisors’ responsibilities",
               "verbatim": true,
               "subsections": [
                 {
-                  "id": "s2-2-1-2.1",
+                  "id": "s2-1-2-1",
                   "number": "2.1.2.1",
-                  "heading": "2.1.2.1",
                   "text": "Supervisors should review and evaluate a bank’s ICAAP (principle 2).",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
-                  "id": "s2-2-1-2.2",
+                  "id": "s2-1-2-2",
                   "number": "2.1.2.2",
-                  "heading": "2.1.2.2",
                   "text": "Supervisors should take appropriate action if they are not satisfied with the results of this process (principle 2), which is captured in regulation 38(4) of the Regulations.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
-                  "id": "s2-2-1-2.3",
+                  "id": "s2-1-2-3",
                   "number": "2.1.2.3",
-                  "heading": "2.1.2.3",
                   "text": "Supervisors should review and evaluate a bank’s compliance with the regulatory capital ratios (principle 2).",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
-                  "id": "s2-2-1-2.4",
+                  "id": "s2-1-2-4",
                   "number": "2.1.2.4",
-                  "heading": "2.1.2.4",
                   "text": "Supervisors should be able to require banks to hold capital in excess of the minimum level (principle 3).",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
-                  "id": "s2-2-1-2.5",
+                  "id": "s2-1-2-5",
                   "number": "2.1.2.5",
-                  "heading": "2.1.2.5",
                   "text": "Supervisors should intervene at an early stage to prevent capital from falling below the minimum level (principle 4). Also refer to Directive 5/2013 in respect of capital conservation ratios that would place limits on discretionary payments.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
-                  "id": "s2-2-1-2.6",
+                  "id": "s2-1-2-6",
                   "number": "2.1.2.6",
-                  "heading": "2.1.2.6",
                   "text": "Supervisors should require rapid remedial action if capital is not maintained or restored (principle 4). The above, with the full supervisory cycle, is generally referred to as the SREP.",
                   "verbatim": true,
                   "subsections": []
