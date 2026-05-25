@@ -7,65 +7,373 @@
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
+  <style>
+    /* ── Breadcrumb ─────────────────────────────────────── */
+    .breadcrumb {
+      display: flex; align-items: center; gap: var(--space-2);
+      font: var(--text-caption); color: var(--color-text-secondary);
+      margin-bottom: var(--space-4);
+    }
+    .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-sep { color: var(--color-text-disabled); }
+    .breadcrumb-current { color: var(--color-text-primary); font-weight: 500; }
+
+    /* ── View toggle ────────────────────────────────────── */
+    #obl-detail { display: none; }
+    #obl-detail.visible { display: block; }
+    #obl-list.hidden { display: none; }
+
+    /* ── Detail header ──────────────────────────────────── */
+    .obl-detail-header {
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: var(--space-6);
+    }
+    .obl-detail-eyebrow {
+      font: var(--text-caption); color: var(--color-text-secondary);
+      margin-bottom: var(--space-2);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .obl-detail-id {
+      font-family: var(--font-mono); font-size: 0.85em;
+      color: var(--color-text-secondary); margin-bottom: var(--space-2);
+    }
+    .obl-detail-title {
+      font: var(--text-display); color: var(--color-text-primary);
+      margin: 0 0 var(--space-3);
+    }
+    .obl-detail-pills {
+      display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center;
+    }
+
+    /* ── Meta grid ──────────────────────────────────────── */
+    .obl-detail-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+    .obl-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .obl-meta-label {
+      font: var(--text-caption); color: var(--color-text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .obl-meta-value { font: var(--text-body); color: var(--color-text-primary); font-weight: 500; }
+
+    /* ── Sections ───────────────────────────────────────── */
+    .obl-section { margin-bottom: var(--space-8); }
+    .obl-section h3 {
+      font: var(--text-h2); color: var(--color-text-primary);
+      margin: 0 0 var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ── Requirement text box ───────────────────────────── */
+    .obl-requirement-text {
+      font: var(--text-body); color: var(--color-text-primary);
+      line-height: 1.7;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    /* ── Policy links ───────────────────────────────────── */
+    .obl-policy-link {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      color: var(--color-accent);
+      font: var(--text-body);
+      margin: 0 var(--space-2) var(--space-2) 0;
+    }
+    .obl-policy-link:hover { background: var(--color-surface-raised); border-color: var(--color-accent); }
+
+    /* ── Gap flags ──────────────────────────────────────── */
+    .obl-gap-flag {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 10px;
+      background: #fef2f2; color: #dc2626;
+      font: var(--text-caption); font-weight: 600;
+      margin: 2px;
+    }
+
+    /* ── Scope / taxonomy tags ──────────────────────────── */
+    .obl-scope-tag {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--color-surface-raised);
+      color: var(--color-text-secondary);
+      font-family: var(--font-mono); font-size: 0.8em;
+      margin: 2px;
+    }
+
+    /* ── Detail DL ──────────────────────────────────────── */
+    .obl-dl {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: var(--space-2) var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    .obl-dl dt {
+      font: var(--text-caption); color: var(--color-text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      padding-top: 3px;
+    }
+    .obl-dl dd { font: var(--text-body); margin: 0; }
+  </style>
 </head>
 <body>
   <div id="shell"></div>
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
-    <div class="page-header"><h1 class="page-title">Obligations</h1></div>
-    <div class="page-body">
-      <div id="obl-tabs" class="tab-bar"></div>
-      <div id="obl-table"></div>
+
+    <!-- ── List view ──────────────────────────────────────────── -->
+    <div id="obl-list">
+      <div class="page-header"><h1 class="page-title">Obligations</h1></div>
+      <div class="page-body">
+        <div id="obl-tabs" class="tab-bar" style="margin-bottom:var(--space-4)"></div>
+        <div id="obl-table"></div>
+      </div>
+    </div>
+
+    <!-- ── Detail view ────────────────────────────────────────── -->
+    <div id="obl-detail">
+      <nav class="breadcrumb">
+        <a href="#" id="obl-bc-back">Obligations</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current" id="obl-bc-name"></span>
+      </nav>
+
+      <div class="obl-detail-header">
+        <div class="obl-detail-eyebrow" id="obl-d-eyebrow"></div>
+        <div class="obl-detail-id" id="obl-d-id"></div>
+        <h1 class="obl-detail-title" id="obl-d-title"></h1>
+        <div class="obl-detail-pills" id="obl-d-pills"></div>
+      </div>
+
+      <div class="obl-detail-meta" id="obl-d-meta"></div>
+
+      <div class="obl-section">
+        <h3>Requirement</h3>
+        <div class="obl-requirement-text" id="obl-d-req"></div>
+      </div>
+
+      <div class="obl-section" id="obl-d-pol-section" style="display:none">
+        <h3>Fulfilment Policies</h3>
+        <div id="obl-d-policies"></div>
+      </div>
+
+      <div class="obl-section">
+        <h3>Further Detail</h3>
+        <dl class="obl-dl" id="obl-d-extra"></dl>
+      </div>
     </div>
   </main>
+
   <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/_components.js"></script>
   <script>
     initShell({ title: "Obligations" });
+
     (async () => {
-      async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
+      async function sf(u) {
+        try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; }
+        catch { return null; }
+      }
+
+      let all = [];
+      let activeFilter = null;
+
+      // ── Navigation ─────────────────────────────────────────
+      function showList() {
+        document.getElementById("obl-list").classList.remove("hidden");
+        document.getElementById("obl-detail").classList.remove("visible");
+        document.title = "Obligations — Scrooge Bank";
+      }
+
+      function showDetail(o) {
+        document.getElementById("obl-list").classList.add("hidden");
+        const det = document.getElementById("obl-detail");
+        det.classList.add("visible");
+        document.title = `${o.id} — Obligations — Scrooge Bank`;
+
+        // Breadcrumb
+        document.getElementById("obl-bc-name").textContent = o.id;
+
+        // Eyebrow: regulator + family (deduplicate when they match)
+        const eyebrowParts = [o.regulator, o.family && o.family !== o.regulator ? o.family : ""].filter(Boolean);
+        document.getElementById("obl-d-eyebrow").textContent = eyebrowParts.join(" · ");
+
+        // ID badge
+        document.getElementById("obl-d-id").textContent = o.id;
+
+        // Title: instrument (doc title) or truncated requirement
+        const titleText = o.instrument
+          ? o.instrument
+          : (o.requirement || "").slice(0, 140) + ((o.requirement || "").length > 140 ? "…" : "");
+        document.getElementById("obl-d-title").textContent = titleText;
+
+        // Pills: bind + status
+        const pills = document.getElementById("obl-d-pills");
+        pills.innerHTML = [
+          o.bind ? SC.renderBadge(o.bind) : "",
+          o.status ? SC.renderBadge(o.status) : "",
+        ].filter(Boolean).join(" ");
+
+        // Meta grid
+        const meta = document.getElementById("obl-d-meta");
+        const metaItem = (label, val) => val
+          ? `<div class="obl-meta-item"><span class="obl-meta-label">${SC.esc(label)}</span><span class="obl-meta-value">${val}</span></div>`
+          : "";
+        meta.innerHTML = [
+          metaItem("ID", `<code style="font-family:var(--font-mono);font-size:0.85em">${SC.esc(o.id)}</code>`),
+          metaItem("Regulator", SC.esc(o.regulator || "")),
+          metaItem("Document", SC.esc(o.instrument || "")),
+          metaItem("Owner", SC.esc(o.owner || "")),
+          metaItem("Bind", SC.esc(o.bind || "")),
+          metaItem("Status", SC.esc(o.status || "")),
+        ].filter(Boolean).join("");
+
+        // Requirement
+        document.getElementById("obl-d-req").textContent = o.requirement || "—";
+
+        // Fulfilment policies
+        const polSection = document.getElementById("obl-d-pol-section");
+        const polEl = document.getElementById("obl-d-policies");
+        const policies = o.linkedPolicies ?? [];
+        if (policies.length) {
+          polSection.style.display = "";
+          polEl.innerHTML = policies.map(p =>
+            `<a href="policies.html#${encodeURIComponent(p)}" class="obl-policy-link">${SC.esc(p)}</a>`
+          ).join("");
+        } else {
+          polSection.style.display = "none";
+        }
+
+        // Further detail DL
+        const extra = document.getElementById("obl-d-extra");
+        const muted = `<span style="color:var(--color-text-disabled)">—</span>`;
+        const txt = v => v ? SC.esc(v) : muted;
+        const gapsHtml = (o.gaps ?? []).length === 0
+          ? `<span style="color:#16a34a;font-weight:500">Complete</span>`
+          : (o.gaps ?? []).map(g => `<span class="obl-gap-flag">${SC.esc(g)}</span>`).join(" ");
+        const scopeTags = arr => (arr ?? ["universal"]).map(c => `<span class="obl-scope-tag">${SC.esc(c)}</span>`).join("");
+
+        extra.innerHTML = [
+          `<dt>Citation</dt><dd>${txt(o.citation)}</dd>`,
+          `<dt>Source family</dt><dd>${txt(o.family)}</dd>`,
+          `<dt>Source type</dt><dd>${txt(o.source)}</dd>`,
+          o.riskTaxonomy
+            ? `<dt>Risk taxonomy</dt><dd><code>${SC.esc(o.riskTaxonomy)}</code></dd>`
+            : `<dt>Risk taxonomy</dt><dd>${muted}</dd>`,
+          `<dt>Product scope</dt><dd>${scopeTags(o.productScope)}</dd>`,
+          `<dt>Activity scope</dt><dd>${scopeTags(o.activityScope)}</dd>`,
+          `<dt>Chain integrity</dt><dd>${gapsHtml}</dd>`,
+          o.urn && o.urn !== "[TBD]"
+            ? `<dt>URN</dt><dd><code style="font-family:var(--font-mono);font-size:0.85em">${SC.esc(o.urn)}</code></dd>`
+            : "",
+        ].filter(Boolean).join("");
+
+        window.scrollTo(0, 0);
+      }
+
+      // ── Hash routing ───────────────────────────────────────
+      function navigateTo(id, push = true) {
+        const o = all.find(x => x.id === id);
+        if (!o) return;
+        if (push) history.pushState({ id }, "", `#${encodeURIComponent(id)}`);
+        showDetail(o);
+      }
+
+      function navigateBack(push = true) {
+        if (push) history.pushState({}, "", location.pathname);
+        showList();
+      }
+
+      window.addEventListener("popstate", () => {
+        const hash = decodeURIComponent(location.hash.slice(1));
+        if (hash) navigateTo(hash, false);
+        else navigateBack(false);
+      });
+
+      document.getElementById("obl-bc-back").addEventListener("click", e => {
+        e.preventDefault();
+        navigateBack();
+      });
+
+      // ── Load & render ──────────────────────────────────────
       document.getElementById("obl-table").innerHTML = SC.renderSkeleton(8);
       const data = await sf("/api/obligations");
-      const all = Array.isArray(data) ? data : Object.values(data?.byId ?? {});
+      all = Object.values(data?.byId ?? {});
       const sc = data?.statusCounts ?? {};
+
       const TABS = [
         { label: `All (${all.length})`, filter: null },
-        { label: `In Force (${sc.IN_FORCE??0})`, filter: "IN_FORCE" },
-        { label: `Partial (${sc.PARTIAL??0})`, filter: "PARTIAL" },
-        { label: `Drafting (${sc.DRAFTING??0})`, filter: "DRAFTING" },
-        { label: `Planned (${sc.PLANNED??0})`, filter: "PLANNED" },
+        { label: `In Force (${sc.IN_FORCE ?? 0})`, filter: "IN_FORCE" },
+        { label: `Partial (${sc.PARTIAL ?? 0})`, filter: "PARTIAL" },
+        { label: `Drafting (${sc.DRAFTING ?? 0})`, filter: "DRAFTING" },
+        { label: `Planned (${sc.PLANNED ?? 0})`, filter: "PLANNED" },
       ];
-      let activeFilter = null;
+
       const tabsEl = document.getElementById("obl-tabs");
+
       function render() {
         const rows = activeFilter ? all.filter(o => o.status === activeFilter) : all;
         SC.renderTable({
           container: document.getElementById("obl-table"),
-          headers: ["ID","Requirement","Citation","Bind","Status","Linked Policies"],
+          headers: ["Regulator", "Document Title", "Requirement", "Status", "Policies"],
           rows: rows.map(o => ({
             cells: [
-              SC.esc(o.id||""),
-              SC.esc((o.requirement||"").slice(0,80) + ((o.requirement||"").length>80?"…":"")),
-              SC.esc(o.citation||o.instrument||""),
-              SC.renderBadge(o.bind||""),
-              SC.renderBadge(o.status||"open"),
-              SC.esc(Array.isArray(o.linkedPolicies) ? o.linkedPolicies.join(", ") : (o.linkedPolicies||"")),
+              SC.esc(o.regulator || "—"),
+              `<span style="font-size:12px">${SC.esc(o.instrument || o.citation?.slice(0, 60) || "—")}</span>`,
+              `<span style="color:var(--color-text-secondary);font-size:12.5px">${SC.esc((o.requirement || "").slice(0, 100) + ((o.requirement || "").length > 100 ? "…" : ""))}</span>`,
+              SC.renderBadge(o.status || ""),
+              (o.linkedPolicies ?? []).length
+                ? (o.linkedPolicies ?? []).slice(0, 2).map(p =>
+                    `<a href="policies.html#${encodeURIComponent(p)}" style="color:var(--color-accent);text-decoration:none;font-size:11.5px;white-space:nowrap" onclick="event.stopPropagation()">${SC.esc(p)}</a>`
+                  ).join("<span style='color:var(--color-text-disabled)'>, </span>")
+                  + ((o.linkedPolicies ?? []).length > 2
+                    ? `<span style="color:var(--color-text-disabled);font-size:11px"> +${(o.linkedPolicies ?? []).length - 2}</span>`
+                    : "")
+                : `<span style="color:var(--color-text-disabled)">—</span>`,
             ],
             data: o,
           })),
-          onRowClick: o => SC.openModal({ title: o.id||"Obligation", body: SC.renderDefList(o) }),
+          onRowClick: o => navigateTo(o.id),
           emptyMessage: "No obligations",
         });
       }
-      tabsEl.innerHTML = TABS.map(t => `<button class="tab-btn${t.filter===activeFilter?" active":""}" data-filter="${t.filter??""}">${SC.esc(t.label)}</button>`).join("");
+
+      tabsEl.innerHTML = TABS.map(t =>
+        `<button class="tab-btn${t.filter === activeFilter ? " active" : ""}" data-filter="${t.filter ?? ""}">${SC.esc(t.label)}</button>`
+      ).join("");
       tabsEl.addEventListener("click", e => {
-        const b = e.target.closest(".tab-btn"); if (!b) return;
+        const b = e.target.closest(".tab-btn");
+        if (!b) return;
         activeFilter = b.dataset.filter || null;
-        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", (x.dataset.filter||null) === activeFilter));
+        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", (x.dataset.filter || null) === activeFilter));
         render();
       });
+
       render();
+
+      // Deep-link from hash on load
+      const initHash = decodeURIComponent(location.hash.slice(1));
+      if (initHash) navigateTo(initHash, false);
     })();
   </script>
 </body>
