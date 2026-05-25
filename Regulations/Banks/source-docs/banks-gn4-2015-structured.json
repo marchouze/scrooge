@@ -27,54 +27,6 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Introduction Page 3",
-          "text": "Introduction Page 3",
-          "verbatim": true,
-          "subsections": []
-        },
-        {
-          "id": "s2",
-          "number": "2",
-          "heading": "Pillar 2 Page 3",
-          "text": "Pillar 2 Page 3",
-          "verbatim": true,
-          "subsections": []
-        },
-        {
-          "id": "s3",
-          "number": "3",
-          "heading": "High-level requirements for an ICAAP Page 5",
-          "text": "High-level requirements for an ICAAP Page 5",
-          "verbatim": true,
-          "subsections": []
-        },
-        {
-          "id": "s4",
-          "number": "4",
-          "heading": "ICAAP submission Page 18",
-          "text": "ICAAP submission Page 18",
-          "verbatim": true,
-          "subsections": []
-        },
-        {
-          "id": "s5",
-          "number": "5",
-          "heading": "ICAAP submission: suggested format Annexure A",
-          "text": "ICAAP submission: suggested format Annexure A",
-          "verbatim": true,
-          "subsections": []
-        },
-        {
-          "id": "s6",
-          "number": "6",
-          "heading": "High-level requirements underpinning sound stress-testing by banks Annexure B 3",
-          "text": "High-level requirements underpinning sound stress-testing by banks Annexure B 3",
-          "verbatim": true,
-          "subsections": []
-        },
-        {
-          "id": "s1",
-          "number": "1",
           "heading": "Introduction",
           "text": "Introduction",
           "verbatim": true,
