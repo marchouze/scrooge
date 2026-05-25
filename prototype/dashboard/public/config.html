@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Config — Scrooge Bank</title>
+  <meta name="description" content="Platform configuration — single source of truth for all process paths and server settings.">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .config-subtitle {
+      font: var(--text-body);
+      color: var(--color-text-secondary);
+      margin: var(--space-2) 0 var(--space-6);
+    }
+    .config-subtitle code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+    }
+    .config-section {
+      margin-bottom: var(--space-8);
+    }
+    .config-section h2 {
+      font: var(--text-h2);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .config-table {
+      width: 100%;
+      border-collapse: collapse;
+      font: var(--text-body);
+    }
+    .config-table th {
+      text-align: left;
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .config-table td {
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+    .config-table tr:last-child td { border-bottom: none; }
+    .config-key {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+    .config-value {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      color: var(--color-text-primary);
+      word-break: break-all;
+    }
+    .source-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .source-env    { background: #fff3cd; color: #856404; }
+    .source-file   { background: #d1e7dd; color: #0a5c36; }
+    .source-default { background: #e9ecef; color: #6c757d; }
+    .edit-btn {
+      font-size: 0.78rem;
+      padding: 2px 10px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: var(--color-surface);
+      cursor: pointer;
+      color: var(--color-text-secondary);
+    }
+    .edit-btn:hover { background: var(--color-surface-raised); }
+    .edit-row {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .edit-input {
+      flex: 1;
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      padding: 4px 8px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+    }
+    .save-btn {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border: none;
+      border-radius: 4px;
+      background: var(--color-accent, #0066cc);
+      color: #fff;
+      cursor: pointer;
+    }
+    .save-btn:hover { opacity: 0.85; }
+    .cancel-btn {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: var(--color-surface);
+      cursor: pointer;
+      color: var(--color-text-secondary);
+    }
+    .env-note {
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <div style="padding: var(--space-4) var(--space-6) 0;">
+      <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+      <h1 style="margin: 0 0 var(--space-2);">Platform configuration</h1>
+      <p class="config-subtitle" id="configSubtitle">
+        Single source of truth for all process paths and server settings.
+        Stored at <code>~/.config/bank/platform.json</code>. Env vars override per key.
+      </p>
+      <div id="configContent">Loading…</div>
+    </div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script src="/config.js"></script>
+  <script>initShell({ title: "Config" });</script>
+</body>
+</html>

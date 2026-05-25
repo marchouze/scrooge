@@ -81,6 +81,7 @@
       pages: [
         { label: "Events", href: "/events.html" },
         { label: "Health", href: "/health.html" },
+        { label: "Config", href: "/config.html" },
         { label: "AgentOps", href: "/agentops.html" },
         { label: "Agents", href: "/agents.html" },
         { label: "Fleet", href: "/fleet.html" },

@@ -5,33 +5,29 @@
 //
 // Resolution precedence (high → low):
 //   1. `BANK_MARKET_DATA_DB` env var
-//   2. `$HOME/.local/share/bank/market-data.db` (home-default shared store)
-//   3. `.local/market-data.db` (per-worktree fallback; CI / fresh-clone)
+//   2. `getBankConfig().marketDataDb` (centralized config store; default:
+//      $HOME/.local/share/bank/market-data.db)
 //
-// The home-default means the dashboard, ingest scripts, and MTM run all
-// converge on a single file regardless of which directory they start from,
-// fixing the "worktree CWD drift" class of bug (2026-05-21 incident:
-// vigilant-swanson dashboard read its own empty .local/market-data.db
-// while the ingest plist wrote to prototype/.local/market-data.db).
+// The cwd-relative `.local/market-data.db` fallback has been removed — it
+// was the source of the split-DB bug (2026-05-21 incident: vigilant-swanson
+// dashboard read its own empty .local/market-data.db while the ingest plist
+// wrote to prototype/.local/market-data.db). The centralized config store
+// ensures all processes converge on a single file regardless of cwd.
 //
+// Authority: D-BANK-CONFIG-STORE (centralized config, 2026-05-25)
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { homedir } from "node:os";
 import { resolve } from "node:path";
+import { getBankConfig } from "../config/loader";
 
 export interface ResolvedMarketDataDb {
   path: string;
-  source: "env" | "home-default" | "fallback";
+  source: "env" | "config";
 }
-
-const HOME_DEFAULT_SUBPATH = ".local/share/bank/market-data.db";
 
 export function resolveMarketDataDbPath(): ResolvedMarketDataDb {
   const env = process.env.BANK_MARKET_DATA_DB?.trim();
   if (env) return { path: resolve(env), source: "env" };
 
-  const home = homedir();
-  if (home) return { path: resolve(home, HOME_DEFAULT_SUBPATH), source: "home-default" };
-
-  return { path: resolve(".local/market-data.db"), source: "fallback" };
+  return { path: getBankConfig().marketDataDb, source: "config" };
 }

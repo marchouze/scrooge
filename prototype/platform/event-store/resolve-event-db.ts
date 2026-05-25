@@ -60,7 +60,6 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { homedir } from "node:os";
 import { resolve } from "node:path";
 
 export interface ResolvedEventDb {
@@ -101,8 +100,6 @@ export interface ResolveEventDbInputs {
   excludeHomeDefault?: boolean;
 }
 
-const HOME_DEFAULT_SUBPATH = ".local/share/bank/event.db";
-
 function nonEmpty(value: string | undefined): string | undefined {
   if (value === undefined) return undefined;
   const trimmed = value.trim();
@@ -113,9 +110,12 @@ function nonEmpty(value: string | undefined): string | undefined {
  * Resolve the event-store path. Pure: never mutates env, never writes.
  *
  * Default mode (no inputs supplied) reads `process.env.BANK_EVENT_DB`,
- * `process.env.BANK_HOME_EVENT_DB`, and `os.homedir()` — the production
- * resolution. Tests inject everything explicitly to exercise the
+ * `process.env.BANK_HOME_EVENT_DB`, and getBankConfig().eventDb — the
+ * production resolution. Tests inject everything explicitly to exercise the
  * precedence ladder without environment leakage.
+ *
+ * getBankConfig() is called lazily (inside the function body, not at module
+ * load time) to avoid circular init issues with platform/composition.ts.
  */
 export function resolveEventDbPath(opts: ResolveEventDbInputs = {}): ResolvedEventDb {
   const explicit = nonEmpty(opts.explicit);
@@ -144,9 +144,24 @@ export function resolveEventDbPath(opts: ResolveEventDbInputs = {}): ResolvedEve
   }
 
   if (!opts.excludeHomeDefault) {
-    const home = opts.home === undefined ? nonEmpty(homedir()) : nonEmpty(opts.home);
-    if (home !== undefined) {
-      return { path: resolve(home, HOME_DEFAULT_SUBPATH), source: "home-default", shared: true };
+    // Lazy import to avoid circular init — do NOT hoist to module level.
+    // opts.home is injectable for tests (no filesystem reads needed).
+    if (opts.home !== undefined) {
+      const home = nonEmpty(opts.home);
+      if (home !== undefined) {
+        return {
+          path: resolve(home, ".local", "share", "bank", "event.db"),
+          source: "home-default",
+          shared: true,
+        };
+      }
+    } else {
+      // Production path: derive from centralized config store (lazy call)
+      const { getBankConfig } = require("../config/loader") as typeof import("../config/loader");
+      const configEventDb = getBankConfig().eventDb;
+      if (configEventDb) {
+        return { path: configEventDb, source: "home-default", shared: true };
+      }
     }
   }
 

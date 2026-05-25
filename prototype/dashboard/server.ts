@@ -57,6 +57,8 @@ import { computeNII } from "../platform/alm/nii";
 import { computeRepricingGap } from "../platform/alm/repricing-gap";
 import { getCollateralInventory } from "../platform/collateral/inventory";
 import { eventStore, logger } from "../platform/composition";
+import { updateConfigFile } from "../platform/config/loader";
+import type { BankConfigPaths, BankConfigServer } from "../platform/config/schema";
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
@@ -127,6 +129,7 @@ import {
   TREASURY_REPO_TRADE_PAYLOADS,
 } from "../seeds/treasury/trade-seeds";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
+import { buildConfigView } from "./config-view";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { registerFxSimRoutes } from "./fx-sim-view";
 import { registerGlRoutes } from "./gl-view";
@@ -2830,6 +2833,87 @@ const server = Bun.serve({
     if (url.pathname === "/api/refresh" && req.method === "POST") {
       refresh("api-refresh");
       return jsonResponse({ ok: true, asOf: cachedState.asOf });
+    }
+    // ---------- Platform config store — GET /api/config, PATCH /api/config ----------
+    // Authority: D-BANK-CONFIG-STORE (centralized config, 2026-05-25)
+    if (url.pathname === "/api/config" && req.method === "GET") {
+      return jsonResponse(buildConfigView());
+    }
+    if (url.pathname === "/api/config" && req.method === "PATCH") {
+      let body: unknown;
+      try {
+        body = await req.json();
+      } catch {
+        return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (typeof body !== "object" || body === null || Array.isArray(body)) {
+        return new Response(JSON.stringify({ error: "Body must be an object" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      const patch = body as Record<string, unknown>;
+      const KNOWN_PATH_KEYS: (keyof BankConfigPaths)[] = [
+        "eventDb",
+        "marketDataDb",
+        "graphDb",
+        "documentStoreRoot",
+        "archiveDir",
+        "repoRoot",
+      ];
+      const KNOWN_SERVER_KEYS: (keyof BankConfigServer)[] = ["port", "refreshMs"];
+      // Validate — reject unknown top-level keys
+      const unknownKeys = Object.keys(patch).filter((k) => k !== "paths" && k !== "server");
+      if (unknownKeys.length > 0) {
+        return new Response(JSON.stringify({ error: `Unknown keys: ${unknownKeys.join(", ")}` }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      // Validate paths sub-keys
+      if (patch.paths !== undefined) {
+        if (typeof patch.paths !== "object" || patch.paths === null) {
+          return new Response(JSON.stringify({ error: "paths must be an object" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const unknownPathKeys = Object.keys(patch.paths as object).filter(
+          (k) => !KNOWN_PATH_KEYS.includes(k as keyof BankConfigPaths),
+        );
+        if (unknownPathKeys.length > 0) {
+          return new Response(
+            JSON.stringify({ error: `Unknown paths keys: ${unknownPathKeys.join(", ")}` }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+      }
+      // Validate server sub-keys
+      if (patch.server !== undefined) {
+        if (typeof patch.server !== "object" || patch.server === null) {
+          return new Response(JSON.stringify({ error: "server must be an object" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const unknownServerKeys = Object.keys(patch.server as object).filter(
+          (k) => !KNOWN_SERVER_KEYS.includes(k as keyof BankConfigServer),
+        );
+        if (unknownServerKeys.length > 0) {
+          return new Response(
+            JSON.stringify({ error: `Unknown server keys: ${unknownServerKeys.join(", ")}` }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+      }
+      updateConfigFile({
+        paths: patch.paths as Partial<BankConfigPaths> | undefined,
+        server: patch.server as Partial<BankConfigServer> | undefined,
+      });
+      return jsonResponse({ ok: true, config: buildConfigView() });
     }
     if (url.pathname === "/api/decide" && req.method === "POST") {
       return handleDecide(req);
