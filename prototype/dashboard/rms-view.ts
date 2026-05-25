@@ -317,12 +317,16 @@ export function buildRmsRegistersFold(
   void effDecisionsKey; // used for logging; actual key managed by projectFromSnapshot
   void decisionsDelta; // available for debug logging if needed
 
-  const correspondenceState = projector.build(correspondenceRegisterProjection);
-  const agentRunsState = projector.build(agentRunsRegisterProjection);
-  const documentState = projector.build(documentRegisterProjection);
-  const feedbackState = projector.build(feedbackRegisterProjection);
-  const briefsState = projector.build(briefsRegisterProjection);
-  const workstreamsState = projector.build(workstreamsRegisterProjection);
+  // Pass the same asOf bound used for decisions so that events appended
+  // mid-run (e.g. by concurrent backfill scripts) are excluded from all
+  // projections consistently — eliminating the race that caused transient
+  // parity mismatches between the live fold and the naive-replay recon path.
+  const correspondenceState = projector.build(correspondenceRegisterProjection, { asOf });
+  const agentRunsState = projector.build(agentRunsRegisterProjection, { asOf });
+  const documentState = projector.build(documentRegisterProjection, { asOf });
+  const feedbackState = projector.build(feedbackRegisterProjection, { asOf });
+  const briefsState = projector.build(briefsRegisterProjection, { asOf });
+  const workstreamsState = projector.build(workstreamsRegisterProjection, { asOf });
 
   return {
     asOf,
