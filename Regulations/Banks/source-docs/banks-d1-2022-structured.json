@@ -142,17 +142,144 @@
         {
           "id": "s-banks-d1-2022-4",
           "number": "4",
-          "heading": "Directive",
-          "text": "4.         Directive\n\n4.1.       Based on the aforesaid, and in accordance with the provisions of section 6(6)\n           of the Banks Act 94 of 1990 (Banks Act), banks are hereby directed as follows:\n\n4.1.1.     to comply with the relevant LCR disclosure requirements as set out in Directive\n           1/2019.\n\n4.1.2.     to calculate the consolidated LCR in accordance with the requirements specified\n           below:\n\n4.1.2.1.   only banking and/or deposit-taking entities shall be included;\n\n4.1.2.2.   branches shall be consolidated in accordance with the requirements specified\n           in paragraph 2.5 above;\n\n\n                                                                                            2\n\n4.1.2.3.    all banking and/or deposit-taking entities that operate in a jurisdiction where\n            compliance with the LCR is a regulatory requirement shall be included;\n\n4.1.2.4.    all banking and/ or deposit-taking entities that operate in jurisdictions where the\n            LCR is not a regulatory requirement shall be included in accordance with the\n            provisions of regulation 36 of the Regulations;\n\n4.1.2.5.    a summation of the relevant individual net cash outflows and the HQLA\n            portfolios of all the relevant entities shall be performed in order to calculate the\n            relevant required consolidated LCR. In this regard, the HQLA of the relevant\n            entities shall be capped at the lower of the specified minimum LCR requirement\n            in each relevant jurisdiction or the home jurisdiction in the summation process.\n            Any excess HQLA or inflows of a particular entity shall only be included in the\n            consolidated LCR once it has been evaluated for transferability across\n            jurisdictions and convertibility across currencies, and if it is freely available to\n            the consolidated (parent) entity in times of stress;\n\n4.1.2.6.    for all entities included in the consolidated LCR, the requirements of paragraphs\n            2.4 and 2.5 shall apply;\n\n4.1.2.7.    for the purpose of consolidation, intragroup transactions of all banking and/or\n            deposit-taking entities included in the consolidated LCR should be eliminated;\n\n4.1.2.8.    for the purpose of consolidation, inflows allowed as part of the LCR framework\n            from all relevant banking and/or deposit-taking entities must be capped at 75%\n            on a group consolidated basis and not at an entity level;\n\n4.1.2.9.    cash reserves may only be included to the extent to which central bank reserves\n            are allowed to count towards the stock of liquid assets, that is, the extent to\n            which reserves can be drawn down in times of stress, with the permission of the\n            relevant local supervisors in accordance with the BCBS framework and section\n            1 of the Banks Act, 1990;\n\n4.1.2.10.   all the respective components required for the calculation of the LCR shall be\n            converted into rand;\n\n4.1.2.11.   consolidated LCR shall be calculated monthly to form the base of the public\n            disclosure requirements and shall be made available to the Prudential Authority\n            (PA) on request; and\n\n4.1.2.12.   the LCR shall be reported according to the form BA 600 requirements. In\n            addition, banks should calculate a month-end position group calculation similar\n            to what is currently required within the BA 600 quarterly reporting.\n\n4.1.3.      Liquidity transfer restrictions in the calculation and disclosure of the relevant\n            LCR should be considered.\n\n4.1.4.      The LCR disclosures shall be made available to the public quarterly according\n            to the requirements specified in D1/2019.\n\n\n\n\n                                                                                              3\n\n4.1.5.     The PA reserves the right to change the inflow factor for any country or currency\n           if it deems the country or currency risky and funds not transferable or fungible\n           when calculating the LCR on a consolidated basis.\n\n4.1.6.     Should a bank be unable to comply with any of the relevant directives specified\n           in this Directive, the bank shall, in accordance with the provisions of regulation\n           5 of the Regulations, report its inability to comply in writing to the PA, stating the\n           reasons for such failure or inability to comply.",
+          "heading": "Directive 4. Directive",
+          "text": "Directive 4. Directive",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d1-2022-4-1",
+              "id": "s4-1",
               "number": "4.1",
-              "heading": "Based on the aforesaid, and in accordance with the provisions of section 6(6)",
-              "text": "4.1.       Based on the aforesaid, and in accordance with the provisions of section 6(6)\n           of the Banks Act 94 of 1990 (Banks Act), banks are hereby directed as follows:\n\n4.1.1.     to comply with the relevant LCR disclosure requirements as set out in Directive\n           1/2019.\n\n4.1.2.     to calculate the consolidated LCR in accordance with the requirements specified\n           below:\n\n4.1.2.1.   only banking and/or deposit-taking entities shall be included;\n\n4.1.2.2.   branches shall be consolidated in accordance with the requirements specified\n           in paragraph 2.5 above;\n\n\n                                                                                            2\n\n4.1.2.3.    all banking and/or deposit-taking entities that operate in a jurisdiction where\n            compliance with the LCR is a regulatory requirement shall be included;\n\n4.1.2.4.    all banking and/ or deposit-taking entities that operate in jurisdictions where the\n            LCR is not a regulatory requirement shall be included in accordance with the\n            provisions of regulation 36 of the Regulations;\n\n4.1.2.5.    a summation of the relevant individual net cash outflows and the HQLA\n            portfolios of all the relevant entities shall be performed in order to calculate the\n            relevant required consolidated LCR. In this regard, the HQLA of the relevant\n            entities shall be capped at the lower of the specified minimum LCR requirement\n            in each relevant jurisdiction or the home jurisdiction in the summation process.\n            Any excess HQLA or inflows of a particular entity shall only be included in the\n            consolidated LCR once it has been evaluated for transferability across\n            jurisdictions and convertibility across currencies, and if it is freely available to\n            the consolidated (parent) entity in times of stress;\n\n4.1.2.6.    for all entities included in the consolidated LCR, the requirements of paragraphs\n            2.4 and 2.5 shall apply;\n\n4.1.2.7.    for the purpose of consolidation, intragroup transactions of all banking and/or\n            deposit-taking entities included in the consolidated LCR should be eliminated;\n\n4.1.2.8.    for the purpose of consolidation, inflows allowed as part of the LCR framework\n            from all relevant banking and/or deposit-taking entities must be capped at 75%\n            on a group consolidated basis and not at an entity level;\n\n4.1.2.9.    cash reserves may only be included to the extent to which central bank reserves\n            are allowed to count towards the stock of liquid assets, that is, the extent to\n            which reserves can be drawn down in times of stress, with the permission of the\n            relevant local supervisors in accordance with the BCBS framework and section\n            1 of the Banks Act, 1990;\n\n4.1.2.10.   all the respective components required for the calculation of the LCR shall be\n            converted into rand;\n\n4.1.2.11.   consolidated LCR shall be calculated monthly to form the base of the public\n            disclosure requirements and shall be made available to the Prudential Authority\n            (PA) on request; and\n\n4.1.2.12.   the LCR shall be reported according to the form BA 600 requirements. In\n            addition, banks should calculate a month-end position group calculation similar\n            to what is currently required within the BA 600 quarterly reporting.\n\n4.1.3.      Liquidity transfer restrictions in the calculation and disclosure of the relevant\n            LCR should be considered.\n\n4.1.4.      The LCR disclosures shall be made available to the public quarterly according\n            to the requirements specified in D1/2019.\n\n\n\n\n                                                                                              3\n\n4.1.5.     The PA reserves the right to change the inflow factor for any country or currency\n           if it deems the country or currency risky and funds not transferable or fungible\n           when calculating the LCR on a consolidated basis.\n\n4.1.6.     Should a bank be unable to comply with any of the relevant directives specified\n           in this Directive, the bank shall, in accordance with the provisions of regulation\n           5 of the Regulations, report its inability to comply in writing to the PA, stating the\n           reasons for such failure or inability to comply.",
+              "text": "Based on the aforesaid, and in accordance with the provisions of section 6(6) of the Banks Act 94 of 1990 (Banks Act), banks are hereby directed as follows:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s4-1-1",
+                  "number": "4.1.1",
+                  "text": "to comply with the relevant LCR disclosure requirements as set out in Directive 1/2019.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-2",
+                  "number": "4.1.2",
+                  "text": "to calculate the consolidated LCR in accordance with the requirements specified below:",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s4-1-2-1",
+                      "number": "4.1.2.1",
+                      "text": "only banking and/or deposit-taking entities shall be included;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-2",
+                      "number": "4.1.2.2",
+                      "text": "branches shall be consolidated in accordance with the requirements specified in paragraph 2.5 above; 2",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-3",
+                      "number": "4.1.2.3",
+                      "text": "all banking and/or deposit-taking entities that operate in a jurisdiction where compliance with the LCR is a regulatory requirement shall be included;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-4",
+                      "number": "4.1.2.4",
+                      "text": "all banking and/ or deposit-taking entities that operate in jurisdictions where the LCR is not a regulatory requirement shall be included in accordance with the provisions of regulation 36 of the Regulations;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-5",
+                      "number": "4.1.2.5",
+                      "text": "a summation of the relevant individual net cash outflows and the HQLA portfolios of all the relevant entities shall be performed in order to calculate the relevant required consolidated LCR. In this regard, the HQLA of the relevant entities shall be capped at the lower of the specified minimum LCR requirement in each relevant jurisdiction or the home jurisdiction in the summation process. Any excess HQLA or inflows of a particular entity shall only be included in the consolidated LCR once it has been evaluated for transferability across jurisdictions and convertibility across currencies, and if it is freely available to the consolidated (parent) entity in times of stress;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-6",
+                      "number": "4.1.2.6",
+                      "text": "for all entities included in the consolidated LCR, the requirements of paragraphs 2.4 and 2.5 shall apply;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-7",
+                      "number": "4.1.2.7",
+                      "text": "for the purpose of consolidation, intragroup transactions of all banking and/or deposit-taking entities included in the consolidated LCR should be eliminated;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-8",
+                      "number": "4.1.2.8",
+                      "text": "for the purpose of consolidation, inflows allowed as part of the LCR framework from all relevant banking and/or deposit-taking entities must be capped at 75% on a group consolidated basis and not at an entity level;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-9",
+                      "number": "4.1.2.9",
+                      "text": "cash reserves may only be included to the extent to which central bank reserves are allowed to count towards the stock of liquid assets, that is, the extent to which reserves can be drawn down in times of stress, with the permission of the relevant local supervisors in accordance with the BCBS framework and section 1 of the Banks Act, 1990;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-10",
+                      "number": "4.1.2.10",
+                      "text": "all the respective components required for the calculation of the LCR shall be converted into rand;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-11",
+                      "number": "4.1.2.11",
+                      "text": "consolidated LCR shall be calculated monthly to form the base of the public disclosure requirements and shall be made available to the Prudential Authority (PA) on request; and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s4-1-2-12",
+                      "number": "4.1.2.12",
+                      "text": "the LCR shall be reported according to the form BA 600 requirements. In addition, banks should calculate a month-end position group calculation similar to what is currently required within the BA 600 quarterly reporting.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s4-1-3",
+                  "number": "4.1.3",
+                  "text": "Liquidity transfer restrictions in the calculation and disclosure of the relevant LCR should be considered.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-4",
+                  "number": "4.1.4",
+                  "text": "The LCR disclosures shall be made available to the public quarterly according to the requirements specified in D1/2019. 3",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-5",
+                  "number": "4.1.5",
+                  "text": "The PA reserves the right to change the inflow factor for any country or currency if it deems the country or currency risky and funds not transferable or fungible when calculating the LCR on a consolidated basis.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s4-1-6",
+                  "number": "4.1.6",
+                  "text": "Should a bank be unable to comply with any of the relevant directives specified in this Directive, the bank shall, in accordance with the provisions of regulation 5 of the Regulations, report its inability to comply in writing to the PA, stating the reasons for such failure or inability to comply.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

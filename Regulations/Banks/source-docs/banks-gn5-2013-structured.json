@@ -1,6 +1,6 @@
 {
   "slug": "banks-gn5-2013",
-  "title": "Banks Act Guidance Note 5/2013 — Foreign Exchange Settlement Risk",
+  "title": "Banks Act Guidance Note 5/2013 \u2014 Foreign Exchange Settlement Risk",
   "shortTitle": "GN 5/2013 (FX Settlement Risk)",
   "regulator": "Prudential Authority",
   "year": 2013,
@@ -27,15 +27,53 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Document issued by the Basel Committee on Banking Supervision on",
-          "text": "foreign exchange settlement risk\n1.1\nIn February 2013, the Basel Committee on Banking Supervision (BCBS)\nreleased a document relating to FXSR, entitled \"Supervisory Guidance for\nManaging Risks Associated\nwith the Settlement of Foreign Exchange\nTransactions\"' The aforesaid document provides guidelines for, and\nestablishes sound practices applicable to, all banks.\n'Available at http://www.bis.org/publ/bcbs241.htm.\nPO Box 8432 Pretoria 0001 370 Helen Joseph Street Pretoria 0002\nSouth Africa\nTel +27 12 3133911/0861 12 7272\nFax+27 12 3133758\nwww.reservebank.co.za\n\n\n1.2\n1.3\n1.4\n2.1\n2\nThis Office is currently in the process of updating its supervisory framework to\nremain up to date with the latest international best practices, including the\nlatest developments regarding FXSR.\nIn future, as part of its Supervisory Review and Evaluation Process (SREP),\nthis Office will review the progress made by banks to incorporate the principles\nand guidance set out in the aforesaid document issued by the BCBS into\nbanks' FXSR policies, processes and practices.\nBanks are accordingly requested to assess their current policies, processes\nand practices against the principles and guidance contained in the aforesaid\nBCBS document related to FXSR.\nAcknowledgement of receipt\nTwo additional copies of this guidance note are enclosed for use by your\ninstitution's independent auditors. The attached acknowledgement of receipt,\nduly completed and signed by both the chief executive officer of the institution\nand the said auditors, should be returned to this Office at the earliest\nconvenience of the aforementioned signatories.\nRené van Wyk\nRegistrar of Banks\nThe previous guidance note issued was Guidance Note 4/2013, dated 23 July 2013.",
+          "heading": "BCBS document on foreign exchange settlement risk",
+          "text": "Document issued by the Basel Committee on Banking Supervision on foreign exchange settlement risk",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s1-1-1",
+              "id": "s1-1",
               "number": "1.1",
-              "text": "In February 2013, the Basel Committee on Banking Supervision (BCBS)\nreleased a document relating to FXSR, entitled \"Supervisory Guidance for\nManaging Risks Associated\nwith the Settlement of Foreign Exchange\nTransactions\"' The aforesaid document provides guidelines for, and\nestablishes sound practices applicable to, all banks.\n'Available at http://www.bis.org/publ/bcbs241.htm.\nPO Box 8432 Pretoria 0001 370 Helen Joseph Street Pretoria 0002\nSouth Africa\nTel +27 12 3133911/0861 12 7272\nFax+27 12 3133758\nwww.reservebank.co.za\n\n\n1.2\n1.3\n1.4\n2.1\n2\nThis Office is currently in the process of updating its supervisory framework to\nremain up to date with the latest international best practices, including the\nlatest developments regarding FXSR.\nIn future, as part of its Supervisory Review and Evaluation Process (SREP),\nthis Office will review the progress made by banks to incorporate the principles\nand guidance set out in the aforesaid document issued by the BCBS into\nbanks' FXSR policies, processes and practices.\nBanks are accordingly requested to assess their current policies, processes\nand practices against the principles and guidance contained in the aforesaid\nBCBS document related to FXSR.\nAcknowledgement of receipt\nTwo additional copies of this guidance note are enclosed for use by your\ninstitution's independent auditors. The attached acknowledgement of receipt,\nduly completed and signed by both the chief executive officer of the institution\nand the said auditors, should be returned to this Office at the earliest\nconvenience of the aforementioned signatories.\nRené van Wyk\nRegistrar of Banks\nThe previous guidance note issued was Guidance Note 4/2013, dated 23 July 2013.",
-              "verbatim": true
+              "text": "In February 2013, the Basel Committee on Banking Supervision (BCBS) released a document relating to FXSR, entitled \"Supervisory Guidance for Managing Risks Associated with the Settlement of Foreign Exchange Transactions\". The aforesaid document provides guidelines for, and establishes sound practices applicable to, all banks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-2",
+              "number": "1.2",
+              "text": "This Office is currently in the process of updating its supervisory framework to remain up to date with the latest international best practices, including the latest developments regarding FXSR.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-3",
+              "number": "1.3",
+              "text": "In future, as part of its Supervisory Review and Evaluation Process (SREP), this Office will review the progress made by banks to incorporate the principles and guidance set out in the aforesaid document issued by the BCBS into banks' FXSR policies, processes and practices.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-4",
+              "number": "1.4",
+              "text": "Banks are accordingly requested to assess their current policies, processes and practices against the principles and guidance contained in the aforesaid BCBS document related to FXSR.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "number": "2",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s2-1",
+              "number": "2.1",
+              "text": "Two additional copies of this guidance note are enclosed for use by your institution's independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer of the institution and the said auditors, should be returned to this Office at the earliest convenience of the aforementioned signatories.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         }

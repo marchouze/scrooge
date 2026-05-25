@@ -84,17 +84,38 @@
         {
           "id": "s-banks-d2-2024-2",
           "number": "2",
-          "heading": "Directive",
-          "text": "2.           Directive\n\n2.1          Based on the aforesaid and in accordance with the provisions of section 6(6) of\n             the Banks Act, 1990 auditors of banks are hereby directed as follows:\n\n2.1.1       To perform an audit, review or limited assurance engagement on the respective\n            regulatory returns specified in regulation 46(6) of the Regulations, in accordance\n            with the detailed audit matrix provided in Annexure 1 for reports submitted to the\n            PA in relation to engagements for financial years ended on or after\n            30 September 2023 for the purposes of reporting in terms of Parts A to E or Parts\n            A to D of the illustrative regulatory reports in relation to South African and foreign\n            operations respectively.\n\n2.1.2       The reports submitted to the PA, in relation to the above, shall be rendered in\n            accordance with the illustrative regulatory reports published by the IRBA from time\n            to time.\n\n1 https://www.irba.co.za/industry-specific-guides-and-regulatory-reports-pages/reports-to-the-prudential-\n\nauthority-and-the-exchange-control-department\n                                                                                                            2\n\n2.1.3         Parts A to E and Parts A to D of the respective reports submitted to the PA shall\n              make reference to this Directive insofar as the detail of audit, review or limited\n              assurance work performed is concerned.",
+          "heading": "Directive 2. Directive",
+          "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d2-2024-2-1",
+              "id": "s2-1",
               "number": "2.1",
-              "heading": "Based on the aforesaid and in accordance with the provisions of section 6(6) of",
-              "text": "2.1          Based on the aforesaid and in accordance with the provisions of section 6(6) of\n             the Banks Act, 1990 auditors of banks are hereby directed as follows:\n\n2.1.1       To perform an audit, review or limited assurance engagement on the respective\n            regulatory returns specified in regulation 46(6) of the Regulations, in accordance\n            with the detailed audit matrix provided in Annexure 1 for reports submitted to the\n            PA in relation to engagements for financial years ended on or after\n            30 September 2023 for the purposes of reporting in terms of Parts A to E or Parts\n            A to D of the illustrative regulatory reports in relation to South African and foreign\n            operations respectively.\n\n2.1.2       The reports submitted to the PA, in relation to the above, shall be rendered in\n            accordance with the illustrative regulatory reports published by the IRBA from time\n            to time.\n\n1 https://www.irba.co.za/industry-specific-guides-and-regulatory-reports-pages/reports-to-the-prudential-\n\nauthority-and-the-exchange-control-department\n                                                                                                            2\n\n2.1.3         Parts A to E and Parts A to D of the respective reports submitted to the PA shall\n              make reference to this Directive insofar as the detail of audit, review or limited\n              assurance work performed is concerned.",
+              "text": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the Banks Act, 1990 auditors of banks are hereby directed as follows:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "To perform an audit, review or limited assurance engagement on the respective regulatory returns specified in regulation 46(6) of the Regulations, in accordance with the detailed audit matrix provided in Annexure 1 for reports submitted to the PA in relation to engagements for financial years ended on or after 30 September 2023 for the purposes of reporting in terms of Parts A to E or Parts A to D of the illustrative regulatory reports in relation to South African and foreign operations respectively.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-2",
+                  "number": "2.1.2",
+                  "text": "The reports submitted to the PA, in relation to the above, shall be rendered in accordance with the illustrative regulatory reports published by the IRBA from time to time. 1 https://www.irba.co.za/industry-specific-guides-and-regulatory-reports-pages/reports-to-the-prudential- authority-and-the-exchange-control-department 2",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-3",
+                  "number": "2.1.3",
+                  "text": "Parts A to E and Parts A to D of the respective reports submitted to the PA shall make reference to this Directive insofar as the detail of audit, review or limited assurance work performed is concerned.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

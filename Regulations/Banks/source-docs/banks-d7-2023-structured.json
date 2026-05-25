@@ -60,17 +60,38 @@
         {
           "id": "s-banks-d7-2023-2",
           "number": "2",
-          "heading": "Purpose",
-          "text": "2.       Purpose\n\n2.1.     Based on the aforesaid, the purpose of this directive is to:\n\n2.1.1.   Inform banks and/or affected persons of the ECAIs approved by the PA as eligible\n         institutions in South Africa – listed in paragraph 5 below.\n\n2.1.2.   Require banks to notify the PA of their nominated ECAIs from the list of eligible ECAIs.\n\n2.1.3.   Require banks to apply the mapping tables outlined below in the calculation of their\n         minimum required amount of capital and reserve funds related to credit risk,\n         calculated in accordance with the respective requirements specified in the\n         Regulations.",
+          "heading": "Purpose 2. Purpose",
+          "text": "Purpose 2. Purpose",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d7-2023-2-1",
+              "id": "s2-1",
               "number": "2.1",
-              "heading": "Based on the aforesaid, the purpose of this directive is to:",
-              "text": "2.1.     Based on the aforesaid, the purpose of this directive is to:\n\n2.1.1.   Inform banks and/or affected persons of the ECAIs approved by the PA as eligible\n         institutions in South Africa – listed in paragraph 5 below.\n\n2.1.2.   Require banks to notify the PA of their nominated ECAIs from the list of eligible ECAIs.\n\n2.1.3.   Require banks to apply the mapping tables outlined below in the calculation of their\n         minimum required amount of capital and reserve funds related to credit risk,\n         calculated in accordance with the respective requirements specified in the\n         Regulations.",
+              "text": "Based on the aforesaid, the purpose of this directive is to:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "Inform banks and/or affected persons of the ECAIs approved by the PA as eligible institutions in South Africa – listed in paragraph 5 below.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-2",
+                  "number": "2.1.2",
+                  "text": "Require banks to notify the PA of their nominated ECAIs from the list of eligible ECAIs.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-3",
+                  "number": "2.1.3",
+                  "text": "Require banks to apply the mapping tables outlined below in the calculation of their minimum required amount of capital and reserve funds related to credit risk, calculated in accordance with the respective requirements specified in the Regulations.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -193,17 +214,38 @@
         {
           "id": "s-banks-d7-2023-7",
           "number": "7",
-          "heading": "Directive",
-          "text": "7.           Directive\n\n7.1.         Based on the aforesaid and in accordance with the provisions of section 6(6) of the\n             Banks Act, banks are hereby directed:\n\n7.1.1.       to note the ECAIs approved by the PA as eligible institutions in South Africa;\n7.1.2.       to notify the PA of their nominated ECAIs from the list of eligible ECAIs within two\n             months from the date of the issue of this directive; and\n7.1.3.       to apply the mapping tables outlined in paragraph 6 of this directive in the calculation\n             of their minimum required amount of capital and reserve funds related to credit risk,\n             calculated in accordance with the respective requirements specified in the\n             Regulations.",
+          "heading": "Directive 7. Directive",
+          "text": "Directive 7. Directive",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d7-2023-7-1",
+              "id": "s7-1",
               "number": "7.1",
-              "heading": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the",
-              "text": "7.1.         Based on the aforesaid and in accordance with the provisions of section 6(6) of the\n             Banks Act, banks are hereby directed:\n\n7.1.1.       to note the ECAIs approved by the PA as eligible institutions in South Africa;\n7.1.2.       to notify the PA of their nominated ECAIs from the list of eligible ECAIs within two\n             months from the date of the issue of this directive; and\n7.1.3.       to apply the mapping tables outlined in paragraph 6 of this directive in the calculation\n             of their minimum required amount of capital and reserve funds related to credit risk,\n             calculated in accordance with the respective requirements specified in the\n             Regulations.",
+              "text": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the Banks Act, banks are hereby directed:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s7-1-1",
+                  "number": "7.1.1",
+                  "text": "to note the ECAIs approved by the PA as eligible institutions in South Africa;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-1-2",
+                  "number": "7.1.2",
+                  "text": "to notify the PA of their nominated ECAIs from the list of eligible ECAIs within two months from the date of the issue of this directive; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s7-1-3",
+                  "number": "7.1.3",
+                  "text": "to apply the mapping tables outlined in paragraph 6 of this directive in the calculation of their minimum required amount of capital and reserve funds related to credit risk, calculated in accordance with the respective requirements specified in the Regulations.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },

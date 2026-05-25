@@ -60,17 +60,45 @@
         {
           "id": "s-banks-d5-2020-3",
           "number": "3",
-          "heading": "Definitions",
-          "text": "3.    Definitions\n\n3.1   For the purposes of this Directive, the following definitions shall apply:\n\n3.1.1 ‘PVA’ means the excess of valuation adjustments required to achieve the identified\n      prudent value over and above any adjustments applied under the applicable\n      financial reporting framework.\n\n3.1.2 ‘Valuation position’ means a financial instrument, commodity, portfolio of financial\n      instruments or commodities held in both trading and non-trading books, which are\n      measured at fair value.\n\n3.1.3 ‘Valuation input’ means a market observable or non-observable parameter or matrix\n      of parameters that influences the fair value of a valuation position.\n\n3.1.4 ‘Valuation exposure’ means the amount of a valuation position which is sensitive to\n      the movement in a valuation input.",
+          "heading": "Definitions 3. Definitions",
+          "text": "Definitions 3. Definitions",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d5-2020-3-1",
+              "id": "s3-1",
               "number": "3.1",
-              "heading": "For the purposes of this Directive, the following definitions shall apply:",
-              "text": "3.1   For the purposes of this Directive, the following definitions shall apply:\n\n3.1.1 ‘PVA’ means the excess of valuation adjustments required to achieve the identified\n      prudent value over and above any adjustments applied under the applicable\n      financial reporting framework.\n\n3.1.2 ‘Valuation position’ means a financial instrument, commodity, portfolio of financial\n      instruments or commodities held in both trading and non-trading books, which are\n      measured at fair value.\n\n3.1.3 ‘Valuation input’ means a market observable or non-observable parameter or matrix\n      of parameters that influences the fair value of a valuation position.\n\n3.1.4 ‘Valuation exposure’ means the amount of a valuation position which is sensitive to\n      the movement in a valuation input.",
+              "text": "For the purposes of this Directive, the following definitions shall apply:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3-1-1",
+                  "number": "3.1.1",
+                  "text": "‘PVA’ means the excess of valuation adjustments required to achieve the identified prudent value over and above any adjustments applied under the applicable financial reporting framework.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-2",
+                  "number": "3.1.2",
+                  "text": "‘Valuation position’ means a financial instrument, commodity, portfolio of financial instruments or commodities held in both trading and non-trading books, which are measured at fair value.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-3",
+                  "number": "3.1.3",
+                  "text": "‘Valuation input’ means a market observable or non-observable parameter or matrix of parameters that influences the fair value of a valuation position.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-4",
+                  "number": "3.1.4",
+                  "text": "‘Valuation exposure’ means the amount of a valuation position which is sensitive to the movement in a valuation input.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -160,17 +188,53 @@
         {
           "id": "s-banks-d5-2020-2",
           "number": "2",
-          "heading": "Materiality threshold",
-          "text": "2.        Materiality threshold\n\n2.1       The PA has deemed it necessary to set a materiality threshold to determine which\n          methodology the banks must employ in calculating the PVAs. As a result, banks\n          must consider the following materiality threshold in their process of calculating\n          PVAs.\n\n2.1.1     Materiality threshold to determine which banks are allowed to use the simplified\n          approach\n\n2.1.1.1   The simplified approach can only be adopted where the total adjustments to fair\n          values that affect CET 1 as a percentage of the sum of the absolute value of fair-\n          valued assets and liabilities (excluding the Debit Valuation Adjustments (DVA)) is\n          below 1%.\n\n\n\n\n                                                                                          1\n\n2.1.1.2   Exactly matching, offsetting fair valued assets and liabilities are excluded from the\n          calculation envisaged in paragraph 2.1.1.1. For fair-valued assets and liabilities\n          whose adjustments to fair values has a partial or zero impact on CET 1 capital,\n          their values must only be included to the extent of the impact of the relevant fair\n          valuation adjustment on CET 1 capital.\n\n2.1.1.3   This materiality threshold must be applied at the following levels: bank solo, bank\n          consolidated, controlling company consolidated, foreign branch and foreign\n          subsidiary of a bank incorporated in the Republic. Where the threshold is breached\n          at controlling company level, the core approach must be applied at all levels in the\n          banking group.",
+          "heading": "Materiality threshold 2. Materiality threshold",
+          "text": "Materiality threshold 2. Materiality threshold",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d5-2020-2-1",
+              "id": "s2-1",
               "number": "2.1",
-              "heading": "The PA has deemed it necessary to set a materiality threshold to determine which",
-              "text": "2.1       The PA has deemed it necessary to set a materiality threshold to determine which\n          methodology the banks must employ in calculating the PVAs. As a result, banks\n          must consider the following materiality threshold in their process of calculating\n          PVAs.\n\n2.1.1     Materiality threshold to determine which banks are allowed to use the simplified\n          approach\n\n2.1.1.1   The simplified approach can only be adopted where the total adjustments to fair\n          values that affect CET 1 as a percentage of the sum of the absolute value of fair-\n          valued assets and liabilities (excluding the Debit Valuation Adjustments (DVA)) is\n          below 1%.\n\n\n\n\n                                                                                          1\n\n2.1.1.2   Exactly matching, offsetting fair valued assets and liabilities are excluded from the\n          calculation envisaged in paragraph 2.1.1.1. For fair-valued assets and liabilities\n          whose adjustments to fair values has a partial or zero impact on CET 1 capital,\n          their values must only be included to the extent of the impact of the relevant fair\n          valuation adjustment on CET 1 capital.\n\n2.1.1.3   This materiality threshold must be applied at the following levels: bank solo, bank\n          consolidated, controlling company consolidated, foreign branch and foreign\n          subsidiary of a bank incorporated in the Republic. Where the threshold is breached\n          at controlling company level, the core approach must be applied at all levels in the\n          banking group.",
+              "text": "The PA has deemed it necessary to set a materiality threshold to determine which methodology the banks must employ in calculating the PVAs. As a result, banks must consider the following materiality threshold in their process of calculating PVAs.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "Materiality threshold to determine which banks are allowed to use the simplified approach",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s2-1-1-1",
+                      "number": "2.1.1.1",
+                      "text": "The simplified approach can only be adopted where the total adjustments to fair values that affect CET 1 as a percentage of the sum of the absolute value of fair- valued assets and liabilities (excluding the Debit Valuation Adjustments (DVA)) is below 1%. 1",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-1-1-1",
+                      "number": "2.1.1.1",
+                      "text": "For fair-valued assets and liabilities whose adjustments to fair values has a partial or zero impact on CET 1 capital, their values must only be included to the extent of the impact of the relevant fair valuation adjustment on CET 1 capital.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-1-1-2",
+                      "number": "2.1.1.2",
+                      "text": "Exactly matching, offsetting fair valued assets and liabilities are excluded from the calculation envisaged in paragraph",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-1-1-3",
+                      "number": "2.1.1.3",
+                      "text": "This materiality threshold must be applied at the following levels: bank solo, bank consolidated, controlling company consolidated, foreign branch and foreign subsidiary of a bank incorporated in the Republic. Where the threshold is breached at controlling company level, the core approach must be applied at all levels in the banking group.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -324,7 +388,7 @@
           "id": "s-banks-d5-2020-5",
           "number": "5",
           "heading": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5.",
-          "text": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs Method 1: APV A = (FV – PV) – 50%*(FV – PV) = 50%*(FV-PV) PVA = ΣAPV A Method 2: APV A = max{0, (FV – PV) – 50%*(EV – PV)} =max{0,FV – 50%*(EV + PV)} PVA = ΣAPV A Where: FV = The valuation exposure level fair value after any accounting adjustment applied in the bank’s fair value that can be identified as addressing the same source of valuation uncertainty at the relevant PVA. PV = The valuation exposure level prudent value determined in accordance with this Directive. EV = The expected value at a valuation exposure level taken from the range of plausible values as referred to in this Directive. APV A = The valuation exposure level PVA after adjusting for aggregation. PVA = The total category level PVA after adjusting for aggregation. 8",
+          "text": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs Method 1: APV A = (FV – PV) – 50%*(FV – PV) = 50%*(FV-PV) PVA = ΣAPV A Method 2: APV A = max{0, (FV – PV) – 50%*(EV – PV)} =max{0,FV – 50%*(EV + PV)} PVA = ΣAPV A Where: FV = The valuation exposure level fair value after any accounting adjustment applied in the bank’s fair value that can be identified as addressing the same source of valuation uncertainty at the relevant PVA. PV = The valuation exposure level prudent value determined in accordance with this Directive. EV = The expected value at a valuation exposure level taken from the range of plausible values as referred to in this Directive. APV A = The valuation exposure level PVA after adjusting for aggregation. PVA = The total category level PVA after adjusting for aggregation. 8",
           "verbatim": true,
           "subsections": []
         }

@@ -141,32 +141,196 @@
         {
           "id": "s2",
           "number": "2",
-          "heading": "Risk Indicators",
-          "text": "2 Risk Indicators \n2.1 Correspondent banking risk factors that may guide the CB to identify, assess and monitor ML/TF/proliferation financing (PF) risks , inter alia , include the following: \n2.1.1 ML/TF/PF risk(s) associated with a particular RB and/or the head office of the RB, which are regarded as unacceptable by the CB in accordance with its risk appetite; 2.1.2 a weak AML/CFT or counter proliferation financing (CPF) regime associated with the country or region in which the RB is located; 2.1.3 a lack of resources and/or effective controls dedicated to countering ML/TF/PF within the RB; 2.1.4 poor understanding and a lack of adequate transaction monitoring controls in respect of inflows and outflows stemming from correspondent banking related transactions; and 2.1.5 concerns of possible penalties by regulators for parties involved in the CBR in instances where one of the parties has insufficient or weak financial crime controls.",
+          "heading": "Risk Indicators 2 Risk Indicators",
+          "text": "Risk Indicators 2 Risk Indicators",
           "verbatim": true,
           "subsections": [
             {
               "id": "s2-1",
               "number": "2.1",
-              "text": "2.1 Correspondent banking risk factors that may guide the CB to identify, assess and monitor ML/TF/proliferation financing (PF) risks , inter alia , include the following:",
+              "text": "Correspondent banking risk factors that may guide the CB to identify, assess and monitor ML/TF/proliferation financing (PF) risks , inter alia , include the following:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "ML/TF/PF risk(s) associated with a particular RB and/or the head office of the RB, which are regarded as unacceptable by the CB in accordance with its risk appetite;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-2",
+                  "number": "2.1.2",
+                  "text": "a weak AML/CFT or counter proliferation financing (CPF) regime associated with the country or region in which the RB is located;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-3",
+                  "number": "2.1.3",
+                  "text": "a lack of resources and/or effective controls dedicated to countering ML/TF/PF within the RB;",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-4",
+                  "number": "2.1.4",
+                  "text": "poor understanding and a lack of adequate transaction monitoring controls in respect of inflows and outflows stemming from correspondent banking related transactions; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-5",
+                  "number": "2.1.5",
+                  "text": "concerns of possible penalties by regulators for parties involved in the CBR in instances where one of the parties has insufficient or weak financial crime controls.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
         {
           "id": "s3",
           "number": "3",
-          "heading": "Obligations of parties to a CBR",
-          "text": "3 Obligations of parties to a CBR \n3.1 Onboarding: The establishment of CBRs \n3.1.1 CBs cannot establish or maintain CBRs with shell banks. \n3.1.2 CBs should not enter into CBRs if they are not satisfied, based on the information gathered or received, that the RB is not a shell bank. \n3.1.3 It is important that a CB has in place appropriate policies, procedures and systems which outline the business relationship agreements which define the roles and responsibilities of both the CB and the RB. \n3.1.4 The decision to enter into a CBR with a RB should be approved by the relevant senior management of the CB. There should be formal contractual relationships governing the CBR. Banks may elect to have contingency arrangements in the form of other CBRs in the event that a particular party to the contract wishes to terminate the CBR. \n3.1.5 A bank that wishes to enter into a vostro 6 CBR must clearly understand, consider and assess the ML/TF/PF risks presented via such relationships and that ascertain that there are adequate due diligence procedures followed prior to the establishment of and during the CBR. \n3.1.6 A CB must be in a position to evidence sufficient understanding of the RB with whom it seeks to establish a relationship. This requires an understanding of various aspects linked to the RB to inform the inherent ML/TF/PF risks of such a relationship by giving consideration to, for example: \n3.1.6.1 The inherent ML/TF/PF risk resulting from the nature of the services provided (e.g., purpose of the services to be rendered such as trade finance/forex services/nesting or downstream payments/PTAs etc.); 5 Guidelines on the Sound management of risks related to money laundering and financing of terrorism https://www.bis.org/bcbs/publ/d505.pdf (Annexure 2) 6 A nostro account is one whereby a bank holds an account in a foreign currency at another bank. A vostro account is one whereby a bank holds an account for a foreign bank to enable the processing of payments of clients of the foreign bank in a differing currency.  5 \n3.1.6.2 The characteristics of the RB (e.g., the RB’s major business activities including target markets and overall types of clients served in key business lines, the management, and beneficial owners of the RB and/or the regulatory status of the RB to be engaged); \n3.1.6.3 The environment within which the RB operates (e.g. the jurisdiction in which the RB operates, including the jurisdiction where its parent company is located; the jurisdictions in which subsidiaries and branches of the group may be located (i.e., possibly using the group structure available in the Legal Entity Identifier (LEI) system), the jurisdictions in which third parties using the CBR may be located, the quality and/or effectiveness of banking regulation and supervision in the respondent’s country (especially AML/CFT laws and regulations); \n3.1.6.4 Whether the RB is situated in a high-risk jurisdiction or in jurisdictions with known strategic ML/TF deficiencies; \n3.1.6.5 The type of clients and transactions the CB is expected to process in respect of the RB; \n3.1.6.6 The evidence of the deliberation of the beneficial ownership (BO) structure of the RB and any specific concerns regarding the BO of the RB; \n3.1.6.7 If the RB is a subsidiary that forms part of a group, how well does the subsidiary bank align to group standards and apply the higher of host or home principles? \n3.1.6.8 Whether the RMCP (e.g., payment screening, client screening and transaction monitoring systems as well as other related policies and procedures) employed by the RB is adequate and in line with the risk appetite of the CB; \n3.1.6.9 Whether transactions for high-risk client types will be processed (e.g., politically exposed persons, state owned entities, intermediaries, virtual-asset traders etc.); \n3.1.6.10 Whether transactions for clients in high-risk industries will be processed (e.g., arms, weapons manufacturing, non-profit organisations etc.); \n3.1.6.11 Whether the transactions are facilitating import or export trade in high-risk products or goods and if the ultimate destinations are understood; and/or \n3.1.6.12 Consideration of the secrecy policies, if any, in the country of the RB.",
+          "heading": "Obligations of parties to a CBR 3 Obligations of parties to a CBR",
+          "text": "Obligations of parties to a CBR 3 Obligations of parties to a CBR",
           "verbatim": true,
           "subsections": [
             {
               "id": "s3-1",
               "number": "3.1",
-              "text": "3.1 Onboarding: The establishment of CBRs",
+              "text": "Onboarding: The establishment of CBRs",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3-1-1",
+                  "number": "3.1.1",
+                  "text": "CBs cannot establish or maintain CBRs with shell banks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-2",
+                  "number": "3.1.2",
+                  "text": "CBs should not enter into CBRs if they are not satisfied, based on the information gathered or received, that the RB is not a shell bank.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-3",
+                  "number": "3.1.3",
+                  "text": "It is important that a CB has in place appropriate policies, procedures and systems which outline the business relationship agreements which define the roles and responsibilities of both the CB and the RB.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-4",
+                  "number": "3.1.4",
+                  "text": "The decision to enter into a CBR with a RB should be approved by the relevant senior management of the CB. There should be formal contractual relationships governing the CBR. Banks may elect to have contingency arrangements in the form of other CBRs in the event that a particular party to the contract wishes to terminate the CBR.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-5",
+                  "number": "3.1.5",
+                  "text": "A bank that wishes to enter into a vostro 6 CBR must clearly understand, consider and assess the ML/TF/PF risks presented via such relationships and that ascertain that there are adequate due diligence procedures followed prior to the establishment of and during the CBR.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-1-6",
+                  "number": "3.1.6",
+                  "text": "A CB must be in a position to evidence sufficient understanding of the RB with whom it seeks to establish a relationship. This requires an understanding of various aspects linked to the RB to inform the inherent ML/TF/PF risks of such a relationship by giving consideration to, for example:",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s3-1-6-1",
+                      "number": "3.1.6.1",
+                      "text": "The inherent ML/TF/PF risk resulting from the nature of the services provided (e.g., purpose of the services to be rendered such as trade finance/forex services/nesting or downstream payments/PTAs etc.); 5 Guidelines on the Sound management of risks related to money laundering and financing of terrorism https://www.bis.org/bcbs/publ/d505.pdf (Annexure 2) 6 A nostro account is one whereby a bank holds an account in a foreign currency at another bank. A vostro account is one whereby a bank holds an account for a foreign bank to enable the processing of payments of clients of the foreign bank in a differing currency. 5",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-2",
+                      "number": "3.1.6.2",
+                      "text": "The characteristics of the RB (e.g., the RB’s major business activities including target markets and overall types of clients served in key business lines, the management, and beneficial owners of the RB and/or the regulatory status of the RB to be engaged);",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-3",
+                      "number": "3.1.6.3",
+                      "text": "The environment within which the RB operates (e.g. the jurisdiction in which the RB operates, including the jurisdiction where its parent company is located; the jurisdictions in which subsidiaries and branches of the group may be located (i.e., possibly using the group structure available in the Legal Entity Identifier (LEI) system), the jurisdictions in which third parties using the CBR may be located, the quality and/or effectiveness of banking regulation and supervision in the respondent’s country (especially AML/CFT laws and regulations);",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-4",
+                      "number": "3.1.6.4",
+                      "text": "Whether the RB is situated in a high-risk jurisdiction or in jurisdictions with known strategic ML/TF deficiencies;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-5",
+                      "number": "3.1.6.5",
+                      "text": "The type of clients and transactions the CB is expected to process in respect of the RB;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-6",
+                      "number": "3.1.6.6",
+                      "text": "The evidence of the deliberation of the beneficial ownership (BO) structure of the RB and any specific concerns regarding the BO of the RB;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-7",
+                      "number": "3.1.6.7",
+                      "text": "If the RB is a subsidiary that forms part of a group, how well does the subsidiary bank align to group standards and apply the higher of host or home principles?",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-8",
+                      "number": "3.1.6.8",
+                      "text": "Whether the RMCP (e.g., payment screening, client screening and transaction monitoring systems as well as other related policies and procedures) employed by the RB is adequate and in line with the risk appetite of the CB;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-9",
+                      "number": "3.1.6.9",
+                      "text": "Whether transactions for high-risk client types will be processed (e.g., politically exposed persons, state owned entities, intermediaries, virtual-asset traders etc.);",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-10",
+                      "number": "3.1.6.10",
+                      "text": "Whether transactions for clients in high-risk industries will be processed (e.g., arms, weapons manufacturing, non-profit organisations etc.);",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-11",
+                      "number": "3.1.6.11",
+                      "text": "Whether the transactions are facilitating import or export trade in high-risk products or goods and if the ultimate destinations are understood; and/or",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-1-6-12",
+                      "number": "3.1.6.12",
+                      "text": "Consideration of the secrecy policies, if any, in the country of the RB.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -380,21 +544,21 @@
           "id": "s9",
           "number": "9",
           "heading": "Terminology 9 Terminology Term Definition Nostro account A nostro account is one whereby a bank holds an account in a",
-          "text": "Terminology 9 Terminology Term Definition Nostro account A nostro account is one whereby a bank holds an account in a foreign currency at another bank. Vostro account A vostro account is one whereby a bank holds an account for a foreign bank to enable the processing of payments of clients of the foreign bank in a differing currency. 13 Payable through accounts are correspondent banking arrangements where, the respondent bank’s clients are permitted to conduct their own transactions directly with the correspondent bank, through the respondent bank’s correspondent account, without first passing through the respondent bank. 14 Para 38 and 39 https://www.bis.org/bcbs/publ/d505.pdf - Sound Management of Risks related to money laundering and financing of terrorism para 38 and 39 9 Term Definition Correspondent banking Correspondent banking is the provision of banking services by one bank (the “correspondent bank”) to another bank (the “respondent bank”). Large international banks typically act as correspondents for thousands of other banks around the world. Respondent banks may be provided with a wide range of services, including cash management (e.g. interest-bearing accounts in a variety of currencies), international wire transfers, cheque clearing, payable-through accounts and foreign exchange services. (FATF definition) Shell bank Shell bank means a bank that has no physical presence in the country in which it is incorporated and licensed, and which is unaffiliated with a regulated financial group that is subject to effective consolidated supervision. Physical presence means meaningful mind and management located within a country. The existence simply of a local agent or low-level staff does not constitute physical presence (FATF definition). Payable through account The term payable-through accounts refers to correspondent accounts that are used directly by third parties to transact business on their own behalf. (FATF definition). Respondent bank Bank that is the recipient of banking services of the correspondent bank. Correspondent bank Bank that provides the banking services to another bank. Risk-based approach A risk-based approach means that countries, competent authorities, and banks identify, assess, and understand the money laundering and terrorist financing risk to which they are exposed, and take the appropriate mitigation measures in accordance with the level of risk (FATF) 15 Trigger event In the context of correspondent banking, it is an instance/event which prompts a bank to take further action regarding a correspondent banking relationship e.g. review aspects of the due diligence, enquire further etc. 15 https://www.fatf‐gafi.org/publications/fatfrecommendations/documents/risk‐based‐approach‐banking‐sector.html 10",
+          "text": "Terminology 9 Terminology Term Definition Nostro account A nostro account is one whereby a bank holds an account in a Terminology 9 Terminology Term Definition Nostro account A nostro account is one whereby a bank holds an account in a Terminology 9 Terminology Term Definition Nostro account A nostro account is one whereby a bank holds an account in a foreign currency at another bank. Vostro account A vostro account is one whereby a bank holds an account for a foreign bank to enable the processing of payments of clients of the foreign bank in a differing currency. 13 Payable through accounts are correspondent banking arrangements where, the respondent bank’s clients are permitted to conduct their own transactions directly with the correspondent bank, through the respondent bank’s correspondent account, without first passing through the respondent bank. 14 Para 38 and 39 https://www.bis.org/bcbs/publ/d505.pdf - Sound Management of Risks related to money laundering and financing of terrorism para 38 and 39 9 Term Definition Correspondent banking Correspondent banking is the provision of banking services by one bank (the “correspondent bank”) to another bank (the “respondent bank”). Large international banks typically act as correspondents for thousands of other banks around the world. Respondent banks may be provided with a wide range of services, including cash management (e.g. interest-bearing accounts in a variety of currencies), international wire transfers, cheque clearing, payable-through accounts and foreign exchange services. (FATF definition) Shell bank Shell bank means a bank that has no physical presence in the country in which it is incorporated and licensed, and which is unaffiliated with a regulated financial group that is subject to effective consolidated supervision. Physical presence means meaningful mind and management located within a country. The existence simply of a local agent or low-level staff does not constitute physical presence (FATF definition). Payable through account The term payable-through accounts refers to correspondent accounts that are used directly by third parties to transact business on their own behalf. (FATF definition). Respondent bank Bank that is the recipient of banking services of the correspondent bank. Correspondent bank Bank that provides the banking services to another bank. Risk-based approach A risk-based approach means that countries, competent authorities, and banks identify, assess, and understand the money laundering and terrorist financing risk to which they are exposed, and take the appropriate mitigation measures in accordance with the level of risk (FATF) 15 Trigger event In the context of correspondent banking, it is an instance/event which prompts a bank to take further action regarding a correspondent banking relationship e.g. review aspects of the due diligence, enquire further etc. 15 https://www.fatf‐gafi.org/publications/fatfrecommendations/documents/risk‐based‐approach‐banking‐sector.html 10",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s10",
           "number": "10",
-          "heading": "Acknowledgement of receipt",
-          "text": "10 Acknowledgement of receipt \n10.1 Kindly ensure that a copy of this guidance note is made available to your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Banks Act Guidance note 6/2022, dated 15 June 2022.",
+          "heading": "Acknowledgement of receipt 10 Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt 10 Acknowledgement of receipt",
           "verbatim": true,
           "subsections": [
             {
               "id": "s10-1",
               "number": "10.1",
-              "text": "10.1 Kindly ensure that a copy of this guidance note is made available to your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Banks Act Guidance note 6/2022, dated 15 June 2022.",
+              "text": "Kindly ensure that a copy of this guidance note is made available to your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Banks Act Guidance note 6/2022, dated 15 June 2022.",
               "verbatim": true,
               "subsections": []
             }
