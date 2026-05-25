@@ -20,11 +20,18 @@
 //     --agent-name <name> --agent-position <position> \
 //     --outcome <delivered|blocked|withdrawn> \
 //     [--deliverable <path>]... \
+//     [--pr <url-or-ref>]... \
 //     [--classification <ceo-only|governance-seat|engineering-seat|agent-internal|public-disclosure>]... \
 //     [--register-key <decisions|correspondence|agent-runs|documents|feedback|briefs|workstreams>]... \
 //     [--cite <urn>]... \
 //     [--gap <substrate-gap-string>]... \
 //     [--follow-on <kind:target:directive>]...
+//
+// `--pr` accepts a GitHub PR URL (https://github.com/org/repo/pull/NNN) or a
+// short ref (pr:#NNN or #NNN). A synthetic markdown stub is stored in the
+// content-addressed document store so the run record has a proper hash, and the
+// PR reference is captured in the RecordFiled metadata. Use this when the
+// deliverable is a code PR rather than a local markdown file.
 //
 // `--cite` defaults to ["D-RMS-PHASE-1"] if none supplied.
 // `--follow-on` format: `kind:target:directive` where kind ∈
@@ -74,6 +81,7 @@ import { die, emitOk, optionalRepeatable, optionalString, parseArgs, requireStri
 
 const REPEATABLE = new Set([
   "deliverable",
+  "pr",
   "classification",
   "register-key",
   "cite",
@@ -177,14 +185,15 @@ function main(): void {
   const outcome = outcomeFrom(requireString(args, "outcome"));
 
   const deliverablePaths = optionalRepeatable(args, "deliverable");
+  const prRefs = optionalRepeatable(args, "pr");
   const classificationsRaw = optionalRepeatable(args, "classification");
   const registerKeysRaw = optionalRepeatable(args, "register-key");
   const cites = optionalRepeatable(args, "cite");
   const gaps = optionalRepeatable(args, "gap");
   const followOnsRaw = optionalRepeatable(args, "follow-on");
 
-  if (outcome === "delivered" && deliverablePaths.length === 0) {
-    die("--outcome=delivered requires at least one --deliverable <path>");
+  if (outcome === "delivered" && deliverablePaths.length === 0 && prRefs.length === 0) {
+    die("--outcome=delivered requires at least one --deliverable <path> or --pr <url-or-ref>");
   }
 
   // D-DISPATCH-SYNC-PRIMITIVE: when closing a decider-class run as delivered,
@@ -270,13 +279,28 @@ function main(): void {
     }
   }
 
+  // Build parallel arrays: unified virtual paths + bodies covering both file
+  // deliverables and PR-reference stubs. PR stubs store a synthetic markdown
+  // body so the content-addressed document store always holds a hash.
+  const allPaths: string[] = [];
   const deliverableBodies: string[] = [];
+
   for (const p of deliverablePaths) {
     if (!existsSync(p)) die(`--deliverable path not found: ${p}`);
     const body = readFileSync(p, "utf8");
     if (body.trim() === "") die(`--deliverable file is empty: ${p}`);
+    allPaths.push(p);
     deliverableBodies.push(body);
   }
+
+  for (const ref of prRefs) {
+    allPaths.push(ref);
+    deliverableBodies.push(
+      `# Code PR Deliverable\n\nThis record references a code pull request delivered as part of agent run ${runId}.\n\nPR: ${ref}\nBrief: ${briefId}\nAgent: ${agentName}\n`,
+    );
+  }
+
+  const totalDeliverables = allPaths.length;
 
   // Pair classification + register-key with each deliverable by position;
   // broadcast last value when fewer supplied; default `agent-internal` /
@@ -284,13 +308,13 @@ function main(): void {
   const classifications = pairBroadcast<RecordFiledPayload["classification"]>(
     "classification",
     classificationsRaw.map(classificationFrom),
-    deliverablePaths.length,
+    totalDeliverables,
     "agent-internal",
   );
   const registerKeys = pairBroadcast<RecordFiledPayload["registerKey"]>(
     "register-key",
     registerKeysRaw.map(registerKeyFrom),
-    deliverablePaths.length,
+    totalDeliverables,
     "documents",
   );
 
@@ -350,13 +374,18 @@ function main(): void {
     eventId: string;
   }> = [];
 
-  for (let i = 0; i < deliverablePaths.length; i++) {
-    const deliverablePath = deliverablePaths[i] ?? `deliverable-${i}`;
+  for (let i = 0; i < totalDeliverables; i++) {
+    const deliverablePath = allPaths[i] ?? `deliverable-${i}`;
     const body = deliverableBodies[i] ?? "";
     const classification = classifications[i] ?? "agent-internal";
     const registerKey = registerKeys[i] ?? "documents";
     const retention = defaultRetentionForRegister(registerKey);
-    const fileBase = basename(deliverablePath).replace(/[^A-Za-z0-9._-]/g, "-");
+    // For PR refs the "path" is a URL or ref string — derive a stable slug for
+    // the recordId rather than treating it as a filesystem basename.
+    const isPr = i >= deliverablePaths.length;
+    const fileBase = isPr
+      ? `pr-${slugify(deliverablePath)}`
+      : basename(deliverablePath).replace(/[^A-Za-z0-9._-]/g, "-");
     const recordId = `record:${runId}:${i}:${fileBase}`;
 
     const filed = recordFiled(
@@ -374,6 +403,7 @@ function main(): void {
           category: registerKey,
           author: agentName,
           date: asOf.slice(0, 10),
+          ...(isPr ? { prRef: deliverablePath } : {}),
         },
       },
       asOf,
