@@ -246,6 +246,123 @@ describe("policy-register — parser fixture", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Standalone-pass tests — Policies/*.md files with no matching register row.
+// ---------------------------------------------------------------------------
+
+describe("policy-register — standalone Policies/ pass", () => {
+  function fixtureWithPoliciesDir() {
+    const dir = mkdtempSync(join(tmpdir(), "policy-register-standalone-"));
+    const registerPath = join(dir, "policy-register.md");
+    const policiesDir = join(dir, "Policies");
+    const { mkdirSync } = require("node:fs") as typeof import("node:fs");
+    mkdirSync(policiesDir, { recursive: true });
+
+    writeFileSync(
+      registerPath,
+      [
+        "## 1. Foundation",
+        "",
+        "| Policy | Owner | Approval | Cadence | Citation | Status |",
+        "|---|---|---|---|---|---|",
+        // Explicitly reference aml-policy-v1.md so it gets claimed.
+        "| AML Policy | Zara | Board | Annual | FIC Act | `EXISTS` Policies/aml-policy-v1.md |",
+        "",
+      ].join("\n"),
+    );
+
+    // Claimed file — should NOT produce a standalone entry.
+    writeFileSync(
+      join(policiesDir, "aml-policy-v1.md"),
+      [
+        "---",
+        'title: "AML/CFT Policy v1"',
+        'status: "EXISTS"',
+        'owner: "Zara"',
+        "---",
+        "# AML/CFT Policy v1",
+      ].join("\n"),
+    );
+
+    // Unclaimed file — SHOULD produce a standalone entry.
+    writeFileSync(
+      join(policiesDir, "bank-strategy-v1.md"),
+      [
+        "---",
+        'title: "Hoz Bank — Institutional Strategy v1"',
+        "status: DRAFT — PENDING CEO APPROVAL",
+        'owner: "Marc (CEO)"',
+        "---",
+        "# Hoz Bank — Institutional Strategy v1",
+      ].join("\n"),
+    );
+
+    // Unclaimed file with no frontmatter — title falls back to H1.
+    writeFileSync(
+      join(policiesDir, "data-governance-policy-v1.md"),
+      ["# Data Governance Policy", "", "Body text."].join("\n"),
+    );
+
+    return { registerPath, policiesDir };
+  }
+
+  it("emits a standalone entry for each unclaimed Policies/*.md file", () => {
+    const f = fixtureWithPoliciesDir();
+    const policies = parsePolicyRegister({ path: f.registerPath, policiesDir: f.policiesDir });
+    const names = policies.map((p) => p.name);
+    expect(names).toContain("Hoz Bank — Institutional Strategy v1");
+    expect(names).toContain("Data Governance Policy");
+  });
+
+  it("does not duplicate a file already claimed by a register row", () => {
+    const f = fixtureWithPoliciesDir();
+    const policies = parsePolicyRegister({ path: f.registerPath, policiesDir: f.policiesDir });
+    const amlEntries = policies.filter(
+      (p) => p.name === "AML Policy" || p.name === "AML/CFT Policy v1",
+    );
+    expect(amlEntries).toHaveLength(1);
+  });
+
+  it("reads title, owner, and status from frontmatter", () => {
+    const f = fixtureWithPoliciesDir();
+    const policies = parsePolicyRegister({ path: f.registerPath, policiesDir: f.policiesDir });
+    const strat = policies.find((p) => p.name === "Hoz Bank — Institutional Strategy v1");
+    expect(strat).toBeDefined();
+    expect(strat?.owner).toBe("Marc (CEO)");
+    expect(strat?.status).toBe("OTHER");
+    expect(strat?.statusRaw).toBe("DRAFT — PENDING CEO APPROVAL");
+    expect(strat?.id).toBe("pol-standalone-bank-strategy-v1");
+    expect(strat?.domain).toBe("Policy Documents");
+    expect(strat?.sourceFiles).toEqual(["Policies/bank-strategy-v1.md"]);
+    expect(strat?.mvp).toBe(false);
+  });
+
+  it("falls back to H1 title when frontmatter is absent", () => {
+    const f = fixtureWithPoliciesDir();
+    const policies = parsePolicyRegister({ path: f.registerPath, policiesDir: f.policiesDir });
+    const dg = policies.find((p) => p.name === "Data Governance Policy");
+    expect(dg).toBeDefined();
+    expect(dg?.id).toBe("pol-standalone-data-governance-policy-v1");
+  });
+
+  it("skips README.md", () => {
+    const f = fixtureWithPoliciesDir();
+    const { writeFileSync: wf } = require("node:fs") as typeof import("node:fs");
+    wf(join(f.policiesDir, "README.md"), "# Readme\n");
+    const policies = parsePolicyRegister({ path: f.registerPath, policiesDir: f.policiesDir });
+    expect(policies.find((p) => p.name === "Readme")).toBeUndefined();
+  });
+
+  it("includes bank-strategy-v1.md from the live Policies/ dir", () => {
+    const REAL_POLICIES_DIR = join(import.meta.dir, "..", "..", "Policies");
+    const policies = parsePolicyRegister({ path: REAL_REGISTER, policiesDir: REAL_POLICIES_DIR });
+    const strat = policies.find((p) => p.sourceFiles.includes("Policies/bank-strategy-v1.md"));
+    expect(strat).toBeDefined();
+    expect(strat?.name).toBe("Hoz Bank — Institutional Strategy v1");
+    expect(strat?.domain).toBe("Policy Documents");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Live-register smoke test. Asserts the parser produces the order-of-magnitude
 // numbers the dashboard expects against the real `Owner Inbox/2026-05-06_*`
 // file. Pinned to ranges (rather than exact counts) so register edits do

@@ -16,9 +16,31 @@
 // Author: Anya (data)
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, join } from "node:path";
 
 import type { Policy, PolicyBind, PolicySource, PolicyStatus } from "./types";
+
+// ---------------------------------------------------------------------------
+// Minimal YAML frontmatter reader (mirrors the one in products-policy-chain.ts
+// but kept inline to avoid a circular import).
+// ---------------------------------------------------------------------------
+
+const FM_DELIM = /^---\s*$/;
+
+function readFrontmatter(content: string): string {
+  const lines = content.split(/\r?\n/);
+  if (!FM_DELIM.test(lines[0] ?? "")) return "";
+  for (let i = 1; i < lines.length; i++) {
+    if (FM_DELIM.test(lines[i] ?? "")) return lines.slice(1, i).join("\n");
+  }
+  return "";
+}
+
+function fmScalar(raw: string, key: string): string | undefined {
+  const m = raw.match(new RegExp(`^${key}\\s*:\\s*(.+?)\\s*$`, "im"));
+  if (!m?.[1]) return undefined;
+  return m[1].replace(/^["']|["']$/g, "").trim();
+}
 
 const TABLE_ROW = /^\s*\|(.*)\|\s*$/;
 
@@ -627,5 +649,50 @@ export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
       sourceFiles,
     });
   }
+
+  // ---------------------------------------------------------------------------
+  // Standalone pass — emit entries for any Policies/*.md file that was not
+  // claimed by a register row above. This ensures documents like
+  // bank-strategy-v1.md show up on the policies page without needing a
+  // manual register entry (D-POLICY-DOCUMENT-HOME Option C).
+  // ---------------------------------------------------------------------------
+  if (opts.policiesDir) {
+    const claimedFiles = new Set(out.flatMap((p) => p.sourceFiles));
+    for (const filename of policiesDirFiles) {
+      const qualified = `Policies/${filename}`;
+      if (claimedFiles.has(qualified)) continue;
+      const absPath = join(opts.policiesDir, filename);
+      let content: string;
+      try {
+        content = readFileSync(absPath, "utf-8");
+      } catch {
+        continue;
+      }
+      const fm = readFrontmatter(content);
+      const h1 = content.match(/^#\s+(.+)$/m);
+      const stem = basename(filename, ".md");
+      const title = fmScalar(fm, "title") ?? h1?.[1]?.trim() ?? stem;
+      const owner = fmScalar(fm, "owner") ?? "";
+      const statusRaw = fmScalar(fm, "status") ?? "";
+      const citation = fmScalar(fm, "citations") ?? "";
+      out.push({
+        id: `pol-standalone-${slugify(stem)}`,
+        name: title,
+        domain: "Policy Documents",
+        owner,
+        approval: "",
+        cadence: "",
+        citation,
+        sources: classifySources(citation),
+        binds: classifyBinds(citation),
+        status: normaliseStatus(statusRaw),
+        statusRaw,
+        mvp: false,
+        linkedObligations: [],
+        sourceFiles: [qualified],
+      });
+    }
+  }
+
   return out;
 }
