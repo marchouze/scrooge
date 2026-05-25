@@ -1,6 +1,6 @@
 {
   "slug": "banks-d6-2021",
-  "title": "Banks Act Directive D6/2021 — Matters related to the use of credit risk models to calculate minimum required capital and reserve funds for specialised lending exposures relating to project finance portfolios",
+  "title": "Banks Act Directive D6/2021 \u2014 Matters related to the use of credit risk models to calculate minimum required capital and reserve funds for specialised lending exposures relating to project finance portfolios",
   "shortTitle": "Directive D6/2021",
   "regulator": "Prudential Authority",
   "year": 2021,
@@ -28,54 +28,63 @@
           "id": "s-banks-d6-2021-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.          Introduction\n\n1.1         The PA conducted PD and LGD benchmarking exercises in 2012 and 2018,\n            respectively, to assess the extent of the variability of risk-weighted assets (RWA)\n\n1 Banks that obtained the prior written approval from the Prudential Authority to adopt the internal ratings-based\n\n(IRB) approach for specialised lending exposures relating to project finance portfolios.\n\n                                                                                                            1\n\n        among banks and banking groups applying the advanced IRB approach. The\n        inconsistencies and incomparability identified, point to two main possible causes:\n\n1.1.1   Banks interpret the IRB requirements differently, which is then incorporated into their\n        models and in turn produces variances in results.\n\n1.1.2   A key ingredient for developing robust IRB models is the availability of reliable historical\n        default and loss data, which are not always internally available, particularly for the\n        majority of wholesale portfolios. This, in turn, results in subjective or expert judgement-\n        driven methodologies and reliance on external data sources with little or no relevance\n        to internal portfolio risk dynamics.\n\n1.2     It is against this background that the PA undertook a review of selected wholesale\n        portfolios in the second half of 2018. The review was specifically targeted at those\n        portfolios regarded as low default, in that they generally exhibit few default and loss\n        events and in turn challenge the development of robust IRB models. It was also an\n        exercise to gather evidence of the industry’s modelling practices and the challenges\n        experienced by banks in this regard, with a view to developing appropriate policy\n        interventions to address the inconsistencies in banks’ RWA and capital calculations.\n\n1.3     Specialised lending exposures relating to project finance can be regarded as low\n        default portfolios, given that they generally have little to no default or loss experience.\n        Another key feature of the methodologies applied across the industry is the significant\n        extent of reliance being placed on expert judgement to design the rating systems. In\n        some cases, this expert judgement is supplemented with the use of external data\n        sources to give the development process an empirical grounding. Validation and\n        overall performance assessment are also qualitative, with minimal, if any, quantitative\n        testing.\n\n1.4     The use of expert judgement introduces bias and often results in excessive variability,\n        and this is observed specifically in the LGD and EAD estimates which ultimately\n        creates variability in risk weighted exposure amounts amongst banks and banking\n        groups. Based on recent studies, these concerns were also raised internationally as\n        one of the reasons for high risk-weighted exposure variability in the wholesale\n        portfolios.\n\n1.5     Regulation 39(16)(a) of the Regulations imposes a duty on the senior management of\n        a bank to develop an internal capital adequacy assessment process and to set capital\n        targets that are commensurate with the bank’s risk profile and control environment.\n        The senior management of the bank is furthermore responsible for understanding the\n        nature and level of risk being assumed by the bank and how this risk relates to the\n        adequacy of capital levels.\n\n1.6     The use of internal models for the calculation of banks and banking groups’ required\n        capital and reserve funds for credit risk is subject to the prior written approval of the\n        PA. The PA has a duty to assess the minimum regulatory requirements as a means of\n        ensuring the overall integrity of a bank or banking group’s ability to provide prudential\n        inputs to the calculation of minimum required capital and reserves.\n\n\n\n\n                                                                                               2",
+          "text": "Introduction 1. Introduction",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d6-2021-1-1",
+              "id": "s1-1",
               "number": "1.1",
-              "heading": "The PA conducted PD and LGD benchmarking exercises in 2012 and 2018,",
-              "text": "1.1         The PA conducted PD and LGD benchmarking exercises in 2012 and 2018,\n            respectively, to assess the extent of the variability of risk-weighted assets (RWA)\n\n1 Banks that obtained the prior written approval from the Prudential Authority to adopt the internal ratings-based\n\n(IRB) approach for specialised lending exposures relating to project finance portfolios.\n\n                                                                                                            1\n\n        among banks and banking groups applying the advanced IRB approach. The\n        inconsistencies and incomparability identified, point to two main possible causes:\n\n1.1.1   Banks interpret the IRB requirements differently, which is then incorporated into their\n        models and in turn produces variances in results.\n\n1.1.2   A key ingredient for developing robust IRB models is the availability of reliable historical\n        default and loss data, which are not always internally available, particularly for the\n        majority of wholesale portfolios. This, in turn, results in subjective or expert judgement-\n        driven methodologies and reliance on external data sources with little or no relevance\n        to internal portfolio risk dynamics.",
+              "text": "The PA conducted PD and LGD benchmarking exercises in 2012 and 2018, respectively, to assess the extent of the variability of risk-weighted assets (RWA) Banks that obtained the prior written approval from the Prudential Authority to adopt the internal ratings-based (IRB) approach for specialised lending exposures relating to project finance portfolios. 1 among banks and banking groups applying the advanced IRB approach. The inconsistencies and incomparability identified, point to two main possible causes:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-1-1",
+                  "number": "1.1.1",
+                  "text": "Banks interpret the IRB requirements differently, which is then incorporated into their models and in turn produces variances in results.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-2",
+                  "number": "1.1.2",
+                  "text": "A key ingredient for developing robust IRB models is the availability of reliable historical default and loss data, which are not always internally available, particularly for the majority of wholesale portfolios. This, in turn, results in subjective or expert judgement- driven methodologies and reliance on external data sources with little or no relevance to internal portfolio risk dynamics.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d6-2021-1-2",
+              "id": "s1-2",
               "number": "1.2",
-              "heading": "It is against this background that the PA undertook a review of selected wholesale",
-              "text": "1.2     It is against this background that the PA undertook a review of selected wholesale\n        portfolios in the second half of 2018. The review was specifically targeted at those\n        portfolios regarded as low default, in that they generally exhibit few default and loss\n        events and in turn challenge the development of robust IRB models. It was also an\n        exercise to gather evidence of the industry’s modelling practices and the challenges\n        experienced by banks in this regard, with a view to developing appropriate policy\n        interventions to address the inconsistencies in banks’ RWA and capital calculations.",
+              "text": "It is against this background that the PA undertook a review of selected wholesale portfolios in the second half of 2018. The review was specifically targeted at those portfolios regarded as low default, in that they generally exhibit few default and loss events and in turn challenge the development of robust IRB models. It was also an exercise to gather evidence of the industry\u2019s modelling practices and the challenges experienced by banks in this regard, with a view to developing appropriate policy interventions to address the inconsistencies in banks\u2019 RWA and capital calculations.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d6-2021-1-3",
+              "id": "s1-3",
               "number": "1.3",
-              "heading": "Specialised lending exposures relating to project finance can be regarded as low",
-              "text": "1.3     Specialised lending exposures relating to project finance can be regarded as low\n        default portfolios, given that they generally have little to no default or loss experience.\n        Another key feature of the methodologies applied across the industry is the significant\n        extent of reliance being placed on expert judgement to design the rating systems. In\n        some cases, this expert judgement is supplemented with the use of external data\n        sources to give the development process an empirical grounding. Validation and\n        overall performance assessment are also qualitative, with minimal, if any, quantitative\n        testing.",
+              "text": "Specialised lending exposures relating to project finance can be regarded as low default portfolios, given that they generally have little to no default or loss experience. Another key feature of the methodologies applied across the industry is the significant extent of reliance being placed on expert judgement to design the rating systems. In some cases, this expert judgement is supplemented with the use of external data sources to give the development process an empirical grounding. Validation and overall performance assessment are also qualitative, with minimal, if any, quantitative testing.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d6-2021-1-4",
+              "id": "s1-4",
               "number": "1.4",
-              "heading": "The use of expert judgement introduces bias and often results in excessive variability,",
-              "text": "1.4     The use of expert judgement introduces bias and often results in excessive variability,\n        and this is observed specifically in the LGD and EAD estimates which ultimately\n        creates variability in risk weighted exposure amounts amongst banks and banking\n        groups. Based on recent studies, these concerns were also raised internationally as\n        one of the reasons for high risk-weighted exposure variability in the wholesale\n        portfolios.",
+              "text": "The use of expert judgement introduces bias and often results in excessive variability, and this is observed specifically in the LGD and EAD estimates which ultimately creates variability in risk weighted exposure amounts amongst banks and banking groups. Based on recent studies, these concerns were also raised internationally as one of the reasons for high risk-weighted exposure variability in the wholesale portfolios.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d6-2021-1-5",
+              "id": "s1-5",
               "number": "1.5",
-              "heading": "Regulation 39(16)(a) of the Regulations imposes a duty on the senior management of",
-              "text": "1.5     Regulation 39(16)(a) of the Regulations imposes a duty on the senior management of\n        a bank to develop an internal capital adequacy assessment process and to set capital\n        targets that are commensurate with the bank’s risk profile and control environment.\n        The senior management of the bank is furthermore responsible for understanding the\n        nature and level of risk being assumed by the bank and how this risk relates to the\n        adequacy of capital levels.",
+              "text": "Regulation 39(16)(a) of the Regulations imposes a duty on the senior management of a bank to develop an internal capital adequacy assessment process and to set capital targets that are commensurate with the bank\u2019s risk profile and control environment. The senior management of the bank is furthermore responsible for understanding the nature and level of risk being assumed by the bank and how this risk relates to the adequacy of capital levels.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d6-2021-1-6",
+              "id": "s1-6",
               "number": "1.6",
-              "heading": "The use of internal models for the calculation of banks and banking groups’ required",
-              "text": "1.6     The use of internal models for the calculation of banks and banking groups’ required\n        capital and reserve funds for credit risk is subject to the prior written approval of the\n        PA. The PA has a duty to assess the minimum regulatory requirements as a means of\n        ensuring the overall integrity of a bank or banking group’s ability to provide prudential\n        inputs to the calculation of minimum required capital and reserves.\n\n\n\n\n                                                                                               2",
+              "text": "The use of internal models for the calculation of banks and banking groups\u2019 required capital and reserve funds for credit risk is subject to the prior written approval of the PA. The PA has a duty to assess the minimum regulatory requirements as a means of ensuring the overall integrity of a bank or banking group\u2019s ability to provide prudential inputs to the calculation of minimum required capital and reserves. 2",
               "verbatim": true,
               "subsections": []
             }
@@ -84,34 +93,34 @@
         {
           "id": "s-banks-d6-2021-2",
           "number": "2",
-          "heading": "Directive 2. Directive",
+          "heading": "Directive",
           "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
             {
               "id": "s2-1",
               "number": "2.1",
-              "text": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the Banks Act, 1990, in order to ensure consistency across the industry in terms of the measurement and calculation of RWA of the banks and banking groups’ respective credit risk exposures to specialised lending exposures arising from project finance, IRB banks are hereby directed, as follows:",
+              "text": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the Banks Act, 1990, in order to ensure consistency across the industry in terms of the measurement and calculation of RWA of the banks and banking groups\u2019 respective credit risk exposures to specialised lending exposures arising from project finance, IRB banks are hereby directed, as follows:",
               "verbatim": true,
               "subsections": [
                 {
                   "id": "s2-1-1",
                   "number": "2.1.1",
-                  "text": "For unsecured transactions (i.e. transaction with no eligible credit risk mitigation (CRM) held against it) apply a PD floor of 0.246% and a LGD floor of 20%, respectively. The specified PD and LGD floors are based on the IRB banks’ transactional data relating to the project finance portfolio and augmented by considering industry input gathered through the Project Finance questionnaire that was issued in March 2019, as well as a further data collection exercise in February 2020.",
+                  "text": "For unsecured transactions (i.e. transaction with no eligible credit risk mitigation (CRM) held against it) apply a PD floor of 0.246% and a LGD floor of 20%, respectively. The specified PD and LGD floors are based on the IRB banks\u2019 transactional data relating to the project finance portfolio and augmented by considering industry input gathered through the Project Finance questionnaire that was issued in March 2019, as well as a further data collection exercise in February 2020.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-2",
                   "number": "2.1.2",
-                  "text": "For transactions that benefit from CRM, the following shall apply: (a) Where any eligible financial collateral as specified in regulation 23(9)(b)(iv) of the Regulations is held against the exposure, no LGD floor shall apply. For all other collateral types held against the exposure, an LGD floor of 15% shall apply. A PD floor of 0.246% shall apply, irrespective of the type of collateral held against the exposure. (b) Where credit risk mitigation in the form of a guarantee or a credit-derivative instrument is obtained against the exposure (referred to as protected portion of the exposures), the requirements in regulation 23(14)(c) and/or regulation 23(14)(d) of the Regulations should be met. Where the parameters (PD and/or LGD) of the guarantor/credit derivative provider are estimated through a PA approved regulatory capital model other than the project finance rating system, the parameters from that model may be used without any floors. In all other instances, a PD floor of 0.246% and a LGD floor of 20% shall apply to both the protected and unprotected portion. Specifically, the banks shall reflect the risk mitigation effect of the guarantee/credit derivative for the protected portion of the exposures as specified in regulation 23(14)(c)(iii) and regulation 23(14)(d)(iii), of the Regulations, respectively whilst ensuring that the RWA is not less than a comparable direct exposure to the protection provider itself. (c) For partially collateralised exposures, a blended weighted LGD floor shall be applied to reduce computational complexity and enable the use of a single LGD at a facility level. This floor shall be calculated based on the quantum of the protected and unprotected portions of the exposure as 𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿𝐿 = 𝑝𝑝 × 15% + (1 − 𝑝𝑝) × 20%, where p represents the protected proportion of the exposure.",
+                  "text": "For transactions that benefit from CRM, the following shall apply: (a) Where any eligible financial collateral as specified in regulation 23(9)(b)(iv) of the Regulations is held against the exposure, no LGD floor shall apply. For all other collateral types held against the exposure, an LGD floor of 15% shall apply. A PD floor of 0.246% shall apply, irrespective of the type of collateral held against the exposure. (b) Where credit risk mitigation in the form of a guarantee or a credit-derivative instrument is obtained against the exposure (referred to as protected portion of the exposures), the requirements in regulation 23(14)(c) and/or regulation 23(14)(d) of the Regulations should be met. Where the parameters (PD and/or LGD) of the guarantor/credit derivative provider are estimated through a PA approved regulatory capital model other than the project finance rating system, the parameters from that model may be used without any floors. In all other instances, a PD floor of 0.246% and a LGD floor of 20% shall apply to both the protected and unprotected portion. Specifically, the banks shall reflect the risk mitigation effect of the guarantee/credit derivative for the protected portion of the exposures as specified in regulation 23(14)(c)(iii) and regulation 23(14)(d)(iii), of the Regulations, respectively whilst ensuring that the RWA is not less than a comparable direct exposure to the protection provider itself. (c) For partially collateralised exposures, a blended weighted LGD floor shall be applied to reduce computational complexity and enable the use of a single LGD at a facility level. This floor shall be calculated based on the quantum of the protected and unprotected portions of the exposure as \ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f\ud835\udc3f = \ud835\udc5d\ud835\udc5d \u00d7 15% + (1 \u2212 \ud835\udc5d\ud835\udc5d) \u00d7 20%, where p represents the protected proportion of the exposure.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-3",
                   "number": "2.1.3",
-                  "text": "To ensure compliance with the directive, IRB banks are required to furnish the PA with the deal-level information relating to the project finance portfolio bi-annually on 31 March (consisting of December data for the previous year), and 30 September (consisting of June data for the current year). A template that will be used to collect such information is enclosed with this directive. 3 Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution’s external auditors. The attached acknowledgement of receipt duly completed and signed by both the chief executive officer of the institution and the said auditors should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: 6 October 2021 The previous Directive issued was Directive D5/2021, dated 20 May 2021 4",
+                  "text": "To ensure compliance with the directive, IRB banks are required to furnish the PA with the deal-level information relating to the project finance portfolio bi-annually on 31 March (consisting of December data for the previous year), and 30 September (consisting of June data for the current year). A template that will be used to collect such information is enclosed with this directive. 3 Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution\u2019s external auditors. The attached acknowledgement of receipt duly completed and signed by both the chief executive officer of the institution and the said auditors should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: 6 October 2021 The previous Directive issued was Directive D5/2021, dated 20 May 2021 4",
                   "verbatim": true,
                   "subsections": []
                 }

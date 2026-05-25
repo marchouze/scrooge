@@ -1,6 +1,6 @@
 {
   "slug": "banks-d3-2024",
-  "title": "Banks Act Directive D3/2024 — Minimum regulatory requirements relating to the deposits covered by the Corporation for Deposit Insurance and banks' fund liquidity contributions",
+  "title": "Banks Act Directive D3/2024 \u2014 Minimum regulatory requirements relating to the deposits covered by the Corporation for Deposit Insurance and banks' fund liquidity contributions",
   "shortTitle": "Directive D3/2024",
   "regulator": "Prudential Authority",
   "year": 2024,
@@ -28,7 +28,7 @@
           "id": "s-banks-d3-2024-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.          Introduction\n\n1.1.        The Corporation is established to give depositors reasonable access to their\n            covered deposits when their bank has been placed in resolution.\n\n1.2.        In terms of the Corporation’s funding model, banks must provide the Corporation\n            with a fund liquidity contribution, the details of which are specified in the Fund\n            Liquidity Prudential Standard1, which was published on 8 March 2024.\n            Contributions by banks to the fund liquidity are interest-bearing loans to the\n            Corporation that will be guaranteed by the South African Reserve Bank (SARB)\n            and will impact the banks’ treatment of the covered deposits and fund liquidity\n            contributions in relation to regulations 23 and 26 of the Regulations.",
+          "text": "1.1.        The Corporation is established to give depositors reasonable access to their\n            covered deposits when their bank has been placed in resolution.\n\n1.2.        In terms of the Corporation\u2019s funding model, banks must provide the Corporation\n            with a fund liquidity contribution, the details of which are specified in the Fund\n            Liquidity Prudential Standard1, which was published on 8 March 2024.\n            Contributions by banks to the fund liquidity are interest-bearing loans to the\n            Corporation that will be guaranteed by the South African Reserve Bank (SARB)\n            and will impact the banks\u2019 treatment of the covered deposits and fund liquidity\n            contributions in relation to regulations 23 and 26 of the Regulations.",
           "verbatim": true,
           "subsections": [
             {
@@ -42,8 +42,8 @@
             {
               "id": "s-banks-d3-2024-1-2",
               "number": "1.2",
-              "heading": "In terms of the Corporation’s funding model, banks must provide the Corporation",
-              "text": "1.2.        In terms of the Corporation’s funding model, banks must provide the Corporation\n            with a fund liquidity contribution, the details of which are specified in the Fund\n            Liquidity Prudential Standard1, which was published on 8 March 2024.\n            Contributions by banks to the fund liquidity are interest-bearing loans to the\n            Corporation that will be guaranteed by the South African Reserve Bank (SARB)\n            and will impact the banks’ treatment of the covered deposits and fund liquidity\n            contributions in relation to regulations 23 and 26 of the Regulations.",
+              "heading": "In terms of the Corporation\u2019s funding model, banks must provide the Corporation",
+              "text": "1.2.        In terms of the Corporation\u2019s funding model, banks must provide the Corporation\n            with a fund liquidity contribution, the details of which are specified in the Fund\n            Liquidity Prudential Standard1, which was published on 8 March 2024.\n            Contributions by banks to the fund liquidity are interest-bearing loans to the\n            Corporation that will be guaranteed by the South African Reserve Bank (SARB)\n            and will impact the banks\u2019 treatment of the covered deposits and fund liquidity\n            contributions in relation to regulations 23 and 26 of the Regulations.",
               "verbatim": true,
               "subsections": []
             }
@@ -53,7 +53,7 @@
           "id": "s-banks-d3-2024-2",
           "number": "2",
           "heading": "Reference to the Regulations",
-          "text": "2.          Reference to the Regulations\n\n2.1.        Regulation 23 of the Regulations specifies the respective risk estimates and the\n            risk weights that apply to banks that have adopted the IRB approaches and the\n            STA approach, respectively, for the calculation of the minimum required regulatory\n            capital and reserve funds relating to credit risk. The Regulations also make\n            provision for risk mitigation and the treatment of guaranteed exposures under both\n            approaches.\n\n2.2.        Regulations 26(12) and 26(14) of the Regulations specify the minimum regulatory\n            requirements relating to the LCR and NSFR, respectively.",
+          "text": "2.1.        Regulation 23 of the Regulations specifies the respective risk estimates and the\n            risk weights that apply to banks that have adopted the IRB approaches and the\n            STA approach, respectively, for the calculation of the minimum required regulatory\n            capital and reserve funds relating to credit risk. The Regulations also make\n            provision for risk mitigation and the treatment of guaranteed exposures under both\n            approaches.\n\n2.2.        Regulations 26(12) and 26(14) of the Regulations specify the minimum regulatory\n            requirements relating to the LCR and NSFR, respectively.",
           "verbatim": true,
           "subsections": [
             {
@@ -78,32 +78,139 @@
           "id": "s-banks-d3-2024-3",
           "number": "3",
           "heading": "Directive",
-          "text": "3.          Directive\n\n3.1.        Based on the aforesaid and in accordance with the provisions of section 6(6) of\n            the Banks Act 94, 1990, banks are hereby directed to comply with the requirements\n            specified in paragraphs 3.2 to 3.3.2.4 below.\n\n3.2.        Minimum regulatory requirements relating to Credit Risk\n\n3.2.1.      In the calculation of the minimum required capital and reserve funds related to\n            credit risk exposure to the Corporation, banks must apply the minimum\n            requirements outlined as follows:\n\n3.2.1.1. For banks that have adopted the STA approach, regulation 23(9)(c)(iii) of the\n         Regulations specifies that when the bank obtains protection against loss relating\n         to an exposure or potential exposure to credit risk in the form of an eligible\n         guarantee, the risk weight applicable to the guaranteed transaction or exposure\n         may be reduced to the risk weight applicable to the guarantor. Hence, banks that\n         have adopted the STA approach must apply a 0% risk weight for the exposure to\n         the Corporation, based on the explicit guarantee provided by the SARB. The STA\n         banks' exposure to the Corporation must be reported in line item 17 of the form BA\n         200.\n\n3.2.1.2. For banks that have obtained approval to adopt the foundation IRB approach,\n         regulation 23(12)(d)(iii)(A)(ii) of the Regulations allows them to substitute the\n         probability of default (PD) estimate related to the Corporation with the PD estimate\n         related to the guarantor (SARB). Foundation IRB banks may also substitute the\n\n1   Prudential Standard CODI 1_Fund liquidity.pdf (resbank.co.za)\n                                                                                            2\n\n         loss-given default (LGD) ratio of the underlying transaction with the relevant\n         regulatory prescribed LGD ratio related to the guaranteed position, not with the\n         LGD related to the SARB.\n\n3.2.1.3. For banks that have obtained approval to adopt the advanced IRB approach,\n         regulation 23(14)(d)(iii)(A)(i) of the Regulations allows them to substitute either the\n         PD or the LGD estimate related to the Corporation with the PD or LGD estimate\n         related to the SARB.\n\n3.2.1.4. The IRB banks' exposure to the Corporation must be reported in line item 133 of\n         the form BA 200.\n\n3.3.     Minimum regulatory requirements relating to the LCR and NSFR\n\n3.3.1.   LCR\n\n3.3.1.1. The Corporation only partially adheres to the requirements set out in regulations\n         26(12)(d)(i)(D) and 26(12)(d)(i)(F) of the Regulations; therefore, banks are\n         required to apply a five per cent run-off factor to retail deposits within a 30-day\n         window covered by the Corporation when calculating the LCR, except in the\n         instances specified in regulations 26(12)(d)(i)(G) and 26(12)(d)(i)(H) of the\n         Regulations.\n\n3.3.1.2. The Corporation adheres to the requirements for stable wholesale funding set out\n         in regulations 26(12)(d)(iii) and 26(12)(d)(viii) of the Regulations.\n\n3.3.1.3. When a bank's total covered deposits decrease from one month to the next, its\n         fund liquidity tier balance with the Corporation must be adjusted by the\n         Corporation, refunding the adjustment amount to the bank. Such an excess must\n         receive a hundred per cent inflow factor when calculating the bank’s LCR.\n\n3.3.1.4. When a bank's total covered deposits increase from one month to the next, its fund\n         liquidity tier balance with the Corporation must be increased. Such a shortfall must\n         be assigned a hundred per cent run-off factor when calculating the bank’s LCR.\n\n3.3.2.   NSFR\n\n3.3.2.1. Deposits covered by the Corporation must be reported in accordance with Table 1\n         of regulation 26(14)(b)(i)(C) of the Regulations when calculating the bank’s NSFR.\n\n3.3.2.2. A required stable funding (RSF) factor of hundred per cent must be applied to the\n         fund liquidity contribution requirement (i.e., a specified percentage of a bank’s total\n         covered deposits) when calculating the bank’s NSFR.\n\n3.3.2.3. An RSF factor of fifty per cent must be applied to a shortfall as envisaged in\n         paragraph 3.3.1.4.\n\n3.3.2.4. An available stable funding (ASF) factor of fifty per cent must be applied to excess\n         balances as envisaged in paragraph 3.3.1.3.\n\n\n\n\n                                                                                              3",
+          "text": "Directive 3. Directive",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d3-2024-3-1",
+              "id": "s3-1",
               "number": "3.1",
-              "heading": "Based on the aforesaid and in accordance with the provisions of section 6(6) of",
-              "text": "3.1.        Based on the aforesaid and in accordance with the provisions of section 6(6) of\n            the Banks Act 94, 1990, banks are hereby directed to comply with the requirements\n            specified in paragraphs 3.2 to 3.3.2.4 below.",
+              "text": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the Banks Act 94, 1990, banks are hereby directed to comply with the requirements specified in paragraphs",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2024-3-2",
+              "id": "s3-2",
               "number": "3.2",
-              "heading": "Minimum regulatory requirements relating to Credit Risk",
-              "text": "3.2.        Minimum regulatory requirements relating to Credit Risk\n\n3.2.1.      In the calculation of the minimum required capital and reserve funds related to\n            credit risk exposure to the Corporation, banks must apply the minimum\n            requirements outlined as follows:\n\n3.2.1.1. For banks that have adopted the STA approach, regulation 23(9)(c)(iii) of the\n         Regulations specifies that when the bank obtains protection against loss relating\n         to an exposure or potential exposure to credit risk in the form of an eligible\n         guarantee, the risk weight applicable to the guaranteed transaction or exposure\n         may be reduced to the risk weight applicable to the guarantor. Hence, banks that\n         have adopted the STA approach must apply a 0% risk weight for the exposure to\n         the Corporation, based on the explicit guarantee provided by the SARB. The STA\n         banks' exposure to the Corporation must be reported in line item 17 of the form BA\n         200.\n\n3.2.1.2. For banks that have obtained approval to adopt the foundation IRB approach,\n         regulation 23(12)(d)(iii)(A)(ii) of the Regulations allows them to substitute the\n         probability of default (PD) estimate related to the Corporation with the PD estimate\n         related to the guarantor (SARB). Foundation IRB banks may also substitute the\n\n1   Prudential Standard CODI 1_Fund liquidity.pdf (resbank.co.za)\n                                                                                            2\n\n         loss-given default (LGD) ratio of the underlying transaction with the relevant\n         regulatory prescribed LGD ratio related to the guaranteed position, not with the\n         LGD related to the SARB.\n\n3.2.1.3. For banks that have obtained approval to adopt the advanced IRB approach,\n         regulation 23(14)(d)(iii)(A)(i) of the Regulations allows them to substitute either the\n         PD or the LGD estimate related to the Corporation with the PD or LGD estimate\n         related to the SARB.\n\n3.2.1.4. The IRB banks' exposure to the Corporation must be reported in line item 133 of\n         the form BA 200.",
+              "text": "to",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3-2-1",
+                  "number": "3.2.1",
+                  "text": "In the calculation of the minimum required capital and reserve funds related to credit risk exposure to the Corporation, banks must apply the minimum requirements outlined as follows:",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s3-2-1-1",
+                      "number": "3.2.1.1",
+                      "text": "For banks that have adopted the STA approach, regulation 23(9)(c)(iii) of the Regulations specifies that when the bank obtains protection against loss relating to an exposure or potential exposure to credit risk in the form of an eligible guarantee, the risk weight applicable to the guaranteed transaction or exposure may be reduced to the risk weight applicable to the guarantor. Hence, banks that have adopted the STA approach must apply a 0% risk weight for the exposure to the Corporation, based on the explicit guarantee provided by the SARB. The STA banks' exposure to the Corporation must be reported in line item 17 of the form BA 200.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-2-1-2",
+                      "number": "3.2.1.2",
+                      "text": "For banks that have obtained approval to adopt the foundation IRB approach, regulation 23(12)(d)(iii)(A)(ii) of the Regulations allows them to substitute the probability of default (PD) estimate related to the Corporation with the PD estimate related to the guarantor (SARB). Foundation IRB banks may also substitute the Prudential Standard CODI 1_Fund liquidity.pdf (resbank.co.za) 2 loss-given default (LGD) ratio of the underlying transaction with the relevant regulatory prescribed LGD ratio related to the guaranteed position, not with the LGD related to the SARB.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-2-1-3",
+                      "number": "3.2.1.3",
+                      "text": "For banks that have obtained approval to adopt the advanced IRB approach, regulation 23(14)(d)(iii)(A)(i) of the Regulations allows them to substitute either the PD or the LGD estimate related to the Corporation with the PD or LGD estimate related to the SARB.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-2-1-4",
+                      "number": "3.2.1.4",
+                      "text": "The IRB banks' exposure to the Corporation must be reported in line item 133 of the form BA 200.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
             },
             {
-              "id": "s-banks-d3-2024-3-3",
+              "id": "s3-3",
               "number": "3.3",
-              "heading": "Minimum regulatory requirements relating to the LCR and NSFR",
-              "text": "3.3.     Minimum regulatory requirements relating to the LCR and NSFR\n\n3.3.1.   LCR\n\n3.3.1.1. The Corporation only partially adheres to the requirements set out in regulations\n         26(12)(d)(i)(D) and 26(12)(d)(i)(F) of the Regulations; therefore, banks are\n         required to apply a five per cent run-off factor to retail deposits within a 30-day\n         window covered by the Corporation when calculating the LCR, except in the\n         instances specified in regulations 26(12)(d)(i)(G) and 26(12)(d)(i)(H) of the\n         Regulations.\n\n3.3.1.2. The Corporation adheres to the requirements for stable wholesale funding set out\n         in regulations 26(12)(d)(iii) and 26(12)(d)(viii) of the Regulations.\n\n3.3.1.3. When a bank's total covered deposits decrease from one month to the next, its\n         fund liquidity tier balance with the Corporation must be adjusted by the\n         Corporation, refunding the adjustment amount to the bank. Such an excess must\n         receive a hundred per cent inflow factor when calculating the bank’s LCR.\n\n3.3.1.4. When a bank's total covered deposits increase from one month to the next, its fund\n         liquidity tier balance with the Corporation must be increased. Such a shortfall must\n         be assigned a hundred per cent run-off factor when calculating the bank’s LCR.\n\n3.3.2.   NSFR\n\n3.3.2.1. Deposits covered by the Corporation must be reported in accordance with Table 1\n         of regulation 26(14)(b)(i)(C) of the Regulations when calculating the bank’s NSFR.\n\n3.3.2.2. A required stable funding (RSF) factor of hundred per cent must be applied to the\n         fund liquidity contribution requirement (i.e., a specified percentage of a bank’s total\n         covered deposits) when calculating the bank’s NSFR.\n\n3.3.2.3. An RSF factor of fifty per cent must be applied to a shortfall as envisaged in\n         paragraph 3.3.1.4.\n\n3.3.2.4. An available stable funding (ASF) factor of fifty per cent must be applied to excess\n         balances as envisaged in paragraph 3.3.1.3.\n\n\n\n\n                                                                                              3",
+              "text": "Minimum regulatory requirements relating to the LCR and NSFR",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3-3-1",
+                  "number": "3.3.1",
+                  "text": "LCR",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s3-3-1-1",
+                      "number": "3.3.1.1",
+                      "text": "The Corporation only partially adheres to the requirements set out in regulations 26(12)(d)(i)(D) and 26(12)(d)(i)(F) of the Regulations; therefore, banks are required to apply a five per cent run-off factor to retail deposits within a 30-day window covered by the Corporation when calculating the LCR, except in the instances specified in regulations 26(12)(d)(i)(G) and 26(12)(d)(i)(H) of the Regulations.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-3-1-2",
+                      "number": "3.3.1.2",
+                      "text": "The Corporation adheres to the requirements for stable wholesale funding set out in regulations 26(12)(d)(iii) and 26(12)(d)(viii) of the Regulations.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-3-1-3",
+                      "number": "3.3.1.3",
+                      "text": "When a bank's total covered deposits decrease from one month to the next, its fund liquidity tier balance with the Corporation must be adjusted by the Corporation, refunding the adjustment amount to the bank. Such an excess must receive a hundred per cent inflow factor when calculating the bank\u2019s LCR.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-3-1-4",
+                      "number": "3.3.1.4",
+                      "text": "When a bank's total covered deposits increase from one month to the next, its fund liquidity tier balance with the Corporation must be increased. Such a shortfall must be assigned a hundred per cent run-off factor when calculating the bank\u2019s LCR.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s3-3-2",
+                  "number": "3.3.2",
+                  "text": "NSFR",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s3-3-2-1",
+                      "number": "3.3.2.1",
+                      "text": "Deposits covered by the Corporation must be reported in accordance with Table 1 of regulation 26(14)(b)(i)(C) of the Regulations when calculating the bank\u2019s NSFR.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-3-2-2",
+                      "number": "3.3.2.2",
+                      "text": "A required stable funding (RSF) factor of hundred per cent must be applied to the fund liquidity contribution requirement (i.e., a specified percentage of a bank\u2019s total covered deposits) when calculating the bank\u2019s NSFR.",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-3-2-3",
+                      "number": "3.3.2.3",
+                      "text": "An RSF factor of fifty per cent must be applied to a shortfall as envisaged in paragraph",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s3-3-2-4",
+                      "number": "3.3.2.4",
+                      "text": "below.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -111,14 +218,14 @@
           "id": "s-banks-d3-2024-4",
           "number": "4",
           "heading": "Acknowledgement of receipt",
-          "text": "4.       Acknowledgement of receipt\n\n4.1.     Kindly ensure that a copy of this Directive is made available to your institution’s\n         external auditors. In addition, the attached acknowledgement of receipt duly\n         completed and signed by both the chief executive officer of the institution and the\n         said auditors should be returned to the PA at the earliest convenience of the\n         aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 16/04/24\n\nThe previous Directive issued was Directive 2/2024, dated 8 March 2024.\n\n\n\n\n                                                                                          4",
+          "text": "4.1.     Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n         external auditors. In addition, the attached acknowledgement of receipt duly\n         completed and signed by both the chief executive officer of the institution and the\n         said auditors should be returned to the PA at the earliest convenience of the\n         aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 16/04/24\n\nThe previous Directive issued was Directive 2/2024, dated 8 March 2024.\n\n\n\n\n                                                                                          4",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d3-2024-4-1",
               "number": "4.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
-              "text": "4.1.     Kindly ensure that a copy of this Directive is made available to your institution’s\n         external auditors. In addition, the attached acknowledgement of receipt duly\n         completed and signed by both the chief executive officer of the institution and the\n         said auditors should be returned to the PA at the earliest convenience of the\n         aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 16/04/24\n\nThe previous Directive issued was Directive 2/2024, dated 8 March 2024.\n\n\n\n\n                                                                                          4",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
+              "text": "4.1.     Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n         external auditors. In addition, the attached acknowledgement of receipt duly\n         completed and signed by both the chief executive officer of the institution and the\n         said auditors should be returned to the PA at the earliest convenience of the\n         aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 16/04/24\n\nThe previous Directive issued was Directive 2/2024, dated 8 March 2024.\n\n\n\n\n                                                                                          4",
               "verbatim": true,
               "subsections": []
             }

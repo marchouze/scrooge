@@ -1,6 +1,6 @@
 {
   "slug": "banks-d2-2025",
-  "title": "Banks Act Directive D2/2025 — Matters related to the capital treatment of significant investments in insurance entities",
+  "title": "Banks Act Directive D2/2025 \u2014 Matters related to the capital treatment of significant investments in insurance entities",
   "shortTitle": "Directive D2/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -28,86 +28,98 @@
           "id": "s-banks-d2-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.          Introduction\n\n1.1         Regulation 36(10)(b)(ii) of the Regulations relating to Banks (the “Regulations”)\n            requires every Bank, when calculating its consolidated amount of qualifying capital\n\n                                                                                             1\n\n      and reserve funds, to deduct from its consolidated amount of qualifying capital and\n      reserves any equity or other regulatory amounts held in an insurance entity and\n      remove from its balance sheet any relevant assets, liabilities or third-party\n      investments relating to such insurance subsidiary or entity that conducts insurance\n      business, or an insurance entity in which the Bank holds a significant minority\n      interest (the “Deduction”). Regulation 36(10)(b)(ii)(A) of the Regulations further\n      provides that the Deduction must be made in accordance with the relevant\n      requirements specified in regulation 38(5) of the Regulations.\n\n1.2   Regulation 38(5)(a)(i)(M) of the Regulations makes provision for the full deduction\n      treatment per the Basel II framework and requires banks to deduct from their\n      consolidated amount of qualifying capital and reserve funds any investment in equity\n      other regulatory capital instruments of a Bank, financial or insurance entity that falls\n      outside the scope of regulatory consolidation.\n\n1.3   The key principle underpinning the deduction treatment is that a banking group\n      containing two or more regulated entities must maintain no less capital than those\n      same entities would be required to hold, in aggregate, if they were separate\n      standalone firms.\n\n1.4   Regulation 38(5)(b) of the Regulations read with Banks Act Circular 4 of 2013\n      provide for the use of the threshold deduction treatment by banks or controlling\n      companies with respect to their significant investments in financial entities, including\n      insurance entities. Notwithstanding this, this treatment must only be applied by\n      banks after obtaining the prior written approval of the Prudential Authority (the “PA”)\n      in respect of significant investments.\n\n1.5   The threshold deduction treatment provides a credible alternative to the full\n      deduction treatment envisaged in the Basel II framework and aims to allow banks\n      to conduct market making activities.\n\n1.6   To preserve the integrity of the qualifying regulatory capital and reserve funds of\n      banking groups, the potential contagion between the banking and insurance sectors\n      must be prevented. To achieve this, banks and banking groups are required to\n      completely remove from their balance sheets all amounts that relate to investments\n      in licensed insurance businesses and subsidiaries. When banks invest in insurance\n      businesses, risks and adverse financial performance within such insurance entities\n      can affect the financial performance of the investing Bank, and vice versa. The\n      required deconsolidation of insurance businesses’ balance sheets aims to address\n      this problem.\n\n1.7   The Regulations prescribe the treatment of investments in entities that are outside\n      the scope of regulatory consolidation. Regulation 38(5)(b) of the Regulations\n      requires that, instead of full deduction as provided for in regulation 38(5)(a)(i)(M) of\n      the Regulations, specified items shall each receive limited recognition when a Bank\n      calculates its common equity tier 1 (CET1) capital and reserve funds, with\n      recognition being capped at 10% of the Bank’s equity or CET1 capital and reserve\n      funds. These items are:\n\n\n\n\n                                                                                            2\n\n        1.7.1   significant investments in the common shares or CET1 capital of\n                unconsolidated financial institutions such as banks, insurance and other\n                financial entities.\n        1.7.2   any relevant amount related to mortgage servicing rights.\n        1.7.3   any relevant amount related to deferred tax assets that arise from temporary\n                differences.\n\n1.8     Circular 4 of 2013 mitigates any ambiguity surrounding the limited recognition of\n        investments in insurance entities by banks as set out in Regulations 38(5)(i)(L) and\n        38(5)(a)(i)(M) of the Regulations, read with regulation 38(5)(b) of the Regulations.\n\n1.9     This Directive deals specifically with the threshold deduction treatment to be utilised\n        in respect of significant investments in insurance entities or activities by banks,\n        subject to the prior written approval of the PA and any other conditions as may be\n        specified in writing by the PA (from time to time). An application to utilise the\n        threshold deduction treatment must contain details of the insurance entity or activity\n        to which the limited recognition will be applied, the envisaged capital impact, and a\n        benchmark of the application against the provisions of Circular 4 of 2013 to\n        demonstrate the eligibility of the investment to be threshold deducted.\n\n1.10    Notwithstanding the inherent complexity of the limited recognition framework and\n        the resultant capital concession, the PA will continue to apply the framework in\n        alignment with the Regulations read with the Basel III framework.",
+          "text": "Introduction 1. Introduction",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d2-2025-1-1",
+              "id": "s1-1",
               "number": "1.1",
-              "heading": "Regulation 36(10)(b)(ii) of the Regulations relating to Banks (the “Regulations”)",
-              "text": "1.1         Regulation 36(10)(b)(ii) of the Regulations relating to Banks (the “Regulations”)\n            requires every Bank, when calculating its consolidated amount of qualifying capital\n\n                                                                                             1\n\n      and reserve funds, to deduct from its consolidated amount of qualifying capital and\n      reserves any equity or other regulatory amounts held in an insurance entity and\n      remove from its balance sheet any relevant assets, liabilities or third-party\n      investments relating to such insurance subsidiary or entity that conducts insurance\n      business, or an insurance entity in which the Bank holds a significant minority\n      interest (the “Deduction”). Regulation 36(10)(b)(ii)(A) of the Regulations further\n      provides that the Deduction must be made in accordance with the relevant\n      requirements specified in regulation 38(5) of the Regulations.",
+              "text": "Regulation 36(10)(b)(ii) of the Regulations relating to Banks (the \u201cRegulations\u201d) requires every Bank, when calculating its consolidated amount of qualifying capital 1 and reserve funds, to deduct from its consolidated amount of qualifying capital and reserves any equity or other regulatory amounts held in an insurance entity and remove from its balance sheet any relevant assets, liabilities or third-party investments relating to such insurance subsidiary or entity that conducts insurance business, or an insurance entity in which the Bank holds a significant minority interest (the \u201cDeduction\u201d). Regulation 36(10)(b)(ii)(A) of the Regulations further provides that the Deduction must be made in accordance with the relevant requirements specified in regulation 38(5) of the Regulations.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-2",
+              "id": "s1-2",
               "number": "1.2",
-              "heading": "Regulation 38(5)(a)(i)(M) of the Regulations makes provision for the full deduction",
-              "text": "1.2   Regulation 38(5)(a)(i)(M) of the Regulations makes provision for the full deduction\n      treatment per the Basel II framework and requires banks to deduct from their\n      consolidated amount of qualifying capital and reserve funds any investment in equity\n      other regulatory capital instruments of a Bank, financial or insurance entity that falls\n      outside the scope of regulatory consolidation.",
+              "text": "Regulation 38(5)(a)(i)(M) of the Regulations makes provision for the full deduction treatment per the Basel II framework and requires banks to deduct from their consolidated amount of qualifying capital and reserve funds any investment in equity other regulatory capital instruments of a Bank, financial or insurance entity that falls outside the scope of regulatory consolidation.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-3",
+              "id": "s1-3",
               "number": "1.3",
-              "heading": "The key principle underpinning the deduction treatment is that a banking group",
-              "text": "1.3   The key principle underpinning the deduction treatment is that a banking group\n      containing two or more regulated entities must maintain no less capital than those\n      same entities would be required to hold, in aggregate, if they were separate\n      standalone firms.",
+              "text": "The key principle underpinning the deduction treatment is that a banking group containing two or more regulated entities must maintain no less capital than those same entities would be required to hold, in aggregate, if they were separate standalone firms.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-4",
+              "id": "s1-4",
               "number": "1.4",
-              "heading": "Regulation 38(5)(b) of the Regulations read with Banks Act Circular 4 of 2013",
-              "text": "1.4   Regulation 38(5)(b) of the Regulations read with Banks Act Circular 4 of 2013\n      provide for the use of the threshold deduction treatment by banks or controlling\n      companies with respect to their significant investments in financial entities, including\n      insurance entities. Notwithstanding this, this treatment must only be applied by\n      banks after obtaining the prior written approval of the Prudential Authority (the “PA”)\n      in respect of significant investments.",
+              "text": "Regulation 38(5)(b) of the Regulations read with Banks Act Circular 4 of 2013 provide for the use of the threshold deduction treatment by banks or controlling companies with respect to their significant investments in financial entities, including insurance entities. Notwithstanding this, this treatment must only be applied by banks after obtaining the prior written approval of the Prudential Authority (the \u201cPA\u201d) in respect of significant investments.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-5",
+              "id": "s1-5",
               "number": "1.5",
-              "heading": "The threshold deduction treatment provides a credible alternative to the full",
-              "text": "1.5   The threshold deduction treatment provides a credible alternative to the full\n      deduction treatment envisaged in the Basel II framework and aims to allow banks\n      to conduct market making activities.",
+              "text": "The threshold deduction treatment provides a credible alternative to the full deduction treatment envisaged in the Basel II framework and aims to allow banks to conduct market making activities.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-6",
+              "id": "s1-6",
               "number": "1.6",
-              "heading": "To preserve the integrity of the qualifying regulatory capital and reserve funds of",
-              "text": "1.6   To preserve the integrity of the qualifying regulatory capital and reserve funds of\n      banking groups, the potential contagion between the banking and insurance sectors\n      must be prevented. To achieve this, banks and banking groups are required to\n      completely remove from their balance sheets all amounts that relate to investments\n      in licensed insurance businesses and subsidiaries. When banks invest in insurance\n      businesses, risks and adverse financial performance within such insurance entities\n      can affect the financial performance of the investing Bank, and vice versa. The\n      required deconsolidation of insurance businesses’ balance sheets aims to address\n      this problem.",
+              "text": "To preserve the integrity of the qualifying regulatory capital and reserve funds of banking groups, the potential contagion between the banking and insurance sectors must be prevented. To achieve this, banks and banking groups are required to completely remove from their balance sheets all amounts that relate to investments in licensed insurance businesses and subsidiaries. When banks invest in insurance businesses, risks and adverse financial performance within such insurance entities can affect the financial performance of the investing Bank, and vice versa. The required deconsolidation of insurance businesses\u2019 balance sheets aims to address this problem.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-7",
+              "id": "s1-7",
               "number": "1.7",
-              "heading": "The Regulations prescribe the treatment of investments in entities that are outside",
-              "text": "1.7   The Regulations prescribe the treatment of investments in entities that are outside\n      the scope of regulatory consolidation. Regulation 38(5)(b) of the Regulations\n      requires that, instead of full deduction as provided for in regulation 38(5)(a)(i)(M) of\n      the Regulations, specified items shall each receive limited recognition when a Bank\n      calculates its common equity tier 1 (CET1) capital and reserve funds, with\n      recognition being capped at 10% of the Bank’s equity or CET1 capital and reserve\n      funds. These items are:\n\n\n\n\n                                                                                            2\n\n        1.7.1   significant investments in the common shares or CET1 capital of\n                unconsolidated financial institutions such as banks, insurance and other\n                financial entities.\n        1.7.2   any relevant amount related to mortgage servicing rights.\n        1.7.3   any relevant amount related to deferred tax assets that arise from temporary\n                differences.",
+              "text": "The Regulations prescribe the treatment of investments in entities that are outside the scope of regulatory consolidation. Regulation 38(5)(b) of the Regulations requires that, instead of full deduction as provided for in regulation 38(5)(a)(i)(M) of the Regulations, specified items shall each receive limited recognition when a Bank calculates its common equity tier 1 (CET1) capital and reserve funds, with recognition being capped at 10% of the Bank\u2019s equity or CET1 capital and reserve funds. These items are: 2",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-7-1",
+                  "number": "1.7.1",
+                  "text": "significant investments in the common shares or CET1 capital of unconsolidated financial institutions such as banks, insurance and other financial entities.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-7-2",
+                  "number": "1.7.2",
+                  "text": "any relevant amount related to mortgage servicing rights.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-7-3",
+                  "number": "1.7.3",
+                  "text": "any relevant amount related to deferred tax assets that arise from temporary differences.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d2-2025-1-8",
+              "id": "s1-8",
               "number": "1.8",
-              "heading": "Circular 4 of 2013 mitigates any ambiguity surrounding the limited recognition of",
-              "text": "1.8     Circular 4 of 2013 mitigates any ambiguity surrounding the limited recognition of\n        investments in insurance entities by banks as set out in Regulations 38(5)(i)(L) and\n        38(5)(a)(i)(M) of the Regulations, read with regulation 38(5)(b) of the Regulations.",
+              "text": "Circular 4 of 2013 mitigates any ambiguity surrounding the limited recognition of investments in insurance entities by banks as set out in Regulations 38(5)(i)(L) and 38(5)(a)(i)(M) of the Regulations, read with regulation 38(5)(b) of the Regulations.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-9",
+              "id": "s1-9",
               "number": "1.9",
-              "heading": "This Directive deals specifically with the threshold deduction treatment to be utilised",
-              "text": "1.9     This Directive deals specifically with the threshold deduction treatment to be utilised\n        in respect of significant investments in insurance entities or activities by banks,\n        subject to the prior written approval of the PA and any other conditions as may be\n        specified in writing by the PA (from time to time). An application to utilise the\n        threshold deduction treatment must contain details of the insurance entity or activity\n        to which the limited recognition will be applied, the envisaged capital impact, and a\n        benchmark of the application against the provisions of Circular 4 of 2013 to\n        demonstrate the eligibility of the investment to be threshold deducted.",
+              "text": "This Directive deals specifically with the threshold deduction treatment to be utilised in respect of significant investments in insurance entities or activities by banks, subject to the prior written approval of the PA and any other conditions as may be specified in writing by the PA (from time to time). An application to utilise the threshold deduction treatment must contain details of the insurance entity or activity to which the limited recognition will be applied, the envisaged capital impact, and a benchmark of the application against the provisions of Circular 4 of 2013 to demonstrate the eligibility of the investment to be threshold deducted.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-1-10",
+              "id": "s1-10",
               "number": "1.10",
-              "heading": "Notwithstanding the inherent complexity of the limited recognition framework and",
-              "text": "1.10    Notwithstanding the inherent complexity of the limited recognition framework and\n        the resultant capital concession, the PA will continue to apply the framework in\n        alignment with the Regulations read with the Basel III framework.",
+              "text": "Notwithstanding the inherent complexity of the limited recognition framework and the resultant capital concession, the PA will continue to apply the framework in alignment with the Regulations read with the Basel III framework.",
               "verbatim": true,
               "subsections": []
             }
@@ -117,30 +129,70 @@
           "id": "s-banks-d2-2025-2",
           "number": "2",
           "heading": "Directive",
-          "text": "2.      Directive\n\n2.1     Based on the aforesaid and in accordance with the provisions of section 6(6) of the\n        Banks Act 94 of 1990, banks are hereby directed as follows:\n2.1.1   A Bank shall not apply the threshold deduction treatment to significant investments\n        in insurance entities or insurance related businesses without the prior written\n        approval of the PA. In instances where the Bank has not sought such approval or\n        approval was not granted by the PA, the Bank shall apply the full deduction\n        treatment provided for in Regulation 38(5)(a)(i)(M) of the Regulations.\n2.1.2   A Bank shall not include any post-acquisition reserves related to significant\n        investments in insurance entities or insurance related businesses in either the\n        Bank’s solo or group consolidated capital. That is, post-acquisition reserves from\n        significant investments in insurance entities or businesses shall not be included in\n        the consolidated capital of banks and banking groups that have investments in such\n        entities or businesses.\n\n2.1.3   A Bank shall apply the threshold deduction treatment to the value of the initial\n        investment, with such initial investment being held at historic cost or an equivalent\n        value (i.e. the initial investment shall never be revalued upwards) to prevent banking\n        groups from including any insurer's post-acquisition reserves in their CET1 capital.\n2.1.4   Banks with investments in insurance entities or insurance related businesses may\n        adjust the value of the initial investment where an impairment is raised against such\n        an investment in order not to hold capital on an initial value that has subsequently\n        been adjusted downwards. Banks may also adjust the value of the initial investment\n        when share capital is adjusted permanently in the form of, for example,\n        recapitalisations and/or share buy-backs.\n                                                                                            3\n\n2.1.5     A Bank shall report variations to the value of the initial investment to the PA\n          biannually using the template attached hereto as “Annexure A”. The template must\n          be submitted by no later than 30 business days following the June and December\n          reporting periods, respectively. The completed templates must be approved and\n          signed off by the Group Treasurer or a senior Bank official having the equivalent\n          signing authority.\n2.1.6     Banking groups may include in their qualifying CET1 capital and reserve funds\n          distributions such as actual dividends declared by such insurance entities or\n          insurance related businesses, once approved by the insurers' board of directors or\n          related governance structures.\n\n2.2       All the Banks must comply with the respective requirements specified in this\n          directive on or before 31 July 2025.\n\n2.3       Banks not in compliance with this Directive may approach the PA, in terms of section\n          279 of the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017), to request an\n          extension for the period for compliance with this Directive.",
+          "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d2-2025-2-1",
+              "id": "s2-1",
               "number": "2.1",
-              "heading": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the",
-              "text": "2.1     Based on the aforesaid and in accordance with the provisions of section 6(6) of the\n        Banks Act 94 of 1990, banks are hereby directed as follows:\n2.1.1   A Bank shall not apply the threshold deduction treatment to significant investments\n        in insurance entities or insurance related businesses without the prior written\n        approval of the PA. In instances where the Bank has not sought such approval or\n        approval was not granted by the PA, the Bank shall apply the full deduction\n        treatment provided for in Regulation 38(5)(a)(i)(M) of the Regulations.\n2.1.2   A Bank shall not include any post-acquisition reserves related to significant\n        investments in insurance entities or insurance related businesses in either the\n        Bank’s solo or group consolidated capital. That is, post-acquisition reserves from\n        significant investments in insurance entities or businesses shall not be included in\n        the consolidated capital of banks and banking groups that have investments in such\n        entities or businesses.\n\n2.1.3   A Bank shall apply the threshold deduction treatment to the value of the initial\n        investment, with such initial investment being held at historic cost or an equivalent\n        value (i.e. the initial investment shall never be revalued upwards) to prevent banking\n        groups from including any insurer's post-acquisition reserves in their CET1 capital.\n2.1.4   Banks with investments in insurance entities or insurance related businesses may\n        adjust the value of the initial investment where an impairment is raised against such\n        an investment in order not to hold capital on an initial value that has subsequently\n        been adjusted downwards. Banks may also adjust the value of the initial investment\n        when share capital is adjusted permanently in the form of, for example,\n        recapitalisations and/or share buy-backs.\n                                                                                            3\n\n2.1.5     A Bank shall report variations to the value of the initial investment to the PA\n          biannually using the template attached hereto as “Annexure A”. The template must\n          be submitted by no later than 30 business days following the June and December\n          reporting periods, respectively. The completed templates must be approved and\n          signed off by the Group Treasurer or a senior Bank official having the equivalent\n          signing authority.\n2.1.6     Banking groups may include in their qualifying CET1 capital and reserve funds\n          distributions such as actual dividends declared by such insurance entities or\n          insurance related businesses, once approved by the insurers' board of directors or\n          related governance structures.",
+              "text": "Based on the aforesaid and in accordance with the provisions of section 6(6) of the Banks Act 94 of 1990, banks are hereby directed as follows:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "A Bank shall not apply the threshold deduction treatment to significant investments in insurance entities or insurance related businesses without the prior written approval of the PA. In instances where the Bank has not sought such approval or approval was not granted by the PA, the Bank shall apply the full deduction treatment provided for in Regulation 38(5)(a)(i)(M) of the Regulations.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-2",
+                  "number": "2.1.2",
+                  "text": "A Bank shall not include any post-acquisition reserves related to significant investments in insurance entities or insurance related businesses in either the Bank\u2019s solo or group consolidated capital. That is, post-acquisition reserves from significant investments in insurance entities or businesses shall not be included in the consolidated capital of banks and banking groups that have investments in such entities or businesses.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-3",
+                  "number": "2.1.3",
+                  "text": "A Bank shall apply the threshold deduction treatment to the value of the initial investment, with such initial investment being held at historic cost or an equivalent value (i.e. the initial investment shall never be revalued upwards) to prevent banking groups from including any insurer's post-acquisition reserves in their CET1 capital.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-4",
+                  "number": "2.1.4",
+                  "text": "Banks with investments in insurance entities or insurance related businesses may adjust the value of the initial investment where an impairment is raised against such an investment in order not to hold capital on an initial value that has subsequently been adjusted downwards. Banks may also adjust the value of the initial investment when share capital is adjusted permanently in the form of, for example, recapitalisations and/or share buy-backs. 3",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-5",
+                  "number": "2.1.5",
+                  "text": "A Bank shall report variations to the value of the initial investment to the PA biannually using the template attached hereto as \u201cAnnexure A\u201d. The template must be submitted by no later than 30 business days following the June and December reporting periods, respectively. The completed templates must be approved and signed off by the Group Treasurer or a senior Bank official having the equivalent signing authority.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-6",
+                  "number": "2.1.6",
+                  "text": "Banking groups may include in their qualifying CET1 capital and reserve funds distributions such as actual dividends declared by such insurance entities or insurance related businesses, once approved by the insurers' board of directors or related governance structures.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d2-2025-2-2",
+              "id": "s2-2",
               "number": "2.2",
-              "heading": "All the Banks must comply with the respective requirements specified in this",
-              "text": "2.2       All the Banks must comply with the respective requirements specified in this\n          directive on or before 31 July 2025.",
+              "text": "All the Banks must comply with the respective requirements specified in this directive on or before 31 July 2025.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d2-2025-2-3",
+              "id": "s2-3",
               "number": "2.3",
-              "heading": "Banks not in compliance with this Directive may approach the PA, in terms of section",
-              "text": "2.3       Banks not in compliance with this Directive may approach the PA, in terms of section\n          279 of the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017), to request an\n          extension for the period for compliance with this Directive.",
+              "text": "Banks not in compliance with this Directive may approach the PA, in terms of section 279 of the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017), to request an extension for the period for compliance with this Directive.",
               "verbatim": true,
               "subsections": []
             }
@@ -150,14 +202,14 @@
           "id": "s-banks-d2-2025-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.        Acknowledgement of receipt\n\n3.1       Kindly ensure that a copy of this Directive is made available to your institution’s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
+          "text": "3.1       Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d2-2025-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
-              "text": "3.1       Kindly ensure that a copy of this Directive is made available to your institution’s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
+              "text": "3.1       Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
               "verbatim": true,
               "subsections": []
             }

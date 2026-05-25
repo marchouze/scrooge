@@ -1,6 +1,6 @@
 {
   "slug": "banks-c4-2025",
-  "title": "Banks Act Circular C4/2025 — Basel III post-crisis reforms reporting",
+  "title": "Banks Act Circular C4/2025 \u2014 Basel III post-crisis reforms reporting",
   "shortTitle": "Circular C4/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -28,54 +28,56 @@
           "id": "s-banks-c4-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.            Introduction\n\n1.1           Regulations 38(2)(g) and 38(2)(h) of the amended Regulations specify, among\n              others, the requirements for the calculation of the output floor, including the relevant\n              transition arrangements and the related phase-in percentages to be applied during\n              the transition period.\n\n1.1.1         The phase-in requirement for the purpose of the output floor apply as follows:\n\n              \u0003     1 July 2025: 60%\n              \u0003     1 January 2026: 65%\n              \u0003     1 January 2027: 70%\n              \u0003     1 January 2028: 72.5%\n\n1.2           As part of the Basel III post-crisis reforms, the Basel Committee on Banking\n              Supervision introduced a new output floor, which provides a minimum level of risk\n              weighted exposures that banks must maintain.\n\n\n\n\n                                                                                                   1\n\n1.3            As such, the output floor effectively sets a lower bound for a bank’s risk weighted\n               exposures (RWEs). It is calculated in terms of internal model approaches, at 72.5\n               per cent, after phase-in, of the banks’ respective capital requirements for Pillar 1\n               risks calculated in terms of the standardised approaches.\n\n1.4            Therefore, the floor was designed not only to reduce undue variability in banks’\n               RWE but also to improve comparability of capital ratios between banks.\n\n1.5            The new output floor must be calculated at an aggregate level by totalling all the\n               different types of risks specified in the amended Regulations. The proviso to\n               regulation 36(2) of the amended Regulations states “Provided that, unless\n               specifically otherwise stated or specified in writing, all the directives, instructions\n               or requirements specified in these Regulations that relate to a bank on a solo basis\n               shall mutatis mutandis apply to that bank or its controlling company on a\n               consolidated basis.”\n\n1.6            Furthermore, regulation 37(3) of the amended Regulations gives effect to the\n               provisions relating to the completion on a solo basis of the respective risk-based\n               returns by a bank in the Republic, to apply mutatis mutandis to the completion of\n               the form BA 610 in respect of any relevant foreign operation.",
+          "text": "Introduction 1. Introduction",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-c4-2025-1-1",
+              "id": "s1-1",
               "number": "1.1",
-              "heading": "Regulations 38(2)(g) and 38(2)(h) of the amended Regulations specify, among",
-              "text": "1.1           Regulations 38(2)(g) and 38(2)(h) of the amended Regulations specify, among\n              others, the requirements for the calculation of the output floor, including the relevant\n              transition arrangements and the related phase-in percentages to be applied during\n              the transition period.\n\n1.1.1         The phase-in requirement for the purpose of the output floor apply as follows:\n\n              \u0003     1 July 2025: 60%\n              \u0003     1 January 2026: 65%\n              \u0003     1 January 2027: 70%\n              \u0003     1 January 2028: 72.5%",
+              "text": "Regulations 38(2)(g) and 38(2)(h) of the amended Regulations specify, among others, the requirements for the calculation of the output floor, including the relevant transition arrangements and the related phase-in percentages to be applied during the transition period.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-1-1",
+                  "number": "1.1.1",
+                  "text": "The phase-in requirement for the purpose of the output floor apply as follows: \u0003 1 July 2025: 60% \u0003 1 January 2026: 65% \u0003 1 January 2027: 70% \u0003 1 January 2028: 72.5%",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-c4-2025-1-2",
+              "id": "s1-2",
               "number": "1.2",
-              "heading": "As part of the Basel III post-crisis reforms, the Basel Committee on Banking",
-              "text": "1.2           As part of the Basel III post-crisis reforms, the Basel Committee on Banking\n              Supervision introduced a new output floor, which provides a minimum level of risk\n              weighted exposures that banks must maintain.\n\n\n\n\n                                                                                                   1",
+              "text": "As part of the Basel III post-crisis reforms, the Basel Committee on Banking Supervision introduced a new output floor, which provides a minimum level of risk weighted exposures that banks must maintain. 1",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-c4-2025-1-3",
+              "id": "s1-3",
               "number": "1.3",
-              "heading": "As such, the output floor effectively sets a lower bound for a bank’s risk weighted",
-              "text": "1.3            As such, the output floor effectively sets a lower bound for a bank’s risk weighted\n               exposures (RWEs). It is calculated in terms of internal model approaches, at 72.5\n               per cent, after phase-in, of the banks’ respective capital requirements for Pillar 1\n               risks calculated in terms of the standardised approaches.",
+              "text": "As such, the output floor effectively sets a lower bound for a bank\u2019s risk weighted exposures (RWEs). It is calculated in terms of internal model approaches, at 72.5 per cent, after phase-in, of the banks\u2019 respective capital requirements for Pillar 1 risks calculated in terms of the standardised approaches.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-c4-2025-1-4",
+              "id": "s1-4",
               "number": "1.4",
-              "heading": "Therefore, the floor was designed not only to reduce undue variability in banks’",
-              "text": "1.4            Therefore, the floor was designed not only to reduce undue variability in banks’\n               RWE but also to improve comparability of capital ratios between banks.",
+              "text": "Therefore, the floor was designed not only to reduce undue variability in banks\u2019 RWE but also to improve comparability of capital ratios between banks.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-c4-2025-1-5",
+              "id": "s1-5",
               "number": "1.5",
-              "heading": "The new output floor must be calculated at an aggregate level by totalling all the",
-              "text": "1.5            The new output floor must be calculated at an aggregate level by totalling all the\n               different types of risks specified in the amended Regulations. The proviso to\n               regulation 36(2) of the amended Regulations states “Provided that, unless\n               specifically otherwise stated or specified in writing, all the directives, instructions\n               or requirements specified in these Regulations that relate to a bank on a solo basis\n               shall mutatis mutandis apply to that bank or its controlling company on a\n               consolidated basis.”",
+              "text": "The new output floor must be calculated at an aggregate level by totalling all the different types of risks specified in the amended Regulations. The proviso to regulation 36(2) of the amended Regulations states \u201cProvided that, unless specifically otherwise stated or specified in writing, all the directives, instructions or requirements specified in these Regulations that relate to a bank on a solo basis shall mutatis mutandis apply to that bank or its controlling company on a consolidated basis.\u201d",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-c4-2025-1-6",
+              "id": "s1-6",
               "number": "1.6",
-              "heading": "Furthermore, regulation 37(3) of the amended Regulations gives effect to the",
-              "text": "1.6            Furthermore, regulation 37(3) of the amended Regulations gives effect to the\n               provisions relating to the completion on a solo basis of the respective risk-based\n               returns by a bank in the Republic, to apply mutatis mutandis to the completion of\n               the form BA 610 in respect of any relevant foreign operation.",
+              "text": "Furthermore, regulation 37(3) of the amended Regulations gives effect to the provisions relating to the completion on a solo basis of the respective risk-based returns by a bank in the Republic, to apply mutatis mutandis to the completion of the form BA 610 in respect of any relevant foreign operation.",
               "verbatim": true,
               "subsections": []
             }
@@ -85,14 +87,14 @@
           "id": "s-banks-c4-2025-2",
           "number": "2",
           "heading": "Clarification of the measurement and reporting of the output floor",
-          "text": "2.             Clarification of the measurement and reporting of the output floor\n\n2.1            The output floor must be calculated and applied at every relevant tier within a\n               banking group as well as at the consolidated level, as if the said consolidated group\n               or sub-group of entities is a single entity. The maximum increase of 25 per cent of\n               the bank’s RWEs before the application of the relevant floor as envisaged in\n               footnote 31 of table 1 in regulation 38(2)(h) of the amended Regulations must\n               similarly be applied at every relevant tier within the banking group, during the\n               specified phase-in period.\n\n2.2            This approach ensures that the output floor is calculated after the appropriate\n               application of potential diversification in respect of banking subsidiaries and that\n               the consolidation / aggregation approach is conducted in accordance with the\n               relevant requirements specified in regulation 36 read with regulation 38 of the\n               amended Regulations.",
+          "text": "2.1            The output floor must be calculated and applied at every relevant tier within a\n               banking group as well as at the consolidated level, as if the said consolidated group\n               or sub-group of entities is a single entity. The maximum increase of 25 per cent of\n               the bank\u2019s RWEs before the application of the relevant floor as envisaged in\n               footnote 31 of table 1 in regulation 38(2)(h) of the amended Regulations must\n               similarly be applied at every relevant tier within the banking group, during the\n               specified phase-in period.\n\n2.2            This approach ensures that the output floor is calculated after the appropriate\n               application of potential diversification in respect of banking subsidiaries and that\n               the consolidation / aggregation approach is conducted in accordance with the\n               relevant requirements specified in regulation 36 read with regulation 38 of the\n               amended Regulations.",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-c4-2025-2-1",
               "number": "2.1",
               "heading": "The output floor must be calculated and applied at every relevant tier within a",
-              "text": "2.1            The output floor must be calculated and applied at every relevant tier within a\n               banking group as well as at the consolidated level, as if the said consolidated group\n               or sub-group of entities is a single entity. The maximum increase of 25 per cent of\n               the bank’s RWEs before the application of the relevant floor as envisaged in\n               footnote 31 of table 1 in regulation 38(2)(h) of the amended Regulations must\n               similarly be applied at every relevant tier within the banking group, during the\n               specified phase-in period.",
+              "text": "2.1            The output floor must be calculated and applied at every relevant tier within a\n               banking group as well as at the consolidated level, as if the said consolidated group\n               or sub-group of entities is a single entity. The maximum increase of 25 per cent of\n               the bank\u2019s RWEs before the application of the relevant floor as envisaged in\n               footnote 31 of table 1 in regulation 38(2)(h) of the amended Regulations must\n               similarly be applied at every relevant tier within the banking group, during the\n               specified phase-in period.",
               "verbatim": true,
               "subsections": []
             },
@@ -110,7 +112,7 @@
           "id": "s-banks-c4-2025-3",
           "number": "3",
           "heading": "Implementation Date",
-          "text": "3.             Implementation Date\n\n3.1            The new output floor came into effect on 1 July 2025 and must be phased in as\n               specified in the amended Regulations, read in conjunction with this Circular.\n\n\n\n\n                                                                                                                                          2",
+          "text": "3.1            The new output floor came into effect on 1 July 2025 and must be phased in as\n               specified in the amended Regulations, read in conjunction with this Circular.\n\n\n\n\n                                                                                                                                          2",
           "verbatim": true,
           "subsections": [
             {
@@ -126,8 +128,8 @@
         {
           "id": "s-banks-c4-2025-1",
           "number": "1",
-          "heading": "Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank’s total Or",
-          "text": "Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank’s total Or Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank’s total Or Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank’s total Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank’s total risk-weighted 1. Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank’s total risk-weighted exposure amount resulting from the application of the specified output floor, to a maximum increase of 25 per cent of the bank’s risk- weighted exposure amount before the application of the relevant specified floor.”",
+          "heading": "Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank\u2019s total Or",
+          "text": "Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank\u2019s total Or Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank\u2019s total Or Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank\u2019s total Or Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank\u2019s total Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank\u2019s total risk-weighted 1. Or such percentage as may be directed in writing by the Authority to cap the incremental increase in a bank\u2019s total risk-weighted exposure amount resulting from the application of the specified output floor, to a maximum increase of 25 per cent of the bank\u2019s risk- weighted exposure amount before the application of the relevant specified floor.\u201d",
           "verbatim": true,
           "subsections": []
         },
@@ -135,14 +137,14 @@
           "id": "s-banks-c4-2025-4",
           "number": "4",
           "heading": "Acknowledgement of Receipt",
-          "text": "4.      Acknowledgement of Receipt\n\n4.1     Kindly ensure that a copy of this Circular is made available to your institution’s\n        independent auditors. The attached acknowledgement of receipt duly completed\n        and signed by both the chief executive officer of the institution and the said auditors\n        should be returned to the PA at the earliest convenience of the aforementioned\n        signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 25/07/25\n\n\n\n\n                                                                                             3",
+          "text": "4.1     Kindly ensure that a copy of this Circular is made available to your institution\u2019s\n        independent auditors. The attached acknowledgement of receipt duly completed\n        and signed by both the chief executive officer of the institution and the said auditors\n        should be returned to the PA at the earliest convenience of the aforementioned\n        signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 25/07/25\n\n\n\n\n                                                                                             3",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-c4-2025-4-1",
               "number": "4.1",
-              "heading": "Kindly ensure that a copy of this Circular is made available to your institution’s",
-              "text": "4.1     Kindly ensure that a copy of this Circular is made available to your institution’s\n        independent auditors. The attached acknowledgement of receipt duly completed\n        and signed by both the chief executive officer of the institution and the said auditors\n        should be returned to the PA at the earliest convenience of the aforementioned\n        signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 25/07/25\n\n\n\n\n                                                                                             3",
+              "heading": "Kindly ensure that a copy of this Circular is made available to your institution\u2019s",
+              "text": "4.1     Kindly ensure that a copy of this Circular is made available to your institution\u2019s\n        independent auditors. The attached acknowledgement of receipt duly completed\n        and signed by both the chief executive officer of the institution and the said auditors\n        should be returned to the PA at the earliest convenience of the aforementioned\n        signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 25/07/25\n\n\n\n\n                                                                                             3",
               "verbatim": true,
               "subsections": []
             }

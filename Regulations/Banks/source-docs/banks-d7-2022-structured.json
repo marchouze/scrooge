@@ -28,40 +28,103 @@
           "id": "s-banks-d7-2022-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.             Introduction\n\n1.1            The responsibilities of banks\n\n1.1.1.         Banks are ultimately responsible for ensuring that they select, nominate and\n               appoint fit and proper individuals to the board of directors (board) or for senior\n               management positions. Banks are required to conduct their due diligence and\n               assessment of the members of the board and senior management not only prior\n               to their appointment but also on a regular basis.\n\n\n\n1 Directors and officers of a bank or controlling company\n2   Statement relating to attributes of serving or prospective directors or executive officers\n\n\n                                                                                                 1\n\n1.1.2.      Such due diligence and assessment must include processes to ensure that the\n            above-mentioned individuals have no criminal records.\n\n1.2         International standards\n\n1.2.1       The Core Principles for Effective Banking Supervision (Core Principles) of the\n            Basel Committee on Banking Supervision (BCBS) and, more specifically, the\n            Essential Criteria 7 of Principle 5 states that a licensing authority, at\n            authorisation, should evaluate a bank\u2019s proposed board members and senior\n            management as to their expertise and integrity (a fit and proper test) as well as\n            any potential for conflict of interest. The fit and proper criteria should include:\n\n                \u2022 an assessment of the skills and experience in relevant financial operations\n                  commensurate with the intended activities of the bank; and\n                \u2022 confirmation that no record of criminal activities and/or adverse regulatory\n                  judgments exist that would make the person unfit to hold important\n                  positions in a bank.\n\n1.2.2       South Africa, as a member of the Financial Action Task Force (FATF), has a\n            duty to conform to the FATF\u2019s 40 Recommendations against money laundering\n            and terrorism financing. FATF Recommendation 26 states that countries should\n            ensure that financial institutions3 (FIs) are subject to adequate regulation and\n            supervision, and that they are effectively implementing the FATF\n            Recommendations. Furthermore, financial supervisors should take the\n            necessary legal and/or regulatory measures to prevent persons holding criminal\n            records or their associates from holding a management function in an FI.\n\n1.3         Legislative requirements\n\n1.3.1       Section 60(5)(a) of the Banks Act requires that every bank give the PA written\n            notice of the nomination of any person in respect of the appointment as CEO,\n            director or executive officer by furnishing the PA with the information prescribed\n            in regulation 42 of the Regulations.\n\n1.3.2       Regulation 42 of the Regulations requires banks to submit to the PA, particulars\n            of each person to be appointed in a key position, in the form of a completed\n            statement relating to the attributes of a serving or prospective director or\n            executive officer (form BA 020) together with a CV.\n\n1.3.3       Regulation 36(17)(b)(ii)4 of the Regulations provides that every relevant foreign\n            branch, subsidiary, or operation of the bank or controlling company implements\n            and applies anti-money laundering and counter-financing of terrorism\n\n3 A financial institution as per the Financial Action Task Force definition means any natural or legal person who conducts as a\nbusiness one or more of the following activities or operations for or on behalf of a customer: 1. Acceptance of deposits and other\nrepayable funds from the public. 2. Lending. 3. Financial leasing. 4. Money or value transfer services. 5. Issuing and managing\nmeans of payment (e.g. credit and debit cards, cheques, traveller's cheques, money orders and bankers' drafts, electronic money).\n6. Financial guarantees and commitments. 7. Trading in: (a) money market instruments (cheques, bills, certificates of deposit,\nderivatives etc.); (b) foreign exchange; (c) exchange, interest rate and index instruments; (d) transferable securities; (e) commodity\nfutures trading. 8. Participation in securities issues and the provision of financial services related to such issues. 9. Individual and\ncollective portfolio management. 10. Safekeeping and administration of cash or liquid securities on behalf of other persons. 11.\nOtherwise investing, administering or managing funds or money on behalf of other persons. 12. Underwriting and placement of life\ninsurance and other investment related insurance. 13. Money and currency changing.\n4 Matters related to corporate governance, risk management and internal controls\n\n\n\n                                                                                                                                      2\n\n            (AML/CFT) measures consistent with the relevant FATF Recommendations\n            (which includes Recommendation 26).\n\n1.4         The duties of the Prudential Authority\n\n1.4.1 The PA in the execution of its mandate requires that banks comply with legislative\n      requirements by implementing robust governance arrangements, including fit and\n      proper requirements for the appointment of directors or persons responsible for\n      the senior management of banks.\n\n1.4.2 The PA requires banks to implement the necessary measures to prevent persons\n      holding criminal records and other unfit persons from being appointed into\n      positions which would allow such individuals to hold a position as a director or\n      oversee any management function in the mutual bank and undermine the\n      integrity of the bank.",
+          "text": "Introduction 1. Introduction",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d7-2022-1-1",
+              "id": "s1-1",
               "number": "1.1",
-              "heading": "The responsibilities of banks",
-              "text": "1.1            The responsibilities of banks\n\n1.1.1.         Banks are ultimately responsible for ensuring that they select, nominate and\n               appoint fit and proper individuals to the board of directors (board) or for senior\n               management positions. Banks are required to conduct their due diligence and\n               assessment of the members of the board and senior management not only prior\n               to their appointment but also on a regular basis.\n\n\n\n1 Directors and officers of a bank or controlling company\n2   Statement relating to attributes of serving or prospective directors or executive officers\n\n\n                                                                                                 1\n\n1.1.2.      Such due diligence and assessment must include processes to ensure that the\n            above-mentioned individuals have no criminal records.",
+              "text": "The responsibilities of banks",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-1-1",
+                  "number": "1.1.1",
+                  "text": "Banks are ultimately responsible for ensuring that they select, nominate and appoint fit and proper individuals to the board of directors (board) or for senior management positions. Banks are required to conduct their due diligence and assessment of the members of the board and senior management not only prior to their appointment but also on a regular basis. Directors and officers of a bank or controlling company 2 Statement relating to attributes of serving or prospective directors or executive officers 1",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-1-2",
+                  "number": "1.1.2",
+                  "text": "Such due diligence and assessment must include processes to ensure that the above-mentioned individuals have no criminal records.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d7-2022-1-2",
+              "id": "s1-2",
               "number": "1.2",
-              "heading": "International standards",
-              "text": "1.2         International standards\n\n1.2.1       The Core Principles for Effective Banking Supervision (Core Principles) of the\n            Basel Committee on Banking Supervision (BCBS) and, more specifically, the\n            Essential Criteria 7 of Principle 5 states that a licensing authority, at\n            authorisation, should evaluate a bank\u2019s proposed board members and senior\n            management as to their expertise and integrity (a fit and proper test) as well as\n            any potential for conflict of interest. The fit and proper criteria should include:\n\n                \u2022 an assessment of the skills and experience in relevant financial operations\n                  commensurate with the intended activities of the bank; and\n                \u2022 confirmation that no record of criminal activities and/or adverse regulatory\n                  judgments exist that would make the person unfit to hold important\n                  positions in a bank.\n\n1.2.2       South Africa, as a member of the Financial Action Task Force (FATF), has a\n            duty to conform to the FATF\u2019s 40 Recommendations against money laundering\n            and terrorism financing. FATF Recommendation 26 states that countries should\n            ensure that financial institutions3 (FIs) are subject to adequate regulation and\n            supervision, and that they are effectively implementing the FATF\n            Recommendations. Furthermore, financial supervisors should take the\n            necessary legal and/or regulatory measures to prevent persons holding criminal\n            records or their associates from holding a management function in an FI.",
+              "text": "International standards",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-2-1",
+                  "number": "1.2.1",
+                  "text": "The Core Principles for Effective Banking Supervision (Core Principles) of the Basel Committee on Banking Supervision (BCBS) and, more specifically, the Essential Criteria 7 of Principle 5 states that a licensing authority, at authorisation, should evaluate a bank\u2019s proposed board members and senior management as to their expertise and integrity (a fit and proper test) as well as any potential for conflict of interest. The fit and proper criteria should include: \u2022 an assessment of the skills and experience in relevant financial operations commensurate with the intended activities of the bank; and \u2022 confirmation that no record of criminal activities and/or adverse regulatory judgments exist that would make the person unfit to hold important positions in a bank.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-2-2",
+                  "number": "1.2.2",
+                  "text": "South Africa, as a member of the Financial Action Task Force (FATF), has a duty to conform to the FATF\u2019s 40 Recommendations against money laundering and terrorism financing. FATF Recommendation 26 states that countries should ensure that financial institutions3 (FIs) are subject to adequate regulation and supervision, and that they are effectively implementing the FATF Recommendations. Furthermore, financial supervisors should take the necessary legal and/or regulatory measures to prevent persons holding criminal records or their associates from holding a management function in an FI.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d7-2022-1-3",
+              "id": "s1-3",
               "number": "1.3",
-              "heading": "Legislative requirements",
-              "text": "1.3         Legislative requirements\n\n1.3.1       Section 60(5)(a) of the Banks Act requires that every bank give the PA written\n            notice of the nomination of any person in respect of the appointment as CEO,\n            director or executive officer by furnishing the PA with the information prescribed\n            in regulation 42 of the Regulations.\n\n1.3.2       Regulation 42 of the Regulations requires banks to submit to the PA, particulars\n            of each person to be appointed in a key position, in the form of a completed\n            statement relating to the attributes of a serving or prospective director or\n            executive officer (form BA 020) together with a CV.\n\n1.3.3       Regulation 36(17)(b)(ii)4 of the Regulations provides that every relevant foreign\n            branch, subsidiary, or operation of the bank or controlling company implements\n            and applies anti-money laundering and counter-financing of terrorism\n\n3 A financial institution as per the Financial Action Task Force definition means any natural or legal person who conducts as a\nbusiness one or more of the following activities or operations for or on behalf of a customer: 1. Acceptance of deposits and other\nrepayable funds from the public. 2. Lending. 3. Financial leasing. 4. Money or value transfer services. 5. Issuing and managing\nmeans of payment (e.g. credit and debit cards, cheques, traveller's cheques, money orders and bankers' drafts, electronic money).\n6. Financial guarantees and commitments. 7. Trading in: (a) money market instruments (cheques, bills, certificates of deposit,\nderivatives etc.); (b) foreign exchange; (c) exchange, interest rate and index instruments; (d) transferable securities; (e) commodity\nfutures trading. 8. Participation in securities issues and the provision of financial services related to such issues. 9. Individual and\ncollective portfolio management. 10. Safekeeping and administration of cash or liquid securities on behalf of other persons. 11.\nOtherwise investing, administering or managing funds or money on behalf of other persons. 12. Underwriting and placement of life\ninsurance and other investment related insurance. 13. Money and currency changing.\n4 Matters related to corporate governance, risk management and internal controls\n\n\n\n                                                                                                                                      2\n\n            (AML/CFT) measures consistent with the relevant FATF Recommendations\n            (which includes Recommendation 26).",
+              "text": "Legislative requirements",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-3-1",
+                  "number": "1.3.1",
+                  "text": "Section 60(5)(a) of the Banks Act requires that every bank give the PA written notice of the nomination of any person in respect of the appointment as CEO, director or executive officer by furnishing the PA with the information prescribed in regulation 42 of the Regulations.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-3-2",
+                  "number": "1.3.2",
+                  "text": "Regulation 42 of the Regulations requires banks to submit to the PA, particulars of each person to be appointed in a key position, in the form of a completed statement relating to the attributes of a serving or prospective director or executive officer (form BA 020) together with a CV.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-3-3",
+                  "number": "1.3.3",
+                  "text": "Regulation 36(17)(b)(ii)4 of the Regulations provides that every relevant foreign branch, subsidiary, or operation of the bank or controlling company implements and applies anti-money laundering and counter-financing of terrorism A financial institution as per the Financial Action Task Force definition means any natural or legal person who conducts as a business one or more of the following activities or operations for or on behalf of a customer: 1. Acceptance of deposits and other repayable funds from the public. 2. Lending. 3. Financial leasing. 4. Money or value transfer services. 5. Issuing and managing means of payment (e.g. credit and debit cards, cheques, traveller's cheques, money orders and bankers' drafts, electronic money). 6. Financial guarantees and commitments. 7. Trading in: (a) money market instruments (cheques, bills, certificates of deposit, derivatives etc.); (b) foreign exchange; (c) exchange, interest rate and index instruments; (d) transferable securities; (e) commodity futures trading. 8. Participation in securities issues and the provision of financial services related to such issues. 9. Individual and collective portfolio management. 10. Safekeeping and administration of cash or liquid securities on behalf of other persons. 11. Otherwise investing, administering or managing funds or money on behalf of other persons. 12. Underwriting and placement of life insurance and other investment related insurance. 13. Money and currency changing. 4 Matters related to corporate governance, risk management and internal controls 2 (AML/CFT) measures consistent with the relevant FATF Recommendations (which includes Recommendation 26).",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d7-2022-1-4",
+              "id": "s1-4",
               "number": "1.4",
-              "heading": "The duties of the Prudential Authority",
-              "text": "1.4         The duties of the Prudential Authority\n\n1.4.1 The PA in the execution of its mandate requires that banks comply with legislative\n      requirements by implementing robust governance arrangements, including fit and\n      proper requirements for the appointment of directors or persons responsible for\n      the senior management of banks.\n\n1.4.2 The PA requires banks to implement the necessary measures to prevent persons\n      holding criminal records and other unfit persons from being appointed into\n      positions which would allow such individuals to hold a position as a director or\n      oversee any management function in the mutual bank and undermine the\n      integrity of the bank.",
+              "text": "The duties of the Prudential Authority",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-4-1",
+                  "number": "1.4.1",
+                  "text": "The PA in the execution of its mandate requires that banks comply with legislative requirements by implementing robust governance arrangements, including fit and proper requirements for the appointment of directors or persons responsible for the senior management of banks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-4-2",
+                  "number": "1.4.2",
+                  "text": "The PA requires banks to implement the necessary measures to prevent persons holding criminal records and other unfit persons from being appointed into positions which would allow such individuals to hold a position as a director or oversee any management function in the mutual bank and undermine the integrity of the bank.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -177,7 +240,7 @@
           "id": "s-banks-d7-2022-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.     Acknowledgement of receipt\n\n3.1    Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n       independent auditors. In addition, the attached acknowledgement of receipt duly\n       completed and signed by both the chief executive officer of the institution and\n       the said auditors should be returned to the PA at the earliest convenience of the\n       aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 2022-08-12\n\nThe previous Directive issued was Directive 06/2022, dated 12 August 2022.\n\n\n\n\n                                                                                        5",
+          "text": "3.1    Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n       independent auditors. In addition, the attached acknowledgement of receipt duly\n       completed and signed by both the chief executive officer of the institution and\n       the said auditors should be returned to the PA at the earliest convenience of the\n       aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 2022-08-12\n\nThe previous Directive issued was Directive 06/2022, dated 12 August 2022.\n\n\n\n\n                                                                                        5",
           "verbatim": true,
           "subsections": [
             {

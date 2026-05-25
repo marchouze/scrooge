@@ -1,6 +1,6 @@
 {
   "slug": "banks-d5-2025",
-  "title": "Banks Act Directive D5/2025 — Returns to be submitted to the Prudential Authority",
+  "title": "Banks Act Directive D5/2025 \u2014 Returns to be submitted to the Prudential Authority",
   "shortTitle": "Directive D5/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -28,46 +28,56 @@
           "id": "s-banks-d5-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.              Introduction\n\n1.1             Sections 105 and 108 of the Financial Sector Regulation Act, 2017 (Act No. 9 of\n                2017) (FSRA), read with the Banks Act, make provision for the PA to make\n                prudential standards and determinations for financial institutions in respect of\n                various matters, including matters in respect of which regulations may be\n                prescribed in terms of the Banks Act.\n\n1.2             Towards the end of 2023, as an integral part of the Umoja System Implementation\n                Project,1 the Umoja team commenced engagements with various key persons in\n                respect of regulatory return developments and the submission of future returns\n                to the PA.\n\n\n1 The Umoja System is a digital interface between the PA and regulated institutions aimed at providing a more\n\nintegrated, efficient and transparent operating model.\n                                                                                                          1\n\n1.3          On 11 September 2024, the PA issued Directive 4 of 2024,2 informing all\n             interested persons that, to facilitate and support the ongoing work related to the\n             Umoja System Implementation Project, the PA had decided to:\n\n1.3.1        recommend to the Minister of Finance and National Treasury that all BA returns\n             and related instructions for the completion of the BA returns be deleted from the\n             Regulations; and\n\n1.3.2        issue all BA returns and related instructions for the completion of the BA returns\n             as an integral part of the directives issued in terms of the Banks Act and/or\n             determinations issued under prudential standards in terms of the FSRA.\n\n1.4          On 31 January 2025, the Minister of Finance amended the Regulations by\n             deleting from the Regulations all BA returns and related instructions for the\n             completion of the BA returns, with effect from 1 February 2025.\n\n1.5          Simultaneously, on 31 January 2025, the PA issued Directive 1 of 2025,3 directing\n             banks to complete and submit specified financial, risk-based and other related\n             returns to the PA in accordance with the requirements specified in\n             Directive 1 of 2025, with effect from 1 February 2025.",
+          "text": "Introduction 1. Introduction",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d5-2025-1-1",
+              "id": "s1-1",
               "number": "1.1",
-              "heading": "Sections 105 and 108 of the Financial Sector Regulation Act, 2017 (Act No. 9 of",
-              "text": "1.1             Sections 105 and 108 of the Financial Sector Regulation Act, 2017 (Act No. 9 of\n                2017) (FSRA), read with the Banks Act, make provision for the PA to make\n                prudential standards and determinations for financial institutions in respect of\n                various matters, including matters in respect of which regulations may be\n                prescribed in terms of the Banks Act.",
+              "text": "Sections 105 and 108 of the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017) (FSRA), read with the Banks Act, make provision for the PA to make prudential standards and determinations for financial institutions in respect of various matters, including matters in respect of which regulations may be prescribed in terms of the Banks Act.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d5-2025-1-2",
+              "id": "s1-2",
               "number": "1.2",
-              "heading": "Towards the end of 2023, as an integral part of the Umoja System Implementation",
-              "text": "1.2             Towards the end of 2023, as an integral part of the Umoja System Implementation\n                Project,1 the Umoja team commenced engagements with various key persons in\n                respect of regulatory return developments and the submission of future returns\n                to the PA.\n\n\n1 The Umoja System is a digital interface between the PA and regulated institutions aimed at providing a more\n\nintegrated, efficient and transparent operating model.\n                                                                                                          1",
+              "text": "Towards the end of 2023, as an integral part of the Umoja System Implementation Project,1 the Umoja team commenced engagements with various key persons in respect of regulatory return developments and the submission of future returns to the PA. The Umoja System is a digital interface between the PA and regulated institutions aimed at providing a more integrated, efficient and transparent operating model. 1",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d5-2025-1-3",
+              "id": "s1-3",
               "number": "1.3",
-              "heading": "On 11 September 2024, the PA issued Directive 4 of 2024,2 informing all",
-              "text": "1.3          On 11 September 2024, the PA issued Directive 4 of 2024,2 informing all\n             interested persons that, to facilitate and support the ongoing work related to the\n             Umoja System Implementation Project, the PA had decided to:\n\n1.3.1        recommend to the Minister of Finance and National Treasury that all BA returns\n             and related instructions for the completion of the BA returns be deleted from the\n             Regulations; and\n\n1.3.2        issue all BA returns and related instructions for the completion of the BA returns\n             as an integral part of the directives issued in terms of the Banks Act and/or\n             determinations issued under prudential standards in terms of the FSRA.",
+              "text": "On 11 September 2024, the PA issued Directive 4 of 2024,2 informing all interested persons that, to facilitate and support the ongoing work related to the Umoja System Implementation Project, the PA had decided to:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s1-3-1",
+                  "number": "1.3.1",
+                  "text": "recommend to the Minister of Finance and National Treasury that all BA returns and related instructions for the completion of the BA returns be deleted from the Regulations; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-3-2",
+                  "number": "1.3.2",
+                  "text": "issue all BA returns and related instructions for the completion of the BA returns as an integral part of the directives issued in terms of the Banks Act and/or determinations issued under prudential standards in terms of the FSRA.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d5-2025-1-4",
+              "id": "s1-4",
               "number": "1.4",
-              "heading": "On 31 January 2025, the Minister of Finance amended the Regulations by",
-              "text": "1.4          On 31 January 2025, the Minister of Finance amended the Regulations by\n             deleting from the Regulations all BA returns and related instructions for the\n             completion of the BA returns, with effect from 1 February 2025.",
+              "text": "On 31 January 2025, the Minister of Finance amended the Regulations by deleting from the Regulations all BA returns and related instructions for the completion of the BA returns, with effect from 1 February 2025.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d5-2025-1-5",
+              "id": "s1-5",
               "number": "1.5",
-              "heading": "Simultaneously, on 31 January 2025, the PA issued Directive 1 of 2025,3 directing",
-              "text": "1.5          Simultaneously, on 31 January 2025, the PA issued Directive 1 of 2025,3 directing\n             banks to complete and submit specified financial, risk-based and other related\n             returns to the PA in accordance with the requirements specified in\n             Directive 1 of 2025, with effect from 1 February 2025.",
+              "text": "Simultaneously, on 31 January 2025, the PA issued Directive 1 of 2025,3 directing banks to complete and submit specified financial, risk-based and other related returns to the PA in accordance with the requirements specified in Directive 1 of 2025, with effect from 1 February 2025.",
               "verbatim": true,
               "subsections": []
             }
@@ -76,7 +86,7 @@
         {
           "id": "s-banks-d5-2025-2",
           "number": "2",
-          "heading": "Directive 2. Directive",
+          "heading": "Directive",
           "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
@@ -305,24 +315,37 @@
           "id": "s-banks-d5-2025-3",
           "number": "3",
           "heading": "Implementation date",
-          "text": "3.       Implementation date\n\n3.1      This Directive replaces Directive 4 of 2024 and Directive 1 of 2025, with effect\n         from 1 July 2025.\n\n\n\n\n                                                                                       4\n\n3.2          Banks must comply with the respective requirements specified in:\n\n3.2.1        paragraph 2.1.1 to paragraph 2.1.23 of this Directive, with effect from\n             1 February 2025 up to and including 30 June 2025; and\n\n3.2.2        paragraph 2.1.24 to paragraph 2.1.28 of this Directive, with effect from\n             1 February 2025.",
+          "text": "Implementation date 3. Implementation date",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d5-2025-3-1",
+              "id": "s3-1",
               "number": "3.1",
-              "heading": "This Directive replaces Directive 4 of 2024 and Directive 1 of 2025, with effect",
-              "text": "3.1      This Directive replaces Directive 4 of 2024 and Directive 1 of 2025, with effect\n         from 1 July 2025.\n\n\n\n\n                                                                                       4",
+              "text": "This Directive replaces Directive 4 of 2024 and Directive 1 of 2025, with effect from 1 July 2025. 4",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d5-2025-3-2",
+              "id": "s3-2",
               "number": "3.2",
-              "heading": "Banks must comply with the respective requirements specified in:",
-              "text": "3.2          Banks must comply with the respective requirements specified in:\n\n3.2.1        paragraph 2.1.1 to paragraph 2.1.23 of this Directive, with effect from\n             1 February 2025 up to and including 30 June 2025; and\n\n3.2.2        paragraph 2.1.24 to paragraph 2.1.28 of this Directive, with effect from\n             1 February 2025.",
+              "text": "Banks must comply with the respective requirements specified in:",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s3-2-1",
+                  "number": "3.2.1",
+                  "text": "paragraph 2.1.1 to paragraph 2.1.23 of this Directive, with effect from 1 February 2025 up to and including 30 June 2025; and",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s3-2-2",
+                  "number": "3.2.2",
+                  "text": "paragraph 2.1.24 to paragraph 2.1.28 of this Directive, with effect from 1 February 2025.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
@@ -330,14 +353,14 @@
           "id": "s-banks-d5-2025-4",
           "number": "4",
           "heading": "Acknowledgement of receipt",
-          "text": "4.           Acknowledgement of receipt\n\n4.1          Kindly ensure that a copy of this Directive is made available to your institution’s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
+          "text": "4.1          Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d5-2025-4-1",
               "number": "4.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
-              "text": "4.1          Kindly ensure that a copy of this Directive is made available to your institution’s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
+              "text": "4.1          Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
               "verbatim": true,
               "subsections": []
             }
