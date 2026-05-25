@@ -18,6 +18,42 @@ import { resolve } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 
 // ---------------------------------------------------------------------------
+// Controlled topic vocabulary for regulatory tagging
+// ---------------------------------------------------------------------------
+const REGULATORY_TOPICS = [
+  "capital-adequacy",
+  "credit-risk",
+  "market-risk",
+  "operational-risk",
+  "liquidity-risk",
+  "counterparty-risk",
+  "interest-rate-risk",
+  "concentration-risk",
+  "governance",
+  "board-oversight",
+  "internal-controls",
+  "internal-audit",
+  "risk-management-framework",
+  "outsourcing",
+  "third-party-risk",
+  "data-management",
+  "business-continuity",
+  "it-systems",
+  "regulatory-reporting",
+  "disclosure",
+  "pillar-3",
+  "compliance",
+  "aml-cft",
+  "kyc",
+  "trading",
+  "derivatives",
+  "fx-risk",
+  "securities",
+  "treasury",
+  "remuneration",
+] as const;
+
+// ---------------------------------------------------------------------------
 // Pricing table (per 1M tokens) — update when Anthropic changes rates
 // ---------------------------------------------------------------------------
 const PRICING: Record<
@@ -135,6 +171,7 @@ interface GNode {
   contributor: string | null;
   applicability?: number;
   chapterTitle?: string;
+  topics?: string[];
 }
 interface GEdge {
   source: string;
@@ -205,14 +242,17 @@ async function main(): Promise<void> {
 Bank profile: institutional counterparties only; activities: JSE bonds/equities, OTC interest-rate derivatives, FX spot; no retail clients; no direct CLS/SAMOS access.
 
 For each section in the document, return a JSON array (no markdown, no explanation):
-[{"id":"<sectionId>","heading":"<heading>","applicability":<0.0-1.0>,"summary":"<one sentence>"}]
+[{"id":"<sectionId>","heading":"<heading>","applicability":<0.0-1.0>,"summary":"<one sentence>","topics":["<topic>"]}]
 
 applicability rubric:
 1.0 = directly binding right now on this bank
 0.7 = likely relevant at commencement of trading
 0.4 = sector-wide obligation, indirect relevance
 0.1 = applies to other entity types or activities
-0.0 = purely procedural / not applicable`;
+0.0 = purely procedural / not applicable
+
+topics: pick 1–4 from this list only (use exact strings):
+${REGULATORY_TOPICS.join(", ")}`;
 
   const response = await client.messages.create({
     model: MODEL,
@@ -240,7 +280,13 @@ applicability rubric:
     process.exit(1);
   }
 
-  let parsed: Array<{ id: string; heading: string; applicability: number; summary: string }>;
+  let parsed: Array<{
+    id: string;
+    heading: string;
+    applicability: number;
+    summary: string;
+    topics?: string[];
+  }>;
   try {
     parsed = JSON.parse(stripFences(textBlock.text));
   } catch {
@@ -253,6 +299,7 @@ applicability rubric:
   // Build graphify graph
   const sourceFile = args[srcIdx + 1] ?? "";
   const docId = normaliseId(doc.slug ?? doc.title ?? "doc");
+  const docTopics = [...new Set(parsed.flatMap((s) => s.topics ?? []))];
 
   const docNode: GNode = {
     id: docId,
@@ -264,6 +311,7 @@ applicability rubric:
     captured_at: new Date().toISOString(),
     author: doc.regulator ?? null,
     contributor: null,
+    topics: docTopics,
   };
 
   const sectionNodes: GNode[] = parsed.map((s) => ({
@@ -278,6 +326,7 @@ applicability rubric:
     contributor: null,
     applicability: s.applicability,
     chapterTitle: sections.find((sec) => sec.sectionId === s.id)?.chapterTitle,
+    topics: s.topics ?? [],
   }));
 
   const edges: GEdge[] = parsed.map((s) => ({
@@ -336,11 +385,14 @@ applicability rubric:
   console.log("Run /graphify to regenerate the visualization (fast-path — no LLM).");
 
   // Summary
+  console.log(`\nDocument topics: ${docTopics.join(", ") || "(none)"}`);
+
   const highApplicability = parsed.filter((s) => s.applicability >= 0.7);
   if (highApplicability.length > 0) {
     console.log("\nHigh-applicability sections (≥0.7):");
     for (const s of highApplicability) {
-      console.log(`  [${s.id}] (${s.applicability}) ${s.summary}`);
+      const t = s.topics?.join(", ") ?? "";
+      console.log(`  [${s.id}] (${s.applicability}) [${t}] ${s.summary}`);
     }
   } else {
     console.log("\nNo sections scored ≥0.7 applicability for this bank profile.");
