@@ -1,6 +1,6 @@
 {
   "slug": "banks-d1-2022",
-  "title": "Banks Act Directive D1/2022 — Liquidity coverage ratio: scope of application and matters related to calculation and disclosure",
+  "title": "Banks Act Directive D1/2022 \u2014 Liquidity coverage ratio: scope of application and matters related to calculation and disclosure",
   "shortTitle": "Directive D1/2022",
   "regulator": "Prudential Authority",
   "year": 2022,
@@ -28,7 +28,7 @@
           "id": "s-banks-d1-2022-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.               Introduction\n\n1.1              On 10 April 2015, the amended Regulations relating to Banks (Regulations)\n                 regarding the implementation of the LCR were published in Government\n                 Gazette No. 35950.\n\n1.2              The LCR promotes short-term resilience of banks’ exposure to liquidity risk by\n                 ensuring that they have sufficient unencumbered high-quality liquid assets\n                 (HQLA) that can be easily and immediately converted into cash in private\n                 markets to meet their liquidity needs for a 30 calendar-day liquidity stress\n                 scenario.\n\n1.3              This Directive replaces Directive 11 of 2014.",
+          "text": "1.1              On 10 April 2015, the amended Regulations relating to Banks (Regulations)\n                 regarding the implementation of the LCR were published in Government\n                 Gazette No. 35950.\n\n1.2              The LCR promotes short-term resilience of banks\u2019 exposure to liquidity risk by\n                 ensuring that they have sufficient unencumbered high-quality liquid assets\n                 (HQLA) that can be easily and immediately converted into cash in private\n                 markets to meet their liquidity needs for a 30 calendar-day liquidity stress\n                 scenario.\n\n1.3              This Directive replaces Directive 11 of 2014.",
           "verbatim": true,
           "subsections": [
             {
@@ -42,8 +42,8 @@
             {
               "id": "s-banks-d1-2022-1-2",
               "number": "1.2",
-              "heading": "The LCR promotes short-term resilience of banks’ exposure to liquidity risk by",
-              "text": "1.2              The LCR promotes short-term resilience of banks’ exposure to liquidity risk by\n                 ensuring that they have sufficient unencumbered high-quality liquid assets\n                 (HQLA) that can be easily and immediately converted into cash in private\n                 markets to meet their liquidity needs for a 30 calendar-day liquidity stress\n                 scenario.",
+              "heading": "The LCR promotes short-term resilience of banks\u2019 exposure to liquidity risk by",
+              "text": "1.2              The LCR promotes short-term resilience of banks\u2019 exposure to liquidity risk by\n                 ensuring that they have sufficient unencumbered high-quality liquid assets\n                 (HQLA) that can be easily and immediately converted into cash in private\n                 markets to meet their liquidity needs for a 30 calendar-day liquidity stress\n                 scenario.",
               "verbatim": true,
               "subsections": []
             },
@@ -61,14 +61,14 @@
           "id": "s-banks-d1-2022-2",
           "number": "2",
           "heading": "Scope of application",
-          "text": "2.               Scope of application\n\n2.1.             The LCR requirements issued by the Basel Committee on Banking Supervision\n                 (BCBS) on 7 January 2013 1 state, among others, that: “The requirements set\n                 out in this document should be applied to all internationally active banks on a\n                 consolidated basis, but may be used for other banks and on any subset of\n                 entities of internationally active banks as well, to ensure greater consistency\n                 and a level playing field between domestic and cross-border banks.”\n\n\n\n1\n    Available online at https://www.bis.org/publ/bcbs238.htm\n\n                                                                                              1\n\n2.2        The LCR requirements issued by the BCBS have been incorporated into the\n           amended Regulations.\n\n2.3        Consolidation within this context should be read in conjunction with the objective\n           of the LCR, which is to ensure that every bank maintains an adequate stock of\n           HQLA to meet its liquidity needs for a 30 calendar-day liquidity stress scenario.\n\n2.4        The LCR framework also makes provision for banks operating in jurisdictions\n           that are not assigned a 0% risk weight under the Basel II standardised approach\n           for credit risk to include, in their Level 1 HQLA, sovereign or central bank debt\n           securities issued in domestic currencies by the sovereign or central bank of the\n           country in which the liquidity risk is incurred.\n\n2.5        The LCR framework requires that the liquidity parameters adopted by the home\n           jurisdiction be applied to all legal entities being consolidated, except for retail\n           and small business deposits, which should follow the host jurisdiction\n           parameters. However, should the host jurisdiction not have these parameters in\n           place, the parameters of the home jurisdiction or a more conservative treatment\n           must be followed.\n\n2.6        The LCR framework requires banks, in accordance with regulation 26(12)(a)(iii)\n           of the Regulations, to take into account any liquidity transfer restrictions that\n           would inhibit the transfer of HQLA and funding flows within the relevant banking\n           group and to include eligible HQLA that are held by a legal entity being\n           consolidated to meet its local LCR requirements in the consolidated LCR, to the\n           extent that such HQLA is used to cover the total net cash outflows of that entity.",
+          "text": "2.1.             The LCR requirements issued by the Basel Committee on Banking Supervision\n                 (BCBS) on 7 January 2013 1 state, among others, that: \u201cThe requirements set\n                 out in this document should be applied to all internationally active banks on a\n                 consolidated basis, but may be used for other banks and on any subset of\n                 entities of internationally active banks as well, to ensure greater consistency\n                 and a level playing field between domestic and cross-border banks.\u201d\n\n\n\n1\n    Available online at https://www.bis.org/publ/bcbs238.htm\n\n                                                                                              1\n\n2.2        The LCR requirements issued by the BCBS have been incorporated into the\n           amended Regulations.\n\n2.3        Consolidation within this context should be read in conjunction with the objective\n           of the LCR, which is to ensure that every bank maintains an adequate stock of\n           HQLA to meet its liquidity needs for a 30 calendar-day liquidity stress scenario.\n\n2.4        The LCR framework also makes provision for banks operating in jurisdictions\n           that are not assigned a 0% risk weight under the Basel II standardised approach\n           for credit risk to include, in their Level 1 HQLA, sovereign or central bank debt\n           securities issued in domestic currencies by the sovereign or central bank of the\n           country in which the liquidity risk is incurred.\n\n2.5        The LCR framework requires that the liquidity parameters adopted by the home\n           jurisdiction be applied to all legal entities being consolidated, except for retail\n           and small business deposits, which should follow the host jurisdiction\n           parameters. However, should the host jurisdiction not have these parameters in\n           place, the parameters of the home jurisdiction or a more conservative treatment\n           must be followed.\n\n2.6        The LCR framework requires banks, in accordance with regulation 26(12)(a)(iii)\n           of the Regulations, to take into account any liquidity transfer restrictions that\n           would inhibit the transfer of HQLA and funding flows within the relevant banking\n           group and to include eligible HQLA that are held by a legal entity being\n           consolidated to meet its local LCR requirements in the consolidated LCR, to the\n           extent that such HQLA is used to cover the total net cash outflows of that entity.",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d1-2022-2-1",
               "number": "2.1",
               "heading": "The LCR requirements issued by the Basel Committee on Banking Supervision",
-              "text": "2.1.             The LCR requirements issued by the Basel Committee on Banking Supervision\n                 (BCBS) on 7 January 2013 1 state, among others, that: “The requirements set\n                 out in this document should be applied to all internationally active banks on a\n                 consolidated basis, but may be used for other banks and on any subset of\n                 entities of internationally active banks as well, to ensure greater consistency\n                 and a level playing field between domestic and cross-border banks.”\n\n\n\n1\n    Available online at https://www.bis.org/publ/bcbs238.htm\n\n                                                                                              1",
+              "text": "2.1.             The LCR requirements issued by the Basel Committee on Banking Supervision\n                 (BCBS) on 7 January 2013 1 state, among others, that: \u201cThe requirements set\n                 out in this document should be applied to all internationally active banks on a\n                 consolidated basis, but may be used for other banks and on any subset of\n                 entities of internationally active banks as well, to ensure greater consistency\n                 and a level playing field between domestic and cross-border banks.\u201d\n\n\n\n1\n    Available online at https://www.bis.org/publ/bcbs238.htm\n\n                                                                                              1",
               "verbatim": true,
               "subsections": []
             },
@@ -118,7 +118,7 @@
           "id": "s-banks-d1-2022-3",
           "number": "3",
           "heading": "LCR requirements",
-          "text": "3.         LCR requirements\n\n3.1.       In terms of the provisions of regulation 26(12)(a)(ix) of the Regulations, while\n           the bank has to report its LCR in South Africa in Rand on a solo and\n           consolidated basis, the bank also has to ensure that it continuously meets its\n           liquidity needs in each relevant currency.\n\n3.2.       The LCR disclosure requirements state that the LCR data must be presented\n           as simple averages of daily observations over the previous quarter — that is,\n           the average shall be calculated over a period of, typically, 90 days.",
+          "text": "3.1.       In terms of the provisions of regulation 26(12)(a)(ix) of the Regulations, while\n           the bank has to report its LCR in South Africa in Rand on a solo and\n           consolidated basis, the bank also has to ensure that it continuously meets its\n           liquidity needs in each relevant currency.\n\n3.2.       The LCR disclosure requirements state that the LCR data must be presented\n           as simple averages of daily observations over the previous quarter \u2014 that is,\n           the average shall be calculated over a period of, typically, 90 days.",
           "verbatim": true,
           "subsections": [
             {
@@ -133,7 +133,7 @@
               "id": "s-banks-d1-2022-3-2",
               "number": "3.2",
               "heading": "The LCR disclosure requirements state that the LCR data must be presented",
-              "text": "3.2.       The LCR disclosure requirements state that the LCR data must be presented\n           as simple averages of daily observations over the previous quarter — that is,\n           the average shall be calculated over a period of, typically, 90 days.",
+              "text": "3.2.       The LCR disclosure requirements state that the LCR data must be presented\n           as simple averages of daily observations over the previous quarter \u2014 that is,\n           the average shall be calculated over a period of, typically, 90 days.",
               "verbatim": true,
               "subsections": []
             }
@@ -142,7 +142,7 @@
         {
           "id": "s-banks-d1-2022-4",
           "number": "4",
-          "heading": "Directive 4. Directive",
+          "heading": "Directive",
           "text": "Directive 4. Directive",
           "verbatim": true,
           "subsections": [
@@ -287,14 +287,14 @@
           "id": "s-banks-d1-2022-5",
           "number": "5",
           "heading": "Acknowledgement of receipt",
-          "text": "5.         Acknowledgement of receipt\n\n5.1        Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. The attached acknowledgement of receipt duly completed\n           and signed by both the chief executive officer of the institution and the said\n           auditors should be returned to the PA at the earliest convenience of the\n           aforementioned signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2022-02-11\n\nEncl. 1\n\nThe previous Directive issued was Directive 10/2021, dated 14 December 2021\n\n\n\n\n                                                                                               4",
+          "text": "5.1        Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n           external auditors. The attached acknowledgement of receipt duly completed\n           and signed by both the chief executive officer of the institution and the said\n           auditors should be returned to the PA at the earliest convenience of the\n           aforementioned signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2022-02-11\n\nEncl. 1\n\nThe previous Directive issued was Directive 10/2021, dated 14 December 2021\n\n\n\n\n                                                                                               4",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d1-2022-5-1",
               "number": "5.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
-              "text": "5.1        Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. The attached acknowledgement of receipt duly completed\n           and signed by both the chief executive officer of the institution and the said\n           auditors should be returned to the PA at the earliest convenience of the\n           aforementioned signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2022-02-11\n\nEncl. 1\n\nThe previous Directive issued was Directive 10/2021, dated 14 December 2021\n\n\n\n\n                                                                                               4",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
+              "text": "5.1        Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n           external auditors. The attached acknowledgement of receipt duly completed\n           and signed by both the chief executive officer of the institution and the said\n           auditors should be returned to the PA at the earliest convenience of the\n           aforementioned signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2022-02-11\n\nEncl. 1\n\nThe previous Directive issued was Directive 10/2021, dated 14 December 2021\n\n\n\n\n                                                                                               4",
               "verbatim": true,
               "subsections": []
             }

@@ -1,6 +1,6 @@
 {
   "slug": "banks-d3-2025",
-  "title": "Banks Act Directive D3/2025 — Matters related to the leverage ratio buffer requirement for domestic systematically important banks",
+  "title": "Banks Act Directive D3/2025 \u2014 Matters related to the leverage ratio buffer requirement for domestic systematically important banks",
   "shortTitle": "Directive D3/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -28,78 +28,105 @@
           "id": "s-banks-d3-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.       Introduction\n\n1.1     An underlying cause of the global financial crisis that commenced in 2007, was the\n        build-up of excessive on- and off-balance sheet leverage in the banking system. In\n        many cases, banks had built up excessive leverage while apparently maintaining\n        strong risk-based capital ratios.\n\n1.2     At the height of the crisis, financial markets forced the banking sector to reduce its\n        leverage in a manner that amplified downward pressures on asset prices. This\n        deleveraging process exacerbated the feedback loop between losses, reducing\n        available bank capital and shrinking credit availability.1\n\n1.3     The Basel III leverage ratio framework aims to restrict the build-up of excessive\n        leverage in the banking sector to avoid the destabilising deleveraging process that\n        could damage the broader financial system and economy and supplement the risk-\n        based requirements with a simple, non-risk-based backstop measure.\n\n1.4     Regulation 38(15)(b)(iv) of the Regulations states that a bank shall manage its\n        business in such a manner that its leverage ratio at no time less than 4% or that such\n        a leverage ratio may be determined by the PA in consultation with the Governor of\n        the South African Reserve Bank, which leverage ratio shall in no case be less than\n        3%.\n\n1.5     The BCBS agreed that a leverage ratio buffer requirement be set at 50% of a G-SIB’s\n        HLA requirements and be imposed on its common equity tier 1 (CET1) ratio. That is,\n        a G-SIB with a 1% HLA requirement, imposed on its CET1 ratio, will be subject to a\n        leverage ratio buffer requirement of 0.5% in addition to the relevant specified\n        minimum leverage ratio requirement.\n\n1.6     The design of the leverage ratio buffer requirement is akin to the capital buffers\n        related to the risk-based capital requirements. Accordingly, the leverage ratio buffer\n        will include minimum capital conservation ratios divided into five ranges, with capital\n        distribution constraints being activated when G-SIBs fail to meet the leverage ratio\n        buffer requirement. This implies that automatic distribution restriction to capital\n        distribution for G-SIBs depends on their CET1 capital requirements as well as their\n        tier 1 leverage ratio.\n\n1.7     The PA extended the application of the leverage ratio buffer framework and its related\n        requirements to South African banks and controlling companies designated as D-\n        SIBs to maintain the intended constant backstop role of the framework. The capital\n        distribution constraints on D-SIBs will depend on the bank or controlling company’s\n        CET1 capital requirements as well as its tier 1 leverage ratio requirement. That is, a\n        bank or controlling company will be required to meet both its minimum CET1 capital\n        requirements (including buffers) and its tier 1 leverage ratio requirement (including\n        buffers) to avoid the specified distribution constraints being imposed.\n\n1.8     For purposes of this Directive:\n\n1.8.1 CET1 risk-based capital requirements include the 4.5% minimum requirement, 50%\n      of Pillar 2A, 50% of Pillar 2B, a 2.5% capital conservation buffer, the D-SIB HLA\n      requirement, and the countercyclical buffer.\n\n1 For further detail see: https://www.bis.org/bcbs/publ/d424.pdf\n\n\n\n                                                                                             2\n\n1.8.2 The tier 1 leverage requirement means the 4% minimum leverage ratio requirement\n      and 50% of the D-SIB HLA requirement.\n\n1.9   A D-SIB that does not meet both requirements envisaged in paragraph 1.8 of this\n      Directive will be subject to distribution constraints in accordance with the ranges\n      specified in Table 1 in paragraph 2.1.2 of this Directive.\n\n1.10 The items that will be subject to restrictions on distributions are identical to those\n     specified in regulation 38(8)(f)(iv) of the Regulations. Furthermore, banks and\n     controlling companies that utilise their leverage buffers must consult the Chief\n     Executive Officer of the PA, commensurate with the requirement in the proviso to\n     regulation 38(8)(e) of the Regulations.\n\n1.11 While the risk-based D-SIB buffers must be met fully with CET1 capital and reserve\n     funds, paragraph 2.4 of Directive 5 of 2021 provides that the first 1% of the specified\n     HLA requirement must be fully met by CET1 capital and reserve funds, the additional\n     requirement up to the first 1.5% of the HLA requirement may be met by tier 1 capital\n     and reserve funds, and up to 2.5% of the HLA requirement may be met with total\n     capital and reserve funds. Leverage ratio buffer requirements must be met fully by\n     tier 1 capital and reserve funds and be based on 50% of HLA requirements imposed\n     on CET1 capital.\n\n1.12 The decision of the PA to extend the application of the leverage ratio buffer framework\n     to D-SIBs is in accordance with the PA’s decision to apply specific aspects intended\n     for G-SIBs to South African D-SIBs. Furthermore, the related framework enhances\n     the safety and soundness of the local banking system.",
+          "text": "Introduction 1. Introduction",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d3-2025-1-1",
+              "id": "s1-1",
               "number": "1.1",
-              "heading": "An underlying cause of the global financial crisis that commenced in 2007, was the",
-              "text": "1.1     An underlying cause of the global financial crisis that commenced in 2007, was the\n        build-up of excessive on- and off-balance sheet leverage in the banking system. In\n        many cases, banks had built up excessive leverage while apparently maintaining\n        strong risk-based capital ratios.",
+              "text": "An underlying cause of the global financial crisis that commenced in 2007, was the build-up of excessive on- and off-balance sheet leverage in the banking system. In many cases, banks had built up excessive leverage while apparently maintaining strong risk-based capital ratios.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-2",
+              "id": "s1-2",
               "number": "1.2",
-              "heading": "At the height of the crisis, financial markets forced the banking sector to reduce its",
-              "text": "1.2     At the height of the crisis, financial markets forced the banking sector to reduce its\n        leverage in a manner that amplified downward pressures on asset prices. This\n        deleveraging process exacerbated the feedback loop between losses, reducing\n        available bank capital and shrinking credit availability.1",
+              "text": "At the height of the crisis, financial markets forced the banking sector to reduce its leverage in a manner that amplified downward pressures on asset prices. This deleveraging process exacerbated the feedback loop between losses, reducing available bank capital and shrinking credit availability.1",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-3",
+              "id": "s1-3",
               "number": "1.3",
-              "heading": "The Basel III leverage ratio framework aims to restrict the build-up of excessive",
-              "text": "1.3     The Basel III leverage ratio framework aims to restrict the build-up of excessive\n        leverage in the banking sector to avoid the destabilising deleveraging process that\n        could damage the broader financial system and economy and supplement the risk-\n        based requirements with a simple, non-risk-based backstop measure.",
+              "text": "The Basel III leverage ratio framework aims to restrict the build-up of excessive leverage in the banking sector to avoid the destabilising deleveraging process that could damage the broader financial system and economy and supplement the risk- based requirements with a simple, non-risk-based backstop measure.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-4",
+              "id": "s1-4",
               "number": "1.4",
-              "heading": "Regulation 38(15)(b)(iv) of the Regulations states that a bank shall manage its",
-              "text": "1.4     Regulation 38(15)(b)(iv) of the Regulations states that a bank shall manage its\n        business in such a manner that its leverage ratio at no time less than 4% or that such\n        a leverage ratio may be determined by the PA in consultation with the Governor of\n        the South African Reserve Bank, which leverage ratio shall in no case be less than\n        3%.",
+              "text": "Regulation 38(15)(b)(iv) of the Regulations states that a bank shall manage its business in such a manner that its leverage ratio at no time less than 4% or that such a leverage ratio may be determined by the PA in consultation with the Governor of the South African Reserve Bank, which leverage ratio shall in no case be less than 3%.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-5",
+              "id": "s1-5",
               "number": "1.5",
-              "heading": "The BCBS agreed that a leverage ratio buffer requirement be set at 50% of a G-SIB’s",
-              "text": "1.5     The BCBS agreed that a leverage ratio buffer requirement be set at 50% of a G-SIB’s\n        HLA requirements and be imposed on its common equity tier 1 (CET1) ratio. That is,\n        a G-SIB with a 1% HLA requirement, imposed on its CET1 ratio, will be subject to a\n        leverage ratio buffer requirement of 0.5% in addition to the relevant specified\n        minimum leverage ratio requirement.",
+              "text": "The BCBS agreed that a leverage ratio buffer requirement be set at 50% of a G-SIB\u2019s HLA requirements and be imposed on its common equity tier 1 (CET1) ratio. That is, a G-SIB with a 1% HLA requirement, imposed on its CET1 ratio, will be subject to a leverage ratio buffer requirement of 0.5% in addition to the relevant specified minimum leverage ratio requirement.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-6",
+              "id": "s1-6",
               "number": "1.6",
-              "heading": "The design of the leverage ratio buffer requirement is akin to the capital buffers",
-              "text": "1.6     The design of the leverage ratio buffer requirement is akin to the capital buffers\n        related to the risk-based capital requirements. Accordingly, the leverage ratio buffer\n        will include minimum capital conservation ratios divided into five ranges, with capital\n        distribution constraints being activated when G-SIBs fail to meet the leverage ratio\n        buffer requirement. This implies that automatic distribution restriction to capital\n        distribution for G-SIBs depends on their CET1 capital requirements as well as their\n        tier 1 leverage ratio.",
+              "text": "The design of the leverage ratio buffer requirement is akin to the capital buffers related to the risk-based capital requirements. Accordingly, the leverage ratio buffer will include minimum capital conservation ratios divided into five ranges, with capital distribution constraints being activated when G-SIBs fail to meet the leverage ratio buffer requirement. This implies that automatic distribution restriction to capital distribution for G-SIBs depends on their CET1 capital requirements as well as their tier 1 leverage ratio.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-7",
+              "id": "s1-7",
               "number": "1.7",
-              "heading": "The PA extended the application of the leverage ratio buffer framework and its related",
-              "text": "1.7     The PA extended the application of the leverage ratio buffer framework and its related\n        requirements to South African banks and controlling companies designated as D-\n        SIBs to maintain the intended constant backstop role of the framework. The capital\n        distribution constraints on D-SIBs will depend on the bank or controlling company’s\n        CET1 capital requirements as well as its tier 1 leverage ratio requirement. That is, a\n        bank or controlling company will be required to meet both its minimum CET1 capital\n        requirements (including buffers) and its tier 1 leverage ratio requirement (including\n        buffers) to avoid the specified distribution constraints being imposed.",
+              "text": "The PA extended the application of the leverage ratio buffer framework and its related requirements to South African banks and controlling companies designated as D- SIBs to maintain the intended constant backstop role of the framework. The capital distribution constraints on D-SIBs will depend on the bank or controlling company\u2019s CET1 capital requirements as well as its tier 1 leverage ratio requirement. That is, a bank or controlling company will be required to meet both its minimum CET1 capital requirements (including buffers) and its tier 1 leverage ratio requirement (including buffers) to avoid the specified distribution constraints being imposed.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-8",
+              "id": "s1-8",
               "number": "1.8",
-              "heading": "For purposes of this Directive:",
-              "text": "1.8     For purposes of this Directive:\n\n1.8.1 CET1 risk-based capital requirements include the 4.5% minimum requirement, 50%\n      of Pillar 2A, 50% of Pillar 2B, a 2.5% capital conservation buffer, the D-SIB HLA\n      requirement, and the countercyclical buffer.\n\n1 For further detail see: https://www.bis.org/bcbs/publ/d424.pdf\n\n\n\n                                                                                             2\n\n1.8.2 The tier 1 leverage requirement means the 4% minimum leverage ratio requirement\n      and 50% of the D-SIB HLA requirement.",
+              "text": "For purposes of this Directive:",
+              "verbatim": true,
+              "subsections": [
+                {
+                  "id": "s1-8-1",
+                  "number": "1.8.1",
+                  "text": "CET1 risk-based capital requirements include the 4.5% minimum requirement, 50% of Pillar 2A, 50% of Pillar 2B, a 2.5% capital conservation buffer, the D-SIB HLA requirement, and the countercyclical buffer. For further detail see: https://www.bis.org/bcbs/publ/d424.pdf 2",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s1-8-2",
+                  "number": "1.8.2",
+                  "text": "The tier 1 leverage requirement means the 4% minimum leverage ratio requirement and 50% of the D-SIB HLA requirement.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
+            },
+            {
+              "id": "s1-9",
+              "number": "1.9",
+              "text": "A D-SIB that does not meet both requirements envisaged in paragraph",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d3-2025-1-9",
-              "number": "1.9",
-              "heading": "A D-SIB that does not meet both requirements envisaged in paragraph 1.8 of this",
-              "text": "1.9   A D-SIB that does not meet both requirements envisaged in paragraph 1.8 of this\n      Directive will be subject to distribution constraints in accordance with the ranges\n      specified in Table 1 in paragraph 2.1.2 of this Directive.\n\n1.10 The items that will be subject to restrictions on distributions are identical to those\n     specified in regulation 38(8)(f)(iv) of the Regulations. Furthermore, banks and\n     controlling companies that utilise their leverage buffers must consult the Chief\n     Executive Officer of the PA, commensurate with the requirement in the proviso to\n     regulation 38(8)(e) of the Regulations.\n\n1.11 While the risk-based D-SIB buffers must be met fully with CET1 capital and reserve\n     funds, paragraph 2.4 of Directive 5 of 2021 provides that the first 1% of the specified\n     HLA requirement must be fully met by CET1 capital and reserve funds, the additional\n     requirement up to the first 1.5% of the HLA requirement may be met by tier 1 capital\n     and reserve funds, and up to 2.5% of the HLA requirement may be met with total\n     capital and reserve funds. Leverage ratio buffer requirements must be met fully by\n     tier 1 capital and reserve funds and be based on 50% of HLA requirements imposed\n     on CET1 capital.\n\n1.12 The decision of the PA to extend the application of the leverage ratio buffer framework\n     to D-SIBs is in accordance with the PA’s decision to apply specific aspects intended\n     for G-SIBs to South African D-SIBs. Furthermore, the related framework enhances\n     the safety and soundness of the local banking system.",
+              "id": "s1-10",
+              "number": "1.10",
+              "text": "The items that will be subject to restrictions on distributions are identical to those specified in regulation 38(8)(f)(iv) of the Regulations. Furthermore, banks and controlling companies that utilise their leverage buffers must consult the Chief Executive Officer of the PA, commensurate with the requirement in the proviso to regulation 38(8)(e) of the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-11",
+              "number": "1.11",
+              "text": "While the risk-based D-SIB buffers must be met fully with CET1 capital and reserve funds, paragraph 2.4 of Directive 5 of 2021 provides that the first 1% of the specified HLA requirement must be fully met by CET1 capital and reserve funds, the additional requirement up to the first 1.5% of the HLA requirement may be met by tier 1 capital and reserve funds, and up to 2.5% of the HLA requirement may be met with total capital and reserve funds. Leverage ratio buffer requirements must be met fully by tier 1 capital and reserve funds and be based on 50% of HLA requirements imposed on CET1 capital.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s1-12",
+              "number": "1.12",
+              "text": "The decision of the PA to extend the application of the leverage ratio buffer framework to D-SIBs is in accordance with the PA\u2019s decision to apply specific aspects intended for G-SIBs to South African D-SIBs. Furthermore, the related framework enhances the safety and soundness of the local banking system.",
               "verbatim": true,
               "subsections": []
             }
@@ -108,7 +135,7 @@
         {
           "id": "s-banks-d3-2025-2",
           "number": "2",
-          "heading": "Directive 2. Directive",
+          "heading": "Directive",
           "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
@@ -135,7 +162,7 @@
                 {
                   "id": "s2-1-3",
                   "number": "2.1.3",
-                  "text": "Apply the capital distribution constraints specified in Table 1 below when the bank or controlling company’s leverage ratio declines below the minimum specified requirement. The capital distribution constraints will be undertaken in a manner that is aligned to the approach followed for the utilisation of the capital conservation buffer range in respect of the bank’s risk-based capital ratios. Table 1: Minimum capital conservation requirement imposed on D-SIBs’ leverage buffer. Minimum capital conservation ratio Common equity tier 1 (expressed as a (including other fully loss Tier 1 leverage ratio2 percentage of absorbing capital)1 earnings) Within first quartile of the buffer 4% to (4% + 12.5% of HLA) 100% Within second quartile of the buffer > (4% + 12.5% of HLA) to (4% + 25% of HLA) 80% Within third quartile of the buffer > (4% + 25% of HLA) to (4% + 37.5% of HLA) 60% Within fourth quartile of the buffer > (4% + 37.5% of HLA) to (4% + 50% of HLA) 40% Above the top of the buffer > 4% + 50% of HLA 0%",
+                  "text": "Apply the capital distribution constraints specified in Table 1 below when the bank or controlling company\u2019s leverage ratio declines below the minimum specified requirement. The capital distribution constraints will be undertaken in a manner that is aligned to the approach followed for the utilisation of the capital conservation buffer range in respect of the bank\u2019s risk-based capital ratios. Table 1: Minimum capital conservation requirement imposed on D-SIBs\u2019 leverage buffer. Minimum capital conservation ratio Common equity tier 1 (expressed as a (including other fully loss Tier 1 leverage ratio2 percentage of absorbing capital)1 earnings) Within first quartile of the buffer 4% to (4% + 12.5% of HLA) 100% Within second quartile of the buffer > (4% + 12.5% of HLA) to (4% + 25% of HLA) 80% Within third quartile of the buffer > (4% + 25% of HLA) to (4% + 37.5% of HLA) 60% Within fourth quartile of the buffer > (4% + 37.5% of HLA) to (4% + 50% of HLA) 40% Above the top of the buffer > 4% + 50% of HLA 0%",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -146,16 +173,16 @@
         {
           "id": "s-banks-d3-2025-1",
           "number": "1",
-          "heading": "Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1.",
-          "text": "Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement",
+          "heading": "Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement",
+          "text": "Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement 1. Minimum capital conservation requirement imposed on the CET1 risk-based capital requirement",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s-banks-d3-2025-2",
           "number": "2",
-          "heading": "Concomitant tier 1 leverage requirement 2.",
-          "text": "Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement",
+          "heading": "Concomitant tier 1 leverage requirement",
+          "text": "Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement 2. Concomitant tier 1 leverage requirement",
           "verbatim": true,
           "subsections": []
         },
@@ -163,7 +190,7 @@
           "id": "s-banks-d3-2025-3",
           "number": "3",
           "heading": "Effective date",
-          "text": "3.       Effective date\n\n3.1     The effective date for the minimum leverage ratio buffer requirement, together with\n        the capital distribution constraints, shall be on 1 July 2025.",
+          "text": "3.1     The effective date for the minimum leverage ratio buffer requirement, together with\n        the capital distribution constraints, shall be on 1 July 2025.",
           "verbatim": true,
           "subsections": [
             {
@@ -180,14 +207,14 @@
           "id": "s-banks-d3-2025-4",
           "number": "4",
           "heading": "Acknowledgement of receipt",
-          "text": "4.       Acknowledgement of receipt\n\n4.1      Kindly ensure that a copy of this Directive is made available to your institution’s\n         external auditors. In addition, the attached acknowledgement of receipt, duly\n         completed and signed by both the Chief Executive Officer of the institution and the\n         said auditors, should be returned to the PA at the earliest convenience of the\n         signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 19/06/25\n\n\nThe previous Directive issued was Directive 2/2025, dated 09 June 2025.\n\n\n\n\n                                                                                                         4",
+          "text": "4.1      Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n         external auditors. In addition, the attached acknowledgement of receipt, duly\n         completed and signed by both the Chief Executive Officer of the institution and the\n         said auditors, should be returned to the PA at the earliest convenience of the\n         signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 19/06/25\n\n\nThe previous Directive issued was Directive 2/2025, dated 09 June 2025.\n\n\n\n\n                                                                                                         4",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d3-2025-4-1",
               "number": "4.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
-              "text": "4.1      Kindly ensure that a copy of this Directive is made available to your institution’s\n         external auditors. In addition, the attached acknowledgement of receipt, duly\n         completed and signed by both the Chief Executive Officer of the institution and the\n         said auditors, should be returned to the PA at the earliest convenience of the\n         signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 19/06/25\n\n\nThe previous Directive issued was Directive 2/2025, dated 09 June 2025.\n\n\n\n\n                                                                                                         4",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
+              "text": "4.1      Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n         external auditors. In addition, the attached acknowledgement of receipt, duly\n         completed and signed by both the Chief Executive Officer of the institution and the\n         said auditors, should be returned to the PA at the earliest convenience of the\n         signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 19/06/25\n\n\nThe previous Directive issued was Directive 2/2025, dated 09 June 2025.\n\n\n\n\n                                                                                                         4",
               "verbatim": true,
               "subsections": []
             }

@@ -1,6 +1,6 @@
 {
   "slug": "banks-d9-2025",
-  "title": "Banks Act Directive D9/2025 — Prudential treatment of credit exposures secured by forest and agricultural land",
+  "title": "Banks Act Directive D9/2025 \u2014 Prudential treatment of credit exposures secured by forest and agricultural land",
   "shortTitle": "Directive D9/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -28,7 +28,7 @@
           "id": "s-banks-d9-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.            Introduction\n\n1.1           Real estate is immovable property that includes land used for forest and\n              agricultural purposes or anything treated as attached to land, in particular\n              buildings. Regulations 23(6)(c) and 23(6)(d) of the Regulations stipulate specific\n              criteria for classifying and treating real estate as security for credit exposures,\n              particularly for residential and commercial real estate as well as land intended for\n              ADC. However, other than the exclusions from the land ADC category, the\n              Regulations do not explicitly specify the prudential treatment for forest and\n              agricultural land. Therefore, the regulatory treatment for forest and agricultural land\n              must be based on considerations of the broader real estate framework.\n\n1.2           Forest and agricultural land may be considered as part of residential and\n              commercial real estate, as well as land ADC exposures. However, credit\n              exposures secured by residential and/or commercial forest and/or agricultural land\n              do not need to be finished property. In other words, unlike other property types,\n              forest and agricultural land does not need to be fully completed.\n\n1.3           Regulation 23(6)(c) of the Regulations specifies criteria for real estate to be treated\n              as security for residential exposures. However, in terms of proviso (i)(bb) of\n              regulation 23(6)(c)(xii) of the Regulations, forest and agricultural land that has\n              neither planning consent nor the intention to apply for planning consent is excluded\n              from residential land ADC.\n\n                                                                                                   1\n\n1.4     Similarly, regulation 23(6)(d) of the Regulations specifies criteria for real estate to\n        be treated as security for commercial real estate. However, in terms of proviso\n        (ii)(bb) of Regulation 23(6)(d) of the Regulations, forest and agricultural land that\n        has neither planning consent nor the intention to apply for planning consent is\n        excluded from commercial land ADC.\n\n1.5     The purpose of this Directive is to direct banks on the prudential treatment of credit\n        exposures secured by land used for forest and agricultural purposes.",
+          "text": "1.1           Real estate is immovable property that includes land used for forest and\n              agricultural purposes or anything treated as attached to land, in particular\n              buildings. Regulations 23(6)(c) and 23(6)(d) of the Regulations stipulate specific\n              criteria for classifying and treating real estate as security for credit exposures,\n              particularly for residential and commercial real estate as well as land intended for\n              ADC. However, other than the exclusions from the land ADC category, the\n              Regulations do not explicitly specify the prudential treatment for forest and\n              agricultural land. Therefore, the regulatory treatment for forest and agricultural land\n              must be based on considerations of the broader real estate framework.\n\n1.2           Forest and agricultural land may be considered as part of residential and\n              commercial real estate, as well as land ADC exposures. However, credit\n              exposures secured by residential and/or commercial forest and/or agricultural land\n              do not need to be finished property. In other words, unlike other property types,\n              forest and agricultural land does not need to be fully completed.\n\n1.3           Regulation 23(6)(c) of the Regulations specifies criteria for real estate to be treated\n              as security for residential exposures. However, in terms of proviso (i)(bb) of\n              regulation 23(6)(c)(xii) of the Regulations, forest and agricultural land that has\n              neither planning consent nor the intention to apply for planning consent is excluded\n              from residential land ADC.\n\n                                                                                                   1\n\n1.4     Similarly, regulation 23(6)(d) of the Regulations specifies criteria for real estate to\n        be treated as security for commercial real estate. However, in terms of proviso\n        (ii)(bb) of Regulation 23(6)(d) of the Regulations, forest and agricultural land that\n        has neither planning consent nor the intention to apply for planning consent is\n        excluded from commercial land ADC.\n\n1.5     The purpose of this Directive is to direct banks on the prudential treatment of credit\n        exposures secured by land used for forest and agricultural purposes.",
           "verbatim": true,
           "subsections": [
             {
@@ -76,7 +76,7 @@
         {
           "id": "s-banks-d9-2025-2",
           "number": "2",
-          "heading": "Directive 2. Directive",
+          "heading": "Directive",
           "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
@@ -117,14 +117,14 @@
                 {
                   "id": "s2-1-4",
                   "number": "2.1.4",
-                  "text": "When the residential real estate exposure is unhedged from a borrower’s currency risk perspective, as specified in regulation 23(6)(c)(xiii) of the Regulations, banks must apply a risk weight of 150% to the relevant exposure.",
+                  "text": "When the residential real estate exposure is unhedged from a borrower\u2019s currency risk perspective, as specified in regulation 23(6)(c)(xiii) of the Regulations, banks must apply a risk weight of 150% to the relevant exposure.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-4",
                   "number": "2.1.4",
-                  "text": "(i.e. the exposure does not fall within the ambit of those envisaged in the aforementioned paragraphs), and, as specified in regulation 23(6)(c)(xiv) of the Regulations, the bank may risk weight the relevant residential real estate exposure based on a risk weight of an unsecured exposure to the relevant counterparty, subject to the Prudential Authority’s (PA) sole discretion and such further requirements as may be directed by the PA (which may include the PA directing the bank in writing to risk weight the relevant exposure at 150%). Commercial real estate",
+                  "text": "(i.e. the exposure does not fall within the ambit of those envisaged in the aforementioned paragraphs), and, as specified in regulation 23(6)(c)(xiv) of the Regulations, the bank may risk weight the relevant residential real estate exposure based on a risk weight of an unsecured exposure to the relevant counterparty, subject to the Prudential Authority\u2019s (PA) sole discretion and such further requirements as may be directed by the PA (which may include the PA directing the bank in writing to risk weight the relevant exposure at 150%). Commercial real estate",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -166,7 +166,7 @@
                 {
                   "id": "s2-1-8",
                   "number": "2.1.8",
-                  "text": "(i.e. the exposure does not fall within the ambit of any of exposure envisaged in the aforementioned paragraphs), and, as specified in regulation 23(6)(d)(iii) of the Regulations, and the repayment of the loan secured by the commercial real estate is not materially dependent on the cash flows generated by the property, the bank may risk weight the relevant commercial real estate exposure based on a risk weight of an unsecured exposure to the relevant counterparty, subject to the PA’s sole discretion and such further requirements as may be directed by the PA (which may include the PA directing the bank in writing to risk weight the relevant exposure at 150%).",
+                  "text": "(i.e. the exposure does not fall within the ambit of any of exposure envisaged in the aforementioned paragraphs), and, as specified in regulation 23(6)(d)(iii) of the Regulations, and the repayment of the loan secured by the commercial real estate is not materially dependent on the cash flows generated by the property, the bank may risk weight the relevant commercial real estate exposure based on a risk weight of an unsecured exposure to the relevant counterparty, subject to the PA\u2019s sole discretion and such further requirements as may be directed by the PA (which may include the PA directing the bank in writing to risk weight the relevant exposure at 150%).",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -185,14 +185,14 @@
           "id": "s-banks-d9-2025-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.         Acknowledgement of receipt\n\n3.1        Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and the\n           said auditors, should be returned to the PA at the earliest convenience of the\n           signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/08/25\n\n\n\n\n                                                                                            3",
+          "text": "3.1        Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and the\n           said auditors, should be returned to the PA at the earliest convenience of the\n           signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/08/25\n\n\n\n\n                                                                                            3",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d9-2025-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
-              "text": "3.1        Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and the\n           said auditors, should be returned to the PA at the earliest convenience of the\n           signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/08/25\n\n\n\n\n                                                                                            3",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
+              "text": "3.1        Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and the\n           said auditors, should be returned to the PA at the earliest convenience of the\n           signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/08/25\n\n\n\n\n                                                                                            3",
               "verbatim": true,
               "subsections": []
             }

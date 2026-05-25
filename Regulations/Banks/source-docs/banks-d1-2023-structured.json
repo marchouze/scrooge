@@ -1,6 +1,6 @@
 {
   "slug": "banks-d1-2023",
-  "title": "Banks Act Directive D1/2023 — Matters related to the net stable funding ratio",
+  "title": "Banks Act Directive D1/2023 \u2014 Matters related to the net stable funding ratio",
   "shortTitle": "Directive D1/2023",
   "regulator": "Prudential Authority",
   "year": 2023,
@@ -28,7 +28,7 @@
           "id": "s-banks-d1-2023-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.                 Introduction\n1.1                On 12 December 2012, the amended Regulations were published in Government\n                   Gazette No. 35950, following which they became effective on 1 January 2013.\n\n1.2                Subsequently, the Basel Committee on Banking Supervision (BCBS) issued an\n                   updated framework for calculating and implementing the NSFR1.\n\n1.3                The BCBS issued a press release2 providing for additional national discretion in\n                   specified cases.\n\n1.4                Directive 8 of 2017, relating to “Matters related to the net stable funding ratio”,\n                   was issued on 13 December 2017.\n\n1.5                On 18 December 2020, the amended Regulations were published in Government\n                   Gazette No. 44003, following which it became effective on 1 January 2021.",
+          "text": "1.1                On 12 December 2012, the amended Regulations were published in Government\n                   Gazette No. 35950, following which they became effective on 1 January 2013.\n\n1.2                Subsequently, the Basel Committee on Banking Supervision (BCBS) issued an\n                   updated framework for calculating and implementing the NSFR1.\n\n1.3                The BCBS issued a press release2 providing for additional national discretion in\n                   specified cases.\n\n1.4                Directive 8 of 2017, relating to \u201cMatters related to the net stable funding ratio\u201d,\n                   was issued on 13 December 2017.\n\n1.5                On 18 December 2020, the amended Regulations were published in Government\n                   Gazette No. 44003, following which it became effective on 1 January 2021.",
           "verbatim": true,
           "subsections": [
             {
@@ -58,8 +58,8 @@
             {
               "id": "s-banks-d1-2023-1-4",
               "number": "1.4",
-              "heading": "Directive 8 of 2017, relating to “Matters related to the net stable funding ratio”,",
-              "text": "1.4                Directive 8 of 2017, relating to “Matters related to the net stable funding ratio”,\n                   was issued on 13 December 2017.",
+              "heading": "Directive 8 of 2017, relating to \u201cMatters related to the net stable funding ratio\u201d,",
+              "text": "1.4                Directive 8 of 2017, relating to \u201cMatters related to the net stable funding ratio\u201d,\n                   was issued on 13 December 2017.",
               "verbatim": true,
               "subsections": []
             },
@@ -77,32 +77,191 @@
           "id": "s-banks-d1-2023-2",
           "number": "2",
           "heading": "Framework for the calculating and implementation of the NSFR",
-          "text": "2.                 Framework for the calculating and implementation of the NSFR\n2.1                Calibration and implementation of the NSFR\n2.1.1              The NSFR framework was assessed holistically to examine the feasibility of\n                   adopting the minimum standard in South Africa, the adequacy of the NSFR's\n                   calibration for South Africa, and the options available for incorporating the\n                   NSFR's principles without causing unnecessary harm to the banking sector and\n                   the economy. The PA also considered the implementation timelines, and it has\n                   been decided not to deviate from the internationally agreed implementation date\n                   of 1 January 2018.\n1   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n2   Implementation of net stable funding ratio and treatment of derivative liabilities, available at https://www.bis.org/press/p171006.htm\n                                                                                                                                             1\n\n2.1.2              The NSFR should be calculated in accordance with Regulation 26(14)(d) of the\n                   Regulations relating to Banks by dividing the available amount of stable funding\n                   by the required amount of stable funding and multiplying it by one hundred.\n\n2.2                Available stable funding (ASF)\n\n2.2.1              The amount of ASF is measured based on the broad characteristics of the relative\n                   stability of an institution’s funding sources, including the contractual maturity of\n                   its liabilities and the differences in the propensity of different types of funding\n                   providers to withdraw their funding3.\n\n2.2.2              The ASF's calibration presupposes that long-term funding is more stable than\n                   short-term funding.\n\n2.2.3              The NSFR framework assumes that regulatory capital and funding provided by\n                   retail and small business customers are the most stable sources of funding and\n                   have the highest ASF factors assigned to them.\n\n2.2.4              Funding with a residual maturity of less than one year received from non-financial\n                   corporate customers, sovereigns and public-sector entities, as well as funding\n                   from financial corporate customers with a residual maturity of between six months\n                   and one year, shall be assigned an ASF factor of 50 per cent.\n\n2.2.5              The NSFR framework assigns an ASF factor of zero per cent to funding with a\n                   residual maturity of less than six months from financial corporate customers.\n\n                   The PA concluded in 2017 that it would be appropriate to deviate from the\n                   international standard and to assign an ASF factor of 35 per cent to secured and\n                   unsecured funding received in Rand (ZAR) from financial corporate customers,\n                   excluding banks, with a residual maturity of less than six months. This\n                   dispensation was only available for banks conducting business in South Africa.\n                   In order to be fully compliant with the NSFR framework, the PA has decided to\n                   phase out the ASF factor in this regard as follows:\n\n                   Table 1\n\n                     Period                                                                       ASF Percentage\n                     From 1 June 2023 to 31 December 2023                                                 30\n                     From 1 January 2024 to 31 December 2024                                              20\n                     From 1 January 2025 to 31 December 2027                                              10\n                     From 1 January 2028 onwards                                                           0\n\n2.3                Required stable funding (RSF)\n\n2.3.1              The amount of RSF is measured based on the broad characteristics of the\n                   liquidity risk profile of an institution’s assets and off-balance sheet (OBS)\n                   exposures3.\n\n2.3.2              The RSF considers the need for resilient credit extension, bank behaviour,\n                   liquidity value, asset tenor and asset quality. Accordingly, the PA’s assessment\n                   that the RSF factors set out in the NSFR framework is appropriate and shall be\n                   implemented accordingly by banks.\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                                   2\n\n2.3.3     Treatment of minimum required cash reserves\n\n2.3.3.1   The RSF assigned to a bank’s minimum required cash reserves shall be\n          5 per cent. Any excess cash reserve balances held at the South African Reserve\n          Bank in the relevant reserve account shall be assigned an RSF factor of 0 per\n          cent.\n\n2.3.4     The required stable funding add-on relating to gross derivative liabilities\n\n2.3.4.1   10 per cent of gross derivative liabilities (before any netting or collateral has been\n          applied) are required to have stable funding raised against them.\n\n2.3.5     Interdependent assets and liabilities\n\n2.3.5.1   The principles for interdependent assets and liabilities that qualify for the\n          beneficial treatment are stated out in paragraph 45 of the BCBS's NSFR\n          framework For banks to benefit from this treatment, supervisory approval would\n          be required, as well as careful evaluation of the bank's internal governance\n          mechanisms. Interdependent assets and liabilities must be approved at the very\n          least by the executive committee of the relevant bank responsible for liquidity risk\n          management monitoring.\n\n2.3.6     Treatment of the Restricted Committed Liquidity Facility (RCLF) from the\n          South African Reserve Bank (SARB)\n\n2.3.6.1   The RCLF should be reported in accordance with Regulation (12)(b)(iii)(D) as\n          level 2B high-quality liquid assets.\n\n2.3.7     The following contingent funding obligations are included in the NSFR framework:\n\n2.3.7.1   Unconditionally revocable credit and liquidity facilities shall be assigned an RSF\n          factor of 5 per cent;\n\n2.3.7.2   Trade finance-related obligations (including guarantees and letters of credit) shall\n          be assigned an RSF factor of 5 per cent;\n\n2.3.7.3   Guarantees and letters of credit unrelated to trade finance obligations shall be\n          assigned an RSF factor of 5 per cent, and\n\n2.3.7.4   Non-contractual obligations such as:\n\n2.3.7.4.1 potential requests for debt repurchases of the bank’s own debt or that of related\n          conduits, securities investment vehicles and other such financing facilities,\n\n2.3.7.4.2 structured products where customers anticipate ready marketability, such as\n          adjustable rate notes and variable rate demand notes, and\n\n2.3.7.4.3 managed funds marketed to maintain a stable value shall all be assigned an RSF\n          factor of 0 per cent.\n\n\n\n\n                                                                                              3",
+          "text": "Framework for the calculating and implementation of the NSFR 2. Framework for the calculating and implementation of the NSFR",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d1-2023-2-1",
+              "id": "s2-1",
               "number": "2.1",
-              "heading": "Calibration and implementation of the NSFR",
-              "text": "2.1                Calibration and implementation of the NSFR\n2.1.1              The NSFR framework was assessed holistically to examine the feasibility of\n                   adopting the minimum standard in South Africa, the adequacy of the NSFR's\n                   calibration for South Africa, and the options available for incorporating the\n                   NSFR's principles without causing unnecessary harm to the banking sector and\n                   the economy. The PA also considered the implementation timelines, and it has\n                   been decided not to deviate from the internationally agreed implementation date\n                   of 1 January 2018.\n1   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n2   Implementation of net stable funding ratio and treatment of derivative liabilities, available at https://www.bis.org/press/p171006.htm\n                                                                                                                                             1\n\n2.1.2              The NSFR should be calculated in accordance with Regulation 26(14)(d) of the\n                   Regulations relating to Banks by dividing the available amount of stable funding\n                   by the required amount of stable funding and multiplying it by one hundred.",
+              "text": "Calibration and implementation of the NSFR",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-1-1",
+                  "number": "2.1.1",
+                  "text": "The NSFR framework was assessed holistically to examine the feasibility of adopting the minimum standard in South Africa, the adequacy of the NSFR's calibration for South Africa, and the options available for incorporating the NSFR's principles without causing unnecessary harm to the banking sector and the economy. The PA also considered the implementation timelines, and it has been decided not to deviate from the internationally agreed implementation date of 1 January 2018. 1 Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf 2 Implementation of net stable funding ratio and treatment of derivative liabilities, available at https://www.bis.org/press/p171006.htm 1",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-1-2",
+                  "number": "2.1.2",
+                  "text": "The NSFR should be calculated in accordance with Regulation 26(14)(d) of the Regulations relating to Banks by dividing the available amount of stable funding by the required amount of stable funding and multiplying it by one hundred.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d1-2023-2-2",
+              "id": "s2-2",
               "number": "2.2",
-              "heading": "Available stable funding (ASF)",
-              "text": "2.2                Available stable funding (ASF)\n\n2.2.1              The amount of ASF is measured based on the broad characteristics of the relative\n                   stability of an institution’s funding sources, including the contractual maturity of\n                   its liabilities and the differences in the propensity of different types of funding\n                   providers to withdraw their funding3.\n\n2.2.2              The ASF's calibration presupposes that long-term funding is more stable than\n                   short-term funding.\n\n2.2.3              The NSFR framework assumes that regulatory capital and funding provided by\n                   retail and small business customers are the most stable sources of funding and\n                   have the highest ASF factors assigned to them.\n\n2.2.4              Funding with a residual maturity of less than one year received from non-financial\n                   corporate customers, sovereigns and public-sector entities, as well as funding\n                   from financial corporate customers with a residual maturity of between six months\n                   and one year, shall be assigned an ASF factor of 50 per cent.\n\n2.2.5              The NSFR framework assigns an ASF factor of zero per cent to funding with a\n                   residual maturity of less than six months from financial corporate customers.\n\n                   The PA concluded in 2017 that it would be appropriate to deviate from the\n                   international standard and to assign an ASF factor of 35 per cent to secured and\n                   unsecured funding received in Rand (ZAR) from financial corporate customers,\n                   excluding banks, with a residual maturity of less than six months. This\n                   dispensation was only available for banks conducting business in South Africa.\n                   In order to be fully compliant with the NSFR framework, the PA has decided to\n                   phase out the ASF factor in this regard as follows:\n\n                   Table 1\n\n                     Period                                                                       ASF Percentage\n                     From 1 June 2023 to 31 December 2023                                                 30\n                     From 1 January 2024 to 31 December 2024                                              20\n                     From 1 January 2025 to 31 December 2027                                              10\n                     From 1 January 2028 onwards                                                           0",
+              "text": "Available stable funding (ASF)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-2-1",
+                  "number": "2.2.1",
+                  "text": "The amount of ASF is measured based on the broad characteristics of the relative stability of an institution\u2019s funding sources, including the contractual maturity of its liabilities and the differences in the propensity of different types of funding providers to withdraw their funding3.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-2",
+                  "number": "2.2.2",
+                  "text": "The ASF's calibration presupposes that long-term funding is more stable than short-term funding.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-3",
+                  "number": "2.2.3",
+                  "text": "The NSFR framework assumes that regulatory capital and funding provided by retail and small business customers are the most stable sources of funding and have the highest ASF factors assigned to them.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-4",
+                  "number": "2.2.4",
+                  "text": "Funding with a residual maturity of less than one year received from non-financial corporate customers, sovereigns and public-sector entities, as well as funding from financial corporate customers with a residual maturity of between six months and one year, shall be assigned an ASF factor of 50 per cent.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-2-5",
+                  "number": "2.2.5",
+                  "text": "The NSFR framework assigns an ASF factor of zero per cent to funding with a residual maturity of less than six months from financial corporate customers. The PA concluded in 2017 that it would be appropriate to deviate from the international standard and to assign an ASF factor of 35 per cent to secured and unsecured funding received in Rand (ZAR) from financial corporate customers, excluding banks, with a residual maturity of less than six months. This dispensation was only available for banks conducting business in South Africa. In order to be fully compliant with the NSFR framework, the PA has decided to phase out the ASF factor in this regard as follows: Table 1 Period ASF Percentage From 1 June 2023 to 31 December 2023 30 From 1 January 2024 to 31 December 2024 20 From 1 January 2025 to 31 December 2027 10 From 1 January 2028 onwards 0",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d1-2023-2-3",
+              "id": "s2-3",
               "number": "2.3",
-              "heading": "Required stable funding (RSF)",
-              "text": "2.3                Required stable funding (RSF)\n\n2.3.1              The amount of RSF is measured based on the broad characteristics of the\n                   liquidity risk profile of an institution’s assets and off-balance sheet (OBS)\n                   exposures3.\n\n2.3.2              The RSF considers the need for resilient credit extension, bank behaviour,\n                   liquidity value, asset tenor and asset quality. Accordingly, the PA’s assessment\n                   that the RSF factors set out in the NSFR framework is appropriate and shall be\n                   implemented accordingly by banks.\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                                   2\n\n2.3.3     Treatment of minimum required cash reserves\n\n2.3.3.1   The RSF assigned to a bank’s minimum required cash reserves shall be\n          5 per cent. Any excess cash reserve balances held at the South African Reserve\n          Bank in the relevant reserve account shall be assigned an RSF factor of 0 per\n          cent.\n\n2.3.4     The required stable funding add-on relating to gross derivative liabilities\n\n2.3.4.1   10 per cent of gross derivative liabilities (before any netting or collateral has been\n          applied) are required to have stable funding raised against them.\n\n2.3.5     Interdependent assets and liabilities\n\n2.3.5.1   The principles for interdependent assets and liabilities that qualify for the\n          beneficial treatment are stated out in paragraph 45 of the BCBS's NSFR\n          framework For banks to benefit from this treatment, supervisory approval would\n          be required, as well as careful evaluation of the bank's internal governance\n          mechanisms. Interdependent assets and liabilities must be approved at the very\n          least by the executive committee of the relevant bank responsible for liquidity risk\n          management monitoring.\n\n2.3.6     Treatment of the Restricted Committed Liquidity Facility (RCLF) from the\n          South African Reserve Bank (SARB)\n\n2.3.6.1   The RCLF should be reported in accordance with Regulation (12)(b)(iii)(D) as\n          level 2B high-quality liquid assets.\n\n2.3.7     The following contingent funding obligations are included in the NSFR framework:\n\n2.3.7.1   Unconditionally revocable credit and liquidity facilities shall be assigned an RSF\n          factor of 5 per cent;\n\n2.3.7.2   Trade finance-related obligations (including guarantees and letters of credit) shall\n          be assigned an RSF factor of 5 per cent;\n\n2.3.7.3   Guarantees and letters of credit unrelated to trade finance obligations shall be\n          assigned an RSF factor of 5 per cent, and\n\n2.3.7.4   Non-contractual obligations such as:\n\n2.3.7.4.1 potential requests for debt repurchases of the bank’s own debt or that of related\n          conduits, securities investment vehicles and other such financing facilities,\n\n2.3.7.4.2 structured products where customers anticipate ready marketability, such as\n          adjustable rate notes and variable rate demand notes, and\n\n2.3.7.4.3 managed funds marketed to maintain a stable value shall all be assigned an RSF\n          factor of 0 per cent.\n\n\n\n\n                                                                                              3",
+              "text": "Required stable funding (RSF)",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-3-1",
+                  "number": "2.3.1",
+                  "text": "The amount of RSF is measured based on the broad characteristics of the liquidity risk profile of an institution\u2019s assets and off-balance sheet (OBS) exposures3.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-3-2",
+                  "number": "2.3.2",
+                  "text": "The RSF considers the need for resilient credit extension, bank behaviour, liquidity value, asset tenor and asset quality. Accordingly, the PA\u2019s assessment that the RSF factors set out in the NSFR framework is appropriate and shall be implemented accordingly by banks. Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf 2",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-3-3",
+                  "number": "2.3.3",
+                  "text": "Treatment of minimum required cash reserves",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s2-3-3-1",
+                      "number": "2.3.3.1",
+                      "text": "The RSF assigned to a bank\u2019s minimum required cash reserves shall be 5 per cent. Any excess cash reserve balances held at the South African Reserve Bank in the relevant reserve account shall be assigned an RSF factor of 0 per cent.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s2-3-4",
+                  "number": "2.3.4",
+                  "text": "The required stable funding add-on relating to gross derivative liabilities",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s2-3-4-1",
+                      "number": "2.3.4.1",
+                      "text": "10 per cent of gross derivative liabilities (before any netting or collateral has been applied) are required to have stable funding raised against them.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s2-3-5",
+                  "number": "2.3.5",
+                  "text": "Interdependent assets and liabilities",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s2-3-5-1",
+                      "number": "2.3.5.1",
+                      "text": "The principles for interdependent assets and liabilities that qualify for the beneficial treatment are stated out in paragraph 45 of the BCBS's NSFR framework For banks to benefit from this treatment, supervisory approval would be required, as well as careful evaluation of the bank's internal governance mechanisms. Interdependent assets and liabilities must be approved at the very least by the executive committee of the relevant bank responsible for liquidity risk management monitoring.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s2-3-6",
+                  "number": "2.3.6",
+                  "text": "Treatment of the Restricted Committed Liquidity Facility (RCLF) from the South African Reserve Bank (SARB)",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s2-3-6-1",
+                      "number": "2.3.6.1",
+                      "text": "The RCLF should be reported in accordance with Regulation (12)(b)(iii)(D) as level 2B high-quality liquid assets.",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                },
+                {
+                  "id": "s2-3-7",
+                  "number": "2.3.7",
+                  "text": "The following contingent funding obligations are included in the NSFR framework:",
+                  "verbatim": true,
+                  "subsections": [
+                    {
+                      "id": "s2-3-7-1",
+                      "number": "2.3.7.1",
+                      "text": "Unconditionally revocable credit and liquidity facilities shall be assigned an RSF factor of 5 per cent;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-3-7-2",
+                      "number": "2.3.7.2",
+                      "text": "Trade finance-related obligations (including guarantees and letters of credit) shall be assigned an RSF factor of 5 per cent;",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-3-7-3",
+                      "number": "2.3.7.3",
+                      "text": "Guarantees and letters of credit unrelated to trade finance obligations shall be assigned an RSF factor of 5 per cent, and",
+                      "verbatim": true,
+                      "subsections": []
+                    },
+                    {
+                      "id": "s2-3-7-4",
+                      "number": "2.3.7.4",
+                      "text": "Non-contractual obligations such as: 2.3.7.4.1 potential requests for debt repurchases of the bank\u2019s own debt or that of related conduits, securities investment vehicles and other such financing facilities, 2.3.7.4.2 structured products where customers anticipate ready marketability, such as adjustable rate notes and variable rate demand notes, and 2.3.7.4.3 managed funds marketed to maintain a stable value shall all be assigned an RSF factor of 0 per cent. 3",
+                      "verbatim": true,
+                      "subsections": []
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -110,14 +269,14 @@
           "id": "s-banks-d1-2023-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.                 Acknowledgement of receipt\n\n3.1.               Kindly ensure that a copy of this Directive is made available to your institution’s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
+          "text": "3.1.               Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d1-2023-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
-              "text": "3.1.               Kindly ensure that a copy of this Directive is made available to your institution’s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
+              "text": "3.1.               Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
               "verbatim": true,
               "subsections": []
             }

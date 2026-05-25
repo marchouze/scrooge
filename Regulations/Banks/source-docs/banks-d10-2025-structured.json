@@ -1,6 +1,6 @@
 {
   "slug": "banks-d10-2025",
-  "title": "Banks Act Directive D10/2025 — Matters related to Pillar 3 disclosure requirements in terms of regulation 43 of the Regulations relating to Banks",
+  "title": "Banks Act Directive D10/2025 \u2014 Matters related to Pillar 3 disclosure requirements in terms of regulation 43 of the Regulations relating to Banks",
   "shortTitle": "Directive D10/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -28,14 +28,14 @@
           "id": "s-banks-d10-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.         Introduction\n\n1.1        The Basel Committee on Banking Supervision (BCBS) has consolidated the\n           disclosure requirements in the ‘Disclosure requirements’ (DIS)-themed chapter of\n           the Basel framework1 on disclosure requirements.\n\n1.2        This Directive and Directive D1/2024 on Pillar 3 disclosure requirements in respect\n           of interest rate risk in the banking book (IRRBB) serve as reference points for the\n           respective disclosure requirements applicable to banks, as the detailed disclosure\n           requirements have been removed from the Regulations. However, the essential\n           disclosure principles remain in regulation 43(1) of the Regulations.\n\n1.3        The disclosure requirements must be published in standardised templates and\n           tables to promote consistency and comparability of the disclosed information.\n           These templates and tables are contained in Annexure A and, in respect of credit\n           risk, Annexure B of this Directive.\n\n1.4        The provisions of this directive are not related to any disclosure requirements that\n           may be prescribed by the Johannesburg Stock Exchange Limited (JSE) in respect\n           of the Stock Exchange News Service (SENS), from time to time.",
+          "text": "1.1        The Basel Committee on Banking Supervision (BCBS) has consolidated the\n           disclosure requirements in the \u2018Disclosure requirements\u2019 (DIS)-themed chapter of\n           the Basel framework1 on disclosure requirements.\n\n1.2        This Directive and Directive D1/2024 on Pillar 3 disclosure requirements in respect\n           of interest rate risk in the banking book (IRRBB) serve as reference points for the\n           respective disclosure requirements applicable to banks, as the detailed disclosure\n           requirements have been removed from the Regulations. However, the essential\n           disclosure principles remain in regulation 43(1) of the Regulations.\n\n1.3        The disclosure requirements must be published in standardised templates and\n           tables to promote consistency and comparability of the disclosed information.\n           These templates and tables are contained in Annexure A and, in respect of credit\n           risk, Annexure B of this Directive.\n\n1.4        The provisions of this directive are not related to any disclosure requirements that\n           may be prescribed by the Johannesburg Stock Exchange Limited (JSE) in respect\n           of the Stock Exchange News Service (SENS), from time to time.",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d10-2025-1-1",
               "number": "1.1",
               "heading": "The Basel Committee on Banking Supervision (BCBS) has consolidated the",
-              "text": "1.1        The Basel Committee on Banking Supervision (BCBS) has consolidated the\n           disclosure requirements in the ‘Disclosure requirements’ (DIS)-themed chapter of\n           the Basel framework1 on disclosure requirements.",
+              "text": "1.1        The Basel Committee on Banking Supervision (BCBS) has consolidated the\n           disclosure requirements in the \u2018Disclosure requirements\u2019 (DIS)-themed chapter of\n           the Basel framework1 on disclosure requirements.",
               "verbatim": true,
               "subsections": []
             },
@@ -69,248 +69,589 @@
           "id": "s-banks-d10-2025-2",
           "number": "2",
           "heading": "Directive",
-          "text": "2.         Directive\n\n2.1        In accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act No 94\n           of 1990), banks are hereby directed to adhere to the general and specific\n           requirements in disclosing the required information to the public as follows:\n\n2.2        Banks are required to disclose the relevant information, required in this directive,\n           commencing on the disclosure periods (year-ends and half-years) ending on or\n           after the effective date of this directive.\n\n2.3        Retrospective disclosure and the location of disclosures\n\n2.3.1      With regard to templates that require the disclosure of data points for current and\n           previous reporting periods, the disclosure of data points for previous periods is not\n           required when metrics for new standards are reported for the first time. The\n           requirements for operational risk templates are an exception to this rule, as\n           comparative disclosures are required in the implementation year of these\n           requirements.\n\n2.3.2      Banks shall publish the Pillar 3 report as a stand-alone document that provides a\n           readily accessible source of prudential information to users, or the Pillar 3 report\n           shall be appended to, or form a discrete section of, a bank’s financial report.\n           However, in all cases, the Pillar 3 report shall be easily identifiable to users.\n\n2.4        Scope of application\n\n2.4.1      The Pillar 3 disclosure requirements, as a minimum, apply to all banks at the\n           highest level of consolidation within a bank or banking group, in accordance with\n           the relevant requirements specified in regulation 43(1) read with regulation 43(3)\n           of the Regulations. These disclosure requirements also apply to branches of\n1 Please see Basel III: DIS disclosure requirements, available\n\nat https://www.bis.org/basel_framework/standard/DIS.htm.\n\n                                                                                              2\n\n        foreign institutions conducting business in South Africa, unless the PA has directed\n        otherwise.\n\n2.4.2   Banks shall refer to specific templates and tables in Annexures A and B for\n        additional requirements in respect of the scope of application, where relevant.\n\n2.5     Archive period\n\n2.5.1   Banks shall make available on their websites an archive of Pillar 3 reports in\n        respect of the required quarterly, semi-annual and/or annual disclosures relating\n        to prior reporting periods, which archive must ultimately cover not less than five\n        years from the initial implementation date.\n\n2.6     Presentation of the disclosure requirements\n\n2.6.1   Banks’ disclosures shall adhere to the following guiding principles:\n\n        •   Principle 1: Disclosures must be clear.\n        •   Principle 2: Disclosures must be comprehensive.\n        •   Principle 3: Disclosures must be meaningful to users.\n        •   Principle 4: Disclosures must be consistent over time.\n        •   Principle 5: Disclosures must be comparable across banks.\n\n2.6.2   Banks shall explain and supplement their disclosed quantitative information\n        provided in both the fixed templates and the flexible tables with commentary to\n        explain any significant changes between reporting periods and any other matters\n        that management considers to be of importance to users.\n\n2.6.3   Banks shall refer to specific templates and tables in Annexures A and B for\n        additional requirements in respect of the required narratives, where relevant.\n\n2.7     Timing of disclosures\n\n2.7.1   Banks shall publish their Pillar 3 reports concurrently with their financial reports no\n        later than 120 days after year-end.\n\n2.7.2   In instances where the Pillar 3 disclosure must be published for a period when a\n        bank does not produce a full set of financial reports, the disclosure requirements\n        must be published as soon as practicable. The time lag shall in no case exceed 60\n        days for the bank’s quarterly reporting date and 90 days for the bank’s semi-annual\n        reporting date.\n\n2.8     Format of disclosures\n\n2.8.1   The respective disclosures must be made in either the fixed templates or the\n        flexible tables format, according to the frequency for each relevant template or\n        table, as specified in Annexures A and B, respectively.\n\n2.8.2   With respect to the fixed templates and flexible tables, banks may add extra rows\n        and extra columns if they wish to provide additional detail to a disclosure\n        requirement. However, the numbering of the specified rows and columns in the\n        template shall not be altered. Banks shall adhere to any additional instructions as\n        set out in the respective templates and tables in Annexures A and B, where\n        relevant.\n\n\n                                                                                             3\n\n2.8.3    Where the format of a template or table is flexible, banks may present the required\n         information either in the format provided in the relevant DIS template/table or in a\n         format that the bank considers most relevant to its business model. Banks shall\n         adhere to any additional instructions as set out in the respective templates and\n         tables in Annexures A and B, where relevant.\n\n2.8.4    In all cases, when a customised presentation of the information is used for flexible\n         templates and tables, the bank must provide information that is comparable with\n         the information required in the relevant DIS-specified requirements.\n\n2.9      Assurance of disclosures\n\n2.9.1    In accordance with the relevant requirements specified in regulation 43(1) of the\n         Regulations, the Board of Directors (Board) and senior management of a bank\n         shall establish and maintain effective internal control structures in respect of the\n         disclosure of the Pillar 3 requirements.\n\n2.9.2    The Board and senior management of a bank shall ensure that an appropriate\n         review, approval and sign-off of the relevant disclosures take place at Board level.\n         One or more senior executive officers of the bank, at Board level or equivalent,\n         shall attest, in writing, that the relevant Pillar 3 disclosures have been prepared in\n         accordance with the Board-approved internal control processes.\n\n2.9.3    The bank shall also describe the key elements of its Board-approved disclosure\n         policy in the Pillar 3 report, that has an annual frequency, or provide the\n         reference(s) to another location(s) where such a policy is available.\n\n2.10     Signposting of disclosure requirements\n\n2.10.1   In all cases, when a bank discloses the required information in a document\n         separate from the Pillar 3 report, the bank shall specify, in its Pillar 3 report, where\n         the disclosure requirements have been published, provided that the signposting in\n         the Pillar 3 report shall include:\n\n         i.   the number and title of the disclosure requirements;\n         ii.  the full name of the separate document(s) in which the disclosure requirements\n              have been published;\n         iii. the page and paragraph number of the separate document(s) in which the\n              disclosure requirements are located; and\n         iv. a web link, where relevant.\n\n2.10.2   Banks may only use signposting to another document(s) when the level of\n         assurance on the reliability and credibility of data in the separate document(s) is\n         equivalent to, or greater than, the internal assurance level required for the Pillar 3\n         report.\n\n2.11     Overview of risk management, key prudential metrics and risk-weighted assets\n\n2.11.1   Banks shall disclose the information required in templates KM1 (‘Key metrics’) and\n         OV1 (‘Overview of risk-weighted assets (RWA)’) as well as table OVA (‘Bank risk\n         management approach’) according to the formats and frequencies specified in\n         DIS 20. These disclosure requirements entail the bank’s strategy and key\n\n\n\n                                                                                               4\n\n         prudential metrics as well as directors and senior management’s assessment and\n         management of risk.\n\n2.11.2   Template KM2 (‘Key metrics – total loss-absorbing capacity (TLAC)’) requirements\n         (at resolution group level) are only applicable to resolution groups of global\n         systemically important banks (G-SIBs). Banks are not required to disclose\n         template KM2 as the PA is not the home supervisor to any G-SIBs.\n\n2.12     Comparison of modelled and standardised risk-weighted assets\n\n2.12.1   Banks using internal models for their risk exposures must disclose the relevant\n         required information set out in templates CMS1 (‘Comparison of modelled and\n         standardised RWA at risk level’) and CMS2 (‘Comparison of modelled and\n         standardised RWA for credit risk at asset class level’) according to the formats and\n         frequencies specified in DIS 21.\n\n2.13     Composition of capital and total loss-absorbing capacity\n\n2.13.1   Banks must disclose the relevant required information set out in table CCA\n         (‘Main features of regulatory capital instruments and other total loss-absorbing\n         capacity (TLAC)-eligible instruments’) as well as the relevant required information\n         set out in templates CC1 (‘Composition of regulatory capital’) and CC2\n         (‘Reconciliation of regulatory capital to balance sheet’) according to the formats\n         and frequencies specified in DIS 25.\n\n2.13.2   Table CCA shall be published on the bank’s website, and it shall be updated\n         whenever the bank issues or repays a capital instrument (or another TLAC-eligible\n         instrument, where applicable) and whenever there is a redemption,\n         conversion/write-down or another material change in an existing instrument.\n\n2.13.3   The PA is not the home supervisor to any G-SIBs. Banks are therefore not required\n         to disclose the relevant required information set out in templates that are meant\n         for G-SIBs, including template TLAC1, which provides details of the TLAC\n         positions of G-SIB resolution groups, and templates TLAC2 and TLAC3, which\n         present information on creditor rankings at the legal entity level for material\n         subgroup entities (i.e. entities that are part of a material subgroup) that have issued\n         an internal TLAC to one or more resolution entities.\n\n2.14     Capital distribution constraints\n\n2.14.1   Template CDC (‘Capital distribution constraints’) (CDCs) provides the common\n         equity tier 1 (CET1) capital ratios that would trigger CDCs. The PA has elected to\n         partially implement template CDC in South Africa.\n\n2.14.2   Banks designated as domestic systemically important banks (D-SIBs) shall\n         disclose line 3, columns (a) and (b), related to the leverage ratio, according to the\n         formats and frequencies specified in DIS 26.\n\n2.14.3   Banks that are not designated as D-SIBs are not required to disclose template\n         CDC, until such time as the PA may direct otherwise.\n\n\n\n\n                                                                                              5\n\n2.15     Links between financial statements and regulatory exposures\n\n2.15.1   Banks shall disclose the relevant required information set out in template LI1\n         (‘Differences between accounting and regulatory scopes of consolidation and\n         mapping of financial statement categories with regulatory risk categories’) and\n         template LI2 (‘Main sources of differences between regulatory exposure amounts\n         and carrying values in financial statements’) as well as the relevant required\n         information set out in table LIA (‘Explanation of differences between regulatory and\n         accounting exposure amounts’) and template PV1 (‘Prudent valuation adjustments\n         (PVAs)’) according to the formats and frequencies specified in DIS 30.\n\n2.16     Asset encumbrance\n\n2.16.1   Banks shall disclose the relevant required information set out in template ENC\n         (‘Asset encumbrance’) according to the formats and frequencies specified in\n         DIS 31. Template ENC requires the disclosure of the carrying amount for\n         encumbered and unencumbered assets on the balance sheet using period-end\n         values. Banks shall use the definition of ‘encumbered assets’ set out in the\n         instructions in DIS 31.\n\n2.16.2   Banks shall disclose column (b) (‘Central bank facilities’) of template ENC, which\n         the PA has decided to make mandatory. Banks shall disclose the relevant required\n         information set out in template ENC commencing from the period ending after the\n         effective date of the final Directive.\n\n2.17     Remuneration\n\n2.17.1   Banks shall disclose the relevant required information set out in table REMA\n         (‘Remuneration policy’) as well as in templates REM1 (‘Remuneration awarded\n         during financial year’), REM2 (‘Special payments’) and REM3 (‘Deferred\n         remuneration’) according to the formats and frequencies specified in DIS 35.\n\n2.18     Credit risk\n\n2.18.1   Banks shall disclose all the relevant required information set out in the templates\n         and tables related to credit risk according to the formats and frequencies specified\n         in DIS 40 in Annexure B. Some of the credit risk templates have been revised to\n         align the definitions and asset classes to the Regulations; all templates and tables\n         related to credit risk are therefore included in Annexure B.\n\n2.19     Counterparty credit risk\n\n2.19.1   Banks shall disclose the relevant required information set out in table CCRA\n         (‘Qualitative disclosure related to counterparty credit risk (CCR)’) as well as in\n         templates CCR1 (‘Analysis of CCR exposures by approach’), CCR3\n         (‘Standardised approach – CCR exposures by regulatory portfolio and risk\n         weights’), CCR4 (‘Internal ratings-based (IRB)-CCR exposures by portfolio and\n         probability-of-default (PD) scale’), CCR5 (‘Composition of collateral for CCR\n         exposures’), CCR6 (‘Credit derivatives exposures’), CCR7 (‘RWA flow statements\n         of CCR exposures under the internal models method (IMM)’) and CCR8\n         (‘Exposures to central counterparties’) according to the formats and frequencies\n         specified in DIS 42.\n\n\n\n                                                                                           6\n\n2.20     Securitisation\n\n2.20.1   Banks shall disclose the relevant required information set out in table SECA\n         (‘Qualitative disclosure requirements related to securitisation exposures’) as well\n         as in templates SEC1 (‘Securitisation exposures in the banking book’), SEC2\n         (‘Securitisation exposures in the trading book’), SEC3 (‘Securitisation exposures\n         in the banking book and associated regulatory capital requirements – bank acting\n         as originator or as sponsor’) and SEC4 (‘Securitisation exposures in the banking\n         book and associated capital requirements – bank acting as investor’) according to\n         the formats and frequencies specified in DIS 43.\n\n2.21     Sovereign exposure\n\n2.21.1   Information related to the disclosure requirements for sovereign exposures is\n         specified in DIS 45, templates SOV1 (‘Exposures to sovereign entities – country’),\n         SOV2 (‘Exposures to sovereign entities – currency denomination breakdown’) and\n         SOV3 (‘Exposures to sovereign entities – accounting classification breakdown’).\n\n2.21.2   The PA has decided to defer the disclosure of sovereign exposures at this stage;\n         and will communicate the implementation date of such disclosure in writing at a\n         future date.\n\n2.22     Market risk\n\n2.22.1   Banks shall disclose the relevant required information set out in tables MRA\n         (‘General qualitative disclosure requirements related to market risk’) and MRB\n         (‘Qualitative disclosures for banks using the internal models approach (IMA)’) as\n         well as in templates MR1 (‘Market risk under the standardised approach’), MR2\n         (‘Market risk for banks using the IMA’) and MR3 (‘Market risk under the simplified\n         standardised approach’) according to the formats and frequencies specified in\n         DIS 50.\n\n2.23     Credit valuation adjustment risk\n\n2.23.1   Banks shall disclose the relevant required information set out in tables CVAA\n         (‘General qualitative disclosure requirements related to credit valuation adjustment\n         (CVA)’) and CVAB (‘Qualitative disclosures for banks using the standardised\n         approach (SA-CVA)’) as well as in templates CVA1 (‘The reduced basic approach\n         for CVA’), CVA2 (‘The full basic approach for CVA’), CVA3 (‘The standardised\n         approach for CVA (SA-CVA)’) and CVA4 (‘RWA flow statements of CVA risk\n         exposures under SA-CVA’) in accordance with the formats and frequencies\n         specified in DIS 51.\n\n2.24     Operational risk\n\n2.24.1   Banks shall disclose the relevant required information set out in table ORA\n         (‘General qualitative information on a bank’s operational risk framework’) as well\n         as in templates OR1 (‘Historical losses’), OR2 (‘Business indicator and\n         subcomponents’) and OR3 (‘Minimum required operational risk capital’) according\n         to the formats and frequencies specified in DIS 60.\n\n\n\n\n                                                                                           7\n\n2.24.2   With regard to the relevant required information set out in template OR1, the PA\n         directs that a rand-denominated threshold of R50 000 be adopted. Banks are not\n         required to complete lines 6–10 of the template OR1 until such time that the PA\n         directs otherwise, as these sections are currently not applicable in South Africa.\n\n2.24.3   Disclosure of the relevant required information in respect of prior periods is\n         required from the implementation date of these templates.\n\n2.25     IRRBB\n\n2.25.1   Banks shall disclose the relevant required information related to IRRBB per\n         Directive D1/2024 on Pillar 3 disclosure requirements on IRRBB.\n\n2.26     Macroprudential supervisory measures\n\n2.26.1   Banks shall disclose the relevant required information set out in template CCyB1\n         (‘Geographical distribution of credit exposures used in the calculation of the bank-\n         specific countercyclical capital buffer requirement’) according to the format and\n         frequency specified in DIS 75. This relates to information on the geographical\n         distribution of credit exposures relevant for the calculation of the countercyclical\n         buffer (CCyB) in respect of jurisdictions where the CCyB rate is higher than zero.\n\n2.26.2   Template G-SIB1 (‘Disclosure of global systemically important bank (G-SIB)\n         indicators’) provides users of Pillar 3 data with details of the indicators used to\n         assess how a G-SIB has been determined. This template is mandatory for a bank\n         that was classified as a G-SIB in the previous year or a bank that was included in\n         the assessment sample by the PA based on supervisory judgement. The PA is not\n         the home supervisor to any G-SIB; banks are therefore not required to publish the\n         templates that are required for G-SIBs (including template G-SIB1).\n\n2.27     Leverage ratio\n\n2.27.1   Banks shall disclose the relevant required information set out in templates LR1\n         (‘Summary comparison of accounting assets vs leverage ratio exposure measure’)\n         and LR2 (‘Leverage ratio common disclosure template’) according to the formats\n         and frequencies specified in DIS 80.\n\n2.27.2   Banks may calculate the leverage ratio based on either daily or monthly average\n         numbers. The disclosures shall include the basis for the calculation of the\n         disclosed amount – daily averaging, monthly averaging or quarter-end averaging\n         – subject to the approval of, and any conditions as may be specified in writing by,\n         the PA.\n\n2.28     Liquidity\n\n2.28.1   Banks shall disclose the relevant required information set out in table LIQA\n         (‘Liquidity risk management’) as well as in templates LIQ1 (‘Liquidity coverage ratio\n         (LCR)’) and LIQ2 (‘Net stable funding ratio (NSFR)’) according to the formats and\n         frequencies specified in DIS 85.\n\n\n\n\n                                                                                            8\n\n2.28.2    Banks shall calculate and disclose an average amount, in relation to template\n          LIQ1, based on the average of daily observation amounts over the previous quarter\n          in the local currency. Banks shall, in all cases, publish the number of data points\n          used in the calculation of the aforesaid average amounts.",
+          "text": "Directive 2. Directive",
           "verbatim": true,
           "subsections": [
             {
-              "id": "s-banks-d10-2025-2-1",
+              "id": "s2-1",
               "number": "2.1",
-              "heading": "In accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act No 94",
-              "text": "2.1        In accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act No 94\n           of 1990), banks are hereby directed to adhere to the general and specific\n           requirements in disclosing the required information to the public as follows:",
+              "text": "In accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act No 94 of 1990), banks are hereby directed to adhere to the general and specific requirements in disclosing the required information to the public as follows:",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d10-2025-2-2",
+              "id": "s2-2",
               "number": "2.2",
-              "heading": "Banks are required to disclose the relevant information, required in this directive,",
-              "text": "2.2        Banks are required to disclose the relevant information, required in this directive,\n           commencing on the disclosure periods (year-ends and half-years) ending on or\n           after the effective date of this directive.",
+              "text": "Banks are required to disclose the relevant information, required in this directive, commencing on the disclosure periods (year-ends and half-years) ending on or after the effective date of this directive.",
               "verbatim": true,
               "subsections": []
             },
             {
-              "id": "s-banks-d10-2025-2-3",
+              "id": "s2-3",
               "number": "2.3",
-              "heading": "Retrospective disclosure and the location of disclosures",
-              "text": "2.3        Retrospective disclosure and the location of disclosures\n\n2.3.1      With regard to templates that require the disclosure of data points for current and\n           previous reporting periods, the disclosure of data points for previous periods is not\n           required when metrics for new standards are reported for the first time. The\n           requirements for operational risk templates are an exception to this rule, as\n           comparative disclosures are required in the implementation year of these\n           requirements.\n\n2.3.2      Banks shall publish the Pillar 3 report as a stand-alone document that provides a\n           readily accessible source of prudential information to users, or the Pillar 3 report\n           shall be appended to, or form a discrete section of, a bank’s financial report.\n           However, in all cases, the Pillar 3 report shall be easily identifiable to users.",
+              "text": "Retrospective disclosure and the location of disclosures",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-3-1",
+                  "number": "2.3.1",
+                  "text": "With regard to templates that require the disclosure of data points for current and previous reporting periods, the disclosure of data points for previous periods is not required when metrics for new standards are reported for the first time. The requirements for operational risk templates are an exception to this rule, as comparative disclosures are required in the implementation year of these requirements.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-3-2",
+                  "number": "2.3.2",
+                  "text": "Banks shall publish the Pillar 3 report as a stand-alone document that provides a readily accessible source of prudential information to users, or the Pillar 3 report shall be appended to, or form a discrete section of, a bank\u2019s financial report. However, in all cases, the Pillar 3 report shall be easily identifiable to users.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-4",
+              "id": "s2-4",
               "number": "2.4",
-              "heading": "Scope of application",
-              "text": "2.4        Scope of application\n\n2.4.1      The Pillar 3 disclosure requirements, as a minimum, apply to all banks at the\n           highest level of consolidation within a bank or banking group, in accordance with\n           the relevant requirements specified in regulation 43(1) read with regulation 43(3)\n           of the Regulations. These disclosure requirements also apply to branches of\n1 Please see Basel III: DIS disclosure requirements, available\n\nat https://www.bis.org/basel_framework/standard/DIS.htm.\n\n                                                                                              2\n\n        foreign institutions conducting business in South Africa, unless the PA has directed\n        otherwise.\n\n2.4.2   Banks shall refer to specific templates and tables in Annexures A and B for\n        additional requirements in respect of the scope of application, where relevant.",
+              "text": "Scope of application",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-4-1",
+                  "number": "2.4.1",
+                  "text": "The Pillar 3 disclosure requirements, as a minimum, apply to all banks at the highest level of consolidation within a bank or banking group, in accordance with the relevant requirements specified in regulation 43(1) read with regulation 43(3) of the Regulations. These disclosure requirements also apply to branches of 1 Please see Basel III: DIS disclosure requirements, available at https://www.bis.org/basel_framework/standard/DIS.htm. 2 foreign institutions conducting business in South Africa, unless the PA has directed otherwise.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-4-2",
+                  "number": "2.4.2",
+                  "text": "Banks shall refer to specific templates and tables in Annexures A and B for additional requirements in respect of the scope of application, where relevant.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-5",
+              "id": "s2-5",
               "number": "2.5",
-              "heading": "Archive period",
-              "text": "2.5     Archive period\n\n2.5.1   Banks shall make available on their websites an archive of Pillar 3 reports in\n        respect of the required quarterly, semi-annual and/or annual disclosures relating\n        to prior reporting periods, which archive must ultimately cover not less than five\n        years from the initial implementation date.",
+              "text": "Archive period",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-5-1",
+                  "number": "2.5.1",
+                  "text": "Banks shall make available on their websites an archive of Pillar 3 reports in respect of the required quarterly, semi-annual and/or annual disclosures relating to prior reporting periods, which archive must ultimately cover not less than five years from the initial implementation date.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-6",
+              "id": "s2-6",
               "number": "2.6",
-              "heading": "Presentation of the disclosure requirements",
-              "text": "2.6     Presentation of the disclosure requirements\n\n2.6.1   Banks’ disclosures shall adhere to the following guiding principles:\n\n        •   Principle 1: Disclosures must be clear.\n        •   Principle 2: Disclosures must be comprehensive.\n        •   Principle 3: Disclosures must be meaningful to users.\n        •   Principle 4: Disclosures must be consistent over time.\n        •   Principle 5: Disclosures must be comparable across banks.\n\n2.6.2   Banks shall explain and supplement their disclosed quantitative information\n        provided in both the fixed templates and the flexible tables with commentary to\n        explain any significant changes between reporting periods and any other matters\n        that management considers to be of importance to users.\n\n2.6.3   Banks shall refer to specific templates and tables in Annexures A and B for\n        additional requirements in respect of the required narratives, where relevant.",
+              "text": "Presentation of the disclosure requirements",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-6-1",
+                  "number": "2.6.1",
+                  "text": "Banks\u2019 disclosures shall adhere to the following guiding principles: \u2022 Principle 1: Disclosures must be clear. \u2022 Principle 2: Disclosures must be comprehensive. \u2022 Principle 3: Disclosures must be meaningful to users. \u2022 Principle 4: Disclosures must be consistent over time. \u2022 Principle 5: Disclosures must be comparable across banks.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-6-2",
+                  "number": "2.6.2",
+                  "text": "Banks shall explain and supplement their disclosed quantitative information provided in both the fixed templates and the flexible tables with commentary to explain any significant changes between reporting periods and any other matters that management considers to be of importance to users.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-6-3",
+                  "number": "2.6.3",
+                  "text": "Banks shall refer to specific templates and tables in Annexures A and B for additional requirements in respect of the required narratives, where relevant.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-7",
+              "id": "s2-7",
               "number": "2.7",
-              "heading": "Timing of disclosures",
-              "text": "2.7     Timing of disclosures\n\n2.7.1   Banks shall publish their Pillar 3 reports concurrently with their financial reports no\n        later than 120 days after year-end.\n\n2.7.2   In instances where the Pillar 3 disclosure must be published for a period when a\n        bank does not produce a full set of financial reports, the disclosure requirements\n        must be published as soon as practicable. The time lag shall in no case exceed 60\n        days for the bank’s quarterly reporting date and 90 days for the bank’s semi-annual\n        reporting date.",
+              "text": "Timing of disclosures",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-7-1",
+                  "number": "2.7.1",
+                  "text": "Banks shall publish their Pillar 3 reports concurrently with their financial reports no later than 120 days after year-end.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-7-2",
+                  "number": "2.7.2",
+                  "text": "In instances where the Pillar 3 disclosure must be published for a period when a bank does not produce a full set of financial reports, the disclosure requirements must be published as soon as practicable. The time lag shall in no case exceed 60 days for the bank\u2019s quarterly reporting date and 90 days for the bank\u2019s semi-annual reporting date.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-8",
+              "id": "s2-8",
               "number": "2.8",
-              "heading": "Format of disclosures",
-              "text": "2.8     Format of disclosures\n\n2.8.1   The respective disclosures must be made in either the fixed templates or the\n        flexible tables format, according to the frequency for each relevant template or\n        table, as specified in Annexures A and B, respectively.\n\n2.8.2   With respect to the fixed templates and flexible tables, banks may add extra rows\n        and extra columns if they wish to provide additional detail to a disclosure\n        requirement. However, the numbering of the specified rows and columns in the\n        template shall not be altered. Banks shall adhere to any additional instructions as\n        set out in the respective templates and tables in Annexures A and B, where\n        relevant.\n\n\n                                                                                             3\n\n2.8.3    Where the format of a template or table is flexible, banks may present the required\n         information either in the format provided in the relevant DIS template/table or in a\n         format that the bank considers most relevant to its business model. Banks shall\n         adhere to any additional instructions as set out in the respective templates and\n         tables in Annexures A and B, where relevant.\n\n2.8.4    In all cases, when a customised presentation of the information is used for flexible\n         templates and tables, the bank must provide information that is comparable with\n         the information required in the relevant DIS-specified requirements.",
+              "text": "Format of disclosures",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-8-1",
+                  "number": "2.8.1",
+                  "text": "The respective disclosures must be made in either the fixed templates or the flexible tables format, according to the frequency for each relevant template or table, as specified in Annexures A and B, respectively.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-8-2",
+                  "number": "2.8.2",
+                  "text": "With respect to the fixed templates and flexible tables, banks may add extra rows and extra columns if they wish to provide additional detail to a disclosure requirement. However, the numbering of the specified rows and columns in the template shall not be altered. Banks shall adhere to any additional instructions as set out in the respective templates and tables in Annexures A and B, where relevant. 3",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-8-3",
+                  "number": "2.8.3",
+                  "text": "Where the format of a template or table is flexible, banks may present the required information either in the format provided in the relevant DIS template/table or in a format that the bank considers most relevant to its business model. Banks shall adhere to any additional instructions as set out in the respective templates and tables in Annexures A and B, where relevant.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-8-4",
+                  "number": "2.8.4",
+                  "text": "In all cases, when a customised presentation of the information is used for flexible templates and tables, the bank must provide information that is comparable with the information required in the relevant DIS-specified requirements.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-9",
+              "id": "s2-9",
               "number": "2.9",
-              "heading": "Assurance of disclosures",
-              "text": "2.9      Assurance of disclosures\n\n2.9.1    In accordance with the relevant requirements specified in regulation 43(1) of the\n         Regulations, the Board of Directors (Board) and senior management of a bank\n         shall establish and maintain effective internal control structures in respect of the\n         disclosure of the Pillar 3 requirements.\n\n2.9.2    The Board and senior management of a bank shall ensure that an appropriate\n         review, approval and sign-off of the relevant disclosures take place at Board level.\n         One or more senior executive officers of the bank, at Board level or equivalent,\n         shall attest, in writing, that the relevant Pillar 3 disclosures have been prepared in\n         accordance with the Board-approved internal control processes.\n\n2.9.3    The bank shall also describe the key elements of its Board-approved disclosure\n         policy in the Pillar 3 report, that has an annual frequency, or provide the\n         reference(s) to another location(s) where such a policy is available.",
+              "text": "Assurance of disclosures",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-9-1",
+                  "number": "2.9.1",
+                  "text": "In accordance with the relevant requirements specified in regulation 43(1) of the Regulations, the Board of Directors (Board) and senior management of a bank shall establish and maintain effective internal control structures in respect of the disclosure of the Pillar 3 requirements.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-9-2",
+                  "number": "2.9.2",
+                  "text": "The Board and senior management of a bank shall ensure that an appropriate review, approval and sign-off of the relevant disclosures take place at Board level. One or more senior executive officers of the bank, at Board level or equivalent, shall attest, in writing, that the relevant Pillar 3 disclosures have been prepared in accordance with the Board-approved internal control processes.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-9-3",
+                  "number": "2.9.3",
+                  "text": "The bank shall also describe the key elements of its Board-approved disclosure policy in the Pillar 3 report, that has an annual frequency, or provide the reference(s) to another location(s) where such a policy is available.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-10",
+              "id": "s2-10",
               "number": "2.10",
-              "heading": "Signposting of disclosure requirements",
-              "text": "2.10     Signposting of disclosure requirements\n\n2.10.1   In all cases, when a bank discloses the required information in a document\n         separate from the Pillar 3 report, the bank shall specify, in its Pillar 3 report, where\n         the disclosure requirements have been published, provided that the signposting in\n         the Pillar 3 report shall include:\n\n         i.   the number and title of the disclosure requirements;\n         ii.  the full name of the separate document(s) in which the disclosure requirements\n              have been published;\n         iii. the page and paragraph number of the separate document(s) in which the\n              disclosure requirements are located; and\n         iv. a web link, where relevant.\n\n2.10.2   Banks may only use signposting to another document(s) when the level of\n         assurance on the reliability and credibility of data in the separate document(s) is\n         equivalent to, or greater than, the internal assurance level required for the Pillar 3\n         report.",
+              "text": "Signposting of disclosure requirements",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-10-1",
+                  "number": "2.10.1",
+                  "text": "In all cases, when a bank discloses the required information in a document separate from the Pillar 3 report, the bank shall specify, in its Pillar 3 report, where the disclosure requirements have been published, provided that the signposting in the Pillar 3 report shall include: i. the number and title of the disclosure requirements; ii. the full name of the separate document(s) in which the disclosure requirements have been published; iii. the page and paragraph number of the separate document(s) in which the disclosure requirements are located; and iv. a web link, where relevant.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-10-2",
+                  "number": "2.10.2",
+                  "text": "Banks may only use signposting to another document(s) when the level of assurance on the reliability and credibility of data in the separate document(s) is equivalent to, or greater than, the internal assurance level required for the Pillar 3 report.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-11",
+              "id": "s2-11",
               "number": "2.11",
-              "heading": "Overview of risk management, key prudential metrics and risk-weighted assets",
-              "text": "2.11     Overview of risk management, key prudential metrics and risk-weighted assets\n\n2.11.1   Banks shall disclose the information required in templates KM1 (‘Key metrics’) and\n         OV1 (‘Overview of risk-weighted assets (RWA)’) as well as table OVA (‘Bank risk\n         management approach’) according to the formats and frequencies specified in\n         DIS 20. These disclosure requirements entail the bank’s strategy and key\n\n\n\n                                                                                               4\n\n         prudential metrics as well as directors and senior management’s assessment and\n         management of risk.\n\n2.11.2   Template KM2 (‘Key metrics – total loss-absorbing capacity (TLAC)’) requirements\n         (at resolution group level) are only applicable to resolution groups of global\n         systemically important banks (G-SIBs). Banks are not required to disclose\n         template KM2 as the PA is not the home supervisor to any G-SIBs.",
+              "text": "Overview of risk management, key prudential metrics and risk-weighted assets",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-11-1",
+                  "number": "2.11.1",
+                  "text": "Banks shall disclose the information required in templates KM1 (\u2018Key metrics\u2019) and OV1 (\u2018Overview of risk-weighted assets (RWA)\u2019) as well as table OVA (\u2018Bank risk management approach\u2019) according to the formats and frequencies specified in DIS 20. These disclosure requirements entail the bank\u2019s strategy and key 4 prudential metrics as well as directors and senior management\u2019s assessment and management of risk.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-11-2",
+                  "number": "2.11.2",
+                  "text": "Template KM2 (\u2018Key metrics \u2013 total loss-absorbing capacity (TLAC)\u2019) requirements (at resolution group level) are only applicable to resolution groups of global systemically important banks (G-SIBs). Banks are not required to disclose template KM2 as the PA is not the home supervisor to any G-SIBs.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-12",
+              "id": "s2-12",
               "number": "2.12",
-              "heading": "Comparison of modelled and standardised risk-weighted assets",
-              "text": "2.12     Comparison of modelled and standardised risk-weighted assets\n\n2.12.1   Banks using internal models for their risk exposures must disclose the relevant\n         required information set out in templates CMS1 (‘Comparison of modelled and\n         standardised RWA at risk level’) and CMS2 (‘Comparison of modelled and\n         standardised RWA for credit risk at asset class level’) according to the formats and\n         frequencies specified in DIS 21.",
+              "text": "Comparison of modelled and standardised risk-weighted assets",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-12-1",
+                  "number": "2.12.1",
+                  "text": "Banks using internal models for their risk exposures must disclose the relevant required information set out in templates CMS1 (\u2018Comparison of modelled and standardised RWA at risk level\u2019) and CMS2 (\u2018Comparison of modelled and standardised RWA for credit risk at asset class level\u2019) according to the formats and frequencies specified in DIS 21.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-13",
+              "id": "s2-13",
               "number": "2.13",
-              "heading": "Composition of capital and total loss-absorbing capacity",
-              "text": "2.13     Composition of capital and total loss-absorbing capacity\n\n2.13.1   Banks must disclose the relevant required information set out in table CCA\n         (‘Main features of regulatory capital instruments and other total loss-absorbing\n         capacity (TLAC)-eligible instruments’) as well as the relevant required information\n         set out in templates CC1 (‘Composition of regulatory capital’) and CC2\n         (‘Reconciliation of regulatory capital to balance sheet’) according to the formats\n         and frequencies specified in DIS 25.\n\n2.13.2   Table CCA shall be published on the bank’s website, and it shall be updated\n         whenever the bank issues or repays a capital instrument (or another TLAC-eligible\n         instrument, where applicable) and whenever there is a redemption,\n         conversion/write-down or another material change in an existing instrument.\n\n2.13.3   The PA is not the home supervisor to any G-SIBs. Banks are therefore not required\n         to disclose the relevant required information set out in templates that are meant\n         for G-SIBs, including template TLAC1, which provides details of the TLAC\n         positions of G-SIB resolution groups, and templates TLAC2 and TLAC3, which\n         present information on creditor rankings at the legal entity level for material\n         subgroup entities (i.e. entities that are part of a material subgroup) that have issued\n         an internal TLAC to one or more resolution entities.",
+              "text": "Composition of capital and total loss-absorbing capacity",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-13-1",
+                  "number": "2.13.1",
+                  "text": "Banks must disclose the relevant required information set out in table CCA (\u2018Main features of regulatory capital instruments and other total loss-absorbing capacity (TLAC)-eligible instruments\u2019) as well as the relevant required information set out in templates CC1 (\u2018Composition of regulatory capital\u2019) and CC2 (\u2018Reconciliation of regulatory capital to balance sheet\u2019) according to the formats and frequencies specified in DIS 25.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-13-2",
+                  "number": "2.13.2",
+                  "text": "Table CCA shall be published on the bank\u2019s website, and it shall be updated whenever the bank issues or repays a capital instrument (or another TLAC-eligible instrument, where applicable) and whenever there is a redemption, conversion/write-down or another material change in an existing instrument.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-13-3",
+                  "number": "2.13.3",
+                  "text": "The PA is not the home supervisor to any G-SIBs. Banks are therefore not required to disclose the relevant required information set out in templates that are meant for G-SIBs, including template TLAC1, which provides details of the TLAC positions of G-SIB resolution groups, and templates TLAC2 and TLAC3, which present information on creditor rankings at the legal entity level for material subgroup entities (i.e. entities that are part of a material subgroup) that have issued an internal TLAC to one or more resolution entities.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-14",
+              "id": "s2-14",
               "number": "2.14",
-              "heading": "Capital distribution constraints",
-              "text": "2.14     Capital distribution constraints\n\n2.14.1   Template CDC (‘Capital distribution constraints’) (CDCs) provides the common\n         equity tier 1 (CET1) capital ratios that would trigger CDCs. The PA has elected to\n         partially implement template CDC in South Africa.\n\n2.14.2   Banks designated as domestic systemically important banks (D-SIBs) shall\n         disclose line 3, columns (a) and (b), related to the leverage ratio, according to the\n         formats and frequencies specified in DIS 26.\n\n2.14.3   Banks that are not designated as D-SIBs are not required to disclose template\n         CDC, until such time as the PA may direct otherwise.\n\n\n\n\n                                                                                              5",
+              "text": "Capital distribution constraints",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-14-1",
+                  "number": "2.14.1",
+                  "text": "Template CDC (\u2018Capital distribution constraints\u2019) (CDCs) provides the common equity tier 1 (CET1) capital ratios that would trigger CDCs. The PA has elected to partially implement template CDC in South Africa.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-14-2",
+                  "number": "2.14.2",
+                  "text": "Banks designated as domestic systemically important banks (D-SIBs) shall disclose line 3, columns (a) and (b), related to the leverage ratio, according to the formats and frequencies specified in DIS 26.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-14-3",
+                  "number": "2.14.3",
+                  "text": "Banks that are not designated as D-SIBs are not required to disclose template CDC, until such time as the PA may direct otherwise. 5",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-15",
+              "id": "s2-15",
               "number": "2.15",
-              "heading": "Links between financial statements and regulatory exposures",
-              "text": "2.15     Links between financial statements and regulatory exposures\n\n2.15.1   Banks shall disclose the relevant required information set out in template LI1\n         (‘Differences between accounting and regulatory scopes of consolidation and\n         mapping of financial statement categories with regulatory risk categories’) and\n         template LI2 (‘Main sources of differences between regulatory exposure amounts\n         and carrying values in financial statements’) as well as the relevant required\n         information set out in table LIA (‘Explanation of differences between regulatory and\n         accounting exposure amounts’) and template PV1 (‘Prudent valuation adjustments\n         (PVAs)’) according to the formats and frequencies specified in DIS 30.",
+              "text": "Links between financial statements and regulatory exposures",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-15-1",
+                  "number": "2.15.1",
+                  "text": "Banks shall disclose the relevant required information set out in template LI1 (\u2018Differences between accounting and regulatory scopes of consolidation and mapping of financial statement categories with regulatory risk categories\u2019) and template LI2 (\u2018Main sources of differences between regulatory exposure amounts and carrying values in financial statements\u2019) as well as the relevant required information set out in table LIA (\u2018Explanation of differences between regulatory and accounting exposure amounts\u2019) and template PV1 (\u2018Prudent valuation adjustments (PVAs)\u2019) according to the formats and frequencies specified in DIS 30.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-16",
+              "id": "s2-16",
               "number": "2.16",
-              "heading": "Asset encumbrance",
-              "text": "2.16     Asset encumbrance\n\n2.16.1   Banks shall disclose the relevant required information set out in template ENC\n         (‘Asset encumbrance’) according to the formats and frequencies specified in\n         DIS 31. Template ENC requires the disclosure of the carrying amount for\n         encumbered and unencumbered assets on the balance sheet using period-end\n         values. Banks shall use the definition of ‘encumbered assets’ set out in the\n         instructions in DIS 31.\n\n2.16.2   Banks shall disclose column (b) (‘Central bank facilities’) of template ENC, which\n         the PA has decided to make mandatory. Banks shall disclose the relevant required\n         information set out in template ENC commencing from the period ending after the\n         effective date of the final Directive.",
+              "text": "Asset encumbrance",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-16-1",
+                  "number": "2.16.1",
+                  "text": "Banks shall disclose the relevant required information set out in template ENC (\u2018Asset encumbrance\u2019) according to the formats and frequencies specified in DIS 31. Template ENC requires the disclosure of the carrying amount for encumbered and unencumbered assets on the balance sheet using period-end values. Banks shall use the definition of \u2018encumbered assets\u2019 set out in the instructions in DIS 31.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-16-2",
+                  "number": "2.16.2",
+                  "text": "Banks shall disclose column (b) (\u2018Central bank facilities\u2019) of template ENC, which the PA has decided to make mandatory. Banks shall disclose the relevant required information set out in template ENC commencing from the period ending after the effective date of the final Directive.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-17",
+              "id": "s2-17",
               "number": "2.17",
-              "heading": "Remuneration",
-              "text": "2.17     Remuneration\n\n2.17.1   Banks shall disclose the relevant required information set out in table REMA\n         (‘Remuneration policy’) as well as in templates REM1 (‘Remuneration awarded\n         during financial year’), REM2 (‘Special payments’) and REM3 (‘Deferred\n         remuneration’) according to the formats and frequencies specified in DIS 35.",
+              "text": "Remuneration",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-17-1",
+                  "number": "2.17.1",
+                  "text": "Banks shall disclose the relevant required information set out in table REMA (\u2018Remuneration policy\u2019) as well as in templates REM1 (\u2018Remuneration awarded during financial year\u2019), REM2 (\u2018Special payments\u2019) and REM3 (\u2018Deferred remuneration\u2019) according to the formats and frequencies specified in DIS 35.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-18",
+              "id": "s2-18",
               "number": "2.18",
-              "heading": "Credit risk",
-              "text": "2.18     Credit risk\n\n2.18.1   Banks shall disclose all the relevant required information set out in the templates\n         and tables related to credit risk according to the formats and frequencies specified\n         in DIS 40 in Annexure B. Some of the credit risk templates have been revised to\n         align the definitions and asset classes to the Regulations; all templates and tables\n         related to credit risk are therefore included in Annexure B.",
+              "text": "Credit risk",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-18-1",
+                  "number": "2.18.1",
+                  "text": "Banks shall disclose all the relevant required information set out in the templates and tables related to credit risk according to the formats and frequencies specified in DIS 40 in Annexure B. Some of the credit risk templates have been revised to align the definitions and asset classes to the Regulations; all templates and tables related to credit risk are therefore included in Annexure B.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-19",
+              "id": "s2-19",
               "number": "2.19",
-              "heading": "Counterparty credit risk",
-              "text": "2.19     Counterparty credit risk\n\n2.19.1   Banks shall disclose the relevant required information set out in table CCRA\n         (‘Qualitative disclosure related to counterparty credit risk (CCR)’) as well as in\n         templates CCR1 (‘Analysis of CCR exposures by approach’), CCR3\n         (‘Standardised approach – CCR exposures by regulatory portfolio and risk\n         weights’), CCR4 (‘Internal ratings-based (IRB)-CCR exposures by portfolio and\n         probability-of-default (PD) scale’), CCR5 (‘Composition of collateral for CCR\n         exposures’), CCR6 (‘Credit derivatives exposures’), CCR7 (‘RWA flow statements\n         of CCR exposures under the internal models method (IMM)’) and CCR8\n         (‘Exposures to central counterparties’) according to the formats and frequencies\n         specified in DIS 42.\n\n\n\n                                                                                           6",
+              "text": "Counterparty credit risk",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-19-1",
+                  "number": "2.19.1",
+                  "text": "Banks shall disclose the relevant required information set out in table CCRA (\u2018Qualitative disclosure related to counterparty credit risk (CCR)\u2019) as well as in templates CCR1 (\u2018Analysis of CCR exposures by approach\u2019), CCR3 (\u2018Standardised approach \u2013 CCR exposures by regulatory portfolio and risk weights\u2019), CCR4 (\u2018Internal ratings-based (IRB)-CCR exposures by portfolio and probability-of-default (PD) scale\u2019), CCR5 (\u2018Composition of collateral for CCR exposures\u2019), CCR6 (\u2018Credit derivatives exposures\u2019), CCR7 (\u2018RWA flow statements of CCR exposures under the internal models method (IMM)\u2019) and CCR8 (\u2018Exposures to central counterparties\u2019) according to the formats and frequencies specified in DIS 42. 6",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-20",
+              "id": "s2-20",
               "number": "2.20",
-              "heading": "Securitisation",
-              "text": "2.20     Securitisation\n\n2.20.1   Banks shall disclose the relevant required information set out in table SECA\n         (‘Qualitative disclosure requirements related to securitisation exposures’) as well\n         as in templates SEC1 (‘Securitisation exposures in the banking book’), SEC2\n         (‘Securitisation exposures in the trading book’), SEC3 (‘Securitisation exposures\n         in the banking book and associated regulatory capital requirements – bank acting\n         as originator or as sponsor’) and SEC4 (‘Securitisation exposures in the banking\n         book and associated capital requirements – bank acting as investor’) according to\n         the formats and frequencies specified in DIS 43.",
+              "text": "Securitisation",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-20-1",
+                  "number": "2.20.1",
+                  "text": "Banks shall disclose the relevant required information set out in table SECA (\u2018Qualitative disclosure requirements related to securitisation exposures\u2019) as well as in templates SEC1 (\u2018Securitisation exposures in the banking book\u2019), SEC2 (\u2018Securitisation exposures in the trading book\u2019), SEC3 (\u2018Securitisation exposures in the banking book and associated regulatory capital requirements \u2013 bank acting as originator or as sponsor\u2019) and SEC4 (\u2018Securitisation exposures in the banking book and associated capital requirements \u2013 bank acting as investor\u2019) according to the formats and frequencies specified in DIS 43.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-21",
+              "id": "s2-21",
               "number": "2.21",
-              "heading": "Sovereign exposure",
-              "text": "2.21     Sovereign exposure\n\n2.21.1   Information related to the disclosure requirements for sovereign exposures is\n         specified in DIS 45, templates SOV1 (‘Exposures to sovereign entities – country’),\n         SOV2 (‘Exposures to sovereign entities – currency denomination breakdown’) and\n         SOV3 (‘Exposures to sovereign entities – accounting classification breakdown’).\n\n2.21.2   The PA has decided to defer the disclosure of sovereign exposures at this stage;\n         and will communicate the implementation date of such disclosure in writing at a\n         future date.",
+              "text": "Sovereign exposure",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-21-1",
+                  "number": "2.21.1",
+                  "text": "Information related to the disclosure requirements for sovereign exposures is specified in DIS 45, templates SOV1 (\u2018Exposures to sovereign entities \u2013 country\u2019), SOV2 (\u2018Exposures to sovereign entities \u2013 currency denomination breakdown\u2019) and SOV3 (\u2018Exposures to sovereign entities \u2013 accounting classification breakdown\u2019).",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-21-2",
+                  "number": "2.21.2",
+                  "text": "The PA has decided to defer the disclosure of sovereign exposures at this stage; and will communicate the implementation date of such disclosure in writing at a future date.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-22",
+              "id": "s2-22",
               "number": "2.22",
-              "heading": "Market risk",
-              "text": "2.22     Market risk\n\n2.22.1   Banks shall disclose the relevant required information set out in tables MRA\n         (‘General qualitative disclosure requirements related to market risk’) and MRB\n         (‘Qualitative disclosures for banks using the internal models approach (IMA)’) as\n         well as in templates MR1 (‘Market risk under the standardised approach’), MR2\n         (‘Market risk for banks using the IMA’) and MR3 (‘Market risk under the simplified\n         standardised approach’) according to the formats and frequencies specified in\n         DIS 50.",
+              "text": "Market risk",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-22-1",
+                  "number": "2.22.1",
+                  "text": "Banks shall disclose the relevant required information set out in tables MRA (\u2018General qualitative disclosure requirements related to market risk\u2019) and MRB (\u2018Qualitative disclosures for banks using the internal models approach (IMA)\u2019) as well as in templates MR1 (\u2018Market risk under the standardised approach\u2019), MR2 (\u2018Market risk for banks using the IMA\u2019) and MR3 (\u2018Market risk under the simplified standardised approach\u2019) according to the formats and frequencies specified in DIS 50.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-23",
+              "id": "s2-23",
               "number": "2.23",
-              "heading": "Credit valuation adjustment risk",
-              "text": "2.23     Credit valuation adjustment risk\n\n2.23.1   Banks shall disclose the relevant required information set out in tables CVAA\n         (‘General qualitative disclosure requirements related to credit valuation adjustment\n         (CVA)’) and CVAB (‘Qualitative disclosures for banks using the standardised\n         approach (SA-CVA)’) as well as in templates CVA1 (‘The reduced basic approach\n         for CVA’), CVA2 (‘The full basic approach for CVA’), CVA3 (‘The standardised\n         approach for CVA (SA-CVA)’) and CVA4 (‘RWA flow statements of CVA risk\n         exposures under SA-CVA’) in accordance with the formats and frequencies\n         specified in DIS 51.",
+              "text": "Credit valuation adjustment risk",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-23-1",
+                  "number": "2.23.1",
+                  "text": "Banks shall disclose the relevant required information set out in tables CVAA (\u2018General qualitative disclosure requirements related to credit valuation adjustment (CVA)\u2019) and CVAB (\u2018Qualitative disclosures for banks using the standardised approach (SA-CVA)\u2019) as well as in templates CVA1 (\u2018The reduced basic approach for CVA\u2019), CVA2 (\u2018The full basic approach for CVA\u2019), CVA3 (\u2018The standardised approach for CVA (SA-CVA)\u2019) and CVA4 (\u2018RWA flow statements of CVA risk exposures under SA-CVA\u2019) in accordance with the formats and frequencies specified in DIS 51.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-24",
+              "id": "s2-24",
               "number": "2.24",
-              "heading": "Operational risk",
-              "text": "2.24     Operational risk\n\n2.24.1   Banks shall disclose the relevant required information set out in table ORA\n         (‘General qualitative information on a bank’s operational risk framework’) as well\n         as in templates OR1 (‘Historical losses’), OR2 (‘Business indicator and\n         subcomponents’) and OR3 (‘Minimum required operational risk capital’) according\n         to the formats and frequencies specified in DIS 60.\n\n\n\n\n                                                                                           7\n\n2.24.2   With regard to the relevant required information set out in template OR1, the PA\n         directs that a rand-denominated threshold of R50 000 be adopted. Banks are not\n         required to complete lines 6–10 of the template OR1 until such time that the PA\n         directs otherwise, as these sections are currently not applicable in South Africa.\n\n2.24.3   Disclosure of the relevant required information in respect of prior periods is\n         required from the implementation date of these templates.",
+              "text": "Operational risk",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-24-1",
+                  "number": "2.24.1",
+                  "text": "Banks shall disclose the relevant required information set out in table ORA (\u2018General qualitative information on a bank\u2019s operational risk framework\u2019) as well as in templates OR1 (\u2018Historical losses\u2019), OR2 (\u2018Business indicator and subcomponents\u2019) and OR3 (\u2018Minimum required operational risk capital\u2019) according to the formats and frequencies specified in DIS 60. 7",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-24-2",
+                  "number": "2.24.2",
+                  "text": "With regard to the relevant required information set out in template OR1, the PA directs that a rand-denominated threshold of R50 000 be adopted. Banks are not required to complete lines 6\u201310 of the template OR1 until such time that the PA directs otherwise, as these sections are currently not applicable in South Africa.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-24-3",
+                  "number": "2.24.3",
+                  "text": "Disclosure of the relevant required information in respect of prior periods is required from the implementation date of these templates.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-25",
+              "id": "s2-25",
               "number": "2.25",
-              "heading": "IRRBB",
-              "text": "2.25     IRRBB\n\n2.25.1   Banks shall disclose the relevant required information related to IRRBB per\n         Directive D1/2024 on Pillar 3 disclosure requirements on IRRBB.",
+              "text": "IRRBB",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-25-1",
+                  "number": "2.25.1",
+                  "text": "Banks shall disclose the relevant required information related to IRRBB per Directive D1/2024 on Pillar 3 disclosure requirements on IRRBB.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-26",
+              "id": "s2-26",
               "number": "2.26",
-              "heading": "Macroprudential supervisory measures",
-              "text": "2.26     Macroprudential supervisory measures\n\n2.26.1   Banks shall disclose the relevant required information set out in template CCyB1\n         (‘Geographical distribution of credit exposures used in the calculation of the bank-\n         specific countercyclical capital buffer requirement’) according to the format and\n         frequency specified in DIS 75. This relates to information on the geographical\n         distribution of credit exposures relevant for the calculation of the countercyclical\n         buffer (CCyB) in respect of jurisdictions where the CCyB rate is higher than zero.\n\n2.26.2   Template G-SIB1 (‘Disclosure of global systemically important bank (G-SIB)\n         indicators’) provides users of Pillar 3 data with details of the indicators used to\n         assess how a G-SIB has been determined. This template is mandatory for a bank\n         that was classified as a G-SIB in the previous year or a bank that was included in\n         the assessment sample by the PA based on supervisory judgement. The PA is not\n         the home supervisor to any G-SIB; banks are therefore not required to publish the\n         templates that are required for G-SIBs (including template G-SIB1).",
+              "text": "Macroprudential supervisory measures",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-26-1",
+                  "number": "2.26.1",
+                  "text": "Banks shall disclose the relevant required information set out in template CCyB1 (\u2018Geographical distribution of credit exposures used in the calculation of the bank- specific countercyclical capital buffer requirement\u2019) according to the format and frequency specified in DIS 75. This relates to information on the geographical distribution of credit exposures relevant for the calculation of the countercyclical buffer (CCyB) in respect of jurisdictions where the CCyB rate is higher than zero.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-26-2",
+                  "number": "2.26.2",
+                  "text": "Template G-SIB1 (\u2018Disclosure of global systemically important bank (G-SIB) indicators\u2019) provides users of Pillar 3 data with details of the indicators used to assess how a G-SIB has been determined. This template is mandatory for a bank that was classified as a G-SIB in the previous year or a bank that was included in the assessment sample by the PA based on supervisory judgement. The PA is not the home supervisor to any G-SIB; banks are therefore not required to publish the templates that are required for G-SIBs (including template G-SIB1).",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-27",
+              "id": "s2-27",
               "number": "2.27",
-              "heading": "Leverage ratio",
-              "text": "2.27     Leverage ratio\n\n2.27.1   Banks shall disclose the relevant required information set out in templates LR1\n         (‘Summary comparison of accounting assets vs leverage ratio exposure measure’)\n         and LR2 (‘Leverage ratio common disclosure template’) according to the formats\n         and frequencies specified in DIS 80.\n\n2.27.2   Banks may calculate the leverage ratio based on either daily or monthly average\n         numbers. The disclosures shall include the basis for the calculation of the\n         disclosed amount – daily averaging, monthly averaging or quarter-end averaging\n         – subject to the approval of, and any conditions as may be specified in writing by,\n         the PA.",
+              "text": "Leverage ratio",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-27-1",
+                  "number": "2.27.1",
+                  "text": "Banks shall disclose the relevant required information set out in templates LR1 (\u2018Summary comparison of accounting assets vs leverage ratio exposure measure\u2019) and LR2 (\u2018Leverage ratio common disclosure template\u2019) according to the formats and frequencies specified in DIS 80.",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-27-2",
+                  "number": "2.27.2",
+                  "text": "Banks may calculate the leverage ratio based on either daily or monthly average numbers. The disclosures shall include the basis for the calculation of the disclosed amount \u2013 daily averaging, monthly averaging or quarter-end averaging \u2013 subject to the approval of, and any conditions as may be specified in writing by, the PA.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             },
             {
-              "id": "s-banks-d10-2025-2-28",
+              "id": "s2-28",
               "number": "2.28",
-              "heading": "Liquidity",
-              "text": "2.28     Liquidity\n\n2.28.1   Banks shall disclose the relevant required information set out in table LIQA\n         (‘Liquidity risk management’) as well as in templates LIQ1 (‘Liquidity coverage ratio\n         (LCR)’) and LIQ2 (‘Net stable funding ratio (NSFR)’) according to the formats and\n         frequencies specified in DIS 85.\n\n\n\n\n                                                                                            8\n\n2.28.2    Banks shall calculate and disclose an average amount, in relation to template\n          LIQ1, based on the average of daily observation amounts over the previous quarter\n          in the local currency. Banks shall, in all cases, publish the number of data points\n          used in the calculation of the aforesaid average amounts.",
+              "text": "Liquidity",
               "verbatim": true,
-              "subsections": []
+              "subsections": [
+                {
+                  "id": "s2-28-1",
+                  "number": "2.28.1",
+                  "text": "Banks shall disclose the relevant required information set out in table LIQA (\u2018Liquidity risk management\u2019) as well as in templates LIQ1 (\u2018Liquidity coverage ratio (LCR)\u2019) and LIQ2 (\u2018Net stable funding ratio (NSFR)\u2019) according to the formats and frequencies specified in DIS 85. 8",
+                  "verbatim": true,
+                  "subsections": []
+                },
+                {
+                  "id": "s2-28-2",
+                  "number": "2.28.2",
+                  "text": "Banks shall calculate and disclose an average amount, in relation to template LIQ1, based on the average of daily observation amounts over the previous quarter in the local currency. Banks shall, in all cases, publish the number of data points used in the calculation of the aforesaid average amounts.",
+                  "verbatim": true,
+                  "subsections": []
+                }
+              ]
             }
           ]
         },
         {
           "id": "s-banks-d10-2025-3",
           "number": "3",
-          "heading": "When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with",
-          "text": "When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with the disclosure requirements or any related matter, the bank shall communicate with the PA before publication date, in writing, for approval, indicating the affected templates and the reasons for non-compliance, as well as a detailed action plan to ensure compliance in future.",
+          "heading": "When banks are unable to comply with the disclosure requirements or any related",
+          "text": "When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with When banks are unable to comply with the disclosure requirements or any related 3. When banks are unable to comply with the disclosure requirements or any related matter, the bank shall communicate with the PA before publication date, in writing, for approval, indicating the affected templates and the reasons for non-compliance, as well as a detailed action plan to ensure compliance in future.",
           "verbatim": true,
           "subsections": []
         },
         {
           "id": "s-banks-d10-2025-4",
           "number": "4",
-          "heading": "Acknowledgement of receipt 4.",
-          "text": "Acknowledgement of receipt 4. Acknowledgement of receipt 4. Acknowledgement of receipt 4. Acknowledgement of receipt 4. Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution’s external auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of your institution and said external auditors, should be returned to the PA at the earliest convenience of the signatories. Fundi Tshazibana Chief Executive Officer Date: 11/08/25 Encl. 2 The previous Directive issued was Directive 9/2025 dated 1 August 2025. 9",
+          "heading": "Acknowledgement of receipt",
+          "text": "Acknowledgement of receipt 4. Acknowledgement of receipt 4. Acknowledgement of receipt 4. Acknowledgement of receipt 4. Acknowledgement of receipt 4. Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution\u2019s external auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of your institution and said external auditors, should be returned to the PA at the earliest convenience of the signatories. Fundi Tshazibana Chief Executive Officer Date: 11/08/25 Encl. 2 The previous Directive issued was Directive 9/2025 dated 1 August 2025. 9",
           "verbatim": true,
           "subsections": []
         }
