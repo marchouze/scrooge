@@ -66,6 +66,31 @@
           ]
         },
         {
+          "id": "s-banks-d6-2022-2",
+          "number": "2",
+          "heading": "Application",
+          "text": "2.     Application\n\n2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).\n\n2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d6-2022-2-1",
+              "number": "2.1",
+              "heading": "This directive applies to all banks, branches of foreign institutions and contro",
+              "text": "2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d6-2022-2-2",
+              "number": "2.2",
+              "heading": "Institutions are required to ensure compliance with the requirements set out her",
+              "text": "2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
           "id": "s-banks-d6-2022-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
