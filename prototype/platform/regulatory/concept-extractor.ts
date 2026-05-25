@@ -156,6 +156,20 @@ const CADENCE_MAP: Record<string, "ongoing" | "one-time" | "periodic" | "event-t
   "continuous obligation": "ongoing",
 };
 
+// Haiku wraps JSON responses in ```json ... ``` fences despite "no markdown"
+// instructions. Strip them so JSON.parse succeeds for all model variants.
+// Also handles unclosed fences (response truncated mid-JSON by token limit).
+function stripCodeFences(text: string): string {
+  const trimmed = text.trim();
+  // Case 1: Properly closed — ```json\n{...}\n```
+  const closed = trimmed.match(/^```(?:json)?\n([\s\S]*?)\n?```\s*$/);
+  if (closed) return (closed[1] ?? trimmed).trim();
+  // Case 2: Opening fence only — response truncated before closing fence
+  const opening = trimmed.match(/^```(?:json)?\n([\s\S]*)$/);
+  if (opening) return (opening[1] ?? trimmed).trim();
+  return trimmed;
+}
+
 function normaliseCadence(
   raw: string | undefined,
 ): "ongoing" | "one-time" | "periodic" | "event-triggered" {
@@ -335,7 +349,7 @@ async function contextualise(opts: {
     "instrumentId" | "contextualisedAt" | "contextualisedBy"
   >;
   try {
-    parsed = JSON.parse(result.result.text);
+    parsed = JSON.parse(stripCodeFences(result.result.text));
   } catch {
     logger.error(
       { instrumentId, raw: result.result.text.slice(0, 200) },
@@ -421,7 +435,7 @@ export async function extractConcepts(opts: {
     const result = await tryGenerateNarrative({
       stableSystem: EXTRACTION_SYSTEM_PROMPT,
       userInput: `INSTRUMENT: ${instrumentId}\nSECTION: ${section.sectionNumber}\n\nTEXT:\n${section.text}`,
-      maxTokens: 2000,
+      maxTokens: 4096,
       effort: "medium",
     });
 
@@ -433,7 +447,7 @@ export async function extractConcepts(opts: {
 
     let parsed: Record<string, unknown>;
     try {
-      parsed = JSON.parse(result.result.text);
+      parsed = JSON.parse(stripCodeFences(result.result.text));
     } catch {
       logger.error(
         { sectionId, raw: result.result.text.slice(0, 200) },

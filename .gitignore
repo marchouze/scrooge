@@ -25,9 +25,8 @@ prototype/.data/
 *-structured.json.bak
 *-reformatted.txt
 
-# Graphify generated outputs
-graphify-out/
-Regulations/graphify-out/
+# Graphify generated outputs (root working dir only; Regulations/graphify-out/ is tracked)
+/graphify-out/
 Owner Inbox/.obsidian/
 
 # Python bytecode
