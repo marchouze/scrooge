@@ -21,54 +21,112 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d4-2023-1",
-      "title": "Full Text",
+      "id": "ch-banks-d4-2023-main",
+      "title": "Directive D4/2023",
       "sections": [
         {
           "id": "s-banks-d4-2023-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Directive on operational resilience. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.        Introduction\n\n1.1       In March 2021, the BCBS issued a paper on principles for operational resilience.\n\n1 Available online at: https://www.bis.org/bcbs/publ/d516.htm\n\n                                                                                             1\n                                                 CONFIDENTIAL\n\n                                        CONFIDENTIAL\n\n\n\n1.2     The paper outlines principles that are organised across the following seven\n        categories:\n\n1.2.1   governance;\n1.2.2   operational risk management;\n1.2.3   business continuity planning and testing;\n1.2.4   mapping of interconnections and interdependencies of critical operations;\n1.2.5   third-party dependency management;\n1.2.6   incident management; and\n1.2.7   resilient information and communication technology (ICT), including cyber security.\n\n1.3     The principles are required to be applied on a consolidated basis and also form an\n        integral part of a bank’s forward-looking operational resilience approach in line with\n        its operational risk appetite and tolerance for disruption.\n\n1.4     The PA published Directive 10 of 2021 on 14 December 2021, stating that banks\n        must comply with the respective requirements envisaged in the directive within 18\n        months of the publication date, which effectively translated to 30 June 2023.Based\n        on developments in the local and international regulatory environment as well as the\n        need for alignment on implementation timelines with other jurisdictions, the PA has\n        decided to extend the previously determined date for compliance.\n\n1.5     Regulation 39 of the Regulations relating to Banks (the Regulations) requires all\n        banks to establish and maintain a robust process of corporate governance that is\n        consistent with the nature, complexity and risk inherent in the bank's on-balance\n        sheet and off-balance sheet activities and that responds to changes in the bank's\n        environment and conditions. This process includes the maintenance of effective risk\n        management and capital management by the bank. In order to achieve the objective\n        relating to the maintenance of effective risk management and capital management,\n        every bank is required to have in place comprehensive risk management processes,\n        practices and procedures, and board-approved policies.\n\n1.6     Consequently, operational resilience must form an integral part of the enterprise risk\n        management processes, practices and procedures, and board-approved policies of\n        banks.\n\n1.7     Regulation 38(4) of the Regulations states that when the PA is of the opinion that a\n        bank’s policies, processes and procedures relating to operational resilience are\n        inadequate, the PA, among other things, may require the said bank to:\n\n1.7.1 maintain additional capital, calculated in such a manner and subject to such\n      conditions as may be specified in writing by the PA;\n1.7.2 duly align the bank’s operational resilience policies, processes, or procedures with\n      the bank’s relevant exposure to risk.\n\n1.8     The PA decided that the principles, as set out in the BCBS paper, need to be\n        implemented by banks.\n\n1.9     This directive replaces Directive 10 of 2021.\n\n\n\n                                                                                            2\n                                        CONFIDENTIAL\n\n                                       CONFIDENTIAL",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d4-2023-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "In March 2021, the BCBS issued a paper on principles for operational resilience.",
+              "text": "1.1       In March 2021, the BCBS issued a paper on principles for operational resilience.\n\n1 Available online at: https://www.bis.org/bcbs/publ/d516.htm\n\n                                                                                             1\n                                                 CONFIDENTIAL\n\n                                        CONFIDENTIAL",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d4-2023-1-2",
               "number": "1.2",
-              "text": "Directive on operational resilience.",
-              "verbatim": true
+              "heading": "The paper outlines principles that are organised across the following seven",
+              "text": "1.2     The paper outlines principles that are organised across the following seven\n        categories:\n\n1.2.1   governance;\n1.2.2   operational risk management;\n1.2.3   business continuity planning and testing;\n1.2.4   mapping of interconnections and interdependencies of critical operations;\n1.2.5   third-party dependency management;\n1.2.6   incident management; and\n1.2.7   resilient information and communication technology (ICT), including cyber security.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d4-2023-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "The principles are required to be applied on a consolidated basis and also form an",
+              "text": "1.3     The principles are required to be applied on a consolidated basis and also form an\n        integral part of a bank’s forward-looking operational resilience approach in line with\n        its operational risk appetite and tolerance for disruption.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2023-1-4",
+              "number": "1.4",
+              "heading": "The PA published Directive 10 of 2021 on 14 December 2021, stating that banks",
+              "text": "1.4     The PA published Directive 10 of 2021 on 14 December 2021, stating that banks\n        must comply with the respective requirements envisaged in the directive within 18\n        months of the publication date, which effectively translated to 30 June 2023.Based\n        on developments in the local and international regulatory environment as well as the\n        need for alignment on implementation timelines with other jurisdictions, the PA has\n        decided to extend the previously determined date for compliance.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2023-1-5",
+              "number": "1.5",
+              "heading": "Regulation 39 of the Regulations relating to Banks (the Regulations) requires all",
+              "text": "1.5     Regulation 39 of the Regulations relating to Banks (the Regulations) requires all\n        banks to establish and maintain a robust process of corporate governance that is\n        consistent with the nature, complexity and risk inherent in the bank's on-balance\n        sheet and off-balance sheet activities and that responds to changes in the bank's\n        environment and conditions. This process includes the maintenance of effective risk\n        management and capital management by the bank. In order to achieve the objective\n        relating to the maintenance of effective risk management and capital management,\n        every bank is required to have in place comprehensive risk management processes,\n        practices and procedures, and board-approved policies.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2023-1-6",
+              "number": "1.6",
+              "heading": "Consequently, operational resilience must form an integral part of the enterprise risk",
+              "text": "1.6     Consequently, operational resilience must form an integral part of the enterprise risk\n        management processes, practices and procedures, and board-approved policies of\n        banks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2023-1-7",
+              "number": "1.7",
+              "heading": "Regulation 38(4) of the Regulations states that when the PA is of the opinion that a",
+              "text": "1.7     Regulation 38(4) of the Regulations states that when the PA is of the opinion that a\n        bank’s policies, processes and procedures relating to operational resilience are\n        inadequate, the PA, among other things, may require the said bank to:\n\n1.7.1 maintain additional capital, calculated in such a manner and subject to such\n      conditions as may be specified in writing by the PA;\n1.7.2 duly align the bank’s operational resilience policies, processes, or procedures with\n      the bank’s relevant exposure to risk.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2023-1-8",
+              "number": "1.8",
+              "heading": "The PA decided that the principles, as set out in the BCBS paper, need to be",
+              "text": "1.8     The PA decided that the principles, as set out in the BCBS paper, need to be\n        implemented by banks.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2023-1-9",
+              "number": "1.9",
+              "heading": "This directive replaces Directive 10 of 2021.",
+              "text": "1.9     This directive replaces Directive 10 of 2021.\n\n\n\n                                                                                            2\n                                        CONFIDENTIAL\n\n                                       CONFIDENTIAL",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d4-2023-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "Directive",
+          "text": "2.     Directive\n\n2.1    Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n       Banks Act 94 of 1990, banks are hereby directed as follows:\n\n2.1.1 Banks must assess the adequacy and robustness of their current policies, processes\n      and practices against the principles for operational resilience issued by the BCBS.\n2.1.2 All operational resilience controls implemented by the bank must follow a risk- based\n      approach that is aligned with the bank's risk appetite, based on the nature, size and\n      complexity of its operations.\n2.1.3 Banks must ensure that all principles contained in the BCBS paper are addressed\n      either through internal resources or by means of outsourcing/third party agreements\n      without undue delay.\n2.1.4 Existing risk management frameworks, business continuity plans and third-party\n      dependency management must be implemented consistently within the bank.\n2.1.5 Banks must consider whether its operational resilience approach is appropriately\n      harmonised with the stated actions, organisational mappings, and definitions of\n      critical functions and critical shared services contained in its recovery and resolution\n      plans.\n\n2.2    All banks must comply with the respective requirements specified in this directive on\n       or before 31 December 2024.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d4-2023-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Based on the aforesaid, and in accordance with the provisions of section 6(6) of the",
+              "text": "2.1    Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n       Banks Act 94 of 1990, banks are hereby directed as follows:\n\n2.1.1 Banks must assess the adequacy and robustness of their current policies, processes\n      and practices against the principles for operational resilience issued by the BCBS.\n2.1.2 All operational resilience controls implemented by the bank must follow a risk- based\n      approach that is aligned with the bank's risk appetite, based on the nature, size and\n      complexity of its operations.\n2.1.3 Banks must ensure that all principles contained in the BCBS paper are addressed\n      either through internal resources or by means of outsourcing/third party agreements\n      without undue delay.\n2.1.4 Existing risk management frameworks, business continuity plans and third-party\n      dependency management must be implemented consistently within the bank.\n2.1.5 Banks must consider whether its operational resilience approach is appropriately\n      harmonised with the stated actions, organisational mappings, and definitions of\n      critical functions and critical shared services contained in its recovery and resolution\n      plans.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-2-2",
+              "id": "s-banks-d4-2023-2-2",
               "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "All banks must comply with the respective requirements specified in this directive on",
+              "text": "2.2    All banks must comply with the respective requirements specified in this directive on\n       or before 31 December 2024.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
@@ -76,16 +134,9 @@
           "id": "s-banks-d4-2023-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "text": "3.     Acknowledgement of receipt\n\n       Kindly ensure that a copy of this Directive is made available to your institution’s\n       external auditors. In addition, the attached acknowledgement of receipt, duly\n       completed and signed by both the Chief Executive Officer of the institution and the\n       said auditors, should be returned to the PA at the earliest convenience of the\n       signatories.\n\n\n\n\n       Fundi Tshazibana\n       Chief Executive Officer\n\n       Date: 01/06/23\n\n       The previous Directive issued was Directive 3/2023, dated 17 May 2023\n\n\n\n\n                                                                                            3\n                                       CONFIDENTIAL",
           "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "subsections": []
         }
       ]
     }

@@ -21,54 +21,80 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d2-2024-1",
-      "title": "Full Text",
+      "id": "ch-banks-d2-2024-main",
+      "title": "Directive D2/2024",
       "sections": [
         {
           "id": "s-banks-d2-2024-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Reporting requirements in terms of regulation 46 of the Regulations relating to Banks. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.             Introduction\n\n1.1            Regulation 46(1) of the Regulations requires the auditor of a bank to report\n               annually, within 120 days of the financial year end, on the bank’s financial position\n               and the results of its operations, as reflected in the regulatory returns specified in\n               regulation 46(6) of the Regulations.\n\n1.2            In addition to reporting on the quantitative aspects, the auditor is also required to\n               report on qualitative aspects of the bank and its operations, including, but not\n               limited to the bank’s system of internal controls.\n\n1.3            Regulation 46(6) of the Regulations further requires that the auditor’s reports\n               contemplated in the same regulation be rendered in accordance with the wording\n               and practices agreed from time to time between the Prudential Authority (PA),\n               the South African Institute of Chartered Accountants and the Independent\n               Regulatory Board for Auditors (IRBA).\n\n1.4          The Committee for Auditing Standards of the IRBA is mandated with the review\n             and approval of the illustrative regulatory reports referred to in regulation 46(6) of\n             the Regulations, in line with required due process. The latest approved versions\n             of these illustrative regulatory reports are published on the website of the IRBA1\n             for use by auditors in fulfilment of the reporting requirements stipulated in\n             regulation 46 of the Regulations.\n\n1.5          In respect of regulatory reports pertaining to South African operations, the\n             illustrative regulatory reports referenced above comprise Parts A to I, with Parts\n             A to E addressing the reports required in terms of regulation 46(6) of the\n             Regulations and structured in accordance with the type of audit, review or limited\n             assurance engagement conducted, including the associated levels of assurance.\n             These are:\n\n             •   Part A – Audit report on the year-end BA returns;\n             •   Part B – Review report on the year-end BA returns;\n             •   Part C – Limited assurance report on risk returns at year-end;\n             •   Part D – Limited assurance report on risk returns at year-end derived from\n                 internal models; and\n             •   Part E – Limited assurance report on BA 325 daily market risk returns.\n\n1.6          In respect of regulatory reports pertaining to foreign operations, the illustrative\n             regulatory reports referenced above comprise Parts A to H, with Parts A to D\n             addressing the reports required in terms of regulation 46(6) of the Regulations\n             and structured in accordance with the type of audit, review or limited assurance\n             engagement conducted, including the associated levels of assurance. These are:\n\n             •   Part A – Audit report on the year-end BA 610 return;\n             •   Part B – Review report on the year-end BA 610 return;\n             •   Part C – Limited assurance report on risk lines of the BA 610 return at year-\n                 end; and\n             •   Part D – Limited assurance report on risk lines of the BA 610 return at year-\n                 end derived from internal models.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d2-2024-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Regulation 46(1) of the Regulations requires the auditor of a bank to report",
+              "text": "1.1            Regulation 46(1) of the Regulations requires the auditor of a bank to report\n               annually, within 120 days of the financial year end, on the bank’s financial position\n               and the results of its operations, as reflected in the regulatory returns specified in\n               regulation 46(6) of the Regulations.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d2-2024-1-2",
               "number": "1.2",
-              "text": "Reporting requirements in terms of regulation 46 of the Regulations relating to Banks.",
-              "verbatim": true
+              "heading": "In addition to reporting on the quantitative aspects, the auditor is also required to",
+              "text": "1.2            In addition to reporting on the quantitative aspects, the auditor is also required to\n               report on qualitative aspects of the bank and its operations, including, but not\n               limited to the bank’s system of internal controls.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d2-2024-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "Regulation 46(6) of the Regulations further requires that the auditor’s reports",
+              "text": "1.3            Regulation 46(6) of the Regulations further requires that the auditor’s reports\n               contemplated in the same regulation be rendered in accordance with the wording\n               and practices agreed from time to time between the Prudential Authority (PA),\n               the South African Institute of Chartered Accountants and the Independent\n               Regulatory Board for Auditors (IRBA).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d2-2024-1-4",
+              "number": "1.4",
+              "heading": "The Committee for Auditing Standards of the IRBA is mandated with the review",
+              "text": "1.4          The Committee for Auditing Standards of the IRBA is mandated with the review\n             and approval of the illustrative regulatory reports referred to in regulation 46(6) of\n             the Regulations, in line with required due process. The latest approved versions\n             of these illustrative regulatory reports are published on the website of the IRBA1\n             for use by auditors in fulfilment of the reporting requirements stipulated in\n             regulation 46 of the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d2-2024-1-5",
+              "number": "1.5",
+              "heading": "In respect of regulatory reports pertaining to South African operations, the",
+              "text": "1.5          In respect of regulatory reports pertaining to South African operations, the\n             illustrative regulatory reports referenced above comprise Parts A to I, with Parts\n             A to E addressing the reports required in terms of regulation 46(6) of the\n             Regulations and structured in accordance with the type of audit, review or limited\n             assurance engagement conducted, including the associated levels of assurance.\n             These are:\n\n             •   Part A – Audit report on the year-end BA returns;\n             •   Part B – Review report on the year-end BA returns;\n             •   Part C – Limited assurance report on risk returns at year-end;\n             •   Part D – Limited assurance report on risk returns at year-end derived from\n                 internal models; and\n             •   Part E – Limited assurance report on BA 325 daily market risk returns.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d2-2024-1-6",
+              "number": "1.6",
+              "heading": "In respect of regulatory reports pertaining to foreign operations, the illustrative",
+              "text": "1.6          In respect of regulatory reports pertaining to foreign operations, the illustrative\n             regulatory reports referenced above comprise Parts A to H, with Parts A to D\n             addressing the reports required in terms of regulation 46(6) of the Regulations\n             and structured in accordance with the type of audit, review or limited assurance\n             engagement conducted, including the associated levels of assurance. These are:\n\n             •   Part A – Audit report on the year-end BA 610 return;\n             •   Part B – Review report on the year-end BA 610 return;\n             •   Part C – Limited assurance report on risk lines of the BA 610 return at year-\n                 end; and\n             •   Part D – Limited assurance report on risk lines of the BA 610 return at year-\n                 end derived from internal models.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d2-2024-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "Directive",
+          "text": "2.           Directive\n\n2.1          Based on the aforesaid and in accordance with the provisions of section 6(6) of\n             the Banks Act, 1990 auditors of banks are hereby directed as follows:\n\n2.1.1       To perform an audit, review or limited assurance engagement on the respective\n            regulatory returns specified in regulation 46(6) of the Regulations, in accordance\n            with the detailed audit matrix provided in Annexure 1 for reports submitted to the\n            PA in relation to engagements for financial years ended on or after\n            30 September 2023 for the purposes of reporting in terms of Parts A to E or Parts\n            A to D of the illustrative regulatory reports in relation to South African and foreign\n            operations respectively.\n\n2.1.2       The reports submitted to the PA, in relation to the above, shall be rendered in\n            accordance with the illustrative regulatory reports published by the IRBA from time\n            to time.\n\n1 https://www.irba.co.za/industry-specific-guides-and-regulatory-reports-pages/reports-to-the-prudential-\n\nauthority-and-the-exchange-control-department\n                                                                                                            2\n\n2.1.3         Parts A to E and Parts A to D of the respective reports submitted to the PA shall\n              make reference to this Directive insofar as the detail of audit, review or limited\n              assurance work performed is concerned.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d2-2024-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "Based on the aforesaid and in accordance with the provisions of section 6(6) of",
+              "text": "2.1          Based on the aforesaid and in accordance with the provisions of section 6(6) of\n             the Banks Act, 1990 auditors of banks are hereby directed as follows:\n\n2.1.1       To perform an audit, review or limited assurance engagement on the respective\n            regulatory returns specified in regulation 46(6) of the Regulations, in accordance\n            with the detailed audit matrix provided in Annexure 1 for reports submitted to the\n            PA in relation to engagements for financial years ended on or after\n            30 September 2023 for the purposes of reporting in terms of Parts A to E or Parts\n            A to D of the illustrative regulatory reports in relation to South African and foreign\n            operations respectively.\n\n2.1.2       The reports submitted to the PA, in relation to the above, shall be rendered in\n            accordance with the illustrative regulatory reports published by the IRBA from time\n            to time.\n\n1 https://www.irba.co.za/industry-specific-guides-and-regulatory-reports-pages/reports-to-the-prudential-\n\nauthority-and-the-exchange-control-department\n                                                                                                            2\n\n2.1.3         Parts A to E and Parts A to D of the respective reports submitted to the PA shall\n              make reference to this Directive insofar as the detail of audit, review or limited\n              assurance work performed is concerned.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
@@ -76,14 +102,16 @@
           "id": "s-banks-d2-2024-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "text": "3.           Acknowledgement of receipt\n\n3.1          Kindly ensure that a copy of this directive is made available to your institution’s\n             external auditors. In addition, the attached acknowledgement of receipt, duly\n             completed and signed by both the Chief Executive Officer of the institution and the\n             said auditors, should be returned to the PA at the earliest convenience of the\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:      08/03/24\n\n\nEncl.: 1\n\nThe previous directive issued was Directive 1/2024, dated 5 March 2024.\n\n\n\n\n                                                                                              3",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-3-1",
+              "id": "s-banks-d2-2024-3-1",
               "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
+              "heading": "Kindly ensure that a copy of this directive is made available to your institution’s",
+              "text": "3.1          Kindly ensure that a copy of this directive is made available to your institution’s\n             external auditors. In addition, the attached acknowledgement of receipt, duly\n             completed and signed by both the Chief Executive Officer of the institution and the\n             said auditors, should be returned to the PA at the earliest convenience of the\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:      08/03/24\n\n\nEncl.: 1\n\nThe previous directive issued was Directive 1/2024, dated 5 March 2024.\n\n\n\n\n                                                                                              3",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         }

@@ -21,69 +21,130 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d5-2024-1",
-      "title": "Full Text",
+      "id": "ch-banks-d5-2024-main",
+      "title": "Directive D5/2024",
       "sections": [
         {
           "id": "s-banks-d5-2024-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Loss absorbency requirements for additional tier 1 and tier 2 capital instruments. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.             Introduction\n\n1.1            The Basel Ill framework, which includes the amended minimum requirements for\n               additional tier 1 and tier 2 capital instruments for banks, was implemented in\n               South Africa, via the Regulations, with effect from 1 January 2013.\n\n1.2            The Prudential Authority (PA) provided guidance to banks in relation to loss\n               absorption at the point of non-viability (PONV) in Guidance Note 2 of 2012,\n               paragraph 2.2, issued on 8 February 2012; Guidance Note 3 of 2013, issued on\n               11 June 2013; Guidance Note 7 of 2013, issued on 18 August 2013; and\n               Guidance Note 6 of 2017, issued on 14 August 2017.\n\n1.3            This Directive replaces Guidance Note 6 of 2017 and banks are advised that the\n               PA will continue to monitor international developments related to the loss\n               absorption requirements of instruments qualifying as capital for banks and,\n               should it become necessary, issue further guidance or directives to banks.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d5-2024-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "The Basel Ill framework, which includes the amended minimum requirements for",
+              "text": "1.1            The Basel Ill framework, which includes the amended minimum requirements for\n               additional tier 1 and tier 2 capital instruments for banks, was implemented in\n               South Africa, via the Regulations, with effect from 1 January 2013.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d5-2024-1-2",
               "number": "1.2",
-              "text": "Loss absorbency requirements for additional tier 1 and tier 2 capital instruments.",
-              "verbatim": true
+              "heading": "The Prudential Authority (PA) provided guidance to banks in relation to loss",
+              "text": "1.2            The Prudential Authority (PA) provided guidance to banks in relation to loss\n               absorption at the point of non-viability (PONV) in Guidance Note 2 of 2012,\n               paragraph 2.2, issued on 8 February 2012; Guidance Note 3 of 2013, issued on\n               11 June 2013; Guidance Note 7 of 2013, issued on 18 August 2013; and\n               Guidance Note 6 of 2017, issued on 14 August 2017.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d5-2024-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "This Directive replaces Guidance Note 6 of 2017 and banks are advised that the",
+              "text": "1.3            This Directive replaces Guidance Note 6 of 2017 and banks are advised that the\n               PA will continue to monitor international developments related to the loss\n               absorption requirements of instruments qualifying as capital for banks and,\n               should it become necessary, issue further guidance or directives to banks.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d5-2024-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "Background and context",
+          "text": "2.      Background and context\n\n2.1     Trigger event, conversion and write-off\n\n2.1.1   Regulations 38(11)(b)(i), 38(11)(b)(iv)(H) and 38(12)(a)(i) of the Regulations\n        prescribe that the contractual terms and conditions for the respective capital\n        instruments must contain a provision that requires the instruments to either be\n        converted to the most subordinated form of equity or written off at the discretion\n        of the Chief Executive Officer (CEO) of the PA at the occurrence of a specified\n        trigger event.\n\n2.1.2   The trigger event for both additional tier 1 capital instruments accounted as equity\n        and tier 2 capital instruments shall be at the discretion of the CEO of the PA as\n        envisaged in regulations 38(11)(b)(i) and 38(12)(a)(i) of the Regulations.\n\n2.1.3   The trigger event for additional tier 1 capital instruments accounted as liabilities\n        shall be the earlier of the decision by the CEO of the PA as envisaged in\n        regulation 38(11)(b)(i) of the Regulations or when a bank or controlling company's\n        common equity tier 1 (CET1) ratio is equal to or below 5.875%.\n\n2.1.4   Banks will be notified in writing by the CEO of the PA once it is deemed that the\n        trigger event has occurred.\n\n2.1.5   The conversion or write-off needs to occur only to the extent that the bank will be\n        deemed to be viable again, as specified in writing by the CEO of the PA. In terms\n        of statutory ranking, additional tier 1 instruments will be converted or written off\n        prior to any conversion or write-off of tier 2 instruments.\n\n2.1.6   The instruments to be converted or written off will be determined by the CEO of\n        the PA and shall be based on the value of the instruments as reflected in the\n        bank's financial statements or management accounts at the time of occurrence\n        of the trigger event.\n\n2.1.7   In the event that a bank has more than one type of capital instrument qualifying\n        as tier 2 capital, containing either a conversion or write-off provision, such\n        instruments will be treated pari passu, meaning that partial conversion or write-\n        off would occur at the occurrence of the trigger event, up to the point that the\n        bank is deemed viable again. The same would apply where a bank has more\n        than one type of capital instrument qualifying as additional tier 1 capital.\n\n2.2     Instruments written off\n\n2.2.1   Instruments issued with a provision for write-off must be written off permanently\n        with no provision for a write-back once the bank becomes viable again.\n\n2.2.2   In the event of an early call or redemption for instruments partially converted or\n        written-off, the value of the capital instruments to be repaid shall be irrevocably\n        reduced by the amount of the instrument written off.\n\n\n\n\n                                                                                          2\n\n2.3       Group treatment\n\n2.3.1     Capital instruments issued by a fully consolidated foreign subsidiary that are\n          included in the consolidated amount of qualifying capital shall, in accordance with\n          regulations 38(11)(b)(i) and 38(12)(a)(i) of the Regulations, be converted or\n          written off at the occurrence of the trigger event, defined as the earlier of either\n          the circumstances described in paragraphs 2.1.2 and 2.1.3 above or a decision\n          by the relevant host regulator that a write-off is necessary to prevent the\n          subsidiary from becoming non-viable.\n\n2.4       Statutory requirements\n\n2.4.1     The Financial Sector Laws Amendment Act No. 23 of 2021 (FSLAA) was enacted\n          on 1 June 2023 and amended the Financial Sector Regulation Act No. 9 of 2017\n          (FSR Act). In accordance with the amended FSR Act, the Reserve Bank may\n          decide to bail-in regulatory capital instruments of a designated institution in\n          resolution. Furthermore, the aforementioned determination by the Reserve Bank\n          as well as the trigger event, as described in section 2.1 of this Directive, to be\n          determined by the CEO of the PA, can only be triggered after concurrence with\n          the Reserve Bank as prescribed in section 166D of the FSR Act.\n\n2.4.2     The required contractual terms and conditions regarding the conversion or the\n          write-off of instruments qualifying as capital, in accordance with the respective\n          requirements stipulated in regulation 38(11) and regulation 38(12) of the\n          Regulations, must be met, notwithstanding the provisions of the FSR Act.\n\n2.4.3     The statutory requirements may differ from the contractual terms and conditions\n          for the instruments, as the value of ordinary shares may fully or partially recover\n          following the trigger event, and in some cases, the conversion of instruments may\n          be preferred over the write-off of instruments, among other preferences.\n\n2.4.4     The point of resolution (POR) and PONV are considered as two separate points,\n          even though in some instances they may occur simultaneously. The statutory\n          requirements that relate to POR are not intended to replace the contractual\n          requirements that relate to PONV which are stipulated in regulation 38 of the\n          Regulations.\n\n2.5       The determination of a contractual bail-in\n\n2.5.1     The PA may consider, among other considerations, the following factors when\n          applying its discretion to apply contractual bail-in:\n\n2.5.1.1   The Reserve Bank’s considerations, including financial stability, market\n          confidence, and the resolution plans of the banking group.\n2.5.1.2   The need for broader support measures.\n2.5.1.3   The absorption of losses before taxpayers or ordinary depositors are exposed to\n          loss.\n2.5.1.4   The probability of success.\n\n\n\n\n                                                                                            3",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d5-2024-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Trigger event, conversion and write-off",
+              "text": "2.1     Trigger event, conversion and write-off\n\n2.1.1   Regulations 38(11)(b)(i), 38(11)(b)(iv)(H) and 38(12)(a)(i) of the Regulations\n        prescribe that the contractual terms and conditions for the respective capital\n        instruments must contain a provision that requires the instruments to either be\n        converted to the most subordinated form of equity or written off at the discretion\n        of the Chief Executive Officer (CEO) of the PA at the occurrence of a specified\n        trigger event.\n\n2.1.2   The trigger event for both additional tier 1 capital instruments accounted as equity\n        and tier 2 capital instruments shall be at the discretion of the CEO of the PA as\n        envisaged in regulations 38(11)(b)(i) and 38(12)(a)(i) of the Regulations.\n\n2.1.3   The trigger event for additional tier 1 capital instruments accounted as liabilities\n        shall be the earlier of the decision by the CEO of the PA as envisaged in\n        regulation 38(11)(b)(i) of the Regulations or when a bank or controlling company's\n        common equity tier 1 (CET1) ratio is equal to or below 5.875%.\n\n2.1.4   Banks will be notified in writing by the CEO of the PA once it is deemed that the\n        trigger event has occurred.\n\n2.1.5   The conversion or write-off needs to occur only to the extent that the bank will be\n        deemed to be viable again, as specified in writing by the CEO of the PA. In terms\n        of statutory ranking, additional tier 1 instruments will be converted or written off\n        prior to any conversion or write-off of tier 2 instruments.\n\n2.1.6   The instruments to be converted or written off will be determined by the CEO of\n        the PA and shall be based on the value of the instruments as reflected in the\n        bank's financial statements or management accounts at the time of occurrence\n        of the trigger event.\n\n2.1.7   In the event that a bank has more than one type of capital instrument qualifying\n        as tier 2 capital, containing either a conversion or write-off provision, such\n        instruments will be treated pari passu, meaning that partial conversion or write-\n        off would occur at the occurrence of the trigger event, up to the point that the\n        bank is deemed viable again. The same would apply where a bank has more\n        than one type of capital instrument qualifying as additional tier 1 capital.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-2-2",
+              "id": "s-banks-d5-2024-2-2",
               "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "Instruments written off",
+              "text": "2.2     Instruments written off\n\n2.2.1   Instruments issued with a provision for write-off must be written off permanently\n        with no provision for a write-back once the bank becomes viable again.\n\n2.2.2   In the event of an early call or redemption for instruments partially converted or\n        written-off, the value of the capital instruments to be repaid shall be irrevocably\n        reduced by the amount of the instrument written off.\n\n\n\n\n                                                                                          2",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d5-2024-2-3",
+              "number": "2.3",
+              "heading": "Group treatment",
+              "text": "2.3       Group treatment\n\n2.3.1     Capital instruments issued by a fully consolidated foreign subsidiary that are\n          included in the consolidated amount of qualifying capital shall, in accordance with\n          regulations 38(11)(b)(i) and 38(12)(a)(i) of the Regulations, be converted or\n          written off at the occurrence of the trigger event, defined as the earlier of either\n          the circumstances described in paragraphs 2.1.2 and 2.1.3 above or a decision\n          by the relevant host regulator that a write-off is necessary to prevent the\n          subsidiary from becoming non-viable.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d5-2024-2-4",
+              "number": "2.4",
+              "heading": "Statutory requirements",
+              "text": "2.4       Statutory requirements\n\n2.4.1     The Financial Sector Laws Amendment Act No. 23 of 2021 (FSLAA) was enacted\n          on 1 June 2023 and amended the Financial Sector Regulation Act No. 9 of 2017\n          (FSR Act). In accordance with the amended FSR Act, the Reserve Bank may\n          decide to bail-in regulatory capital instruments of a designated institution in\n          resolution. Furthermore, the aforementioned determination by the Reserve Bank\n          as well as the trigger event, as described in section 2.1 of this Directive, to be\n          determined by the CEO of the PA, can only be triggered after concurrence with\n          the Reserve Bank as prescribed in section 166D of the FSR Act.\n\n2.4.2     The required contractual terms and conditions regarding the conversion or the\n          write-off of instruments qualifying as capital, in accordance with the respective\n          requirements stipulated in regulation 38(11) and regulation 38(12) of the\n          Regulations, must be met, notwithstanding the provisions of the FSR Act.\n\n2.4.3     The statutory requirements may differ from the contractual terms and conditions\n          for the instruments, as the value of ordinary shares may fully or partially recover\n          following the trigger event, and in some cases, the conversion of instruments may\n          be preferred over the write-off of instruments, among other preferences.\n\n2.4.4     The point of resolution (POR) and PONV are considered as two separate points,\n          even though in some instances they may occur simultaneously. The statutory\n          requirements that relate to POR are not intended to replace the contractual\n          requirements that relate to PONV which are stipulated in regulation 38 of the\n          Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d5-2024-2-5",
+              "number": "2.5",
+              "heading": "The determination of a contractual bail-in",
+              "text": "2.5       The determination of a contractual bail-in\n\n2.5.1     The PA may consider, among other considerations, the following factors when\n          applying its discretion to apply contractual bail-in:\n\n2.5.1.1   The Reserve Bank’s considerations, including financial stability, market\n          confidence, and the resolution plans of the banking group.\n2.5.1.2   The need for broader support measures.\n2.5.1.3   The absorption of losses before taxpayers or ordinary depositors are exposed to\n          loss.\n2.5.1.4   The probability of success.\n\n\n\n\n                                                                                            3",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d5-2024-3",
           "number": "3",
-          "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "heading": "Directive",
+          "text": "3.        Directive\n\n          Based on the aforesaid and in accordance with the provisions of section 6(6) of\n          the Banks Act, banks are hereby directed as follows:\n\n3.1       Contractual and statutory requirements\n\n3.1.1     Banks must clearly indicate in the contractual terms and conditions for additional\n          tier 1 and tier 2 capital instruments issued whether such instruments will either\n          be written off or converted into the most subordinated form of equity at the\n          occurrence of a trigger event, at the discretion of the CEO of the PA, as envisaged\n          in regulations 38(11)(b)(i) and 38(12)(a)(i) of the Regulations.\n\n3.1.2     Banks must clearly indicate in their respective issuing documentation or\n          contractual terms and conditions for additional tier 1 and tier 2 capital instruments\n          to be issued, that such instruments could either be statutorily or contractually\n          bailed in at a specified trigger event.\n\n3.2       Conversion to the most subordinated form of equity\n\n3.2.1     Banks must include in the contractual terms and conditions for additional tier 1\n          and tier 2 instruments, which provide for conversion into the most subordinated\n          form of equity, the following information:\n\n3.2.1.1   number of shares or a formula to determine the number of shares in the most\n          subordinated form of equity to be received by additional tier 1 and tier 2 instrument\n          holders at conversion; and\n3.2.1.2   the conversion price, which must be determined as the greater of:\n           a.   the arithmetic mean of the closing price of the shares on each of the five\n                consecutive dealing days prior to the date of the trigger event; or\n           b.   a floor price of 20% of the shares’ closing price at the same date as issuance\n                of the capital instrument.\n\n3.2.2     In exceptional instances when, following a trigger event, the conversion of a\n          capital instrument:\n3.2.2.1   cannot be undertaken;\n3.2.2.2   is not irrevocable; or\n3.2.2.3   will not result in an immediate increase in CET1,\n          such instrument shall, instead of being converted to the most subordinated form\n          of equity, be written off and result in an increase in the bank's CET1 capital.\n\n3.2.3     Conversion shall occur in the form of listed ordinary shares of the relevant bank\n          if such bank is listed on an exchange or, alternatively, that of the bank’s\n          controlling company if the said bank is a wholly owned subsidiary.\n\n3.2.4     In the event that neither a bank nor the bank's controlling company is listed on\n          an exchange, the issuing bank must determine a conversion price at the date of\n          issuance determined as 20% of the book value of the shares.\n\n\n\n\n                                                                                             4",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-3-1",
+              "id": "s-banks-d5-2024-3-1",
               "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
+              "heading": "Contractual and statutory requirements",
+              "text": "3.1       Contractual and statutory requirements\n\n3.1.1     Banks must clearly indicate in the contractual terms and conditions for additional\n          tier 1 and tier 2 capital instruments issued whether such instruments will either\n          be written off or converted into the most subordinated form of equity at the\n          occurrence of a trigger event, at the discretion of the CEO of the PA, as envisaged\n          in regulations 38(11)(b)(i) and 38(12)(a)(i) of the Regulations.\n\n3.1.2     Banks must clearly indicate in their respective issuing documentation or\n          contractual terms and conditions for additional tier 1 and tier 2 capital instruments\n          to be issued, that such instruments could either be statutorily or contractually\n          bailed in at a specified trigger event.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d5-2024-3-2",
+              "number": "3.2",
+              "heading": "Conversion to the most subordinated form of equity",
+              "text": "3.2       Conversion to the most subordinated form of equity\n\n3.2.1     Banks must include in the contractual terms and conditions for additional tier 1\n          and tier 2 instruments, which provide for conversion into the most subordinated\n          form of equity, the following information:\n\n3.2.1.1   number of shares or a formula to determine the number of shares in the most\n          subordinated form of equity to be received by additional tier 1 and tier 2 instrument\n          holders at conversion; and\n3.2.1.2   the conversion price, which must be determined as the greater of:\n           a.   the arithmetic mean of the closing price of the shares on each of the five\n                consecutive dealing days prior to the date of the trigger event; or\n           b.   a floor price of 20% of the shares’ closing price at the same date as issuance\n                of the capital instrument.\n\n3.2.2     In exceptional instances when, following a trigger event, the conversion of a\n          capital instrument:\n3.2.2.1   cannot be undertaken;\n3.2.2.2   is not irrevocable; or\n3.2.2.3   will not result in an immediate increase in CET1,\n          such instrument shall, instead of being converted to the most subordinated form\n          of equity, be written off and result in an increase in the bank's CET1 capital.\n\n3.2.3     Conversion shall occur in the form of listed ordinary shares of the relevant bank\n          if such bank is listed on an exchange or, alternatively, that of the bank’s\n          controlling company if the said bank is a wholly owned subsidiary.\n\n3.2.4     In the event that neither a bank nor the bank's controlling company is listed on\n          an exchange, the issuing bank must determine a conversion price at the date of\n          issuance determined as 20% of the book value of the shares.\n\n\n\n\n                                                                                             4",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d5-2024-4",
+          "number": "4",
+          "heading": "Acknowledgement of receipt",
+          "text": "4.             Acknowledgement of receipt\n\n4.1.           Kindly ensure that a copy of this Directive is made available to your institution’s\n               external auditors. In addition, the attached acknowledgement of receipt, duly\n               completed and signed by both the CEO of the institution and the said auditors,\n               should be returned to the PA at the earliest convenience of the aforementioned\n               signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22 October 2024\n\nThe previous Directive issued was Directive 4/2024, dated 10 September 2024.\n\n\n\n\n                                                                                                5",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d5-2024-4-1",
+              "number": "4.1",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "4.1.           Kindly ensure that a copy of this Directive is made available to your institution’s\n               external auditors. In addition, the attached acknowledgement of receipt, duly\n               completed and signed by both the CEO of the institution and the said auditors,\n               should be returned to the PA at the earliest convenience of the aforementioned\n               signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22 October 2024\n\nThe previous Directive issued was Directive 4/2024, dated 10 September 2024.\n\n\n\n\n                                                                                                5",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         }

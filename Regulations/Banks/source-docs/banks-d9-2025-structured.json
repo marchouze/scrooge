@@ -21,54 +21,72 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d9-2025-1",
-      "title": "Full Text",
+      "id": "ch-banks-d9-2025-main",
+      "title": "Directive D9/2025",
       "sections": [
         {
           "id": "s-banks-d9-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Prudential treatment of credit exposures secured by forest and agricultural land. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.            Introduction\n\n1.1           Real estate is immovable property that includes land used for forest and\n              agricultural purposes or anything treated as attached to land, in particular\n              buildings. Regulations 23(6)(c) and 23(6)(d) of the Regulations stipulate specific\n              criteria for classifying and treating real estate as security for credit exposures,\n              particularly for residential and commercial real estate as well as land intended for\n              ADC. However, other than the exclusions from the land ADC category, the\n              Regulations do not explicitly specify the prudential treatment for forest and\n              agricultural land. Therefore, the regulatory treatment for forest and agricultural land\n              must be based on considerations of the broader real estate framework.\n\n1.2           Forest and agricultural land may be considered as part of residential and\n              commercial real estate, as well as land ADC exposures. However, credit\n              exposures secured by residential and/or commercial forest and/or agricultural land\n              do not need to be finished property. In other words, unlike other property types,\n              forest and agricultural land does not need to be fully completed.\n\n1.3           Regulation 23(6)(c) of the Regulations specifies criteria for real estate to be treated\n              as security for residential exposures. However, in terms of proviso (i)(bb) of\n              regulation 23(6)(c)(xii) of the Regulations, forest and agricultural land that has\n              neither planning consent nor the intention to apply for planning consent is excluded\n              from residential land ADC.\n\n                                                                                                   1\n\n1.4     Similarly, regulation 23(6)(d) of the Regulations specifies criteria for real estate to\n        be treated as security for commercial real estate. However, in terms of proviso\n        (ii)(bb) of Regulation 23(6)(d) of the Regulations, forest and agricultural land that\n        has neither planning consent nor the intention to apply for planning consent is\n        excluded from commercial land ADC.\n\n1.5     The purpose of this Directive is to direct banks on the prudential treatment of credit\n        exposures secured by land used for forest and agricultural purposes.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d9-2025-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Real estate is immovable property that includes land used for forest and",
+              "text": "1.1           Real estate is immovable property that includes land used for forest and\n              agricultural purposes or anything treated as attached to land, in particular\n              buildings. Regulations 23(6)(c) and 23(6)(d) of the Regulations stipulate specific\n              criteria for classifying and treating real estate as security for credit exposures,\n              particularly for residential and commercial real estate as well as land intended for\n              ADC. However, other than the exclusions from the land ADC category, the\n              Regulations do not explicitly specify the prudential treatment for forest and\n              agricultural land. Therefore, the regulatory treatment for forest and agricultural land\n              must be based on considerations of the broader real estate framework.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d9-2025-1-2",
               "number": "1.2",
-              "text": "Prudential treatment of credit exposures secured by forest and agricultural land.",
-              "verbatim": true
+              "heading": "Forest and agricultural land may be considered as part of residential and",
+              "text": "1.2           Forest and agricultural land may be considered as part of residential and\n              commercial real estate, as well as land ADC exposures. However, credit\n              exposures secured by residential and/or commercial forest and/or agricultural land\n              do not need to be finished property. In other words, unlike other property types,\n              forest and agricultural land does not need to be fully completed.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d9-2025-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "Regulation 23(6)(c) of the Regulations specifies criteria for real estate to be treated",
+              "text": "1.3           Regulation 23(6)(c) of the Regulations specifies criteria for real estate to be treated\n              as security for residential exposures. However, in terms of proviso (i)(bb) of\n              regulation 23(6)(c)(xii) of the Regulations, forest and agricultural land that has\n              neither planning consent nor the intention to apply for planning consent is excluded\n              from residential land ADC.\n\n                                                                                                   1",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d9-2025-1-4",
+              "number": "1.4",
+              "heading": "Similarly, regulation 23(6)(d) of the Regulations specifies criteria for real estate to",
+              "text": "1.4     Similarly, regulation 23(6)(d) of the Regulations specifies criteria for real estate to\n        be treated as security for commercial real estate. However, in terms of proviso\n        (ii)(bb) of Regulation 23(6)(d) of the Regulations, forest and agricultural land that\n        has neither planning consent nor the intention to apply for planning consent is\n        excluded from commercial land ADC.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d9-2025-1-5",
+              "number": "1.5",
+              "heading": "The purpose of this Directive is to direct banks on the prudential treatment of credit",
+              "text": "1.5     The purpose of this Directive is to direct banks on the prudential treatment of credit\n        exposures secured by land used for forest and agricultural purposes.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d9-2025-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "Directive",
+          "text": "2.      Directive\n\n2.1     In accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act 94 of\n        1990), banks are hereby directed to apply risk weights to exposures secured by\n        forest and agricultural land as follows:\n\n        Residential real estate\n\n2.1.1   When lending to a borrower is secured by residential real estate that complies with\n        the requirements specified in regulations 23(6)(c)(i) to regulation 23(6)(c)(x) of the\n        Regulations, banks must apply the applicable risk weights specified in Table 1 of\n        regulation 23(6)(c) of the Regulations to the relevant exposure.\n\n2.1.2   When the repayment of the loan secured by residential real estate depends\n        materially on the cash flows generated by the real estate, as specified in\n        regulation 23(6)(c)(xi) of the Regulations, banks must apply the applicable risk\n        weights specified in Table 2 of that regulation to the relevant exposure.\n\n2.1.3   When the exposure relates to residential land ADC, as specified in\n        regulation 23(6)(c)(xii) of the Regulations, banks must apply a risk weight of 100%\n        to the relevant exposure.\n\n2.1.4   When the residential real estate exposure is unhedged from a borrower’s currency\n        risk perspective, as specified in regulation 23(6)(c)(xiii) of the Regulations, banks\n        must apply a risk weight of 150% to the relevant exposure.\n\n2.1.5   When a bank does not comply with the requirements set out in paragraphs 2.1.1\n        through 2.1.4 (i.e. the exposure does not fall within the ambit of those envisaged\n        in the aforementioned paragraphs), and, as specified in regulation 23(6)(c)(xiv) of\n        the Regulations, the bank may risk weight the relevant residential real estate\n        exposure based on a risk weight of an unsecured exposure to the relevant\n        counterparty, subject to the Prudential Authority’s (PA) sole discretion and such\n        further requirements as may be directed by the PA (which may include the PA\n        directing the bank in writing to risk weight the relevant exposure at 150%).\n\n        Commercial real estate\n\n2.1.6   When lending to a borrower is secured by commercial real estate that complies\n        with regulation 23(6)(d) of the Regulations, banks must apply the applicable risk\n        weights specified in Table 1 of that regulation to the relevant exposure.\n\n\n\n\n                                                                                            2\n\n2.1.7      When the repayment of the loan secured by commercial real estate depends\n           materially on the cash flows generated by the commercial real estate, as specified\n           in regulation 23(6)(d)(i) of the Regulations, banks must apply the applicable risk\n           weights specified in Table 2 of that regulation to the relevant exposure.\n\n2.1.8      When the exposures relate to commercial land ADC, as specified in regulation\n           23(6)(d)(ii) of the Regulations, banks must apply a risk weight of 150% to the\n           relevant exposure.\n\n2.1.9      When a bank does not comply with the requirements set out in paragraphs 2.1.6\n           through 2.1.8 (i.e. the exposure does not fall within the ambit of any of exposure\n           envisaged in the aforementioned paragraphs), and, as specified in\n           regulation 23(6)(d)(iii) of the Regulations, and the repayment of the loan secured\n           by the commercial real estate is not materially dependent on the cash flows\n           generated by the property, the bank may risk weight the relevant commercial real\n           estate exposure based on a risk weight of an unsecured exposure to the relevant\n           counterparty, subject to the PA’s sole discretion and such further requirements as\n           may be directed by the PA (which may include the PA directing the bank in writing\n           to risk weight the relevant exposure at 150%).",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d9-2025-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "In accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act 94 of",
+              "text": "2.1     In accordance with the provisions of section 6(6) of the Banks Act, 1990 (Act 94 of\n        1990), banks are hereby directed to apply risk weights to exposures secured by\n        forest and agricultural land as follows:\n\n        Residential real estate\n\n2.1.1   When lending to a borrower is secured by residential real estate that complies with\n        the requirements specified in regulations 23(6)(c)(i) to regulation 23(6)(c)(x) of the\n        Regulations, banks must apply the applicable risk weights specified in Table 1 of\n        regulation 23(6)(c) of the Regulations to the relevant exposure.\n\n2.1.2   When the repayment of the loan secured by residential real estate depends\n        materially on the cash flows generated by the real estate, as specified in\n        regulation 23(6)(c)(xi) of the Regulations, banks must apply the applicable risk\n        weights specified in Table 2 of that regulation to the relevant exposure.\n\n2.1.3   When the exposure relates to residential land ADC, as specified in\n        regulation 23(6)(c)(xii) of the Regulations, banks must apply a risk weight of 100%\n        to the relevant exposure.\n\n2.1.4   When the residential real estate exposure is unhedged from a borrower’s currency\n        risk perspective, as specified in regulation 23(6)(c)(xiii) of the Regulations, banks\n        must apply a risk weight of 150% to the relevant exposure.\n\n2.1.5   When a bank does not comply with the requirements set out in paragraphs 2.1.1\n        through 2.1.4 (i.e. the exposure does not fall within the ambit of those envisaged\n        in the aforementioned paragraphs), and, as specified in regulation 23(6)(c)(xiv) of\n        the Regulations, the bank may risk weight the relevant residential real estate\n        exposure based on a risk weight of an unsecured exposure to the relevant\n        counterparty, subject to the Prudential Authority’s (PA) sole discretion and such\n        further requirements as may be directed by the PA (which may include the PA\n        directing the bank in writing to risk weight the relevant exposure at 150%).\n\n        Commercial real estate\n\n2.1.6   When lending to a borrower is secured by commercial real estate that complies\n        with regulation 23(6)(d) of the Regulations, banks must apply the applicable risk\n        weights specified in Table 1 of that regulation to the relevant exposure.\n\n\n\n\n                                                                                            2\n\n2.1.7      When the repayment of the loan secured by commercial real estate depends\n           materially on the cash flows generated by the commercial real estate, as specified\n           in regulation 23(6)(d)(i) of the Regulations, banks must apply the applicable risk\n           weights specified in Table 2 of that regulation to the relevant exposure.\n\n2.1.8      When the exposures relate to commercial land ADC, as specified in regulation\n           23(6)(d)(ii) of the Regulations, banks must apply a risk weight of 150% to the\n           relevant exposure.\n\n2.1.9      When a bank does not comply with the requirements set out in paragraphs 2.1.6\n           through 2.1.8 (i.e. the exposure does not fall within the ambit of any of exposure\n           envisaged in the aforementioned paragraphs), and, as specified in\n           regulation 23(6)(d)(iii) of the Regulations, and the repayment of the loan secured\n           by the commercial real estate is not materially dependent on the cash flows\n           generated by the property, the bank may risk weight the relevant commercial real\n           estate exposure based on a risk weight of an unsecured exposure to the relevant\n           counterparty, subject to the PA’s sole discretion and such further requirements as\n           may be directed by the PA (which may include the PA directing the bank in writing\n           to risk weight the relevant exposure at 150%).",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
@@ -76,14 +94,16 @@
           "id": "s-banks-d9-2025-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "text": "3.         Acknowledgement of receipt\n\n3.1        Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and the\n           said auditors, should be returned to the PA at the earliest convenience of the\n           signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/08/25\n\n\n\n\n                                                                                            3",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-3-1",
+              "id": "s-banks-d9-2025-3-1",
               "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "3.1        Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and the\n           said auditors, should be returned to the PA at the earliest convenience of the\n           signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/08/25\n\n\n\n\n                                                                                            3",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         }

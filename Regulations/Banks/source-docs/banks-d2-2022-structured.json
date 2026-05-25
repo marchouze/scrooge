@@ -21,54 +21,88 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d2-2022-1",
-      "title": "Full Text",
+      "id": "ch-banks-d2-2022-main",
+      "title": "Directive D2/2022",
       "sections": [
         {
           "id": "s-banks-d2-2022-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Requirements for conducting the business of a representative office of a foreign banking institution conducting business in South Africa, and of a representative office of a South African bank conducting business outside South Africa. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.           Introduction\n\n1.1.         In this Directive, the term chief representative officer (CRO) refers to both the chief\n             representative officer of a representative office of a foreign banking institution\n             conducting business in South Africa, and the chief representative officer of a\n             representative office of a South African banking institution conducting business\n             outside South Africa.\n                                                                                                  1\n\n1.2.     The purpose of this Directive is to inform CROs of their responsibility to report to the\n         PA, on an annual basis, on the adequacy and effectiveness of the representative\n         offices’ internal controls. Should the CRO be the only employee of a representative\n         office, an authorised senior representative of the international division of the head\n         office of the representative office (“international division”) may, in exceptional cases,\n         with the prior written approval of the Authority, be responsible for furnishing the PA\n         with the aforementioned information.\n\n1.3.     The secondary purpose of this Directive is to inform the CROs of representative\n         offices of foreign banking institutions conducting business in South Africa of their\n         responsibility to report any change to the information originally submitted to the PA\n         in the forms RO 003 and RO 004 specified in Annexures C and D to the Regulations\n         relating to representative offices of foreign banking institutions (the Regulations).\n\n1.4.     The attention of the CROs of representative offices of South African banking\n         institutions conducting business outside South Africa is drawn to the requirement to\n         report any changes to the information originally submitted to the PA in terms of\n         section 52(4)(a) to (c) of the Banks Act, 1990, as soon as any such change occurs.\n\n1.5.     This Directive replaces Banks Act Circular 3/2004 dated 5 March 2004.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d2-2022-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "In this Directive, the term chief representative officer (CRO) refers to both the chief",
+              "text": "1.1.         In this Directive, the term chief representative officer (CRO) refers to both the chief\n             representative officer of a representative office of a foreign banking institution\n             conducting business in South Africa, and the chief representative officer of a\n             representative office of a South African banking institution conducting business\n             outside South Africa.\n                                                                                                  1",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d2-2022-1-2",
               "number": "1.2",
-              "text": "Requirements for conducting the business of a representative office of a foreign banking institution conducting business in South Africa, and of a representative office of a South African bank conducting business outside South Africa.",
-              "verbatim": true
+              "heading": "The purpose of this Directive is to inform CROs of their responsibility to report to the",
+              "text": "1.2.     The purpose of this Directive is to inform CROs of their responsibility to report to the\n         PA, on an annual basis, on the adequacy and effectiveness of the representative\n         offices’ internal controls. Should the CRO be the only employee of a representative\n         office, an authorised senior representative of the international division of the head\n         office of the representative office (“international division”) may, in exceptional cases,\n         with the prior written approval of the Authority, be responsible for furnishing the PA\n         with the aforementioned information.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d2-2022-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "The secondary purpose of this Directive is to inform the CROs of representative",
+              "text": "1.3.     The secondary purpose of this Directive is to inform the CROs of representative\n         offices of foreign banking institutions conducting business in South Africa of their\n         responsibility to report any change to the information originally submitted to the PA\n         in the forms RO 003 and RO 004 specified in Annexures C and D to the Regulations\n         relating to representative offices of foreign banking institutions (the Regulations).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d2-2022-1-4",
+              "number": "1.4",
+              "heading": "The attention of the CROs of representative offices of South African banking",
+              "text": "1.4.     The attention of the CROs of representative offices of South African banking\n         institutions conducting business outside South Africa is drawn to the requirement to\n         report any changes to the information originally submitted to the PA in terms of\n         section 52(4)(a) to (c) of the Banks Act, 1990, as soon as any such change occurs.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d2-2022-1-5",
+              "number": "1.5",
+              "heading": "This Directive replaces Banks Act Circular 3/2004 dated 5 March 2004.",
+              "text": "1.5.     This Directive replaces Banks Act Circular 3/2004 dated 5 March 2004.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d2-2022-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "Directive",
+          "text": "2.       Directive\n\n2.1.     Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n         Banks Act 94 of 1990, banks, controlling companies and representative offices are\n         hereby directed as follows:\n\n2.1.1.   Internal controls\n\n2.1.1.1 The CRO, or an authorised senior representative of the international division, is\n        responsible for ensuring that adequate and effective internal controls, consistent\n        with the nature, complexity and risks inherent in the representative office’s activities\n        and which respond to changes in the representative office’s environment and\n        conditions, are established and maintained.\n\n2.1.1.2 Furthermore, it remains the duty of every CRO, or the international division, to\n        ensure that the conduct of the business of the representative office is managed in a\n        prudent manner.\n\n2.1.2.   Internal control report\n\n2.1.2.1 The CRO, or, in exceptional cases, with the prior written approval of the Authority,\n        an authorised senior representative of the international division, shall annually, by\n        not later than 31 January of each year in the case of a representative office of a\n        foreign banking institution conducting business in South Africa and not later than\n        120 days after the end of the financial year of the institution of which it is a\n        representative office, in the case of a representative office of a South African\n        banking institution conducting business outside South Africa, report to the PA\n        whether:\n                                                                                                2\n\n            (a) the representative office’s internal controls are adequate in relation to the\n                integrity and reliability of the representative office’s monthly budgetary\n                statements and safeguard, verify and maintain accountability of the\n                representative office’s assets and activities;\n\n            (b) the internal controls are based on established policies and procedures and\n                are implemented by trained, suitably qualified and experienced personnel,\n                whose duties have been segregated appropriately;\n\n            (c) adherence to the implemented internal controls is continuously monitored by\n                the representative office or the aforementioned international division;\n\n            (d) all representative office employees have maintained high ethical standards\n                in the execution of their duties, thereby ensuring that the representative\n                office’s business practices are conducted in a manner that is above\n                reproach; and\n\n            (e) the system of internal control has functioned effectively throughout the\n                financial year.\n\n2.1.2.2 There is no specific format required for the internal control report, however, the\n        CRO, must ensure that the report contains all the relevant information as specified\n        above.\n\n2.1.3.   Auditor’s report\n\n2.1.3.1 The external auditor/s of the representative office, or the external auditor/s of the\n        international division of the relevant bank or controlling company, as the case may\n        be, shall annually report to the PA on whether they concur with the internal control\n        report mentioned in paragraph 2.1.2 above. If the external auditor/s do/es not concur\n        with the said report, they shall provide reasons therefor.\n\n2.1.3.2 The auditor’s report submitted to the PA shall be rendered in accordance with the\n        wording and practices agreed with the Independent Regulatory Board for Auditors\n        (IRBA) from time to time or according to the reporting procedures agreed as part of\n        the SAICA Banking Project Group until such time as it is published by IRBA.\n\n2.1.3.3 In the case of a representative office of a foreign banking institution conducting\n        business in South Africa, the external auditor’s report shall be submitted together\n        with the application for the renewal of the representative office’s licence, that is, by\n        not later than 31 January of each year.\n\n2.1.3.4 In the case of a representative office of a South African banking institution\n        conducting business outside South Africa, the external auditor’s report shall be\n        submitted to the PA by not later than 120 days after the end of the financial year of\n        the institution of which it is a representative office.\n\n\n\n\n                                                                                              3\n\n2.1.4.   Ad hoc reporting\n\n         During reporting periods, the CRO, or, in exceptional cases, with the prior written\n         approval of the Authority, an authorised senior representative of the international\n         division of the relevant bank or controlling company, as the case may be, shall\n         immediately report to the PA on any matter that has come to the attention of the\n         CRO or the international division to indicate that a material breakdown in the\n         aforementioned controls, procedures and/or systems occurred.\n\n2.2.     Changes to information in forms RO 003 and RO 004 forwarded by a\n         representative office of a foreign banking institution\n\n         The CRO, or, in exceptional cases, with the prior written approval of the Authority,\n         an authorised senior representative of the international division, shall –\n\n         (a) inform the PA in writing, within seven days of the occurrence thereof, of any\n             change to the information originally furnished to the PA in the form RO 003,\n             specified in Annexure C to the Regulations;\n\n         (b) submit a statement and declaration in the format of form RO 004, specified in\n             Annexure D to the Regulations, duly completed in the manner as prescribed in\n             regulation 3(c) of the Regulations.\n\n2.3.     Changes to information furnished by a representative office of a South African\n         banking institution, in terms of section 52 (4) of the Banks Act, 1990\n\n         The CRO, or, in exceptional cases, with the prior written approval of the Authority,\n         the international division, shall –\n\n         (a) inform the PA in writing, as soon as it occurs, of any change to the information\n             originally furnished to the PA in terms of section 52(4)(a) to (c) of the Banks\n             Act,1990.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d2-2022-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Based on the aforesaid, and in accordance with the provisions of section 6(6) of the",
+              "text": "2.1.     Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n         Banks Act 94 of 1990, banks, controlling companies and representative offices are\n         hereby directed as follows:\n\n2.1.1.   Internal controls\n\n2.1.1.1 The CRO, or an authorised senior representative of the international division, is\n        responsible for ensuring that adequate and effective internal controls, consistent\n        with the nature, complexity and risks inherent in the representative office’s activities\n        and which respond to changes in the representative office’s environment and\n        conditions, are established and maintained.\n\n2.1.1.2 Furthermore, it remains the duty of every CRO, or the international division, to\n        ensure that the conduct of the business of the representative office is managed in a\n        prudent manner.\n\n2.1.2.   Internal control report\n\n2.1.2.1 The CRO, or, in exceptional cases, with the prior written approval of the Authority,\n        an authorised senior representative of the international division, shall annually, by\n        not later than 31 January of each year in the case of a representative office of a\n        foreign banking institution conducting business in South Africa and not later than\n        120 days after the end of the financial year of the institution of which it is a\n        representative office, in the case of a representative office of a South African\n        banking institution conducting business outside South Africa, report to the PA\n        whether:\n                                                                                                2\n\n            (a) the representative office’s internal controls are adequate in relation to the\n                integrity and reliability of the representative office’s monthly budgetary\n                statements and safeguard, verify and maintain accountability of the\n                representative office’s assets and activities;\n\n            (b) the internal controls are based on established policies and procedures and\n                are implemented by trained, suitably qualified and experienced personnel,\n                whose duties have been segregated appropriately;\n\n            (c) adherence to the implemented internal controls is continuously monitored by\n                the representative office or the aforementioned international division;\n\n            (d) all representative office employees have maintained high ethical standards\n                in the execution of their duties, thereby ensuring that the representative\n                office’s business practices are conducted in a manner that is above\n                reproach; and\n\n            (e) the system of internal control has functioned effectively throughout the\n                financial year.\n\n2.1.2.2 There is no specific format required for the internal control report, however, the\n        CRO, must ensure that the report contains all the relevant information as specified\n        above.\n\n2.1.3.   Auditor’s report\n\n2.1.3.1 The external auditor/s of the representative office, or the external auditor/s of the\n        international division of the relevant bank or controlling company, as the case may\n        be, shall annually report to the PA on whether they concur with the internal control\n        report mentioned in paragraph 2.1.2 above. If the external auditor/s do/es not concur\n        with the said report, they shall provide reasons therefor.\n\n2.1.3.2 The auditor’s report submitted to the PA shall be rendered in accordance with the\n        wording and practices agreed with the Independent Regulatory Board for Auditors\n        (IRBA) from time to time or according to the reporting procedures agreed as part of\n        the SAICA Banking Project Group until such time as it is published by IRBA.\n\n2.1.3.3 In the case of a representative office of a foreign banking institution conducting\n        business in South Africa, the external auditor’s report shall be submitted together\n        with the application for the renewal of the representative office’s licence, that is, by\n        not later than 31 January of each year.\n\n2.1.3.4 In the case of a representative office of a South African banking institution\n        conducting business outside South Africa, the external auditor’s report shall be\n        submitted to the PA by not later than 120 days after the end of the financial year of\n        the institution of which it is a representative office.\n\n\n\n\n                                                                                              3\n\n2.1.4.   Ad hoc reporting\n\n         During reporting periods, the CRO, or, in exceptional cases, with the prior written\n         approval of the Authority, an authorised senior representative of the international\n         division of the relevant bank or controlling company, as the case may be, shall\n         immediately report to the PA on any matter that has come to the attention of the\n         CRO or the international division to indicate that a material breakdown in the\n         aforementioned controls, procedures and/or systems occurred.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-2-2",
+              "id": "s-banks-d2-2022-2-2",
               "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "Changes to information in forms RO 003 and RO 004 forwarded by a",
+              "text": "2.2.     Changes to information in forms RO 003 and RO 004 forwarded by a\n         representative office of a foreign banking institution\n\n         The CRO, or, in exceptional cases, with the prior written approval of the Authority,\n         an authorised senior representative of the international division, shall –\n\n         (a) inform the PA in writing, within seven days of the occurrence thereof, of any\n             change to the information originally furnished to the PA in the form RO 003,\n             specified in Annexure C to the Regulations;\n\n         (b) submit a statement and declaration in the format of form RO 004, specified in\n             Annexure D to the Regulations, duly completed in the manner as prescribed in\n             regulation 3(c) of the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d2-2022-2-3",
+              "number": "2.3",
+              "heading": "Changes to information furnished by a representative office of a South African",
+              "text": "2.3.     Changes to information furnished by a representative office of a South African\n         banking institution, in terms of section 52 (4) of the Banks Act, 1990\n\n         The CRO, or, in exceptional cases, with the prior written approval of the Authority,\n         the international division, shall –\n\n         (a) inform the PA in writing, as soon as it occurs, of any change to the information\n             originally furnished to the PA in terms of section 52(4)(a) to (c) of the Banks\n             Act,1990.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
@@ -76,16 +110,9 @@
           "id": "s-banks-d2-2022-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "text": "3.       Acknowledgement of receipt\n\n         Kindly ensure that a copy of this Directive is made available to your institution’s\n         external auditors. The attached acknowledgement of receipt duly completed and\n         signed by both the CRO, or, in exceptional cases, with the prior written approval of\n         the Authority, an authorised senior representative of the international division of the\n         institution, and the said auditors should be returned to the PA at the earliest\n         convenience of the aforementioned signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\nDate: 2022-02-25\n\nThe previous Directive issued was Directive 01/2022, dated 11 February 2022\n                                                                                              4",
           "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "subsections": []
         }
       ]
     }
