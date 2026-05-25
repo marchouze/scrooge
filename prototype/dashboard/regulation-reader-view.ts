@@ -149,133 +149,59 @@ export interface InstrumentDetailView {
 // File paths for each slug
 // ---------------------------------------------------------------------------
 
-const SLUG_TO_FILE: Record<string, string> = {
-  "banks-act": "Regulations/SARB-PA/source-docs/banks-act-structured.json",
-  rrb: "Regulations/SARB-PA/source-docs/rrb-structured.json",
-  "fic-act": "Regulations/FIC/source-docs/fic-act-structured.json",
-  popia: "Regulations/Information-Regulator/source-docs/popia-structured.json",
-  "fais-act": "Regulations/FSCA/source-docs/fais-act-structured.json",
-  js2: "Regulations/Joint-Standards/source-docs/js2-structured.json",
-  "fais-gcc": "Regulations/FSCA/source-docs/fais-gcc-structured.json",
-  excon: "Regulations/SARB-FinSurv/source-docs/excon-structured.json",
-  "cs-1-2018": "Regulations/ODP/source-docs/cs-1-2018-structured.json",
-  "cs-2-2018": "Regulations/ODP/source-docs/cs-2-2018-structured.json",
-  "cs-3-2018": "Regulations/ODP/source-docs/cs-3-2018-structured.json",
-  "js-2-2020": "Regulations/ODP/source-docs/js-2-2020-structured.json",
-  "jn-2-2024": "Regulations/ODP/source-docs/jn-2-2024-structured.json",
-  // ── PA Co-operative Banks / CFI Guidance Notes & Directives ──────────────
-  "gn1-2019": "Regulations/CoopBanks/source-docs/gn1-2019-structured.json",
-  "gn2-2019": "Regulations/CoopBanks/source-docs/gn2-2019-structured.json",
-  "gn1-2020": "Regulations/CoopBanks/source-docs/gn1-2020-structured.json",
-  "gn2-2020": "Regulations/CoopBanks/source-docs/gn2-2020-structured.json",
-  "gn1-2021": "Regulations/CoopBanks/source-docs/gn1-2021-structured.json",
-  "d1-2023": "Regulations/CoopBanks/source-docs/d1-2023-structured.json",
-  "gn1-2026": "Regulations/CoopBanks/source-docs/gn1-2026-structured.json",
-  // ── Banks Act Guidance Notes (effective per GN 1/2026) ───────────────────
-  "banks-gn1-2008": "Regulations/Banks/source-docs/banks-gn1-2008-structured.json",
-  "banks-gn2-2008": "Regulations/Banks/source-docs/banks-gn2-2008-structured.json",
-  "banks-gn5-2008": "Regulations/Banks/source-docs/banks-gn5-2008-structured.json",
-  "banks-gn7-2008": "Regulations/Banks/source-docs/banks-gn7-2008-structured.json",
-  "banks-gn8-2008": "Regulations/Banks/source-docs/banks-gn8-2008-structured.json",
-  "banks-gn9-2008": "Regulations/Banks/source-docs/banks-gn9-2008-structured.json",
-  "banks-gn3-2010": "Regulations/Banks/source-docs/banks-gn3-2010-structured.json",
-  "banks-gn3-2011": "Regulations/Banks/source-docs/banks-gn3-2011-structured.json",
-  "banks-gn5-2013": "Regulations/Banks/source-docs/banks-gn5-2013-structured.json",
-  "banks-gn3-2014": "Regulations/Banks/source-docs/banks-gn3-2014-structured.json",
-  "banks-gn4-2014": "Regulations/Banks/source-docs/banks-gn4-2014-structured.json",
-  "banks-gn5-2014": "Regulations/Banks/source-docs/banks-gn5-2014-structured.json",
-  "banks-gn4-2015": "Regulations/Banks/source-docs/banks-gn4-2015-structured.json",
-  "banks-gn3-2016": "Regulations/Banks/source-docs/banks-gn3-2016-structured.json",
-  "banks-gn4-2016": "Regulations/Banks/source-docs/banks-gn4-2016-structured.json",
-  "banks-gn5-2016": "Regulations/Banks/source-docs/banks-gn5-2016-structured.json",
-  "banks-gn7-2016": "Regulations/Banks/source-docs/banks-gn7-2016-structured.json",
-  "banks-gn3-2017": "Regulations/Banks/source-docs/banks-gn3-2017-structured.json",
-  "banks-gn5-2018": "Regulations/Banks/source-docs/banks-gn5-2018-structured.json",
-  "banks-gn8-2020": "Regulations/Banks/source-docs/banks-gn8-2020-structured.json",
-  "banks-gn5-2022": "Regulations/Banks/source-docs/banks-gn5-2022-structured.json",
-  "banks-gn6-2022": "Regulations/Banks/source-docs/banks-gn6-2022-structured.json",
-  "banks-gn7-2022": "Regulations/Banks/source-docs/banks-gn7-2022-structured.json",
-  "banks-gn9-2022": "Regulations/Banks/source-docs/banks-gn9-2022-structured.json",
-  "banks-gn10-2022": "Regulations/Banks/source-docs/banks-gn10-2022-structured.json",
-  "banks-gn12-2022": "Regulations/Banks/source-docs/banks-gn12-2022-structured.json",
-  "banks-gn4-2023": "Regulations/Banks/source-docs/banks-gn4-2023-structured.json",
-  "banks-gn2-2024": "Regulations/Banks/source-docs/banks-gn2-2024-structured.json",
-  "banks-gn4-2024": "Regulations/Banks/source-docs/banks-gn4-2024-structured.json",
-  "banks-gn5-2024": "Regulations/Banks/source-docs/banks-gn5-2024-structured.json",
-  "banks-gn2-2025": "Regulations/Banks/source-docs/banks-gn2-2025-structured.json",
-  "banks-gn3-2025": "Regulations/Banks/source-docs/banks-gn3-2025-structured.json",
-  "banks-gn1-2026": "Regulations/Banks/source-docs/banks-gn1-2026-structured.json",
-};
+// ---------------------------------------------------------------------------
+// Dynamic instrument discovery
+//
+// Scans all Regulations/<regulator>/source-docs/*-structured.json files and
+// returns a slug→absolutePath map. Replaces the previous hardcoded
+// SLUG_TO_FILE / ALL_SLUGS so newly-extracted instruments appear automatically.
+// ---------------------------------------------------------------------------
 
-const ALL_SLUGS = [
-  "banks-act",
-  "rrb",
-  "fic-act",
-  "popia",
-  "fais-act",
-  "js2",
-  "fais-gcc",
-  "excon",
-  "cs-1-2018",
-  "cs-2-2018",
-  "cs-3-2018",
-  "js-2-2020",
-  "jn-2-2024",
-  "gn1-2019",
-  "gn2-2019",
-  "gn1-2020",
-  "gn2-2020",
-  "gn1-2021",
-  "d1-2023",
-  "gn1-2026",
-  "banks-gn1-2008",
-  "banks-gn2-2008",
-  "banks-gn5-2008",
-  "banks-gn7-2008",
-  "banks-gn8-2008",
-  "banks-gn9-2008",
-  "banks-gn3-2010",
-  "banks-gn3-2011",
-  "banks-gn5-2013",
-  "banks-gn3-2014",
-  "banks-gn4-2014",
-  "banks-gn5-2014",
-  "banks-gn4-2015",
-  "banks-gn3-2016",
-  "banks-gn4-2016",
-  "banks-gn5-2016",
-  "banks-gn7-2016",
-  "banks-gn3-2017",
-  "banks-gn5-2018",
-  "banks-gn8-2020",
-  "banks-gn5-2022",
-  "banks-gn6-2022",
-  "banks-gn7-2022",
-  "banks-gn9-2022",
-  "banks-gn10-2022",
-  "banks-gn12-2022",
-  "banks-gn4-2023",
-  "banks-gn2-2024",
-  "banks-gn4-2024",
-  "banks-gn5-2024",
-  "banks-gn2-2025",
-  "banks-gn3-2025",
-  "banks-gn1-2026",
-] as const;
+let _slugPathCache: Map<string, string> | null = null;
+
+function discoverSlugPaths(repoRoot: string): Map<string, string> {
+  if (_slugPathCache) return _slugPathCache;
+
+  const map = new Map<string, string>();
+  const regsDir = resolve(repoRoot, "Regulations");
+
+  let regulatorDirs: string[];
+  try {
+    regulatorDirs = readdirSync(regsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
+      .map((d) => resolve(regsDir, d.name, "source-docs"));
+  } catch {
+    return map;
+  }
+
+  for (const sourceDocsDir of regulatorDirs) {
+    if (!existsSync(sourceDocsDir)) continue;
+    let files: string[];
+    try {
+      files = readdirSync(sourceDocsDir).filter((f) => f.endsWith("-structured.json"));
+    } catch {
+      continue;
+    }
+    for (const file of files) {
+      const slug = file.replace(/-structured\.json$/, "");
+      map.set(slug, resolve(sourceDocsDir, file));
+    }
+  }
+
+  _slugPathCache = map;
+  return map;
+}
 
 // ---------------------------------------------------------------------------
 // Loaders
 // ---------------------------------------------------------------------------
 
 function loadStructuredDoc(repoRoot: string, slug: string): RegStructuredDoc | null {
-  const rel = SLUG_TO_FILE[slug];
-  if (!rel) return null;
-
-  const path = resolve(repoRoot, rel);
-  if (!existsSync(path)) return null;
+  const absPath = discoverSlugPaths(repoRoot).get(slug);
+  if (!absPath || !existsSync(absPath)) return null;
 
   try {
-    return JSON.parse(readFileSync(path, "utf-8")) as RegStructuredDoc;
+    return JSON.parse(readFileSync(absPath, "utf-8")) as RegStructuredDoc;
   } catch {
     return null;
   }
@@ -508,7 +434,7 @@ function getInstrumentWideObligations(
 export function buildInstrumentsListView(repoRoot: string): InstrumentsListView {
   const instruments: InstrumentSummary[] = [];
 
-  for (const slug of ALL_SLUGS) {
+  for (const slug of discoverSlugPaths(repoRoot).keys()) {
     const doc = loadStructuredDoc(repoRoot, slug);
     if (!doc) continue;
 
