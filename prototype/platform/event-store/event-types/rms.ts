@@ -197,6 +197,7 @@ export const recordFiledPayloadSchema = z.object({
       category: z.string(),
       author: z.string().optional(),
       date: z.string().optional(),
+      prRef: z.string().optional(),
     })
     .optional(),
 });
