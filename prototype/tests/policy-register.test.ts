@@ -250,7 +250,7 @@ describe("policy-register — parser fixture", () => {
 // ---------------------------------------------------------------------------
 
 describe("policy-register — standalone Policies/ pass", () => {
-  function fixtureWithPoliciesDir(opts?: { includeMatchedFile?: boolean }) {
+  function fixtureWithPoliciesDir() {
     const dir = mkdtempSync(join(tmpdir(), "policy-register-standalone-"));
     const registerPath = join(dir, "policy-register.md");
     const policiesDir = join(dir, "Policies");
@@ -316,7 +316,9 @@ describe("policy-register — standalone Policies/ pass", () => {
   it("does not duplicate a file already claimed by a register row", () => {
     const f = fixtureWithPoliciesDir();
     const policies = parsePolicyRegister({ path: f.registerPath, policiesDir: f.policiesDir });
-    const amlEntries = policies.filter((p) => p.name === "AML Policy" || p.name === "AML/CFT Policy v1");
+    const amlEntries = policies.filter(
+      (p) => p.name === "AML Policy" || p.name === "AML/CFT Policy v1",
+    );
     expect(amlEntries).toHaveLength(1);
   });
 

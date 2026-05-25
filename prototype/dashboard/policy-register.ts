@@ -671,8 +671,7 @@ export function parsePolicyRegister(opts: ParsePolicyRegisterOpts): Policy[] {
       const fm = readFrontmatter(content);
       const h1 = content.match(/^#\s+(.+)$/m);
       const stem = basename(filename, ".md");
-      const title =
-        fmScalar(fm, "title") ?? h1?.[1]?.trim() ?? stem;
+      const title = fmScalar(fm, "title") ?? h1?.[1]?.trim() ?? stem;
       const owner = fmScalar(fm, "owner") ?? "";
       const statusRaw = fmScalar(fm, "status") ?? "";
       const citation = fmScalar(fm, "citations") ?? "";
