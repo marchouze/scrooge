@@ -17,8 +17,8 @@
 // Authority: D-POLICY-DOCUMENT-HOME Option C (CEO-approved 2026-05-12).
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { basename, resolve } from "node:path";
 
 import { eventStore } from "../platform/composition";
 import { BANK_ZA_001, newEventId } from "../platform/core/types";
@@ -45,8 +45,10 @@ function findRepoRoot(start: string): string {
 const REPO_ROOT = findRepoRoot(import.meta.dir);
 
 // ---------------------------------------------------------------------------
-// Policy manifest — the 10 documents migrated to Policies/ on 2026-05-12
+// Policy manifest — auto-discovered from Policies/*.md
 // ---------------------------------------------------------------------------
+
+const SKIP_BASENAMES = new Set(["README.md"]);
 
 interface PolicyEntry {
   readonly documentId: string;
@@ -58,116 +60,64 @@ interface PolicyEntry {
   readonly registeredAt: string; // ISO 8601 — back-dated to original authoring
 }
 
-const POLICIES: readonly PolicyEntry[] = [
-  {
-    documentId: "policy:liquidity-risk-management:v1",
-    title: "Liquidity Risk Management Policy v1",
-    kind: "policy",
-    filePath: "Policies/liquidity-risk-management-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:camille", "agent:eitan", "agent:helena"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:risk-management-and-compliance:v1",
-    title: "Risk Management & Compliance Programme (RMCP) v1",
-    kind: "policy",
-    filePath: "Policies/risk-management-and-compliance-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:mira", "agent:zara"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:aml-cft:v1",
-    title: "AML / CFT Policy v1",
-    kind: "policy",
-    filePath: "Policies/aml-cft-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:mira", "agent:zara"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:popia-privacy:v1",
-    title: "POPIA Privacy Policy v1",
-    kind: "policy",
-    filePath: "Policies/popia-privacy-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:iris", "agent:zara"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:capital-management:v1",
-    title: "Capital Management Policy v1",
-    kind: "policy",
-    filePath: "Policies/capital-management-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:camille", "agent:helena"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:recovery-resolution-planning:v1",
-    title: "Recovery & Resolution Planning Policy v1",
-    kind: "policy",
-    filePath: "Policies/recovery-resolution-planning-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:helena", "agent:camille"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:trading-mandate:v1",
-    title: "Trading Mandate v1",
-    kind: "policy",
-    filePath: "Policies/trading-mandate-v1.md",
-    version: "1.0.0",
-    authors: ["agent:kai", "agent:helena", "agent:devon"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:remuneration:v1",
-    title: "Remuneration Policy v1",
-    kind: "policy",
-    filePath: "Policies/remuneration-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:owen", "agent:sade"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "policy:fit-and-proper:v1",
-    title: "Fit and Proper Policy v1",
-    kind: "policy",
-    filePath: "Policies/fit-and-proper-policy-v1.md",
-    version: "1.0.0",
-    authors: ["agent:owen", "agent:helena"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-  {
-    documentId: "charter:internal-audit:v1",
-    title: "Internal Audit Charter v1",
-    kind: "charter",
-    filePath: "Policies/internal-audit-charter-v1.md",
-    version: "1.0.0",
-    authors: ["agent:thandiwe", "agent:vera"],
-    registeredAt: "2026-05-11T00:00:00.000Z",
-  },
-];
+function deriveDocumentId(file: string): string {
+  const slug = file
+    .replace(/-policy-v\d+\.md$/, "")
+    .replace(/-v\d+\.md$/, "")
+    .replace(/\.md$/, "");
+  const kind = file.includes("-charter-") ? "charter" : "policy";
+  return `${kind}:${slug}:v1`;
+}
+
+function discoverPolicies(): PolicyEntry[] {
+  const policiesDir = resolve(REPO_ROOT, "Policies");
+  if (!existsSync(policiesDir)) return [];
+  return readdirSync(policiesDir)
+    .filter(
+      (f) =>
+        f.endsWith(".md") && !SKIP_BASENAMES.has(f) && statSync(resolve(policiesDir, f)).isFile(),
+    )
+    .map((file) => {
+      const slug = file
+        .replace(/-policy-v\d+\.md$/, "")
+        .replace(/-v\d+\.md$/, "")
+        .replace(/\.md$/, "");
+      const kind: DocumentRegisteredPayload["kind"] = file.includes("-charter-")
+        ? "charter"
+        : "policy";
+      return {
+        documentId: deriveDocumentId(file),
+        title:
+          slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) +
+          (kind === "charter" ? " Charter v1" : " Policy v1"),
+        kind,
+        filePath: `Policies/${file}`,
+        version: "1.0.0",
+        authors: ["agent:scrooge"],
+        registeredAt: "2026-05-11T00:00:00.000Z",
+      };
+    });
+}
+
+const POLICIES: readonly PolicyEntry[] = discoverPolicies();
 
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 function main(): number {
-  // Build idempotency set: documentIds already in the store.
+  // Build idempotency set: filePaths already registered (matches recon check).
   const alreadyRegistered = new Set<string>();
   for (const e of eventStore.replay({ type: "DocumentRegistered" })) {
-    const id = (e.payload as Record<string, unknown>).documentId;
-    if (typeof id === "string") alreadyRegistered.add(id);
+    const fp = (e.payload as Record<string, unknown>).filePath;
+    if (typeof fp === "string") alreadyRegistered.add(fp);
   }
 
   let emitted = 0;
   let skipped = 0;
 
   for (const entry of POLICIES) {
-    if (alreadyRegistered.has(entry.documentId)) {
+    if (alreadyRegistered.has(entry.filePath)) {
       logger.info(
         { documentId: entry.documentId },
         "backfill-document-registered — skipped (event already exists)",

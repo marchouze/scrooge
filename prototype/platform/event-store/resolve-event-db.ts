@@ -10,9 +10,9 @@
 //     to the home-default shared store and mutates `BANK_EVENT_DB` so
 //     composition picks it up.
 //
-//   - The interactive persona emission scripts (`approve-d-*.ts`,
-//     `record-d-*.ts`, `file-*.ts`) opt into the shared HOME store by
-//     importing the boot shim FIRST:
+//   - The dashboard server (`dashboard/server.ts`) and interactive persona
+//     emission scripts (`approve-d-*.ts`, `record-d-*.ts`, `file-*.ts`) opt
+//     into the shared HOME store by importing the boot shim FIRST:
 //
 //       import "../platform/event-store/resolve-event-db-boot";
 //

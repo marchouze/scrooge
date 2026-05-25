@@ -234,6 +234,89 @@
       "name": "Unrealised P&L — IRD (FVTPL)",
       "category": "income",
       "side": "credit"
-    }
+    },
+
+    {
+      "id": "ACC-5100-001",
+      "name": "Repo Asset (Secured Lending Receivable)",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-5100-002",
+      "name": "Repo Liability (Secured Borrowing Payable)",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-5100-003",
+      "name": "Repo Collateral Memo (Off-Balance-Sheet)",
+      "category": "asset",
+      "side": "debit"
+    },
+    { "id": "ACC-5100-004", "name": "Repo Accrued Interest", "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-5100-005",
+      "name": "Repo Interest Income / Expense",
+      "category": "income",
+      "side": "credit"
+    },
+
+    {
+      "id": "ACC-6100-001",
+      "name": "Deposit Liability — Retail Stable",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-6100-002",
+      "name": "Deposit Liability — Retail Less-Stable",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-6100-003",
+      "name": "Deposit Liability — Wholesale Operational",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-6100-004",
+      "name": "Deposit Liability — Wholesale Non-Operational",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-6100-005",
+      "name": "Deposit Accrued Interest Payable",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-6100-006",
+      "name": "Deposit Interest Expense",
+      "category": "expense",
+      "side": "debit"
+    },
+
+    {
+      "id": "ACC-7100-001",
+      "name": "Due from Banks — Call Placements",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7100-002",
+      "name": "Due from Banks — Fixed-Term Placements",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7100-003",
+      "name": "IBL Accrued Interest Receivable",
+      "category": "asset",
+      "side": "debit"
+    },
+    { "id": "ACC-7100-004", "name": "IBL Interest Income", "category": "income", "side": "credit" }
   ]
 }

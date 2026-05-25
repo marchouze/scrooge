@@ -49,6 +49,10 @@
 import { type FSWatcher, existsSync, watch as fsWatch, mkdirSync, readFileSync } from "node:fs";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 
+// Must precede any import of platform/composition — sets BANK_EVENT_DB to the
+// shared canonical store (config file → ~/.local/share/bank/event.db).
+import "../platform/event-store/resolve-event-db-boot";
+
 import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
 import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
