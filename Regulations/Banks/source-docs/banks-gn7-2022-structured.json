@@ -27,72 +27,72 @@
         {
           "id": "s1",
           "number": "1",
-          "heading": "Section 1",
-          "text": "Section 1",
+          "heading": "Section 1 Section 1",
+          "text": "Section 1 Section 1",
           "verbatim": "Section 1",
           "subsections": []
         },
         {
           "id": "s2",
           "number": "2",
-          "heading": "Risk Indicators",
-          "text": "Risk Indicators",
+          "heading": "Risk Indicators Risk Indicators",
+          "text": "Risk Indicators Risk Indicators",
           "verbatim": "Risk Indicators",
           "subsections": []
         },
         {
           "id": "s3",
           "number": "3",
-          "heading": "Section 3",
-          "text": "Section 3",
+          "heading": "Section 3 Section 3",
+          "text": "Section 3 Section 3",
           "verbatim": "Section 3",
           "subsections": []
         },
         {
           "id": "s4",
           "number": "4",
-          "heading": "Section 4",
-          "text": "Section 4",
+          "heading": "Section 4 Section 4",
+          "text": "Section 4 Section 4",
           "verbatim": "Section 4",
           "subsections": []
         },
         {
           "id": "s5",
           "number": "5",
-          "heading": "Guidelines on",
-          "text": "Guidelines on",
+          "heading": "Guidelines on Guidelines on",
+          "text": "Guidelines on Guidelines on",
           "verbatim": "Guidelines on",
           "subsections": []
         },
         {
           "id": "s6",
           "number": "6",
-          "heading": "CBR must",
-          "text": "CBR must",
+          "heading": "CBR must CBR must",
+          "text": "CBR must CBR must",
           "verbatim": "CBR must",
           "subsections": []
         },
         {
           "id": "s7",
           "number": "7",
-          "heading": "Section 7",
-          "text": "Section 7",
+          "heading": "Section 7 Section 7",
+          "text": "Section 7 Section 7",
           "verbatim": "Section 7",
           "subsections": []
         },
         {
           "id": "s8",
           "number": "8",
-          "heading": "Section 8",
-          "text": "Section 8",
+          "heading": "Section 8 Section 8",
+          "text": "Section 8 Section 8",
           "verbatim": "Section 8",
           "subsections": []
         },
         {
           "id": "s10",
           "number": "10",
-          "heading": "Acknowledgement of",
-          "text": "Acknowledgement of",
+          "heading": "Acknowledgement of Acknowledgement of",
+          "text": "Acknowledgement of Acknowledgement of",
           "verbatim": "Acknowledgement of",
           "subsections": []
         }
