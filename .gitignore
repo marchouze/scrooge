@@ -24,3 +24,12 @@ prototype/.data/
 # Regulation outline fixer artifacts
 *-structured.json.bak
 *-reformatted.txt
+
+# Graphify generated outputs
+graphify-out/
+Regulations/graphify-out/
+Owner Inbox/.obsidian/
+
+# Python bytecode
+__pycache__/
+*.pyc
