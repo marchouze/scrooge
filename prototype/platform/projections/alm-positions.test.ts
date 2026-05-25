@@ -173,3 +173,155 @@ describe("alm-positions — source-event registry stability", () => {
     expect(ALM_POSITION_SOURCE_EVENTS.rsfBalanceSheet).toBe("BalanceSheetProjected");
   });
 });
+
+// ---------------------------------------------------------------------------
+// 4. Settlement outflow derivation from TradeBooked (explicit settlementDate)
+// ---------------------------------------------------------------------------
+
+function appendBuyTradeWithSettlementDate(
+  store: EventStore,
+  args: {
+    isin: string;
+    marketValueZar: number;
+    settlementDate: string;
+  },
+): void {
+  store.append({
+    event_id: newEventId(),
+    type: "TradeBooked",
+    as_of: AS_OF,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "service", id: "agent:test" },
+    citations: ["D-RAS"],
+    payload: {
+      tradeId: newEventId(),
+      isin: args.isin,
+      side: "buy",
+      marketValueZar: args.marketValueZar,
+      currency: "ZAR",
+      settlementDate: args.settlementDate,
+    },
+  });
+}
+
+describe("alm-positions — settlement outflow derivation", () => {
+  it("includes buy trade with explicit settlementDate within T+30 horizon in fundingPositions", () => {
+    const store = makeStore();
+    // Settlement date 2 days after AS_OF — within T+30 horizon
+    appendBuyTradeWithSettlementDate(store, {
+      isin: "ZAG000456789",
+      marketValueZar: 10_000_000,
+      settlementDate: "2026-05-23",
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+
+    expect(snap.fundingPositions.length).toBeGreaterThanOrEqual(1);
+    const settlement = snap.fundingPositions.find(
+      (p) => p.category === "wholesale-non-operational" && p.amountZar === 10_000_000,
+    );
+    expect(settlement).toBeDefined();
+
+    // Gap entry should be the informational note (count > 0), not the unconditional gap
+    const gapEntry = snap.gaps.find((g) =>
+      g.includes(ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut),
+    );
+    expect(gapEntry).toBeDefined();
+    expect(gapEntry).toContain("pending buy trade");
+  });
+
+  it("excludes buy trade with settlementDate outside the horizon", () => {
+    const store = makeStore();
+    // Settlement date 40 days after AS_OF — outside T+30 horizon
+    appendBuyTradeWithSettlementDate(store, {
+      isin: "ZAG000456789",
+      marketValueZar: 10_000_000,
+      settlementDate: "2026-06-30",
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+
+    // fundingPositions should not include this trade
+    expect(snap.fundingPositions.length).toBe(0);
+    // Gap should remain the unconditional form
+    const gapEntry = snap.gaps.find((g) =>
+      g.includes(ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut),
+    );
+    expect(gapEntry).toBeDefined();
+    expect(gapEntry).not.toContain("pending buy trade");
+  });
+
+  it("skips TradeBooked without settlementDate and gap remains unconditional", () => {
+    const store = makeStore();
+    // TradeBooked without settlementDate — should be skipped
+    store.append({
+      event_id: newEventId(),
+      type: "TradeBooked",
+      as_of: AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service", id: "agent:test" },
+      citations: ["D-RAS"],
+      payload: {
+        tradeId: newEventId(),
+        isin: "ZAG000111222",
+        side: "buy",
+        marketValueZar: 5_000_000,
+        currency: "ZAR",
+        // no settlementDate
+      },
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+
+    // No settlement outflows derived
+    const settlementPositions = snap.fundingPositions.filter(
+      (p) => p.category === "wholesale-non-operational",
+    );
+    expect(settlementPositions.length).toBe(0);
+
+    // Gap entry mentions skipped trades
+    const gapEntry = snap.gaps.find((g) =>
+      g.includes(ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut),
+    );
+    expect(gapEntry).toBeDefined();
+    expect(gapEntry).toContain("not yet emitted");
+  });
+
+  it("excludes already-settled trades via TradeSettled tombstone", () => {
+    const store = makeStore();
+    const tradeId = newEventId();
+    // Book a buy trade with settlementDate
+    store.append({
+      event_id: newEventId(),
+      type: "TradeBooked",
+      as_of: AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service", id: "agent:test" },
+      citations: ["D-RAS"],
+      payload: {
+        tradeId,
+        isin: "ZAG000789012",
+        side: "buy",
+        marketValueZar: 8_000_000,
+        currency: "ZAR",
+        settlementDate: "2026-05-24",
+      },
+    });
+    // Then mark it settled
+    store.append({
+      event_id: newEventId(),
+      type: "TradeSettled",
+      as_of: AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service", id: "agent:test" },
+      citations: ["D-RAS"],
+      payload: { tradeId },
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+
+    // Settled trade should not appear in fundingPositions
+    const settlement = snap.fundingPositions.find((p) => p.amountZar === 8_000_000);
+    expect(settlement).toBeUndefined();
+  });
+});

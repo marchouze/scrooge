@@ -134,16 +134,18 @@ Ravi pairs with Tomas on SAMOS: Tomas owns the SAMOS connector and settlement-ac
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-05-25.
 
 - **No real liquidity to manage yet.** Per CLAUDE.md "build phase vs licence-day": no real capital, no real customers, no real funding. Build-phase work runs against synthetic positions to validate the substrate end-to-end. Real ALM begins at licence-day.
-- **ALM engine** — designed; partial. LCR / NSFR / IRRBB computation prototyped against synthetic positions; not yet event-driven. Owner: Ravi + Atlas. Target: pre-licence go-live readiness gate.
-- **FTP engine** — designed; partial. Curve construction prototyped; transaction-level FTP attribution not yet wired to the postable-event stream. Owner: Ravi. Target: pre-licence.
-- **FTP curve sources** — not yet wired. Curve registry designed; market-rate feed integrations (ZARONIA, JIBAR, OIS, FX) deferred to vendor-selection phase. Owner: Ravi + Atlas. Target: pre-licence.
+- **ALM engine** — ✅ closed 2026-05-19. Repricing gap (BCBS 319), ΔEVE (6 BCBS d365 shocks), and ΔNII (4 parallel shocks, 12-month horizon) engines live in `platform/alm/`; `ravi:alm-run` handler registered; `ALMRunCompleted` + `IRRBBChecked` events emitted daily. LCR / NSFR engines live at `platform/liquidity/`; `anya:liquidity-projection` handler uses `runLiquidityProjection` (event-store-backed, all five horizons). Authority: D-TREASURY-GAPS-WAVE1.
+- **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier (BA 325 Annex 1 L1/L2a/L2b), inventory projection, and `atlas:collateral-snapshot` handler live (`platform/collateral/`). Authority: D-TREASURY-GAPS-WAVE1.
+- **ILAAP** — ✅ closed 2026-05-19. Four stress scenarios (idiosyncratic, market-wide, combined, reverse-stress); `ILAAPScenarioRun` + `ILAAPSummaryCompleted` events; `atlas:ilaap-run` handler registered. Authority: D-TREASURY-GAPS-WAVE1.
+- **Settlement outflows (BA 325 §23)** — partially closed 2026-05-25. `buildSettlementOutflows` in `platform/projections/alm-positions.ts` now folds `TradeBooked` buy-side events with explicit `settlementDate` into the LCR denominator. Remaining gap: trades without `settlementDate` in payload are skipped; `SettlementInstructionIssued` event class is still a deferred gap for non-trade contractual outflows. Owner: Ravi + Atlas. Target: pre-licence.
+- **FTP engine** — live (indicative rates). `ravi:ftp-curve-publish` handler builds a ZAR tenor grid from SARB repo rate + typical spreads; `FtpCurvePublished` event emitted daily. `ravi:ftp-attribution` wired to trade events. Remaining gap: live ZARONIA / JIBAR / SAGB market-data feed deferred to vendor-selection phase. Owner: Ravi + Atlas. Target: pre-licence.
+- **FTP curve sources** — not yet wired. Market-rate feed integrations (ZARONIA, JIBAR, OIS, FX) deferred to vendor-selection phase. Owner: Ravi + Atlas. Target: pre-licence.
 - **SAMOS interface** — designed; not yet built. Tomas owns the connector; Ravi specifies the funding-plan logic. Owner: Tomas + Ravi. Target: pre-licence (mandatory for licence-day).
 - **Hedge-accounting integration** — designed; partial. Effectiveness testing prototyped; Bea's posting boundary not yet wired. Owner: Ravi + Bea. Target: post-licence; gated on first hedge designation.
-- **Collateral inventory substrate** — designed; not yet built. Owner: Ravi + Atlas. Target: pre-licence (mandatory for repo book).
-- **ILAAP runs as paper exercise** during build-only.
+- **BalanceSheetProjected (BA 326 full scope)** — partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced. Full BA 326 NSFR scope pending `BalanceSheetProjected` event (Bea + Ravi substrate). Owner: Ravi + Bea. Target: pre-licence.
 
 ## 17. Change log
 
@@ -152,3 +154,4 @@ Ravi pairs with Tomas on SAMOS: Tomas owns the SAMOS connector and settlement-ac
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from role brief. |
 | v1.0 | 2026-05-07 | Ravi (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Eitan (Treasurer) per top-of-house structure. |
 | v1.1 | 2026-05-14 | Ravi (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
+| v1.2 | 2026-05-25 | Ravi (via Scrooge) | §16 updated: ALM engine + collateral inventory + ILAAP gaps closed per D-TREASURY-GAPS-WAVE1 (2026-05-19). `SettlementInstructionIssued` gap partially closed — buy-side trades with explicit `settlementDate` now folded into LCR outflow via `buildSettlementOutflows` in `platform/projections/alm-positions.ts`. FTP engine noted as live-with-indicative-rates. `runLiquidityProjection` now defaults to event-store-backed provider. |

@@ -264,22 +264,29 @@ function buildReportMarkdown(
   lines.push("## Substrate gaps (build-phase)");
   lines.push("");
   lines.push(
-    "- **Liquidity projection engine** — under build (Anya) per `Team/Eitan.md` § 16. Until live, LCR / NSFR are not query-able from the event log.",
+    "- **Liquidity projection engine** — ✅ closed 2026-05-19. `runLiquidityProjection` live at `platform/liquidity/projection.ts`; event-store-backed provider defaults to the composition store; all five horizons (T+0, T+7, T+14, T+30, T+90) computed. `anya:liquidity-projection` handler uses it. Authority: D-TREASURY-GAPS-WAVE1.",
   );
   lines.push(
-    "- **ALM engine** — under build (Ravi) per § 16. Daily ALM run is a manually-orchestrated query today.",
-  );
-  lines.push("- **FTP curve generator** — not yet built (§ 16). Quarterly FTP review degraded.");
-  lines.push(
-    "- **Auto-generated ALCO pack** — not yet built (§ 16). Pack authored against the cycle template; gap is the load-bearing P6-downward seam (Eitan does not assemble; he generates).",
+    "- **ALM engine** — ✅ closed 2026-05-19. Repricing gap, ΔEVE, ΔNII engines live; `ravi:alm-run` handler emits `ALMRunCompleted` + `IRRBBChecked` events daily. Authority: D-TREASURY-GAPS-WAVE1.",
   );
   lines.push(
-    "- **Intraday liquidity watch (live)** — partial; settlement-account watch exists, intraday HQLA-stress projection is not live (§ 16). Intraday-stress trigger SLA (§ 7, 30-min response) is dormant in build-phase.",
+    "- **Intraday liquidity watch** — ✅ closed 2026-05-19. Intraday HQLA-stress projection live in `platform/alm/intraday-stress.ts`; `ravi:intraday-stress` handler runs BAU + stress scenarios across 4 SAMOS windows. Authority: D-TREASURY-GAPS-WAVE1.",
   );
   lines.push(
-    "- **Collateral inventory substrate** — not yet built (§ 16). Treasury collateral-move sign-offs operate on registered limits without live inventory.",
+    "- **Auto-generated ALCO pack** — ✅ closed 2026-05-19. ALCO pack generator live at `platform/alco/`; `atlas:alco-pack` handler assembles all sections from live projection events; `ALCOPackGenerated` event registered. Authority: D-TREASURY-GAPS-WAVE1.",
   );
-  lines.push("- **ILAAP engine** — not yet built (Helena's gap, Eitan co-owns liquidity slice).");
+  lines.push(
+    "- **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier + inventory projection + `atlas:collateral-snapshot` handler live (`platform/collateral/`). Authority: D-TREASURY-GAPS-WAVE1.",
+  );
+  lines.push(
+    "- **ILAAP engine** — ✅ closed 2026-05-19. Four stress scenarios; `ILAAPSummaryCompleted` events; `atlas:ilaap-run` handler registered. Authority: D-TREASURY-GAPS-WAVE1.",
+  );
+  lines.push(
+    "- **Settlement outflows (BA 325 §23)** — partially closed 2026-05-25. `buildSettlementOutflows` folds `TradeBooked` buy-side events with explicit `settlementDate` into the LCR denominator. Remaining gap: `SettlementInstructionIssued` event class for non-trade contractual outflows. Owner: Ravi + Atlas.",
+  );
+  lines.push(
+    "- **FTP curve generator (live market data)** — open. `ravi:ftp-curve-publish` runs with indicative ZAR rates (SARB repo + spreads). Live ZARONIA / JIBAR / SAGB feed deferred to vendor-selection. Owner: Ravi + Anya.",
+  );
   lines.push("");
 
   if (narrative) {

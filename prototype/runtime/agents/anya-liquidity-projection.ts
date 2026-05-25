@@ -32,8 +32,7 @@ import {
   makeNSFRComputed,
 } from "../../platform/event-store/event-types/liquidity";
 import { makeLCRRatioProjection } from "../../platform/event-store/event-types/risk-treasury-extended";
-import { computeLCR } from "../../platform/liquidity/lcr";
-import { computeNSFR } from "../../platform/liquidity/nsfr";
+import { runLiquidityProjection } from "../../platform/liquidity/projection";
 import { getALMPositionSnapshot } from "../../platform/projections/alm-positions";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -48,20 +47,26 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let eventsEmitted = 0;
 
   // -------------------------------------------------------------------------
-  // ALM position snapshots — driven by Ravi's projection.
+  // Multi-horizon projection — delegates to runLiquidityProjection which
+  // uses the event-store-backed ALM-positions provider (Ravi's substrate).
+  // Gaps are surfaced via a separate T+0 snapshot for the deliverable.
   // -------------------------------------------------------------------------
-  // The projection folds events into HQLA / funding / ASF / RSF input sets;
-  // in build phase most arrays are empty and `gaps[]` names each missing
-  // event class (see `platform/projections/alm-positions.ts`).
+  const projection = runLiquidityProjection(ctx.asOf);
+  const horizonT0 = projection.horizons.find((h) => h.horizonDays === 0);
+  const horizonT30 = projection.horizons.find((h) => h.horizonDays === 30);
+  if (!horizonT0 || !horizonT30) {
+    throw new Error(
+      "runLiquidityProjection missing T+0 or T+30 horizon — check PROJECTION_HORIZONS",
+    );
+  }
+  const lcrT0 = horizonT0.lcr;
+  const lcrT30 = horizonT30.lcr;
+  const nsfrT0 = horizonT0.nsfr;
+  const nsfrT30 = horizonT30.nsfr;
+
+  // Separate snapshot for gap reporting in the deliverable.
   const almT0 = getALMPositionSnapshot(eventStore, ctx.asOf, 0);
   const almT30 = getALMPositionSnapshot(eventStore, ctx.asOf, 30);
-
-  // `computeLCR` and `computeNSFR` accept mutable arrays for back-compat;
-  // copy the read-only projection arrays into mutable shape.
-  const lcrT0 = computeLCR([...almT0.hqlaPositions], [...almT0.fundingPositions]);
-  const lcrT30 = computeLCR([...almT30.hqlaPositions], [...almT30.fundingPositions]);
-  const nsfrT0 = computeNSFR([...almT0.asfItems], [...almT0.rsfItems]);
-  const nsfrT30 = computeNSFR([...almT30.asfItems], [...almT30.rsfItems]);
 
   if (!ctx.dryRun) {
     // -----------------------------------------------------------------------
