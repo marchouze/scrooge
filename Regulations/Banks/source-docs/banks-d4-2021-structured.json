@@ -21,54 +21,152 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d4-2021-1",
-      "title": "Full Text",
+      "id": "ch-banks-d4-2021-main",
+      "title": "Directive D4/2021",
       "sections": [
         {
           "id": "s-banks-d4-2021-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Externally facilitated liquidity stress simulations. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.          Introduction\n\n1.1         Banking operations encompass a wide range of activities which continuously\n            change the asset and liability profile of the bank. Irrespective of the business\n            model adopted by a bank, the key considerations in all banking activities\n            include factors related to risk, return and the preservation of capital.\n\n                                                                                          1\n\n1.2   Regulation 39(5)(i)(iii) of the Regulations states that, as a minimum, the risk\n      management processes, practices, procedures and policies referred to in\n      sub-regulation (4) shall in the case of liquidity risk be sufficiently robust to\n      ensure that the bank conducts robust liquidity scenario stress testing, including\n      stress tests in respect of such bank-specific or sector-specific scenarios as\n      may be specified in writing by the PA.\n\n1.3   Paragraph 8.2 of Directive D1/2015 issued in terms of section 6(6) of the Banks\n      Act, No. 94 of 1990, states that:\n\n      “Reverse stress testing should be used as a starting point for the development\n      of stress scenarios that are severe enough to bring the bank to failure if no\n      corrective actions are taken, thus necessitating the implementation of the\n      recovery plan. The identification of the circumstances under which this would\n      occur should facilitate the development of the stress scenarios and recovery\n      options that take into account strained operating conditions. Typically, such\n      scenarios would entail a combination of a number of stress events.”\n\n1.4   Since 2007, the PA has participated in ad-hoc liquidity risk simulation\n      exercises conducted by D-SIBs in order to assess the adequacy and\n      effectiveness of the D-SIBs’ overall liquidity risk management frameworks.\n      Independent external persons have facilitated these liquidity simulation\n      exercises.\n\n1.5   A liquidity simulation has a slightly different outcome to a regular or reverse\n      stress test framework in the sense that it not only focuses on the solvency of\n      the individual bank, that is, the related impact of the shock on that bank’s\n      capital, but it also focuses on the collective behaviour of institutions in\n      response to a shock so as to minimise the probability of a system-wide distress\n      and the associated economic costs. Thus, the board approved contingency\n      funding plan and/or recovery plan is severely tested in a system-wide scenario.\n\n1.6   Furthermore, a liquidity simulation has the key objective of testing the\n      interrelationship between the microprudential and macroprudential dimensions\n      of financial stability. It is designed in such a way that the outcome depends not\n      only on the size and nature of the initial shock and the buffers of individual\n      financial institutions, but also on the behavioural responses of these\n      institutions as the shock unfolds, and the interactions of these institutions with\n      each other and with other economic agents, such as shareholders, borrowers,\n      funding providers and regulators.\n\n1.7   For participating banks, these liquidity simulations add value by highlighting\n      areas of potential improvement and by demonstrating the need for robust\n      liquidity risk management.\n\n1.8   These externally-facilitated liquidity stress simulations assist D-SIBs in testing\n      numerous facets of dealing with a liquidity crisis by increasing the awareness\n      and impact that a stress scenario will have on the bank as well as its\n      stakeholders.\n\n\n\n\n                                                                                      2",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d4-2021-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Banking operations encompass a wide range of activities which continuously",
+              "text": "1.1         Banking operations encompass a wide range of activities which continuously\n            change the asset and liability profile of the bank. Irrespective of the business\n            model adopted by a bank, the key considerations in all banking activities\n            include factors related to risk, return and the preservation of capital.\n\n                                                                                          1",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d4-2021-1-2",
               "number": "1.2",
-              "text": "Externally facilitated liquidity stress simulations.",
-              "verbatim": true
+              "heading": "Regulation 39(5)(i)(iii) of the Regulations states that, as a minimum, the risk",
+              "text": "1.2   Regulation 39(5)(i)(iii) of the Regulations states that, as a minimum, the risk\n      management processes, practices, procedures and policies referred to in\n      sub-regulation (4) shall in the case of liquidity risk be sufficiently robust to\n      ensure that the bank conducts robust liquidity scenario stress testing, including\n      stress tests in respect of such bank-specific or sector-specific scenarios as\n      may be specified in writing by the PA.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d4-2021-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "Paragraph 8.2 of Directive D1/2015 issued in terms of section 6(6) of the Banks",
+              "text": "1.3   Paragraph 8.2 of Directive D1/2015 issued in terms of section 6(6) of the Banks\n      Act, No. 94 of 1990, states that:\n\n      “Reverse stress testing should be used as a starting point for the development\n      of stress scenarios that are severe enough to bring the bank to failure if no\n      corrective actions are taken, thus necessitating the implementation of the\n      recovery plan. The identification of the circumstances under which this would\n      occur should facilitate the development of the stress scenarios and recovery\n      options that take into account strained operating conditions. Typically, such\n      scenarios would entail a combination of a number of stress events.”",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-1-4",
+              "number": "1.4",
+              "heading": "Since 2007, the PA has participated in ad-hoc liquidity risk simulation",
+              "text": "1.4   Since 2007, the PA has participated in ad-hoc liquidity risk simulation\n      exercises conducted by D-SIBs in order to assess the adequacy and\n      effectiveness of the D-SIBs’ overall liquidity risk management frameworks.\n      Independent external persons have facilitated these liquidity simulation\n      exercises.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-1-5",
+              "number": "1.5",
+              "heading": "A liquidity simulation has a slightly different outcome to a regular or reverse",
+              "text": "1.5   A liquidity simulation has a slightly different outcome to a regular or reverse\n      stress test framework in the sense that it not only focuses on the solvency of\n      the individual bank, that is, the related impact of the shock on that bank’s\n      capital, but it also focuses on the collective behaviour of institutions in\n      response to a shock so as to minimise the probability of a system-wide distress\n      and the associated economic costs. Thus, the board approved contingency\n      funding plan and/or recovery plan is severely tested in a system-wide scenario.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-1-6",
+              "number": "1.6",
+              "heading": "Furthermore, a liquidity simulation has the key objective of testing the",
+              "text": "1.6   Furthermore, a liquidity simulation has the key objective of testing the\n      interrelationship between the microprudential and macroprudential dimensions\n      of financial stability. It is designed in such a way that the outcome depends not\n      only on the size and nature of the initial shock and the buffers of individual\n      financial institutions, but also on the behavioural responses of these\n      institutions as the shock unfolds, and the interactions of these institutions with\n      each other and with other economic agents, such as shareholders, borrowers,\n      funding providers and regulators.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-1-7",
+              "number": "1.7",
+              "heading": "For participating banks, these liquidity simulations add value by highlighting",
+              "text": "1.7   For participating banks, these liquidity simulations add value by highlighting\n      areas of potential improvement and by demonstrating the need for robust\n      liquidity risk management.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-1-8",
+              "number": "1.8",
+              "heading": "These externally-facilitated liquidity stress simulations assist D-SIBs in testing",
+              "text": "1.8   These externally-facilitated liquidity stress simulations assist D-SIBs in testing\n      numerous facets of dealing with a liquidity crisis by increasing the awareness\n      and impact that a stress scenario will have on the bank as well as its\n      stakeholders.\n\n\n\n\n                                                                                      2",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d4-2021-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "Directive",
+          "text": "2.       Directive\n\n         Related to D-SIBs\n\n2.1.     Based on the aforesaid, and in accordance with the provisions of section 6(6)\n         of the Banks Act 94 of 1990, D-SIBs are hereby directed to conduct externally-\n         facilitated liquidity stress simulations on a bank solo level, at least once every\n         four years in order to balance the benefits, costs, planning and preparation for\n         such simulations.\n\n2.2.     The liquidity stress simulations must, at a minimum, cover the following items:\n\n2.2.1.   Early identification of a liquidity stress event and timely response in terms of\n         the need for heightened liquidity risk monitoring and / or a reduction in liquidity\n         risk exposure;\n2.2.2.   Sufficient funding sources to withstand unexpected market disruptions (the\n         stress scenario) given its balance sheet composition, funding profile and\n         business strategy;\n2.2.3.   A robust and evolving contingency funding plan and/or recovery plan;\n2.2.4.   Adequate early warning indicators;\n2.2.5.   Effective escalation and decision making processes;\n2.2.6.   Clear and well-understood roles and responsibilities of each key player;\n2.2.7.   Communication strategy and operational response both internally and\n         externally, designed to avert, minimise or address a liquidity event;\n2.2.8.   Approach to tactically and operationally execute mitigating liquidity strategies\n         including timely management of liquidity buffers designed to meet stress\n         liquidity outflows; and\n2.2.9.   Compliance with applicable laws and regulations that are deemed to be within\n         the scope of the simulation.\n\n2.3.     A D-SIB that has not conducted an externally-facilitated liquidity stress\n         simulation within the last four years, from the effective date of this Directive is\n         required to do so within 12 months following the effective date of this Directive\n         and thereafter, at least once every four years.\n\n2.4.     Where a D-SIB has conducted similar externally-facilitated liquidity stress\n         simulations within the last four years, from the effective date of the Directive,\n         such simulations can be taken into account in determining the due date for the\n         next simulation in order to comply with the requirements specified in this\n         Directive.\n\n2.5.     Relevant representatives of the PA, as well as the South African Reserve\n         Bank, must be invited to participate in the externally-facilitated liquidity stress\n         simulations.\n\n2.6.     The externally-facilitated liquidity stress simulation should be organised in\n         consultation with the PA.\n\n2.7.     Should a D-SIB not be able to comply with the requirements specified in this\n         Directive, the D-SIB shall, in accordance with the provisions of regulation 5 of\n         the Regulations, report to the PA, in writing, of its inability to comply, stating\n         the reasons for such failure or inability to comply.\n\n\n                                                                                          3\n\n       Related to non-D-SIBs\n\n2.8.   The PA may communicate individually with non-D-SIBs to request those\n       respective institutions to conduct a suitable liquidity simulation exercise,\n       subject to additional parameters that may be agreed with the PA. The suitability\n       of the test will depend on factors such as the nature, scale and complexity of\n       the liquidity profile of and the liquidity exposures of the relevant non-D-SIB.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d4-2021-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Based on the aforesaid, and in accordance with the provisions of section 6(6)",
+              "text": "2.1.     Based on the aforesaid, and in accordance with the provisions of section 6(6)\n         of the Banks Act 94 of 1990, D-SIBs are hereby directed to conduct externally-\n         facilitated liquidity stress simulations on a bank solo level, at least once every\n         four years in order to balance the benefits, costs, planning and preparation for\n         such simulations.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-2-2",
+              "id": "s-banks-d4-2021-2-2",
               "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "The liquidity stress simulations must, at a minimum, cover the following items:",
+              "text": "2.2.     The liquidity stress simulations must, at a minimum, cover the following items:\n\n2.2.1.   Early identification of a liquidity stress event and timely response in terms of\n         the need for heightened liquidity risk monitoring and / or a reduction in liquidity\n         risk exposure;\n2.2.2.   Sufficient funding sources to withstand unexpected market disruptions (the\n         stress scenario) given its balance sheet composition, funding profile and\n         business strategy;\n2.2.3.   A robust and evolving contingency funding plan and/or recovery plan;\n2.2.4.   Adequate early warning indicators;\n2.2.5.   Effective escalation and decision making processes;\n2.2.6.   Clear and well-understood roles and responsibilities of each key player;\n2.2.7.   Communication strategy and operational response both internally and\n         externally, designed to avert, minimise or address a liquidity event;\n2.2.8.   Approach to tactically and operationally execute mitigating liquidity strategies\n         including timely management of liquidity buffers designed to meet stress\n         liquidity outflows; and\n2.2.9.   Compliance with applicable laws and regulations that are deemed to be within\n         the scope of the simulation.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-2-3",
+              "number": "2.3",
+              "heading": "A D-SIB that has not conducted an externally-facilitated liquidity stress",
+              "text": "2.3.     A D-SIB that has not conducted an externally-facilitated liquidity stress\n         simulation within the last four years, from the effective date of this Directive is\n         required to do so within 12 months following the effective date of this Directive\n         and thereafter, at least once every four years.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-2-4",
+              "number": "2.4",
+              "heading": "Where a D-SIB has conducted similar externally-facilitated liquidity stress",
+              "text": "2.4.     Where a D-SIB has conducted similar externally-facilitated liquidity stress\n         simulations within the last four years, from the effective date of the Directive,\n         such simulations can be taken into account in determining the due date for the\n         next simulation in order to comply with the requirements specified in this\n         Directive.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-2-5",
+              "number": "2.5",
+              "heading": "Relevant representatives of the PA, as well as the South African Reserve",
+              "text": "2.5.     Relevant representatives of the PA, as well as the South African Reserve\n         Bank, must be invited to participate in the externally-facilitated liquidity stress\n         simulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-2-6",
+              "number": "2.6",
+              "heading": "The externally-facilitated liquidity stress simulation should be organised in",
+              "text": "2.6.     The externally-facilitated liquidity stress simulation should be organised in\n         consultation with the PA.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-2-7",
+              "number": "2.7",
+              "heading": "Should a D-SIB not be able to comply with the requirements specified in this",
+              "text": "2.7.     Should a D-SIB not be able to comply with the requirements specified in this\n         Directive, the D-SIB shall, in accordance with the provisions of regulation 5 of\n         the Regulations, report to the PA, in writing, of its inability to comply, stating\n         the reasons for such failure or inability to comply.\n\n\n                                                                                          3\n\n       Related to non-D-SIBs",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d4-2021-2-8",
+              "number": "2.8",
+              "heading": "The PA may communicate individually with non-D-SIBs to request those",
+              "text": "2.8.   The PA may communicate individually with non-D-SIBs to request those\n       respective institutions to conduct a suitable liquidity simulation exercise,\n       subject to additional parameters that may be agreed with the PA. The suitability\n       of the test will depend on factors such as the nature, scale and complexity of\n       the liquidity profile of and the liquidity exposures of the relevant non-D-SIB.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
@@ -76,16 +174,9 @@
           "id": "s-banks-d4-2021-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "text": "3.     Acknowledgement of receipt\n\n       Kindly ensure that a copy of this Directive is made available to your institution’s\n       independent auditors. The attached acknowledgement of receipt duly\n       completed and signed by both the chief executive officer of the institution and\n       the said auditors should be returned to the PA at the earliest convenience of\n       the aforementioned signatories\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2021-04-14\n\n\n\n\n                                                                                        4",
           "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "subsections": []
         }
       ]
     }
