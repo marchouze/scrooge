@@ -176,7 +176,6 @@ jobs:
   # needed. Fails explicitly if any upstream job failed or was cancelled.
   # --------------------------------------------------------------------------
   ci:
-    name: CI gate
     needs: [core, recon-infra, recon-domain]
     runs-on: ubuntu-latest
     if: always()
