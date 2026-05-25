@@ -12,6 +12,7 @@
 import { Database } from "bun:sqlite";
 import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { getBankConfig } from "../../config/loader";
 import type { GraphEdge, GraphNode } from "./types";
 
 const SCHEMA_SQL_PATH = resolve(import.meta.dir, "schema.sql");
@@ -28,7 +29,7 @@ function initDb(path: string): Database {
   return db;
 }
 
-const dbPath = process.env.BANK_GRAPH_DB ?? ".local/graph.db";
+const dbPath = process.env.BANK_GRAPH_DB ?? getBankConfig().graphDb;
 let _db: Database | null = null;
 
 /** Lazy singleton — initialised on first call. */
