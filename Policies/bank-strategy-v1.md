@@ -239,14 +239,14 @@ The build phase ends at the **pre-licence go-live readiness gate**, co-owned by 
 
 | Milestone | Owner | Status |
 |---|---|---|
-| KYC onboarding substrate (D-KYC-ONBOARDING-BUILD) | Atlas / Mira | Complete (PR #532–536) |
-| FX sales/trading frontend (D-FX-SALES-TRADING-FRONTEND) | Kai / Head of Global Markets | 7/8 slices complete |
-| Trade lifecycle + IFRS chain (D-TRADE-LIFECYCLE-IFRS-CHAIN) | Kai / Bea | Complete (PRs #549–556) |
-| Credit-limit engine (D-CREDIT-LIMIT-ENGINE-BUILD) | Rohan / CRO | Complete (PRs #611–624) |
-| Market data substrate | Ravi / Anya | Complete (PRs #686–688) |
-| RMS Phase 1–4 (records management substrate) | Atlas / CoSec | Complete |
-| LCR/NSFR measurement substrate | Ravi | Pending (before BRC Cycle 1) |
-| CET1 RWA engine | Bea | Pending (before BRC Cycle 1) |
+| KYC onboarding substrate (D-KYC-ONBOARDING-BUILD) | Platform / Compliance-RegTech | Complete (PR #532–536) |
+| FX sales/trading frontend (D-FX-SALES-TRADING-FRONTEND) | Trading Systems / Head of Global Markets | 7/8 slices complete |
+| Trade lifecycle + IFRS chain (D-TRADE-LIFECYCLE-IFRS-CHAIN) | Trading Systems / Accounting-GL | Complete (PRs #549–556) |
+| Credit-limit engine (D-CREDIT-LIMIT-ENGINE-BUILD) | Risk / CRO | Complete (PRs #611–624) |
+| Market data substrate | Treasury-ALM / Data-Analytics | Complete (PRs #686–688) |
+| RMS Phase 1–4 (records management substrate) | Platform / CoSec | Complete |
+| LCR/NSFR measurement substrate | Treasury-ALM | Pending (before BRC Cycle 1) |
+| CET1 RWA engine | Accounting-GL | Pending (before BRC Cycle 1) |
 | Climate-risk substrate specification | CRO | Due 2026-07-15 |
 | Pre-licence go-live readiness gate | Head of Global Markets · COO · CISO | Not started — pending substrate completion |
 
@@ -283,8 +283,8 @@ A full Board (including independent NEDs) is constituted at licence-day. All Boa
 ### 7.3 Three-lines-of-defence model
 
 - **First line:** All agents in the engineering and markets domains operate within policy and procedure constraints encoded in the substrate. Risk is owned at source.
-- **Second line:** CRO, CCO, and their engineering counterparts (Rohan, Mira, Nadia) provide independent oversight, risk appetite monitoring, and compliance assurance.
-- **Third line:** CAE and Vera (internal audit engineer) provide independent audit assurance. The CAE reports functionally to the Interim Audit Forum and administratively through the CEO; third-line independence is non-negotiable.
+- **Second line:** CRO, CCO, and their engineering counterparts (Risk, Compliance-RegTech, Independent Validation) provide independent oversight, risk appetite monitoring, and compliance assurance.
+- **Third line:** CAE and the Audit engineer provide independent audit assurance. The CAE reports functionally to the Interim Audit Forum and administratively through the CEO; third-line independence is non-negotiable.
 
 ---
 
@@ -309,13 +309,13 @@ A full Board (including independent NEDs) is constituted at licence-day. All Boa
 
 ### 8.3 Compliance posture
 
-The bank's compliance model is **proactive and technology-led**: obligations are encoded as typed artefacts in the substrate; the Compliance/RegTech engineer maintains the obligations register; CCO owns the regulatory relationship. Compliance monitoring is autonomous via continuous recon pipelines (Vera + Mira), not periodic manual review.
+The bank's compliance model is **proactive and technology-led**: obligations are encoded as typed artefacts in the substrate; the Compliance/RegTech engineer maintains the obligations register; CCO owns the regulatory relationship. Compliance monitoring is autonomous via continuous recon pipelines (Audit + Compliance-RegTech), not periodic manual review.
 
 Key postures:
 - **AML/CFT:** Full KYC substrate live; institutional-counterparty EDD; no high-risk-jurisdiction or PEP onboarding without enhanced review; STR/CTR/TPR filing by autonomous agent under CCO oversight.
 - **FAIS:** Fit-and-proper policy live; conflict-of-interest policy live; TCF policy live; no retail advisory.
 - **Excon:** FX compliance per SARB Exchange Control Regulations; CISO authored the Excon compliance assessment.
-- **Market conduct:** Insider trading and PA-dealing policy live; Bea and Kai operate under surveillance hooks.
+- **Market conduct:** Insider trading and PA-dealing policy live; Accounting-GL and Trading Systems operate under surveillance hooks.
 
 ---
 
