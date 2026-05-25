@@ -26,7 +26,7 @@
     (async () => {
       async function sf(u) { try { const r = await fetch(u,{headers:{Accept:"application/json"}}); return r.ok?r.json():null; } catch { return null; } }
       document.getElementById("proc-table").innerHTML = SC.renderSkeleton(8);
-      const data = await sf("/api/ops/procedures");
+      const data = await sf("/api/procedures");
       const all = Array.isArray(data) ? data : (data?.items ?? data?.procedures ?? []);
       const tabs = ["All","Populated","Draft","Planned"];
       let activeTab = "All";
