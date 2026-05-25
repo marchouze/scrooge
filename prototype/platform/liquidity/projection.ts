@@ -4,15 +4,16 @@
 //
 // Horizons: T+0, T+7, T+14, T+30, T+90.
 //
-// In the build phase, HQLA positions and funding positions are read from the
-// event store. With no positions, each horizon returns the "no-positions"
-// baseline result. As the collateral inventory and position projection
-// substrates land (Tomas + Ravi), the inputs will be populated from live
-// events rather than this stub.
+// The default provider is `makeEventStoreLiquidityInputProvider` backed by
+// the composition event store singleton. Tests pass an isolated store via
+// `makeEventStoreLiquidityInputProvider(isolatedStore)` explicitly.
 //
 // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
+import { eventStore as compositionEventStore } from "../composition";
+import type { EventStore } from "../event-store/store";
+import { getALMPositionSnapshot } from "../projections/alm-positions";
 import { type FundingPosition, type HQLAPosition, type LCRResult, computeLCR } from "./lcr";
 import { type ASFItem, type NSFRResult, type RSFItem, computeNSFR } from "./nsfr";
 
@@ -48,10 +49,8 @@ export interface LiquidityProjectionResult {
 
 /**
  * Provides HQLA and funding positions for a given horizon.
- *
- * In build phase the default implementation returns empty arrays.
- * Once Tomas's collateral inventory and Ravi's ALM substrate land,
- * this interface will be fulfilled by an event-store query.
+ * Fulfilled by `makeEventStoreLiquidityInputProvider` in production;
+ * tests pass an isolated-store variant.
  */
 export interface LiquidityInputProvider {
   getHQLAPositions(asOf: string, horizonDays: ProjectionHorizonDays): HQLAPosition[];
@@ -60,13 +59,34 @@ export interface LiquidityInputProvider {
   getRSFItems(asOf: string, horizonDays: ProjectionHorizonDays): RSFItem[];
 }
 
-/** Build-phase no-op provider — returns empty positions for all horizons. */
-const buildPhaseProvider: LiquidityInputProvider = {
-  getHQLAPositions: () => [],
-  getFundingPositions: () => [],
-  getASFItems: () => [],
-  getRSFItems: () => [],
-};
+/**
+ * Create a `LiquidityInputProvider` backed by the given event store.
+ *
+ * Calls `getALMPositionSnapshot` once per (asOf, horizonDays) pair and
+ * caches the result so the four getters for the same pair share one replay.
+ * Pass the composition singleton (`eventStore`) for production; pass an
+ * isolated `EventStore` for tests.
+ */
+export function makeEventStoreLiquidityInputProvider(store: EventStore): LiquidityInputProvider {
+  const cache = new Map<string, ReturnType<typeof getALMPositionSnapshot>>();
+
+  function snap(asOf: string, horizonDays: number) {
+    const key = `${asOf}:${horizonDays}`;
+    let entry = cache.get(key);
+    if (entry === undefined) {
+      entry = getALMPositionSnapshot(store, asOf, horizonDays);
+      cache.set(key, entry);
+    }
+    return entry;
+  }
+
+  return {
+    getHQLAPositions: (asOf, h) => [...snap(asOf, h).hqlaPositions],
+    getFundingPositions: (asOf, h) => [...snap(asOf, h).fundingPositions],
+    getASFItems: (asOf, h) => [...snap(asOf, h).asfItems],
+    getRSFItems: (asOf, h) => [...snap(asOf, h).rsfItems],
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Status severity ordering (for worst-case aggregation)
@@ -94,13 +114,16 @@ function worseNSFRStatus(a: NSFRResult["status"], b: NSFRResult["status"]): NSFR
 /**
  * Run the full liquidity projection for all five horizons.
  *
- * @param asOf  ISO 8601 date string (e.g. "2026-05-19").
- * @param provider  Input provider (defaults to build-phase no-op).
+ * @param asOf      ISO 8601 date string (e.g. "2026-05-19").
+ * @param provider  Input provider. Defaults to the live event-store provider
+ *                  backed by the composition singleton. Pass
+ *                  `makeEventStoreLiquidityInputProvider(isolatedStore)` in
+ *                  tests to avoid touching the shared store.
  * @returns LiquidityProjectionResult across T+0, T+7, T+14, T+30, T+90.
  */
 export function runLiquidityProjection(
   asOf: string,
-  provider: LiquidityInputProvider = buildPhaseProvider,
+  provider: LiquidityInputProvider = makeEventStoreLiquidityInputProvider(compositionEventStore),
 ): LiquidityProjectionResult {
   const horizons: HorizonResult[] = [];
 

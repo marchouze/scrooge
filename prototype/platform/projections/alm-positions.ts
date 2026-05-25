@@ -386,6 +386,105 @@ function buildFundingPositions(
 }
 
 // ---------------------------------------------------------------------------
+// Settlement-outflow fold — TradeBooked buy-side with explicit settlementDate
+// ---------------------------------------------------------------------------
+// Settlement date conventions differ by product (SAGB T+3, FX spot T+2,
+// repo T+0/T+1, IRDs vary). We NEVER compute T+N from trade date; we only
+// consume trades that carry an explicit `settlementDate` field in the payload.
+// Trades without `settlementDate` are skipped and counted in `skippedNoDate`.
+// ---------------------------------------------------------------------------
+
+interface TradeBookedSettlementPayload {
+  tradeId?: string;
+  side?: string;
+  marketValueZar?: number;
+  marketValue?: number;
+  faceValue?: number;
+  notional?: number;
+  settlementDate?: string;
+}
+
+interface SettlementOutflowResult {
+  positions: FundingPosition[];
+  count: number;
+  skippedNoDate: number;
+}
+
+/**
+ * Fold `TradeBooked` buy-side events into contractual settlement outflows
+ * for the LCR denominator (BA 325 §23 — contractual maturity within the
+ * stress horizon).
+ *
+ * Only includes trades that:
+ *   1. Carry an explicit `settlementDate` field in the payload.
+ *   2. Have not yet been matched by a `TradeSettled` event.
+ *   3. Have a settlement date within `[asOf, asOf + horizonDays]`.
+ *   4. Are buy-side (`side === "buy"`).
+ *
+ * Conservative treatment: classified as `"wholesale-non-operational"` per
+ * BA 325 §23 contractual-maturity outflow bucket.
+ */
+function buildSettlementOutflows(
+  eventStore: EventStore,
+  asOf: string,
+  horizonDays: number,
+): SettlementOutflowResult {
+  const asOfDate = new Date(asOf);
+  const horizonDate = new Date(asOf);
+  horizonDate.setUTCDate(horizonDate.getUTCDate() + horizonDays);
+
+  // Collect already-settled trade IDs so we can exclude them.
+  const settledTradeIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "TradeSettled" })) {
+    if (ev.as_of > asOf) continue;
+    const p = ev.payload as { tradeId?: string };
+    if (p.tradeId) settledTradeIds.add(p.tradeId);
+  }
+
+  const positions: FundingPosition[] = [];
+  let count = 0;
+  let skippedNoDate = 0;
+
+  for (const ev of eventStore.replay({ type: "TradeBooked" })) {
+    if (ev.as_of > asOf) continue;
+    const p = ev.payload as unknown as TradeBookedSettlementPayload;
+
+    // Only buy-side creates a cash outflow on settlement.
+    if (p.side !== "buy") continue;
+
+    // Skip if no explicit settlementDate — never infer T+N arithmetic.
+    if (!p.settlementDate || typeof p.settlementDate !== "string") {
+      skippedNoDate++;
+      continue;
+    }
+
+    // Skip already-settled trades.
+    if (p.tradeId && settledTradeIds.has(p.tradeId)) continue;
+
+    // Check settlement date falls within stress horizon.
+    const settlementDate = new Date(p.settlementDate);
+    if (settlementDate < asOfDate || settlementDate > horizonDate) continue;
+
+    const amountZar =
+      typeof p.marketValueZar === "number"
+        ? p.marketValueZar
+        : typeof p.marketValue === "number"
+          ? p.marketValue
+          : typeof p.faceValue === "number"
+            ? p.faceValue
+            : typeof p.notional === "number"
+              ? p.notional
+              : 0;
+    if (amountZar <= 0) continue;
+
+    positions.push({ amountZar, category: "wholesale-non-operational" });
+    count++;
+  }
+
+  return { positions, count, skippedNoDate };
+}
+
+// ---------------------------------------------------------------------------
 // ASF / RSF fold — CapitalEvent + DepositTaken + InterbankLoanPlaced + HQLA
 // ---------------------------------------------------------------------------
 
@@ -535,7 +634,7 @@ export function getALMPositionSnapshot(
   // Funding — live event fold via WS1-PR1a event types
   // -------------------------------------------------------------------------
   const {
-    positions: fundingPositions,
+    positions: rawFundingPositions,
     depositCount,
     fundingLineCount,
     iblCount,
@@ -550,10 +649,24 @@ export function getALMPositionSnapshot(
     );
   }
 
-  // SettlementInstructionIssued: event class not yet typed — gap remains
-  gaps.push(
-    `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: not yet emitted (Ravi + Atlas substrate). Contractual settlement outflows over the ${horizonDays}-day horizon not yet queryable.`,
-  );
+  // Settlement outflows — fold TradeBooked buy-side with explicit settlementDate.
+  // Trades without settlementDate are skipped; see buildSettlementOutflows.
+  const settlementResult = buildSettlementOutflows(eventStore, asOf, horizonDays);
+  const fundingPositions: FundingPosition[] = [
+    ...rawFundingPositions,
+    ...settlementResult.positions,
+  ];
+
+  if (settlementResult.count > 0) {
+    gaps.push(
+      `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: ${settlementResult.count} pending buy trade(s) with explicit settlementDate included in LCR outflow. ${settlementResult.skippedNoDate} trade(s) skipped (no settlementDate in payload). Full event class remains a deferred gap for non-trade contractual outflows.`,
+    );
+  } else {
+    // No settlement positions derived — unconditional gap.
+    gaps.push(
+      `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: not yet emitted (Ravi + Atlas substrate). Contractual settlement outflows over the ${horizonDays}-day horizon not yet queryable.${settlementResult.skippedNoDate > 0 ? ` (${settlementResult.skippedNoDate} TradeBooked event(s) skipped — no explicit settlementDate in payload)` : ""}`,
+    );
+  }
 
   if (
     fundingLineCount === 0 &&
