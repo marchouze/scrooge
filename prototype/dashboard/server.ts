@@ -46,6 +46,7 @@
 //
 // Author: Atlas · Anya (derivation)
 
+import { execSync } from "node:child_process";
 import { type FSWatcher, existsSync, watch as fsWatch, mkdirSync, readFileSync } from "node:fs";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 
@@ -216,6 +217,30 @@ const REPO_ROOT = process.env.BANK_REPO_ROOT ?? resolve(import.meta.dir, "..", "
 const RUNTIME_STATE_PATH =
   process.env.BANK_DASHBOARD_RUNTIME_STATE ?? ".local/dashboard-state.json";
 const PUBLIC_DIR = resolve(import.meta.dir, "public");
+
+const GIT_HASH = (() => {
+  try {
+    return execSync("git rev-parse HEAD", {
+      cwd: REPO_ROOT,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+})();
+const GIT_BRANCH = (() => {
+  try {
+    return execSync("git rev-parse --abbrev-ref HEAD", {
+      cwd: REPO_ROOT,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+})();
+const STARTED_AT = new Date().toISOString();
 
 const SOURCES = (() => {
   const base = defaultSourcePaths(REPO_ROOT);
@@ -2137,6 +2162,9 @@ const server = Bun.serve({
   port: PORT,
   async fetch(req) {
     const url = new URL(req.url);
+    if (url.pathname === "/api/version" && req.method === "GET") {
+      return jsonResponse({ gitHash: GIT_HASH, gitBranch: GIT_BRANCH, startedAt: STARTED_AT });
+    }
     if (url.pathname === "/api/state" && req.method === "GET") {
       // Slice 3.5 — attach `pageProvenance` so the badge resolves the
       // page's mode from the data the endpoint actually returned, not
