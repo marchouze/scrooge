@@ -94,17 +94,7 @@ export function run(): ReconResult {
     violations.push({
       subject: `posting-rule:${stub.postingRuleId}`,
       severity: "fail",
-      message:
-        `Unwarranted posting-rule stub: posting rule ${stub.postingRuleId} ` +
-        `(triggerEventType="${stub.triggerEventType}", postingType="${stub.postingType}") ` +
-        `has condition="intentional-no-impact" but the trigger event type ` +
-        `"${stub.triggerEventType}" IS registered in EVENT_TYPE_REGISTRY. ` +
-        `Either wire the full posting rule (account codes + amount derivation) ` +
-        `or reclassify as zero-impact-by-design by adding "${ZERO_IMPACT_BY_DESIGN_MARKER}" ` +
-        `to conditionDetail with an IFRS 9 / accounting-policy rationale. ` +
-        `Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; ` +
-        `platform/accounting/posting-rule-registry.ts; ` +
-        `Principles/1-events-are-truth.md.`,
+      message: `Unwarranted posting-rule stub: posting rule ${stub.postingRuleId} (triggerEventType="${stub.triggerEventType}", postingType="${stub.postingType}") has condition="intentional-no-impact" but the trigger event type "${stub.triggerEventType}" IS registered in EVENT_TYPE_REGISTRY. Either wire the full posting rule (account codes + amount derivation) or reclassify as zero-impact-by-design by adding "${ZERO_IMPACT_BY_DESIGN_MARKER}" to conditionDetail with an IFRS 9 / accounting-policy rationale. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; platform/accounting/posting-rule-registry.ts; Principles/1-events-are-truth.md.`,
     });
   }
 
