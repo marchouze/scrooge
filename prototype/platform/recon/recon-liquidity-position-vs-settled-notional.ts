@@ -76,7 +76,7 @@
 //     ALM side.
 //
 // Authority:
-//   D-DATA-QUALITY-CROSS-DOMAIN-V1
+//   D-DATA-QUALITY-CROSS-DOMAIN-V1 (CEO-approved 2026-05-26)
 //   Principle 1 — Events are the only source of truth.
 //   Principle 2 — Single-graph discipline (each projection traces to the
 //     same source events).
