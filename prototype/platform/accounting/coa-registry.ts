@@ -65,8 +65,8 @@
 
 import { z } from "zod";
 
-import type { AccountCapitalClassification, CapitalTier } from "../reporting/ba-700-capital";
 import type { AccountLiquidityClassification, HqlaLevel } from "../reporting/ba-325-lcr";
+import type { AccountCapitalClassification, CapitalTier } from "../reporting/ba-700-capital";
 
 // ---------------------------------------------------------------------------
 // TypeScript type
