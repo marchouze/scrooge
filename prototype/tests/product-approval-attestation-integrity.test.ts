@@ -44,7 +44,10 @@ function toMinimal(ev: ReturnType<typeof makeProductApproved>) {
 }
 
 /** Build 14 ProductDimensionAttested events (one per NPA dimension). */
-function makeAllAttestations(productId: string, result: "design-attested" | "implementation-attested" | "failed" = "design-attested") {
+function makeAllAttestations(
+  productId: string,
+  result: "design-attested" | "implementation-attested" | "failed" = "design-attested",
+) {
   return ALL_NPA_DIMENSION_KEYS.map((dimension) =>
     toMinimal(
       makeProductDimensionAttested({

@@ -110,26 +110,19 @@ export function runOnEvents(
     if (count < REQUIRED_ATTESTATIONS) {
       violations.push({
         subject: productId,
-        message:
-          `ProductApproved for \`${productId}\` at ${approvedAsOf} is preceded by only ` +
-          `${count}/${REQUIRED_ATTESTATIONS} ProductDimensionAttested events — audit integrity ` +
-          `violation (authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8)`,
+        message: `ProductApproved for \`${productId}\` at ${approvedAsOf} is preceded by only ${count}/${REQUIRED_ATTESTATIONS} ProductDimensionAttested events — audit integrity violation (authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8)`,
         severity: "fail",
       });
       continue; // Skip failed-dimension check when count is already insufficient.
     }
 
     // Check for any dimension with result:"failed" in the prior attestations.
-    const failedDimension = prior.find(
-      (att) => safeString(att.payload.result) === "failed",
-    );
+    const failedDimension = prior.find((att) => safeString(att.payload.result) === "failed");
     if (failedDimension) {
       const dim = safeString(failedDimension.payload.dimension) ?? "<unknown>";
       violations.push({
         subject: productId,
-        message:
-          `ProductApproved for \`${productId}\` contains a failed dimension attestation: ` +
-          `${dim} — governance bypass (authority: D-NEW-PRODUCT-APPROVAL-POLICY)`,
+        message: `ProductApproved for \`${productId}\` contains a failed dimension attestation: ${dim} — governance bypass (authority: D-NEW-PRODUCT-APPROVAL-POLICY)`,
         severity: "fail",
       });
       continue;
@@ -138,8 +131,7 @@ export function runOnEvents(
     // All good — emit info summary.
     violations.push({
       subject: productId,
-      message:
-        `ProductApproved for \`${productId}\` — ${count}/${REQUIRED_ATTESTATIONS} attestations present (ok)`,
+      message: `ProductApproved for \`${productId}\` — ${count}/${REQUIRED_ATTESTATIONS} attestations present (ok)`,
       severity: "info",
     });
   }
@@ -154,17 +146,12 @@ export function runOnEvents(
 export function run(opts: RunOpts = {}): ReconResult {
   // When callers supply event overrides (unit tests), skip the store entirely.
   if (opts.approvedEvents !== undefined || opts.attestedEvents !== undefined) {
-    return runOnEvents(
-      [...(opts.approvedEvents ?? [])],
-      [...(opts.attestedEvents ?? [])],
-    );
+    return runOnEvents([...(opts.approvedEvents ?? [])], [...(opts.attestedEvents ?? [])]);
   }
 
   const repoRoot = findRepoRoot(import.meta.dir);
   const dbPath =
-    opts.dbPath ??
-    process.env.BANK_EVENT_DB ??
-    resolve(repoRoot, "prototype/.local/event.db");
+    opts.dbPath ?? process.env.BANK_EVENT_DB ?? resolve(repoRoot, "prototype/.local/event.db");
 
   if (!existsSync(dbPath)) {
     // No event store — nothing to assert. Return ok.
