@@ -131,6 +131,7 @@ import {
 import { runAgent } from "../runtime/run";
 import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
+import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import {
   TRADE_SEEDS_CITATIONS,
   TREASURY_DEPOSIT_TAKEN_PAYLOADS,
@@ -513,6 +514,11 @@ function bootDerive(): DashboardState {
     // existing legal-entity / counterparty / agent / signatory streams.
     // Idempotent (keyed by source-event id); re-boot is a no-op.
     bootPartyBackfill();
+    // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
+    // core products (equity, bond, repo, IRS, FX swap) idempotently.
+    // Must run BEFORE trade seeds that reference these products.
+    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+    bootNpaAttestations();
     // Treasury seed events — emit REPO, MMD, IBL positions idempotently.
     // Required by getALMPositionSnapshot so LCR/NSFR compute live values.
     bootTreasurySeeds();
@@ -540,6 +546,31 @@ function bootDerive(): DashboardState {
   } catch (e) {
     logger.error({ err: (e as Error).message }, "initial derivation failed");
     throw e;
+  }
+}
+
+/**
+ * Idempotently emit ProductApproved events for M1–M4 products.
+ *
+ * Called before `bootTreasurySeeds()` so that trade seeds which reference
+ * M1–M4 products (equity, bond, repo, IRS, FX swap) find the NPA gate
+ * already passed. Idempotent — products with an existing ProductApproved
+ * event are skipped silently.
+ *
+ * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+ */
+function bootNpaAttestations(): void {
+  const result = seedNpaAttestations(eventStore);
+  if (result.approved.length > 0) {
+    logger.info(
+      { approved: result.approved.length, skipped: result.skipped.length },
+      "npa-attestation-seed: M1–M4 products approved",
+    );
+  } else {
+    logger.debug(
+      { skipped: result.skipped.length },
+      "npa-attestation-seed: idempotent boot; all products already approved",
+    );
   }
 }
 
