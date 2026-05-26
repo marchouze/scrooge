@@ -178,5 +178,11 @@ const _TILE_CATALOGUE = [
     }
   }
 
+  // Run on load + 30 s auto-refresh + visibility-change refresh
+  // Authority: D-DATA-QUALITY-GOLDEN-SOURCE-V1 Slice 4 — stale-page recon gate
   load();
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) load();
+  });
+  setInterval(load, 30_000);
 })();
