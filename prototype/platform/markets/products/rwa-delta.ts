@@ -210,6 +210,9 @@ function resolveCreditRwaDelta(
  * @param referenceNotionalMinor  Notional in minor units (e.g. 100_000_00 = R100,000).
  * @param entityId                Legal entity. Defaults to "LE-ZA-HOZ-BANK".
  *                                Any other value throws RwaDeltaEngineError.
+ * @param asOf                    Valuation date (YYYY-MM-DD). Defaults to
+ *                                wall-clock today. Pass an explicit date for
+ *                                deterministic scenarios.
  *
  * @throws {RwaDeltaEngineError}  If entityId is not "LE-ZA-HOZ-BANK".
  */
@@ -217,6 +220,7 @@ export function computeProductRwaDelta(
   product: Product,
   referenceNotionalMinor: number,
   entityId: string = BANK_ENTITY_ID,
+  asOf?: string,
 ): RwaDeltaOutput {
   if (entityId !== BANK_ENTITY_ID) {
     throw new RwaDeltaEngineError(
@@ -236,7 +240,7 @@ export function computeProductRwaDelta(
   // negligible and not modelled at v0.1).
   const engineInput: RwaEngineInput = {
     entityId: BANK_ENTITY_ID,
-    asOf: new Date().toISOString().slice(0, 10),
+    asOf: asOf ?? new Date().toISOString().slice(0, 10), // wall-clock: default; inject asOf for deterministic scenarios
     functionalCurrency: product.currency,
     creditExposures:
       creditRwaDeltaMinor > 0

@@ -94,6 +94,9 @@ export interface IrsConfirmMessage {
  *
  * @param booking  The IrsTradeBooked payload from the event store.
  * @param opts     Party identity for the confirmation envelope.
+ *                 Pass `asOf` to override the wall-clock timestamp (required
+ *                 for deterministic scenarios; omit in production paths where
+ *                 the event timestamp is the real generation time).
  */
 export function generateIrsConfirm(
   booking: IrsTradeBookedPayload,
@@ -102,6 +105,8 @@ export function generateIrsConfirm(
     partyALei: string;
     partyBName: string;
     partyBLei: string;
+    /** Override generation timestamp. Defaults to wall-clock (production). */
+    asOf?: string;
   },
 ): IrsConfirmMessage {
   const tradeIdValue = booking.tradeId.value;
@@ -130,7 +135,7 @@ export function generateIrsConfirm(
       name: opts.partyBName,
       lei: opts.partyBLei,
     },
-    generatedAt: new Date().toISOString(),
+    generatedAt: opts.asOf ?? new Date().toISOString(), // wall-clock: default; inject asOf for deterministic scenarios
   };
 }
 
