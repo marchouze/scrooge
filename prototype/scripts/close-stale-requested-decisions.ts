@@ -39,7 +39,8 @@ const CLOSURES: Array<{
   {
     decisionId: "D-G2-ENTITY-ID-BACKFILL",
     phase: "approved",
-    title: "G-2: backfill deprecated BANK-ZA-001 entity-id to LE-ZA-HOZ-BANK on all affected events",
+    title:
+      "G-2: backfill deprecated BANK-ZA-001 entity-id to LE-ZA-HOZ-BANK on all affected events",
     recommendation: "Backfill all events using BANK-ZA-001 entity-id to LE-ZA-HOZ-BANK.",
     rationale:
       "PR #735 (feat(substrate): G-2 — backfill entity-id BANK-ZA-001 → LE-ZA-HOZ-BANK) merged 2026-05-22. Work complete; approval event was not emitted at merge time. CEO approved via session delegation 2026-05-26.",
@@ -64,7 +65,8 @@ const CLOSURES: Array<{
     decisionId: "D-RMS-PHASE-1-SLICE-3",
     phase: "approved",
     title: "RMS Phase 1 Slice 3 — projection runtime + 7 RMS register projections",
-    recommendation: "Build projection runtime and seven RMS register projections as Phase 1 Slice 3.",
+    recommendation:
+      "Build projection runtime and seven RMS register projections as Phase 1 Slice 3.",
     rationale:
       "RMS Phase 1 is marked complete in CLAUDE.md ('Phase 1 ✅ complete'). Slice 3 projection runtime and seven register projections shipped as part of the Phase 1 deliverable. Approval event was not emitted. CEO approved via session delegation 2026-05-26.",
   },
@@ -104,7 +106,10 @@ function main(): number {
 
   for (const c of CLOSURES) {
     if (hasTerminal(c.decisionId)) {
-      logger.info({ decisionId: c.decisionId }, "close-stale — already has terminal phase, skipping");
+      logger.info(
+        { decisionId: c.decisionId },
+        "close-stale — already has terminal phase, skipping",
+      );
       skipped++;
       continue;
     }
@@ -127,7 +132,10 @@ function main(): number {
       AS_OF,
     );
 
-    logger.info({ decisionId: c.decisionId, phase: c.phase }, "close-stale — terminal event emitted");
+    logger.info(
+      { decisionId: c.decisionId, phase: c.phase },
+      "close-stale — terminal event emitted",
+    );
     emitted++;
   }
 
