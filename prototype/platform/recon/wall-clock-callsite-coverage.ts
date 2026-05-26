@@ -95,8 +95,20 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   chore so unrelated work (WS-OBLIGATION-REVIEW-SUBSTRATE) can land.
 //   Clock-abstraction cleanup remains a follow-on (track under
 //   D-PROVENANCE-FILTER-ENFORCEMENT).
+//
+// 2026-05-26 — Bumped 58 → 60 (PR #820, D-PRODUCT-CONSTRUCTION-SUBSTRATE):
+//   Two new wall-clock callsites added by the product-construction PR-B:
+//   - platform/payments/isda-confirm/irs-confirm.ts: `opts.asOf ?? new Date().toISOString()`
+//     (injectable default — callers pass `opts.asOf` for deterministic scenarios)
+//   - platform/markets/products/rwa-delta.ts: `asOf ?? new Date().toISOString().slice(0, 10)`
+//     (injectable default — callers pass `asOf` for deterministic scenarios)
+//   Both use the approved injectable-default pattern; the wall-clock fallback
+//   only activates in production paths where the caller omits the timestamp.
+//   Clock-abstraction cleanup for these two callsites deferred to a follow-on
+//   item under D-PROVENANCE-FILTER-ENFORCEMENT.
+//   Author: Atlas (Core banking platform architect, engineering), 2026-05-26.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 58;
+const KNOWN_VIOLATIONS_SNAPSHOT = 60;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
