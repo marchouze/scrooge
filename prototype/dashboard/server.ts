@@ -814,6 +814,26 @@ function jsonResponse(data: unknown, status = 200): Response {
   });
 }
 
+/**
+ * Normalise a raw party object to always emit `partyKind`.
+ *
+ * The canonical field name for the party kind discriminant is `partyKind`
+ * (D-DATA-QUALITY-GOLDEN-SOURCE-V1). Legacy serialization paths may emit
+ * `kind` or `type`. This helper normalises the wire format to `partyKind`
+ * and removes the legacy aliases so clients never need a fallback chain.
+ *
+ * Apply to every party object before including it in an API response.
+ */
+function normalizePartyShape(raw: Record<string, unknown>): Record<string, unknown> {
+  const kind = (raw.partyKind ?? raw.kind ?? raw.type ?? "") as string;
+  const { kind: _k, type: _t, ...rest } = raw as {
+    kind?: unknown;
+    type?: unknown;
+    [k: string]: unknown;
+  };
+  return { ...rest, partyKind: kind };
+}
+
 async function handleDecide(req: Request): Promise<Response> {
   let raw: unknown;
   try {
@@ -2248,11 +2268,17 @@ const server = Bun.serve({
       // D-PARTY-REGISTER PR 2 — Party tile read-side. Folds the unified
       // Party event family (10 event types in domains/party/) and
       // returns the four kind sub-counts + relationships sub-count.
+      // D-DATA-QUALITY-GOLDEN-SOURCE-V1 — normalizePartyShape applied to
+      // every party object so the wire format always emits `partyKind`.
       // pageProvenance: event-derived → simulated-only in build phase.
       const projection = buildPartyProjection(eventStore, cachedState.asOf);
       const summary = buildPartyTileSummary(projection);
+      const parties = [...projection.parties.values()].map((p) =>
+        normalizePartyShape(p as unknown as Record<string, unknown>),
+      );
       return jsonResponse({
         ...summary,
+        parties,
         pageProvenance: eventDerivedPageProvenance(),
       });
     }

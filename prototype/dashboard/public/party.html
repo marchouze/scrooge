@@ -30,21 +30,22 @@
       const [partyData, relsData] = await Promise.all([sf("/api/party"), sf("/api/party/relationships")]);
       const all = Array.isArray(partyData) ? partyData : (partyData?.parties ?? partyData?.items ?? []);
       const rels = Array.isArray(relsData) ? relsData : (relsData?.relationships ?? relsData?.items ?? []);
+      const counts = partyData?.counts ?? {};
       const kinds = ["All","natural-person","legal-entity","counterparty","agent"];
       const tilesEl = document.getElementById("party-tiles");
-      tilesEl.appendChild(SC.renderTile({ label:"Total Parties", value:all.length, status:"info" }));
+      tilesEl.appendChild(SC.renderTile({ label:"Total Parties", value: counts.total ?? all.length, status:"info" }));
       ["natural-person","legal-entity","counterparty","agent"].forEach(k => {
-        tilesEl.appendChild(SC.renderTile({ label:k, value: all.filter(p=>(p.kind||p.partyKind||p.type||"")==k).length }));
+        tilesEl.appendChild(SC.renderTile({ label:k, value: counts[k] ?? all.filter(p => p.partyKind === k).length }));
       });
       let kindFilter = "All";
       const tabsEl = document.getElementById("party-tabs");
       function render() {
-        const rows = kindFilter === "All" ? all : all.filter(p => (p.kind||p.partyKind||p.type||"") === kindFilter);
+        const rows = kindFilter === "All" ? all : all.filter(p => p.partyKind === kindFilter);
         SC.renderTable({
           container: document.getElementById("party-table"),
           headers: ["ID","Name","Kind","LEI / ID","Status"],
           rows: rows.map(p => ({
-            cells: [SC.esc(p.partyId||p.id||""), SC.esc(p.name||p.legalName||""), SC.renderBadge(p.kind||p.partyKind||p.type||""), SC.esc(p.lei||p.nationalId||p.identifier||""), SC.renderBadge(p.status||"active")],
+            cells: [SC.esc(p.partyId||p.id||""), SC.esc(p.name||p.legalName||""), SC.renderBadge(p.partyKind||""), SC.esc(p.lei||p.nationalId||p.identifier||""), SC.renderBadge(p.status||"active")],
             data: p,
           })),
           onRowClick: p => {

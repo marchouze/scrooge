@@ -93,6 +93,7 @@
 
   // Extract party records from PartyRegistered events.
   // Each event's payload contains: partyId, kind, displayName, registeredAt, etc.
+  // D-DATA-QUALITY-GOLDEN-SOURCE-V1: emits `partyKind` (canonical field name).
   function extractPartiesFromEvents(events) {
     const partyMap = new Map();
     for (const ev of events) {
@@ -102,7 +103,7 @@
       // Latest-wins-per-key per projection rules.
       partyMap.set(partyId, {
         partyId,
-        kind: p.kind || "–",
+        partyKind: p.kind || "–",
         displayName: p.displayName || p.legalName || partyId,
         registeredAt: p.registeredAt || ev.as_of || "–",
         status: "active",
@@ -141,7 +142,7 @@
   }
 
   function renderPartyTable(parties, filter) {
-    const filtered = filter === "all" ? parties : parties.filter((p) => p.kind === filter);
+    const filtered = filter === "all" ? parties : parties.filter((p) => p.partyKind === filter);
 
     if (!filtered.length) {
       return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No parties of kind <strong>${escHtml(filter)}</strong> found. Build-phase: parties are registered via the Party event stream (D-PARTY-REGISTER boot backfill). <a href="/events.html?type=PartyRegistered" style="color:var(--accent-ink)">Browse PartyRegistered events →</a></p>`;
@@ -150,12 +151,11 @@
     const rows = filtered
       .map((p) => {
         const urn = escHtml(p.urn || p.partyId || "–");
-        const _kind = escHtml(p.kind || "–");
         const displayName = escHtml(p.displayName || "–");
         const regDate = fmtDate(p.registeredAt);
         const status = p.deactivatedAt ? "deactivated" : "active";
         const statusBadge = `<span class="status-badge" data-status="${status === "active" ? "active" : "unknown"}">${status}</span>`;
-        const kindBadge = `<span class="status-badge" data-status="${kindBadgeStatus(p.kind)}">${kindLabel(p.kind)}</span>`;
+        const kindBadge = `<span class="status-badge" data-status="${kindBadgeStatus(p.partyKind)}">${kindLabel(p.partyKind)}</span>`;
         return `<tr>
   <td><code style="font-size:var(--type-caption);word-break:break-all">${urn}</code></td>
   <td>${kindBadge}</td>
@@ -356,16 +356,16 @@
     cachedParties = extractPartiesFromEvents(partyEvents);
     cachedRelationships = extractRelationshipsFromEvents([...relEvents, ...relRevokeEvents]);
 
-    // --- Summary metrics (prefer tile summary; fall back to event-derived counts) ---
+    // --- Summary metrics (API counts are the single source of truth) ---
+    // D-DATA-QUALITY-GOLDEN-SOURCE-V1: counts come from the server-side projection
+    // via /api/party; client-side filter fallbacks were removed to prevent
+    // divergence between API counts and inline-computed counts.
     const counts = tileSummary?.counts ?? {};
-    const naturalCount =
-      counts["natural-person"] ?? cachedParties.filter((p) => p.kind === "natural-person").length;
-    const legalCount =
-      counts["legal-entity"] ?? cachedParties.filter((p) => p.kind === "legal-entity").length;
-    const counterCount =
-      counts.counterparty ?? cachedParties.filter((p) => p.kind === "counterparty").length;
-    const agentCount = counts.agent ?? cachedParties.filter((p) => p.kind === "agent").length;
-    const totalCount = counts.total ?? cachedParties.length;
+    const naturalCount = counts["natural-person"] ?? 0;
+    const legalCount = counts["legal-entity"] ?? 0;
+    const counterCount = counts.counterparty ?? 0;
+    const agentCount = counts.agent ?? 0;
+    const totalCount = counts.total ?? 0;
     const relLive =
       tileSummary?.relationshipsLive ?? cachedRelationships.filter((r) => !r.revoked).length;
 
