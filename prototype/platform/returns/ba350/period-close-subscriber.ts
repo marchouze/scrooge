@@ -182,6 +182,12 @@ export function ba350PeriodCloseSubscriber(
     ...(input.irGeneralDisallowancesMinor !== undefined
       ? { irGeneralDisallowancesMinor: input.irGeneralDisallowancesMinor }
       : {}),
+    // Thread the frozen cursor from AccountingPeriodClosed so all replay
+    // calls inside the events adapter are bounded to the same event window.
+    // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+    ...(input.closedPayload.eventSequence !== undefined
+      ? { untilSequence: input.closedPayload.eventSequence }
+      : {}),
   };
 
   const ba350Output = generateBa350MarketRiskFromEvents(input.eventStore, fromEventsInput);

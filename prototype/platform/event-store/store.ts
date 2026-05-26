@@ -154,6 +154,15 @@ export interface ArchiveResult {
 
 export interface ReplayOpts {
   fromSequence?: number;
+  /**
+   * Upper bound (inclusive) on the event `sequence` column.
+   * Frozen-cursor replay: subscribers processing `AccountingPeriodClosed`
+   * pass `eventSequence` from the triggering event payload to ensure all
+   * reads see the same event set — preventing divergence when new events
+   * append between the first and last subscriber read.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  untilSequence?: number;
   entity?: string;
   type?: string;
   asOf?: string; // upper bound (inclusive) on event.as_of
@@ -555,6 +564,10 @@ export class EventStore {
     if (opts.asOf) {
       where.push("as_of <= ?");
       params.push(opts.asOf);
+    }
+    if (opts.untilSequence !== undefined) {
+      where.push("sequence <= ?");
+      params.push(opts.untilSequence);
     }
     if (opts.aggregateId) {
       where.push("aggregate_id = ?");

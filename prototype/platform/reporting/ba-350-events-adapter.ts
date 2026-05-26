@@ -107,6 +107,14 @@ export interface Ba350FromEventsInput {
   readonly commodity: readonly CommodityPositionRow[];
   /** Optional IR disallowances. */
   readonly irGeneralDisallowancesMinor?: number;
+  /**
+   * Upper bound (inclusive) on the event `sequence` column.
+   * Sourced from `AccountingPeriodClosed.eventSequence` (frozen cursor).
+   * When supplied, all event-store replays in this adapter are bounded
+   * to prevent divergence from concurrent appends.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  readonly untilSequence?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -132,6 +140,12 @@ export function generateBa350MarketRiskFromEvents(
   // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
   const provenanceFilter = defaultProvenanceFilter();
 
+  // Frozen-cursor replay opts: when untilSequence is supplied, all replays
+  // are bounded to prevent divergence from concurrent appends.
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const frozenCursorOpts =
+    input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {};
+
   // ---- Step 1: replay FxTradeExecuted for the entity within the window. ----
   const tradedPayloads: FxTradeExecutedPayload[] = [];
   const tradeEventIds: string[] = [];
@@ -140,6 +154,7 @@ export function generateBa350MarketRiskFromEvents(
     entity: input.entity,
     type: "FxTradeExecuted",
     asOf: input.periodEnd,
+    ...frozenCursorOpts,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     // Include trades from the beginning of time up to period end.
@@ -171,6 +186,7 @@ export function generateBa350MarketRiskFromEvents(
     entity: input.entity,
     type: "SettlementConfirmed",
     asOf: input.periodEnd,
+    ...frozenCursorOpts,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as { tradeId?: unknown };
@@ -180,6 +196,7 @@ export function generateBa350MarketRiskFromEvents(
     entity: input.entity,
     type: "TradeMatured",
     asOf: input.periodEnd,
+    ...frozenCursorOpts,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as { tradeId: string };
