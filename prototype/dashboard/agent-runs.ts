@@ -22,7 +22,19 @@
 // directly with a token from Key Vault.
 //
 // Author: Atlas (substrate plumbing). F-002 cursor invalidation: Anya.
+// Golden-source refactor: Atlas (D-DATA-QUALITY-GOLDEN-SOURCE-V1 Slice 2).
+//
+// Golden-source discipline (D-DATA-QUALITY-GOLDEN-SOURCE-V1, Slice 2):
+// WORKFLOW_MAP and NAME_MAP are now derived from Team/_team-roster.json
+// rather than hardcoded here. Add `workflowFile` / `workflowFiles` +
+// `workflowTrigger` / `workflowTriggers` to a roster entry to make that
+// agent's workflow(s) visible to the dashboard.
+// Never add hardcoded .yml keys in this file — the recon pipeline
+// `recon:golden-source-hardcoded-maps` will flag them as violations.
 
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 
@@ -84,36 +96,84 @@ const RUN_LIMIT = 50;
 let cache: CachedRuns | null = null;
 let inflight: Promise<readonly AgentRun[]> | null = null;
 
-// Map workflow filename → { agent, trigger }. Mirrors the
-// `.github/workflows/agent-runtime-*.yml` naming convention. Update
-// when adding new agent workflows.
-const WORKFLOW_MAP: Record<string, { agent: string; trigger: string }> = {
-  "agent-runtime-vera-overnight.yml": { agent: "Vera", trigger: "overnight-recon" },
-  "agent-runtime-atlas-substrate-state.yml": { agent: "Atlas", trigger: "substrate-state" },
-  "agent-runtime-anya-projection-drift.yml": { agent: "Anya", trigger: "projection-drift" },
-  "agent-runtime-scrooge-inbox-hygiene.yml": { agent: "Scrooge", trigger: "inbox-hygiene" },
-  "agent-runtime-owen-governance-cycle-prep.yml": {
-    agent: "Owen",
-    trigger: "governance-cycle-prep",
-  },
-  "agent-runtime-mira-obligations-snapshot.yml": { agent: "Mira", trigger: "obligations-snapshot" },
-  "agent-runtime-senna-security-substrate-state.yml": {
-    agent: "Senna",
-    trigger: "security-substrate-state",
-  },
-};
+// ---------------------------------------------------------------------------
+// Golden-source workflow map — derived from Team/_team-roster.json
+// ---------------------------------------------------------------------------
 
-// Reverse map: workflow display name → file. gh run list --json doesn't
-// always emit the file path; we fall back to display-name matching.
-const NAME_MAP: Record<string, string> = {
-  "Vera overnight recon": "agent-runtime-vera-overnight.yml",
-  "Atlas substrate-state": "agent-runtime-atlas-substrate-state.yml",
-  "Anya projection drift": "agent-runtime-anya-projection-drift.yml",
-  "Scrooge inbox hygiene": "agent-runtime-scrooge-inbox-hygiene.yml",
-  "Owen governance-cycle prep": "agent-runtime-owen-governance-cycle-prep.yml",
-  "Mira obligations snapshot": "agent-runtime-mira-obligations-snapshot.yml",
-  "Senna security substrate state": "agent-runtime-senna-security-substrate-state.yml",
-};
+interface RosterEntry {
+  name: string;
+  workflowFile?: string;
+  workflowTrigger?: string;
+  workflowFiles?: string[];
+  workflowTriggers?: string[];
+}
+
+interface WorkflowMaps {
+  /** workflow filename → { agent, trigger } */
+  byFile: Record<string, { agent: string; trigger: string }>;
+  /** workflow display name → workflow filename (fallback for gh run list) */
+  byDisplayName: Record<string, string>;
+}
+
+/**
+ * Derive a trigger id from a workflow filename by stripping the
+ * `agent-runtime-<name>-` prefix and `.yml` suffix.
+ *
+ * e.g. "agent-runtime-vera-overnight-recon.yml" → "overnight-recon"
+ *      "agent-runtime-atlas-substrate-state.yml" → "substrate-state"
+ */
+function deriveTrigger(workflowFile: string): string {
+  const bare = workflowFile.replace(/^agent-runtime-/, "").replace(/\.yml$/, "");
+  const firstDash = bare.indexOf("-");
+  return firstDash === -1 ? bare : bare.slice(firstDash + 1);
+}
+
+/**
+ * Build workflow maps from the team roster. Supports both:
+ *   - `workflowFile` (singular) + `workflowTrigger` — primary workflow per agent
+ *   - `workflowFiles` (array) + `workflowTriggers` (array, parallel) — additional workflows
+ *
+ * If the roster file cannot be read or parsed, logs a warning and returns
+ * empty maps — the dashboard will show "unknown agent" rather than crashing.
+ */
+function buildWorkflowMap(rosterPath: string): WorkflowMaps {
+  try {
+    const raw = readFileSync(rosterPath, "utf8");
+    const roster = JSON.parse(raw) as { personas?: RosterEntry[] };
+    const personas = roster.personas ?? [];
+
+    const byFile: Record<string, { agent: string; trigger: string }> = {};
+    const byDisplayName: Record<string, string> = {};
+
+    function register(wf: string, trigger: string, agentName: string) {
+      byFile[wf] = { agent: agentName, trigger };
+      const displayName = `${agentName} ${trigger.replace(/-/g, " ")}`;
+      byDisplayName[displayName] = wf;
+    }
+
+    for (const entry of personas) {
+      if (entry.workflowFile) {
+        const trigger = entry.workflowTrigger ?? deriveTrigger(entry.workflowFile);
+        register(entry.workflowFile, trigger, entry.name);
+      }
+      for (const [i, wf] of (entry.workflowFiles ?? []).entries()) {
+        const trigger = entry.workflowTriggers?.[i] ?? deriveTrigger(wf);
+        register(wf, trigger, entry.name);
+      }
+    }
+
+    return { byFile, byDisplayName };
+  } catch (e) {
+    logger.warn(
+      { err: (e as Error).message, rosterPath },
+      "agent-runs: failed to load Team/_team-roster.json — WORKFLOW_MAP will be empty; dashboard will show unknown agents",
+    );
+    return { byFile: {}, byDisplayName: {} };
+  }
+}
+
+const ROSTER_PATH = join(dirname(fileURLToPath(import.meta.url)), "../Team/_team-roster.json");
+const { byFile: WORKFLOW_MAP, byDisplayName: NAME_MAP } = buildWorkflowMap(ROSTER_PATH);
 
 function durationMs(status: string, createdAt: string, updatedAt: string): number | null {
   if (status !== "completed") return null;
