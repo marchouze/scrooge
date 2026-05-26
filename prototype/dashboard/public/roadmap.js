@@ -666,7 +666,12 @@
     }
   }
 
-  // Run on load + wire refresh button
+  // Run on load + wire refresh button + 30 s auto-refresh
+  // Authority: D-DATA-QUALITY-GOLDEN-SOURCE-V1 Slice 4 — stale-page recon gate
   refreshAll();
   document.addEventListener("shell:refresh", refreshAll);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshAll();
+  });
+  setInterval(refreshAll, 30_000);
 })();

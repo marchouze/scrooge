@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Oversight — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <h1 class="page-title">CEO Oversight</h1>
+      <div class="page-header-meta">
+        <span id="live-indicator" class="live-dot"></span>
+        <span id="stamp" class="muted" style="font-size:12px;margin-left:6px;"></span>
+      </div>
+    </div>
+    <div class="page-body">
+      <div id="oversight-tiles" class="tile-row"></div>
+      <div id="escalations-header"></div>
+      <div id="escalations-table"></div>
+      <div id="fleet-header"></div>
+      <div id="fleet-table"></div>
+      <div id="decisions-header"></div>
+      <div id="decisions-table"></div>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script src="/oversight.js"></script>
+  <script>
+    initShell({ title: "Oversight" });
+  </script>
+</body>
+</html>
