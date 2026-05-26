@@ -37,12 +37,6 @@ async function safeFetch(url) {
 // ---------------------------------------------------------------------------
 // Render helpers
 
-function setTile(container, label, value, href, status) {
-  if (!container || typeof SC === "undefined") return;
-  const tile = SC.renderTile({ label, value: value ?? "—", href, status: status ?? "info" });
-  container.appendChild(tile);
-}
-
 function renderSection(headerId, tableId, title, headers, rows, emptyMessage) {
   const headerEl = $(headerId);
   const tableEl = $(tableId);
@@ -81,7 +75,7 @@ async function load() {
       const openDecisions = state?.decisionsOpen?.length ?? 0;
 
       if (typeof SC !== "undefined") {
-        [
+        const tiles = [
           SC.renderTile({
             label: "Active Escalations",
             value: escalationCount,
@@ -106,7 +100,8 @@ async function load() {
             href: "/decisions.html",
             status: openDecisions > 0 ? "amber" : "ok",
           }),
-        ].forEach((t) => tilesEl.appendChild(t));
+        ];
+        for (const t of tiles) tilesEl.appendChild(t);
       }
     }
 

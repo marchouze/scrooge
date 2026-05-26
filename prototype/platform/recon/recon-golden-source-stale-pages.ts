@@ -75,20 +75,6 @@ const ALLOWLIST = new Set([
 // ---------------------------------------------------------------------------
 // Helpers
 
-function findRepoRoot(): string {
-  let dir = path.resolve(import.meta.dir ?? process.cwd());
-  for (let i = 0; i < 12; i++) {
-    if (fs.existsSync(path.join(dir, "package.json")) && fs.existsSync(path.join(dir, ".git"))) {
-      return dir;
-    }
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  // Fallback: resolve relative to this file's location
-  return path.resolve(import.meta.dir ?? process.cwd(), "..");
-}
-
 function hasRefreshLogic(jsContent: string): boolean {
   return (
     jsContent.includes("setInterval") ||
@@ -104,13 +90,12 @@ export function run(): ReconResult {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
 
-  // Locate dashboard/public directory relative to repo root.
-  // This file lives at prototype/platform/recon/ so the repo root is two levels up
-  // from the prototype/ directory.
+  // Locate dashboard/public directory relative to this file.
+  // This file lives at prototype/platform/recon/; dashboard is at prototype/dashboard/public/.
+  // Resolve: recon/ -> platform/ -> prototype/ -> dashboard/public
   const thisFile = import.meta.dir ?? process.cwd();
-  // Resolve: recon/ -> platform/ -> prototype/ -> repo-root/
   const protoDir = path.resolve(thisFile, "..", "..");
-  const publicDir = path.join(protoDir, "..", "dashboard", "public");
+  const publicDir = path.join(protoDir, "dashboard", "public");
 
   if (!fs.existsSync(publicDir)) {
     // Tolerate missing directory in CI environments that do not include the
@@ -194,7 +179,7 @@ if (import.meta.main) {
       msg: r.ok
         ? warns.length > 0
           ? `stale-pages check passed with ${warns.length} warning(s) — no hard-fail violations. Pages in the warn list should have refresh logic added.`
-          : `stale-pages check passed — all checked pages have refresh logic.`
+          : "stale-pages check passed — all checked pages have refresh logic."
         : `stale-pages check FAILED — ${fails.length} hard-fail page(s) missing refresh logic (setInterval / visibilitychange). Add polling to the listed .js files.`,
       detail: r.violations,
     }),
