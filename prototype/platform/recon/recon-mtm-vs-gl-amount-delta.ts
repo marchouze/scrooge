@@ -36,7 +36,7 @@
 //   - Non-FX asset classes: focuses only on FxPositionRevalued / ACC-2100-* family.
 //
 // Tolerance authority: D-IPV-TOLERANCE-SCHEDULE-FX-SPOT (CEO-approved 2026-05-22).
-// Data-quality authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+// Data-quality authority: D-DATA-QUALITY-CROSS-DOMAIN-V1 (CEO-approved 2026-05-26).
 // IFRS-9-§5.7.1: fair value changes of FVTPL instruments recognised in profit or loss.
 //
 // Author: Atlas (Core banking platform architect, engineering)
