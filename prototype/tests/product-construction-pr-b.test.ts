@@ -9,13 +9,10 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { M4_FX_SPOT_FIXTURE } from "@platform/markets/products/fixtures";
-import {
-  RwaDeltaEngineError,
-  computeProductRwaDelta,
-} from "@platform/markets/products/rwa-delta";
-import { generateIrsConfirm } from "@platform/payments/isda-confirm/irs-confirm";
 import type { IrsTradeBookedPayload } from "@platform/markets/cdm/ird";
+import { M4_FX_SPOT_FIXTURE } from "@platform/markets/products/fixtures";
+import { RwaDeltaEngineError, computeProductRwaDelta } from "@platform/markets/products/rwa-delta";
+import { generateIrsConfirm } from "@platform/payments/isda-confirm/irs-confirm";
 
 // ---------------------------------------------------------------------------
 // Mock IRS booking
@@ -71,15 +68,15 @@ describe("computeProductRwaDelta", () => {
   });
 
   it("throws RwaDeltaEngineError for a non-bank entity", () => {
-    expect(() =>
-      computeProductRwaDelta(M4_FX_SPOT_FIXTURE, 100_000_00, "LE-OTHER"),
-    ).toThrow(RwaDeltaEngineError);
+    expect(() => computeProductRwaDelta(M4_FX_SPOT_FIXTURE, 100_000_00, "LE-OTHER")).toThrow(
+      RwaDeltaEngineError,
+    );
   });
 
   it("throws RwaDeltaEngineError with informative message", () => {
-    expect(() =>
-      computeProductRwaDelta(M4_FX_SPOT_FIXTURE, 100_000_00, "LE-OTHER"),
-    ).toThrow(/LE-ZA-HOZ-BANK/);
+    expect(() => computeProductRwaDelta(M4_FX_SPOT_FIXTURE, 100_000_00, "LE-OTHER")).toThrow(
+      /LE-ZA-HOZ-BANK/,
+    );
   });
 
   it("populates all required output fields", () => {
@@ -95,16 +92,12 @@ describe("computeProductRwaDelta", () => {
   });
 
   it("defaults to LE-ZA-HOZ-BANK entity when entityId is omitted", () => {
-    expect(() =>
-      computeProductRwaDelta(M4_FX_SPOT_FIXTURE, 100_000_00),
-    ).not.toThrow();
+    expect(() => computeProductRwaDelta(M4_FX_SPOT_FIXTURE, 100_000_00)).not.toThrow();
   });
 
   it("totalRwaDeltaMinor = creditRwaDeltaMinor + marketRwaDeltaMinor", () => {
     const result = computeProductRwaDelta(M4_FX_SPOT_FIXTURE, 100_000_00);
-    expect(result.totalRwaDeltaMinor).toBe(
-      result.creditRwaDeltaMinor + result.marketRwaDeltaMinor,
-    );
+    expect(result.totalRwaDeltaMinor).toBe(result.creditRwaDeltaMinor + result.marketRwaDeltaMinor);
   });
 });
 

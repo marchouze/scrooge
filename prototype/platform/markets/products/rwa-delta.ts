@@ -15,8 +15,8 @@
 //            D-REGULATORY-READINESS-GATE-PLAN — RWA engine authority.
 // Author: Atlas (substrate) · Rohan (risk systems engineer, engineering).
 
-import type { Product, ProductFamily } from "./types";
 import { type RwaEngineInput, computeRwa } from "../../risk/rwa-engine";
+import type { Product, ProductFamily } from "./types";
 
 // ---------------------------------------------------------------------------
 // RWA weights from the capital-funding stub (build-phase)
@@ -24,8 +24,10 @@ import { type RwaEngineInput, computeRwa } from "../../risk/rwa-engine";
 
 import capitalFundingStub from "../regulatory/capital-funding-stub.json" with { type: "json" };
 
-const RWA_WEIGHT_BY_INSTRUMENT_CLASS =
-  capitalFundingStub.rwa.rwaWeightByInstrumentClass as Record<string, number>;
+const RWA_WEIGHT_BY_INSTRUMENT_CLASS = capitalFundingStub.rwa.rwaWeightByInstrumentClass as Record<
+  string,
+  number
+>;
 
 // ---------------------------------------------------------------------------
 // Output shape
@@ -218,9 +220,7 @@ export function computeProductRwaDelta(
 ): RwaDeltaOutput {
   if (entityId !== BANK_ENTITY_ID) {
     throw new RwaDeltaEngineError(
-      `RwaDelta engine: capital-adequacy estimation is bank-licence-bound; ` +
-        `entity '${entityId}' is not in scope. Only '${BANK_ENTITY_ID}' is supported at v0.1. ` +
-        `See D-REGULATORY-READINESS-GATE-PLAN + D-PRODUCT-CONSTRUCTION-SUBSTRATE.`,
+      `RwaDelta engine: capital-adequacy estimation is bank-licence-bound; entity '${entityId}' is not in scope. Only '${BANK_ENTITY_ID}' is supported at v0.1. See D-REGULATORY-READINESS-GATE-PLAN + D-PRODUCT-CONSTRUCTION-SUBSTRATE.`,
     );
   }
 
