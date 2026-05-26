@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: daily-mtm
-asOf: 2026-05-26T09:21:25.673Z
+asOf: 2026-05-26T18:02:28.610Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous EOD mark-to-market run per `Team/Rohan.md` operating spec § 6 (Cadence). Wraps the legacy `scripts/mtm-run.ts` logic into a scheduled handler (cron `0 18 * * 1-5` — 18:00 UTC weekdays = after JSE 17:00 SAST close). Reversal-then-reval pair is atomic per `D-EVENT-VIEW-BOUNDARY-WIRE` Slice B.1 — every position-day either carries one `FxPositionRevalued` event (live or stale-mark) or none, so Bea's posting engine never reverses without a paired forward.
 
-**Headline:** 0 live · 0 stale-mark · 21 unvalued · net unrealised P&L delta ZAR 0,00 · runId `5c1912ea-9aca-4f71-9ff6-7eb1eab73f2d`.
+**Headline:** 0 live · 0 stale-mark · 0 unvalued · net unrealised P&L delta ZAR 0,00 · runId `87385717-db96-4935-ae91-e5bb2fc14262`.
 
 ## Position detail
 
