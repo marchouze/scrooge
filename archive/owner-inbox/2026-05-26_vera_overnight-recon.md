@@ -1,7 +1,11 @@
 ---
 agent: Vera
 trigger: overnight-recon
+<<<<<<< Updated upstream
 asOf: 2026-05-26T09:35:41.619Z
+=======
+asOf: 2026-05-26T09:22:34.389Z
+>>>>>>> Stashed changes
 decision-required: false
 ---
 
@@ -9,7 +13,11 @@ decision-required: false
 
 Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop.
 
+<<<<<<< Updated upstream
 **Headline:** PASS — 3062 assertions; 0 fail violations; 51 warn violations across 9 pipelines.
+=======
+**Headline:** PASS — 3063 assertions; 0 fail violations; 51 warn violations across 9 pipelines.
+>>>>>>> Stashed changes
 
 ## Pipeline results
 
@@ -79,6 +87,7 @@ Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operat
 
 ### escalation-channel
 
+<<<<<<< Updated upstream
 - **[warn]** `escalation:esc:atlas:bus-in-process-2026-05-20` — escalation esc:atlas:bus-in-process-2026-05-20 (severity:medium) is unresolved after 147.2h — SLA is 120h for medium. routedTo=Vera. Citations: IIA-IPPF, P6-AUTONOMOUS-BY-DEFAULT, BCBS-223.
 - **[warn]** `escalation:esc:atlas:cron-drift-a2-1-2026-05-20` — escalation esc:atlas:cron-drift-a2-1-2026-05-20 (severity:medium) is unresolved after 147.2h — SLA is 120h for medium. routedTo=Atlas. Citations: IIA-IPPF, P6-AUTONOMOUS-BY-DEFAULT, BCBS-223.
 - **[warn]** `escalation:esc:atlas:bus-in-process-2026-05-21` — escalation esc:atlas:bus-in-process-2026-05-21 (severity:medium) is unresolved after 122.6h — SLA is 120h for medium. routedTo=Vera. Citations: IIA-IPPF, P6-AUTONOMOUS-BY-DEFAULT, BCBS-223.
@@ -87,6 +96,16 @@ Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operat
 ## Vera's narrative
 
 _Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbQxMRpXmTa8U3wE6r31q"}). Mechanical recon results above stand on their own._
+=======
+- **[warn]** `escalation:esc:atlas:bus-in-process-2026-05-20` — escalation esc:atlas:bus-in-process-2026-05-20 (severity:medium) is unresolved after 146.9h — SLA is 120h for medium. routedTo=Vera. Citations: IIA-IPPF, P6-AUTONOMOUS-BY-DEFAULT, BCBS-223.
+- **[warn]** `escalation:esc:atlas:cron-drift-a2-1-2026-05-20` — escalation esc:atlas:cron-drift-a2-1-2026-05-20 (severity:medium) is unresolved after 146.9h — SLA is 120h for medium. routedTo=Atlas. Citations: IIA-IPPF, P6-AUTONOMOUS-BY-DEFAULT, BCBS-223.
+- **[warn]** `escalation:esc:atlas:bus-in-process-2026-05-21` — escalation esc:atlas:bus-in-process-2026-05-21 (severity:medium) is unresolved after 122.4h — SLA is 120h for medium. routedTo=Vera. Citations: IIA-IPPF, P6-AUTONOMOUS-BY-DEFAULT, BCBS-223.
+- **[warn]** `escalation:esc:atlas:cron-drift-a2-1-2026-05-21` — escalation esc:atlas:cron-drift-a2-1-2026-05-21 (severity:medium) is unresolved after 122.4h — SLA is 120h for medium. routedTo=Atlas. Citations: IIA-IPPF, P6-AUTONOMOUS-BY-DEFAULT, BCBS-223.
+
+## Vera's narrative
+
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbQwFm5P1MGbReMG6MJUU"}). Mechanical recon results above stand on their own._
+>>>>>>> Stashed changes
 
 ## Substrate
 
