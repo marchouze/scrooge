@@ -449,6 +449,152 @@ export const M4_FX_SPOT_FIXTURE: Product = {
   ],
 };
 
+/**
+ * M3 — Vanilla Interest Rate Swap (ZAR).
+ * Plain-vanilla OTC IRS: bank receives fixed and pays JIBAR floating (or
+ * vice versa), ZAR-denominated, under ISDA 2002 master agreement.
+ * CDM composition per the IRD module (ird.ts): 5 lifecycle event types.
+ *
+ * NPA gates cleared (design-attestation, lifecycle: "conceptualised"):
+ *   trading-mandate-alignment, cdm-composition-complete,
+ *   lifecycle-event-family-named, risk-profile-populated.
+ *
+ * Pre-go-live gates deferred per project_product_lifecycle_npa_vs_engineering.md:
+ *   model-risk (Nadia), legal-documentation (Imani), operational-readiness (Devon),
+ *   capital-attestation (Helena), conduct-aml (Zara).
+ *
+ * Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE · D-NEW-PRODUCT-APPROVAL-POLICY ·
+ *            D-MARKETS-SCHEMA-FOUNDATION · ISDA-2002-MASTER · ORG-PR-11 · ORG-MK-JIBAR
+ *
+ * Authors: Atlas (substrate authority) · Kai (trading systems engineer, engineering)
+ */
+export const M3_VANILLA_IRS_FIXTURE: Product = {
+  productId: "prd:bank:otc-ird:vanilla-irs-zar",
+  family: "otc-ird",
+  version: "0.1.0",
+  name: "Vanilla Interest Rate Swap (ZAR)",
+  description:
+    "Plain-vanilla OTC interest rate swap: bank receives fixed rate and pays JIBAR floating (or vice versa), denominated in ZAR, under ISDA 2002 master agreement. Notionals are in ZAR; net settlement of coupon differentials on each payment date. JIBAR-3M is the primary floating index; ZARONIA is the alternative SOFR-equivalent benchmark. Institutional counterparties only; ISDA master agreement + Credit Support Annex required before first trade.",
+  franchiseScope: "institutional",
+  legalEntityId: "LE-BANK-SA",
+  currency: "ZAR",
+  jurisdiction: "ZA",
+  cdmComposition: {
+    primitives: [
+      {
+        module: "@platform/markets/cdm/ird",
+        symbol: "irsTradeBookedPayloadSchema",
+        role: "IRS trade booking: fixed/float legs, notional, maturity — the canonical trade record",
+      },
+      {
+        module: "@platform/markets/cdm/ird",
+        symbol: "irsCouponScheduleGeneratedPayloadSchema",
+        role: "Full coupon schedule: payment dates, day-count fractions, fixed-leg cashflows",
+      },
+      {
+        module: "@platform/markets/cdm/ird",
+        symbol: "irsCouponPaymentInstructedPayloadSchema",
+        role: "Net coupon instruction: computed differential payment to correspondent on each payment date",
+      },
+      {
+        module: "@platform/markets/cdm/ird",
+        symbol: "irsCouponSettlementConfirmedPayloadSchema",
+        role: "Settlement confirmation from correspondent for each coupon payment",
+      },
+      {
+        module: "@platform/markets/cdm/ird",
+        symbol: "irsPositionRevaluedPayloadSchema",
+        role: "EOD mark-to-market: NPV of remaining cashflows using JIBAR/ZARONIA discount curve",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "partySchema",
+        role: "Counterparty LEI + bank entity (LE-BANK-SA) — ISDA master agreement parties",
+      },
+    ],
+    extensions: [
+      {
+        name: "ISDA 2002 Master Agreement (ZAR IRS definitions)",
+        module: "@platform/markets/cdm/ird",
+        citationUrn: "ISDA-2002-MASTER",
+      },
+      {
+        name: "JIBAR/ZARONIA floating index (SARB administered)",
+        module: "@platform/markets/cdm/ird",
+        citationUrn: "ORG-MK-JIBAR",
+      },
+    ],
+    compositionRule:
+      "Asset(swap: fixed-vs-JIBAR) + Cashflow(net coupon differentials on payment dates) + Schedule(IRS term + coupon frequency + day-count) + Settlement(net cash via correspondent, T+2 from each payment date) + Identification(counterparty LEI + ISDA master agreement reference). Lifecycle: IrsTradeBooked → IrsCouponScheduleGenerated → IrsCouponPaymentInstructed×N → IrsCouponSettlementConfirmed×N → IrsPositionRevalued×N.",
+  },
+  lifecycleEventFamily: [
+    "IrsTradeBooked",
+    "IrsCouponScheduleGenerated",
+    "IrsCouponPaymentInstructed",
+    "IrsCouponSettlementConfirmed",
+    "IrsPositionRevalued",
+  ],
+  riskProfile: {
+    marketRiskDimensions: ["curve", "basis"],
+    creditRiskShape: "ongoing-bilateral-exposure",
+    liquidityClassification: "non-hqla",
+    fundingProfile: "csa-collateralised",
+    modelRiskTier: "tier-1",
+  },
+  accountingClassification: {
+    ifrs9Family: "fvtpl",
+    ifrs13FairValueHierarchy: "level-2",
+    ias21FxTreatment: "n/a",
+    baReturnLineMapping: ["BA200.line.12", "BA350.line.ir-delta", "BA700.line.rwa-ird"],
+  },
+  legalDocumentation: {
+    masterAgreement: "isda-2002",
+    ectaExecutionPath: "electronic-default",
+    jurisdictionMatrix: ["ZA"],
+  },
+  operationalReadiness: {
+    settlementPath: "correspondent-bank T+2 (net coupon per payment date)",
+    reconciliationCadence: "daily",
+    substrateCompletenessGate: "M3-exit",
+  },
+  securityProfile: {
+    threatModelRef: "ORG-CY-01",
+    hsmCustodyRequired: false,
+    zeroTrustPosture: "default",
+  },
+  policyAttestations: [
+    {
+      policy: "D-NEW-PRODUCT-APPROVAL-POLICY",
+      version: "1.0.0",
+      attestedAt: "2026-05-26T00:00:00.000Z",
+      attestedBy:
+        "Helena (Chief Risk Officer, governance) + Nadia (model-risk engineer, engineering)",
+      gatesCleared: [
+        "trading-mandate-alignment",
+        "cdm-composition-complete",
+        "lifecycle-event-family-named",
+        "risk-profile-populated",
+      ],
+      conditions: [
+        "Nadia (model-risk engineer): formal model-validation report required before controlled-launch; JIBAR/ZARONIA curve sourcing methodology to be documented",
+        "Helena (Chief Risk Officer): RWA-delta estimate required for capital-attestation gate",
+        "Imani (legal engineer): ISDA master agreement + CSA template finalisation deferred to pre-go-live",
+        "Devon (COO): operational runbook for IRS booking, confirmation, and coupon settlement deferred to pre-go-live",
+        "Zara (CCO): AML/conduct screen for institutional IRS counterparties deferred to pre-go-live",
+      ],
+    },
+  ],
+  lifecycle: "conceptualised",
+  citations: [
+    "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+    "D-NEW-PRODUCT-APPROVAL-POLICY",
+    "D-MARKETS-SCHEMA-FOUNDATION",
+    "ISDA-2002-MASTER",
+    "ORG-PR-11",
+    "ORG-MK-JIBAR",
+  ],
+};
+
 // ─── Treasury products (M5–M8) ────────────────────────────────────────────────
 // Added per WS3-PR3b (PRs #763–#768): repo/MMD/IBL event types, lifecycle
 // registry, GL posting rules, and ALM book data wired to the treasury
