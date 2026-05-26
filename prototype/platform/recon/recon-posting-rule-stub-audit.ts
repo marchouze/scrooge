@@ -36,8 +36,8 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { EVENT_TYPE_REGISTRY } from "../event-store/registry";
 import { POSTING_RULE_REGISTRY } from "../accounting/posting-rule-registry";
+import { EVENT_TYPE_REGISTRY } from "../event-store/registry";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "recon:posting-rule-stub-audit";
