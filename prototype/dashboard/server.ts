@@ -826,7 +826,11 @@ function jsonResponse(data: unknown, status = 200): Response {
  */
 function normalizePartyShape(raw: Record<string, unknown>): Record<string, unknown> {
   const kind = (raw.partyKind ?? raw.kind ?? raw.type ?? "") as string;
-  const { kind: _k, type: _t, ...rest } = raw as {
+  const {
+    kind: _k,
+    type: _t,
+    ...rest
+  } = raw as {
     kind?: unknown;
     type?: unknown;
     [k: string]: unknown;

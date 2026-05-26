@@ -47,8 +47,9 @@ const PIPELINE = "recon:golden-source-schema";
 // File discovery
 // ---------------------------------------------------------------------------
 
-const REPO_ROOT = resolve(import.meta.dir, "../../..");
-const DASHBOARD_PUBLIC = join(REPO_ROOT, "dashboard/public");
+// prototype/ root — two levels up from platform/recon/
+const PROTOTYPE_ROOT = resolve(import.meta.dir, "../..");
+const DASHBOARD_PUBLIC = join(PROTOTYPE_ROOT, "dashboard/public");
 
 /** Collect all .html and .js files under dashboard/public/ */
 function collectDashboardPublicFiles(): { path: string; ext: "html" | "js" }[] {
@@ -80,20 +81,16 @@ function collectDashboardPublicFiles(): { path: string; ext: "html" | "js" }[] {
 
 const FALLBACK_CHAIN_RE = /\|\|\s*(?:p\.)?(kind|partyKind|type)\b/g;
 
-function checkFallbackChains(
-  content: string,
-  filePath: string,
-  lineOffset = 0,
-): ReconViolation[] {
+function checkFallbackChains(content: string, filePath: string, lineOffset = 0): ReconViolation[] {
   const violations: ReconViolation[] = [];
   const lines = content.split("\n");
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i] ?? "";
     FALLBACK_CHAIN_RE.lastIndex = 0;
     const match = FALLBACK_CHAIN_RE.exec(line);
     if (match) {
       const lineNo = lineOffset + i + 1;
-      const rel = relative(REPO_ROOT, filePath);
+      const rel = relative(PROTOTYPE_ROOT, filePath);
       violations.push({
         subject: `${rel}:${lineNo}`,
         severity: "fail",
@@ -118,12 +115,12 @@ function checkKindEquality(content: string, filePath: string): ReconViolation[] 
   const violations: ReconViolation[] = [];
   const lines = content.split("\n");
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i] ?? "";
     KIND_EQUALITY_RE.lastIndex = 0;
     const match = KIND_EQUALITY_RE.exec(line);
     if (match) {
       const lineNo = i + 1;
-      const rel = relative(REPO_ROOT, filePath);
+      const rel = relative(PROTOTYPE_ROOT, filePath);
       violations.push({
         subject: `${rel}:${lineNo}`,
         severity: "fail",
