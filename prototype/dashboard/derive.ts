@@ -36,16 +36,17 @@ import type { CapitalMetrics } from "../platform/projections/capital-metrics";
 import {
   type DecisionsRegister,
   buildDecisionsRegister,
+  buildOpenDecisionsFromEscalations,
   decisionsSourceFromStore,
 } from "../projections/decisions";
 import { HANDLERS_METADATA } from "../runtime/handlers-metadata";
 import { parsePolicyRegister } from "./policy-register";
 import type {
   AgentDeliverable,
+  AgentEscalationEventSummary,
   AgentMiniDashboard,
   AgentOpsState,
   DashboardState,
-  DecisionCategory,
   DecisionCommentSummary,
   FindingSummary,
   FtpDashboardSummary,
@@ -107,17 +108,9 @@ export interface WorkstreamRegisteredEventSummary {
   readonly asOf: string;
 }
 
-export interface AgentEscalationEventSummary {
-  readonly escalationId: string;
-  readonly raisedBy: string;
-  readonly question: string;
-  readonly options: readonly string[];
-  readonly blockedBy: string;
-  readonly severity: "low" | "medium" | "high" | "blocking";
-  readonly routedTo: string;
-  readonly deadline?: string;
-  readonly asOf: string;
-}
+// AgentEscalationEventSummary moved to dashboard/types.ts
+// (D-DATA-QUALITY-GOLDEN-SOURCE-V1) so projections/decisions.ts can import it
+// without creating a dashboard→projections circular dependency.
 
 export interface AuditFindingEventSummary {
   readonly findingId: string;
@@ -1271,35 +1264,10 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   // decisions sourced from the curated seed.
   const ownerInboxOpenDecisions: OpenDecision[] = [];
 
-  // Lift AgentEscalation events into open decisions (Atlas substrate-gap
-  // closure 2026-05-07). An escalation is "resolved" when a CeoDecision
-  // event with the same decisionId as the escalationId exists. Latest
-  // escalation per escalationId wins to allow correction / superseding.
-  const latestEscalations = new Map<string, AgentEscalationEventSummary>();
-  for (const e of escalations) {
-    const prev = latestEscalations.get(e.escalationId);
-    if (!prev || prev.asOf <= e.asOf) latestEscalations.set(e.escalationId, e);
-  }
-  const escalationOpenDecisions: OpenDecision[] = [];
-  for (const e of latestEscalations.values()) {
-    if (resolvedIds.has(e.escalationId)) continue;
-    const sevToCategory: Record<typeof e.severity, DecisionCategory> = {
-      blocking: "near-term",
-      high: "near-term",
-      medium: "near-term",
-      low: "second-order",
-    };
-    escalationOpenDecisions.push({
-      id: e.escalationId,
-      title: e.question.length > 120 ? `${e.question.slice(0, 117)}...` : e.question,
-      category: sevToCategory[e.severity],
-      owner: e.raisedBy,
-      trigger: `AgentEscalation event (severity: ${e.severity})`,
-      decisionForCEO: e.question,
-      sourceDocs: [],
-      ...(e.blockedBy ? { note: `Blocked by: ${e.blockedBy}` } : {}),
-    });
-  }
+  // D-DATA-QUALITY-GOLDEN-SOURCE-V1: escalation→OpenDecision synthesis
+  // extracted to projections/decisions.ts so /api/decisions-register and
+  // cachedState both use the same function.
+  const escalationOpenDecisions = buildOpenDecisionsFromEscalations(escalations, resolvedIds);
 
   // Dedupe: prefer curated open entries over the event-synthesized fallback
   // (the latter has no human-authored `decisionForCEO` / `recommendation`).

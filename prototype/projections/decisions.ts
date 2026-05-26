@@ -9,6 +9,14 @@
 // continue to be the dominant input. Slices B/C migrate authoring and
 // backfill historical IDs.
 //
+// Slice 1 — D-DATA-QUALITY-GOLDEN-SOURCE-V1 (CEO-approved 2026-05-26):
+// `buildOpenDecisionsFromEscalations` extracted here so both
+// `dashboard/derive.ts` (cachedState path) and `dashboard/server.ts`
+// (/api/decisions-register path) share a single derivation function.
+// Previously the escalation→OpenDecision synthesis lived only in derive.ts;
+// the /api/decisions-register endpoint therefore showed 0 open decisions
+// when all open items were escalation-sourced.
+//
 // Spec: `/Users/marc/.claude/plans/the-current-setup-for-polymorphic-pie.md`
 // §"Target design / 3. Projection: one register, derived from events only".
 //
@@ -17,6 +25,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
+import type { AgentEscalationEventSummary, OpenDecision } from "../dashboard/types";
 import type {
   DecisionAuthority,
   DecisionCategory,
@@ -263,6 +272,58 @@ export function decisionsSourceFromStore(store: ReplayableStore): DecisionsEvent
     decisionEvents: () => store.replay({ type: "Decision" }),
     ceoDecisionEvents: () => store.replay({ type: "CeoDecision" }),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Escalation → OpenDecision synthesis (D-DATA-QUALITY-GOLDEN-SOURCE-V1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Converts unresolved AgentEscalation events into OpenDecision rows.
+ *
+ * Extracted from `dashboard/derive.ts` so BOTH the `/api/decisions-register`
+ * endpoint AND the cached-state path (`deriveState()`) use the same logic.
+ * Prior to this extraction the two paths diverged: derive.ts included
+ * escalation-sourced open decisions; /api/decisions-register did not.
+ *
+ * @param escalations - All AgentEscalation summaries (caller deduplicates or passes raw).
+ * @param resolvedIds - Set of decisionIds already in a terminal phase; escalations
+ *                      whose escalationId is in this set are excluded.
+ */
+export function buildOpenDecisionsFromEscalations(
+  escalations: readonly AgentEscalationEventSummary[],
+  resolvedIds: ReadonlySet<string>,
+): OpenDecision[] {
+  // Deduplicate: latest asOf per escalationId wins.
+  const latest = new Map<string, AgentEscalationEventSummary>();
+  for (const e of escalations) {
+    const prev = latest.get(e.escalationId);
+    if (!prev || prev.asOf <= e.asOf) latest.set(e.escalationId, e);
+  }
+
+  // Maps severity to pacing category (dashboard DecisionCategory, not domain category).
+  const sevToCategory: Record<AgentEscalationEventSummary["severity"], OpenDecision["category"]> = {
+    blocking: "near-term",
+    high: "near-term",
+    medium: "near-term",
+    low: "second-order",
+  };
+
+  const out: OpenDecision[] = [];
+  for (const e of latest.values()) {
+    if (resolvedIds.has(e.escalationId)) continue;
+    out.push({
+      id: e.escalationId,
+      title: e.question.length > 120 ? `${e.question.slice(0, 117)}...` : e.question,
+      category: sevToCategory[e.severity],
+      owner: e.raisedBy,
+      trigger: `AgentEscalation event (severity: ${e.severity})`,
+      decisionForCEO: e.question,
+      sourceDocs: [],
+      ...(e.blockedBy ? { note: `Blocked by: ${e.blockedBy}` } : {}),
+    });
+  }
+  return out;
 }
 
 // Re-export the terminal-phase set for downstream consumers that need

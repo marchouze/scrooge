@@ -263,6 +263,25 @@ export interface RuntimeHandlerInfo {
  */
 export type EscalationLifecycle = "open" | "acknowledged" | "delegated" | "decided" | "overdue";
 
+/**
+ * Raw summary of a single AgentEscalation event payload, as extracted by
+ * the EventSource.agentEscalations() reader. Defined here (canonical shared
+ * types) so both dashboard/derive.ts and projections/decisions.ts can import
+ * it without creating a circular dependency.
+ * D-DATA-QUALITY-GOLDEN-SOURCE-V1 — moved from derive.ts local definition.
+ */
+export interface AgentEscalationEventSummary {
+  readonly escalationId: string;
+  readonly raisedBy: string;
+  readonly question: string;
+  readonly options: readonly string[];
+  readonly blockedBy: string;
+  readonly severity: "low" | "medium" | "high" | "blocking";
+  readonly routedTo: string;
+  readonly deadline?: string;
+  readonly asOf: string;
+}
+
 export interface EscalationView {
   escalationId: string;
   raisedBy: string;

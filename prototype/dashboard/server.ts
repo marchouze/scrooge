@@ -114,7 +114,11 @@ import { runObligationReviewStatusRecon } from "../platform/recon/obligation-rev
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
-import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
+import {
+  buildDecisionsRegister,
+  buildOpenDecisionsFromEscalations,
+  decisionsSourceFromStore,
+} from "../projections/decisions";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
@@ -2971,17 +2975,37 @@ const server = Bun.serve({
     // Decisions register — all authorities (CEO, CRO, CoSec, Agent, etc.).
     // Authority: D-DECISIONS-FRAMEWORK-REDESIGN (unified Decision event type).
     if (url.pathname === "/api/decisions-register" && req.method === "GET") {
+      // D-DATA-QUALITY-GOLDEN-SOURCE-V1: include escalation-derived open
+      // decisions so this endpoint returns the same set as cachedState.decisionsOpenAll.
       const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
+      const resolvedIds = new Set(register.resolved.map((r) => r.decisionId));
+      const escalationOpen = buildOpenDecisionsFromEscalations(
+        EVENTS.agentEscalations(),
+        resolvedIds,
+      );
       return jsonResponse({
-        open: register.open.map((r) => ({
-          id: r.decisionId,
-          title: r.title,
-          authority: r.authority,
-          authorityRef: r.authorityRef,
-          category: r.category,
-          phase: r.phase,
-          requestedAt: r.openedAt,
-        })),
+        open: [
+          ...register.open.map((r) => ({
+            id: r.decisionId,
+            title: r.title,
+            authority: r.authority,
+            authorityRef: r.authorityRef,
+            category: r.category,
+            phase: r.phase,
+            requestedAt: r.openedAt,
+          })),
+          ...escalationOpen.map((d) => ({
+            id: d.id,
+            title: d.title,
+            authority: "Agent" as const,
+            authorityRef: d.owner,
+            category: d.category,
+            phase: "requested" as const,
+            requestedAt: undefined,
+            trigger: d.trigger,
+            note: d.note,
+          })),
+        ],
         resolved: register.resolved.map((r) => ({
           id: r.decisionId,
           title: r.title,
