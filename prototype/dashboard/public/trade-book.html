@@ -191,10 +191,26 @@
       <option value="repo">Repo</option>
       <option value="mmd">Money Market Deposit (MMD)</option>
       <option value="ib-placement">IB Placement</option>
+      <option value="equity">JSE Equity (M1)</option>
+      <option value="bond">SAGB Bond (M2)</option>
+      <option value="irs">Vanilla IRS (M3)</option>
     </select>
   </div>
 
   <form class="tb-form" id="tb-form" autocomplete="off" novalidate>
+
+    <!-- Booking mode -->
+    <div class="tb-field tb-form-full" style="margin-bottom: var(--space-4)">
+      <label>Booking mode</label>
+      <div class="tb-side-group">
+        <label class="tb-side-label">
+          <input type="radio" name="provenanceMode" value="production" checked> Production
+        </label>
+        <label class="tb-side-label">
+          <input type="radio" name="provenanceMode" value="simulated"> Simulated
+        </label>
+      </div>
+    </div>
 
     <!-- ================================================================ -->
     <!-- FX Spot fields                                                   -->
@@ -470,6 +486,270 @@
       </div>
     </div><!-- /#ib-fields -->
 
+    <!-- ================================================================ -->
+    <!-- Equity (M1) fields                                             -->
+    <!-- ================================================================ -->
+    <div id="equity-fields" style="display:none; grid-column: 1 / -1;">
+      <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field">
+          <label for="eq-trade-id">Trade ID</label>
+          <input type="text" id="eq-trade-id" name="eq_tradeId" placeholder="EQ-001">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-isin">ISIN</label>
+          <input type="text" id="eq-isin" name="eq_isin" placeholder="ZAE000259701">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-exchange">Exchange</label>
+          <input type="text" id="eq-exchange" name="eq_exchange" value="JSE">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-book-id">Book ID</label>
+          <input type="text" id="eq-book-id" name="eq_bookId" value="EQUITY-BOOK">
+        </div>
+
+        <div class="tb-field tb-form-full">
+          <label>Side</label>
+          <div class="tb-side-group">
+            <label class="tb-side-label">
+              <input type="radio" name="eq_side" value="buy" checked> Buy
+            </label>
+            <label class="tb-side-label">
+              <input type="radio" name="eq_side" value="sell"> Sell
+            </label>
+          </div>
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-quantity">Quantity (shares)</label>
+          <input type="number" id="eq-quantity" name="eq_quantity" min="1" step="1" placeholder="10000">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-price-zar">Price ZAR per share</label>
+          <input type="number" id="eq-price-zar" name="eq_priceZar" min="0.01" step="0.01" placeholder="150.00">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-trade-date">Trade date</label>
+          <input type="date" id="eq-trade-date" name="eq_tradeDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-settlement-date">Settlement date</label>
+          <input type="date" id="eq-settlement-date" name="eq_settlementDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-cpty-lei">Counterparty LEI</label>
+          <input type="text" id="eq-cpty-lei" name="eq_counterpartyLei" placeholder="529900T8BM49AURSDO55">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-cpty-name">Counterparty name</label>
+          <input type="text" id="eq-cpty-name" name="eq_counterpartyName" placeholder="Broker name">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-cpty-id">Counterparty ID <span class="tb-optional">(blank = LEI)</span></label>
+          <input type="text" id="eq-cpty-id" name="eq_counterpartyId" placeholder="LEI or internal ID">
+        </div>
+
+        <div class="tb-field">
+          <label for="eq-trader">Trader ref</label>
+          <input type="text" id="eq-trader" name="eq_trader" value="manual-desk">
+        </div>
+
+      </div>
+    </div><!-- /#equity-fields -->
+
+    <!-- ================================================================ -->
+    <!-- Bond (M2) fields                                                 -->
+    <!-- ================================================================ -->
+    <div id="bond-fields" style="display:none; grid-column: 1 / -1;">
+      <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field">
+          <label for="bond-trade-id">Trade ID</label>
+          <input type="text" id="bond-trade-id" name="bond_tradeId" placeholder="BOND-001">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-isin">Bond ISIN</label>
+          <input type="text" id="bond-isin" name="bond_isin" placeholder="ZAG000149037">
+        </div>
+
+        <div class="tb-field tb-form-full">
+          <label>Side</label>
+          <div class="tb-side-group">
+            <label class="tb-side-label">
+              <input type="radio" name="bond_side" value="buy" checked> Buy
+            </label>
+            <label class="tb-side-label">
+              <input type="radio" name="bond_side" value="sell"> Sell
+            </label>
+          </div>
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-nominal-minor">Nominal ZAR (cents)</label>
+          <input type="number" id="bond-nominal-minor" name="bond_nominalMinor" min="1" step="1" placeholder="10000000">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-clean-price-pct">Clean price %</label>
+          <input type="number" id="bond-clean-price-pct" name="bond_cleanPricePct" min="0.01" step="0.001" placeholder="97.50">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-accrued-minor">Accrued interest (cents)</label>
+          <input type="number" id="bond-accrued-minor" name="bond_accruedInterestMinor" min="0" step="1" value="0">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-settlement-date">Settlement date</label>
+          <input type="date" id="bond-settlement-date" name="bond_settlementDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-portfolio">Portfolio</label>
+          <select id="bond-portfolio" name="bond_portfolio">
+            <option value="trading-book" selected>Trading book</option>
+            <option value="banking-book">Banking book</option>
+          </select>
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-coupon-rate">Coupon rate (decimal e.g. 0.085)</label>
+          <input type="number" id="bond-coupon-rate" name="bond_couponRate" min="0" step="0.0001" placeholder="0.0850">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-maturity-date">Maturity date</label>
+          <input type="date" id="bond-maturity-date" name="bond_maturityDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-cpty-lei">Counterparty LEI</label>
+          <input type="text" id="bond-cpty-lei" name="bond_counterpartyLei" placeholder="529900T8BM49AURSDO55">
+        </div>
+
+        <div class="tb-field">
+          <label for="bond-book-id">Book ID</label>
+          <input type="text" id="bond-book-id" name="bond_bookId" value="BOND-BOOK">
+        </div>
+
+      </div>
+    </div><!-- /#bond-fields -->
+
+    <!-- ================================================================ -->
+    <!-- IRS (M3) fields                                                  -->
+    <!-- ================================================================ -->
+    <div id="irs-fields" style="display:none; grid-column: 1 / -1;">
+      <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field">
+          <label for="irs-trade-id">Trade ID</label>
+          <input type="text" id="irs-trade-id" name="irs_tradeId" placeholder="IRS-001">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-book-id">Book ID</label>
+          <input type="text" id="irs-book-id" name="irs_bookId" value="IRS-BOOK">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-cpty-lei">Counterparty LEI</label>
+          <input type="text" id="irs-cpty-lei" name="irs_counterpartyLei" placeholder="529900T8BM49AURSDO55">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-cpty-name">Counterparty name</label>
+          <input type="text" id="irs-cpty-name" name="irs_counterpartyName" placeholder="Counterparty bank name">
+        </div>
+
+        <div class="tb-field tb-form-full">
+          <label for="irs-cpty-id">Counterparty ID <span class="tb-optional">(blank = LEI)</span></label>
+          <input type="text" id="irs-cpty-id" name="irs_counterpartyId" placeholder="LEI or internal ID">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-notional-minor">Notional ZAR (cents)</label>
+          <input type="number" id="irs-notional-minor" name="irs_notionalMinor" min="1" step="1" placeholder="100000000000">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-fixed-rate-pct">Fixed rate %</label>
+          <input type="number" id="irs-fixed-rate-pct" name="irs_fixedRatePct" min="0.001" step="0.001" placeholder="8.5">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-floating-index">Floating index</label>
+          <select id="irs-floating-index" name="irs_floatingIndex">
+            <option value="JIBAR-3M" selected>JIBAR-3M</option>
+            <option value="JIBAR-1M">JIBAR-1M</option>
+            <option value="ZARONIA">ZARONIA</option>
+          </select>
+        </div>
+
+        <div class="tb-field">
+          <label>Bank pays</label>
+          <div class="tb-side-group">
+            <label class="tb-side-label">
+              <input type="radio" name="irs_bankPays" value="fixed" checked> Fixed
+            </label>
+            <label class="tb-side-label">
+              <input type="radio" name="irs_bankPays" value="floating"> Floating
+            </label>
+          </div>
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-trade-date">Trade date</label>
+          <input type="date" id="irs-trade-date" name="irs_tradeDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-effective-date">Effective date</label>
+          <input type="date" id="irs-effective-date" name="irs_effectiveDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-maturity-date">Maturity date</label>
+          <input type="date" id="irs-maturity-date" name="irs_maturityDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-payment-frequency">Payment frequency</label>
+          <select id="irs-payment-frequency" name="irs_paymentFrequency">
+            <option value="quarterly" selected>Quarterly</option>
+            <option value="monthly">Monthly</option>
+            <option value="semi-annual">Semi-annual</option>
+            <option value="annual">Annual</option>
+          </select>
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-day-count">Day count convention</label>
+          <select id="irs-day-count" name="irs_dayCount">
+            <option value="ACT/365" selected>ACT/365</option>
+            <option value="ACT/360">ACT/360</option>
+            <option value="30/360">30/360</option>
+          </select>
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-trader-ref">Trader ref</label>
+          <input type="text" id="irs-trader-ref" name="irs_traderRef" value="manual-desk">
+        </div>
+
+      </div>
+    </div><!-- /#irs-fields -->
+
     <!-- Submit -->
     <div class="tb-submit-row">
       <button type="submit" class="tb-btn" id="tb-submit">Book Trade</button>
@@ -490,7 +770,7 @@
 // Product-type field visibility toggle.
 // Called by the product-type <select> onchange handler.
 function showProductFields(type) {
-  const sections = ['fx-fields', 'repo-fields', 'mmd-fields', 'ib-fields'];
+  const sections = ['fx-fields', 'repo-fields', 'mmd-fields', 'ib-fields', 'equity-fields', 'bond-fields', 'irs-fields'];
   sections.forEach(function(id) {
     const el = document.getElementById(id);
     if (el) el.style.display = (id === type + '-fields') ? '' : 'none';
@@ -515,6 +795,26 @@ function showProductFields(type) {
   const todayIso = new Date().toISOString().slice(0, 10);
   if (repoStartInput) repoStartInput.value = todayIso;
   if (ibStartInput)   ibStartInput.value   = todayIso;
+
+  // Default equity/bond/IRS date fields
+  const eqTradeDateInput      = document.getElementById('eq-trade-date');
+  const eqSettleDateInput     = document.getElementById('eq-settlement-date');
+  const bondSettleDateInput   = document.getElementById('bond-settlement-date');
+  const irsTradeDateInput     = document.getElementById('irs-trade-date');
+  const irsEffectiveDateInput = document.getElementById('irs-effective-date');
+  const t2Iso = (function() {
+    const d = new Date(); d.setDate(d.getDate() + 2);
+    return d.toISOString().slice(0, 10);
+  })();
+  const t3Iso = (function() {
+    const d = new Date(); d.setDate(d.getDate() + 3);
+    return d.toISOString().slice(0, 10);
+  })();
+  if (eqTradeDateInput)      eqTradeDateInput.value      = todayIso;
+  if (eqSettleDateInput)     eqSettleDateInput.value     = t3Iso;
+  if (bondSettleDateInput)   bondSettleDateInput.value   = t3Iso;
+  if (irsTradeDateInput)     irsTradeDateInput.value     = todayIso;
+  if (irsEffectiveDateInput) irsEffectiveDateInput.value = t2Iso;
 
   // Populate counterparty select from onboarded KYC clients
   const cptySelect = document.getElementById('tb-cpty-select');
@@ -617,11 +917,13 @@ function showProductFields(type) {
 
     const productType = productTypeSelect ? productTypeSelect.value : 'fx';
     const data = new FormData(form);
+    const provenanceMode = (document.querySelector('input[name="provenanceMode"]:checked') || {}).value || 'production';
 
     let body;
     if (productType === 'fx') {
       body = {
         productType: 'fx',
+        provenanceMode,
         currencyPair: {
           base: data.get('base'),
           quote: data.get('quote'),
@@ -647,6 +949,7 @@ function showProductFields(type) {
       const repurchasePrice = Math.round(startCash * (1 + (ratePct / 100) * days / 365));
       body = {
         productType: 'repo',
+        provenanceMode,
         tradeId: data.get('repo_tradeId'),
         counterpartyLei: data.get('repo_counterpartyLei'),
         startLegSettlementDate: startDate,
@@ -664,6 +967,7 @@ function showProductFields(type) {
     } else if (productType === 'mmd') {
       body = {
         productType: 'mmd',
+        provenanceMode,
         depositId: data.get('mmd_depositId'),
         counterpartyLei: data.get('mmd_counterpartyLei'),
         principalZar: parseInt(data.get('mmd_principalZar'), 10),
@@ -676,6 +980,7 @@ function showProductFields(type) {
     } else if (productType === 'ib-placement') {
       body = {
         productType: 'ib-placement',
+        provenanceMode,
         placementId: data.get('ib_placementId'),
         counterpartyLei: data.get('ib_counterpartyLei'),
         principalZar: parseInt(data.get('ib_principalZar'), 10),
@@ -685,6 +990,61 @@ function showProductFields(type) {
         placementType: data.get('ib_placementType'),
         bookId: data.get('ib_bookId') || 'TREASURY',
         instrumentRef: data.get('ib_instrumentRef') || 'fi:pam:IBL-1M-001',
+      };
+    } else if (productType === 'equity') {
+      body = {
+        productType: 'equity',
+        provenanceMode,
+        eq_tradeId: data.get('eq_tradeId'),
+        eq_isin: data.get('eq_isin'),
+        eq_exchange: data.get('eq_exchange') || 'JSE',
+        eq_side: data.get('eq_side'),
+        eq_quantity: Number(data.get('eq_quantity')),
+        eq_priceZar: Number(data.get('eq_priceZar')),
+        eq_tradeDate: data.get('eq_tradeDate'),
+        eq_settlementDate: data.get('eq_settlementDate'),
+        eq_counterpartyId: data.get('eq_counterpartyId') || undefined,
+        eq_counterpartyName: data.get('eq_counterpartyName'),
+        eq_counterpartyLei: data.get('eq_counterpartyLei'),
+        eq_trader: data.get('eq_trader') || 'manual-desk',
+        eq_bookId: data.get('eq_bookId') || 'EQUITY-BOOK',
+      };
+    } else if (productType === 'bond') {
+      body = {
+        productType: 'bond',
+        provenanceMode,
+        bond_tradeId: data.get('bond_tradeId'),
+        bond_isin: data.get('bond_isin'),
+        bond_side: data.get('bond_side'),
+        bond_nominalMinor: Number(data.get('bond_nominalMinor')),
+        bond_cleanPricePct: Number(data.get('bond_cleanPricePct')),
+        bond_accruedInterestMinor: Number(data.get('bond_accruedInterestMinor') || 0),
+        bond_settlementDate: data.get('bond_settlementDate'),
+        bond_portfolio: data.get('bond_portfolio'),
+        bond_couponRate: Number(data.get('bond_couponRate')),
+        bond_maturityDate: data.get('bond_maturityDate'),
+        bond_counterpartyLei: data.get('bond_counterpartyLei'),
+        bond_bookId: data.get('bond_bookId') || 'BOND-BOOK',
+      };
+    } else if (productType === 'irs') {
+      body = {
+        productType: 'irs',
+        provenanceMode,
+        irs_tradeId: data.get('irs_tradeId'),
+        irs_counterpartyId: data.get('irs_counterpartyId') || undefined,
+        irs_counterpartyName: data.get('irs_counterpartyName'),
+        irs_counterpartyLei: data.get('irs_counterpartyLei'),
+        irs_notionalMinor: Number(data.get('irs_notionalMinor')),
+        irs_fixedRatePct: Number(data.get('irs_fixedRatePct')),
+        irs_floatingIndex: data.get('irs_floatingIndex'),
+        irs_bankPays: data.get('irs_bankPays'),
+        irs_tradeDate: data.get('irs_tradeDate'),
+        irs_effectiveDate: data.get('irs_effectiveDate'),
+        irs_maturityDate: data.get('irs_maturityDate'),
+        irs_paymentFrequency: data.get('irs_paymentFrequency'),
+        irs_dayCount: data.get('irs_dayCount'),
+        irs_bookId: data.get('irs_bookId') || 'IRS-BOOK',
+        irs_traderRef: data.get('irs_traderRef') || 'manual-desk',
       };
     }
 
