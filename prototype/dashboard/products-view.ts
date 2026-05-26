@@ -21,8 +21,8 @@
 //
 // Author: Scrooge-coordinated session for marc@tgv.co.za.
 
-import type { EventStore } from "../platform/event-store/store";
 import { PRODUCT_TYPED_EVENT_TYPES } from "../platform/event-store/event-types/product";
+import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,

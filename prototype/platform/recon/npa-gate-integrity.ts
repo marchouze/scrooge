@@ -59,45 +59,36 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   // Query all product-lifecycle events.
   const productEventTypeSet = new Set<string>(PRODUCT_TYPED_EVENT_TYPES);
-  const productEvents = Array.from(store.replay()).filter((ev) =>
-    productEventTypeSet.has(ev.type),
-  );
+  const productEvents = Array.from(store.replay()).filter((ev) => productEventTypeSet.has(ev.type));
 
   const register = buildProductRegisterView(productEvents);
 
   const violations: ReconViolation[] = [];
-  let asserted = 0;
 
   for (const row of register.values()) {
     const { lifecycleStage, productId, attestedDimensions, pendingDimensions } = row;
 
     if (ENFORCED_STAGES.has(lifecycleStage)) {
-      asserted++;
       result.asserted++;
       const gateResult = validateNpaGate(row);
       if (!gateResult.ready) {
+        const missingList = gateResult.missing.map((d) => `\`${d}\``).join(", ");
         violations.push({
           subject: productId,
-          message:
-            `product \`${productId}\` is at stage \`${lifecycleStage}\` but has ` +
-            `${gateResult.missing.length} un-attested NPA dimensions: ` +
-            gateResult.missing.map((d) => `\`${d}\``).join(", ") +
-            `. All 14 dimensions must be attested before controlled-launch ` +
-            `(authority: D-NEW-PRODUCT-APPROVAL-POLICY §5).`,
+          message: `product \`${productId}\` is at stage \`${lifecycleStage}\` but has ${gateResult.missing.length} un-attested NPA dimensions: ${missingList}. All 14 dimensions must be attested before controlled-launch (authority: D-NEW-PRODUCT-APPROVAL-POLICY §5).`,
           severity: "fail",
         });
       }
     } else if (lifecycleStage !== "retired") {
       // Info-level: show coverage for pre-launch products.
       result.asserted++;
+      const pendingNote =
+        pendingDimensions.length > 0
+          ? `; pending: ${pendingDimensions.map((d) => `\`${d}\``).join(", ")}`
+          : "; all dimensions attested";
       violations.push({
         subject: productId,
-        message:
-          `product \`${productId}\` (stage: \`${lifecycleStage}\`) — ` +
-          `${attestedDimensions.size}/14 dimensions attested` +
-          (pendingDimensions.length > 0
-            ? `; pending: ${pendingDimensions.map((d) => `\`${d}\``).join(", ")}`
-            : "; all dimensions attested"),
+        message: `product \`${productId}\` (stage: \`${lifecycleStage}\`) — ${attestedDimensions.size}/14 dimensions attested${pendingNote}`,
         severity: "info",
       });
     }

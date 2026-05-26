@@ -19,8 +19,8 @@
 // Author: Atlas (substrate authority)
 
 import type { Event } from "../../event-store/types";
-import type { ProductFamily, ProductLifecycleStage } from "../../markets/products/types";
 import { PRODUCT_DIMENSION_VALUES } from "../../markets/products/semantic";
+import type { ProductFamily, ProductLifecycleStage } from "../../markets/products/types";
 
 // Re-export for convenience of callers that only import from this module.
 export type { ProductFamily, ProductLifecycleStage };
@@ -67,15 +67,15 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
 
   for (const ev of events) {
     const p = ev.payload as Record<string, unknown>;
-    const productId = typeof p.productId === "string" ? p.productId : null;
-    if (!productId) continue;
+    if (typeof p.productId !== "string" || p.productId === "") continue;
+    const productId: string = p.productId;
 
     // Helper: get or create a mutable draft row.
     function row(): ProductRegisterRow {
-      let r = register.get(productId!);
+      let r = register.get(productId);
       if (!r) {
         r = {
-          productId: productId!,
+          productId,
           family: "fx", // placeholder until ProductConceptualised arrives
           version: "0.0.0",
           lifecycleStage: "proposed",
@@ -84,7 +84,7 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
           citations: ev.citations,
           updatedAt: ev.as_of,
         };
-        register.set(productId!, r);
+        register.set(productId, r);
       }
       return r;
     }

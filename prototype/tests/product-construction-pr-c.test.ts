@@ -14,13 +14,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { EventStore } from "../platform/event-store/store";
 import {
   makeProductConceptualised,
   makeProductDimensionAttested,
   makeProductLaunched,
   makeProductVersionPublished,
 } from "../platform/event-store/event-types/product";
+import { EventStore } from "../platform/event-store/store";
 import { validateNpaGate } from "../platform/markets/products/npa-gate";
 import {
   ALL_NPA_DIMENSION_KEYS,
@@ -68,10 +68,10 @@ describe("Product Register projection", () => {
     const register = buildProductRegisterView([ev]);
     const row = register.get(productId);
     expect(row).toBeDefined();
-    expect(row!.lifecycleStage).toBe("conceptualised");
-    expect(row!.version).toBe("1.0.0");
-    expect(row!.pendingDimensions.length).toBe(14);
-    expect(row!.attestedDimensions.size).toBe(0);
+    expect(row?.lifecycleStage).toBe("conceptualised");
+    expect(row?.version).toBe("1.0.0");
+    expect(row?.pendingDimensions.length).toBe(14);
+    expect(row?.attestedDimensions.size).toBe(0);
   });
 
   it("ProductDimensionAttested → dimension appears in attestedDimensions", () => {
@@ -103,9 +103,9 @@ describe("Product Register projection", () => {
     const register = buildProductRegisterView([conceptualised, attested]);
     const row = register.get(productId);
     expect(row).toBeDefined();
-    expect(row!.attestedDimensions.has("market-risk")).toBe(true);
-    expect(row!.pendingDimensions).not.toContain("market-risk");
-    expect(row!.pendingDimensions.length).toBe(13);
+    expect(row?.attestedDimensions.has("market-risk")).toBe(true);
+    expect(row?.pendingDimensions).not.toContain("market-risk");
+    expect(row?.pendingDimensions.length).toBe(13);
   });
 
   it("ProductLaunched → lifecycleStage 'controlled-launch'", () => {
@@ -137,7 +137,7 @@ describe("Product Register projection", () => {
     const register = buildProductRegisterView([conceptualised, launched]);
     const row = register.get(productId);
     expect(row).toBeDefined();
-    expect(row!.lifecycleStage).toBe("controlled-launch");
+    expect(row?.lifecycleStage).toBe("controlled-launch");
   });
 
   it("ProductVersionPublished → version updated", () => {
@@ -169,9 +169,9 @@ describe("Product Register projection", () => {
     const register = buildProductRegisterView([conceptualised, versionPublished]);
     const row = register.get(productId);
     expect(row).toBeDefined();
-    expect(row!.version).toBe("1.1.0");
+    expect(row?.version).toBe("1.1.0");
     // Stage is unchanged from conceptualised
-    expect(row!.lifecycleStage).toBe("conceptualised");
+    expect(row?.lifecycleStage).toBe("conceptualised");
   });
 });
 
@@ -195,8 +195,9 @@ describe("NPA gate", () => {
       },
     });
     const register = buildProductRegisterView([conceptualised]);
-    const row = register.get(productId)!;
-    const result = validateNpaGate(row);
+    const row = register.get(productId);
+    expect(row).toBeDefined();
+    const result = validateNpaGate(row as NonNullable<typeof row>);
     expect(result.ready).toBe(false);
     expect(result.missing.length).toBe(14);
   });
@@ -230,8 +231,9 @@ describe("NPA gate", () => {
       }),
     );
     const register = buildProductRegisterView([conceptualised, ...attestations]);
-    const row = register.get(productId)!;
-    const result = validateNpaGate(row);
+    const row = register.get(productId);
+    expect(row).toBeDefined();
+    const result = validateNpaGate(row as NonNullable<typeof row>);
     expect(result.ready).toBe(true);
     expect(result.missing.length).toBe(0);
   });
@@ -267,8 +269,9 @@ describe("NPA gate", () => {
       }),
     );
     const register = buildProductRegisterView([conceptualised, ...attestations]);
-    const row = register.get(productId)!;
-    const result = validateNpaGate(row);
+    const row = register.get(productId);
+    expect(row).toBeDefined();
+    const result = validateNpaGate(row as NonNullable<typeof row>);
     expect(result.ready).toBe(false);
     expect(result.missing.length).toBe(2);
   });
