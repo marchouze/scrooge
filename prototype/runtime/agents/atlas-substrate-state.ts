@@ -386,67 +386,89 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // Gap 2: GH Actions cron drift (A2.1) → cross-host scheduler unreliability.
     //   Self-escalate to Atlas so it surfaces on Atlas's own inbound queue.
     //
-    // Pattern mirrors RiskRaised below; both unblock downstream consumers
-    // that subscribe to AgentEscalation events (Vera pipelines, dashboard).
+    // Idempotency: emit only when no undecided escalation with the same stem
+    // already exists. This prevents accumulation of date-stamped duplicates
+    // when the question hasn't been answered yet.
     // -------------------------------------------------------------------------
     const atlasEscActor = { type: "service" as const, id: "agent:atlas:substrate-state" };
 
-    eventStore.append(
-      makeAgentEscalation({
-        asOf: ctx.asOf,
-        entity: "LE-ZA-HOZ-BANK",
-        actor: atlasEscActor,
-        citations: EVENT_CITATIONS,
-        payload: {
-          escalationId: `esc:atlas:bus-in-process-${fmtDateUTC(ctx.asOf)}`,
-          raisedBy: "Atlas",
-          question:
-            "Event-driven dispatch is in-process only (no cross-process bus). " +
-            "Vera audit pipelines #14 and #15 are gated on AgentEscalation events " +
-            "flowing from a running handler to Vera's subscriber — which requires at " +
-            "minimum in-process fan-out to be wired. Are pipelines #14/#15 now unblocked, " +
-            "or does Vera need an explicit integration test before marking them green?",
-          options: [
-            "Confirm in-process fan-out satisfies pipelines #14/#15 for now; track cross-process bus as M8 work only.",
-            "Vera runs integration test against the emitted AgentEscalation events before closing #14/#15.",
-            "Defer: keep #14/#15 blocked until the full cross-process bus lands (M8 cloud lift).",
-          ],
-          blockedBy: "M8 cloud-lift (cross-process event bus)",
-          severity: "medium",
-          routedTo: "Vera",
-        },
-      }),
-    );
-    eventsEmitted++;
+    // Build decided-escalation set once for both checks below.
+    const decidedEscIds = new Set<string>();
+    for (const e of eventStore.replay({ type: "AgentEscalationDecided" })) {
+      const p = e.payload as Record<string, unknown>;
+      const id = String(p.escalationId ?? "");
+      if (id) decidedEscIds.add(id);
+    }
 
-    eventStore.append(
-      makeAgentEscalation({
-        asOf: ctx.asOf,
-        entity: "LE-ZA-HOZ-BANK",
-        actor: atlasEscActor,
-        citations: EVENT_CITATIONS,
-        payload: {
-          escalationId: `esc:atlas:cron-drift-a2-1-${fmtDateUTC(ctx.asOf)}`,
-          raisedBy: "Atlas",
-          question:
-            "GH Actions cron reliability is an ongoing substrate gap (A2.1). " +
-            "Scheduled runs have been observed to drift by hours or be silently dropped. " +
-            "Workaround (distinct off-the-hour minutes per workflow) is in place but is " +
-            "not a permanent fix. Should Atlas prioritise the A2.1 substrate scheduler " +
-            "(Bun process emitting typed ScheduledTrigger events) ahead of other " +
-            "planned M-phase work, or continue with the workaround through the build phase?",
-          options: [
-            "Prioritise A2.1 substrate scheduler ahead of other M-phase items.",
-            "Continue with the cron-minute workaround; revisit at M8 cloud lift.",
-            "Accept residual drift risk and document it in Atlas's substrate-gap register.",
-          ],
-          blockedBy: "A2.1 substrate scheduler not yet built",
-          severity: "medium",
-          routedTo: "Atlas",
-        },
-      }),
-    );
-    eventsEmitted++;
+    function hasOpenEscalation(stem: string): boolean {
+      for (const e of eventStore.replay({ type: "AgentEscalation" })) {
+        const p = e.payload as Record<string, unknown>;
+        const id = String(p.escalationId ?? "");
+        if (id.startsWith(stem) && !decidedEscIds.has(id)) return true;
+      }
+      return false;
+    }
+
+    if (!hasOpenEscalation("esc:atlas:bus-in-process-")) {
+      eventStore.append(
+        makeAgentEscalation({
+          asOf: ctx.asOf,
+          entity: "LE-ZA-HOZ-BANK",
+          actor: atlasEscActor,
+          citations: EVENT_CITATIONS,
+          payload: {
+            escalationId: `esc:atlas:bus-in-process-${fmtDateUTC(ctx.asOf)}`,
+            raisedBy: "Atlas",
+            question:
+              "Event-driven dispatch is in-process only (no cross-process bus). " +
+              "Vera audit pipelines #14 and #15 are gated on AgentEscalation events " +
+              "flowing from a running handler to Vera's subscriber — which requires at " +
+              "minimum in-process fan-out to be wired. Are pipelines #14/#15 now unblocked, " +
+              "or does Vera need an explicit integration test before marking them green?",
+            options: [
+              "Confirm in-process fan-out satisfies pipelines #14/#15 for now; track cross-process bus as M8 work only.",
+              "Vera runs integration test against the emitted AgentEscalation events before closing #14/#15.",
+              "Defer: keep #14/#15 blocked until the full cross-process bus lands (M8 cloud lift).",
+            ],
+            blockedBy: "M8 cloud-lift (cross-process event bus)",
+            severity: "medium",
+            routedTo: "Vera",
+          },
+        }),
+      );
+      eventsEmitted++;
+    }
+
+    if (!hasOpenEscalation("esc:atlas:cron-drift-a2-1-")) {
+      eventStore.append(
+        makeAgentEscalation({
+          asOf: ctx.asOf,
+          entity: "LE-ZA-HOZ-BANK",
+          actor: atlasEscActor,
+          citations: EVENT_CITATIONS,
+          payload: {
+            escalationId: `esc:atlas:cron-drift-a2-1-${fmtDateUTC(ctx.asOf)}`,
+            raisedBy: "Atlas",
+            question:
+              "GH Actions cron reliability is an ongoing substrate gap (A2.1). " +
+              "Scheduled runs have been observed to drift by hours or be silently dropped. " +
+              "Workaround (distinct off-the-hour minutes per workflow) is in place but is " +
+              "not a permanent fix. Should Atlas prioritise the A2.1 substrate scheduler " +
+              "(Bun process emitting typed ScheduledTrigger events) ahead of other " +
+              "planned M-phase work, or continue with the workaround through the build phase?",
+            options: [
+              "Prioritise A2.1 substrate scheduler ahead of other M-phase items.",
+              "Continue with the cron-minute workaround; revisit at M8 cloud lift.",
+              "Accept residual drift risk and document it in Atlas's substrate-gap register.",
+            ],
+            blockedBy: "A2.1 substrate scheduler not yet built",
+            severity: "medium",
+            routedTo: "Atlas",
+          },
+        }),
+      );
+      eventsEmitted++;
+    }
 
     // -------------------------------------------------------------------------
     // AgentDecision — classify the event bus as in-process-only.

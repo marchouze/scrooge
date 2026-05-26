@@ -151,6 +151,10 @@ export interface EventSource {
   // When provided, replaces the Owner Inbox FS scan in agent mini-dashboards.
   // Optional for backwards compat with test fixtures that don't wire this.
   recentDeliverables?(agentName: string, limit?: number): AgentDeliverable[];
+  // Returns the set of escalation IDs that have a terminal AgentEscalationDecided
+  // event. Used to filter decided escalations out of the open-decisions dashboard.
+  // Optional for backwards compat with test fixtures.
+  decidedEscalationIds?(): string[];
 }
 
 export interface DeriveOpts {
@@ -317,6 +321,15 @@ export function eventSourceFromStore(store: EventStore): EventSource {
       // `replay` is itself a generator. Both `Decision` and (transition)
       // `CeoDecision` events feed in.
       return buildDecisionsRegister(decisionsSourceFromStore(store));
+    },
+    decidedEscalationIds(): string[] {
+      const out: string[] = [];
+      for (const e of store.replay({ type: "AgentEscalationDecided" })) {
+        const p = e.payload as Record<string, unknown>;
+        const id = String(p.escalationId ?? "");
+        if (id) out.push(id);
+      }
+      return out;
     },
     recentDeliverables(agentName: string, limit = 5): AgentDeliverable[] {
       // RMS Phase 2 — read RecordFiled events authored by this agent.
@@ -1257,6 +1270,12 @@ export function deriveState(opts: DeriveOpts): DashboardState {
   // ownerInboxFeed has been removed from DashboardState. Decisions are now
   // sourced exclusively from the events-only projection (Decision events).
   const resolvedIds = new Set(resolved.map((r) => r.id));
+  // Also include decided escalation IDs so buildOpenDecisionsFromEscalations
+  // filters them out. AgentEscalationDecided events are terminal for the
+  // escalation channel but were not previously reflected in resolvedIds.
+  for (const id of opts.events.decidedEscalationIds?.() ?? []) {
+    resolvedIds.add(id);
+  }
 
   // D-DECISIONS-FRAMEWORK-REDESIGN — Owner Inbox markdown is retired as an
   // authoring channel. ownerInboxOpenDecisions is always empty; kept for the
