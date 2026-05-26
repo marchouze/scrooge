@@ -117,11 +117,10 @@ function main(argv: ReadonlyArray<string>): number {
   db.close();
 
   process.stdout.write(
-    `${PIPELINE}: reclassified ${result.changes} ProvenanceReclassified event(s) ` +
-      `kind:production→kind:simulated (sourceLineage:test-run-1)\n`,
+    `${PIPELINE}: reclassified ${result.changes} ProvenanceReclassified event(s) kind:production→kind:simulated (sourceLineage:test-run-1)\n`,
   );
   process.stdout.write(
-    `${PIPELINE}: run \`bun run recon:test-lineage-not-in-production\` to verify 0 violations\n`,
+    `${PIPELINE}: run 'bun run recon:test-lineage-not-in-production' to verify 0 violations\n`,
   );
 
   return 0;
