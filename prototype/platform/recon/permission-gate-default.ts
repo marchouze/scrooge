@@ -165,6 +165,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // attestation coverage. Gate is a no-op on replay. Citation:
   // D-NEW-PRODUCT-APPROVAL-POLICY §5, P4-SECURITY-DESIGNED-IN.
   "platform/recon/npa-gate-integrity.ts",
+  // ProductApproved attestation-integrity recon (D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8)
+  // — backward-looking read-only replay of ProductApproved + ProductDimensionAttested events
+  // to assert governance integrity before approval. Gate is a no-op on replay.
+  // Citation: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8, D-NEW-PRODUCT-APPROVAL-POLICY,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/recon/product-approval-attestation-integrity.ts",
   // PartitionedEventStore — substrate class that opens cold archive SQLite
   // databases for read-only replay; no appends; gate is a no-op on replay.
   // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.
