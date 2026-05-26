@@ -16,20 +16,38 @@ import { randomBytes } from "node:crypto";
 
 import { clock, eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
+import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
 import {
   makeDepositTaken,
   makeInterbankLoanPlaced,
   makeRepoTradeOpened,
 } from "../platform/event-store/event-types/repo-mmd-ibl";
-import { productionTag } from "../platform/event-store/provenance";
+import { productionTag, simulatedTag } from "../platform/event-store/provenance";
+import type { ProvenanceTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
+import { makeEquityTradeBooked } from "../platform/markets/cdm/equity";
 import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
+import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+function resolveProvenance(mode: unknown, product: string): ProvenanceTag {
+  if (mode === "simulated") {
+    return simulatedTag({
+      scenario: "operator:manual-sim-booking",
+      sourceLineage: "operator:manual-trade-booking",
+      tags: ["manual", "sim", product],
+    });
+  }
+  return productionTag({
+    sourceLineage: "operator:manual-trade-booking",
+    tags: ["manual", product],
+  });
+}
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -48,6 +66,7 @@ function isValidDate(s: string): boolean {
 
 interface TradeBookBody {
   productType?: unknown;
+  provenanceMode?: unknown;
   // FX Spot fields
   currencyPair?: { base?: unknown; quote?: unknown };
   side?: unknown;
@@ -81,6 +100,49 @@ interface TradeBookBody {
   rateDecimal?: unknown;
   startDate?: unknown;
   placementType?: unknown;
+  // Equity fields
+  eq_tradeId?: unknown;
+  eq_isin?: unknown;
+  eq_exchange?: unknown;
+  eq_side?: unknown;
+  eq_quantity?: unknown;
+  eq_priceZar?: unknown;
+  eq_tradeDate?: unknown;
+  eq_settlementDate?: unknown;
+  eq_counterpartyId?: unknown;
+  eq_counterpartyName?: unknown;
+  eq_counterpartyLei?: unknown;
+  eq_trader?: unknown;
+  eq_bookId?: unknown;
+  // Bond fields
+  bond_tradeId?: unknown;
+  bond_isin?: unknown;
+  bond_side?: unknown;
+  bond_nominalMinor?: unknown;
+  bond_cleanPricePct?: unknown;
+  bond_accruedInterestMinor?: unknown;
+  bond_settlementDate?: unknown;
+  bond_portfolio?: unknown;
+  bond_couponRate?: unknown;
+  bond_maturityDate?: unknown;
+  bond_counterpartyLei?: unknown;
+  bond_bookId?: unknown;
+  // IRS fields
+  irs_tradeId?: unknown;
+  irs_counterpartyId?: unknown;
+  irs_counterpartyName?: unknown;
+  irs_counterpartyLei?: unknown;
+  irs_notionalMinor?: unknown;
+  irs_fixedRatePct?: unknown;
+  irs_floatingIndex?: unknown;
+  irs_bankPays?: unknown;
+  irs_tradeDate?: unknown;
+  irs_effectiveDate?: unknown;
+  irs_maturityDate?: unknown;
+  irs_paymentFrequency?: unknown;
+  irs_dayCount?: unknown;
+  irs_bookId?: unknown;
+  irs_traderRef?: unknown;
 }
 
 // ---------------------------------------------------------------------------
@@ -220,10 +282,10 @@ async function handleRepoBooking(body: TradeBookBody): Promise<Response> {
     },
   });
 
-  (repoEvent as Record<string, unknown>).provenance = productionTag({
-    sourceLineage: "operator:manual-trade-booking",
-    tags: ["manual", "treasury", "repo"],
-  });
+  (repoEvent as Record<string, unknown>).provenance = resolveProvenance(
+    body.provenanceMode,
+    "repo",
+  );
 
   eventStore.append(repoEvent);
 
@@ -332,10 +394,10 @@ async function handleMMDBooking(body: TradeBookBody): Promise<Response> {
     },
   });
 
-  (depositEvent as Record<string, unknown>).provenance = productionTag({
-    sourceLineage: "operator:manual-trade-booking",
-    tags: ["manual", "treasury", "mmd"],
-  });
+  (depositEvent as Record<string, unknown>).provenance = resolveProvenance(
+    body.provenanceMode,
+    "mmd",
+  );
 
   eventStore.append(depositEvent);
 
@@ -442,10 +504,7 @@ async function handleIBLBooking(body: TradeBookBody): Promise<Response> {
     },
   });
 
-  (iblEvent as Record<string, unknown>).provenance = productionTag({
-    sourceLineage: "operator:manual-trade-booking",
-    tags: ["manual", "treasury", "ibl"],
-  });
+  (iblEvent as Record<string, unknown>).provenance = resolveProvenance(body.provenanceMode, "ibl");
 
   eventStore.append(iblEvent);
 
@@ -471,6 +530,475 @@ async function handleIBLBooking(body: TradeBookBody): Promise<Response> {
   }
 
   return jsonResponse({ ok: true, placementId, eventId });
+}
+
+// ---------------------------------------------------------------------------
+// Markets booking helpers — Equity / Bond / IRS
+// ---------------------------------------------------------------------------
+
+const MARKETS_CITATIONS = ["D-MANUAL-TRADE-BOOKING", "D-TRADE-LIFECYCLE-IFRS-CHAIN"] as const;
+
+async function handleEquityBooking(body: TradeBookBody): Promise<Response> {
+  const eq_tradeId =
+    typeof body.eq_tradeId === "string" && body.eq_tradeId.trim() ? body.eq_tradeId.trim() : null;
+  if (!eq_tradeId) return jsonResponse({ ok: false, error: "eq_tradeId is required" }, 400);
+
+  const eq_isin =
+    typeof body.eq_isin === "string" && body.eq_isin.trim() ? body.eq_isin.trim() : null;
+  if (!eq_isin) return jsonResponse({ ok: false, error: "eq_isin is required" }, 400);
+
+  const eq_exchange =
+    typeof body.eq_exchange === "string" && body.eq_exchange.trim()
+      ? body.eq_exchange.trim()
+      : "JSE";
+
+  if (body.eq_side !== "buy" && body.eq_side !== "sell")
+    return jsonResponse({ ok: false, error: "eq_side must be 'buy' or 'sell'" }, 400);
+  const eq_side = body.eq_side as "buy" | "sell";
+
+  const eq_quantity =
+    typeof body.eq_quantity === "number" ? body.eq_quantity : Number(body.eq_quantity);
+  if (!Number.isFinite(eq_quantity) || eq_quantity <= 0)
+    return jsonResponse({ ok: false, error: "eq_quantity must be a positive number" }, 400);
+
+  const eq_priceZar =
+    typeof body.eq_priceZar === "number" ? body.eq_priceZar : Number(body.eq_priceZar);
+  if (!Number.isFinite(eq_priceZar) || eq_priceZar <= 0)
+    return jsonResponse({ ok: false, error: "eq_priceZar must be a positive number" }, 400);
+
+  const eq_tradeDate = typeof body.eq_tradeDate === "string" ? body.eq_tradeDate : "";
+  if (!isValidDate(eq_tradeDate))
+    return jsonResponse({ ok: false, error: "eq_tradeDate must be a valid YYYY-MM-DD date" }, 400);
+
+  const eq_settlementDate =
+    typeof body.eq_settlementDate === "string" ? body.eq_settlementDate : "";
+  if (!isValidDate(eq_settlementDate))
+    return jsonResponse(
+      { ok: false, error: "eq_settlementDate must be a valid YYYY-MM-DD date" },
+      400,
+    );
+
+  const eq_counterpartyLei =
+    typeof body.eq_counterpartyLei === "string" && body.eq_counterpartyLei.trim()
+      ? body.eq_counterpartyLei.trim()
+      : null;
+  if (!eq_counterpartyLei)
+    return jsonResponse({ ok: false, error: "eq_counterpartyLei is required" }, 400);
+
+  const eq_counterpartyName =
+    typeof body.eq_counterpartyName === "string" && body.eq_counterpartyName.trim()
+      ? body.eq_counterpartyName.trim()
+      : null;
+  if (!eq_counterpartyName)
+    return jsonResponse({ ok: false, error: "eq_counterpartyName is required" }, 400);
+
+  const eq_counterpartyId =
+    typeof body.eq_counterpartyId === "string" && body.eq_counterpartyId.trim()
+      ? body.eq_counterpartyId.trim()
+      : eq_counterpartyLei;
+
+  const eq_trader =
+    typeof body.eq_trader === "string" && body.eq_trader.trim()
+      ? body.eq_trader.trim()
+      : "manual-desk";
+
+  const eq_bookId =
+    typeof body.eq_bookId === "string" && body.eq_bookId.trim()
+      ? body.eq_bookId.trim()
+      : "EQUITY-BOOK";
+
+  const asOf = clock.now();
+  const eventId = newEventId();
+
+  const equityEvent = makeEquityTradeBooked({
+    asOf,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "human", id: "operator" },
+    citations: [...MARKETS_CITATIONS],
+    eventId,
+    payload: {
+      tradeId: { scheme: "internal-manual", value: eq_tradeId },
+      instrument: {
+        identifier: { scheme: "JSE", value: eq_isin },
+        class: "listed-equity" as const,
+        currency: "ZAR",
+        venue: eq_exchange,
+      },
+      side: eq_side,
+      quantity: { unit: "share" as const, amount: eq_quantity },
+      price: { currency: "ZAR", amount: eq_priceZar },
+      consideration: {
+        currency: "ZAR",
+        amountMinor: Math.round(eq_quantity * eq_priceZar * 100),
+      },
+      tradeDate: { iso: eq_tradeDate, calendar: "JIHCAL" as const },
+      settlementDate: { iso: eq_settlementDate, calendar: "JIHCAL" as const },
+      counterparty: {
+        partyId: eq_counterpartyId,
+        name: eq_counterpartyName,
+        role: "counterparty" as const,
+      },
+      venue: eq_exchange,
+      trader: eq_trader,
+      bookId: eq_bookId,
+    },
+  });
+
+  (equityEvent as Record<string, unknown>).provenance = resolveProvenance(
+    body.provenanceMode,
+    "equity",
+  );
+
+  eventStore.append(equityEvent);
+
+  const ctx: AgentRunContext = {
+    agent: "Bea",
+    trigger: { kind: "on-request", id: "manual-trade-booking" },
+    asOf,
+    repoRoot: process.cwd(),
+    ownerInboxDir: `${process.cwd()}/Owner Inbox`,
+    dryRun: false,
+  };
+
+  try {
+    await beaGlPostingEngine(ctx);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return jsonResponse({
+      ok: true,
+      tradeId: eq_tradeId,
+      eventId,
+      glWarning: `Trade booked but GL engine error: ${msg}`,
+    });
+  }
+
+  return jsonResponse({ ok: true, tradeId: eq_tradeId, eventId });
+}
+
+async function handleBondBooking(body: TradeBookBody): Promise<Response> {
+  const bond_tradeId =
+    typeof body.bond_tradeId === "string" && body.bond_tradeId.trim()
+      ? body.bond_tradeId.trim()
+      : null;
+  if (!bond_tradeId) return jsonResponse({ ok: false, error: "bond_tradeId is required" }, 400);
+
+  const bond_isin =
+    typeof body.bond_isin === "string" && body.bond_isin.trim() ? body.bond_isin.trim() : null;
+  if (!bond_isin) return jsonResponse({ ok: false, error: "bond_isin is required" }, 400);
+
+  if (body.bond_side !== "buy" && body.bond_side !== "sell")
+    return jsonResponse({ ok: false, error: "bond_side must be 'buy' or 'sell'" }, 400);
+  const bond_side = body.bond_side as "buy" | "sell";
+
+  const bond_nominalMinor =
+    typeof body.bond_nominalMinor === "number"
+      ? body.bond_nominalMinor
+      : Number(body.bond_nominalMinor);
+  if (
+    !Number.isFinite(bond_nominalMinor) ||
+    !Number.isInteger(bond_nominalMinor) ||
+    bond_nominalMinor <= 0
+  )
+    return jsonResponse(
+      { ok: false, error: "bond_nominalMinor must be a positive integer (ZAR cents)" },
+      400,
+    );
+
+  const bond_cleanPricePct =
+    typeof body.bond_cleanPricePct === "number"
+      ? body.bond_cleanPricePct
+      : Number(body.bond_cleanPricePct);
+  if (!Number.isFinite(bond_cleanPricePct) || bond_cleanPricePct <= 0)
+    return jsonResponse({ ok: false, error: "bond_cleanPricePct must be a positive number" }, 400);
+
+  const bond_accruedInterestMinor =
+    typeof body.bond_accruedInterestMinor === "number"
+      ? body.bond_accruedInterestMinor
+      : Number(body.bond_accruedInterestMinor ?? 0);
+  if (
+    !Number.isFinite(bond_accruedInterestMinor) ||
+    !Number.isInteger(bond_accruedInterestMinor) ||
+    bond_accruedInterestMinor < 0
+  )
+    return jsonResponse(
+      { ok: false, error: "bond_accruedInterestMinor must be a non-negative integer" },
+      400,
+    );
+
+  const bond_settlementDate =
+    typeof body.bond_settlementDate === "string" ? body.bond_settlementDate : "";
+  if (!isValidDate(bond_settlementDate))
+    return jsonResponse(
+      { ok: false, error: "bond_settlementDate must be a valid YYYY-MM-DD date" },
+      400,
+    );
+
+  if (body.bond_portfolio !== "trading-book" && body.bond_portfolio !== "banking-book")
+    return jsonResponse(
+      { ok: false, error: "bond_portfolio must be 'trading-book' or 'banking-book'" },
+      400,
+    );
+  const bond_portfolio = body.bond_portfolio as "trading-book" | "banking-book";
+
+  const bond_couponRate =
+    typeof body.bond_couponRate === "number" ? body.bond_couponRate : Number(body.bond_couponRate);
+  if (!Number.isFinite(bond_couponRate) || bond_couponRate < 0)
+    return jsonResponse({ ok: false, error: "bond_couponRate must be a non-negative number" }, 400);
+
+  const bond_maturityDate =
+    typeof body.bond_maturityDate === "string" ? body.bond_maturityDate : "";
+  if (!isValidDate(bond_maturityDate))
+    return jsonResponse(
+      { ok: false, error: "bond_maturityDate must be a valid YYYY-MM-DD date" },
+      400,
+    );
+
+  const bond_counterpartyLei =
+    typeof body.bond_counterpartyLei === "string" && body.bond_counterpartyLei.trim()
+      ? body.bond_counterpartyLei.trim()
+      : null;
+  if (!bond_counterpartyLei)
+    return jsonResponse({ ok: false, error: "bond_counterpartyLei is required" }, 400);
+
+  const dirtyPricePercent =
+    bond_cleanPricePct + (bond_accruedInterestMinor / bond_nominalMinor) * 100;
+
+  const asOf = clock.now();
+  const eventId = newEventId();
+
+  const bondEvent = makeBondTradeExecuted({
+    asOf,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "human", id: "operator" },
+    citations: [...MARKETS_CITATIONS],
+    eventId,
+    payload: {
+      tradeId: bond_tradeId,
+      bondIsin: bond_isin,
+      side: bond_side,
+      nominalMinor: bond_nominalMinor,
+      cleanPricePercent: bond_cleanPricePct,
+      accruedInterestMinor: bond_accruedInterestMinor,
+      dirtyPricePercent,
+      settlementDate: bond_settlementDate,
+      portfolio: bond_portfolio,
+      couponRate: bond_couponRate,
+      maturityDate: bond_maturityDate,
+      currency: "ZAR",
+      counterpartyLei: bond_counterpartyLei,
+      executedAt: clock.now(),
+    },
+  });
+
+  (bondEvent as Record<string, unknown>).provenance = resolveProvenance(
+    body.provenanceMode,
+    "bond",
+  );
+
+  eventStore.append(bondEvent);
+
+  const ctx: AgentRunContext = {
+    agent: "Bea",
+    trigger: { kind: "on-request", id: "manual-trade-booking" },
+    asOf,
+    repoRoot: process.cwd(),
+    ownerInboxDir: `${process.cwd()}/Owner Inbox`,
+    dryRun: false,
+  };
+
+  try {
+    await beaGlPostingEngine(ctx);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return jsonResponse({
+      ok: true,
+      tradeId: bond_tradeId,
+      eventId,
+      glWarning: `Trade booked but GL engine error: ${msg}`,
+    });
+  }
+
+  return jsonResponse({ ok: true, tradeId: bond_tradeId, eventId });
+}
+
+async function handleIRSBooking(body: TradeBookBody): Promise<Response> {
+  const irs_tradeId =
+    typeof body.irs_tradeId === "string" && body.irs_tradeId.trim()
+      ? body.irs_tradeId.trim()
+      : null;
+  if (!irs_tradeId) return jsonResponse({ ok: false, error: "irs_tradeId is required" }, 400);
+
+  const irs_counterpartyLei =
+    typeof body.irs_counterpartyLei === "string" && body.irs_counterpartyLei.trim()
+      ? body.irs_counterpartyLei.trim()
+      : null;
+  if (!irs_counterpartyLei)
+    return jsonResponse({ ok: false, error: "irs_counterpartyLei is required" }, 400);
+
+  const irs_counterpartyName =
+    typeof body.irs_counterpartyName === "string" && body.irs_counterpartyName.trim()
+      ? body.irs_counterpartyName.trim()
+      : null;
+  if (!irs_counterpartyName)
+    return jsonResponse({ ok: false, error: "irs_counterpartyName is required" }, 400);
+
+  const irs_counterpartyId =
+    typeof body.irs_counterpartyId === "string" && body.irs_counterpartyId.trim()
+      ? body.irs_counterpartyId.trim()
+      : irs_counterpartyLei;
+
+  const irs_notionalMinor =
+    typeof body.irs_notionalMinor === "number"
+      ? body.irs_notionalMinor
+      : Number(body.irs_notionalMinor);
+  if (
+    !Number.isFinite(irs_notionalMinor) ||
+    !Number.isInteger(irs_notionalMinor) ||
+    irs_notionalMinor <= 0
+  )
+    return jsonResponse(
+      { ok: false, error: "irs_notionalMinor must be a positive integer (ZAR cents)" },
+      400,
+    );
+
+  const irs_fixedRatePct =
+    typeof body.irs_fixedRatePct === "number"
+      ? body.irs_fixedRatePct
+      : Number(body.irs_fixedRatePct);
+  if (!Number.isFinite(irs_fixedRatePct) || irs_fixedRatePct <= 0)
+    return jsonResponse({ ok: false, error: "irs_fixedRatePct must be a positive number" }, 400);
+
+  const VALID_FLOATING_INDICES = ["JIBAR-3M", "JIBAR-1M", "ZARONIA"] as const;
+  type FloatingIndex = (typeof VALID_FLOATING_INDICES)[number];
+  if (
+    typeof body.irs_floatingIndex !== "string" ||
+    !(VALID_FLOATING_INDICES as readonly string[]).includes(body.irs_floatingIndex)
+  )
+    return jsonResponse(
+      {
+        ok: false,
+        error: `irs_floatingIndex must be one of: ${VALID_FLOATING_INDICES.join(", ")}`,
+      },
+      400,
+    );
+  const irs_floatingIndex = body.irs_floatingIndex as FloatingIndex;
+
+  if (body.irs_bankPays !== "fixed" && body.irs_bankPays !== "floating")
+    return jsonResponse({ ok: false, error: "irs_bankPays must be 'fixed' or 'floating'" }, 400);
+  const irs_bankPays = body.irs_bankPays as "fixed" | "floating";
+
+  const irs_tradeDate = typeof body.irs_tradeDate === "string" ? body.irs_tradeDate : "";
+  if (!isValidDate(irs_tradeDate))
+    return jsonResponse({ ok: false, error: "irs_tradeDate must be a valid YYYY-MM-DD date" }, 400);
+
+  const irs_effectiveDate =
+    typeof body.irs_effectiveDate === "string" ? body.irs_effectiveDate : "";
+  if (!isValidDate(irs_effectiveDate))
+    return jsonResponse(
+      { ok: false, error: "irs_effectiveDate must be a valid YYYY-MM-DD date" },
+      400,
+    );
+
+  const irs_maturityDate = typeof body.irs_maturityDate === "string" ? body.irs_maturityDate : "";
+  if (!isValidDate(irs_maturityDate))
+    return jsonResponse(
+      { ok: false, error: "irs_maturityDate must be a valid YYYY-MM-DD date" },
+      400,
+    );
+
+  const VALID_PAYMENT_FREQUENCIES = ["monthly", "quarterly", "semi-annual", "annual"] as const;
+  type PaymentFrequency = (typeof VALID_PAYMENT_FREQUENCIES)[number];
+  if (
+    typeof body.irs_paymentFrequency !== "string" ||
+    !(VALID_PAYMENT_FREQUENCIES as readonly string[]).includes(body.irs_paymentFrequency)
+  )
+    return jsonResponse(
+      {
+        ok: false,
+        error: `irs_paymentFrequency must be one of: ${VALID_PAYMENT_FREQUENCIES.join(", ")}`,
+      },
+      400,
+    );
+  const irs_paymentFrequency = body.irs_paymentFrequency as PaymentFrequency;
+
+  const VALID_DAY_COUNTS = ["ACT/365", "ACT/360", "30/360"] as const;
+  type DayCount = (typeof VALID_DAY_COUNTS)[number];
+  if (
+    typeof body.irs_dayCount !== "string" ||
+    !(VALID_DAY_COUNTS as readonly string[]).includes(body.irs_dayCount)
+  )
+    return jsonResponse(
+      { ok: false, error: `irs_dayCount must be one of: ${VALID_DAY_COUNTS.join(", ")}` },
+      400,
+    );
+  const irs_dayCount = body.irs_dayCount as DayCount;
+
+  const irs_bookId =
+    typeof body.irs_bookId === "string" && body.irs_bookId.trim()
+      ? body.irs_bookId.trim()
+      : "IRS-BOOK";
+
+  const irs_traderRef =
+    typeof body.irs_traderRef === "string" && body.irs_traderRef.trim()
+      ? body.irs_traderRef.trim()
+      : "manual-desk";
+
+  const asOf = clock.now();
+  const eventId = newEventId();
+
+  const irsEvent = makeIrsTradeBooked({
+    asOf,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "human", id: "operator" },
+    citations: [...MARKETS_CITATIONS],
+    eventId,
+    payload: {
+      tradeId: { scheme: "internal-manual", value: irs_tradeId },
+      counterparty: {
+        partyId: irs_counterpartyId,
+        name: irs_counterpartyName,
+        role: "counterparty" as const,
+      },
+      notional: { currency: "ZAR", amountMinor: irs_notionalMinor },
+      fixedRate: irs_fixedRatePct / 100,
+      floatingIndex: irs_floatingIndex,
+      bankPays: irs_bankPays,
+      tradeDate: { iso: irs_tradeDate, calendar: "JIHCAL" as const },
+      effectiveDate: { iso: irs_effectiveDate, calendar: "JIHCAL" as const },
+      maturityDate: { iso: irs_maturityDate, calendar: "JIHCAL" as const },
+      paymentFrequency: irs_paymentFrequency,
+      dayCountConvention: irs_dayCount,
+      bookId: irs_bookId,
+      traderRef: irs_traderRef,
+    },
+  });
+
+  (irsEvent as Record<string, unknown>).provenance = resolveProvenance(body.provenanceMode, "irs");
+
+  eventStore.append(irsEvent);
+
+  const ctx: AgentRunContext = {
+    agent: "Bea",
+    trigger: { kind: "on-request", id: "manual-trade-booking" },
+    asOf,
+    repoRoot: process.cwd(),
+    ownerInboxDir: `${process.cwd()}/Owner Inbox`,
+    dryRun: false,
+  };
+
+  try {
+    await beaGlPostingEngine(ctx);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return jsonResponse({
+      ok: true,
+      tradeId: irs_tradeId,
+      eventId,
+      glWarning: `Trade booked but GL engine error: ${msg}`,
+    });
+  }
+
+  return jsonResponse({ ok: true, tradeId: irs_tradeId, eventId });
 }
 
 // ---------------------------------------------------------------------------
@@ -501,6 +1029,12 @@ export async function handleTradeBook(req: Request, _store: EventStore): Promise
       return handleMMDBooking(body);
     case "ib-placement":
       return handleIBLBooking(body);
+    case "equity":
+      return handleEquityBooking(body);
+    case "bond":
+      return handleBondBooking(body);
+    case "irs":
+      return handleIRSBooking(body);
     default:
       break; // fall through to existing FX handler below
   }
@@ -671,11 +1205,8 @@ export async function handleTradeBook(req: Request, _store: EventStore): Promise
     },
   });
 
-  // Attach manual provenance — production kind (this is a real, non-simulated trade booking)
-  (tradeEvent as Record<string, unknown>).provenance = productionTag({
-    sourceLineage: "operator:manual-trade-booking",
-    tags: ["manual"],
-  });
+  // Attach manual provenance — resolved from provenanceMode in the request body.
+  (tradeEvent as Record<string, unknown>).provenance = resolveProvenance(body.provenanceMode, "fx");
 
   eventStore.append(tradeEvent);
 
