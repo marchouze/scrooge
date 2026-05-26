@@ -178,7 +178,7 @@ const PRODUCT_LIFECYCLE_STAGE_VALUES: readonly {
  * The dimension key is the canonical value of `ProductDimensionAttested.dimension`.
  * Per Q2 resolution, the per-dimension agent emits its own attestation.
  */
-const PRODUCT_DIMENSION_VALUES: readonly {
+export const PRODUCT_DIMENSION_VALUES: readonly {
   readonly value: string;
   readonly note: string;
 }[] = [
