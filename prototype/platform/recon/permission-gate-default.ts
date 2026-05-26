@@ -171,6 +171,10 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8, D-NEW-PRODUCT-APPROVAL-POLICY,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/product-approval-attestation-integrity.ts",
+  // model-risk-gap-inventory — read-only replay to surface Slice 7 substrate
+  // gaps as info findings. No appends; gate is a no-op on the read path.
+  // Citation: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 7, D-PRODUCT-CONSTRUCTION-SLICES-4-8.
+  "platform/recon/model-risk-gap-inventory.ts",
   // PartitionedEventStore — substrate class that opens cold archive SQLite
   // databases for read-only replay; no appends; gate is a no-op on replay.
   // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.

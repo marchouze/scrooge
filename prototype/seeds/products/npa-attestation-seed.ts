@@ -27,6 +27,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
+import { makeProductDimensionAttested } from "../../platform/event-store/event-types/product";
 import type { EventStore } from "../../platform/event-store/store";
 import type { ProductNpaDef } from "../../platform/markets/products/npa-attestation-runner";
 import { runNpaAttestation } from "../../platform/markets/products/npa-attestation-runner";
@@ -154,6 +155,84 @@ const PRODUCTS: ProductNpaDef[] = [
 // Seed runner — called by the boot sequence
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Slice 7 — model-risk upgrade: no-model products
+// ---------------------------------------------------------------------------
+
+// Products whose model-risk can be upgraded to implementation-attested
+// because no pricing model is used (SR 11-7 model definition not met).
+const NO_MODEL_PRODUCTS: ReadonlyArray<{ productId: string; notes: string }> = [
+  {
+    productId: "prd:bank:equity:jse-equity-cash",
+    notes:
+      "No pricing model. JSE-quoted prices used directly. SR 11-7 §I model definition not met. Tier: N/A.",
+  },
+  {
+    productId: "prd:bank:bond:open-repo-gmra",
+    notes:
+      "No pricing model. Repo rate negotiated bilaterally; collateral valued at quoted prices. Tier: N/A.",
+  },
+] as const;
+
+const UPGRADE_AS_OF = "2026-05-26T19:00:00.000Z";
+const UPGRADE_ACTOR = { type: "service" as const, id: "agent:atlas:npa-model-risk-upgrade" };
+const UPGRADE_CITATIONS = [
+  "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+  "D-NEW-PRODUCT-APPROVAL-POLICY",
+  "D-PRODUCT-CONSTRUCTION-SLICES-4-8",
+];
+
+/**
+ * Upgrades model-risk attestation to implementation-attested for products
+ * where no pricing model is used. Idempotent.
+ */
+export function seedModelRiskUpgrades(store: EventStore): {
+  upgraded: string[];
+  skipped: string[];
+} {
+  const upgraded: string[] = [];
+  const skipped: string[] = [];
+
+  // Single scan — check all no-model products in one pass.
+  const alreadyUpgraded = new Set(
+    Array.from(store.replay())
+      .filter(
+        (ev) =>
+          ev.type === "ProductDimensionAttested" &&
+          (ev.payload as Record<string, unknown>).dimension === "model-risk" &&
+          (ev.payload as Record<string, unknown>).result === "implementation-attested",
+      )
+      .map((ev) => (ev.payload as Record<string, unknown>).productId as string),
+  );
+
+  for (const { productId } of NO_MODEL_PRODUCTS) {
+    if (alreadyUpgraded.has(productId)) {
+      skipped.push(productId);
+      continue;
+    }
+    const ev = makeProductDimensionAttested({
+      asOf: UPGRADE_AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: UPGRADE_ACTOR,
+      citations: UPGRADE_CITATIONS,
+      payload: {
+        productId,
+        dimension: "model-risk",
+        result: "implementation-attested",
+        citationChain: [
+          "D-NEW-PRODUCT-APPROVAL-POLICY",
+          "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+          "D-PRODUCT-CONSTRUCTION-SLICES-4-8",
+        ],
+      },
+    });
+    store.append(ev);
+    upgraded.push(productId);
+  }
+
+  return { upgraded, skipped };
+}
+
 export interface NpaAttestationSeedResult {
   approved: string[];
   skipped: string[];
@@ -177,6 +256,9 @@ export function seedNpaAttestations(store: EventStore): NpaAttestationSeedResult
       approved.push(def.productId);
     }
   }
+
+  // Slice 7: upgrade model-risk to implementation-attested for no-model products.
+  seedModelRiskUpgrades(store);
 
   return { approved, skipped };
 }
