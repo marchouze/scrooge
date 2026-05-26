@@ -21,6 +21,7 @@
 //
 // Author: Scrooge-coordinated session for marc@tgv.co.za.
 
+import { PRODUCT_TYPED_EVENT_TYPES } from "../platform/event-store/event-types/product";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 import {
@@ -32,6 +33,11 @@ import {
   M7_FUNDING_LINE_FIXTURE,
   M8_IBL_FIXTURE,
 } from "../platform/markets/products/fixtures";
+import { validateNpaGate } from "../platform/markets/products/npa-gate";
+import {
+  ALL_NPA_DIMENSION_KEYS,
+  buildProductRegisterView,
+} from "../platform/projections/products/product-register";
 
 // ---------------------------------------------------------------------------
 // The 14 NPA dimensions — source of truth: NPA Policy v1.0 §5.
@@ -79,6 +85,13 @@ export interface ProductListEntry {
   };
   /** Per-dimension latest status — one row per NPA dimension. */
   dimensions: Record<NpaDimension, DimensionStatus>;
+  /** NPA gate summary derived from the product-register projection. */
+  npaGateStatus: {
+    ready: boolean;
+    missing: string[];
+    attestedCount: number;
+    totalDimensions: 14;
+  };
   /** Source: "fixture" (baseline) or "proposal" (registered via UI). */
   origin: "fixture" | "proposal";
 }
@@ -130,7 +143,15 @@ export function buildProductListView(
     Map<NpaDimension, { status: DimensionStatus; asOf: string }>
   >();
 
-  for (const ev of store.replay()) {
+  // Build the product-register projection for NPA gate status.
+  // We collect all events first, then build the register.
+  const allEvents = Array.from(store.replay());
+  const productEventTypeSet = new Set<string>(PRODUCT_TYPED_EVENT_TYPES);
+  const productRegister = buildProductRegisterView(
+    allEvents.filter((ev) => productEventTypeSet.has(ev.type)),
+  );
+
+  for (const ev of allEvents) {
     if (ev.type === "ProductProposalRegistered") {
       const p = ev.payload as Record<string, unknown>;
       const productId = String(p.productId ?? "");
@@ -184,11 +205,11 @@ export function buildProductListView(
   const entries: ProductListEntry[] = [];
 
   for (const fx of BASELINE_FIXTURES) {
-    entries.push(buildEntryFromFixture(fx, approvals, dimensionFolds));
+    entries.push(buildEntryFromFixture(fx, approvals, dimensionFolds, productRegister));
   }
   for (const proposal of proposals.values()) {
     if (entries.some((e) => e.productId === proposal.productId)) continue;
-    entries.push(buildEntryFromProposal(proposal, approvals, dimensionFolds));
+    entries.push(buildEntryFromProposal(proposal, approvals, dimensionFolds, productRegister));
   }
 
   // Stable ordering: family then name.
@@ -217,10 +238,34 @@ function applyDimensionFold(
   return base;
 }
 
+function buildNpaGateStatus(
+  productId: string,
+  productRegister: ReturnType<typeof buildProductRegisterView>,
+): ProductListEntry["npaGateStatus"] {
+  const row = productRegister.get(productId);
+  if (!row) {
+    // No lifecycle events yet — all 14 dimensions pending.
+    return {
+      ready: false,
+      missing: [...ALL_NPA_DIMENSION_KEYS],
+      attestedCount: 0,
+      totalDimensions: 14,
+    };
+  }
+  const gateResult = validateNpaGate(row);
+  return {
+    ready: gateResult.ready,
+    missing: [...gateResult.missing],
+    attestedCount: row.attestedDimensions.size,
+    totalDimensions: 14,
+  };
+}
+
 function buildEntryFromFixture(
   fx: Product,
   approvals: Map<string, { status: ProductApprovalStatus; asOf: string; reason?: string }>,
   dimensionFolds: Map<string, Map<NpaDimension, { status: DimensionStatus; asOf: string }>>,
+  productRegister: ReturnType<typeof buildProductRegisterView>,
 ): ProductListEntry {
   const approval = approvals.get(fx.productId);
   const dimensions = applyDimensionFold(fx.productId, emptyDimensionMap(), dimensionFolds);
@@ -245,6 +290,7 @@ function buildEntryFromFixture(
         }
       : { status: "pending" },
     dimensions,
+    npaGateStatus: buildNpaGateStatus(fx.productId, productRegister),
     origin: "fixture",
   };
 }
@@ -253,6 +299,7 @@ function buildEntryFromProposal(
   proposal: ProposalRecord,
   approvals: Map<string, { status: ProductApprovalStatus; asOf: string; reason?: string }>,
   dimensionFolds: Map<string, Map<NpaDimension, { status: DimensionStatus; asOf: string }>>,
+  productRegister: ReturnType<typeof buildProductRegisterView>,
 ): ProductListEntry {
   const approval = approvals.get(proposal.productId);
   const dimensions = applyDimensionFold(proposal.productId, emptyDimensionMap(), dimensionFolds);
@@ -277,6 +324,7 @@ function buildEntryFromProposal(
         }
       : { status: "pending" },
     dimensions,
+    npaGateStatus: buildNpaGateStatus(proposal.productId, productRegister),
     origin: "proposal",
   };
 }
