@@ -36,9 +36,52 @@ export class CorrespondentAdviceSim {
     this.store = store;
   }
 
+  /**
+   * Scan the event store to find the set of tradeIds already covered by a
+   * previously-emitted MT202 from this actor, then advance
+   * `lastProcessedSequence` past the highest sequence of the corresponding
+   * PrincipalPayment[receive] events.  Prevents re-processing history on
+   * every server restart (which caused ~325x event multiplication).
+   */
+  private initSequenceCursor(): void {
+    // Collect tradeIds for which we already emitted an MT202.
+    const alreadyCovered = new Set<string>();
+    try {
+      for (const evt of this.store.replay({ type: "InboundMessageReceived" })) {
+        if ((evt.actor as { id?: string } | undefined)?.id !== ACTOR.id) continue;
+        const p = evt.payload as Record<string, unknown>;
+        if (p.messageStandard !== "MT202") continue;
+        const tid = String(p.tradeId ?? "");
+        if (tid) alreadyCovered.add(tid);
+      }
+    } catch {
+      return; // store not available (test mocks)
+    }
+
+    if (alreadyCovered.size === 0) return;
+
+    // Advance cursor past the highest PrincipalPayment[receive] sequence we
+    // have already handled so poll() won't re-emit for those trades.
+    try {
+      for (const evt of this.store.replay({ type: "PrincipalPayment" })) {
+        const p = evt.payload as Record<string, unknown>;
+        if (p.legKind !== "receive") continue;
+        const tid = String(p.tradeId ?? "");
+        if (!alreadyCovered.has(tid)) continue;
+        const seq = (evt as unknown as { sequence?: number }).sequence;
+        if (seq !== undefined && seq > this.lastProcessedSequence) {
+          this.lastProcessedSequence = seq;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   /** Start polling. Idempotent. */
   start(): void {
     if (this.running) return;
+    this.initSequenceCursor();
     this.running = true;
     this.timer = setInterval(() => {
       this.poll();
