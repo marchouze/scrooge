@@ -158,9 +158,7 @@ describe("runNpaAttestation — idempotency", () => {
 
     // No additional events emitted.
     expect(countEventsOfType(store, "ProductApproved")).toBe(approvedAfterFirst);
-    expect(countEventsOfType(store, "ProductDimensionAttested")).toBe(
-      dimensionAttestedAfterFirst,
-    );
+    expect(countEventsOfType(store, "ProductDimensionAttested")).toBe(dimensionAttestedAfterFirst);
     expect(countEventsOfType(store, "ProductProposalRegistered")).toBe(proposalAfterFirst);
   });
 });

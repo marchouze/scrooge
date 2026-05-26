@@ -123,7 +123,10 @@ const result = runNpaAttestation(
 );
 
 if (result.outcome === "skipped-already-approved") {
-  logger.info({ productId: PRODUCT_ID }, "NPA attestation: already approved — skipped (idempotent)");
+  logger.info(
+    { productId: PRODUCT_ID },
+    "NPA attestation: already approved — skipped (idempotent)",
+  );
 } else {
   logger.info(
     {

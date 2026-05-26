@@ -23,7 +23,11 @@ import {
 } from "../../event-store/event-types/product";
 import { buildPhaseFixtureTag } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
-import type { ProductFamily } from "./types";
+
+// The product event schema uses a restricted 6-value family enum (it predates
+// the `money-market` and `interbank-loan` additions to ProductFamily in types.ts).
+// NPA attestation only applies to the 6 NPA-eligible families.
+type NpaProductFamily = "listed-equity" | "listed-bond" | "repo" | "otc-ird" | "fx" | "structured";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -54,7 +58,7 @@ export interface DimensionAssessment {
 
 export interface ProductNpaDef {
   productId: string;
-  family: ProductFamily;
+  family: NpaProductFamily;
   name: string;
   version: string;
   dimensions: Record<DimensionKey, DimensionAssessment>;
@@ -306,23 +310,22 @@ export function runNpaAttestation(
     store.append(ev);
     eventsEmitted.push("ProductApproved");
     return { productId, outcome: "approved", eventsEmitted };
-  } else {
-    const ev = {
-      ...makeProductWithheld({
-        asOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: [...CITATIONS],
-        payload: {
-          productId,
-          version,
-          reason: `NPA gate failed on dimensions: ${gatesFailed.join(", ")}`,
-        },
-      }),
-      provenance,
-    };
-    store.append(ev);
-    eventsEmitted.push("ProductWithheld");
-    return { productId, outcome: "withheld", eventsEmitted };
   }
+  const ev = {
+    ...makeProductWithheld({
+      asOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: [...CITATIONS],
+      payload: {
+        productId,
+        version,
+        reason: `NPA gate failed on dimensions: ${gatesFailed.join(", ")}`,
+      },
+    }),
+    provenance,
+  };
+  store.append(ev);
+  eventsEmitted.push("ProductWithheld");
+  return { productId, outcome: "withheld", eventsEmitted };
 }
