@@ -130,12 +130,8 @@ if (import.meta.main) {
       findings: r.violations.length,
       ok: r.ok,
       msg: r.ok
-        ? `posting-rule-stub-audit passed — ${stubsChecked} stub(s) checked; ` +
-          `all are either legitimately deferred (event schema absent) ` +
-          `or classified as zero-impact-by-design.`
-        : `posting-rule-stub-audit FAILED — ${r.violations.length} unwarranted stub(s) found: ` +
-          `event type exists in EVENT_TYPE_REGISTRY but posting rule is still stubbed. ` +
-          `Wire the rule or add the [zero-impact-by-design] marker with IFRS 9 rationale.`,
+        ? `posting-rule-stub-audit passed — ${stubsChecked} stub(s) checked; all are either legitimately deferred (event schema absent) or classified as zero-impact-by-design.`
+        : `posting-rule-stub-audit FAILED — ${r.violations.length} unwarranted stub(s) found: event type exists in EVENT_TYPE_REGISTRY but posting rule is still stubbed. Wire the rule or add the [zero-impact-by-design] marker with IFRS 9 rationale.`,
       detail: r.violations,
     }),
   );
