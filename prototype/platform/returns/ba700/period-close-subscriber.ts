@@ -39,6 +39,7 @@
 //   + Camille (Chief Financial Officer, governance — reports to CEO;
 //   capital-stack accountable signer).
 
+import { coaToCapitalClassifications } from "../../accounting/coa-registry";
 import type { EventStore } from "../../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
 import type {
@@ -80,10 +81,14 @@ export interface PeriodCloseSubscriberInput {
   readonly eventStore: EventStore;
   /**
    * Per-account capital-tier classification.
-   * TODO: derive from chart-of-accounts once Mira's WS-INSTRUMENT-ANALYSES
-   * populates the `capitalTier` field.
+   *
+   * Defaults to `coaToCapitalClassifications()` — the canonical CET1 + T2
+   * account set from the chart-of-accounts `capitalTier` field.
+   * Includes ACC-5000-001/002 (CET1) and ACC-5200-001/002 (T2).
+   *
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; coa-registry.ts.
    */
-  readonly classifications: readonly AccountCapitalClassification[];
+  readonly classifications?: readonly AccountCapitalClassification[];
   /**
    * Regulatory deductions.  Defaults to empty (gross = net).
    */
@@ -173,6 +178,11 @@ export function onAccountingPeriodClosed(
     return { processed: false, substrateGap: SUBSTRATE_GAP };
   }
 
+  // Resolve classifications: caller override or canonical COA-derived set.
+  // The canonical set includes CET1 + T2 accounts from coaToCapitalClassifications().
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const resolvedClassifications = input.classifications ?? coaToCapitalClassifications();
+
   const { return: ba700Return } = generateBA700Return({
     entityId: input.entity,
     reportingDate: input.closedAt,
@@ -181,7 +191,7 @@ export function onAccountingPeriodClosed(
     eventStore: input.eventStore,
     periodStart: input.periodStart,
     periodEnd: input.periodEnd,
-    classifications: input.classifications,
+    classifications: resolvedClassifications,
     deductions: input.deductions ?? [],
     rwa: input.rwa,
     ...(input.bufferRequirements !== undefined

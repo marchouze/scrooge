@@ -65,6 +65,7 @@
 
 import { z } from "zod";
 
+import type { AccountCapitalClassification, CapitalTier } from "../reporting/ba-700-capital";
 import type { AccountLiquidityClassification, HqlaLevel } from "../reporting/ba-325-lcr";
 
 // ---------------------------------------------------------------------------
@@ -115,6 +116,28 @@ export interface CoaAccountEntry {
    */
   readonly hqlaAssetSpecificFactor?: number;
   /**
+   * Basel III capital tier per Reg 38(8) / BCBS Basel III §50–§57.
+   * Only set for accounts that form part of the regulatory capital stack.
+   *
+   * - "cet1" → Common Equity Tier 1 (paid-up shares, retained earnings, OCI)
+   * - "at1"  → Additional Tier 1 (perpetual AT1 instruments, contingent capital)
+   * - "t2"   → Tier 2 (subordinated debt ≥5yr, qualifying general provisions)
+   *
+   * Absent = not a capital-stack account; excluded from BA 700 capital fold.
+   *
+   * Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8); BCBS Basel III §50–§57.
+   * Placeholder entries added per D-DATA-QUALITY-CROSS-DOMAIN-V1 pending
+   * Mira's WS-INSTRUMENT-ANALYSES capital-stack mapping.
+   */
+  readonly capitalTier?: CapitalTier;
+  /**
+   * Sub-category label for BA 700 line rendering.
+   * Only meaningful when `capitalTier` is set.
+   * Example: "t2.subordinated-debt", "cet1.paid-up-ordinary-shares".
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; SARB BA 700.
+   */
+  readonly capitalSubCategory?: string;
+  /**
    * ISIN of the security held in this GL account.
    *
    * When present, the BA 325 generator will look up this ISIN in the
@@ -154,6 +177,9 @@ export const CoaAccountEntrySchema = z.object({
   hqlaAssetSpecificFactor: z.number().min(0).max(1).optional(),
   // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9: ISIN bridge to SecurityMaster override map.
   isin: z.string().optional(),
+  // D-DATA-QUALITY-CROSS-DOMAIN-V1: capital tier for BA 700 capital fold.
+  capitalTier: z.enum(["cet1", "at1", "t2"]).optional(),
+  capitalSubCategory: z.string().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -505,19 +531,72 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   },
 
   // ------------------------------------------------------------------
-  // 5000 — Equity accounts
+  // 5000 — Equity / CET1 accounts
   // ------------------------------------------------------------------
   {
     id: "ACC-5000-001",
     name: "Share Capital",
     category: "equity",
     side: "credit",
+    // CET1 per BCBS Basel III §52(a): paid-up ordinary shares / common equity.
+    // Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8); BCBS Basel III §52(a).
+    capitalTier: "cet1" as const,
+    capitalSubCategory: "cet1.paid-up-ordinary-shares",
   },
   {
     id: "ACC-5000-002",
     name: "Retained Earnings",
     category: "equity",
     side: "credit",
+    // CET1 per BCBS Basel III §52(c): retained earnings.
+    // Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8); BCBS Basel III §52(c).
+    capitalTier: "cet1" as const,
+    capitalSubCategory: "cet1.retained-earnings",
+  },
+
+  // ------------------------------------------------------------------
+  // 5200 — Tier 2 capital accounts
+  //
+  // Placeholder entries per D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  // These accounts are provisioned at build-phase to represent the
+  // principal T2 instruments expected at licence-day:
+  //   (a) Subordinated debt with remaining maturity ≥ 5 years
+  //       (BCBS Basel III §58; Reg 38(8)(b))
+  //   (b) Qualifying general provisions (IFRS 9 Stage-1 + Stage-2 ECL
+  //       allowances, capped at 1.25% of credit RWA per BCBS §60)
+  //
+  // No real T2 instruments are outstanding in the build phase.
+  // Posting rules fire against these account IDs when T2 instruments
+  // are issued or general-provision balances are determined.
+  //
+  // Substrate gap (D-DATA-QUALITY-CROSS-DOMAIN-V1): posting rules for
+  // T2 instrument issuance and general-provision accumulation are not
+  // yet implemented. The BA 700 fold will return zero T2 capital until
+  // those rules land and produce SubLedgerPostingEmitted credits to
+  // these accounts. This is expected and non-blocking.
+  // ------------------------------------------------------------------
+  {
+    id: "ACC-5200-001",
+    name: "Subordinated Debt — Tier 2 (≥5yr remaining maturity)",
+    category: "liability-t2-capital",
+    side: "credit",
+    // T2 per BCBS Basel III §58; Reg 38(8)(b).
+    // Subordinated debt with remaining contractual maturity ≥ 5 years.
+    // Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b); BCBS §58.
+    capitalTier: "t2" as const,
+    capitalSubCategory: "t2.subordinated-debt",
+  },
+  {
+    id: "ACC-5200-002",
+    name: "General Provisions — Qualifying Tier 2 (IFRS 9 Stage-1/2)",
+    category: "liability-t2-capital",
+    side: "credit",
+    // T2 per BCBS Basel III §60: qualifying general provisions (Stage-1 + Stage-2
+    // ECL allowances under IFRS 9) capped at 1.25% of credit RWA.
+    // Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(c); BCBS §60;
+    //           IFRS 9 §5.5.3 (Stage-1 / Stage-2 ECL provisioning).
+    capitalTier: "t2" as const,
+    capitalSubCategory: "t2.qualifying-general-provisions",
   },
 ];
 
@@ -532,6 +611,35 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
 export const COA_BY_ID: ReadonlyMap<string, CoaAccountEntry> = new Map(
   COA_ACCOUNTS.map((a) => [a.id, a]),
 );
+
+/**
+ * Derive an `AccountCapitalClassification[]` from the COA registry.
+ *
+ * Scans all accounts in `COA_ACCOUNTS` for those with a `capitalTier` set,
+ * and maps them to `AccountCapitalClassification` entries suitable for
+ * passing directly to `generateBa700CapitalFromEvents` as the `classifications`
+ * input.
+ *
+ * This provides the canonical T2 (and CET1/AT1) account set for the BA 700
+ * generator without requiring callers to hard-code account IDs.
+ *
+ * Substrate gap (D-DATA-QUALITY-CROSS-DOMAIN-V1): T2 accounts (ACC-5200-001,
+ * ACC-5200-002) are placeholder entries. No real T2 instruments are outstanding
+ * at build-phase; the BA 700 tier2Capital will be 0 until posting rules for
+ * T2 instrument issuance and general-provision accumulation are implemented.
+ *
+ * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+ * Citations: Reg 38(8); BCBS Basel III §50–§60; SARB BA 700.
+ */
+export function coaToCapitalClassifications(): readonly AccountCapitalClassification[] {
+  return COA_ACCOUNTS.filter(
+    (a): a is CoaAccountEntry & { capitalTier: CapitalTier } => a.capitalTier !== undefined,
+  ).map((a) => ({
+    leafAccountId: a.id,
+    capitalTier: a.capitalTier,
+    ...(a.capitalSubCategory ? { subCategory: a.capitalSubCategory } : {}),
+  }));
+}
 
 /**
  * Derive a `AccountLiquidityClassification[]` from the COA registry.

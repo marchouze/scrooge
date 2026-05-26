@@ -6,6 +6,19 @@
     { "id": "ACC-5000-002", "name": "Retained Earnings", "category": "equity", "side": "credit" },
 
     {
+      "id": "ACC-5200-001",
+      "name": "Subordinated Debt — Tier 2 (≥5yr remaining maturity)",
+      "category": "liability-t2-capital",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-5200-002",
+      "name": "General Provisions — Qualifying Tier 2 (IFRS 9 Stage-1/2)",
+      "category": "liability-t2-capital",
+      "side": "credit"
+    },
+
+    {
       "id": "ACC-1100-001",
       "name": "Nostro — ZAR (SARB operational)",
       "category": "asset",
