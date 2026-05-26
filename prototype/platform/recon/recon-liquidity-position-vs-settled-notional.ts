@@ -269,13 +269,7 @@ export function run(): LiquidityPositionVsSettledNotionalResult {
       almOnlyTrades += 1;
       violations.push({
         subject: `trade:${almPos.tradeId}:isin:${isin}`,
-        message:
-          `ALM-only: TradeSettled exists for tradeId=${almPos.tradeId} (ISIN=${isin}) ` +
-          `with marketValueZar=${almPos.marketValueZar.toFixed(2)} ${almPos.currency} ` +
-          `but no JournalEntryPosted found for this tradeId. ` +
-          `Expected in build phase (securities accounting not yet fully wired) and for FX trades ` +
-          `whose settlement flows through SettlementConfirmed/PrincipalPayment. ` +
-          `Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
+        message: `ALM-only: TradeSettled exists for tradeId=${almPos.tradeId} (ISIN=${isin}) with marketValueZar=${almPos.marketValueZar.toFixed(2)} ${almPos.currency} but no JournalEntryPosted found for this tradeId. Expected in build phase (securities accounting not yet fully wired) and for FX trades whose settlement flows through SettlementConfirmed/PrincipalPayment. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
         severity: "warn",
       });
       continue;
@@ -292,18 +286,7 @@ export function run(): LiquidityPositionVsSettledNotionalResult {
       failCount += 1;
       violations.push({
         subject: `trade:${almPos.tradeId}:isin:${isin}`,
-        message:
-          `Quantity mismatch: ALM marketValueZar=${almPos.marketValueZar.toFixed(2)} ${almPos.currency} ` +
-          `vs. GL amountZar=${glEntry.amountZar.toFixed(2)} ${glEntry.currency} ` +
-          `(diff=${diff.toFixed(2)} ZAR, tolerance=${tolerance.toFixed(2)} ZAR). ` +
-          `tradeId=${almPos.tradeId}, ISIN=${isin}. ` +
-          `ALM fold (alm-positions.ts::readHQLAFromEventStore) and GL fold ` +
-          `(JournalEntryPosted) disagree on settled notional. ` +
-          `Check: (1) alm-positions.ts amount extraction priority ` +
-          `(marketValueZar > marketValue > faceValue > notional); ` +
-          `(2) JournalEntryPosted.amountMinor conversion (÷100 for ZAR major units); ` +
-          `(3) currency conversion at trade-date vs. settlement-date rate (IAS 21 §23). ` +
-          `Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
+        message: `Quantity mismatch: ALM marketValueZar=${almPos.marketValueZar.toFixed(2)} ${almPos.currency} vs. GL amountZar=${glEntry.amountZar.toFixed(2)} ${glEntry.currency} (diff=${diff.toFixed(2)} ZAR, tolerance=${tolerance.toFixed(2)} ZAR). tradeId=${almPos.tradeId}, ISIN=${isin}. ALM fold (alm-positions.ts::readHQLAFromEventStore) and GL fold (JournalEntryPosted) disagree on settled notional. Check: (1) alm-positions.ts amount extraction priority (marketValueZar > marketValue > faceValue > notional); (2) JournalEntryPosted.amountMinor conversion (div100 for ZAR major units); (3) currency conversion at trade-date vs. settlement-date rate (IAS 21 s23). Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
         severity: "fail",
       });
     }
@@ -325,13 +308,7 @@ export function run(): LiquidityPositionVsSettledNotionalResult {
       glOnlyTrades += 1;
       violations.push({
         subject: `gl-trade:${tradeId}`,
-        message:
-          `GL-only: JournalEntryPosted exists for tradeId=${tradeId} ` +
-          `(amountZar=${glEntry.amountZar.toFixed(2)} ${glEntry.currency}) ` +
-          `but no TradeSettled event found carrying this tradeId. ` +
-          `May be a pure-payments trade (not a security ISIN trade); ` +
-          `if this is a security trade, TradeSettled is missing from the event store. ` +
-          `Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
+        message: `GL-only: JournalEntryPosted exists for tradeId=${tradeId} (amountZar=${glEntry.amountZar.toFixed(2)} ${glEntry.currency}) but no TradeSettled event found carrying this tradeId. May be a pure-payments trade (not a security ISIN trade); if this is a security trade, TradeSettled is missing from the event store. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
         severity: "warn",
       });
       continue;
@@ -346,12 +323,7 @@ export function run(): LiquidityPositionVsSettledNotionalResult {
       glOnlyTrades += 1;
       violations.push({
         subject: `trade:${tradeId}:isin:${isin}`,
-        message:
-          `ALM-absent: JournalEntryPosted for tradeId=${tradeId} (ISIN=${isin}) ` +
-          `found in GL but ALM position map has no entry for ISIN=${isin}. ` +
-          `TradeSettled event may have been discarded by the ALM fold ` +
-          `(e.g. missing isin field, or position overwritten by later event with no ISIN). ` +
-          `Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
+        message: `ALM-absent: JournalEntryPosted for tradeId=${tradeId} (ISIN=${isin}) found in GL but ALM position map has no entry for ISIN=${isin}. TradeSettled event may have been discarded by the ALM fold (e.g. missing isin field, or position overwritten by later event with no ISIN). Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`,
         severity: "warn",
       });
     }
