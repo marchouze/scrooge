@@ -16,12 +16,12 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { composeFromProduct } from "../platform/markets/products/composeProduct";
-import { M3_VANILLA_IRS_FIXTURE } from "../platform/markets/products/fixtures";
 import {
   PricingModelNotFoundError,
   lookupPricingModel,
 } from "../platform/markets/pricing/registry";
+import { composeFromProduct } from "../platform/markets/products/composeProduct";
+import { M3_VANILLA_IRS_FIXTURE } from "../platform/markets/products/fixtures";
 
 describe("PR-A: M3 Vanilla IRS fixture — composeFromProduct", () => {
   it("composes to a valid ProductTemplate without throwing", () => {

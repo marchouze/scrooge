@@ -31,8 +31,7 @@ const REGISTRY = new Map<ProductFamily, PricingModelEntry>([
       modelId: "pm:equity:last-observed-price",
       family: "listed-equity",
       tier: "tier-3",
-      valuationApproach:
-        "Last observed market price (JSE closing price or intraday quote)",
+      valuationApproach: "Last observed market price (JSE closing price or intraday quote)",
       curveDependencies: [],
     },
   ],
@@ -97,8 +96,7 @@ const REGISTRY = new Map<ProductFamily, PricingModelEntry>([
       modelId: "pm:ibl:yield-to-maturity",
       family: "interbank-loan",
       tier: "tier-3",
-      valuationApproach:
-        "Yield-to-maturity (simple interest; amortised-cost per IFRS 9 §4.1.2)",
+      valuationApproach: "Yield-to-maturity (simple interest; amortised-cost per IFRS 9 §4.1.2)",
       curveDependencies: [],
     },
   ],
