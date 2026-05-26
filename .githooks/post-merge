@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# After every git pull / merge: check whether the dashboard server is
+# running on a now-stale commit and warn if so.
+#
+# Non-destructive — prints a restart reminder only; does not kill the
+# server automatically (that would disrupt active work sessions).
+#
+# Requires the /api/version endpoint added to prototype/dashboard/server.ts
+# (D-STALE-SERVER-PREVENTION).
+
+SERVER_URL="http://localhost:3010/api/version"
+RESPONSE=$(curl -sf --max-time 2 "$SERVER_URL" 2>/dev/null || echo "")
+
+# Server not running — nothing to do.
+[ -z "$RESPONSE" ] && exit 0
+
+RUNNING_HASH=$(echo "$RESPONSE" | grep -o '"gitHash":"[^"]*"' | cut -d'"' -f4 || echo "")
+HEAD_HASH=$(git rev-parse HEAD 2>/dev/null || echo "")
+
+if [ -z "$RUNNING_HASH" ] || [ -z "$HEAD_HASH" ]; then
+  exit 0
+fi
+
+if [ "$RUNNING_HASH" != "$HEAD_HASH" ]; then
+  printf '\n  \033[33m⚠  Dashboard server is stale\033[0m (running \033[2m%s\033[0m, HEAD is \033[2m%s\033[0m)\n' \
+    "${RUNNING_HASH:0:8}" "${HEAD_HASH:0:8}"
+  printf '     Restart: \033[1mcd prototype && bun run dashboard\033[0m\n\n'
+fi
