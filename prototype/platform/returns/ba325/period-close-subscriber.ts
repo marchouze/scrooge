@@ -207,7 +207,14 @@ export function ba325PeriodCloseSubscriber(
   if (tbEventId) {
     // Replay all events for the entity and find the TrialBalanceSnapshotted event
     // with this event_id. The trial-balance rows are carried in the event payload.
-    for (const event of input.eventStore.replay({ entity: input.entity })) {
+    // Use the frozen cursor from the AccountingPeriodClosed event (if present) to
+    // prevent divergence when new events append concurrently.
+    // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+    const untilSequence = input.closedPayload.eventSequence;
+    for (const event of input.eventStore.replay({
+      entity: input.entity,
+      ...(untilSequence !== undefined ? { untilSequence } : {}),
+    })) {
       if (event.event_id === tbEventId && event.type === "TrialBalanceSnapshotted") {
         const payload = event.payload as TrialBalanceSnapshottedPayload;
         trialBalanceRows = payload.rows;
@@ -230,6 +237,11 @@ export function ba325PeriodCloseSubscriber(
     trialBalance: trialBalanceRows,
     classifications,
     trialBalanceSnapshotEventId: tbEventId,
+    // Thread the frozen cursor so the settlement cash-flow fold is bounded.
+    // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+    ...(input.closedPayload.eventSequence !== undefined
+      ? { untilSequence: input.closedPayload.eventSequence }
+      : {}),
   });
 
   return {

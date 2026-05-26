@@ -57,6 +57,14 @@ export interface ConductGeneratorInput {
    * Defaults to `reportingDate` if omitted.
    */
   readonly periodLabel?: string;
+  /**
+   * Upper bound (inclusive) on the event `sequence` column.
+   * Sourced from `AccountingPeriodClosed.eventSequence` (frozen cursor).
+   * When supplied, all event-store replays in this generator are bounded
+   * to prevent divergence from concurrent appends.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  readonly untilSequence?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -107,6 +115,13 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
   const periodStartTs = parseTs(input.periodStart);
   const reportingDateTs = parseTs(input.reportingDate);
 
+  // Frozen-cursor replay opts: when the triggering AccountingPeriodClosed event
+  // carries an eventSequence, all event-store replays in this generator are
+  // bounded to that sequence to prevent divergence from concurrent appends.
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const frozenCursorOpts =
+    input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {};
+
   // Guard: only regulated entities generate conduct disclosures.
   if (!CONDUCT_REGULATED_ENTITIES.includes(input.entityId)) {
     const skippedDisclosure: ConductPeriodDisclosure = {
@@ -154,6 +169,7 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
   for (const event of input.eventStore.replay({
     type: "ConductComplaintFiled",
     entity: input.entityId,
+    ...frozenCursorOpts,
   })) {
     const eventTs = parseTs(event.as_of);
     if (eventTs < periodStartTs || eventTs > reportingDateTs) continue;
@@ -185,6 +201,7 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
   for (const event of input.eventStore.replay({
     type: "ConductComplaintResolved",
     entity: input.entityId,
+    ...frozenCursorOpts,
   })) {
     const eventTs = parseTs(event.as_of);
     if (eventTs < periodStartTs || eventTs > reportingDateTs) continue;
@@ -225,6 +242,7 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
   for (const event of input.eventStore.replay({
     type: "ConductIncidentLogged",
     entity: input.entityId,
+    ...frozenCursorOpts,
   })) {
     const eventTs = parseTs(event.as_of);
     if (eventTs < periodStartTs || eventTs > reportingDateTs) continue;
@@ -269,6 +287,7 @@ export function generateConductDisclosure(input: ConductGeneratorInput): {
   for (const event of input.eventStore.replay({
     type: "BestExecutionAnalysisCompleted",
     entity: input.entityId,
+    ...frozenCursorOpts,
   })) {
     const eventTs = parseTs(event.as_of);
     if (eventTs < periodStartTs || eventTs > reportingDateTs) continue;

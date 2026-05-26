@@ -235,6 +235,14 @@ export const accountingPeriodClosedPayloadSchema = z.object({
   trialBalanceSnapshotEventId: z.string().min(1),
   trialBalanceDocumentHash: z.string().min(1).optional(),
   uptoSequence: z.number().int().nonnegative(),
+  /**
+   * Append sequence of the event store at the moment the period was closed.
+   * Frozen cursor for subscriber convergence — all subscribers must replay
+   * events up to (and including) this sequence only, preventing divergence
+   * when new events append between the first and last subscriber read.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  eventSequence: z.number().int().nonnegative().optional(),
 });
 
 export type AccountingPeriodClosedPayload = z.infer<typeof accountingPeriodClosedPayloadSchema>;

@@ -103,6 +103,14 @@ export interface Ba700FromEventsInput {
    * (per BCBS §147–§165). Forwarded to the pure generator unchanged.
    */
   readonly leverageExposureMeasure?: LeverageExposureDecomposition;
+  /**
+   * Upper bound (inclusive) on the event `sequence` column.
+   * Sourced from `AccountingPeriodClosed.eventSequence` (frozen cursor).
+   * When supplied, all event-store replays in this adapter are bounded
+   * to prevent divergence from concurrent appends.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  readonly untilSequence?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -136,6 +144,7 @@ function foldCapitalAccountBalances(
   asOf: string,
   classifiedAccountIds: ReadonlySet<string>,
   functionalCurrency: string,
+  untilSequence?: number,
 ): FoldedAccountBalance[] {
   // Accumulate debit/credit totals per (accountId, currency).
   const balances = new Map<string, number>(); // key: `${accountId}:${currency}`
@@ -144,6 +153,10 @@ function foldCapitalAccountBalances(
   // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
   const provenanceFilter = defaultProvenanceFilter();
 
+  // Frozen-cursor opts: bound by untilSequence when supplied.
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const frozenCursorOpts = untilSequence !== undefined ? { untilSequence } : {};
+
   // ---- Fold SubLedgerPostingEmitted events --------------------------------
   // Each posting carries balanced legs (debits = credits per currency).
   // We extract legs that touch capital-classified accounts.
@@ -151,6 +164,7 @@ function foldCapitalAccountBalances(
     entity,
     type: "SubLedgerPostingEmitted",
     asOf,
+    ...frozenCursorOpts,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const payload = ev.payload as {
@@ -183,6 +197,7 @@ function foldCapitalAccountBalances(
     entity,
     type: "CapitalContributionRecorded",
     asOf,
+    ...frozenCursorOpts,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const payload = ev.payload as {
@@ -242,6 +257,7 @@ export function generateBa700CapitalFromEvents(
     input.periodEnd,
     classifiedAccountIds,
     input.functionalCurrency,
+    input.untilSequence,
   );
 
   // Delegate to the pure generator with the folded rows in lieu of the

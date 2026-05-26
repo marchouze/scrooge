@@ -236,6 +236,14 @@ export interface Ba325GeneratorInput {
    * snapshot under Principle 1.
    */
   readonly trialBalanceSnapshotEventId?: string;
+  /**
+   * Upper bound (inclusive) on the event `sequence` column.
+   * Sourced from `AccountingPeriodClosed.eventSequence` (frozen cursor).
+   * When supplied, the settlement cash-flow fold is bounded to prevent
+   * divergence from concurrent appends.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  readonly untilSequence?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -616,6 +624,8 @@ function foldSettlementCashFlows(args: {
   readonly entity: string;
   readonly periodStart: string;
   readonly periodEnd: string;
+  /** Upper bound (inclusive) on sequence — frozen-cursor replay. */
+  readonly untilSequence?: number;
 }): {
   readonly flows: readonly SettlementCashFlow[];
   /**
@@ -639,8 +649,13 @@ function foldSettlementCashFlows(args: {
   // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
   const provenanceFilter = defaultProvenanceFilter();
 
+  // Frozen-cursor opts: bound by untilSequence when supplied.
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const frozenCursorOpts =
+    args.untilSequence !== undefined ? { untilSequence: args.untilSequence } : {};
+
   // Fold FxSettlementInstructed, TradeMatured, and EquitySettlementInstructed events.
-  for (const event of eventStore.replay({ entity, asOf: periodEnd })) {
+  for (const event of eventStore.replay({ entity, asOf: periodEnd, ...frozenCursorOpts })) {
     if (
       event.type !== "FxSettlementInstructed" &&
       event.type !== "TradeMatured" &&
@@ -946,6 +961,7 @@ export function generateBa325Lcr(input: Ba325GeneratorInput, opts?: Ba325LcrOpts
     entity: input.entity,
     periodStart: input.periodStart,
     periodEnd: input.periodEnd,
+    ...(input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {}),
   });
 
   const outflowLines: Ba325LineItem[] = [];

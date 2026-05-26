@@ -466,6 +466,14 @@ export function closePeriod(args: ClosePeriodArgs): ClosePeriodResult {
   });
   args.eventStore.append(tbEvent);
 
+  // Capture the event store high-watermark immediately after appending the
+  // trial-balance snapshot. This frozen cursor flows into
+  // `AccountingPeriodClosed.eventSequence` so that all downstream subscribers
+  // (BA 325, BA 350, BA 600, conduct, CMS, climate) replay against the same
+  // event window, preventing divergence when new events append concurrently.
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const closedAtSequence = args.eventStore.highWatermark();
+
   // (d) cache the trial balance via the EvSS Slice 2 snapshot substrate.
   // Stream-key partitions per entity per pack §6 Q2 + D-EVENT-STORE-
   // SCALING Slice 2 Q4. Payload is the same JSON shape as the doc-store
@@ -492,6 +500,7 @@ export function closePeriod(args: ClosePeriodArgs): ClosePeriodResult {
     closedAt: args.closedAt,
     trialBalanceSnapshotEventId: tbEvent.event_id,
     uptoSequence: trialBalance.uptoSequence,
+    eventSequence: closedAtSequence,
     ...(documentHash ? { trialBalanceDocumentHash: documentHash } : {}),
   };
   const closedEvent = makeAccountingPeriodClosed({

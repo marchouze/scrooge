@@ -111,6 +111,12 @@ export function conductPeriodCloseSubscriber(
     eventStore: input.eventStore,
     periodStart: input.periodStart,
     periodLabel,
+    // Thread the frozen cursor from AccountingPeriodClosed so all replay
+    // calls inside the generator are bounded to the same event window.
+    // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+    ...(input.closedPayload.eventSequence !== undefined
+      ? { untilSequence: input.closedPayload.eventSequence }
+      : {}),
   });
 
   return skipReason !== undefined ? { disclosure, skipped, skipReason } : { disclosure, skipped };

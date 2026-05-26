@@ -95,6 +95,14 @@ export interface PeriodCloseSubscriberInput {
   readonly rwa: RwaDecomposition;
   /** Buffer requirements; defaults to build-phase BCBS minimums + 2.5% CCB. */
   readonly bufferRequirements?: BufferRequirements;
+  /**
+   * Upper bound (inclusive) on the event `sequence` column.
+   * Sourced from `AccountingPeriodClosed.eventSequence` (frozen cursor).
+   * When supplied, all event-store replays in the BA 700 generator are
+   * bounded to prevent divergence from concurrent appends.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  readonly untilSequence?: number;
 }
 
 /** Result returned by the subscriber after generating the BA 700 return. */
@@ -179,6 +187,9 @@ export function onAccountingPeriodClosed(
     ...(input.bufferRequirements !== undefined
       ? { bufferRequirements: input.bufferRequirements }
       : {}),
+    // Thread the frozen cursor so all replays in the BA 700 generator are bounded.
+    // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+    ...(input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {}),
   });
 
   return { processed: true, ba700Return, substrateGap: SUBSTRATE_GAP };

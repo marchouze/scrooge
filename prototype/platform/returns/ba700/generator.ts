@@ -291,6 +291,14 @@ export interface GenerateBA700ReturnInput {
    */
   readonly deductions?: readonly RegulatoryDeduction[];
   /**
+   * Upper bound (inclusive) on the event `sequence` column.
+   * Sourced from `AccountingPeriodClosed.eventSequence` (frozen cursor).
+   * When supplied, all event-store replays in this generator are bounded
+   * to prevent divergence from concurrent appends.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+   */
+  readonly untilSequence?: number;
+  /**
    * RWA decomposition — caller-supplied at v0.
    * TODO: wire from RwaComputed event (W2 Slice 3 engine).
    */
@@ -340,11 +348,17 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
   // -------------------------------------------------------------------------
   // Step 1: confirm AccountingPeriodClosed exists for (entity, periodId).
   // -------------------------------------------------------------------------
+  // Frozen-cursor opts: bound by untilSequence when supplied.
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const frozenCursorOpts =
+    input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {};
+
   let periodClosed = false;
   for (const ev of input.eventStore.replay({
     entity: input.entityId,
     type: "AccountingPeriodClosed",
     asOf: input.reportingDate,
+    ...frozenCursorOpts,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as Record<string, unknown>;
@@ -362,6 +376,7 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
     entity: input.entityId,
     type: "TrialBalanceSnapshotted",
     asOf: input.reportingDate,
+    ...frozenCursorOpts,
   })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as Record<string, unknown>;
@@ -384,6 +399,7 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
     deductions: input.deductions ?? [],
     rwa: input.rwa,
     bufferRequirements: input.bufferRequirements ?? BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
+    ...(input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {}),
   });
 
   // -------------------------------------------------------------------------
