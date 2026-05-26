@@ -36,26 +36,38 @@
 //   - BCBS Basel III §50–§90
 //   - D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10)
 //
-// TODO: feed capitalAdequacy.tier1Capital from CapitalContributionRecorded
-//       + SubLedgerPostingEmitted (CET1 + AT1 accounts classified per
-//       AccountCapitalClassification map).
-// TODO: feed capitalAdequacy.tier2Capital from SubLedgerPostingEmitted
-//       (T2 accounts — subordinated debt + qualifying general provisions).
-// TODO: feed capitalAdequacy.rwa from RwaComputed (W2 Slice 3 RWA engine).
-// TODO: feed balanceSheet.totalAssets / totalLiabilities / equity from
-//       TrialBalanceSnapshotted rows (Balance semantic entry, GL accounts).
-// TODO: feed incomeStatement rows from TrialBalanceSnapshotted P&L accounts
-//       (netInterestIncome, nonInterestIncome, operatingExpenses, netProfit).
-// TODO: feed offBalanceSheet from OBS event types (guarantees, commitments,
-//       derivative notional — Exposure semantic entry, BA 600 overlap).
+// Gap 3 resolution (D-DATA-QUALITY-CROSS-DOMAIN-V1):
+//   capitalAdequacy.tier2Capital is fed from SubLedgerPostingEmitted events
+//   on T2-classified GL accounts (ACC-5200-001 subordinated debt,
+//   ACC-5200-002 qualifying general provisions) via the
+//   generateBa700CapitalFromEvents path.  The canonical T2 account set comes
+//   from coaToCapitalClassifications() in coa-registry.ts.  At build-phase
+//   both T2 accounts are placeholder entries (no real T2 instruments
+//   outstanding); tier2Capital will be 0 until posting rules for T2
+//   issuance and general-provision accumulation are implemented.
+//   Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.
+//
+//   capitalAdequacy.tier1Capital is fed from CapitalContributionRecorded
+//   + SubLedgerPostingEmitted (CET1 accounts ACC-5000-001 Share Capital,
+//   ACC-5000-002 Retained Earnings) via the same path.
+//
+// Remaining substrate gaps (deferred per brief scope):
+//   feed capitalAdequacy.rwa from RwaComputed (W2 Slice 3 RWA engine).
+//   feed balanceSheet.totalAssets / totalLiabilities / equity from
+//     TrialBalanceSnapshotted rows (Balance semantic entry, GL accounts).
+//   feed incomeStatement rows from TrialBalanceSnapshotted P&L accounts
+//     (netInterestIncome, nonInterestIncome, operatingExpenses, netProfit).
+//   feed offBalanceSheet from OBS event types (guarantees, commitments,
+//     derivative notional — Exposure semantic entry, BA 600 overlap).
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line mapping owner)
 //   + Camille (Chief Financial Officer, governance — reports to CEO;
 //   capital-stack accountable signer)
 //   + Atlas (Core banking platform architect, engineering — generator input
-//   contract for the W2 Slice 3 RWA-engine hand-off).
+//   contract for the W2 Slice 3 RWA-engine hand-off; Gap 3 resolution).
 
+import { coaToCapitalClassifications } from "../../accounting/coa-registry";
 import type { TrialBalanceSnapshotRow } from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
@@ -128,14 +140,20 @@ export interface BA700Return {
      * minor units.  Semantic ref: `CommonEquityTier1Capital` +
      * `AdditionalTier1Capital`.
      *
-     * TODO: feed from SubLedgerPostingEmitted capital-classified accounts.
+     * Fed from SubLedgerPostingEmitted (CET1/AT1 accounts per
+     * coaToCapitalClassifications()) + CapitalContributionRecorded.
+     * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8); BCBS §52–§54.
      */
     readonly tier1Capital: number;
     /**
      * Net Tier 2 capital after deductions, in functional-currency minor units.
      * Semantic ref: `Tier2Capital`.
      *
-     * TODO: feed from SubLedgerPostingEmitted T2-classified accounts.
+     * Folded from SubLedgerPostingEmitted on T2-classified GL accounts
+     * (ACC-5200-001 subordinated debt, ACC-5200-002 qualifying general
+     * provisions) via coaToCapitalClassifications().  Zero at build-phase
+     * (no real T2 instruments outstanding) — expected placeholder.
+     * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.
      */
     readonly tier2Capital: number;
     /**
@@ -281,10 +299,18 @@ export interface GenerateBA700ReturnInput {
   readonly periodEnd: string;
   /**
    * Per-account capital-tier classification.
-   * TODO: derive from chart-of-accounts `capitalTier` field once
-   * Mira's WS-INSTRUMENT-ANALYSES populates it.
+   *
+   * Defaults to `coaToCapitalClassifications()` — the canonical T2 + CET1/AT1
+   * account set derived from the chart-of-accounts `capitalTier` field.
+   * Callers may override for test fixtures or period-specific overrides.
+   *
+   * The canonical set includes:
+   *   CET1: ACC-5000-001 (Share Capital), ACC-5000-002 (Retained Earnings)
+   *   T2:   ACC-5200-001 (Subordinated Debt), ACC-5200-002 (General Provisions)
+   *
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; coa-registry.ts.
    */
-  readonly classifications: readonly AccountCapitalClassification[];
+  readonly classifications?: readonly AccountCapitalClassification[];
   /**
    * Regulatory deductions (CET1 / AT1 / T2).
    * Defaults to empty (gross = net) for build-phase rehearsal.
@@ -344,6 +370,10 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
   readonly rawOutput: Ba700Output;
 } {
   const provenanceFilter = defaultProvenanceFilter();
+  // Resolve classifications: caller override or canonical COA-derived set.
+  // The COA-derived set includes CET1 (ACC-5000-001/002) + T2 (ACC-5200-001/002).
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const resolvedClassifications = input.classifications ?? coaToCapitalClassifications();
 
   // -------------------------------------------------------------------------
   // Step 1: confirm AccountingPeriodClosed exists for (entity, periodId).
@@ -395,7 +425,7 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
     functionalCurrency: input.functionalCurrency,
     periodStart: input.periodStart,
     periodEnd: input.periodEnd,
-    classifications: input.classifications,
+    classifications: resolvedClassifications,
     deductions: input.deductions ?? [],
     rwa: input.rwa,
     bufferRequirements: input.bufferRequirements ?? BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
