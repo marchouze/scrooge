@@ -22,6 +22,16 @@
 // Any rule wired in the engine must appear here; any entry here with
 // condition ≠ "intentional-no-impact" must be wired in the engine.
 //
+// Stub classification (per Gap-4 audit, 2026-05-26):
+//   Category A — event type EXISTS in EVENT_TYPE_REGISTRY, stub is unwarranted
+//                → must be wired (recon:posting-rule-stub-audit will FAIL)
+//   Category B — event type does NOT exist in EVENT_TYPE_REGISTRY
+//                → legitimately deferred; conditionDetail cites
+//                  D-DATA-QUALITY-CROSS-DOMAIN-V1
+//   Category C — event type EXISTS, stub is genuinely zero-accounting-impact
+//                → keep stub; conditionDetail contains "[zero-impact-by-design]"
+//                  with IFRS 9 / accounting-policy rationale
+//
 // Authority: D-MARKETS-SCHEMA-FOUNDATION (CEO-approved).
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
@@ -112,6 +122,10 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // PR-FX-INSTRUCT — Settlement instruction (memo; no GL impact)
+  // Category C: genuinely zero-accounting-impact — FxSettlementInstructed is an
+  // informational payment-instruction event; cash moves only on correspondent
+  // confirmation (FxSettlementConfirmed / PrincipalPayment). No IFRS 9 recognition
+  // trigger fires on instruction dispatch. [zero-impact-by-design]
   {
     triggerEventType: "FxSettlementInstructed",
     triggerDomain: "trade",
@@ -120,7 +134,8 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingRuleId: "PR-FX-INSTRUCT",
     postingType: "payment-initiation",
     condition: "intentional-no-impact",
-    conditionDetail: "MT202 / pacs.009 instruction issued; no cash moved yet",
+    conditionDetail:
+      "MT202 / pacs.009 instruction issued; no cash moved yet [zero-impact-by-design]",
   },
 
   // PR-FX-PRIN — Per-leg cash at correspondent confirmation
@@ -136,6 +151,10 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // PR-FX-REGREPORT — Regulatory reporting dispatch (memo; no GL impact)
+  // Category C: genuinely zero-accounting-impact — TradeReportSubmitted is a
+  // regulatory-dispatch confirmation (SARB FinSurv / DTCC). Submission of a
+  // report is not a financial transaction; IFRS 9 prescribes no GL entry
+  // for regulatory reporting events. [zero-impact-by-design]
   {
     triggerEventType: "TradeReportSubmitted",
     triggerDomain: "trade",
@@ -144,7 +163,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingRuleId: "PR-FX-REGREPORT",
     postingType: "trade-booking",
     condition: "intentional-no-impact",
-    conditionDetail: "SARB FinSurv / DTCC dispatch; no GL impact",
+    conditionDetail: "SARB FinSurv / DTCC dispatch; no GL impact [zero-impact-by-design]",
   },
 
   // PR-FX-LIFECYCLE-CLOSE — Realised P&L on settlement confirmation
@@ -302,6 +321,10 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // No direct GL entry on settlement instruction (memo path)
+  // Category C: genuinely zero-accounting-impact — EquitySettlementInstructed is
+  // a settlement-system dispatch memo (DVP instruction to STRATE). GL recognition
+  // fires only on EquitySettlementConfirmed (IFRS 9 §3.2.3 settlement-date
+  // derecognition). [zero-impact-by-design]
   {
     triggerEventType: "EquitySettlementInstructed",
     triggerDomain: "trade",
@@ -310,7 +333,8 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingRuleId: "PR-EQ-INSTRUCT",
     postingType: "payment-initiation",
     condition: "intentional-no-impact",
-    conditionDetail: "Settlement instruction memo; cash moves on confirmation",
+    conditionDetail:
+      "Settlement instruction memo; cash moves on confirmation [zero-impact-by-design]",
   },
 
   // PR-EQ-004 — Derecognition on settlement confirmation
@@ -354,6 +378,10 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // Coupon schedule generation — memo only
+  // Category C: genuinely zero-accounting-impact — IrsCouponScheduleGenerated
+  // records the fixing of coupon amounts for the payment schedule. No cash
+  // changes hands at this point; IFRS 9 B5.4.1 EIR accrual fires on coupon
+  // settlement dates, not on schedule publication. [zero-impact-by-design]
   {
     triggerEventType: "IrsCouponScheduleGenerated",
     triggerDomain: "trade",
@@ -362,10 +390,15 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingRuleId: "PR-IRS-SCHED",
     postingType: "ird-swap-trade-booking",
     condition: "intentional-no-impact",
-    conditionDetail: "Schedule generated; no cash or GL impact until coupon dates",
+    conditionDetail:
+      "Schedule generated; no cash or GL impact until coupon dates [zero-impact-by-design]",
   },
 
   // Coupon payment instruction — memo only
+  // Category C: genuinely zero-accounting-impact — IrsCouponPaymentInstructed
+  // dispatches a payment instruction to the correspondent; no cash has moved.
+  // GL posts on IrsCouponSettlementConfirmed per IFRS 9 net-settlement
+  // recognition. [zero-impact-by-design]
   {
     triggerEventType: "IrsCouponPaymentInstructed",
     triggerDomain: "trade",
@@ -374,7 +407,8 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingRuleId: "PR-IRS-INSTRUCT",
     postingType: "ird-swap-coupon-settlement",
     condition: "intentional-no-impact",
-    conditionDetail: "Payment instruction issued; GL posts on confirmed settlement",
+    conditionDetail:
+      "Payment instruction issued; GL posts on confirmed settlement [zero-impact-by-design]",
   },
 
   // PR-IRS-003 — Net coupon cash settlement
@@ -419,6 +453,11 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // PR-REPO-SETTLE-START — Start-leg confirmation (memo; no GL impact)
+  // Category C: genuinely zero-accounting-impact — RepoStartLegSettled confirms
+  // that the start-leg cash and collateral exchange has completed. Initial
+  // recognition was already posted on RepoTradeOpened (IAS 39 §27 secured-
+  // borrowing model). Posting a second entry here would double-count the
+  // liability. [zero-impact-by-design]
   {
     triggerEventType: "RepoStartLegSettled",
     triggerDomain: "trade",
@@ -428,7 +467,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "repo-trade-booking",
     condition: "intentional-no-impact",
     conditionDetail:
-      "Recognition already posted at RepoTradeOpened; this is a confirmation-only memo",
+      "Recognition already posted at RepoTradeOpened; this is a confirmation-only memo [zero-impact-by-design]",
   },
 
   // PR-REPO-ACCRUAL — Daily repo rate accrual (IFRS 9 B5.4.1 EIR)
@@ -608,12 +647,19 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
 
   // ══════════════════════════════════════════════════════════════════════════
   // NON-TRADE TRIGGER STUBS
-  // These event types do not yet exist. They are registered here so the
-  // gap is visible in recon output. Each stub must be updated when the
-  // corresponding domain event is introduced and wired into the GL engine.
-  // See platform/accounting/non-trade-trigger-spec.md for the pattern.
+  // These event types do not yet exist in EVENT_TYPE_REGISTRY. They are
+  // registered here so the gap is visible in recon output. Each stub must
+  // be updated when the corresponding domain event is introduced and wired
+  // into the GL engine. See platform/accounting/non-trade-trigger-spec.md
+  // for the pattern.
   // ══════════════════════════════════════════════════════════════════════════
 
+  // Category B: deferred — event schema pending D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  // ProvisionCalculated does not yet exist in the EVENT_TYPE_REGISTRY; the risk
+  // domain has not yet published its ECL calculation event schema. Wire this rule
+  // when the risk domain lands ProvisionCalculated (IFRS 9 §5.5 ECL provision
+  // posting: Dr ECL Expense / Cr Loss Allowance).
+  // deferred: event schema pending — D-DATA-QUALITY-CROSS-DOMAIN-V1
   {
     triggerEventType: "ProvisionCalculated",
     triggerDomain: "risk",
@@ -623,9 +669,15 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "ecl-provision",
     condition: "intentional-no-impact",
     conditionDetail:
-      "Future: risk domain will emit ProvisionCalculated; accounting agent subscribes. Not yet wired.",
+      "Future: risk domain will emit ProvisionCalculated; accounting agent subscribes. Not yet wired. deferred: event schema pending — D-DATA-QUALITY-CROSS-DOMAIN-V1",
   },
 
+  // Category B: deferred — event schema pending D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  // BookPnlAttributed does not yet exist in the EVENT_TYPE_REGISTRY; the
+  // product-control domain has not yet published its book-level P&L attribution
+  // event schema. Wire this rule when product-control lands BookPnlAttributed
+  // (IFRS 9 §5.7.1 FVTPL P&L posting: Dr/Cr FVTPL Position / Dr/Cr P&L).
+  // deferred: event schema pending — D-DATA-QUALITY-CROSS-DOMAIN-V1
   {
     triggerEventType: "BookPnlAttributed",
     triggerDomain: "product-control",
@@ -635,7 +687,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "bond-revaluation",
     condition: "intentional-no-impact",
     conditionDetail:
-      "Future: product-control domain will emit BookPnlAttributed; accounting agent subscribes. Not yet wired.",
+      "Future: product-control domain will emit BookPnlAttributed; accounting agent subscribes. Not yet wired. deferred: event schema pending — D-DATA-QUALITY-CROSS-DOMAIN-V1",
   },
 ];
 
