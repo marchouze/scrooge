@@ -250,7 +250,10 @@
     "recon:obligation-review-status": "bun run platform/recon/obligation-review-status.ts",
     "recon:regulatory-extraction-coverage": "bun run platform/recon/regulatory-extraction-coverage.ts",
     "recon:period-close-cursor-integrity": "bun run platform/recon/recon-period-close-cursor-integrity.ts",
+<<<<<<< HEAD
     "recon:ba-returns-vs-gl-balances": "bun run platform/recon/recon-ba-returns-vs-gl-balances.ts",
+=======
+>>>>>>> 20d844db (fix: remove duplicate ci:recon:domain key and resolve conflict markers)
     "recon:liquidity-position-vs-settled-notional": "bun run platform/recon/recon-liquidity-position-vs-settled-notional.ts",
     "extract:regulations": "bun run scripts/extract-regulations.ts",
     "extract:regulation": "bun run scripts/extract-regulations.ts --instrument"
