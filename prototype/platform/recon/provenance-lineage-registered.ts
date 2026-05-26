@@ -31,13 +31,29 @@ export function run(): ReconResult {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
 
+  // Known test-pollution lineages: ProvenanceReclassified events carrying
+  // these values leaked from the test suite into the production store. Skip
+  // them here — the `recon:test-lineage-not-in-production` gate enforces
+  // remediation. Run `bun run scripts/cleanup-test-run1-provenance-pollution.ts`
+  // to reclassify these events to kind:simulated, which also removes them
+  // from this recon's scope entirely (simulated events are checked against
+  // the lineage registry for completeness but are not enforcement targets).
+  const KNOWN_POLLUTION_LINEAGES: ReadonlySet<string> = new Set(["test-run-1"]);
+
   const lineagesSeen = new Map<string, number>();
   let asserted = 0;
+  let pollutionSkipped = 0;
   for (const event of eventStore.replay()) {
     asserted += 1;
     const tag = event.provenance;
     if (!tag) continue; // tag-coverage recon flags this; skip here
     const lineage = String(tag.sourceLineage);
+    // Skip known-pollution lineages to prevent 123k warn-spam; the dedicated
+    // recon:test-lineage-not-in-production gate handles enforcement.
+    if (KNOWN_POLLUTION_LINEAGES.has(lineage)) {
+      pollutionSkipped += 1;
+      continue;
+    }
     lineagesSeen.set(lineage, (lineagesSeen.get(lineage) ?? 0) + 1);
   }
 
@@ -61,6 +77,17 @@ export function run(): ReconResult {
         severity: "warn",
       });
     }
+  }
+
+  // Surface pollution-skip count so the operator knows cleanup is pending.
+  if (pollutionSkipped > 0) {
+    violations.push({
+      subject: `known-pollution: ${pollutionSkipped} event(s) with test-* sourceLineage skipped`,
+      message:
+        "Run `bun run scripts/cleanup-test-run1-provenance-pollution.ts` to reclassify these events " +
+        "to kind:simulated, then they will no longer appear here.",
+      severity: "warn",
+    });
   }
 
   result.violations = violations;
