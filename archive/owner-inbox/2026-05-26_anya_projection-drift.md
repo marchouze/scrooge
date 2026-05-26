@@ -1,7 +1,7 @@
 ---
 agent: Anya
 trigger: projection-drift
-asOf: 2026-05-26T08:23:12.481Z
+asOf: 2026-05-26T11:03:04.137Z
 decision-required: false
 ---
 
@@ -21,13 +21,13 @@ Autonomous run of Anya's daily projection-drift sweep per `Team/Anya.md` operati
 | Obligations register rows (ORG-*) | 283 |
 | Regulations index — total | 95 |
 | Regulations index — POPULATED | 6 |
-| Owner Inbox deliverables | 448 |
+| Owner Inbox deliverables | 459 |
 | Team Inbox — open | 5 |
 | Team Inbox — actioned | 59 |
 
 ## Cross-check vs dashboard cache
 
-Cache asOf: `2026-05-26T08:23:08.753Z`
+Cache asOf: `2026-05-26T11:02:46.571Z`
 
 | Metric | Canonical | Cached | Drift |
 |---|---|---|---|
@@ -41,11 +41,7 @@ Cache asOf: `2026-05-26T08:23:08.753Z`
 
 ## Anya's narrative
 
-Dashboard cache is reachable and within four seconds of this run, but canonical counts have moved on it in two places: `instruments` shows canonical=95 vs cached=83 (drift +12), and `proceduresPopulated` shows canonical=130 vs cached=144 (drift -14). `principles`, `obligations`, and `instrumentsAnalysed` are clean.
-
-The `proceduresPopulated` drift is the load-bearing one — the cache is reporting *more* populated procedures than the file system actually contains, which is the wrong direction for a stale-derive story and suggests the dashboard's "populated" predicate has diverged from the canonical definition (likely counting stubs or deleted files still resident in a prior projection). That's a derivation bug, not a freshness gap. The `instruments` drift (+12) is the opposite shape — canonical has grown past the cache — and is consistent with regulations being added to `/Regulations/` since the dashboard's last instrument enumeration; that one likely clears on the next refresh.
-
-Concrete next action: refresh the dashboard projection first and re-run this sweep; if `instruments` closes to 0 but `proceduresPopulated` remains negative, raise a Vera dashboard-derivation finding against the procedures predicate so the cached and canonical definitions of "populated" are reconciled. I'll hold the finding draft pending the post-refresh delta.
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbR4ubbk3AkvPo95QqMCY"})._
 
 ## Provenance
 

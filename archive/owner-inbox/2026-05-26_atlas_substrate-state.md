@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-05-26T06:40:11.466Z
+asOf: 2026-05-26T09:37:07.226Z
 decision-required: false
 ---
 
@@ -9,164 +9,84 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 268052 events across 150 types; 31/31 personas have operating specs; 123 runtime handlers registered; 446 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 509932 events across 70 types; 31/31 personas have operating specs; 123 runtime handlers registered; 460 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 268052
+Path: `.local/event.db` · Total events: 509932
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `ProvenanceReclassified` | 125794 | 2026-05-22 | 2026-05-26 |
-| `InboundMessageReceived` | 95212 | 2026-05-19 | 2026-05-25 |
-| `EntityReclassified` | 11696 | 2026-05-22 | 2026-05-22 |
-| `SubstrateAgentRunStarted` | 3968 | 2026-05-17 | 2026-05-26 |
-| `BusDispatched` | 3938 | 2026-05-17 | 2026-05-26 |
-| `SubstrateAgentRunCompleted` | 3834 | 2026-05-17 | 2026-05-26 |
-| `SubLedgerPostingEmitted` | 1577 | 2026-05-09 | 2026-05-26 |
-| `MessageCorrelated` | 1350 | 2026-05-19 | 2026-05-23 |
-| `Decision` | 1158 | 2026-05-01 | 2026-05-26 |
-| `GatewayCheckRequested` | 1098 | 2026-05-09 | 2026-05-21 |
-| `RecordFiled` | 1037 | 2026-05-05 | 2026-05-26 |
-| `LegacyFanoutShadowed` | 935 | 2026-05-17 | 2026-05-26 |
-| `SubstrateAlert` | 908 | 2025-01-01 | 2026-05-25 |
-| `ScheduledTrigger` | 728 | 2026-05-17 | 2026-05-26 |
-| `RiskRaised` | 673 | 2025-12-01 | 2026-05-26 |
-| `GatewayCheckCompleted` | 654 | 2026-05-17 | 2026-05-21 |
-| `FxSettlementInstructed` | 598 | 2026-05-19 | 2026-05-25 |
-| `PrincipalPayment` | 572 | 2026-05-19 | 2026-05-25 |
-| `AgentGoalEvaluated` | 540 | 2026-05-17 | 2026-05-26 |
-| `FxTradeExecuted` | 498 | 2026-05-17 | 2026-05-25 |
-| `AgentGoalDeferred` | 483 | 2026-05-17 | 2026-05-26 |
-| `ISDACSAAssessmentCompleted` | 464 | 2024-01-01 | 2026-05-20 |
-| `OrderProposed` | 430 | 2026-05-09 | 2026-05-21 |
-| `CreditLimitLoaded` | 411 | 2024-01-01 | 2026-05-21 |
-| `WorkstreamRegistered` | 399 | 2026-05-07 | 2026-05-26 |
-| `CreditLimitApplicationSubmitted` | 392 | 2024-01-01 | 2026-05-20 |
-| `CreditLimitApproved` | 392 | 2024-01-01 | 2026-05-20 |
-| `AuditFinding` | 377 | 2026-05-07 | 2026-05-25 |
-| `IdentityKeyRotated` | 349 | 2026-05-19 | 2026-05-25 |
-| `ReconResult` | 327 | 2026-05-07 | 2026-05-25 |
-| `DashboardProjectionRefreshed` | 326 | 2026-05-19 | 2026-05-26 |
-| `CreditAnalysisCompleted` | 308 | 2024-01-01 | 2026-05-20 |
-| `CreditLimitProposed` | 308 | 2024-01-01 | 2026-05-20 |
-| `SettlementConfirmed` | 290 | 2026-05-19 | 2026-05-25 |
-| `OutboundMessageDispatched` | 270 | 2026-05-19 | 2026-05-23 |
-| `CcrReplacementCostComputed` | 260 | 2026-05-20 | 2026-05-20 |
-| `BacktestRequested` | 222 | 2026-01-10 | 2026-01-10 |
-| `BacktestRun` | 208 | 2026-05-09 | 2026-05-09 |
-| `AgentBriefIssued` | 201 | 2026-05-10 | 2026-05-26 |
-| `ClientCandidateRegistered` | 196 | 2026-05-18 | 2026-05-26 |
-| `AgentRunStarted` | 188 | 2026-05-10 | 2026-05-26 |
-| `AgentRunCompleted` | 186 | 2026-05-10 | 2026-05-26 |
-| `KYCIdentityCollected` | 164 | 2026-05-18 | 2026-05-26 |
-| `KYCIdentityVerified` | 164 | 2026-05-18 | 2026-05-26 |
-| `KYCSanctionsPEPScreened` | 164 | 2026-05-18 | 2026-05-26 |
-| `KYCDecisionMade` | 164 | 2026-05-18 | 2026-05-26 |
-| `AgentPerformanceEvaluated` | 142 | 2026-05-17 | 2026-05-25 |
-| `AgentFeedbackIssued` | 142 | 2026-05-17 | 2026-05-25 |
-| `CounterpartyFaisClassified` | 136 | 2026-05-01 | 2026-05-17 |
-| `ClientAccepted` | 132 | 2026-05-13 | 2026-05-26 |
-| `SubstrateAgentRunFailed` | 129 | 2026-05-17 | 2026-05-25 |
-| `KYCUBOResolved` | 122 | 2026-05-18 | 2026-05-26 |
-| `KYCRiskRated` | 122 | 2026-05-18 | 2026-05-26 |
-| `ClientRejected` | 112 | 2026-05-21 | 2026-05-26 |
-| `LawfulProcessingRegistered` | 108 | 2026-05-18 | 2026-05-26 |
-| `DailyPnLReportGenerated` | 104 | 2026-05-19 | 2026-05-26 |
-| `RegulatoryConceptExtracted` | 102 | 2026-05-22 | 2026-05-25 |
-| `AgentEscalation` | 98 | 2026-05-07 | 2026-05-26 |
-| `CcrEadComputed` | 96 | 2026-05-20 | 2026-05-20 |
-| `PermissionPolicyPublished` | 86 | 2026-05-18 | 2026-05-25 |
-| `IRRBBChecked` | 80 | 2026-05-19 | 2026-05-20 |
-| `MarketsProjectionRefreshed` | 78 | 2026-05-09 | 2026-05-09 |
-| `DocumentRegistered` | 72 | 2026-05-11 | 2026-05-25 |
-| `FxTradeCancelled` | 65 | 2026-05-19 | 2026-05-23 |
-| `IntradayHQLAStressProjection` | 64 | 2026-05-19 | 2026-05-20 |
-| `AgentRegistered` | 60 | 2026-05-18 | 2026-05-25 |
-| `AgentGoalSelected` | 57 | 2026-05-17 | 2026-05-26 |
-| `M1CitationTrancheRegistered` | 56 | 2026-05-09 | 2026-05-09 |
-| `IrsPositionRevalued` | 56 | 2026-05-19 | 2026-05-20 |
-| `SubstrateStateSnapshot` | 50 | 2026-05-07 | 2026-05-26 |
-| `PartyRelationshipAsserted` | 48 | 2026-05-18 | 2026-05-19 |
-| `DecisionRequested` | 42 | 2026-05-10 | 2026-05-10 |
-| `EquityTradeBooked` | 42 | 2026-05-09 | 2026-05-09 |
-| `IfrsClassificationApplied` | 42 | 2026-05-09 | 2026-05-09 |
-| `IrsTradeBooked` | 42 | 2026-05-20 | 2026-05-20 |
-| `KYCEDDInitiated` | 42 | 2026-05-21 | 2026-05-26 |
-| `KYCEDDCompleted` | 42 | 2026-05-21 | 2026-05-26 |
-| `FxPositionRevalued` | 39 | 2026-05-19 | 2026-05-21 |
-| `PartyRegistered` | 37 | 2026-05-18 | 2026-05-21 |
-| `AgentDecision` | 33 | 2026-05-07 | 2026-05-20 |
-| `OrderApprovedAtGateway` | 32 | 2026-05-17 | 2026-05-21 |
-| `SanctionsClearancePassed` | 32 | 2026-05-13 | 2026-05-13 |
-| `PEPScreeningCompleted` | 32 | 2026-05-13 | 2026-05-13 |
-| `BeneficialOwnerResolved` | 32 | 2026-05-13 | 2026-05-13 |
-| `RiskRatingAssigned` | 32 | 2026-05-13 | 2026-05-13 |
-| `ObligationCandidateProposed` | 31 | 2026-05-22 | 2026-05-25 |
-| `OrderRejectedAtGateway` | 30 | 2026-05-17 | 2026-05-17 |
-| `ProductDimensionAttested` | 28 | 2026-05-21 | 2026-05-21 |
-| `SettlementRealisedPnlCorrected` | 28 | 2026-05-21 | 2026-05-23 |
-| `CreditLimitBreached` | 28 | 2026-05-22 | 2026-05-22 |
-| `CreditLimitBreachDisposed` | 28 | 2026-05-23 | 2026-05-23 |
-| `Feedback` | 28 | 2026-05-10 | 2026-05-10 |
-| `LiquidityLimitBreached` | 26 | 2026-05-21 | 2026-05-23 |
-| `LiquidityLimitBreachDisposed` | 26 | 2026-05-22 | 2026-05-24 |
-| `CdmBindingsRegenerated` | 24 | 2026-05-09 | 2026-05-18 |
+| `SubstrateAlert` | 495466 | 2026-05-09 | 2026-05-26 |
+| `EntityReclassified` | 4159 | 2026-05-26 | 2026-05-26 |
+| `SubstrateAgentRunStarted` | 1800 | 2026-05-20 | 2026-05-26 |
+| `BusDispatched` | 1798 | 2026-05-20 | 2026-05-26 |
+| `SubstrateAgentRunCompleted` | 1708 | 2026-05-20 | 2026-05-26 |
+| `RecordFiled` | 836 | 2026-05-05 | 2026-05-26 |
+| `ScheduledTrigger` | 799 | 2026-05-20 | 2026-05-26 |
+| `AgentGoalEvaluated` | 453 | 2026-05-20 | 2026-05-26 |
+| `ReconResult` | 450 | 2026-05-20 | 2026-05-26 |
+| `AgentGoalDeferred` | 399 | 2026-05-20 | 2026-05-25 |
+| `Decision` | 391 | 2026-05-01 | 2026-05-25 |
+| `LegacyFanoutShadowed` | 304 | 2026-05-20 | 2026-05-26 |
+| `AgentPerformanceEvaluated` | 171 | 2026-05-20 | 2026-05-25 |
+| `AgentFeedbackIssued` | 171 | 2026-05-20 | 2026-05-25 |
+| `IRRBBChecked` | 120 | 2026-05-20 | 2026-05-25 |
+| `IntradayHQLAStressProjection` | 96 | 2026-05-20 | 2026-05-25 |
+| `SubstrateAgentRunFailed` | 90 | 2026-05-20 | 2026-05-25 |
+| `AgentGoalSelected` | 54 | 2026-05-20 | 2026-05-26 |
+| `DashboardProjectionRefreshed` | 54 | 2026-05-20 | 2026-05-25 |
+| `WorkstreamRegistered` | 48 | 2026-05-20 | 2026-05-25 |
+| `RiskRaised` | 42 | 2026-05-20 | 2026-05-25 |
+| `PartyRegistered` | 35 | 2026-05-22 | 2026-05-24 |
+| `PartyRelationshipAsserted` | 35 | 2026-05-19 | 2026-05-24 |
+| `AgentRegistered` | 30 | 2026-05-22 | 2026-05-22 |
+| `PermissionPolicyPublished` | 29 | 2026-05-22 | 2026-05-22 |
 | `ObligationRegistered` | 24 | 2026-05-09 | 2026-05-09 |
-| `PopiaConsentRecorded` | 24 | 2026-05-13 | 2026-05-13 |
-| `ConflictOfInterestDisclosed` | 23 | 2026-05-17 | 2026-05-17 |
-| `GoLiveConditionUpdated` | 22 | 2026-05-21 | 2026-05-21 |
-| `OfficialMarkAdopted` | 22 | 2026-05-21 | 2026-05-21 |
-| `BestExecutionVerified` | 22 | 2026-05-17 | 2026-05-17 |
-| `DataProjectionSnapshot` | 20 | 2026-05-07 | 2026-05-20 |
-| `InboxHygieneSweep` | 20 | 2026-05-07 | 2026-05-20 |
-| `ProductDimensionNarrativeRecorded` | 17 | 2026-05-20 | 2026-05-21 |
-| `IpvExceptionRaised` | 17 | 2026-05-21 | 2026-05-21 |
-| `FaisClassificationSuitabilityChecked` | 17 | 2026-05-17 | 2026-05-17 |
-| `BestExecutionBreached` | 15 | 2026-05-17 | 2026-05-17 |
-| `AccountingReadinessSnapshot` | 14 | 2026-05-17 | 2026-05-20 |
-| `CreditLimitAnnualReviewCompleted` | 14 | 2026-05-21 | 2026-05-21 |
-| `LexUtilisationComputed` | 14 | 2026-05-20 | 2026-05-20 |
-| `BriefSuperseded` | 14 | 2026-05-10 | 2026-05-10 |
-| `EquitySettlementInstructed` | 14 | 2026-05-13 | 2026-05-13 |
-| `PaNotificationSubmitted` | 14 | 2026-05-11 | 2026-05-11 |
-| `CreditLimitWithdrawn` | 14 | 2026-05-12 | 2026-05-12 |
-| `OrderAccepted` | 14 | 2026-05-13 | 2026-05-13 |
-| `GovernanceCyclePrep` | 12 | 2026-05-07 | 2026-05-19 |
-| `LCRComputed` | 12 | 2026-05-19 | 2026-05-20 |
-| `NSFRComputed` | 12 | 2026-05-19 | 2026-05-20 |
-| `ObligationsRegisterSnapshot` | 11 | 2026-05-07 | 2026-05-17 |
-| `SecuritySubstrateSnapshot` | 11 | 2026-05-07 | 2026-05-17 |
-| `FtpCurvePublished` | 10 | 2026-05-17 | 2026-05-20 |
-| `CounterpartyEligibilityScreened` | 9 | 2026-05-20 | 2026-05-20 |
-| `ALMRunCompleted` | 8 | 2026-05-19 | 2026-05-20 |
-| `CollateralInventorySnapshot` | 8 | 2026-05-19 | 2026-05-19 |
-| `EddInitiated` | 8 | 2026-05-13 | 2026-05-13 |
-| `AgentPromptOptimizationApplied` | 8 | 2026-05-21 | 2026-05-22 |
-| `ProductDimensionNarrativeRequested` | 5 | 2026-05-20 | 2026-05-23 |
-| `MtmRunCompleted` | 5 | 2026-05-21 | 2026-05-21 |
-| `MarketsProjectionRegistered` | 5 | 2026-05-09 | 2026-05-09 |
-| `RfqRequested` | 4 | 2026-05-21 | 2026-05-21 |
-| `QuoteResponded` | 4 | 2026-05-21 | 2026-05-21 |
-| `ThreatModelDimensionRegistered` | 4 | 2026-05-08 | 2026-05-08 |
-| `TradeCancelled` | 4 | 2026-05-21 | 2026-05-21 |
-| `RegulatoryInstrumentRegistered` | 4 | 2026-05-22 | 2026-05-25 |
-| `InterbankLoanPlaced` | 4 | 2026-05-23 | 2026-05-23 |
-| `RegulatoryInstrumentContextualised` | 3 | 2026-05-22 | 2026-05-25 |
-| `MLROAttestation` | 2 | 2026-05-17 | 2026-05-18 |
-| `GoLiveGateActivated` | 2 | 2026-05-21 | 2026-05-21 |
-| `RasLimitSchedulePublished` | 2 | 2026-05-14 | 2026-05-21 |
-| `ConductObligationFlagged` | 2 | 2026-05-17 | 2026-05-17 |
-| `RepoTradeOpened` | 2 | 2026-05-23 | 2026-05-23 |
-| `DepositTaken` | 2 | 2026-05-23 | 2026-05-23 |
-| `AccountingPeriodOpened` | 1 | 2026-05-17 | 2026-05-17 |
-| `AgentOpsReadinessSnapshot` | 1 | 2026-05-17 | 2026-05-17 |
-| `ManualJournalEntry` | 1 | 2026-05-18 | 2026-05-18 |
-| `ProductProposalRegistered` | 1 | 2026-05-21 | 2026-05-21 |
-| `ProductDueDiligenceCompleted` | 1 | 2026-05-21 | 2026-05-21 |
-| `ProductApproved` | 1 | 2026-05-21 | 2026-05-21 |
+| `CreditLimitApplicationSubmitted` | 22 | 2024-01-01 | 2026-05-20 |
+| `CreditAnalysisCompleted` | 22 | 2024-01-01 | 2026-05-20 |
+| `ISDACSAAssessmentCompleted` | 22 | 2024-01-01 | 2026-05-20 |
+| `CreditLimitProposed` | 22 | 2024-01-01 | 2026-05-20 |
+| `CreditLimitApproved` | 22 | 2024-01-01 | 2026-05-20 |
+| `CreditLimitLoaded` | 21 | 2024-01-01 | 2026-05-20 |
+| `AccountingReadinessSnapshot` | 18 | 2026-05-20 | 2026-05-25 |
+| `AuditFinding` | 17 | 2026-05-20 | 2026-05-23 |
+| `LCRComputed` | 16 | 2026-05-20 | 2026-05-25 |
+| `NSFRComputed` | 16 | 2026-05-20 | 2026-05-25 |
+| `GatewayCheckRequested` | 16 | 2026-05-09 | 2026-05-09 |
+| `CollateralInventorySnapshot` | 13 | 2026-05-20 | 2026-05-25 |
+| `AgentEscalation` | 12 | 2026-05-20 | 2026-05-25 |
+| `DataProjectionSnapshot` | 12 | 2026-05-20 | 2026-05-25 |
+| `InboxHygieneSweep` | 12 | 2026-05-20 | 2026-05-25 |
+| `FtpCurvePublished` | 12 | 2026-05-20 | 2026-05-25 |
+| `ALMRunCompleted` | 12 | 2026-05-20 | 2026-05-25 |
+| `DailyPnLReportGenerated` | 12 | 2026-05-24 | 2026-05-24 |
+| `CcrReplacementCostComputed` | 11 | 2026-05-20 | 2026-05-20 |
+| `MtmRunCompleted` | 8 | 2026-05-21 | 2026-05-25 |
+| `SubstrateStateSnapshot` | 6 | 2026-05-20 | 2026-05-25 |
+| `AgentBriefIssued` | 5 | 2026-05-18 | 2026-05-18 |
+| `AgentDecision` | 4 | 2026-05-20 | 2026-05-23 |
+| `SubLedgerPostingEmitted` | 4 | 2026-05-23 | 2026-05-23 |
+| `M1CitationTrancheRegistered` | 3 | 2026-05-09 | 2026-05-09 |
+| `ObligationsRegisterSnapshot` | 2 | 2026-05-20 | 2026-05-20 |
+| `SecuritySubstrateSnapshot` | 2 | 2026-05-20 | 2026-05-21 |
+| `MLROAttestation` | 2 | 2026-05-20 | 2026-05-25 |
+| `CdmBindingsRegenerated` | 2 | 2026-05-20 | 2026-05-25 |
+| `AgentOpsReadinessSnapshot` | 2 | 2026-05-20 | 2026-05-22 |
+| `InterbankLoanPlaced` | 2 | 2026-05-23 | 2026-05-23 |
+| `OrderProposed` | 2 | 2026-05-09 | 2026-05-09 |
+| `CreditLimitBreached` | 2 | 2026-05-22 | 2026-05-22 |
+| `CreditLimitBreachDisposed` | 2 | 2026-05-23 | 2026-05-23 |
+| `LiquidityLimitBreached` | 2 | 2026-05-21 | 2026-05-23 |
+| `LiquidityLimitBreachDisposed` | 2 | 2026-05-22 | 2026-05-24 |
+| `AccountingPeriodOpened` | 1 | 2026-05-20 | 2026-05-20 |
+| `GovernanceCyclePrep` | 1 | 2026-05-20 | 2026-05-20 |
 | `PolicyVersionActivated` | 1 | 2026-05-19 | 2026-05-19 |
-| `SecurityGateRegistered` | 1 | 2026-05-08 | 2026-05-08 |
+| `IdentityKeyRotated` | 1 | 2026-05-22 | 2026-05-22 |
+| `RepoTradeOpened` | 1 | 2026-05-23 | 2026-05-23 |
+| `DepositTaken` | 1 | 2026-05-23 | 2026-05-23 |
+| `CreditLimitAnnualReviewCompleted` | 1 | 2026-05-21 | 2026-05-21 |
+| `LexUtilisationComputed` | 1 | 2026-05-20 | 2026-05-20 |
 
 ## Personas — operating-spec coverage
 
@@ -316,7 +236,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Substrate snapshot above stands on its own._
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbQxTMG7Yt56TxkpnvKsD"})._
 
 ## Provenance
 

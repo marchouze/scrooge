@@ -1,7 +1,7 @@
 ---
 agent: Bea
 trigger: accounting-readiness
-asOf: 2026-05-26T08:22:09.364Z
+asOf: 2026-05-26T11:03:02.308Z
 decision-required: false
 ---
 
@@ -64,11 +64,7 @@ _Build-phase posture: zero accounting-domain events. The bank has no real bookin
 
 ## Bea's narrative
 
-The accounting substrate is empty — zero postings, zero classifications, zero closes in the seven-day window, and Camille has never signed a CloseApproved, BAReturnSigned, AFSSigned or CapitalPlanRefreshed. We are squarely in build phase. The load-bearing block on Camille's first signed close is the **monthly close cycle**: until a sub-ledger projection exists over postable events, with a published chart of accounts and at least one posting rule wired to a real domain event, nothing downstream — BA 100 cell-map, AFS line items per IAS 1, capital-base derivation per Banks Act Reg 38 — can fire end-to-end. All 26 Bea-owned obligations sit at PLANNED or DRAFTING; none are IN FORCE, but none are stuck at PARTIAL either, which is the right shape for build phase (no policy-vs-implementation gaps — only unbuilt engine).
-
-The most consequential observation is that the monthly close is one engineering ticket away from producing its first synthetic SubLedgerEntryPosted: the chart-of-accounts schema and the first posting rule (FundingDrawn → debit cash / credit funding-liability, IFRS 9 classification as amortised-cost financial liability per the Framework's recognition criteria and IAS 1 presentation) are both fully specified and waiting on substrate. Once that rule publishes against Atlas's event bus, the sub-ledger projection becomes real, and the BA-return generator (Reg 38, Banks Act 94 of 1990) and capital-base projection both unblock from the same dataset. AFS (IAS 1 structure, IFRS 7 disclosures) and ECL staging (IFRS 9 three-stage) correctly stay deferred — AFS until first close lands, ECL until Saskia books a counterparty exposure — and deferred tax (IAS 12 / Income Tax Act 58 of 1962) sits behind both.
-
-Next engineering move, in order: (1) publish the chart-of-accounts schema and the FundingDrawn posting rule with Atlas this week, so the sub-ledger projection has something to consume; (2) wire the CloseApproved producer behind a synthetic month-end so Camille's snapshot can observe a non-`never` last-close timestamp on the next cycle; (3) commission with Anya the BA 100 cell-map register against the synthetic capital line, so the first BAReturnGenerated dry-run can fire the moment the sub-ledger projection lands. AFS line-item schema (IAS 1) drafts in parallel — no substrate dependency on the engine, only on the schema being agreed.
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbR4uTybwRBWpoVHqpkMT"})._
 
 ## Provenance
 
