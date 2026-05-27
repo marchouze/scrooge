@@ -93,7 +93,8 @@ idempotentPair(
   {
     authority: "CISO",
     authorityRef: "agent:rashida",
-    title: "CISO programme framework — adopt Joint Standard 2 of 2024 as the cyber-security mandate",
+    title:
+      "CISO programme framework — adopt Joint Standard 2 of 2024 as the cyber-security mandate",
     category: "compliance",
     recommendation:
       "Adopt Joint Standard 2 of 2024 (PA/FSCA) as the CISO programme framework, covering: threat-model-gate sign-off, SBOM acceptance, key-ceremony design, detection standards, and JS-2 attestation. All CISO-authority decisions within this surface are exercised by Rashida without CEO routing unless an escalation trigger fires.",
@@ -145,12 +146,7 @@ idempotentPair(
       "Adopt the IFRS 9 Expected Credit Loss (ECL) general approach (3-stage: Stage 1 12-month ECL, Stage 2 lifetime ECL on significant credit deterioration, Stage 3 lifetime ECL on credit impairment) as the bank's ECL model for all financial instruments. The simplified approach is not used. The bank's wholesale-banking product set (bonds, repos, IRS, FX swaps) requires general-approach staging.",
     rationale:
       "IFRS 9 paragraph 5.5 requires an ECL model for all financial assets at amortised cost and debt instruments at FVOCI. The general approach is the appropriate election for a wholesale bank; the simplified approach is restricted to trade receivables and lease receivables. This election binds the accounting system design and must be locked before the general-ledger substrate is finalised. Camille's mandate (Team/Camille.md §9) covers IFRS accounting policy elections.",
-    citations: [
-      "IFRS-9-PARA-5-5",
-      "BANKS-ACT-94-1990-S90",
-      "IAS-37",
-      "SARB-D5-IMPAIRMENT",
-    ],
+    citations: ["IFRS-9-PARA-5-5", "BANKS-ACT-94-1990-S90", "IAS-37", "SARB-D5-IMPAIRMENT"],
   },
 );
 
@@ -158,53 +154,43 @@ idempotentPair(
 // CCO — Zara — FIC Act RMCP framework v1
 // ---------------------------------------------------------------------------
 
-idempotentPair(
-  "D-CCO-RMCP-FRAMEWORK-V1",
-  "2026-05-18T10:30:00.000Z",
-  "2026-05-18T11:00:00.000Z",
-  {
-    authority: "CCO",
-    authorityRef: "agent:zara",
-    title: "CCO FIC Act RMCP framework v1 — adopt 4-pillar compliance programme",
-    category: "compliance",
-    recommendation:
-      "Adopt the Risk Management and Compliance Programme (RMCP) framework v1 under FIC Act s.42, covering 4 pillars: (1) Customer Due Diligence (CDD/EDD/SDD), (2) Record-keeping (7-year retention per s.22), (3) Reporting (STR/CTR/TPR filing cadence), (4) Training (staff AML/CFT awareness). Zara (CCO/MLRO) exercises RMCP attestation, STR/CTR filing, and obligation-interpretation authority without CEO routing unless a sanctions true-positive or material exposure fires.",
-    rationale:
-      "FIC Act 38 of 2001 s.42 makes the RMCP a legal obligation for all accountable institutions. Adopting the framework structure now ensures the compliance substrate (KYC pipeline, STR/CTR filing, EDD workflow) is scoped to the correct four pillars before go-live. Zara's mandate (Team/Zara.md §9) covers RMCP attestation.",
-    citations: [
-      "FIC-ACT-38-2001-S42",
-      "FIC-ACT-38-2001-S22",
-      "FATF-RECOMMENDATION-10",
-      "PA-GUIDANCE-AML-2023",
-    ],
-  },
-);
+idempotentPair("D-CCO-RMCP-FRAMEWORK-V1", "2026-05-18T10:30:00.000Z", "2026-05-18T11:00:00.000Z", {
+  authority: "CCO",
+  authorityRef: "agent:zara",
+  title: "CCO FIC Act RMCP framework v1 — adopt 4-pillar compliance programme",
+  category: "compliance",
+  recommendation:
+    "Adopt the Risk Management and Compliance Programme (RMCP) framework v1 under FIC Act s.42, covering 4 pillars: (1) Customer Due Diligence (CDD/EDD/SDD), (2) Record-keeping (7-year retention per s.22), (3) Reporting (STR/CTR/TPR filing cadence), (4) Training (staff AML/CFT awareness). Zara (CCO/MLRO) exercises RMCP attestation, STR/CTR filing, and obligation-interpretation authority without CEO routing unless a sanctions true-positive or material exposure fires.",
+  rationale:
+    "FIC Act 38 of 2001 s.42 makes the RMCP a legal obligation for all accountable institutions. Adopting the framework structure now ensures the compliance substrate (KYC pipeline, STR/CTR filing, EDD workflow) is scoped to the correct four pillars before go-live. Zara's mandate (Team/Zara.md §9) covers RMCP attestation.",
+  citations: [
+    "FIC-ACT-38-2001-S42",
+    "FIC-ACT-38-2001-S22",
+    "FATF-RECOMMENDATION-10",
+    "PA-GUIDANCE-AML-2023",
+  ],
+});
 
 // ---------------------------------------------------------------------------
 // CAE — Thandiwe — inaugural audit universe v1
 // ---------------------------------------------------------------------------
 
-idempotentPair(
-  "D-CAE-AUDIT-UNIVERSE-V1",
-  "2026-05-18T11:00:00.000Z",
-  "2026-05-18T11:30:00.000Z",
-  {
-    authority: "CAE",
-    authorityRef: "agent:thandiwe",
-    title: "CAE inaugural audit universe v1 — 4-domain coverage",
-    category: "governance",
-    recommendation:
-      "Adopt the inaugural internal audit universe v1 covering 4 top-level audit domains: (1) Technology & Cyber (core banking, cloud infrastructure, SDLC, key management), (2) Financial Reporting (GL integrity, BA returns, IFRS 9 ECL, AFS), (3) Compliance & AML (RMCP, KYC/EDD, STR/CTR, FAIS conduct), (4) Operational Risk (business continuity, third-party risk, operational-resilience scenarios). Each domain has 3 engagement types: assurance, advisory, investigation. This decision is reported to the Interim Audit Forum (Owen, chair), not the CEO.",
-    rationale:
-      "The IPPF 2024 (IIA Standards) requires a risk-based audit universe as the foundation of the audit plan. King IV Principle 11 requires effective internal audit. The 4-domain structure covers the complete regulatory obligation set binding at commencement of trading. Thandiwe's mandate (Team/Thandiwe.md §9) covers audit-plan and audit-universe decisions; functional independence from the CEO is preserved — this is AC-accountable, not CEO-accountable.",
-    citations: [
-      "IPPF-2024",
-      "KING-IV-PRINCIPLE-11",
-      "COMPANIES-ACT-71-2008-S94",
-      "BANKS-ACT-94-1990",
-    ],
-  },
-);
+idempotentPair("D-CAE-AUDIT-UNIVERSE-V1", "2026-05-18T11:00:00.000Z", "2026-05-18T11:30:00.000Z", {
+  authority: "CAE",
+  authorityRef: "agent:thandiwe",
+  title: "CAE inaugural audit universe v1 — 4-domain coverage",
+  category: "governance",
+  recommendation:
+    "Adopt the inaugural internal audit universe v1 covering 4 top-level audit domains: (1) Technology & Cyber (core banking, cloud infrastructure, SDLC, key management), (2) Financial Reporting (GL integrity, BA returns, IFRS 9 ECL, AFS), (3) Compliance & AML (RMCP, KYC/EDD, STR/CTR, FAIS conduct), (4) Operational Risk (business continuity, third-party risk, operational-resilience scenarios). Each domain has 3 engagement types: assurance, advisory, investigation. This decision is reported to the Interim Audit Forum (Owen, chair), not the CEO.",
+  rationale:
+    "The IPPF 2024 (IIA Standards) requires a risk-based audit universe as the foundation of the audit plan. King IV Principle 11 requires effective internal audit. The 4-domain structure covers the complete regulatory obligation set binding at commencement of trading. Thandiwe's mandate (Team/Thandiwe.md §9) covers audit-plan and audit-universe decisions; functional independence from the CEO is preserved — this is AC-accountable, not CEO-accountable.",
+  citations: [
+    "IPPF-2024",
+    "KING-IV-PRINCIPLE-11",
+    "COMPANIES-ACT-71-2008-S94",
+    "BANKS-ACT-94-1990",
+  ],
+});
 
 console.log(
   JSON.stringify({
