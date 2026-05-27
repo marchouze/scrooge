@@ -91,6 +91,14 @@ function buildBriefEventIndex(): BriefEventIndex {
   const byDate = new Map<string, Set<string>>();
   let totalEvents = 0;
 
+  const addToDate = (d: string, toName: string, byName: string): void => {
+    if (!byDate.has(d)) byDate.set(d, new Set());
+    // biome-ignore lint/style/noNonNullAssertion: guarded by byDate.has(d) above
+    const names = byDate.get(d)!;
+    if (toName) names.add(toName);
+    if (byName) names.add(byName);
+  };
+
   for (const e of eventStore.replay({ type: "AgentBriefIssued" })) {
     totalEvents++;
     const date = (e.as_of ?? "").slice(0, 10); // "YYYY-MM-DD"
@@ -104,11 +112,16 @@ function buildBriefEventIndex(): BriefEventIndex {
     const toName = typeof issuedTo?.name === "string" ? issuedTo.name.toLowerCase() : "";
     const byName = typeof issuedBy?.name === "string" ? issuedBy.name.toLowerCase() : "";
 
-    if (!byDate.has(date)) byDate.set(date, new Set());
-    // biome-ignore lint/style/noNonNullAssertion: guarded by byDate.has(date) above
-    const names = byDate.get(date)!;
-    if (toName) names.add(toName);
-    if (byName) names.add(byName);
+    addToDate(date, toName, byName);
+
+    // For backfill events emitted after the fact, also index by the date
+    // embedded at the tail of the briefId (e.g. "brief:owen:title:2026-05-18").
+    // This lets a brief emitted today match a file dated 2026-05-18.
+    const briefId = typeof payload.briefId === "string" ? payload.briefId : "";
+    const briefIdDate = /(\d{4}-\d{2}-\d{2})$/.exec(briefId)?.[1] ?? "";
+    if (briefIdDate && briefIdDate !== date) {
+      addToDate(briefIdDate, toName, byName);
+    }
   }
 
   return { byDate, totalEvents };
