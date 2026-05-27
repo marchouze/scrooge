@@ -247,6 +247,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // this seed file itself passes the raw store through from the caller.
   // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8, P4-SECURITY-DESIGNED-IN.
   "seeds/models/model-validation-seed.ts",
+  // model-registered-seed — emits ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
+  // and ModelValidationApproved × 3 for IRS ZARONIA and FX swap gap closure. Called from
+  // dashboard/server.ts (via bootModelRegisteredSeeds) with the gated store.
+  // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8, P4-SECURITY-DESIGNED-IN.
+  "seeds/models/model-registered-seed.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

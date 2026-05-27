@@ -138,6 +138,7 @@ import {
   BALANCE_SHEET_SEED_CITATIONS,
   BALANCE_SHEET_SEED_PAYLOAD,
 } from "../seeds/alm/balance-sheet-seed";
+import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
 import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import {
   seedModelValidations,
@@ -539,6 +540,12 @@ function bootDerive(): DashboardState {
     // bootNpaAttestations() (seedValidatedModelRiskUpgrades checks for approvals).
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     bootModelValidationSeeds();
+    // ModelRegistered seed — emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
+    // and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
+    // Complements model-registry-seed (ModelSubmitted) and model-validation-seed (v0.1).
+    // Must run AFTER bootModelValidationSeeds().
+    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+    bootModelRegisteredSeeds();
     // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
     // core products (equity, bond, repo, IRS, FX swap) idempotently.
     // seedValidatedModelRiskUpgrades() upgrades bond/IRS/FX model-risk to
@@ -661,6 +668,39 @@ function bootModelValidationSeeds(): void {
     logger.debug(
       { skipped: valResult.skipped.length },
       "model-validation-seed: idempotent boot; all models already approved or not yet registered",
+    );
+  }
+}
+
+/**
+ * Idempotent seed: emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
+ * and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
+ *
+ * Called after bootModelValidationSeeds() — complements (not replaces) the existing
+ * ModelSubmitted and v0.1 methodology events.
+ *
+ * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+ */
+function bootModelRegisteredSeeds(): void {
+  const result = seedModelRegisteredEvents(eventStore);
+  const total =
+    result.modelRegistered.length +
+    result.methodologiesPublished.length +
+    result.validationsApproved.length;
+  if (total > 0) {
+    logger.info(
+      {
+        modelRegistered: result.modelRegistered.length,
+        methodologiesPublished: result.methodologiesPublished.length,
+        validationsApproved: result.validationsApproved.length,
+        skipped: result.skipped.length,
+      },
+      "model-registered-seed: ModelRegistered + methodology v1 + validation approved emitted",
+    );
+  } else {
+    logger.debug(
+      { skipped: result.skipped.length },
+      "model-registered-seed: idempotent boot; all events already present",
     );
   }
 }
