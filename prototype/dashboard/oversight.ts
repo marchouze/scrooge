@@ -24,6 +24,7 @@
 import { LocalEscalationChannel } from "../platform/escalation/channel";
 import type { EventStore } from "../platform/event-store/store";
 import type { Event } from "../platform/event-store/types";
+import { nextFireAfter, parseCron } from "../platform/scheduler/cron-parse";
 import { HANDLERS_METADATA } from "../runtime/handlers-metadata";
 import type {
   AgentMiniDashboard,
@@ -153,70 +154,114 @@ function byDeadlineAsc(a: EscalationView, b: EscalationView): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Build per-handler fleet status. Pulls from HANDLERS_METADATA + the agent
- * mini-dashboards (whose `lastActivityAt` is the canonical "last touched"
- * timestamp) + the live escalation list.
+ * Build per-handler fleet status. Pulls from HANDLERS_METADATA + the
+ * lifecycle-event fold (SubstrateAgentRunCompleted / SubstrateAgentRunFailed
+ * from the event store) + the live escalation list.
  *
- * `nextRunAt` is computed from `lastActivityAt + cadenceHours` — a rough
- * predictor; the real scheduler post-M8 will own the authoritative next-run.
+ * `lastRunAt` is the timestamp of the most recent closed run event for the
+ * agent (Completed or Failed). `lastActivityAt` is aliased to `lastRunAt` for
+ * backwards compat with dashboard consumers that read the old field name.
+ *
+ * `nextRunAt` is computed from `cronExpression + lastRunAt` using
+ * `nextFireAfter` (the canonical cron evaluator) — more accurate than the
+ * former `lastActivityAt + cadenceHours` heuristic.
+ *
+ * The event store is optional for backwards compat; when omitted, `lastRunAt`
+ * is undefined and `nextRunAt` is not populated.
  */
 export function buildFleetStatus(
   state: DashboardState,
   escalations: readonly EscalationView[],
+  eventStore?: EventStore,
 ): FleetAgentStatus[] {
-  const agentByName = new Map<string, AgentMiniDashboard>();
-  for (const a of state.agents) agentByName.set(a.name, a);
+  // ---------------------------------------------------------------------------
+  // Lifecycle-event fold — per-agent last closed run timestamp.
+  //
+  // Fold SubstrateAgentRunCompleted + SubstrateAgentRunFailed events to find
+  // the most recent closed run for each agent URN. Mirrors the LifecycleFold
+  // pattern in platform/scheduler/scheduler.ts (§ inactivityCheck).
+  // ---------------------------------------------------------------------------
+  const lastClosedAtByUrn = new Map<string, number>(); // agentUrn → epoch ms
 
-  // Last-activity for an agent name: prefer the direct-report card; fall back
-  // to subordinate slot when the persona is a subordinate of a head.
-  const lastActivityFor = (name: string): string | undefined => {
-    const direct = agentByName.get(name);
-    if (direct?.lastActivityAt) return direct.lastActivityAt;
-    for (const a of state.agents) {
-      for (const s of a.subordinates) {
-        if (s.name === name && s.lastActivityAt) return s.lastActivityAt;
+  if (eventStore) {
+    for (const closingType of ["SubstrateAgentRunCompleted", "SubstrateAgentRunFailed"] as const) {
+      for (const e of eventStore.replay({ type: closingType })) {
+        const p = e.payload as Record<string, unknown>;
+        const agentName = typeof p.agent === "string" ? p.agent : "";
+        if (!agentName) continue;
+        const closedAtKey =
+          closingType === "SubstrateAgentRunCompleted" ? "completedAt" : "failedAt";
+        const closedAt = typeof p[closedAtKey] === "string" ? (p[closedAtKey] as string) : e.as_of;
+        const closedAtMs = Date.parse(closedAt);
+        if (Number.isNaN(closedAtMs)) continue;
+        const urn = `agent:${agentName.toLowerCase()}`;
+        const prior = lastClosedAtByUrn.get(urn);
+        if (prior === undefined || closedAtMs > prior) {
+          lastClosedAtByUrn.set(urn, closedAtMs);
+        }
       }
     }
-    return undefined;
-  };
+  }
 
-  // Pending escalations per agent — count of open / acknowledged / delegated /
-  // overdue (i.e. anything not `decided`) raised by the agent.
+  // ---------------------------------------------------------------------------
+  // Pending escalations per agent.
+  // ---------------------------------------------------------------------------
   const pendingByAgent = new Map<string, number>();
   for (const e of escalations) {
     if (e.status === "decided") continue;
-    // raisedBy convention: `agent:<lowercased-name>` for agent escalations.
-    // Normalise back to a persona name for the count.
     const m = e.raisedBy.match(/^agent:([a-z][a-z0-9-]*)/i);
     if (!m || !m[1]) continue;
     const name = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
     pendingByAgent.set(name, (pendingByAgent.get(name) ?? 0) + 1);
   }
 
-  // Recent decisions per agent — folded from the resolved-decision list. We
-  // attribute by the same owner-by-decision-id convention the agents page uses.
-  // Without owner-tracking on the resolved row itself, fall back to the agent
-  // mini-dashboard's `recentlyResolvedDecisions` count.
+  // ---------------------------------------------------------------------------
+  // Recent decisions per agent.
+  // ---------------------------------------------------------------------------
   const recentDecisionsByAgent = new Map<string, number>();
   for (const a of state.agents) {
     recentDecisionsByAgent.set(a.name, a.recentlyResolvedDecisions.length);
   }
 
+  // ---------------------------------------------------------------------------
+  // Build fleet rows.
+  // ---------------------------------------------------------------------------
   const out: FleetAgentStatus[] = [];
   for (const h of HANDLERS_METADATA) {
-    const lastActivityAt = lastActivityFor(h.agent);
-    const nextRunAt =
-      h.kind === "scheduled" && h.cadenceHours && lastActivityAt
-        ? new Date(new Date(lastActivityAt).getTime() + h.cadenceHours * 3600 * 1000).toISOString()
-        : undefined;
+    const urn = `agent:${h.agent.toLowerCase()}`;
+    const lastClosedMs = lastClosedAtByUrn.get(urn);
+    const lastRunAt = lastClosedMs !== undefined ? new Date(lastClosedMs).toISOString() : undefined;
+
+    // Compute nextRunAt from cronExpression + lastRunAt (accurate), falling
+    // back to lastRunAt + cadenceHours (heuristic) when no cron is available.
+    // Only computable when we have a closed run to anchor from.
+    let nextRunAt: string | undefined;
+    if (h.kind === "scheduled" && lastClosedMs !== undefined) {
+      if (h.cronExpression) {
+        try {
+          const parsed = parseCron(h.cronExpression);
+          const next = nextFireAfter(parsed, new Date(lastClosedMs));
+          nextRunAt = next.toISOString();
+        } catch {
+          // Broken cron — fall back to cadence heuristic.
+          if (h.cadenceHours) {
+            nextRunAt = new Date(lastClosedMs + h.cadenceHours * 3600 * 1000).toISOString();
+          }
+        }
+      } else if (h.cadenceHours) {
+        nextRunAt = new Date(lastClosedMs + h.cadenceHours * 3600 * 1000).toISOString();
+      }
+    }
+
     out.push({
       agent: h.agent,
       trigger: h.trigger,
       handlerKey: h.key,
       kind: h.kind,
       ...(h.cadenceHours !== undefined ? { cadenceHours: h.cadenceHours } : {}),
-      agentUrn: `agent:${h.agent.toLowerCase()}`,
-      ...(lastActivityAt ? { lastActivityAt } : {}),
+      agentUrn: urn,
+      // lastRunAt — canonical from lifecycle fold.
+      ...(lastRunAt ? { lastRunAt, lastActivityAt: lastRunAt } : {}),
       ...(nextRunAt ? { nextRunAt } : {}),
       inFlightRuns: 0, // synchronous in-process model — no in-flight slots
       pendingEscalationCount: pendingByAgent.get(h.agent) ?? 0,

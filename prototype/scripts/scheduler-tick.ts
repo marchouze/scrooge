@@ -159,7 +159,30 @@ async function main(): Promise<number> {
     logger.warn(f, `scheduler:tick — inactivity ${f.alertId}: ${f.details}`);
   }
 
-  // 5. Daily performance evaluations (Sade — AgentOps).
+  // 5. Escalation overdue enforcement — daily.
+  //    Walks every open AgentEscalation, emits AgentEscalationOverdue for
+  //    any whose declared deadline has passed without a Decided / Delegated
+  //    landing. Idempotent — a second invocation against the same store does
+  //    not duplicate Overdue events (EscalationChannel.enforceOverdue is
+  //    idempotent per escalation id). Per Atlas spec §3.5.
+  {
+    const { LocalEscalationChannel } = await import("../platform/escalation/channel");
+    const escalationChannel = new LocalEscalationChannel(eventStore);
+    const overdueResult = escalationChannel.enforceOverdue(now);
+    logger.info(
+      {
+        walked: overdueResult.walked,
+        emitted: overdueResult.emitted.length,
+        skipped: overdueResult.skipped.length,
+      },
+      `scheduler:tick — escalation:enforceOverdue: walked=${overdueResult.walked} emitted=${overdueResult.emitted.length} skipped=${overdueResult.skipped.length}`,
+    );
+    for (const id of overdueResult.emitted) {
+      logger.warn({ escalationId: id }, `scheduler:tick — AgentEscalationOverdue emitted: ${id}`);
+    }
+  }
+
+  // 6. Daily performance evaluations (Sade — AgentOps).
   //    Run once per calendar day (idempotent — skips if already evaluated).
   //    TODO: move to a Sade-owned scheduled handler (cron entry in Team/Sade.md)
   //    once the goal-loop scheduled-handler substrate is fully wired.

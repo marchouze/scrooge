@@ -17,4 +17,10 @@ export const NOA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Noa", "ux-finding-raised", "event-driven", {
     subscribesTo: ["UXFindingRaised"],
   }),
+  // Weekly design-sprint-boundary ops cycle per Team/Noa.md §6 "Cadence".
+  // Cadence: Tuesdays at 08:11 UTC (consistent with Linnea's sprint cadence).
+  entry("Noa", "ops-cycle", "scheduled", {
+    cadenceHours: 24 * 7,
+    cronExpression: "11 8 * * TUE",
+  }),
 ];

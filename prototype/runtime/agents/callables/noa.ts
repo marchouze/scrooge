@@ -5,10 +5,12 @@
 import type { AgentRunHandler } from "../../types";
 import noaDesignReviewComplete from "../noa-design-review-complete";
 import noaFeatureShipped from "../noa-feature-shipped";
+import noaOpsCycle from "../noa-ops-cycle";
 import noaUxFindingRaised from "../noa-ux-finding-raised";
 
 export const NOA_CALLABLES: Record<string, AgentRunHandler> = {
   "noa:feature-shipped": noaFeatureShipped,
   "noa:design-review-complete": noaDesignReviewComplete,
   "noa:ux-finding-raised": noaUxFindingRaised,
+  "noa:ops-cycle": noaOpsCycle,
 };

@@ -170,7 +170,10 @@
       "role": "External environment simulator",
       "type": "engineering",
       "expertise": ["simulation", "market-data", "swift-messaging", "correspondent-banking"],
-      "reportsTo": "Devon"
+      "reportsTo": "Devon",
+      "specFile": "Team/Env.md",
+      "workflowFile": "agent-runtime-env-readiness.yml",
+      "workflowTrigger": "readiness"
     },
     {
       "id": "noa",
@@ -183,6 +186,8 @@
       "reportsToNote": "Reports to CEO (Marc) for product/design authority; engineering coordination with Atlas for backend platform integration.",
       "buildPhaseStatus": "active",
       "specFile": "Team/Noa.md",
+      "workflowFile": "agent-runtime-noa-ops-cycle.yml",
+      "workflowTrigger": "ops-cycle",
       "coordinationNote": "Noa owns the intranet product end-to-end (information architecture, UX, component library, feature roadmap). Atlas provides backend event-store and API platform that Noa's UI consumes."
     },
     {
