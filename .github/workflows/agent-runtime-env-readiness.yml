@@ -11,8 +11,6 @@
 name: Env readiness
 
 on:
-  schedule:
-    - cron: "17 7 * * FRI"
   workflow_dispatch: {}
 
 permissions:

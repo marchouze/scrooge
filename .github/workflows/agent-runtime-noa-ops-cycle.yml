@@ -11,8 +11,6 @@
 name: Noa ops cycle
 
 on:
-  schedule:
-    - cron: "11 8 * * TUE"
   workflow_dispatch: {}
 
 permissions:

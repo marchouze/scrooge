@@ -184,18 +184,14 @@ export function buildFleetStatus(
   const lastClosedAtByUrn = new Map<string, number>(); // agentUrn → epoch ms
 
   if (eventStore) {
-    for (const closingType of [
-      "SubstrateAgentRunCompleted",
-      "SubstrateAgentRunFailed",
-    ] as const) {
+    for (const closingType of ["SubstrateAgentRunCompleted", "SubstrateAgentRunFailed"] as const) {
       for (const e of eventStore.replay({ type: closingType })) {
         const p = e.payload as Record<string, unknown>;
         const agentName = typeof p.agent === "string" ? p.agent : "";
         if (!agentName) continue;
         const closedAtKey =
           closingType === "SubstrateAgentRunCompleted" ? "completedAt" : "failedAt";
-        const closedAt =
-          typeof p[closedAtKey] === "string" ? (p[closedAtKey] as string) : e.as_of;
+        const closedAt = typeof p[closedAtKey] === "string" ? (p[closedAtKey] as string) : e.as_of;
         const closedAtMs = Date.parse(closedAt);
         if (Number.isNaN(closedAtMs)) continue;
         const urn = `agent:${agentName.toLowerCase()}`;
@@ -230,31 +226,29 @@ export function buildFleetStatus(
   // ---------------------------------------------------------------------------
   // Build fleet rows.
   // ---------------------------------------------------------------------------
-  const now = Date.now();
   const out: FleetAgentStatus[] = [];
   for (const h of HANDLERS_METADATA) {
     const urn = `agent:${h.agent.toLowerCase()}`;
     const lastClosedMs = lastClosedAtByUrn.get(urn);
-    const lastRunAt =
-      lastClosedMs !== undefined ? new Date(lastClosedMs).toISOString() : undefined;
+    const lastRunAt = lastClosedMs !== undefined ? new Date(lastClosedMs).toISOString() : undefined;
 
     // Compute nextRunAt from cronExpression + lastRunAt (accurate), falling
     // back to lastRunAt + cadenceHours (heuristic) when no cron is available.
+    // Only computable when we have a closed run to anchor from.
     let nextRunAt: string | undefined;
-    if (h.kind === "scheduled" && lastRunAt) {
+    if (h.kind === "scheduled" && lastClosedMs !== undefined) {
       if (h.cronExpression) {
         try {
           const parsed = parseCron(h.cronExpression);
-          const after = lastClosedMs !== undefined ? new Date(lastClosedMs) : new Date(now);
-          const next = nextFireAfter(parsed, after);
+          const next = nextFireAfter(parsed, new Date(lastClosedMs));
           nextRunAt = next.toISOString();
         } catch {
           // Broken cron — fall back to cadence heuristic.
-          if (h.cadenceHours && lastClosedMs !== undefined) {
+          if (h.cadenceHours) {
             nextRunAt = new Date(lastClosedMs + h.cadenceHours * 3600 * 1000).toISOString();
           }
         }
-      } else if (h.cadenceHours && lastClosedMs !== undefined) {
+      } else if (h.cadenceHours) {
         nextRunAt = new Date(lastClosedMs + h.cadenceHours * 3600 * 1000).toISOString();
       }
     }
