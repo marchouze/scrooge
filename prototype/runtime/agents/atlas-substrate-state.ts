@@ -409,7 +409,20 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       return false;
     }
 
-    if (!hasOpenEscalation("esc:atlas:bus-in-process-")) {
+    // True if any date-variant of this escalation stem has already been decided.
+    // Prevents re-raising a question that has already been answered, even after
+    // the decided variant's date-stamped ID no longer matches an open escalation.
+    function hasDecidedEscalation(stem: string): boolean {
+      for (const id of decidedEscIds) {
+        if (id.startsWith(stem)) return true;
+      }
+      return false;
+    }
+
+    if (
+      !hasOpenEscalation("esc:atlas:bus-in-process-") &&
+      !hasDecidedEscalation("esc:atlas:bus-in-process-")
+    ) {
       eventStore.append(
         makeAgentEscalation({
           asOf: ctx.asOf,
@@ -439,7 +452,10 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventsEmitted++;
     }
 
-    if (!hasOpenEscalation("esc:atlas:cron-drift-a2-1-")) {
+    if (
+      !hasOpenEscalation("esc:atlas:cron-drift-a2-1-") &&
+      !hasDecidedEscalation("esc:atlas:cron-drift-a2-1-")
+    ) {
       eventStore.append(
         makeAgentEscalation({
           asOf: ctx.asOf,
