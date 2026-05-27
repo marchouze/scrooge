@@ -161,6 +161,28 @@ const PRODUCTS: ProductNpaDef[] = [
 
 // Products whose model-risk can be upgraded to implementation-attested
 // because no pricing model is used (SR 11-7 model definition not met).
+// Products whose model-risk upgrade requires a ModelValidationApproved event
+// for the product's primary pricing model. Blocked products are retried on
+// every server boot — once Nadia's validation events land in the store the
+// upgrade fires automatically.
+const WITH_MODEL_PRODUCTS: ReadonlyArray<{
+  productId: string;
+  modelId: string;
+}> = [
+  {
+    productId: "prd:bank:bond:sagb-fixed-coupon",
+    modelId: "model:sagb-dcf-v1",
+  },
+  {
+    productId: "prd:bank:ird:vanilla-zar-fix-zaronia",
+    modelId: "model:zaronia-ois-irspv-v1",
+  },
+  {
+    productId: "prd:bank:fx:fx-swap-usdzar",
+    modelId: "model:fx-forward-irp-v1",
+  },
+] as const;
+
 const NO_MODEL_PRODUCTS: ReadonlyArray<{ productId: string; notes: string }> = [
   {
     productId: "prd:bank:equity:jse-equity-cash",
@@ -233,6 +255,76 @@ export function seedModelRiskUpgrades(store: EventStore): {
   return { upgraded, skipped };
 }
 
+export interface ValidatedModelRiskUpgradeResult {
+  readonly upgraded: string[];
+  readonly skipped: string[];
+  readonly blocked: string[];
+}
+
+/**
+ * Upgrades model-risk attestation to implementation-attested for products
+ * whose primary pricing model has a ModelValidationApproved event in the store.
+ *
+ * Products without an approved validation are returned in `blocked` and will be
+ * upgraded on the next server boot after Nadia's validation events land.
+ * Idempotent: products already at implementation-attested are returned in `skipped`.
+ */
+export function seedValidatedModelRiskUpgrades(store: EventStore): ValidatedModelRiskUpgradeResult {
+  const upgraded: string[] = [];
+  const skipped: string[] = [];
+  const blocked: string[] = [];
+
+  const events = Array.from(store.replay());
+
+  const approvedModelIds = new Set(
+    events
+      .filter((ev) => ev.type === "ModelValidationApproved")
+      .map((ev) => (ev.payload as Record<string, unknown>).modelId as string),
+  );
+
+  const alreadyUpgraded = new Set(
+    events
+      .filter(
+        (ev) =>
+          ev.type === "ProductDimensionAttested" &&
+          (ev.payload as Record<string, unknown>).dimension === "model-risk" &&
+          (ev.payload as Record<string, unknown>).result === "implementation-attested",
+      )
+      .map((ev) => (ev.payload as Record<string, unknown>).productId as string),
+  );
+
+  for (const { productId, modelId } of WITH_MODEL_PRODUCTS) {
+    if (alreadyUpgraded.has(productId)) {
+      skipped.push(productId);
+      continue;
+    }
+    if (!approvedModelIds.has(modelId)) {
+      blocked.push(productId);
+      continue;
+    }
+    const ev = makeProductDimensionAttested({
+      asOf: UPGRADE_AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: UPGRADE_ACTOR,
+      citations: UPGRADE_CITATIONS,
+      payload: {
+        productId,
+        dimension: "model-risk",
+        result: "implementation-attested",
+        citationChain: [
+          "D-NEW-PRODUCT-APPROVAL-POLICY",
+          "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+          "D-PRODUCT-CONSTRUCTION-SLICES-4-8",
+        ],
+      },
+    });
+    store.append(ev);
+    upgraded.push(productId);
+  }
+
+  return { upgraded, skipped, blocked };
+}
+
 export interface NpaAttestationSeedResult {
   approved: string[];
   skipped: string[];
@@ -257,8 +349,13 @@ export function seedNpaAttestations(store: EventStore): NpaAttestationSeedResult
     }
   }
 
-  // Slice 7: upgrade model-risk to implementation-attested for no-model products.
+  // Slice 7: upgrade model-risk for no-model products (equity, repo).
   seedModelRiskUpgrades(store);
+
+  // Slice 7: upgrade model-risk for model-using products (bond, IRS, FX) once
+  // ModelValidationApproved events are present. Blocked products are retried
+  // on every boot; no-op if validations have not yet landed.
+  seedValidatedModelRiskUpgrades(store);
 
   return { approved, skipped };
 }
