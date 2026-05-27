@@ -175,6 +175,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // gaps as info findings. No appends; gate is a no-op on the read path.
   // Citation: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 7, D-PRODUCT-CONSTRUCTION-SLICES-4-8.
   "platform/recon/model-risk-gap-inventory.ts",
+  // clients-entityname-uniqueness — read-only replay of the KYC clients
+  // projection to detect duplicate entityName rows; no appends; gate is a
+  // no-op on replay. Citation: D-RECON-CLIENT-ENTITYNAME-UNIQUENESS,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/recon/clients-entityname-uniqueness.ts",
   // PartitionedEventStore — substrate class that opens cold archive SQLite
   // databases for read-only replay; no appends; gate is a no-op on replay.
   // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.
