@@ -3148,6 +3148,12 @@ const server = Bun.serve({
       // decisions so this endpoint returns the same set as cachedState.decisionsOpenAll.
       const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
       const resolvedIds = new Set(register.resolved.map((r) => r.decisionId));
+      // AgentEscalationDecided events close escalations; add their IDs to
+      // resolvedIds so buildOpenDecisionsFromEscalations excludes them.
+      for (const e of eventStore.replay({ type: "AgentEscalationDecided" })) {
+        const id = (e.payload as Record<string, unknown>).escalationId;
+        if (typeof id === "string" && id) resolvedIds.add(id);
+      }
       const escalationOpen = buildOpenDecisionsFromEscalations(
         EVENTS.agentEscalations(),
         resolvedIds,
