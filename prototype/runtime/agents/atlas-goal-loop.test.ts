@@ -8,7 +8,7 @@
 //   - Old brief for Atlas (> 2h) → 1
 //   - Brief for Atlas but AgentRunCompleted → 0 (closed)
 //   - Brief for Atlas but AgentRunStarted → 0 (started)
-//   - Brief for Atlas but newer than 2h → 0
+//   - Brief for Atlas but newer than 30 min (default minAgeMs) → 0
 //   - Brief for non-Atlas agent → 0
 //   - Priority: event-reactive count > 0 signals trigger should fire before cadence
 //
@@ -193,11 +193,12 @@ describe("openBriefsAddressedToAtlas", () => {
     expect(openBriefsAddressedToAtlas(store)).toBe(0);
   });
 
-  it("does NOT count a brief that is newer than 2 hours", () => {
+  it("does NOT count a brief that is newer than 30 minutes (default minAgeMs)", () => {
     const store = makeStore();
+    const FIFTEEN_MIN_AGO = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     store.append(
       makeAgentBriefIssued({
-        asOf: hoursAgoIso(1),
+        asOf: FIFTEEN_MIN_AGO,
         entity: BASE_ENTITY,
         actor: BASE_ACTOR,
         citations: BASE_CITATIONS,

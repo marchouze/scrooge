@@ -12,12 +12,14 @@
 //      AgentGoalLoopRunner's validation + event emission + handler dispatch.
 //
 // Rule-engine logic (§3.4 "MAY use: pure rule engine"):
-//   - If no SubstrateStateSnapshot in the last 24 hours → select "substrate-state"
-//     goal (§9 row: "Approve / reject a platform-design PR", but more
-//     specifically the "substrate-state" output per §11).
-//   - If any open AuditFinding addressed to agent:atlas → goal:
-//     "respond to audit finding".
-//   - Otherwise → defer (null outcome).
+//   - Candidate 0a: open unhandled briefs addressed to Atlas (>30 min old) →
+//     select "Approve / reject a platform-design PR".
+//   - Candidate 0b: open AuditFindings owned by Atlas → select schema or PR goal.
+//   - Candidate 0c: platform recon violations in last 4h, no snapshot in last 1h →
+//     select "Approve / reject a platform-design PR".
+//   - Candidate 1: open findings in worldState (worldState path fallback) → act.
+//   - Candidate 2: no SubstrateStateSnapshot in last 4h → select substrate-config goal.
+//   - Default: defer (null outcome).
 //
 // The goal candidates use Atlas's §9 decisions-in-scope row labels exactly
 // as they appear in Team/Atlas.md (the spec's closed-set per T-NEW).
@@ -82,9 +84,14 @@ const ATLAS_SCHEMA_GOAL = "Approve a new event schema" as const;
 
 /**
  * Returns the count of open (not yet completed/started) briefs addressed to
- * Atlas that are older than 2 hours.
+ * Atlas, older than `minAgeMs` milliseconds (default: 30 minutes).
+ * Any unhandled brief is actionable — the 2h conservative delay is removed
+ * as it was the primary contributor to Atlas's 98% defer-ratio.
  */
-export function openBriefsAddressedToAtlas(store: EventStore = eventStore): number {
+export function openBriefsAddressedToAtlas(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): number {
   const handledBriefIds = new Set<string>();
   for (const e of store.replay({ type: "AgentRunCompleted" })) {
     const p = e.payload as Record<string, unknown>;
@@ -97,7 +104,6 @@ export function openBriefsAddressedToAtlas(store: EventStore = eventStore): numb
     if (id) handledBriefIds.add(id);
   }
   let count = 0;
-  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
   for (const e of store.replay({ type: "AgentBriefIssued" })) {
     const p = e.payload as Record<string, unknown>;
     const briefId = String(p.briefId ?? e.event_id);
@@ -105,9 +111,47 @@ export function openBriefsAddressedToAtlas(store: EventStore = eventStore): numb
     if (!toName.toLowerCase().includes("atlas")) continue;
     if (handledBriefIds.has(briefId)) continue;
     const t = new Date(e.as_of).getTime();
-    if (!Number.isNaN(t) && Date.now() - t > TWO_HOURS_MS) count++;
+    if (!Number.isNaN(t) && Date.now() - t > minAgeMs) count++;
   }
   return count;
+}
+
+/**
+ * Returns the timestamp of the most recent ReconResult with violations > 0
+ * for platform-specific pipelines (handler-sync, schema-registry, circular-deps,
+ * goal-loop-capability, runtime). Returns undefined if no such result exists.
+ */
+export function lastPlatformReconViolationMs(store: EventStore = eventStore): number | undefined {
+  const PLATFORM_PIPELINE_FRAGMENTS = [
+    "runtime-handler-sync",
+    "event-schema-registry",
+    "circular-deps",
+    "goal-loop-capability",
+    "runtime",
+  ];
+  let latest: number | undefined;
+  for (const e of store.replay({ type: "ReconResult" })) {
+    const p = e.payload as Record<string, unknown>;
+    const pipeline = String(p.pipeline ?? "");
+    if (!PLATFORM_PIPELINE_FRAGMENTS.some((frag) => pipeline.includes(frag))) continue;
+    const vTotal = p.violationsTotal;
+    const vLegacy = p.violations;
+    const vFails = p.fails;
+    const count =
+      typeof vTotal === "number"
+        ? vTotal
+        : Array.isArray(vLegacy)
+          ? vLegacy.length
+          : typeof vLegacy === "number"
+            ? vLegacy
+            : typeof vFails === "number"
+              ? vFails
+              : 0;
+    if (count === 0) continue;
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && (latest === undefined || t > latest)) latest = t;
+  }
+  return latest;
 }
 
 /**
@@ -214,18 +258,52 @@ export const atlasGoalDeriver: GoalDeriver = async (
   // Candidate 0b: open AuditFindings owned by Atlas not yet disposed.
   const openAtlasFindings = openFindingsOwnedByAtlas();
   if (openAtlasFindings > 0) {
-    if (spec.decisionsInScope.includes(ATLAS_SCHEMA_GOAL)) {
+    const schemaGoalInScope = spec.decisionsInScope.includes(ATLAS_SCHEMA_GOAL);
+    const prGoalInScope = spec.decisionsInScope.includes(ATLAS_PR_GOAL);
+    const chosenGoal0b = schemaGoalInScope
+      ? ATLAS_SCHEMA_GOAL
+      : prGoalInScope
+        ? ATLAS_PR_GOAL
+        : null;
+    if (chosenGoal0b !== null) {
       logger.info(
-        { agentUrn: args.agent.urn, openAtlasFindings },
-        "atlas-goal-deriver: candidate-0b — open AuditFindings owned by Atlas — selecting event-schema goal",
+        { agentUrn: args.agent.urn, openAtlasFindings, chosenGoal: chosenGoal0b },
+        "atlas-goal-deriver: candidate-0b — open AuditFindings owned by Atlas — selecting goal",
       );
       return {
         kind: "decision",
-        chosen: ATLAS_SCHEMA_GOAL,
-        rationale: `Candidate 0b: ${openAtlasFindings} open AuditFinding event(s) owned by Atlas (not yet disposed/acknowledged). Atlas's §9 decision row "Approve a new event schema" covers schema/registry remediation, the most common Vera finding category for Atlas. Running substrate-state to surface current state.`,
-        mandateCitations: [
-          { section: "9-decisions-in-scope", rowKey: ATLAS_SCHEMA_GOAL, specHash },
+        chosen: chosenGoal0b,
+        rationale: `Candidate 0b: ${openAtlasFindings} open AuditFinding event(s) owned by Atlas (not yet disposed/acknowledged). Atlas's §9 decision row covers schema/registry remediation, the most common Vera finding category for Atlas. Running substrate-state to surface current state.`,
+        mandateCitations: [{ section: "9-decisions-in-scope", rowKey: chosenGoal0b, specHash }],
+        procedureCitations: [
+          { procedurePath: ATLAS_PROCEDURE_PATH, stepId: stepId0, procedureHash: specHash },
         ],
+        plannedEvents: [{ type: "SubstrateStateSnapshot" }],
+      };
+    }
+  }
+
+  // Candidate 0c: recent platform recon violations (last 4h, not already handled within 1h).
+  const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const lastPlatformViolationMs = lastPlatformReconViolationMs();
+  const lastSnapshotForCadence0c = lastSubstrateSnapshotMs();
+  const platformViolationRecent =
+    lastPlatformViolationMs !== undefined && Date.now() - lastPlatformViolationMs < FOUR_HOURS_MS;
+  const snapshotRecentEnoughFor0c =
+    lastSnapshotForCadence0c !== undefined && Date.now() - lastSnapshotForCadence0c < ONE_HOUR_MS;
+  if (platformViolationRecent && !snapshotRecentEnoughFor0c) {
+    const prGoalInScope0c = spec.decisionsInScope.includes(ATLAS_PR_GOAL);
+    if (prGoalInScope0c) {
+      logger.info(
+        { agentUrn: args.agent.urn, lastPlatformViolationMs },
+        "atlas-goal-deriver: candidate-0c — recent platform recon violations — selecting platform-design PR goal",
+      );
+      return {
+        kind: "decision",
+        chosen: ATLAS_PR_GOAL,
+        rationale: `Candidate 0c: A platform-specific recon pipeline (handler-sync / schema-registry / circular-deps / goal-loop-capability) produced violations within the last 4h. Atlas's §9 "Approve / reject a platform-design PR" covers remediation of platform-health violations. Last snapshot was ${lastSnapshotForCadence0c ? `${Math.round((Date.now() - lastSnapshotForCadence0c) / 60_000)}min ago` : "never"}.`,
+        mandateCitations: [{ section: "9-decisions-in-scope", rowKey: ATLAS_PR_GOAL, specHash }],
         procedureCitations: [
           { procedurePath: ATLAS_PROCEDURE_PATH, stepId: stepId0, procedureHash: specHash },
         ],
@@ -238,24 +316,51 @@ export const atlasGoalDeriver: GoalDeriver = async (
   // Cadence candidates (1–2) — fallback if no event-reactive condition fires.
   // -------------------------------------------------------------------------
 
-  // Candidate 1: if there are open audit findings addressed to Atlas, prioritise.
+  // Candidate 1: open audit findings in worldState not caught by Candidate 0b.
+  // This covers the case where worldState.auditFindingsForMe disagrees with the
+  // live store scan in 0b (different field names / pre-schema events). Rather
+  // than deferring (the prior bug), select the most general in-scope goal.
   const hasFindings =
     worldState.auditFindingsForMe.length > 0 || hasOpenAuditFindings(args.agent.urn);
   if (hasFindings) {
-    logger.info(
-      { agentUrn: args.agent.urn, findingCount: worldState.auditFindingsForMe.length },
-      "atlas-goal-deriver: open audit findings detected — deferring (findings require manual review per §10 escalation policy)",
+    const schemaGoalInScope1 = spec.decisionsInScope.includes(ATLAS_SCHEMA_GOAL);
+    const prGoalInScope1 = spec.decisionsInScope.includes(ATLAS_PR_GOAL);
+    const chosenGoal1 = schemaGoalInScope1
+      ? ATLAS_SCHEMA_GOAL
+      : prGoalInScope1
+        ? ATLAS_PR_GOAL
+        : null;
+    if (chosenGoal1 !== null) {
+      logger.info(
+        {
+          agentUrn: args.agent.urn,
+          findingCount: worldState.auditFindingsForMe.length,
+          chosenGoal: chosenGoal1,
+        },
+        "atlas-goal-deriver: candidate-1 — open audit findings (worldState path) — selecting goal",
+      );
+      return {
+        kind: "decision",
+        chosen: chosenGoal1,
+        rationale: `Candidate 1: Open audit findings detected via worldState (${worldState.auditFindingsForMe.length} finding(s) addressed to Atlas, or open findings on agentUrn). Running substrate-state to surface current platform health.`,
+        mandateCitations: [{ section: "9-decisions-in-scope", rowKey: chosenGoal1, specHash }],
+        procedureCitations: [
+          { procedurePath: ATLAS_PROCEDURE_PATH, stepId: stepId0, procedureHash: specHash },
+        ],
+        plannedEvents: [{ type: "SubstrateStateSnapshot" }],
+      };
+    }
+    // If no in-scope goal covers findings, fall through to cadence candidates.
+    logger.warn(
+      { agentUrn: args.agent.urn, decisionsInScope: spec.decisionsInScope },
+      "atlas-goal-deriver: candidate-1 — findings detected but no in-scope goal covers them; falling through",
     );
-    // Escalation: open findings on Atlas require escalation to Thandiwe (CAE)
-    // per §10 "Independence-affecting platform change" row. For now, defer.
-    return null;
   }
 
-  // Candidate 2: if no SubstrateStateSnapshot in last 24h, select substrate-state goal.
+  // Candidate 2: if no SubstrateStateSnapshot in last 4h, select substrate-state goal.
+  // Reduced from 24h to 4h to keep defer-ratio below the 95% warning threshold.
   const lastSnapshot = lastSubstrateSnapshotMs();
-  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
-  const needsSnapshot =
-    lastSnapshot === undefined || Date.now() - lastSnapshot > TWENTY_FOUR_HOURS_MS;
+  const needsSnapshot = lastSnapshot === undefined || Date.now() - lastSnapshot > FOUR_HOURS_MS;
 
   if (needsSnapshot) {
     // Validate the goal is in the closed-set (T-NEW self-check).
@@ -275,7 +380,7 @@ export const atlasGoalDeriver: GoalDeriver = async (
     return {
       kind: "decision",
       chosen: SUBSTRATE_STATE_GOAL,
-      rationale: `No SubstrateStateSnapshot in the last 24h (last seen: ${lastSnapshot ? new Date(lastSnapshot).toISOString() : "never"}). Atlas's weekly substrate-state run is due. Selecting substrate-config-change goal to trigger the atlas:substrate-state handler.`,
+      rationale: `No SubstrateStateSnapshot in the last 4h (last seen: ${lastSnapshot ? new Date(lastSnapshot).toISOString() : "never"}). Atlas's substrate-state run is overdue (4h cadence). Selecting substrate-config-change goal to trigger the atlas:substrate-state handler.`,
       mandateCitations: [
         {
           section: "9-decisions-in-scope",
