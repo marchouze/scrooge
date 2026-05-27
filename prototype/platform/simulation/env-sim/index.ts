@@ -385,8 +385,20 @@ export class EnvSimEngine {
 
   /** Get a snapshot of current status. */
   getStatus(): EnvSimStatus {
+    // Always compute a fresh risk monitor reading so callers (e.g. /api/fx-sim/status)
+    // see current B3 even when the sim is stopped between ticks.
+    const { mode, b3Row } = this.computeRiskDirection();
     return {
       ...this.status,
+      riskMonitor: {
+        b3UtilisationPct: b3Row ? b3Row.utilisationPct : null,
+        b3RagStatus: b3Row ? b3Row.ragStatus : null,
+        b3ExposureZar: b3Row ? b3Row.currentExposure : null,
+        b3LimitZar: b3Row ? b3Row.limitValue : null,
+        mode,
+        lastForcedSide: this.status.riskMonitor.lastForcedSide,
+        lastTargetPairs: this.status.riskMonitor.lastTargetPairs,
+      },
       subSimulators: {
         marketData: this.marketDataSim.isRunning(),
         nostroStatement: this.nostroSim.isRunning(),

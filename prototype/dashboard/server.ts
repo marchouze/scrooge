@@ -285,7 +285,7 @@ let cachedState: DashboardState = bootDerive();
 
 // FX market-making simulation engine — module-level singleton.
 // Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
-const fxSimEngine = new FxSimEngine(eventStore);
+const fxSimEngine = new FxSimEngine(eventStore, { marketDataStore });
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
