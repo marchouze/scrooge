@@ -26,14 +26,9 @@
 //   D-REPORTING-CAPABILITY-SLICE-2; Principles/1-events-are-truth.md.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
+import { closePeriod, openPeriod } from "../platform/accounting/period-close";
+import { snapshotTrialBalance } from "../platform/accounting/period-close-handler";
 import { EventStore } from "../platform/event-store/store";
-import {
-  closePeriod,
-  openPeriod,
-} from "../platform/accounting/period-close";
-import {
-  snapshotTrialBalance,
-} from "../platform/accounting/period-close-handler";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -141,23 +136,21 @@ function main(): number {
   // -------------------------------------------------------------------------
   // Note: the early-exit guard above handles the already-closed case; this
   // path only runs when the period is open and not yet closed.
-  {
-    try {
-      const closeResult = closePeriod({
-        eventStore: db,
-        entity: ENTITY,
-        periodId: PERIOD_ID,
-        closedAt: CLOSED_AT,
-        actor: ACTOR,
-        citations: CITATIONS,
-      });
-      console.log(
-        `✓ Period closed — closedEvent=${closeResult.accountingPeriodClosedEvent.event_id}, TB rows=${closeResult.trialBalance.rows.length}, uptoSequence=${closeResult.trialBalance.uptoSequence}`,
-      );
-    } catch (err) {
-      console.error(`[seed-period-close] ERROR closing period: ${String(err)}`);
-      return 1;
-    }
+  try {
+    const closeResult = closePeriod({
+      eventStore: db,
+      entity: ENTITY,
+      periodId: PERIOD_ID,
+      closedAt: CLOSED_AT,
+      actor: ACTOR,
+      citations: CITATIONS,
+    });
+    console.log(
+      `✓ Period closed — closedEvent=${closeResult.accountingPeriodClosedEvent.event_id}, TB rows=${closeResult.trialBalance.rows.length}, uptoSequence=${closeResult.trialBalance.uptoSequence}`,
+    );
+  } catch (err) {
+    console.error(`[seed-period-close] ERROR closing period: ${String(err)}`);
+    return 1;
   }
 
   console.log("\n✓ seed-period-close complete");
