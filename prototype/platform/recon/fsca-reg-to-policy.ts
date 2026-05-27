@@ -193,6 +193,10 @@ const POLICY_NAME_ALIASES: Readonly<Record<string, string>> = {
   "ifrs 9 ecl policy": "ifrs9-ecl-provisioning-policy",
   "ifrs9 ecl policy": "ifrs9-ecl-provisioning-policy",
   "ecl provisioning policy": "ifrs9-ecl-provisioning-policy",
+  // 3LoD — obligation register cites "Governance Framework — 3LoD"; file is three-lines-of-defence-policy
+  "governance framework 3lod": "three-lines-of-defence-policy",
+  "governance framework  3lod": "three-lines-of-defence-policy",
+  "3lod": "three-lines-of-defence-policy",
 };
 
 // ---------------------------------------------------------------------------
