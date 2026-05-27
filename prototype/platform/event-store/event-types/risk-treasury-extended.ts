@@ -202,15 +202,48 @@ export function makeRASCalibrationChange(args: {
 // RiskAppetiteSnapshot
 // ---------------------------------------------------------------------------
 
-export const riskAppetiteSnapshotPayloadSchema = z.object({
-  snapshotId: z.string().min(1),
-  asOf: z.string().min(1),
-  varUtilisationPct: z.number().min(0).max(100).optional(),
-  stressPnLUtilisationPct: z.number().min(0).max(100).optional(),
-  concentrationUtilisationPct: z.number().min(0).max(100).optional(),
-  overallStatus: z.enum(["green", "amber", "red"]),
-  breachCount: z.number().int().nonnegative(),
-});
+// RiskAppetiteSnapshot payload — two emission shapes exist in the codebase:
+//
+//   Shape A (helena-risk-appetite-watch.ts): emitted by the standing appetite-
+//     watch handler. Fields: appetiteLineCount, measuredCount, unmeasuredCount,
+//     nABuildPhaseCount, openBreaches, tier1OpenBreaches, tier2OpenBreaches,
+//     disposedBreaches, daysSinceRasReview, runTrigger, lineStatuses.
+//
+//   Shape B (original schema): fields snapshotId, asOf, overallStatus,
+//     breachCount (plus optional VaR/stress/concentration utilisation pcts).
+//     Was defined before the handler was written; the two shapes diverged.
+//
+// Resolution (2026-05-27): all fields optional so both shapes are valid.
+// `.passthrough()` allows either shape's fields (and any future extension)
+// through validation without stripping unknown keys. The authoritative
+// payload shape is the one the handler emits (Shape A); Shape B fields
+// are retained for backward-compat with any consumer that reads them.
+//
+// Authority: POSTING_RULE_REGISTRY; Team/Helena.md § 9 (Outputs).
+export const riskAppetiteSnapshotPayloadSchema = z
+  .object({
+    // Shape B — original schema fields (kept optional for backward compat)
+    snapshotId: z.string().min(1).optional(),
+    asOf: z.string().min(1).optional(),
+    varUtilisationPct: z.number().min(0).max(100).optional(),
+    stressPnLUtilisationPct: z.number().min(0).max(100).optional(),
+    concentrationUtilisationPct: z.number().min(0).max(100).optional(),
+    overallStatus: z.enum(["green", "amber", "red"]).optional(),
+    breachCount: z.number().int().nonnegative().optional(),
+    // Shape A — helena-risk-appetite-watch.ts emission fields
+    appetiteLineCount: z.number().int().nonnegative().optional(),
+    measuredCount: z.number().int().nonnegative().optional(),
+    unmeasuredCount: z.number().int().nonnegative().optional(),
+    nABuildPhaseCount: z.number().int().nonnegative().optional(),
+    openBreaches: z.number().int().nonnegative().optional(),
+    tier1OpenBreaches: z.number().int().nonnegative().optional(),
+    tier2OpenBreaches: z.number().int().nonnegative().optional(),
+    disposedBreaches: z.number().int().nonnegative().optional(),
+    daysSinceRasReview: z.number().int().nonnegative().optional(),
+    runTrigger: z.string().optional(),
+    lineStatuses: z.record(z.string()).optional(),
+  })
+  .passthrough();
 
 export type RiskAppetiteSnapshotPayload = z.infer<typeof riskAppetiteSnapshotPayloadSchema>;
 
