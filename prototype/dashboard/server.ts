@@ -131,6 +131,7 @@ import {
 import { runAgent } from "../runtime/run";
 import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
+import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import {
   TRADE_SEEDS_CITATIONS,
@@ -514,6 +515,11 @@ function bootDerive(): DashboardState {
     // existing legal-entity / counterparty / agent / signatory streams.
     // Idempotent (keyed by source-event id); re-boot is a no-op.
     bootPartyBackfill();
+    // Model registry seed — submit and tier-classify 3 pricing models (SAGB DCF,
+    // ZARONIA OIS+IRS-PV, FX forward IRP). Must run BEFORE model-validation-seed
+    // and BEFORE NPA attestation seeds that read model validation status.
+    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+    bootModelRegistry();
     // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
     // core products (equity, bond, repo, IRS, FX swap) idempotently.
     // Must run BEFORE trade seeds that reference these products.
@@ -557,6 +563,31 @@ function bootDerive(): DashboardState {
  * already passed. Idempotent — products with an existing ProductApproved
  * event are skipped silently.
  *
+ * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+ */
+function bootModelRegistry(): void {
+  const result = seedModelRegistry(eventStore);
+  if (result.submitted.length > 0 || result.tierClassified.length > 0) {
+    logger.info(
+      {
+        submitted: result.submitted.length,
+        tierClassified: result.tierClassified.length,
+        skipped: result.skipped.length,
+      },
+      "model-registry-seed: models submitted and tier-classified",
+    );
+  } else {
+    logger.debug(
+      { skipped: result.skipped.length },
+      "model-registry-seed: idempotent boot; all models already registered",
+    );
+  }
+}
+
+/**
+ * Idempotently emit ProductApproved events for M1–M4 products.
+ *
+ * Called before `bootTreasurySeeds()` so that trade seeds which reference
  * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
  */
 function bootNpaAttestations(): void {
