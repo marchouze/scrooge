@@ -13,7 +13,7 @@
 //
 // Sections:
 //   1. Liquidity     — LCRComputed + NSFRComputed (latest)
-//   2. HQLA          — CollateralInventorySnapshot (latest)
+//   2. HQLA          — CollateralInventorySnapshotted (latest)
 //   3. ALM/IRRBB     — ALMRunCompleted (latest)
 //   4. Intraday      — IntradayHQLAStressProjection (latest, scenario=stress)
 //   5. FTP curve     — FtpCurvePublished (latest)
@@ -215,14 +215,14 @@ export function generateALCOPack(asOf: string): ALCOPack {
   }
 
   // -----------------------------------------------------------------------
-  // 2. HQLA Composition — latest CollateralInventorySnapshot
+  // 2. HQLA Composition — latest CollateralInventorySnapshotted
   // -----------------------------------------------------------------------
 
   let hqlaComposition: HQLASection | null = null;
   let latestCollateral: CollateralInventorySnapshotPayload | null = null;
 
   try {
-    for (const evt of eventStore.replay({ type: "CollateralInventorySnapshot", asOf })) {
+    for (const evt of eventStore.replay({ type: "CollateralInventorySnapshotted", asOf })) {
       latestCollateral = evt.payload as CollateralInventorySnapshotPayload;
     }
     if (latestCollateral !== null) {

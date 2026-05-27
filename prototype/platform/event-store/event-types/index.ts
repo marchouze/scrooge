@@ -173,10 +173,19 @@ export * from "./climate-risk";
 // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
 export * from "./alm";
 // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
-// CollateralInventorySnapshot (daily HQLA buffer snapshot + cap checks),
+// CollateralInventorySnapshotted (daily HQLA buffer snapshot + cap checks),
 //   CollateralUpdated (per-security inventory change — add/remove/revalue).
 // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 export * from "./collateral";
+// D-TREASURY-GAPS-WAVE1 — settlement instruction event (LCR outflow substrate).
+// SettlementInstructionIssued — non-trade contractual outflow per BA 325 §23.
+// Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+export * from "./settlement";
+// D-TREASURY-GAPS-WAVE1 — balance-sheet projection event (NSFR ASF/RSF substrate).
+// BalanceSheetProjected — supplemental BA 326 line items (Tier 2 capital,
+//   wholesale funding GT 1Y, covered bonds, retail loans, encumbered assets).
+// Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+export * from "./balance-sheet";
 // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
 // LCRComputed — result of a single LCR computation (BA 325 / Basel III).
 // NSFRComputed — result of a single NSFR computation (BA 326 / Basel III).
@@ -335,6 +344,7 @@ import { ALM_TYPED_EVENT_TYPES } from "./alm";
 import { AML_POPIA_EXTENDED_TYPED_EVENT_TYPES } from "./aml-popia-extended";
 import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
+import { BALANCE_SHEET_TYPED_EVENT_TYPES } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
 import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
 import { CLOSE_MANAGEMENT_TYPED_EVENT_TYPES } from "./close-management";
@@ -381,6 +391,7 @@ import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extended";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
 import { SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES } from "./security-devops-extended";
+import { SETTLEMENT_TYPED_EVENT_TYPES } from "./settlement";
 import { TRADE_MATURED_EVENT_TYPES } from "./trade-matured";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
 import { VALUATION_TYPED_EVENT_TYPES } from "./valuation";
@@ -461,6 +472,12 @@ export const TYPED_EVENT_TYPES = [
   // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
   // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...COLLATERAL_TYPED_EVENT_TYPES,
+  // D-TREASURY-GAPS-WAVE1 — settlement instruction outflow substrate (LCR §23).
+  // Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  ...SETTLEMENT_TYPED_EVENT_TYPES,
+  // D-TREASURY-GAPS-WAVE1 — balance-sheet projection (NSFR ASF/RSF substrate).
+  // Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+  ...BALANCE_SHEET_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine event types (LCR/NSFR).
   // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
   ...LIQUIDITY_TYPED_EVENT_TYPES,

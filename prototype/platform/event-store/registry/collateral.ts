@@ -3,13 +3,13 @@
 // Collateral inventory event-type registry rows.
 //
 // Covers:
-//   CollateralInventorySnapshot — daily HQLA buffer snapshot with cap checks.
+//   CollateralInventorySnapshotted — daily HQLA buffer snapshot with cap checks.
 //
 // Note: CollateralUpdated is registered in the markets-trading-extended module
 // (markets/margin shape). The Ravi ALM readiness handler references it there.
 //
 // Retention classification:
-//   - CollateralInventorySnapshot → RETENTION_BANKING_5Y
+//   - CollateralInventorySnapshotted → RETENTION_BANKING_5Y
 //     (prudential record; regulatory LCR measurement once trading commences)
 //
 // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
@@ -30,7 +30,7 @@ import type { EventTypeMetadata } from "./types";
  */
 export const COLLATERAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
   {
-    type: "CollateralInventorySnapshot",
+    type: "CollateralInventorySnapshotted",
     class: "markets",
     issuer: "Atlas",
     subscribers: ["Eitan", "Ravi", "Helena", "Atlas"],

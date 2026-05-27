@@ -3,13 +3,12 @@
 // Collateral inventory event-payload schemas.
 //
 // Covers:
-//   CollateralInventorySnapshot — daily snapshot of the HQLA buffer position,
-//     cap check results, and aggregate totals.
+//   CollateralInventorySnapshotted — daily snapshot of the HQLA buffer
+//     position, cap check results, and aggregate totals.
 //
 // Note: `CollateralUpdated` is already defined in `markets-trading-extended.ts`
 // (markets/margin schema). The Ravi ALM readiness handler references
 // `CollateralUpdated` as a zero-count event type via that existing definition.
-// The inventory-specific per-security change event uses `CollateralInventorySnapshot`.
 //
 // Authority: BA 325 Annex 1; Banks Act Reg 26 (LCR); D-TREASURY-GAPS-WAVE1.
 // Author: Atlas (Core banking platform architect, engineering)
@@ -20,7 +19,7 @@ import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
-// CollateralInventorySnapshot
+// CollateralInventorySnapshotted
 // ---------------------------------------------------------------------------
 
 export const collateralInventorySnapshotPayloadSchema = z.object({
@@ -40,7 +39,7 @@ export type CollateralInventorySnapshotPayload = z.infer<
   typeof collateralInventorySnapshotPayloadSchema
 >;
 
-export function makeCollateralInventorySnapshot(args: {
+export function makeCollateralInventorySnapshotted(args: {
   asOf: string;
   entity: string;
   actor: Actor;
@@ -50,7 +49,7 @@ export function makeCollateralInventorySnapshot(args: {
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
-    type: "CollateralInventorySnapshot",
+    type: "CollateralInventorySnapshotted",
     as_of: args.asOf,
     entity: args.entity,
     actor: args.actor,
@@ -63,4 +62,4 @@ export function makeCollateralInventorySnapshot(args: {
 // Typed event types list
 // ---------------------------------------------------------------------------
 
-export const COLLATERAL_TYPED_EVENT_TYPES = ["CollateralInventorySnapshot"] as const;
+export const COLLATERAL_TYPED_EVENT_TYPES = ["CollateralInventorySnapshotted"] as const;

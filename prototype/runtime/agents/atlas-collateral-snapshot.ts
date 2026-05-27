@@ -6,7 +6,7 @@
 //
 // What this handler does:
 //   1. Calls getCollateralInventory(asOf) from the collateral projection module.
-//   2. Emits a CollateralInventorySnapshot event with the HQLA buffer totals
+//   2. Emits a CollateralInventorySnapshotted event with the HQLA buffer totals
 //      and BA 325 Annex 1 cap-check results.
 //   3. If l2CapBreached or l2bCapBreached: also emits HQLACompositionDrift
 //      with severity "breach".
@@ -27,7 +27,7 @@ import { resolve } from "node:path";
 import { getCollateralInventory } from "../../platform/collateral";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import { makeCollateralInventorySnapshot } from "../../platform/event-store/event-types/collateral";
+import { makeCollateralInventorySnapshotted } from "../../platform/event-store/event-types/collateral";
 import { makeHQLACompositionDrift } from "../../platform/event-store/event-types/risk-treasury-extended";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -47,8 +47,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let eventsEmitted = 0;
 
   if (!ctx.dryRun) {
-    // 1. Emit CollateralInventorySnapshot
-    const snapshotEvent = makeCollateralInventorySnapshot({
+    // 1. Emit CollateralInventorySnapshotted
+    const snapshotEvent = makeCollateralInventorySnapshotted({
       asOf: ctx.asOf,
       entity: "LE-ZA-HOZ-BANK",
       actor: { type: "service", id: "agent:atlas:collateral-snapshot" },

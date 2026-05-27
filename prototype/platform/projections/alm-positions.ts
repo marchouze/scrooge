@@ -123,6 +123,12 @@ interface RawPosition {
   descriptor: SecurityDescriptor;
 }
 
+interface CollateralSnapshotPayload {
+  l1Zar: number;
+  l2aZar: number;
+  l2bZar: number;
+}
+
 function extractDescriptor(payload: Record<string, unknown>, isin: string): SecurityDescriptor {
   const assetClass = ((): SecurityDescriptor["assetClass"] => {
     const ac = typeof payload.assetClass === "string" ? payload.assetClass : "";
@@ -177,21 +183,39 @@ function extractRawPosition(type: string, payload: Record<string, unknown>): Raw
 }
 
 /**
- * Read HQLA positions by folding `TradeBooked` and `TradeSettled` events
- * through the HQLA classifier (`classifyHQLA`).
+ * Read HQLA positions from the event store.
+ *
+ * Priority: if `CollateralInventorySnapshotted` events exist, use the latest
+ * one's authoritative L1/L2a/L2b totals (already haircut-adjusted per Atlas's
+ * collateral-snapshot handler). Falls back to folding `TradeBooked` /
+ * `TradeSettled` events through the HQLA classifier when no snapshot exists.
  *
  * Returns the per-tier pre-haircut positions as `HQLAPosition[]` (pre-cap;
  * `computeLCR` applies the L2 / L2b caps + haircuts downstream). Returns
- * an empty array when no trades exist (build-phase default).
- *
- * This is a self-contained fold against the passed `EventStore`. It does
- * not call `getCollateralInventory()` because that function reaches for
- * the composition singleton, which breaks isolated-store testing.
- * Once `CollateralInventorySnapshotted` events flow (Tomas + Atlas
- * substrate), this helper swaps to consuming those events directly.
+ * an empty array when no snapshot and no trades exist (build-phase default).
  */
 function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosition[] {
-  // Aggregate positions by ISIN — latest trade event wins.
+  // Check for authoritative CollateralInventorySnapshotted events first.
+  let latestSnapshot: { as_of: string; payload: CollateralSnapshotPayload } | null = null;
+  for (const ev of eventStore.replay({ type: "CollateralInventorySnapshotted" })) {
+    if (ev.as_of > asOf) continue;
+    if (!latestSnapshot || ev.as_of > latestSnapshot.as_of) {
+      latestSnapshot = {
+        as_of: ev.as_of,
+        payload: ev.payload as unknown as CollateralSnapshotPayload,
+      };
+    }
+  }
+  if (latestSnapshot) {
+    const { l1Zar, l2aZar, l2bZar } = latestSnapshot.payload;
+    const positions: HQLAPosition[] = [];
+    if (l1Zar > 0) positions.push({ amountZar: l1Zar, tier: "L1" });
+    if (l2aZar > 0) positions.push({ amountZar: l2aZar, tier: "L2a" });
+    if (l2bZar > 0) positions.push({ amountZar: l2bZar, tier: "L2b" });
+    return positions;
+  }
+
+  // Fallback: aggregate positions by ISIN — latest trade event wins.
   const positionMap = new Map<string, RawPosition>();
 
   for (const event of eventStore.replay({ type: "TradeBooked" })) {
@@ -408,6 +432,13 @@ interface SettlementOutflowResult {
   positions: FundingPosition[];
   count: number;
   skippedNoDate: number;
+  instructionCount: number;
+}
+
+interface SettlementInstructionPayload {
+  settlementInstructionId?: string;
+  settlementDate?: string;
+  outflowAmountZar?: number;
 }
 
 /**
@@ -481,12 +512,37 @@ function buildSettlementOutflows(
     count++;
   }
 
-  return { positions, count, skippedNoDate };
+  // SettlementInstructionIssued — non-trade contractual outflows per BA 325 §23.
+  let instructionCount = 0;
+  for (const ev of eventStore.replay({ type: "SettlementInstructionIssued" })) {
+    if (ev.as_of > asOf) continue;
+    const p = ev.payload as unknown as SettlementInstructionPayload;
+    if (!p.settlementDate || typeof p.settlementDate !== "string") continue;
+    const settlementDate = new Date(p.settlementDate);
+    if (settlementDate < asOfDate || settlementDate > horizonDate) continue;
+    const amountZar = (p.outflowAmountZar ?? 0) / 100;
+    if (amountZar <= 0) continue;
+    positions.push({ amountZar, category: "wholesale-non-operational" });
+    instructionCount++;
+  }
+
+  return { positions, count, skippedNoDate, instructionCount };
 }
 
 // ---------------------------------------------------------------------------
 // ASF / RSF fold — CapitalEvent + DepositTaken + InterbankLoanPlaced + HQLA
+//                  + BalanceSheetProjected (supplemental BA 326 scope)
 // ---------------------------------------------------------------------------
+
+interface BalanceSheetPayload {
+  tier2CapitalZar?: number;
+  unsecuredWholesaleFundingGt1yZar?: number;
+  coveredBondsIssuedGt6mZar?: number;
+  unencumberedRetailLoansLt1yZar?: number;
+  unencumberedRetailLoansGt1yZar?: number;
+  encumberedAssetsZar?: number;
+  offBalanceSheetCommitmentsZar?: number;
+}
 
 /**
  * Build ASF items per BA 326 §8:
@@ -536,6 +592,26 @@ function buildASFItems(
     asfItems.push({ amountZar, category });
   }
 
+  // BalanceSheetProjected — supplemental BA 326 ASF items (latest snapshot wins).
+  let latestBs: { as_of: string; payload: BalanceSheetPayload } | null = null;
+  for (const ev of eventStore.replay({ type: "BalanceSheetProjected" })) {
+    if (ev.as_of > asOf) continue;
+    if (!latestBs || ev.as_of > latestBs.as_of) {
+      latestBs = { as_of: ev.as_of, payload: ev.payload as unknown as BalanceSheetPayload };
+    }
+  }
+  if (latestBs) {
+    const bs = latestBs.payload;
+    const tier2Zar = (bs.tier2CapitalZar ?? 0) / 100;
+    if (tier2Zar > 0) asfItems.push({ amountZar: tier2Zar, category: "tier1-capital" });
+    const unsecuredGt1yZar = (bs.unsecuredWholesaleFundingGt1yZar ?? 0) / 100;
+    if (unsecuredGt1yZar > 0)
+      asfItems.push({ amountZar: unsecuredGt1yZar, category: "wholesale-gt1y" });
+    const coveredBondsZar = (bs.coveredBondsIssuedGt6mZar ?? 0) / 100;
+    if (coveredBondsZar > 0)
+      asfItems.push({ amountZar: coveredBondsZar, category: "wholesale-gt1y" });
+  }
+
   return asfItems;
 }
 
@@ -543,9 +619,10 @@ function buildASFItems(
  * Build RSF items per BA 326:
  *   - HQLA L1: 5%, L2a: 15%, L2b: 50%.
  *   - InterbankLoanPlaced (live placements): RSF by residual maturity.
+ *   - BalanceSheetProjected: retail loans + encumbered assets + OBS commitments.
  */
 function buildRSFItems(
-  _eventStore: EventStore,
+  eventStore: EventStore,
   asOf: string,
   hqlaPositions: readonly HQLAPosition[],
   liveIBLs: Array<{ principalZar: number; maturityDate: string | null }>,
@@ -574,6 +651,26 @@ function buildRSFItems(
     }
     const category: RSFItem["category"] = residualDays >= 180 ? "loan-6m-1y" : "loan-lt6m";
     rsfItems.push({ amountZar, category });
+  }
+
+  // BalanceSheetProjected — supplemental BA 326 RSF items (latest snapshot wins).
+  let latestBsRsf: { as_of: string; payload: BalanceSheetPayload } | null = null;
+  for (const ev of eventStore.replay({ type: "BalanceSheetProjected" })) {
+    if (ev.as_of > asOf) continue;
+    if (!latestBsRsf || ev.as_of > latestBsRsf.as_of) {
+      latestBsRsf = { as_of: ev.as_of, payload: ev.payload as unknown as BalanceSheetPayload };
+    }
+  }
+  if (latestBsRsf) {
+    const bs = latestBsRsf.payload;
+    const retailLt1yZar = (bs.unencumberedRetailLoansLt1yZar ?? 0) / 100;
+    if (retailLt1yZar > 0) rsfItems.push({ amountZar: retailLt1yZar, category: "loan-lt6m" });
+    const retailGt1yZar = (bs.unencumberedRetailLoansGt1yZar ?? 0) / 100;
+    if (retailGt1yZar > 0) rsfItems.push({ amountZar: retailGt1yZar, category: "loan-6m-1y" });
+    const encumberedZar = (bs.encumberedAssetsZar ?? 0) / 100;
+    if (encumberedZar > 0) rsfItems.push({ amountZar: encumberedZar, category: "loan-6m-1y" });
+    const obsZar = (bs.offBalanceSheetCommitmentsZar ?? 0) / 100;
+    if (obsZar > 0) rsfItems.push({ amountZar: obsZar, category: "loan-lt6m" });
   }
 
   return rsfItems;
@@ -657,15 +754,24 @@ export function getALMPositionSnapshot(
     ...settlementResult.positions,
   ];
 
-  if (settlementResult.count > 0) {
+  if (settlementResult.count > 0 || settlementResult.instructionCount > 0) {
     gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: ${settlementResult.count} pending buy trade(s) with explicit settlementDate included in LCR outflow. ${settlementResult.skippedNoDate} trade(s) skipped (no settlementDate in payload). Full event class remains a deferred gap for non-trade contractual outflows.`,
+      `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: ${settlementResult.count} pending buy trade(s) + ${settlementResult.instructionCount} settlement instruction(s) included in LCR outflow over ${horizonDays}-day horizon. ${settlementResult.skippedNoDate} trade(s) skipped (no settlementDate in payload).`,
     );
   } else {
-    // No settlement positions derived — unconditional gap.
-    gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: not yet emitted (Ravi + Atlas substrate). Contractual settlement outflows over the ${horizonDays}-day horizon not yet queryable.${settlementResult.skippedNoDate > 0 ? ` (${settlementResult.skippedNoDate} TradeBooked event(s) skipped — no explicit settlementDate in payload)` : ""}`,
+    const hasInstructionType = hasAnyEventOfType(
+      eventStore,
+      ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut,
     );
+    if (hasInstructionType) {
+      gaps.push(
+        `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: 0 settlement instructions within ${horizonDays}-day horizon (event class defined; no instructions issued yet).${settlementResult.skippedNoDate > 0 ? ` (${settlementResult.skippedNoDate} TradeBooked event(s) skipped — no explicit settlementDate in payload)` : ""}`,
+      );
+    } else {
+      gaps.push(
+        `${ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut}: 0 settlement instructions within ${horizonDays}-day horizon (event class defined; no instructions issued yet).${settlementResult.skippedNoDate > 0 ? ` (${settlementResult.skippedNoDate} TradeBooked event(s) skipped — no explicit settlementDate in payload)` : ""}`,
+      );
+    }
   }
 
   if (
@@ -735,10 +841,12 @@ export function getALMPositionSnapshot(
   const asfItems = buildASFItems(eventStore, asOf, liveDeposits);
   const rsfItems = buildRSFItems(eventStore, asOf, hqlaPositions, liveIBLs);
 
-  // BalanceSheetProjected gap: partially wired but full BA 326 scope pending
-  gaps.push(
-    `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced; BalanceSheetProjected event pending for complete BA 326 scope (Bea + Ravi substrate).`,
-  );
+  // BalanceSheetProjected gap: conditional on event existence
+  if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet)) {
+    gaps.push(
+      `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced; BalanceSheetProjected event pending for complete BA 326 scope (Bea + Ravi substrate).`,
+    );
+  }
 
   // -------------------------------------------------------------------------
   // Note + buildPhase flag

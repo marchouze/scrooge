@@ -67,6 +67,7 @@ import type { BankConfigPaths, BankConfigServer } from "../platform/config/schem
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
+import { makeBalanceSheetProjected } from "../platform/event-store/event-types/balance-sheet";
 import {
   makeProductApproved,
   makeProductDimensionAttested,
@@ -76,6 +77,7 @@ import {
 } from "../platform/event-store/event-types/product";
 import {
   makeDepositTaken,
+  makeFundingLineDrawn,
   makeInterbankLoanPlaced,
   makeRepoTradeOpened,
 } from "../platform/event-store/event-types/repo-mmd-ibl";
@@ -131,6 +133,11 @@ import {
 import { runAgent } from "../runtime/run";
 import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
+import {
+  BALANCE_SHEET_SEED_AS_OF,
+  BALANCE_SHEET_SEED_CITATIONS,
+  BALANCE_SHEET_SEED_PAYLOAD,
+} from "../seeds/alm/balance-sheet-seed";
 import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import {
   seedModelValidations,
@@ -140,6 +147,7 @@ import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import {
   TRADE_SEEDS_CITATIONS,
   TREASURY_DEPOSIT_TAKEN_PAYLOADS,
+  TREASURY_FUNDING_LINE_PAYLOADS,
   TREASURY_IBL_PLACED_PAYLOADS,
   TREASURY_REPO_TRADE_PAYLOADS,
 } from "../seeds/treasury/trade-seeds";
@@ -269,6 +277,7 @@ function ensureRuntimeDir(path: string): void {
 const TREASURY_SIM_TRADE_IDS = ["REPO-SIM-001"] as const;
 const TREASURY_SIM_DEPOSIT_IDS = ["MMD-SIM-001"] as const;
 const TREASURY_SIM_PLACEMENT_IDS = ["IBL-SIM-001", "IBL-SIM-002"] as const;
+const TREASURY_SIM_FUNDING_LINE_IDS = ["FL-SIM-001"] as const;
 
 const TREASURY_BOOT_PROVENANCE = buildPhaseFixtureTag({
   sourceLineage: "seeds/treasury/trade-seeds.ts",
@@ -540,6 +549,8 @@ function bootDerive(): DashboardState {
     // Treasury seed events — emit REPO, MMD, IBL positions idempotently.
     // Required by getALMPositionSnapshot so LCR/NSFR compute live values.
     bootTreasurySeeds();
+    // Balance-sheet seed — emit BalanceSheetProjected for build-phase NSFR baseline.
+    bootBalanceSheetSeed();
     // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections.
     buildSlice5Projections();
     // Product Control — emit DailyPnLReportGenerated on each derive cycle.
@@ -688,12 +699,19 @@ function bootTreasurySeeds(): void {
     if (p.placementId) existingPlacementIds.add(p.placementId);
   }
 
+  const existingFundingLineIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "FundingLineDrawn" })) {
+    const p = ev.payload as { fundingLineId?: string };
+    if (p.fundingLineId) existingFundingLineIds.add(p.fundingLineId);
+  }
+
   // If the sim scenario (scenarios/12-treasury-trades.ts) has already run,
   // its trades supersede the boot seeds. Skip boot emission entirely.
   const simPresent =
     TREASURY_SIM_TRADE_IDS.some((id) => existingTradeIds.has(id)) ||
     TREASURY_SIM_DEPOSIT_IDS.some((id) => existingDepositIds.has(id)) ||
-    TREASURY_SIM_PLACEMENT_IDS.some((id) => existingPlacementIds.has(id));
+    TREASURY_SIM_PLACEMENT_IDS.some((id) => existingPlacementIds.has(id)) ||
+    TREASURY_SIM_FUNDING_LINE_IDS.some((id) => existingFundingLineIds.has(id));
   if (simPresent) {
     logger.debug("treasury-seeds: sim scenario present; boot seeds suppressed");
     return;
@@ -746,6 +764,20 @@ function bootTreasurySeeds(): void {
     emitted++;
   }
 
+  for (const payload of TREASURY_FUNDING_LINE_PAYLOADS) {
+    if (existingFundingLineIds.has(payload.fundingLineId)) continue;
+    const ev = makeFundingLineDrawn({
+      asOf: seedAsOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: [...TRADE_SEEDS_CITATIONS],
+      payload,
+    });
+    ev.provenance = TREASURY_BOOT_PROVENANCE;
+    eventStore.append(ev);
+    emitted++;
+  }
+
   if (emitted === 0) {
     logger.debug("treasury-seeds: idempotent boot; no events emitted");
   } else {
@@ -754,6 +786,54 @@ function bootTreasurySeeds(): void {
       `treasury-seeds: ${emitted} seed event(s) emitted (build-phase-fixture)`,
     );
   }
+}
+
+/**
+ * Idempotently emit the build-phase BalanceSheetProjected seed event so that
+ * getALMPositionSnapshot can derive NSFR ASF/RSF values and the substrate gap
+ * is cleared from the dashboard.
+ *
+ * Idempotency key: projectionId in the event payload. Replays existing
+ * BalanceSheetProjected events; skips emission if the seed projectionId is
+ * already present.
+ *
+ * Authority: BA 326; BCBS D396; D-TREASURY-GAPS-WAVE1.
+ */
+function bootBalanceSheetSeed(): void {
+  const ENTITY = "LE-BANK-SA";
+  const ACTOR = {
+    type: "system" as const,
+    id: "system:boot",
+    name: "Boot seed runner",
+  } as const;
+
+  const existingProjectionIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "BalanceSheetProjected" })) {
+    const p = ev.payload as { projectionId?: string };
+    if (p.projectionId) existingProjectionIds.add(p.projectionId);
+  }
+
+  if (existingProjectionIds.has(BALANCE_SHEET_SEED_PAYLOAD.projectionId)) {
+    logger.debug("balance-sheet-seed: idempotent boot; seed already present");
+    return;
+  }
+
+  const ev = makeBalanceSheetProjected({
+    asOf: BALANCE_SHEET_SEED_AS_OF,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: [...BALANCE_SHEET_SEED_CITATIONS],
+    payload: BALANCE_SHEET_SEED_PAYLOAD,
+  });
+  ev.provenance = buildPhaseFixtureTag({
+    sourceLineage: "seeds/alm/balance-sheet-seed.ts",
+    tags: ["boot-seed", "build-phase-baseline"],
+  });
+  eventStore.append(ev);
+  logger.info(
+    { projectionId: BALANCE_SHEET_SEED_PAYLOAD.projectionId },
+    "balance-sheet-seed: 1 seed event emitted (build-phase-fixture)",
+  );
 }
 
 /**
