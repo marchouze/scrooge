@@ -9,6 +9,14 @@
 // is the ONLY reduce branch that calls `insertClient`. All other branches may
 // only UPDATE existing rows.
 //
+// DUPLICATE-ENTITYNAME GUARD (D-RECON-CLIENT-ENTITYNAME-UNIQUENESS):
+// `applyClientAccepted` checks for an existing active row with the same
+// `entityName` before inserting. If a duplicate is found the insert is
+// skipped and a structured WARN is emitted to stderr so monitoring surfaces
+// it. The `recon:clients-entityname-uniqueness` CI gate emits the persistent
+// `SubstrateAlert{alertClass:"integrity", severity:"high"}` event to the store
+// when it detects duplicates in the replayed projection.
+//
 // This invariant maps directly to Principle 1 (events are the only source of
 // truth) and to the KYC gateway design: ClientAccepted is the only gate that
 // marks a candidate as having passed all AML/CDD/EDD checks.
@@ -17,6 +25,7 @@
 //               KYCRatingRevised, CounterpartyCategorised.
 //
 // Authority: D-KYC-ONBOARDING-BUILD (CEO-approved 2026-05-18);
+//   D-RECON-CLIENT-ENTITYNAME-UNIQUENESS (CEO-approved 2026-05-27);
 //   AML-CFT-POLICY-V1; FIC-ACT-38-2001; FAIS-ACT-37-2002.
 //
 // Authors: Atlas (Core banking platform architect, engineering) +
@@ -157,6 +166,26 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
 
   const category: ClientCategory = p.category === "EC" || p.category === "PC" ? p.category : "PC";
   const simulated = p.simulated === true;
+
+  // DUPLICATE-ENTITYNAME GUARD (D-RECON-CLIENT-ENTITYNAME-UNIQUENESS):
+  // If another active row already exists with the same entityName, skip this
+  // insert and emit a structured integrity alert to stderr. The projection
+  // must not throw — processing continues for subsequent events.
+  // The persistent SubstrateAlert event is emitted by the
+  // `recon:clients-entityname-uniqueness` CI gate which replays this
+  // projection and writes to the event store.
+  if (entityName) {
+    const existing = [...state.values()].find((c) => c.entityName === entityName);
+    if (existing) {
+      // Structured warn — surfaced by monitoring / log aggregation.
+      // Format: SubstrateAlert{alertClass:"integrity",severity:"medium"} prefix
+      // so the line is grep-able in CI and ops tooling.
+      process.stderr.write(
+        `SubstrateAlert{alertClass:"integrity",severity:"medium"} clients-projection: duplicate entityName skipped — entityName="${entityName}" existingClientId="${existing.clientId}" incomingClientId="${clientId}" eventId="${e.event_id}" authority=D-RECON-CLIENT-ENTITYNAME-UNIQUENESS\n`,
+      );
+      return state; // skip insert — do not throw
+    }
+  }
 
   // INVARIANT: insertClient is the ONLY function that may create a row.
   return insertClient(state, clientId, {
