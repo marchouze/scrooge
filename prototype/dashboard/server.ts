@@ -524,17 +524,19 @@ function bootDerive(): DashboardState {
     // and BEFORE NPA attestation seeds that read model validation status.
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     bootModelRegistry();
+    // Model validation seed — emit ValidationMethodologyPublished (Tier-2 + Tier-3)
+    // and ModelValidationApproved for the 3 build-phase models idempotently.
+    // Must run AFTER bootModelRegistry() (models must exist) and BEFORE
+    // bootNpaAttestations() (seedValidatedModelRiskUpgrades checks for approvals).
+    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+    bootModelValidationSeeds();
     // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
     // core products (equity, bond, repo, IRS, FX swap) idempotently.
+    // seedValidatedModelRiskUpgrades() upgrades bond/IRS/FX model-risk to
+    // implementation-attested when ModelValidationApproved events are present.
     // Must run BEFORE trade seeds that reference these products.
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     bootNpaAttestations();
-    // PR-G — emit ValidationMethodologyPublished (Tier-2 + Tier-3 v0.1) and
-    // ModelValidationApproved for the 3 build-phase models idempotently.
-    // Must run AFTER bootNpaAttestations() (NPA gate) but is otherwise
-    // independent of trade seeds.
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    bootModelValidationSeeds();
     // Treasury seed events — emit REPO, MMD, IBL positions idempotently.
     // Required by getALMPositionSnapshot so LCR/NSFR compute live values.
     bootTreasurySeeds();
