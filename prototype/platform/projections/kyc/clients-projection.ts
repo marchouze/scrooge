@@ -181,13 +181,7 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
       // Format: SubstrateAlert{alertClass:"integrity",severity:"medium"} prefix
       // so the line is grep-able in CI and ops tooling.
       process.stderr.write(
-        `SubstrateAlert{alertClass:"integrity",severity:"medium"} ` +
-          `clients-projection: duplicate entityName skipped — ` +
-          `entityName="${entityName}" ` +
-          `existingClientId="${existing.clientId}" ` +
-          `incomingClientId="${clientId}" ` +
-          `eventId="${e.event_id}" ` +
-          `authority=D-RECON-CLIENT-ENTITYNAME-UNIQUENESS\n`,
+        `SubstrateAlert{alertClass:"integrity",severity:"medium"} clients-projection: duplicate entityName skipped — entityName="${entityName}" existingClientId="${existing.clientId}" incomingClientId="${clientId}" eventId="${e.event_id}" authority=D-RECON-CLIENT-ENTITYNAME-UNIQUENESS\n`,
       );
       return state; // skip insert — do not throw
     }

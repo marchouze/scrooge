@@ -22,9 +22,9 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { nowUtc, newEventId } from "@platform/core/types";
-import { EventStore } from "@platform/event-store/store";
+import { nowUtc } from "@platform/core/types";
 import { makeSubstrateAlert } from "@platform/event-store/event-types";
+import { EventStore } from "@platform/event-store/store";
 import { buildKycClientsView } from "../../dashboard/kyc-clients-view";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -60,7 +60,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   const clients = view.clients;
 
   // Group active rows by entityName (case-sensitive — legal names are exact).
-  const byName = new Map<string, typeof clients[number][]>();
+  const byName = new Map<string, (typeof clients)[number][]>();
   for (const client of clients) {
     const name = client.entityName;
     if (!name) continue;
@@ -83,12 +83,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     const clientIds = rows.map((r) => r.clientId).join(", ");
     violations.push({
       subject: entityName,
-      message:
-        `duplicate entityName "${entityName}" appears ${rows.length} times in the active ` +
-        `clients register (clientIds: ${clientIds}). ` +
-        `This is an AML/CDD integrity violation — the same legal entity must not be ` +
-        `onboarded more than once (authority: D-RECON-CLIENT-ENTITYNAME-UNIQUENESS; ` +
-        `AML-CFT-POLICY-V1; FIC-ACT-38-2001 §21).`,
+      message: `duplicate entityName "${entityName}" appears ${rows.length} times in the active clients register (clientIds: ${clientIds}). This is an AML/CDD integrity violation — the same legal entity must not be onboarded more than once (authority: D-RECON-CLIENT-ENTITYNAME-UNIQUENESS; AML-CFT-POLICY-V1; FIC-ACT-38-2001 §21).`,
       severity: "fail",
     });
 
@@ -114,10 +109,7 @@ export function run(opts: RunOpts = {}): ReconResult {
             alertId: `alert:integrity:clients-dup-entityname-${slug}`,
             alertClass: "integrity",
             severity: "high",
-            details:
-              `Duplicate entityName detected in active clients register: ` +
-              `"${entityName}" (${rows.length} rows, clientIds: ${clientIds}). ` +
-              `Remediation: investigate ClientAccepted event history and tombstone the duplicate via ClientRejected.`,
+            details: `Duplicate entityName detected in active clients register: "${entityName}" (${rows.length} rows, clientIds: ${clientIds}). Remediation: investigate ClientAccepted event history and tombstone the duplicate via ClientRejected.`,
           },
         }),
       );
@@ -143,13 +135,10 @@ if (import.meta.main) {
   }
 
   if (fails.length === 0) {
-    console.log(
-      `recon:${PIPELINE} OK — ${result.asserted} entityName(s) checked, 0 duplicates`,
-    );
+    console.log(`recon:${PIPELINE} OK — ${result.asserted} entityName(s) checked, 0 duplicates`);
   } else {
     console.error(
-      `\nrecon:${PIPELINE} — ${result.asserted} entityName(s) checked, ` +
-        `${fails.length} duplicate(s) found`,
+      `\nrecon:${PIPELINE} — ${result.asserted} entityName(s) checked, ${fails.length} duplicate(s) found`,
     );
     console.error(`recon:${PIPELINE} FAILED — ${fails.length} violation(s)`);
     process.exit(1);
