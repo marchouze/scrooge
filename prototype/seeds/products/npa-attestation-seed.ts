@@ -520,6 +520,102 @@ export function seedSubstrateReadyDimensionUpgrades(
   return { upgraded, skipped };
 }
 
+// ---------------------------------------------------------------------------
+// Governance-policy dimension upgrades (PR-J)
+//
+// Upgrades conduct, aml, infosec, and privacy for all 5 products where the
+// required policy + procedure substrate is in place:
+//
+//   conduct:   trading-mandate-v1 (ORG-MK-01 market conduct); insider-
+//              trading-pa-dealing-policy (ORG-MK-05); market-abuse controls.
+//   aml:       aml-cft-policy-v1; FIC Act obligations (ORG-FC-02/03/04);
+//              Mira sanctions-screening + transaction-monitoring live.
+//   infosec:   secure-sdlc-policy-v1; PA/FSCA JS-2/2024 (ORG-CY-01/12/13);
+//              SIEM + threat-model gate + SBOM substrate.
+//   privacy:   popia-privacy-policy-v1; Information Officer appointed;
+//              POPIA ss.19–22 data-processing controls in place.
+//
+// Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE + D-NEW-PRODUCT-APPROVAL-POLICY
+// ---------------------------------------------------------------------------
+
+const GOVERNANCE_DIM_AS_OF = "2026-05-27T06:30:00.000Z";
+const GOVERNANCE_DIM_ACTOR = {
+  type: "service" as const,
+  id: "agent:atlas:npa-governance-dimension-upgrade",
+};
+
+const GOVERNANCE_CITATION_CHAINS = {
+  conduct: [...DIM_BASE_CHAIN, "ORG-MK-01"],
+  aml: [...DIM_BASE_CHAIN, "ORG-FC-02"],
+  infosec: [...DIM_BASE_CHAIN, "ORG-CY-01"],
+  privacy: [...DIM_BASE_CHAIN, "ORG-RM-01"],
+} as const;
+
+const GOVERNANCE_READY_UPGRADES: readonly DimUpgrade[] = (
+  ["conduct", "aml", "infosec", "privacy"] as const
+).flatMap((dim) =>
+  [
+    "prd:bank:equity:jse-equity-cash",
+    "prd:bank:bond:sagb-fixed-coupon",
+    "prd:bank:bond:open-repo-gmra",
+    "prd:bank:ird:vanilla-zar-fix-zaronia",
+    "prd:bank:fx:fx-swap-usdzar",
+  ].map((productId) => ({
+    productId,
+    dimension: dim,
+    citationChain: GOVERNANCE_CITATION_CHAINS[dim],
+  })),
+);
+
+/**
+ * Upgrades conduct, aml, infosec, and privacy to implementation-attested for
+ * all 5 products. Policy + procedure substrate is in place for each dimension.
+ * Idempotent: pairs already at implementation-attested are skipped.
+ */
+export function seedGovernanceDimensionUpgrades(store: EventStore): SubstrateReadyUpgradeResult {
+  const upgraded: string[] = [];
+  const skipped: string[] = [];
+
+  const events = Array.from(store.replay());
+
+  const alreadyUpgraded = new Set(
+    events
+      .filter(
+        (ev) =>
+          ev.type === "ProductDimensionAttested" &&
+          (ev.payload as Record<string, unknown>).result === "implementation-attested",
+      )
+      .map(
+        (ev) =>
+          `${(ev.payload as Record<string, unknown>).productId}:${(ev.payload as Record<string, unknown>).dimension}`,
+      ),
+  );
+
+  for (const upgrade of GOVERNANCE_READY_UPGRADES) {
+    const key = `${upgrade.productId}:${upgrade.dimension}`;
+    if (alreadyUpgraded.has(key)) {
+      skipped.push(key);
+      continue;
+    }
+    const ev = makeProductDimensionAttested({
+      asOf: GOVERNANCE_DIM_AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: GOVERNANCE_DIM_ACTOR,
+      citations: [...DIM_BASE_CHAIN],
+      payload: {
+        productId: upgrade.productId,
+        dimension: upgrade.dimension,
+        result: "implementation-attested",
+        citationChain: [...upgrade.citationChain],
+      },
+    });
+    store.append(ev);
+    upgraded.push(key);
+  }
+
+  return { upgraded, skipped };
+}
+
 export interface NpaAttestationSeedResult {
   approved: string[];
   skipped: string[];
@@ -556,6 +652,10 @@ export function seedNpaAttestations(store: EventStore): NpaAttestationSeedResult
   // accounting, capital, legal) for bond, repo, IRS, FX where the required
   // substrate exists in the codebase.
   seedSubstrateReadyDimensionUpgrades(store);
+
+  // PR-J: upgrade governance-policy dimensions (conduct, aml, infosec, privacy)
+  // for all 5 products where policy + procedure substrate is in place.
+  seedGovernanceDimensionUpgrades(store);
 
   return { approved, skipped };
 }
