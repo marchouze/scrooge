@@ -19,8 +19,7 @@ import { recordDecision } from "../runtime/decisions/record";
 import { EventStore } from "../platform/event-store/store";
 import { resolve } from "node:path";
 
-const DB_PATH =
-  process.env.BANK_EVENT_DB ?? resolve(import.meta.dir, "../.local/event.db");
+const DB_PATH = process.env.BANK_EVENT_DB ?? resolve(import.meta.dir, "../.local/event.db");
 
 // Inject shared store so recordDecision writes to the correct path.
 process.env.BANK_EVENT_DB = DB_PATH;
@@ -31,8 +30,7 @@ const DECISION_ID = "D-IFRS-THRESHOLDS-V13";
 const store = new EventStore(DB_PATH);
 const existing = Array.from(store.replay()).find(
   (ev) =>
-    ev.type === "Decision" &&
-    (ev.payload as Record<string, unknown>).decisionId === DECISION_ID,
+    ev.type === "Decision" && (ev.payload as Record<string, unknown>).decisionId === DECISION_ID,
 );
 if (existing) {
   console.log(`${DECISION_ID} already in store — skipped.`);
@@ -45,8 +43,7 @@ const result = recordDecision(
     phase: "approved",
     authority: "CEO",
     authorityRef: "marc@tgv.co.za",
-    title:
-      "Approve IFRS quantitative threshold amendments — accounting-policies-ifrs v1.3",
+    title: "Approve IFRS quantitative threshold amendments — accounting-policies-ifrs v1.3",
     category: "finance",
     recommendation:
       "Amend both §3.2.2 SICR trigger and §3.5.2 materiality threshold per Bea's peer review of Owen v1.2.",
