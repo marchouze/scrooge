@@ -57,7 +57,8 @@ const SEED_MODELS = [
     modelId: "model:zaronia-ois-irspv-v1",
     version: "v1.0",
     tier: 2 as const,
-    description: "ZARONIA OIS IRS present-value pricing engine — ZAR fixed vs ZARONIA OIS discounting",
+    description:
+      "ZARONIA OIS IRS present-value pricing engine — ZAR fixed vs ZARONIA OIS discounting",
   },
   {
     modelId: "model:fx-forward-irp-v1",

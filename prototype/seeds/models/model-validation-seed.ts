@@ -96,7 +96,8 @@ const MODELS: ModelSeedDef[] = [
     version: "v1.0",
     tier: 2,
     expiryDate: "2027-11-27",
-    description: "ZARONIA OIS IRS present-value pricing engine — ZAR fixed vs ZARONIA OIS discounting",
+    description:
+      "ZARONIA OIS IRS present-value pricing engine — ZAR fixed vs ZARONIA OIS discounting",
   },
   {
     modelId: "model:fx-forward-irp-v1",

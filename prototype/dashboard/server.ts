@@ -132,11 +132,11 @@ import { runAgent } from "../runtime/run";
 import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { seedModelRegistry } from "../seeds/models/model-registry-seed";
-import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import {
   seedModelValidations,
   seedValidationMethodologies,
 } from "../seeds/models/model-validation-seed";
+import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import {
   TRADE_SEEDS_CITATIONS,
   TREASURY_DEPOSIT_TAKEN_PAYLOADS,
