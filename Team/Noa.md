@@ -54,6 +54,10 @@ Role brief archived at `Team Inbox/actioned/2026-05-12_pax_role-brief_noa-intran
 | Dashboard data gap finding | Any agent (Owner Inbox finding) | Next agent tick |
 | Design review checkpoint | Agent-sprint boundary | On schedule |
 | Accessibility or UX regression flagged | Vera recon pipeline | Next agent tick |
+| `IntranetFeatureShipped` event | `@platform/event-store` | Record feature delivery and update intranet product log; build-phase |
+| `DesignReviewComplete` event | `@platform/event-store` | Process design-review outcome and update sprint state; build-phase |
+| `UXFindingRaised` event | `@platform/event-store` | Triage UX finding and queue for next sprint; build-phase |
+| Weekly ops cycle — Tuesdays 08:11 UTC (`noa:ops-cycle`) | Runtime scheduler | Design-sprint-boundary review: roadmap delta, component-library state, open findings; build-phase |
 
 ## 8. Inputs
 

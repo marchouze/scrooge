@@ -53,6 +53,10 @@ Ravi does **not** measure ECL or own RWA (Rohan), book trades into the OMS (Kai)
 | Scheduled wake-up — weekly FTP cycle Monday 07:00 UTC | Runtime scheduler | FTP-rate calibration published by Monday 09:00 UTC |
 | Scheduled wake-up — quarter-end ILAAP | Runtime scheduler | ILAAP draft ready within 10 working days |
 | Postable product event (`TradePosted`, `FundingDrawn`, `DepositReceived`, etc.) | Event store | FTP attribution event within 60 seconds |
+| `FtpCurvePublished` event | `@platform/event-store` | Trigger FTP attribution re-run on new curve publication; build-phase |
+| `TradeBooked` event | `@platform/event-store` | FTP attribution for newly booked trade within 60 seconds; build-phase |
+| `LoanBooked` event | `@platform/event-store` | FTP attribution for newly booked loan within 60 seconds; build-phase |
+| `FundingDrawnDown` event | `@platform/event-store` | FTP attribution for funding drawdown within 60 seconds; build-phase |
 | `SAMOSFundingShortfall` event | SAMOS interface (Tomas) | Funding plan within 15 minutes (intraday) |
 | `HQLACompositionDrift` event | Event store | HQLA recomposition action within 1 working day |
 | `IRRBBExcursion` event | Risk engine (Rohan) | IRRBB hedge-action within 1 working day |

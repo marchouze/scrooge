@@ -85,6 +85,12 @@ Under the AI-driven-bank operating model (CLAUDE.md, 2026-05-07), Sade's primary
 | Weekly scheduled tick — agentops-readiness (Friday) | Runtime scheduler | At tick |
 | `AgentRegistered` event | Atlas's runtime registration | Onboarding-pack issued within next daily run |
 | `AgentRetired` event | Atlas's runtime | Capability revocation + handover within same day |
+| `AgentCapabilityChanged` event | `@platform/event-store` | Update agentOps projection and assess efficiency impact; build-phase |
+| `PersonaSpecChanged` event | `@platform/event-store` | Re-evaluate spec verbosity and efficiency metrics; build-phase |
+| `HireConfirmed` event | `@platform/event-store` | Initiate agent onboarding-pack and fleet-registration workflow; build-phase |
+| `Termination` event | `@platform/event-store` | Initiate agent retirement and capability-revocation workflow; build-phase |
+| `LeaveGranted` event | `@platform/event-store` | Update fleet availability state; build-phase |
+| `DisciplinaryActionRequested` event | `@platform/event-store` | Flag for AgentOps review; build-phase |
 | Inbound from Vera (Internal Audit Engineer) — agent-spec integrity finding | Vera's recon pipeline | Remediation within finding's stated deadline |
 
 ## 8. Inputs

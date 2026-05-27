@@ -52,6 +52,7 @@ Env does not own real market data connectivity (no live feed subscription), real
 | Interval tick — nostro statement | Internal timer | Within `nostroStatementIntervalMs` of last tick |
 | [deferred — PrincipalPayment receive-leg handler not yet built] | `@platform/event-store` | n/a |
 | [deferred — OutboundMessageDispatched regulatory-type handler not yet built] | `@platform/event-store` | n/a |
+| Weekly scheduled readiness snapshot — Fridays 07:17 UTC (`env:readiness`) | Runtime scheduler | Sim-engine substrate-gap report and sub-simulator state emitted at tick; build-phase |
 
 ## 8. Inputs
 

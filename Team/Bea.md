@@ -57,6 +57,15 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 | `EquityTradeBooked` event | Event store (Kai) | Classify booked equity trade under IFRS 9 within 60 seconds |
 | `EquitySettlementInstructed` event | Event store (Kai / Tomas) | Update IFRS classification on settlement instruction within 60 seconds |
 | `EquityCorporateActionApplied` event | Event store (Ravi / Kai) | Re-classify equity position on corporate action within 1 working day |
+| `FxTradeExecuted` event | `@platform/event-store` | FX trade GL postings within 60 seconds; build-phase |
+| `FxPositionRevalued` event | `@platform/event-store` | Revaluation journal entry within 60 seconds; build-phase |
+| `TradeMatured` event | `@platform/event-store` | Maturity settlement posting within 60 seconds; build-phase |
+| `FxTradeCancelled` event | `@platform/event-store` | Reversal posting within 60 seconds; build-phase |
+| `PaymentInitiated` event | `@platform/event-store` | Payment GL posting within 60 seconds; build-phase |
+| `SettlementInstructionReceived` event | `@platform/event-store` | Settlement instruction GL entry within 60 seconds; build-phase |
+| `RepoTradeOpened` event | `@platform/event-store` | Repo opening journal within 60 seconds; build-phase |
+| `DepositTaken` event | `@platform/event-store` | Deposit liability posting within 60 seconds; build-phase |
+| `InterbankLoanPlaced` event | `@platform/event-store` | Interbank loan asset posting within 60 seconds; build-phase |
 | Inbound query — Camille / external auditor | Owner Inbox / direct ask | Within 2 working days |
 
 ## 8. Inputs
