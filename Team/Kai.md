@@ -49,6 +49,8 @@ Kai does **not** own the post-settlement payment rails (Tomas's domain) or risk 
 | Trigger | Source | Response SLA |
 |---|---|---|
 | `OrderProposed` event | OMS / EMS internal stream | Aggregate and route proposed orders through pre-trade gateway checks within 50ms |
+| `GatewayCheckCompleted` event | `@platform/event-store` | Aggregate completed gateway check results and emit pre-trade-gateway decision within 50ms; build-phase |
+| `GatewayCheckRequested` event | `@platform/event-store` | Run identity + suitability + credit/capital/funding gateway checks within 200ms; build-phase |
 | `OrderSubmitted` event | OMS / EMS internal stream | Pre-trade gateway evaluation within 50ms; routing decision within 200ms |
 | `OrderFilled` event | Exchange / counterparty FIX session | Booking event within 1 second; trade-reporting prep within 30s |
 | `PreTradeGatewayBlock` event | Pre-trade gateway | Surface to trader + Rohan within 1 second; case opened |

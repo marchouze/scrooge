@@ -54,6 +54,7 @@ Rashida does **not** run risk taxonomy ownership (Helena), compliance / RMCP (Za
 | `SecurityIncidentRaised` event — any severity | Senna's detection pipeline | Severity rating within 30 min; incident command per severity tier |
 | `SecurityIncidentRaised` event — JS-2-of-2024 reportable | Severity classifier | PA / FSCA notification path triggered per Joint Standard window |
 | `ThreatModelExceptionRequested` event | Threat-model gate (Senna) | Decision within 5 working days |
+| `ThreatModelGateDecision` event | `@platform/event-store` (Senna / Atlas) | Review gate decision; archive as evidence; build-phase |
 | `KeyCeremonyScheduled` event | Senna's key-management substrate | Actor-set + ceremony schedule signed within 5 working days |
 | `SBOMAcceptanceRequired` event | Build pipeline (Atlas / Senna) | Decision within 24h |
 | `VendorSecurityReview` event | Imani's vendor onboarding | Decision within 10 working days |

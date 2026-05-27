@@ -52,6 +52,8 @@ Mira does **not** write postings, run audits (Vera's role), draft contracts (Ima
 | `SanctionsListPublished` event | Daily 04:00 UTC scheduler | Re-screen open population within 4h |
 | `PepListPublished` / `AdverseMediaPublished` | Daily 05:00 UTC scheduler | Re-screen within 4h |
 | `RegulatoryInstrumentUpdate` event | External feed (weekly Monday scan) | Register update within 5 working days; impact note within 10 |
+| `ObligationRegistered` event | `@platform/event-store` | Goal-loop: evaluate newly registered obligation against current controls gap; build-phase |
+| `GatewayCheckRequested` event | `@platform/event-store` | Run sanctions + counterparty-eligibility gateway checks within 200ms; build-phase |
 | Quarter-end | Runtime scheduler | RMCP attestation pack within 10 working days |
 | `AlertOpened` event with score ≥ MLRO threshold | Screening or monitoring pipeline | Disposition within 24h |
 | `CeoDecision` event for `D-MARKETS-SCHEMA-FOUNDATION` | Event-driven fan-out (`mira:m1-regulator-citation-urns`) | Register the M1 URN tranche (per source proposal §8) within the run; emit `ObligationRegistered` per URN |

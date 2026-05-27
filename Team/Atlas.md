@@ -54,6 +54,7 @@ Atlas does **not** own application-domain logic (accounting rules, trading flow,
 | `IdentityPermissionChangeProposal` event | Event store | Review within 1 working day; emergency rotations within 1h |
 | `AgentRegistered` event | Agent runtime registry | Derive and publish `PermissionPolicyPublished` for newly-registered agent within same run (T-12 mitigation); sweep full registry for stale policies |
 | `SubstrateAlert` event (capacity, latency, integrity) | Runtime monitoring | Triage within 15 minutes; resolution path within 1h |
+| `ProductDimensionNarrativeRequested` event | `@platform/event-store` | Author per-dimension narrative and emit `ProductDimensionNarrativeRecorded` within same run; build-phase |
 | Daily 06:00 UTC | Runtime scheduler | Platform-health rollup produced by 07:00 UTC |
 | Weekly Monday 09:00 UTC | Runtime scheduler | Substrate roadmap delta to Devon |
 

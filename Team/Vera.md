@@ -50,6 +50,8 @@ Vera does **not** run controls; Vera tests them. Independence is preserved in co
 | Nightly scheduler 02:00 UTC | Runtime scheduler | All pipelines run; results posted by 03:00 UTC |
 | Quarter-end | Runtime scheduler | Opinion-pack inputs ready within 5 working days |
 | `CeoDecision` event | Event store | Decision-event reconciliation pipeline runs within 1h |
+| `AuditFinding` event | `@platform/event-store` | Goal-loop: triage finding, route to Thandiwe + finding-owner, and update issues-and-actions tracker; build-phase |
+| `ReconResult` event | `@platform/event-store` | Goal-loop: assess recon result and escalate on fail-severity findings; build-phase |
 | Fail-severity finding from any pipeline | Pipeline event stream | Finding routed to Thandiwe + finding-owner within 1h |
 
 ## 8. Inputs

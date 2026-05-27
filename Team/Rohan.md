@@ -56,6 +56,8 @@ Rohan shares the IFRS 9 ECL methodology surface with Bea, and the pre-trade gate
 | `PolicyChange` (RAS) event | Event store (Helena) | Limit-framework recalibration within 10 working days |
 | `PortfolioReclassification` event | Event store (Bea / Saskia) | Risk re-aggregation within 1 working day |
 | `BacktestRequested` event | Event store (internal / Rohan / Kai) | Execute backtest run and emit results within 1 working day |
+| `GatewayCheckRequested` event | `@platform/event-store` | Run market-risk limit check in pre-trade gateway within 200ms; build-phase |
+| `FxTradeExecuted` event | `@platform/event-store` | Conduct-risk evaluation (best execution, FAIS suitability, conflicts) within 60 seconds; build-phase |
 | Inbound query — Helena (RAS calibration) / Camille (capital plan) / Eitan / Kai | Owner Inbox / direct ask | Within 2 working days |
 
 ## 8. Inputs
