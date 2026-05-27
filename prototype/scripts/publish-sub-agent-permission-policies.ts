@@ -616,6 +616,140 @@ const CATEGORY_G: AgentSpec[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Category H — Sub-agents added in PRs #836–#840 and scenario seeds
+//              (2026-05-27 batch; authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN)
+// ---------------------------------------------------------------------------
+
+const CATEGORY_H: AgentSpec[] = [
+  // Environment / simulation actors
+  makeSubAgentSpec("agent:env:correspondent-advice-sim", ["InboundMessageReceived"]),
+  makeSubAgentSpec("agent:env:fx-sim-engine", ["FxTradeExecuted"]),
+  makeSubAgentSpec("agent:env:settle-matured-trades", ["PrincipalPayment", "SettlementConfirmed"]),
+
+  // Test-harness actors (build-phase scenario seeds only)
+  makeSubAgentSpec("agent:test:order-source", ["OrderProposed"]),
+  makeSubAgentSpec("agent:test:trade-source", ["EquitySettlementInstructed", "EquityTradeBooked"]),
+  makeSubAgentSpec("agent:test:rohan-conduct-risk-events", [
+    "BestExecutionBreached",
+    "BestExecutionVerified",
+    "ConflictOfInterestDisclosed",
+    "CounterpartyFaisClassified",
+    "FaisClassificationSuitabilityChecked",
+    "FxTradeExecuted",
+  ]),
+
+  // Trading gateway sub-agents (Kai)
+  makeSubAgentSpec("agent:kai:pre-trade-gateway-aggregator", [
+    "GatewayCheckRequested",
+    "OrderApprovedAtGateway",
+    "OrderRejectedAtGateway",
+  ]),
+  makeSubAgentSpec("agent:kai:identity-gateway-check", ["GatewayCheckCompleted"]),
+  makeSubAgentSpec("agent:kai:suitability-gateway-check", ["GatewayCheckCompleted"]),
+  makeSubAgentSpec("agent:kai:credit-capital-funding-check", ["GatewayCheckCompleted"]),
+
+  // Compliance gateway sub-agents (Mira)
+  makeSubAgentSpec("agent:mira:sanctions-gateway-check", ["GatewayCheckCompleted"]),
+  makeSubAgentSpec("agent:mira:counterparty-eligibility-check", ["GatewayCheckCompleted"]),
+  makeSubAgentSpec("agent:mira:multi-instrument-horizon-scan", [
+    "ObligationCandidateProposed",
+    "RecordFiled",
+    "RegulatoryConceptExtracted",
+    "RegulatoryInstrumentContextualised",
+    "RegulatoryInstrumentRegistered",
+  ]),
+  makeSubAgentSpec("agent:mira:m1-regulator-citation-urns", [
+    "M1CitationTrancheRegistered",
+    "ObligationRegistered",
+  ]),
+
+  // Markets sub-agents (Saskia)
+  makeSubAgentSpec("agent:saskia:auto-quote", ["OrderProposed"]),
+  makeSubAgentSpec("agent:saskia:fx-trader", ["FxTradeExecuted"]),
+
+  // Risk sub-agents (Rohan)
+  makeSubAgentSpec("agent:rohan:market-risk-limit-check", ["GatewayCheckCompleted"]),
+  makeSubAgentSpec("agent:rohan:backtest-harness", ["BacktestRun", "RiskRaised"]),
+  makeSubAgentSpec("agent:rohan:conduct-risk-events", [
+    "BestExecutionBreached",
+    "BestExecutionVerified",
+    "ConductObligationFlagged",
+    "ConflictOfInterestDisclosed",
+    "FaisClassificationSuitabilityChecked",
+  ]),
+  makeSubAgentSpec("agent:rohan:model-registry-seed", ["ModelSubmitted"]),
+
+  // Model-risk sub-agents (Nadia)
+  makeSubAgentSpec("agent:nadia:model-tier-classification", ["ModelTierClassified"]),
+  makeSubAgentSpec("agent:nadia:model-validation", [
+    "ModelValidationApproved",
+    "ValidationFindingRaised",
+    "ValidationMethodologyPublished",
+  ]),
+
+  // NPA / product lifecycle sub-agents (Atlas)
+  makeSubAgentSpec("agent:atlas:npa-attestation-runner", [
+    "ProductApproved",
+    "ProductConceptualised",
+    "ProductDimensionAttested",
+    "ProductDueDiligenceCompleted",
+    "ProductProposalRegistered",
+  ]),
+  makeSubAgentSpec("agent:atlas:npa-dimension-upgrade", ["ProductDimensionAttested"]),
+  makeSubAgentSpec("agent:atlas:npa-governance-dimension-upgrade", ["ProductDimensionAttested"]),
+  makeSubAgentSpec("agent:atlas:npa-model-risk-upgrade", ["ProductDimensionAttested"]),
+  makeSubAgentSpec("agent:atlas:npa-remaining-dimension-upgrade", ["ProductDimensionAttested"]),
+  makeSubAgentSpec("agent:atlas:runner-worker", ["SubstrateAlert"]),
+  makeSubAgentSpec("agent:atlas:collateral-snapshot", [
+    "CollateralInventorySnapshot",
+    "CollateralInventorySnapshotted",
+  ]),
+
+  // Accounting sub-agents (Bea)
+  makeSubAgentSpec("agent:bea:gl-posting-engine", ["FxTradeCancelled", "SubLedgerPostingEmitted"]),
+  makeSubAgentSpec("agent:bea:m1-ifrs-classification-rules", [
+    "IfrsClassificationApplied",
+    "SubLedgerPostingEmitted",
+  ]),
+
+  // ALM / treasury sub-agents (Ravi)
+  makeSubAgentSpec("agent:ravi:alm-run", ["ALMRunCompleted", "IRRBBChecked"]),
+  makeSubAgentSpec("agent:ravi:intraday-stress", ["IntradayHQLAStressProjection", "RecordFiled"]),
+
+  // Liquidity / analytics sub-agents (Anya)
+  makeSubAgentSpec("agent:anya:liquidity-projection", ["LCRComputed", "NSFRComputed"]),
+  makeSubAgentSpec("agent:anya:m1-projection-runtime-mapping", [
+    "MarketsProjectionRefreshed",
+    "MarketsProjectionRegistered",
+  ]),
+
+  // Product control
+  makeSubAgentSpec("agent:product-control-engine", ["DailyPnLReportGenerated"]),
+
+  // Security / threat model (Senna)
+  makeSubAgentSpec("agent:senna:m1-trading-stack-threat-model", [
+    "SecurityGateRegistered",
+    "ThreatModelDimensionRegistered",
+  ]),
+
+  // Tax / treasury (Yael)
+  makeSubAgentSpec("agent:yael:treasurer-tax", ["CreditLimitLoaded", "ISDACSAAssessmentCompleted"]),
+
+  // Client onboarding (Niko)
+  makeSubAgentSpec("agent:niko:onboarding", ["CounterpartyFaisClassified"]),
+
+  // Governance persona sub-agents (Helena, Scrooge)
+  makeSubAgentSpec("agent:helena:governance", ["RecordFiled"]),
+  makeSubAgentSpec("agent:helena-eitan-camille-saskia", [
+    "AgentRunCompleted",
+    "AgentRunStarted",
+    "RecordFiled",
+  ]),
+  makeSubAgentSpec("agent:scrooge:ceo-decision-record", ["Decision"]),
+  makeSubAgentSpec("agent:scrooge:owner-inbox-archiver", ["RecordFiled"]),
+];
+
+// ---------------------------------------------------------------------------
 // All sub-agent specs
 // ---------------------------------------------------------------------------
 
@@ -627,6 +761,7 @@ const ALL_SUB_AGENT_SPECS: AgentSpec[] = [
   ...CATEGORY_E,
   ...CATEGORY_F,
   ...CATEGORY_G,
+  ...CATEGORY_H,
 ];
 
 // ---------------------------------------------------------------------------
