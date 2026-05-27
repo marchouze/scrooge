@@ -138,8 +138,8 @@ import {
   BALANCE_SHEET_SEED_CITATIONS,
   BALANCE_SHEET_SEED_PAYLOAD,
 } from "../seeds/alm/balance-sheet-seed";
-import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
+import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import {
   seedModelValidations,
   seedValidationMethodologies,

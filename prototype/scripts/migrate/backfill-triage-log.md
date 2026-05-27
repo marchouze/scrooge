@@ -1,6 +1,6 @@
 # Backfill triage log — D-DECISIONS-FRAMEWORK-REDESIGN Slice C
 
-Generated: 2026-05-27T07:37:35.705Z
+Generated: 2026-05-27T12:29:07.765Z
 
 ---
 
@@ -61,6 +61,7 @@ _None — all encountered IDs resolved cleanly._
 - `D-FX-BOOK-BOUNDARY`
 - `D-REGULATORY-READINESS-W2`
 - `D-REGULATORY-READINESS-GATE-PLAN`
+- `D-TRADE-LIFECYCLE-IFRS-CHAIN`
 - `D-A22-RETIRE-BUS`
 - `D-RMS-PHASE-1-SLICE-5`
 - `D-RMS-SLICE-5-OBLIGATION-CADENCE`
@@ -82,5 +83,5 @@ _None identified by the migration script. Review manually if recon gates still f
 ## Summary
 
 - Triage IDs (a): 0
-- Reference-only IDs (b): 62
+- Reference-only IDs (b): 63
 - Emitted backfill events: 0
