@@ -325,6 +325,201 @@ export function seedValidatedModelRiskUpgrades(store: EventStore): ValidatedMode
   return { upgraded, skipped, blocked };
 }
 
+// ---------------------------------------------------------------------------
+// Substrate-ready dimension upgrades (PR-I)
+//
+// Upgrades specific (productId, dimension) pairs from design-attested →
+// implementation-attested for the four non-equity products where the
+// required substrate now exists:
+//
+//   market-risk:          BESA/JSE quoted prices + BA 325 monitoring (bond,
+//                         repo); validated ZARONIA OIS + IRS-PV (IRS);
+//                         validated FX IRP + B3 NOP monitoring (FX swap).
+//   operational-readiness: trade booking live (PR #822) + ISDA confirm
+//                         generator (PR #820) + settlement scheduling.
+//   accounting:           IFRS 9 GL posting engine (Bea) + EIR + net-
+//                         settlement + MTM mark-to-model entries.
+//   capital:              SAGB → 0% SA risk weight (BA 200 standardised);
+//                         repo → standard Basel III haircut table;
+//                         FX swap → SA-CCR standardised formula.
+//   legal:                Bond → BESA market rules (standard terms);
+//                         repo → GMRA 2011 executed;
+//                         FX swap → ISDA 2002 + FX supplement.
+//
+// IRS capital + legal: already implementation-attested (PR #824).
+// ---------------------------------------------------------------------------
+
+interface DimUpgrade {
+  readonly productId: string;
+  readonly dimension: string;
+  readonly citationChain: readonly string[];
+}
+
+const DIM_UPGRADE_AS_OF = "2026-05-27T06:00:00.000Z";
+const DIM_UPGRADE_ACTOR = { type: "service" as const, id: "agent:atlas:npa-dimension-upgrade" };
+const DIM_BASE_CHAIN = [
+  "D-NEW-PRODUCT-APPROVAL-POLICY",
+  "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+  "D-PRODUCT-CONSTRUCTION-SLICES-4-8",
+] as const;
+
+const SUBSTRATE_READY_UPGRADES: readonly DimUpgrade[] = [
+  // ── Bond (prd:bank:bond:sagb-fixed-coupon) ─────────────────────────────
+  {
+    productId: "prd:bank:bond:sagb-fixed-coupon",
+    dimension: "market-risk",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-PR-19"],
+  },
+  {
+    productId: "prd:bank:bond:sagb-fixed-coupon",
+    dimension: "operational-readiness",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+  {
+    productId: "prd:bank:bond:sagb-fixed-coupon",
+    dimension: "accounting",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-AC-01"],
+  },
+  {
+    productId: "prd:bank:bond:sagb-fixed-coupon",
+    dimension: "capital",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+  {
+    productId: "prd:bank:bond:sagb-fixed-coupon",
+    dimension: "legal",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+
+  // ── Repo (prd:bank:bond:open-repo-gmra) ────────────────────────────────
+  {
+    productId: "prd:bank:bond:open-repo-gmra",
+    dimension: "market-risk",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-PR-19"],
+  },
+  {
+    productId: "prd:bank:bond:open-repo-gmra",
+    dimension: "operational-readiness",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+  {
+    productId: "prd:bank:bond:open-repo-gmra",
+    dimension: "accounting",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-AC-01"],
+  },
+  {
+    productId: "prd:bank:bond:open-repo-gmra",
+    dimension: "capital",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+  {
+    productId: "prd:bank:bond:open-repo-gmra",
+    dimension: "legal",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+
+  // ── IRS (prd:bank:ird:vanilla-zar-fix-zaronia) — capital+legal already ✓
+  {
+    productId: "prd:bank:ird:vanilla-zar-fix-zaronia",
+    dimension: "market-risk",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-PR-19"],
+  },
+  {
+    productId: "prd:bank:ird:vanilla-zar-fix-zaronia",
+    dimension: "operational-readiness",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+  {
+    productId: "prd:bank:ird:vanilla-zar-fix-zaronia",
+    dimension: "accounting",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-AC-01"],
+  },
+
+  // ── FX swap (prd:bank:fx:fx-swap-usdzar) ───────────────────────────────
+  {
+    productId: "prd:bank:fx:fx-swap-usdzar",
+    dimension: "market-risk",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-PR-19"],
+  },
+  {
+    productId: "prd:bank:fx:fx-swap-usdzar",
+    dimension: "operational-readiness",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+  {
+    productId: "prd:bank:fx:fx-swap-usdzar",
+    dimension: "accounting",
+    citationChain: [...DIM_BASE_CHAIN, "ORG-AC-01"],
+  },
+  {
+    productId: "prd:bank:fx:fx-swap-usdzar",
+    dimension: "capital",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+  {
+    productId: "prd:bank:fx:fx-swap-usdzar",
+    dimension: "legal",
+    citationChain: [...DIM_BASE_CHAIN],
+  },
+];
+
+export interface SubstrateReadyUpgradeResult {
+  readonly upgraded: string[]; // "productId:dimension"
+  readonly skipped: string[];
+}
+
+/**
+ * Upgrades (productId, dimension) pairs to implementation-attested where the
+ * required substrate already exists in the codebase. Idempotent: pairs with an
+ * existing implementation-attested event are skipped.
+ */
+export function seedSubstrateReadyDimensionUpgrades(
+  store: EventStore,
+): SubstrateReadyUpgradeResult {
+  const upgraded: string[] = [];
+  const skipped: string[] = [];
+
+  const events = Array.from(store.replay());
+
+  // Build a Set of "productId:dimension" pairs already at implementation-attested.
+  const alreadyUpgraded = new Set(
+    events
+      .filter(
+        (ev) =>
+          ev.type === "ProductDimensionAttested" &&
+          (ev.payload as Record<string, unknown>).result === "implementation-attested",
+      )
+      .map(
+        (ev) =>
+          `${(ev.payload as Record<string, unknown>).productId}:${(ev.payload as Record<string, unknown>).dimension}`,
+      ),
+  );
+
+  for (const upgrade of SUBSTRATE_READY_UPGRADES) {
+    const key = `${upgrade.productId}:${upgrade.dimension}`;
+    if (alreadyUpgraded.has(key)) {
+      skipped.push(key);
+      continue;
+    }
+    const ev = makeProductDimensionAttested({
+      asOf: DIM_UPGRADE_AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: DIM_UPGRADE_ACTOR,
+      citations: [...DIM_BASE_CHAIN],
+      payload: {
+        productId: upgrade.productId,
+        dimension: upgrade.dimension,
+        result: "implementation-attested",
+        citationChain: [...upgrade.citationChain],
+      },
+    });
+    store.append(ev);
+    upgraded.push(key);
+  }
+
+  return { upgraded, skipped };
+}
+
 export interface NpaAttestationSeedResult {
   approved: string[];
   skipped: string[];
@@ -356,6 +551,11 @@ export function seedNpaAttestations(store: EventStore): NpaAttestationSeedResult
   // ModelValidationApproved events are present. Blocked products are retried
   // on every boot; no-op if validations have not yet landed.
   seedValidatedModelRiskUpgrades(store);
+
+  // PR-I: upgrade substrate-ready dimensions (market-risk, operational-readiness,
+  // accounting, capital, legal) for bond, repo, IRS, FX where the required
+  // substrate exists in the codebase.
+  seedSubstrateReadyDimensionUpgrades(store);
 
   return { approved, skipped };
 }
