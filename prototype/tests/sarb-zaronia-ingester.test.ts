@@ -135,7 +135,9 @@ describe("sarb-zaronia-ingester", () => {
 
     // Verify dates are in strictly ascending order.
     for (let i = 1; i < dates.length; i++) {
-      expect(dates[i]! > dates[i - 1]!).toBe(true);
+      const curr = dates[i];
+      const prev = dates[i - 1];
+      expect(curr !== undefined && prev !== undefined && curr > prev).toBe(true);
     }
   });
 

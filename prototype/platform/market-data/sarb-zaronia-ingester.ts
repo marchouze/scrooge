@@ -150,9 +150,7 @@ export interface SarbZaroniaFixtureShape {
 /**
  * Construct a `SarbZaroniaSource` from the on-disk fixture shape.
  */
-export function makeFixtureSarbZaroniaSource(
-  fixture: SarbZaroniaFixtureShape,
-): SarbZaroniaSource {
+export function makeFixtureSarbZaroniaSource(fixture: SarbZaroniaFixtureShape): SarbZaroniaSource {
   const dates = Object.keys(fixture.fixings).sort();
   return {
     fixingsForDate(date: string): ReadonlyArray<SarbZaroniaEntry> {

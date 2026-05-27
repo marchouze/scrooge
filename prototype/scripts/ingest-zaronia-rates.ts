@@ -51,11 +51,7 @@ function main(): number {
     return 1;
   }
 
-  if (
-    !fixture.instrument ||
-    !fixture.fixings ||
-    Object.keys(fixture.fixings).length === 0
-  ) {
+  if (!fixture.instrument || !fixture.fixings || Object.keys(fixture.fixings).length === 0) {
     console.error(
       "[ingest-zaronia-rates] ERROR: fixture is malformed (missing instrument / fixings)",
     );
