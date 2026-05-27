@@ -92,6 +92,8 @@
     "recon:permission-policy-coverage": "bun run platform/recon/permission-policy-coverage.ts",
     "seed:permission-policies": "bun run scripts/seed-permission-policies.ts",
     "seed:sarb-fixings": "bun run scripts/bootstrap/seed-sarb-fixings.ts",
+    "seed:period-close": "bun run scripts/seed-period-close.ts",
+    "run:helena-appetite-watch": "bun run scripts/run-helena-appetite-watch.ts",
     "recon:event-type-registry-coverage": "bun run platform/recon/event-type-registry-coverage.ts",
     "recon:decision-required-event-pairing": "bun run platform/recon/decision-required-event-pairing.ts",
     "recon:agent-snapshot-staleness": "bun run platform/recon/agent-snapshot-staleness.ts",

@@ -79,13 +79,22 @@ const PIPELINE = "recon:gl-ledger-coverage";
  * `FxSettlementFailed` is handled separately because it splits by
  * `failureKind` — `one-leg-delivered` must produce postings; the other
  * two failure kinds must NOT.
+ *
+ * `SettlementConfirmed` is handled separately (see assertion 1 below)
+ * because it has condition `non-zero-pnl` (PR-FX-LIFECYCLE-CLOSE) —
+ * zero-P&L trades genuinely produce no GL posting per IAS 21 §28; only
+ * events with `realisedPnlDelta !== 0` require a SubLedgerPostingEmitted.
  */
 const POSTING_REQUIRED_TYPES = new Set<string>([
   "FxTradeExecuted",
   "FxPositionRevalued",
   "TradeMatured",
-  "SettlementConfirmed", // CDM lifecycle close
   "PrincipalPayment",
+]);
+
+/** Event types checked separately with payload-conditional logic. */
+const POSTING_CONDITIONAL_TYPES = new Set<string>([
+  "SettlementConfirmed", // CDM lifecycle close — condition: non-zero-pnl (PR-FX-LIFECYCLE-CLOSE)
 ]);
 
 /**
@@ -210,6 +219,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   const postings: MinimalEvent[] = [];
   const postingsBySourceRef = new Map<string, MinimalEvent[]>();
   const fxLifecycleEvents: MinimalEvent[] = [];
+  const settlementConfirmedEvents: MinimalEvent[] = [];
   const closeEvents: MinimalEvent[] = [];
   const fxSettlementFailedEvents: MinimalEvent[] = [];
 
@@ -226,6 +236,9 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
     if (POSTING_REQUIRED_TYPES.has(e.type)) {
       fxLifecycleEvents.push(e);
+    }
+    if (POSTING_CONDITIONAL_TYPES.has(e.type)) {
+      settlementConfirmedEvents.push(e);
     }
     if (e.type === "FxSettlementFailed") {
       fxSettlementFailedEvents.push(e);
@@ -247,6 +260,51 @@ export function run(opts: RunOpts = {}): ReconResult {
         severity: "fail",
         message: `GL coverage gap: ${e.type} event ${e.event_id} (as_of=${e.as_of}) has NO matching SubLedgerPostingEmitted or JournalEntryPosted referencing it as sourceEventId. Required by the FX-spot posting-rule pack (PRs #608/#609/#616). Authority: brief:bea:gl-ledger-end-to-end-projection; Principles/1-events-are-truth.md.`,
       });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Assertion 1c: SettlementConfirmed — condition: non-zero-pnl (PR-FX-LIFECYCLE-CLOSE).
+  //
+  // PR-FX-LIFECYCLE-CLOSE posts the realised-P&L residual on SettlementConfirmed.
+  // IAS 21 §28 only recognises a P&L entry when there IS a non-zero residual.
+  // When realisedPnlDelta === 0 the trade settled exactly at the carrying value
+  // and no GL entry is warranted (the principal cash has already been derecognised
+  // by the two PR-FX-PRIN postings on the PrincipalPayment events). This is an
+  // intentional "skipped" outcome, not a coverage gap.
+  //
+  // MUST have posting  → realisedPnlDelta !== 0
+  // OK to have no posting → realisedPnlDelta === 0 (zero-P&L: no IAS 21 §28 entry)
+  //
+  // Authority: POSTING_RULE_REGISTRY PR-FX-LIFECYCLE-CLOSE (condition: non-zero-pnl);
+  //   IAS 21 §28; PR #608/#616.
+  // -------------------------------------------------------------------------
+  for (const e of settlementConfirmedEvents) {
+    result.asserted++;
+    const realisedPnlDelta =
+      typeof e.payload.realisedPnlDelta === "number" ? e.payload.realisedPnlDelta : undefined;
+    const hasPosting = postingsBySourceRef.has(e.event_id);
+
+    if (realisedPnlDelta === 0) {
+      // Zero-P&L settlement: no posting expected. Verify the inverse — if
+      // a posting DID appear for a zero-P&L event, that is a rule regression.
+      if (hasPosting) {
+        violations.push({
+          subject: `event:${e.event_id}`,
+          severity: "fail",
+          message: `Rule regression: SettlementConfirmed event ${e.event_id} (as_of=${e.as_of}) has realisedPnlDelta=0 but HAS a SubLedgerPostingEmitted — PR-FX-LIFECYCLE-CLOSE should return [] for zero-P&L settlements per IAS 21 §28. Authority: POSTING_RULE_REGISTRY (condition: non-zero-pnl); IAS 21 §28; PR-FX-LIFECYCLE-CLOSE.`,
+        });
+      }
+      // Otherwise: zero-P&L with no posting is the correct state — no violation.
+    } else {
+      // Non-zero P&L: a SubLedgerPostingEmitted is required.
+      if (!hasPosting) {
+        violations.push({
+          subject: `event:${e.event_id}`,
+          severity: "fail",
+          message: `GL coverage gap: SettlementConfirmed event ${e.event_id} (as_of=${e.as_of}, realisedPnlDelta=${realisedPnlDelta ?? "unknown"}) has NO matching SubLedgerPostingEmitted or JournalEntryPosted referencing it as sourceEventId. Required by PR-FX-LIFECYCLE-CLOSE for non-zero-pnl settlements (IAS 21 §28). Authority: POSTING_RULE_REGISTRY; PRs #608/#616.`,
+        });
+      }
     }
   }
 
