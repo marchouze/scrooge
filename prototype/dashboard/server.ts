@@ -3134,7 +3134,7 @@ const server = Bun.serve({
       // pageProvenance: event-derived → simulated-only in build phase.
       const resolvedIds = new Set(cachedState.decisionsResolved.map((r) => r.id));
       const escalations = enrichBlockedBy(listEscalations(eventStore, resolvedIds), eventStore);
-      const fleet = buildFleetStatus(cachedState, escalations);
+      const fleet = buildFleetStatus(cachedState, escalations, eventStore);
       return jsonResponse({
         asOf: cachedState.asOf,
         fleet,

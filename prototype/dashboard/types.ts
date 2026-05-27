@@ -321,11 +321,24 @@ export interface FleetAgentStatus {
   cadenceHours?: number;
   /** Synthetic agent URN — `agent:<lowercased-name>`. */
   agentUrn: string;
-  /** Last activity attributed to the agent (deliverable / completion / decision). */
+  /**
+   * Timestamp of the most recent closed run event
+   * (SubstrateAgentRunCompleted or SubstrateAgentRunFailed) from the event
+   * store lifecycle fold. The canonical "last touched" signal.
+   */
+  lastRunAt?: string;
+  /**
+   * Alias of `lastRunAt` — retained for backwards compat with dashboard
+   * consumers that read the legacy field name.
+   * @deprecated Prefer `lastRunAt`.
+   */
   lastActivityAt?: string;
   /**
-   * Predicted next scheduled run (now + cadenceHours from lastActivityAt).
-   * Undefined for event-driven / on-request. ISO 8601.
+   * Predicted next scheduled run — computed from the handler's
+   * `cronExpression` + `lastRunAt` via `nextFireAfter` (accurate cron
+   * evaluation). Falls back to `lastRunAt + cadenceHours` when no cron
+   * expression is available. Undefined for event-driven / on-request.
+   * ISO 8601.
    */
   nextRunAt?: string;
   /**

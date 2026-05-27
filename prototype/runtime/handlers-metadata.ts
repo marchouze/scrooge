@@ -66,6 +66,7 @@ import { BEA_HANDLER_METADATA } from "./agents/metadata/bea";
 import { CAMILLE_HANDLER_METADATA } from "./agents/metadata/camille";
 import { DEVON_HANDLER_METADATA } from "./agents/metadata/devon";
 import { EITAN_HANDLER_METADATA } from "./agents/metadata/eitan";
+import { ENV_HANDLER_METADATA } from "./agents/metadata/env";
 import { HELENA_HANDLER_METADATA } from "./agents/metadata/helena";
 import { IMANI_HANDLER_METADATA } from "./agents/metadata/imani";
 import { IRIS_HANDLER_METADATA } from "./agents/metadata/iris";
@@ -114,6 +115,7 @@ export const HANDLERS_METADATA: readonly HandlerMetadata[] = [
   ...RASHIDA_HANDLER_METADATA,
   ...IRIS_HANDLER_METADATA,
   ...EITAN_HANDLER_METADATA,
+  ...ENV_HANDLER_METADATA,
   ...SASKIA_HANDLER_METADATA,
   ...KAI_HANDLER_METADATA,
   ...YAEL_HANDLER_METADATA,

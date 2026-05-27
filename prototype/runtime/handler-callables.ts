@@ -19,6 +19,7 @@ import { BEA_CALLABLES } from "./agents/callables/bea";
 import { CAMILLE_CALLABLES } from "./agents/callables/camille";
 import { DEVON_CALLABLES } from "./agents/callables/devon";
 import { EITAN_CALLABLES } from "./agents/callables/eitan";
+import { ENV_CALLABLES } from "./agents/callables/env";
 import { HELENA_CALLABLES } from "./agents/callables/helena";
 import { IMANI_CALLABLES } from "./agents/callables/imani";
 import { IRIS_CALLABLES } from "./agents/callables/iris";
@@ -77,6 +78,7 @@ const _map: Record<string, AgentRunHandler> = {
   ...RASHIDA_CALLABLES,
   ...IRIS_CALLABLES,
   ...EITAN_CALLABLES,
+  ...ENV_CALLABLES,
   ...SASKIA_CALLABLES,
   ...KAI_CALLABLES,
   ...YAEL_CALLABLES,
