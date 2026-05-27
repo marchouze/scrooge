@@ -375,21 +375,24 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
     processFile(f, true);
   }
 
-  // 3. Reference-only IDs — IDs seen in body text but with no owning record
+  // 3. Reference-only IDs — IDs seen in body text but with no owning record.
+  // Guard: skip IDs that already have a terminal-phase event in the store —
+  // surfacing them as open would wrongly re-open already-resolved decisions.
   for (const id of referenceOnlyIds) {
-    if (!seenIds.has(`${id}|requested`)) {
-      sources.push({
-        decisionId: id,
-        canonicalId: id,
-        title: `${id} (referenced, no owning record)`,
-        phase: "requested",
-        authority: "CEO",
-        authorityRef: "marc@tgv.co.za",
-        asOf: "2026-05-01T00:00:00.000Z", // before all known CEO decisions → requested sorts first
-        filePath: "(body-text reference)",
-        isReferenceOnly: true,
-      });
-    }
+    if (seenIds.has(`${id}|requested`)) continue;
+    const existingCov = coveredPhases.get(id);
+    if (existingCov && [...existingCov].some((p) => TERMINAL_PHASES_SET.has(p))) continue;
+    sources.push({
+      decisionId: id,
+      canonicalId: id,
+      title: `${id} (referenced, no owning record)`,
+      phase: "requested",
+      authority: "CEO",
+      authorityRef: "marc@tgv.co.za",
+      asOf: "2026-05-01T00:00:00.000Z", // before all known CEO decisions → requested sorts first
+      filePath: "(body-text reference)",
+      isReferenceOnly: true,
+    });
   }
 
   // 4. Migrate AgentDecision events
@@ -470,6 +473,14 @@ export function runBackfill(opts: { dryRun?: boolean } = {}): BackfillStats {
     if (existing?.has(src.phase)) {
       skipped.push(src.canonicalId);
       continue;
+    }
+    // Defense-in-depth: never emit a reference-only `requested` event for an
+    // ID that already has a terminal phase — that would wrongly re-open it.
+    if (src.isReferenceOnly && src.phase === "requested" && existing?.size) {
+      if ([...existing].some((p) => TERMINAL_PHASES_SET.has(p))) {
+        skipped.push(src.canonicalId);
+        continue;
+      }
     }
 
     if (dryRun) {
@@ -651,6 +662,85 @@ function writeTriage(
 }
 
 // ---------------------------------------------------------------------------
+// Repair: close IDs wrongly re-opened by a prior backfill run
+//
+// Detects Decision IDs where the head event is `requested` (written by this
+// script via backfill:decisions-framework-cutover) but a prior `approved`
+// event already exists in the store — meaning the ID was accidentally
+// re-opened. Emits a fresh `approved` event with today's as_of to restore
+// the correct state. Safe to re-run: the normal backfill idempotency check
+// skips IDs whose `approved` phase is already covered.
+// ---------------------------------------------------------------------------
+
+export interface RepairStats {
+  repaired: string[];
+  examined: number;
+}
+
+export function runRepair(opts: { dryRun?: boolean } = {}): RepairStats {
+  const { dryRun = false } = opts;
+
+  // Build the current register to find which IDs are open.
+  const register = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
+
+  // Build a map: decisionId → best approved event (highest sequence) from store.
+  const bestApproved = new Map<
+    string,
+    { asOf: string; title: string; recommendation: string; rationale: string }
+  >();
+
+  for (const e of eventStore.replay({ type: "Decision" })) {
+    const p = e.payload as Record<string, unknown>;
+    const id = typeof p.decisionId === "string" ? p.decisionId : "";
+    const phase = typeof p.phase === "string" ? p.phase : "";
+    if (!id || phase !== "approved") continue;
+    // Keep the entry with the best (most informative) title/recommendation.
+    if (!bestApproved.has(id)) {
+      bestApproved.set(id, {
+        asOf: e.as_of,
+        title: typeof p.title === "string" ? p.title : id,
+        recommendation: typeof p.recommendation === "string" ? p.recommendation : "Approved.",
+        rationale:
+          typeof p.rationale === "string"
+            ? p.rationale
+            : "(repair: restored from prior approved event)",
+      });
+    }
+  }
+
+  const repaired: string[] = [];
+
+  for (const row of register.open) {
+    const id = row.decisionId;
+    const prior = bestApproved.get(id);
+    if (!prior) continue; // Genuinely open — no prior approved event.
+
+    repaired.push(id);
+    if (dryRun) continue;
+
+    // Emit a new approved event with today's as_of so it sorts after the
+    // bad `requested` event and becomes the new head.
+    const event = buildDecisionEvent({
+      decisionId: id,
+      canonicalId: id,
+      title: prior.title,
+      phase: "approved",
+      authority: "CEO",
+      authorityRef: "marc@tgv.co.za",
+      asOf: new Date().toISOString(),
+      filePath: "(repair: re-closed by runRepair)",
+      isReferenceOnly: false,
+    });
+    (event.payload as Record<string, unknown>).rationale = prior.rationale;
+    (event.payload as Record<string, unknown>).recommendation = prior.recommendation;
+    (event.payload as Record<string, unknown>).recordedVia = "backfill:decisions-cutover-repair";
+    eventStore.append(event);
+  }
+
+  return { repaired, examined: register.open.length };
+}
+
+// ---------------------------------------------------------------------------
 // CLI entry point
 // ---------------------------------------------------------------------------
 
@@ -677,6 +767,20 @@ if (import.meta.main) {
         level: "warn",
         msg: "backfill-all-decisions: triage items require manual resolution",
         items: stats.triage.map((t) => `${t.id}: ${t.reason}`),
+      }),
+    );
+  }
+
+  // Repair pass: close any IDs that a prior backfill accidentally re-opened.
+  const repair = runRepair({ dryRun });
+  if (repair.repaired.length > 0) {
+    console.log(
+      JSON.stringify({
+        level: "info",
+        msg: "backfill-all-decisions: repair closed wrongly-reopened decisions",
+        repaired: repair.repaired.length,
+        ids: repair.repaired,
+        dryRun,
       }),
     );
   }

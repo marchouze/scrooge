@@ -148,13 +148,60 @@
           text: "Liquidity substrate gaps closed — buildPhaseProvider deleted; settlement outflows derived from TradeBooked.settlementDate",
           ref: "PRs #788 #789",
         },
-      ],
-      inflight: [
         {
-          text: "Product-construction substrate gap closure — six items (pricing-model registration, RWA-delta engine, trade-confirmation generators)",
-          ref: "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+          text: "Product-construction substrate — pricing-model registration, RWA-delta engine, NPA gate, trade-confirmation generators, NPA attestation runtime, M1–M4 ProductApproved events, Vera integrity recon",
+          ref: "PRs #819–#825",
+        },
+        {
+          text: "Trade booking extended — equity/bond/IRS booking + Repo/MMD/IBL bookable; sim/prod toggle; provenance recon gate",
+          ref: "PRs #822 #823",
+        },
+        {
+          text: "Stale-server prevention — /api/version + post-merge hook + env guard + recon:server-version-vs-head",
+          ref: "PR #815",
+        },
+        {
+          text: "Data quality cross-domain complete — D-DATA-QUALITY-CROSS-DOMAIN-V1; 5 domains; dispatch-sync-integrity 389/0",
+          ref: "PRs #805–#809",
+        },
+        {
+          text: "Data quality golden source complete — D-DATA-QUALITY-GOLDEN-SOURCE-V1; oversight.html auto-poll; 4 recon gates in CI",
+          ref: "PRs #810–#814",
+        },
+        {
+          text: "Atlas escalation idempotency — hasDecidedEscalation guard; ghost-open decisions resolved; /api/decisions-register AgentEscalationDecided fix",
+          ref: "PRs #835 #837",
+        },
+        {
+          text: "S8 A4 complete — all 31 personas wired; Env + Noa handlers; fleet-status lifecycle fold; escalation-overdue cron",
+          ref: "PR #838",
+        },
+        {
+          text: "Inbound MT202 dedup — correspondentSim gated on realtime mode; coveredTradeIds dedup set",
+          ref: "PR #839",
+        },
+        {
+          text: "ALM substrate gaps closed — SettlementInstructionIssued + BalanceSheetProjected defined; CollateralInventorySnapshotted rename fixed; FundingLineDrawn seed",
+          ref: "PR #840",
+        },
+        {
+          text: "Substrate gap batch — GL recon (0 violations), permission gate (0 warns), IFRS9 alias, period-close seed, Helena appetite runner, SA-CCR seed, §7 handler-without-spec 37→0",
+          ref: "PRs #841–#844",
+        },
+        {
+          text: "Atlas goal-deriver — defer-ratio 98%→fixed; 4h cadence; 30-min brief window",
+          ref: "PR #845",
+        },
+        {
+          text: "Event-store append-only test isolation — injected-observation archive checks skipped in unit-test mode",
+          ref: "PRs #846 #847",
+        },
+        {
+          text: "WAL-loss data fix — archive partition max_sequence 94330→94522; SubstrateAlert + AuditFinding F-ATLAS-20260527-MBZB filed",
+          ref: "d4701916",
         },
       ],
+      inflight: [],
       todo: [
         {
           text: "Approve agent-runtime substrate (S8) → unblocks autonomous personas (Principle 6)",
@@ -248,6 +295,10 @@
           text: "Bank strategy v1 — Hoz Bank institutional strategy (D-BANK-STRATEGY-V1) filed",
           ref: "PR #790 D-BANK-STRATEGY-V1",
         },
+        {
+          text: "Decision-authority routing operationalised — 5 inaugural seat decisions seeded (CISO/COO/CFO/CCO/CAE); routing table active per Owen brief",
+          ref: "PR #848",
+        },
       ],
       inflight: [],
       todo: [
@@ -314,6 +365,14 @@
         {
           text: "3 Decision(requested) obligations surfaced as CEO decision cards — queued for approval",
           ref: "PR #670",
+        },
+        {
+          text: "11 policy stubs authored + 3LoD alias — fsca-reg-to-policy WARNs 12→0; all instrument-to-policy gaps closed",
+          ref: "commit b97f0e53",
+        },
+        {
+          text: "D-IFRS-THRESHOLDS-V13 approved — Bea's IFRS v1.3 threshold amendments (materiality thresholds + recognition boundaries)",
+          ref: "commit 3ebbfc3b",
         },
       ],
       inflight: [
@@ -473,8 +532,33 @@
           text: "Market risk procedures Wave-2 — BA-325 + daily P&L + GL projection scenarios; SicrTriggered fixture (WS-MARKET-RISK-PROCEDURES)",
           ref: "PR #663",
         },
+        {
+          text: "Product-construction substrate slices 4–8 — NPA attestation runtime, M1–M4 ProductApproved events, Vera integrity recon",
+          ref: "PRs #824 #825",
+        },
+        {
+          text: "NPA gate walks — PROC-NPA-GATE-01 walked for equity/bond/repo/IRS/FX-swap; 5 CEO decision cards opened",
+          ref: "PR #826",
+        },
+        {
+          text: "Track B model-risk complete — ZARONIA feed + model registry seed + Tier-2/3 methodology + validation sign-offs; all 5 products model-risk implementation-attested",
+          ref: "PRs #828–#831",
+        },
+        {
+          text: "NPA dimension bulk upgrades — 53 new impl-attested; 13/14 dimensions at 5/5 (tax deferred to revenue-start, Yael)",
+          ref: "PRs #832 #833 #836",
+        },
+        {
+          text: "B3 risk limit fix — computeB3Exposure canonical formula; shared market-data store wiring; B3 = ZAR 602.6M / 301% red",
+          ref: "PR #834",
+        },
       ],
-      inflight: [{ text: "Product-construction substrate slices 4+ (Atlas + Kai + Saskia)" }],
+      inflight: [
+        {
+          text: "5 NPA CEO decision cards awaiting approval — equity/bond/repo/IRS/FX-swap product go-live gates",
+          ref: "PR #826",
+        },
+      ],
       todo: [
         {
           text: "CEO decide NPA Policy v1.0 — gates first product through approval (cross-ref Workstream C)",
