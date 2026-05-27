@@ -134,6 +134,10 @@ import { registerFleet } from "../scripts/register-fleet";
 import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import {
+  seedModelValidations,
+  seedValidationMethodologies,
+} from "../seeds/models/model-validation-seed";
+import {
   TRADE_SEEDS_CITATIONS,
   TREASURY_DEPOSIT_TAKEN_PAYLOADS,
   TREASURY_IBL_PLACED_PAYLOADS,
@@ -525,6 +529,12 @@ function bootDerive(): DashboardState {
     // Must run BEFORE trade seeds that reference these products.
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     bootNpaAttestations();
+    // PR-G — emit ValidationMethodologyPublished (Tier-2 + Tier-3 v0.1) and
+    // ModelValidationApproved for the 3 build-phase models idempotently.
+    // Must run AFTER bootNpaAttestations() (NPA gate) but is otherwise
+    // independent of trade seeds.
+    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+    bootModelValidationSeeds();
     // Treasury seed events — emit REPO, MMD, IBL positions idempotently.
     // Required by getALMPositionSnapshot so LCR/NSFR compute live values.
     bootTreasurySeeds();
@@ -601,6 +611,43 @@ function bootNpaAttestations(): void {
     logger.debug(
       { skipped: result.skipped.length },
       "npa-attestation-seed: idempotent boot; all products already approved",
+    );
+  }
+}
+
+/**
+ * Idempotently emit ValidationMethodologyPublished (Tier-2 + Tier-3 v0.1) and
+ * ModelValidationApproved for the 3 build-phase models.
+ *
+ * Called after bootNpaAttestations() so the NPA gate is already satisfied.
+ * Idempotent — models with existing ModelValidationApproved events are skipped.
+ *
+ * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
+ */
+function bootModelValidationSeeds(): void {
+  const methResult = seedValidationMethodologies(eventStore);
+  if (methResult.published.length > 0) {
+    logger.info(
+      { published: methResult.published.length, skipped: methResult.skipped.length },
+      "model-validation-seed: methodology published",
+    );
+  } else {
+    logger.debug(
+      { skipped: methResult.skipped.length },
+      "model-validation-seed: idempotent boot; methodologies already published",
+    );
+  }
+
+  const valResult = seedModelValidations(eventStore);
+  if (valResult.approved.length > 0) {
+    logger.info(
+      { approved: valResult.approved.length, skipped: valResult.skipped.length },
+      "model-validation-seed: model validations approved",
+    );
+  } else {
+    logger.debug(
+      { skipped: valResult.skipped.length },
+      "model-validation-seed: idempotent boot; all models already approved or not yet registered",
     );
   }
 }
