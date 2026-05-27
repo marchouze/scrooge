@@ -31,24 +31,29 @@ export class CorrespondentAdviceSim {
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
   private lastProcessedSequence = 0;
+  /** tradeIds for which an MT202 has already been emitted (any actor, any session). */
+  private readonly coveredTradeIds = new Set<string>();
 
   constructor(store: EventStore) {
     this.store = store;
   }
 
   /**
-   * Scan the event store to find the set of tradeIds already covered by a
-   * previously-emitted MT202 from this actor, then advance
+   * Scan the event store to find the set of tradeIds already covered by ANY
+   * previously-emitted MT202 (regardless of actor), then advance
    * `lastProcessedSequence` past the highest sequence of the corresponding
    * PrincipalPayment[receive] events.  Prevents re-processing history on
    * every server restart (which caused ~325x event multiplication).
+   *
+   * The actor filter was intentionally removed: simulateInboundMessages()
+   * (actor tomas@bank.local) emits MT202s in accelerated mode, which this
+   * cursor previously ignored — causing duplicates on restart.
    */
   private initSequenceCursor(): void {
-    // Collect tradeIds for which we already emitted an MT202.
+    // Collect tradeIds for which an MT202 was already emitted by any actor.
     const alreadyCovered = new Set<string>();
     try {
       for (const evt of this.store.replay({ type: "InboundMessageReceived" })) {
-        if ((evt.actor as { id?: string } | undefined)?.id !== ACTOR.id) continue;
         const p = evt.payload as Record<string, unknown>;
         if (p.messageStandard !== "MT202") continue;
         const tid = String(p.tradeId ?? "");
@@ -56,6 +61,11 @@ export class CorrespondentAdviceSim {
       }
     } catch {
       return; // store not available (test mocks)
+    }
+
+    // Sync the in-memory covered set so poll() doesn't re-emit this session.
+    for (const tid of alreadyCovered) {
+      this.coveredTradeIds.add(tid);
     }
 
     if (alreadyCovered.size === 0) return;
@@ -122,6 +132,9 @@ export class CorrespondentAdviceSim {
       const payload = evt.payload as Record<string, unknown>;
       if (payload.legKind !== "receive") continue;
 
+      const tradeId = String(payload.tradeId ?? "");
+      if (tradeId && this.coveredTradeIds.has(tradeId)) continue;
+
       this.emitAdvice(payload);
     }
   }
@@ -175,6 +188,7 @@ export class CorrespondentAdviceSim {
           },
         }),
       );
+      this.coveredTradeIds.add(tradeId);
     } catch (err) {
       console.error("[CorrespondentAdviceSim] error emitting MT202:", err);
     }

@@ -348,7 +348,11 @@ export class EnvSimEngine {
     this.scheduleNext();
     this.marketDataSim.start();
     this.nostroSim.start();
-    this.correspondentSim.start();
+    // correspondentSim handles MT202s for realtime mode only; in accelerated mode
+    // simulateInboundMessages() already emits the MT202 inside runPostTradeLifecycle.
+    if (this.opts.settlementMode === "realtime") {
+      this.correspondentSim.start();
+    }
     this.regulatoryAckSim.start();
 
     return this.getStatus();
