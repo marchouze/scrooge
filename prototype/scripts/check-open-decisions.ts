@@ -1,5 +1,5 @@
-import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { eventStore } from "../platform/composition";
+import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 
 const reg = buildDecisionsRegister(decisionsSourceFromStore(eventStore));
 console.log("open:", reg.open.length);

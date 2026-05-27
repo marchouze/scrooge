@@ -10,7 +10,8 @@ const decisions = [
     decisionId: "D-FX-CLS-MEMBERSHIP",
     title: "FX CLS membership pathway: indirect via correspondent",
     category: "risk" as const,
-    recommendation: "Access CLS settlement indirectly via named correspondent bank; no direct CLS membership required in the build phase.",
+    recommendation:
+      "Access CLS settlement indirectly via named correspondent bank; no direct CLS membership required in the build phase.",
     rationale:
       "Approved 2026-05-07 as part of the FX sub-decisions batch in the named-correspondent-pair proposal (Devon, Company Secretary). Direct CLS membership deferred until commencement-of-trading scale justifies it.",
     asOf: "2026-05-07T00:00:00.000Z",
@@ -19,7 +20,8 @@ const decisions = [
     decisionId: "D-RMS-PHASE-4-ARCHIVE-SCOPE",
     title: "RMS Phase 4: archive scope — all four inbox directories moved to archive/",
     category: "governance" as const,
-    recommendation: "Move Owner Inbox/, Owner Inbox/actioned/, Team Inbox/, Team Inbox/actioned/ to archive/; retire ownerInboxFeed parser and /api/owner-inbox/:filename route; RMS registers become sole canonical.",
+    recommendation:
+      "Move Owner Inbox/, Owner Inbox/actioned/, Team Inbox/, Team Inbox/actioned/ to archive/; retire ownerInboxFeed parser and /api/owner-inbox/:filename route; RMS registers become sole canonical.",
     rationale:
       "CEO-approved 2026-05-17 as part of the D-RMS-PHASE-4 record in the RMS Phase 1 spec. Phase 4 completed via PR #523.",
     asOf: "2026-05-17T00:00:00.000Z",
@@ -36,7 +38,8 @@ const decisions = [
   },
   {
     decisionId: "D-TRADE-LIFECYCLE-IFRS-CHAIN",
-    title: "Trade lifecycle IFRS accounting chain: TRADE_LIFECYCLE_REGISTRY + POSTING_RULE_REGISTRY",
+    title:
+      "Trade lifecycle IFRS accounting chain: TRADE_LIFECYCLE_REGISTRY + POSTING_RULE_REGISTRY",
     category: "engineering" as const,
     recommendation:
       "Approve the IFRS-aligned trade lifecycle and accounting chain: TRADE_LIFECYCLE_REGISTRY + POSTING_RULE_REGISTRY + buildTradeLifecycleView; lifecycle and accounting domain separation as implemented in PR #722.",
