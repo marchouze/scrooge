@@ -1,7 +1,7 @@
 ---
 agent: Bea
 trigger: accounting-readiness
-asOf: 2026-05-27T05:47:01.943Z
+asOf: 2026-05-27T06:03:37.899Z
 decision-required: false
 ---
 
@@ -64,7 +64,11 @@ _Build-phase posture: zero accounting-domain events. The bank has no real bookin
 
 ## Bea's narrative
 
-_Narrative generation failed (api error undefined: {"type":"error","error":{"details":null,"type":"overloaded_error","message":"Overloaded"},"request_id":"req_011CbSYcjjvYS7Ekw89T3z6Y"})._
+Accounting substrate is at zero — no chart of accounts, no posting rules published, no sub-ledger projection, and zero postable events in the last seven days. Every Camille-line readiness flag (CloseApproved, BAReturnSigned, AFSSigned, CapitalPlanRefreshed) is `never`, and that is correct: nothing can be *recognised* in an IAS 1 sense until something is *posted*, and nothing posts until the sub-ledger projection exists over an event with a published posting rule. The load-bearing block on Camille's first signed close is the **monthly close cycle** — specifically, the sub-ledger projection over postable events. BA returns, AFS, and the capital plan are all downstream of it; the BA 100 generator has nothing to read from, the IAS 1 statement of financial position has no line items to populate, and Reg 38 capital cannot be derived without a posted equity line.
+
+Two observations rank above the rest. First, the monthly close is one engineering ticket from green-in-principle: chart-of-accounts schema + one posting rule (synthetic `FundingDrawn` → Dr cash / Cr funding liability, classified amortised cost under IFRS 9 and presented per IAS 1) + a `CloseApproved` producer. That single thread proves the engine end-to-end against the synthetic seed before any real exposure books. Second, the obligations register tells a clean build-phase story — 26 Bea-owned obligations, **zero in PARTIAL**, 14 PLANNED, 2 DRAFTING. There is no orphaned policy waiting on a missing engine; the gap is uniformly upstream substrate, which means the sequencing risk is execution order, not policy debt. IFRS 9 ECL, IFRS 13 fair-value hierarchy, IFRS 16 lessee accounting, IAS 12 deferred tax (Income Tax Act 58 of 1962 §s 7–24JB interaction), and IFRS 7 disclosure all stay drafted-in-parallel and wire the day their triggering event-type books.
+
+Next engineering move, in order: (1) specify the chart-of-accounts schema and publish the first posting rule — `FundingDrawn` → Dr cash / Cr funding liability — jointly with Atlas, so the sub-ledger projection has something to fold; (2) stand up the sub-ledger projection over postable events and emit the first `SubLedgerEntryPosted` against the synthetic seed, which unblocks `CloseApproved`; (3) commission with Anya the BA 100 cell-map register against the same synthetic capital line per Banks Act 94 of 1990 Reg 38, so the first `BAReturnGenerated` dry-run fires the moment the sub-ledger lands. AFS line-item schema (IAS 1 structure, IAS 7 cash-flow reconciliation) is drafted in parallel but not wired until close-one is signed.
 
 ## Provenance
 
