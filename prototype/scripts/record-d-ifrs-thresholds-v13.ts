@@ -15,9 +15,9 @@
 //          routing table; routed back to Camille for ratification at first
 //          ICAAP review cycle.
 
-import { recordDecision } from "../runtime/decisions/record";
-import { EventStore } from "../platform/event-store/store";
 import { resolve } from "node:path";
+import { EventStore } from "../platform/event-store/store";
+import { recordDecision } from "../runtime/decisions/record";
 
 const DB_PATH = process.env.BANK_EVENT_DB ?? resolve(import.meta.dir, "../.local/event.db");
 
