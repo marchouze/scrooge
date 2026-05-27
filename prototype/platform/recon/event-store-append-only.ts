@@ -448,8 +448,9 @@ export function runEventStoreAppendOnlyRecon(
   const violations = compareToBaseline(observation, baselineBefore);
 
   // D-EVENT-STORE-SCALING-PHASE-5 — two additional archive checks.
-  // These run only when the event DB file exists (observation is non-null).
-  if (observation && existsSync(eventDbPath)) {
+  // Skipped when observation is injected (unit-test mode for comparison logic);
+  // archive checks require the real store file and are irrelevant to injected scenarios.
+  if (observation && opts.observation === undefined && existsSync(eventDbPath)) {
     const archiveViolations = runArchiveChecks(eventDbPath);
     violations.push(...archiveViolations);
   }
