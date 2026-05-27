@@ -308,6 +308,44 @@ export function getFxNetPositions(): ReadonlyMap<string, number> {
 }
 
 /**
+ * Canonical B3 (Market Risk — Net Open Position) formula.
+ *
+ *   B3 = Σ |netPosition(CCY)| × rate(CCY/ZAR)   for all CCY
+ *      + nonFxB3   (notional from TradeExecuted / EquityTradeBooked)
+ *
+ * Pass `marketDataStore` for ZAR-equivalent conversion. Without it, foreign
+ * CCY units are summed raw (correct topology, wrong scale for multi-currency
+ * books — only use in tests or fallback contexts).
+ *
+ * This is the single authoritative implementation of the B3 metric. All
+ * consumers (limit-utilisation projection, sim engine, reporting) must call
+ * this function rather than re-implementing the formula.
+ */
+export function computeB3Exposure(
+  netPositions: ReadonlyMap<string, number>,
+  nonFxB3: number,
+  marketDataStore?: MarketDataStore,
+): number {
+  let fxB3 = 0;
+  for (const [ccy, position] of netPositions) {
+    const absPos = Math.abs(position);
+    if (absPos === 0) continue;
+    if (ccy === "ZAR") {
+      fxB3 += absPos;
+      continue;
+    }
+    if (marketDataStore) {
+      const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);
+      if (quote) fxB3 += absPos * quote.rate;
+      // No rate available → 0 contribution (rather than silently inflating)
+    } else {
+      fxB3 += absPos;
+    }
+  }
+  return fxB3 + nonFxB3;
+}
+
+/**
  * Returns the current per-cluster utilisation rows.
  *
  * Pass `marketDataStore` to enable ZAR-equivalent B3 computation from the net
@@ -318,29 +356,11 @@ export function getFxNetPositions(): ReadonlyMap<string, number> {
  * rows with zero exposure and zero limit (status: green, no limit active).
  */
 export function getLimitUtilisations(marketDataStore?: MarketDataStore): LimitUtilisationRow[] {
-  // Compute B3 as ZAR-equivalent net open position (NOP).
-  //   B3 = Σ |netPosition(CCY)| × rate(CCY/ZAR)   for all CCY
-  //      + non-FX B3 exposure (TradeExecuted / EquityTradeBooked)
-  let fxB3Exposure = 0;
-  for (const [ccy, position] of _state.fxNetPosition) {
-    const absPos = Math.abs(position);
-    if (absPos === 0) continue;
-    if (ccy === "ZAR") {
-      fxB3Exposure += absPos;
-      continue;
-    }
-    if (marketDataStore) {
-      const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);
-      if (quote) {
-        fxB3Exposure += absPos * quote.rate;
-      }
-      // No rate available → 0 contribution (rather than silently inflating)
-    } else {
-      // No store provided — sum raw CCY units as a rough proxy
-      fxB3Exposure += absPos;
-    }
-  }
-  const b3Exposure = fxB3Exposure + (_state.exposure.get("B3") ?? 0);
+  const b3Exposure = computeB3Exposure(
+    _state.fxNetPosition,
+    _state.exposure.get("B3") ?? 0,
+    marketDataStore,
+  );
 
   return CLUSTERS.map((cluster) => {
     const row = _state.schedule.get(cluster);

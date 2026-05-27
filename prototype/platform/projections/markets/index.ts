@@ -26,6 +26,7 @@ export { subLedgerInitial, subLedgerProjection } from "./sub-ledger";
 // Slice 5 — pre-trade risk controls + correspondent routing
 export type { LimitUtilisationRow } from "./limit-utilisation";
 export {
+  computeB3Exposure,
   getFxNetPositions,
   getLimitUtilisations,
   rebuildLimitUtilisation,
