@@ -48,10 +48,30 @@ export interface NewsPayload {
 // Canonical source identifiers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// ZARONIA overnight rate (SARB-published)
+// ---------------------------------------------------------------------------
+
+export interface ZaroniaRatePayload {
+  /** Rate in decimal form, e.g. "0.0818" for 8.18% */
+  rate: string;
+  /** Compounding convention */
+  convention: "overnight-compounded";
+  /** Publication reference time, e.g. "17:00:00+02:00" */
+  refTime: string;
+  /** Build-phase marker */
+  fixingVariant: "build-phase-fixture" | "live-sarb-api";
+}
+
+// ---------------------------------------------------------------------------
+// Canonical source identifiers
+// ---------------------------------------------------------------------------
+
 export const MarketDataSources = {
   FX_SIM: "fx-sim",
   JSE_SENS: "jse-sens",
   NEWS: "news",
   OPEN_ER_API: "open-er-api",
   TWELVE_DATA: "twelve-data",
+  ZARONIA_SARB: "zaronia-sarb",
 } as const;

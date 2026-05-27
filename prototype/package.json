@@ -25,6 +25,7 @@
     "sens:ingest": "bun run scripts/agents/sens-ingest.ts",
     "fx-rates:ingest": "bun run scripts/agents/fx-rates-ingest.ts",
     "twelve-data:ingest": "bun run scripts/agents/fx-twelvedata-ingest.ts",
+    "ingest:zaronia": "bun run scripts/ingest-zaronia-rates.ts",
     "returns:ba325:smoke": "bun test tests/ba-325-lcr.test.ts",
     "returns:ba350:smoke": "bun test platform/returns/ba350/period-close-subscriber.test.ts",
     "returns:ba600:smoke": "bun test platform/returns/ba600/period-close-subscriber.test.ts",
