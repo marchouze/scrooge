@@ -74,7 +74,7 @@ function main(argv: ReadonlyArray<string>): number {
     `${PIPELINE}: db=${resolved.path} (source:${resolved.source}) mode:${dryRun ? "dry-run" : "apply"}\n`,
   );
 
-  const db = new Database(resolved.path, { readonly: dryRun });
+  const db = dryRun ? new Database(resolved.path, { readonly: true }) : new Database(resolved.path);
   db.exec("PRAGMA busy_timeout = 5000;");
 
   const SQL_MATCH = `
