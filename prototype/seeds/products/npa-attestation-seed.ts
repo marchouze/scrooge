@@ -616,6 +616,102 @@ export function seedGovernanceDimensionUpgrades(store: EventStore): SubstrateRea
   return { upgraded, skipped };
 }
 
+// ---------------------------------------------------------------------------
+// Remaining dimension upgrades (PR-K)
+//
+// Upgrades credit-risk, liquidity-risk, and operational-risk for all 5
+// products now that the required policy + procedure substrate is in place:
+//
+//   credit-risk:      credit-risk-policy-v1 + counterparty-credit-risk-policy-v1
+//                     (ORG-PR-09 CCR framework); ISDA CSA + GMRA margining;
+//                     SA-CCR standardised RWA formula.
+//   liquidity-risk:   liquidity-risk-management-policy-v1 (ORG-PR-01 LCR);
+//                     BA 300 liquidity framework; LCR/NSFR monitoring live.
+//   operational-risk: operational-risk-policy-v1 (ORG-PR-17 ORC framework);
+//                     risk-event register; secure-SDLC + SIEM controls in place.
+//
+// Tax (14th dimension): explicitly deferred to revenue-start (Yael's mandate).
+//
+// Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE + D-NEW-PRODUCT-APPROVAL-POLICY
+// ---------------------------------------------------------------------------
+
+const REMAINING_DIM_AS_OF = "2026-05-27T07:00:00.000Z";
+const REMAINING_DIM_ACTOR = {
+  type: "service" as const,
+  id: "agent:atlas:npa-remaining-dimension-upgrade",
+};
+
+const REMAINING_CITATION_CHAINS = {
+  "credit-risk": [...DIM_BASE_CHAIN, "ORG-PR-09"],
+  "liquidity-risk": [...DIM_BASE_CHAIN, "ORG-PR-01"],
+  "operational-risk": [...DIM_BASE_CHAIN, "ORG-PR-17"],
+} as const;
+
+const REMAINING_UPGRADES: readonly DimUpgrade[] = (
+  ["credit-risk", "liquidity-risk", "operational-risk"] as const
+).flatMap((dim) =>
+  [
+    "prd:bank:equity:jse-equity-cash",
+    "prd:bank:bond:sagb-fixed-coupon",
+    "prd:bank:bond:open-repo-gmra",
+    "prd:bank:ird:vanilla-zar-fix-zaronia",
+    "prd:bank:fx:fx-swap-usdzar",
+  ].map((productId) => ({
+    productId,
+    dimension: dim,
+    citationChain: REMAINING_CITATION_CHAINS[dim],
+  })),
+);
+
+/**
+ * Upgrades credit-risk, liquidity-risk, and operational-risk to
+ * implementation-attested for all 5 products. Idempotent: pairs already at
+ * implementation-attested are skipped. Tax is excluded (deferred to revenue-start).
+ */
+export function seedRemainingDimensionUpgrades(store: EventStore): SubstrateReadyUpgradeResult {
+  const upgraded: string[] = [];
+  const skipped: string[] = [];
+
+  const events = Array.from(store.replay());
+
+  const alreadyUpgraded = new Set(
+    events
+      .filter(
+        (ev) =>
+          ev.type === "ProductDimensionAttested" &&
+          (ev.payload as Record<string, unknown>).result === "implementation-attested",
+      )
+      .map(
+        (ev) =>
+          `${(ev.payload as Record<string, unknown>).productId}:${(ev.payload as Record<string, unknown>).dimension}`,
+      ),
+  );
+
+  for (const upgrade of REMAINING_UPGRADES) {
+    const key = `${upgrade.productId}:${upgrade.dimension}`;
+    if (alreadyUpgraded.has(key)) {
+      skipped.push(key);
+      continue;
+    }
+    const ev = makeProductDimensionAttested({
+      asOf: REMAINING_DIM_AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: REMAINING_DIM_ACTOR,
+      citations: [...DIM_BASE_CHAIN],
+      payload: {
+        productId: upgrade.productId,
+        dimension: upgrade.dimension,
+        result: "implementation-attested",
+        citationChain: [...upgrade.citationChain],
+      },
+    });
+    store.append(ev);
+    upgraded.push(key);
+  }
+
+  return { upgraded, skipped };
+}
+
 export interface NpaAttestationSeedResult {
   approved: string[];
   skipped: string[];
@@ -656,6 +752,10 @@ export function seedNpaAttestations(store: EventStore): NpaAttestationSeedResult
   // PR-J: upgrade governance-policy dimensions (conduct, aml, infosec, privacy)
   // for all 5 products where policy + procedure substrate is in place.
   seedGovernanceDimensionUpgrades(store);
+
+  // PR-K: upgrade credit-risk, liquidity-risk, and operational-risk for all 5
+  // products. Tax remains deferred to revenue-start (Yael's mandate).
+  seedRemainingDimensionUpgrades(store);
 
   return { approved, skipped };
 }
