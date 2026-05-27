@@ -80,7 +80,7 @@ export function run(): ReconResult {
   const selected = new Map<string, GoalSelectedRow>();
   const deferred = new Map<string, GoalDeferredRow>();
 
-  for (const e of eventStore.replay()) {
+  for (const e of eventStore.replay({ entity: "LE-ZA-HOZ-BANK" })) {
     const p = e.payload as Record<string, unknown>;
     if (e.type === "AgentGoalEvaluated") {
       const iterationId = String(p.iterationId ?? "");

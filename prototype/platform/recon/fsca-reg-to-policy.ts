@@ -188,6 +188,11 @@ const POLICY_NAME_ALIASES: Readonly<Record<string, string>> = {
   "complaints handling policy": "conduct-of-business-tcf-policy",
   "complaints policy": "conduct-of-business-tcf-policy",
   "tcf policy": "conduct-of-business-tcf-policy",
+  // IFRS 9 ECL — file is ifrs9-ecl-provisioning-policy-v1.md; obligation register cites display name
+  "provisioning / ifrs 9 ecl policy": "ifrs9-ecl-provisioning-policy",
+  "ifrs 9 ecl policy": "ifrs9-ecl-provisioning-policy",
+  "ifrs9 ecl policy": "ifrs9-ecl-provisioning-policy",
+  "ecl provisioning policy": "ifrs9-ecl-provisioning-policy",
 };
 
 // ---------------------------------------------------------------------------
