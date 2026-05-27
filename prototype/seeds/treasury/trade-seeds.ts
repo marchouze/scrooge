@@ -41,6 +41,7 @@
 
 import type {
   DepositTakenPayload,
+  FundingLineDrawnPayload,
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
 } from "../../platform/event-store/event-types/repo-mmd-ibl";
@@ -146,6 +147,22 @@ export const IBL_002_PAYLOAD: InterbankLoanPlacedPayload = {
 };
 
 // ---------------------------------------------------------------------------
+// 5. FundingLineDrawn — FL-001
+//
+// Build-phase correspondent-bank facility: R50m drawn from ABSA correspondent
+// credit facility at prime-linked 8.65%, maturing 2026-08-27 (90 days).
+// From the bank's perspective: wholesale funding outflow (BA 325 §34, 100%
+// run-off rate as unsecured wholesale non-operational).
+// ---------------------------------------------------------------------------
+
+export const FL_001_PAYLOAD: FundingLineDrawnPayload = {
+  fundingLineId: "FL-001",
+  drawnAmountZar: 5_000_000_000, // R50m in cents
+  maturityDate: "2026-08-27",
+  rateDecimal: 0.0865,
+};
+
+// ---------------------------------------------------------------------------
 // Exported arrays — for use by the boot script / seed runner
 // ---------------------------------------------------------------------------
 
@@ -160,3 +177,6 @@ export const TREASURY_IBL_PLACED_PAYLOADS: InterbankLoanPlacedPayload[] = [
   IBL_001_PAYLOAD,
   IBL_002_PAYLOAD,
 ];
+
+/** All FundingLineDrawn payloads for the treasury trade seed. */
+export const TREASURY_FUNDING_LINE_PAYLOADS: FundingLineDrawnPayload[] = [FL_001_PAYLOAD];

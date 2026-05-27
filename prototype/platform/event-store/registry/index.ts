@@ -93,6 +93,12 @@ export { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
 export { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
+// D-TREASURY-GAPS-WAVE1 — settlement instruction outflow substrate (LCR §23).
+// Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+export { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
+// D-TREASURY-GAPS-WAVE1 — balance-sheet projection (NSFR ASF/RSF substrate).
+// Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+export { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
 export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit lifecycle events.
@@ -144,6 +150,7 @@ export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 // ---------------------------------------------------------------------------
 
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
+import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
@@ -197,6 +204,7 @@ import {
   GOAL_LOOP_EVENT_TYPES,
   RUNTIME_EVENT_TYPES,
 } from "./runtime";
+import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 
@@ -267,6 +275,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
   // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...COLLATERAL_EVENT_TYPES_REGISTRY,
+  // D-TREASURY-GAPS-WAVE1 — settlement instruction outflow substrate (LCR §23).
+  // Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  ...SETTLEMENT_EVENT_TYPES_REGISTRY,
+  // D-TREASURY-GAPS-WAVE1 — balance-sheet projection (NSFR ASF/RSF substrate).
+  // Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+  ...BALANCE_SHEET_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
   // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
   ...LIQUIDITY_EVENT_TYPES_REGISTRY,

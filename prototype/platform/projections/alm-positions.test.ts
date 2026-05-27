@@ -284,7 +284,7 @@ describe("alm-positions — settlement outflow derivation", () => {
       g.includes(ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut),
     );
     expect(gapEntry).toBeDefined();
-    expect(gapEntry).toContain("not yet emitted");
+    expect(gapEntry).toContain("0 settlement instructions");
   });
 
   it("excludes already-settled trades via TradeSettled tombstone", () => {
