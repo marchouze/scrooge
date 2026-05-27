@@ -241,6 +241,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-325-LCR; P4-SECURITY-DESIGNED-IN.
   "platform/reporting/ba-325-lcr.test.ts",
+  // PR-G model-validation seed — emits ValidationMethodologyPublished + ModelValidationApproved
+  // at boot time from the Nadia validation sign-off seed. The seed is called from
+  // dashboard/server.ts (via bootModelValidationSeeds) which already holds the gated store;
+  // this seed file itself passes the raw store through from the caller.
+  // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8, P4-SECURITY-DESIGNED-IN.
+  "seeds/models/model-validation-seed.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

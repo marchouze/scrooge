@@ -21,8 +21,8 @@ maps-to-decision-id: D-S7-TARGETED-3-5-OPEN-QUESTIONS
 |---|---|---|---|---|---|
 | **Tier definitions (cross-tier anchor)** | [`_tier-definitions-v0.1.md`](_tier-definitions-v0.1.md) | v0.1 | **LOCKED-FOR-SLICE-A** | RAS § B7 · SR 11-7 §I + §V + §VI · SS 1/23 Principle 1 + Principle 4 · BCBS CG-Principles 6 + 8 · Banks Act § 70(2A)(b) | Slice A of validation-methodology library v0 |
 | Tier-1 methodology | [`_methodology-tier-1.md`](_methodology-tier-1.md) | v0.1 | **POPULATED** | RAS § B7 · SR 11-7 §V + §VI · SS 1/23 Principle 4 · BCBS CG-Principles 6 + 8 · Banks Act § 70(2A)(b) · Reg 39 · IFRS 9 §5.5 · FIC Act ss.21–28 · FATF Rec. 10 | Slice C of validation-methodology library v0 |
-| Tier-2 methodology | `_methodology-tier-2.md` | — | **PLANNED** | RAS § B7 · SR 11-7 §V + §VI · SS 1/23 Principle 4 · BCBS CG-Principles 6 + 8 | Slice E (follows Tier-1 + procedure-pair) |
-| Tier-3 methodology | `_methodology-tier-3.md` | — | **PLANNED** | RAS § B7 · SR 11-7 §V (proportionate application) · SS 1/23 Principle 4 (proportionate) | Slice F (minimum-viable depth) |
+| Tier-2 methodology | [`_methodology-tier-2.md`](_methodology-tier-2.md) | v0.1 | **POPULATED** | RAS § B7 · SR 11-7 §V + §VI · SS 1/23 Principle 4 · BCBS CG-Principles 6 + 8 | Slice E (follows Tier-1 + procedure-pair) |
+| Tier-3 methodology | [`_methodology-tier-3.md`](_methodology-tier-3.md) | v0.1 | **POPULATED** | RAS § B7 · SR 11-7 §V (proportionate application) · SS 1/23 Principle 4 (proportionate) | Slice F (minimum-viable depth) |
 
 Slice mapping per `Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md` §7.
 
@@ -56,5 +56,6 @@ The two pieces land together at minimum-viable depth (Slice C + Slice D of the v
 |---|---|---|---|
 | v0.1 | 2026-05-09 | Nadia (via Scrooge) | Register opened. Tier-1 row `POPULATED` (methodology v0.1 authored as Slice C). Tier-2 + Tier-3 rows `PLANNED` (Slices E + F). Procedure-pair partner reference: `Procedures/by-policy/model-validation.md` (Helena, `PLANNED`). |
 | v0.2 | 2026-05-09 | Nadia (via Scrooge) | Slice A landed: cross-tier `_tier-definitions-v0.1.md` row added at top of register, status `LOCKED-FOR-SLICE-A`. The tier-definitions file is the structural anchor (definitions, classification criteria, disambiguation, model taxonomy) the per-tier methodology pages inherit from. Procedure-pair stub created at `Procedures/by-policy/model-validation.md` (Helena, `STUB`) so the pair is discoverable in the graph. |
+| v0.3 | 2026-05-27 | Nadia (via Scrooge) | Slices E + F landed: Tier-2 methodology v0.1 (`_methodology-tier-2.md`, status `POPULATED`) and Tier-3 methodology v0.1 (`_methodology-tier-3.md`, status `POPULATED`) authored as PR-G of the product-construction-slices-4-8 deliverable. Tier-2: seven dimensions; REQUIRED conceptual soundness + sensitivity + one of benchmark/challenger; 18-month approval expiry; authority D-PRODUCT-CONSTRUCTION-SLICES-4-8. Tier-3: two REQUIRED dimensions (conceptual soundness + documentation review); optional sensitivity and benchmark; 12-month approval expiry; proportionate for standard textbook models. |
 
 —Nadia
