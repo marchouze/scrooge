@@ -38,6 +38,7 @@
 // Author: Vera (Internal audit engineer).
 
 import { eventStore } from "../composition";
+import type { ProvenanceTag } from "../event-store/provenance";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "credit-limit-annual-review-staleness";
@@ -90,6 +91,10 @@ function loadEvents(type: string, override: Iterable<MinimalEvent> | undefined):
   const out: MinimalEvent[] = [];
   try {
     for (const e of eventStore.replay({ type })) {
+      // Only process production-tagged events. build-phase-fixture and simulated
+      // events are test/scenario data and must not trigger staleness alerts.
+      const tag = (e.provenance ?? {}) as Partial<ProvenanceTag>;
+      if (tag.kind !== "production") continue;
       out.push({
         event_id: e.event_id,
         type: e.type,

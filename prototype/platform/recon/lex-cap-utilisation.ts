@@ -54,6 +54,7 @@
 // Author: Vera (Internal audit engineer).
 
 import { eventStore } from "../composition";
+import type { ProvenanceTag } from "../event-store/provenance";
 import { getConnectedGroupFromStore } from "../identity/party-projection";
 import { getEligibleCapital } from "../projections/capital-metrics";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -88,6 +89,8 @@ function loadEvents(opts: RunOpts): MinimalLexEvent[] {
   const out: MinimalLexEvent[] = [];
   try {
     for (const e of eventStore.replay({ type: "LexUtilisationComputed" })) {
+      const tag = (e.provenance ?? {}) as Partial<ProvenanceTag>;
+      if (tag.kind !== "production") continue;
       out.push({
         event_id: e.event_id,
         as_of: e.as_of,
