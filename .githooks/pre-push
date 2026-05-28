@@ -20,7 +20,13 @@ fi
 echo "pre-push: running biome check (format + lint)..."
 cd "$PROTOTYPE_DIR"
 
-if ! bunx biome check . 2>&1; then
+BIOME_BIN="./node_modules/.bin/biome"
+if [[ ! -x "$BIOME_BIN" ]]; then
+  echo "pre-push: node_modules/.bin/biome not found — run 'bun install' in prototype/ first."
+  exit 1
+fi
+
+if ! "$BIOME_BIN" check . 2>&1; then
   echo ""
   echo "pre-push: biome check failed. Run 'bun run format' to auto-fix, then re-stage and retry."
   exit 1
