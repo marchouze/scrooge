@@ -221,13 +221,16 @@
           text: "S7 substrate-completeness brief filed — sessions-to-pre-licence-gate countdown live",
           ref: "PR #851",
         },
+        {
+          text: "D-S8-AGENT-RUNTIME-SUBSTRATE-APPROVED — agent-runtime substrate approved; autonomous personas unblocked (Principle 6)",
+          ref: "D-S8-AGENT-RUNTIME-SUBSTRATE-APPROVED",
+        },
+        {
+          text: "D-S7-SUBSTRATE-COMPLETENESS-GATE — substrate-completeness budget approved; sessions-to-gate cadence active",
+          ref: "D-S7-SUBSTRATE-COMPLETENESS-GATE",
+        },
       ],
       todo: [
-        {
-          text: "Approve agent-runtime substrate (S8) → unblocks autonomous personas (Principle 6)",
-          ref: "S8",
-        },
-        { text: "Approve substrate-completeness budget (S7)", ref: "S7 WS-SUBSTRATE-BUDGET" },
         {
           text: "M2 → M8 markers — reporting build, projection runtime hardening, agent-runtime ingest (M8 auto-commit ingest)",
         },
@@ -240,7 +243,7 @@
       label: "Governance",
       sublabel: "Seats, hires, frameworks",
       owner: "Owen (Company Secretary) · Devon (COO) · Nolan (Recruiter)",
-      blockers: ["D-HIRE-SIX-SEATS-PACK", "D-S3-THIN-HUMAN-LAYER-COMPOSITION"],
+      blockers: ["D-HIRE-SIX-SEATS-PACK"],
       done: [
         {
           text: "11 CEO direct reports filled — Scrooge, Helena (CRO), Devon (COO), Camille (CFO), Eitan, Saskia, Owen, Zara (CCO), Iris (IO), Thandiwe (CAE), Rashida (CISO)",
@@ -339,6 +342,10 @@
           text: "D-PRELICENCE-SUBSTRATE-GATES-G3-G4-G5 approved — G3 (BA 700/325 stress tests + SARB dry-run), G4 (IFRS 9 ECL engine), G5 (CAE/CCO/CISO governance seat runs) all CI-green; build-phase substrate readiness recorded",
           ref: "D-PRELICENCE-SUBSTRATE-GATES-G3-G4-G5",
         },
+        {
+          text: "D-S3-THIN-HUMAN-LAYER-COMPOSITION approved — thin-human-layer composition and timing for licence-day confirmed (Owen)",
+          ref: "D-S3-THIN-HUMAN-LAYER-COMPOSITION",
+        },
       ],
       todo: [
         {
@@ -348,10 +355,6 @@
         { text: "Open governance seats — GC then CHRO per hire-order (A2-approved)" },
         {
           text: "Board AC constitution — replaces Interim Audit Forum once independent-NED hires land",
-        },
-        {
-          text: "S3 decision — thin-human-layer composition and timing for licence-day (Owen)",
-          ref: "S3",
         },
       ],
     },
@@ -412,6 +415,14 @@
         {
           text: "D-IFRS-THRESHOLDS-V13 approved — Bea's IFRS v1.3 threshold amendments (materiality thresholds + recognition boundaries)",
           ref: "commit 3ebbfc3b",
+        },
+        {
+          text: "Compliance obligation tracing 82→7 — noBackRef 67→0; Complaints Handling Policy authored; 22 policy files back-referenced (Principle 2)",
+          ref: "PR #862",
+        },
+        {
+          text: "D-CREDIT-RISK-CAPITAL-APPROACH-V1 alignment — capital-management-policy v1.1, credit-risk-policy v1.2, pillar-3-disclosure-policy v1.1; IRB sections marked NOT_APPLICABLE; SA election principle recorded",
+          ref: "PR #863 D-CREDIT-RISK-CAPITAL-APPROACH-V1",
         },
       ],
       todo: [
