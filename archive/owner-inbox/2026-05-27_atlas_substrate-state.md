@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-05-27T14:40:36.140Z
+asOf: 2026-05-27T17:45:43.472Z
 decision-required: false
 ---
 
@@ -9,35 +9,35 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 712043 events across 70 types; 31/31 personas have operating specs; 125 runtime handlers registered; 468 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 715418 events across 70 types; 31/31 personas have operating specs; 125 runtime handlers registered; 469 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `.local/event.db` · Total events: 712043
+Path: `.local/event.db` · Total events: 715418
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `SubstrateAlert` | 695899 | 2026-05-09 | 2026-05-27 |
+| `SubstrateAlert` | 699089 | 2026-05-09 | 2026-05-27 |
 | `EntityReclassified` | 4159 | 2026-05-26 | 2026-05-26 |
-| `SubstrateAgentRunStarted` | 2123 | 2026-05-20 | 2026-05-27 |
-| `BusDispatched` | 2121 | 2026-05-20 | 2026-05-27 |
-| `SubstrateAgentRunCompleted` | 2017 | 2026-05-20 | 2026-05-27 |
+| `SubstrateAgentRunStarted` | 2171 | 2026-05-20 | 2026-05-27 |
+| `BusDispatched` | 2169 | 2026-05-20 | 2026-05-27 |
+| `SubstrateAgentRunCompleted` | 2065 | 2026-05-20 | 2026-05-27 |
 | `RecordFiled` | 916 | 2026-05-05 | 2026-05-27 |
-| `ScheduledTrigger` | 853 | 2026-05-20 | 2026-05-27 |
+| `ScheduledTrigger` | 856 | 2026-05-20 | 2026-05-27 |
 | `ReconResult` | 540 | 2026-05-20 | 2026-05-27 |
-| `AgentGoalEvaluated` | 508 | 2026-05-20 | 2026-05-27 |
+| `AgentGoalEvaluated` | 511 | 2026-05-20 | 2026-05-28 |
 | `Decision` | 471 | 2026-05-01 | 2026-05-25 |
-| `AgentGoalDeferred` | 440 | 2026-05-20 | 2026-05-27 |
-| `LegacyFanoutShadowed` | 370 | 2026-05-20 | 2026-05-27 |
+| `AgentGoalDeferred` | 442 | 2026-05-20 | 2026-05-27 |
+| `LegacyFanoutShadowed` | 377 | 2026-05-20 | 2026-05-27 |
 | `AgentPerformanceEvaluated` | 229 | 2026-05-20 | 2026-05-27 |
 | `AgentFeedbackIssued` | 229 | 2026-05-20 | 2026-05-27 |
 | `IRRBBChecked` | 140 | 2026-05-20 | 2026-05-27 |
 | `IntradayHQLAStressProjection` | 112 | 2026-05-20 | 2026-05-27 |
 | `SubstrateAgentRunFailed` | 104 | 2026-05-20 | 2026-05-27 |
-| `DashboardProjectionRefreshed` | 72 | 2026-05-20 | 2026-05-27 |
-| `AgentGoalSelected` | 68 | 2026-05-20 | 2026-05-27 |
-| `WorkstreamRegistered` | 64 | 2026-05-20 | 2026-05-27 |
-| `RiskRaised` | 56 | 2026-05-20 | 2026-05-27 |
+| `DashboardProjectionRefreshed` | 81 | 2026-05-20 | 2026-05-27 |
+| `WorkstreamRegistered` | 72 | 2026-05-20 | 2026-05-27 |
+| `AgentGoalSelected` | 69 | 2026-05-20 | 2026-05-28 |
+| `RiskRaised` | 63 | 2026-05-20 | 2026-05-27 |
 | `PartyRegistered` | 35 | 2026-05-22 | 2026-05-24 |
 | `PartyRelationshipAsserted` | 35 | 2026-05-19 | 2026-05-24 |
 | `AgentRegistered` | 30 | 2026-05-22 | 2026-05-22 |
@@ -62,8 +62,8 @@ Path: `.local/event.db` · Total events: 712043
 | `ALMRunCompleted` | 14 | 2026-05-20 | 2026-05-27 |
 | `DailyPnLReportGenerated` | 12 | 2026-05-24 | 2026-05-24 |
 | `CcrReplacementCostComputed` | 11 | 2026-05-20 | 2026-05-20 |
+| `SubstrateStateSnapshot` | 9 | 2026-05-20 | 2026-05-27 |
 | `MtmRunCompleted` | 9 | 2026-05-21 | 2026-05-26 |
-| `SubstrateStateSnapshot` | 8 | 2026-05-20 | 2026-05-27 |
 | `AgentBriefIssued` | 5 | 2026-05-18 | 2026-05-18 |
 | `AgentDecision` | 4 | 2026-05-20 | 2026-05-23 |
 | `SubLedgerPostingEmitted` | 4 | 2026-05-23 | 2026-05-23 |
@@ -238,11 +238,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-Substrate is dense and live: 712,043 events across 70 types, 31/31 personas specced, 125 runtime handlers registered across the fleet. The four typed payload schemas previously called out as load-bearing — `AgentEscalation`, `AgentDecision`, `WorkstreamRegistered`, `RiskRaised` — are all now emitting (14 / 4 / 64 / 56 respectively), so the substrate that Vera's audit pipelines and the dashboard's curated-seed retirement were gated on now exists in shape and in volume. The dominant operational fact in the snapshot is `SubstrateAlert` at 695,899 events — 97.7% of the store — which is not failure but is signal-to-noise debt the projections layer will have to absorb.
-
-I don't have a prior-week snapshot visible from this runner, but the gap inventory makes the consequential moves since the last narrative legible: Atlas's weekly run is now emitting one `RiskRaised` per tracked gap (the schema is being exercised by its owner, not just defined); the projection-cache seed was removed from the commit graph entirely in D-EVENT-STORE-SCALING Slice 3b, with recon now deriving and asserting consistency at run time; and `mira:citation-gate` is wrapped as a first-class on-request handler with `CitationGatePassed` / `CitationGateFailed` / `AuditFinding` outputs. `SubstrateAgentRunFailed` sits at 104 against 2,123 starts (~4.9%) — bounded but not negligible, and worth a Sade pass.
-
-The load-bearing gaps that remain: (1) the event-driven bus is still in-process only — cross-workflow fan-out is M8 cloud-lift work, which means any handler whose trigger sits in a different GitHub Actions process from its producer still relies on the next scheduled tick rather than a real subscription; (2) the cron scheduler is interim substrate with documented silent-drop behaviour, pending A2.1's `ScheduledTrigger`-emitting Bun scheduler (already 853 `ScheduledTrigger` events in store, so the event type is proved — the daemon isn't); and (3) the Neon hardening conditions §5.1/§5.2 are deferred but become blocking the moment any sensitive-data event type is added. Next: stand up A2.1 so cron files retire and event-driven dispatch becomes cross-process — that single move closes the largest remaining gap between the substrate as designed and the substrate as run.
+_Narrative generation failed (api error undefined: Connection error.)._
 
 ## Provenance
 
