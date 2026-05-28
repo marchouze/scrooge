@@ -324,7 +324,7 @@ async function main(): Promise<void> {
     store.append(event);
     emitted++;
     console.log(
-      `[ciso-periodic-run] EMIT GovernanceSeatRunCompleted — seatId=CISO, status=completed`,
+      "[ciso-periodic-run] EMIT GovernanceSeatRunCompleted — seatId=CISO, status=completed",
     );
   }
 

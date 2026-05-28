@@ -321,7 +321,7 @@ describe("makeGovernanceSeatRunCompleted factory", () => {
         citations: [],
         payload: BASE_RUN_COMPLETED_PAYLOAD,
       }),
-    ).toThrow("P2 violation");
+    ).toThrow("at least one citation");
   });
 });
 
