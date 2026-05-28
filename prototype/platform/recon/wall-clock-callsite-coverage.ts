@@ -107,8 +107,16 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   Clock-abstraction cleanup for these two callsites deferred to a follow-on
 //   item under D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Author: Atlas (Core banking platform architect, engineering), 2026-05-26.
+//
+// 2026-05-28 — Bumped 60 → 61 (PR #858, G5 CAE quarterly run):
+//   platform/lifecycle/onboarding-orchestrator.ts:401 — injectable default
+//   `nowIso: string = new Date().toISOString()` added by Thandiwe's CAE run.
+//   Approved injectable-default pattern (same as 58→60 bump); wall-clock
+//   fallback only activates in production paths where caller omits nowIso.
+//   Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
+//   Author: Scrooge (Chief of Staff), 2026-05-28.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 60;
+const KNOWN_VIOLATIONS_SNAPSHOT = 61;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

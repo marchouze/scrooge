@@ -147,6 +147,12 @@ export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
 //   IFRS 9 §5.5; Regulations Relating to Banks Reg 23.
 export { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
+// D-CAE-QUARTERLY-RUN-G5 — CAE quarterly autonomous run event types.
+// AuditPlanUpdated, AuditIssueTrackerReviewed, QaipAttestationFiled,
+// ThirdLineOpinionFiled, GovernanceSeatRunCompleted.
+// Authority: D-CAE-QUARTERLY-RUN-G5 (2026-05-28); IIA Standards §1300/§2010/§2600;
+//   Banks Act 94/1990 §73; BCBS 239 Principles I, III, IX, XIV.
+export { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -156,6 +162,7 @@ export { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
+import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
@@ -344,6 +351,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
   //   IFRS 9 §5.5; Regulations Relating to Banks Reg 23.
   ...IFRS9_STAGING_EVENT_TYPES_REGISTRY,
+  // D-CAE-QUARTERLY-RUN-G5 — CAE quarterly autonomous run event types.
+  // AuditPlanUpdated, AuditIssueTrackerReviewed, QaipAttestationFiled,
+  // ThirdLineOpinionFiled, GovernanceSeatRunCompleted.
+  // Authority: D-CAE-QUARTERLY-RUN-G5 (2026-05-28); IIA Standards §1300/§2010/§2600;
+  //   Banks Act 94/1990 §73; BCBS 239 Principles I, III, IX, XIV.
+  ...CAE_GOVERNANCE_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
