@@ -143,6 +143,10 @@ export { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrumen
 // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9; IAS 39 §27;
 //   Banks Act 94/1990 Reg 26/27; BA 325; BA 326; BCBS d365.
 export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
+// D-IFRS9-STAGING-V1 — IFRS 9 impairment stage classification events.
+// Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
+//   IFRS 9 §5.5; Regulations Relating to Banks Reg 23.
+export { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -197,6 +201,7 @@ import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
+import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
@@ -334,6 +339,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
   //   IFRS 9; IAS 39 §27; Banks Act 94/1990 Reg 26/27; BA 325; BA 326; BCBS d365.
   ...REPO_MMD_IBL_EVENT_TYPES_REGISTRY,
+  // D-IFRS9-STAGING-V1 — IFRS 9 impairment stage classification events.
+  // Placed last so typed schema rows override any placeholder rows.
+  // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
+  //   IFRS 9 §5.5; Regulations Relating to Banks Reg 23.
+  ...IFRS9_STAGING_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
