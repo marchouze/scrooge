@@ -20,6 +20,11 @@ riskTaxonomy:
   - RT-OR
   - RT-BC
   - RT-CY
+obligations:
+  - ORG-CS1-004
+  - ORG-CY-01
+  - ORG-CY-03
+  - ORG-CY-08
 ---
 
 # Operational Resilience Policy v1

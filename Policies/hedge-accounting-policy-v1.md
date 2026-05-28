@@ -26,6 +26,8 @@ decision-required: false
 riskTaxonomy:
   - RT-MR.GN
   - RT-LR.RC
+obligations:
+  - ORG-GV-12
 ---
 
 # Hedge Accounting Policy

@@ -17,6 +17,8 @@ summary: Document Execution Policy governing electronic and wet-signature execut
 decision-required: false
 riskTaxonomy:
   - RT-LR.CT
+obligations:
+  - ORG-MK-02
 ---
 
 # Document Execution Policy v1

@@ -22,6 +22,8 @@ summary: Health and Safety Policy establishing the OHS Act framework for Hoz Ban
 decision-required: false
 riskTaxonomy:
   - RT-OR
+obligations:
+  - ORG-HR-09
 ---
 
 # Health and Safety Policy v1

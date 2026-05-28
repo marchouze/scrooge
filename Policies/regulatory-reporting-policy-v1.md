@@ -19,6 +19,8 @@ decision-required: false
 riskTaxonomy:
   - RT-RR
   - RT-OR
+obligations:
+  - ORG-GRP-PA-PARENT
 ---
 
 # Regulatory Reporting Policy v1

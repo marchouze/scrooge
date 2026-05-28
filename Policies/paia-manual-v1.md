@@ -12,6 +12,8 @@ citations:
   - PAIA-2-2000-S11
 decision-required: false
 riskTaxonomy: RT-LR.DP
+obligations:
+  - ORG-PR(IV)-17
 ---
 
 # Promotion of Access to Information Act Manual

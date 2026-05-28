@@ -20,6 +20,28 @@ decision-required: false
 riskTaxonomy:
   - RT-OR
   - RT-TOR
+obligations:
+  - ORG-AC-13
+  - ORG-CS1-001
+  - ORG-CY-02-RECON-CRO-INDEPENDENCE
+  - ORG-GV-21
+  - ORG-JSE-IRC-02
+  - ORG-MK-16
+  - ORG-PR(IV)-03
+  - ORG-PR-23
+  - ORG-PR-26
+  - ORG-PR-31
+  - ORG-PR-32
+  - ORG-PR-34
+  - ORG-PR-46
+  - ORG-PR-47
+  - ORG-PR-53
+  - ORG-PR-54
+  - ORG-PR-55
+  - ORG-PR-63
+  - ORG-PR-64
+  - ORG-PR-65
+  - ORG-PR-66
 ---
 
 # Data Management Policy v1

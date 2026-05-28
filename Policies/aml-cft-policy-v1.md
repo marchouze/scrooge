@@ -18,6 +18,9 @@ riskTaxonomy:
   - RT-FC.ML
   - RT-FC.TF
   - RT-FC.SA
+obligations:
+  - ORG-FC-07
+  - ORG-FC-SANCTIONS-SCREENING
 ---
 
 # AML/CFT Policy v1

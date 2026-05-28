@@ -19,6 +19,8 @@ riskTaxonomy:
   - RT-CD
   - RT-OP.PE
   - RT-ST.GV
+obligations:
+  - ORG-HR-05
 ---
 
 # Remuneration Policy — Hoz Bank

@@ -26,6 +26,9 @@ riskTaxonomy:
   - CY-001
   - OPS-002
   - GOV-003
+obligations:
+  - ORG-BNK-CYBER-CONS
+  - ORG-CY-17
 ---
 
 # Cyber and Operational Incident Response Policy v1

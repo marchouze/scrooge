@@ -21,6 +21,10 @@ riskTaxonomy:
   - RT-CR
   - RT-OR
   - RT-ESG
+obligations:
+  - ORG-PR-22
+  - ORG-PR-61
+  - ORG-PR-62
 ---
 
 # Climate and Environmental Risk Policy v1
