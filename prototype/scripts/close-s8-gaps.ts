@@ -2,9 +2,9 @@
 // Close S8 substrate gaps 2–7 + A2.1 with WorkstreamCompleted events.
 // All gaps are functionally implemented; this records formal closure.
 // Authority: D-AGENT-RUNTIME-AUTHORIZE (approved), D-S8-A4-CLOSE (approved).
-import { EventStore } from "../platform/event-store/store.ts";
 import { makeWorkstreamCompleted } from "../platform/event-store/event-types/agent-substrate-extended.ts";
 import { resolveEventDbPath } from "../platform/event-store/resolve-event-db.ts";
+import { EventStore } from "../platform/event-store/store.ts";
 
 const db = new EventStore(resolveEventDbPath().path);
 const now = new Date().toISOString();
@@ -79,4 +79,6 @@ for (const gap of GAPS) {
   emitted++;
 }
 
-console.log(`\nEmitted ${emitted} WorkstreamCompleted events. S8 substrate gaps 2–7 + A2.1 formally closed.`);
+console.log(
+  `\nEmitted ${emitted} WorkstreamCompleted events. S8 substrate gaps 2–7 + A2.1 formally closed.`,
+);

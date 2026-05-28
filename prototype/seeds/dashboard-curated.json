@@ -630,8 +630,8 @@
       "id": "WS-AGENT-RUNTIME-SUBSTRATE",
       "what": "Agent-runtime substrate (S8) \u2014 scheduler, AgentEscalation/Decision events, event-sourced workstream lifecycle",
       "owner": "Atlas + Anya",
-      "due": "Drafted; approval pending",
-      "active": true,
+      "due": "Complete \u2014 all S8 gaps closed 2026-05-27 via WorkstreamCompleted events",
+      "active": false,
       "startedAt": "2026-05-07",
       "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
       "roadmapWorkstream": "A"
