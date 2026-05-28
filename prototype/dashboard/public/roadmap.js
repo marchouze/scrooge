@@ -537,7 +537,7 @@
           ref: "PRs #824 #825",
         },
         {
-          text: "NPA gate walks — PROC-NPA-GATE-01 walked for equity/bond/repo/IRS/FX-swap; 5 CEO decision cards opened",
+          text: "NPA gate walks — PROC-NPA-GATE-01 walked for equity/bond/repo/IRS/FX-swap (internal pre-licence test scope); gate rehearsal complete",
           ref: "PR #826",
         },
         {
@@ -553,12 +553,7 @@
           ref: "PR #834",
         },
       ],
-      inflight: [
-        {
-          text: "5 NPA CEO decision cards awaiting approval — equity/bond/repo/IRS/FX-swap product go-live gates",
-          ref: "PR #826",
-        },
-      ],
+      inflight: [],
       todo: [
         {
           text: "CEO decide NPA Policy v1.0 — gates first product through approval (cross-ref Workstream C)",
