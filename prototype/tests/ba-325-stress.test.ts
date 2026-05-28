@@ -128,7 +128,9 @@ describe("BA 325 stress — ST-2: LCR = Infinity (zero denominator)", () => {
   it("positive HQLA stock + zero net outflows → lcrRatio = Infinity, lcrCompliant = true", () => {
     const output = generateBa325Lcr(
       baseInput({
-        trialBalance: [{ leafAccountId: "ACC-L1-HQLA", currency: "ZAR", amountMinor: 50_000_000_00 }],
+        trialBalance: [
+          { leafAccountId: "ACC-L1-HQLA", currency: "ZAR", amountMinor: 50_000_000_00 },
+        ],
         classifications: [
           {
             leafAccountId: "ACC-L1-HQLA",

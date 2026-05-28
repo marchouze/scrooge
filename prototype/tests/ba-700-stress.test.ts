@@ -95,9 +95,7 @@ describe("BA 700 stress — ST-1: CET1 ratio < 4.5% minimum", () => {
   it("cet1Compliant = false and cet1Ratio value accessible from ratios section", () => {
     const output = generateBa700Capital(
       baseInput({
-        trialBalance: [
-          { leafAccountId: "ACC-small-cet1", currency: "ZAR", amountMinor: -100_00 },
-        ],
+        trialBalance: [{ leafAccountId: "ACC-small-cet1", currency: "ZAR", amountMinor: -100_00 }],
         classifications: [{ leafAccountId: "ACC-small-cet1", capitalTier: "cet1" }],
         rwa: {
           creditRwaMinor: 100_000_000_00, // 100 million ZAR in minor
@@ -176,9 +174,7 @@ describe("BA 700 stress — ST-3: Zero RWA denominator", () => {
   it("all capital-adequacy ratios = Infinity when totalRwaMinor = 0", () => {
     const output = generateBa700Capital(
       baseInput({
-        trialBalance: [
-          { leafAccountId: "ACC-cet1", currency: "ZAR", amountMinor: -50_000_000_00 },
-        ],
+        trialBalance: [{ leafAccountId: "ACC-cet1", currency: "ZAR", amountMinor: -50_000_000_00 }],
         classifications: [{ leafAccountId: "ACC-cet1", capitalTier: "cet1" }],
         rwa: {
           creditRwaMinor: 0,
