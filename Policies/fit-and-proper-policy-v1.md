@@ -18,6 +18,9 @@ decision-required: false
 riskTaxonomy:
   - RT-OP.PE
   - RT-ST.GV
+obligations:
+  - ORG-CD-03
+  - ORG-HR-11
 ---
 
 # Fit-and-Proper Policy v1

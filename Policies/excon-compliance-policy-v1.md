@@ -21,6 +21,10 @@ riskTaxonomy:
   - RT-FC
   - RT-CC
   - RT-MR
+obligations:
+  - ORG-BNK-CGPS-CONS
+  - ORG-MK-08
+  - ORG-MK-10
 ---
 
 # Exchange Control Compliance Policy v1

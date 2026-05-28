@@ -19,6 +19,8 @@ decision-required: false
 riskTaxonomy:
   - RT-FC
   - RT-CC
+obligations:
+  - ORG-CD-02
 ---
 
 # FAIS Compliance Policy v1

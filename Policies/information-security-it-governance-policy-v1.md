@@ -20,6 +20,8 @@ riskTaxonomy:
   - RT-CY
   - RT-OR
   - RT-IT
+obligations:
+  - ORG-CY-09
 ---
 
 # Information Security and IT Governance Policy v1

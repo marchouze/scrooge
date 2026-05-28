@@ -20,6 +20,17 @@ riskTaxonomy:
   - "GOV-001"
   - "GOV-002"
   - "GOV-003"
+obligations:
+  - ORG-FMA-002
+  - ORG-GV-01
+  - ORG-GV-03
+  - ORG-GV-05
+  - ORG-GV-08
+  - ORG-GV-09
+  - ORG-GV-14
+  - ORG-GV-18
+  - ORG-GV-22
+  - ORG-GV-AC-MINIMUM
 ---
 
 # Governance Framework v1

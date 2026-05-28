@@ -20,6 +20,8 @@ riskTaxonomy:
   - RT-CR.CP
   - RT-CR.SL
   - RT-OP.PA
+obligations:
+  - ORG-JSE-IRC-01
 ---
 
 # Trading Mandate v1

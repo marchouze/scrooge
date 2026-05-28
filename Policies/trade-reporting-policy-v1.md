@@ -21,6 +21,11 @@ summary: >
 decision-required: false
 riskTaxonomy:
   - RT-LR.RC
+obligations:
+  - ORG-FC-24
+  - ORG-GRP-FINREP
+  - ORG-GRP-RPT
+  - ORG-MK-11
 ---
 
 # OTC Derivative Trade Reporting Policy v1

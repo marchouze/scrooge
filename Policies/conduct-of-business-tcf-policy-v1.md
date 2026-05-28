@@ -26,6 +26,9 @@ obligations-closed:
   - ORG-CD-04
   - ORG-CD-06
   - ORG-CD-08
+obligations:
+  - ORG-CS3-008
+  - ORG-GV-02
 ---
 
 # Conduct of Business and Treating Customers Fairly Policy v1

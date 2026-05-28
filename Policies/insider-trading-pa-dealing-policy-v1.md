@@ -17,6 +17,10 @@ decision-required: false
 riskTaxonomy:
   - RT-CD.MA
   - RT-ST.GV
+obligations:
+  - ORG-CS3-002
+  - ORG-MK-09
+  - ORG-MK-14
 ---
 
 # Insider Trading and Personal Account Dealing Policy v1
