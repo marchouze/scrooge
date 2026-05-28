@@ -44,8 +44,8 @@ export const GovernanceSeatRunCompletedPayloadSchema = z.object({
   agentId: z.string().min(1),
   /** Run type discriminator. */
   runType: z.string().min(1),
-  /** Reporting period the run covers (e.g. "2026-Q2"). */
-  period: z.string().min(1),
+  /** Reporting period the run covers in YYYY-QN format (e.g. "2026-Q2"). */
+  period: z.string().regex(/^\d{4}-Q[1-4]$/, { message: "period must be YYYY-QN (e.g. 2026-Q2)" }),
   /** Count of domain events emitted by this run (excluding this completion event). */
   eventsEmitted: z.number().int().nonnegative(),
   /** Summary findings or notes from the run. Empty array when no findings. */
