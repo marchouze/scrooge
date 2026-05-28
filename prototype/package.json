@@ -264,6 +264,7 @@
     "sarb:pdf-extract": "bun run platform/tools/sarb-pdf-extract.ts",
     "sarb:dry-run": "bun run scripts/sarb-ba-return-dry-run.ts",
     "ifrs9:stage": "bun run scripts/ifrs9-staging-run.ts",
+    "governance:cae-run": "bun run scripts/governance/cae-periodic-run.ts",
     "recon:liquidity-appetite-snapshot-coverage": "bun run platform/recon/liquidity-appetite-snapshot-coverage.ts",
     "recon:liquidity-limit-breach-unescalated": "bun run platform/recon/liquidity-limit-breach-unescalated.ts",
     "recon:liquidity-limit-coverage": "bun run platform/recon/liquidity-limit-coverage.ts",
