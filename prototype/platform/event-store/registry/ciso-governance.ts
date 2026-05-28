@@ -67,11 +67,7 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     subscribers: ["Owen", "Devon", "Vera", "dashboard", "audit"],
     replay: "append-only-audit",
     retention: RETENTION_GOVERNANCE_7Y,
-    citationsHint: [
-      "PA-FSCA-JS2-2024-§4.3",
-      "POPIA-s19-22",
-      "Banks Act 94/1990 §73",
-    ],
+    citationsHint: ["PA-FSCA-JS2-2024-§4.3", "POPIA-s19-22", "Banks Act 94/1990 §73"],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
   },
   {

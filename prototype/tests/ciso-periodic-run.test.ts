@@ -185,9 +185,7 @@ describe("SbomReviewCompleted schema", () => {
 
 describe("ThreatModelGateCompleted schema", () => {
   it("TC-6: validates a correct threat-model gate payload", () => {
-    expect(() =>
-      threatModelGateCompletedPayloadSchema.parse(BASE_THREAT_PAYLOAD),
-    ).not.toThrow();
+    expect(() => threatModelGateCompletedPayloadSchema.parse(BASE_THREAT_PAYLOAD)).not.toThrow();
     const parsed = threatModelGateCompletedPayloadSchema.parse(BASE_THREAT_PAYLOAD);
     expect(parsed.systemsReviewed).toBe(12);
     expect(parsed.threatsIdentified).toBe(4);
@@ -323,7 +321,7 @@ describe("makeGovernanceSeatRunCompleted factory", () => {
         citations: [],
         payload: BASE_RUN_COMPLETED_PAYLOAD,
       }),
-    ).toThrow("at least one citation");
+    ).toThrow("P2 violation");
   });
 });
 
@@ -447,7 +445,7 @@ describe("CISO run — event store integration", () => {
     // Simulate the idempotency check from the script:
     // Only emit if no event for this period exists yet.
     const existingJs2ForPeriod = [...store.replay({ type: "CisoJs2AttestationFiled" })].filter(
-      (e) => (e.payload as Record<string, unknown>)["period"] === PERIOD,
+      (e) => (e.payload as Record<string, unknown>).period === PERIOD,
     );
 
     // Guard: only emit if not already present
@@ -457,7 +455,7 @@ describe("CISO run — event store integration", () => {
 
     // Should still be exactly 1 CisoJs2AttestationFiled for this period
     const js2Events = [...store.replay({ type: "CisoJs2AttestationFiled" })].filter(
-      (e) => (e.payload as Record<string, unknown>)["period"] === PERIOD,
+      (e) => (e.payload as Record<string, unknown>).period === PERIOD,
     );
     expect(js2Events.length).toBe(1);
   });
@@ -471,12 +469,8 @@ describe("CISO run — event store integration", () => {
     const allJs2 = [...store.replay({ type: "CisoJs2AttestationFiled" })];
     expect(allJs2.length).toBe(2);
 
-    const q1 = allJs2.filter(
-      (e) => (e.payload as Record<string, unknown>)["period"] === "2026-Q1",
-    );
-    const q2 = allJs2.filter(
-      (e) => (e.payload as Record<string, unknown>)["period"] === "2026-Q2",
-    );
+    const q1 = allJs2.filter((e) => (e.payload as Record<string, unknown>).period === "2026-Q1");
+    const q2 = allJs2.filter((e) => (e.payload as Record<string, unknown>).period === "2026-Q2");
     expect(q1.length).toBe(1);
     expect(q2.length).toBe(1);
   });

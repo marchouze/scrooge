@@ -69,7 +69,6 @@ const CITATIONS = [
   "Banks Act 94/1990 §73",
 ];
 
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -111,9 +110,7 @@ function deriveRemediationDeadline(date: Date): string {
 
 async function main(): Promise<void> {
   const resolved = resolveEventDbPath();
-  console.log(
-    `[ciso-periodic-run] Event DB: ${resolved.path} (source: ${resolved.source})`,
-  );
+  console.log(`[ciso-periodic-run] Event DB: ${resolved.path} (source: ${resolved.source})`);
 
   const store = new EventStore(resolved.path);
   const now = new Date();
@@ -121,14 +118,14 @@ async function main(): Promise<void> {
 
   // Derive period
   const period =
-    typeof process !== "undefined" && process.env["CISO_PERIOD"]
-      ? process.env["CISO_PERIOD"]
+    typeof process !== "undefined" && process.env.CISO_PERIOD
+      ? process.env.CISO_PERIOD
       : derivePeriod(now);
 
   // Derive run ID
   const runId =
-    typeof process !== "undefined" && process.env["CISO_RUN_ID"]
-      ? process.env["CISO_RUN_ID"]
+    typeof process !== "undefined" && process.env.CISO_RUN_ID
+      ? process.env.CISO_RUN_ID
       : `run:senna:${nowIso}`;
 
   console.log(`[ciso-periodic-run] Period: ${period}`);
@@ -146,32 +143,32 @@ async function main(): Promise<void> {
 
   for (const evt of store.replay({ type: "CisoJs2AttestationFiled" })) {
     const p = evt.payload as Record<string, unknown>;
-    if (p["period"] === period) {
-      existingJs2.add(p["period"] as string);
+    if (p.period === period) {
+      existingJs2.add(p.period as string);
     }
   }
   for (const evt of store.replay({ type: "SbomReviewCompleted" })) {
     const p = evt.payload as Record<string, unknown>;
-    if (p["period"] === period) {
-      existingSbom.add(p["period"] as string);
+    if (p.period === period) {
+      existingSbom.add(p.period as string);
     }
   }
   for (const evt of store.replay({ type: "ThreatModelGateCompleted" })) {
     const p = evt.payload as Record<string, unknown>;
-    if (p["period"] === period) {
-      existingThreatGate.add(p["period"] as string);
+    if (p.period === period) {
+      existingThreatGate.add(p.period as string);
     }
   }
   for (const evt of store.replay({ type: "KeyCeremonyAttested" })) {
     const p = evt.payload as Record<string, unknown>;
-    if (p["period"] === period) {
-      existingKeyCeremony.add(p["period"] as string);
+    if (p.period === period) {
+      existingKeyCeremony.add(p.period as string);
     }
   }
   for (const evt of store.replay({ type: "GovernanceSeatRunCompleted" })) {
     const p = evt.payload as Record<string, unknown>;
-    if (p["period"] === period && p["seatId"] === "CISO") {
-      existingRunCompleted.add(`${p["seatId"] as string}:${p["period"] as string}`);
+    if (p.period === period && p.seatId === "CISO") {
+      existingRunCompleted.add(`${p.seatId as string}:${p.period as string}`);
     }
   }
 
@@ -183,9 +180,7 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
 
   if (existingJs2.has(period)) {
-    console.log(
-      `[ciso-periodic-run] SKIP CisoJs2AttestationFiled — already filed for ${period}`,
-    );
+    console.log(`[ciso-periodic-run] SKIP CisoJs2AttestationFiled — already filed for ${period}`);
     skipped++;
   } else {
     const event = makeCisoJs2AttestationFiled({
@@ -215,9 +210,7 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
 
   if (existingSbom.has(period)) {
-    console.log(
-      `[ciso-periodic-run] SKIP SbomReviewCompleted — already filed for ${period}`,
-    );
+    console.log(`[ciso-periodic-run] SKIP SbomReviewCompleted — already filed for ${period}`);
     skipped++;
   } else {
     const remediationDeadline = deriveRemediationDeadline(now);
@@ -239,9 +232,7 @@ async function main(): Promise<void> {
     });
     store.append(event);
     emitted++;
-    console.log(
-      `[ciso-periodic-run] EMIT SbomReviewCompleted — period=${period}, criticalCount=0`,
-    );
+    console.log(`[ciso-periodic-run] EMIT SbomReviewCompleted — period=${period}, criticalCount=0`);
   }
 
   // -------------------------------------------------------------------------
@@ -249,9 +240,7 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
 
   if (existingThreatGate.has(period)) {
-    console.log(
-      `[ciso-periodic-run] SKIP ThreatModelGateCompleted — already filed for ${period}`,
-    );
+    console.log(`[ciso-periodic-run] SKIP ThreatModelGateCompleted — already filed for ${period}`);
     skipped++;
   } else {
     const event = makeThreatModelGateCompleted({
@@ -281,9 +270,7 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
 
   if (existingKeyCeremony.has(period)) {
-    console.log(
-      `[ciso-periodic-run] SKIP KeyCeremonyAttested — already filed for ${period}`,
-    );
+    console.log(`[ciso-periodic-run] SKIP KeyCeremonyAttested — already filed for ${period}`);
     skipped++;
   } else {
     const event = makeKeyCeremonyAttested({
