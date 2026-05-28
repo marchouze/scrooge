@@ -159,10 +159,10 @@ export { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 // that the original registry.ts exported as EVENT_TYPE_REGISTRY.
 // ---------------------------------------------------------------------------
 
-import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
+import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";

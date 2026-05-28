@@ -230,6 +230,7 @@
     "agent:imani-goal-loop": "bun run runtime/run.ts --agent Imani --trigger goal-loop",
     "agent:devon-goal-loop": "bun run runtime/run.ts --agent Devon --trigger goal-loop",
     "agent:saskia-goal-loop": "bun run runtime/run.ts --agent Saskia --trigger goal-loop",
+    "governance:cco-run": "bun run scripts/governance/cco-periodic-run.ts",
     "reset": "rm -rf .local && mkdir -p .local",
     "check:circular": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/",
     "recon:wall-clock-callsite-coverage": "bun run platform/recon/wall-clock-callsite-coverage.ts",

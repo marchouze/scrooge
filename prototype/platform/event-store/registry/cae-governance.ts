@@ -42,11 +42,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     issuer: "Thandiwe",
     subscribers: ["Owen", "Vera", "Atlas", "dashboard", "audit"],
     replay: "append-only-audit",
-    citationsHint: [
-      "D-CAE-QUARTERLY-RUN-G5",
-      "IIA-STANDARDS-2010",
-      "Banks Act 94/1990 §73",
-    ],
+    citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-2010", "Banks Act 94/1990 §73"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
   },
@@ -64,11 +60,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     issuer: "Thandiwe",
     subscribers: ["Owen", "Helena", "Vera", "Atlas", "dashboard", "audit"],
     replay: "append-only-audit",
-    citationsHint: [
-      "D-CAE-QUARTERLY-RUN-G5",
-      "IIA-STANDARDS-2010",
-      "Banks Act 94/1990 §73",
-    ],
+    citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-2010", "Banks Act 94/1990 §73"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
   },
@@ -130,10 +122,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     issuer: "any-agent",
     subscribers: ["Owen", "Vera", "Atlas", "dashboard", "audit"],
     replay: "append-only-audit",
-    citationsHint: [
-      "D-CAE-QUARTERLY-RUN-G5",
-      "Banks Act 94/1990 §73",
-    ],
+    citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "Banks Act 94/1990 §73"],
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "scripts/governance/cae-periodic-run.ts (quarterly batch); future: any governance-seat run script",

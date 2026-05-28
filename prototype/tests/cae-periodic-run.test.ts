@@ -51,7 +51,7 @@ import { EventStore } from "../platform/event-store/store";
 // ---------------------------------------------------------------------------
 
 const BANK_ENTITY = "LE-ZA-HOZ-BANK";
-const CAE_ACTOR = { type: "agent" as const, id: "Thandiwe" };
+const CAE_ACTOR = { type: "service" as const, id: "Thandiwe" };
 const CITATIONS = ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-1300"];
 const NOW = "2026-05-28T07:38:43.015Z";
 const PERIOD = "2026-Q2";
@@ -462,8 +462,7 @@ describe("All 5 events emission", () => {
     }
 
     const planEvents = [...store.replay({ type: "AuditPlanUpdated" })].filter(
-      (e) =>
-        (e.payload as unknown as { runId: string }).runId === RUN_ID,
+      (e) => (e.payload as unknown as { runId: string }).runId === RUN_ID,
     );
     expect(planEvents.length).toBe(1); // exactly 1 — not duplicated
   });
@@ -492,12 +491,10 @@ describe("All 5 events emission", () => {
     const store = new EventStore(dbPath);
     emitAllEvents(store, RUN_ID);
 
-    const completed = [...store.replay({ type: "GovernanceSeatRunCompleted" })].filter(
-      (e) => {
-        const p = e.payload as unknown as { seatId: string; outcome: string };
-        return p.seatId === "CAE" && p.outcome === "delivered";
-      },
-    );
+    const completed = [...store.replay({ type: "GovernanceSeatRunCompleted" })].filter((e) => {
+      const p = e.payload as unknown as { seatId: string; outcome: string };
+      return p.seatId === "CAE" && p.outcome === "delivered";
+    });
     expect(completed.length).toBeGreaterThanOrEqual(1);
   });
 });

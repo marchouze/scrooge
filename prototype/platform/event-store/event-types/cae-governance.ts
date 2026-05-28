@@ -71,9 +71,7 @@ export function makeGovernanceSeatRunCompleted(args: {
   eventId?: string;
 }): Event {
   if (!args.citations || args.citations.length === 0) {
-    throw new Error(
-      "GovernanceSeatRunCompleted requires at least one citation (Principle 2).",
-    );
+    throw new Error("GovernanceSeatRunCompleted requires at least one citation (Principle 2).");
   }
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),

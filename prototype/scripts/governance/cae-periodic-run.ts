@@ -50,7 +50,7 @@ import { EventStore } from "../../platform/event-store/store";
 const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
 const CAE_ACTOR = {
-  type: "agent" as const,
+  type: "service" as const,
   id: "Thandiwe",
 };
 
@@ -85,9 +85,7 @@ function derivePeriod(now: Date): string {
 
 async function main(): Promise<void> {
   const resolved = resolveEventDbPath();
-  console.log(
-    `[cae-periodic-run] Event DB: ${resolved.path} (source: ${resolved.source})`,
-  );
+  console.log(`[cae-periodic-run] Event DB: ${resolved.path} (source: ${resolved.source})`);
 
   const store = new EventStore(resolved.path);
   const now = new Date();
@@ -137,9 +135,7 @@ async function main(): Promise<void> {
   }
 
   if (emittedTypes.size > 0) {
-    console.log(
-      `[cae-periodic-run] Already emitted for this run: ${[...emittedTypes].join(", ")}`,
-    );
+    console.log(`[cae-periodic-run] Already emitted for this run: ${[...emittedTypes].join(", ")}`);
   }
 
   let emitted = 0;
@@ -166,9 +162,9 @@ async function main(): Promise<void> {
     });
     store.append(event);
     emitted++;
-    console.log(`[cae-periodic-run] Emitted AuditPlanUpdated`);
+    console.log("[cae-periodic-run] Emitted AuditPlanUpdated");
   } else {
-    console.log(`[cae-periodic-run] Skipped AuditPlanUpdated (already emitted)`);
+    console.log("[cae-periodic-run] Skipped AuditPlanUpdated (already emitted)");
   }
 
   // -------------------------------------------------------------------------
@@ -193,9 +189,9 @@ async function main(): Promise<void> {
     });
     store.append(event);
     emitted++;
-    console.log(`[cae-periodic-run] Emitted AuditIssueTrackerReviewed`);
+    console.log("[cae-periodic-run] Emitted AuditIssueTrackerReviewed");
   } else {
-    console.log(`[cae-periodic-run] Skipped AuditIssueTrackerReviewed (already emitted)`);
+    console.log("[cae-periodic-run] Skipped AuditIssueTrackerReviewed (already emitted)");
   }
 
   // -------------------------------------------------------------------------
@@ -219,9 +215,9 @@ async function main(): Promise<void> {
     });
     store.append(event);
     emitted++;
-    console.log(`[cae-periodic-run] Emitted QaipAttestationFiled`);
+    console.log("[cae-periodic-run] Emitted QaipAttestationFiled");
   } else {
-    console.log(`[cae-periodic-run] Skipped QaipAttestationFiled (already emitted)`);
+    console.log("[cae-periodic-run] Skipped QaipAttestationFiled (already emitted)");
   }
 
   // -------------------------------------------------------------------------
@@ -249,9 +245,9 @@ async function main(): Promise<void> {
     });
     store.append(event);
     emitted++;
-    console.log(`[cae-periodic-run] Emitted ThirdLineOpinionFiled`);
+    console.log("[cae-periodic-run] Emitted ThirdLineOpinionFiled");
   } else {
-    console.log(`[cae-periodic-run] Skipped ThirdLineOpinionFiled (already emitted)`);
+    console.log("[cae-periodic-run] Skipped ThirdLineOpinionFiled (already emitted)");
   }
 
   // -------------------------------------------------------------------------
@@ -277,9 +273,9 @@ async function main(): Promise<void> {
     });
     store.append(event);
     emitted++;
-    console.log(`[cae-periodic-run] Emitted GovernanceSeatRunCompleted`);
+    console.log("[cae-periodic-run] Emitted GovernanceSeatRunCompleted");
   } else {
-    console.log(`[cae-periodic-run] Skipped GovernanceSeatRunCompleted (already emitted)`);
+    console.log("[cae-periodic-run] Skipped GovernanceSeatRunCompleted (already emitted)");
   }
 
   // -------------------------------------------------------------------------
