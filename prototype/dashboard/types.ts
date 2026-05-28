@@ -160,6 +160,9 @@ export interface InFlightItem {
   outcomeDoc?: string;
   outcomeNote?: string;
   briefDoc?: string;
+  /** Maps this workstream to a roadmap section (A–D). Items without this tag
+   *  are internal-tracking only and do not surface on the roadmap page. */
+  roadmapWorkstream?: "A" | "B" | "C" | "D";
 }
 
 export interface PrototypeModule {

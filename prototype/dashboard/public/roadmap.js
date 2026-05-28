@@ -9,7 +9,8 @@
 
 (() => {
   // ── Workstream catalogue ────────────────────────────────────────────────
-  // Each workstream has: id, label, owner, blockers[], done[], inflight[], todo[]
+  // Each workstream has: id, label, owner, blockers[], done[], todo[]
+  // inflight[] is derived live from /api/state (inFlight items tagged with roadmapWorkstream)
   // Items: { text, ref? }
 
   const WORKSTREAMS = [
@@ -201,7 +202,6 @@
           ref: "d4701916",
         },
       ],
-      inflight: [],
       todo: [
         {
           text: "Approve agent-runtime substrate (S8) → unblocks autonomous personas (Principle 6)",
@@ -300,7 +300,6 @@
           ref: "PR #848",
         },
       ],
-      inflight: [],
       todo: [
         {
           text: "CEO decision on D-HIRE-SIX-SEATS-PACK — approve batched six-role hire pack; unblocks 18 months of recruitment lead time",
@@ -373,16 +372,6 @@
         {
           text: "D-IFRS-THRESHOLDS-V13 approved — Bea's IFRS v1.3 threshold amendments (materiality thresholds + recognition boundaries)",
           ref: "commit 3ebbfc3b",
-        },
-      ],
-      inflight: [
-        {
-          text: "~45 instrument analyses remaining — [citation: TBC] markers open; citation resolution in progress (Mira)",
-          ref: "WS-INSTRUMENT-ANALYSES",
-        },
-        {
-          text: "POPIA IO designation finalisation — Marc interim, real human at licence-day (Iris)",
-          ref: "WS-E1-IO-OPTIONS",
         },
       ],
       todo: [
@@ -553,7 +542,6 @@
           ref: "PR #834",
         },
       ],
-      inflight: [],
       todo: [
         {
           text: "CEO decide NPA Policy v1.0 — gates first product through approval (cross-ref Workstream C)",
@@ -607,11 +595,20 @@
 
   // ── Render workstreams ───────────────────────────────────────────────────
 
-  function renderWorkstreams(resolvedIds = new Set()) {
+  function renderWorkstreams(resolvedIds = new Set(), liveInFlight = []) {
     const container = document.getElementById("rm-workstreams");
     if (!container) return;
 
     container.innerHTML = WORKSTREAMS.map((ws) => {
+      // Derive inflight from the live event store (inFlight items tagged for this workstream)
+      const wsInflight = liveInFlight
+        .filter((item) => item.roadmapWorkstream === ws.id && item.active === true)
+        .map((item) => ({
+          text:
+            item.what + (item.owner ? ` — ${item.owner}` : "") + (item.due ? ` · ${item.due}` : ""),
+          ref: item.id,
+        }));
+
       const openBlockers = ws.blockers.filter((b) => !resolvedIds.has(b));
       const blockerChips = openBlockers
         .map((b) => `<span class="rm-blocker-chip">${esc(b)}</span>`)
@@ -642,10 +639,10 @@
               <summary>
                 <span class="rm-panel-badge inflight">⟳ In flight</span>
                 Active work
-                <span class="rm-panel-count">${ws.inflight.length} items</span>
+                <span class="rm-panel-count">${wsInflight.length} items</span>
               </summary>
               <div class="rm-panel-body">
-                <ul class="rm-items">${itemsHtml(ws.inflight, "icon-inflight", "⟳")}</ul>
+                <ul class="rm-items">${itemsHtml(wsInflight, "icon-inflight", "⟳")}</ul>
               </div>
             </details>
             <details class="rm-panel">
@@ -732,7 +729,7 @@
     setMetric("rm-policies", policiesCount != null ? String(policiesCount) : "112+", "muted");
 
     const resolvedIds = new Set(decisionsResolved.map((r) => r.id ?? r));
-    renderWorkstreams(resolvedIds);
+    renderWorkstreams(resolvedIds, inFlight);
 
     // CEO queue
     renderCeoQueue(decisionsOpen);

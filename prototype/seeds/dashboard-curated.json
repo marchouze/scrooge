@@ -544,27 +544,30 @@
       "what": "Markets franchise design",
       "owner": "Saskia",
       "due": "~2 weeks",
-      "active": true,
+      "active": false,
       "startedAt": "2026-05-06",
-      "briefDoc": "Team Inbox/2026-05-06_brief_markets-franchise-design.md"
+      "briefDoc": "Team Inbox/2026-05-06_brief_markets-franchise-design.md",
+      "roadmapWorkstream": "D"
     },
     {
       "id": "WS-RAS-RECALIBRATION",
       "what": "RAS for AI-driven bank \u2014 substrate / coherence / supply-chain risks",
       "owner": "Helena",
       "due": "Next governance-cycle run",
-      "active": true,
+      "active": false,
       "startedAt": "2026-05-06",
-      "briefDoc": "Team Inbox/2026-05-06_brief_risk-appetite-statement-and-framework.md"
+      "briefDoc": "Team Inbox/2026-05-06_brief_risk-appetite-statement-and-framework.md",
+      "roadmapWorkstream": "D"
     },
     {
       "id": "WS-IA-CHARTER",
       "what": "Internal Audit Charter + first audit plan",
       "owner": "Thandiwe",
       "due": "~2 + ~4 weeks",
-      "active": true,
+      "active": false,
       "startedAt": "2026-05-06",
-      "briefDoc": "Team Inbox/2026-05-06_brief_cae-onboarding-vera-owen.md"
+      "briefDoc": "Team Inbox/2026-05-06_brief_cae-onboarding-vera-owen.md",
+      "roadmapWorkstream": "B"
     },
     {
       "id": "WS-CISO-RECRUITMENT",
@@ -573,14 +576,16 @@
       "due": "Shortlist ~3 weeks",
       "active": true,
       "startedAt": "2026-05-06",
-      "briefDoc": "Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md"
+      "briefDoc": "Team Inbox/2026-05-06_role-brief_chief-information-security-officer.md",
+      "roadmapWorkstream": "B"
     },
     {
       "id": "WS-E1-IO-OPTIONS",
       "what": "POPIA IO designation \u2014 Marc interim; real human at licence-day",
       "owner": "Iris",
       "due": "Substrate-deferred; activates at licence-day",
-      "active": false
+      "active": true,
+      "roadmapWorkstream": "C"
     },
     {
       "id": "WS-REPORTING-M2-M3",
@@ -594,28 +599,32 @@
       "what": "~70 procedures drafting (markets-bank-tilted)",
       "owner": "Devon",
       "due": "Continuous",
-      "active": false
+      "active": true,
+      "roadmapWorkstream": "C"
     },
     {
       "id": "WS-INSTRUMENT-ANALYSES",
       "what": "~60 regulator instrument analyses",
       "owner": "Mira",
       "due": "Continuous",
-      "active": false
+      "active": true,
+      "roadmapWorkstream": "C"
     },
     {
       "id": "WS-API-CLOUD-BUDGET",
       "what": "API + cloud cost budget (S6)",
       "owner": "Camille",
       "due": "Decision at next session",
-      "active": false
+      "active": false,
+      "roadmapWorkstream": "A"
     },
     {
       "id": "WS-SUBSTRATE-BUDGET",
       "what": "Substrate-completeness budget (S7)",
       "owner": "Atlas + Anya",
       "due": "Drafted against substrate spec",
-      "active": false
+      "active": false,
+      "roadmapWorkstream": "A"
     },
     {
       "id": "WS-AGENT-RUNTIME-SUBSTRATE",
@@ -624,7 +633,8 @@
       "due": "Drafted; approval pending",
       "active": true,
       "startedAt": "2026-05-07",
-      "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md"
+      "briefDoc": "Owner Inbox/2026-05-07_atlas_agent-runtime-substrate-spec.md",
+      "roadmapWorkstream": "A"
     }
   ],
   "prototype": {
