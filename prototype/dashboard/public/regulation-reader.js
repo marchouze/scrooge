@@ -23,9 +23,9 @@
   const drillDetailCache = {};
 
   const TABS = [
-    { key: "all",  label: "All",          filter: () => true },
-    { key: "p1",   label: "Priority 1",   filter: (i) => i.priority === 1 },
-    { key: "p12",  label: "Priority ≤ 2", filter: (i) => i.priority <= 2 },
+    { key: "all", label: "All", filter: () => true },
+    { key: "p1", label: "Priority 1", filter: (i) => i.priority === 1 },
+    { key: "p12", label: "Priority ≤ 2", filter: (i) => i.priority <= 2 },
   ];
 
   // ── DOM refs (populated after DOMContentLoaded) ──────────────────
@@ -483,13 +483,15 @@
       body.innerHTML = `<tr><td colspan="6" style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font:var(--text-small)">No instruments match the current filter.</td></tr>`;
       return;
     }
-    body.innerHTML = instruments.map((inst) => {
-      const pCell = inst.priority <= 2
-        ? `<span class="rr-badge rr-badge-obl">P${inst.priority}</span>`
-        : `<span style="color:var(--color-text-muted);font-size:0.82em">P${inst.priority}</span>`;
-      const isActive = inst.slug === activeDrillSlug;
-      const oblCell = (inst.obligationCount || 0) > 0 ? inst.obligationCount : "—";
-      return `<tr class="rr-inst-row${isActive ? " rr-row-active" : ""}" data-slug="${esc(inst.slug)}">
+    body.innerHTML = instruments
+      .map((inst) => {
+        const pCell =
+          inst.priority <= 2
+            ? `<span class="rr-badge rr-badge-obl">P${inst.priority}</span>`
+            : `<span style="color:var(--color-text-muted);font-size:0.82em">P${inst.priority}</span>`;
+        const isActive = inst.slug === activeDrillSlug;
+        const oblCell = (inst.obligationCount || 0) > 0 ? inst.obligationCount : "—";
+        return `<tr class="rr-inst-row${isActive ? " rr-row-active" : ""}" data-slug="${esc(inst.slug)}">
   <td><div class="rr-inst-name">${esc(inst.shortTitle)}</div>${inst.shortTitle !== inst.title ? `<div class="rr-inst-short">${esc(inst.title)}</div>` : ""}</td>
   <td>${esc(String(inst.year))}</td>
   <td style="max-width:200px">${esc(inst.regulator)}</td>
@@ -497,7 +499,8 @@
   <td class="rr-num-cell">${oblCell}</td>
   <td>${pCell}</td>
 </tr>`;
-    }).join("");
+      })
+      .join("");
     for (const tr of body.querySelectorAll(".rr-inst-row")) {
       tr.addEventListener("click", () => {
         const slug = tr.dataset.slug;
@@ -534,16 +537,18 @@
       : (inst.sectionCount ?? 0);
 
     const toc = detail
-      ? detail.chapters.map((ch) => {
-          const num = ch.number || ch.id || "";
-          const head = ch.heading || ch.title || "";
-          const cnt = ch.sections?.length || 0;
-          return `<div class="rr-drill-toc-item">
+      ? detail.chapters
+          .map((ch) => {
+            const num = ch.number || ch.id || "";
+            const head = ch.heading || ch.title || "";
+            const cnt = ch.sections?.length || 0;
+            return `<div class="rr-drill-toc-item">
   <span class="rr-drill-toc-num">${esc(num)}</span>
   <span class="rr-drill-toc-head">${esc(head)}</span>
   <span class="rr-drill-toc-count">${cnt} section${cnt !== 1 ? "s" : ""}</span>
 </div>`;
-        }).join("")
+          })
+          .join("")
       : `<div class="rr-drill-loading">Could not load detail.</div>`;
 
     const oblCount = (inst.obligationCount || 0);
