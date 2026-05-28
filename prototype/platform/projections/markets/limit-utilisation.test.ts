@@ -91,7 +91,8 @@ describe("LimitUtilisationProjection — placeholder-zero bug fix", () => {
     //
     // Trade: sell USD/ZAR at 18.5 — pay USD 1,000,000, receive ZAR 18,500,000.
     //   fxNetPosition = { ZAR: +18_500_000, USD: −1_000_000 }
-    //   B3 (no MDS) = |18_500_000| + |−1_000_000| = 19_500_000
+    //   B3 (no MDS) = |−1_000_000| = 1_000_000
+    //   ZAR is excluded: home currency per BA 600 (not an FX risk for a ZAR bank).
     const events: Event[] = [makeFxSpotTrade("TRADE-0001")];
 
     rebuildLimitUtilisation(events);
@@ -99,8 +100,8 @@ describe("LimitUtilisationProjection — placeholder-zero bug fix", () => {
 
     const b3 = rows.find((r) => r.cluster === "B3");
     expect(b3).toBeDefined();
-    // ZAR received (18_500_000_00 ÷ 100) + USD paid (1_000_000_00 ÷ 100) = 19_500_000
-    expect(b3?.currentExposure).toBe(19_500_000);
+    // Only USD net position contributes (ZAR excluded as home currency — BA 600).
+    expect(b3?.currentExposure).toBe(1_000_000);
     // No schedule → utilisationPct=0, limitValue=0, ragStatus=green
     expect(b3?.utilisationPct).toBe(0);
     expect(b3?.limitValue).toBe(0);
