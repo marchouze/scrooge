@@ -232,7 +232,7 @@
       ],
       todo: [
         {
-          text: "M2 → M8 markers — reporting build, projection runtime hardening, agent-runtime ingest (M8 auto-commit ingest)",
+          text: "M4–M8 markers — M2/M3 reporting done; M4 payments/tax vertical deferred to revenue-start (Yael); M8 agent-runtime auto-commit ingest + Azure cloud lift",
         },
         { text: "Azure migration — single-coherent-phase per Principle 3; seams already in place" },
       ],
@@ -243,7 +243,7 @@
       label: "Governance",
       sublabel: "Seats, hires, frameworks",
       owner: "Owen (Company Secretary) · Devon (COO) · Nolan (Recruiter)",
-      blockers: ["D-HIRE-SIX-SEATS-PACK"],
+      blockers: [],
       done: [
         {
           text: "11 CEO direct reports filled — Scrooge, Helena (CRO), Devon (COO), Camille (CFO), Eitan, Saskia, Owen, Zara (CCO), Iris (IO), Thandiwe (CAE), Rashida (CISO)",
@@ -346,12 +346,12 @@
           text: "D-S3-THIN-HUMAN-LAYER-COMPOSITION approved — thin-human-layer composition and timing for licence-day confirmed (Owen)",
           ref: "D-S3-THIN-HUMAN-LAYER-COMPOSITION",
         },
-      ],
-      todo: [
         {
-          text: "CEO decision on D-HIRE-SIX-SEATS-PACK — approve batched six-role hire pack; unblocks 18 months of recruitment lead time",
+          text: "D-HIRE-SIX-SEATS-PACK approved — all six thin-human-layer role-briefs approved as drafted; Nolan opened active search across all six channels",
           ref: "D-HIRE-SIX-SEATS-PACK",
         },
+      ],
+      todo: [
         { text: "Open governance seats — GC then CHRO per hire-order (A2-approved)" },
         {
           text: "Board AC constitution — replaces Interim Audit Forum once independent-NED hires land",
@@ -365,7 +365,7 @@
       sublabel: "Obligations, policies, procedures, instruments",
       owner:
         "Mira (Compliance / RegTech engineer) · Zara (CCO) · Iris (IO) · Imani (Legal-as-code)",
-      blockers: ["D-NEW-PRODUCT-APPROVAL-POLICY", "S5"],
+      blockers: ["S5"],
       done: [
         {
           text: "Obligations register v1.12 — ~224 obligations across 16 domains, ~68 instruments; entity-scope + applies-at vocabulary",
@@ -424,12 +424,12 @@
           text: "D-CREDIT-RISK-CAPITAL-APPROACH-V1 alignment — capital-management-policy v1.1, credit-risk-policy v1.2, pillar-3-disclosure-policy v1.1; IRB sections marked NOT_APPLICABLE; SA election principle recorded",
           ref: "PR #863 D-CREDIT-RISK-CAPITAL-APPROACH-V1",
         },
-      ],
-      todo: [
         {
-          text: "CEO decide D-NEW-PRODUCT-APPROVAL-POLICY — required gate before products approach commencement-of-trading",
+          text: "New Product Approval Policy v1.0 authored + D-NEW-PRODUCT-APPROVAL-POLICY approved — gates product walk-through PROC-NPA-GATE-01; backfilled 2026-05-10",
           ref: "D-NEW-PRODUCT-APPROVAL-POLICY",
         },
+      ],
+      todo: [
         {
           text: "Complete instrument analyses — drive ~45 → 0; each unlocks obligations register rows",
         },
@@ -452,7 +452,7 @@
       sublabel: "Saskia's domain — products, RAS, trading mandate, NPA",
       owner:
         "Saskia (Head of Global Markets) · Helena (CRO) · Kai (technology) · Tomas (settlement) · Eitan (funding)",
-      blockers: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+      blockers: [],
       done: [
         {
           text: "Strategic foundation — institutional global-markets dealer in JSE bonds + JSE equities + OTC IRD; institutional-only; SA single-branch; ~R300m capital target",
@@ -610,10 +610,6 @@
         },
       ],
       todo: [
-        {
-          text: "CEO decide NPA Policy v1.0 — gates first product through approval (cross-ref Workstream C)",
-          ref: "D-NEW-PRODUCT-APPROVAL-POLICY",
-        },
         { text: "NPA gate fires as products approach commencement-of-trading" },
         {
           text: "JSE Listings Requirements scoping (ORG-MK-10) — fires only on first listing event",
