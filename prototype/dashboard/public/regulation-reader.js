@@ -16,6 +16,18 @@
   let currentSlug = null;
   let currentDetail = null;
 
+  // ── List view state ──────────────────────────────────────────────
+  let allInstruments = [];
+  let activeTabKey = "all";
+  let activeDrillSlug = null;
+  const drillDetailCache = {};
+
+  const TABS = [
+    { key: "all", label: "All", filter: () => true },
+    { key: "p1", label: "Priority 1", filter: (i) => i.priority === 1 },
+    { key: "p12", label: "Priority ≤ 2", filter: (i) => i.priority <= 2 },
+  ];
+
   // ── DOM refs (populated after DOMContentLoaded) ──────────────────
   let listEl;
   let detailEl;
@@ -394,10 +406,189 @@
     }
   }
 
+  // ── View switching ───────────────────────────────────────────────
+
+  function switchView(view) {
+    const listView = document.getElementById("rr-list-view");
+    const readerView = document.getElementById("rr-reader-view");
+    const btnList = document.getElementById("rr-btn-list");
+    const btnReader = document.getElementById("rr-btn-reader");
+    if (view === "reader") {
+      if (listView) listView.style.display = "none";
+      if (readerView) readerView.style.display = "";
+      if (btnList) btnList.classList.remove("active");
+      if (btnReader) btnReader.classList.add("active");
+    } else {
+      if (listView) listView.style.display = "";
+      if (readerView) readerView.style.display = "none";
+      if (btnList) btnList.classList.add("active");
+      if (btnReader) btnReader.classList.remove("active");
+    }
+  }
+
+  // ── List view ────────────────────────────────────────────────────
+
+  function renderTabs() {
+    const container = document.getElementById("rr-tabs");
+    if (!container) return;
+    container.innerHTML = TABS.map((tab) => {
+      const count = allInstruments.filter(tab.filter).length;
+      const active = tab.key === activeTabKey ? " active" : "";
+      return `<button type="button" class="rr-tab${active}" data-tab="${esc(tab.key)}">${esc(tab.label)}<span class="rr-tab-count">${count}</span></button>`;
+    }).join("");
+    for (const btn of container.querySelectorAll(".rr-tab")) {
+      btn.addEventListener("click", () => {
+        activeTabKey = btn.dataset.tab;
+        for (const b of container.querySelectorAll(".rr-tab")) {
+          b.classList.toggle("active", b.dataset.tab === activeTabKey);
+        }
+        renderInstTable(applyListFilters());
+      });
+    }
+  }
+
+  function populateRegulatorFilter(instruments) {
+    const sel = document.getElementById("rr-regulator-filter");
+    if (!sel) return;
+    const regs = Array.from(new Set(instruments.map((i) => i.regulator).filter(Boolean))).sort();
+    for (const r of regs) {
+      const opt = document.createElement("option");
+      opt.value = r;
+      opt.textContent = r.length > 40 ? `${r.slice(0, 37)}…` : r;
+      sel.appendChild(opt);
+    }
+  }
+
+  function applyListFilters() {
+    const tab = TABS.find((t) => t.key === activeTabKey) || TABS[0];
+    const search = (document.getElementById("rr-list-search")?.value || "").trim().toLowerCase();
+    const regFilter = document.getElementById("rr-regulator-filter")?.value || "";
+    return allInstruments.filter((i) => {
+      if (!tab.filter(i)) return false;
+      if (regFilter && i.regulator !== regFilter) return false;
+      if (search) {
+        const hay = [i.shortTitle, i.title, i.regulator, String(i.year)].join(" ").toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderInstTable(instruments) {
+    const body = document.getElementById("rr-inst-body");
+    const countEl = document.getElementById("rr-list-count");
+    if (!body) return;
+    if (countEl) countEl.textContent = `${instruments.length} of ${allInstruments.length}`;
+    if (instruments.length === 0) {
+      body.innerHTML = `<tr><td colspan="6" style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font:var(--text-small)">No instruments match the current filter.</td></tr>`;
+      return;
+    }
+    body.innerHTML = instruments
+      .map((inst) => {
+        const pCell =
+          inst.priority <= 2
+            ? `<span class="rr-badge rr-badge-obl">P${inst.priority}</span>`
+            : `<span style="color:var(--color-text-muted);font-size:0.82em">P${inst.priority}</span>`;
+        const isActive = inst.slug === activeDrillSlug;
+        const oblCell = (inst.obligationCount || 0) > 0 ? inst.obligationCount : "—";
+        return `<tr class="rr-inst-row${isActive ? " rr-row-active" : ""}" data-slug="${esc(inst.slug)}">
+  <td><div class="rr-inst-name">${esc(inst.shortTitle)}</div>${inst.shortTitle !== inst.title ? `<div class="rr-inst-short">${esc(inst.title)}</div>` : ""}</td>
+  <td>${esc(String(inst.year))}</td>
+  <td style="max-width:200px">${esc(inst.regulator)}</td>
+  <td class="rr-num-cell">${inst.sectionCount ?? "—"}</td>
+  <td class="rr-num-cell">${oblCell}</td>
+  <td>${pCell}</td>
+</tr>`;
+      })
+      .join("");
+    for (const tr of body.querySelectorAll(".rr-inst-row")) {
+      tr.addEventListener("click", () => {
+        const slug = tr.dataset.slug;
+        const inst = allInstruments.find((i) => i.slug === slug);
+        if (slug && inst) openDrilldown(slug, inst);
+      });
+    }
+  }
+
+  // ── Drilldown panel ──────────────────────────────────────────────
+
+  async function openDrilldown(slug, inst) {
+    activeDrillSlug = slug;
+    for (const tr of document.querySelectorAll(".rr-inst-row")) {
+      tr.classList.toggle("rr-row-active", tr.dataset.slug === slug);
+    }
+    const drill = document.getElementById("rr-drill");
+    const titleEl = document.getElementById("rr-drill-title");
+    const content = document.getElementById("rr-drill-content");
+    if (!drill) return;
+    drill.style.display = "";
+    if (titleEl) titleEl.textContent = inst.shortTitle;
+    if (content) content.innerHTML = `<div class="rr-drill-loading">Loading…</div>`;
+
+    // Fetch detail (cached)
+    if (!drillDetailCache[slug]) {
+      drillDetailCache[slug] = await sf(`/api/regulation-reader/${slug}`);
+    }
+    const detail = drillDetailCache[slug];
+    if (!content) return;
+
+    const totalSecs = detail
+      ? detail.chapters.reduce((n, ch) => n + (ch.sections?.length || 0), 0)
+      : (inst.sectionCount ?? 0);
+
+    const toc = detail
+      ? detail.chapters
+          .map((ch) => {
+            const num = ch.number || ch.id || "";
+            const head = ch.heading || ch.title || "";
+            const cnt = ch.sections?.length || 0;
+            return `<div class="rr-drill-toc-item">
+  <span class="rr-drill-toc-num">${esc(num)}</span>
+  <span class="rr-drill-toc-head">${esc(head)}</span>
+  <span class="rr-drill-toc-count">${cnt} section${cnt !== 1 ? "s" : ""}</span>
+</div>`;
+          })
+          .join("")
+      : `<div class="rr-drill-loading">Could not load detail.</div>`;
+
+    const oblCount = inst.obligationCount || 0;
+    content.innerHTML = `
+<button type="button" class="rr-drill-read-btn" data-read-slug="${esc(slug)}">
+  Read instrument <span>→</span>
+</button>
+<div class="rr-drill-meta-grid">
+  <div class="rr-drill-meta-row"><span class="rr-drill-meta-lbl">Regulator</span><span class="rr-drill-meta-val">${esc(inst.regulator)}</span></div>
+  <div class="rr-drill-meta-row"><span class="rr-drill-meta-lbl">Year</span><span class="rr-drill-meta-val">${esc(String(inst.year))}</span></div>
+  <div class="rr-drill-meta-row"><span class="rr-drill-meta-lbl">Priority</span><span class="rr-drill-meta-val">P${inst.priority}</span></div>
+  <div class="rr-drill-meta-row"><span class="rr-drill-meta-lbl">Sections</span><span class="rr-drill-meta-val">${totalSecs}</span></div>
+  ${oblCount > 0 ? `<div class="rr-drill-meta-row"><span class="rr-drill-meta-lbl">Obligations</span><span class="rr-drill-meta-val">${oblCount}</span></div>` : ""}
+</div>
+<div class="rr-drill-sect-head">Chapters (${detail?.chapters?.length ?? 0})</div>
+<div>${toc}</div>`;
+
+    const readBtn = content.querySelector(".rr-drill-read-btn");
+    if (readBtn) {
+      readBtn.addEventListener("click", () => {
+        switchView("reader");
+        selectInstrument(readBtn.dataset.readSlug);
+        history.replaceState(null, "", `#${readBtn.dataset.readSlug}`);
+      });
+    }
+  }
+
+  function closeDrilldown() {
+    activeDrillSlug = null;
+    const drill = document.getElementById("rr-drill");
+    if (drill) drill.style.display = "none";
+    for (const tr of document.querySelectorAll(".rr-inst-row")) {
+      tr.classList.remove("rr-row-active");
+    }
+  }
+
   // ── Hash routing ─────────────────────────────────────────────────
 
   function handleHash() {
-    const hash = window.location.hash.slice(1); // remove leading #
+    const hash = window.location.hash.slice(1);
     if (!hash) return;
 
     const parts = hash.split("/");
@@ -405,6 +596,7 @@
     const sectionId = parts[1] || null;
 
     if (slug) {
+      switchView("reader");
       selectInstrument(slug, sectionId);
     }
   }
@@ -412,12 +604,11 @@
   // ── Init ─────────────────────────────────────────────────────────
 
   async function init() {
-    // Init shell chrome
     if (typeof initShell === "function") {
       initShell({ title: "Regulation Reader" });
     }
 
-    // Grab DOM refs
+    // Reader DOM refs
     listEl = document.getElementById("rr-instrument-list");
     detailEl = document.getElementById("rr-detail");
     placeholderEl = document.getElementById("rr-placeholder");
@@ -427,33 +618,42 @@
     searchCountEl = document.getElementById("rr-search-count");
     showOblEl = document.getElementById("rr-show-obl");
 
-    // Search handler
-    if (searchEl) {
-      searchEl.addEventListener("input", (e) => applySearch(e.target.value));
-    }
+    if (searchEl) searchEl.addEventListener("input", (e) => applySearch(e.target.value));
+    if (showOblEl)
+      showOblEl.addEventListener("change", (e) => applyGlobalObligationToggle(e.target.checked));
 
-    // Global obligation toggle
-    if (showOblEl) {
-      showOblEl.addEventListener("change", (e) => {
-        applyGlobalObligationToggle(e.target.checked);
-      });
-    }
+    // View toggle buttons
+    document.getElementById("rr-btn-list")?.addEventListener("click", () => switchView("list"));
+    document.getElementById("rr-btn-reader")?.addEventListener("click", () => switchView("reader"));
+
+    // Drilldown close
+    document.getElementById("rr-drill-close")?.addEventListener("click", closeDrilldown);
+
+    // List filters
+    document
+      .getElementById("rr-list-search")
+      ?.addEventListener("input", () => renderInstTable(applyListFilters()));
+    document
+      .getElementById("rr-regulator-filter")
+      ?.addEventListener("change", () => renderInstTable(applyListFilters()));
 
     // Hash routing
     window.addEventListener("hashchange", handleHash);
 
-    // Load instrument list
+    // Load instruments
     const data = await sf("/api/regulation-reader/instruments");
-    const instruments = data?.instruments ?? [];
+    allInstruments = data?.instruments ?? [];
 
-    renderSidebar(instruments);
+    renderSidebar(allInstruments);
+    renderTabs();
+    populateRegulatorFilter(allInstruments);
+    renderInstTable(applyListFilters());
 
-    // Handle initial hash or auto-load priority-1
+    // Hash → reader; no hash → list view (default)
     if (window.location.hash) {
       handleHash();
-    } else if (instruments.length > 0) {
-      const first = instruments[0];
-      if (first) selectInstrument(first.slug);
+    } else {
+      switchView("list");
     }
   }
 

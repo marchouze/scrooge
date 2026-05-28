@@ -401,14 +401,278 @@
         overflow-y: visible;
       }
     }
+
+    /* ── View toggle ─────────────────────────────────────────────────── */
+    .rr-view-toggle { display: flex; gap: var(--space-1); }
+    .rr-toggle-btn {
+      padding: var(--space-2) var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font: var(--text-small);
+      font-weight: 500;
+      background: var(--color-bg);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .rr-toggle-btn.active {
+      background: var(--color-accent);
+      color: white;
+      border-color: var(--color-accent);
+    }
+    .rr-toggle-btn:hover:not(.active) {
+      background: var(--color-surface-hover);
+      color: var(--color-text);
+    }
+
+    /* ── List view ───────────────────────────────────────────────────── */
+    #rr-list-view { padding: var(--space-4); }
+    .rr-list-toolbar {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .rr-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--color-surface-hover);
+      padding: 3px;
+      border-radius: var(--radius-md);
+    }
+    .rr-tab {
+      padding: 4px 14px;
+      border: none;
+      border-radius: calc(var(--radius-md) - 1px);
+      font: var(--text-small);
+      font-weight: 500;
+      background: transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all 0.1s;
+      white-space: nowrap;
+    }
+    .rr-tab.active {
+      background: var(--color-bg);
+      color: var(--color-text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+    .rr-tab-count {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 0 5px;
+      background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+      border-radius: 8px;
+      font-size: 0.75em;
+    }
+    .rr-tab.active .rr-tab-count {
+      background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+      color: var(--color-accent);
+    }
+    .rr-list-search, .rr-regulator-select {
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font: var(--text-small);
+      background: var(--color-bg);
+      color: var(--color-text);
+      outline: none;
+    }
+    .rr-list-search { flex: 1; min-width: 140px; max-width: 260px; }
+    .rr-list-search:focus { border-color: var(--color-accent); }
+    .rr-list-count { font: var(--text-small); color: var(--color-text-muted); white-space: nowrap; }
+    .rr-list-body { display: flex; gap: var(--space-4); align-items: flex-start; }
+    .rr-list-table-wrap { flex: 1; overflow-x: auto; min-width: 0; }
+    .rr-inst-table { width: 100%; border-collapse: collapse; font: var(--text-small); }
+    .rr-inst-table th {
+      background: var(--color-surface-hover);
+      border-bottom: 2px solid var(--color-border);
+      padding: var(--space-2) var(--space-3);
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+    .rr-inst-table td {
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-2) var(--space-3);
+      vertical-align: middle;
+      color: var(--color-text);
+    }
+    .rr-inst-table tr:last-child td { border-bottom: none; }
+    .rr-inst-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    .rr-inst-table tbody tr:hover { background: var(--color-surface-hover); }
+    .rr-inst-table tbody tr.rr-row-active {
+      background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+    }
+    .rr-inst-name { font-weight: 600; color: var(--color-text); }
+    .rr-inst-short { font-size: 0.82em; color: var(--color-text-muted); margin-top: 1px; }
+    .rr-badge-p1 {
+      background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+      color: var(--color-accent);
+    }
+    .rr-num-cell { text-align: right; }
+
+    /* ── Drilldown panel ─────────────────────────────────────────────── */
+    .rr-drill {
+      width: 360px;
+      flex-shrink: 0;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-bg);
+      overflow-y: auto;
+      max-height: calc(100vh - var(--topbar-height) - 140px);
+      position: sticky;
+      top: var(--space-3);
+    }
+    .rr-drill-head {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface-hover);
+    }
+    .rr-drill-head-title {
+      flex: 1;
+      font: var(--text-small);
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.4;
+    }
+    .rr-drill-close-btn {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      font-size: 1em;
+      border-radius: var(--radius-sm);
+    }
+    .rr-drill-close-btn:hover { background: var(--color-border); color: var(--color-text); }
+    .rr-drill-content { padding: var(--space-3) var(--space-4); }
+    .rr-drill-read-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-3);
+      border: 1px solid var(--color-accent);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+      color: var(--color-accent);
+      font: var(--text-small);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .rr-drill-read-btn:hover { background: color-mix(in srgb, var(--color-accent) 16%, transparent); }
+    .rr-drill-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-2) var(--space-4);
+      margin-bottom: var(--space-4);
+      padding: var(--space-3);
+      background: var(--color-surface-hover);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+    }
+    .rr-drill-meta-row { display: flex; flex-direction: column; gap: 1px; }
+    .rr-drill-meta-lbl {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+    }
+    .rr-drill-meta-val { font: var(--text-small); color: var(--color-text); font-weight: 500; }
+    .rr-drill-sect-head {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-2);
+      padding-bottom: var(--space-1);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .rr-drill-toc-item {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding: var(--space-1) 0;
+      border-bottom: 1px solid var(--color-border);
+      font: var(--text-small);
+    }
+    .rr-drill-toc-item:last-child { border-bottom: none; }
+    .rr-drill-toc-num { font-weight: 600; color: var(--color-accent); flex-shrink: 0; min-width: 28px; }
+    .rr-drill-toc-head { flex: 1; color: var(--color-text); }
+    .rr-drill-toc-count { color: var(--color-text-muted); font-size: 0.78em; white-space: nowrap; }
+    .rr-drill-loading { color: var(--color-text-muted); font: var(--text-small); padding: var(--space-2) 0; }
   </style>
 </head>
 <body>
   <div id="shell"></div>
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
-    <div class="page-header"><h1 class="page-title">Regulation Reader</h1></div>
-    <div class="page-body" style="padding:0">
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3)">
+      <h1 class="page-title">Regulation Reader</h1>
+      <div class="rr-view-toggle">
+        <button type="button" id="rr-btn-list" class="rr-toggle-btn active">List</button>
+        <button type="button" id="rr-btn-reader" class="rr-toggle-btn">Reader</button>
+      </div>
+    </div>
+
+    <!-- List view -->
+    <div id="rr-list-view" class="page-body">
+      <div class="rr-list-toolbar">
+        <div id="rr-tabs" class="rr-tabs"></div>
+        <input type="search" id="rr-list-search" class="rr-list-search" placeholder="Search instruments…" aria-label="Search instruments">
+        <select id="rr-regulator-filter" class="rr-regulator-select" aria-label="Filter by regulator">
+          <option value="">All regulators</option>
+        </select>
+        <span id="rr-list-count" class="rr-list-count"></span>
+      </div>
+      <div class="rr-list-body">
+        <div class="rr-list-table-wrap">
+          <table class="rr-inst-table">
+            <thead>
+              <tr>
+                <th>Instrument</th>
+                <th>Year</th>
+                <th>Regulator</th>
+                <th class="rr-num-cell">Sections</th>
+                <th class="rr-num-cell">Obls</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody id="rr-inst-body">
+              <tr><td colspan="6" class="rr-skeleton" style="padding:var(--space-4)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <aside id="rr-drill" class="rr-drill" style="display:none" aria-label="Instrument detail">
+          <div class="rr-drill-head">
+            <div class="rr-drill-head-title" id="rr-drill-title">—</div>
+            <button type="button" class="rr-drill-close-btn" id="rr-drill-close" aria-label="Close">×</button>
+          </div>
+          <div class="rr-drill-content" id="rr-drill-content"></div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Reader view -->
+    <div class="page-body" style="padding:0;display:none" id="rr-reader-view">
       <div class="rr-layout">
         <!-- Left sidebar: instrument list -->
         <aside class="rr-sidebar" id="rr-sidebar">
@@ -442,8 +706,8 @@
             <div class="rr-sections-scroll" id="rr-sections"></div>
           </div>
         </section>
-      </div>
-    </div>
+      </div><!-- /.rr-layout -->
+    </div><!-- /#rr-reader-view -->
   </main>
 
   <script src="/_shell.js"></script>
