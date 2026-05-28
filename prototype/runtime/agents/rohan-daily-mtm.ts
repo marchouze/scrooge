@@ -189,7 +189,7 @@ function lastRevaluationFor(tradeId: string): PriorRevaluation | null {
 // ---------------------------------------------------------------------------
 
 interface PositionRevalResult {
-  readonly outcome: "revalued" | "stale-mark" | "skipped-no-mark";
+  readonly outcome: "revalued" | "overnight-close" | "stale-mark" | "skipped-no-mark";
   readonly tradeId: string;
   readonly currencyPair: string;
   readonly bookRate: number;
@@ -300,21 +300,24 @@ function revalueOnePosition(args: {
   // ---- 2. No fresh production tick — try stale-mark carry-forward ----------
   const prior = lastRevaluationFor(tradeId);
   if (prior !== null) {
-    // Carry yesterday's mark forward. P&L delta is zero (no fair-value
-    // movement on this day) — the reversal-then-reval pair stays atomic.
-    // The rateSource is tagged "stale-mark:<original>" so downstream
+    // Carry yesterday's close rate forward; compute full cumulative PnL vs
+    // book rate (not delta) so the daily-pnl engine reads the correct position
+    // value. The rateSource is tagged "stale-mark:<original>" so downstream
     // recon + Vera see the provenance.
     const originalSource = prior.rateSource.startsWith("stale-mark:")
       ? prior.rateSource.slice("stale-mark:".length)
       : prior.rateSource;
     const staleSource = `stale-mark:${originalSource}`;
+    const unrealisedPnlZarMinor = Math.round(
+      sideSign * notionalBaseMinor * (prior.revalRate - bookRate),
+    );
     const revalPayload: FxPositionRevaluedPayload = {
       tradeId,
       currencyPair,
       bookRate,
       revalRate: prior.revalRate,
       notionalBaseMinor,
-      unrealisedPnlZarMinor: 0,
+      unrealisedPnlZarMinor,
       revaluedAt,
       rateSource: staleSource,
     };
@@ -336,17 +339,64 @@ function revalueOnePosition(args: {
       currencyPair,
       bookRate,
       markRate: prior.revalRate,
-      pnlDeltaMinor: 0,
+      pnlDeltaMinor: unrealisedPnlZarMinor,
       rateSource: staleSource,
     };
   }
 
+  // ---- 2b. No prior FxPositionRevalued — try overnight close proxy ---------
+  // First-ever run for this position. If a tick exists in mdStore (any date,
+  // not just today), use it as an overnight close proxy. The `tick` variable
+  // is already in scope from the mdStore query above — reuse it rather than
+  // re-querying. We do NOT emit OfficialMarkAdopted for a historical tick;
+  // only current marks get adopted. Increment positionsStaleMark (not
+  // positionsValued) — this is not a live mark.
+  if (tick) {
+    const tickPayload = tick.payload as Record<string, unknown>;
+    const midRate = extractMidRate(tickPayload);
+    if (midRate !== undefined && midRate > 0) {
+      const unrealisedPnlZarMinor = Math.round(sideSign * notionalBaseMinor * (midRate - bookRate));
+      const rateSource = `overnight-close:${tick.asOf.slice(0, 10)}:${tick.source}`;
+      const revalPayload: FxPositionRevaluedPayload = {
+        tradeId,
+        currencyPair,
+        bookRate,
+        revalRate: midRate,
+        notionalBaseMinor,
+        unrealisedPnlZarMinor,
+        revaluedAt,
+        rateSource,
+      };
+
+      eventStore.append(
+        makeFxPositionRevalued({
+          asOf,
+          entity: BANK_ENTITY,
+          actor: ENGINE_ACTOR,
+          citations: CITATIONS,
+          payload: revalPayload,
+          eventId: newEventId(),
+        }),
+      );
+
+      return {
+        outcome: "overnight-close",
+        tradeId,
+        currencyPair,
+        bookRate,
+        markRate: midRate,
+        pnlDeltaMinor: unrealisedPnlZarMinor,
+        rateSource,
+      };
+    }
+  }
+
   // ---- 3. No production tick and no prior reval — must skip ----------------
-  // This is the legitimate "first-day with no feed" case. We cannot
-  // synthesise a mark; book rate is not a valid FVTPL mark. We do NOT
-  // emit FxPositionRevalued — Bea's posting engine therefore emits
-  // nothing for this position-day either, preserving the reversal-
-  // reval pairing invariant.
+  // This is the legitimate "first-day with no feed and no tick at all" case.
+  // We cannot synthesise a mark; book rate is not a valid FVTPL mark. We do
+  // NOT emit FxPositionRevalued — Bea's posting engine therefore emits
+  // nothing for this position-day either, preserving the reversal-reval
+  // pairing invariant. Alert elevated to "high" — this is a more serious gap.
   return {
     outcome: "skipped-no-mark",
     tradeId,
@@ -439,9 +489,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         if (r.outcome === "revalued") {
           positionsValued += 1;
           totalPnlDeltaMinor += r.pnlDeltaMinor;
-        } else if (r.outcome === "stale-mark") {
+        } else if (r.outcome === "stale-mark" || r.outcome === "overnight-close") {
           positionsStaleMark += 1;
-          const reason = `stale-mark carry-forward for ${r.currencyPair}`;
+          const reason =
+            r.outcome === "overnight-close"
+              ? `overnight-close proxy for ${r.currencyPair} (rateSource: ${r.rateSource})`
+              : `stale-mark carry-forward for ${r.currencyPair}`;
           if (!skippedReasons.includes(reason)) skippedReasons.push(reason);
         } else {
           positionsSkipped += 1;
@@ -479,7 +532,11 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   if (!ctx.dryRun) {
     if (positionsStaleMark > 0) {
       const distinctPairs = Array.from(
-        new Set(summary.filter((r) => r.outcome === "stale-mark").map((r) => r.currencyPair)),
+        new Set(
+          summary
+            .filter((r) => r.outcome === "stale-mark" || r.outcome === "overnight-close")
+            .map((r) => r.currencyPair),
+        ),
       ).sort();
       eventStore.append(
         makeSubstrateAlert({
@@ -491,13 +548,38 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
             alertId: `alert:integrity:mtm-stale-mark-${dateStr}`,
             alertClass: "integrity",
             agentUrn: "urn:agent:rohan:daily-mtm",
-            details: `Daily MTM ${dateStr}: ${positionsStaleMark} position(s) carried forward stale marks (no fresh production tick). Pairs: ${distinctPairs.join(", ")}. Substrate gap: no production FX feed (Reuters / Bloomberg / SARB intraday). Each affected position-day has FxPositionRevalued emitted with rateSource="stale-mark:<original>" and unrealisedPnlZarMinor=0.`,
+            details: `Daily MTM ${dateStr}: ${positionsStaleMark} position(s) used non-live marks (stale-mark carry-forward or overnight-close proxy). Pairs: ${distinctPairs.join(", ")}. Substrate gap: no production FX feed (Reuters / Bloomberg / SARB intraday). Each affected position-day has FxPositionRevalued emitted with rateSource="stale-mark:<original>" or "overnight-close:<date>:<source>"; unrealised PnL is computed as cumulative vs book rate.`,
             severity: "medium",
           },
           eventId: newEventId(),
         }),
       );
       eventsEmitted += 1;
+    }
+
+    if (positionsSkipped > 0) {
+      const skippedFxPositions = summary
+        .filter((r) => r.outcome === "skipped-no-mark")
+        .map((r) => r.currencyPair);
+      if (skippedFxPositions.length > 0) {
+        eventStore.append(
+          makeSubstrateAlert({
+            asOf,
+            entity: BANK_ENTITY,
+            actor: ENGINE_ACTOR,
+            citations: SUBSTRATE_ALERT_CITATIONS,
+            payload: {
+              alertId: `alert:integrity:mtm-no-mark-${dateStr}`,
+              alertClass: "integrity",
+              agentUrn: "urn:agent:rohan:daily-mtm",
+              details: `Daily MTM ${dateStr}: ${skippedFxPositions.length} position(s) have NO mark — no production tick and no prior FxPositionRevalued. Pairs: ${skippedFxPositions.join(", ")}. Unrealised P&L is INCOMPLETE; dashboard will show mark-unavailable indicator. MTM feed required.`,
+              severity: "high",
+            },
+            eventId: newEventId(),
+          }),
+        );
+        eventsEmitted += 1;
+      }
     }
 
     // ---------------------------------------------------------------------

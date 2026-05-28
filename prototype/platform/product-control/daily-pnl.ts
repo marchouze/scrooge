@@ -58,16 +58,32 @@ export interface TradeDetailRow {
   /** Realised P&L in ZAR minor units (from TradeMatured). 0 if open. */
   realisedPnlZarMinor: number;
   status: "live" | "settled" | "cancelled";
+  /** Data quality of the unrealised P&L mark. */
+  markStatus: "live" | "stale" | "overnight" | "unavailable";
 }
 
 export interface DailyPnLResult {
   payload: DailyPnLReportGeneratedPayload;
   trades: TradeDetailRow[];
+  marksUnavailableCount: number;
 }
 
 // ---------------------------------------------------------------------------
 // Engine
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function deriveMarkStatus(
+  reval: FxPositionRevaluedPayload | undefined,
+): "live" | "stale" | "overnight" | "unavailable" {
+  if (!reval) return "unavailable";
+  if (reval.rateSource.startsWith("stale-mark:")) return "stale";
+  if (reval.rateSource.startsWith("overnight-close:")) return "overnight";
+  return "live";
+}
 
 const DESK_ID = "FX-SPOT";
 const BANK_ENTITY = "LE-ZA-HOZ-BANK";
@@ -192,6 +208,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   let totalRealised = 0;
   let activePositions = 0;
   let cancelledPositions = 0;
+  let marksUnavailableCount = 0;
 
   for (const [tradeId, trade] of tradeMap) {
     // Per-trade `pair` retains the booked direction (for trader-audit
@@ -233,6 +250,11 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
       totalRealised += realised;
     }
 
+    const markStatus = status === "cancelled" ? ("unavailable" as const) : deriveMarkStatus(reval);
+    if (status === "live" && markStatus === "unavailable") {
+      marksUnavailableCount++;
+    }
+
     trades.push({
       tradeId,
       pair,
@@ -245,6 +267,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
       unrealisedPnlZarMinor: status === "cancelled" ? 0 : unrealised,
       realisedPnlZarMinor: status === "cancelled" ? 0 : realised,
       status,
+      markStatus,
     });
 
     if (status !== "cancelled") {
@@ -327,7 +350,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
     generatedBy: ENGINE_ACTOR.id,
   };
 
-  return { payload, trades };
+  return { payload, trades, marksUnavailableCount };
 }
 
 /**

@@ -2965,10 +2965,15 @@ const server = Bun.serve({
         latestReport = e.payload; // keep last (replay is oldest-first)
       }
       // Compute fresh trade-level detail and report on demand.
-      const { payload: freshPayload, trades } = computeDailyPnL(eventStore, reportDate);
+      const {
+        payload: freshPayload,
+        trades,
+        marksUnavailableCount,
+      } = computeDailyPnL(eventStore, reportDate);
       return jsonResponse({
         report: latestReport ?? freshPayload,
         trades,
+        marksUnavailableCount,
         asOf: nowUtc(),
         pageProvenance: eventDerivedPageProvenance(),
       });
