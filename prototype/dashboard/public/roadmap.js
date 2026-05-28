@@ -201,6 +201,26 @@
           text: "WAL-loss data fix — archive partition max_sequence 94330→94522; SubstrateAlert + AuditFinding F-ATLAS-20260527-MBZB filed",
           ref: "d4701916",
         },
+        {
+          text: "MTM stale-mark PnL fix — overnight-close proxy; mark-unavailable indicator; 25 SettlementConfirmed backfilled (active 137→111)",
+          ref: "PR #850",
+        },
+        {
+          text: "Client entity-name uniqueness gate — recon CI gate + projection dedup guard; 240 tombstones",
+          ref: "PR #849",
+        },
+        {
+          text: "Vera Wave-4 #11–#13 — mandate-coverage, procedure-actor, compliance-obligation-tracing recon pipelines",
+          ref: "PR #854",
+        },
+        {
+          text: "BA 325/700 SARB adapters — XML adapters + local portal simulator + sarb:dry-run script + stress-test coverage — G3 gate",
+          ref: "PRs #855 #856",
+        },
+        {
+          text: "S7 substrate-completeness brief filed — sessions-to-pre-licence-gate countdown live",
+          ref: "PR #851",
+        },
       ],
       todo: [
         {
@@ -298,6 +318,26 @@
         {
           text: "Decision-authority routing operationalised — 5 inaugural seat decisions seeded (CISO/COO/CFO/CCO/CAE); routing table active per Owen brief",
           ref: "PR #848",
+        },
+        {
+          text: "IFRS 9 staging engine v1 — stage classification + ECL provision; G4 gate complete",
+          ref: "PR #857",
+        },
+        {
+          text: "CAE quarterly autonomous run — audit-plan review + QAIP + third-line opinion; G5 gate",
+          ref: "PR #858",
+        },
+        {
+          text: "CCO quarterly autonomous run — RMCP + STR/AML + EDD; G5 gate",
+          ref: "PR #861",
+        },
+        {
+          text: "CISO quarterly autonomous run — JS-2 + SBOM + threat-model + key-ceremony; G5 gate",
+          ref: "PR #860",
+        },
+        {
+          text: "D-PRELICENCE-SUBSTRATE-GATES-G3-G4-G5 approved — G3 (BA 700/325 stress tests + SARB dry-run), G4 (IFRS 9 ECL engine), G5 (CAE/CCO/CISO governance seat runs) all CI-green; build-phase substrate readiness recorded",
+          ref: "D-PRELICENCE-SUBSTRATE-GATES-G3-G4-G5",
         },
       ],
       todo: [
@@ -552,6 +592,10 @@
         {
           text: "M7 NPA gate walk — PROC-NPA-GATE-01 for prd:bank:treasury:funding-line (Committed Funding Line); ProductApproved event emitted",
           ref: "PR #850 brief:saskia:m5-m7-npa-gate-walks-productapproved-events:2026-05-28",
+        },
+        {
+          text: "B3 NOP fix — ZAR home-currency excluded from NOP calculation per BA 600; B3 = ZAR 602.6M / 301% red (pre-licence design intent)",
+          ref: "PR #859",
         },
       ],
       todo: [
