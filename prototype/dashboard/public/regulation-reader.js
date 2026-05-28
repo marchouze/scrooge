@@ -551,7 +551,7 @@
           .join("")
       : `<div class="rr-drill-loading">Could not load detail.</div>`;
 
-    const oblCount = (inst.obligationCount || 0);
+    const oblCount = inst.obligationCount || 0;
     content.innerHTML = `
 <button type="button" class="rr-drill-read-btn" data-read-slug="${esc(slug)}">
   Read instrument <span>→</span>
@@ -619,7 +619,8 @@
     showOblEl = document.getElementById("rr-show-obl");
 
     if (searchEl) searchEl.addEventListener("input", (e) => applySearch(e.target.value));
-    if (showOblEl) showOblEl.addEventListener("change", (e) => applyGlobalObligationToggle(e.target.checked));
+    if (showOblEl)
+      showOblEl.addEventListener("change", (e) => applyGlobalObligationToggle(e.target.checked));
 
     // View toggle buttons
     document.getElementById("rr-btn-list")?.addEventListener("click", () => switchView("list"));
@@ -629,8 +630,12 @@
     document.getElementById("rr-drill-close")?.addEventListener("click", closeDrilldown);
 
     // List filters
-    document.getElementById("rr-list-search")?.addEventListener("input", () => renderInstTable(applyListFilters()));
-    document.getElementById("rr-regulator-filter")?.addEventListener("change", () => renderInstTable(applyListFilters()));
+    document
+      .getElementById("rr-list-search")
+      ?.addEventListener("input", () => renderInstTable(applyListFilters()));
+    document
+      .getElementById("rr-regulator-filter")
+      ?.addEventListener("change", () => renderInstTable(applyListFilters()));
 
     // Hash routing
     window.addEventListener("hashchange", handleHash);
