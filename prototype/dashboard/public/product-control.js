@@ -31,8 +31,17 @@
 
     const report = pnlData?.report;
 
-    // ── Summary tiles ──────────────────────────────────────────────────────
+    // ── Mark-unavailable warning banner ────────────────────────────────────
     const tilesEl = document.getElementById("pc-tiles");
+    if (tilesEl && pnlData?.marksUnavailableCount > 0) {
+      const banner = document.createElement("div");
+      banner.style.cssText =
+        "background:#fff1f0;border:1px solid #ff4d4f;border-radius:4px;padding:8px 12px;margin-bottom:12px;font:var(--text-body)";
+      banner.textContent = `⚠ ${pnlData.marksUnavailableCount} position(s) have no mark — unrealised P&L is incomplete. MTM feed required.`;
+      tilesEl.before(banner);
+    }
+
+    // ── Summary tiles ──────────────────────────────────────────────────────
     if (tilesEl && report) {
       const tiles = [
         SC.renderTile({
@@ -153,7 +162,13 @@
             t.revalRate != null ? t.revalRate.toFixed(6) : "—",
             t.status === "cancelled"
               ? `<span style="color:var(--color-text-disabled)">—</span>`
-              : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`,
+              : t.markStatus === "unavailable"
+                ? `<span style="color:#ff4d4f;font-style:italic" title="No mark available — MTM data missing">⚠ no mark</span>`
+                : t.markStatus === "stale"
+                  ? `<span style="color:#d48806" title="Stale mark — overnight carry-forward from prior close">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">stale</small></span>`
+                  : t.markStatus === "overnight"
+                    ? `<span style="color:#d48806" title="Overnight close proxy — no live feed">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">close</small></span>`
+                    : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`,
             SC.renderBadge(
               t.status === "cancelled" ? "cancelled" : t.status === "settled" ? "settled" : "live",
             ),
