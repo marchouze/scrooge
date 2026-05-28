@@ -1,7 +1,7 @@
 ---
 agent: Ravi
 trigger: ftp-curve-publish
-asOf: 2026-05-28T06:00:12.886Z
+asOf: 2026-05-28T06:03:30.803Z
 decision-required: false
 ---
 
