@@ -159,6 +159,10 @@ export { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 // Authority: FIC Act 38/2001; Banks Act 94/1990 §60A; POL-AML-001; RMCP v1;
 //   D-CCO-GOVERNANCE-SEAT-G5 (CEO-approved).
 export { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-runs";
+// CISO quarterly governance run events — JS-2 attestation, SBOM review,
+// threat-model gate, key-ceremony attestation, governance-seat-run completion.
+// Authority: PA/FSCA Joint Standard 2 of 2024; POPIA s.19–22; Principle 4.
+export { CISO_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./ciso-governance";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -169,6 +173,7 @@ import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
+import { CISO_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./ciso-governance";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
@@ -369,6 +374,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // SuspiciousActivityQueueReviewed, AmlRiskAssessmentCompleted, EddQueueReviewed.
   // Authority: FIC Act 38/2001; Banks Act 94/1990 §60A; POL-AML-001; RMCP v1.
   ...GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY,
+  // CISO quarterly governance run events — JS-2 attestation, SBOM review,
+  // threat-model gate, key-ceremony attestation, governance-seat-run completion.
+  // Authority: PA/FSCA Joint Standard 2 of 2024; POPIA s.19–22; Principle 4.
+  ...CISO_GOVERNANCE_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
