@@ -541,6 +541,18 @@
           text: "B3 risk limit fix — computeB3Exposure canonical formula; shared market-data store wiring; B3 = ZAR 602.6M / 301% red",
           ref: "PR #834",
         },
+        {
+          text: "M5 NPA gate walk — PROC-NPA-GATE-01 for prd:bank:treasury:repo-sagb-term (SAGB-backed Term Repo); ProductApproved event emitted",
+          ref: "PR #850 brief:saskia:m5-m7-npa-gate-walks-productapproved-events:2026-05-28",
+        },
+        {
+          text: "M6 NPA gate walk — PROC-NPA-GATE-01 for prd:bank:treasury:mmd-deposit (Money Market Deposit); ProductApproved event emitted",
+          ref: "PR #850 brief:saskia:m5-m7-npa-gate-walks-productapproved-events:2026-05-28",
+        },
+        {
+          text: "M7 NPA gate walk — PROC-NPA-GATE-01 for prd:bank:treasury:funding-line (Committed Funding Line); ProductApproved event emitted",
+          ref: "PR #850 brief:saskia:m5-m7-npa-gate-walks-productapproved-events:2026-05-28",
+        },
       ],
       todo: [
         {
