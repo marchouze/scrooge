@@ -20,7 +20,7 @@
       label: "Substrate",
       sublabel: "Engineering platform",
       owner: "Atlas (Core banking platform architect) · Devon (COO)",
-      blockers: ["S6", "S7", "S8"],
+      blockers: ["D-S8-AGENT-RUNTIME-SUBSTRATE-APPROVED", "D-S7-SUBSTRATE-COMPLETENESS-GATE"],
       done: [
         {
           text: "Walking-skeleton platform: event store, projection runtime, identity authenticator, IaC seam, recon harnesses",
@@ -240,7 +240,7 @@
       label: "Governance",
       sublabel: "Seats, hires, frameworks",
       owner: "Owen (Company Secretary) · Devon (COO) · Nolan (Recruiter)",
-      blockers: ["D-HIRE-SIX-SEATS-PACK", "S3"],
+      blockers: ["D-HIRE-SIX-SEATS-PACK", "D-S3-THIN-HUMAN-LAYER-COMPOSITION"],
       done: [
         {
           text: "11 CEO direct reports filled — Scrooge, Helena (CRO), Devon (COO), Camille (CFO), Eitan, Saskia, Owen, Zara (CCO), Iris (IO), Thandiwe (CAE), Rashida (CISO)",
