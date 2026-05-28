@@ -285,6 +285,20 @@ export {
   ba600ToXmlPayload,
 } from "./ba-600-xml-adapter";
 
+export {
+  BA_325_NAMESPACE,
+  BA_325_REQUIRED_ELEMENTS,
+  BA_325_XSD_URI,
+  ba325ToXmlPayload,
+} from "./ba-325-xml-adapter";
+
+export {
+  BA_700_NAMESPACE,
+  BA_700_REQUIRED_ELEMENTS,
+  BA_700_XSD_URI,
+  ba700ToXmlPayload,
+} from "./ba-700-xml-adapter";
+
 // ---------------------------------------------------------------------------
 // Slice 9 — BA 120 (Off-Balance-Sheet Activities) monthly return
 // ---------------------------------------------------------------------------
