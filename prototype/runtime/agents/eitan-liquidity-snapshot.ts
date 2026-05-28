@@ -27,7 +27,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
-import { newEventId } from "../../platform/core/types";
+import { makeLiquiditySnapshot } from "../../platform/event-store/event-types/risk-treasury-extended";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -315,30 +315,20 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    eventStore.append({
-      event_id: newEventId(),
-      type: "LiquiditySnapshot",
-      as_of: ctx.asOf,
-      entity: "LE-ZA-HOZ-BANK",
-      actor: { type: "service", id: "agent:eitan:liquidity-snapshot" },
-      citations: EVENT_CITATIONS,
-      payload: {
-        liquidityObligationsCount: digest.liquidityObligations.length,
-        liquidityObligationsPartial: digest.liquidityPartial,
-        hqlaReportedLast24h: digest.hqlaReportedLast24h,
-        liquidityReportLast24h: digest.liquidityReportLast24h,
-        lcrProjectionLast24h: digest.lcrProjectionLast24h,
-        nsfrProjectionLast24h: digest.nsfrProjectionLast24h,
-        irrbbCheckedLast24h: digest.irrbbCheckedLast24h,
-        fxPositionReportedLast24h: digest.fxPositionReportedLast24h,
-        capitalActionLast24h: digest.capitalActionLast24h,
-        samosFundingApprovedLast24h: digest.samosFundingApprovedLast24h,
-        alcoDecisionLast7d: digest.alcoDecisionLast7d,
-        hedgeProgrammeApprovedLast7d: digest.hedgeProgrammeApprovedLast7d,
-        priorSnapshotsLast7d: digest.priorSnapshotsLast7d,
-        runTrigger: ctx.trigger.id,
-      },
-    });
+    eventStore.append(
+      makeLiquiditySnapshot({
+        asOf: ctx.asOf,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:eitan:liquidity-snapshot" },
+        citations: EVENT_CITATIONS,
+        payload: {
+          snapshotId: `LIQ-SNAP-${fmtDateUTC(ctx.asOf)}`,
+          asOf: ctx.asOf,
+          currency: "ZAR",
+          overallStatus: "green", // build-phase default — no positions, no breaches
+        },
+      }),
+    );
     eventsEmitted = 1;
   }
 
