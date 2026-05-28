@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: collateral-snapshot
-asOf: 2026-05-28T05:55:24.094Z
+asOf: 2026-05-28T06:30:54.309Z
 decision-required: false
 ---
 
