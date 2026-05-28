@@ -21,7 +21,6 @@
 import {
   auditIssueTrackerReviewedPayloadSchema,
   auditPlanUpdatedPayloadSchema,
-  governanceSeatRunCompletedPayloadSchema,
   qaipAttestationFiledPayloadSchema,
   thirdLineOpinionFiledPayloadSchema,
 } from "../event-types/cae-governance";
@@ -107,24 +106,5 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
-  },
-  {
-    // GovernanceSeatRunCompleted — shared seat-run completion event.
-    // Emitted as the final event of any governance-seat quarterly run to
-    // close the run lifecycle. The seatId field identifies which seat's run
-    // is being completed. Re-defined here until governance-seat-runs.ts
-    // lands from the parallel CCO delivery.
-    //
-    // Idempotency: one event per (seatId, runId, period).
-    type: "GovernanceSeatRunCompleted",
-    class: "governance",
-    payloadSchema: governanceSeatRunCompletedPayloadSchema,
-    issuer: "any-agent",
-    subscribers: ["Owen", "Vera", "Atlas", "dashboard", "audit"],
-    replay: "append-only-audit",
-    citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "Banks Act 94/1990 §73"],
-    retention: RETENTION_GOVERNANCE_7Y,
-    source:
-      "scripts/governance/cae-periodic-run.ts (quarterly batch); future: any governance-seat run script",
   },
 ];

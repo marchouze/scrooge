@@ -62,8 +62,6 @@ const CITATIONS = [
   "Banks Act 94/1990 §73",
 ];
 
-const BRIEF_ID = "brief:thandiwe:cae-quarterly-autonomous-run-audit-plan-qaip-thi:2026-05-28";
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -262,13 +260,12 @@ async function main(): Promise<void> {
       citations: CITATIONS,
       payload: {
         seatId: "CAE",
-        runId,
-        briefId: BRIEF_ID,
+        agentId: "thandiwe",
+        runType: "quarterly",
         period,
-        outcome: "delivered",
-        completedAt: nowIso,
-        summaryNotes:
-          "Audit plan updated; 7 open findings (0 critical, 1 overdue); QAIP generally-conforms; third-line opinion: reasonable assurance",
+        eventsEmitted: emitted,
+        findings: [],
+        status: "completed",
       },
     });
     store.append(event);

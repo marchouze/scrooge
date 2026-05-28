@@ -153,6 +153,12 @@ export { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 // Authority: D-CAE-QUARTERLY-RUN-G5 (2026-05-28); IIA Standards §1300/§2010/§2600;
 //   Banks Act 94/1990 §73; BCBS 239 Principles I, III, IX, XIV.
 export { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
+// D-CCO-GOVERNANCE-SEAT-G5 — CCO/CISO/CAE periodic-run event types.
+// GovernanceSeatRunCompleted + GovernanceAttestationFiled +
+// SuspiciousActivityQueueReviewed + AmlRiskAssessmentCompleted + EddQueueReviewed.
+// Authority: FIC Act 38/2001; Banks Act 94/1990 §60A; POL-AML-001; RMCP v1;
+//   D-CCO-GOVERNANCE-SEAT-G5 (CEO-approved).
+export { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-runs";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -184,6 +190,7 @@ import {
   READINESS_SNAPSHOT_EVENT_TYPES,
   RMS_EVENT_TYPES,
 } from "./governance";
+import { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-runs";
 import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
 import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
@@ -357,6 +364,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-CAE-QUARTERLY-RUN-G5 (2026-05-28); IIA Standards §1300/§2010/§2600;
   //   Banks Act 94/1990 §73; BCBS 239 Principles I, III, IX, XIV.
   ...CAE_GOVERNANCE_EVENT_TYPES_REGISTRY,
+  // D-CCO-GOVERNANCE-SEAT-G5 — CCO/CISO/CAE periodic-run event types.
+  // GovernanceSeatRunCompleted, GovernanceAttestationFiled,
+  // SuspiciousActivityQueueReviewed, AmlRiskAssessmentCompleted, EddQueueReviewed.
+  // Authority: FIC Act 38/2001; Banks Act 94/1990 §60A; POL-AML-001; RMCP v1.
+  ...GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

@@ -56,7 +56,6 @@ const CITATIONS = ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-1300"];
 const NOW = "2026-05-28T07:38:43.015Z";
 const PERIOD = "2026-Q2";
 const RUN_ID = "run:thandiwe:test-run-001";
-const BRIEF_ID = "brief:thandiwe:cae-quarterly-autonomous-run-audit-plan-qaip-thi:2026-05-28";
 
 const VALID_AUDIT_PLAN_PAYLOAD = {
   runId: RUN_ID,
@@ -102,13 +101,12 @@ const VALID_THIRD_LINE_PAYLOAD = {
 
 const VALID_SEAT_RUN_PAYLOAD = {
   seatId: "CAE",
-  runId: RUN_ID,
-  briefId: BRIEF_ID,
+  agentId: "thandiwe",
+  runType: "quarterly",
   period: PERIOD,
-  outcome: "delivered" as const,
-  completedAt: NOW,
-  summaryNotes:
-    "Audit plan updated; 7 open findings (0 critical, 1 overdue); QAIP generally-conforms; third-line opinion: reasonable assurance",
+  eventsEmitted: 4,
+  findings: [],
+  status: "completed",
 };
 
 // ---------------------------------------------------------------------------
@@ -158,7 +156,7 @@ function emitAllEvents(store: EventStore, runId: string): void {
       entity: BANK_ENTITY,
       actor: CAE_ACTOR,
       citations: CITATIONS,
-      payload: { ...VALID_SEAT_RUN_PAYLOAD, runId },
+      payload: VALID_SEAT_RUN_PAYLOAD,
     }),
   );
 }
@@ -335,13 +333,13 @@ describe("ThirdLineOpinionFiled schema", () => {
 // ---------------------------------------------------------------------------
 
 describe("GovernanceSeatRunCompleted schema", () => {
-  it("TC-10: seatId=CAE + outcome=delivered passes schema", () => {
+  it("TC-10: seatId=CAE + status=completed passes schema", () => {
     expect(() =>
       governanceSeatRunCompletedPayloadSchema.parse(VALID_SEAT_RUN_PAYLOAD),
     ).not.toThrow();
     const parsed = governanceSeatRunCompletedPayloadSchema.parse(VALID_SEAT_RUN_PAYLOAD);
     expect(parsed.seatId).toBe("CAE");
-    expect(parsed.outcome).toBe("delivered");
+    expect(parsed.status).toBe("completed");
   });
 
   // TC-11: invalid period format
@@ -363,11 +361,11 @@ describe("GovernanceSeatRunCompleted schema", () => {
     ).toThrow();
   });
 
-  it("TC-10b: invalid outcome → schema throws", () => {
+  it("TC-10b: empty status → schema throws", () => {
     expect(() =>
       governanceSeatRunCompletedPayloadSchema.parse({
         ...VALID_SEAT_RUN_PAYLOAD,
-        outcome: "succeeded",
+        status: "",
       }),
     ).toThrow();
   });
@@ -487,13 +485,13 @@ describe("All 5 events emission", () => {
     expect(p.overallAssurance).toBe("reasonable");
   });
 
-  it("GovernanceSeatRunCompleted seatId=CAE + outcome=delivered in store", () => {
+  it("GovernanceSeatRunCompleted seatId=CAE + status=completed in store", () => {
     const store = new EventStore(dbPath);
     emitAllEvents(store, RUN_ID);
 
     const completed = [...store.replay({ type: "GovernanceSeatRunCompleted" })].filter((e) => {
-      const p = e.payload as unknown as { seatId: string; outcome: string };
-      return p.seatId === "CAE" && p.outcome === "delivered";
+      const p = e.payload as unknown as { seatId: string; status: string };
+      return p.seatId === "CAE" && p.status === "completed";
     });
     expect(completed.length).toBeGreaterThanOrEqual(1);
   });

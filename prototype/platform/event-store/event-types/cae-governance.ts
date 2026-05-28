@@ -32,57 +32,16 @@ import { type Actor, type Event, eventSchema } from "../types";
 // ---------------------------------------------------------------------------
 // GovernanceSeatRunCompleted
 //
-// Shared governance-run completion event. Re-exported from
-// governance-seat-runs.ts once the parallel CCO delivery lands; until then
-// defined here as a local stub so the CAE module compiles independently.
-//
-// Payload: { seatId, runId, briefId, period, outcome, completedAt, summaryNotes }
+// Canonical shared type defined in governance-seat-runs.ts (CCO delivery).
+// Re-exported here for backward-compat import paths used by cae-periodic-run.ts
+// and cae-periodic-run.test.ts.
 // ---------------------------------------------------------------------------
 
-export const governanceSeatRunCompletedPayloadSchema = z.object({
-  /** Governance seat identifier (e.g. "CAE", "CCO", "CISO"). */
-  seatId: z.string().min(1),
-  /** Unique run identifier — ties this completion to the run lifecycle events. */
-  runId: z.string().min(1),
-  /** RMS brief ID that authorised this run. */
-  briefId: z.string().min(1),
-  /** Reporting period in `YYYY-QN` format (e.g. "2026-Q2"). */
-  period: z.string().regex(/^\d{4}-Q[1-4]$/, {
-    message: "period must be YYYY-QN (e.g. 2026-Q2)",
-  }),
-  /** Run outcome. */
-  outcome: z.enum(["delivered", "blocked", "withdrawn"]),
-  /** ISO 8601 UTC timestamp when the run completed. */
-  completedAt: z.string().min(1),
-  /** Human-readable one-liner summarising the run outcomes. */
-  summaryNotes: z.string().min(1),
-});
-
-export type GovernanceSeatRunCompletedPayload = z.infer<
-  typeof governanceSeatRunCompletedPayloadSchema
->;
-
-export function makeGovernanceSeatRunCompleted(args: {
-  asOf: string;
-  entity: string;
-  actor: Actor;
-  citations: string[];
-  payload: GovernanceSeatRunCompletedPayload;
-  eventId?: string;
-}): Event {
-  if (!args.citations || args.citations.length === 0) {
-    throw new Error("GovernanceSeatRunCompleted requires at least one citation (Principle 2).");
-  }
-  return eventSchema.parse({
-    event_id: args.eventId ?? newEventId(),
-    type: "GovernanceSeatRunCompleted",
-    as_of: args.asOf,
-    entity: args.entity,
-    actor: args.actor,
-    citations: args.citations,
-    payload: governanceSeatRunCompletedPayloadSchema.parse(args.payload),
-  });
-}
+export {
+  GovernanceSeatRunCompletedPayloadSchema as governanceSeatRunCompletedPayloadSchema,
+  type GovernanceSeatRunCompletedPayload,
+  makeGovernanceSeatRunCompleted,
+} from "./governance-seat-runs";
 
 // ---------------------------------------------------------------------------
 // AuditPlanUpdated
