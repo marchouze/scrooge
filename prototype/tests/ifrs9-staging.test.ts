@@ -30,9 +30,12 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { Ifrs9StageAssignedSchema, makeIfrs9StageAssigned } from "../platform/event-store/event-types/ifrs9-staging";
-import { EventStore } from "../platform/event-store/store";
 import { assessIfrs9Stage, computeEcl } from "../platform/accounting/ifrs9-staging";
+import {
+  Ifrs9StageAssignedSchema,
+  makeIfrs9StageAssigned,
+} from "../platform/event-store/event-types/ifrs9-staging";
+import { EventStore } from "../platform/event-store/store";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -285,7 +288,9 @@ describe("ifrs9-staging-run smoke test", () => {
     const now = new Date().toISOString();
 
     // Emit a synthetic TradeBooked
-    const { makeTradeBooked } = require("../platform/event-store/event-types/markets-trading-extended");
+    const {
+      makeTradeBooked,
+    } = require("../platform/event-store/event-types/markets-trading-extended");
     const tradeEvt = makeTradeBooked({
       asOf: now,
       entity: "LE-ZA-HOZ-BANK",
@@ -340,7 +345,9 @@ describe("ifrs9-staging-run smoke test", () => {
 
     const emitted = [...store.replay({ type: "Ifrs9StageAssigned" })];
     expect(emitted.length).toBe(1);
-    const p = emitted[0].payload as unknown as { stage: number; triggerReason: string };
+    const first = emitted[0];
+    expect(first).toBeDefined();
+    const p = first?.payload as unknown as { stage: number; triggerReason: string };
     expect(p.stage).toBe(1);
     expect(p.triggerReason).toBe("initial-recognition");
   });

@@ -178,6 +178,7 @@ import {
   RMS_EVENT_TYPES,
 } from "./governance";
 import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
+import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
@@ -201,7 +202,6 @@ import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
-import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,

@@ -31,12 +31,12 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { resolveEventDbPath } from "../platform/event-store/resolve-event-db";
-import { EventStore } from "../platform/event-store/store";
+import { assessIfrs9Stage } from "../platform/accounting/ifrs9-staging";
 import { makeIfrs9StageAssigned } from "../platform/event-store/event-types/ifrs9-staging";
 import type { Ifrs9StageAssignedPayload } from "../platform/event-store/event-types/ifrs9-staging";
-import { assessIfrs9Stage } from "../platform/accounting/ifrs9-staging";
 import type { TradeBookedPayload } from "../platform/event-store/event-types/markets-trading-extended";
+import { resolveEventDbPath } from "../platform/event-store/resolve-event-db";
+import { EventStore } from "../platform/event-store/store";
 
 // ---------------------------------------------------------------------------
 // Constants
