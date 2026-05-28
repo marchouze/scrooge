@@ -454,7 +454,7 @@
     for (const r of regs) {
       const opt = document.createElement("option");
       opt.value = r;
-      opt.textContent = r.length > 40 ? r.slice(0, 37) + "…" : r;
+      opt.textContent = r.length > 40 ? `${r.slice(0, 37)}…` : r;
       sel.appendChild(opt);
     }
   }
