@@ -140,14 +140,10 @@ export function ba700ToXmlPayload(report: Ba700Output): SarbXmlReportPayload {
       Cet1Ratio: Number.isFinite(report.ratios.cet1Ratio) ? report.ratios.cet1Ratio : "Infinity",
       Cet1RatioRequiredMinimum: report.ratios.cet1RatioRequiredMinimum,
       Cet1Compliant: report.ratios.cet1Compliant,
-      Tier1Ratio: Number.isFinite(report.ratios.tier1Ratio)
-        ? report.ratios.tier1Ratio
-        : "Infinity",
+      Tier1Ratio: Number.isFinite(report.ratios.tier1Ratio) ? report.ratios.tier1Ratio : "Infinity",
       Tier1RatioRequiredMinimum: report.ratios.tier1RatioRequiredMinimum,
       Tier1Compliant: report.ratios.tier1Compliant,
-      TotalRatio: Number.isFinite(report.ratios.totalRatio)
-        ? report.ratios.totalRatio
-        : "Infinity",
+      TotalRatio: Number.isFinite(report.ratios.totalRatio) ? report.ratios.totalRatio : "Infinity",
       TotalRatioRequiredMinimum: report.ratios.totalRatioRequiredMinimum,
       TotalCompliant: report.ratios.totalCompliant,
     },

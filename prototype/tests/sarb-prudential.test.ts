@@ -21,9 +21,9 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import { generateBa325Lcr } from "../platform/reporting/ba-325-lcr";
 import { ba325ToXmlPayload } from "../platform/reporting/ba-325-xml-adapter";
+import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import { ba700ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
 import type { SarbXmlReportPayload } from "../platform/reporting/xml-render";
 import { submitToSarbPortal } from "../simulators/sarb-prudential";
@@ -53,9 +53,7 @@ function makeValidBa325Payload(): SarbXmlReportPayload {
     eventStore: store,
     periodStart: PERIOD_START,
     periodEnd: PERIOD_END,
-    trialBalance: [
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 5_000_000_00 },
-    ],
+    trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 5_000_000_00 }],
     classifications: [
       {
         leafAccountId: "ACC-1100-001",
@@ -73,9 +71,7 @@ function makeValidBa700Payload(): SarbXmlReportPayload {
     asOf: AS_OF,
     periodId: PERIOD_ID,
     functionalCurrency: FUNCTIONAL_CURRENCY,
-    trialBalance: [
-      { leafAccountId: "ACC-eq-stub", currency: "ZAR", amountMinor: -50_000_000_00 },
-    ],
+    trialBalance: [{ leafAccountId: "ACC-eq-stub", currency: "ZAR", amountMinor: -50_000_000_00 }],
     classifications: [
       { leafAccountId: "ACC-eq-stub", capitalTier: "cet1", subCategory: "cet1.paid-up-shares" },
     ],
@@ -122,8 +118,8 @@ describe("submitToSarbPortal() — valid payloads", () => {
     expect(evt).toBeDefined();
     if (evt) {
       const p = evt.payload as Record<string, unknown>;
-      expect(p["accepted"]).toBe(true);
-      expect(p["formId"]).toBe("BA325");
+      expect(p.accepted).toBe(true);
+      expect(p.formId).toBe("BA325");
     }
   });
 
@@ -209,8 +205,8 @@ describe("submitToSarbPortal() — invalid payloads", () => {
     const evt = events[0];
     if (evt) {
       const p = evt.payload as Record<string, unknown>;
-      expect(p["accepted"]).toBe(false);
-      expect(Array.isArray(p["errors"])).toBe(true);
+      expect(p.accepted).toBe(false);
+      expect(Array.isArray(p.errors)).toBe(true);
     }
   });
 
@@ -223,7 +219,7 @@ describe("submitToSarbPortal() — invalid payloads", () => {
     const evt = events[0];
     if (evt) {
       const p = evt.payload as Record<string, unknown>;
-      expect(p["mode"]).toBe("simulator");
+      expect(p.mode).toBe("simulator");
     }
   });
 
@@ -233,7 +229,7 @@ describe("submitToSarbPortal() — invalid payloads", () => {
       formId: "BA325",
       formVersion: "v0.1-rehearsal",
       xsdUri: "https://hoz.bank/xsd/ba-325.xsd",
-      namespaceUri: "",          // empty
+      namespaceUri: "", // empty
       body: {
         Meta: {
           Entity: ENTITY,

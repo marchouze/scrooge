@@ -55,9 +55,7 @@ function makeMinimalBa325Output(): Ba325Output {
     eventStore: makeEmptyStore(),
     periodStart: PERIOD_START,
     periodEnd: PERIOD_END,
-    trialBalance: [
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 5_000_000_00 },
-    ],
+    trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 5_000_000_00 }],
     classifications: [
       {
         leafAccountId: "ACC-1100-001",
@@ -90,28 +88,28 @@ describe("ba325ToXmlPayload()", () => {
   it("TC-3: body.Meta contains Form, Entity, PeriodId", () => {
     const output = makeMinimalBa325Output();
     const payload = ba325ToXmlPayload(output);
-    const meta = payload.body["Meta"] as Record<string, unknown>;
+    const meta = payload.body.Meta as Record<string, unknown>;
     expect(meta).toBeDefined();
-    expect(meta["Form"]).toBe("BA 325");
-    expect(meta["Entity"]).toBe(ENTITY);
-    expect(meta["PeriodId"]).toBe(PERIOD_ID);
-    expect(meta["FunctionalCurrency"]).toBe(FUNCTIONAL_CURRENCY);
+    expect(meta.Form).toBe("BA 325");
+    expect(meta.Entity).toBe(ENTITY);
+    expect(meta.PeriodId).toBe(PERIOD_ID);
+    expect(meta.FunctionalCurrency).toBe(FUNCTIONAL_CURRENCY);
   });
 
   it("TC-4: body.Hqla.TotalStockHqlaMinor matches the generator output", () => {
     const output = makeMinimalBa325Output();
     const payload = ba325ToXmlPayload(output);
-    const hqla = payload.body["Hqla"] as Record<string, unknown>;
+    const hqla = payload.body.Hqla as Record<string, unknown>;
     expect(hqla).toBeDefined();
-    expect(hqla["TotalStockHqlaMinor"]).toBe(output.hqla.totalStockHqlaMinor);
+    expect(hqla.TotalStockHqlaMinor).toBe(output.hqla.totalStockHqlaMinor);
   });
 
   it("TC-5: body.CashFlows.NetCashOutflowsMinor matches the generator output", () => {
     const output = makeMinimalBa325Output();
     const payload = ba325ToXmlPayload(output);
-    const cashFlows = payload.body["CashFlows"] as Record<string, unknown>;
+    const cashFlows = payload.body.CashFlows as Record<string, unknown>;
     expect(cashFlows).toBeDefined();
-    expect(cashFlows["NetCashOutflowsMinor"]).toBe(output.cashFlows.netCashOutflowsMinor);
+    expect(cashFlows.NetCashOutflowsMinor).toBe(output.cashFlows.netCashOutflowsMinor);
   });
 
   it("TC-6: LcrRatio maps finite ratio as a number", () => {
@@ -122,14 +120,14 @@ describe("ba325ToXmlPayload()", () => {
     const output = makeMinimalBa325Output();
     const payload = ba325ToXmlPayload(output);
     // Empty event store → no settlement events → netCashOutflows = 0 → Infinity.
-    expect(payload.body["LcrRatio"]).toBe("Infinity");
+    expect(payload.body.LcrRatio).toBe("Infinity");
   });
 
   it("TC-7: LcrCompliant is mapped", () => {
     const output = makeMinimalBa325Output();
     const payload = ba325ToXmlPayload(output);
     // lcrRatio = Infinity (compliant = true per BCBS D295 §22 / Reg 26(2)).
-    expect(payload.body["LcrCompliant"]).toBe(true);
+    expect(payload.body.LcrCompliant).toBe(true);
   });
 
   it("TC-8: optional trialBalanceSnapshotEventId is forwarded when present", () => {
@@ -146,25 +144,25 @@ describe("ba325ToXmlPayload()", () => {
       trialBalanceSnapshotEventId: "test-snapshot-event-id",
     });
     const payload = ba325ToXmlPayload(output);
-    const meta = payload.body["Meta"] as Record<string, unknown>;
-    expect(meta["TrialBalanceSnapshotEventId"]).toBe("test-snapshot-event-id");
+    const meta = payload.body.Meta as Record<string, unknown>;
+    expect(meta.TrialBalanceSnapshotEventId).toBe("test-snapshot-event-id");
   });
 
   it("TC-9: trialBalanceSnapshotEventId is absent when not supplied", () => {
     const output = makeMinimalBa325Output();
     const payload = ba325ToXmlPayload(output);
-    const meta = payload.body["Meta"] as Record<string, unknown>;
-    expect(meta["TrialBalanceSnapshotEventId"]).toBeUndefined();
+    const meta = payload.body.Meta as Record<string, unknown>;
+    expect(meta.TrialBalanceSnapshotEventId).toBeUndefined();
   });
 
   it("TC-10: InputCompleteness block is present in Meta", () => {
     const output = makeMinimalBa325Output();
     const payload = ba325ToXmlPayload(output);
-    const meta = payload.body["Meta"] as Record<string, unknown>;
-    const ic = meta["InputCompleteness"] as Record<string, unknown>;
+    const meta = payload.body.Meta as Record<string, unknown>;
+    const ic = meta.InputCompleteness as Record<string, unknown>;
     expect(ic).toBeDefined();
-    expect(typeof ic["HqlaInputsFound"]).toBe("number");
-    expect(typeof ic["CompletenessClass"]).toBe("string");
+    expect(typeof ic.HqlaInputsFound).toBe("number");
+    expect(typeof ic.CompletenessClass).toBe("string");
   });
 });
 

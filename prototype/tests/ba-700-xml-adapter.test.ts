@@ -22,7 +22,6 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { EventStore } from "../platform/event-store/store";
 import type { Ba700Output } from "../platform/reporting/ba-700-capital";
 import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import {
@@ -73,9 +72,6 @@ function makeMinimalBa700Output(): Ba700Output {
   });
 }
 
-// Suppress unused import warning — EventStore may be needed for future tests.
-const _storeRef = EventStore;
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -98,46 +94,46 @@ describe("ba700ToXmlPayload()", () => {
   it("TC-3: body.Meta contains Form, Entity, PeriodId", () => {
     const output = makeMinimalBa700Output();
     const payload = ba700ToXmlPayload(output);
-    const meta = payload.body["Meta"] as Record<string, unknown>;
+    const meta = payload.body.Meta as Record<string, unknown>;
     expect(meta).toBeDefined();
-    expect(meta["Form"]).toBe("BA 700");
-    expect(meta["Entity"]).toBe(ENTITY);
-    expect(meta["PeriodId"]).toBe(PERIOD_ID);
-    expect(meta["FunctionalCurrency"]).toBe(FUNCTIONAL_CURRENCY);
+    expect(meta.Form).toBe("BA 700");
+    expect(meta.Entity).toBe(ENTITY);
+    expect(meta.PeriodId).toBe(PERIOD_ID);
+    expect(meta.FunctionalCurrency).toBe(FUNCTIONAL_CURRENCY);
   });
 
   it("TC-4: body.CapitalStack.Cet1.NetStockMinor maps correctly", () => {
     const output = makeMinimalBa700Output();
     const payload = ba700ToXmlPayload(output);
-    const stack = payload.body["CapitalStack"] as Record<string, unknown>;
-    const cet1 = stack["Cet1"] as Record<string, unknown>;
-    expect(cet1["NetStockMinor"]).toBe(output.capitalStack.cet1.netStockMinor);
-    expect(cet1["GrossStockMinor"]).toBe(output.capitalStack.cet1.grossStockMinor);
-    expect(cet1["TotalDeductionsMinor"]).toBe(output.capitalStack.cet1.totalDeductionsMinor);
+    const stack = payload.body.CapitalStack as Record<string, unknown>;
+    const cet1 = stack.Cet1 as Record<string, unknown>;
+    expect(cet1.NetStockMinor).toBe(output.capitalStack.cet1.netStockMinor);
+    expect(cet1.GrossStockMinor).toBe(output.capitalStack.cet1.grossStockMinor);
+    expect(cet1.TotalDeductionsMinor).toBe(output.capitalStack.cet1.totalDeductionsMinor);
   });
 
   it("TC-5: body.Rwa.TotalRwaMinor maps correctly", () => {
     const output = makeMinimalBa700Output();
     const payload = ba700ToXmlPayload(output);
-    const rwa = payload.body["Rwa"] as Record<string, unknown>;
-    expect(rwa["TotalRwaMinor"]).toBe(output.rwa.totalRwaMinor);
-    expect(rwa["CreditRwaMinor"]).toBe(output.rwa.creditRwaMinor);
-    expect(rwa["MarketRwaMinor"]).toBe(output.rwa.marketRwaMinor);
-    expect(rwa["OperationalRwaMinor"]).toBe(output.rwa.operationalRwaMinor);
+    const rwa = payload.body.Rwa as Record<string, unknown>;
+    expect(rwa.TotalRwaMinor).toBe(output.rwa.totalRwaMinor);
+    expect(rwa.CreditRwaMinor).toBe(output.rwa.creditRwaMinor);
+    expect(rwa.MarketRwaMinor).toBe(output.rwa.marketRwaMinor);
+    expect(rwa.OperationalRwaMinor).toBe(output.rwa.operationalRwaMinor);
   });
 
   it("TC-6: body.Ratios carries CET1, Tier1, Total compliance fields", () => {
     const output = makeMinimalBa700Output();
     const payload = ba700ToXmlPayload(output);
-    const ratios = payload.body["Ratios"] as Record<string, unknown>;
+    const ratios = payload.body.Ratios as Record<string, unknown>;
     expect(ratios).toBeDefined();
-    expect(typeof ratios["Cet1Ratio"]).toBe("number");
-    expect(typeof ratios["Cet1RatioRequiredMinimum"]).toBe("number");
-    expect(typeof ratios["Cet1Compliant"]).toBe("boolean");
-    expect(typeof ratios["Tier1Ratio"]).toBe("number");
-    expect(typeof ratios["Tier1Compliant"]).toBe("boolean");
-    expect(typeof ratios["TotalRatio"]).toBe("number");
-    expect(typeof ratios["TotalCompliant"]).toBe("boolean");
+    expect(typeof ratios.Cet1Ratio).toBe("number");
+    expect(typeof ratios.Cet1RatioRequiredMinimum).toBe("number");
+    expect(typeof ratios.Cet1Compliant).toBe("boolean");
+    expect(typeof ratios.Tier1Ratio).toBe("number");
+    expect(typeof ratios.Tier1Compliant).toBe("boolean");
+    expect(typeof ratios.TotalRatio).toBe("number");
+    expect(typeof ratios.TotalCompliant).toBe("boolean");
   });
 
   it("TC-7: infinite ratios serialise as the string 'Infinity'", () => {
@@ -150,9 +146,7 @@ describe("ba700ToXmlPayload()", () => {
       trialBalance: [
         { leafAccountId: "ACC-equity-stub", currency: "ZAR", amountMinor: -50_000_000_00 },
       ],
-      classifications: [
-        { leafAccountId: "ACC-equity-stub", capitalTier: "cet1" },
-      ],
+      classifications: [{ leafAccountId: "ACC-equity-stub", capitalTier: "cet1" }],
       deductions: [],
       rwa: {
         creditRwaMinor: 0,
@@ -162,10 +156,10 @@ describe("ba700ToXmlPayload()", () => {
       },
     });
     const payload = ba700ToXmlPayload(output);
-    const ratios = payload.body["Ratios"] as Record<string, unknown>;
-    expect(ratios["Cet1Ratio"]).toBe("Infinity");
-    expect(ratios["Tier1Ratio"]).toBe("Infinity");
-    expect(ratios["TotalRatio"]).toBe("Infinity");
+    const ratios = payload.body.Ratios as Record<string, unknown>;
+    expect(ratios.Cet1Ratio).toBe("Infinity");
+    expect(ratios.Tier1Ratio).toBe("Infinity");
+    expect(ratios.TotalRatio).toBe("Infinity");
   });
 
   it("TC-8: LeverageRatio section absent when leverageExposureMeasure not supplied", () => {
@@ -173,7 +167,7 @@ describe("ba700ToXmlPayload()", () => {
     // The minimal fixture does not supply leverageExposureMeasure.
     expect(output.leverageRatio).toBeUndefined();
     const payload = ba700ToXmlPayload(output);
-    expect(payload.body["LeverageRatio"]).toBeUndefined();
+    expect(payload.body.LeverageRatio).toBeUndefined();
   });
 
   it("TC-9: trialBalanceSnapshotEventId forwarded when supplied", () => {
@@ -189,8 +183,8 @@ describe("ba700ToXmlPayload()", () => {
       trialBalanceSnapshotEventId: "test-tb-snapshot-id",
     });
     const payload = ba700ToXmlPayload(output);
-    const meta = payload.body["Meta"] as Record<string, unknown>;
-    expect(meta["TrialBalanceSnapshotEventId"]).toBe("test-tb-snapshot-id");
+    const meta = payload.body.Meta as Record<string, unknown>;
+    expect(meta.TrialBalanceSnapshotEventId).toBe("test-tb-snapshot-id");
   });
 });
 

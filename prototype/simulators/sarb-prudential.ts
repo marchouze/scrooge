@@ -81,7 +81,9 @@ const PERIOD_ID_RX = /^period:[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$/;
  * failure. All violations are collected (not short-circuited) so the caller
  * can surface the full list to the operator.
  */
-function validatePayload(payload: SarbXmlReportPayload): { ok: true } | { ok: false; errors: string[] } {
+function validatePayload(
+  payload: SarbXmlReportPayload,
+): { ok: true } | { ok: false; errors: string[] } {
   const errors: string[] = [];
 
   // 1. formId — must be non-empty and match BA<digits>.
@@ -94,7 +96,7 @@ function validatePayload(payload: SarbXmlReportPayload): { ok: true } | { ok: fa
   // 2. namespaceUri — must be non-empty.
   if (!payload.namespaceUri || payload.namespaceUri.trim() === "") {
     errors.push(
-      `namespaceUri is empty — the portal requires an XML namespace declaration per the XSD envelope. [citation: TBC — SARB portal XSD; Mira WS-INSTRUMENT-ANALYSES]`,
+      "namespaceUri is empty — the portal requires an XML namespace declaration per the XSD envelope. [citation: TBC — SARB portal XSD; Mira WS-INSTRUMENT-ANALYSES]",
     );
   }
 
@@ -103,12 +105,14 @@ function validatePayload(payload: SarbXmlReportPayload): { ok: true } | { ok: fa
     errors.push("body is null or not an object — the XML envelope requires a body section.");
   } else {
     // 4. body.Meta — must be present (XSD envelope structural gate).
-    const meta = payload.body["Meta"];
+    const meta = payload.body.Meta;
     if (meta === undefined || meta === null) {
-      errors.push("body.Meta is missing — the SARB portal requires a Meta section in the submission envelope.");
+      errors.push(
+        "body.Meta is missing — the SARB portal requires a Meta section in the submission envelope.",
+      );
     } else if (typeof meta === "object" && !Array.isArray(meta)) {
       // 5. body.Meta.Entity — must be non-empty (institutionId proxy).
-      const entity = (meta as Record<string, unknown>)["Entity"];
+      const entity = (meta as Record<string, unknown>).Entity;
       if (!entity || (typeof entity === "string" && entity.trim() === "")) {
         errors.push(
           "body.Meta.Entity is missing or empty — the institution identifier is required for portal routing.",
@@ -116,7 +120,7 @@ function validatePayload(payload: SarbXmlReportPayload): { ok: true } | { ok: fa
       }
 
       // 6. body.Meta.PeriodId — basic format check.
-      const periodId = (meta as Record<string, unknown>)["PeriodId"];
+      const periodId = (meta as Record<string, unknown>).PeriodId;
       if (periodId !== undefined && typeof periodId === "string") {
         if (!PERIOD_ID_RX.test(periodId)) {
           errors.push(
@@ -170,9 +174,9 @@ export async function submitToSarbPortal(
   // Fall back to "LE-ZA-HOZ-BANK" when the payload is invalid (the event
   // still needs an entity field; the validation error surfaces the real problem).
   let entity = "LE-ZA-HOZ-BANK";
-  const meta = payload.body?.["Meta"];
+  const meta = payload.body?.Meta;
   if (meta !== null && meta !== undefined && typeof meta === "object" && !Array.isArray(meta)) {
-    const entityValue = (meta as Record<string, unknown>)["Entity"];
+    const entityValue = (meta as Record<string, unknown>).Entity;
     if (typeof entityValue === "string" && entityValue.trim() !== "") {
       entity = entityValue.trim();
     }
@@ -181,7 +185,7 @@ export async function submitToSarbPortal(
   // Derive the periodId for the event.
   let reportingPeriod = "period:hoz-bank:rehearsal:unknown";
   if (meta !== null && meta !== undefined && typeof meta === "object" && !Array.isArray(meta)) {
-    const periodValue = (meta as Record<string, unknown>)["PeriodId"];
+    const periodValue = (meta as Record<string, unknown>).PeriodId;
     if (typeof periodValue === "string" && periodValue.trim() !== "") {
       reportingPeriod = periodValue.trim();
     }
@@ -219,32 +223,31 @@ export async function submitToSarbPortal(
     store.append(event);
 
     return { ok: true, referenceNumber, submittedAt };
-  } else {
-    // Emit the submission-attempt event (failure).
-    const event = makeSarbSubmissionAttempted({
-      asOf: submittedAt,
-      entity,
-      actor: { type: "service", id: "simulator:sarb-prudential" },
-      citations: [
-        "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
-        "Banks Act 94 of 1990 §70",
-        "Regulations Relating to Banks Reg 26",
-        "[citation: TBC — SARB portal submission procedure PROC-SARB-SUBMIT-01]",
-      ],
-      payload: {
-        formId: payload.formId,
-        formVersion: payload.formVersion,
-        institutionId: entity,
-        reportingPeriod,
-        submittedAt,
-        accepted: false,
-        errors: validationResult.errors,
-        mode: "simulator",
-      },
-      eventId: newEventId(),
-    });
-    store.append(event);
-
-    return { ok: false, errors: validationResult.errors, submittedAt };
   }
+  // Emit the submission-attempt event (failure).
+  const event = makeSarbSubmissionAttempted({
+    asOf: submittedAt,
+    entity,
+    actor: { type: "service", id: "simulator:sarb-prudential" },
+    citations: [
+      "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+      "Banks Act 94 of 1990 §70",
+      "Regulations Relating to Banks Reg 26",
+      "[citation: TBC — SARB portal submission procedure PROC-SARB-SUBMIT-01]",
+    ],
+    payload: {
+      formId: payload.formId,
+      formVersion: payload.formVersion,
+      institutionId: entity,
+      reportingPeriod,
+      submittedAt,
+      accepted: false,
+      errors: validationResult.errors,
+      mode: "simulator",
+    },
+    eventId: newEventId(),
+  });
+  store.append(event);
+
+  return { ok: false, errors: validationResult.errors, submittedAt };
 }
