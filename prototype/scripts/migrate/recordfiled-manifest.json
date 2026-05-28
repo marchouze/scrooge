@@ -456,6 +456,37 @@
         "P2-SINGLE-GRAPH-DISCIPLINE",
         "brief:mira:operationalise-regulatory-concept-extraction-acr:2026-05-22"
       ]
+    },
+    {
+      "recordId": "record:documents:atlas:s7-substrate-completeness-brief:2026-05-28",
+      "sourcePath": "2026-05-28_atlas_s7-substrate-completeness-brief.md",
+      "asOf": "2026-05-28T06:20:00.000Z",
+      "registerKey": "documents",
+      "classification": "engineering-seat",
+      "retention": {
+        "citationRef": "BANKS-ACT-94-1990",
+        "minimumYears": 5,
+        "archivalTier": "cool"
+      },
+      "actor": {
+        "type": "service",
+        "id": "agent:atlas:engineering"
+      },
+      "metadata": {
+        "title": "S7 Substrate-Completeness Brief — Sessions to Pre-Licence Readiness Gate",
+        "path": "2026-05-28_atlas_s7-substrate-completeness-brief.md",
+        "category": "substrate-completeness-brief",
+        "author": "Atlas (Core banking platform architect, engineering)",
+        "date": "2026-05-28",
+        "brief": "brief:atlas:s7-substrate-completeness-brief-current-state-se:2026-05-28"
+      },
+      "citations": [
+        "D-RMS-PHASE-3",
+        "P1-EVENTS-AS-TRUTH",
+        "P2-SINGLE-GRAPH-DISCIPLINE",
+        "P6-AUTONOMOUS-BY-DEFAULT",
+        "brief:atlas:s7-substrate-completeness-brief-current-state-se:2026-05-28"
+      ]
     }
   ]
 }
