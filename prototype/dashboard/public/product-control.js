@@ -136,10 +136,14 @@
       cpEl.innerHTML = `${SC.renderSectionHeader("P&L by Counterparty", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No counterparty data.</p>`;
     }
 
-    // ── Trade-level detail ─────────────────────────────────────────────────
+    // ── Trade-level detail (live positions only) ───────────────────────────
     const tradesEl = document.getElementById("pc-trades");
     if (tradesEl && pnlData?.trades) {
-      tradesEl.innerHTML = SC.renderSectionHeader("Trade-Level Detail", null);
+      // Only open positions carry unrealised MTM. Settled/cancelled trades
+      // have crystallised (or zeroed) their P&L and belong to the realised
+      // history, not the live trade book.
+      const liveTrades = pnlData.trades.filter((t) => t.status === "live");
+      tradesEl.innerHTML = SC.renderSectionHeader("Trade-Level Detail — Live Positions", null);
       const tableWrap = document.createElement("div");
       tradesEl.appendChild(tableWrap);
       SC.renderTable({
@@ -153,7 +157,7 @@
           "Unrealised P&L (ZAR)",
           "Status",
         ],
-        rows: pnlData.trades.map((t) => ({
+        rows: liveTrades.map((t) => ({
           cells: [
             `<code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code>`,
             SC.esc(t.pair),
@@ -184,16 +188,29 @@
       });
     }
 
-    // ── Report history ─────────────────────────────────────────────────────
+    // ── Report history (closing report per day) ────────────────────────────
     const histEl = document.getElementById("pc-history");
     if (histEl && history?.reports) {
-      histEl.innerHTML = SC.renderSectionHeader("Report History", null);
+      // Multiple reports can be generated for the same trading day (intraday
+      // re-runs). The closing report is the one with the latest generatedAt for
+      // that reportDate — that is the day's record of account.
+      const closingByDate = new Map();
+      for (const r of history.reports) {
+        const prev = closingByDate.get(r.reportDate);
+        if (!prev || (r.generatedAt || "") > (prev.generatedAt || "")) {
+          closingByDate.set(r.reportDate, r);
+        }
+      }
+      const closingReports = [...closingByDate.values()].sort((a, b) =>
+        a.reportDate < b.reportDate ? 1 : a.reportDate > b.reportDate ? -1 : 0,
+      );
+      histEl.innerHTML = SC.renderSectionHeader("Report History — Daily Close", null);
       const tableWrap = document.createElement("div");
       histEl.appendChild(tableWrap);
       SC.renderTable({
         container: tableWrap,
         headers: ["Report ID", "Date", "Total P&L (ZAR)", "Positions", "Generated At"],
-        rows: history.reports.map((r) => ({
+        rows: closingReports.map((r) => ({
           cells: [
             `<code style="font:12px var(--font-mono)">${SC.esc(r.reportId)}</code>`,
             r.reportDate,
