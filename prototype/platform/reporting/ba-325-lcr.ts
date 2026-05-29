@@ -118,6 +118,8 @@ import type { FxSettlementInstructedPayload } from "../markets/cdm/fx";
 import type { Identifier } from "../markets/cdm/primitives";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import type { HqlaLevelOverride } from "./hqla-overrides";
+import { computeHqlaStockFromPositions } from "./hqla-stock";
+import type { HqlaStockInput, HqlaStockLine } from "./hqla-stock";
 
 /** Normalise a tradeId that may be either a plain string or a CDM Identifier object. */
 function normaliseTradeId(tradeId: string | Identifier): string {
@@ -138,6 +140,13 @@ export type HqlaLevel = "level-1" | "level-2a" | "level-2b";
 
 /**
  * Per-leaf-account liquidity classification for the BA 325 generator.
+ *
+ * @deprecated Use `Ba325GeneratorInput.hqlaStock` (instrument-level from SecurityMaster ×
+ * unified-position) instead. This account-level approach is a Phase-0 shortcut that applies
+ * a single HQLA tier to the entire GL account balance, which is incorrect when an account
+ * holds heterogeneous instruments (e.g. both Level-1 SAGBs and non-HQLA corporate bonds).
+ * Retained for backward compatibility. Authority: D-FINANCIAL-INSTRUMENT-ENTITY
+ * (CEO-approved 2026-05-22); corrected 2026-05-29.
  *
  * Post P1-fix: `outflowRunOffRate` and `inflowRate` entries are
  * **deprecated** — cash flows now come from `FxSettlementInstructed` /
@@ -228,7 +237,14 @@ export interface Ba325GeneratorInput {
   readonly periodEnd: string;
   /** Trial-balance rows from `TrialBalanceSnapshotted.rows` / `closePeriod` result. Used for HQLA stock only. */
   readonly trialBalance: readonly TrialBalanceSnapshotRow[];
-  /** Per-account liquidity classification. Only HQLA entries are active; outflow/inflow entries are deprecated. */
+  /**
+   * Per-account liquidity classification. Only HQLA entries are active; outflow/inflow entries are deprecated.
+   *
+   * @deprecated Superseded by `hqlaStock` (instrument-level from SecurityMaster × unified-position).
+   * When `hqlaStock` is provided, this field is used only as a source for the
+   * `classificationsFingerprint` metadata field. The account-level HQLA derivation is skipped.
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; corrected 2026-05-29.
+   */
   readonly classifications: readonly AccountLiquidityClassification[];
   /**
    * Optional: cite the source `TrialBalanceSnapshotted.event_id` so the
@@ -244,6 +260,25 @@ export interface Ba325GeneratorInput {
    * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
    */
   readonly untilSequence?: number;
+  /**
+   * Instrument-level HQLA stock computed from unified-position × SecurityMaster.
+   *
+   * When provided, this replaces the Phase-0 trial-balance + AccountLiquidityClassification
+   * path for HQLA stock calculation. This is the preferred (correct) path:
+   * instrument-level classification from FinancialInstrumentClassified events
+   * gives the correct HQLA tier for each individual security, rather than
+   * applying a single tier to the entire balance of a GL account.
+   *
+   * When absent, the generator falls back to the legacy trial-balance +
+   * `classifications` path (maintained for backward compatibility).
+   *
+   * Compute via `computeHqlaStockFromPositions()` from `./hqla-stock.ts`.
+   *
+   * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
+   * corrected 2026-05-29 per brief:ravi:fix-ba-325-hqla-stock-instrument-level-positions.
+   * Citations: BCBS D295 §50–§54; Reg 26(7).
+   */
+  readonly hqlaStock?: HqlaStockInput;
 }
 
 // ---------------------------------------------------------------------------
@@ -810,6 +845,32 @@ export interface Ba325LcrOpts {
   readonly hqlaOverrides?: ReadonlyMap<string, HqlaLevelOverride>;
 }
 
+// ---------------------------------------------------------------------------
+// Helper: map HqlaStockLine → Ba325LineItem (for the preferred hqlaStock path).
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert an `HqlaStockLine` (from `computeHqlaStockFromPositions`) to a
+ * `Ba325LineItem` suitable for the HQLA section of the BA 325 output.
+ *
+ * - `lineId` uses the instrument-level convention: `hqla.<level>.<instrumentId>`.
+ * - `contributingAccounts` is empty — instrument-level positions are not
+ *   mapped to GL accounts at this stage.
+ * - `amountMinor` is the post-haircut `adjustedMinor` value.
+ * - `note` carries the haircut percentage for auditability.
+ */
+function hqlaStockLineToLineItem(line: HqlaStockLine, ccy: string): Ba325LineItem {
+  return {
+    lineId: `hqla.${line.hqlaLevel}.${line.instrumentId}`,
+    lineLabel: line.instrumentName ?? line.isin ?? line.instrumentId,
+    amountMinor: line.adjustedMinor,
+    currency: ccy,
+    contributingAccounts: [],
+    ...(line.isin ? { subCategory: line.hqlaLevel } : {}),
+    note: `haircut=${line.haircut * 100}%; basis=${line.valuationBasis}`,
+  };
+}
+
 export function generateBa325Lcr(input: Ba325GeneratorInput, opts?: Ba325LcrOpts): Ba325Output {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
@@ -836,23 +897,24 @@ export function generateBa325Lcr(input: Ba325GeneratorInput, opts?: Ba325LcrOpts
   }
 
   // -------------------------------------------------------------------------
-  // HQLA stock — derived from trial balance (account balances).
+  // HQLA stock — preferred path: instrument-level positions × SecurityMaster.
+  // Fallback path: trial balance + AccountLiquidityClassification (deprecated).
+  //
+  // The preferred path (input.hqlaStock) is instrument-level: each security
+  // held by the bank is classified via FinancialInstrumentClassified.hqlaLevel
+  // in the SecurityMaster projection, and the mark-to-market value of the
+  // unified-position projection provides the stock amount. This is the correct
+  // approach per BCBS D295: a single GL account may hold both Level-1 SAGBs
+  // and non-HQLA corporate bonds, so account-level tags are structurally wrong.
+  //
+  // The fallback path (legacy) uses trial-balance account balances mapped
+  // through AccountLiquidityClassification entries. It is preserved for
+  // backward compatibility (pre-Slice-10 callers) but deprecated.
+  //
+  // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
+  // corrected 2026-05-29 per brief:ravi:fix-ba-325-hqla-stock-instrument-level-positions.
+  // Citations: BCBS D295 §50–§54; Reg 26(7); Principles/1-events-are-truth.md.
   // -------------------------------------------------------------------------
-
-  // Index HQLA classifications by account for O(1) lookup.
-  const classMap = new Map<string, AccountLiquidityClassification>();
-  for (const c of input.classifications) {
-    if (!c.hqlaLevel) continue; // Skip deprecated outflow/inflow entries.
-    if (classMap.has(c.leafAccountId)) {
-      throw new Ba325GeneratorError(
-        `BA 325 generator: duplicate classification for account '${c.leafAccountId}'`,
-      );
-    }
-    classMap.set(c.leafAccountId, c);
-  }
-
-  // Filter trial balance to the functional currency.
-  const tbInCurrency = input.trialBalance.filter((r) => r.currency === ccy);
 
   const level1Lines: Ba325LineItem[] = [];
   const level2ALines: Ba325LineItem[] = [];
@@ -861,94 +923,163 @@ export function generateBa325Lcr(input: Ba325GeneratorInput, opts?: Ba325LcrOpts
   let level1Stock = 0;
   let level2AStock = 0;
   let level2BRawWeighted = 0; // factor-weighted before cap
-  let hqlaInputsFound = 0; // G-3: distinct trial-balance rows that classified as HQLA
+  let hqlaInputsFound = 0; // G-3: distinct inputs that classified as HQLA
 
-  // Stable iteration order — sort by leafAccountId.
-  const sorted = [...tbInCurrency].sort((a, b) =>
-    a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
-  );
-
-  for (const row of sorted) {
-    const c = classMap.get(row.leafAccountId);
-    if (!c) continue;
-
+  if (input.hqlaStock) {
     // -----------------------------------------------------------------------
-    // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 — SecurityMaster HQLA override.
-    //
-    // If the classification has an ISIN AND the override map is provided AND
-    // the ISIN is present in the override map, use the SecurityMaster-derived
-    // tier in preference to the COA hqlaLevel tag.
-    //
-    // The "non-hqla" override tier explicitly removes HQLA eligibility:
-    // the account contributes zero to the HQLA stock even though the COA
-    // carries an hqlaLevel tag. This is the correct behaviour when an
-    // instrument held in the account has been classified as non-HQLA at
-    // the instrument level (e.g. a bond that lost its 0%-RW status).
-    //
-    // COA fallback: when no ISIN is set, or the ISIN is absent from the
-    // override map, or no override map is provided — use COA hqlaLevel tag.
-    //
-    // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
-    // Citations: BA-325-LCR; BCBS-LCR-2013.
+    // Preferred path: instrument-level HQLA stock.
+    // computeHqlaStockFromPositions() has already applied BCBS D295 haircuts
+    // and filtered to functional currency. Map HqlaStockLine → Ba325LineItem.
     // -----------------------------------------------------------------------
-    let effectiveHqlaLevel: HqlaLevel | "non-hqla" | undefined = c.hqlaLevel;
-    let overrideApplied = false;
-    if (c.isin && opts?.hqlaOverrides) {
-      const overrideTier = opts.hqlaOverrides.get(c.isin);
-      if (overrideTier !== undefined) {
-        effectiveHqlaLevel = overrideTier;
-        overrideApplied = true;
-      }
+    const stockResult = computeHqlaStockFromPositions(input.hqlaStock);
+
+    // Map Level-1 lines.
+    for (const line of stockResult.level1Lines) {
+      level1Lines.push(hqlaStockLineToLineItem(line, ccy));
+      level1Stock += line.adjustedMinor;
+      hqlaInputsFound += 1;
     }
 
-    // Skip accounts explicitly classified as non-HQLA at the instrument level.
-    if (effectiveHqlaLevel === "non-hqla" || effectiveHqlaLevel === undefined) {
-      continue;
+    // Map Level-2A lines (haircut already applied by computeHqlaStockFromPositions).
+    // level2AStock is the PRE-haircut stock for the cap formula; adjustedMinor
+    // already has the 15% haircut. We reverse it here so the cap formula works
+    // consistently (same as the legacy path where level2AStock is pre-haircut).
+    for (const line of stockResult.level2aLines) {
+      level2ALines.push(hqlaStockLineToLineItem(line, ccy));
+      // Un-apply haircut to get raw stock (cap formula expects pre-haircut totals).
+      const rawStock = line.haircut < 1 ? Math.round(line.adjustedMinor / (1 - line.haircut)) : 0;
+      level2AStock += rawStock;
+      hqlaInputsFound += 1;
     }
 
-    // Count as a qualifying HQLA input only after the override check resolves
-    // to an actual HQLA tier (non-hqla skips are not counted).
-    hqlaInputsFound += 1;
+    // Map Level-2B lines (haircut already applied).
+    for (const line of stockResult.level2bLines) {
+      level2BLines.push(hqlaStockLineToLineItem(line, ccy));
+      // level2BRawWeighted is the factor-weighted pre-cap value fed to applyHqlaCaps.
+      // adjustedMinor = nominalMinor × (1 − haircut). The cap formula for 2B uses
+      // factor-weighted pre-cap = adjustedMinor (since haircut IS the factor here).
+      level2BRawWeighted += line.adjustedMinor;
+      hqlaInputsFound += 1;
+    }
 
-    // HQLA — debit-side accounts (assets); take absolute value to be
-    // robust against sign convention drift, but flag a generator note
-    // when the balance is on the credit side of an HQLA-classified row.
-    const stockMinor = Math.abs(row.amountMinor);
-    const creditWarning =
-      row.amountMinor < 0 ? "warning: HQLA-classified account has credit balance" : undefined;
-    const overrideNote = overrideApplied
-      ? `SecurityMaster override: isin=${c.isin} tier=${effectiveHqlaLevel} (COA tag=${c.hqlaLevel ?? "none"})`
-      : undefined;
-    const noteParts = [creditWarning, overrideNote].filter(Boolean);
-    const note = noteParts.length > 0 ? noteParts.join("; ") : undefined;
+    // Surface excluded FX positions as a placeholder.
+    if (stockResult.excludedFxPositions.length > 0) {
+      const excludedSummary = stockResult.excludedFxPositions
+        .map((p) => `${p.instrumentId}(${p.currency})`)
+        .join(", ");
+      placeholders.push(
+        `[instrument-level HQLA: ${stockResult.excludedFxPositions.length} position(s) excluded — non-functional-currency holdings not yet FX-converted (Slice-6+): ${excludedSummary}]`,
+      );
+    }
+  } else {
+    // -----------------------------------------------------------------------
+    // Fallback path (deprecated): trial balance + AccountLiquidityClassification.
+    // Maintained for backward compatibility with pre-Slice-10 callers.
+    // @deprecated — use input.hqlaStock instead.
+    // -----------------------------------------------------------------------
 
-    const lineItem: Ba325LineItem = {
-      lineId: `${effectiveHqlaLevel}.${row.leafAccountId}`,
-      lineLabel: c.subCategory ?? `HQLA ${effectiveHqlaLevel} — ${row.leafAccountId}`,
-      amountMinor: stockMinor,
-      currency: ccy,
-      contributingAccounts: [row.leafAccountId],
-      ...(c.subCategory ? { subCategory: c.subCategory } : {}),
-      ...(note ? { note } : {}),
-    };
-    if (effectiveHqlaLevel === "level-1") {
-      level1Lines.push(lineItem);
-      level1Stock += stockMinor;
-    } else if (effectiveHqlaLevel === "level-2a") {
-      level2ALines.push(lineItem);
-      level2AStock += stockMinor;
-    } else {
-      const factor = c.assetSpecificFactor ?? 0.5;
-      if (factor < 0 || factor > 1) {
+    // Index HQLA classifications by account for O(1) lookup.
+    const classMap = new Map<string, AccountLiquidityClassification>();
+    for (const c of input.classifications) {
+      if (!c.hqlaLevel) continue; // Skip deprecated outflow/inflow entries.
+      if (classMap.has(c.leafAccountId)) {
         throw new Ba325GeneratorError(
-          `BA 325 generator: assetSpecificFactor on '${row.leafAccountId}' must be in [0,1], got ${factor}`,
+          `BA 325 generator: duplicate classification for account '${c.leafAccountId}'`,
         );
       }
-      level2BLines.push({
-        ...lineItem,
-        note: `${lineItem.note ?? ""}${lineItem.note ? "; " : ""}assetSpecificFactor=${factor}`.trim(),
-      });
-      level2BRawWeighted += stockMinor * factor;
+      classMap.set(c.leafAccountId, c);
+    }
+
+    // Filter trial balance to the functional currency.
+    const tbInCurrency = input.trialBalance.filter((r) => r.currency === ccy);
+
+    // Stable iteration order — sort by leafAccountId.
+    const sorted = [...tbInCurrency].sort((a, b) =>
+      a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
+    );
+
+    for (const row of sorted) {
+      const c = classMap.get(row.leafAccountId);
+      if (!c) continue;
+
+      // ---------------------------------------------------------------------
+      // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 — SecurityMaster HQLA override.
+      //
+      // If the classification has an ISIN AND the override map is provided AND
+      // the ISIN is present in the override map, use the SecurityMaster-derived
+      // tier in preference to the COA hqlaLevel tag.
+      //
+      // The "non-hqla" override tier explicitly removes HQLA eligibility:
+      // the account contributes zero to the HQLA stock even though the COA
+      // carries an hqlaLevel tag. This is the correct behaviour when an
+      // instrument held in the account has been classified as non-HQLA at
+      // the instrument level (e.g. a bond that lost its 0%-RW status).
+      //
+      // COA fallback: when no ISIN is set, or the ISIN is absent from the
+      // override map, or no override map is provided — use COA hqlaLevel tag.
+      //
+      // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+      // Citations: BA-325-LCR; BCBS-LCR-2013.
+      // ---------------------------------------------------------------------
+      let effectiveHqlaLevel: HqlaLevel | "non-hqla" | undefined = c.hqlaLevel;
+      let overrideApplied = false;
+      if (c.isin && opts?.hqlaOverrides) {
+        const overrideTier = opts.hqlaOverrides.get(c.isin);
+        if (overrideTier !== undefined) {
+          effectiveHqlaLevel = overrideTier;
+          overrideApplied = true;
+        }
+      }
+
+      // Skip accounts explicitly classified as non-HQLA at the instrument level.
+      if (effectiveHqlaLevel === "non-hqla" || effectiveHqlaLevel === undefined) {
+        continue;
+      }
+
+      // Count as a qualifying HQLA input only after the override check resolves
+      // to an actual HQLA tier (non-hqla skips are not counted).
+      hqlaInputsFound += 1;
+
+      // HQLA — debit-side accounts (assets); take absolute value to be
+      // robust against sign convention drift, but flag a generator note
+      // when the balance is on the credit side of an HQLA-classified row.
+      const stockMinor = Math.abs(row.amountMinor);
+      const creditWarning =
+        row.amountMinor < 0 ? "warning: HQLA-classified account has credit balance" : undefined;
+      const overrideNote = overrideApplied
+        ? `SecurityMaster override: isin=${c.isin} tier=${effectiveHqlaLevel} (COA tag=${c.hqlaLevel ?? "none"})`
+        : undefined;
+      const noteParts = [creditWarning, overrideNote].filter(Boolean);
+      const note = noteParts.length > 0 ? noteParts.join("; ") : undefined;
+
+      const lineItem: Ba325LineItem = {
+        lineId: `${effectiveHqlaLevel}.${row.leafAccountId}`,
+        lineLabel: c.subCategory ?? `HQLA ${effectiveHqlaLevel} — ${row.leafAccountId}`,
+        amountMinor: stockMinor,
+        currency: ccy,
+        contributingAccounts: [row.leafAccountId],
+        ...(c.subCategory ? { subCategory: c.subCategory } : {}),
+        ...(note ? { note } : {}),
+      };
+      if (effectiveHqlaLevel === "level-1") {
+        level1Lines.push(lineItem);
+        level1Stock += stockMinor;
+      } else if (effectiveHqlaLevel === "level-2a") {
+        level2ALines.push(lineItem);
+        level2AStock += stockMinor;
+      } else {
+        const factor = c.assetSpecificFactor ?? 0.5;
+        if (factor < 0 || factor > 1) {
+          throw new Ba325GeneratorError(
+            `BA 325 generator: assetSpecificFactor on '${row.leafAccountId}' must be in [0,1], got ${factor}`,
+          );
+        }
+        level2BLines.push({
+          ...lineItem,
+          note: `${lineItem.note ?? ""}${lineItem.note ? "; " : ""}assetSpecificFactor=${factor}`.trim(),
+        });
+        level2BRawWeighted += stockMinor * factor;
+      }
     }
   }
 

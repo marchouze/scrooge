@@ -43,7 +43,7 @@ Compute the bank's capital and liquidity ratios daily as projections over the ev
 |---|---|---|---|---|
 | 1 | Determine as-of date / time for the computation | `system` (scheduler) | `@platform/scheduler` (`PLANNED`) | Daily run targets prior business-day close per ZA-CAL. |
 | 2 | Compute CET1 / AT1 / T2 ratio as projection | `system` | `@domains/capital/projection` (`PLANNED`) | Reads event log; applies CRR-equivalent risk-weights from BCBS framework. Emits `RatioComputed`. |
-| 3 | Compute LCR projection (HQLA / 30d net cash outflow) | `system` | `@domains/liquidity/lcr-projection` (`PLANNED`) | Per BCBS D295. Emits `RatioComputed`. |
+| 3 | Compute LCR projection (HQLA / 30d net cash outflow) | `system` | `@domains/liquidity/lcr-projection` (`PLANNED`) | Per BCBS D295. Emits `RatioComputed`. HQLA stock (LCR numerator) is sourced from the **instrument-level position register**. For each instrument held by the bank, the SecurityMaster classification (`FinancialInstrumentClassified.hqlaLevel`) determines the HQLA tier. The mark-to-market value of each eligible position is multiplied by the applicable BCBS D295 haircut (Level 1: 0%; Level 2A: 15%; Level 2B: 25% default). GL account balances are not used as a proxy for HQLA stock. Account-level `hqlaLevel` tags on the Chart of Accounts were a Phase-0 shortcut and are deprecated (`D-FINANCIAL-INSTRUMENT-ENTITY`, 2026-05-22; corrected 2026-05-29). |
 | 4 | Compute NSFR projection (ASF / RSF) | `system` | `@domains/liquidity/nsfr-projection` (`PLANNED`) | Per BCBS D335. Emits `RatioComputed`. |
 | 5 | Compute by-significant-currency LCR | `system` | `@domains/liquidity/lcr-projection` (`PLANNED`) | Per RAS / Liquidity Policy. |
 | 6 | Compare against thresholds (regulatory min, internal trigger, internal escalation) | `system` | `@domains/capital/threshold-engine` (`PLANNED`) | Soft / Hard / Critical severity per breach taxonomy. |
@@ -102,6 +102,7 @@ Compute the bank's capital and liquidity ratios daily as projections over the ev
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v1.0 | 2026-05-06 | Bea + Camille | Initial draft. B2 calibration deferred — placeholder thresholds use RAS / RAF §B3 floors. |
+| v1.1 | 2026-05-29 | Ravi | Step 3 corrected: HQLA stock sourced from instrument-level position register (SecurityMaster × unified-position), not GL account balances. Account-level COA hqlaLevel tags deprecated. Authority: `D-FINANCIAL-INSTRUMENT-ENTITY`; `brief:ravi:fix-ba-325-hqla-stock-instrument-level-positions:2026-05-29`. |
 
 ## 12. Audit / assurance
 
