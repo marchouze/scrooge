@@ -9,23 +9,39 @@
 //   1. model:lcr-ba325-v1          — Liquidity Coverage Ratio (Tier-1, BA 325)
 //   2. model:nsfr-ba325-v1         — Net Stable Funding Ratio (Tier-1, BA 325)
 //   3. model:capital-cet1-ba700-v1 — CET1 Capital Ratio (Tier-1, BA 700)
+//   4. model:rwa-sa-v1             — Risk-Weighted Assets, standardised (Tier-1, BA 700)
 //
-// These are regulatory-submission models (LCR/NSFR → BA 325; CET1 → BA 700) and
+// These are regulatory-submission models (LCR/NSFR → BA 325; CET1/RWA → BA 700) and
 // therefore Tier-1 under SR 11-7 §V: a misstated figure feeds a statutory return.
+//
+// `model:rwa-sa-v1` (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, CEO session-delegation
+// 2026-05-29) makes RWA a first-class governed figure. RWA was previously only an
+// *input* to the CET1 binding — the denominator of every capital ratio — but was
+// not itself a registered, owned, approved model. Closing that gap removes a live
+// control weakness: under D-TRUSTED-FIGURES-PROGRAM-V1 every surfaced figure must
+// trace to an approved model, and RWA is the most consequential capital figure the
+// bank computes. Methodology ownership for RWA sits with Helena (CRO) per the
+// decision-authority routing table (CRO: RWA / risk) — distinct from the CFO-owned
+// liquidity/capital-ratio figures above; that ownership is carried on the calc
+// binding, not the registry submit actor.
 //
 // Registry governance flow mirrors model-registry-seed + model-validation-seed:
 // Rohan (model builder, first line) submits; Nadia (independent validator, second
-// line) classifies the tier and approves. Methodology ownership for these figures
-// sits with Camille (CFO) per the decision-authority routing table (CFO: liquidity
-// / capital calibration) — that ownership is carried on the calc binding, not the
-// registry submit actor.
+// line) classifies the tier and approves. Methodology ownership for the LCR/NSFR/
+// CET1 figures sits with Camille (CFO) per the decision-authority routing table
+// (CFO: liquidity / capital calibration); RWA ownership sits with Helena (CRO).
+// Ownership is carried on the calc binding, not the registry submit actor.
 //
 // Idempotent: models already submitted / tier-classified / approved are skipped.
 // Must run alongside the other model seeds in bootDerive(); order-independent of
 // the pricing-model seeds (distinct modelIds).
 //
-// Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
-// Author: Atlas (substrate), coordinating Rohan (builder) + Nadia (validator).
+// Authority:
+//   - D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+//   - D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (CEO session-delegation 2026-05-29) — RWA.
+// Author: Atlas (substrate), coordinating Rohan (Risk systems engineer, builder)
+//   + Nadia (Independent-validation engineer, validator); RWA slice coordinated by
+//   Helena (Chief Risk Officer, governance — model-risk-policy owner).
 
 import { createHash } from "node:crypto";
 
@@ -43,7 +59,11 @@ const SEED_AS_OF = "2026-05-29T00:00:00.000Z";
 const ROHAN_ACTOR: Actor = { type: "service", id: "agent:rohan:calc-model-seed" };
 const NADIA_ACTOR: Actor = { type: "service", id: "agent:nadia:calc-model-validation" };
 
-const CITATIONS = ["D-TRUSTED-FIGURES-PROGRAM-V1", "BANKS-ACT-94-1990"];
+const CITATIONS = [
+  "D-TRUSTED-FIGURES-PROGRAM-V1",
+  "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1",
+  "BANKS-ACT-94-1990",
+];
 
 function methodologyHash(description: string): string {
   return createHash("sha256").update(description).digest("hex");
@@ -104,6 +124,29 @@ const MODELS: ReadonlyArray<CalcModelDef> = [
       "Tier-1 under SR 11-7 §V: direct regulatory-capital consequence — the output feeds the " +
       "BA 700 statutory capital-adequacy return to the PA and gates RAS capital limits. " +
       "Full independent validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  {
+    modelId: "model:rwa-sa-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "Risk-Weighted Assets engine (computeRwa), standardised approach. Pillar-1 RWA = credit " +
+      "RWA (Σ EAD × standardised risk-weight, CRE20) + market RWA (12.5 × Σ capital charge, " +
+      "pre-FRTB Basel-2.5 MAR) + operational RWA (12.5 × BIC × ILM, OPE25) + CVA RWA " +
+      "(placeholder). RWA is the direct denominator of every capital ratio (CET1, Tier-1, total) " +
+      "and feeds the BA 700 capital-adequacy return.",
+    methodologyDescription:
+      "rwa-sa-v1.0-standardised-credit-cre20-market-mar-pre-frtb-operational-ope25-bic-ilm-cva-placeholder",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and Model Risk Policy RISK-MRP-01 §2: RWA is the direct " +
+      "denominator of every regulatory capital ratio and feeds the BA 700 statutory " +
+      "capital-adequacy return to the PA. A misstated RWA misstates CET1, Tier-1 and total " +
+      "capital ratios and the RAS capital limits derived from them — the highest-consequence " +
+      "capital figure the bank computes. Full independent validation applies. NOTE: the " +
+      "prescribed inputs the engine consumes (SA risk-weight tables, BA 325 haircuts, SA-CCR " +
+      "supervisory factors) are regulatory-prescribed constants, NOT bank models, and are " +
+      "intentionally out of model-registry scope.",
     expiryDate: "2027-05-29",
   },
 ] as const;

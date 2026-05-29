@@ -106,7 +106,7 @@ describe("expected-event watchdog", () => {
     const store = new EventStore();
     const gaps = checkExpectedEvents(store);
     expect(gaps.length).toBe(expectedEvents().length);
-    // 3 calc-bound (one per CALC_BINDINGS entry) + 2 standalone.
+    // One calc-bound expectation per CALC_BINDINGS entry + 2 standalone.
     expect(gaps.length).toBe(Object.keys(CALC_BINDINGS).length + 2);
     const ids = new Set(gaps.map((g) => g.id));
     expect(ids.has("daily-pnl")).toBe(true);
