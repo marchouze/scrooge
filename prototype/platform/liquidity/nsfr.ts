@@ -36,6 +36,7 @@ import {
   nsfrAsfWeights,
   nsfrRsfWeights,
 } from "../config/financial-constants";
+import { requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
 // Input types
@@ -160,7 +161,7 @@ export function computeNSFR(asfItems: ASFItem[], rsfItems: RSFItem[]): NSFRResul
   // -------------------------------------------------------------------------
   let asf = 0;
   for (const item of asfItems) {
-    const weight = ASF_WEIGHTS[item.category] ?? 0;
+    const weight = requireWeight(ASF_WEIGHTS, item.category, "nsfr.asf");
     asf += item.amountZar * weight;
   }
 
@@ -169,7 +170,7 @@ export function computeNSFR(asfItems: ASFItem[], rsfItems: RSFItem[]): NSFRResul
   // -------------------------------------------------------------------------
   let rsf = 0;
   for (const item of rsfItems) {
-    const weight = RSF_WEIGHTS[item.category] ?? 1.0; // default 100% for unknown
+    const weight = requireWeight(RSF_WEIGHTS, item.category, "nsfr.rsf");
     rsf += item.amountZar * weight;
   }
 
