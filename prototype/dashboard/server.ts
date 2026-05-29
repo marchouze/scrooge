@@ -99,6 +99,9 @@ import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
+import { checkModelApproved } from "../platform/model-registry/calculation-binding";
+import { buildCalculationPerformed } from "../platform/model-registry/calculation-emit";
+import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import { getALMPositionSnapshot } from "../platform/projections/alm-positions";
@@ -138,6 +141,7 @@ import {
   BALANCE_SHEET_SEED_CITATIONS,
   BALANCE_SHEET_SEED_PAYLOAD,
 } from "../seeds/alm/balance-sheet-seed";
+import { seedCalcModels } from "../seeds/models/calc-model-seed";
 import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
 import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import {
@@ -546,6 +550,11 @@ function bootDerive(): DashboardState {
     // Must run AFTER bootModelValidationSeeds().
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     bootModelRegisteredSeeds();
+    // Calc-model seed — register + approve the three regulatory-metric models
+    // (LCR/NSFR/CET1) that calculation-binding.ts binds surfaced figures to.
+    // Distinct modelIds from the pricing-model seeds; order-independent of them.
+    // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+    bootCalcModels();
     // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
     // core products (equity, bond, repo, IRS, FX swap) idempotently.
     // seedValidatedModelRiskUpgrades() upgrades bond/IRS/FX model-risk to
@@ -558,6 +567,10 @@ function bootDerive(): DashboardState {
     bootTreasurySeeds();
     // Balance-sheet seed — emit BalanceSheetProjected for build-phase NSFR baseline.
     bootBalanceSheetSeed();
+    // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
+    // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.
+    // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+    emitCalculationProvenance();
     // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections.
     buildSlice5Projections();
     // Product Control — emit DailyPnLReportGenerated on each derive cycle.
@@ -610,6 +623,128 @@ function bootModelRegistry(): void {
     logger.debug(
       { skipped: result.skipped.length },
       "model-registry-seed: idempotent boot; all models already registered",
+    );
+  }
+}
+
+/**
+ * Idempotently register + approve the three regulatory-metric calc models
+ * (LCR / NSFR / CET1) that calculation-binding.ts binds surfaced figures to.
+ * Without these, checkModelApproved() is a loud failure for every regulatory
+ * figure. Submit (Rohan) → classifyTier + approveValidation (Nadia).
+ *
+ * Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+ */
+function bootCalcModels(): void {
+  const result = seedCalcModels(eventStore);
+  if (result.submitted.length > 0 || result.approved.length > 0) {
+    logger.info(
+      {
+        submitted: result.submitted.length,
+        tierClassified: result.tierClassified.length,
+        approved: result.approved.length,
+        skipped: result.skipped.length,
+      },
+      "calc-model-seed: regulatory-metric models registered and approved",
+    );
+  } else {
+    logger.debug(
+      { skipped: result.skipped.length },
+      "calc-model-seed: idempotent boot; all calc models already approved",
+    );
+  }
+}
+
+/**
+ * Emit one CalculationPerformed event per surfaced regulatory figure
+ * (LCR / NSFR / CET1) on each boot cycle — the calculation-history provenance
+ * axis (which model, which inputs, with what trust status). A figure whose bound
+ * model is not approved is NOT emitted as a number: it is a loud skip + warning
+ * (objective 3). A figure with a missing required input emits status `failed`,
+ * output null — never a silent 0 (objective 4).
+ *
+ * Called after the calc models are seeded + approved and after treasury/balance
+ * sheet seeds so the ALM snapshot is populated.
+ *
+ * Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+ */
+function emitCalculationProvenance(): void {
+  const asOf = nowUtc();
+  const entity = "LE-ZA-HOZ-BANK";
+  const actor = { type: "service" as const, id: "agent:atlas:calc-provenance" };
+
+  const emitOne = (
+    calcKey: string,
+    resolvedInputs: { name: string; value: number | null; missing: boolean }[],
+    output: number | null,
+  ): void => {
+    const approval = checkModelApproved(eventStore, calcKey);
+    if (!approval.ok) {
+      logger.warn(
+        { calcKey, reason: approval.reason },
+        "calc-provenance: bound model not approved; figure not emitted (loud skip)",
+      );
+      return;
+    }
+    eventStore.append(
+      buildCalculationPerformed({ asOf, entity, actor, calcKey, resolvedInputs, output }),
+    );
+  };
+
+  try {
+    const snap = getALMPositionSnapshot(eventStore, asOf, 30);
+
+    const lcr = computeLCR(
+      snap.hqlaPositions as import("../platform/liquidity/lcr").HQLAPosition[],
+      snap.fundingPositions as import("../platform/liquidity/lcr").FundingPosition[],
+    );
+    const lcrNoPos = lcr.status === "no-positions";
+    emitOne(
+      "lcr",
+      [
+        { name: "hqlaZar", value: lcrNoPos ? null : lcr.hqlaZar, missing: lcrNoPos },
+        {
+          name: "netCashOutflowsZar",
+          value: lcrNoPos ? null : lcr.netCashOutflowsZar,
+          missing: lcrNoPos,
+        },
+      ],
+      lcr.lcrRatioPct,
+    );
+
+    const nsfr = computeNSFR(
+      snap.asfItems as import("../platform/liquidity/nsfr").ASFItem[],
+      snap.rsfItems as import("../platform/liquidity/nsfr").RSFItem[],
+    );
+    const nsfrNoPos = nsfr.status === "no-positions";
+    emitOne(
+      "nsfr",
+      [
+        { name: "asfZar", value: nsfrNoPos ? null : nsfr.asfZar, missing: nsfrNoPos },
+        { name: "rsfZar", value: nsfrNoPos ? null : nsfr.rsfZar, missing: nsfrNoPos },
+      ],
+      nsfr.nsfrRatioPct,
+    );
+
+    const capital = computeCapitalMetrics(eventStore, asOf);
+    const rwaMissing = capital.totalRwaMinor <= 0;
+    const cet1Pct = Number.isFinite(capital.cet1Ratio) ? capital.cet1Ratio * 100 : null;
+    emitOne(
+      "capital-cet1",
+      [
+        {
+          name: "availableCapitalMinor",
+          value: capital.availableCapitalMinor,
+          missing: false,
+        },
+        { name: "rwaMinor", value: rwaMissing ? null : capital.totalRwaMinor, missing: rwaMissing },
+      ],
+      cet1Pct,
+    );
+  } catch (err) {
+    logger.warn(
+      { err: (err as Error).message },
+      "calc-provenance: emission skipped (ALM snapshot or compute failed)",
     );
   }
 }
@@ -2525,6 +2660,24 @@ const server = Bun.serve({
         byAgent: groupByAgent(result.runs, 5),
         all: result.runs,
         pageProvenance: productionReferencePageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/models" && req.method === "GET") {
+      // Trusted-Figures Program — calculation models. Each surfaced regulatory
+      // figure (LCR/NSFR/CET1) bound to an owned, registered model, with its
+      // governance status, model-approval gate, input contract, and latest
+      // CalculationPerformed lineage (inputs → output + trust status).
+      // pageProvenance: event-derived → simulated-only in build phase.
+      // Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
+      const models = buildCalcModelsView(eventStore);
+      return jsonResponse({
+        models,
+        counts: {
+          total: models.length,
+          approved: models.filter((m) => m.approved).length,
+          unapproved: models.filter((m) => !m.approved).length,
+        },
+        pageProvenance: eventDerivedPageProvenance(),
       });
     }
     if (url.pathname === "/api/party" && req.method === "GET") {
