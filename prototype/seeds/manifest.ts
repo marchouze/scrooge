@@ -151,7 +151,7 @@ export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
     description:
       "Registers the team roster through the agent registry / identity issuer / permission publisher. Structural identity backfill — not descopable (the whole agent axis depends on it).",
     kind: "fleet-identity",
-    emittedEventTypes: ["AgentRegistered", "AgentIdentityIssued", "PermissionPolicyPublished"],
+    emittedEventTypes: ["AgentRegistered", "IdentityKeyRotated", "PermissionPolicyPublished"],
     descopable: false,
     citations: ["S8-A4"],
   },

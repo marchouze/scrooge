@@ -83,6 +83,7 @@
       group: "Platform",
       pages: [
         { label: "Events", href: "/events.html" },
+        { label: "Seeds", href: "/seeds.html" },
         { label: "Health", href: "/health.html" },
         { label: "Config", href: "/config.html" },
         { label: "AgentOps", href: "/agentops.html" },
