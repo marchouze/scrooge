@@ -3,9 +3,9 @@
 // Zero-position baseline tests for the ΔEVE engine.
 //
 // In build phase the event store has no positions. All ΔEVE values should
-// be 0 across all six BCBS d365 shock scenarios.
+// be 0 across all six BCBS d368 shock scenarios.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365 §4.
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d368 §4.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import { describe, expect, it } from "bun:test";
@@ -26,11 +26,11 @@ describe("computeEVE — zero-position baseline", () => {
     expect(report.currency).toBe("ZAR");
   });
 
-  it("returns 6 results (one per BCBS d365 shock scenario)", () => {
+  it("returns 6 results (one per BCBS d368 shock scenario)", () => {
     expect(report.results).toHaveLength(6);
   });
 
-  it("shock labels match the canonical BCBS d365 order", () => {
+  it("shock labels match the canonical BCBS d368 order", () => {
     const labels = report.results.map((r) => r.shockLabel);
     expect(labels).toEqual([...EVE_SHOCK_LABELS]);
   });

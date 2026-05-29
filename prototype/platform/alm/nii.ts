@@ -1,9 +1,11 @@
 // platform/alm/nii.ts
 //
-// NII (Net Interest Income) sensitivity computation.
+// ΔNII (Net Interest Income) sensitivity computation.
 //
-// Computes NII sensitivity over a 12-month horizon for four parallel
-// interest-rate shock scenarios, per BCBS d365 §4:
+// Computes NII sensitivity over a 12-month horizon for the parallel
+// interest-rate shock scenarios prescribed by BCBS d368 §III for the earnings
+// (ΔNII) measure — the earnings perspective uses the two parallel shocks plus
+// their ±100 bps intermediate steps:
 //
 //   Shock 1 — Parallel +200 bps
 //   Shock 2 — Parallel +100 bps
@@ -13,11 +15,17 @@
 // NII = projected interest income − projected interest expense.
 // ΔNII = NII(shocked) − NII(base).
 //
-// Build-phase posture:
-//   No real positions → NII = 0 for all scenarios → ΔNII = 0.
-//   With zero rate-sensitive assets and liabilities, there is no interest
-//   income or expense to project. The zero posture is auditable and correct
-//   (Principle 1 — events are the only source of truth).
+// GOVERNANCE (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3): this engine is a
+// surfaced figure bound in CALC_BINDINGS (calcKey `irrbb-nii`,
+// model:irrbb-nii-engine-v1, owned by Camille (Chief Financial Officer,
+// governance) as the ΔNII earnings-figure owner). It consumes the
+// repricing/behavioural model (model:irrbb-repricing-v1).
+//
+// NO SILENT ZEROS (objective 4 of D-TRUSTED-FIGURES-PROGRAM-V1): when the
+// banking book holds no repricing-sensitive positions the report carries
+// `status: "zero-positions"` (a loud, reasoned absence), which the caller maps
+// to a `degraded` CalculationPerformed + SubstrateAlert on the /api/data-failures
+// banner — never an unexplained 0.
 //
 //   When real positions land (bonds, IRS, deposits, loans), this engine
 //   replaces the zero basis with a per-bucket projection:
@@ -25,8 +33,14 @@
 //     NII_shocked = Σ_t (RSA_t × (base_rate_t + shock) − RSL_t × (base_rate_t + shock)) × min(T_t, 1Y)
 //   where T_t is the remaining life of the position capped at 12 months.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365 §4; Banks Act Reg 26/27.
-// Author: Ravi (Treasury/ALM Engineer, engineering)
+// Authority: D-TREASURY-GAPS-WAVE1; D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (Slice 3);
+//   BCBS d368 §III; Banks Act Reg 26/27.
+// Author: Ravi (Treasury/ALM Engineer, engineering); IRRBB governance Slice 3
+//   coordinated by Helena (Chief Risk Officer, governance — methodology
+//   accountability) + Camille (Chief Financial Officer, governance — ΔNII
+//   earnings-figure owner) with Eitan (Treasurer — ALM repricing/behavioural
+//   inputs), built by Rohan (Risk systems engineer, engineering), validated by
+//   Nadia (Independent-validation engineer).
 
 import type { EventStore } from "../event-store/store";
 import { type REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";

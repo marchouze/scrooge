@@ -708,7 +708,7 @@ function bootCalcModels(): void {
 
 /**
  * Emit one CalculationPerformed event per surfaced regulatory figure
- * (LCR / NSFR / CET1) on each boot cycle — the calculation-history provenance
+ * (LCR / NSFR / CET1 / RWA / ECL / IRRBB ΔEVE / IRRBB ΔNII) on each boot cycle — the calculation-history provenance
  * axis (which model, which inputs, with what trust status). A figure whose bound
  * model is not approved is NOT emitted as a number: it is a loud skip + warning
  * (objective 3). A figure with a missing required input emits status `failed`,
@@ -845,6 +845,51 @@ function emitCalculationProvenance(): void {
         { name: "stagingClassified", value: 1, missing: false },
       ],
       eclDegraded ? null : ecl.eclMinor,
+    );
+
+    // IRRBB ΔEVE — economic-value-of-equity sensitivity across the six BCBS d368
+    // shocks (model:irrbb-eve-engine-v1). NO SILENT ZEROS: an empty banking book
+    // (no repricing-sensitive positions) yields `status: "zero-positions"`,
+    // surfaced via the data-failure banner, never an unexplained 0. The surfaced
+    // figure is the worst-case (most adverse) ΔEVE in minor units. The repricing
+    // base is the optional input — absent when the banking book is empty → status
+    // `degraded`, output null ("value unavailable"). Authority:
+    // D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3.
+    const eve = computeEVE(eventStore, asOf);
+    const eveNoPos = eve.status === "zero-positions";
+    const eveRepricingBaseZar = eve.results.reduce((s, r) => s + Math.abs(r.baseNpvZar), 0);
+    emitOne(
+      "irrbb-eve",
+      [
+        {
+          name: "repricingBaseZar",
+          value: eveNoPos ? null : eveRepricingBaseZar,
+          missing: eveNoPos,
+        },
+        { name: "shockScenariosApplied", value: eve.results.length, missing: false },
+      ],
+      eveNoPos ? null : Math.round(eve.worstCaseDeltaEveZar * 100),
+    );
+
+    // IRRBB ΔNII — 12-month net-interest-income sensitivity across the BCBS d368
+    // parallel shocks (model:irrbb-nii-engine-v1). NO SILENT ZEROS: an empty
+    // banking book yields `status: "zero-positions"` → `degraded`, output null.
+    // The surfaced figure is the worst-case ΔNII over the 12-month horizon in
+    // minor units. Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3.
+    const nii = computeNII(eventStore, asOf);
+    const niiNoPos = nii.status === "zero-positions";
+    const niiRepricingBaseZar = nii.results.reduce((s, r) => s + Math.abs(r.baseNiiZar), 0);
+    emitOne(
+      "irrbb-nii",
+      [
+        {
+          name: "repricingBaseZar",
+          value: niiNoPos ? null : niiRepricingBaseZar,
+          missing: niiNoPos,
+        },
+        { name: "shockScenariosApplied", value: nii.results.length, missing: false },
+      ],
+      niiNoPos ? null : Math.round(nii.worstCaseDeltaNiiZar * 100),
     );
   } catch (err) {
     logger.warn(

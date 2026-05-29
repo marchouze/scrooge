@@ -2,32 +2,44 @@
 //
 // ΔEVE (Economic Value of Equity) sensitivity computation.
 //
-// Computes ΔEVE for the six standard interest-rate shock scenarios defined in
-// BCBS d365 (April 2016 / updated June 2019):
+// Computes ΔEVE for the six standard interest-rate shock scenarios prescribed
+// by BCBS d368 (Interest rate risk in the banking book, April 2016) §III / the
+// SARB IRRBB framework: the canonical six are parallel up, parallel down,
+// steepener, flattener, short-rate up and short-rate down:
 //
-//   Scenario 1 — Parallel up   +200 bps
-//   Scenario 2 — Parallel up   +100 bps
-//   Scenario 3 — Parallel down −100 bps
-//   Scenario 4 — Parallel down −200 bps
-//   Scenario 5 — Steepener     short end +300 bps
-//   Scenario 6 — Flattener     short end −300 bps
+//   Scenario 1 — Parallel up    +200 bps (all buckets)
+//   Scenario 2 — Parallel down  −200 bps (all buckets)
+//   Scenario 3 — Steepener      short end −, long end + (rotation)
+//   Scenario 4 — Flattener      short end +, long end − (rotation)
+//   Scenario 5 — Short-rate up   short end +300 bps, tapering to 0 long
+//   Scenario 6 — Short-rate down short end −300 bps, tapering to 0 long
 //
 // ΔEVE = shocked NPV − base NPV.
 //
-// Build-phase posture:
-//   No real positions → NPV = 0 for all scenarios → ΔEVE = 0.
-//   This is correct: with no interest-rate-sensitive positions, there is no
-//   economic value to shock. The zero posture is explicitly documented and
-//   auditable (Principle 1).
+// GOVERNANCE (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3): this engine is a
+// surfaced figure bound in CALC_BINDINGS (calcKey `irrbb-eve`,
+// model:irrbb-eve-engine-v1, owned by Helena (Chief Risk Officer, governance)).
+// It consumes the repricing/behavioural model (model:irrbb-repricing-v1).
 //
-//   When real positions land (bonds, IRS, repos), this engine replaces the
-//   zero basis with a proper cashflow-discounting approach:
+// NO SILENT ZEROS (objective 4 of D-TRUSTED-FIGURES-PROGRAM-V1): when the
+// banking book holds no repricing-sensitive positions the report carries
+// `status: "zero-positions"` (a loud, reasoned absence), which the caller maps
+// to a `degraded` CalculationPerformed + SubstrateAlert on the /api/data-failures
+// banner — never an unexplained 0.
+//
+//   When real positions land (bonds, IRS, repos), this engine discounts each
+//   repricing bucket's net cashflow under shocked rates:
 //     NPV = Σ CF_t × discount_factor(r_t + shock_t)
 //   where r_t is the base zero rate at tenor t and shock_t is the parallel or
 //   slope adjustment for that tenor.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365 §4; Banks Act Reg 26/27.
-// Author: Ravi (Treasury/ALM Engineer, engineering)
+// Authority: D-TREASURY-GAPS-WAVE1; D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (Slice 3);
+//   BCBS d368 §III; Banks Act Reg 26/27.
+// Author: Ravi (Treasury/ALM Engineer, engineering); IRRBB governance Slice 3
+//   coordinated by Helena (Chief Risk Officer, governance — methodology
+//   accountability) with Eitan (Treasurer — ALM repricing/behavioural inputs),
+//   built by Rohan (Risk systems engineer, engineering), validated by Nadia
+//   (Independent-validation engineer).
 
 import type { EventStore } from "../event-store/store";
 import { computeCapitalMetrics } from "../projections/capital-metrics";
@@ -37,32 +49,32 @@ import { REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";
 // Types
 // ---------------------------------------------------------------------------
 
-/** Standard BCBS d365 shock scenarios. */
+/** The canonical six BCBS d368 §III interest-rate shock scenarios. */
 export type EVEShockLabel =
-  | "parallel+200"
-  | "parallel+100"
-  | "parallel-100"
-  | "parallel-200"
-  | "steepener+300"
-  | "flattener-300";
+  | "parallel-up"
+  | "parallel-down"
+  | "steepener"
+  | "flattener"
+  | "short-up"
+  | "short-down";
 
 export const EVE_SHOCK_LABELS: readonly EVEShockLabel[] = [
-  "parallel+200",
-  "parallel+100",
-  "parallel-100",
-  "parallel-200",
-  "steepener+300",
-  "flattener-300",
+  "parallel-up",
+  "parallel-down",
+  "steepener",
+  "flattener",
+  "short-up",
+  "short-down",
 ];
 
-/** Human-readable description for each shock scenario. */
+/** Human-readable description for each BCBS d368 shock scenario. */
 export const EVE_SHOCK_DESCRIPTIONS: Record<EVEShockLabel, string> = {
-  "parallel+200": "Parallel shift +200 bps (upward shock)",
-  "parallel+100": "Parallel shift +100 bps (upward shock)",
-  "parallel-100": "Parallel shift −100 bps (downward shock)",
-  "parallel-200": "Parallel shift −200 bps (downward shock)",
-  "steepener+300": "Steepener: short end +300 bps, long end unchanged",
-  "flattener-300": "Flattener: short end −300 bps, long end unchanged",
+  "parallel-up": "Parallel up: +200 bps across all repricing buckets",
+  "parallel-down": "Parallel down: −200 bps across all repricing buckets",
+  steepener: "Steepener: short rates fall, long rates rise (curve rotation)",
+  flattener: "Flattener: short rates rise, long rates fall (curve rotation)",
+  "short-up": "Short-rate up: +300 bps at the short end, tapering to 0 at the long end",
+  "short-down": "Short-rate down: −300 bps at the short end, tapering to 0 at the long end",
 };
 
 /** ΔEVE sensitivity result for one shock scenario. */
@@ -95,14 +107,16 @@ export interface EVEReport {
 
 /**
  * Compute the basis-point shift applied to each repricing bucket under each
- * shock scenario. Returns bps as a decimal fraction (e.g. 200bps = 0.02).
+ * BCBS d368 §III shock scenario. Returns bps as a decimal fraction (e.g.
+ * 200bps = 0.02). `position` is the bucket's place on the curve, 0 (shortest)
+ * to 1 (longest).
  *
- * Short-end buckets: ON, 1M, 3M.
- * Long-end buckets: 5Y, 7Y, 10Y+.
- * Mid buckets: 6M, 1Y, 2Y, 3Y.
- *
- * Steepener: short end +300bps; long end 0; mid interpolated linearly.
- * Flattener: short end −300bps; long end 0; mid interpolated linearly.
+ * - parallel up/down: ±200 bps uniformly across all buckets.
+ * - steepener: short rates fall, long rates rise — linear rotation from
+ *   −150 bps at the short end to +150 bps at the long end (BCBS rotation form).
+ * - flattener: short rates rise, long rates fall — the steepener inverted.
+ * - short up/down: ±300 bps at the short end, tapering linearly to 0 at the
+ *   long end.
  */
 function bucketShift(
   label: EVEShockLabel,
@@ -110,25 +124,29 @@ function bucketShift(
   bucketIndex: number,
 ): number {
   const n = REPRICING_BUCKETS.length; // 10 buckets
+  // Normalised curve position: 0 at the shortest bucket, 1 at the longest.
+  const position = n > 1 ? bucketIndex / (n - 1) : 0;
 
   switch (label) {
-    case "parallel+200":
+    case "parallel-up":
       return 0.02;
-    case "parallel+100":
-      return 0.01;
-    case "parallel-100":
-      return -0.01;
-    case "parallel-200":
+    case "parallel-down":
       return -0.02;
-    case "steepener+300": {
-      // Linear taper from +300bps at bucket 0 to 0bps at bucket n-1.
-      const fraction = 1 - bucketIndex / (n - 1);
-      return 0.03 * fraction;
+    case "steepener": {
+      // Short end −150bps → long end +150bps (linear rotation).
+      return -0.015 + 0.03 * position;
     }
-    case "flattener-300": {
-      // Linear taper from −300bps at bucket 0 to 0bps at bucket n-1.
-      const fraction = 1 - bucketIndex / (n - 1);
-      return -0.03 * fraction;
+    case "flattener": {
+      // Short end +150bps → long end −150bps (linear rotation).
+      return 0.015 - 0.03 * position;
+    }
+    case "short-up": {
+      // +300bps at the short end, tapering linearly to 0 at the long end.
+      return 0.03 * (1 - position);
+    }
+    case "short-down": {
+      // −300bps at the short end, tapering linearly to 0 at the long end.
+      return -0.03 * (1 - position);
     }
   }
 }

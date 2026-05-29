@@ -16,6 +16,9 @@
 //   8. model:ecl-ead-ifrs9-v1           — IFRS 9 EAD (Tier-1, IFRS 9 §B5.5)
 //   9. model:ecl-macro-overlay-ifrs9-v1 — IFRS 9 macroeconomic overlay (Tier-1, IFRS 9 §B5.5)
 //  10. model:ecl-engine-ifrs9-v1        — IFRS 9 ECL computation engine (Tier-1, IFRS 9 §B5.5)
+//  11. model:irrbb-repricing-v1         — IRRBB repricing/behavioural model (Tier-1, BCBS d368)
+//  12. model:irrbb-eve-engine-v1        — IRRBB ΔEVE engine (Tier-1, BCBS d368 §III)
+//  13. model:irrbb-nii-engine-v1        — IRRBB ΔNII engine (Tier-1, BCBS d368 §III)
 //
 // These are regulatory-submission models (LCR/NSFR → BA 325; CET1/RWA → BA 700) and
 // therefore Tier-1 under SR 11-7 §V: a misstated figure feeds a statutory return.
@@ -54,14 +57,29 @@
 // *surfaced* figure in CALC_BINDINGS (calcKey `ecl`); the five component models are
 // registered + governed but consumed by the engine, not surfaced directly.
 //
+// The three IRRBB models (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3) close the
+// model-scope gap declared by RISK-MRP-01 (Model Risk Policy v1) §1.1: IRRBB is
+// in declared model scope, but ΔEVE (economic-value sensitivity) and ΔNII
+// (12-month earnings sensitivity) were ungoverned figures. The repricing/
+// behavioural model (model:irrbb-repricing-v1) carries the repricing-bucket
+// assignment + behavioural assumptions (NMD decay, prepayment) — owned by Eitan
+// (Treasurer) as the ALM repricing/behavioural input owner. The EVE engine
+// (model:irrbb-eve-engine-v1) is bound as the surfaced `irrbb-eve` figure
+// (owned by Helena, CRO); the NII engine (model:irrbb-nii-engine-v1) is bound as
+// the surfaced `irrbb-nii` figure (owned by Camille, CFO — the ΔNII earnings
+// figure). All three are Tier-1 under SR 11-7 §V and RISK-MRP-01 §2: IRRBB
+// feeds Pillar-2 capital, the ICAAP and the BA 330 IRRBB return. Methodology
+// accountability sits with Helena (CRO) per RISK-MRP-01 §3.4.
+//
 // Authority:
 //   - D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
-//   - D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (CEO session-delegation 2026-05-29) — RWA + ECL suite.
+//   - D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (CEO session-delegation 2026-05-29) — RWA + ECL suite + IRRBB.
 // Author: Atlas (substrate), coordinating Rohan (Risk systems engineer, builder)
-//   + Nadia (Independent-validation engineer, validator); RWA + ECL-suite slices
-//   coordinated by Helena (Chief Risk Officer, governance — model-risk-policy owner),
-//   with Camille (Chief Financial Officer, governance) confirming IFRS 9 accounting
-//   treatment for the ECL suite.
+//   + Nadia (Independent-validation engineer, validator); RWA + ECL-suite + IRRBB
+//   slices coordinated by Helena (Chief Risk Officer, governance — model-risk-policy
+//   owner), with Camille (Chief Financial Officer, governance) confirming IFRS 9
+//   accounting treatment for the ECL suite + owning the ΔNII earnings figure, and
+//   Eitan (Treasurer) owning the IRRBB repricing/behavioural inputs.
 
 import { createHash } from "node:crypto";
 
@@ -280,6 +298,75 @@ const MODELS: ReadonlyArray<CalcModelDef> = [
       "suite. Methodology accountability: Helena (CRO); the impairment figure is owned by " +
       "Camille (CFO) per the decision-authority routing table, with Camille confirming " +
       "accounting-treatment consistency per RISK-MRP-01 §3.4. Full independent validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  // -- IRRBB governance suite (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3) ---------
+  {
+    modelId: "model:irrbb-repricing-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "IRRBB repricing / behavioural model (computeRepricingGap). Assigns every banking-book " +
+      "instrument to a BCBS d368 repricing time-bucket (ON, 1M, 3M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, " +
+      "10Y+) as rate-sensitive asset (RSA) or liability (RSL): fixed-rate bonds reprice at " +
+      "maturity, IRS legs at reset/maturity, repos/deposits/interbank placements at their " +
+      "contractual roll dates. Carries the behavioural assumptions — non-maturing-deposit (NMD) " +
+      "decay and prepayment treatment — that BCBS d368 §III mandates for the banking book. The " +
+      "common repricing base both the ΔEVE and ΔNII engines consume.",
+    methodologyDescription:
+      "irrbb-repricing-v1.0-bcbs-d368-time-buckets-rsa-rsl-nmd-decay-prepayment-behavioural",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §2/§5: the repricing/behavioural model is the " +
+      "common base for both IRRBB measures (ΔEVE and ΔNII), which feed Pillar-2 capital, the " +
+      "ICAAP and the BA 330 IRRBB return. Its behavioural assumptions (NMD decay, prepayment) " +
+      "are the most judgement-intensive IRRBB inputs and drive the entire sensitivity. " +
+      "Methodology accountability: Helena (CRO); the repricing/behavioural assumptions are " +
+      "owned by Eitan (Treasurer) as the ALM input owner. Full independent validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  {
+    modelId: "model:irrbb-eve-engine-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "IRRBB ΔEVE engine (computeEVE). Computes the change in the economic value of equity of " +
+      "the banking book under the six BCBS d368 §III standard interest-rate shocks (parallel up, " +
+      "parallel down, steepener, flattener, short-rate up, short-rate down). ΔEVE = shocked NPV − " +
+      "base NPV, discounting each repricing bucket's net cashflow at base vs shocked rates. " +
+      "Surfaced figure (calcKey `irrbb-eve`) in CALC_BINDINGS. When the banking book has no " +
+      "repricing-sensitive positions the engine returns a loud `zero-positions` status (ΔEVE is 0 " +
+      "by absence of exposure), never a silent 0.",
+    methodologyDescription:
+      "irrbb-eve-engine-v1.0-delta-eve-six-bcbs-d368-shocks-npv-discount-no-silent-zero",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §2/§5: ΔEVE is the economic-value (Pillar-2) IRRBB " +
+      "measure feeding the ICAAP, the SARB outlier test (ΔEVE > 15% of Tier-1 capital) and the " +
+      "BA 330 IRRBB return. A misstated ΔEVE misstates the Pillar-2 capital add-on. Methodology " +
+      "accountability: Helena (CRO); the figure is owned by Helena (CRO) as the risk-measure " +
+      "owner; ALM repricing/behavioural inputs are owned by Eitan (Treasurer). Full independent " +
+      "validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  {
+    modelId: "model:irrbb-nii-engine-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "IRRBB ΔNII engine (computeNII). Computes the change in projected 12-month net interest " +
+      "income of the banking book under the BCBS d368 §III parallel interest-rate shocks " +
+      "(±100 / ±200 bps). ΔNII = shocked NII − base NII, projecting each repricing bucket's net " +
+      "gap × rate × in-window year-fraction over the 12-month earnings horizon. Surfaced figure " +
+      "(calcKey `irrbb-nii`) in CALC_BINDINGS. When the banking book has no repricing-sensitive " +
+      "positions the engine returns a loud `zero-positions` status (ΔNII is 0 by absence of " +
+      "exposure), never a silent 0.",
+    methodologyDescription:
+      "irrbb-nii-engine-v1.0-delta-nii-12m-horizon-bcbs-d368-parallel-shocks-no-silent-zero",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §2/§5: ΔNII is the earnings-perspective IRRBB " +
+      "measure feeding the ICAAP and the BA 330 IRRBB return; a misstated ΔNII misstates the " +
+      "earnings-at-risk self-assessment. Methodology accountability: Helena (CRO); the ΔNII " +
+      "earnings figure is owned by Camille (CFO) per the decision-authority routing table; ALM " +
+      "repricing/behavioural inputs are owned by Eitan (Treasurer). Full independent validation applies.",
     expiryDate: "2027-05-29",
   },
 ] as const;

@@ -210,6 +210,76 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
       },
     ],
   },
+  "irrbb-eve": {
+    calcKey: "irrbb-eve",
+    figure: "IRRBB ΔEVE (Economic Value of Equity sensitivity)",
+    modelId: "model:irrbb-eve-engine-v1",
+    modelVersion: "1.0.0",
+    // ΔEVE is the economic-value (Pillar-2) IRRBB measure: the change in the
+    // present value of the banking book under the six BCBS d368 standard rate
+    // shocks. Methodology accountability sits with Helena (CRO) per RISK-MRP-01
+    // §5 (IRRBB is a declared sub-domain of the Model Risk Policy) — the EVE
+    // figure is the risk-measure owner's figure, so the binding owner is Helena.
+    // ALM repricing/behavioural assumptions are owned by Eitan (Treasurer),
+    // carried on model:irrbb-repricing-v1, not here. Authority:
+    // D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3.
+    owningAgent: "Helena (Chief Risk Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BCBS-D368"],
+    inputContract: [
+      {
+        // Optional: an empty banking book is a legitimate "no repricing-sensitive
+        // position" state, not a data-integrity fault. An absent repricing base
+        // degrades the figure (status `degraded`, surfaced loudly) rather than
+        // failing it — ΔEVE is 0 by absence of positions, never a silent 0.
+        name: "repricingBaseZar",
+        required: false,
+        unit: "ZAR",
+        expectedFrom:
+          "IRRBB repricing/behavioural model (model:irrbb-repricing-v1): Σ |bucket net gap| from computeRepricingGap (banking-book RSA − RSL across BCBS buckets)",
+      },
+      {
+        name: "shockScenariosApplied",
+        required: true,
+        unit: "count",
+        expectedFrom:
+          "EVE engine (model:irrbb-eve-engine-v1): the six BCBS d368 standard shocks (parallel up/down, steepener, flattener, short up/down)",
+      },
+    ],
+  },
+  "irrbb-nii": {
+    calcKey: "irrbb-nii",
+    figure: "IRRBB ΔNII (12-month Net-Interest-Income sensitivity)",
+    modelId: "model:irrbb-nii-engine-v1",
+    modelVersion: "1.0.0",
+    // ΔNII is the earnings-perspective IRRBB measure: the change in projected
+    // 12-month net interest income under parallel rate shocks. The earnings
+    // *figure* is owned by Camille (CFO) per the decision-authority routing
+    // table (CFO: earnings / financial figures); the methodology accountability
+    // sits with Helena (CRO) per RISK-MRP-01 §5, carried on the model registry,
+    // and the ALM repricing/behavioural inputs are owned by Eitan (Treasurer)
+    // on model:irrbb-repricing-v1. The owningAgent here is the figure owner.
+    // Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3.
+    owningAgent: "Camille (Chief Financial Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BCBS-D368"],
+    inputContract: [
+      {
+        name: "repricingBaseZar",
+        required: false,
+        unit: "ZAR",
+        expectedFrom:
+          "IRRBB repricing/behavioural model (model:irrbb-repricing-v1): Σ |bucket net gap| from computeRepricingGap over the 12-month NII horizon (RSA − RSL by bucket year-fraction)",
+      },
+      {
+        name: "shockScenariosApplied",
+        required: true,
+        unit: "count",
+        expectedFrom:
+          "NII engine (model:irrbb-nii-engine-v1): the parallel rate shocks over the 12-month earnings horizon (BCBS d368 §III earnings measure)",
+      },
+    ],
+  },
 } as const;
 
 /** Look up a binding by calc key. Throws (loud) on an unknown key. */
