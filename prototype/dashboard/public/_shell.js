@@ -28,7 +28,10 @@
     },
     {
       group: "Risk",
-      pages: [{ label: "Risk", href: "/risk.html" }],
+      pages: [
+        { label: "Risk", href: "/risk.html" },
+        { label: "Models", href: "/models.html" },
+      ],
     },
     {
       group: "Markets",

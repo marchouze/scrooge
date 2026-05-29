@@ -180,6 +180,15 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // no-op on replay. Citation: D-RECON-CLIENT-ENTITYNAME-UNIQUENESS,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/clients-entityname-uniqueness.ts",
+  // calc-model-binding — opens the live store to assert each surfaced figure
+  // binds to an approved model. It idempotently seeds the calc models (via
+  // seedCalcModels, which receives the store and appends ModelSubmitted/
+  // ModelTierClassified/ModelValidationApproved through it) then replays the
+  // registry fold. The seed path goes through the same gated boot path in
+  // production (dashboard/server.ts bootCalcModels); the raw construction here
+  // is the recon's own read/seed root, analogous to the other recon roots
+  // above. Citation: D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/calc-model-binding.ts",
   // PartitionedEventStore — substrate class that opens cold archive SQLite
   // databases for read-only replay; no appends; gate is a no-op on replay.
   // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.
