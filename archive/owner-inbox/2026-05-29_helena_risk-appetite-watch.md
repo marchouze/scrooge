@@ -1,7 +1,7 @@
 ---
 agent: Helena
 trigger: risk-appetite-watch
-asOf: 2026-05-29T05:01:22.519Z
+asOf: 2026-05-29T09:52:49.783Z
 decision-required: false
 ---
 
@@ -59,11 +59,7 @@ _Zero breach events in the store — consistent with the build-phase posture (no
 
 ## Helena's narrative
 
-The appetite-monitoring substrate is partially live: 7 of 14 lines measured, 2 lines unmeasured, 5 dormant pending commencement of trading. The class most exposed is **liquidity** — specifically the LCR line, which is reporting red on a synthetic denominator (R27m net outflow against zero HQLA) and which I am not prepared to treat as a true breach until the substrate is corrected. The NSFR figure (10,714%) is, on its face, evidence of the same substrate problem from the other direction: ratios that round to absurdities are not measurements, they are placeholders dressed as measurements, and the BRC will not accept them as RAS §B3 attestations.
-
-Three observations the Board needs to hear. First: the LCR/NSFR substrate for RAS §B3 is not fit for regulator-facing use — the inputs are build-phase stubs, not a calibrated HQLA / outflow / ASF / RSF projection — and until Rohan commissions a proper liquidity projection the red on LCR must be registered as a *measurement exception*, not a tier-1 appetite breach. This matters because LCR and NSFR are the two lines on which the PA will expect demonstrable governance under Banks Act 94 of 1990 s 60B and the ICAAP/ILAAP discipline. Second: the **model-risk** appetite line (RAS §B7) is unmeasured and will remain so until the independent-validation hire (Nolan) lands — this is a direct gap against BCBS Corporate Governance Principles for Banks Principle 6 (risk management function) and Principle 8 (risk communication), and the BRC needs to see it on the gap inventory, not buried in an ops note. Third: the **cyber-severity** line (RAS §B6) is unmeasured pending Senna→Rashida substrate work; tolerable for now, but it cannot still be unmeasured at the day-90 RAS review.
-
-Next governance step, concrete: (i) I will commission a BRC paper for the next cycle — *"Liquidity appetite substrate: measurement exception on LCR/NSFR and remediation plan"* — registering the LCR red as a substrate exception under the RAS exception register, not a tier-1 breach, with Rohan named as the substrate owner and a commitment to a calibrated ILAAP-grade liquidity projection before day 90. (ii) I will write to Rohan to commission the limit cascade for RAS §B3 (LCR/NSFR component limits and the leverage-ratio exposure-measure projection — SA-CCR, commitments, SFTs) so that the day-90 RAS review has real numbers to govern. (iii) The model-risk and cyber-severity unmeasured lines go on the BRC gap inventory as standing items until substrate is delivered. Day-23 of 90; we have time, but only if the substrate work starts now.
+_Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Inventory above stands on its own._
 
 ## Provenance
 

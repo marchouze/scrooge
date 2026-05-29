@@ -1,7 +1,7 @@
 ---
 agent: Eitan
 trigger: liquidity-snapshot
-asOf: 2026-05-29T06:53:50.096Z
+asOf: 2026-05-29T09:52:04.554Z
 decision-required: false
 ---
 
@@ -76,7 +76,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 |---|---|
 | `ALCODecision` | 0 |
 | `HedgeProgrammeApproved` | 0 |
-| Prior `LiquiditySnapshot` (this agent) | 1 |
+| Prior `LiquiditySnapshot` (this agent) | 2 |
 
 ## Substrate gaps (build-phase)
 
@@ -91,11 +91,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 
 ## Eitan's narrative
 
-Register coverage on the liquidity-related slice stands at 39 obligations indexed against me as Treasurer (sole or joint owner on all but the auditor-acknowledgement and circular-confirmation lines, which sit with Owen / Iris). None are flagged PARTIAL in today's snapshot — the register has them all, but every one of `ORG-PR-06/-07/-08/-11/-14/-15` is still carrying a `[TBD]` URN against the underlying policy obligations (Liquidity Risk Management, Funding Strategy, IRRBB), which means the pre-PA-directive policy spine that the post-2022 LCR/NSFR/IRRBB obligations bolt onto is not yet citation-grade. Degraded-mode is functioning as the daily-funding-event SLA stand-in: this is the second `LiquiditySnapshot` run in seven days, and the heartbeat is doing what § 6 expects of it while the engine is being built. Zero `HQLAReported`, zero `LiquidityReport`, zero `NSFRRatioProjection`, zero `FXPositionReported`, zero `SAMOSFundingApproved` over 24h are all build-phase-acceptable today — none of those event-types have a live producer yet — but they convert to § 6 inactivity-SLA breaches the moment Rohan's LCR/NSFR engine and the SAMOS-funding event emitter land. I am writing that conversion date into the ALCO pack now so it is not a surprise.
-
-The one consequential reading: ten `IRRBBChecked` events landed in the window against one `LCRRatioProjection` and zero of everything else. That is the wrong shape — IRRBB is firing hot relative to the rest of the treasury surface, and with `ORG-PR-11` still `[TBD]` on the IRRBB Policy URN and `ORG-PR-P3-001` (Pillar 3 IRRBB application, `pa-d1-2024`) sitting downstream of it, I cannot yet tell from the snapshot whether those ten checks represent a genuine duration / EVE excursion or just an over-eager projection schema. Until the IRRBB obligation has a real URN and Anya's projection emits a delta-EVE / delta-NII figure with each check, I am treating this as a *watch* item for Helena rather than an ALCO-chair escalation — but if next week's snapshot shows the same ratio I will raise it formally. The single `LCRRatioProjection` against zero `HQLAReported` is also worth flagging: an LCR projection without a paired HQLA report is structurally incomplete, and `ORG-PR-LCR-001` (HQLA maintenance) and `ORG-PR-LCR-004` (HQLA summation cap) both expect the HQLA event to be the upstream input, not an afterthought.
-
-Next substrate step, in order: (1) close the `[TBD]` URNs on `ORG-PR-06/-07/-08/-11/-14/-15` — these are my and Helena's policy obligations and they are gating the citation chain for every downstream PA-directive obligation in this slice; without them, `ORG-PR-36` (revised LCR), `ORG-PR-43` (NSFR), and `ORG-PR-NSFR-001..012` are anchored to placeholders. (2) Land the `HQLAReported` projection schema before the `LCRRatioProjection` schema is hardened, so the LCR projection has a real upstream rather than a synthetic one — Ravi and Rohan know the shape I need (Level 1 / Level 2A / Level 2B with the `ORG-PR-LCR-004` cap pre-applied). (3) For the next ALCO pack: a one-page note that enumerates which treasury event-types will flip from "build-phase-acceptable zero" to "§ 6 inactivity-SLA breach" on engine cutover, with `SAMOSFundingApproved` named explicitly as the daily-cadence one. That is the prep item I want sitting in front of Camille and Helena before we co-chair the next session.
+_Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Snapshot above stands on its own._
 
 ## Provenance
 
