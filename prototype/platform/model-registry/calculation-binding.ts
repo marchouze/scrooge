@@ -125,6 +125,47 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
       },
     ],
   },
+  rwa: {
+    calcKey: "rwa",
+    figure: "Risk-Weighted Assets",
+    modelId: "model:rwa-sa-v1",
+    modelVersion: "1.0.0",
+    // RWA methodology ownership sits with the CRO per the decision-authority
+    // routing table (CRO: RWA / risk) — distinct from the CFO-owned capital-ratio
+    // figures above. RWA is the denominator of every capital ratio, so making it a
+    // first-class governed figure (rather than an ungoverned input to capital-cet1)
+    // closes the D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 control gap.
+    owningAgent: "Helena (Chief Risk Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BA-700"],
+    inputContract: [
+      {
+        name: "creditRwaMinor",
+        required: true,
+        unit: "ZAR-minor",
+        expectedFrom: "RWA engine credit section (computeRwa: Σ creditExposures EAD × CRE20 RW)",
+      },
+      {
+        name: "marketRwaMinor",
+        required: true,
+        unit: "ZAR-minor",
+        expectedFrom:
+          "RWA engine market section (computeRwa: 12.5 × Σ tradingBookPositions capital charge)",
+      },
+      {
+        name: "operationalRwaMinor",
+        required: true,
+        unit: "ZAR-minor",
+        expectedFrom: "RWA engine operational section (computeRwa: 12.5 × BIC × ILM, OPE25)",
+      },
+      {
+        name: "cvaRwaMinor",
+        required: false,
+        unit: "ZAR-minor",
+        expectedFrom: "RWA engine CVA passthrough (computeRwa input cvaRwaMinor; BA 600 owns)",
+      },
+    ],
+  },
 } as const;
 
 /** Look up a binding by calc key. Throws (loud) on an unknown key. */
