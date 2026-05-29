@@ -132,7 +132,12 @@ export class ScheduledTriggerConsumer {
 
   async consume(now: Date): Promise<ScheduledConsumeResult> {
     // Pre-fold the BusDispatched stream into a Set keyed `<eventId>|<handlerKey>`
-    // for O(1) idempotency lookup. Mirrors the LocalEventTriggerBus pattern.
+    // for an O(1) in-process fast-path. Mirrors the LocalEventTriggerBus pattern.
+    // As in the bus, this in-memory set is ONLY a within-run optimisation — the
+    // authoritative cross-process dedup is `eventStore.claimDispatch` below.
+    // Applying the same claim primitive here means the scheduled path cannot
+    // race the event-driven path (or a concurrent scheduled run) on the same
+    // (eventId, handlerKey) pair. F2 close (F-ATLAS-20260529-BUSDEDUP).
     const dispatched = new Set<string>();
     for (const e of this.eventStore.replay({ type: "BusDispatched" })) {
       const p = e.payload as Record<string, unknown>;
@@ -238,7 +243,18 @@ export class ScheduledTriggerConsumer {
       }
 
       const dedupKey = `${event.event_id}|${handlerKey}`;
+      // Fast-path: skip if already dispatched in this run (not authoritative).
       if (dispatched.has(dedupKey)) continue;
+
+      // Authoritative cross-process claim. Claim-FIRST: take the atomic
+      // UNIQUE-constrained claim BEFORE invoking the handler. A lost claim
+      // means another process/path (the event-driven bus or a concurrent
+      // scheduled run) owns this pair — skip invocation. F2 close.
+      const won = this.eventStore.claimDispatch(event.event_id, handlerKey);
+      if (!won) {
+        dispatched.add(dedupKey);
+        continue;
+      }
       dispatched.add(dedupKey);
 
       const dispatchedAt = now.toISOString();
