@@ -25,6 +25,18 @@
 //
 // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325.
 // Author: Anya (Liquidity & projections engineer, engineering)
+//
+// Calibration constants (run-off / inflow / haircut rates, caps, minimum,
+// tolerance) are owned in platform/config/financial-constants.ts — objective 2
+// of D-TRUSTED-FIGURES-PROGRAM-V1. This file reads them; it holds no inline
+// rate tables.
+
+import {
+  getFinancialConstant,
+  lcrHaircutRates,
+  lcrRunoffRates,
+} from "../config/financial-constants";
+import { requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
 // Input types
@@ -56,28 +68,16 @@ export interface FundingPosition {
 // Run-off rates (BA 325 calibration)
 // ---------------------------------------------------------------------------
 
-const RUNOFF_RATES: Record<string, number> = {
-  "retail-stable": 0.03,
-  "retail-less-stable": 0.1,
-  "wholesale-operational": 0.25,
-  "wholesale-non-operational": 1.0,
-  "secured-level1": 0.0,
-  "secured-level2": 0.15,
-};
+const RUNOFF_RATES: Record<string, number> = lcrRunoffRates();
 
-/** Inflow rate cap under BA 325: inflows recognised at 100% of contractual amounts. */
-const INFLOW_RATE_CONTRACTUAL = 1.0;
-const INFLOW_RATE_OTHER = 0.5;
+const INFLOW_RATE_CONTRACTUAL = getFinancialConstant("lcr.inflow.contractual");
+const INFLOW_RATE_OTHER = getFinancialConstant("lcr.inflow.other");
 
 // ---------------------------------------------------------------------------
-// HQLA haircut rates (BA 325 Annex 1)
+// HQLA haircut rates (BA 325 Annex 1) — owned in financial-constants
 // ---------------------------------------------------------------------------
 
-const HAIRCUT_RATES: Record<string, number> = {
-  L1: 0.0,
-  L2a: 0.15,
-  L2b: 0.25, // minimum; build phase uses floor; actual can be up to 50%
-};
+const HAIRCUT_RATES: Record<string, number> = lcrHaircutRates();
 
 // ---------------------------------------------------------------------------
 // LCR result type
@@ -120,10 +120,10 @@ export interface LCRDetail {
 // ---------------------------------------------------------------------------
 
 /** Regulatory minimum LCR as a ratio (1.00 = 100%). */
-export const LCR_MINIMUM_RATIO = 1.0;
+export const LCR_MINIMUM_RATIO = getFinancialConstant("lcr.minimum-ratio");
 
-/** "At-minimum" tolerance band: within 5 percentage points of the minimum. */
-const AT_MINIMUM_TOLERANCE_PCT = 5;
+/** "At-minimum" tolerance band, in percentage points above the minimum. */
+const AT_MINIMUM_TOLERANCE_PCT = getFinancialConstant("lcr.at-minimum-tolerance-pct");
 
 /**
  * Compute the Liquidity Coverage Ratio from positions.
@@ -173,7 +173,7 @@ export function computeLCR(
   let l2bRaw = 0;
 
   for (const pos of hqlaPositions) {
-    const haircut = HAIRCUT_RATES[pos.tier] ?? 0;
+    const haircut = requireWeight(HAIRCUT_RATES, pos.tier, "lcr.haircut");
     const postHaircut = pos.amountZar * (1 - haircut);
     if (pos.tier === "L1") l1Raw += postHaircut;
     else if (pos.tier === "L2a") l2aRaw += postHaircut;
@@ -190,11 +190,16 @@ export function computeLCR(
   // Let H = L1 + L2. Then L2 ≤ 0.40 × H → L2 ≤ (40/60) × L1.
   // Similarly L2b ≤ 0.15 × H → L2b ≤ (15/85) × L1.
 
-  const l2bCap = (15 / 85) * l1Raw;
+  // Caps are owned as fractions of total HQLA; converted here to the
+  // equivalent L1-relative bound: cap_of_hqla / (1 − cap_of_hqla) × L1.
+  const l2bCapOfHqla = getFinancialConstant("lcr.cap.l2b-of-hqla");
+  const l2CapOfHqla = getFinancialConstant("lcr.cap.l2-of-hqla");
+
+  const l2bCap = (l2bCapOfHqla / (1 - l2bCapOfHqla)) * l1Raw;
   const l2bCapped = Math.min(l2bRaw, l2bCap);
   const l2bCapBinding = l2bRaw > l2bCap;
 
-  const l2Cap = (40 / 60) * l1Raw;
+  const l2Cap = (l2CapOfHqla / (1 - l2CapOfHqla)) * l1Raw;
   const l2Combined = l2aRaw + l2bCapped;
   let l2CapBinding = false;
   let l2aFinal = l2aRaw;
@@ -230,7 +235,7 @@ export function computeLCR(
       stressedInflows += pos.amountZar * rate;
     } else {
       // Outflows
-      const runoffRate = RUNOFF_RATES[pos.category] ?? 0;
+      const runoffRate = requireWeight(RUNOFF_RATES, pos.category, "lcr.runoff");
       stressedOutflows += pos.amountZar * runoffRate;
     }
   }
@@ -239,7 +244,7 @@ export function computeLCR(
   // Step 3 — Net cash outflows (BA 325 §19)
   // -------------------------------------------------------------------------
   // Net outflows = stressed outflows − min(stressed inflows, 75% × stressed outflows)
-  const inflowCap = 0.75 * stressedOutflows;
+  const inflowCap = getFinancialConstant("lcr.inflow-recognition-cap") * stressedOutflows;
   const recognisedInflows = Math.min(stressedInflows, inflowCap);
   const netCashOutflows = Math.max(stressedOutflows - recognisedInflows, 0);
 

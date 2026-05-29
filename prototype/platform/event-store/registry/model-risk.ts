@@ -15,6 +15,7 @@ import {
   backtestBreachDisposedPayloadSchema,
   backtestRequestedPayloadSchema,
   backtestRunPayloadSchema,
+  calculationPerformedPayloadSchema,
   methodologyChangeRequestedPayloadSchema,
   modelDriftDetectedPayloadSchema,
   modelSubmittedPayloadSchema,
@@ -184,5 +185,20 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §11",
+  },
+  // Calculation-history provenance (D-TRUSTED-FIGURES-PROGRAM-V1). Emitted
+  // whenever a surfaced regulatory figure is computed, binding it to an
+  // owned + approved model with its full input lineage and trust status.
+  // The Models page projection takes the latest per modelId.
+  {
+    type: "CalculationPerformed",
+    class: "audit",
+    payloadSchema: calculationPerformedPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Camille", "Helena", "Nadia", "Vera"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "BANKS-ACT-94-1990"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "platform/model-registry/calculation-binding.ts; D-TRUSTED-FIGURES-PROGRAM-V1",
   },
 ];

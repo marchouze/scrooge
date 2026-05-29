@@ -264,6 +264,18 @@ export * from "./obligation-review";
 //   IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1; Banks Act Reg 26/27.
 // Author: Ravi (Treasury/ALM Engineer, engineering).
 export * from "./repo-mmd-ibl";
+// D-TRUSTED-FIGURES-PROGRAM-V1 — calculation-history provenance.
+// CalculationPerformed: which model/version/owner/inputs derived a figure,
+//   with an explicit ok|degraded|failed status (never a silent 0).
+// Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+// Author: Atlas (Core banking platform architect, engineering).
+export * from "./calculation";
+// D-TRUSTED-FIGURES-PROGRAM-V1 — seed-management provenance (objective 1).
+// SeedDescoped + SeedPromotedToSimulated: make the boot-seed layer visible and
+//   controllable from the UI (descope at next boot; replace with real-simulated).
+// Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+// Author: Atlas (Core banking platform architect, engineering).
+export * from "./seed-management";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER

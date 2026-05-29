@@ -24,11 +24,15 @@
         { label: "Treasury", href: "/treasury.html" },
         { label: "General Ledger", href: "/gl" },
         { label: "Product Control", href: "/product-control.html" },
+        { label: "Constants", href: "/constants.html" },
       ],
     },
     {
       group: "Risk",
-      pages: [{ label: "Risk", href: "/risk.html" }],
+      pages: [
+        { label: "Risk", href: "/risk.html" },
+        { label: "Models", href: "/models.html" },
+      ],
     },
     {
       group: "Markets",
@@ -80,6 +84,7 @@
       group: "Platform",
       pages: [
         { label: "Events", href: "/events.html" },
+        { label: "Seeds", href: "/seeds.html" },
         { label: "Health", href: "/health.html" },
         { label: "Config", href: "/config.html" },
         { label: "AgentOps", href: "/agentops.html" },
@@ -149,6 +154,16 @@
     if (clockEl) {
       updateClock(clockEl);
       setInterval(() => updateClock(clockEl), 1000);
+    }
+
+    // Cross-page data-failure surface (Trusted-Figures objective 4): loaded
+    // globally so every page shows figures that are "value unavailable" rather
+    // than a silent 0. Self-contained — injects its own banner + polls.
+    if (!document.getElementById("sc-data-failure-banner-script")) {
+      const s = document.createElement("script");
+      s.id = "sc-data-failure-banner-script";
+      s.src = "/_data-failure-banner.js";
+      document.body.appendChild(s);
     }
   };
 
