@@ -1,4 +1,6 @@
 ---
+policy-parent: Gifts Policy (planned) · Owner Inbox/2026-05-06_core-policies-compliance-conduct.md
+last-reviewed: 2026-05-16
 procedureId: PROC-COND-GR-01
 title: Gifts, hospitality and entertainment registration
 author: Owen (Company Secretary, governance)

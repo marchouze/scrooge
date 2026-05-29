@@ -1,4 +1,6 @@
 ---
+policy-parent: Remuneration Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-MC-01
 title: Malus and clawback trigger assessment
 author: Sade (AgentOps & token efficiency engineer) · Helena (Chief Risk Officer, governance)

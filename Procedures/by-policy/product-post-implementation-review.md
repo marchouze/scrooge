@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md
+last-reviewed: 2026-05-15
 procedureId: PROC-MK-NPA-PIR-01
 title: Product Post-Implementation Review
 author: Saskia (Head of Global Markets, governance) · Devon (COO, governance)

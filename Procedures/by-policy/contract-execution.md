@@ -1,4 +1,6 @@
 ---
+policy-parent: Contracting Policy v0.1 (STUB) · Document Execution Policy v0.1 (STUB) · Owner Inbox/2026-05-06_core-policies-governance.md
+last-reviewed: 2026-05-16
 procedureId: PROC-LEG-CE-01
 title: Contract execution — wet signature, digital signature, ECTA discipline
 author: Imani (legal-as-code engineer)

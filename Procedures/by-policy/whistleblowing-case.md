@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-06_core-policies-compliance-conduct.md §5 — Whistleblowing Policy
+last-reviewed: 2026-05-15
 procedureId: PROC-COND-WB-01
 title: Whistleblowing case management
 author: Owen (Company Secretary, governance)

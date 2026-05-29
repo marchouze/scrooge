@@ -1,4 +1,7 @@
 ---
+id: PROC-IS-AP-01
+policy-parent: — Information Security and IT Governance Policy
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — Access provisioning (joiner / mover / leaver)

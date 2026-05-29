@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-06_core-policies-compliance-conduct.md §3 — ABC Policy
+last-reviewed: 2026-05-15
 procedureId: PROC-COND-ABC-DD-01
 title: Anti-bribery and corruption third-party due diligence
 author: Owen (Company Secretary, governance) · Zara (Chief Compliance Officer, governance)

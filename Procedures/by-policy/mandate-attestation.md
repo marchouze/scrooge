@@ -1,4 +1,6 @@
 ---
+policy-parent: Trading Mandate Policy (B5 — refining)
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-MA-01
 title: Trading mandate attestation and limit compliance sign-off
 author: Saskia (Head of Global Markets, governance) · Helena (Chief Risk Officer, governance)

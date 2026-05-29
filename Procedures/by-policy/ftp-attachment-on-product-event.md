@@ -1,4 +1,6 @@
 ---
+policy-parent: FTP Methodology (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-ALM-FTP-01
 title: Funds transfer pricing rate attachment on product lifecycle events
 author: Eitan (Treasurer) · Anya (platform & data engineer)

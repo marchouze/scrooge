@@ -1,4 +1,6 @@
 ---
+policy-parent: Payments Policy v0.1 (STUB)
+last-reviewed: 2026-05-16
 procedureId: PROC-PAY-RBH-01
 title: Payment reconciliation break identification and resolution
 author: Tomas (payments engineer) · Bea (financial-reporting engineer)

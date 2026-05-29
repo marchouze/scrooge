@@ -1,4 +1,6 @@
 ---
+policy-parent: Governance Framework Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-GOV-BP-01
 title: Board paper preparation and circulation — governance framework
 author: Owen (Company Secretary, governance)

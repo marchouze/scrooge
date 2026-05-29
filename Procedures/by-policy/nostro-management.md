@@ -1,4 +1,6 @@
 ---
+policy-parent: Sponsor-Bank Operating Policy v0.1 (STUB) · Payments Policy v0.1 (STUB) · Funding Strategy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-PAY-NM-01
 title: Nostro account management — correspondent balance and settlement feed
 author: Tomas (payments engineer) · Eitan (Treasurer)

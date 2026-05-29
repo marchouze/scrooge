@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/odp-authorisation-policy-v1.md
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-01
 title: ODP authorisation application (FSCA, Index 1 banks-track)
 author: Kai (Trading systems engineer, engineering) · Imani (Legal-as-code engineer, engineering)

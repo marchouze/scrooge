@@ -1,4 +1,6 @@
 ---
+policy-parent: Remuneration Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-ARR-01
 title: Annual remuneration review cycle — variable pay and benchmarking
 author: Sade (AgentOps & token efficiency engineer) · Helena (Chief Risk Officer, governance — RemCo chair)

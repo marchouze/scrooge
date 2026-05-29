@@ -1,4 +1,7 @@
 ---
+id: PROC-RSK-EC-01
+policy-parent: -  § Provisioning / IFRS 9 ECL Policy v0.1 §2 (Three-stage staging discipline); §3 (SICR trigger); §
+last-reviewed: 2026-05-07
 status: POPULATED
 ---
 # Procedure — ECL stage projection refresh

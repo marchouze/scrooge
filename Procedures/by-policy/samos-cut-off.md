@@ -1,4 +1,6 @@
 ---
+policy-parent: Payments Policy v0.1 (STUB) · Sponsor-Bank Operating Policy v0.1 (STUB)
+last-reviewed: 2026-05-16
 procedureId: PROC-PAY-SCO-01
 title: Correspondent instruction cut-off discipline — SAMOS windows
 author: Tomas (payments engineer)

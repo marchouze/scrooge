@@ -1,4 +1,6 @@
 ---
+policy-parent: Cloud Computing Policy (planned) · Owner Inbox/2026-05-06_core-policies-infosec-cloud.md
+last-reviewed: 2026-05-16
 procedureId: PROC-IS-CRA-01
 title: Cloud data residency attestation — POPIA and PA requirements
 author: Devon (Chief Operating Officer) · Senna (information security & cloud engineer)

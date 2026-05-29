@@ -1,4 +1,6 @@
 ---
+policy-parent: Secure SDLC Policy (in-force); Information Security Policy (in-force)
+last-reviewed: 2026-05-15
 procedureId: PROC-SDLC-TM-01
 title: Threat Model Review (Secure SDLC sub-procedure)
 author: Rashida (Chief Information Security Officer, governance)

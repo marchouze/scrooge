@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/trade-reporting-policy-v1.md
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-02
 title: OTC derivative trade reporting to STRATE Trade Repository
 author: Kai (Trading systems engineer, engineering) · Anya (Data engineer, engineering)

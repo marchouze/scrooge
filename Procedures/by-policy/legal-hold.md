@@ -1,4 +1,6 @@
 ---
+policy-parent: Records Management Policy (planned) · Owner Inbox/2026-05-06_core-policies-governance.md
+last-reviewed: 2026-05-16
 procedureId: PROC-RMS-LH-01
 title: Legal hold — preservation of records and evidence
 author: Imani (legal-as-code engineer) · Owen (Company Secretary, governance)

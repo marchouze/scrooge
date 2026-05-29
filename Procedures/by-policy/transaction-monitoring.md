@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-TM-01
+policy-parent: — AML/CFT Policy
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — Transaction monitoring

@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-SO-01
+policy-parent: §3 — Sanctions Policy
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — Sanctions override (MLRO exception)

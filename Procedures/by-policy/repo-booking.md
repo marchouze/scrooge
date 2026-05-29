@@ -1,4 +1,6 @@
 ---
+policy-parent: >
+last-reviewed: 2026-05-22
 procedureId: PROC-MK-REPO-01
 title: Repo and reverse-repo booking — end-to-end lifecycle
 author: Saskia (Head of Global Markets, governance) · Bea (Accounting & financial reporting engineer, engineering)

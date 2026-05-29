@@ -1,4 +1,6 @@
 ---
+policy-parent: Excon Compliance Policy (planned, markets bundle) · Funding Strategy Policy
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-09
 title: Exchange Control (Excon) compliance for OTC derivatives
 author: Mira (regulatory intelligence engineer) · Eitan (Treasurer) · Tomas (operations engineer)

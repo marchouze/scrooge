@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-TPR-01
+policy-parent: — AML/CFT Policy §7 (Terrorist Property Reporting obligations)
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — Terrorist Property Report (TPR) Filing

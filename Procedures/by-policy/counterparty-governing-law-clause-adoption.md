@@ -1,4 +1,7 @@
 ---
+id: PROC-LEG-CL-01
+policy-parent: -  § Contracting Policy v0.1 §2 (Default governing law); §3 (Clause-library discipline); §4 (Legal-e
+last-reviewed: 2026-05-07
 status: POPULATED
 ---
 # Procedure — Counterparty governing-law clause adoption

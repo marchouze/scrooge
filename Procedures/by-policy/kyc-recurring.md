@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-KYC-R-01
+policy-parent: (RMCP) — AML/CFT Policy annex
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — KYC Periodic Refresh (Recurring CDD)

@@ -1,4 +1,6 @@
 ---
+policy-parent: Health & Safety Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-OHS-01
 title: Occupational Health and Safety incident reporting and investigation
 author: Sade (AgentOps & token efficiency engineer)

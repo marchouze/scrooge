@@ -1,4 +1,7 @@
 ---
+id: PROC-CY-02
+policy-parent: §8 — Change Management Policy
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — Change management (production change approval & deployment)

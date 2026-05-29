@@ -1,4 +1,6 @@
 ---
+policy-parent: Marketing & Advertising Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-MCV-01
 title: Marketing and advertising claim validation — FAIS / TCF compliance
 author: Zara (Chief Compliance Officer, governance) · Imani (legal-as-code engineer)

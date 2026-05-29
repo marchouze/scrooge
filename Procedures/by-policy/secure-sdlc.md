@@ -1,4 +1,7 @@
 ---
+id: PROC-CY-03
+policy-parent: -  §9 — Secure SDLC Policy (primary)
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — Secure software development lifecycle (idea-to-merge)

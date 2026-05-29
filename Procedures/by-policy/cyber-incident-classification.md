@@ -1,4 +1,6 @@
 ---
+policy-parent: Cyber Resilience Policy (in-force)
+last-reviewed: 2026-05-15
 procedureId: PROC-IS-CIC-01
 title: Cyber Incident Severity Classification
 author: Rashida (Chief Information Security Officer, governance)

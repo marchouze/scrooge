@@ -1,4 +1,7 @@
 ---
+id: PROC-OR-DR-01
+policy-parent: — Operational Resilience Policy
+last-reviewed: 2026-05-13
 status: POPULATED
 ---
 # Procedure — DR Test Execution

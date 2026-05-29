@@ -1,4 +1,6 @@
 ---
+policy-parent: ifrs10-consolidation-policy (planned by Camille — sub-policy under Accounting Policies (IFRS) v0.1 / Financial Reporting & Disclosure v0.1, both STUB at `Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md`)
+last-reviewed: 2026-05-09
 procedureId: PROC-ACC-IFRS10-01
 title: IFRS 10 group consolidation cycle
 author: Bea (Accounting & financial reporting engineer)

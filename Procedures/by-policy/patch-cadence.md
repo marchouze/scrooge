@@ -1,4 +1,6 @@
 ---
+policy-parent: Information Security Policy (in-force); Cyber Resilience Policy (in-force)
+last-reviewed: 2026-05-15
 procedureId: PROC-IS-PC-01
 title: Vulnerability Management — Patch Cadence
 author: Rashida (Chief Information Security Officer, governance)

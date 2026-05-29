@@ -1,4 +1,6 @@
 ---
+policy-parent: Internal Audit Charter (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-AUD-FT-01
 title: Audit findings tracking and remediation follow-up
 author: Vera (internal audit engineer) · Thandiwe (Chief Audit Executive, governance)

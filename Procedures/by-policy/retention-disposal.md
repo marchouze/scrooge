@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-06_core-policies-compliance-privacy.md §4 — Data Governance / Retention Policy
+last-reviewed: 2026-05-15
 procedureId: PROC-PRIV-RD-01
 title: Data retention and disposal schedule (privacy lens)
 author: Iris (Information Officer, governance) · Owen (Company Secretary, governance)

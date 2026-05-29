@@ -1,4 +1,6 @@
 ---
+policy-parent: Disciplinary Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-DISC-01
 title: Disciplinary process — human employees
 author: Sade (AgentOps & token efficiency engineer)

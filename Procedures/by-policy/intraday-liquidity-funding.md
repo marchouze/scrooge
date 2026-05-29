@@ -1,4 +1,6 @@
 ---
+policy-parent: Liquidity Risk Management Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B5
+last-reviewed: 2026-05-15
 procedureId: PROC-RISK-ILF-01
 title: Intraday liquidity and funding monitoring
 author: Eitan (Treasurer) · Ravi (ALM quant engineer)

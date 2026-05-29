@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-02
+policy-parent: §3 — Sanctions Policy
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — Sanctions screening (pre-execution)

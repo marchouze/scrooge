@@ -1,4 +1,7 @@
 ---
+id: PROC-WB-01
+policy-parent: §2 — Conflicts of Interest Policy
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — Conflicts of interest declaration

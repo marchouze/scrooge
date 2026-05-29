@@ -1,4 +1,6 @@
 ---
+policy-parent: Collateral Management Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-ALM-CVD-01
 title: Daily collateral valuation and margin call management
 author: Eitan (Treasurer) · Saskia (Head of Global Markets)

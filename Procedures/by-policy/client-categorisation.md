@@ -1,4 +1,6 @@
 ---
+policy-parent: Client Categorisation Policy (planned) · Conduct of Business / TCF Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-08
 title: Client / counterparty categorisation (OTC derivative scope)
 author: Zara (Chief Compliance Officer, governance) · Mira (regulatory intelligence engineer)

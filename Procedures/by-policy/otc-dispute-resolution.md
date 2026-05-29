@@ -1,4 +1,6 @@
 ---
+policy-parent: OTC Trading Policy · Counterparty Onboarding Policy · ISDA Master Agreement + Schedule + CSA
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-07
 title: OTC derivative dispute resolution
 author: Imani (legal-as-code engineer) · Rohan (market risk quant engineer) · Tomas (operations engineer)

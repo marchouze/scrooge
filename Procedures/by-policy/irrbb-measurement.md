@@ -1,4 +1,6 @@
 ---
+policy-parent: IRRBB Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B6
+last-reviewed: 2026-05-15
 procedureId: PROC-RISK-IRRBB-01
 title: IRRBB measurement cycle
 author: Helena (Chief Risk Officer, governance) · Eitan (Treasurer) · Ravi (ALM quant engineer)

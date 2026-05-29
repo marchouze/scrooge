@@ -1,4 +1,6 @@
 ---
+policy-parent: Employment Equity Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-EE-01
 title: Employment Equity annual report (EEA2/EEA4) — EE Act compliance
 author: Sade (AgentOps & token efficiency engineer)

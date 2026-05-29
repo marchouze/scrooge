@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-06_core-policies-compliance-privacy.md §7 — PAIA Manual / Access to Information
+last-reviewed: 2026-05-15
 procedureId: PROC-PAIA-RH-01
 title: PAIA manual and request handling
 author: Iris (Information Officer, governance) · Owen (Company Secretary, governance)

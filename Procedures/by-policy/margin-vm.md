@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/margin-policy-v1.md · Policies/collateral-management-policy-v1.md
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-03
 title: Variation Margin — daily calculation and exchange (per-counterparty)
 author: Kai (Trading systems engineer, engineering) · Tomas (Operations engineer, engineering)

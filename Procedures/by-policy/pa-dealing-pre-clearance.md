@@ -1,4 +1,6 @@
 ---
+policy-parent: Insider Trading / PA Dealing Policy (planned) · Owner Inbox/2026-05-06_core-policies-compliance-conduct.md
+last-reviewed: 2026-05-16
 procedureId: PROC-COND-PAD-01
 title: Personal account dealing pre-clearance — insider trading controls
 author: Owen (Company Secretary, governance) · Zara (Chief Compliance Officer)

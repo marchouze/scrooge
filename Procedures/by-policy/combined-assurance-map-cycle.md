@@ -1,4 +1,6 @@
 ---
+policy-parent: Combined Assurance Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-AUD-CAM-01
 title: Combined assurance map — annual refresh
 author: Vera (internal audit engineer) · Owen (Company Secretary, governance)

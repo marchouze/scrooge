@@ -1,4 +1,6 @@
 ---
+policy-parent: Litigation Policy (planned) · Owner Inbox/2026-05-06_core-policies-governance.md
+last-reviewed: 2026-05-16
 procedureId: PROC-LEG-LH-01
 title: Litigation and dispute management
 author: Imani (legal-as-code engineer) · Owen (Company Secretary, governance)

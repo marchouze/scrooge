@@ -1,4 +1,6 @@
 ---
+policy-parent: - Policies/trade-reporting-policy-v1.md
+last-reviewed: 2026-05-22
 procedureId: PROC-MK-SFTR-01
 title: SFTR / repo trade reporting procedure
 author: Mira (Compliance / RegTech engineer, compliance) · Tomas (Payments & settlement engineer, engineering)

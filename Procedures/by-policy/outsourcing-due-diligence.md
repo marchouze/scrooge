@@ -1,4 +1,6 @@
 ---
+policy-parent: Outsourcing & Third-Party Risk Policy (planned — Devon)
+last-reviewed: 2026-05-15
 procedureId: PROC-OPS-OUTS-01
 title: Outsourcing Due Diligence (Pre-Engagement)
 author: Devon (COO, governance)

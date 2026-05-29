@@ -1,4 +1,6 @@
 ---
+policy-parent: liquidity-risk-management-policy-v1
+last-reviewed: 2026-05-21
 procedureId: PROC-RISK-LLM-01
 title: Liquidity limit management
 author: Ravi (Treasury and ALM engineer, engineering)

@@ -1,4 +1,7 @@
 ---
+id: PROC-CD-01
+policy-parent: §10 — Pricing Policy
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — Pricing approval (new product / re-pricing)

@@ -1,4 +1,7 @@
 ---
+id: PROC-CRM-FA-01
+policy-parent: -  § FAIS Policy v0.1 §3 (Advice-record discipline); §4 (Suitability discipline); §5 (Rep authorisat
+last-reviewed: 2026-05-07
 status: POPULATED
 ---
 # Procedure — FAIS advice record capture

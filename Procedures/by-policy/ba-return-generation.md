@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/regulatory-reporting-policy-v1.md · Policies/capital-management-policy-v1.md
+last-reviewed: 2026-05-15
 procedureId: PROC-FIN-BA-01
 title: BA return generation
 author: Atlas (Core banking platform architect, engineering)
