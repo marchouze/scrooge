@@ -30,8 +30,11 @@ import type {
   UnifiedPositionRow,
   UnifiedPositionState,
 } from "../platform/projections/markets/unified-position";
-import { computeHqlaStockFromPositions } from "../platform/reporting/hqla-stock";
-import type { HqlaStockInput } from "../platform/reporting/hqla-stock";
+import {
+  computeCashHqlaLevel1FromAccounts,
+  computeHqlaStockFromPositions,
+} from "../platform/reporting/hqla-stock";
+import type { CashHqlaTrialBalanceRow, HqlaStockInput } from "../platform/reporting/hqla-stock";
 
 // ---------------------------------------------------------------------------
 // Test fixture builders
@@ -428,5 +431,74 @@ describe("computeHqlaStockFromPositions()", () => {
     expect(line.nominalMinor).toBe(98_000_000);
     expect(line.adjustedMinor).toBe(Math.round(98_000_000 * 0.85));
     expect(line.valuationBasis).toBe("markToMarket");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeCashHqlaLevel1FromAccounts() — account-level cash residual
+// ---------------------------------------------------------------------------
+
+describe("computeCashHqlaLevel1FromAccounts()", () => {
+  const cashAccountIds = new Set(["ACC-1100-001"]);
+  const tb = (rows: readonly CashHqlaTrialBalanceRow[]): readonly CashHqlaTrialBalanceRow[] => rows;
+
+  it("counts a positive-balance reserve account as Level-1 with 0% haircut", () => {
+    const lines = computeCashHqlaLevel1FromAccounts({
+      trialBalance: tb([
+        { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 500_000_000 },
+      ]),
+      cashAccountIds,
+      functionalCurrency: "ZAR",
+    });
+    expect(lines).toHaveLength(1);
+    // biome-ignore lint/style/noNonNullAssertion: length checked above
+    const line = lines[0]!;
+    expect(line.hqlaLevel).toBe("level-1");
+    expect(line.haircut).toBe(0);
+    expect(line.nominalMinor).toBe(500_000_000);
+    expect(line.adjustedMinor).toBe(500_000_000);
+    expect(line.instrumentId).toBe("ACC-1100-001");
+  });
+
+  it("excludes a negative (overdrawn) reserve balance — not HQLA, no Math.abs()", () => {
+    const lines = computeCashHqlaLevel1FromAccounts({
+      trialBalance: tb([
+        { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: -475_000_000 },
+      ]),
+      cashAccountIds,
+      functionalCurrency: "ZAR",
+    });
+    expect(lines).toHaveLength(0);
+  });
+
+  it("excludes a zero balance", () => {
+    const lines = computeCashHqlaLevel1FromAccounts({
+      trialBalance: tb([{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 0 }]),
+      cashAccountIds,
+      functionalCurrency: "ZAR",
+    });
+    expect(lines).toHaveLength(0);
+  });
+
+  it("excludes non-functional-currency balances", () => {
+    const lines = computeCashHqlaLevel1FromAccounts({
+      trialBalance: tb([
+        { leafAccountId: "ACC-1100-001", currency: "USD", amountMinor: 500_000_000 },
+      ]),
+      cashAccountIds,
+      functionalCurrency: "ZAR",
+    });
+    expect(lines).toHaveLength(0);
+  });
+
+  it("excludes accounts not in the cash-account set (e.g. securities accounts)", () => {
+    const lines = computeCashHqlaLevel1FromAccounts({
+      trialBalance: tb([
+        { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000_000 },
+      ]),
+      cashAccountIds,
+      functionalCurrency: "ZAR",
+    });
+    expect(lines).toHaveLength(0);
   });
 });

@@ -1,7 +1,7 @@
 ---
 agent: Vera
 trigger: overnight-recon
-asOf: 2026-05-29T04:56:15.436Z
+asOf: 2026-05-29T11:01:22.463Z
 decision-required: false
 ---
 
@@ -9,18 +9,18 @@ decision-required: false
 
 Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operating spec § 6 (Cadence) and § 7 (Triggers). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** FAIL — 3414 assertions; 2 fail violations; 15 warn violations across 9 pipelines.
+**Headline:** FAIL — 3460 assertions; 2 fail violations; 19 warn violations across 9 pipelines.
 
 ## Pipeline results
 
 | Pipeline | OK | Asserted | Fail | Warn |
 |---|---|---|---|---|
 | mandate-ownership-integrity | ✓ | 292 | 0 | 0 |
-| decision-event-reconciliation | ✓ | 334 | 0 | 0 |
-| dashboard-derivation-reconciliation | ✓ | 193 | 0 | 0 |
+| decision-event-reconciliation | ✓ | 337 | 0 | 0 |
+| dashboard-derivation-reconciliation | ✓ | 197 | 0 | 0 |
 | no-prose-duplication-of-canonical-facts | ✓ | 161 | 0 | 0 |
-| permission-gate-default | ✓ | 763 | 0 | 15 |
-| event-type-registry-coverage | ✓ | 1555 | 0 | 0 |
+| permission-gate-default | ✓ | 790 | 0 | 19 |
+| event-type-registry-coverage | ✓ | 1567 | 0 | 0 |
 | decision-required-event-pairing | ✓ | 36 | 0 | 0 |
 | escalation-channel | ✓ | 77 | 0 | 0 |
 | agent-scope | ✗ | 3 | 2 | 0 |
@@ -44,6 +44,10 @@ Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operat
 - **[warn]** `actor:agent:rohan:model-registered-seed` — Agent actor `agent:rohan:model-registered-seed` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via `bun run publish:sub-agent-policies` or `bun run identity:issue`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: P4-SECURITY-DESIGNED-IN, ORG-CY-09, Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md (T-01), Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-031, F-011).
 - **[warn]** `actor:agent:anya:model-registered-seed` — Agent actor `agent:anya:model-registered-seed` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via `bun run publish:sub-agent-policies` or `bun run identity:issue`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: P4-SECURITY-DESIGNED-IN, ORG-CY-09, Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md (T-01), Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-031, F-011).
 - **[warn]** `actor:agent:dispatch-close-run` — Agent actor `agent:dispatch-close-run` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via `bun run publish:sub-agent-policies` or `bun run identity:issue`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: P4-SECURITY-DESIGNED-IN, ORG-CY-09, Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md (T-01), Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-031, F-011).
+- **[warn]** `actor:agent:rohan:calc-model-seed` — Agent actor `agent:rohan:calc-model-seed` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via `bun run publish:sub-agent-policies` or `bun run identity:issue`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: P4-SECURITY-DESIGNED-IN, ORG-CY-09, Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md (T-01), Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-031, F-011).
+- **[warn]** `actor:agent:nadia:calc-model-validation` — Agent actor `agent:nadia:calc-model-validation` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via `bun run publish:sub-agent-policies` or `bun run identity:issue`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: P4-SECURITY-DESIGNED-IN, ORG-CY-09, Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md (T-01), Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-031, F-011).
+- **[warn]** `actor:agent:atlas:calc-provenance` — Agent actor `agent:atlas:calc-provenance` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via `bun run publish:sub-agent-policies` or `bun run identity:issue`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: P4-SECURITY-DESIGNED-IN, ORG-CY-09, Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md (T-01), Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-031, F-011).
+- **[warn]** `actor:agent:atlas:core-platform` — Agent actor `agent:atlas:core-platform` has appended events without a published PermissionPolicy (T-12 enforcement). Publish via `bun run publish:sub-agent-policies` or `bun run identity:issue`. If a build-phase carve-out is required, add to ACCEPTED_NO_POLICY_ACTORS with a citation. Citations: P4-SECURITY-DESIGNED-IN, ORG-CY-09, Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md (T-01), Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-031, F-011).
 
 ### agent-scope
 
@@ -52,11 +56,11 @@ Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operat
 
 ## Vera's narrative
 
-**Partial pass.** The four pipelines I own — mandate-ownership, decision-event, dashboard-derivation, prose-duplication — all returned clean (0 violations across 980 assertions), and the decision-event run had a populated event store this cycle so the usual fresh-runner empty-store caveat does not apply here. However, the adjacent `agent-scope` pipeline returned two fail-severity findings that I am obliged to surface alongside my own results.
+**Partial pass.** The four reconciliation pipelines I own (mandate-ownership, decision-event, dashboard-derivation, prose-duplication) all returned clean — 987 assertions, zero violations — and notably the decision-event pipeline did *not* exhibit the empty-event-store substrate condition this run, so there is no fresh-runner noise to discount. The substantive concerns sit in the adjacent pipelines.
 
-Substantive findings, ranked: (1) **`agent-decision:RAVI-NOP-RECOMPUTE-2026-05-28`** — `decidedBy` resolves to `agent:ravi:intraday-stress`, for which no `AgentRegistered` event exists. An unregistered actor making autonomous decisions is a P6-AUTONOMOUS-BY-DEFAULT breach, not a registry hygiene matter. (2) **`agent-decision:EITAN-FX-REDUCE-2026-05-28`** — the asserted `inScopeBy` does not match Eitan's registered `decisionsInScope` set; on its face the decision relates to FX-position adjustment, which *is* in scope, so the violation is likely a citation-mismatch in the AgentDecision event rather than a true mandate breach — but I cannot resolve that from the reconciliation output and it must be triaged, not assumed-benign. Both route to **Thandiwe** as CAE per fail-severity routing. The 15 `permission-gate-default` warns are T-12 PermissionPolicy gaps across agent actors (ORG-CY-09, P4-SECURITY-DESIGNED-IN); they are clustering and have been clustering — I am noting the cluster but not yet escalating individually, on the basis that the remediation path (`publish:sub-agent-policies` / `ACCEPTED_NO_POLICY_ACTORS` carve-out) is documented and owned. The 201 `event-type-registry-coverage` infos are unconsumed factory exports — build-phase noise per the registry header, track-only, no action from me.
+Two fail-severity findings in `agent-scope`, both routed to Thandiwe. First, `EITAN-FX-REDUCE-2026-05-28` records an out-of-scope decision: `inScopeBy: agent:eitan` does not match any item in Eitan's registered `decisionsInScope` — this is a P6-AUTONOMOUS-BY-DEFAULT / mandate-discipline breach and needs either a registry amendment with the proper mandate citation or the decision retracted. Second, `RAVI-NOP-RECOMPUTE-2026-05-28` was decided by `agent:ravi:intraday-stress`, which has no matching `AgentRegistered` event — an unregistered agent making autonomous decisions is a harder failure of the same principle and should not recur. Separately, `permission-gate-default` produced a 19-actor cluster of warn-severity findings: agent actors appending events without a published `PermissionPolicy` (T-12 enforcement, P4-SECURITY-DESIGNED-IN, ORG-CY-09). Individually warn-tracked, but at 19 distinct sub-agents this is a cluster and I am escalating it to Thandiwe alongside the agent-scope fails — Senna/Rashida's threat model (T-01) and my own F-031/F-011 already flagged the substrate gap; the fix is either `bun run publish:sub-agent-policies` for live actors or properly cited `ACCEPTED_NO_POLICY_ACTORS` carve-outs for build-phase seeds. The 201 info-level entries from `event-type-registry-coverage` are unconsumed factories — housekeeping per F-032, not escalated, tracked for follow-on schema authoring.
 
-**Recommendation:** triage the two agent-scope fails with Thandiwe before next cadence; everything else continues on cadence.
+Recommendation: continue cadence; Thandiwe to pick up the two agent-scope fails and the T-12 policy-publication cluster this week.
 
 ## Substrate
 
