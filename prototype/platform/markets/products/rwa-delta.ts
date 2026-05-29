@@ -15,19 +15,23 @@
 //            D-REGULATORY-READINESS-GATE-PLAN — RWA engine authority.
 // Author: Atlas (substrate) · Rohan (risk systems engineer, engineering).
 
+import { rwaInstrumentClassWeights } from "../../config/financial-constants";
 import { type RwaEngineInput, computeRwa } from "../../risk/rwa-engine";
+import { requireWeight } from "../../types/financial-input";
 import type { Product, ProductFamily } from "./types";
 
 // ---------------------------------------------------------------------------
-// RWA weights from the capital-funding stub (build-phase)
+// Per-instrument-class market-RWA weights (owned, cited — CRE20)
 // ---------------------------------------------------------------------------
+//
+// Sourced from the financial-constants registry (category
+// "rwa-instrument-weight", CRO-owned), replacing the literals previously read
+// from capital-funding-stub.json. Lookups go through requireWeight() so an
+// unknown instrument class fails loudly rather than silently weighting a
+// position at a default — objective 4 of D-TRUSTED-FIGURES-PROGRAM-V1.
 
-import capitalFundingStub from "../regulatory/capital-funding-stub.json" with { type: "json" };
-
-const RWA_WEIGHT_BY_INSTRUMENT_CLASS = capitalFundingStub.rwa.rwaWeightByInstrumentClass as Record<
-  string,
-  number
->;
+const RWA_WEIGHT_BY_INSTRUMENT_CLASS = rwaInstrumentClassWeights();
+const RWA_WEIGHT_TABLE_LABEL = "rwa.instrument-weight";
 
 // ---------------------------------------------------------------------------
 // Output shape
@@ -129,28 +133,28 @@ function resolveMarketRiskWeight(product: Product): {
   if ((dims.includes("curve") || dims.includes("basis")) && family === "otc-ird") {
     return {
       riskType: "interest-rate",
-      weight: RWA_WEIGHT_BY_INSTRUMENT_CLASS["OTC-IRD"] ?? 0.5,
+      weight: requireWeight(RWA_WEIGHT_BY_INSTRUMENT_CLASS, "OTC-IRD", RWA_WEIGHT_TABLE_LABEL),
     };
   }
 
   if (dims.includes("delta") && family === "fx") {
     return {
       riskType: "fx",
-      weight: RWA_WEIGHT_BY_INSTRUMENT_CLASS["FX-spot"] ?? 0.2,
+      weight: requireWeight(RWA_WEIGHT_BY_INSTRUMENT_CLASS, "FX-spot", RWA_WEIGHT_TABLE_LABEL),
     };
   }
 
   if (dims.includes("delta") && family === "listed-equity") {
     return {
       riskType: "equity",
-      weight: RWA_WEIGHT_BY_INSTRUMENT_CLASS["JSE-EQUITY"] ?? 0.35,
+      weight: requireWeight(RWA_WEIGHT_BY_INSTRUMENT_CLASS, "JSE-EQUITY", RWA_WEIGHT_TABLE_LABEL),
     };
   }
 
   if (family === "listed-bond" || family === "repo") {
     return {
       riskType: "interest-rate",
-      weight: RWA_WEIGHT_BY_INSTRUMENT_CLASS["ZA-GOV-BOND"] ?? 0.0,
+      weight: requireWeight(RWA_WEIGHT_BY_INSTRUMENT_CLASS, "ZA-GOV-BOND", RWA_WEIGHT_TABLE_LABEL),
     };
   }
 

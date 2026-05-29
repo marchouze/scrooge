@@ -17,7 +17,11 @@ import {
   lcrRunoffRates,
   nsfrAsfWeights,
   nsfrRsfWeights,
+  rwaInstrumentClassWeights,
 } from "../platform/config/financial-constants";
+import capitalFundingStub from "../platform/markets/regulatory/capital-funding-stub.json" with {
+  type: "json",
+};
 import { run as runCoverage } from "../platform/recon/financial-constants-coverage";
 
 describe("FINANCIAL_CONSTANTS registry", () => {
@@ -65,6 +69,37 @@ describe("rate-table builders", () => {
   it("projects NSFR ASF/RSF weights keyed by category", () => {
     expect(nsfrAsfWeights()["tier1-capital"]).toBe(1.0);
     expect(nsfrRsfWeights()["hqla-l1"]).toBe(0.05);
+  });
+
+  it("projects per-instrument-class RWA weights keyed by instrument class", () => {
+    const w = rwaInstrumentClassWeights();
+    expect(w["OTC-IRD"]).toBe(0.5);
+    expect(w["FX-spot"]).toBe(0.2);
+    expect(w["FX-forward"]).toBe(0.2);
+    expect(w["JSE-EQUITY"]).toBe(0.35);
+    expect(w["ZA-GOV-BOND"]).toBe(0.0);
+  });
+});
+
+describe("RWA instrument-class weights — registry is the single source", () => {
+  // The legacy capital-funding stub JSON still carries the same table for the
+  // build-phase capital-funding-check agent (which reads other fields too).
+  // This parity test guards against the two drifting: the registry is canonical.
+  const stub = capitalFundingStub.rwa.rwaWeightByInstrumentClass as Record<string, number>;
+
+  it("every registry instrument-class weight matches the stub", () => {
+    const registry = rwaInstrumentClassWeights();
+    for (const [cls, weight] of Object.entries(registry)) {
+      expect(stub[cls]).toBe(weight);
+    }
+  });
+
+  it("every stub instrument class (except the 'default' sentinel) is in the registry", () => {
+    const registry = rwaInstrumentClassWeights();
+    for (const cls of Object.keys(stub)) {
+      if (cls === "default") continue;
+      expect(registry[cls]).toBe(stub[cls]);
+    }
   });
 });
 

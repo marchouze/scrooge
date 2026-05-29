@@ -22,6 +22,7 @@
     "capital-baseline": "Capital — build-phase baselines",
     "capital-threshold": "Capital — appetite thresholds",
     "leverage-threshold": "Leverage — appetite bands",
+    "rwa-instrument-weight": "RWA — per-instrument-class weights",
   };
 
   function formatValue(value, unit) {

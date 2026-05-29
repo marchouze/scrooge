@@ -50,6 +50,7 @@ const VALID_CATEGORIES: ReadonlySet<ConstantCategory> = new Set<ConstantCategory
   "capital-baseline",
   "capital-threshold",
   "leverage-threshold",
+  "rwa-instrument-weight",
 ]);
 
 /** Calc files that must read calibration from the registry, not inline it. */
@@ -58,6 +59,7 @@ const CALC_FILES = [
   "prototype/platform/liquidity/nsfr.ts",
   "prototype/platform/projections/capital-metrics.ts",
   "prototype/platform/projections/leverage-ratio-metrics.ts",
+  "prototype/platform/markets/products/rwa-delta.ts",
 ];
 
 function findRepoRoot(start: string): string {
