@@ -67,6 +67,55 @@ export interface ZaroniaRatePayload {
 // Canonical source identifiers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// JIBAR 3M daily fixing (AFMA-published)
+// ---------------------------------------------------------------------------
+
+export interface JibarFixingPayload {
+  /** Rate in decimal form, e.g. "0.0815" for 8.15% */
+  rate: string;
+  /** Fixing tenor */
+  tenor: "3M";
+  /** Day-count convention */
+  convention: "act365-simple";
+  /** Build-phase marker */
+  fixingVariant: "build-phase-fixture" | "live-afma-api";
+}
+
+// ---------------------------------------------------------------------------
+// JIBAR swap curve daily snapshot
+// ---------------------------------------------------------------------------
+
+export interface SwapCurveSnapshotPayload {
+  /** Annualised par JIBAR swap rates by tenor, e.g. {"3M":0.0815, "10Y":0.086} */
+  tenors: Record<string, number>;
+  /** Risk-free discount factors P(0,T) by tenor */
+  discountFactors: Record<string, number>;
+  /** Curve build convention */
+  curveConvention: "jibar-single-curve";
+  /** Build-phase marker */
+  fixingVariant: "build-phase-fixture" | "live-sarb-api";
+}
+
+// ---------------------------------------------------------------------------
+// SARB repo rate + prime rate (MPC decision)
+// ---------------------------------------------------------------------------
+
+export interface RepoPrimeRatePayload {
+  /** Repo rate in decimal form, e.g. "0.075" for 7.5% */
+  repoRate: string;
+  /** Prime rate = repo + 0.035, derived */
+  primeRate: string;
+  /** ISO 8601 date of MPC decision */
+  effectiveDate: string;
+  /** Build-phase marker */
+  fixingVariant: "build-phase-fixture" | "live-sarb-api";
+}
+
+// ---------------------------------------------------------------------------
+// Canonical source identifiers
+// ---------------------------------------------------------------------------
+
 export const MarketDataSources = {
   FX_SIM: "fx-sim",
   JSE_SENS: "jse-sens",
@@ -74,4 +123,7 @@ export const MarketDataSources = {
   OPEN_ER_API: "open-er-api",
   TWELVE_DATA: "twelve-data",
   ZARONIA_SARB: "zaronia-sarb",
+  JIBAR_AFMA: "jibar-afma",
+  JIBAR_SWAP_SARB: "jibar-swap-sarb",
+  SARB_REPO: "sarb-repo",
 } as const;
