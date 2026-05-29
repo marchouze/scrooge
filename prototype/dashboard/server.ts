@@ -54,6 +54,7 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 // shared canonical store (config file → ~/.local/share/bank/event.db).
 import "../platform/event-store/resolve-event-db-boot";
 
+import { computeStage1Ecl } from "../platform/accounting/ecl-engine";
 import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
 import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
@@ -821,6 +822,29 @@ function emitCalculationProvenance(): void {
         { name: "rwaMinor", value: rwaMissing ? null : capital.totalRwaMinor, missing: rwaMissing },
       ],
       cet1Pct,
+    );
+
+    // IFRS 9 Expected Credit Loss — 12-month Stage-1 ECL over the debt book.
+    // model:ecl-engine-ifrs9-v1. NO SILENT ZEROS: an empty debt book yields a
+    // `degraded` status (no in-scope exposures), surfaced via the data-failure
+    // banner, never an unexplained 0. The contract inputs (EAD, PD/LGD params,
+    // staging) are all "present" when the engine ran ok; when degraded, the EAD
+    // input is marked missing so the figure renders "value unavailable".
+    // Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1.
+    const ecl = computeStage1Ecl(eventStore);
+    const eclDegraded = ecl.status === "degraded";
+    // EAD is the optional input: absent when the debt book is empty → status
+    // `degraded` (not `failed`). The PD/LGD parameterisation and staging logic
+    // are code-resident and always present. Output is null when degraded so the
+    // figure renders "value unavailable", never a silent 0.
+    emitOne(
+      "ecl",
+      [
+        { name: "eadMinor", value: eclDegraded ? null : ecl.eadMinor, missing: eclDegraded },
+        { name: "pdLgdParameterised", value: 1, missing: false },
+        { name: "stagingClassified", value: 1, missing: false },
+      ],
+      eclDegraded ? null : ecl.eclMinor,
     );
   } catch (err) {
     logger.warn(
