@@ -242,6 +242,23 @@ export function recordDecision(input: RecordDecisionInput, asOf?: string): Recor
     aggregateId: deterministicAggregateId(aggregateLabel),
     aggregateLabel,
   };
+
+  // Idempotency guard. Runs AFTER payload validation (so malformed inputs
+  // still throw) but BEFORE append: if a Decision event with the identical
+  // (decisionId, phase, as_of) triple already exists, return it instead of
+  // appending a duplicate. Matches the dedup granularity used by
+  // `scripts/migrate/backfill-all-decisions.ts` and protects against
+  // accidental re-emission — e.g. a test suite or a backfill re-run
+  // replaying the same fixed-timestamp decision. A *different* as_of is a
+  // genuine new lifecycle event (a re-request after deferral, a fresh
+  // re-affirmation), so it still appends normally.
+  for (const existing of eventStore.replay({ type: "Decision" })) {
+    const p = existing.payload as { decisionId?: string; phase?: string };
+    if (p.decisionId === input.decisionId && p.phase === input.phase && existing.as_of === ts) {
+      return { event: existing, eventId: existing.event_id };
+    }
+  }
+
   eventStore.append(withProvenance);
   return { event: withProvenance, eventId: withProvenance.event_id };
 }
