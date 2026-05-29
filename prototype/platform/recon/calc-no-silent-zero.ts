@@ -30,6 +30,7 @@ const CALC_FILES = [
   "prototype/platform/liquidity/lcr.ts",
   "prototype/platform/liquidity/nsfr.ts",
   "prototype/platform/markets/products/rwa-delta.ts",
+  "prototype/platform/market-risk/var-engine.ts",
 ];
 
 /**

@@ -280,6 +280,100 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
       },
     ],
   },
+  var: {
+    calcKey: "var",
+    figure: "Market Risk VaR (99% 1-day, historical simulation)",
+    modelId: "model:market-risk-var-hs-v1",
+    modelVersion: "1.0.0",
+    // VaR is the headline market-risk measure: the 99% 1-day Value-at-Risk over
+    // the trading book, computed by historical simulation. Methodology
+    // accountability + the figure both sit with Helena (CRO) — market-risk
+    // figures are CRO-owned per the decision-authority routing table (CRO:
+    // risk-appetite / risk measures) and RISK-MRP-01 §1.1 declares market-risk
+    // models in model scope. Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 4.
+    owningAgent: "Helena (Chief Risk Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BCBS-D457"],
+    inputContract: [
+      {
+        // Optional: a flat trading book is a legitimate "no open risk-factor
+        // exposure" state, not a data-integrity fault. An absent exposure vector
+        // degrades the figure (status `degraded`, surfaced loudly) — VaR is 0 by
+        // absence of risk, never a silently-computed 0.
+        name: "riskFactorExposureZar",
+        required: false,
+        unit: "ZAR",
+        expectedFrom:
+          "market-risk P&L/sensitivity model (model:market-risk-pnl-sensitivity-v1): net ZAR exposure per risk factor from the live trading book (deriveRiskFactorExposures over FxTradeExecuted)",
+      },
+      {
+        // Optional: an insufficient return window degrades the figure (status
+        // `degraded`) — a VaR from a too-short window understates tail risk and
+        // is never surfaced as a number.
+        name: "returnHistorySufficient",
+        required: false,
+        unit: "bool",
+        expectedFrom:
+          "MarketDataStore fx-quote tick history per risk factor (Ravi — market-data infrastructure); ≥20-observation floor, 250-day target window",
+      },
+    ],
+  },
+  svar: {
+    calcKey: "svar",
+    figure: "Market Risk Stressed VaR (99% 1-day, stress-calibrated)",
+    modelId: "model:market-risk-svar-hs-v1",
+    modelVersion: "1.0.0",
+    // SVaR is the Basel-2.5 / FRTB stressed VaR: the same 99% 1-day historical-
+    // simulation VaR calibrated to a window of significant financial stress.
+    // CRO-owned (market-risk figure). Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 4.
+    owningAgent: "Helena (Chief Risk Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BCBS-D457"],
+    inputContract: [
+      {
+        name: "riskFactorExposureZar",
+        required: false,
+        unit: "ZAR",
+        expectedFrom:
+          "market-risk P&L/sensitivity model (model:market-risk-pnl-sensitivity-v1): net ZAR exposure per risk factor from the live trading book",
+      },
+      {
+        name: "stressWindowCalibrated",
+        required: false,
+        unit: "bool",
+        expectedFrom:
+          "MarketDataStore stress-window return history (Ravi — market-data infrastructure); build-phase uses the full available window pending multi-year history",
+      },
+    ],
+  },
+  es: {
+    calcKey: "es",
+    figure: "Market Risk Expected Shortfall (97.5% 1-day, FRTB)",
+    modelId: "model:market-risk-es-hs-v1",
+    modelVersion: "1.0.0",
+    // ES is the FRTB-prescribed market-risk measure (d457 / MAR33): the mean loss
+    // in the 97.5% tail. Replaces VaR as the FRTB internal-model metric. CRO-owned.
+    // Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 4.
+    owningAgent: "Helena (Chief Risk Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BCBS-D457"],
+    inputContract: [
+      {
+        name: "riskFactorExposureZar",
+        required: false,
+        unit: "ZAR",
+        expectedFrom:
+          "market-risk P&L/sensitivity model (model:market-risk-pnl-sensitivity-v1): net ZAR exposure per risk factor from the live trading book",
+      },
+      {
+        name: "returnHistorySufficient",
+        required: false,
+        unit: "bool",
+        expectedFrom:
+          "MarketDataStore fx-quote tick history per risk factor (Ravi — market-data infrastructure); ≥20-observation floor, 250-day target window",
+      },
+    ],
+  },
 } as const;
 
 /** Look up a binding by calc key. Throws (loud) on an unknown key. */
