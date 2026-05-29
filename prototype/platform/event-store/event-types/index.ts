@@ -270,6 +270,12 @@ export * from "./repo-mmd-ibl";
 // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
 // Author: Atlas (Core banking platform architect, engineering).
 export * from "./calculation";
+// D-TRUSTED-FIGURES-PROGRAM-V1 — seed-management provenance (objective 1).
+// SeedDescoped + SeedPromotedToSimulated: make the boot-seed layer visible and
+//   controllable from the UI (descope at next boot; replace with real-simulated).
+// Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+// Author: Atlas (Core banking platform architect, engineering).
+export * from "./seed-management";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
