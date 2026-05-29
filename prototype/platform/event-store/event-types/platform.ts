@@ -314,6 +314,24 @@ export const legacyFanoutShadowedPayloadSchema = z.object({
     }),
   triggeringEventTypes: z.array(z.string().min(1)).min(1),
   suppressedAtSequence: z.number().int().nonnegative(),
+  // The `event_id` of the triggering event whose append would (under the
+  // legacy in-process fan-out) have dispatched `triggeredHandlerKey`. This
+  // is the real-identity field that lets `recon:parallel-dispatch-divergence`
+  // perform the G1 `(eventId, handlerKey)` symmetric-coverage comparison
+  // against `BusDispatched.payload.eventId` (which is also the triggering
+  // event's id — see `platform/event-trigger-bus/bus.ts`). It mirrors the
+  // bus's canonical dedup key exactly.
+  //
+  // OPTIONAL for back-compat: the 1,095 `LegacyFanoutShadowed` events
+  // persisted before the real-identity protocol (A22 Phase-1 evidence
+  // completion, 2026-05-29) carry only `suppressedAtSequence` (a single
+  // parent-run pointer) and no `eventId`. Making this required would
+  // retroactively invalidate those persisted events on replay. The recon
+  // treats events lacking `eventId` as pre-protocol baseline (excluded from
+  // the divergence comparison; reported as info) — see the recon header.
+  // The "real-id shadow protocol epoch" is the `as_of` of the earliest
+  // `LegacyFanoutShadowed` that DOES carry this field.
+  eventId: z.string().min(1).optional(),
 });
 
 export type LegacyFanoutShadowedPayload = z.infer<typeof legacyFanoutShadowedPayloadSchema>;

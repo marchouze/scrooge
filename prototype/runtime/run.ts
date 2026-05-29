@@ -753,32 +753,46 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
             },
             "event-driven dispatch (shadowed — bus is canonical)",
           );
-          if (matchedTypes.length > 0) {
-            try {
-              eventStore.append(
-                makeLegacyFanoutShadowed({
-                  asOf: clock.now(),
-                  entity: DEFAULT_ENTITY,
-                  actor: SHADOW_ACTOR,
-                  citations: [...PHASE_1_CITATIONS],
-                  payload: {
-                    parentAgent: ctx.agent.toLowerCase(),
-                    parentTrigger: ctx.trigger.id,
-                    triggeredHandlerKey: tk,
-                    triggeringEventTypes: matchedTypes,
-                    suppressedAtSequence: seqBefore,
-                  },
-                }),
-              );
-            } catch (err) {
-              // Shadow-event append failed — most likely a permission-
-              // gate denial or schema regression. The shadow event is
-              // Phase-1 evidence, not a runtime gate, so we log and
-              // continue. The bus path is unaffected.
-              logger.error(
-                { triggered: tk, err: (err as Error).message },
-                "legacy-fanout-shadow — append LegacyFanoutShadowed failed (non-fatal)",
-              );
+          if (matchedEvents.length > 0) {
+            // Real-identity protocol (A22 Phase-1 evidence completion,
+            // 2026-05-29): emit ONE `LegacyFanoutShadowed` per matched
+            // triggering event, carrying that event's real `event_id`.
+            // The bus dispatches per `(triggering event_id, handlerKey)`
+            // (`platform/event-trigger-bus/bus.ts`), so the shadow stream
+            // must record the same granularity for the recon's G1
+            // `(eventId, handlerKey)` symmetric-coverage comparison to be
+            // evaluable. The earlier protocol emitted a single shadow event
+            // per (parent-run, handler) carrying only `suppressedAtSequence`
+            // — no triggering-event identity — which pinned the recon to
+            // warn (event-level comparison inconclusive). See spec §3.1.
+            for (const me of matchedEvents) {
+              try {
+                eventStore.append(
+                  makeLegacyFanoutShadowed({
+                    asOf: clock.now(),
+                    entity: DEFAULT_ENTITY,
+                    actor: SHADOW_ACTOR,
+                    citations: [...PHASE_1_CITATIONS],
+                    payload: {
+                      parentAgent: ctx.agent.toLowerCase(),
+                      parentTrigger: ctx.trigger.id,
+                      triggeredHandlerKey: tk,
+                      triggeringEventTypes: [me.type],
+                      suppressedAtSequence: seqBefore,
+                      eventId: me.event_id,
+                    },
+                  }),
+                );
+              } catch (err) {
+                // Shadow-event append failed — most likely a permission-
+                // gate denial or schema regression. The shadow event is
+                // Phase-1 evidence, not a runtime gate, so we log and
+                // continue. The bus path is unaffected.
+                logger.error(
+                  { triggered: tk, eventId: me.event_id, err: (err as Error).message },
+                  "legacy-fanout-shadow — append LegacyFanoutShadowed failed (non-fatal)",
+                );
+              }
             }
           }
           continue;
