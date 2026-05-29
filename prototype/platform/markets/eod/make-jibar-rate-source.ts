@@ -60,7 +60,14 @@ export class MarketDataStoreJibarRateSource implements IrsRateSource {
   private readonly nodes: Array<{ days: number; df: number }>;
 
   constructor(store: MarketDataStore, asOf?: string) {
-    const tick = store.getLatest("jibar-swap-sarb", "SWAPJIBAR", asOf);
+    const ticks = store.query({
+      source: "jibar-swap-sarb",
+      instrument: "SWAPJIBAR",
+      provenance: "production",
+      ...(asOf ? { to: asOf } : {}),
+      limit: 1,
+    });
+    const tick = ticks[0];
     if (!tick) {
       // Fall back to static curve nodes when store has no snapshot.
       this.nodes = [...CURVE_NODES];
@@ -109,6 +116,12 @@ export class MarketDataStoreJibarRateSource implements IrsRateSource {
  * @param asOf   Optional ISO 8601 timestamp bounding the tick lookup.
  */
 export function makeJibarRateSource(store: MarketDataStore, asOf?: string): IrsRateSource {
-  const tick = store.getLatest("jibar-swap-sarb", "SWAPJIBAR", asOf);
-  return tick ? new MarketDataStoreJibarRateSource(store, asOf) : staticJibarRateSource;
+  const ticks = store.query({
+    source: "jibar-swap-sarb",
+    instrument: "SWAPJIBAR",
+    provenance: "production",
+    ...(asOf ? { to: asOf } : {}),
+    limit: 1,
+  });
+  return ticks[0] ? new MarketDataStoreJibarRateSource(store, asOf) : staticJibarRateSource;
 }
