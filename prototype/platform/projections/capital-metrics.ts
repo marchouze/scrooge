@@ -35,35 +35,43 @@
 // Authority: D-RAS (2026-05-06) · D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import { getFinancialConstant } from "../config/financial-constants";
 import { type Money, minor } from "../core/money";
 import { ZAR } from "../core/types";
 import type { EventStore } from "../event-store/store";
 
 // ---------------------------------------------------------------------------
-// Constants — ICAAP v1 build-phase baseline (D-MARKETS-CAPITAL-TIME-SHAPE)
+// Constants — owned in platform/config/financial-constants.ts (objective 2 of
+// D-TRUSTED-FIGURES-PROGRAM-V1). Capital baselines are CFO-owned; the RAS §B3
+// appetite bands are CRO-owned. This file reads them; it holds no inline
+// calibration literals.
 // ---------------------------------------------------------------------------
 
 /** ZAR cents — R300,000,000 total capital envelope (ICAAP v1 build-phase) */
-export const BUILD_PHASE_TOTAL_CAPITAL_MINOR = 30_000_000_000;
+export const BUILD_PHASE_TOTAL_CAPITAL_MINOR = getFinancialConstant(
+  "capital.build-phase.total-capital-minor",
+);
 
 /** ZAR cents — R73,750,000 total RWA at franchise-design scale (ICAAP v1) */
-export const BUILD_PHASE_TOTAL_RWA_MINOR = 7_375_000_000;
+export const BUILD_PHASE_TOTAL_RWA_MINOR = getFinancialConstant(
+  "capital.build-phase.total-rwa-minor",
+);
 
 /** ZAR cents — R36,675,000 Total Internal Capital Requirement (TICR / ICAAP v1) */
-export const TICR_MINOR = 3_667_500_000;
+export const TICR_MINOR = getFinancialConstant("capital.ticr-minor");
 
 /** ZAR cents — R263,325,000 capital headroom in build phase (ICAAP v1) */
 export const BUILD_PHASE_HEADROOM_MINOR = BUILD_PHASE_TOTAL_CAPITAL_MINOR - TICR_MINOR;
 
-// ---------------------------------------------------------------------------
-// RAS §B3 appetite thresholds (authority: D-RAS 2026-05-06)
-// ---------------------------------------------------------------------------
-
 /** CEO escalation trigger (< R100m headroom) in ZAR cents */
-export const THRESHOLD_CEO_ESCALATION_MINOR = 10_000_000_000;
+export const THRESHOLD_CEO_ESCALATION_MINOR = getFinancialConstant(
+  "capital.threshold.ceo-escalation-minor",
+);
 
 /** Board notification trigger (< R50m headroom) in ZAR cents */
-export const THRESHOLD_BOARD_NOTIFICATION_MINOR = 5_000_000_000;
+export const THRESHOLD_BOARD_NOTIFICATION_MINOR = getFinancialConstant(
+  "capital.threshold.board-notification-minor",
+);
 
 /** TICR floor — critical breach when headroom < R36.675m (= TICR_MINOR) */
 export const THRESHOLD_CRITICAL_MINOR = TICR_MINOR;

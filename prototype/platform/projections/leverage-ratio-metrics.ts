@@ -40,6 +40,7 @@
 // Authors: Helena (Chief Risk Officer, governance) · Rohan (Market risk
 //   quantitative engineer, engineering — measurement substrate)
 
+import { getFinancialConstant } from "../config/financial-constants";
 import type { EventStore } from "../event-store/store";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
@@ -49,14 +50,14 @@ import { generateLeverageRatio } from "../reporting/ba-700-leverage-ratio";
 import { BUILD_PHASE_TOTAL_CAPITAL_MINOR, computeCapitalMetrics } from "./capital-metrics";
 
 // ---------------------------------------------------------------------------
-// RAS §B3 appetite thresholds (proposed; Decision(requested) pending Marc
-// approval per the brief). Default values below are conservative buffers
-// over the BCBS 3 % regulatory floor.
+// RAS §B3 leverage-ratio appetite bands — owned (CRO) in
+// platform/config/financial-constants.ts. Conservative buffers over the BCBS
+// 3 % regulatory floor.
 // ---------------------------------------------------------------------------
 
-export const THRESHOLD_LEVERAGE_GREEN = 0.045;
-export const THRESHOLD_LEVERAGE_AMBER = 0.04;
-export const THRESHOLD_LEVERAGE_RED = 0.035;
+export const THRESHOLD_LEVERAGE_GREEN = getFinancialConstant("leverage.threshold.green");
+export const THRESHOLD_LEVERAGE_AMBER = getFinancialConstant("leverage.threshold.amber");
+export const THRESHOLD_LEVERAGE_RED = getFinancialConstant("leverage.threshold.red");
 // `THRESHOLD_LEVERAGE_CRITICAL` mirrors `THRESHOLD_LEVERAGE_RED`: below
 // 3.5 % the bank is in the management-action zone above the regulatory
 // floor; status is `red` with `critical: true`.
