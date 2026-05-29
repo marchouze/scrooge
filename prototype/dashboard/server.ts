@@ -69,6 +69,8 @@ import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
 import { makeBalanceSheetProjected } from "../platform/event-store/event-types/balance-sheet";
+import type { CalculationPerformedPayload } from "../platform/event-store/event-types/calculation";
+import { makeSubstrateAlert } from "../platform/event-store/event-types/platform";
 import {
   makeProductApproved,
   makeProductDimensionAttested,
@@ -106,6 +108,7 @@ import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-
 import { MarketDataStore } from "../platform/market-data/store";
 import { checkModelApproved } from "../platform/model-registry/calculation-binding";
 import { buildCalculationPerformed } from "../platform/model-registry/calculation-emit";
+import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
@@ -711,9 +714,40 @@ function emitCalculationProvenance(): void {
       );
       return;
     }
-    eventStore.append(
-      buildCalculationPerformed({ asOf, entity, actor, calcKey, resolvedInputs, output }),
-    );
+    const event = buildCalculationPerformed({
+      asOf,
+      entity,
+      actor,
+      calcKey,
+      resolvedInputs,
+      output,
+    });
+    eventStore.append(event);
+
+    // Objective 4 — a figure that could not be computed from a complete input
+    // set is a data-integrity fault, surfaced loudly. Emit a SubstrateAlert so
+    // the data-failure banner (/api/data-failures) shows it; the figure renders
+    // "value unavailable", never a silent 0.
+    const payload = event.payload as unknown as CalculationPerformedPayload;
+    if (payload.status !== "ok") {
+      const severity = payload.status === "failed" ? "high" : "medium";
+      eventStore.append(
+        makeSubstrateAlert({
+          asOf,
+          entity,
+          actor,
+          citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
+          payload: {
+            alertId: `alert:integrity:calc-${calcKey}-${payload.status}`,
+            alertClass: "integrity",
+            details: `${payload.figure} is ${payload.status} — missing input(s): ${
+              payload.missingInputs.join(", ") || "none"
+            }. Figure not surfaced as a number.`,
+            severity,
+          },
+        }),
+      );
+    }
   };
 
   try {
@@ -2817,6 +2851,23 @@ const server = Bun.serve({
           total: models.length,
           approved: models.filter((m) => m.approved).length,
           unapproved: models.filter((m) => !m.approved).length,
+        },
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/data-failures" && req.method === "GET") {
+      // Trusted-Figures Program objective 4 — cross-page data-failure surface.
+      // Every bound figure whose latest computation is degraded/failed (a
+      // missing required/optional input), so the figure renders "value
+      // unavailable" with the missing inputs named — never a silent 0.
+      // Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
+      const failures = buildDataFailuresView(eventStore);
+      return jsonResponse({
+        failures,
+        counts: {
+          total: failures.length,
+          failed: failures.filter((f) => f.status === "failed").length,
+          degraded: failures.filter((f) => f.status === "degraded").length,
         },
         pageProvenance: eventDerivedPageProvenance(),
       });

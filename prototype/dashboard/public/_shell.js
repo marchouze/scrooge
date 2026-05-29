@@ -155,6 +155,16 @@
       updateClock(clockEl);
       setInterval(() => updateClock(clockEl), 1000);
     }
+
+    // Cross-page data-failure surface (Trusted-Figures objective 4): loaded
+    // globally so every page shows figures that are "value unavailable" rather
+    // than a silent 0. Self-contained — injects its own banner + polls.
+    if (!document.getElementById("sc-data-failure-banner-script")) {
+      const s = document.createElement("script");
+      s.id = "sc-data-failure-banner-script";
+      s.src = "/_data-failure-banner.js";
+      document.body.appendChild(s);
+    }
   };
 
   // Legacy: keep bankShell for pages that reference it

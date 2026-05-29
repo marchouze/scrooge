@@ -36,6 +36,7 @@ import {
   lcrHaircutRates,
   lcrRunoffRates,
 } from "../config/financial-constants";
+import { requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
 // Input types
@@ -172,7 +173,7 @@ export function computeLCR(
   let l2bRaw = 0;
 
   for (const pos of hqlaPositions) {
-    const haircut = HAIRCUT_RATES[pos.tier] ?? 0;
+    const haircut = requireWeight(HAIRCUT_RATES, pos.tier, "lcr.haircut");
     const postHaircut = pos.amountZar * (1 - haircut);
     if (pos.tier === "L1") l1Raw += postHaircut;
     else if (pos.tier === "L2a") l2aRaw += postHaircut;
@@ -234,7 +235,7 @@ export function computeLCR(
       stressedInflows += pos.amountZar * rate;
     } else {
       // Outflows
-      const runoffRate = RUNOFF_RATES[pos.category] ?? 0;
+      const runoffRate = requireWeight(RUNOFF_RATES, pos.category, "lcr.runoff");
       stressedOutflows += pos.amountZar * runoffRate;
     }
   }
