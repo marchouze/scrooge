@@ -17,13 +17,26 @@
 // recon itself is correct; the issue is that the "live repo" the test
 // observes is the test-polluted event store, not the actual repo.
 //
+// 2026-05-29: redirect made UNCONDITIONAL. The previous guard
+// (`if (!process.env.BANK_EVENT_DB)`) only redirected when the env var
+// was UNSET — so running `bun test` in a shell that already had
+// `BANK_EVENT_DB` pointed at the production store (e.g. left over from
+// `bun run dashboard`, which exports
+// `BANK_EVENT_DB=$HOME/.local/share/bank/event.db`) let test-fixture
+// events (`D-TEST-SESSION-DELEGATION-*` etc.) append straight into
+// production. Now the preload always points the singleton at a fresh
+// temp DB unless a caller has *explicitly* opted into the ambient store
+// via `BANK_TEST_USE_AMBIENT_DB=1`. Tests that need a specific DB set
+// `process.env.BANK_EVENT_DB` themselves at runtime (after this preload)
+// or pass it to spawned subprocesses, so they are unaffected.
+//
 // Author: Atlas (Core banking platform architect)
 
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-if (!process.env.BANK_EVENT_DB) {
+if (process.env.BANK_TEST_USE_AMBIENT_DB !== "1") {
   const tmpDir = mkdtempSync(join(tmpdir(), "bank-test-eventdb-"));
   process.env.BANK_EVENT_DB = join(tmpDir, "event.db");
 }
