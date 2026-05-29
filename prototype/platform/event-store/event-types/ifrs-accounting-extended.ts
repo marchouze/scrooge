@@ -389,18 +389,44 @@ export function makeRestatementProposed(args: {
 // ---------------------------------------------------------------------------
 // FinancialPositionSnapshot
 // ---------------------------------------------------------------------------
-
-export const financialPositionSnapshotPayloadSchema = z.object({
-  snapshotId: z.string().min(1),
-  asOf: z.string().min(1),
-  totalAssets: z.number().optional(),
-  totalLiabilities: z.number().optional(),
-  equity: z.number().optional(),
-  netPnL: z.number().optional(),
-  currency: z.string().min(3).max(3),
-  cet1RatioPct: z.number().optional(),
-  reportingPeriod: z.string().optional(),
-});
+//
+// Schema aligned with camille-financial-position-snapshot.ts handler emission
+// shape (2026-05-29). Handler emits: camilleOwnedObligations,
+// obligationsInForce/Partial/Planned/Drafting/NAyet, beaHandlerCount,
+// yaelHandlerCount, plus ...snap.events (tax / accounting domain events),
+// lastCloseApproved, lastBaReturnSigned, lastAfsSigned,
+// lastCapitalPlanRefresh, runTrigger.
+// Original idealised fields (snapshotId, asOf, currency) now optional for
+// backward compat.
+//
+export const financialPositionSnapshotPayloadSchema = z
+  .object({
+    // Handler-emitted fields (authoritative)
+    camilleOwnedObligations: z.number().int().nonnegative().optional(),
+    obligationsInForce: z.number().int().nonnegative().optional(),
+    obligationsPartial: z.number().int().nonnegative().optional(),
+    obligationsPlanned: z.number().int().nonnegative().optional(),
+    obligationsDrafting: z.number().int().nonnegative().optional(),
+    obligationsNAyet: z.number().int().nonnegative().optional(),
+    beaHandlerCount: z.number().int().nonnegative().optional(),
+    yaelHandlerCount: z.number().int().nonnegative().optional(),
+    lastCloseApproved: z.string().nullable().optional(),
+    lastBaReturnSigned: z.string().nullable().optional(),
+    lastAfsSigned: z.string().nullable().optional(),
+    lastCapitalPlanRefresh: z.string().nullable().optional(),
+    runTrigger: z.string().optional(),
+    // Original idealised fields (optional, backward compat)
+    snapshotId: z.string().min(1).optional(),
+    asOf: z.string().min(1).optional(),
+    totalAssets: z.number().optional(),
+    totalLiabilities: z.number().optional(),
+    equity: z.number().optional(),
+    netPnL: z.number().optional(),
+    currency: z.string().min(3).max(3).optional(),
+    cet1RatioPct: z.number().optional(),
+    reportingPeriod: z.string().optional(),
+  })
+  .passthrough();
 
 export type FinancialPositionSnapshotPayload = z.infer<
   typeof financialPositionSnapshotPayloadSchema
