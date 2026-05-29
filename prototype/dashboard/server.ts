@@ -81,6 +81,10 @@ import {
   makeInterbankLoanPlaced,
   makeRepoTradeOpened,
 } from "../platform/event-store/event-types/repo-mmd-ibl";
+import {
+  makeSeedDescoped,
+  makeSeedPromotedToSimulated,
+} from "../platform/event-store/event-types/seed-management";
 import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import type { Event } from "../platform/event-store/types";
 import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
@@ -141,6 +145,8 @@ import {
   BALANCE_SHEET_SEED_CITATIONS,
   BALANCE_SHEET_SEED_PAYLOAD,
 } from "../seeds/alm/balance-sheet-seed";
+import { loadDescopedSeedIds } from "../seeds/descope";
+import { getSeedManifestEntry } from "../seeds/manifest";
 import { seedCalcModels } from "../seeds/models/calc-model-seed";
 import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
 import { seedModelRegistry } from "../seeds/models/model-registry-seed";
@@ -149,6 +155,7 @@ import {
   seedValidationMethodologies,
 } from "../seeds/models/model-validation-seed";
 import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
+import { buildSeedsView } from "../seeds/seeds-view";
 import {
   TRADE_SEEDS_CITATIONS,
   TREASURY_DEPOSIT_TAKEN_PAYLOADS,
@@ -528,6 +535,23 @@ function bootDerive(): DashboardState {
     // by migrate:decisions-backfill (unified Decision events with proper
     // symmetry). The call is kept for backwards-compat but emits nothing.
     backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
+
+    // D-TRUSTED-FIGURES-PROGRAM-V1 objective 1 — seed descoping. An operator can
+    // emit SeedDescoped (or SeedPromotedToSimulated) via /api/seeds to stop a
+    // descopable boot seed from re-emitting. runSeed() consults that set; a
+    // descoped seed is skipped (and logged), never silently. The seedId strings
+    // here are the canonical keys in seeds/manifest.ts (recon:seed-manifest-parity).
+    const descopedSeeds = loadDescopedSeedIds(eventStore);
+    const runSeed = (seedId: string, fn: () => void): void => {
+      if (descopedSeeds.has(seedId)) {
+        logger.info({ seedId }, "boot-seed: descoped — skipped at boot (SeedDescoped)");
+        return;
+      }
+      fn();
+    };
+
+    // Structural backfills (fleet identity, party graph) are NOT descopable —
+    // the agent/party axes the whole substrate rests on depend on them.
     bootFleetRegistration();
     // D-PARTY-REGISTER PR 2 — backfill the unified Party graph from
     // existing legal-entity / counterparty / agent / signatory streams.
@@ -537,36 +561,36 @@ function bootDerive(): DashboardState {
     // ZARONIA OIS+IRS-PV, FX forward IRP). Must run BEFORE model-validation-seed
     // and BEFORE NPA attestation seeds that read model validation status.
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    bootModelRegistry();
+    runSeed("model-registry", bootModelRegistry);
     // Model validation seed — emit ValidationMethodologyPublished (Tier-2 + Tier-3)
     // and ModelValidationApproved for the 3 build-phase models idempotently.
     // Must run AFTER bootModelRegistry() (models must exist) and BEFORE
     // bootNpaAttestations() (seedValidatedModelRiskUpgrades checks for approvals).
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    bootModelValidationSeeds();
+    runSeed("model-validation", bootModelValidationSeeds);
     // ModelRegistered seed — emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
     // and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
     // Complements model-registry-seed (ModelSubmitted) and model-validation-seed (v0.1).
     // Must run AFTER bootModelValidationSeeds().
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    bootModelRegisteredSeeds();
+    runSeed("model-registered", bootModelRegisteredSeeds);
     // Calc-model seed — register + approve the three regulatory-metric models
     // (LCR/NSFR/CET1) that calculation-binding.ts binds surfaced figures to.
     // Distinct modelIds from the pricing-model seeds; order-independent of them.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
-    bootCalcModels();
+    runSeed("calc-models", bootCalcModels);
     // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
     // core products (equity, bond, repo, IRS, FX swap) idempotently.
     // seedValidatedModelRiskUpgrades() upgrades bond/IRS/FX model-risk to
     // implementation-attested when ModelValidationApproved events are present.
     // Must run BEFORE trade seeds that reference these products.
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    bootNpaAttestations();
+    runSeed("npa-attestations", bootNpaAttestations);
     // Treasury seed events — emit REPO, MMD, IBL positions idempotently.
     // Required by getALMPositionSnapshot so LCR/NSFR compute live values.
-    bootTreasurySeeds();
+    runSeed("treasury-positions", bootTreasurySeeds);
     // Balance-sheet seed — emit BalanceSheetProjected for build-phase NSFR baseline.
-    bootBalanceSheetSeed();
+    runSeed("balance-sheet-baseline", bootBalanceSheetSeed);
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
     // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
@@ -1866,6 +1890,122 @@ async function handleProductApprove(req: Request): Promise<Response> {
   }
 }
 
+/**
+ * POST /api/seeds/descope — emit SeedDescoped so a descopable boot seed is
+ * skipped at next boot (objective 1 of D-TRUSTED-FIGURES-PROGRAM-V1). The
+ * skip takes effect on the next server boot (boot seeds run once at startup);
+ * the response says so explicitly rather than implying an immediate effect.
+ */
+async function handleSeedDescope(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const seedId = typeof body.seedId === "string" ? body.seedId.trim() : "";
+  const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+  const actorId =
+    typeof body.actor === "string" && body.actor.trim().length > 0
+      ? body.actor.trim()
+      : "marc@tgv.co.za";
+  if (!seedId) return jsonResponse({ error: "seedId is required" }, 400);
+  if (!reason) return jsonResponse({ error: "reason is required" }, 400);
+  const entry = getSeedManifestEntry(seedId);
+  if (!entry) return jsonResponse({ error: `unknown seedId "${seedId}"` }, 400);
+  if (!entry.descopable) {
+    return jsonResponse(
+      { error: `seed "${seedId}" is structural (not descopable) — ${entry.title}` },
+      400,
+    );
+  }
+  try {
+    const evt = makeSeedDescoped({
+      asOf: nowUtc(),
+      entity: "LE-BANK-SA",
+      actor: { type: "human", id: actorId },
+      citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
+      payload: { seedId, reason },
+    });
+    eventStore.append(evt);
+    logger.info({ seedId, actorId }, "SeedDescoped emitted via dashboard");
+    return jsonResponse(
+      {
+        ok: true,
+        eventId: evt.event_id,
+        effect: "Seed will be skipped at next server boot. Bounce the server to apply.",
+      },
+      201,
+    );
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+}
+
+/**
+ * POST /api/seeds/promote — emit SeedPromotedToSimulated, recording that a boot
+ * seed has been replaced by author-driven simulated events (links the
+ * replacement event ids). Also descopes the seed at next boot.
+ */
+async function handleSeedPromote(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const seedId = typeof body.seedId === "string" ? body.seedId.trim() : "";
+  const replacementEventIds = Array.isArray(body.replacementEventIds)
+    ? (body.replacementEventIds as unknown[]).filter((c): c is string => typeof c === "string")
+    : [];
+  const note = typeof body.note === "string" ? body.note.trim() : undefined;
+  const actorId =
+    typeof body.actor === "string" && body.actor.trim().length > 0
+      ? body.actor.trim()
+      : "marc@tgv.co.za";
+  if (!seedId) return jsonResponse({ error: "seedId is required" }, 400);
+  const entry = getSeedManifestEntry(seedId);
+  if (!entry) return jsonResponse({ error: `unknown seedId "${seedId}"` }, 400);
+  if (!entry.descopable) {
+    return jsonResponse(
+      { error: `seed "${seedId}" is structural (not descopable) — ${entry.title}` },
+      400,
+    );
+  }
+  try {
+    const evt = makeSeedPromotedToSimulated({
+      asOf: nowUtc(),
+      entity: "LE-BANK-SA",
+      actor: { type: "human", id: actorId },
+      citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
+      payload: { seedId, replacementEventIds, note },
+    });
+    eventStore.append(evt);
+    logger.info(
+      { seedId, replacements: replacementEventIds.length, actorId },
+      "SeedPromotedToSimulated emitted via dashboard",
+    );
+    return jsonResponse(
+      {
+        ok: true,
+        eventId: evt.event_id,
+        effect: "Seed replaced + descoped at next boot. Bounce the server to apply.",
+      },
+      201,
+    );
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 400);
+  }
+}
+
 async function handleProductNarrative(req: Request): Promise<Response> {
   let raw: unknown;
   try {
@@ -2679,6 +2819,29 @@ const server = Bun.serve({
         },
         pageProvenance: eventDerivedPageProvenance(),
       });
+    }
+    if (url.pathname === "/api/seeds" && req.method === "GET") {
+      // Trusted-Figures Program objective 1 — boot-seed inventory. Every
+      // build-phase boot seed (seeds/manifest.ts), its descope status, the
+      // descope/promotion lineage, and the live count of events it has emitted.
+      // pageProvenance: event-derived → simulated-only in build phase.
+      // Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
+      const seeds = buildSeedsView(eventStore);
+      return jsonResponse({
+        seeds,
+        counts: {
+          total: seeds.length,
+          descoped: seeds.filter((s) => s.descoped).length,
+          descopable: seeds.filter((s) => s.descopable).length,
+        },
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/seeds/descope" && req.method === "POST") {
+      return handleSeedDescope(req);
+    }
+    if (url.pathname === "/api/seeds/promote" && req.method === "POST") {
+      return handleSeedPromote(req);
     }
     if (url.pathname === "/api/party" && req.method === "GET") {
       // D-PARTY-REGISTER PR 2 — Party tile read-side. Folds the unified

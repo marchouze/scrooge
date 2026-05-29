@@ -45,6 +45,8 @@ export {
   RUNTIME_EVENT_TYPES,
 } from "./runtime";
 export { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
+// D-TRUSTED-FIGURES-PROGRAM-V1 — seed-management events (objective 1).
+export { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 export {
   BANK_ACCOUNT_EVENT_TYPES,
   CUSTOMER_LIFECYCLE_EVENT_TYPES,
@@ -228,6 +230,7 @@ import {
   GOAL_LOOP_EVENT_TYPES,
   RUNTIME_EVENT_TYPES,
 } from "./runtime";
+import { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
@@ -240,6 +243,7 @@ import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...RUNTIME_EVENT_TYPES,
   ...MODEL_REGISTRY_EVENT_TYPES,
+  ...SEED_MANAGEMENT_EVENT_TYPES,
   ...MARKETS_EVENT_TYPES,
   ...GOVERNANCE_EVENT_TYPES,
   ...AUDIT_EVENT_TYPES,
