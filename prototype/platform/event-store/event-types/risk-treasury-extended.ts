@@ -305,21 +305,36 @@ export function makeIRRBBExcursion(args: {
 // ---------------------------------------------------------------------------
 // Readiness snapshots (common structure)
 // ---------------------------------------------------------------------------
-
-const readinessSnapshotBaseSchema = z.object({
-  snapshotId: z.string().min(1),
-  asOf: z.string().min(1),
-  owner: z.string().min(1),
-  overallStatus: z.enum(["green", "amber", "red", "not-started"]),
-  blockerCount: z.number().int().nonnegative(),
-  gapCount: z.number().int().nonnegative(),
-  notes: z.string().optional(),
-});
+//
+// Original idealised fields (snapshotId, asOf, owner, overallStatus,
+// blockerCount, gapCount) are made optional and .passthrough() applied so
+// each handler's actual emission shape is accepted without stripping unknown
+// keys. Handlers are the ground truth; these fields kept for backward compat.
+//
+const readinessSnapshotBaseSchema = z
+  .object({
+    snapshotId: z.string().min(1).optional(),
+    asOf: z.string().min(1).optional(),
+    owner: z.string().min(1).optional(),
+    overallStatus: z.enum(["green", "amber", "red", "not-started"]).optional(),
+    blockerCount: z.number().int().nonnegative().optional(),
+    gapCount: z.number().int().nonnegative().optional(),
+    notes: z.string().optional(),
+    // Common handler-emitted field present on most readiness handlers
+    runTrigger: z.string().optional(),
+  })
+  .passthrough();
 
 // ---------------------------------------------------------------------------
 // ALMReadinessSnapshot
 // ---------------------------------------------------------------------------
-
+//
+// Handler (ravi-alm-readiness.ts) emits: pipelineCount, readinessReady/Drafting/
+// Specified/Unspecified, raviObligationsCount, raviObligationsPartial,
+// hqlaObservedLast7d, lcrComputedLast7d, nsfrComputedLast7d,
+// irrbbCheckedLast7d, fxPositionReportedLast7d, collateralUpdatedLast7d,
+// fundingDrawnDownLast7d, priorRaviSnapshotsLast7d, latestEitanRun, runTrigger.
+//
 export const almReadinessSnapshotPayloadSchema = readinessSnapshotBaseSchema;
 export type ALMReadinessSnapshotPayload = z.infer<typeof almReadinessSnapshotPayloadSchema>;
 
@@ -345,9 +360,17 @@ export function makeALMReadinessSnapshot(args: {
 // ---------------------------------------------------------------------------
 // CyberResilienceSnapshot
 // ---------------------------------------------------------------------------
-
+//
+// Handler (rashida-cyber-resilience-snapshot.ts) emits: cyberObligationsCount,
+// jointStandardObligationsCount, popiaSecurityObligationsCount,
+// sennaSubstrateLast7d, incidentsLast7d (length), threatModelGateDecisionsLast7d,
+// keyRotationsLast7d, sbomAcceptedLast7d, sbomRejectedLast7d,
+// vendorSecurityReviewsLast7d, popiaCompromiseSuspectedLast7d, runTrigger.
+// Original idealised fields (criticalVulnerabilities, patchCompliancePct) now
+// optional for backward compat.
+//
 export const cyberResilienceSnapshotPayloadSchema = readinessSnapshotBaseSchema.extend({
-  criticalVulnerabilities: z.number().int().nonnegative(),
+  criticalVulnerabilities: z.number().int().nonnegative().optional(),
   patchCompliancePct: z.number().min(0).max(100).optional(),
 });
 
@@ -375,10 +398,18 @@ export function makeCyberResilienceSnapshot(args: {
 // ---------------------------------------------------------------------------
 // OperationalResilienceSnapshot
 // ---------------------------------------------------------------------------
-
+//
+// Handler (devon-operational-resilience-snapshot.ts) emits: benchSeats,
+// benchHandlersTotal, benchSeatsWithoutHandler, incidentsLast7d,
+// sloBurnsLast7d, capacityBreachesLast7d, changesApprovedLast7d,
+// resilienceTestsLast7d, auditFindingsOpsLast7d, atlasSubstrateLast7d,
+// anyaProjectionDriftLast7d, sennaSecurityLast7d, substrateExceptionsCount,
+// runTrigger. Original idealised field (openIncidentCount) now optional for
+// backward compat.
+//
 export const operationalResilienceSnapshotPayloadSchema = readinessSnapshotBaseSchema.extend({
   sloCompliancePct: z.number().min(0).max(100).optional(),
-  openIncidentCount: z.number().int().nonnegative(),
+  openIncidentCount: z.number().int().nonnegative().optional(),
 });
 
 export type OperationalResilienceSnapshotPayload = z.infer<
@@ -407,7 +438,15 @@ export function makeOperationalResilienceSnapshot(args: {
 // ---------------------------------------------------------------------------
 // LegalReadinessSnapshot
 // ---------------------------------------------------------------------------
-
+//
+// Handler (imani-legal-readiness.ts) emits: imaniOwnedObligations,
+// obligationsInForce/InFlight/Partial/Planned/Drafting, masterAgreementsSigned/
+// clauseLibraryVersionsPublished/legalEntitiesRegistered/ectaExecutionsRecorded
+// Last7d, priorReadinessSnapshotsLast30d, clauseLibraryVersionPublished,
+// clauseLibraryClauseCount, legalEntityTreeCount, ectaExecutionPathReady,
+// counterpartyOnboardingReady, runTrigger. readinessSnapshotBaseSchema
+// .passthrough() admits all handler fields.
+//
 export const legalReadinessSnapshotPayloadSchema = readinessSnapshotBaseSchema;
 export type LegalReadinessSnapshotPayload = z.infer<typeof legalReadinessSnapshotPayloadSchema>;
 
@@ -433,7 +472,13 @@ export function makeLegalReadinessSnapshot(args: {
 // ---------------------------------------------------------------------------
 // TaxReadinessSnapshot
 // ---------------------------------------------------------------------------
-
+//
+// Handler (yael-tax-readiness.ts) emits: yaelOwnedObligations,
+// obligationsInForce/Partial/Planned/Drafting/NAyet, tax domain events,
+// cycleCount, cyclesReady/Drafting/Specified/NotYetSpecified,
+// camilleSnapshotAsOf, camilleLastCloseApproved, camilleLastBaReturnSigned,
+// runTrigger. readinessSnapshotBaseSchema .passthrough() admits all.
+//
 export const taxReadinessSnapshotPayloadSchema = readinessSnapshotBaseSchema;
 export type TaxReadinessSnapshotPayload = z.infer<typeof taxReadinessSnapshotPayloadSchema>;
 
@@ -459,7 +504,13 @@ export function makeTaxReadinessSnapshot(args: {
 // ---------------------------------------------------------------------------
 // PaymentsReadinessSnapshot
 // ---------------------------------------------------------------------------
-
+//
+// Handler (tomas-payments-readiness.ts) emits: capabilityCount,
+// readinessReady/Drafting/Specified/Unspecified, obligationCount,
+// obligationsInForce/Drafting/Planned/NAyet, payments event counts
+// (paymentInitiatedLast7d etc. via ...snap.events), latestDevonSnapshot,
+// runTrigger. readinessSnapshotBaseSchema .passthrough() admits all.
+//
 export const paymentsReadinessSnapshotPayloadSchema = readinessSnapshotBaseSchema;
 export type PaymentsReadinessSnapshotPayload = z.infer<
   typeof paymentsReadinessSnapshotPayloadSchema
@@ -487,7 +538,12 @@ export function makePaymentsReadinessSnapshot(args: {
 // ---------------------------------------------------------------------------
 // MarketsReadinessSnapshot
 // ---------------------------------------------------------------------------
-
+//
+// Handler (saskia-markets-readiness-snapshot.ts) emits: saskiaOwnedObligations,
+// obligationsInForce/InFlight/Partial/Planned/Drafting/PreLicence/NAyet,
+// kaiHandlerCount, markets event counts, m1 substrate state flags,
+// runTrigger. readinessSnapshotBaseSchema .passthrough() admits all.
+//
 export const marketsReadinessSnapshotPayloadSchema = readinessSnapshotBaseSchema;
 export type MarketsReadinessSnapshotPayload = z.infer<typeof marketsReadinessSnapshotPayloadSchema>;
 

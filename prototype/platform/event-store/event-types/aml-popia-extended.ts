@@ -416,16 +416,42 @@ export function makePAIARequest(args: {
 // ---------------------------------------------------------------------------
 // POPIAControlsSnapshot
 // ---------------------------------------------------------------------------
-
-export const popiaControlsSnapshotPayloadSchema = z.object({
-  snapshotId: z.string().min(1),
-  asOf: z.string().min(1),
-  dataMappingComplete: z.boolean(),
-  consentRegisterCount: z.number().int().nonnegative(),
-  openBreachCount: z.number().int().nonnegative(),
-  openDSARCount: z.number().int().nonnegative(),
-  overallStatus: z.enum(["green", "amber", "red"]),
-});
+//
+// Schema aligned with iris-popia-controls-snapshot.ts handler emission shape
+// (2026-05-29). Handler emits: popiaObligationsCount, popiaObligationsPartial,
+// dsarReceivedLast7d, dsarClosedLast7d, consentWithdrawnLast7d,
+// processingPurposeApprovedLast7d, processingPurposeRejectedLast7d,
+// crossBorderTransferApprovedLast7d, breachNotificationDispatchedLast7d,
+// popiaCompromiseSuspectedLast7d, informationRegulatorInquiryLast7d,
+// priorSnapshotsLast30d, runTrigger.
+// Original idealised fields now optional for backward compat.
+//
+export const popiaControlsSnapshotPayloadSchema = z
+  .object({
+    // Handler-emitted fields (authoritative)
+    popiaObligationsCount: z.number().int().nonnegative().optional(),
+    popiaObligationsPartial: z.number().int().nonnegative().optional(),
+    dsarReceivedLast7d: z.number().int().nonnegative().optional(),
+    dsarClosedLast7d: z.number().int().nonnegative().optional(),
+    consentWithdrawnLast7d: z.number().int().nonnegative().optional(),
+    processingPurposeApprovedLast7d: z.number().int().nonnegative().optional(),
+    processingPurposeRejectedLast7d: z.number().int().nonnegative().optional(),
+    crossBorderTransferApprovedLast7d: z.number().int().nonnegative().optional(),
+    breachNotificationDispatchedLast7d: z.number().int().nonnegative().optional(),
+    popiaCompromiseSuspectedLast7d: z.number().int().nonnegative().optional(),
+    informationRegulatorInquiryLast7d: z.number().int().nonnegative().optional(),
+    priorSnapshotsLast30d: z.number().int().nonnegative().optional(),
+    runTrigger: z.string().optional(),
+    // Original idealised fields (optional, backward compat)
+    snapshotId: z.string().min(1).optional(),
+    asOf: z.string().min(1).optional(),
+    dataMappingComplete: z.boolean().optional(),
+    consentRegisterCount: z.number().int().nonnegative().optional(),
+    openBreachCount: z.number().int().nonnegative().optional(),
+    openDSARCount: z.number().int().nonnegative().optional(),
+    overallStatus: z.enum(["green", "amber", "red"]).optional(),
+  })
+  .passthrough();
 
 export type POPIAControlsSnapshotPayload = z.infer<typeof popiaControlsSnapshotPayloadSchema>;
 
