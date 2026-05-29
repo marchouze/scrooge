@@ -93,6 +93,19 @@ export interface NsfrInputs {
    */
   interbankLiabilitiesZAR: number;
 
+  /**
+   * ZAR financial-corporate funding with residual maturity < 6 months.
+   * ASF factor is date-dependent per the SARB D1/2023 §3 phase-out schedule:
+   *   Before 2023-06-01: 50% (pre-directive BCBS 295 default)
+   *   2023-06-01 – 2023-12-31: 30%
+   *   2024-01-01 – 2024-12-31: 20%
+   *   2025-01-01 – 2027-12-31: 10%
+   *   From 2028-01-01: 0%
+   *
+   * // D1/2023 §3 + ORG-PR-NSFR-004
+   */
+  zarFinCorpShortTermFundingZAR: number;
+
   // -------------------------------------------------------------------------
   // Assets (funding uses) — RSF denominator.
   // -------------------------------------------------------------------------
@@ -137,6 +150,12 @@ export interface NsfrComponents {
   readonly asfInstitutional: number;
   /** ASF from interbank liabilities (interbankLiabilitiesZAR × 0.00 = 0). */
   readonly asfInterbank: number;
+  /**
+   * ASF from ZAR financial-corporate short-term funding
+   * (zarFinCorpShortTermFundingZAR × zarFinCorpAsfFactor(periodEnd)).
+   * D1/2023 §3 + ORG-PR-NSFR-004
+   */
+  readonly asfZarFinCorpShortTerm: number;
   /** RSF from Level-1 HQLA (hqlaLevel1ZAR × 0.05). */
   readonly rsfHqla: number;
   /** RSF from corporate loans (corporateLoansZAR × 0.85). */
@@ -204,6 +223,39 @@ const ASF_FACTORS = {
   interbank: 0.0,
 } as const;
 
+// ---------------------------------------------------------------------------
+// Phase-out schedule — ZAR financial-corporate funding (< 6 months)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the date-dependent ASF factor for ZAR financial-corporate funding
+ * with residual maturity < 6 months, per the SARB D1/2023 phase-out schedule.
+ *
+ * Schedule (D1/2023 §3):
+ *   Before 2023-06-01:          50%  (pre-directive BCBS 295 default)
+ *   2023-06-01 – 2023-12-31:    30%
+ *   2024-01-01 – 2024-12-31:    20%
+ *   2025-01-01 – 2027-12-31:    10%
+ *   From 2028-01-01:             0%
+ *
+ * // D1/2023 §3 + ORG-PR-NSFR-004
+ *
+ * @param asOf - The reporting/period-end date.
+ * @returns ASF factor as a decimal (e.g. 0.30 = 30%).
+ */
+export function zarFinCorpAsfFactor(asOf: Date): number {
+  // D1/2023 §3 + ORG-PR-NSFR-004
+  const d = asOf;
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth() + 1; // 1-based month
+
+  if (y > 2027) return 0.0; // from 2028-01-01
+  if (y >= 2025) return 0.1; // 2025-01-01 – 2027-12-31
+  if (y === 2024) return 0.2; // 2024-01-01 – 2024-12-31
+  if (y === 2023 && m >= 6) return 0.3; // 2023-06-01 – 2023-12-31
+  return 0.5; // before 2023-06-01 (pre-directive BCBS 295 default)
+}
+
 /**
  * Required Stable Funding (RSF) factors per BCBS 295 Table 4.
  *
@@ -259,6 +311,7 @@ export async function generateNsfrProjection(
     ["retailDepositsZAR", inputs.retailDepositsZAR],
     ["institutionalDepositsZAR", inputs.institutionalDepositsZAR],
     ["interbankLiabilitiesZAR", inputs.interbankLiabilitiesZAR],
+    ["zarFinCorpShortTermFundingZAR", inputs.zarFinCorpShortTermFundingZAR],
     ["hqlaLevel1ZAR", inputs.hqlaLevel1ZAR],
     ["corporateLoansZAR", inputs.corporateLoansZAR],
     ["equityBookZAR", inputs.equityBookZAR],
@@ -279,7 +332,13 @@ export async function generateNsfrProjection(
   const asfInstitutional = inputs.institutionalDepositsZAR * ASF_FACTORS.institutional;
   const asfInterbank = inputs.interbankLiabilitiesZAR * ASF_FACTORS.interbank; // always 0
 
-  const availableStableFundingZAR = asfRetail + asfInstitutional + asfInterbank;
+  // ZAR financial-corporate short-term funding — date-dependent ASF factor.
+  // D1/2023 §3 + ORG-PR-NSFR-004
+  const finCorpFactor = zarFinCorpAsfFactor(new Date(inputs.periodEnd));
+  const asfZarFinCorpShortTerm = inputs.zarFinCorpShortTermFundingZAR * finCorpFactor;
+
+  const availableStableFundingZAR =
+    asfRetail + asfInstitutional + asfInterbank + asfZarFinCorpShortTerm;
 
   // -------------------------------------------------------------------------
   // RSF (denominator).
@@ -342,6 +401,7 @@ export async function generateNsfrProjection(
       asfRetail,
       asfInstitutional,
       asfInterbank,
+      asfZarFinCorpShortTerm,
       rsfHqla,
       rsfLoans,
       rsfEquity,
