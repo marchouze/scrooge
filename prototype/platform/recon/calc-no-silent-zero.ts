@@ -31,6 +31,7 @@ const CALC_FILES = [
   "prototype/platform/liquidity/nsfr.ts",
   "prototype/platform/markets/products/rwa-delta.ts",
   "prototype/platform/market-risk/var-engine.ts",
+  "prototype/platform/market-risk/cva-engine.ts",
 ];
 
 /**
