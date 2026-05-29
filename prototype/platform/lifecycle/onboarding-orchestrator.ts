@@ -45,6 +45,12 @@ import { CUSTOMER_EVENT_TYPES } from "@domains/customer/types";
 // fold below maps them to their respective phases via eventToPhaseCandidate.
 import type { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
+// CS 2/2018 §4 + ORG-ODP-COND-002 — ODP categorisation hook at fais-categorised gate.
+import {
+  type OdpCategoriationDecision,
+  type OdpPartyCategory,
+  makeOdpCategoriationDecision,
+} from "@platform/compliance/odp-categorisation";
 
 // ---------------------------------------------------------------------------
 // Post-activation + eligibility event types not yet in CUSTOMER_EVENT_TYPES.
@@ -142,6 +148,17 @@ export interface CounterpartyOnboardingState {
   readonly isTerminal: boolean;
   /** Phase-advance history: [{phase, asOf}] in chronological order. */
   readonly history: ReadonlyArray<{ readonly phase: OnboardingPhase; readonly asOf: string }>;
+  /**
+   * ODP categorisation decision derived at the fais-categorised gate.
+   * Present once `CounterpartyFaisClassified` has been folded.
+   * CS 2/2018 §4 + ORG-ODP-COND-002.
+   */
+  readonly odpDecision?: OdpCategoriationDecision;
+  /**
+   * ODP category shorthand — `undefined` until fais-categorised gate.
+   * CS 2/2018 §4 + ORG-ODP-COND-002.
+   */
+  readonly odpCategory?: OdpPartyCategory;
 }
 
 // ---------------------------------------------------------------------------
@@ -170,6 +187,11 @@ interface MutableState {
   lastAdvancedAt: string;
   eventCount: number;
   history: Array<{ phase: OnboardingPhase; asOf: string }>;
+  /**
+   * ODP categorisation decision — set once CounterpartyFaisClassified is
+   * folded. CS 2/2018 §4 + ORG-ODP-COND-002.
+   */
+  odpDecision?: OdpCategoriationDecision;
 }
 
 /**
@@ -337,6 +359,29 @@ export function derivePhaseFromEvents(
 
     state.eventCount += 1;
 
+    // CS 2/2018 §4 + ORG-ODP-COND-002 — derive ODP category at the
+    // fais-categorised gate. CounterpartyFaisClassified carries faisCategory;
+    // we run determineOdpCategory inline so the fold output carries the ODP
+    // decision without additional I/O.
+    if (ev.type === "CounterpartyFaisClassified" && state.odpDecision === undefined) {
+      const faisPayload = ev.payload as {
+        faisCategory?: string;
+        electedCounterparty?: boolean;
+        recategorisedToClient?: boolean;
+        entityType?: string;
+      };
+      state.odpDecision = makeOdpCategoriationDecision(
+        counterpartyId,
+        {
+          faisCategory: faisPayload.faisCategory ?? "",
+          entityType: faisPayload.entityType,
+          electedCounterparty: faisPayload.electedCounterparty,
+          recategorisedToClient: faisPayload.recategorisedToClient,
+        },
+        ev.as_of,
+      );
+    }
+
     const candidate = eventToPhaseCandidate(ev.type);
 
     if (candidate === null) {
@@ -378,6 +423,12 @@ export function derivePhaseFromEvents(
       eventCount: s.eventCount,
       isTerminal: phase === "activated" || phase === "offboarded",
       history: [...s.history],
+      // CS 2/2018 §4 + ORG-ODP-COND-002 — ODP decision present once
+      // CounterpartyFaisClassified has been folded; undefined before that gate.
+      ...(s.odpDecision !== undefined && {
+        odpDecision: s.odpDecision,
+        odpCategory: s.odpDecision.category,
+      }),
     });
   }
   return result;
