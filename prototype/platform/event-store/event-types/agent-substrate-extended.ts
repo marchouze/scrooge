@@ -439,9 +439,7 @@ export const roleResearchQueueSnapshotPayloadSchema = z
   .object({
     // Handler-emitted fields (authoritative)
     draftPersonaCount: z.number().int().nonnegative().optional(),
-    draftPersonas: z
-      .array(z.object({ name: z.string(), latestVersion: z.string() }))
-      .optional(),
+    draftPersonas: z.array(z.object({ name: z.string(), latestVersion: z.string() })).optional(),
     substrateGapHireCount: z.number().int().nonnegative().optional(),
     substrateGapHires: z.array(z.object({ persona: z.string() })).optional(),
     pendingHireBriefCount: z.number().int().nonnegative().optional(),

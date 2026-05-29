@@ -18,6 +18,13 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  riskRunCompletedPayloadSchema,
+  roleResearchQueueSnapshotPayloadSchema,
+} from "../event-store/event-types/agent-substrate-extended";
+import { popiaControlsSnapshotPayloadSchema } from "../event-store/event-types/aml-popia-extended";
+import { auditCommitteePackPreppedPayloadSchema } from "../event-store/event-types/governance-extended";
+import { financialPositionSnapshotPayloadSchema } from "../event-store/event-types/ifrs-accounting-extended";
+import {
   almReadinessSnapshotPayloadSchema,
   cyberResilienceSnapshotPayloadSchema,
   legalReadinessSnapshotPayloadSchema,
@@ -26,13 +33,6 @@ import {
   paymentsReadinessSnapshotPayloadSchema,
   taxReadinessSnapshotPayloadSchema,
 } from "../event-store/event-types/risk-treasury-extended";
-import {
-  riskRunCompletedPayloadSchema,
-  roleResearchQueueSnapshotPayloadSchema,
-} from "../event-store/event-types/agent-substrate-extended";
-import { auditCommitteePackPreppedPayloadSchema } from "../event-store/event-types/governance-extended";
-import { popiaControlsSnapshotPayloadSchema } from "../event-store/event-types/aml-popia-extended";
-import { financialPositionSnapshotPayloadSchema } from "../event-store/event-types/ifrs-accounting-extended";
 
 // ---------------------------------------------------------------------------
 // Helpers
