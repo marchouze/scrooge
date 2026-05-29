@@ -11,17 +11,23 @@
 //   5. Zero RSF → NSFR = Infinity (graceful divide-by-zero).
 //   6. Negative input rejected with NsfrGeneratorError.
 //   7. NSFR ratio = 1.0 → status "at-minimum".
+//   8. zarFinCorpAsfFactor phase-out schedule (D1/2023 §3 + ORG-PR-NSFR-004).
 //
 // Authority:
 //   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10)
 //   BCBS 295; Regulations Relating to Banks Reg 26A; BA-300.
+//   D1/2023 §3; ORG-PR-NSFR-004.
 //
 // Author: Ravi (ALM / treasury engineer, engineering)
 
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { NsfrGeneratorError, generateNsfrProjection } from "../platform/reporting/ba-350-nsfr";
+import {
+  NsfrGeneratorError,
+  generateNsfrProjection,
+  zarFinCorpAsfFactor,
+} from "../platform/reporting/ba-350-nsfr";
 
 const PERIOD_END = "2026-05-31T23:59:59.999Z";
 
@@ -42,6 +48,7 @@ describe("BA-350 NSFR — well-funded scenario", () => {
       retailDepositsZAR: 95_000_000 * 100, // R95m = 9,500,000,000 cents
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 90_000_000 * 100, // R90m
       corporateLoansZAR: 0,
       equityBookZAR: 50_000_000 * 100, // R50m
@@ -111,6 +118,7 @@ describe("BA-350 NSFR — breached scenario", () => {
       institutionalDepositsZAR: 0,
       // Interbank at 0% ASF factor.
       interbankLiabilitiesZAR: 500_000_000,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 10_000,
       corporateLoansZAR: 50_000,
       equityBookZAR: 20_000,
@@ -132,6 +140,7 @@ describe("BA-350 NSFR — breached scenario", () => {
       retailDepositsZAR: 0,
       institutionalDepositsZAR: 200_000,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 0,
       corporateLoansZAR: 0,
       equityBookZAR: 0,
@@ -159,6 +168,7 @@ describe("BA-350 NSFR — event emission", () => {
       retailDepositsZAR: 200_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 50_000,
       corporateLoansZAR: 0,
       equityBookZAR: 10_000,
@@ -190,6 +200,7 @@ describe("BA-350 NSFR — event emission", () => {
       retailDepositsZAR: 500_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 10_000,
       corporateLoansZAR: 0,
       equityBookZAR: 0,
@@ -210,6 +221,7 @@ describe("BA-350 NSFR — event emission", () => {
       retailDepositsZAR: 0,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 100_000,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 10_000,
       corporateLoansZAR: 50_000,
       equityBookZAR: 20_000,
@@ -236,6 +248,7 @@ describe("BA-350 NSFR — edge cases", () => {
       retailDepositsZAR: 100_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 0,
       corporateLoansZAR: 0,
       equityBookZAR: 0,
@@ -256,6 +269,7 @@ describe("BA-350 NSFR — edge cases", () => {
         retailDepositsZAR: -100,
         institutionalDepositsZAR: 0,
         interbankLiabilitiesZAR: 0,
+        zarFinCorpShortTermFundingZAR: 0,
         hqlaLevel1ZAR: 0,
         corporateLoansZAR: 0,
         equityBookZAR: 0,
@@ -272,6 +286,7 @@ describe("BA-350 NSFR — edge cases", () => {
       retailDepositsZAR: 1_000_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 0,
       corporateLoansZAR: 0,
       equityBookZAR: 0,
@@ -290,6 +305,7 @@ describe("BA-350 NSFR — edge cases", () => {
       retailDepositsZAR: 1_000_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 0,
       corporateLoansZAR: 100_000,
       equityBookZAR: 0,
@@ -311,6 +327,7 @@ describe("BA-350 NSFR — edge cases", () => {
       retailDepositsZAR: 85_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 0,
       corporateLoansZAR: 95_000,
       equityBookZAR: 0,
@@ -338,6 +355,7 @@ describe("BA-350 NSFR — edge cases", () => {
       retailDepositsZAR: 100_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 5_000,
       corporateLoansZAR: 0,
       equityBookZAR: 0,
@@ -349,6 +367,7 @@ describe("BA-350 NSFR — edge cases", () => {
       retailDepositsZAR: 200_000,
       institutionalDepositsZAR: 0,
       interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 10_000,
       corporateLoansZAR: 0,
       equityBookZAR: 0,
@@ -360,5 +379,148 @@ describe("BA-350 NSFR — edge cases", () => {
       count++;
     }
     expect(count).toBe(2);
+  });
+});
+
+// =====================================================================
+// 5. D1/2023 §3 — ZAR financial-corporate ASF phase-out schedule.
+//    ORG-PR-NSFR-004
+// =====================================================================
+
+describe("zarFinCorpAsfFactor — D1/2023 §3 phase-out schedule (ORG-PR-NSFR-004)", () => {
+  it("before 2023-06-01 → 50% (pre-directive BCBS 295 default)", () => {
+    expect(zarFinCorpAsfFactor(new Date("2023-05-31"))).toBe(0.5);
+    expect(zarFinCorpAsfFactor(new Date("2020-01-01"))).toBe(0.5);
+  });
+
+  it("2023-06-15 → 30%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2023-06-15"))).toBe(0.3);
+  });
+
+  it("2023-12-31 (last day of 30% window) → 30%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2023-12-31"))).toBe(0.3);
+  });
+
+  it("2024-03-01 → 20%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2024-03-01"))).toBe(0.2);
+  });
+
+  it("2024-12-31 (last day of 20% window) → 20%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2024-12-31"))).toBe(0.2);
+  });
+
+  it("2025-01-01 (first day of 10% window) → 10%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2025-01-01"))).toBe(0.1);
+  });
+
+  it("2026-01-01 → 10%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2026-01-01"))).toBe(0.1);
+  });
+
+  it("2027-12-31 (last day of 10% window) → 10%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2027-12-31"))).toBe(0.1);
+  });
+
+  it("2028-02-01 → 0%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2028-02-01"))).toBe(0.0);
+  });
+
+  it("2030-01-01 (well after phase-out) → 0%", () => {
+    expect(zarFinCorpAsfFactor(new Date("2030-01-01"))).toBe(0.0);
+  });
+});
+
+describe("BA-350 NSFR — zarFinCorpShortTermFundingZAR wired correctly (ORG-PR-NSFR-004)", () => {
+  it("100k ZAR fin-corp short-term funding as of 2023-06-15 → ASF = 30,000", async () => {
+    // D1/2023 §3 + ORG-PR-NSFR-004: factor = 30% on 2023-06-15
+    const store = makeStore();
+    const result = await generateNsfrProjection(store, {
+      periodEnd: "2023-06-15T23:59:59.999Z",
+      retailDepositsZAR: 0,
+      institutionalDepositsZAR: 0,
+      interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 100_000,
+      hqlaLevel1ZAR: 0,
+      corporateLoansZAR: 0,
+      equityBookZAR: 0,
+      otcDerivativesNetZAR: 0,
+    });
+    expect(result.components.asfZarFinCorpShortTerm).toBeCloseTo(30_000, 5);
+    expect(result.availableStableFundingZAR).toBeCloseTo(30_000, 5);
+  });
+
+  it("100k ZAR fin-corp short-term funding as of 2024-03-01 → ASF = 20,000", async () => {
+    // D1/2023 §3 + ORG-PR-NSFR-004: factor = 20% on 2024-03-01
+    const store = makeStore();
+    const result = await generateNsfrProjection(store, {
+      periodEnd: "2024-03-01T23:59:59.999Z",
+      retailDepositsZAR: 0,
+      institutionalDepositsZAR: 0,
+      interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 100_000,
+      hqlaLevel1ZAR: 0,
+      corporateLoansZAR: 0,
+      equityBookZAR: 0,
+      otcDerivativesNetZAR: 0,
+    });
+    expect(result.components.asfZarFinCorpShortTerm).toBeCloseTo(20_000, 5);
+    expect(result.availableStableFundingZAR).toBeCloseTo(20_000, 5);
+  });
+
+  it("100k ZAR fin-corp short-term funding as of 2026-01-01 → ASF = 10,000", async () => {
+    // D1/2023 §3 + ORG-PR-NSFR-004: factor = 10% on 2026-01-01
+    const store = makeStore();
+    const result = await generateNsfrProjection(store, {
+      periodEnd: "2026-01-01T23:59:59.999Z",
+      retailDepositsZAR: 0,
+      institutionalDepositsZAR: 0,
+      interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 100_000,
+      hqlaLevel1ZAR: 0,
+      corporateLoansZAR: 0,
+      equityBookZAR: 0,
+      otcDerivativesNetZAR: 0,
+    });
+    expect(result.components.asfZarFinCorpShortTerm).toBeCloseTo(10_000, 5);
+    expect(result.availableStableFundingZAR).toBeCloseTo(10_000, 5);
+  });
+
+  it("100k ZAR fin-corp short-term funding as of 2028-02-01 → ASF = 0", async () => {
+    // D1/2023 §3 + ORG-PR-NSFR-004: factor = 0% from 2028-01-01
+    const store = makeStore();
+    const result = await generateNsfrProjection(store, {
+      periodEnd: "2028-02-01T23:59:59.999Z",
+      retailDepositsZAR: 0,
+      institutionalDepositsZAR: 0,
+      interbankLiabilitiesZAR: 0,
+      zarFinCorpShortTermFundingZAR: 100_000,
+      hqlaLevel1ZAR: 0,
+      corporateLoansZAR: 0,
+      equityBookZAR: 0,
+      otcDerivativesNetZAR: 0,
+    });
+    expect(result.components.asfZarFinCorpShortTerm).toBe(0);
+    expect(result.availableStableFundingZAR).toBe(0);
+  });
+
+  it("components sum still holds with zarFinCorpShortTermFundingZAR non-zero", async () => {
+    const store = makeStore();
+    const result = await generateNsfrProjection(store, {
+      periodEnd: "2024-06-30T23:59:59.999Z",
+      retailDepositsZAR: 50_000,
+      institutionalDepositsZAR: 30_000,
+      interbankLiabilitiesZAR: 10_000,
+      zarFinCorpShortTermFundingZAR: 40_000,
+      hqlaLevel1ZAR: 20_000,
+      corporateLoansZAR: 10_000,
+      equityBookZAR: 5_000,
+      otcDerivativesNetZAR: 2_000,
+    });
+    const asfSum =
+      result.components.asfRetail +
+      result.components.asfInstitutional +
+      result.components.asfInterbank +
+      result.components.asfZarFinCorpShortTerm;
+    expect(asfSum).toBeCloseTo(result.availableStableFundingZAR, 5);
   });
 });
