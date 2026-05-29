@@ -10,6 +10,9 @@ import raviFtpAttribution from "../ravi-ftp-attribution";
 import raviFtpCurvePublish from "../ravi-ftp-curve-publish";
 import raviGoalLoop from "../ravi-goal-loop";
 import raviIntradayStress from "../ravi-intraday-stress";
+import raviJibarFixingIngest from "../ravi-jibar-fixing-ingest";
+import raviJibarSwapCurveIngest from "../ravi-jibar-swap-curve-ingest";
+import raviRepoPrimeIngest from "../ravi-repo-rate-ingest";
 
 export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:alm-readiness": raviAlmReadiness,
@@ -19,4 +22,7 @@ export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:goal-loop": raviGoalLoop,
   "ravi:event-triage": raviEventTriage,
   "ravi:intraday-stress": raviIntradayStress,
+  "ravi:jibar-fixing-ingest": raviJibarFixingIngest,
+  "ravi:jibar-swap-curve-ingest": raviJibarSwapCurveIngest,
+  "ravi:repo-rate-ingest": raviRepoPrimeIngest,
 };

@@ -121,8 +121,9 @@ export interface IrsRateSource {
 
 /**
  * The standard curve nodes in ascending tenor-day order.
+ * Exported for use in `make-jibar-rate-source.ts` as the static fallback.
  */
-const CURVE_NODES: Array<{ days: number; df: number }> = Object.entries(JIBAR_TENOR_DAYS)
+export const CURVE_NODES: Array<{ days: number; df: number }> = Object.entries(JIBAR_TENOR_DAYS)
   .map(([tenor, days]) => ({
     days,
     df:
@@ -133,17 +134,24 @@ const CURVE_NODES: Array<{ days: number; df: number }> = Object.entries(JIBAR_TE
   .sort((a, b) => a.days - b.days);
 
 /**
- * Linear-in-log-discount interpolation between two curve nodes.
+ * Linear-in-log-discount interpolation over an arbitrary node array.
  *
  * log(P(t)) = log(P(t0)) + (t - t0)/(t1 - t0) × (log(P(t1)) - log(P(t0)))
  *
  * This ensures discount factors are always positive and monotonically
  * decreasing with tenor (no negative rates artifact from naive linear interp).
+ *
+ * Exported so that `MarketDataStoreJibarRateSource` (in
+ * `make-jibar-rate-source.ts`) can share the same interpolation logic
+ * without duplicating it.
  */
-function interpolateDiscountFactor(days: number): number {
+export function interpolateDiscountFactorFromNodes(
+  nodes: ReadonlyArray<{ days: number; df: number }>,
+  days: number,
+): number {
   // Before first node — clamp to 3M.
   if (days <= 0) return 1.0;
-  const first = CURVE_NODES[0];
+  const first = nodes[0];
   if (first && days <= first.days) {
     // Linear between 0 (df=1) and 3M node.
     const t = days / first.days;
@@ -151,13 +159,13 @@ function interpolateDiscountFactor(days: number): number {
   }
 
   // After last node — flat extrapolation (conservative build-phase only).
-  const last = CURVE_NODES[CURVE_NODES.length - 1];
+  const last = nodes[nodes.length - 1];
   if (last && days >= last.days) return last.df;
 
   // Find bracketing nodes.
-  for (let i = 0; i < CURVE_NODES.length - 1; i++) {
-    const n0 = CURVE_NODES[i];
-    const n1 = CURVE_NODES[i + 1];
+  for (let i = 0; i < nodes.length - 1; i++) {
+    const n0 = nodes[i];
+    const n1 = nodes[i + 1];
     if (!n0 || !n1) continue;
     if (days >= n0.days && days <= n1.days) {
       const t = (days - n0.days) / (n1.days - n0.days);
@@ -167,6 +175,13 @@ function interpolateDiscountFactor(days: number): number {
 
   // Fallback — should not reach.
   return last?.df ?? 0.5;
+}
+
+/**
+ * Convenience wrapper: interpolate using the static CURVE_NODES.
+ */
+function interpolateDiscountFactor(days: number): number {
+  return interpolateDiscountFactorFromNodes(CURVE_NODES, days);
 }
 
 // ---------------------------------------------------------------------------

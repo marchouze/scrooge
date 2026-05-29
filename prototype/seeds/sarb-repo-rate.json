@@ -1,0 +1,19 @@
+{
+  "_comment": "Build-phase SARB repo rate and prime rate decisions — MPC decisions effective from 2026-01-01. SARB held at 8.25% repo until the MPC decision on 2026-03-26, which cut 25bp to 8.00%. Prime = repo + 3.5% per South African banking convention. Used by the build-phase SARB repo rate ingester (platform/market-data/sarb-repo-prime-ingester.ts) to seed rate decision ticks into MarketDataStore for IRS pricing and ALM discount curve construction.",
+  "_authority": "D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26); D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07); Team/Ravi.md (rate conventions).",
+  "_provenance": "Build-phase fixture variant. Production SARB MPC decision ingestion (live SARB published rates) is sequenced post-licence. Ticks carry provenance=production in MarketDataStore (SARB is a regulator-grade source) and fixingVariant=build-phase-fixture in payload.",
+  "_rate_regime": "2026-01-01: Repo 8.25%, Prime 11.75% (SARB held rate from prior MPC). 2026-03-26: Repo 8.00%, Prime 11.50% (MPC cut 25bp). These are the only two MPC decisions in the fixture window.",
+  "source": "SARB",
+  "decisions": [
+    {
+      "effectiveDate": "2026-01-01",
+      "repoRate": "0.0825",
+      "primeRate": "0.1175"
+    },
+    {
+      "effectiveDate": "2026-03-26",
+      "repoRate": "0.0800",
+      "primeRate": "0.1150"
+    }
+  ]
+}

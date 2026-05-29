@@ -39,6 +39,16 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "55 5 * * *",
   }),
+  // Ravi: JIBAR 3M fixing ingest — build-phase fixture, on-request.
+  // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8; D-MARKETS-SCHEMA-FOUNDATION.
+  entry("Ravi", "jibar-fixing-ingest", "on-request"),
+  // Ravi: JIBAR swap curve ingest — build-phase fixture, on-request.
+  // Closes GAP-IRS-1: wires MarketDataStore swap-curve ticks into IrsRateSource.
+  // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8; D-MARKETS-SCHEMA-FOUNDATION.
+  entry("Ravi", "jibar-swap-curve-ingest", "on-request"),
+  // Ravi: SARB repo + prime rate ingest — build-phase fixture, on-request.
+  // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8; D-MARKETS-SCHEMA-FOUNDATION.
+  entry("Ravi", "repo-rate-ingest", "on-request"),
   // ravi:goal-loop — cohort-3 (on-request only).
   entry("Ravi", "goal-loop", "on-request"),
   entry("Ravi", "event-triage", "event-driven", {
