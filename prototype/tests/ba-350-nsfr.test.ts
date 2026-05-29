@@ -81,6 +81,7 @@ describe("BA-350 NSFR — well-funded scenario", () => {
       retailDepositsZAR: 100_000,
       institutionalDepositsZAR: 50_000,
       interbankLiabilitiesZAR: 20_000,
+      zarFinCorpShortTermFundingZAR: 0,
       hqlaLevel1ZAR: 80_000,
       corporateLoansZAR: 30_000,
       equityBookZAR: 10_000,
@@ -91,7 +92,8 @@ describe("BA-350 NSFR — well-funded scenario", () => {
     const asfSum =
       result.components.asfRetail +
       result.components.asfInstitutional +
-      result.components.asfInterbank;
+      result.components.asfInterbank +
+      result.components.asfZarFinCorpShortTerm;
     expect(asfSum).toBeCloseTo(result.availableStableFundingZAR, 5);
 
     // RSF components should sum to total RSF.

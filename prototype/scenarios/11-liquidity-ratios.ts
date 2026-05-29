@@ -261,6 +261,7 @@ async function main(): Promise<void> {
     retailDepositsZAR: RETAIL_DEPOSITS_MINOR,
     institutionalDepositsZAR: 0,
     interbankLiabilitiesZAR: 0,
+    zarFinCorpShortTermFundingZAR: 0,
     hqlaLevel1ZAR: HQLA_L1_MINOR,
     corporateLoansZAR: 0,
     equityBookZAR: EQUITY_BOOK_MINOR,
