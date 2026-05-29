@@ -44,6 +44,7 @@ import {
   kycSanctionsPEPScreenedPayloadSchema,
   kycUBOResolvedPayloadSchema,
   lawfulProcessingRegisteredPayloadSchema,
+  odpCounterpartyCategorisedPayloadSchema,
 } from "../event-types/kyc";
 import { RETENTION_BANKING_5Y, RETENTION_FIC_5Y, RETENTION_GOVERNANCE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
@@ -272,5 +273,23 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: counterpartyDeclinedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FAIS-ACT-37-2002", "FAIS-GCC-S2"],
+  },
+  // ---------------------------------------------------------------------------
+  // ODP client / counterparty categorisation — CS 2/2018 §4 + ORG-ODP-COND-002
+  // Emitted at the fais-categorised gate when determineOdpCategory() runs.
+  // Distinct from CounterpartyCategorised (FAIS EC/PC/RC); this is the ODP
+  // binary classification required before entering any OTC derivative.
+  // Retention: GOVERNANCE_7Y — FAIS s.18 record-keeping obligation.
+  // ---------------------------------------------------------------------------
+  {
+    type: "OdpCounterpartyCategorised",
+    class: "audit",
+    issuer: "Mira",
+    subscribers: ["Mira", "Niko", "Kai", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: odpCounterpartyCategorisedPayloadSchema,
+    source: "platform/event-store/event-types/kyc.ts",
+    citationsHint: ["CS-2-2018-S4", "ORG-ODP-COND-002", "FAIS-ACT-37-2002"],
   },
 ];

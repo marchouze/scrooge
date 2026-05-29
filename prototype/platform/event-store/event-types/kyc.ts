@@ -733,6 +733,50 @@ export function makeCounterpartyDeclined(args: {
 }
 
 // ---------------------------------------------------------------------------
+// OdpCounterpartyCategorised
+// Emitted after determineOdpCategory() runs at the fais-categorised gate.
+// Records the ODP client/counterparty classification per CS 2/2018 §4.
+// Distinct from CounterpartyCategorised (FAIS GCC §2(1) classification):
+//   CounterpartyCategorised → FAIS EC/PC/RC category
+//   OdpCounterpartyCategorised → ODP client | counterparty binary
+// ---------------------------------------------------------------------------
+
+export const odpCounterpartyCategorisedPayloadSchema = z.object({
+  partyId: z.string().min(1),
+  /** ODP binary category per CS 2/2018 §4. */
+  category: z.enum(["client", "counterparty"]),
+  /** Human-readable reason citing the applicable rule. */
+  reason: z.string().min(1),
+  /** True when category arose from an explicit written election per CS 2/2018 §4(3). */
+  electedUpCategorisation: z.boolean(),
+  /** ISO 8601 timestamp of determination. */
+  asOf: z.string().min(1),
+});
+
+export type OdpCounterpartyCategorisedPayload = z.infer<
+  typeof odpCounterpartyCategorisedPayloadSchema
+>;
+
+export function makeOdpCounterpartyCategorised(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OdpCounterpartyCategorisedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OdpCounterpartyCategorised",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: odpCounterpartyCategorisedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Typed event types list — add every new type name here for the registry.
 // ---------------------------------------------------------------------------
 
@@ -754,6 +798,8 @@ export const KYC_TYPED_EVENT_TYPES = [
   "KYCRatingRevised",
   "CounterpartyCategorised",
   "CounterpartyDeclined",
+  // CS 2/2018 §4 + ORG-ODP-COND-002 — ODP client/counterparty binary category.
+  "OdpCounterpartyCategorised",
 ] as const;
 
 export type KYCEventType = (typeof KYC_TYPED_EVENT_TYPES)[number];
