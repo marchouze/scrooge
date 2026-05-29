@@ -12,13 +12,18 @@
 // Ownership follows the CLAUDE.md decision-authority routing table:
 //   - LCR / NSFR / capital-calibration baselines  → CFO (Chief Financial Officer)
 //   - capital + leverage appetite bands           → CRO (Chief Risk Officer)
+//   - per-instrument-class RWA weights            → CRO (Chief Risk Officer)
 // Nadia (Model validator) validates calibration changes.
 //
-// NOTE: extensive standardised-approach lookup *tables* (RWA risk weights in
-// platform/risk/rwa-engine.ts, BIC OPE25 thresholds) are exhaustively cited
-// inline against BCBS CRE20/OPE25 and are transparent regulatory tables, not
-// buried magic numbers — they are tracked as a documented follow-on and are
-// out of scope for the coverage gate.
+// NOTE: the flat per-instrument-class RWA weight table that the per-product
+// marginal-RWA estimator (platform/markets/products/rwa-delta.ts) consumes now
+// lives here (category "rwa-instrument-weight"), replacing the buried literals
+// it previously read from capital-funding-stub.json. The bucketed standardised-
+// approach risk-weight *switch* in platform/risk/rwa-engine.ts and the BIC
+// OPE25 thresholds remain in-engine: they are exhaustively cited inline against
+// BCBS CRE20/OPE25 clause-by-clause, are not flat config tables, and fail loudly
+// (RwaEngineError) rather than defaulting — flattening them into this registry
+// would shed the clause citations and create a drift surface.
 //
 // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
 // Author: Atlas (Core banking platform architect, engineering).
@@ -36,7 +41,8 @@ export type ConstantCategory =
   | "nsfr-threshold"
   | "capital-baseline"
   | "capital-threshold"
-  | "leverage-threshold";
+  | "leverage-threshold"
+  | "rwa-instrument-weight";
 
 export interface FinancialConstant {
   /** Stable dotted key. Calc files address constants by this key. */
@@ -517,6 +523,61 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     owningRole: "Chief Risk Officer",
     citation: "D-RAS",
   },
+
+  // ── Per-instrument-class market-RWA weights (CRE20) — CRO ──────────────────
+  // Flat instrument-class → market-risk weight table read by the per-product
+  // marginal-RWA estimator (markets/products/rwa-delta.ts). Migrated out of
+  // capital-funding-stub.json so the weights are owned + cited, not buried.
+  {
+    key: "rwa.instrument-weight.OTC-IRD",
+    value: 0.5,
+    unit: "ratio",
+    category: "rwa-instrument-weight",
+    label: "RWA weight — OTC interest-rate derivative",
+    description: "Market-RWA weight for OTC interest-rate derivative positions.",
+    owningRole: "Chief Risk Officer",
+    citation: "Reg38-CRE20",
+  },
+  {
+    key: "rwa.instrument-weight.FX-spot",
+    value: 0.2,
+    unit: "ratio",
+    category: "rwa-instrument-weight",
+    label: "RWA weight — FX spot",
+    description: "Market-RWA weight for FX spot positions.",
+    owningRole: "Chief Risk Officer",
+    citation: "Reg38-CRE20",
+  },
+  {
+    key: "rwa.instrument-weight.FX-forward",
+    value: 0.2,
+    unit: "ratio",
+    category: "rwa-instrument-weight",
+    label: "RWA weight — FX forward",
+    description: "Market-RWA weight for FX forward positions.",
+    owningRole: "Chief Risk Officer",
+    citation: "Reg38-CRE20",
+  },
+  {
+    key: "rwa.instrument-weight.JSE-EQUITY",
+    value: 0.35,
+    unit: "ratio",
+    category: "rwa-instrument-weight",
+    label: "RWA weight — JSE-listed equity",
+    description: "Market-RWA weight for JSE-listed equity positions.",
+    owningRole: "Chief Risk Officer",
+    citation: "Reg38-CRE20",
+  },
+  {
+    key: "rwa.instrument-weight.ZA-GOV-BOND",
+    value: 0.0,
+    unit: "ratio",
+    category: "rwa-instrument-weight",
+    label: "RWA weight — ZA government bond",
+    description: "Market-RWA weight for South African government bond positions (0% RW sovereign).",
+    owningRole: "Chief Risk Officer",
+    citation: "Reg38-CRE20",
+  },
 ];
 
 const BY_KEY: ReadonlyMap<string, FinancialConstant> = new Map(
@@ -573,4 +634,9 @@ export function nsfrAsfWeights(): Record<string, number> {
 /** NSFR RSF category → required-stable-funding factor. */
 export function nsfrRsfWeights(): Record<string, number> {
   return recordForCategory("nsfr-rsf", "nsfr.rsf.");
+}
+
+/** Instrument class (OTC-IRD / FX-spot / FX-forward / JSE-EQUITY / ZA-GOV-BOND) → market-RWA weight. */
+export function rwaInstrumentClassWeights(): Record<string, number> {
+  return recordForCategory("rwa-instrument-weight", "rwa.instrument-weight.");
 }

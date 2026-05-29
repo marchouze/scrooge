@@ -26,10 +26,19 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 const PIPELINE = "calc-no-silent-zero";
 
 /** Calc engines that must use loud weight lookups, not silent defaults. */
-const CALC_FILES = ["prototype/platform/liquidity/lcr.ts", "prototype/platform/liquidity/nsfr.ts"];
+const CALC_FILES = [
+  "prototype/platform/liquidity/lcr.ts",
+  "prototype/platform/liquidity/nsfr.ts",
+  "prototype/platform/markets/products/rwa-delta.ts",
+];
 
-/** `<UPPER_TABLE>[ ... ] ?? <number>` or `|| <number>` — the silent collapse. */
-const SILENT_COLLAPSE = /\b[A-Z_]+(?:RATES|WEIGHTS)\b\s*\[[^\]]*\]\s*(?:\?\?|\|\|)\s*[\d.]/;
+/**
+ * `<SCREAMING_SNAKE_TABLE>[ ... ] ?? <number>` or `|| <number>` — the silent
+ * collapse on a weight/rate table. Matches any screaming-snake identifier
+ * (≥3 chars) so it catches RUNOFF_RATES, *_WEIGHTS and the per-instrument
+ * RWA_WEIGHT_BY_INSTRUMENT_CLASS table alike.
+ */
+const SILENT_COLLAPSE = /\b[A-Z][A-Z0-9_]{2,}\b\s*\[[^\]]*\]\s*(?:\?\?|\|\|)\s*-?[\d.]/;
 
 const IMPORT_REQUIRE_WEIGHT =
   /import\s*\{[^}]*\brequireWeight\b[^}]*\}\s*from\s*["'][^"']*financial-input["']/s;
