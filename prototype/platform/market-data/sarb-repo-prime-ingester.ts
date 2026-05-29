@@ -114,9 +114,7 @@ export interface SarbRepoFixtureShape {
  * decisions whose effectiveDate ≤ date (sorted ascending). The most
  * recently effective rate is the last entry.
  */
-export function makeFixtureSarbRepoPrimeSource(
-  fixture: SarbRepoFixtureShape,
-): SarbRepoPrimeSource {
+export function makeFixtureSarbRepoPrimeSource(fixture: SarbRepoFixtureShape): SarbRepoPrimeSource {
   // Sort decisions ascending by effectiveDate for stable step-function lookup.
   const sorted = [...fixture.decisions].sort((a, b) =>
     a.effectiveDate < b.effectiveDate ? -1 : a.effectiveDate > b.effectiveDate ? 1 : 0,

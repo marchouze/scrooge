@@ -24,13 +24,10 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const dbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
-  const date = ctx.asOf.slice(0, 10);
 
-  // When triggered with payload.seedAll=true, seed all MPC decisions.
-  const seedAll =
-    typeof ctx.trigger.payload === "object" &&
-    ctx.trigger.payload !== null &&
-    (ctx.trigger.payload as Record<string, unknown>)["seedAll"] === true;
+  // When trigger id is "repo-rate-ingest:seed-all", seed all MPC decisions.
+  // For the regular on-request case, resolve the effective rate for as-of date.
+  const seedAll = ctx.trigger.id === "repo-rate-ingest:seed-all";
 
   if (seedAll) {
     const result = runRepoRateIngestAllDates({
@@ -52,6 +49,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
+  const date = ctx.asOf.slice(0, 10);
   const result = runRepoRateIngestForDate({
     dbPath,
     date,

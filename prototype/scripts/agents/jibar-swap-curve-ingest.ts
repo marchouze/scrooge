@@ -22,10 +22,10 @@
 
 import { resolve } from "node:path";
 import {
+  type JibarSwapCurveFixtureShape,
   makeFixtureJibarSwapCurveSource,
   runJibarSwapCurveIngest,
   runJibarSwapCurveIngestAll,
-  type JibarSwapCurveFixtureShape,
 } from "../../platform/market-data/jibar-swap-curve-ingester";
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
@@ -174,9 +174,7 @@ function main(): void {
 
   const date = args[0] ?? new Date().toISOString().slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    console.error(
-      `[jibar-swap-curve-ingest] ERROR: invalid date "${date}" — expected YYYY-MM-DD`,
-    );
+    console.error(`[jibar-swap-curve-ingest] ERROR: invalid date "${date}" — expected YYYY-MM-DD`);
     process.exit(1);
   }
 

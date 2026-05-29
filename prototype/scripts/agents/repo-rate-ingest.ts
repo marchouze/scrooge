@@ -24,10 +24,10 @@
 import { resolve } from "node:path";
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import {
+  type SarbRepoFixtureShape,
   makeFixtureSarbRepoPrimeSource,
   runSarbRepoPrimeIngest,
   runSarbRepoPrimeIngestAll,
-  type SarbRepoFixtureShape,
 } from "../../platform/market-data/sarb-repo-prime-ingester";
 import { MarketDataStore } from "../../platform/market-data/store";
 

@@ -22,10 +22,10 @@
 
 import { resolve } from "node:path";
 import {
+  type JibarFixingFixtureShape,
   makeFixtureJibarFixingSource,
   runJibarFixingIngest,
   runJibarFixingIngestAll,
-  type JibarFixingFixtureShape,
 } from "../../platform/market-data/jibar-fixing-ingester";
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";

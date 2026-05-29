@@ -35,10 +35,10 @@
 import type { MarketDataStore } from "../../market-data/store";
 import {
   CURVE_NODES,
+  type IrsRateSource,
   JIBAR_TENOR_DAYS,
   interpolateDiscountFactorFromNodes,
   staticJibarRateSource,
-  type IrsRateSource,
 } from "./jibar-curve-seed";
 
 // ---------------------------------------------------------------------------
@@ -81,14 +81,12 @@ export class MarketDataStoreJibarRateSource implements IrsRateSource {
 
   getForwardJibar(periodStartDays: number, periodEndDays: number): number {
     if (periodEndDays <= periodStartDays) {
-      throw new Error(
-        `MarketDataStoreJibarRateSource: periodEndDays must exceed periodStartDays`,
-      );
+      throw new Error("MarketDataStoreJibarRateSource: periodEndDays must exceed periodStartDays");
     }
     const dfStart = this.getDiscountFactor(periodStartDays);
     const dfEnd = this.getDiscountFactor(periodEndDays);
     if (dfEnd <= 0) {
-      throw new Error(`MarketDataStoreJibarRateSource: dfEnd must be positive`);
+      throw new Error("MarketDataStoreJibarRateSource: dfEnd must be positive");
     }
     const dcf = (periodEndDays - periodStartDays) / 365;
     return (dfStart / dfEnd - 1) / dcf;

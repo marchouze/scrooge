@@ -17,20 +17,17 @@
 
 import { logger } from "../../platform/composition";
 import {
-  runJibarFixingIngestForDate,
   runJibarFixingIngestAllDates,
+  runJibarFixingIngestForDate,
 } from "../../scripts/agents/jibar-fixing-ingest";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const dbPath = process.env.BANK_MARKET_DATA_DB ?? ".local/market-data.db";
-  const date = ctx.asOf.slice(0, 10);
 
-  // When triggered with payload.seedAll=true, seed the entire fixture.
-  const seedAll =
-    typeof ctx.trigger.payload === "object" &&
-    ctx.trigger.payload !== null &&
-    (ctx.trigger.payload as Record<string, unknown>)["seedAll"] === true;
+  // When trigger id is "jibar-fixing-ingest:seed-all", seed the entire fixture.
+  // For the regular on-request case, ingest the current as-of date.
+  const seedAll = ctx.trigger.id === "jibar-fixing-ingest:seed-all";
 
   if (seedAll) {
     const result = runJibarFixingIngestAllDates({
@@ -52,6 +49,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
+  const date = ctx.asOf.slice(0, 10);
   const result = runJibarFixingIngestForDate({
     dbPath,
     date,
