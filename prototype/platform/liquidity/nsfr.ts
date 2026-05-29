@@ -26,6 +26,16 @@
 //
 // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 326.
 // Author: Anya (Liquidity & projections engineer, engineering)
+//
+// ASF/RSF weights, the regulatory minimum and the tolerance band are owned in
+// platform/config/financial-constants.ts (objective 2 of D-TRUSTED-FIGURES-
+// PROGRAM-V1). This file reads them; it holds no inline weight tables.
+
+import {
+  getFinancialConstant,
+  nsfrAsfWeights,
+  nsfrRsfWeights,
+} from "../config/financial-constants";
 
 // ---------------------------------------------------------------------------
 // Input types
@@ -69,29 +79,9 @@ export interface RSFItem {
 // ASF and RSF weight tables (BA 326)
 // ---------------------------------------------------------------------------
 
-const ASF_WEIGHTS: Record<string, number> = {
-  "tier1-capital": 1.0,
-  "tier2-capital-gt1y": 1.0,
-  "retail-stable-lt1y": 0.95,
-  "retail-less-stable-lt1y": 0.9,
-  "wholesale-gt1y": 1.0,
-  "wholesale-lt1y-operational": 0.5,
-  "wholesale-lt1y-non-operational": 0.0,
-};
+const ASF_WEIGHTS: Record<string, number> = nsfrAsfWeights();
 
-const RSF_WEIGHTS: Record<string, number> = {
-  "hqla-l1": 0.05,
-  "hqla-l2a": 0.15,
-  "hqla-l2b": 0.5,
-  "loan-lt6m": 0.1,
-  "loan-6m-1y": 0.5,
-  "loan-gt1y-standard": 0.65,
-  "loan-gt1y-residential": 0.85,
-  "security-lt1y": 0.1,
-  "security-gt1y-non-hqla": 0.85,
-  "operational-deposit-at-fi": 0.1,
-  "derivative-net": 1.0,
-};
+const RSF_WEIGHTS: Record<string, number> = nsfrRsfWeights();
 
 // ---------------------------------------------------------------------------
 // NSFR result type
@@ -128,10 +118,10 @@ export interface NSFRDetail {
 // ---------------------------------------------------------------------------
 
 /** Regulatory minimum NSFR ratio. */
-export const NSFR_MINIMUM_RATIO = 1.0;
+export const NSFR_MINIMUM_RATIO = getFinancialConstant("nsfr.minimum-ratio");
 
-/** "At-minimum" tolerance band: within 5 percentage points. */
-const AT_MINIMUM_TOLERANCE_PCT = 5;
+/** "At-minimum" tolerance band, in percentage points above the minimum. */
+const AT_MINIMUM_TOLERANCE_PCT = getFinancialConstant("nsfr.at-minimum-tolerance-pct");
 
 /**
  * Compute the Net Stable Funding Ratio.

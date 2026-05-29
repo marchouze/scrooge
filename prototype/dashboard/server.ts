@@ -62,6 +62,7 @@ import { computeNII } from "../platform/alm/nii";
 import { computeRepricingGap } from "../platform/alm/repricing-gap";
 import { getCollateralInventory } from "../platform/collateral/inventory";
 import { eventStore, logger } from "../platform/composition";
+import { FINANCIAL_CONSTANTS } from "../platform/config/financial-constants";
 import { updateConfigFile } from "../platform/config/loader";
 import type { BankConfigPaths, BankConfigServer } from "../platform/config/schema";
 import { newEventId, nowUtc } from "../platform/core/types";
@@ -2842,6 +2843,34 @@ const server = Bun.serve({
     }
     if (url.pathname === "/api/seeds/promote" && req.method === "POST") {
       return handleSeedPromote(req);
+    }
+    if (url.pathname === "/api/constants" && req.method === "GET") {
+      // Trusted-Figures Program objective 2 — owned financial-constants
+      // inventory. Every regulatory calibration number consumed by the LCR /
+      // NSFR / capital / leverage calc engines, declared once in
+      // platform/config/financial-constants.ts with its owning seat + citation.
+      // Read-only: regulated constants change via a governed Decision, not a
+      // dashboard field. Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
+      const groupsMap = new Map<string, (typeof FINANCIAL_CONSTANTS)[number][]>();
+      for (const c of FINANCIAL_CONSTANTS) {
+        const list = groupsMap.get(c.category) ?? [];
+        list.push(c);
+        groupsMap.set(c.category, list);
+      }
+      const groups = [...groupsMap.entries()].map(([category, constants]) => ({
+        category,
+        constants,
+      }));
+      const owners = [...new Set(FINANCIAL_CONSTANTS.map((c) => c.owningRole))];
+      return jsonResponse({
+        groups,
+        counts: {
+          total: FINANCIAL_CONSTANTS.length,
+          categories: groups.length,
+          owners: owners.length,
+        },
+        pageProvenance: eventDerivedPageProvenance(),
+      });
     }
     if (url.pathname === "/api/party" && req.method === "GET") {
       // D-PARTY-REGISTER PR 2 — Party tile read-side. Folds the unified
