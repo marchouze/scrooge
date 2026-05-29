@@ -196,7 +196,16 @@ export class LocalEventTriggerBus implements EventTriggerBus {
   async tick(fromSequence: number, now: Date): Promise<TickResult> {
     const subs = this.subscriptions();
     // Pre-fold the BusDispatched stream into a Set keyed
-    // `<eventId>|<handlerKey>` for O(1) idempotency lookup.
+    // `<eventId>|<handlerKey>` for an O(1) in-process fast-path. This is
+    // ONLY a within-tick optimisation to avoid a DB round-trip for pairs
+    // already dispatched in this process — it is NOT the cross-process
+    // authority. The authoritative dedup is `eventStore.claimDispatch`
+    // (an atomic UNIQUE-constrained insert) below: two concurrent ticks
+    // both pre-fold a stale set (neither sees the other's not-yet-appended
+    // BusDispatched), so the in-memory check alone let both invoke the
+    // handler and both append BusDispatched{ok} (the 2026-05-26 88-duplicate
+    // incident, AuditFinding F-ATLAS-20260529-BUSDEDUP). The DB claim closes
+    // that race.
     const dispatched = new Set<string>();
     for (const e of this.eventStore.replay({ type: "BusDispatched" })) {
       const p = e.payload as Record<string, unknown>;
@@ -242,7 +251,23 @@ export class LocalEventTriggerBus implements EventTriggerBus {
       if (subscribers.length === 0) continue;
       for (const sub of subscribers) {
         const dedupKey = `${event.event_id}|${sub.handlerKey}`;
+        // Fast-path: skip if this process already dispatched the pair in
+        // this tick (avoids a DB round-trip). Not authoritative.
         if (dispatched.has(dedupKey)) continue;
+
+        // Authoritative cross-process claim. Claim-FIRST: take the
+        // atomic UNIQUE-constrained claim BEFORE invoking the handler.
+        // If we lose the claim (another process/tick claimed it first),
+        // skip invocation entirely — no double-invoke, no duplicate
+        // BusDispatched{ok}. F2 close (F-ATLAS-20260529-BUSDEDUP).
+        const won = this.eventStore.claimDispatch(event.event_id, sub.handlerKey);
+        if (!won) {
+          // Lost the claim — another claimant owns this pair. Record the
+          // in-memory key so we don't re-attempt the claim within this
+          // tick, and move on without invoking the handler.
+          dispatched.add(dedupKey);
+          continue;
+        }
         dispatched.add(dedupKey);
 
         const dispatchedAt = now.toISOString();

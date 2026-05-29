@@ -125,6 +125,29 @@ CREATE TABLE IF NOT EXISTS archive_partitions (
   sha256_hash   TEXT    NOT NULL,
   archived_at   TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- F2 dedup-race close (AuditFinding F-ATLAS-20260529-BUSDEDUP) — cross-process
+-- atomic dispatch-claim registry. The event-trigger bus and the
+-- scheduled-trigger consumer claim a (event_id, handler_key) pair here BEFORE
+-- invoking the handler; the UNIQUE constraint serialises concurrent claimants
+-- so exactly one process wins the claim, invokes the handler once, and records
+-- the BusDispatched audit row. Losers catch the constraint violation and skip
+-- invocation entirely. This replaces the per-tick in-memory Set, which only
+-- guarded within a single process and let two concurrent ticks both pass the
+-- check and double-invoke (the 2026-05-26 88-duplicate incident).
+--
+-- Mirrors the events.event_id UNIQUE idempotency pattern (store.ts DDL above);
+-- lifts unchanged to the Azure Cosmos/Postgres target (Principle 3) — the
+-- UNIQUE(event_id, handler_key) maps to a composite unique index there. The
+-- claim is the authoritative idempotency record; BusDispatched stays the audit
+-- + outcome record (its payload contract is unchanged so recon + dashboard
+-- read it as before).
+CREATE TABLE IF NOT EXISTS bus_dispatch_claims (
+  event_id    TEXT    NOT NULL,
+  handler_key TEXT    NOT NULL,
+  claimed_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (event_id, handler_key)
+);
 `;
 
 /**
@@ -303,6 +326,53 @@ export class EventStore {
     // active flag) so a freshly-opened legacy DB heals before the first
     // append; the hard-rejection path then sees a fully-tagged store.
     this.softTagUntaggedEvents();
+    // F2 dedup-race close — backfill the claim registry from the historical
+    // BusDispatched audit stream. Pre-fix dispatches recorded only a
+    // BusDispatched row (no claim row); without this backfill the first
+    // post-deploy tick would see every historical pair as unclaimed and
+    // re-invoke every handler. Idempotent (INSERT OR IGNORE keyed on the
+    // UNIQUE PK): a store already at parity is a no-op.
+    this.backfillDispatchClaims();
+  }
+
+  /**
+   * F2 dedup-race close — seed `bus_dispatch_claims` from every historical
+   * `BusDispatched` event so pre-fix dispatches stay deduped after the claim
+   * mechanism lands. Each `(eventId, handlerKey)` pair appearing in any
+   * `BusDispatched` row (regardless of outcome — failed dispatches are
+   * deduped under the preserved no-retry policy) gets a claim row.
+   *
+   * Idempotent: `INSERT OR IGNORE` against the UNIQUE PK means already-seeded
+   * pairs are skipped. Runs unconditionally on store-open, mirroring the
+   * soft-tagger's heal-on-open pattern. Returns the number of claim rows
+   * inserted (0 in steady state).
+   */
+  backfillDispatchClaims(): number {
+    const rows = this.db
+      .prepare(
+        `SELECT DISTINCT
+           json_extract(payload, '$.eventId')    AS event_id,
+           json_extract(payload, '$.handlerKey') AS handler_key
+         FROM events
+         WHERE type = 'BusDispatched'
+           AND json_extract(payload, '$.eventId')    IS NOT NULL
+           AND json_extract(payload, '$.handlerKey') IS NOT NULL`,
+      )
+      .all() as Array<{ event_id: string | null; handler_key: string | null }>;
+    if (rows.length === 0) return 0;
+    const stmt = this.db.prepare(
+      "INSERT OR IGNORE INTO bus_dispatch_claims (event_id, handler_key) VALUES (?, ?)",
+    );
+    let inserted = 0;
+    const tx = this.db.transaction((batch: typeof rows) => {
+      for (const r of batch) {
+        if (!r.event_id || !r.handler_key) continue;
+        const res = stmt.run(r.event_id, r.handler_key);
+        inserted += res.changes;
+      }
+    });
+    tx(rows);
+    return inserted;
   }
 
   /**
@@ -613,6 +683,92 @@ export class EventStore {
       m: number | null;
     };
     return r.m ?? 0;
+  }
+
+  // --------------------------------------------------------------------
+  // F2 dedup-race close (AuditFinding F-ATLAS-20260529-BUSDEDUP) —
+  // cross-process atomic dispatch claim.
+  //
+  // `claimDispatch(eventId, handlerKey)` attempts to insert a row into
+  // `bus_dispatch_claims` under the `UNIQUE(event_id, handler_key)`
+  // primary key. The insert is wrapped in `BEGIN IMMEDIATE` so the
+  // write lock is taken eagerly: concurrent claimants serialise at the
+  // SQLite level rather than both reading a stale snapshot. The winner
+  // gets the row and returns `true` (invoke the handler exactly once);
+  // every loser hits the UNIQUE constraint, the transaction rolls back,
+  // and the helper returns `false` (skip invocation). This is the
+  // cross-process authority the per-tick in-memory Set could never be.
+  //
+  // The claim is taken BEFORE the handler runs and is never released —
+  // the documented retry policy is "at most one invocation per pair,
+  // ever" (a failed dispatch is claimed and not retried, preserving the
+  // pre-fix fold-regardless-of-outcome behaviour). The caller is
+  // responsible for recording a `BusDispatched` audit row (ok OR failed)
+  // after a winning claim so no claim is ever left without an audit row.
+  //
+  // M8 cloud lift: `BEGIN IMMEDIATE` + UNIQUE maps to a Postgres
+  // `INSERT ... ON CONFLICT DO NOTHING` (returning row-count) inside a
+  // transaction, or a Cosmos unique-key-policy insert with a 409 catch;
+  // the `claimDispatch(): boolean` signature is unchanged.
+  // --------------------------------------------------------------------
+
+  /**
+   * Atomically claim the `(eventId, handlerKey)` dispatch pair. Returns
+   * `true` when this caller won the claim (no prior row existed and the
+   * insert succeeded) and `false` when the pair was already claimed by
+   * any process (UNIQUE constraint violation, caught and swallowed).
+   *
+   * Cross-process safe: the immediate transaction takes the write lock
+   * eagerly so two concurrent claimants for the same pair cannot both
+   * succeed. Only the claim winner should invoke the handler.
+   *
+   * Authority: AuditFinding F-ATLAS-20260529-BUSDEDUP remediation;
+   * D-AGENT-RUNTIME-AUTHORIZE (bus substrate) + D-A22-RETIRE-LEGACY.
+   */
+  claimDispatch(eventId: string, handlerKey: string): boolean {
+    if (!eventId || !handlerKey) {
+      throw new Error("EventStore.claimDispatch: eventId and handlerKey required");
+    }
+    // `BEGIN IMMEDIATE` (via bun:sqlite's `immediate` transaction kind)
+    // takes the RESERVED write lock at transaction start, so concurrent
+    // claimants serialise rather than racing a deferred read→write. The
+    // loser blocks on the lock (busy_timeout) then hits the UNIQUE PK.
+    const claim = this.db.transaction((args: { eventId: string; handlerKey: string }) => {
+      this.db
+        .prepare("INSERT INTO bus_dispatch_claims (event_id, handler_key) VALUES (?, ?)")
+        .run(args.eventId, args.handlerKey);
+    });
+    try {
+      claim.immediate({ eventId, handlerKey });
+      return true;
+    } catch (err) {
+      // UNIQUE / PRIMARY KEY constraint violation ⇒ another claimant won.
+      // Any constraint-class error means the pair is already claimed; the
+      // caller must skip invocation. Re-throw genuinely unexpected errors
+      // (e.g. disk I/O) so they surface rather than silently dropping a
+      // dispatch.
+      const msg = (err as Error).message ?? "";
+      if (/UNIQUE|constraint|PRIMARY KEY/i.test(msg)) {
+        return false;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Whether the `(eventId, handlerKey)` pair has already been claimed.
+   * Read-only; used by tests and diagnostics. The authoritative
+   * concurrency guard is `claimDispatch` (the atomic insert), not this
+   * read — never gate invocation on `isDispatchClaimed` alone (that
+   * reintroduces the read-then-act race this fix closes).
+   */
+  isDispatchClaimed(eventId: string, handlerKey: string): boolean {
+    const row = this.db
+      .prepare(
+        "SELECT 1 AS one FROM bus_dispatch_claims WHERE event_id = ? AND handler_key = ? LIMIT 1",
+      )
+      .get(eventId, handlerKey) as { one: number } | null;
+    return row != null;
   }
 
   // --------------------------------------------------------------------
