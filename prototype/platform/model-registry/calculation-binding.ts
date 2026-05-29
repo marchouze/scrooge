@@ -184,11 +184,15 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
     citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "IFRS-9-B5.5", "BANKS-ACT-94-1990"],
     inputContract: [
       {
+        // Optional: an empty debt book is a legitimate "no in-scope exposure"
+        // state, not a data-integrity fault. An absent EAD degrades the figure
+        // (status `degraded`, surfaced loudly) rather than failing it — the
+        // ECL is 0 by absence of exposure, never a silently-computed 0.
         name: "eadMinor",
-        required: true,
+        required: false,
         unit: "ZAR-minor",
         expectedFrom:
-          "ECL engine EAD read (model:ecl-ead-ifrs9-v1): Σ |markToMarket| over unified-position bond book",
+          "ECL engine EAD read (model:ecl-ead-ifrs9-v1): Σ |net nominal × clean price| folded per ISIN from BondTradeExecuted",
       },
       {
         name: "pdLgdParameterised",

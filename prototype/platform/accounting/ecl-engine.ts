@@ -5,9 +5,11 @@
 // bank's actual debt book.
 //
 // 12-month ECL = Σ over in-scope debt exposures of (PD × LGD × EAD):
-//   - EAD (exposure at default) = gross market value of the debt position in
-//     minor units, read from the unified-position projection (assetClass:"bond").
-//     This is the same instrument-level position source the LCR HQLA build folds.
+//   - EAD (exposure at default) = gross market value of the net debt position in
+//     minor units, folded per ISIN from the store's `BondTradeExecuted` events
+//     (the bond-accounting schema the event store validates and persists). Market
+//     value = net nominal × latest clean price / 100. This is the same bond-trade
+//     event stream the GL bond-posting engine and IFRS 9 staging consume.
 //   - PD  (12-month probability of default) — build-phase point-in-time estimate.
 //   - LGD (loss given default) — build-phase estimate, secured-vs-unsecured.
 //   - Staging — every in-scope debt exposure is assessed via assessIfrs9Stage();
@@ -42,8 +44,6 @@
 //   validated by Nadia (Independent-validation engineer).
 
 import type { EventStore } from "../event-store/store";
-import { unifiedPositionProjection } from "../projections/markets/unified-position";
-import { ProjectionRuntime } from "../projections/runtime";
 import { requireWeight } from "../types/financial-input";
 import { assessIfrs9Stage } from "./ifrs9-staging";
 
@@ -132,40 +132,72 @@ export interface EclResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Map a unified-position bond row to its ECL risk bucket. The unified-position
- * projection collapses all bonds to `assetClass:"bond"`; in the build phase the
- * bond book is SA sovereign (SAGB), so the default bucket is `sovereign-bond`.
- * As the corporate/covered debt book grows, this resolves from the instrumentId
- * convention (`fi:bond:<ISIN>` — ZAG prefix = SA government).
+ * Map a bond ISIN to its ECL risk bucket. SA government bonds (SAGB) carry the
+ * ISIN prefix `ZAG`; in the build phase the bond book is SA sovereign, but a
+ * non-ZAG ISIN falls into the conservative `debt-other` bucket pending a
+ * fuller issuer-classification source (SecurityMaster).
  */
-function bucketForBond(instrumentId: string): string {
-  // instrumentId convention: "fi:bond:<ISIN>".
-  const isin = instrumentId.split(":").pop() ?? "";
+function bucketForIsin(isin: string): string {
   if (isin.startsWith("ZAG") || isin.startsWith("ZAR")) return "sovereign-bond";
   return "debt-other";
 }
 
+/** Per-ISIN net bond position folded from BondTradeExecuted events. */
+interface NetBondPosition {
+  isin: string;
+  /** Net nominal in minor units (signed: + = long, − = net short). */
+  netNominalMinor: number;
+  /** Latest clean price as percentage of nominal. */
+  lastCleanPricePercent: number;
+  currency: string;
+}
+
 /**
- * Read the in-scope debt exposures from the unified-position projection. EAD is
- * the gross market value of each net bond position (|markToMarket|), in minor
- * units. Flat (zero-quantity) positions are excluded. Pure aggregation of an
- * event-folded projection — no bank assumption, so not itself a registered model.
+ * Read the in-scope debt exposures by folding the store's `BondTradeExecuted`
+ * events per ISIN. EAD is the gross market value of each net position:
+ * |netNominalMinor| × latestCleanPrice / 100, in minor units. Flat (net-zero)
+ * positions are excluded. Pure aggregation of the event log — no bank
+ * assumption, so not itself a registered model (the EAD *methodology* is
+ * model:ecl-ead-ifrs9-v1; this read is its implementation).
  */
 export function readDebtExposures(store: EventStore): DebtExposure[] {
-  const runtime = new ProjectionRuntime(store);
-  const state = runtime.build(unifiedPositionProjection);
+  const byIsin = new Map<string, NetBondPosition>();
+
+  for (const ev of store.replay({ type: "BondTradeExecuted" })) {
+    const p = ev.payload as Record<string, unknown>;
+    const isin = typeof p.bondIsin === "string" ? p.bondIsin : null;
+    const nominalMinor = typeof p.nominalMinor === "number" ? p.nominalMinor : null;
+    const cleanPricePercent = typeof p.cleanPricePercent === "number" ? p.cleanPricePercent : null;
+    const side = p.side === "buy" || p.side === "sell" ? p.side : null;
+    if (!isin || nominalMinor === null || cleanPricePercent === null || !side) continue;
+
+    const signed = side === "buy" ? nominalMinor : -nominalMinor;
+    const currency = typeof p.currency === "string" ? p.currency : "ZAR";
+
+    const existing = byIsin.get(isin);
+    if (existing) {
+      existing.netNominalMinor += signed;
+      existing.lastCleanPricePercent = cleanPricePercent; // latest trade wins
+    } else {
+      byIsin.set(isin, {
+        isin,
+        netNominalMinor: signed,
+        lastCleanPricePercent: cleanPricePercent,
+        currency,
+      });
+    }
+  }
 
   const out: DebtExposure[] = [];
-  for (const row of state.rows.values()) {
-    if (row.assetClass !== "bond") continue;
-    if (row.quantity === 0) continue;
-    const eadMinor = Math.abs(Math.round(row.markToMarket));
+  for (const pos of byIsin.values()) {
+    if (pos.netNominalMinor === 0) continue;
+    const eadMinor = Math.abs(Math.round((pos.netNominalMinor * pos.lastCleanPricePercent) / 100));
     if (eadMinor === 0) continue;
     out.push({
-      instrumentId: row.key.instrumentId,
-      riskBucket: bucketForBond(row.key.instrumentId),
+      instrumentId: `fi:bond:${pos.isin}`,
+      riskBucket: bucketForIsin(pos.isin),
       eadMinor,
-      currency: row.currency,
+      currency: pos.currency,
     });
   }
   return out;
