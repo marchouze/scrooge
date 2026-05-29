@@ -15,11 +15,16 @@
 //      `"shadow"` (Phase 1 build step). Records what the legacy path
 //      *would have* dispatched, without actually invoking the handler.
 //      Payload: `{ parentAgent, parentTrigger, triggeredHandlerKey,
-//      triggeringEventTypes, suppressedAtSequence, eventId? }`.
-//      Pre-Phase 1 the type does not yet exist in the schema; the
-//      pipeline tolerates absence and emits a warn (insufficient samples)
-//      rather than a fail (real divergence) — see "Sample-window
-//      discipline" below.
+//      triggeringEventTypes, suppressedAtSequence, eventId? }`. The
+//      `eventId` field (the real triggering-event id) is the
+//      real-identity protocol added in A22 Phase-1 evidence completion;
+//      events from before that protocol carry only `suppressedAtSequence`
+//      and the recon keys them as `seq:N` (pre-protocol). The earliest
+//      real-`eventId` shadow event's `as_of` is the protocol epoch — see
+//      "Real-id shadow protocol epoch" below. Pre-Phase 1 the type does
+//      not yet exist in the schema; the pipeline tolerates absence and
+//      emits a warn (insufficient samples) rather than a fail (real
+//      divergence) — see "Sample-window discipline" below.
 //
 //   2. `BusDispatched` — emitted by the LocalEventTriggerBus on every
 //      handler invocation. Payload: `{ eventId, eventType, handlerKey,
@@ -60,18 +65,93 @@
 //      gate-status is reproducible from the recon output without
 //      cross-pipeline join logic.
 //
+// Real-id shadow protocol epoch (A22 Phase-1 evidence completion, 2026-05-29).
+//
+// The first generation of `LegacyFanoutShadowed` events (1,095 of them in
+// the production store) carried no triggering-event identity — only
+// `suppressedAtSequence`, a single parent-run pointer. The recon fell back
+// to a synthetic `seq:N` key for those, which can never match a real
+// `BusDispatched.eventId`, so event-level G1 was inconclusive and the gate
+// was pinned to warn. Once the emitter began recording the real
+// `eventId` (one shadow event per triggering event), event-level G1
+// becomes evaluable — but naively turning it on would instantly flip the
+// gate to fail, for two stale-baseline reasons:
+//
+//   1. The 1,095 legacy `seq:N` shadow events have no matching bus pair
+//      (the bus keys on real ids), so each would become an A.2 divergence.
+//   2. The thousands of historical `BusDispatched` rows predate the
+//      protocol and have no matching real-id shadow, so each would become
+//      an A.1 divergence. And the sample-window floor — keyed off the
+//      earliest event across both streams (weeks old) — is already met, so
+//      there is no warn grace.
+//
+// To make the gate *evaluable without breaking CI*, we anchor on a
+// protocol epoch:
+//
+//   epoch = the `as_of` of the EARLIEST `LegacyFanoutShadowed` event that
+//           carries a real (non-`seq:`) `eventId`.
+//
+// All dispatch pairs whose triggering event is BEFORE the epoch — both
+// `seq:N` shadow events and pre-epoch `BusDispatched` rows — are
+// PRE-PROTOCOL baseline: excluded from the A.1/A.2/F2 comparison and
+// reported as a single info row ("N pre-protocol pairs excluded from G1"),
+// never as divergence. The sample-window floor is computed FROM the epoch,
+// not from the earliest event across all streams, so the 3-fleet-cycle
+// (~72h) window accrues from the cutover point forward. When no real-id
+// shadow event exists yet (epoch undefined), behaviour is preserved
+// exactly: warn, "shadow lacks real ids / Phase 1 not entered", ok=true.
+//
+// Cascade topology (A22 Phase-1, option (b) — recon scopes G1 to the
+// non-cascade subset).
+//
+// The bus ticks at the end of `runAgent` and dispatches event-driven
+// handlers for ALL new events in the tick window, INCLUDING events that
+// were themselves appended by other event-driven handlers (cascades). The
+// legacy shadow block, by contrast, only runs for NON-event-driven parent
+// runs (`runtime/run.ts`: `entry.metadata.kind !== "event-driven"`) and
+// deliberately does NOT recurse into event-driven handlers (loop risk; the
+// bus's idempotency is the canonical guard). So the bus stream legitimately
+// contains pairs the shadow stream never will: dispatches whose triggering
+// event was appended by an event-driven handler (a cascade).
+//
+// Two ways to make the equivalence proof TRUE were considered:
+//   (a) Mirror cascades in the shadow path (recurse shadow into
+//       event-driven handlers so it dispatches cascades too). REJECTED:
+//       it would change shadow-mode runtime semantics, reintroduce the
+//       loop risk the shadow block was written to avoid, and — critically
+//       — it would NOT reflect what the LEGACY in-process dispatcher
+//       actually did. The legacy path being retired also only fanned out
+//       from non-event-driven parents. Mirroring cascades would prove
+//       equivalence to a dispatcher that never existed.
+//   (b) Scope the recon's bus-side G1 (A.1) to the non-cascade subset:
+//       only require a matching shadow event for bus pairs whose triggering
+//       event was observed by the shadow path. CHOSEN. The shadow stream is
+//       precisely the set of triggering events a non-event-driven parent
+//       run produced and that had a subscriber. A bus pair whose
+//       triggering `eventId` never appears in the post-epoch shadow
+//       eventId set is, by construction, a cascade dispatch — a legitimate
+//       new-system behaviour, not a divergence. We report the count of such
+//       cascade-only bus pairs as info and exclude them from A.1. Shadow
+//       side (A.2) stays full: every post-epoch shadow pair MUST have a
+//       matching `BusDispatched{ok}` — that is the real equivalence the
+//       cutover must prove (the bus does everything legacy did, and more).
+//
+// This makes the equivalence proof TRUE rather than merely green: legacy
+// dispatched exactly the non-cascade subset; the recon asserts the bus is a
+// superset (covers every legacy/shadow pair) and that the extra pairs are
+// cascades. Authority: D-A22-RETIRE-LEGACY (Phase-1 evidence completion).
+//
 // Sample-window discipline.
 //
 // Atlas's spec defines the gating window as ≥ 3 fleet-cycles (§2.1). A
 // fleet-cycle is approximately 24h of agent-time, so the floor is
-// approximately 72h between the first observed `BusDispatched` /
-// `LegacyFanoutShadowed` event and `now`. The pipeline computes this
-// from the event timestamps directly: it reads the earliest pair-stream
-// event and compares its `as_of` against the run's `now` (defaulting to
-// wall-clock; overridable for tests). Below the floor, the pipeline
-// returns `ok: true` with warn-severity violations and a `detail`
-// note flagging "sample-window not yet met". Above the floor, the same
-// rows escalate to fail-severity.
+// approximately 72h between the protocol epoch (see above) and `now`. The
+// pipeline computes this from the event timestamps directly: it reads the
+// epoch and compares it against the run's `now` (defaulting to wall-clock;
+// overridable for tests). Below the floor, the pipeline returns `ok: true`
+// with warn-severity violations and a `detail` note flagging
+// "sample-window not yet met". Above the floor, the same rows escalate to
+// fail-severity.
 //
 // Pre-Phase 1 (legacy still active, no shadow events) the pipeline
 // runs but produces no divergence rows — both streams are valid; the
@@ -159,10 +239,18 @@ export interface RunOpts {
   events?: ReadonlyArray<Event>;
 }
 
-/** A `(eventId, handlerKey)` dispatch pair. */
+/** A `(eventId, handlerKey)` dispatch pair, with the triggering event's `as_of`. */
 interface DispatchPair {
   readonly eventId: string;
   readonly handlerKey: string;
+  /** `as_of` of the source dispatch event — used for epoch windowing. */
+  readonly asOf: string;
+  /**
+   * True when this pair's `eventId` is the synthetic `seq:N` fallback
+   * (shadow event from before the real-id protocol). Bus pairs are always
+   * `false` (the bus always carries a real id).
+   */
+  readonly isSeqFallback: boolean;
 }
 
 interface ParsedStreams {
@@ -189,6 +277,13 @@ interface ParsedStreams {
    * sample-window-floor. `undefined` when both streams are empty.
    */
   earliestAsOf: string | undefined;
+  /**
+   * Real-id shadow protocol epoch: the earliest `as_of` of any
+   * `LegacyFanoutShadowed` event carrying a real (non-`seq:`) `eventId`.
+   * `undefined` when no real-id shadow event exists yet (Phase 1 not
+   * entered with the real-identity protocol). See the header comment.
+   */
+  realIdShadowEpoch: string | undefined;
   /** Total events in the store (for empty-store detection). */
   totalEvents: number;
 }
@@ -203,6 +298,7 @@ function readStreams(
   let shadowHasRealIds = false;
   let busIntegrityAlerts = 0;
   let earliestAsOf: string | undefined;
+  let realIdShadowEpoch: string | undefined;
   let totalEvents = 0;
 
   for (const e of events) {
@@ -214,7 +310,7 @@ function readStreams(
       const eventType = typeof p.eventType === "string" ? p.eventType : "";
       const outcome = typeof p.outcome === "string" ? p.outcome : "unknown";
       if (eventId && handlerKey) {
-        const pair: DispatchPair = { eventId, handlerKey };
+        const pair: DispatchPair = { eventId, handlerKey, asOf: e.as_of, isSeqFallback: false };
         busAllRows.push({ pair, outcome, asOf: e.as_of });
         // Exclude ScheduledTrigger dispatches from the G1 symmetric-coverage
         // set. The ScheduledTriggerConsumer (A2.2) dispatches scheduled
@@ -232,10 +328,12 @@ function readStreams(
     if (e.type === "LegacyFanoutShadowed") {
       const p = e.payload as Record<string, unknown>;
       // Phase 1's payload field name is normative per Atlas spec §3.1;
-      // we accept either `eventId` (typed) or fall back to a derived
-      // key when the legacy emitter records the parent-run sequence
-      // pointer instead. The recon prefers strong identity (eventId).
+      // we accept either `eventId` (real triggering-event id, the
+      // real-identity protocol) or fall back to a synthetic `seq:N`
+      // key when the legacy emitter recorded only the parent-run sequence
+      // pointer. The recon prefers strong identity (eventId).
       const rawEventId = typeof p.eventId === "string" && p.eventId.length > 0 ? p.eventId : "";
+      const isSeqFallback = rawEventId.length === 0;
       const eventId =
         rawEventId.length > 0
           ? rawEventId
@@ -244,12 +342,16 @@ function readStreams(
             : "";
       const handlerKey = typeof p.triggeredHandlerKey === "string" ? p.triggeredHandlerKey : "";
       if (eventId && handlerKey) {
-        shadowPairs.push({ eventId, handlerKey });
+        shadowPairs.push({ eventId, handlerKey, asOf: e.as_of, isSeqFallback });
         // Track whether any shadow event carries a real (non-seq) eventId.
         // Shadow events emitted by the old protocol only carry suppressedAtSequence
         // (yielding "seq:N" here); event-level G1 comparison is only valid when
         // at least one shadow event has a real UUID.
-        if (rawEventId.length > 0) shadowHasRealIds = true;
+        if (rawEventId.length > 0) {
+          shadowHasRealIds = true;
+          // The protocol epoch is the EARLIEST real-id shadow event's as_of.
+          if (!realIdShadowEpoch || e.as_of < realIdShadowEpoch) realIdShadowEpoch = e.as_of;
+        }
         if (!earliestAsOf || e.as_of < earliestAsOf) earliestAsOf = e.as_of;
       }
       continue;
@@ -279,6 +381,7 @@ function readStreams(
     shadowHasRealIds,
     busIntegrityAlerts,
     earliestAsOf,
+    realIdShadowEpoch,
     totalEvents,
   };
 }
@@ -347,45 +450,108 @@ export function run(opts: RunOpts = {}): ReconResult {
     return result;
   }
 
-  const earliestMs = streams.earliestAsOf ? Date.parse(streams.earliestAsOf) : Number.NaN;
-  const sampleWindowMet =
-    !Number.isNaN(earliestMs) && !Number.isNaN(nowMs) && nowMs - earliestMs >= gatingWindowMs;
+  // ---------------------------------------------------------------------
+  // Protocol-epoch boundary (A22 Phase-1 evidence completion). See header.
+  //
+  // epoch = as_of of the earliest real-id `LegacyFanoutShadowed`. Pairs
+  // whose triggering event is BEFORE the epoch are pre-protocol baseline:
+  // excluded from A.1/A.2/F2, reported as info. When epoch is undefined
+  // (no real-id shadow yet), behaviour is preserved exactly — every pair
+  // is pre-protocol, the comparison sets are empty, and the
+  // "shadow lacks real ids / Phase 1 not entered" warn below fires.
+  // ---------------------------------------------------------------------
+  const epoch = streams.realIdShadowEpoch;
+  const epochMs = epoch ? Date.parse(epoch) : Number.NaN;
+  const isPostEpoch = (p: DispatchPair): boolean => {
+    // seq:N shadow events are pre-protocol by construction.
+    if (p.isSeqFallback) return false;
+    // No protocol epoch yet → nothing is post-epoch (today's behaviour).
+    if (Number.isNaN(epochMs)) return false;
+    const tMs = Date.parse(p.asOf);
+    return !Number.isNaN(tMs) && tMs >= epochMs;
+  };
 
-  // Severity ladder: when the sample window has not yet passed, divergence
-  // rows are warn-severity (insufficient evidence to fail the gate). When
-  // it has passed, they escalate to fail — except when shadow events exist
-  // but only carry seq:N synthetic ids (old shadow protocol). In that case
-  // event-level G1 comparison is inconclusive regardless of the window,
-  // so we hold at warn-severity until the protocol is updated (shadow
-  // emission updated to include real eventIds per triggering event).
-  // When the shadow stream is absent entirely, the sentinel path below
-  // still escalates on window-met (original behaviour preserved).
+  const busOkPostEpoch = streams.busOkPairs.filter(isPostEpoch);
+  const shadowPostEpoch = streams.shadowPairs.filter(isPostEpoch);
+  const preEpochBusCount = streams.busOkPairs.length - busOkPostEpoch.length;
+  const preEpochShadowCount = streams.shadowPairs.length - shadowPostEpoch.length;
+  const preEpochTotal = preEpochBusCount + preEpochShadowCount;
+
+  // Sample window now accrues FROM the epoch, not from the earliest event
+  // across all streams. Pre-epoch the gate cannot escalate (warn only).
+  const sampleWindowMet =
+    !Number.isNaN(epochMs) && !Number.isNaN(nowMs) && nowMs - epochMs >= gatingWindowMs;
+
+  // Severity ladder: when the sample window (measured from the epoch) has
+  // not yet passed, divergence rows are warn (insufficient post-cutover
+  // evidence to fail the gate). When it has passed, they escalate to fail.
+  // When no real-id shadow exists yet (epoch undefined), the comparison
+  // sets below are empty; the only row emitted is the
+  // "shadow lacks real ids / Phase 1 not entered" warn (behaviour
+  // preserved exactly from the pre-protocol pipeline).
   const shadowExistsButLacksRealIds = streams.shadowPairs.length > 0 && !streams.shadowHasRealIds;
   const divergenceSeverity = sampleWindowMet && !shadowExistsButLacksRealIds ? "fail" : "warn";
 
-  const busOkSet = new Set(streams.busOkPairs.map(pairKey));
-  const shadowSet = new Set(streams.shadowPairs.map(pairKey));
+  // Cascade-topology scoping (option (b), see header). The shadow stream is
+  // the authoritative set of NON-cascade triggering events (events appended
+  // by a non-event-driven parent run that had a subscriber). Bus pairs whose
+  // triggering `eventId` never appears in the post-epoch shadow eventId set
+  // are cascade dispatches — legitimate new-system behaviour, excluded from
+  // A.1 and reported as info.
+  const shadowEventIdSet = new Set(shadowPostEpoch.map((p) => p.eventId));
+  const busOkPostEpochNonCascade = busOkPostEpoch.filter((p) => shadowEventIdSet.has(p.eventId));
+  const cascadeOnlyBusCount = busOkPostEpoch.length - busOkPostEpochNonCascade.length;
 
-  // Assertion A — symmetric coverage. Each `(eventId, handlerKey)` pair
-  // in either stream must appear in the other.
+  const busOkSet = new Set(busOkPostEpochNonCascade.map(pairKey));
+  const shadowSet = new Set(shadowPostEpoch.map(pairKey));
 
-  // A.1 — Bus-side coverage: every `BusDispatched{outcome:"ok"}` pair
-  // must have a matching `LegacyFanoutShadowed`. When shadow events
-  // are absent we surface a single sentinel rather than per-pair noise
-  // (the explanation is the same for every pair). Severity follows the
-  // sample-window ladder: pre-window the absence is most plausibly
-  // "Phase 1 has not entered yet" (warn); post-window the absence
-  // means shadow regressed mid-cutover (fail).
-  if (streams.shadowPairs.length === 0) {
+  // Info rows — pre-protocol baseline + cascade exclusions. These are never
+  // divergence; they document why the gate's comparison set is scoped.
+  if (preEpochTotal > 0) {
+    result.asserted++;
+    violations.push({
+      subject: "pre-protocol-baseline",
+      message: `${preEpochTotal} pre-protocol dispatch pair(s) excluded from G1 (${preEpochBusCount} pre-epoch \`BusDispatched\` + ${preEpochShadowCount} \`seq:N\`/pre-epoch \`LegacyFanoutShadowed\`). These predate the real-id shadow protocol epoch${epoch ? ` (${epoch})` : ""} and carry no comparable identity. Reported as info per the A22 Phase-1 epoch-boundary design; never divergence. NOTE: pre-epoch \`BusDispatched\` dedup-race (F2) duplicates, if any, are likewise pre-protocol and excluded here — see the filed SubstrateAlert/AuditFinding for the historical concurrent-bus incident.`,
+      severity: "info",
+    });
+  }
+  if (cascadeOnlyBusCount > 0) {
+    result.asserted++;
+    violations.push({
+      subject: "cascade-dispatches",
+      message: `${cascadeOnlyBusCount} post-epoch \`BusDispatched{ok}\` pair(s) excluded from A.1 as cascade dispatches (triggering event appended by an event-driven handler; the legacy fan-out / shadow path never fired for these by design — see cascade-topology option (b) in the recon header). Legitimate new-system behaviour, not divergence.`,
+      severity: "info",
+    });
+  }
+
+  // Assertion A — symmetric coverage (post-epoch, non-cascade subset).
+  // Each `(eventId, handlerKey)` pair in either scoped stream must appear
+  // in the other.
+
+  // A.1 — Bus-side coverage: every post-epoch, non-cascade
+  // `BusDispatched{outcome:"ok"}` pair must have a matching
+  // `LegacyFanoutShadowed`. When the (post-epoch) shadow stream is absent
+  // we surface a single sentinel rather than per-pair noise.
+  if (epoch === undefined) {
+    // No real-id shadow protocol entered yet — G1 not evaluable. Preserve
+    // the pre-protocol warn behaviour exactly.
     result.asserted++;
     violations.push({
       subject: "shadow-stream",
       message:
-        "`BusDispatched` events present but no `LegacyFanoutShadowed` events. Either Phase 1 has not entered (legacy fan-out still active in `runtime/run.ts:132–199`), or the shadow emitter regressed. Recon cannot assert G1 symmetric coverage from a one-sided stream.",
+        '`LegacyFanoutShadowed` events lack real triggering-event ids (pre-protocol `seq:N` only), or none exist yet. The real-id shadow protocol has not entered, so G1 `(eventId, handlerKey)` symmetric coverage is not yet evaluable. Flip Atlas\'s shadow flag to "shadow" with the real-identity emitter (runtime/run.ts) to begin epoch accrual.',
+      severity: "warn",
+    });
+  } else if (shadowPostEpoch.length === 0) {
+    result.asserted++;
+    violations.push({
+      subject: "shadow-stream",
+      message:
+        "Post-epoch `BusDispatched` events present but no post-epoch `LegacyFanoutShadowed` events. Either Phase 1 regressed mid-cutover (shadow emitter stopped) or the bus is dispatching only cascades. Recon cannot assert G1 symmetric coverage from a one-sided post-epoch stream.",
       severity: divergenceSeverity,
     });
   } else {
-    for (const p of streams.busOkPairs) {
+    for (const p of busOkPostEpochNonCascade) {
       result.asserted++;
       if (!shadowSet.has(pairKey(p))) {
         violations.push({
@@ -397,39 +563,49 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
   }
 
-  // A.2 — Shadow-side coverage: every `LegacyFanoutShadowed` pair must
-  // have a matching `BusDispatched{outcome:"ok"}` (this is the G4
-  // criterion — for every event-driven handler invocation observed via
-  // legacy logs, a corresponding bus-dispatch row exists).
-  if (streams.busOkPairs.length === 0) {
-    result.asserted++;
-    violations.push({
-      subject: "bus-stream",
-      message:
-        '`LegacyFanoutShadowed` events present but no `BusDispatched{outcome:"ok"}` events. Either the bus is wedged (Phase 1 failure mode F3 — see A22 spec §4.3) or the bus-tick hook is not firing. Recon cannot assert G4 from a one-sided stream.',
-      severity: divergenceSeverity,
-    });
-  } else {
-    for (const p of streams.shadowPairs) {
+  // A.2 — Shadow-side coverage: every post-epoch `LegacyFanoutShadowed`
+  // pair must have a matching `BusDispatched{outcome:"ok"}` (G4). This side
+  // is NOT cascade-scoped: the bus must cover everything the shadow path
+  // saw (the equivalence the cutover proves). The bus-side match set for
+  // A.2 is the full post-epoch bus set (not the non-cascade subset), since
+  // a shadow pair matching a bus pair is by definition non-cascade.
+  const busOkPostEpochSet = new Set(busOkPostEpoch.map(pairKey));
+  if (epoch !== undefined) {
+    if (busOkPostEpoch.length === 0 && shadowPostEpoch.length > 0) {
       result.asserted++;
-      if (!busOkSet.has(pairKey(p))) {
-        violations.push({
-          subject: pairKey(p),
-          message: `Divergence — legacy fan-out shadowed (eventId=${p.eventId}, handlerKey=${p.handlerKey}) but no matching \`BusDispatched{outcome:"ok"}\` event from the bus. G4 fail (per A22 spec §2).`,
-          severity: divergenceSeverity,
-        });
+      violations.push({
+        subject: "bus-stream",
+        message:
+          'Post-epoch `LegacyFanoutShadowed` events present but no post-epoch `BusDispatched{outcome:"ok"}` events. Either the bus is wedged (Phase 1 failure mode F3 — see A22 spec §4.3) or the bus-tick hook is not firing. Recon cannot assert G4 from a one-sided post-epoch stream.',
+        severity: divergenceSeverity,
+      });
+    } else {
+      for (const p of shadowPostEpoch) {
+        result.asserted++;
+        if (!busOkPostEpochSet.has(pairKey(p))) {
+          violations.push({
+            subject: pairKey(p),
+            message: `Divergence — legacy fan-out shadowed (eventId=${p.eventId}, handlerKey=${p.handlerKey}) but no matching \`BusDispatched{outcome:"ok"}\` event from the bus. G4 fail (per A22 spec §2).`,
+            severity: divergenceSeverity,
+          });
+        }
       }
     }
   }
+  // Silence "assigned but never read" for busOkSet (kept for A.1 lookups).
+  void busOkSet;
 
   // Assertion B — dedup-race detection. At most one
   // `BusDispatched{outcome:"ok"}` per (eventId, handlerKey) pair. Atlas
   // spec §4.2 F2: concurrent ticks could double-invoke a handler before
-  // either records its dedup row. Phase 1 has no concurrent ticks so the
-  // expected count here is 0; this remains live for steady-state
-  // (post-Phase 2) defence-in-depth.
+  // either records its dedup row. Scoped to post-epoch bus rows — F2 is a
+  // forward-looking invariant about the NEW bus under the cutover protocol;
+  // historical pre-protocol concurrent-bus duplicates are part of the stale
+  // bus baseline (header, stale-baseline problem #2) and are excluded as
+  // info above + recorded via the filed SubstrateAlert/AuditFinding so the
+  // finding is preserved (Principle 1) rather than masked.
   const okPairCounts = new Map<string, number>();
-  for (const p of streams.busOkPairs) {
+  for (const p of busOkPostEpoch) {
     const k = pairKey(p);
     okPairCounts.set(k, (okPairCounts.get(k) ?? 0) + 1);
   }

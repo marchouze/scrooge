@@ -209,38 +209,53 @@ describe("parallel-dispatch-divergence pipeline (Vera Wave-4 #13b)", () => {
     );
   });
 
-  it("flags pair-level divergence at warn severity pre-window", () => {
-    // Bus-only pair `ev-aaa`; shadow-only pair `ev-bbb` — both streams non-empty
-    // but they don't overlap.
+  it("flags genuine pair-level divergence at warn severity pre-window", () => {
+    // Shared triggering event `ev-shared` with TWO subscriber handlers. The
+    // bus dispatched both (`anya` + `linnea`); the shadow only recorded
+    // `anya`. Because `ev-shared` IS in the shadow eventId set, the bus pair
+    // for `linnea` is a NON-cascade A.1 divergence (genuine missing shadow),
+    // and `anya` matches both ways. This is a true G1 divergence, not a
+    // cascade exclusion. Pre-window → warn, ok stays true.
     const events: Event[] = [
       busDispatched({
-        eventId: "ev-aaa",
+        eventId: "ev-shared",
         handlerKey: "anya:projection-refresh",
         asOf: T_PRE_WINDOW,
       }),
+      busDispatched({
+        eventId: "ev-shared",
+        handlerKey: "linnea:event-triage",
+        asOf: T_PRE_WINDOW,
+      }),
       legacyShadowed({
-        eventId: "ev-bbb",
+        eventId: "ev-shared",
         handlerKey: "anya:projection-refresh",
         asOf: T_PRE_WINDOW,
       }),
     ];
     const r = parallelDispatchDivergence({ events, now: NOW });
-    // Pre-window: divergences are warn, so ok stays true.
+    // Pre-window (measured from the epoch = ev-shadow as_of): divergence warn.
     expect(r.ok).toBe(true);
     const warns = r.violations.filter((v) => v.severity === "warn");
-    // Two divergence rows: bus-side missing shadow + shadow-side missing bus.
-    expect(warns.length).toBeGreaterThanOrEqual(2);
+    expect(warns.some((v) => v.subject === "ev-shared|linnea:event-triage")).toBe(true);
+    // No cascade exclusion should fire (the bus event IS in the shadow set).
+    expect(r.violations.some((v) => v.subject === "cascade-dispatches")).toBe(false);
   });
 
-  it("escalates pair-level divergence to fail severity post-window", () => {
+  it("escalates genuine pair-level divergence to fail severity post-window", () => {
     const events: Event[] = [
       busDispatched({
-        eventId: "ev-aaa",
+        eventId: "ev-shared",
         handlerKey: "anya:projection-refresh",
         asOf: T_POST_WINDOW,
       }),
+      busDispatched({
+        eventId: "ev-shared",
+        handlerKey: "linnea:event-triage",
+        asOf: T_POST_WINDOW,
+      }),
       legacyShadowed({
-        eventId: "ev-bbb",
+        eventId: "ev-shared",
         handlerKey: "anya:projection-refresh",
         asOf: T_POST_WINDOW,
       }),
@@ -248,7 +263,7 @@ describe("parallel-dispatch-divergence pipeline (Vera Wave-4 #13b)", () => {
     const r = parallelDispatchDivergence({ events, now: NOW });
     expect(r.ok).toBe(false);
     const fails = r.violations.filter((v) => v.severity === "fail");
-    expect(fails.length).toBeGreaterThanOrEqual(2);
+    expect(fails.some((v) => v.subject === "ev-shared|linnea:event-triage")).toBe(true);
     expect(fails.every((v) => v.message.includes("Divergence") || v.subject === "bus-stream")).toBe(
       true,
     );
@@ -333,10 +348,18 @@ describe("parallel-dispatch-divergence pipeline (Vera Wave-4 #13b)", () => {
   });
 
   it("respects a custom gatingWindowMs override (tests can pin the floor)", () => {
-    // 1-millisecond window — any event older than 1ms post-window.
+    // A real-id shadow event (ev-bbb) establishes the protocol epoch at
+    // T_PRE_WINDOW; a post-epoch shadow pair has no matching bus pair (A.2
+    // divergence). With the default window it would be warn (epoch is only
+    // ~1h old); the 1ms override forces the window met → fail.
     const events: Event[] = [
       busDispatched({
         eventId: "ev-aaa",
+        handlerKey: "anya:projection-refresh",
+        asOf: T_PRE_WINDOW,
+      }),
+      legacyShadowed({
+        eventId: "ev-bbb",
         handlerKey: "anya:projection-refresh",
         asOf: T_PRE_WINDOW,
       }),
@@ -346,11 +369,171 @@ describe("parallel-dispatch-divergence pipeline (Vera Wave-4 #13b)", () => {
       now: NOW,
       gatingWindowMs: 1,
     });
-    // Bus-only stream → shadow-stream warn → escalates to fail
-    // post-window (which we forced via the 1ms override).
+    // Window forced met → the A.2 shadow-side divergence escalates to fail.
     expect(r.ok).toBe(false);
-    expect(r.violations.some((v) => v.subject === "shadow-stream" && v.severity === "fail")).toBe(
+    expect(
+      r.violations.some(
+        (v) => v.subject === "ev-bbb|anya:projection-refresh" && v.severity === "fail",
+      ),
+    ).toBe(true);
+  });
+
+  // -------------------------------------------------------------------------
+  // A22 Phase-1 real-id epoch boundary + cascade-topology (option b).
+  // -------------------------------------------------------------------------
+
+  it("preserves pre-protocol warn behaviour when only seq:N shadow events exist", () => {
+    // Mirrors the production store before the real-id emitter: many bus rows
+    // + many seq:N (no real eventId) shadow rows. Epoch is undefined → G1 is
+    // not evaluable → single shadow-stream warn, ok=true. The stale baseline
+    // must NOT flip the gate to fail.
+    const seqShadow = (handlerKey: string, seq: number, asOf: string): Event => ({
+      event_id: newEventId(),
+      type: "LegacyFanoutShadowed",
+      as_of: asOf,
+      entity: ENTITY,
+      actor: { type: "service", id: "agent:atlas:legacy-fanout-shadow" },
+      citations: [...CITATIONS],
+      payload: {
+        // NOTE: no `eventId` field — pre-protocol shadow event.
+        parentAgent: "Anya",
+        parentTrigger: "projection-refresh",
+        triggeredHandlerKey: handlerKey,
+        triggeringEventTypes: ["WorkstreamRegistered"],
+        suppressedAtSequence: seq,
+      },
+    });
+    const events: Event[] = [
+      busDispatched({
+        eventId: "ev-1",
+        handlerKey: "anya:projection-refresh",
+        asOf: T_POST_WINDOW,
+      }),
+      busDispatched({ eventId: "ev-2", handlerKey: "linnea:event-triage", asOf: T_POST_WINDOW }),
+      seqShadow("anya:projection-refresh", 10, T_POST_WINDOW),
+      seqShadow("linnea:event-triage", 11, T_POST_WINDOW),
+    ];
+    const r = parallelDispatchDivergence({ events, now: NOW });
+    expect(r.ok).toBe(true);
+    expect(r.violations.every((v) => v.severity !== "fail")).toBe(true);
+    expect(r.violations.some((v) => v.subject === "shadow-stream" && v.severity === "warn")).toBe(
       true,
     );
+    // The seq:N shadow pairs are reported as pre-protocol info, not divergence.
+    expect(
+      r.violations.some((v) => v.subject === "pre-protocol-baseline" && v.severity === "info"),
+    ).toBe(true);
+  });
+
+  it("excludes pre-epoch pairs from divergence when mixed seq:N + real-id shadow exist", () => {
+    // The trap: a real-id shadow event (T_POST_WINDOW) establishes the epoch.
+    // Pre-epoch baseline = old seq:N shadow + bus rows BEFORE the epoch. They
+    // must NOT become divergence — only the post-epoch matched pair counts.
+    const EPOCH = "2026-05-10T00:00:00.000Z"; // after T_POST_WINDOW (05-08), before NOW (05-12)
+    const PRE = T_POST_WINDOW; // 05-08 — before the epoch
+    const seqShadow: Event = {
+      event_id: newEventId(),
+      type: "LegacyFanoutShadowed",
+      as_of: PRE,
+      entity: ENTITY,
+      actor: { type: "service", id: "agent:atlas:legacy-fanout-shadow" },
+      citations: [...CITATIONS],
+      payload: {
+        parentAgent: "Anya",
+        parentTrigger: "projection-refresh",
+        triggeredHandlerKey: "anya:projection-refresh",
+        triggeringEventTypes: ["WorkstreamRegistered"],
+        suppressedAtSequence: 5,
+      },
+    };
+    const events: Event[] = [
+      // Pre-epoch bus row with no shadow match — must be excluded, not divergence.
+      busDispatched({ eventId: "ev-old", handlerKey: "anya:projection-refresh", asOf: PRE }),
+      seqShadow,
+      // Post-epoch matched pair — clean.
+      busDispatched({ eventId: "ev-new", handlerKey: "anya:projection-refresh", asOf: EPOCH }),
+      legacyShadowed({ eventId: "ev-new", handlerKey: "anya:projection-refresh", asOf: EPOCH }),
+    ];
+    const r = parallelDispatchDivergence({ events, now: NOW });
+    expect(r.ok).toBe(true);
+    // No divergence rows at all (post-epoch set agrees).
+    expect(
+      r.violations.some((v) => typeof v.message === "string" && v.message.includes("Divergence")),
+    ).toBe(false);
+    // Pre-epoch pairs reported as info (1 bus + 1 seq shadow = 2).
+    expect(
+      r.violations.some(
+        (v) =>
+          v.subject === "pre-protocol-baseline" &&
+          v.severity === "info" &&
+          v.message.includes("2 pre-protocol"),
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes cascade-only bus dispatches from A.1 (cascade topology, option b)", () => {
+    // Post-epoch: shadow saw `ev-parent` (a non-event-driven parent's event).
+    // The bus also dispatched `ev-cascade` (appended by an event-driven
+    // handler — a cascade). The shadow never recorded `ev-cascade` by design.
+    // It must be excluded from A.1 as a cascade, not flagged as divergence.
+    const EPOCH = "2026-05-10T00:00:00.000Z";
+    const events: Event[] = [
+      busDispatched({ eventId: "ev-parent", handlerKey: "anya:projection-refresh", asOf: EPOCH }),
+      busDispatched({ eventId: "ev-cascade", handlerKey: "linnea:event-triage", asOf: EPOCH }),
+      legacyShadowed({ eventId: "ev-parent", handlerKey: "anya:projection-refresh", asOf: EPOCH }),
+    ];
+    const r = parallelDispatchDivergence({ events, now: NOW });
+    expect(r.ok).toBe(true);
+    expect(
+      r.violations.some((v) => typeof v.message === "string" && v.message.includes("Divergence")),
+    ).toBe(false);
+    expect(
+      r.violations.some((v) => v.subject === "cascade-dispatches" && v.severity === "info"),
+    ).toBe(true);
+  });
+
+  it("warns (not fails) post-epoch divergence while inside the sample window", () => {
+    // Epoch ~1h before NOW (pre-window). A genuine A.2 divergence (shadow
+    // pair with no bus match) should be warn, ok=true — the window has not
+    // accrued from the cutover point yet.
+    const events: Event[] = [
+      busDispatched({ eventId: "ev-x", handlerKey: "anya:projection-refresh", asOf: T_PRE_WINDOW }),
+      legacyShadowed({
+        eventId: "ev-x",
+        handlerKey: "anya:projection-refresh",
+        asOf: T_PRE_WINDOW,
+      }),
+      // Unmatched shadow pair (no bus) → A.2 divergence.
+      legacyShadowed({ eventId: "ev-y", handlerKey: "linnea:event-triage", asOf: T_PRE_WINDOW }),
+    ];
+    const r = parallelDispatchDivergence({ events, now: NOW });
+    expect(r.ok).toBe(true);
+    expect(
+      r.violations.some((v) => v.subject === "ev-y|linnea:event-triage" && v.severity === "warn"),
+    ).toBe(true);
+  });
+
+  it("fails on a genuine post-epoch divergence once the sample window is met", () => {
+    // Epoch ~4 days before NOW (post-window). A genuine A.2 divergence
+    // (shadow pair with no bus match, real id, post-epoch) MUST fail — this
+    // is the real divergence the gate exists to catch.
+    const events: Event[] = [
+      busDispatched({
+        eventId: "ev-x",
+        handlerKey: "anya:projection-refresh",
+        asOf: T_POST_WINDOW,
+      }),
+      legacyShadowed({
+        eventId: "ev-x",
+        handlerKey: "anya:projection-refresh",
+        asOf: T_POST_WINDOW,
+      }),
+      legacyShadowed({ eventId: "ev-y", handlerKey: "linnea:event-triage", asOf: T_POST_WINDOW }),
+    ];
+    const r = parallelDispatchDivergence({ events, now: NOW });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some((v) => v.subject === "ev-y|linnea:event-triage" && v.severity === "fail"),
+    ).toBe(true);
   });
 });
