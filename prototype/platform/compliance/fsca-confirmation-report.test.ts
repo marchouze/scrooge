@@ -26,12 +26,12 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  type FscaConfirmationReportInput,
+  type TradeConfirmationRecord,
   businessDaysElapsed,
   classifyProductComplexity,
   generateFscaConfirmationReport,
   isLateConfirmation,
-  type FscaConfirmationReportInput,
-  type TradeConfirmationRecord,
 } from "./fsca-confirmation-report";
 
 // ---------------------------------------------------------------------------

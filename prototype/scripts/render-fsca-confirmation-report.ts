@@ -43,12 +43,12 @@ import "../platform/event-store/resolve-event-db-boot";
 
 import { writeFileSync } from "node:fs";
 
-import { eventStore } from "../platform/composition";
 import {
-  generateFscaConfirmationReport,
   type FscaConfirmationReportInput,
   type TradeConfirmationRecord,
+  generateFscaConfirmationReport,
 } from "../platform/compliance/fsca-confirmation-report";
+import { eventStore } from "../platform/composition";
 
 // ---------------------------------------------------------------------------
 // Argv parsing
@@ -93,8 +93,8 @@ function periodToWindow(period: string): { periodStart: string; periodEnd: strin
   if (!yearStr || !monthStr) {
     throw new Error(`Invalid period format: ${period}`);
   }
-  const year = parseInt(yearStr, 10);
-  const month = parseInt(monthStr, 10);
+  const year = Number.parseInt(yearStr, 10);
+  const month = Number.parseInt(monthStr, 10);
 
   const periodStart = new Date(Date.UTC(year, month - 1, 1)).toISOString();
   // Last moment of the last day of the month
@@ -197,9 +197,7 @@ function foldTradeConfirmationRecords(args: {
     const productType = mapInstrumentToProductType(instrument);
     if (!productType) {
       process.stderr.write(
-        `WARN: render-fsca-confirmation-report: skipping TradeBooked ${event.event_id} — ` +
-          `instrument '${instrument}' not mappable to Annexure A product type. ` +
-          `Substrate gap: extend mapInstrumentToProductType() when new product codes land.\n`,
+        `WARN: render-fsca-confirmation-report: skipping TradeBooked ${event.event_id} — instrument '${instrument}' not mappable to Annexure A product type. Substrate gap: extend mapInstrumentToProductType() when new product codes land.\n`,
       );
       skipped++;
       continue;
@@ -225,8 +223,7 @@ function foldTradeConfirmationRecords(args: {
 
   if (skipped > 0) {
     process.stderr.write(
-      `WARN: render-fsca-confirmation-report: ${skipped} TradeBooked event(s) skipped ` +
-        `(missing tradeId or unmappable instrument). Check stderr above for details.\n`,
+      `WARN: render-fsca-confirmation-report: ${skipped} TradeBooked event(s) skipped (missing tradeId or unmappable instrument). Check stderr above for details.\n`,
     );
   }
 
@@ -242,10 +239,7 @@ function foldTradeConfirmationRecords(args: {
     if (!trades.has(tradeId)) continue;
     // Take the earliest confirmation (in case of duplicates, first wins)
     if (!confirmations.has(tradeId)) {
-      confirmations.set(
-        tradeId,
-        (p.matchedAt as string | undefined) ?? event.as_of,
-      );
+      confirmations.set(tradeId, (p.matchedAt as string | undefined) ?? event.as_of);
     }
   }
 
@@ -273,7 +267,7 @@ function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const { periodStart, periodEnd } = periodToWindow(args.period);
 
-  process.stderr.write(`render-fsca-confirmation-report\n`);
+  process.stderr.write("render-fsca-confirmation-report\n");
   process.stderr.write(`  Period:  ${args.period} (${periodStart} → ${periodEnd})\n`);
   process.stderr.write(`  Entity:  ${args.entity}\n`);
 
