@@ -279,6 +279,20 @@ export interface Ba325GeneratorInput {
    * Citations: BCBS D295 §50–§54; Reg 26(7).
    */
   readonly hqlaStock?: HqlaStockInput;
+  /**
+   * Level-1 HQLA from cash / central-bank-reserve accounts — the one legitimate
+   * account-level HQLA residual (cash has no instrument, so it cannot be
+   * classified per-ISIN). **Additive** to the instrument-level securities stock
+   * in `hqlaStock`, never a substitute. Only consumed when `hqlaStock` is also
+   * provided (the instrument path is active).
+   *
+   * Compute via `computeCashHqlaLevel1FromAccounts()` from `./hqla-stock.ts`:
+   * positive-balance, functional-currency, cash-nature accounts only. An
+   * overdrawn reserve account is a borrowing, not HQLA — it contributes nothing.
+   *
+   * Authority: BCBS D295 §50; Reg 26(7); 2026-05-29 instrument-level fix follow-on.
+   */
+  readonly cashHqlaLevel1Lines?: readonly HqlaStockLine[];
 }
 
 // ---------------------------------------------------------------------------
@@ -936,6 +950,24 @@ export function generateBa325Lcr(input: Ba325GeneratorInput, opts?: Ba325LcrOpts
     // Map Level-1 lines.
     for (const line of stockResult.level1Lines) {
       level1Lines.push(hqlaStockLineToLineItem(line, ccy));
+      level1Stock += line.adjustedMinor;
+      hqlaInputsFound += 1;
+    }
+
+    // Additive cash / central-bank-reserve Level-1 HQLA (account-level — the one
+    // legitimate non-instrument case; cash has no ISIN). Positive-balance,
+    // functional-currency, cash-nature accounts only — computed by the caller via
+    // computeCashHqlaLevel1FromAccounts(). contributingAccounts carries the GL
+    // account id because cash HQLA genuinely is account-level.
+    for (const line of input.cashHqlaLevel1Lines ?? []) {
+      level1Lines.push({
+        lineId: `hqla.level-1.cash.${line.instrumentId}`,
+        lineLabel: line.instrumentName ?? line.instrumentId,
+        amountMinor: line.adjustedMinor,
+        currency: ccy,
+        contributingAccounts: [line.instrumentId],
+        note: `haircut=${line.haircut * 100}%; basis=${line.valuationBasis}; cash-reserve`,
+      });
       level1Stock += line.adjustedMinor;
       hqlaInputsFound += 1;
     }

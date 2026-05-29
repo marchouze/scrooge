@@ -290,3 +290,72 @@ export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockR
     excludedFxPositions,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Cash / central-bank-reserve HQLA (account-level — the one legitimate case)
+// ---------------------------------------------------------------------------
+
+/**
+ * One trial-balance row, narrowed to the fields the cash-HQLA fold needs.
+ */
+export interface CashHqlaTrialBalanceRow {
+  readonly leafAccountId: string;
+  readonly currency: string;
+  /** Period-end balance in minor units. Positive = debit (asset cash held). */
+  readonly amountMinor: number;
+}
+
+/**
+ * Input to `computeCashHqlaLevel1FromAccounts()`.
+ */
+export interface CashHqlaInput {
+  readonly trialBalance: readonly CashHqlaTrialBalanceRow[];
+  /**
+   * GL accounts that are cash-nature AND Level-1 HQLA-eligible — i.e. central-bank
+   * reserves held at the SARB. The caller derives this from the COA registry
+   * (`category === "asset-cash"` with `hqlaLevel === "level-1"`). Securities
+   * accounts MUST NOT appear here — the instrument-level path
+   * (`computeHqlaStockFromPositions`) owns those.
+   */
+  readonly cashAccountIds: ReadonlySet<string>;
+  /** ISO 4217 functional currency. Only same-currency balances contribute. */
+  readonly functionalCurrency: string;
+}
+
+/**
+ * Compute the Level-1 HQLA contribution from cash / central-bank-reserve
+ * accounts. This is the *only* legitimate account-level HQLA path: cash has no
+ * instrument, so it cannot be classified per-ISIN. It is additive to the
+ * instrument-level securities stock — never a substitute.
+ *
+ * Rules:
+ *   - Only accounts in `cashAccountIds` (cash-nature, Level-1) contribute.
+ *   - Only balances in the functional currency contribute (FX conversion is a
+ *     Slice-6+ step; Principle 5).
+ *   - Only **positive** (debit) balances contribute. A negative balance is an
+ *     overdrawn reserve account (a borrowing), not HQLA — counting `Math.abs()`
+ *     of it (as the deprecated account-level path did) produced phantom HQLA.
+ *   - Level-1 assets carry a 0% haircut (BCBS D295 §50).
+ *
+ * Authority: BCBS D295 §50; Reg 26(7); corrected 2026-05-29 (instrument-level
+ * fix follow-on — cash is the legitimate account-level residual).
+ */
+export function computeCashHqlaLevel1FromAccounts(input: CashHqlaInput): readonly HqlaStockLine[] {
+  const lines: HqlaStockLine[] = [];
+  for (const row of input.trialBalance) {
+    if (!input.cashAccountIds.has(row.leafAccountId)) continue;
+    if (row.currency !== input.functionalCurrency) continue;
+    if (row.amountMinor <= 0) continue; // overdrafts are not HQLA
+    lines.push({
+      instrumentId: row.leafAccountId,
+      instrumentName: `Central-bank reserves — ${row.leafAccountId}`,
+      hqlaLevel: "level-1",
+      currency: row.currency,
+      nominalMinor: row.amountMinor,
+      haircut: 0,
+      adjustedMinor: row.amountMinor,
+      valuationBasis: "markToMarket",
+    });
+  }
+  return lines;
+}

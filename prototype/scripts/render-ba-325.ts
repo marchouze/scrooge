@@ -53,7 +53,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { coaToHqlaClassifications } from "../platform/accounting/coa-registry";
+import { COA_ACCOUNTS, coaToHqlaClassifications } from "../platform/accounting/coa-registry";
 import { computeTrialBalance, periodAuditChain } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import {
@@ -68,7 +68,10 @@ import {
   generateBa325Lcr,
   renderBa325Canonical,
 } from "../platform/reporting";
-import { computeHqlaStockFromPositions } from "../platform/reporting/hqla-stock";
+import {
+  computeCashHqlaLevel1FromAccounts,
+  computeHqlaStockFromPositions,
+} from "../platform/reporting/hqla-stock";
 
 // ---------------------------------------------------------------------------
 // Build-phase default classifications — derived from the COA registry.
@@ -230,9 +233,24 @@ function main(argv: readonly string[]): number {
     functionalCurrency: args.functionalCurrency,
   };
   const hqlaStock = computeHqlaStockFromPositions(hqlaStockInput);
+
+  // Additive cash / central-bank-reserve Level-1 HQLA (account-level residual).
+  // Cash-nature, Level-1 accounts only (category "asset-cash" + hqlaLevel
+  // "level-1") — securities accounts are owned by the instrument path above.
+  const cashAccountIds = new Set(
+    COA_ACCOUNTS.filter((a) => a.category === "asset-cash" && a.hqlaLevel === "level-1").map(
+      (a) => a.id,
+    ),
+  );
+  const cashHqlaLevel1Lines = computeCashHqlaLevel1FromAccounts({
+    trialBalance: tb.rows,
+    cashAccountIds,
+    functionalCurrency: args.functionalCurrency,
+  });
+
   // Log a brief summary to stderr for diagnostic purposes.
   process.stderr.write(
-    `[render-ba-325] HQLA stock: L1=${hqlaStock.level1TotalMinor} L2A=${hqlaStock.level2aTotalMinor} L2B=${hqlaStock.level2bTotalMinor} (${hqlaStock.level1Lines.length + hqlaStock.level2aLines.length + hqlaStock.level2bLines.length} instrument(s); ${hqlaStock.excludedFxPositions.length} FX-excluded)\n`,
+    `[render-ba-325] HQLA stock: L1=${hqlaStock.level1TotalMinor} L2A=${hqlaStock.level2aTotalMinor} L2B=${hqlaStock.level2bTotalMinor} (${hqlaStock.level1Lines.length + hqlaStock.level2aLines.length + hqlaStock.level2bLines.length} instrument(s); ${hqlaStock.excludedFxPositions.length} FX-excluded) + cash-L1 ${cashHqlaLevel1Lines.reduce((s, l) => s + l.adjustedMinor, 0)} (${cashHqlaLevel1Lines.length} reserve-account(s))\n`,
   );
 
   // P1-compliant: pass the event store + period window so cash flows are
@@ -249,6 +267,8 @@ function main(argv: readonly string[]): number {
     classifications,
     // Preferred path: instrument-level HQLA stock.
     hqlaStock: hqlaStockInput,
+    // Additive account-level cash / central-bank-reserve Level-1 HQLA.
+    cashHqlaLevel1Lines,
     ...(tb.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: tb.trialBalanceSnapshotEventId }
       : {}),
