@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-06_core-policies-compliance-privacy.md §6 — POPIA / Privacy Policy
+last-reviewed: 2026-05-15
 procedureId: PROC-PRIV-IO-DSG-01
 title: POPIA Information Officer designation (per entity)
 author: Iris (Information Officer, governance) · Owen (Company Secretary, governance)

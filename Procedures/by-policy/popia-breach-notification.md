@@ -1,4 +1,7 @@
 ---
+id: PROC-PRIV-01
+policy-parent: §6 — POPIA / Privacy Policy
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — POPIA breach notification

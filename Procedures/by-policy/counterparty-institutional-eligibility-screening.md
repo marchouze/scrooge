@@ -1,4 +1,6 @@
 ---
+policy-parent: institutional-only-FAIS-Posture-A
+last-reviewed: 2026-05-09
 procedureId: PROC-CRM-CIE-01
 title: Counterparty institutional-eligibility screening (FAIS Posture A)
 author: Niko (Sales / CRM engineer)

@@ -1,4 +1,7 @@
 ---
+id: PROC-GOV-CDR-01
+policy-parent: Governance Framework () — CEO reserved-matter authority and the two-track approval convention (CEO /
+last-reviewed: 2026-05-29
 status: POPULATED
 ---
 # Procedure — CEO decision review

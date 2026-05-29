@@ -1,4 +1,6 @@
 ---
+policy-parent: Market Abuse / Surveillance Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-SUR-01
 title: Market abuse surveillance alert triage and escalation
 author: Zara (Chief Compliance Officer, governance) · Saskia (Head of Global Markets, governance)

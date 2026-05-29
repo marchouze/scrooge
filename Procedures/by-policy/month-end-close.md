@@ -1,4 +1,7 @@
 ---
+id: PROC-FIN-MC-01
+policy-parent: -  — Regulatory Reporting Policy v1 (period-close gates the BA return timeline)
+last-reviewed: 2026-05-17
 status: POPULATED
 ---
 # Procedure — Month-End Close

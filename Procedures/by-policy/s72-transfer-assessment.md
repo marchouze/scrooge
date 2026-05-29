@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-06_core-policies-compliance-privacy.md §6 — POPIA / Privacy Policy (Cross-Border Transfer Policy)
+last-reviewed: 2026-05-15
 procedureId: PROC-PRIV-CBT-01
 title: POPIA s.72 cross-border transfer assessment
 author: Iris (Information Officer, governance) · Devon (Chief Operating Officer, governance)

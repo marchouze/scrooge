@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/records-management-policy-v1.md — Records Management Policy
+last-reviewed: 2026-05-15
 procedureId: PROC-RM-RD-01
 title: Records retention and disposal
 author: Owen (Company Secretary, governance) · Devon (Chief Operating Officer, governance)

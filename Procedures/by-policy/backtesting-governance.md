@@ -1,4 +1,6 @@
 ---
+policy-parent: market-risk-policy-v1
+last-reviewed: 2026-05-20
 procedureId: PROC-RISK-BACKTEST-01
 title: FRTB back-testing governance — daily HPL/RTPL exception count and zone management
 author: Rohan (Market risk quantitative engineer, engineering)

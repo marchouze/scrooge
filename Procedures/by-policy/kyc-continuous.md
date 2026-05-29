@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-KYC-C-01
+policy-parent: §4 — KYC / CDD / EDD Policy
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — KYC continuous monitoring (event-triggered CDD)

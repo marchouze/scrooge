@@ -1,4 +1,6 @@
 ---
+policy-parent: corporate-naming-policy (planned by Owen)
+last-reviewed: 2026-05-15
 procedureId: PROC-CORP-NPC-01
 title: Naming pre-clearance — TM + Banks Act §22 + CIPC + 11-language sweep
 author: Owen (Company Secretary, governance) · Imani (Legal-as-code engineer) · Mira (Regulatory intelligence engineer)

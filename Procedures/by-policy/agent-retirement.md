@@ -1,4 +1,5 @@
 ---
+last-reviewed: 2026-05-18
 id: PROC-AGENTOPS-RETIREMENT-001
 title: Agent Retirement
 status: POPULATED

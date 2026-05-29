@@ -1,4 +1,6 @@
 ---
+policy-parent: Climate-Related Risk Policy (planned) · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B8
+last-reviewed: 2026-05-15
 procedureId: PROC-RISK-CSA-01
 title: Climate scenario analysis cycle
 author: Helena (Chief Risk Officer, governance) · Devon (Chief Operating Officer, governance)

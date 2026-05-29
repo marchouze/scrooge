@@ -1,4 +1,7 @@
 ---
+id: PROC-FIN-BSS-01
+policy-parent: — Accounting Policies (IFRS) v0.1 (STUB)
+last-reviewed: 2026-05-12
 status: POPULATED
 ---
 # Procedure — Balance sheet substantiation

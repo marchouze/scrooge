@@ -1,4 +1,7 @@
 ---
+id: PROC-PR-01
+policy-parent: §1 — Capital Management Policy
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — Capital and liquidity ratio monitoring (daily)

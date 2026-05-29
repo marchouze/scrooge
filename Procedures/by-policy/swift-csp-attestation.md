@@ -1,4 +1,6 @@
 ---
+policy-parent: >
+last-reviewed: 2026-05-22
 procedureId: PROC-SWIFT-CSP-01
 title: SWIFT Customer Security Programme (CSP) attestation
 author: Senna (Security & Infrastructure engineer) · Tomas (Payments & settlement engineer)

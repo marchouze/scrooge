@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/pillar-3-disclosure-policy-v1.md · Policies/regulatory-reporting-policy-v1.md · Policies/financial-reporting-policy-v1.md
+last-reviewed: 2026-05-22
 procedureId: PROC-P3-01
 title: Pillar 3 public disclosure cycle
 author: Camille (Chief Financial Officer, governance)

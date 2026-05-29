@@ -1,4 +1,6 @@
 ---
+policy-parent: Performance Management Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-PERF-01
 title: Performance management cycle — human and agent roles
 author: Sade (AgentOps & token efficiency engineer)

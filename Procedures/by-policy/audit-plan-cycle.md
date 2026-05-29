@@ -1,4 +1,6 @@
 ---
+policy-parent: Internal Audit Charter (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-AUD-APC-01
 title: Internal audit plan — annual risk-based planning cycle
 author: Vera (internal audit engineer) · Thandiwe (Chief Audit Executive, governance)

@@ -1,4 +1,6 @@
 ---
+policy-parent: Customer Treatment (TCF) Policy v0.1 · FAIS General Code of Conduct (FAIS Act 37/2002)
+last-reviewed: 2026-05-15
 procedureId: PROC-COMP-TCF-01
 title: TCF/conduct complaints handling
 author: Zara (Chief Compliance Officer, governance) · Niko (client relationship manager, markets — activates licence-day)

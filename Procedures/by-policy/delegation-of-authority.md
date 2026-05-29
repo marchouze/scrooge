@@ -1,4 +1,7 @@
 ---
+id: PROC-GV-DOA-01
+policy-parent: Governance Framework (Policies/ — STUB at this version)
+last-reviewed: 2026-05-13
 status: POPULATED
 ---
 # Procedure — Delegation of Authority

@@ -1,4 +1,7 @@
 ---
+id: PROC-OPS-PS-01
+policy-parent: -  § Payments Policy v0.1 §3 (Indirect-participant posture); §4 (ISO 20022 discipline); §5 (Reconcil
+last-reviewed: 2026-05-07
 status: POPULATED
 ---
 # Procedure — Outbound payment instruction lifecycle (sponsor-bank channel, indirect-participant posture)

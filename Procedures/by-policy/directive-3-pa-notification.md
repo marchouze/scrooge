@@ -1,4 +1,6 @@
 ---
+policy-parent: Outsourcing & Third-Party Risk Policy (planned — Devon)
+last-reviewed: 2026-05-15
 procedureId: PROC-OPS-D3-01
 title: Directive 3 of 2018 (Cloud Computing & Offshoring of Data) PA Notification
 author: Devon (COO, governance)

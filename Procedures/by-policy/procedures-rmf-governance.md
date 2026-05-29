@@ -1,4 +1,6 @@
 ---
+policy-parent: Risk Management Framework (planned) · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md
+last-reviewed: 2026-05-16
 procedureId: PROC-GOV-RMF-01
 title: Risk Management Framework governance — annual review and attestation
 author: Helena (Chief Risk Officer, governance)

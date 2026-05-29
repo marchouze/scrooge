@@ -1,4 +1,6 @@
 ---
+policy-parent: Voice & Communications Recording Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-REC-01
 title: Voice and electronic communications recording and retention
 author: Saskia (Head of Global Markets, governance) · Senna (information security & cloud engineer) · Sade (AgentOps & token efficiency engineer)

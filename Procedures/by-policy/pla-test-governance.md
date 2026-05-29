@@ -1,4 +1,6 @@
 ---
+policy-parent: market-risk-policy-v1
+last-reviewed: 2026-05-20
 procedureId: PROC-RISK-PLA-01
 title: FRTB Profit & Loss Attribution (PLA) test governance — monthly Spearman correlation and variance ratio
 author: Rohan (Market risk quantitative engineer, engineering)

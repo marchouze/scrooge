@@ -1,4 +1,7 @@
 ---
+id: PROC-IS-KR-01
+policy-parent: — Information Security and IT Governance Policy (primary)
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — Key Rotation

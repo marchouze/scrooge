@@ -1,4 +1,6 @@
 ---
+policy-parent: Provisioning / IFRS 9 ECL Policy (planned, under Owner Inbox/2026-05-07_rohan_risk-policies-bundle-v0.md)
+last-reviewed: 2026-05-15
 procedureId: PROC-RSK-ECL-02
 title: ECL (IFRS 9) staging cycle
 author: Atlas (Core banking platform architect, engineering)

@@ -1,4 +1,6 @@
 ---
+policy-parent: Operational Resilience Policy (in-force); BCP / DR Policy (planned — Devon)
+last-reviewed: 2026-05-15
 procedureId: PROC-OR-CMA-01
 title: Crisis Management Activation (BCP / DR)
 author: Devon (COO, governance)

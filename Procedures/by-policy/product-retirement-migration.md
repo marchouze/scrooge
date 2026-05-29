@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md
+last-reviewed: 2026-05-15
 procedureId: PROC-MK-NPA-RET-01
 title: Product Retirement and Open-Position Migration
 author: Saskia (Head of Global Markets, governance) · Imani (Legal-as-code engineer) · Tomas (Operations & payments engineer)

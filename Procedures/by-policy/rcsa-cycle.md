@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/operational-risk-policy-v1.md · Policies/risk-management-framework-v1.md
+last-reviewed: 2026-05-15
 procedureId: PROC-RISK-RCSA-01
 title: Risk and Control Self-Assessment (RCSA) Cycle
 author: Helena (Chief Risk Officer, governance) · Devon (Chief Operating Officer, governance)

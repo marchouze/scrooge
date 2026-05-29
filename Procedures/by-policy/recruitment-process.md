@@ -1,4 +1,6 @@
 ---
+policy-parent: Recruitment & Selection Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-REC-01
 title: Recruitment and selection — human roles at licence-day threshold
 author: Sade (AgentOps & token efficiency engineer)

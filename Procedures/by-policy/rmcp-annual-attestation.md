@@ -1,4 +1,6 @@
 ---
+policy-parent: Risk Management and Compliance Programme (RMCP) — FIC Act s.42 / Guidance Note 7
+last-reviewed: 2026-05-15
 procedureId: PROC-COMP-RMCP-01
 title: RMCP annual attestation cycle
 author: Zara (Chief Compliance Officer, governance) · Mira (regulatory intelligence engineer)

@@ -1,4 +1,6 @@
 ---
+policy-parent: FAIS Policy v0.1 (STUB, FSP-conditional) · Fit-and-Proper Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-FAIS-KI-FAP-01
 title: FAIS Key Individual fit-and-proper file
 author: Sade (AgentOps engineer) · Zara (Chief Compliance Officer, governance) · Mira (regulatory intelligence engineer)

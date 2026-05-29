@@ -1,4 +1,7 @@
 ---
+id: PROC-CY-01
+policy-parent: §3 — Incident Response Policy
+last-reviewed: 2026-05-06
 status: POPULATED
 ---
 # Procedure — Incident response (IR command)

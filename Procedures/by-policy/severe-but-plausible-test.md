@@ -1,4 +1,7 @@
 ---
+id: PROC-OR-SBP-01
+policy-parent: — Operational Resilience Policy
+last-reviewed: 2026-05-13
 status: POPULATED
 ---
 # Procedure — Severe-but-Plausible Scenario Test

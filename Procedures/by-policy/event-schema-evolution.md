@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-10_saskia_new-product-approval-policy.md §11 — NPA Policy; Change Management Policy; Secure SDLC Policy
+last-reviewed: 2026-05-15
 procedureId: PROC-PLAT-EV-EVOL-01
 title: Event schema evolution
 author: Atlas (Core banking platform architect) · Anya (Dashboard & projection engineer)

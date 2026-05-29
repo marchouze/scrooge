@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-01
+policy-parent: -  §2 — RMCP / FIC Act compliance policy (Zara, owner)
+last-reviewed: 2026-05-09
 status: POPULATED
 ---
 # Procedure — FIC submission cycle

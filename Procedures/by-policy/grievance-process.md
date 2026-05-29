@@ -1,4 +1,6 @@
 ---
+policy-parent: Grievance Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-GRIEV-01
 title: Grievance handling — human employees
 author: Sade (AgentOps & token efficiency engineer)

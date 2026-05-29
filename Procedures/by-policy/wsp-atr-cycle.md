@@ -1,4 +1,6 @@
 ---
+policy-parent: Skills Development Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-WSP-01
 title: Workplace Skills Plan and Annual Training Report cycle — Skills Development Act
 author: Sade (AgentOps & token efficiency engineer)

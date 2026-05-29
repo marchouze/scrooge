@@ -1,4 +1,6 @@
 ---
+policy-parent: market-risk-policy-v1
+last-reviewed: 2026-05-20
 procedureId: PROC-RISK-FRTB-SA-01
 title: FRTB Standardised Approach (SA) — daily market risk capital computation
 author: Rohan (Market risk quantitative engineer, engineering)

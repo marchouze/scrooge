@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/margin-policy-v1.md · Policies/im-methodology-policy-v1.md
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-04
 title: Initial Margin — SIMM-aligned calculation, exchange, and segregation (phased)
 author: Kai (Trading systems engineer, engineering) · Tomas (Operations engineer, engineering)

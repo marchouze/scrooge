@@ -1,4 +1,6 @@
 ---
+policy-parent: Tax Policy (planned — Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md)
+last-reviewed: 2026-05-15
 procedureId: PROC-TX-VAT-01
 title: VAT financial-services apportionment
 author: Atlas (Core banking platform architect, engineering)

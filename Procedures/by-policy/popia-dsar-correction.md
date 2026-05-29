@@ -1,4 +1,6 @@
 ---
+policy-parent: Owner Inbox/2026-05-06_core-policies-compliance-privacy.md §6 — POPIA / Privacy Policy
+last-reviewed: 2026-05-15
 procedureId: PROC-PRIV-DSAR-COR-01
 title: POPIA data subject correction and deletion
 author: Iris (Information Officer, governance) · Anya (Dashboard & projection engineer)

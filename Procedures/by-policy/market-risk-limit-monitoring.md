@@ -1,4 +1,6 @@
 ---
+policy-parent: market-risk-policy-v1
+last-reviewed: 2026-05-20
 procedureId: PROC-RISK-MRL-01
 title: Market risk limit monitoring — MR-1 to MR-6 daily limit register, breach escalation, and no-prop attribution
 author: Rohan (Market risk quantitative engineer, engineering)

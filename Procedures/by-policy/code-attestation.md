@@ -1,4 +1,6 @@
 ---
+policy-parent: Code of Conduct Policy (planned) · Owner Inbox/2026-05-06_core-policies-compliance-conduct.md
+last-reviewed: 2026-05-16
 procedureId: PROC-COND-CA-01
 title: Annual code of conduct attestation
 author: Owen (Company Secretary, governance) · Sade (AgentOps & token efficiency engineer)

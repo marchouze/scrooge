@@ -1,4 +1,6 @@
 ---
+policy-parent: Policies/otc-trading-policy-v1.md · Policies/counterparty-onboarding-policy-v1.md
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-05
 title: OTC derivative portfolio reconciliation (per-counterparty, frequency-tiered)
 author: Kai (Trading systems engineer, engineering) · Anya (Data engineer, engineering)

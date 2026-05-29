@@ -1,4 +1,6 @@
 ---
+policy-parent: Best Execution Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-BE-01
 title: Best execution monitoring and periodic reporting
 author: Saskia (Head of Global Markets, governance) · Zara (Chief Compliance Officer, governance)

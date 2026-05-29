@@ -1,4 +1,6 @@
 ---
+policy-parent: >
+last-reviewed: 2026-05-22
 procedureId: PROC-MK-CONF-01
 title: Trade confirmation and affirmation — JSE-listed bonds, equities, and exchange-traded products
 author: Saskia (Head of Global Markets) · Tomas (Payments & settlement engineer, engineering)

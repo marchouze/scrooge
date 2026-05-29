@@ -1,4 +1,6 @@
 ---
+policy-parent: credit-risk-policy-v1
+last-reviewed: 2026-05-20
 procedureId: PROC-RISK-CLM-01
 title: Credit risk limit management
 author: Helena (Chief Risk Officer, governance)

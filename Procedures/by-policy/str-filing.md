@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-STR-01
+policy-parent: — AML/CFT Policy §5 (STR obligations)
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — Suspicious Transaction Report (STR) filing

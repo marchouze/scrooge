@@ -1,4 +1,7 @@
 ---
+id: PROC-RRP-01
+policy-parent: — Recovery and Resolution Planning Policy v1 (IN FORCE, effective 2026-05-11)
+last-reviewed: 2026-05-22
 status: POPULATED
 ---
 # Procedure — Recovery and Resolution Planning

@@ -1,4 +1,6 @@
 ---
+policy-parent: Credit Risk Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-RISK-CO-01
 title: Credit origination — counterparty credit limit approval
 author: Helena (Chief Risk Officer, governance)

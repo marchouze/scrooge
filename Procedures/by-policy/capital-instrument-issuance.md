@@ -1,4 +1,6 @@
 ---
+policy-parent: Capital Management Policy (planned — Owner Inbox/2026-05-07_bea_finance-policies-bundle-v0.md)
+last-reviewed: 2026-05-15
 procedureId: PROC-CAP-CII-01
 title: Capital instrument issuance
 author: Atlas (Core banking platform architect, engineering)

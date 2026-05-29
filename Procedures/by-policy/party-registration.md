@@ -1,4 +1,7 @@
 ---
+id: PROC-ID-01
+policy-parent: 
+last-reviewed: 2026-05-11
 status: Approved
 ---
 # Procedure — Party registration (unified identity axis across all four actor kinds)

@@ -1,4 +1,6 @@
 ---
+policy-parent: Hedge Accounting Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-ALM-HDT-01
 title: IFRS 9 hedge designation and effectiveness test
 author: Eitan (Treasurer) · Bea (financial-reporting engineer)

@@ -1,4 +1,6 @@
 ---
+policy-parent: OTC Trading Policy (planned, markets bundle)
+last-reviewed: 2026-05-16
 procedureId: PROC-MK-ODP-06
 title: OTC derivative confirmation (post-execution)
 author: Kai (trading systems engineer) · Tomas (operations engineer) · Imani (legal-as-code engineer)

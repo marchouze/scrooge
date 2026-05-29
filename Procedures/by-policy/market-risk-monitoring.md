@@ -1,4 +1,7 @@
 ---
+id: PROC-RISK-MRM-01
+policy-parent: — Market Risk Policy (primary)
+last-reviewed: 2026-05-13
 status: POPULATED
 ---
 # Procedure — Market risk monitoring

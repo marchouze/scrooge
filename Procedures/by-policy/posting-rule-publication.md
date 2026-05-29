@@ -1,4 +1,7 @@
 ---
+id: PROC-FIN-AC-01
+policy-parent: -  § Accounting Policies (IFRS) v0.1 §3 (Recognition and double-entry discipline); §4 (Multi-currenc
+last-reviewed: 2026-05-07
 status: POPULATED
 ---
 # Procedure — Posting-rule publication

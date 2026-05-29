@@ -1,4 +1,6 @@
 ---
+policy-parent: Fit-and-Proper Policy (planned)
+last-reviewed: 2026-05-16
 procedureId: PROC-HR-FP-01
 title: Ongoing fit-and-proper attestation — non-FAIS-KI roles
 author: Sade (AgentOps & token efficiency engineer) · Owen (Company Secretary, governance) · Helena (Chief Risk Officer, governance)

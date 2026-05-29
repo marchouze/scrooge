@@ -1,4 +1,7 @@
 ---
+id: PROC-RISK-ST-01
+policy-parent: — Market Risk Policy (market risk stress inputs)
+last-reviewed: 2026-05-13
 status: POPULATED
 ---
 # Procedure — Stress test cycle

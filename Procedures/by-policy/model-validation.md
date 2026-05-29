@@ -1,4 +1,6 @@
 ---
+policy-parent: Model Risk Policy (pending full codification) · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B7
+last-reviewed: 2026-05-15
 procedureId: PROC-RSK-MV-01
 title: Model validation cycle
 author: Helena (Chief Risk Officer, governance) · Nadia (model validation engineer)

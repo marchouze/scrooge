@@ -1,4 +1,7 @@
 ---
+id: PROC-FC-CTR-01
+policy-parent: — AML/CFT Policy §6 (Cash Threshold Reporting obligations)
+last-reviewed: 2026-05-15
 status: POPULATED
 ---
 # Procedure — Cash Threshold Report (CTR) Filing
