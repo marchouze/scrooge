@@ -12,33 +12,43 @@
 // When `AccountingPeriodClosed` fires for `LE-ZA-HOZ-BANK`, the subscriber:
 //   1. Reads the trial-balance rows from the event payload's referenced
 //      `TrialBalanceSnapshotted` event_id (persisted in the event store).
-//   2. Applies the default HQLA classification map (caller-supplied or
-//      built-in default). The built-in default maps `ACC-1100-001` (Cash and
-//      balances at SARB, per `CashAndBalancesAtSARB` semantic entry) to
-//      HQLA Level-1.
-//   3. Calls `generateBa325Lcr` with the event store, trial balance, and
-//      classification map.
-//   4. Returns the typed `Ba325Output` for the caller to render / store.
+//   2. Folds the unified-position and security-master projections to compute
+//      instrument-level HQLA stock (`computeHqlaStockFromPositions`).
+//   3. Derives the additive cash HQLA contribution from each cash account's
+//      custodian Party classification (`computeCashHqlaFromCustodian`): cash
+//      held with a `central-bank`-classified custodian (the SARB) is Level-1
+//      (Reg 26(7)(a)(i); BCBS D295 §50(a)). The tier is a query over the
+//      event-sourced Party register, never an authored COA tag.
+//   4. Calls `generateBa325Lcr` with the event store, trial balance, the
+//      instrument-level `hqlaStock`, and the custodian-derived `cashHqlaLines`.
+//   5. Returns the typed `Ba325Output` for the caller to render / store.
 //
 // ## Principle 1 compliance
 //
 // Cash flows (LCR denominator) are folded directly from
 // `FxSettlementInstructed` and `TradeMatured` events inside
 // `generateBa325Lcr` — not from GL account balances. HQLA stock (numerator)
-// uses the trial-balance rows from the period-close snapshot. This is the
-// Principle 1 compliant architecture per `Principles/1-events-are-truth.md`
-// (updated 2026-05-12).
+// is instrument-level (SecurityMaster × unified-position) plus the
+// custodian-derived cash residual — both queries over the event log, not
+// stored classification state. This is the Principle 1 compliant architecture
+// per `Principles/1-events-are-truth.md` (updated 2026-05-12).
 //
-// ## Cross-link to semantic registry
+// ## Custodian-derived cash HQLA
 //
-// The built-in default classification map is anchored to
-// `CashAndBalancesAtSARB` from `@platform/semantic`. That entry carries the
-// BA 325 regulatory cell: "HQLA Level 1 — central-bank reserves (LCR)".
-// The account ID `ACC-1100-001` in the default classification map corresponds
-// to the formula `Balance(account=ACC-1100-001, ...)` in the semantic entry.
+// Cash has no ISIN, so it cannot be classified per-security. Its HQLA
+// eligibility flows from *who holds it*: the cash account's custodian Party.
+// The COA registry records each cash account's `custodianPartyId`
+// (e.g. ACC-1100-001 → `urn:party:legal-entity:sarb`); the Party register
+// records the custodian's classification (`central-bank`). The tier is
+// derived from the two — never from a hand-typed `hqlaLevel` tag on the
+// account. This removes the prior authored-tag failure mode (the tier was
+// stored state, not a query over a source fact).
 //
 // Citation: Principles/1-events-are-truth.md; D-MARKETS-SCHEMA-FOUNDATION;
-//           D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN.
+//           D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
+//           D-FINANCIAL-INSTRUMENT-ENTITY;
+//           D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
+//           BCBS D295 §50; Reg 26(7)(a)(i).
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line mapping + subscriber owner)
@@ -46,59 +56,65 @@
 //   owner)
 //   + Anya (Projection Engineer, engineering — semantic-layer integration).
 
+import { COA_ACCOUNTS, coaToHqlaClassifications } from "../../accounting/coa-registry";
 import type {
   AccountingPeriodClosedPayload,
   TrialBalanceSnapshottedPayload,
 } from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
+import { buildPartyProjection } from "../../identity/party-projection";
+import {
+  securityMasterInitial,
+  securityMasterProjection,
+  unifiedPositionInitial,
+  unifiedPositionProjection,
+} from "../../projections/markets";
 import {
   type AccountLiquidityClassification,
   BA_325_BANK_ENTITIES,
   type Ba325Output,
   generateBa325Lcr,
 } from "../../reporting/ba-325-lcr";
-import { cashAndBalancesAtSARB } from "../../semantic";
+import {
+  type CashHqlaCustodianAccount,
+  type HqlaStockInput,
+  computeCashHqlaFromCustodian,
+} from "../../reporting/hqla-stock";
 
 // ---------------------------------------------------------------------------
-// Default HQLA classification map
+// Functional currency (build-phase scope)
+// ---------------------------------------------------------------------------
+
+// TODO: read from AccountingPeriodOpened.functionalCurrency (Slice 6+). Until
+// then the bank's single licensed entity reports in ZAR (Principle 5: FX
+// positions are excluded from the functional-currency LCR until conversion
+// lands).
+const FUNCTIONAL_CURRENCY = "ZAR";
+
+// ---------------------------------------------------------------------------
+// Cash-nature accounts with a custodian (HQLA tier derived from the custodian)
 // ---------------------------------------------------------------------------
 
 /**
- * The SARB BA 325 account ID for Cash and balances at SARB (Hoz Bank).
- * Anchored to `CashAndBalancesAtSARB` semantic entry (Slice 1) which carries:
- *   formula: "Balance(account=ACC-1100-001, entity=urn:legal-entity:hoz:hoz-bank:v1, ...)"
- *   regulatoryCell: { form: "BA 325", line: "HQLA Level 1 — central-bank reserves (LCR)" }
+ * Cash-nature GL accounts that carry a custodian Party. The HQLA tier of each
+ * balance is *derived* from the custodian's Party classification at report
+ * time (`central-bank` → Level-1), never from an authored COA tag. Securities
+ * accounts MUST NOT appear here — the instrument-level path
+ * (`computeHqlaStockFromPositions`) owns those.
  *
- * Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN; platform/semantic/entries.ts.
- */
-export const CASH_AT_SARB_ACCOUNT_ID = "ACC-1100-001";
-
-/**
- * Default HQLA classification map derived from the `CashAndBalancesAtSARB`
- * semantic entry. This is the minimum production-grade map for Hoz Bank:
- * a single Level-1 HQLA account (SARB operational cash). Additional
- * Level-2A / Level-2B classifications are supplied at the call site as
- * the chart-of-accounts and instrument classifications mature (Slice 6+).
+ * Sourced from the COA registry (`category === "asset-cash"` with a
+ * `custodianPartyId`). This is the same derivation the rehearsal CLI
+ * (`scripts/render-ba-325.ts`) uses, kept in lock-step so the two BA 325
+ * code paths agree.
  *
- * The semantic entry is imported and referenced here so that the recon
- * pipeline can assert "the default map is consistent with the semantic
- * registry" — Principle 2 (single-graph discipline, bidirectional
- * traceability) and Principle 1 (events as truth; semantic registry
- * as the typed classification layer).
+ * Authority: D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
+ * BCBS D295 §50; Reg 26(7)(a)(i).
  */
-export const DEFAULT_HQLA_CLASSIFICATIONS: readonly AccountLiquidityClassification[] = [
-  {
-    // Anchored to CashAndBalancesAtSARB semantic entry (Slice 1).
-    // entry.id: cashAndBalancesAtSARB.id === "CashAndBalancesAtSARB"
-    // entry.regulatoryCells[1]: { form: "BA 325", line: "HQLA Level 1 — central-bank reserves (LCR)" }
-    leafAccountId: CASH_AT_SARB_ACCOUNT_ID,
-    hqlaLevel: "level-1",
-    subCategory:
-      cashAndBalancesAtSARB.regulatoryCells?.find((c) => c.form === "BA 325")?.line ??
-      "level-1.cash-at-sarb",
-  },
-];
+const CASH_CUSTODIAN_ACCOUNTS: readonly CashHqlaCustodianAccount[] = COA_ACCOUNTS.filter(
+  (a): a is typeof a & { custodianPartyId: string } =>
+    a.category === "asset-cash" && a.custodianPartyId !== undefined,
+).map((a) => ({ leafAccountId: a.id, custodianPartyId: a.custodianPartyId }));
 
 // ---------------------------------------------------------------------------
 // Subscriber input / output
@@ -114,16 +130,20 @@ export interface Ba325PeriodCloseSubscriberInput {
   readonly entity: string;
   /**
    * Event store — provides access to:
-   *   (a) `TrialBalanceSnapshotted` event rows (HQLA stock);
-   *   (b) `FxSettlementInstructed` / `TradeMatured` events (cash flows).
+   *   (a) `TrialBalanceSnapshotted` event rows (cash HQLA base);
+   *   (b) unified-position / security-master projections (instrument HQLA);
+   *   (c) the Party register (custodian → classification lookup);
+   *   (d) `FxSettlementInstructed` / `TradeMatured` events (cash flows).
    */
   readonly eventStore: EventStore;
   /** Actor running the subscriber (typically the Bea agent). */
   readonly actor: Actor;
   /**
-   * Optional override classifications. Defaults to `DEFAULT_HQLA_CLASSIFICATIONS`.
-   * Use at the call site to add Level-2A / Level-2B entries when the
-   * instrument classification map is populated (Slice 6+).
+   * Optional override liquidity classifications. Defaults to the COA-registry
+   * derived securities classifications (`coaToHqlaClassifications()`). With the
+   * instrument-level `hqlaStock` path active (always, here) this feeds only the
+   * generator's `classificationsFingerprint` metadata — HQLA stock is computed
+   * instrument-level + custodian-derived-cash, not from these account tags.
    */
   readonly classifications?: readonly AccountLiquidityClassification[];
   /**
@@ -140,7 +160,7 @@ export interface Ba325PeriodCloseSubscriberInput {
 export interface Ba325PeriodCloseSubscriberResult {
   /** The generated BA 325 projection. Caller renders + stores this. */
   readonly ba325Output: Ba325Output;
-  /** The trial-balance rows used as HQLA stock input. */
+  /** The trial-balance rows used as the cash HQLA base. */
   readonly trialBalanceRows: readonly {
     leafAccountId: string;
     currency: string;
@@ -153,6 +173,34 @@ export interface Ba325PeriodCloseSubscriberResult {
    */
   readonly skipped: boolean;
   readonly skipReason?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Projection fold — unified-position + security-master for instrument HQLA
+// ---------------------------------------------------------------------------
+
+function foldPositionProjections(
+  eventStore: EventStore,
+  entity: string,
+  untilSequence: number | undefined,
+): { positions: typeof unifiedPositionInitial; securityMaster: typeof securityMasterInitial } {
+  let positions = unifiedPositionInitial;
+  let securityMaster = securityMasterInitial;
+  // Bound the fold by the AccountingPeriodClosed frozen cursor (if present) so
+  // it cannot diverge from concurrent appends — matches the trial-balance and
+  // cash-flow folds. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  for (const event of eventStore.replay({
+    entity,
+    ...(untilSequence !== undefined ? { untilSequence } : {}),
+  })) {
+    if (unifiedPositionProjection.accepts(event)) {
+      positions = unifiedPositionProjection.reduce(positions, event);
+    }
+    if (securityMasterProjection.accepts(event)) {
+      securityMaster = securityMasterProjection.reduce(securityMaster, event);
+    }
+  }
+  return { positions, securityMaster };
 }
 
 // ---------------------------------------------------------------------------
@@ -170,15 +218,18 @@ export interface Ba325PeriodCloseSubscriberResult {
  * from the trial balance. Cash flows (LCR denominator) are folded directly
  * from settlement events inside `generateBa325Lcr`.
  *
- * **Semantic cross-link**: the default classification map (`DEFAULT_HQLA_CLASSIFICATIONS`)
- * is anchored to `CashAndBalancesAtSARB` from `@platform/semantic`. The
- * semantic entry carries the BA 325 regulatory cell, so the classification
- * is traceable from regulation → policy → semantic entry → account → BA 325
- * cell (Principle 2 — single-graph discipline).
+ * **HQLA stock**: instrument-level (SecurityMaster × unified-position) plus an
+ * additive custodian-derived cash residual. Each cash account's tier is a
+ * query over the event-sourced Party register (`central-bank` → Level-1), not
+ * an authored COA tag — Principle 1 (events as truth) and Principle 2
+ * (single-graph discipline: regulation → policy → custodian classification →
+ * account → BA 325 cell).
  *
  * Citations:
  *   Principles/1-events-are-truth.md (updated 2026-05-12);
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10);
+ *   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
+ *   D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
  *   D-MARKETS-SCHEMA-FOUNDATION;
  *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 26;
  *   BCBS D295.
@@ -223,25 +274,56 @@ export function ba325PeriodCloseSubscriber(
     }
   }
 
-  const classifications = input.classifications ?? DEFAULT_HQLA_CLASSIFICATIONS;
+  const classifications = input.classifications ?? coaToHqlaClassifications();
   const periodEnd = input.closedPayload.closedAt;
+  const untilSequence = input.closedPayload.eventSequence;
+
+  // Instrument-level HQLA stock (SecurityMaster × unified-position).
+  const { positions, securityMaster } = foldPositionProjections(
+    input.eventStore,
+    input.entity,
+    untilSequence,
+  );
+  const hqlaStock: HqlaStockInput = {
+    positions,
+    securityMaster,
+    functionalCurrency: FUNCTIONAL_CURRENCY,
+  };
+
+  // Additive cash HQLA — tier DERIVED from the custodian Party classification.
+  // Fold the Party register so the custodian → classification lookup is a query
+  // over events (Principle 1), not a hard-coded tag. positive-balance and
+  // functional-currency rules live inside computeCashHqlaFromCustodian.
+  const partyProjection = buildPartyProjection(input.eventStore, periodEnd);
+  const custodianClassifications = (custodianPartyId: string): ReadonlySet<string> => {
+    const party = partyProjection.parties.get(custodianPartyId as never);
+    return new Set(party?.classifications ?? []);
+  };
+  const cashHqlaLines = computeCashHqlaFromCustodian({
+    trialBalance: trialBalanceRows,
+    cashAccounts: CASH_CUSTODIAN_ACCOUNTS,
+    custodianClassifications,
+    functionalCurrency: FUNCTIONAL_CURRENCY,
+  });
 
   const ba325Output = generateBa325Lcr({
     entity: input.entity,
     asOf: periodEnd,
     periodId: input.closedPayload.periodId,
-    functionalCurrency: "ZAR", // TODO: read from AccountingPeriodOpened.functionalCurrency (Slice 6+)
+    functionalCurrency: FUNCTIONAL_CURRENCY,
     eventStore: input.eventStore,
     periodStart: input.periodStart,
     periodEnd,
     trialBalance: trialBalanceRows,
     classifications,
+    // Preferred path: instrument-level HQLA stock from SecurityMaster × position.
+    hqlaStock,
+    // Additive cash HQLA — tier derived from the custodian Party classification.
+    cashHqlaLines,
     trialBalanceSnapshotEventId: tbEventId,
     // Thread the frozen cursor so the settlement cash-flow fold is bounded.
     // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
-    ...(input.closedPayload.eventSequence !== undefined
-      ? { untilSequence: input.closedPayload.eventSequence }
-      : {}),
+    ...(untilSequence !== undefined ? { untilSequence } : {}),
   });
 
   return {
