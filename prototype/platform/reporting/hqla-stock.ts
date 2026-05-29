@@ -198,11 +198,7 @@ export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockR
 
   // Stable iteration order — sort by instrumentId for deterministic output.
   const sortedRows = [...positions.rows.values()].sort((a, b) =>
-    a.key.instrumentId < b.key.instrumentId
-      ? -1
-      : a.key.instrumentId > b.key.instrumentId
-        ? 1
-        : 0,
+    a.key.instrumentId < b.key.instrumentId ? -1 : a.key.instrumentId > b.key.instrumentId ? 1 : 0,
   );
 
   for (const row of sortedRows) {

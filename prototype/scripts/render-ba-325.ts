@@ -57,11 +57,18 @@ import { coaToHqlaClassifications } from "../platform/accounting/coa-registry";
 import { computeTrialBalance, periodAuditChain } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import {
+  securityMasterInitial,
+  securityMasterProjection,
+  unifiedPositionInitial,
+  unifiedPositionProjection,
+} from "../platform/projections/markets";
+import {
   type AccountLiquidityClassification,
   type Ba325GeneratorInput,
   generateBa325Lcr,
   renderBa325Canonical,
 } from "../platform/reporting";
+import { computeHqlaStockFromPositions } from "../platform/reporting/hqla-stock";
 
 // ---------------------------------------------------------------------------
 // Build-phase default classifications — derived from the COA registry.
@@ -179,12 +186,55 @@ function resolveTrialBalance(args: CliArgs): TrialBalanceResolution {
 // main
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Fold unified-position and security-master projections from the event store.
+// ---------------------------------------------------------------------------
+
+interface ProjectionsFoldResult {
+  readonly positions: ReturnType<typeof unifiedPositionInitial> extends infer T ? T : never;
+  readonly securityMaster: ReturnType<typeof securityMasterInitial> extends infer T ? T : never;
+}
+
+function foldPositionProjections(args: CliArgs): ProjectionsFoldResult {
+  // Fold unified-position.
+  let positions = unifiedPositionInitial;
+  // Fold security-master.
+  let securityMaster = securityMasterInitial;
+
+  for (const event of eventStore.replay({ entity: args.entity, asOf: args.periodEnd })) {
+    if (unifiedPositionProjection.accepts(event)) {
+      positions = unifiedPositionProjection.reduce(positions, event);
+    }
+    if (securityMasterProjection.accepts(event)) {
+      securityMaster = securityMasterProjection.reduce(securityMaster, event);
+    }
+  }
+
+  return { positions, securityMaster };
+}
+
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const classifications = args.classificationsPath
     ? loadClassifications(args.classificationsPath)
     : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
   const tb = resolveTrialBalance(args);
+
+  // Fold unified-position and security-master projections for HQLA stock.
+  // This gives instrument-level HQLA classification, replacing the Phase-0
+  // trial-balance + AccountLiquidityClassification proxy.
+  const { positions, securityMaster } = foldPositionProjections(args);
+  const hqlaStockInput = {
+    positions,
+    securityMaster,
+    functionalCurrency: args.functionalCurrency,
+  };
+  const hqlaStock = computeHqlaStockFromPositions(hqlaStockInput);
+  // Log a brief summary to stderr for diagnostic purposes.
+  process.stderr.write(
+    `[render-ba-325] HQLA stock: L1=${hqlaStock.level1TotalMinor} L2A=${hqlaStock.level2aTotalMinor} L2B=${hqlaStock.level2bTotalMinor} (${hqlaStock.level1Lines.length + hqlaStock.level2aLines.length + hqlaStock.level2bLines.length} instrument(s); ${hqlaStock.excludedFxPositions.length} FX-excluded)\n`,
+  );
+
   // P1-compliant: pass the event store + period window so cash flows are
   // folded from FxSettlementInstructed / TradeMatured events.
   const output = generateBa325Lcr({
@@ -197,6 +247,8 @@ function main(argv: readonly string[]): number {
     periodEnd: args.periodEnd,
     trialBalance: tb.rows,
     classifications,
+    // Preferred path: instrument-level HQLA stock.
+    hqlaStock: hqlaStockInput,
     ...(tb.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: tb.trialBalanceSnapshotEventId }
       : {}),
