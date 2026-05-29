@@ -13,8 +13,14 @@
 //   EquityTradeBooked   — when payload.instrumentId is present (backward-compat:
 //                         legacy events without instrumentId are skipped; the
 //                         equity-only markets.position projection handles them)
-//   BondTradeExecuted   — always has instrumentId (required field); quantity is
-//                         nominal face value; price is clean price (% of face)
+//   BondTradeExecuted   — store-wired flat bond-accounting schema (the only
+//                         bond-trade event actually emitted; see
+//                         event-store/event-types/bond-accounting.ts). The
+//                         canonical instrument key is derived as
+//                         "fi:bond:<bondIsin>" and the position book is the
+//                         IFRS-9 portfolio (trading-book / banking-book);
+//                         quantity is nominal face value (minor units, signed by
+//                         side); price is clean price (% of face).
 //   IrsTradeBooked      — when payload.instrumentId is present; quantity is
 //                         notional (positive = receive-fixed, negative = pay-fixed);
 //                         price proxy is the fixed rate (MTM will replace in M2)
@@ -33,8 +39,8 @@
 // Author: Anya (Data / analytics engineer, engineering) per
 //   D-FINANCIAL-INSTRUMENT-ENTITY Slice 11 (CEO-approved 2026-05-22).
 
+import type { BondTradeExecutedPayload } from "../../event-store/event-types/bond-accounting";
 import type { Event } from "../../event-store/types";
-import type { BondTradeExecutedPayload } from "../../markets/cdm/fixed-income";
 import type { IrsTradeBookedPayload } from "../../markets/cdm/ird";
 import type { Projection } from "../types";
 import type { EquityTradeBookedEvent } from "./types";
@@ -223,13 +229,17 @@ function applyBondTrade(
   e: BondTradeExecutedEvent,
 ): UnifiedPositionState {
   const p = e.payload;
-  const signed = p.side === "buy" ? p.nominalAmount.amountMinor : -p.nominalAmount.amountMinor;
+  // The flat bond-accounting schema has no explicit instrumentId / bookId, so
+  // derive the canonical instrument key from the ISIN ("fi:bond:<ISIN>" per the
+  // FinancialInstrument convention) and use the IFRS-9 portfolio as the book.
+  const instrumentId = `fi:bond:${p.bondIsin}`;
+  const signed = p.side === "buy" ? p.nominalMinor : -p.nominalMinor;
   return applyTrade(
     state,
-    { entity: e.entity, instrumentId: p.instrumentId, bookId: p.bookId },
+    { entity: e.entity, instrumentId, bookId: p.portfolio },
     signed,
-    p.cleanPrice,
-    p.nominalAmount.currency,
+    p.cleanPricePercent,
+    p.currency,
     "bond",
     "PAM",
   );
