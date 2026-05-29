@@ -270,15 +270,34 @@ export function makeRoleBriefDelivered(args: {
 // ---------------------------------------------------------------------------
 // RiskRunCompleted
 // ---------------------------------------------------------------------------
-
-export const riskRunCompletedPayloadSchema = z.object({
-  runId: z.string().min(1),
-  runKind: z.enum(["var", "stress-test", "back-test", "scenario", "other"]),
-  completedAt: z.string().min(1),
-  outcome: z.enum(["passed", "flagged", "breached"]),
-  summaryMetrics: z.record(z.string(), z.number()).optional(),
-  notes: z.string().optional(),
-});
+//
+// Schema aligned with rohan-risk-run.ts handler emission shape (2026-05-29).
+// Handler emits: appetiteLineCount, readinessReady/Drafting/Specified/Unspecified,
+// positionEventsLast7d, riskRaisedEventsLast7d, latestHelenaRun, runTrigger.
+// Original idealised fields (runId, runKind, completedAt, outcome) are now
+// optional for backward compat with any stored events.
+//
+export const riskRunCompletedPayloadSchema = z
+  .object({
+    // Handler-emitted fields (authoritative)
+    appetiteLineCount: z.number().int().nonnegative().optional(),
+    readinessReady: z.number().int().nonnegative().optional(),
+    readinessDrafting: z.number().int().nonnegative().optional(),
+    readinessSpecified: z.number().int().nonnegative().optional(),
+    readinessUnspecified: z.number().int().nonnegative().optional(),
+    positionEventsLast7d: z.number().int().nonnegative().optional(),
+    riskRaisedEventsLast7d: z.number().int().nonnegative().optional(),
+    latestHelenaRun: z.string().nullable().optional(),
+    runTrigger: z.string().optional(),
+    // Original idealised fields (optional, backward compat)
+    runId: z.string().min(1).optional(),
+    runKind: z.enum(["var", "stress-test", "back-test", "scenario", "other"]).optional(),
+    completedAt: z.string().min(1).optional(),
+    outcome: z.enum(["passed", "flagged", "breached"]).optional(),
+    summaryMetrics: z.record(z.string(), z.number()).optional(),
+    notes: z.string().optional(),
+  })
+  .passthrough();
 
 export type RiskRunCompletedPayload = z.infer<typeof riskRunCompletedPayloadSchema>;
 
@@ -409,14 +428,39 @@ export function makeRoleResearchRequested(args: {
 // ---------------------------------------------------------------------------
 // RoleResearchQueueSnapshot
 // ---------------------------------------------------------------------------
-
-export const roleResearchQueueSnapshotPayloadSchema = z.object({
-  snapshotId: z.string().min(1),
-  asOf: z.string().min(1),
-  queueDepth: z.number().int().nonnegative(),
-  pendingRoles: z.array(z.string()),
-  completedCount: z.number().int().nonnegative(),
-});
+//
+// Schema aligned with pax-role-research-queue.ts handler emission shape (2026-05-29).
+// Handler emits: draftPersonaCount, draftPersonas, substrateGapHireCount,
+// substrateGapHires, pendingHireBriefCount, pendingHireBriefs, runTrigger.
+// Original idealised fields (snapshotId, asOf, queueDepth, pendingRoles,
+// completedCount) are now optional for backward compat.
+//
+export const roleResearchQueueSnapshotPayloadSchema = z
+  .object({
+    // Handler-emitted fields (authoritative)
+    draftPersonaCount: z.number().int().nonnegative().optional(),
+    draftPersonas: z.array(z.object({ name: z.string(), latestVersion: z.string() })).optional(),
+    substrateGapHireCount: z.number().int().nonnegative().optional(),
+    substrateGapHires: z.array(z.object({ persona: z.string() })).optional(),
+    pendingHireBriefCount: z.number().int().nonnegative().optional(),
+    pendingHireBriefs: z
+      .array(
+        z.object({
+          file: z.string(),
+          decisionId: z.string().nullable().optional(),
+          date: z.string().nullable().optional(),
+        }),
+      )
+      .optional(),
+    runTrigger: z.string().optional(),
+    // Original idealised fields (optional, backward compat)
+    snapshotId: z.string().min(1).optional(),
+    asOf: z.string().min(1).optional(),
+    queueDepth: z.number().int().nonnegative().optional(),
+    pendingRoles: z.array(z.string()).optional(),
+    completedCount: z.number().int().nonnegative().optional(),
+  })
+  .passthrough();
 
 export type RoleResearchQueueSnapshotPayload = z.infer<
   typeof roleResearchQueueSnapshotPayloadSchema

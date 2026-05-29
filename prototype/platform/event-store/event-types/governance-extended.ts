@@ -23,16 +23,38 @@ import { type Actor, type Event, eventSchema } from "../types";
 // ---------------------------------------------------------------------------
 // AuditCommitteePackPrepped
 // ---------------------------------------------------------------------------
-
-export const auditCommitteePackPreppedPayloadSchema = z.object({
-  packId: z.string().min(1),
-  period: z.string().min(1),
-  preparedBy: z.string().min(1),
-  preparedAt: z.string().min(1),
-  meetingDate: z.string().min(1),
-  sectionCount: z.number().int().positive(),
-  filePath: z.string().optional(),
-});
+//
+// Schema aligned with thandiwe-audit-committee-prep.ts handler emission shape
+// (2026-05-29). Handler emits: findingsLast7d, highSeverityFindingsLast7d,
+// reconResultsLast7d, reconViolationsLast7d, governancePrepLast7d,
+// priorPacksLast30d, whistleblowingLast7d, externalAuditorInquiryLast7d,
+// thirdLineRelevantObligations, runTrigger.
+// Original idealised fields (packId, period, preparedBy, preparedAt,
+// meetingDate, sectionCount) are now optional for backward compat.
+//
+export const auditCommitteePackPreppedPayloadSchema = z
+  .object({
+    // Handler-emitted fields (authoritative)
+    findingsLast7d: z.number().int().nonnegative().optional(),
+    highSeverityFindingsLast7d: z.number().int().nonnegative().optional(),
+    reconResultsLast7d: z.number().int().nonnegative().optional(),
+    reconViolationsLast7d: z.number().int().nonnegative().optional(),
+    governancePrepLast7d: z.number().int().nonnegative().optional(),
+    priorPacksLast30d: z.number().int().nonnegative().optional(),
+    whistleblowingLast7d: z.number().int().nonnegative().optional(),
+    externalAuditorInquiryLast7d: z.number().int().nonnegative().optional(),
+    thirdLineRelevantObligations: z.number().int().nonnegative().optional(),
+    runTrigger: z.string().optional(),
+    // Original idealised fields (optional, backward compat)
+    packId: z.string().min(1).optional(),
+    period: z.string().min(1).optional(),
+    preparedBy: z.string().min(1).optional(),
+    preparedAt: z.string().min(1).optional(),
+    meetingDate: z.string().min(1).optional(),
+    sectionCount: z.number().int().positive().optional(),
+    filePath: z.string().optional(),
+  })
+  .passthrough();
 
 export type AuditCommitteePackPreppedPayload = z.infer<
   typeof auditCommitteePackPreppedPayloadSchema
