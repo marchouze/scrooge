@@ -166,6 +166,46 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
       },
     ],
   },
+  ecl: {
+    calcKey: "ecl",
+    figure: "IFRS 9 Expected Credit Loss",
+    modelId: "model:ecl-engine-ifrs9-v1",
+    modelVersion: "1.0.0",
+    // ECL is an IFRS 9 impairment figure that lands on the published financial
+    // statements — methodology accountability sits with Helena (CRO) per the
+    // model-risk policy (RISK-MRP-01 §5: IFRS 9 ECL suite is a sub-domain of the
+    // Model Risk Policy), while the impairment *figure* (the provision booked) is
+    // owned by Camille (CFO) per the decision-authority routing table (CFO: IFRS
+    // accounting policy / AFS). The owningAgent on the binding is the figure
+    // owner; the model-registry methodology owner is Helena, carried on the
+    // model's tier rationale, not here. Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1.
+    owningAgent: "Camille (Chief Financial Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "IFRS-9-B5.5", "BANKS-ACT-94-1990"],
+    inputContract: [
+      {
+        name: "eadMinor",
+        required: true,
+        unit: "ZAR-minor",
+        expectedFrom:
+          "ECL engine EAD read (model:ecl-ead-ifrs9-v1): Σ |markToMarket| over unified-position bond book",
+      },
+      {
+        name: "pdLgdParameterised",
+        required: true,
+        unit: "bool",
+        expectedFrom:
+          "ECL engine PD × LGD parameters (model:ecl-pd-ifrs9-v1, model:ecl-lgd-ifrs9-v1); loud requireWeight lookup by risk bucket",
+      },
+      {
+        name: "stagingClassified",
+        required: true,
+        unit: "bool",
+        expectedFrom:
+          "ECL engine staging (model:ecl-staging-ifrs9-v1): assessIfrs9Stage() per in-scope debt exposure",
+      },
+    ],
+  },
 } as const;
 
 /** Look up a binding by calc key. Throws (loud) on an unknown key. */
