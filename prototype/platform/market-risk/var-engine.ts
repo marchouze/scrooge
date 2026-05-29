@@ -63,9 +63,9 @@
 
 import { fxPositionCalculator } from "../accounting/fx-calculators";
 import type { EventStore } from "../event-store/store";
-import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { MarketDataStore } from "../market-data/store";
-import { extractMidRate } from "../market-data/store";
+import { extractMidRate, lookupQuoteWithInverse } from "../market-data/store";
+import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { type FinancialInput, absent, present, requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
@@ -155,11 +155,14 @@ export function fxReturnSeries(
   pair: string,
   asOf: string,
   window: number = VAR_OBSERVATION_WINDOW,
+  provenance: "production" | "simulated" = "production",
 ): number[] {
   // Most-recent-first ticks (asc-bounded by asOf), one extra so we can form
-  // `window` returns from `window + 1` levels.
+  // `window` returns from `window + 1` levels. Production-provenance only:
+  // simulation ticks must never contaminate a live VaR valuation
+  // (D-MARKETS-SCHEMA-FOUNDATION; valuation-policy §4.3).
   const ticks = marketData
-    .query({ instrument: pair, dataType: "fx-quote", to: asOf, limit: window + 1 })
+    .query({ provenance, instrument: pair, dataType: "fx-quote", to: asOf, limit: window + 1 })
     .map((t) => extractMidRate(t.payload))
     .filter((r): r is number => typeof r === "number" && r > 0);
 
@@ -174,6 +177,32 @@ export function fxReturnSeries(
 }
 
 /**
+ * Derive a currency → ZAR-rate map (units of ZAR per 1 minor unit of currency,
+ * matching fxPositionCalculator's contract) from the live trading book's
+ * currencies, sourcing the latest mid quote per pair from the MarketDataStore
+ * (direction-aware). ZAR maps to 1. A currency with no usable quote is omitted
+ * (fxPositionCalculator then treats it at rate 1 — a degraded translation that
+ * the engine's history-sufficiency gate will catch downstream, never a silent
+ * wrong figure surfaced as VaR).
+ */
+export function deriveZarRatesFromMarketData(
+  marketData: MarketDataStore,
+  currencies: Iterable<string>,
+): Map<string, number> {
+  const rates = new Map<string, number>();
+  rates.set("ZAR", 1);
+  for (const ccy of currencies) {
+    if (ccy === "ZAR" || rates.has(ccy)) continue;
+    const quote = lookupQuoteWithInverse(marketData, `${ccy}/ZAR`, { provenance: "production" });
+    // rate is ZAR per 1 unit of ccy; fxPositionCalculator multiplies a minor
+    // base amount by this rate to get a minor ZAR amount, so the per-unit and
+    // per-minor-unit factors coincide (both legs are minor units).
+    if (quote && quote.rate > 0) rates.set(ccy, quote.rate);
+  }
+  return rates;
+}
+
+/**
  * Derive the live trading-book risk-factor exposures (FX desk) + their return
  * histories. This is the market-risk P&L / sensitivity model
  * (model:market-risk-pnl-sensitivity-v1): it maps the live book to a signed
@@ -183,10 +212,11 @@ export function deriveRiskFactorExposures(args: {
   readonly eventStore: EventStore;
   readonly marketData: MarketDataStore;
   readonly asOf: string;
-  /** currency → ZAR rate, for translating net base positions to ZAR. */
-  readonly zarRates: ReadonlyMap<string, number>;
+  /** currency → ZAR rate, for translating net base positions to ZAR. Derived
+   *  from the MarketDataStore when omitted. */
+  readonly zarRates?: ReadonlyMap<string, number>;
 }): { exposures: RiskFactorExposure[]; returnsByFactor: Map<string, number[]> } {
-  const { eventStore, marketData, asOf, zarRates } = args;
+  const { eventStore, marketData, asOf } = args;
 
   // ---- Live FX positions (the populated build-phase trading book) ----------
   const trades: FxTradeExecutedPayload[] = [];
@@ -203,6 +233,14 @@ export function deriveRiskFactorExposures(args: {
     const p = ev.payload as { tradeId?: unknown };
     if (typeof p.tradeId === "string") settledTradeIds.add(p.tradeId);
   }
+
+  // Build (or accept) the ZAR-rate map across every currency the book touches.
+  const currencies = new Set<string>();
+  for (const t of trades) {
+    currencies.add(t.currencyPair.base);
+    currencies.add(t.currencyPair.quote);
+  }
+  const zarRates = args.zarRates ?? deriveZarRatesFromMarketData(marketData, currencies);
 
   const fxPositions = fxPositionCalculator({ trades, settledTradeIds, zarRates, asOf });
 
@@ -243,7 +281,7 @@ export function simulatePnLDistribution(
   returnsByFactor: ReadonlyMap<string, number[]>,
 ): number[] {
   if (exposures.length === 0) return [];
-  let scenarioCount = Infinity;
+  let scenarioCount = Number.POSITIVE_INFINITY;
   for (const e of exposures) {
     const series = returnsByFactor.get(e.factor) ?? [];
     scenarioCount = Math.min(scenarioCount, series.length);
@@ -307,19 +345,20 @@ export function computeMarketRisk(args: {
   readonly eventStore: EventStore;
   readonly marketData: MarketDataStore;
   readonly asOf: string;
-  readonly zarRates: ReadonlyMap<string, number>;
+  /** currency → ZAR rate. Derived from the MarketDataStore when omitted. */
+  readonly zarRates?: ReadonlyMap<string, number>;
 }): MarketRiskReport {
-  const { eventStore, marketData, asOf, zarRates } = args;
+  const { eventStore, marketData, asOf } = args;
   const { exposures, returnsByFactor } = deriveRiskFactorExposures({
     eventStore,
     marketData,
     asOf,
-    zarRates,
+    ...(args.zarRates ? { zarRates: args.zarRates } : {}),
   });
 
   const minObservations = exposures.reduce(
     (min, e) => Math.min(min, e.returnObservations),
-    exposures.length === 0 ? 0 : Infinity,
+    exposures.length === 0 ? 0 : Number.POSITIVE_INFINITY,
   );
 
   // ---- No live positions: VaR is 0 by absence of risk, surfaced loudly. ----
@@ -340,12 +379,8 @@ export function computeMarketRisk(args: {
 
   // ---- Live positions but too-short history: degraded, never a silent 0. ---
   if (!Number.isFinite(minObservations) || minObservations < MIN_RETURN_OBSERVATIONS) {
-    const reason =
-      `insufficient market-data return history — ${
-        Number.isFinite(minObservations) ? minObservations : 0
-      } observation(s) for the thinnest risk factor, ` +
-      `below the ${MIN_RETURN_OBSERVATIONS}-observation floor (target ${VAR_OBSERVATION_WINDOW}-day window). ` +
-      `A VaR derived from a too-short window understates tail risk.`;
+    const obs = Number.isFinite(minObservations) ? minObservations : 0;
+    const reason = `insufficient market-data return history — ${obs} observation(s) for the thinnest risk factor, below the ${MIN_RETURN_OBSERVATIONS}-observation floor (target ${VAR_OBSERVATION_WINDOW}-day window). A VaR derived from a too-short window understates tail risk.`;
     const exp =
       "MarketDataStore fx-quote tick history per risk factor (Ravi — market-data infrastructure)";
     return {
@@ -353,7 +388,7 @@ export function computeMarketRisk(args: {
       currency: "ZAR",
       status: "insufficient-history",
       exposures,
-      minObservations: Number.isFinite(minObservations) ? minObservations : 0,
+      minObservations: obs,
       var: absent(reason, exp),
       svar: absent(reason, exp),
       es: absent(reason, exp),

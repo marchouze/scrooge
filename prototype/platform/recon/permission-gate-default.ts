@@ -266,6 +266,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // dashboard/server.ts (via bootModelRegisteredSeeds) with the gated store.
   // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8, P4-SECURITY-DESIGNED-IN.
   "seeds/models/model-registered-seed.ts",
+  // Market-risk VaR/SVaR/ES engine unit tests — co-located per-module test
+  // convention. Raw EventStore(":memory:") is a build-phase fixture for the
+  // historical-simulation status-path assertions, not a production access
+  // path. T-01 carve-out.
+  // Citation: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/market-risk/var-engine.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

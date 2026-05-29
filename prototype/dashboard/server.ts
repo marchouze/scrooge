@@ -107,6 +107,7 @@ import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
+import { computeMarketRisk } from "../platform/market-risk/var-engine";
 import { checkModelApproved } from "../platform/model-registry/calculation-binding";
 import { buildCalculationPerformed } from "../platform/model-registry/calculation-emit";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
@@ -133,6 +134,7 @@ import { runObligationReviewStatusRecon } from "../platform/recon/obligation-rev
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
+import type { FinancialInput } from "../platform/types/financial-input";
 import {
   buildDecisionsRegister,
   buildOpenDecisionsFromEscalations,
@@ -891,6 +893,44 @@ function emitCalculationProvenance(): void {
       ],
       niiNoPos ? null : Math.round(nii.worstCaseDeltaNiiZar * 100),
     );
+
+    // Market-risk VaR / SVaR / ES — historical-simulation suite over the live
+    // trading book (model:market-risk-{var,svar,es}-hs-v1). UNLIKE the banking-
+    // book figures the trading book is NOT empty (FX positions exist), so these
+    // compute LIVE when there is sufficient market-data return history. NO SILENT
+    // ZEROS: a flat book yields `no-positions` and a too-short return window
+    // yields `insufficient-history` — both degraded (output null), surfaced on
+    // the data-failure banner, never an unexplained 0. The risk-factor exposure
+    // vector is the optional input (absent → degraded); the return-history
+    // sufficiency flag is the second optional input (absent → degraded).
+    // Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 4.
+    const mr = computeMarketRisk({ eventStore, marketData: marketDataStore, asOf });
+    const mrPositioned = mr.status !== "no-positions";
+    const mrHistoryOk = mr.status === "computed";
+    // Exposure vector is missing only when the book is flat; history flag is
+    // missing when there are positions but the return window is too short.
+    const exposureZarTotal = mr.exposures.reduce((s, e) => s + Math.abs(e.exposureZar), 0);
+    const emitMarketRisk = (calcKey: "var" | "svar" | "es", fig: FinancialInput<number>): void => {
+      emitOne(
+        calcKey,
+        [
+          {
+            name: "riskFactorExposureZar",
+            value: mrPositioned ? exposureZarTotal : null,
+            missing: !mrPositioned,
+          },
+          {
+            name: calcKey === "svar" ? "stressWindowCalibrated" : "returnHistorySufficient",
+            value: mrHistoryOk ? 1 : null,
+            missing: !mrHistoryOk,
+          },
+        ],
+        fig.present ? Math.round(fig.value * 100) : null,
+      );
+    };
+    emitMarketRisk("var", mr.var);
+    emitMarketRisk("svar", mr.svar);
+    emitMarketRisk("es", mr.es);
   } catch (err) {
     logger.warn(
       { err: (err as Error).message },

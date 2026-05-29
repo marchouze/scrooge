@@ -19,6 +19,10 @@
 //  11. model:irrbb-repricing-v1         — IRRBB repricing/behavioural model (Tier-1, BCBS d368)
 //  12. model:irrbb-eve-engine-v1        — IRRBB ΔEVE engine (Tier-1, BCBS d368 §III)
 //  13. model:irrbb-nii-engine-v1        — IRRBB ΔNII engine (Tier-1, BCBS d368 §III)
+//  14. model:market-risk-pnl-sensitivity-v1 — market-risk P&L/sensitivity (Tier-1, RISK-MRP-01 §1.1)
+//  15. model:market-risk-var-hs-v1      — market-risk VaR 99% 1-day HS (Tier-1, BCBS d457 / Basel-2.5)
+//  16. model:market-risk-svar-hs-v1     — market-risk Stressed VaR (Tier-1, Basel-2.5 MAR)
+//  17. model:market-risk-es-hs-v1       — market-risk Expected Shortfall 97.5% (Tier-1, BCBS d457 MAR33)
 //
 // These are regulatory-submission models (LCR/NSFR → BA 325; CET1/RWA → BA 700) and
 // therefore Tier-1 under SR 11-7 §V: a misstated figure feeds a statutory return.
@@ -71,9 +75,27 @@
 // feeds Pillar-2 capital, the ICAAP and the BA 330 IRRBB return. Methodology
 // accountability sits with Helena (CRO) per RISK-MRP-01 §3.4.
 //
+// The four market-risk models (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 4) close
+// the final declared model-scope gap in RISK-MRP-01 §1.1: market-risk models
+// (VaR, Stressed VaR, Expected Shortfall) were in declared scope but ungoverned
+// and uncomputed. The P&L / sensitivity model (model:market-risk-pnl-sensitivity-v1)
+// derives the live trading-book risk-factor exposure vector; the VaR engine
+// (model:market-risk-var-hs-v1, surfaced calcKey `var`), the SVaR engine
+// (model:market-risk-svar-hs-v1, calcKey `svar`) and the ES engine
+// (model:market-risk-es-hs-v1, calcKey `es`) compute the three surfaced figures
+// by historical simulation. All four are Tier-1 under SR 11-7 §V and RISK-MRP-01
+// §2: market risk feeds the RAS market-risk limits and potential Pillar-1 /
+// Pillar-2 market-risk capital. Market-risk figures are CRO-owned per the
+// decision-authority routing table, so methodology accountability AND figure
+// ownership both sit with Helena (CRO); the historical return window is supplied
+// by Ravi (market-data infrastructure engineer). The prescribed FRTB
+// standardised-approach inputs (risk-weight buckets, correlation parameters) are
+// regulatory-prescribed constants, not bank models, and are intentionally out of
+// model-registry scope. CVA is the next slice (Slice 5) — out of scope here.
+//
 // Authority:
 //   - D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
-//   - D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (CEO session-delegation 2026-05-29) — RWA + ECL suite + IRRBB.
+//   - D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (CEO session-delegation 2026-05-29) — RWA + ECL suite + IRRBB + market-risk.
 // Author: Atlas (substrate), coordinating Rohan (Risk systems engineer, builder)
 //   + Nadia (Independent-validation engineer, validator); RWA + ECL-suite + IRRBB
 //   slices coordinated by Helena (Chief Risk Officer, governance — model-risk-policy
@@ -367,6 +389,97 @@ const MODELS: ReadonlyArray<CalcModelDef> = [
       "earnings-at-risk self-assessment. Methodology accountability: Helena (CRO); the ΔNII " +
       "earnings figure is owned by Camille (CFO) per the decision-authority routing table; ALM " +
       "repricing/behavioural inputs are owned by Eitan (Treasurer). Full independent validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  // -- Market-risk governance suite (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 4) ---
+  {
+    modelId: "model:market-risk-pnl-sensitivity-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "Market-risk P&L / sensitivity model (deriveRiskFactorExposures). Maps the live trading " +
+      "book (FX, bonds, IRS, equity) to a signed net-ZAR-exposure-per-risk-factor vector and " +
+      "attaches each factor's historical-return window from the MarketDataStore. The build-phase " +
+      "trading book is the FX desk (net open ZAR positions per currency pair from " +
+      "fxPositionCalculator over FxTradeExecuted); bonds/IRS/equity legs map to their own risk " +
+      "factors as price-history feeds land. This is the common exposure base the VaR / SVaR / ES " +
+      "engines all consume.",
+    methodologyDescription:
+      "market-risk-pnl-sensitivity-v1.0-risk-factor-exposure-vector-fx-net-zar-positions-return-window",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §1.1/§2: the P&L / sensitivity model is the common " +
+      "exposure base for every market-risk measure (VaR, SVaR, ES) — a misstated exposure vector " +
+      "misstates all three figures and the RAS market-risk limits derived from them. Market-risk " +
+      "models are in declared model scope per RISK-MRP-01 §1.1. Methodology accountability: " +
+      "Helena (CRO) — market-risk figures are CRO-owned per the decision-authority routing table; " +
+      "the historical return window is supplied by Ravi (market-data infrastructure engineer). " +
+      "Full independent validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  {
+    modelId: "model:market-risk-var-hs-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "Market-risk VaR engine (computeMarketRisk → historicalVaR). 99% 1-day Value-at-Risk by " +
+      "historical simulation: the simulated 1-day P&L distribution is built by applying each " +
+      "historical scenario's per-factor return to the live exposure vector and summing across " +
+      "factors; VaR is the loss at the 99% quantile. A 250-business-day observation window is the " +
+      "Basel-2.5 / FRTB standard lookback. Surfaced figure (calcKey `var`) in CALC_BINDINGS. NO " +
+      "SILENT ZEROS: a flat book yields `no-positions` and a too-short return window yields " +
+      "`insufficient-history` — both loud, output null, never a silent 0.",
+    methodologyDescription:
+      "market-risk-var-hs-v1.0-99pct-1day-historical-simulation-250d-window-no-silent-zero",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §1.1/§2: VaR is the headline market-risk measure " +
+      "feeding the RAS market-risk limits and potential Pillar-1 / Pillar-2 market-risk capital. A " +
+      "misstated VaR misstates the market-risk limit utilisation and the capital self-assessment. " +
+      "The bank elects historical simulation (no distributional assumption; captures fat tails " +
+      "directly) as the most defensible build-phase method. Methodology accountability + figure " +
+      "ownership: Helena (CRO). Full independent validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  {
+    modelId: "model:market-risk-svar-hs-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "Market-risk Stressed VaR engine (computeMarketRisk → stress-calibrated historicalVaR). The " +
+      "same 99% 1-day historical-simulation VaR calibrated to a window of significant financial " +
+      "stress (Basel-2.5 MAR / FRTB ES-stress-period analogue). Build-phase: until a multi-year " +
+      "return history exists the stress window is the full available window (SVaR ≥ VaR enforced). " +
+      "Surfaced figure (calcKey `svar`) in CALC_BINDINGS. NO SILENT ZEROS: shares the VaR " +
+      "`no-positions` / `insufficient-history` loud gates.",
+    methodologyDescription:
+      "market-risk-svar-hs-v1.0-99pct-1day-stress-calibrated-historical-simulation-svar-gte-var",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §1.1/§2: SVaR is the Basel-2.5 / FRTB stressed " +
+      "market-risk capital measure — a stress add-on to the current VaR that feeds market-risk " +
+      "capital. A misstated SVaR understates stressed-market capital. Methodology accountability + " +
+      "figure ownership: Helena (CRO). Full independent validation applies.",
+    expiryDate: "2027-05-29",
+  },
+  {
+    modelId: "model:market-risk-es-hs-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "Market-risk Expected Shortfall engine (computeMarketRisk → historicalES). 97.5% 1-day " +
+      "Expected Shortfall (the FRTB d457 / MAR33 prescribed quantile): the mean loss in the tail " +
+      "beyond the 97.5% quantile of the simulated 1-day P&L distribution. ES is a coherent risk " +
+      "measure that, unlike VaR, captures the magnitude of tail losses and is the FRTB " +
+      "internal-model metric. Surfaced figure (calcKey `es`) in CALC_BINDINGS. NO SILENT ZEROS: " +
+      "shares the VaR `no-positions` / `insufficient-history` loud gates.",
+    methodologyDescription:
+      "market-risk-es-hs-v1.0-97.5pct-1day-expected-shortfall-tail-mean-frtb-d457-mar33-no-silent-zero",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §1.1/§2: ES is the FRTB-prescribed market-risk " +
+      "internal-model measure feeding market-risk capital and the RAS market-risk limits. A " +
+      "misstated ES misstates the FRTB capital charge. Methodology accountability + figure " +
+      "ownership: Helena (CRO). Full independent validation applies. NOTE: the prescribed FRTB " +
+      "standardised-approach inputs (risk-weight buckets, correlation parameters) are " +
+      "regulatory-prescribed constants, not bank models, and are intentionally out of " +
+      "model-registry scope (per the Slice-4 exclusions).",
     expiryDate: "2027-05-29",
   },
 ] as const;
