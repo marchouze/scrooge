@@ -92,12 +92,14 @@ describe("D-HQLA-COA-CLASSIFICATION — COA registry structure", () => {
 // =====================================================================
 
 describe("D-HQLA-COA-CLASSIFICATION — HQLA account tagging", () => {
-  it("ACC-1100-001 (SARB operational nostro) is tagged level-1", () => {
+  it("ACC-1100-001 (SARB operational nostro) carries a custodianPartyId, NOT an authored hqlaLevel tag", () => {
+    // HQLA tier for cash is derived from the custodian Party's event-sourced
+    // classification (central-bank → Level-1), not an authored COA tag.
+    // See computeCashHqlaFromCustodian + party-register SARB registration.
     const account = COA_BY_ID.get("ACC-1100-001");
     expect(account).toBeDefined();
-    expect(account?.hqlaLevel).toBe("level-1");
-    // Sub-category should reflect central-bank-reserves.
-    expect(account?.hqlaSubCategory).toContain("central-bank-reserves");
+    expect(account?.hqlaLevel).toBeUndefined();
+    expect(account?.custodianPartyId).toBe("urn:party:legal-entity:sarb");
   });
 
   it("ACC-3100-001 (Bond Asset — Banking Book) is tagged level-1", () => {
@@ -169,12 +171,14 @@ describe("D-HQLA-COA-CLASSIFICATION — coaToHqlaClassifications()", () => {
     }
   });
 
-  it("includes ACC-1100-001, ACC-3100-001, and ACC-3100-002", () => {
+  it("includes the bond accounts ACC-3100-001 and ACC-3100-002 but NOT cash ACC-1100-001", () => {
+    // Cash HQLA tier is now custodian-derived, not COA-tagged; only securities
+    // accounts carry an authored hqlaLevel in the COA registry.
     const classifications = coaToHqlaClassifications();
     const ids = classifications.map((c) => c.leafAccountId);
-    expect(ids).toContain("ACC-1100-001");
     expect(ids).toContain("ACC-3100-001");
     expect(ids).toContain("ACC-3100-002");
+    expect(ids).not.toContain("ACC-1100-001");
   });
 
   it("excludes non-HQLA accounts (e.g. trading suspense, P&L)", () => {
@@ -187,9 +191,9 @@ describe("D-HQLA-COA-CLASSIFICATION — coaToHqlaClassifications()", () => {
 
   it("maps hqlaLevel correctly onto AccountLiquidityClassification", () => {
     const classifications = coaToHqlaClassifications();
-    const sarb = classifications.find((c) => c.leafAccountId === "ACC-1100-001");
-    expect(sarb?.hqlaLevel).toBe("level-1");
-    expect(sarb?.subCategory).toBe("level-1.central-bank-reserves");
+    const bond = classifications.find((c) => c.leafAccountId === "ACC-3100-001");
+    expect(bond?.hqlaLevel).toBe("level-1");
+    expect(bond?.subCategory).toContain("government-securities");
   });
 
   it("propagates hqlaSubCategory as subCategory", () => {
@@ -222,9 +226,9 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
     const store = makeStore();
     const classifications = coaToHqlaClassifications();
 
-    // Synthetic trial balance: ACC-1100-001 with 1,000,000 minor units.
+    // Synthetic trial balance: bond account ACC-3100-001 (level-1) with 1,000,000 minor units.
     const trialBalance = [
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 },
+      { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 1_000_000 },
     ];
 
     const out = generateBa325Lcr({
@@ -249,9 +253,9 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
     const store = makeStore();
     const classifications = coaToHqlaClassifications();
 
-    // Both SARB nostro and trading-book bonds in the trial balance.
+    // Both banking-book and trading-book bonds in the trial balance.
     const trialBalance = [
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 500_000 },
+      { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 },
       { leafAccountId: "ACC-3100-002", currency: "ZAR", amountMinor: 300_000 },
     ];
 
@@ -273,13 +277,13 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
     expect(out.hqla.level1.lineItems).toHaveLength(2);
   });
 
-  it("adding bond accounts to trial balance increases total HQLA over SARB-only baseline", () => {
+  it("adding a second bond account to trial balance increases total HQLA over single-bond baseline", () => {
     const store = makeStore();
     const classifications = coaToHqlaClassifications();
 
-    // Baseline: SARB only.
+    // Baseline: banking-book bond only.
     const baselineTrialBalance = [
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 500_000 },
+      { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 },
     ];
     const baselineOut = generateBa325Lcr({
       entity: ENTITY_BANK,
@@ -293,11 +297,10 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
       classifications,
     });
 
-    // With bonds added.
+    // With the trading-book bond added.
     const withBondsTrialBalance = [
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 500_000 },
-      { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 200_000 },
-      { leafAccountId: "ACC-3100-002", currency: "ZAR", amountMinor: 100_000 },
+      { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 },
+      { leafAccountId: "ACC-3100-002", currency: "ZAR", amountMinor: 300_000 },
     ];
     const withBondsOut = generateBa325Lcr({
       entity: ENTITY_BANK,
@@ -314,7 +317,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
     expect(withBondsOut.hqla.totalStockHqlaMinor).toBeGreaterThan(
       baselineOut.hqla.totalStockHqlaMinor,
     );
-    expect(withBondsOut.hqla.totalStockHqlaMinor).toBe(800_000); // 500k + 200k + 100k
+    expect(withBondsOut.hqla.totalStockHqlaMinor).toBe(800_000); // 500k + 300k
   });
 });
 
@@ -502,11 +505,11 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
 // =====================================================================
 
 describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classifications", () => {
-  it("LCR ≥ 100% when SARB reserves exceed net cash outflows", () => {
+  it("LCR ≥ 100% when bond HQLA exceeds net cash outflows", () => {
     const store = makeStore();
     const classifications = coaToHqlaClassifications();
 
-    // HQLA: 500k ZAR at SARB.
+    // HQLA: 500k ZAR in level-1 banking-book bonds.
     // No settlement events → infinite LCR.
     const out = generateBa325Lcr({
       entity: ENTITY_BANK,
@@ -516,7 +519,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
       eventStore: store,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
-      trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 500_000 }],
+      trialBalance: [{ leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 }],
       classifications,
     });
 
@@ -536,7 +539,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
       eventStore: store,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
-      trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 100_000 }],
+      trialBalance: [{ leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 100_000 }],
       classifications,
     });
 
@@ -549,7 +552,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
 
     // Include some non-HQLA accounts — should be ignored by the HQLA scan.
     const trialBalance = [
-      { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 200_000 },
+      { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 200_000 },
       { leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 500_000 }, // FX receivable
       { leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 100_000 }, // suspense
     ];
@@ -566,10 +569,10 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
       classifications,
     });
 
-    // Only ACC-1100-001 contributes; others are not in HQLA classifications.
+    // Only ACC-3100-001 contributes; others are not in HQLA classifications.
     expect(out.hqla.level1.stockMinor).toBe(200_000);
     expect(out.hqla.totalStockHqlaMinor).toBe(200_000);
-    // Only 1 line item (ACC-1100-001).
+    // Only 1 line item (ACC-3100-001).
     expect(out.hqla.level1.lineItems).toHaveLength(1);
   });
 });
@@ -585,9 +588,9 @@ describe("D-HQLA-COA-CLASSIFICATION — regression guard", () => {
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 
-  it("build-phase has at least 3 HQLA-tagged accounts (SARB + 2 bond accounts)", () => {
+  it("build-phase has at least 2 COA-tagged HQLA accounts (the 2 bond accounts; cash is custodian-derived)", () => {
     const classifications = coaToHqlaClassifications();
-    expect(classifications.length).toBeGreaterThanOrEqual(3);
+    expect(classifications.length).toBeGreaterThanOrEqual(2);
   });
 
   it("all level-1 classifications are debit-side accounts in COA", () => {

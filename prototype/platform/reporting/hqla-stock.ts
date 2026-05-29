@@ -292,7 +292,8 @@ export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockR
 }
 
 // ---------------------------------------------------------------------------
-// Cash / central-bank-reserve HQLA (account-level — the one legitimate case)
+// Cash HQLA (the one legitimate non-instrument case — tier DERIVED from the
+// custodian, never authored on the GL account)
 // ---------------------------------------------------------------------------
 
 /**
@@ -306,50 +307,96 @@ export interface CashHqlaTrialBalanceRow {
 }
 
 /**
- * Input to `computeCashHqlaLevel1FromAccounts()`.
+ * A cash-nature GL account and the custodian Party the balance is held with.
+ * The custodian — not a hand-typed COA tag — is the source fact that
+ * determines whether the cash qualifies as HQLA and at which tier.
  */
-export interface CashHqlaInput {
+export interface CashHqlaCustodianAccount {
+  readonly leafAccountId: string;
+  /** Party URN of the custodian holding this cash (e.g. SARB, a correspondent bank). */
+  readonly custodianPartyId: string;
+}
+
+/**
+ * Input to `computeCashHqlaFromCustodian()`.
+ */
+export interface CashHqlaFromCustodianInput {
   readonly trialBalance: readonly CashHqlaTrialBalanceRow[];
   /**
-   * GL accounts that are cash-nature AND Level-1 HQLA-eligible — i.e. central-bank
-   * reserves held at the SARB. The caller derives this from the COA registry
-   * (`category === "asset-cash"` with `hqlaLevel === "level-1"`). Securities
-   * accounts MUST NOT appear here — the instrument-level path
-   * (`computeHqlaStockFromPositions`) owns those.
+   * Cash-nature GL accounts and the custodian Party each is held with. The
+   * caller derives this from the COA registry (`category === "asset-cash"`
+   * with a `custodianPartyId`). Securities accounts MUST NOT appear here — the
+   * instrument-level path (`computeHqlaStockFromPositions`) owns those.
    */
-  readonly cashAccountIds: ReadonlySet<string>;
+  readonly cashAccounts: readonly CashHqlaCustodianAccount[];
+  /**
+   * Resolver: custodian Party URN → the set of classification strings folded
+   * from the Party projection (`PartyClassified` events). The HQLA tier is
+   * *derived* from these classifications — it is never authored on the GL
+   * account. This is the principled fix for the authored-tag failure mode:
+   * "risk derives its figures from the source" (Principle 1).
+   */
+  readonly custodianClassifications: (custodianPartyId: string) => ReadonlySet<string>;
   /** ISO 4217 functional currency. Only same-currency balances contribute. */
   readonly functionalCurrency: string;
 }
 
 /**
- * Compute the Level-1 HQLA contribution from cash / central-bank-reserve
- * accounts. This is the *only* legitimate account-level HQLA path: cash has no
- * instrument, so it cannot be classified per-ISIN. It is additive to the
- * instrument-level securities stock — never a substitute.
+ * Derive the HQLA tier of a cash balance from its custodian's regulatory
+ * classification.
+ *
+ *   - Cash held at the central bank (custodian classified `central-bank`) is
+ *     Level-1 HQLA — Reg 26(7)(a)(i); BCBS D295 §50(a).
+ *   - Cash held at a correspondent commercial bank is generally NOT HQLA
+ *     (it is an unsecured claim on a private institution) — undefined tier.
+ *
+ * Returns `undefined` when the custodian does not confer HQLA status; the
+ * caller drops the line (it does not become phantom Level-1 stock).
+ */
+function deriveCashHqlaTier(classifications: ReadonlySet<string>): "level-1" | undefined {
+  if (classifications.has("central-bank")) return "level-1";
+  return undefined;
+}
+
+/**
+ * Compute the cash HQLA contribution by *deriving* each balance's tier from
+ * its custodian Party's classification. This is the only legitimate
+ * non-instrument HQLA path: cash has no ISIN, so it cannot be classified
+ * per-security; instead its eligibility flows from *who holds it*. It is
+ * additive to the instrument-level securities stock — never a substitute.
  *
  * Rules:
- *   - Only accounts in `cashAccountIds` (cash-nature, Level-1) contribute.
+ *   - Only accounts in `cashAccounts` (cash-nature, with a custodian) contribute.
+ *   - The tier is derived from `custodianClassifications(custodianPartyId)`;
+ *     a custodian that confers no HQLA status drops the line entirely.
  *   - Only balances in the functional currency contribute (FX conversion is a
  *     Slice-6+ step; Principle 5).
  *   - Only **positive** (debit) balances contribute. A negative balance is an
- *     overdrawn reserve account (a borrowing), not HQLA — counting `Math.abs()`
- *     of it (as the deprecated account-level path did) produced phantom HQLA.
+ *     overdrawn reserve account (a borrowing), not HQLA.
  *   - Level-1 assets carry a 0% haircut (BCBS D295 §50).
  *
- * Authority: BCBS D295 §50; Reg 26(7); corrected 2026-05-29 (instrument-level
- * fix follow-on — cash is the legitimate account-level residual).
+ * Authority: BCBS D295 §50; Reg 26(7)(a)(i); custodian-derived rework
+ * 2026-05-29 (removes the authored COA `hqlaLevel` tag — the tier is now a
+ * query over the event-sourced Party register, not stored state).
  */
-export function computeCashHqlaLevel1FromAccounts(input: CashHqlaInput): readonly HqlaStockLine[] {
+export function computeCashHqlaFromCustodian(
+  input: CashHqlaFromCustodianInput,
+): readonly HqlaStockLine[] {
+  const custodianByAccount = new Map<string, string>(
+    input.cashAccounts.map((a) => [a.leafAccountId, a.custodianPartyId]),
+  );
   const lines: HqlaStockLine[] = [];
   for (const row of input.trialBalance) {
-    if (!input.cashAccountIds.has(row.leafAccountId)) continue;
+    const custodianPartyId = custodianByAccount.get(row.leafAccountId);
+    if (!custodianPartyId) continue; // not a custodied cash account
     if (row.currency !== input.functionalCurrency) continue;
     if (row.amountMinor <= 0) continue; // overdrafts are not HQLA
+    const tier = deriveCashHqlaTier(input.custodianClassifications(custodianPartyId));
+    if (!tier) continue; // custodian confers no HQLA status (e.g. correspondent bank)
     lines.push({
       instrumentId: row.leafAccountId,
-      instrumentName: `Central-bank reserves — ${row.leafAccountId}`,
-      hqlaLevel: "level-1",
+      instrumentName: `Cash at ${custodianPartyId} — ${row.leafAccountId}`,
+      hqlaLevel: tier,
       currency: row.currency,
       nominalMinor: row.amountMinor,
       haircut: 0,

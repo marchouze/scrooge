@@ -31,10 +31,14 @@ import type {
   UnifiedPositionState,
 } from "../platform/projections/markets/unified-position";
 import {
-  computeCashHqlaLevel1FromAccounts,
+  computeCashHqlaFromCustodian,
   computeHqlaStockFromPositions,
 } from "../platform/reporting/hqla-stock";
-import type { CashHqlaTrialBalanceRow, HqlaStockInput } from "../platform/reporting/hqla-stock";
+import type {
+  CashHqlaCustodianAccount,
+  CashHqlaTrialBalanceRow,
+  HqlaStockInput,
+} from "../platform/reporting/hqla-stock";
 
 // ---------------------------------------------------------------------------
 // Test fixture builders
@@ -435,19 +439,28 @@ describe("computeHqlaStockFromPositions()", () => {
 });
 
 // ---------------------------------------------------------------------------
-// computeCashHqlaLevel1FromAccounts() — account-level cash residual
+// computeCashHqlaFromCustodian() — custodian-derived cash HQLA tier
 // ---------------------------------------------------------------------------
 
-describe("computeCashHqlaLevel1FromAccounts()", () => {
-  const cashAccountIds = new Set(["ACC-1100-001"]);
+describe("computeCashHqlaFromCustodian()", () => {
+  const SARB = "urn:party:legal-entity:sarb";
+  const CORRESPONDENT = "urn:party:legal-entity:correspondent-bank";
+  const cashAccounts: readonly CashHqlaCustodianAccount[] = [
+    { leafAccountId: "ACC-1100-001", custodianPartyId: SARB },
+    { leafAccountId: "ACC-1100-002", custodianPartyId: CORRESPONDENT },
+  ];
+  // SARB is classified central-bank → Level-1; correspondent commercial bank → not HQLA.
+  const custodianClassifications = (custodianPartyId: string): ReadonlySet<string> =>
+    custodianPartyId === SARB ? new Set(["central-bank"]) : new Set<string>();
   const tb = (rows: readonly CashHqlaTrialBalanceRow[]): readonly CashHqlaTrialBalanceRow[] => rows;
 
-  it("counts a positive-balance reserve account as Level-1 with 0% haircut", () => {
-    const lines = computeCashHqlaLevel1FromAccounts({
+  it("derives Level-1 with 0% haircut for cash at a central-bank custodian", () => {
+    const lines = computeCashHqlaFromCustodian({
       trialBalance: tb([
         { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 500_000_000 },
       ]),
-      cashAccountIds,
+      cashAccounts,
+      custodianClassifications,
       functionalCurrency: "ZAR",
     });
     expect(lines).toHaveLength(1);
@@ -460,43 +473,59 @@ describe("computeCashHqlaLevel1FromAccounts()", () => {
     expect(line.instrumentId).toBe("ACC-1100-001");
   });
 
+  it("excludes cash at a non-central-bank custodian — tier derived from custodian, not a tag", () => {
+    const lines = computeCashHqlaFromCustodian({
+      trialBalance: tb([
+        { leafAccountId: "ACC-1100-002", currency: "ZAR", amountMinor: 500_000_000 },
+      ]),
+      cashAccounts,
+      custodianClassifications,
+      functionalCurrency: "ZAR",
+    });
+    expect(lines).toHaveLength(0);
+  });
+
   it("excludes a negative (overdrawn) reserve balance — not HQLA, no Math.abs()", () => {
-    const lines = computeCashHqlaLevel1FromAccounts({
+    const lines = computeCashHqlaFromCustodian({
       trialBalance: tb([
         { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: -475_000_000 },
       ]),
-      cashAccountIds,
+      cashAccounts,
+      custodianClassifications,
       functionalCurrency: "ZAR",
     });
     expect(lines).toHaveLength(0);
   });
 
   it("excludes a zero balance", () => {
-    const lines = computeCashHqlaLevel1FromAccounts({
+    const lines = computeCashHqlaFromCustodian({
       trialBalance: tb([{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 0 }]),
-      cashAccountIds,
+      cashAccounts,
+      custodianClassifications,
       functionalCurrency: "ZAR",
     });
     expect(lines).toHaveLength(0);
   });
 
   it("excludes non-functional-currency balances", () => {
-    const lines = computeCashHqlaLevel1FromAccounts({
+    const lines = computeCashHqlaFromCustodian({
       trialBalance: tb([
         { leafAccountId: "ACC-1100-001", currency: "USD", amountMinor: 500_000_000 },
       ]),
-      cashAccountIds,
+      cashAccounts,
+      custodianClassifications,
       functionalCurrency: "ZAR",
     });
     expect(lines).toHaveLength(0);
   });
 
-  it("excludes accounts not in the cash-account set (e.g. securities accounts)", () => {
-    const lines = computeCashHqlaLevel1FromAccounts({
+  it("excludes accounts without a custodian mapping (e.g. securities accounts)", () => {
+    const lines = computeCashHqlaFromCustodian({
       trialBalance: tb([
         { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000_000 },
       ]),
-      cashAccountIds,
+      cashAccounts,
+      custodianClassifications,
       functionalCurrency: "ZAR",
     });
     expect(lines).toHaveLength(0);

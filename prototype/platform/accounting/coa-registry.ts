@@ -161,6 +161,26 @@ export interface CoaAccountEntry {
    * Citations: BA-325-LCR; BCBS-LCR-2013.
    */
   readonly isin?: string;
+  /**
+   * Party URN of the custodian holding the cash in this account.
+   *
+   * Only meaningful for cash-nature accounts (`category === "asset-cash"`).
+   * The custodian — not a hand-typed `hqlaLevel` tag — is the SOURCE FACT that
+   * determines whether cash held here is HQLA and at which tier: cash at the
+   * central bank (custodian Party classified `central-bank`) is Level-1
+   * (Reg 26(7)(a)(i)); cash at a correspondent commercial bank is generally
+   * not HQLA. The BA 325 cash-HQLA fold (`computeCashHqlaFromCustodian`)
+   * derives the tier by looking the custodian up in the event-sourced Party
+   * register — never from an authored tag on this row. This removes the
+   * authored-tag failure mode (Principle 1: risk derives its figures from the
+   * source, not from stored classification state).
+   *
+   * Authority: custodian-derived HQLA rework (CEO-approved 2026-05-29);
+   * supersedes the authored `hqlaLevel` tag previously carried on the SARB
+   * cash account.
+   * Citations: BCBS D295 §50(a); Reg 26(7)(a)(i); D-PARTY-REGISTER.
+   */
+  readonly custodianPartyId?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -177,6 +197,8 @@ export const CoaAccountEntrySchema = z.object({
   hqlaAssetSpecificFactor: z.number().min(0).max(1).optional(),
   // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9: ISIN bridge to SecurityMaster override map.
   isin: z.string().optional(),
+  // Custodian-derived HQLA (2026-05-29): cash-account custodian Party URN.
+  custodianPartyId: z.string().optional(),
   // D-DATA-QUALITY-CROSS-DOMAIN-V1: capital tier for BA 700 capital fold.
   capitalTier: z.enum(["cet1", "at1", "t2"]).optional(),
   capitalSubCategory: z.string().optional(),
@@ -205,11 +227,13 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     name: "Nostro — ZAR (SARB operational)",
     category: "asset-cash",
     side: "debit",
-    // Level 1 HQLA: central-bank reserves per BCBS D295 §49(b) / Reg 26(7)(a)(i).
-    // The SARB operational account represents balances at the central bank.
-    // Authority: D-HQLA-COA-CLASSIFICATION; BCBS D295 §49; Reg 26(7)(a)(i).
-    hqlaLevel: "level-1",
-    hqlaSubCategory: "level-1.central-bank-reserves",
+    // HQLA tier is DERIVED from the custodian, not authored here. This account
+    // holds cash at the SARB; the SARB Party is classified `central-bank`, so
+    // the BA 325 cash-HQLA fold derives Level-1 (Reg 26(7)(a)(i); BCBS D295
+    // §50(a)). The previous authored `hqlaLevel: "level-1"` tag was removed in
+    // the custodian-derived rework (2026-05-29) to close the authored-tag
+    // failure mode — risk must derive its figures from the source (Principle 1).
+    custodianPartyId: "urn:party:legal-entity:sarb",
   },
   {
     id: "ACC-1100-002",

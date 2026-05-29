@@ -56,6 +56,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { COA_ACCOUNTS, coaToHqlaClassifications } from "../platform/accounting/coa-registry";
 import { computeTrialBalance, periodAuditChain } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
+import { buildPartyProjection } from "../platform/identity/party-projection";
 import {
   securityMasterInitial,
   securityMasterProjection,
@@ -69,7 +70,8 @@ import {
   renderBa325Canonical,
 } from "../platform/reporting";
 import {
-  computeCashHqlaLevel1FromAccounts,
+  type CashHqlaCustodianAccount,
+  computeCashHqlaFromCustodian,
   computeHqlaStockFromPositions,
 } from "../platform/reporting/hqla-stock";
 
@@ -78,9 +80,13 @@ import {
 // Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).
 // Citations: BCBS D295 §II.A; SARB BA 325; Reg 26(7).
 //
-// Previously hard-coded to ACC-1100-001 only. Now dynamically derived from
-// COA_ACCOUNTS.hqlaLevel tags, covering all HQLA-eligible accounts:
-//   - ACC-1100-001: Nostro — ZAR (SARB operational) → level-1
+// Dynamically derived from COA_ACCOUNTS.hqlaLevel tags. This is the
+// DEPRECATED legacy classifications path (the generator's `else` branch);
+// the production HQLA path is the instrument-level `hqlaStock` plus the
+// custodian-derived cash fold below. The two remaining COA-tagged accounts
+// are securities (bonds), superseded per-instrument by the SecurityMaster
+// path; cash no longer carries an authored COA tag — its tier is derived
+// from the custodian (see the cash-HQLA fold in main()):
 //   - ACC-3100-001: Bond Asset — Banking Book (Amortised Cost) → level-1
 //   - ACC-3100-002: Bond Asset — Trading Book (FVTPL) → level-1
 //
@@ -234,23 +240,35 @@ function main(argv: readonly string[]): number {
   };
   const hqlaStock = computeHqlaStockFromPositions(hqlaStockInput);
 
-  // Additive cash / central-bank-reserve Level-1 HQLA (account-level residual).
-  // Cash-nature, Level-1 accounts only (category "asset-cash" + hqlaLevel
-  // "level-1") — securities accounts are owned by the instrument path above.
-  const cashAccountIds = new Set(
-    COA_ACCOUNTS.filter((a) => a.category === "asset-cash" && a.hqlaLevel === "level-1").map(
-      (a) => a.id,
-    ),
-  );
-  const cashHqlaLevel1Lines = computeCashHqlaLevel1FromAccounts({
+  // Additive cash HQLA — tier DERIVED from the custodian, not authored on the
+  // GL account. Cash-nature accounts that carry a custodianPartyId
+  // (category "asset-cash" + custodianPartyId set) are resolved against the
+  // event-sourced Party register: cash held with a `central-bank`-classified
+  // custodian (the SARB) is Level-1 (Reg 26(7)(a)(i); BCBS D295 §50(a)).
+  // Securities accounts are owned by the instrument path above.
+  const cashAccounts: readonly CashHqlaCustodianAccount[] = COA_ACCOUNTS.filter(
+    (a): a is typeof a & { custodianPartyId: string } =>
+      a.category === "asset-cash" && a.custodianPartyId !== undefined,
+  ).map((a) => ({ leafAccountId: a.id, custodianPartyId: a.custodianPartyId }));
+
+  // Fold the Party register so the custodian → classification lookup derives
+  // from events (Principle 1), not a hard-coded tag.
+  const partyProjection = buildPartyProjection(eventStore, args.periodEnd);
+  const custodianClassifications = (custodianPartyId: string): ReadonlySet<string> => {
+    const party = partyProjection.parties.get(custodianPartyId as never);
+    return new Set(party?.classifications ?? []);
+  };
+
+  const cashHqlaLines = computeCashHqlaFromCustodian({
     trialBalance: tb.rows,
-    cashAccountIds,
+    cashAccounts,
+    custodianClassifications,
     functionalCurrency: args.functionalCurrency,
   });
 
   // Log a brief summary to stderr for diagnostic purposes.
   process.stderr.write(
-    `[render-ba-325] HQLA stock: L1=${hqlaStock.level1TotalMinor} L2A=${hqlaStock.level2aTotalMinor} L2B=${hqlaStock.level2bTotalMinor} (${hqlaStock.level1Lines.length + hqlaStock.level2aLines.length + hqlaStock.level2bLines.length} instrument(s); ${hqlaStock.excludedFxPositions.length} FX-excluded) + cash-L1 ${cashHqlaLevel1Lines.reduce((s, l) => s + l.adjustedMinor, 0)} (${cashHqlaLevel1Lines.length} reserve-account(s))\n`,
+    `[render-ba-325] HQLA stock: L1=${hqlaStock.level1TotalMinor} L2A=${hqlaStock.level2aTotalMinor} L2B=${hqlaStock.level2bTotalMinor} (${hqlaStock.level1Lines.length + hqlaStock.level2aLines.length + hqlaStock.level2bLines.length} instrument(s); ${hqlaStock.excludedFxPositions.length} FX-excluded) + cash ${cashHqlaLines.reduce((s, l) => s + l.adjustedMinor, 0)} (${cashHqlaLines.length} custodian-derived account(s))\n`,
   );
 
   // P1-compliant: pass the event store + period window so cash flows are
@@ -267,8 +285,8 @@ function main(argv: readonly string[]): number {
     classifications,
     // Preferred path: instrument-level HQLA stock.
     hqlaStock: hqlaStockInput,
-    // Additive account-level cash / central-bank-reserve Level-1 HQLA.
-    cashHqlaLevel1Lines,
+    // Additive cash HQLA — tier derived from the custodian Party classification.
+    cashHqlaLines,
     ...(tb.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: tb.trialBalanceSnapshotEventId }
       : {}),
