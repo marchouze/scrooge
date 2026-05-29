@@ -280,19 +280,21 @@ export interface Ba325GeneratorInput {
    */
   readonly hqlaStock?: HqlaStockInput;
   /**
-   * Level-1 HQLA from cash / central-bank-reserve accounts — the one legitimate
-   * account-level HQLA residual (cash has no instrument, so it cannot be
-   * classified per-ISIN). **Additive** to the instrument-level securities stock
+   * HQLA from cash accounts — the one legitimate non-instrument HQLA residual
+   * (cash has no ISIN, so its eligibility flows from *who holds it*, not from a
+   * per-security classification). Each line's tier is **derived from the
+   * custodian Party's classification** (`central-bank` → Level-1), never from
+   * an authored COA tag. **Additive** to the instrument-level securities stock
    * in `hqlaStock`, never a substitute. Only consumed when `hqlaStock` is also
    * provided (the instrument path is active).
    *
-   * Compute via `computeCashHqlaLevel1FromAccounts()` from `./hqla-stock.ts`:
-   * positive-balance, functional-currency, cash-nature accounts only. An
+   * Compute via `computeCashHqlaFromCustodian()` from `./hqla-stock.ts`:
+   * positive-balance, functional-currency, custodied cash accounts only. An
    * overdrawn reserve account is a borrowing, not HQLA — it contributes nothing.
    *
-   * Authority: BCBS D295 §50; Reg 26(7); 2026-05-29 instrument-level fix follow-on.
+   * Authority: BCBS D295 §50; Reg 26(7)(a)(i); 2026-05-29 custodian-derived rework.
    */
-  readonly cashHqlaLevel1Lines?: readonly HqlaStockLine[];
+  readonly cashHqlaLines?: readonly HqlaStockLine[];
 }
 
 // ---------------------------------------------------------------------------
@@ -954,21 +956,33 @@ export function generateBa325Lcr(input: Ba325GeneratorInput, opts?: Ba325LcrOpts
       hqlaInputsFound += 1;
     }
 
-    // Additive cash / central-bank-reserve Level-1 HQLA (account-level — the one
-    // legitimate non-instrument case; cash has no ISIN). Positive-balance,
-    // functional-currency, cash-nature accounts only — computed by the caller via
-    // computeCashHqlaLevel1FromAccounts(). contributingAccounts carries the GL
-    // account id because cash HQLA genuinely is account-level.
-    for (const line of input.cashHqlaLevel1Lines ?? []) {
-      level1Lines.push({
-        lineId: `hqla.level-1.cash.${line.instrumentId}`,
+    // Additive cash HQLA (the one legitimate non-instrument case; cash has no
+    // ISIN). Each line's tier was DERIVED from the custodian Party's
+    // classification by the caller via computeCashHqlaFromCustodian() —
+    // central-bank cash is Level-1. Positive-balance, functional-currency,
+    // custodied cash accounts only. contributingAccounts carries the GL account
+    // id because cash HQLA genuinely is account-level. Routed by line.hqlaLevel
+    // so a future non-Level-1 custodian mapping lands in the correct bucket
+    // rather than being silently miscounted.
+    for (const line of input.cashHqlaLines ?? []) {
+      const lineItem: Ba325LineItem = {
+        lineId: `hqla.${line.hqlaLevel}.cash.${line.instrumentId}`,
         lineLabel: line.instrumentName ?? line.instrumentId,
         amountMinor: line.adjustedMinor,
         currency: ccy,
         contributingAccounts: [line.instrumentId],
-        note: `haircut=${line.haircut * 100}%; basis=${line.valuationBasis}; cash-reserve`,
-      });
-      level1Stock += line.adjustedMinor;
+        note: `haircut=${line.haircut * 100}%; basis=${line.valuationBasis}; cash-custodian-derived`,
+      };
+      if (line.hqlaLevel === "level-1") {
+        level1Lines.push(lineItem);
+        level1Stock += line.adjustedMinor;
+      } else if (line.hqlaLevel === "level-2a") {
+        level2ALines.push(lineItem);
+        level2AStock += line.nominalMinor;
+      } else if (line.hqlaLevel === "level-2b") {
+        level2BLines.push(lineItem);
+        level2BRawWeighted += line.adjustedMinor;
+      }
       hqlaInputsFound += 1;
     }
 

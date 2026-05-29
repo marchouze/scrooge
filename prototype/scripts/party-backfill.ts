@@ -1027,6 +1027,13 @@ interface PartyRegisterLegalEntitySeed {
   readonly displayName: string;
   readonly legalName?: string;
   readonly jurisdictions: readonly string[];
+  /**
+   * Free-form classifications folded into `PartyClassified` events (e.g.
+   * `central-bank`). These are the SOURCE FACT downstream derivations query —
+   * e.g. the BA 325 cash-HQLA fold derives Level-1 for cash whose custodian is
+   * classified `central-bank`, rather than reading an authored COA tag.
+   */
+  readonly classifications?: readonly string[];
   readonly kindAttributes: {
     readonly kind: "legal-entity";
     readonly entityForm: "Ltd" | "RF" | "Pty";
@@ -1060,7 +1067,7 @@ const INSTITUTIONAL_COUNTERPARTY_CITATIONS = [
 function backfillInstitutionalCounterparties(
   eventStore: EventStore,
   index: BackfilledIndex,
-  result: { counterpartyPartiesEmitted: number; skipped: number },
+  result: { counterpartyPartiesEmitted: number; classificationsEmitted: number; skipped: number },
   asOf: string,
   seeds: readonly PartyRegisterLegalEntitySeed[],
 ): void {
@@ -1068,46 +1075,78 @@ function backfillInstitutionalCounterparties(
     // Slug = last colon-segment of the URN.
     const slug = seed.partyId.split(":").pop() ?? "";
     if (HOZ_GROUP_SLUGS.has(slug)) continue;
-    if (index.partyIds.has(seed.partyId)) {
-      result.skipped += 1;
-      continue;
-    }
     const sourceId = `party-register-seed:${seed.partyId}`;
-    if (index.sourceEventIds.has(sourceId)) {
-      result.skipped += 1;
-      continue;
-    }
-    const event = makePartyRegistered({
-      asOf,
-      entity: ENTITY,
-      actor: IMANI_ACTOR,
-      citations: [...INSTITUTIONAL_COUNTERPARTY_CITATIONS],
-      payload: {
-        partyId: seed.partyId,
-        kind: "legal-entity",
-        displayName: seed.displayName,
-        ...(seed.legalName ? { legalName: seed.legalName } : {}),
-        jurisdictions: seed.jurisdictions,
-        kindAttributes: {
+    if (!index.partyIds.has(seed.partyId) && !index.sourceEventIds.has(sourceId)) {
+      const event = makePartyRegistered({
+        asOf,
+        entity: ENTITY,
+        actor: IMANI_ACTOR,
+        citations: [...INSTITUTIONAL_COUNTERPARTY_CITATIONS],
+        payload: {
+          partyId: seed.partyId,
           kind: "legal-entity",
-          entityForm: seed.kindAttributes.entityForm,
-          parentPartyId: seed.kindAttributes.parentPartyId,
-          primaryRegulator: seed.kindAttributes.primaryRegulator,
-          regimeAnchor: seed.kindAttributes.regimeAnchor,
-          ...(seed.kindAttributes.lei ? { lei: seed.kindAttributes.lei } : {}),
+          displayName: seed.displayName,
+          ...(seed.legalName ? { legalName: seed.legalName } : {}),
+          jurisdictions: seed.jurisdictions,
+          kindAttributes: {
+            kind: "legal-entity",
+            entityForm: seed.kindAttributes.entityForm,
+            parentPartyId: seed.kindAttributes.parentPartyId,
+            primaryRegulator: seed.kindAttributes.primaryRegulator,
+            regimeAnchor: seed.kindAttributes.regimeAnchor,
+            ...(seed.kindAttributes.lei ? { lei: seed.kindAttributes.lei } : {}),
+          },
+          citations: [
+            "[citation: D-PARTY-REGISTER]",
+            "[citation: D-PARTY-REGISTER-CORRECTION — counterparty is a relationship, not a kind]",
+            "[citation: Banks Act 94 of 1990 — SARB-registered counterparty bank]",
+            "[citation: FIC Act 38 of 2001 s.21 — institutional-counterparty CDD]",
+          ],
         },
-        citations: [
-          "[citation: D-PARTY-REGISTER]",
-          "[citation: D-PARTY-REGISTER-CORRECTION — counterparty is a relationship, not a kind]",
-          "[citation: Banks Act 94 of 1990 — SARB-registered counterparty bank]",
-          "[citation: FIC Act 38 of 2001 s.21 — institutional-counterparty CDD]",
-        ],
-      },
-    });
-    appendWithBackfillTag(eventStore, event, sourceId, "party-register-seed");
-    index.partyIds.add(seed.partyId);
-    index.sourceEventIds.add(sourceId);
-    result.counterpartyPartiesEmitted += 1;
+      });
+      appendWithBackfillTag(eventStore, event, sourceId, "party-register-seed");
+      index.partyIds.add(seed.partyId);
+      index.sourceEventIds.add(sourceId);
+      result.counterpartyPartiesEmitted += 1;
+    } else {
+      result.skipped += 1;
+    }
+
+    // Emit seed-declared classifications (e.g. `central-bank`) as PartyClassified
+    // events — idempotent per partyId+classification. These are the source fact
+    // downstream derivations query (e.g. custodian-derived HQLA tier), so they
+    // must exist in the event log, not just the seed JSON.
+    for (const classification of seed.classifications ?? []) {
+      const classificationKey = `${seed.partyId}|${classification}`;
+      if (index.classificationKeys.has(classificationKey)) {
+        result.skipped += 1;
+        continue;
+      }
+      const classifiedEvent = makePartyClassified({
+        asOf,
+        entity: ENTITY,
+        actor: IMANI_ACTOR,
+        citations: [...INSTITUTIONAL_COUNTERPARTY_CITATIONS],
+        payload: {
+          partyId: seed.partyId,
+          classification,
+          scopeJson: { source: "party-register-seed" },
+          citations: [
+            "[citation: D-PARTY-REGISTER]",
+            "[citation: South African Reserve Bank Act 90 of 1989 — central-bank status]",
+            "[citation: BCBS D295 §50(a); Reg 26(7)(a)(i) — central-bank cash is Level-1 HQLA]",
+          ],
+        },
+      });
+      appendWithBackfillTag(
+        eventStore,
+        classifiedEvent,
+        `${sourceId}:classification:${classification}`,
+        "party-register-seed",
+      );
+      index.classificationKeys.add(classificationKey);
+      result.classificationsEmitted += 1;
+    }
   }
 }
 

@@ -1,9 +1,9 @@
 {
   "$schema": "Regulations/_party-register.md",
-  "asOf": "2026-05-20",
-  "source": "D-PARTY-REGISTER PR 3 (CEO-approved 2026-05-11) — Marc CEO seat live; 2026-05-20 add Standard Bank + Investec for FX-spot controlled-launch (PR #634 + PR #637)",
+  "asOf": "2026-05-29",
+  "source": "D-PARTY-REGISTER PR 3 (CEO-approved 2026-05-11) — Marc CEO seat live; 2026-05-20 add Standard Bank + Investec for FX-spot controlled-launch (PR #634 + PR #637); 2026-05-29 add SARB as central-bank custodian for custodian-derived HQLA",
   "totals": {
-    "legal-entity": 5,
+    "legal-entity": 6,
     "agent": 27,
     "natural-person": 1
   },
@@ -25,6 +25,24 @@
       }
     ],
     "legal-entity": [
+      {
+        "partyId": "urn:party:legal-entity:sarb",
+        "displayName": "South African Reserve Bank",
+        "legalName": "South African Reserve Bank",
+        "jurisdictions": ["ZA"],
+        "classifications": ["central-bank"],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "other",
+          "regimeAnchor": [
+            "South African Reserve Bank Act 90 of 1989 (the central bank; monetary authority and banker to the State)",
+            "Constitution of the Republic of South Africa s.223-225 (SARB established as the central bank)"
+          ]
+        },
+        "registeredAt": "2026-05-29T00:00:00.000Z"
+      },
       {
         "partyId": "urn:party:legal-entity:hoz-bank",
         "displayName": "Hoz Bank Limited",
