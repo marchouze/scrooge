@@ -9,9 +9,9 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { makeBondTradeExecuted } from "../../event-store/event-types/bond-accounting";
 import type { Actor, Event } from "../../event-store/types";
 import { makeEquityTradeBooked } from "../../markets/cdm/equity";
-import { makeBondTradeExecuted } from "../../markets/cdm/fixed-income";
 import { makeIrsTradeBooked } from "../../markets/cdm/ird";
 import { unifiedPositionInitial, unifiedPositionProjection } from "./unified-position";
 
@@ -66,22 +66,23 @@ const baseEquityPayload = {
   bookId: "BOOK-EQ-01",
 };
 
+// Store-wired flat bond-accounting schema (event-store/event-types/bond-accounting.ts).
+// unified-position derives instrumentId = "fi:bond:<bondIsin>" and book = portfolio.
 const baseBondPayload = {
-  tradeId: { scheme: "internal", value: "TRD-BOND-001" },
-  instrumentId: "fi:bond:ZAG000030108",
-  isin: "ZAG000030108",
+  tradeId: "TRD-BOND-001",
+  bondIsin: "ZAG000030108",
   side: "buy" as const,
-  nominalAmount: { amountMinor: 10000000, currency: "ZAR" },
-  cleanPrice: 98.5,
-  accruedInterest: { amountMinor: 145000, currency: "ZAR" },
-  consideration: { amountMinor: 9995000, currency: "ZAR" },
-  tradeDate: TRADE_DATE,
-  settlementDate: SETTLE_DATE_BOND,
-  counterparty: COUNTERPARTY_B,
-  venue: "JSE" as const,
-  traderRef: "trader-002",
-  bookId: "BOOK-BOND-01",
-  yieldToMaturity: 0.0875,
+  nominalMinor: 10000000,
+  cleanPricePercent: 98.5,
+  accruedInterestMinor: 145000,
+  dirtyPricePercent: 99.95,
+  settlementDate: SETTLE_DATE_BOND.iso,
+  portfolio: "trading-book" as const,
+  couponRate: 0.0875,
+  maturityDate: "2031-05-27",
+  currency: "ZAR",
+  counterpartyLei: COUNTERPARTY_B.partyId,
+  executedAt: AS_OF,
 };
 
 const baseIrsPayload = {
@@ -186,9 +187,9 @@ describe("unified-position projection", () => {
       citations: CITATIONS,
       payload: {
         ...baseBondPayload,
-        tradeId: { scheme: "internal", value: "TRD-BOND-002" },
-        nominalAmount: { amountMinor: 5000000, currency: "ZAR" },
-        cleanPrice: 99.0,
+        tradeId: "TRD-BOND-002",
+        nominalMinor: 5000000,
+        cleanPricePercent: 99.0,
       },
     });
     const state = fold([e1, e2]);
@@ -322,9 +323,9 @@ describe("unified-position projection", () => {
       citations: CITATIONS,
       payload: {
         ...baseBondPayload,
-        tradeId: { scheme: "internal", value: "TRD-BOND-003" },
+        tradeId: "TRD-BOND-003",
         side: "sell" as const,
-        nominalAmount: { amountMinor: 4000000, currency: "ZAR" },
+        nominalMinor: 4000000,
       },
     });
     const state = fold([buy, sell]);
