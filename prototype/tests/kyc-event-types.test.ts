@@ -1,6 +1,6 @@
 // tests/kyc-event-types.test.ts
 //
-// Registry registration and schema round-trip tests for the 17 KYC
+// Registry registration and schema round-trip tests for the 18 KYC
 // onboarding lifecycle event types.
 //
 // Asserts:
@@ -34,6 +34,7 @@ import {
   makeKYCSanctionsPEPScreened,
   makeKYCUBOResolved,
   makeLawfulProcessingRegistered,
+  makeOdpCounterpartyCategorised,
 } from "../platform/event-store/event-types/kyc";
 import { lookupEventType, validatePayload } from "../platform/event-store/registry";
 
@@ -54,7 +55,7 @@ describe("KYC event types — registry coverage", () => {
     }
   });
 
-  it("KYC_TYPED_EVENT_TYPES covers all 17 expected types", () => {
+  it("KYC_TYPED_EVENT_TYPES covers all 18 expected types", () => {
     const expected = [
       "KYCIdentityCollected",
       "KYCIdentityVerified",
@@ -73,6 +74,8 @@ describe("KYC event types — registry coverage", () => {
       "KYCRatingRevised",
       "CounterpartyCategorised",
       "CounterpartyDeclined",
+      // CS 2/2018 §4 + ORG-ODP-COND-002 — ODP binary client/counterparty category.
+      "OdpCounterpartyCategorised",
     ];
     for (const t of expected) {
       expect(KYC_TYPED_EVENT_TYPES as readonly string[]).toContain(t);
@@ -383,6 +386,24 @@ describe("KYC event type factory functions", () => {
     });
     expect(event.type).toBe("CounterpartyDeclined");
     validatePayload("CounterpartyDeclined", event.payload as Record<string, unknown>);
+  });
+
+  it("makeOdpCounterpartyCategorised produces a valid event (CS 2/2018 §4)", () => {
+    const event = makeOdpCounterpartyCategorised({
+      asOf: NOW,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: ACTOR,
+      citations: ["CS-2-2018-S4", "ORG-ODP-COND-002"],
+      payload: {
+        partyId: "cp-001",
+        category: "counterparty",
+        reason: 'CS 2/2018 §4(1)(a)–(c): regulated financial institution (entityType="bank")',
+        electedUpCategorisation: false,
+        asOf: NOW,
+      },
+    });
+    expect(event.type).toBe("OdpCounterpartyCategorised");
+    validatePayload("OdpCounterpartyCategorised", event.payload as Record<string, unknown>);
   });
 });
 

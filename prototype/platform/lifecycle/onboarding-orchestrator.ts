@@ -41,16 +41,16 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { CUSTOMER_EVENT_TYPES } from "@domains/customer/types";
-// Slice 2 event types are in CUSTOMER_EVENT_TYPES (indices 12–18); the
-// fold below maps them to their respective phases via eventToPhaseCandidate.
-import type { EventStore } from "@platform/event-store/store";
-import type { Event } from "@platform/event-store/types";
 // CS 2/2018 §4 + ORG-ODP-COND-002 — ODP categorisation hook at fais-categorised gate.
 import {
   type OdpCategoriationDecision,
   type OdpPartyCategory,
   makeOdpCategoriationDecision,
 } from "@platform/compliance/odp-categorisation";
+// Slice 2 event types are in CUSTOMER_EVENT_TYPES (indices 12–18); the
+// fold below maps them to their respective phases via eventToPhaseCandidate.
+import type { EventStore } from "@platform/event-store/store";
+import type { Event } from "@platform/event-store/types";
 
 // ---------------------------------------------------------------------------
 // Post-activation + eligibility event types not yet in CUSTOMER_EVENT_TYPES.
@@ -370,13 +370,18 @@ export function derivePhaseFromEvents(
         recategorisedToClient?: boolean;
         entityType?: string;
       };
+      // Build the OdpPartyInput using exactOptionalPropertyTypes-safe spreading:
+      // only include optional keys when they carry a non-undefined value.
+      const entityType = faisPayload.entityType;
+      const electedCounterparty = faisPayload.electedCounterparty;
+      const recategorisedToClient = faisPayload.recategorisedToClient;
       state.odpDecision = makeOdpCategoriationDecision(
         counterpartyId,
         {
           faisCategory: faisPayload.faisCategory ?? "",
-          entityType: faisPayload.entityType,
-          electedCounterparty: faisPayload.electedCounterparty,
-          recategorisedToClient: faisPayload.recategorisedToClient,
+          ...(entityType !== undefined && { entityType }),
+          ...(electedCounterparty !== undefined && { electedCounterparty }),
+          ...(recategorisedToClient !== undefined && { recategorisedToClient }),
         },
         ev.as_of,
       );
