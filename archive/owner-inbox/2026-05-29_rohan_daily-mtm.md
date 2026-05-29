@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: daily-mtm
-asOf: 2026-05-29T04:48:52.708Z
+asOf: 2026-05-29T18:13:00.646Z
 decision-required: false
 ---
 
@@ -9,18 +9,16 @@ decision-required: false
 
 Autonomous EOD mark-to-market run per `Team/Rohan.md` operating spec § 6 (Cadence). Wraps the legacy `scripts/mtm-run.ts` logic into a scheduled handler (cron `0 18 * * 1-5` — 18:00 UTC weekdays = after JSE 17:00 SAST close). Reversal-then-reval pair is atomic per `D-EVENT-VIEW-BOUNDARY-WIRE` Slice B.1 — every position-day either carries one `FxPositionRevalued` event (live or stale-mark) or none, so Bea's posting engine never reverses without a paired forward.
 
-**Headline:** 0 live · 2 stale-mark · 0 unvalued · net unrealised P&L delta ZAR 0,00 · runId `a809c766-e30c-4698-87cd-e8f6df538987`.
+**Headline:** 1 live · 0 stale-mark · 0 unvalued · net unrealised P&L delta ZAR -63 196,31 · runId `87db4a7c-49c0-4809-8453-e433760ab304`.
 
 ## Position detail
 
 | Trade | Pair | Outcome | Book rate | Mark rate | P&L delta (ZAR) | Source |
 |---|---|---|---:|---:|---:|---|
-| `SIM-1779951540517-BE5D1D15` | USD/ZAR | overnight-close | 16.4586 | 16.2429 | -57 218,71 | overnight-close:2026-05-28:twelve-data |
-| `REG-PRIN-5a36856c-e92e-4201-8630-028fa9c1363a` | USD/ZAR | overnight-close | 18.5000 | 16.2429 | -2 257 140,00 | overnight-close:2026-05-28:twelve-data |
+| `SIM-1779951540517-BE5D1D15` | USD/ZAR | revalued | 16.4586 | 16.2203 | -63 196,31 | twelve-data |
 
 ## Skip reasons
 
-- overnight-close proxy for USD/ZAR (rateSource: overnight-close:2026-05-28:twelve-data)
 - bond MTM: no JSE price feed connected — skipped
 - equity MTM: no JSE equity feed connected — skipped
 - IRD MTM: no curve ingest connected — skipped
