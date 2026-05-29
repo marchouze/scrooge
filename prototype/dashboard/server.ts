@@ -109,6 +109,10 @@ import { MarketDataStore } from "../platform/market-data/store";
 import { checkModelApproved } from "../platform/model-registry/calculation-binding";
 import { buildCalculationPerformed } from "../platform/model-registry/calculation-emit";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
+import {
+  checkExpectedEvents,
+  emitExpectedEventGapAlerts,
+} from "../platform/model-registry/expected-event-watchdog";
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
@@ -608,6 +612,24 @@ function bootDerive(): DashboardState {
       runDailyPnLReport(eventStore, nowUtc);
     } catch (pnlErr) {
       logger.warn({ err: (pnlErr as Error).message }, "product-control: daily P&L report skipped");
+    }
+    // Trusted-Figures follow-on — expected-event watchdog. After every emitter
+    // above has had its chance, assert the events that MUST exist actually do.
+    // An expectation with no matching event (e.g. a calc try/catch bailed, or
+    // the daily-P&L run was skipped) emits a SubstrateAlert{integrity} so the
+    // data-failure banner surfaces the silent gap rather than letting a figure
+    // read from stale/absent state. Idempotent by alertId.
+    // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+    try {
+      const watchdog = emitExpectedEventGapAlerts(eventStore, nowUtc());
+      if (watchdog.emitted.length > 0) {
+        logger.warn(
+          { gaps: watchdog.emitted },
+          "expected-event-watchdog: expected events missing — SubstrateAlert(integrity) emitted",
+        );
+      }
+    } catch (wErr) {
+      logger.warn({ err: (wErr as Error).message }, "expected-event-watchdog: check skipped");
     }
     const s = deriveState({
       sources: SOURCES,
@@ -2862,12 +2884,18 @@ const server = Bun.serve({
       // unavailable" with the missing inputs named — never a silent 0.
       // Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
       const failures = buildDataFailuresView(eventStore);
+      // Expected-event gaps — the other silent-gap shape: an event that should
+      // have been emitted but wasn't (no degraded calc to show; figure reads
+      // from stale/absent state). Surfaced in the same banner.
+      const expectedEventGaps = checkExpectedEvents(eventStore);
       return jsonResponse({
         failures,
+        expectedEventGaps,
         counts: {
           total: failures.length,
           failed: failures.filter((f) => f.status === "failed").length,
           degraded: failures.filter((f) => f.status === "degraded").length,
+          expectedEventGaps: expectedEventGaps.length,
         },
         pageProvenance: eventDerivedPageProvenance(),
       });
