@@ -107,6 +107,7 @@ import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
+import { computeCva } from "../platform/market-risk/cva-engine";
 import { computeMarketRisk } from "../platform/market-risk/var-engine";
 import { checkModelApproved } from "../platform/model-registry/calculation-binding";
 import { buildCalculationPerformed } from "../platform/model-registry/calculation-emit";
@@ -931,6 +932,38 @@ function emitCalculationProvenance(): void {
     emitMarketRisk("var", mr.var);
     emitMarketRisk("svar", mr.svar);
     emitMarketRisk("es", mr.es);
+
+    // Counterparty CVA — standardised CVA over the live uncollateralised OTC
+    // derivative book (model:cva-engine-v1, consuming model:cva-exposure-epe-v1).
+    // NO SILENT ZEROS: an OTC book with no uncollateralised positive exposure
+    // yields `no-otc-exposure` and a counterparty with no resolvable PD yields
+    // `insufficient-credit-inputs` — both degraded (output null), surfaced on the
+    // data-failure banner, never an unexplained 0. The counterparty-EAD vector is
+    // the optional input (absent when there is no exposure → degraded); the
+    // PD-resolved flag is the second optional input (absent when a counterparty
+    // has neither a live spread nor a fallback weight → degraded). This is the
+    // figure (not the `rwa` binding's `cvaRwaMinor` BA-600 passthrough).
+    // Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5 (workstream close).
+    const cva = computeCva({ eventStore, marketData: marketDataStore, asOf });
+    const cvaExposed = cva.status !== "no-otc-exposure";
+    const cvaComputed = cva.status === "computed";
+    const cvaEadZarTotal = cva.counterparties.reduce((s, c) => s + c.eadZar, 0);
+    emitOne(
+      "cva",
+      [
+        {
+          name: "counterpartyEadZar",
+          value: cvaExposed ? cvaEadZarTotal : null,
+          missing: !cvaExposed,
+        },
+        {
+          name: "counterpartyPdResolved",
+          value: cvaComputed ? 1 : null,
+          missing: !cvaComputed,
+        },
+      ],
+      cva.cva.present ? Math.round(cva.cva.value * 100) : null,
+    );
   } catch (err) {
     logger.warn(
       { err: (err as Error).message },

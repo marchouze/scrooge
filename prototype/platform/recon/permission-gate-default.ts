@@ -272,6 +272,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // path. T-01 carve-out.
   // Citation: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, P4-SECURITY-DESIGNED-IN.
   "platform/market-risk/var-engine.test.ts",
+  // CVA engine unit tests (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5) — co-located
+  // per-module test convention. Raw EventStore(":memory:") is a build-phase fixture
+  // for the loud-status / computed-CVA assertions, not a production access path.
+  // T-01 carve-out.
+  // Citation: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/market-risk/cva-engine.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

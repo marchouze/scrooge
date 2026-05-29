@@ -23,6 +23,8 @@
 //  15. model:market-risk-var-hs-v1      — market-risk VaR 99% 1-day HS (Tier-1, BCBS d457 / Basel-2.5)
 //  16. model:market-risk-svar-hs-v1     — market-risk Stressed VaR (Tier-1, Basel-2.5 MAR)
 //  17. model:market-risk-es-hs-v1       — market-risk Expected Shortfall 97.5% (Tier-1, BCBS d457 MAR33)
+//  18. model:cva-exposure-epe-v1        — CVA exposure / EPE sub-model (Tier-1, BCBS d424 BA-CVA)
+//  19. model:cva-engine-v1              — counterparty CVA engine (Tier-1, BCBS d424 / IFRS 13)
 //
 // These are regulatory-submission models (LCR/NSFR → BA 325; CET1/RWA → BA 700) and
 // therefore Tier-1 under SR 11-7 §V: a misstated figure feeds a statutory return.
@@ -91,7 +93,29 @@
 // by Ravi (market-data infrastructure engineer). The prescribed FRTB
 // standardised-approach inputs (risk-weight buckets, correlation parameters) are
 // regulatory-prescribed constants, not bank models, and are intentionally out of
-// model-registry scope. CVA is the next slice (Slice 5) — out of scope here.
+// model-registry scope.
+//
+// The two CVA models (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5 — the FINAL
+// slice; it CLOSES WS-MODEL-REGISTRY-SCOPE-CLOSURE) close the last declared
+// model-scope class in RISK-MRP-01 §1.1: counterparty-credit-risk / CVA. CVA was
+// referenced only as an optional passthrough input (`cvaRwaMinor`) to the `rwa`
+// binding (BA 600 owns the regulatory RWA charge) — there was no governed `cva`
+// figure and no registered CVA model. The CVA exposure / EPE sub-model
+// (model:cva-exposure-epe-v1) derives the per-counterparty netted positive EAD
+// over the live uncollateralised OTC book (IRS + FX forward/swap, spot excluded);
+// the CVA engine (model:cva-engine-v1, surfaced calcKey `cva`) aggregates the
+// standardised CVA = Σ LGD × EAD × PD × discount across counterparties. Both are
+// Tier-1 under SR 11-7 §V and RISK-MRP-01 §2: CVA feeds the counterparty-credit-
+// risk appetite and the BA-CVA / IFRS 13 fair-value adjustment. CVA is CRO-owned
+// per the decision-authority routing table, so methodology accountability AND
+// figure ownership both sit with Helena (CRO); the counterparty credit-spread
+// inputs are supplied by Ravi (market-data infrastructure engineer). The
+// prescribed inputs the engine would otherwise consume (SA-CCR supervisory
+// factors, BA 325 haircuts, SA risk-weight tables) are regulatory-prescribed
+// constants, NOT bank models, and are intentionally out of model-registry scope
+// (per the Slice-5 exclusions). With these two models landed, every RISK-MRP-01
+// §1.1 model class is registered + bound and CALC_BINDINGS is fully coherent with
+// the declared model scope.
 //
 // Authority:
 //   - D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
@@ -480,6 +504,67 @@ const MODELS: ReadonlyArray<CalcModelDef> = [
       "standardised-approach inputs (risk-weight buckets, correlation parameters) are " +
       "regulatory-prescribed constants, not bank models, and are intentionally out of " +
       "model-registry scope (per the Slice-4 exclusions).",
+    expiryDate: "2027-05-29",
+  },
+  // -- CVA governance suite (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5 / FINAL) ---
+  {
+    modelId: "model:cva-exposure-epe-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "CVA exposure / EPE sub-model (deriveCounterpartyExposures). Maps the live " +
+      "uncollateralised OTC derivative book (IRS + FX forward/swap; spot excluded) to a " +
+      "per-counterparty netted positive Exposure At Default: EAD_cp = max(0, Σ current MTM) + " +
+      "Σ PFE add-on, a single netting set per counterparty. IRS current exposure is the positive " +
+      "mark-to-market from the latest IrsPositionRevalued; the PFE add-on is a documented " +
+      "notional fraction (proxy for the SA-CCR supervisory factor, which is a prescribed input " +
+      "out of model scope). FX forward/swap exposure is the PFE add-on on the |net ZAR notional| " +
+      "of the open term legs. This is the common exposure base the CVA engine consumes.",
+    methodologyDescription:
+      "cva-exposure-epe-v1.0-counterparty-netted-positive-ead-current-mtm-plus-pfe-addon-otc-irs-fx-fwd-swap-spot-excluded",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §1.1/§2: the exposure / EPE model is the common " +
+      "base for the CVA figure — a misstated counterparty EAD misstates the CVA and the " +
+      "counterparty-credit-risk appetite derived from it. Counterparty-credit-risk / CVA models " +
+      "are in declared model scope per RISK-MRP-01 §1.1. Methodology accountability + figure " +
+      "ownership: Helena (CRO) — CVA is CRO-owned per the decision-authority routing table; the " +
+      "counterparty credit-spread inputs are supplied by Ravi (market-data infrastructure " +
+      "engineer). Full independent validation applies. NOTE: the prescribed inputs the engine " +
+      "would otherwise consume (SA-CCR supervisory factors, BA 325 haircuts, SA risk-weight " +
+      "tables) are regulatory-prescribed constants, NOT bank models, and are intentionally out " +
+      "of model-registry scope (per the Slice-5 exclusions).",
+    expiryDate: "2027-05-29",
+  },
+  {
+    modelId: "model:cva-engine-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "Counterparty CVA engine (computeCva). Standardised / accounting CVA over the live " +
+      "uncollateralised OTC derivative book: CVA = Σ_counterparty LGD × EAD × PD × discount, a " +
+      "simple no-hedge no-correlation sum (the build-phase analogue of the Basel BA-CVA " +
+      "standardised approach, BCBS d424 MAR50, and the IFRS 13 fair-value CVA). LGD is the " +
+      "Basel-CVA standard 60% for senior uncollateralised exposure; PD is derived from a live " +
+      "counterparty credit spread via the credit-triangle approximation where one exists, " +
+      "falling back to a documented standardised weight by counterparty class (a loud " +
+      "requireWeight lookup — an unknown class fails, never a silent 0% PD). Surfaced figure " +
+      "(calcKey `cva`) in CALC_BINDINGS. NO SILENT ZEROS: an OTC book with no uncollateralised " +
+      "positive exposure yields a loud `no-otc-exposure` status (CVA is 0 by absence of " +
+      "exposure), and a counterparty with no resolvable PD yields `insufficient-credit-inputs` — " +
+      "both degraded (output null), never a silent 0. Distinct from the `rwa` binding's " +
+      "`cvaRwaMinor` passthrough (BA 600 owns the regulatory RWA charge; this is the CVA figure).",
+    methodologyDescription:
+      "cva-engine-v1.0-standardised-ba-cva-sum-lgd-ead-pd-discount-credit-triangle-fallback-weight-no-silent-zero",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and RISK-MRP-01 §1.1/§2: CVA is the counterparty-credit-risk " +
+      "valuation adjustment feeding the counterparty-credit-risk appetite and the BA-CVA / " +
+      "IFRS 13 fair-value adjustment on the published financial statements. A misstated CVA " +
+      "misstates the counterparty-credit-risk position and the fair-value adjustment. The bank " +
+      "elects the standardised (no-hedge, no-correlation) sum as the most defensible build-phase " +
+      "method while the OTC book is small and a full SA-CVA sensitivity engine is not yet built. " +
+      "Methodology accountability + figure ownership: Helena (CRO). Full independent validation " +
+      "applies. CLOSES WS-MODEL-REGISTRY-SCOPE-CLOSURE — the LAST declared model class in " +
+      "RISK-MRP-01 §1.1; every model class is now registered + bound.",
     expiryDate: "2027-05-29",
   },
 ] as const;

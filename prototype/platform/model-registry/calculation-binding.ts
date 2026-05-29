@@ -374,6 +374,52 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
       },
     ],
   },
+  cva: {
+    calcKey: "cva",
+    figure: "Counterparty Credit Valuation Adjustment (standardised, BA-CVA / IFRS 13)",
+    modelId: "model:cva-engine-v1",
+    modelVersion: "1.0.0",
+    // CVA is the counterparty-credit-risk valuation adjustment on the bank's
+    // uncollateralised OTC derivative book (IRS + FX forward/swap): the
+    // market value of expected counterparty default loss. Methodology
+    // accountability + the figure both sit with Helena (CRO) — counterparty
+    // credit risk is a CRO-owned risk measure per the decision-authority
+    // routing table, and RISK-MRP-01 §1.1 declares counterparty-credit-risk /
+    // CVA models in model scope. This is the FINAL slice of
+    // D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 — it closes WS-MODEL-REGISTRY-SCOPE-
+    // CLOSURE, with every §1.1 model class now registered + bound. NOTE: this
+    // is the CVA *figure*, distinct from the `rwa` binding's `cvaRwaMinor`
+    // passthrough input (BA 600 owns the regulatory RWA charge; this is the
+    // accounting / BA-CVA valuation figure). Authority:
+    // D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5.
+    owningAgent: "Helena (Chief Risk Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BCBS-D424"],
+    inputContract: [
+      {
+        // Optional: an OTC book with no uncollateralised positive exposure is a
+        // legitimate "no counterparty credit risk" state, not a data-integrity
+        // fault. An absent EAD degrades the figure (status `degraded`, surfaced
+        // loudly) — CVA is 0 by absence of exposure, never a silently-computed 0.
+        name: "counterpartyEadZar",
+        required: false,
+        unit: "ZAR",
+        expectedFrom:
+          "CVA exposure / EPE model (model:cva-exposure-epe-v1): per-counterparty netted positive EAD = max(0, Σ current MTM) + Σ PFE add-on over the live uncollateralised OTC book (IRS IrsPositionRevalued + FX forward/swap FxTradeExecuted, spot excluded)",
+      },
+      {
+        // Optional: a counterparty with neither a live credit spread nor a
+        // resolvable documented fallback weight degrades the figure (status
+        // `degraded`) — a CVA derived from a missing PD silently under-states
+        // counterparty credit risk and is never surfaced as a number.
+        name: "counterpartyPdResolved",
+        required: false,
+        unit: "bool",
+        expectedFrom:
+          "counterparty credit spread (Ravi — market-data infrastructure: credit-spread:<partyId> / cds:<partyId>) via the credit-triangle PD, or the documented FALLBACK_PD_BY_CLASS standardised weight (loud requireWeight lookup)",
+      },
+    ],
+  },
 } as const;
 
 /** Look up a binding by calc key. Throws (loud) on an unknown key. */
