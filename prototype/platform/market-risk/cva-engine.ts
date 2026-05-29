@@ -334,7 +334,9 @@ export function deriveCounterpartyExposures(args: {
       partyId: irs.counterparty.partyId,
       name: irs.counterparty.name,
       role: irs.counterparty.role,
-      jurisdiction: irs.counterparty.jurisdiction,
+      ...(irs.counterparty.jurisdiction !== undefined
+        ? { jurisdiction: irs.counterparty.jurisdiction }
+        : {}),
     };
     const acc = accFor(party);
     // Current exposure: positive MTM only (CVA is on the bank's positive
@@ -357,7 +359,9 @@ export function deriveCounterpartyExposures(args: {
       partyId: fx.counterparty.partyId,
       name: fx.counterparty.name,
       role: fx.counterparty.role,
-      jurisdiction: fx.counterparty.jurisdiction,
+      ...(fx.counterparty.jurisdiction !== undefined
+        ? { jurisdiction: fx.counterparty.jurisdiction }
+        : {}),
     };
     const acc = accFor(party);
     // ZAR notional: the leg whose currency is ZAR (notional or counterNotional).
