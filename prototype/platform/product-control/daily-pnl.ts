@@ -255,6 +255,14 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
       marksUnavailableCount++;
     }
 
+    // Unrealised P&L is only carried by live positions. Settled trades have
+    // crystallised their P&L into realised (a stale FxPositionRevalued may
+    // still sit in the log if the daily MTM ran before settlement was
+    // recorded), and cancelled trades carry none. Zeroing here keeps the
+    // per-trade rows and the by-pair/counterparty/book breakdowns reconciled
+    // with the top-level totalUnrealised, which already excludes non-live.
+    const unrealisedForReporting = status === "live" ? unrealised : 0;
+
     trades.push({
       tradeId,
       pair,
@@ -264,7 +272,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
       bookId,
       bookRate,
       revalRate,
-      unrealisedPnlZarMinor: status === "cancelled" ? 0 : unrealised,
+      unrealisedPnlZarMinor: unrealisedForReporting,
       realisedPnlZarMinor: status === "cancelled" ? 0 : realised,
       status,
       markStatus,
@@ -279,7 +287,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
         realised: 0,
       };
       pairRow.trades++;
-      pairRow.unrealised += unrealised;
+      pairRow.unrealised += unrealisedForReporting;
       pairRow.realised += realised;
       byPairMap.set(canonicalPairKey, pairRow);
 
@@ -291,14 +299,14 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
         realised: 0,
       };
       cpRow.trades++;
-      cpRow.unrealised += unrealised;
+      cpRow.unrealised += unrealisedForReporting;
       cpRow.realised += realised;
       byCounterpartyMap.set(cid, cpRow);
 
       // Aggregate by book.
       const bookRow = byBookMap.get(bookId) ?? { trades: 0, unrealised: 0, realised: 0 };
       bookRow.trades++;
-      bookRow.unrealised += unrealised;
+      bookRow.unrealised += unrealisedForReporting;
       bookRow.realised += realised;
       byBookMap.set(bookId, bookRow);
     }
