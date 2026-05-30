@@ -24,7 +24,13 @@
       "description": "Stable GL account identifier. Convention: ACC-<TYPE><CATEGORY>-<NNN>. The four-digit prefix encodes the IFRS classification group (e.g., 1xxx assets, 2xxx liabilities, 3xxx equity, 4xxx income, 5xxx expense)."
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Human-readable account name. Currency-free: currency is a SEPARATE dimension (see `currency` / `currencies`), never embedded in the name (D-COA-CURRENCY-DECOUPLING, CEO-approved 2026-05-30)."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "The account's designated ISO-4217 currency, as a first-class dimension. Currency is NEVER part of `name` (D-COA-CURRENCY-DECOUPLING, 2026-05-30). The authoritative per-balance currency is the currency dimension on each ledger entry; this field is the account's designated currency. Omitted only for genuinely multi-currency pool accounts. Distinct from `currencies` (the array of all currencies an account may hold); for single-currency accounts the two are consistent (currencies = [currency])."
     },
     "category": {
       "type": "string",

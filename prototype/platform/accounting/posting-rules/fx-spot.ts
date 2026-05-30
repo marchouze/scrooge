@@ -48,11 +48,16 @@
 //   ACC-2100-004  FX Trading Payable    — USD
 //   ACC-2100-005  Unrealised FX P&L — FVTPL
 //   ACC-2100-006  Realised FX P&L
-//   ACC-1100-001  Nostro ZAR (SARB operational)
-//   ACC-1100-002  Nostro USD (correspondent)
-//   ACC-1100-003  Nostro EUR (correspondent)
-//   ACC-1100-004  FX Settlement Suspense — ZAR
-//   ACC-1100-005  FX Settlement Suspense — USD
+//   ACC-1200-001  Nostro (ZAR correspondent — FX settlement target for ZAR)
+//   ACC-1200-002  Nostro (USD correspondent; ACC-1100-002 merged here)
+//   ACC-1200-003  Nostro (EUR correspondent; ACC-1100-003 merged here)
+//   ACC-1100-004  FX Settlement Suspense (ZAR)
+//   ACC-1100-005  FX Settlement Suspense (USD)
+//
+//   D-COA-CURRENCY-DECOUPLING (2026-05-30): FX settles through the
+//   correspondent nostros (1200 range), never through the central-bank reserve
+//   account (ACC-1100-001). The USD/EUR 1100 nostros were duplicates and are
+//   merged into the 1200 range; FX_ACCOUNTS now points at the 1200 ids.
 //   ACC-2300-001  Settlement-Failed Receivable — ZAR (amortised cost, credit-impaired)
 //   ACC-2300-002  Settlement-Failed Receivable — USD (amortised cost, credit-impaired)
 //   ACC-2300-003  ECL Allowance — Settlement-Failed Receivables (contra-asset, ZAR)
@@ -172,9 +177,13 @@ export const FX_ACCOUNTS = {
   PAYABLE_USD: "ACC-2100-004",
   UNREALISED_PNL: "ACC-2100-005",
   REALISED_PNL: "ACC-2100-006",
-  NOSTRO_ZAR: "ACC-1100-001",
-  NOSTRO_USD: "ACC-1100-002",
-  NOSTRO_EUR: "ACC-1100-003",
+  // D-COA-CURRENCY-DECOUPLING (2026-05-30): FX settles through the correspondent
+  // nostros (1200 range), NOT the central-bank reserve account (ACC-1100-001).
+  // The USD/EUR 1100 nostros were duplicates of the 1200 correspondent nostros
+  // and have been merged into the 1200 range; these constants now resolve there.
+  NOSTRO_ZAR: "ACC-1200-001",
+  NOSTRO_USD: "ACC-1200-002",
+  NOSTRO_EUR: "ACC-1200-003",
   SUSPENSE_ZAR: "ACC-1100-004",
   SUSPENSE_USD: "ACC-1100-005",
   // Settlement-failed receivable sub-ledger (PR-FX-005; added 2026-05-20).
