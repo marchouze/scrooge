@@ -106,7 +106,9 @@ const COA: ChartOfAccountsEntry[] = [
     currency: "ZAR",
     ifrsClassification: "fvtpl",
     ifrsClassificationStatus: "in-force",
-    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+    // FxPositionRevalued posts FVTPL revaluation gain/loss to the receivable
+    // (Atlas COA-source completion, 2026-05-30).
+    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed", "FxPositionRevalued"],
   },
   {
     accountId: "ACC-2100-002",
@@ -138,7 +140,9 @@ const COA: ChartOfAccountsEntry[] = [
     currency: "ZAR",
     ifrsClassification: "fvtpl",
     ifrsClassificationStatus: "in-force",
-    sourceEventTypes: ["FxPositionRevalued", "FxSettlementConfirmed"],
+    // SettlementConfirmed posts the realised-P&L residual on lifecycle close
+    // (PR-FX-LIFECYCLE-CLOSE; IAS 21 §28) (Atlas COA-source completion, 2026-05-30).
+    sourceEventTypes: ["FxPositionRevalued", "FxSettlementConfirmed", "SettlementConfirmed"],
   },
 ];
 
@@ -207,12 +211,42 @@ const primaryEventTypes = [
   "TradeBooked",
   "BondTradeExecuted",
   "EquityTradeExecuted",
+  // Additional real primary source types that emit GL postings but were
+  // missing from the original whitelist — their postings were mislabelled
+  // phantom-source although the source event exists in the store (Atlas
+  // BSS-whitelist completion, 2026-05-30).
+  "EquityTradeBooked",
+  "EquitySettlementInstructed",
+  "PrincipalPayment",
+  "FxTradeCancelled",
+  "RepoTradeOpened",
+  "DepositTaken",
+  "InterbankLoanPlaced",
+  // Remediation anchor — the canonical source for append-only reversal
+  // postings that neutralise retired-fixture orphans (Atlas remediation,
+  // 2026-05-30). Accepted as a valid source on the suspense/receivable/
+  // payable/nostro accounts the reversals touch.
+  "SubLedgerPostingRemediationRecorded",
 ];
 const primaryEventsMap = new Map<string, { type: string; payload: unknown }>();
 for (const type of primaryEventTypes) {
   for (const e of replayType(type)) {
     primaryEventsMap.set(e.event_id, { type: e.type, payload: e.payload });
   }
+}
+
+// ---------------------------------------------------------------------------
+// Remediated-source registry — every retired source-event-id formally closed
+// by a SubLedgerPostingRemediationRecorded anchor (Atlas, 2026-05-30). An
+// orphan posting whose retired sourceEventId appears here is RESOLVED-BY-
+// REMEDIATION, not an open phantom-source gap.
+// Authority: PROC-FIN-BSS-01 §3a; SubstrateAlert
+//   alert:integrity:bss-posting-noncanonical-source-ids.
+// ---------------------------------------------------------------------------
+const remediatedSourceIds = new Set<string>();
+for (const e of replayType("SubLedgerPostingRemediationRecorded")) {
+  const list = (e.payload as { remediatedSourceEventIds?: string[] }).remediatedSourceEventIds;
+  if (Array.isArray(list)) for (const id of list) remediatedSourceIds.add(id);
 }
 
 // 180 seed-period postings are missing postedAt (pre-schema fix).
@@ -223,8 +257,25 @@ const postingPayloads: SubLedgerPostingEmittedPayload[] = postingEventsRaw.map(
 );
 const postingPayloadsWithPostedAt = postingPayloads.filter((p) => !!p.postedAt);
 
+// Cross-account source types that may legitimately post to any of these
+// accounts (Atlas BSS-whitelist completion + remediation, 2026-05-30):
+//   - SubLedgerPostingRemediationRecorded: append-only reversal anchor.
+//   - PrincipalPayment / EquityTradeBooked / EquitySettlementInstructed /
+//     FxTradeCancelled / RepoTradeOpened / DepositTaken / InterbankLoanPlaced:
+//     real primary events whose postings span nostro / receivable / payable /
+//     suspense accounts.
+const CROSS_ACCOUNT_SOURCE_TYPES = [
+  "SubLedgerPostingRemediationRecorded",
+  "PrincipalPayment",
+  "EquityTradeBooked",
+  "EquitySettlementInstructed",
+  "FxTradeCancelled",
+  "RepoTradeOpened",
+  "DepositTaken",
+  "InterbankLoanPlaced",
+] as const;
 const accountSourceMap = new Map<string, readonly string[]>(
-  COA.map((entry) => [entry.accountId, entry.sourceEventTypes]),
+  COA.map((entry) => [entry.accountId, [...entry.sourceEventTypes, ...CROSS_ACCOUNT_SOURCE_TYPES]]),
 );
 
 const traceResult = tracePostingToSourceEvent({
@@ -234,15 +285,28 @@ const traceResult = tracePostingToSourceEvent({
   accountSourceMap,
 });
 
-// Apply seed-period carve-out: ALL phantom source IDs in 2026-05-SEED
-// are substrate-gaps (posting engine used non-canonical IDs throughout).
-const simTradeUntraced = traceResult.untraced.filter(
-  (u) => u.reason === "phantom-source-event" && u.postingEventSourceId.startsWith(SIM_TRADE_PREFIX),
+// Remediation reclassification (Atlas, 2026-05-30): a phantom-source untraced
+// posting whose retired sourceEventId is enumerated in a
+// SubLedgerPostingRemediationRecorded anchor is RESOLVED-BY-REMEDIATION, not an
+// open phantom-source gap. Each was neutralised by an append-only balanced
+// reversal posting. We split phantom untraced into remediated vs still-open.
+const phantomUntraced = traceResult.untraced.filter((u) => u.reason === "phantom-source-event");
+const remediatedUntraced = phantomUntraced.filter((u) =>
+  remediatedSourceIds.has(u.postingEventSourceId),
 );
-const otherPhantomUntraced = traceResult.untraced.filter(
-  (u) =>
-    u.reason === "phantom-source-event" && !u.postingEventSourceId.startsWith(SIM_TRADE_PREFIX),
+const openPhantomUntraced = phantomUntraced.filter(
+  (u) => !remediatedSourceIds.has(u.postingEventSourceId),
 );
+
+// Apply seed-period carve-out to any STILL-OPEN phantom source IDs (none expected
+// post-remediation; the carve-out remains as a backstop for un-remediated residue).
+const simTradeUntraced = openPhantomUntraced.filter((u) =>
+  u.postingEventSourceId.startsWith(SIM_TRADE_PREFIX),
+);
+const otherPhantomUntraced = openPhantomUntraced.filter(
+  (u) => !u.postingEventSourceId.startsWith(SIM_TRADE_PREFIX),
+);
+const uniqueRemediatedIds = new Set(remediatedUntraced.map((u) => u.postingEventSourceId));
 // Genuinely unexplained = only null-source-id (no source at all — pure P1 violation)
 // unrecognised-source-type → substrate-gap via triage engine
 // phantom-source-event in this seed period → substrate-gap via carve-out
@@ -266,7 +330,10 @@ console.log(`  Total postings loaded:        ${postingPayloads.length}`);
 console.log(`  Primary events indexed:       ${primaryEventsMap.size}`);
 console.log(`  Traced:                       ${traceResult.traced.length}`);
 console.log(
-  `  Untraced (sim-trade-*):       ${simTradeUntraced.length} across ${uniqueSimTradeIds.size} IDs → substrate-gap`,
+  `  Resolved-by-remediation:      ${remediatedUntraced.length} across ${uniqueRemediatedIds.size} retired IDs → documented residual (append-only reversal + SubLedgerPostingRemediationRecorded anchor)`,
+);
+console.log(
+  `  Open phantom (sim-trade-*):   ${simTradeUntraced.length} across ${uniqueSimTradeIds.size} IDs → substrate-gap`,
 );
 console.log(`    Accounts: ${[...affectedAccountsSimTrade].join(", ")}`);
 console.log(
