@@ -122,12 +122,12 @@ export function generateSimTrade(
       const half = mid * (halfBps / 10_000);
       rate = { mid, bid: mid - half, ask: mid + half };
       // Keep the rate-engine internal state warm so it can serve inverse lookups.
-      rateEngine.tick(pair);
+      rateEngine.tick(pair, rng);
     } else {
-      rate = rateEngine.tick(pair);
+      rate = rateEngine.tick(pair, rng);
     }
   } else {
-    rate = rateEngine.tick(pair);
+    rate = rateEngine.tick(pair, rng);
   }
   const { base: baseCcy, quote: quoteCcy } = parsePair(pair);
 

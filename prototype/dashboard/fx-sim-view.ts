@@ -1,13 +1,23 @@
 // dashboard/fx-sim-view.ts
 //
 // API routes for the FX market-making simulation engine control panel.
-// Registers three endpoints:
-//   POST /api/fx-sim/start   — start the simulation with optional config
-//   POST /api/fx-sim/stop    — stop the simulation
-//   GET  /api/fx-sim/status  — get current simulation status
+// Registers:
+//   GET  /api/fx-sim/status  — get current simulation status (read-only).
 //
-// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
-// Author: Devon (Chief Operating Officer, engineering)
+// RETIRED (D-FX-SIM-FRONTEND-INPUT-DRIVER, CEO-approved 2026-05-30):
+//   POST /api/fx-sim/start   — started the in-process counterparty FX trade
+//   POST /api/fx-sim/stop      loop, which auto-booked through `bookFxTrade`.
+// Counterparty FX trades now ENTER VIA THE FRONT-END: an agent generates specs
+// with `scripts/sim/fx-frontend-trade-specs.ts` and drives /trade-book.html via
+// Claude-in-Chrome (see platform/simulation/fx-frontend-driver/README.md). The
+// two control routes now return HTTP 410 Gone so no second in-process booking
+// path remains ("One dispatch path per scope"). The internal-MM risk-monitor
+// read context is still exposed via /api/fx-sim/status.
+//
+// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION;
+//   D-FX-SIM-FRONTEND-INPUT-DRIVER.
+// Author: Devon (Chief Operating Officer, engineering);
+//   retirement by Atlas (Core banking platform architect, engineering).
 
 import type { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 
@@ -28,7 +38,7 @@ export async function registerFxSimRoutes(
   pathname: string,
   method: string,
   _searchParams: URLSearchParams,
-  req: Request,
+  _req: Request,
   simEngine: FxSimEngine,
 ): Promise<Response | null> {
   // GET /api/fx-sim/status
@@ -36,50 +46,19 @@ export async function registerFxSimRoutes(
     return jsonResponse(simEngine.getStatus());
   }
 
-  // POST /api/fx-sim/start
-  if (pathname === "/api/fx-sim/start" && method === "POST") {
-    let body: {
-      minIntervalMs?: number;
-      maxIntervalMs?: number;
-      bookId?: string;
-      settlementMode?: string;
-    } = {};
-    try {
-      const raw = await req.json();
-      if (typeof raw === "object" && raw !== null) {
-        body = raw as typeof body;
-      }
-    } catch {
-      // empty body or non-JSON is fine — all fields are optional
-    }
-
-    const config: {
-      minIntervalMs?: number;
-      maxIntervalMs?: number;
-      bookId?: string;
-      settlementMode?: "realtime" | "accelerated";
-    } = {};
-    if (typeof body.minIntervalMs === "number" && body.minIntervalMs > 0) {
-      config.minIntervalMs = body.minIntervalMs;
-    }
-    if (typeof body.maxIntervalMs === "number" && body.maxIntervalMs > 0) {
-      config.maxIntervalMs = body.maxIntervalMs;
-    }
-    if (typeof body.bookId === "string" && body.bookId.trim().length > 0) {
-      config.bookId = body.bookId.trim();
-    }
-    if (body.settlementMode === "realtime" || body.settlementMode === "accelerated") {
-      config.settlementMode = body.settlementMode;
-    }
-
-    const status = simEngine.start(config);
-    return jsonResponse(status);
-  }
-
-  // POST /api/fx-sim/stop
-  if (pathname === "/api/fx-sim/stop" && method === "POST") {
-    const status = simEngine.stop();
-    return jsonResponse(status);
+  // POST /api/fx-sim/start, POST /api/fx-sim/stop — RETIRED.
+  // The in-process counterparty FX trade loop (auto-booking via bookFxTrade) is
+  // retired; counterparty trades now enter via the front-end driver. Returns
+  // HTTP 410 Gone with a pointer to the replacement path.
+  if ((pathname === "/api/fx-sim/start" || pathname === "/api/fx-sim/stop") && method === "POST") {
+    return jsonResponse(
+      {
+        error: "retired",
+        detail:
+          "The in-process counterparty FX trade loop is retired (D-FX-SIM-FRONTEND-INPUT-DRIVER). Counterparty FX trades now enter via the front-end: generate specs with `bun run scripts/sim/fx-frontend-trade-specs.ts` and drive /trade-book.html via Claude-in-Chrome (platform/simulation/fx-frontend-driver/README.md).",
+      },
+      410,
+    );
   }
 
   return null;
