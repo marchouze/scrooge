@@ -142,8 +142,18 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   omitted (production). All tests inject a fixed `now`. Clock-abstraction
 //   cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Author: Devon (COO, operations), 2026-05-30.
+//
+// 2026-05-30 — Bumped 64 → 65 (WS-ODP-UMOJA-UTI):
+//   platform/recon/odp-repo-recon-dispute-staleness.ts:125 — injectable
+//   default `const now = opts.now ?? new Date()` added by the ODP trade-repository
+//   reconciliation dispute-staleness gate. Same approved injectable-default pattern
+//   as the 63→64 bump; the wall-clock fallback only activates when a caller omits
+//   opts.now (production paths), while every test injects a fixed `now` via opts.
+//   Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
+//   Authority: ORG-ODP-RPT-003; urn:regulation:odp:cs-3-2018 §6.
+//   Author: Devon (COO, operations), 2026-05-30.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 64;
+const KNOWN_VIOLATIONS_SNAPSHOT = 65;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

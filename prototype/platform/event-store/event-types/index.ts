@@ -307,6 +307,17 @@ export * from "./odp-portfolio-recon";
 //   (segregation and rehypothecation controls); ISDA 1994/2016 VM CSA.
 // Author: Devon (COO, operations).
 export * from "./odp-collateral-segregation";
+// WS-ODP-UMOJA-UTI — UTI allocation + trade-report serialisation + submission
+// lifecycle + trade-repository reconciliation events (12 total).
+// TradeUtiAllocated, OdpTradeReportPrepared, OdpReportSubmissionAttempted,
+//   OdpReportSubmissionAccepted, OdpReportSubmissionRejected,
+//   OdpReportAmendmentRequested, OdpReportAmendmentSubmitted,
+//   OdpRepoReconRun, OdpRepoReconBreakRaised, OdpRepoReconDisputeOpened,
+//   OdpRepoReconDisputeResolved, UmojaPortalTokenRefreshed.
+// Authority: ORG-ODP-RPT-003; ORG-MK-RPT-002; urn:regulation:odp:cs-3-2018;
+//   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
+// Author: Devon (COO, operations).
+export * from "./odp-umoja-uti";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -422,6 +433,7 @@ import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { MTM_TYPED_EVENT_TYPES } from "./mtm";
 import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
 import { ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES } from "./odp-portfolio-recon";
+import { ODP_UMOJA_UTI_TYPED_EVENT_TYPES } from "./odp-umoja-uti";
 import { OTC_CONFIRMATIONS_TYPED_EVENT_TYPES } from "./otc-confirmations";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
@@ -595,6 +607,14 @@ export const TYPED_EVENT_TYPES = [
   // 5 recon-run events + 3 break/dispute lifecycle events (8 total).
   // Authority: ORG-ODP-COND-007; urn:regulation:odp:cs-2-2018 §9.
   ...ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES,
+  // WS-ODP-UMOJA-UTI — UTI allocation + submission lifecycle + repo-recon events.
+  // 12 events: TradeUtiAllocated, OdpTradeReportPrepared, OdpReportSubmissionAttempted,
+  //   OdpReportSubmissionAccepted, OdpReportSubmissionRejected, OdpReportAmendmentRequested,
+  //   OdpReportAmendmentSubmitted, OdpRepoReconRun, OdpRepoReconBreakRaised,
+  //   OdpRepoReconDisputeOpened, OdpRepoReconDisputeResolved, UmojaPortalTokenRefreshed.
+  // Authority: ORG-ODP-RPT-003; ORG-MK-RPT-002; urn:regulation:odp:cs-3-2018;
+  //   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
+  ...ODP_UMOJA_UTI_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
