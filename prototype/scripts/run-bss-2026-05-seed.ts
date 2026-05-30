@@ -387,11 +387,23 @@ console.log(
 // Step 3c — Aged-item check
 // ---------------------------------------------------------------------------
 
+// Confirmation signal (PROC-FIN-BSS-01 §5 step 3c — confirmation-aware aging):
+// a posting whose sourceEventId resolves to a settlement-confirmation primary
+// event is a CONFIRMED (settled) leg and must NOT be aged. We collect the
+// event_ids of all settlement-confirmation primary events; checkAgedItems uses
+// this set (in addition to the settlement-side posting types it recognises
+// internally) to net only OPEN/unconfirmed legs into the aged residual.
+const confirmedSourceEventIds = new Set<string>();
+for (const type of ["SettlementConfirmed", "FxSettlementConfirmed", "TradeMatured"]) {
+  for (const e of replayType(type)) confirmedSourceEventIds.add(e.event_id);
+}
+
 const agedResult = checkAgedItems({
   trialBalance,
   chartOfAccounts: COA,
   asOf: RUN_AS_OF.slice(0, 10), // YYYY-MM-DD
   postingEvents: postingPayloadsWithPostedAt,
+  confirmedSourceEventIds,
 });
 
 console.log("=== STEP 3c: AGED-ITEM CHECK ===");

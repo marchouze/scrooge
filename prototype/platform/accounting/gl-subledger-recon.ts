@@ -265,9 +265,15 @@ export function verifyIfrsClassification(args: {
 export interface AgedItem {
   readonly accountId: string;
   readonly currency: string;
+  /**
+   * Net OPEN (unconfirmed) residual outstanding in minor units — NOT the net
+   * account balance. A confirmed standing cash balance nets to zero in the
+   * open-residual space and is never reported here.
+   */
   readonly amountMinor: number;
+  /** Oldest posting date among the OPEN/unconfirmed legs that form the residual. */
   readonly oldestPostingDate: string;
-  /** Number of calendar days the balance has been outstanding. */
+  /** Number of calendar days the open residual has been outstanding. */
   readonly ageCalendarDays: number;
   readonly clearanceHorizonDays: number;
 }
@@ -278,6 +284,44 @@ export interface AgedItemsResult {
   readonly aged: readonly AgedItem[];
   readonly ok: boolean;
 }
+
+/**
+ * Posting types that represent a CONFIRMED / settled cash movement — the
+ * correspondent (or central bank) has confirmed the leg, so the cash sitting
+ * in the nostro is substantiated and must NOT be aged.
+ *
+ * These are the settlement-side posting types: the explicit
+ * `settlement-confirmation` confirmation posting, the FX principal-payment and
+ * lifecycle-close cash movements (which only post once the leg has settled),
+ * the generic `settlement` posting, and the treasury funding movements
+ * (repo / deposit / interbank placement) which represent confirmed cash in/out
+ * of the nostro at value date.
+ *
+ * Authority: PROC-FIN-BSS-01 §5 step 3c — "aged only if outstanding beyond
+ * same-day WITHOUT correspondent confirmation".
+ */
+const CONFIRMED_SETTLEMENT_POSTING_TYPES: ReadonlySet<string> = new Set([
+  "settlement-confirmation",
+  "settlement",
+  "fx-principal-payment",
+  "fx-lifecycle-close",
+  "repo-trade-booking",
+  "deposit-taken",
+  "ibl-placement",
+  // Append-only correcting entries neutralise prior open postings — they carry
+  // a confirmed (resolved) status by construction.
+  "duplicate-reversal-correction",
+  "stale-revaluation-correction",
+  "settlement-reversal",
+  "cancellation-reversal",
+]);
+
+// The second confirmation signal — postings whose `sourceEventId` resolves to
+// a settlement-confirmation primary event (`SettlementConfirmed` /
+// `FxSettlementConfirmed` / `TradeMatured`) — is supplied by the caller as the
+// `confirmedSourceEventIds` set on `checkAgedItems`. The seed/BSS runner builds
+// that set by replaying those event types; keeping the type list in the caller
+// avoids hard-coding event-type knowledge in this pure function.
 
 /**
  * Parse a YYYY-MM-DD date string into a Date object (UTC midnight).
@@ -299,17 +343,55 @@ function calendarDaysBetween(from: string, to: string): number {
 }
 
 /**
- * Step 3c of PROC-FIN-BSS-01 — aged-item check.
+ * Decide whether a posting leg is CONFIRMED (settled/cleared) rather than OPEN
+ * (unconfirmed / unsettled). Confirmation is determined per-posting from two
+ * independent signals, either of which is sufficient:
  *
- * For each non-zero balance in the trial balance, look at the oldest
- * `SubLedgerPostingEmitted` event that contributed to that account's balance.
- * If the age (in calendar days from that oldest posting to `asOf`) exceeds
- * the account's `clearanceHorizonDays`, the account is flagged as aged.
+ *   1. `postingType` ∈ CONFIRMED_SETTLEMENT_POSTING_TYPES — the posting is a
+ *      settlement-side cash movement (or an append-only correction).
+ *   2. The posting's `sourceEventId` resolves, via the caller-supplied
+ *      `confirmedSourceEventIds` set, to a settlement-confirmation primary
+ *      event (`SettlementConfirmed` / `FxSettlementConfirmed` / `TradeMatured`).
+ *
+ * Anything else is treated as OPEN.
+ */
+function isConfirmedPosting(
+  posting: SubLedgerPostingEmittedPayload,
+  confirmedSourceEventIds: ReadonlySet<string>,
+): boolean {
+  if (CONFIRMED_SETTLEMENT_POSTING_TYPES.has(posting.postingType)) return true;
+  if (posting.sourceEventId && confirmedSourceEventIds.has(posting.sourceEventId)) return true;
+  return false;
+}
+
+/**
+ * Step 3c of PROC-FIN-BSS-01 — aged-item check (PER-ITEM, CONFIRMATION-AWARE).
+ *
+ * The check ages only OPEN / UNCONFIRMED items, never the net confirmed cash
+ * balance. For each aging-eligible account (one with a `clearanceHorizonDays`)
+ * it nets ONLY the open/unconfirmed posting legs into a per-account+currency
+ * open residual. A confirmed standing cash balance — e.g. a nostro holding
+ * net confirmed settlement positions — nets to zero in this open-residual
+ * space and is reported clean, not aged.
+ *
+ * An account+currency is flagged aged iff:
+ *   (a) its net OPEN residual is non-zero, AND
+ *   (b) the oldest OPEN posting contributing to that residual is older than
+ *       the account's `clearanceHorizonDays`.
+ *
+ * Confirmation is sourced from the available settlement signal: the
+ * `settlement-confirmation` posting type, the settlement-side cash-movement
+ * posting types, and (when `confirmedSourceEventIds` is supplied) postings
+ * whose `sourceEventId` resolves to a `SettlementConfirmed` event. See
+ * `isConfirmedPosting` and CONFIRMED_SETTLEMENT_POSTING_TYPES.
  *
  * Accounts with no `clearanceHorizonDays` defined are never flagged.
  *
  * Citations: PROC-FIN-BSS-01 §5 step 3c; Accounting Policies v0.1 §3.4;
- * IFRS 9 §B3.1.3.
+ * IFRS 9 §B3.1.3. Confirmation-aware redesign: PROC-FIN-BSS-01 §7.3 retiring
+ * D-CFO-BSS-2026-05-SEED-NOSTRO-AGED-EXCEPTION; SubstrateAlert
+ * alert:integrity:bss-aged-items-confirmed-leg-blind (Bea, Accounting &
+ * financial reporting engineer, engineering).
  */
 export function checkAgedItems(args: {
   trialBalance: TrialBalance;
@@ -317,21 +399,45 @@ export function checkAgedItems(args: {
   chartOfAccounts: readonly ChartOfAccountsEntry[];
   /** YYYY-MM-DD — the substantiation as-of date. */
   asOf: string;
+  /**
+   * Optional set of `sourceEventId`s known to resolve to a settlement
+   * confirmation primary event (`SettlementConfirmed` etc). Postings whose
+   * source is in this set are treated as CONFIRMED even if their `postingType`
+   * is not itself a settlement-side type. Defaults to empty — confirmation is
+   * then driven entirely by posting type.
+   */
+  confirmedSourceEventIds?: ReadonlySet<string>;
 }): AgedItemsResult {
   const { trialBalance, postingEvents, chartOfAccounts, asOf } = args;
+  const confirmedSourceEventIds = args.confirmedSourceEventIds ?? new Set<string>();
 
   const coaByAccountId = new Map(chartOfAccounts.map((e) => [e.accountId, e]));
 
-  // Build per-account oldest posting date from the posting events.
-  const oldestPostingDate = new Map<string, string>();
+  // Aging-eligible accounts are those that carry a clearance horizon.
+  const eligibleAccountIds = new Set(
+    chartOfAccounts.filter((e) => e.clearanceHorizonDays !== undefined).map((e) => e.accountId),
+  );
+
+  // Per (account|currency) open-residual state: signed net amount of OPEN legs
+  // (debit positive, credit negative) and the oldest OPEN posting date.
+  interface OpenResidual {
+    netMinor: number;
+    oldestOpenDate: string | undefined;
+  }
+  const openByKey = new Map<string, OpenResidual>();
+
   for (const posting of postingEvents) {
+    if (isConfirmedPosting(posting, confirmedSourceEventIds)) continue; // confirmed → not aged
+    const postDate = posting.postedAt.slice(0, 10);
     for (const leg of posting.legs) {
-      const existing = oldestPostingDate.get(leg.accountId);
-      // postedAt is ISO 8601; take date portion for comparison
-      const postDate = posting.postedAt.slice(0, 10);
-      if (!existing || postDate < existing) {
-        oldestPostingDate.set(leg.accountId, postDate);
+      if (!eligibleAccountIds.has(leg.accountId)) continue;
+      const key = `${leg.accountId}|${leg.currency}`;
+      const state = openByKey.get(key) ?? { netMinor: 0, oldestOpenDate: undefined };
+      state.netMinor += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      if (!state.oldestOpenDate || postDate < state.oldestOpenDate) {
+        state.oldestOpenDate = postDate;
       }
+      openByKey.set(key, state);
     }
   }
 
@@ -341,32 +447,33 @@ export function checkAgedItems(args: {
   for (const row of trialBalance.rows) {
     if (row.amountMinor === 0) continue;
 
+    const key = `${row.leafAccountId}|${row.currency}`;
     const entry = coaByAccountId.get(row.leafAccountId);
     if (!entry || entry.clearanceHorizonDays === undefined) {
       // No clearance horizon — not eligible for aging.
-      clean.push(`${row.leafAccountId}|${row.currency}`);
+      clean.push(key);
       continue;
     }
 
-    const oldestDate = oldestPostingDate.get(row.leafAccountId);
-    if (!oldestDate) {
-      // No posting events found for this account; treat as clean (no evidence of age).
-      clean.push(`${row.leafAccountId}|${row.currency}`);
+    const residual = openByKey.get(key);
+    if (!residual || residual.netMinor === 0 || !residual.oldestOpenDate) {
+      // No open/unconfirmed residual — the balance is fully confirmed cash.
+      clean.push(key);
       continue;
     }
 
-    const ageDays = calendarDaysBetween(oldestDate, asOf);
+    const ageDays = calendarDaysBetween(residual.oldestOpenDate, asOf);
     if (ageDays > entry.clearanceHorizonDays) {
       aged.push({
         accountId: row.leafAccountId,
         currency: row.currency,
-        amountMinor: row.amountMinor,
-        oldestPostingDate: oldestDate,
+        amountMinor: residual.netMinor,
+        oldestPostingDate: residual.oldestOpenDate,
         ageCalendarDays: ageDays,
         clearanceHorizonDays: entry.clearanceHorizonDays,
       });
     } else {
-      clean.push(`${row.leafAccountId}|${row.currency}`);
+      clean.push(key);
     }
   }
 

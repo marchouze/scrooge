@@ -299,14 +299,16 @@ describe("verifyIfrsClassification", () => {
 // ---------------------------------------------------------------------------
 
 describe("checkAgedItems", () => {
-  it("returns ok=true when no accounts exceed clearance horizon", () => {
+  it("returns ok=true when no open item exceeds clearance horizon", () => {
     const tb = makeTB([{ leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 50_000 }]);
-    // Posting date and asOf within 2 days
+    // Open one-sided suspense item: DR suspense / CR receivable — net open
+    // residual on the suspense account is +50_000. Posting 1 day before asOf,
+    // horizon 2 → within window → clean.
     const posting = makePosting(
       "evt-010",
       [
         { accountId: "ACC-1100-004", debitCredit: "debit", currency: "ZAR", amountMinor: 50_000 },
-        { accountId: "ACC-1100-004", debitCredit: "credit", currency: "ZAR", amountMinor: 50_000 },
+        { accountId: "ACC-2100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 50_000 },
       ],
       "2026-05-15T10:00:00.000Z",
     );
@@ -321,14 +323,14 @@ describe("checkAgedItems", () => {
     expect(result.aged.length).toBe(0);
   });
 
-  it("flags accounts where age exceeds clearance horizon", () => {
+  it("flags accounts where an open item exceeds clearance horizon", () => {
     const tb = makeTB([{ leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 50_000 }]);
-    // Posting date 5 days before asOf — exceeds 2-day horizon
+    // Open suspense item posted 5 days before asOf — exceeds 2-day horizon.
     const posting = makePosting(
       "evt-011",
       [
         { accountId: "ACC-1100-004", debitCredit: "debit", currency: "ZAR", amountMinor: 50_000 },
-        { accountId: "ACC-1100-004", debitCredit: "credit", currency: "ZAR", amountMinor: 50_000 },
+        { accountId: "ACC-2100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 50_000 },
       ],
       "2026-05-10T08:00:00.000Z",
     );
@@ -344,11 +346,13 @@ describe("checkAgedItems", () => {
     expect(result.aged[0]?.accountId).toBe("ACC-1100-004");
     expect(result.aged[0]?.ageCalendarDays).toBe(5);
     expect(result.aged[0]?.clearanceHorizonDays).toBe(2);
+    // amountMinor now reports the OPEN residual, not the net account balance.
+    expect(result.aged[0]?.amountMinor).toBe(50_000);
   });
 
   it("does not flag accounts with no clearance horizon defined", () => {
     const tb = makeTB([{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 }]);
-    // Very old posting — but no clearance horizon
+    // Very old OPEN posting — but ACC-1100-001 has no clearance horizon.
     const posting = makePosting(
       "evt-012",
       [
@@ -359,7 +363,7 @@ describe("checkAgedItems", () => {
           amountMinor: 1_000_000,
         },
         {
-          accountId: "ACC-1100-001",
+          accountId: "ACC-2100-001",
           debitCredit: "credit",
           currency: "ZAR",
           amountMinor: 1_000_000,
@@ -378,7 +382,7 @@ describe("checkAgedItems", () => {
     expect(result.aged.length).toBe(0);
   });
 
-  it("uses oldest posting date when multiple postings exist for same account", () => {
+  it("uses oldest OPEN posting date when multiple open postings exist for same account", () => {
     const tb = makeTB([{ leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 100_000 }]);
     const postings = [
       makePosting(
@@ -386,7 +390,7 @@ describe("checkAgedItems", () => {
         [
           { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 60_000 },
           {
-            accountId: "ACC-2100-001",
+            accountId: "ACC-1100-004",
             debitCredit: "credit",
             currency: "ZAR",
             amountMinor: 60_000,
@@ -399,7 +403,7 @@ describe("checkAgedItems", () => {
         [
           { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 40_000 },
           {
-            accountId: "ACC-2100-001",
+            accountId: "ACC-1100-004",
             debitCredit: "credit",
             currency: "ZAR",
             amountMinor: 40_000,
@@ -415,10 +419,199 @@ describe("checkAgedItems", () => {
       asOf: "2026-05-15",
     });
 
-    // Oldest is May 12; asOf May 15 = 3 days; horizon = 2 days → aged
+    // ACC-2100-001 open residual = +100_000; oldest open posting May 12;
+    // asOf May 15 = 3 days; horizon = 2 days → aged.
     expect(result.ok).toBe(false);
+    expect(result.aged[0]?.accountId).toBe("ACC-2100-001");
     expect(result.aged[0]?.oldestPostingDate).toBe("2026-05-12");
     expect(result.aged[0]?.ageCalendarDays).toBe(3);
+  });
+
+  // -------------------------------------------------------------------------
+  // Confirmation-aware redesign (PROC-FIN-BSS-01 §5 step 3c).
+  // SubstrateAlert alert:integrity:bss-aged-items-confirmed-leg-blind;
+  // retires D-CFO-BSS-2026-05-SEED-NOSTRO-AGED-EXCEPTION.
+  // -------------------------------------------------------------------------
+
+  it("(a) does NOT flag a confirmed standing nostro cash balance past horizon", () => {
+    // Nostro ACC-1100-002 (USD, horizon 0) holds a standing confirmed balance
+    // posted 9 days ago. The cash movement is a CONFIRMED settlement leg
+    // (postingType fx-principal-payment) — the old logic flagged this as a
+    // false positive; the confirmation-aware logic must not.
+    const tb = makeTB([{ leafAccountId: "ACC-1100-002", currency: "USD", amountMinor: 1_000_000 }]);
+    const posting: SubLedgerPostingEmittedPayload = {
+      sourceEventId: "evt-conf-settle",
+      postingType: "fx-principal-payment",
+      postedAt: "2026-05-06T12:00:00.000Z", // 9 days before asOf
+      legs: [
+        {
+          accountId: "ACC-1100-002",
+          debitCredit: "debit",
+          currency: "USD",
+          amountMinor: 1_000_000,
+        },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          currency: "ZAR",
+          amountMinor: 1_000_000,
+        },
+      ],
+    };
+    const result = checkAgedItems({
+      trialBalance: tb,
+      postingEvents: [posting],
+      chartOfAccounts: COA_FIXTURES,
+      asOf: "2026-05-15",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.aged.length).toBe(0);
+    expect(result.clean).toContain("ACC-1100-002|USD");
+  });
+
+  it("(a') treats a posting as confirmed when its source resolves to a SettlementConfirmed event", () => {
+    // Same nostro balance, but the posting type is a generic trade-booking
+    // (not itself a settlement type). It is confirmed via confirmedSourceEventIds.
+    const tb = makeTB([{ leafAccountId: "ACC-1100-002", currency: "USD", amountMinor: 1_000_000 }]);
+    const posting: SubLedgerPostingEmittedPayload = {
+      sourceEventId: "evt-settlement-confirmed-1",
+      postingType: "trade-booking",
+      postedAt: "2026-05-06T12:00:00.000Z", // 9 days before asOf
+      legs: [
+        {
+          accountId: "ACC-1100-002",
+          debitCredit: "debit",
+          currency: "USD",
+          amountMinor: 1_000_000,
+        },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          currency: "ZAR",
+          amountMinor: 1_000_000,
+        },
+      ],
+    };
+    const result = checkAgedItems({
+      trialBalance: tb,
+      postingEvents: [posting],
+      chartOfAccounts: COA_FIXTURES,
+      asOf: "2026-05-15",
+      confirmedSourceEventIds: new Set(["evt-settlement-confirmed-1"]),
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.aged.length).toBe(0);
+  });
+
+  it("(b) DOES flag an unconfirmed nostro item past horizon", () => {
+    // Same nostro, same age, but the posting is an OPEN/unconfirmed item
+    // (postingType trade-booking, no confirmation signal). Horizon 0 → aged.
+    const tb = makeTB([{ leafAccountId: "ACC-1100-002", currency: "USD", amountMinor: 1_000_000 }]);
+    const posting: SubLedgerPostingEmittedPayload = {
+      sourceEventId: "evt-open-nostro",
+      postingType: "trade-booking",
+      postedAt: "2026-05-06T12:00:00.000Z", // 9 days before asOf, horizon 0
+      legs: [
+        {
+          accountId: "ACC-1100-002",
+          debitCredit: "debit",
+          currency: "USD",
+          amountMinor: 1_000_000,
+        },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          currency: "ZAR",
+          amountMinor: 1_000_000,
+        },
+      ],
+    };
+    const result = checkAgedItems({
+      trialBalance: tb,
+      postingEvents: [posting],
+      chartOfAccounts: COA_FIXTURES,
+      asOf: "2026-05-15",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.aged.length).toBe(1);
+    expect(result.aged[0]?.accountId).toBe("ACC-1100-002");
+    expect(result.aged[0]?.ageCalendarDays).toBe(9);
+    expect(result.aged[0]?.clearanceHorizonDays).toBe(0);
+  });
+
+  it("(b') ages only the unconfirmed residual when confirmed and open legs coexist", () => {
+    // A nostro with a large CONFIRMED inflow (settlement) and a small OPEN
+    // outflow. Only the open residual ages — the confirmed cash is clean.
+    const tb = makeTB([{ leafAccountId: "ACC-1100-002", currency: "USD", amountMinor: 900_000 }]);
+    const confirmed: SubLedgerPostingEmittedPayload = {
+      sourceEventId: "evt-conf",
+      postingType: "settlement-confirmation",
+      postedAt: "2026-05-06T12:00:00.000Z",
+      legs: [
+        {
+          accountId: "ACC-1100-002",
+          debitCredit: "debit",
+          currency: "USD",
+          amountMinor: 1_000_000,
+        },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          currency: "ZAR",
+          amountMinor: 1_000_000,
+        },
+      ],
+    };
+    const open: SubLedgerPostingEmittedPayload = {
+      sourceEventId: "evt-open",
+      postingType: "trade-booking",
+      postedAt: "2026-05-04T12:00:00.000Z", // 11 days before asOf
+      legs: [
+        { accountId: "ACC-1100-002", debitCredit: "credit", currency: "USD", amountMinor: 100_000 },
+        { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 100_000 },
+      ],
+    };
+    const result = checkAgedItems({
+      trialBalance: tb,
+      postingEvents: [confirmed, open],
+      chartOfAccounts: COA_FIXTURES,
+      asOf: "2026-05-15",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.aged.length).toBe(1);
+    // Only the OPEN −100_000 residual ages — not the 900_000 net balance.
+    expect(result.aged[0]?.amountMinor).toBe(-100_000);
+    expect(result.aged[0]?.oldestPostingDate).toBe("2026-05-04");
+  });
+
+  it("(c) still flags a suspense item outstanding > 2 business days", () => {
+    // Genuine open suspense item: DR suspense / CR receivable, posted 4 days
+    // before asOf, horizon 2 → aged. Suspense aging is preserved.
+    const tb = makeTB([{ leafAccountId: "ACC-1100-005", currency: "USD", amountMinor: 75_000 }]);
+    const posting = makePosting(
+      "evt-suspense-open",
+      [
+        { accountId: "ACC-1100-005", debitCredit: "debit", currency: "USD", amountMinor: 75_000 },
+        { accountId: "ACC-2100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 75_000 },
+      ],
+      "2026-05-11T08:00:00.000Z",
+    );
+    const result = checkAgedItems({
+      trialBalance: tb,
+      postingEvents: [posting],
+      chartOfAccounts: COA_FIXTURES,
+      asOf: "2026-05-15",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.aged.length).toBe(1);
+    expect(result.aged[0]?.accountId).toBe("ACC-1100-005");
+    expect(result.aged[0]?.ageCalendarDays).toBe(4);
+    expect(result.aged[0]?.clearanceHorizonDays).toBe(2);
   });
 });
 
