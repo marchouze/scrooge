@@ -127,12 +127,13 @@ Eitan does **not** measure risk or set appetite (Helena), report financials or o
 - `Procedures/by-policy/hedge-designation-test.md` (PROC-ALM-HDT-01) — **co-owner with Bea** (IFRS 9 hedge designation; the hedge procedure formerly stubbed as "hedge-programme-approval").
 - `Procedures/by-policy/capital-ratio-monitoring.md` — **co-owner with Camille + Helena** (treasury sign-off side).
 - `Procedures/by-policy/capital-instrument-issuance.md` (PROC-CAP-CII-01) — **co-owner with Camille**.
+- `Procedures/by-policy/alco-cycle.md` (PROC-ALM-ALCO-01) — **owner** (chair; co-authored with Owen + Helena).
+- `Procedures/by-policy/ilaap-cycle.md` (PROC-RISK-ILAAP-01) — **owner** (co-authored with Helena + Camille).
+- `Procedures/by-policy/fx-position-governance.md` (PROC-ALM-FXP-01) — **owner** (co-authored with Saskia + Helena).
 
 **Planned (not yet authored):**
 
-- `Procedures/by-policy/alco-cycle.md` — **owner** (ALCO charter v1 filed 2026-05-15; the cycle procedure itself remains pending).
-- `Procedures/by-policy/ilaap-cycle.md` — **owner** (ILAAP engine live; governing procedure pending).
-- `Procedures/by-policy/fx-position-governance.md` — **owner**.
+- None — all owned functions now have a governing procedure (authored 2026-05-30 under D-TREASURER-PROC-COMPLETION-2026-05-30).
 
 ## 14. Data contracts
 
