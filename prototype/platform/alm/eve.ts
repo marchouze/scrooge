@@ -43,6 +43,7 @@
 
 import type { EventStore } from "../event-store/store";
 import { computeCapitalMetrics } from "../projections/capital-metrics";
+import { requireWeight } from "../types/financial-input";
 import { REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";
 
 // ---------------------------------------------------------------------------
@@ -163,7 +164,7 @@ function discountFactor(rateDecimal: number, years: number): number {
 }
 
 /** Mid-year for each BCBS bucket (used as the repricing date proxy). */
-const BUCKET_MID_YEARS: Record<(typeof REPRICING_BUCKETS)[number], number> = {
+export const BUCKET_MID_YEARS: Record<(typeof REPRICING_BUCKETS)[number], number> = {
   ON: 1 / 365,
   "1M": 1 / 12,
   "3M": 3 / 12,
@@ -213,7 +214,7 @@ export function computeEVE(eventStore: EventStore, asOf: string): EVEReport {
       const row = gapSchedule.rows[i];
       if (!row) continue;
       const netCashflow = row.rsaZar - row.rslZar; // Same as gapZar
-      const years = BUCKET_MID_YEARS[row.bucket] ?? 1;
+      const years = requireWeight(BUCKET_MID_YEARS, row.bucket, "BUCKET_MID_YEARS");
       const shift = bucketShift(label, row.bucket, i);
 
       baseNpv += netCashflow * discountFactor(BASE_RATE, years);
