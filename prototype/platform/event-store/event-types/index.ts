@@ -276,6 +276,19 @@ export * from "./calculation";
 // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
 // Author: Atlas (Core banking platform architect, engineering).
 export * from "./seed-management";
+// WS-ODP-ISDA-ANNEXURES — ISDA Master Agreement Schedule + CSA election events.
+// IsdaScheduleElected, IsdaCsaElected, IsdaCsaSuperseded.
+// Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018 §§ 3, 7, 14;
+//   ISDA 2002 MA; ISDA 1994/2016 VM/2018 IM CSA; BCBS d317 (SA-CCR).
+// Author: Imani (General Counsel, legal).
+export * from "./isda-schedule-csa";
+// WS-ODP-ISDA-ANNEXURES — OTC non-IRS confirmation events.
+// FraTradeBooked, SwaptionTradeBooked, BasisSwapTradeBooked,
+//   CrossCurrencySwapTradeBooked.
+// Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018 §§ 3, 7;
+//   ISDA 2006 Definitions; ISDA 2000 Definitions; BCBS d317 (SA-CCR).
+// Author: Imani (General Counsel, legal).
+export * from "./otc-confirmations";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -380,6 +393,7 @@ import { IFRS_POLICY_THRESHOLDS_TYPED_EVENT_TYPES } from "./ifrs-policy-threshol
 import { ILAAP_TYPED_EVENT_TYPES } from "./ilaap";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES } from "./ird-accounting";
+import { ISDA_SCHEDULE_CSA_TYPED_EVENT_TYPES } from "./isda-schedule-csa";
 import { KYC_TYPED_EVENT_TYPES } from "./kyc";
 import { LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES } from "./legal-documentation";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
@@ -389,6 +403,7 @@ import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-ex
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { MTM_TYPED_EVENT_TYPES } from "./mtm";
 import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
+import { OTC_CONFIRMATIONS_TYPED_EVENT_TYPES } from "./otc-confirmations";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
@@ -546,6 +561,17 @@ export const TYPED_EVENT_TYPES = [
   // loan lifecycles. Authority: WS1-PR1a brief; D-MARKETS-SCHEMA-FOUNDATION;
   // IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1; Banks Act Reg 26/27.
   ...REPO_MMD_IBL_TYPED_EVENT_TYPES,
+  // WS-ODP-ISDA-ANNEXURES — ISDA Master Agreement Schedule + CSA election events.
+  // IsdaScheduleElected, IsdaCsaElected, IsdaCsaSuperseded.
+  // Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018 §§ 3, 7, 14;
+  //   ISDA 2002 MA; ISDA 1994/2016 VM/2018 IM CSA; BCBS d317.
+  ...ISDA_SCHEDULE_CSA_TYPED_EVENT_TYPES,
+  // WS-ODP-ISDA-ANNEXURES — OTC non-IRS confirmation events.
+  // FraTradeBooked, SwaptionTradeBooked, BasisSwapTradeBooked,
+  //   CrossCurrencySwapTradeBooked.
+  // Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018 §§ 3, 7;
+  //   ISDA 2006 Definitions; ISDA 2000 Definitions; BCBS d317 (SA-CCR).
+  ...OTC_CONFIRMATIONS_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
