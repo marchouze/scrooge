@@ -27,11 +27,11 @@
 // Authority: D-FX-SIM-FRONTEND-INPUT-DRIVER (CEO-approved 2026-05-30).
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx.ts";
 import { mulberry32 } from "../../platform/simulation/env-sim/counterparty-profiles.ts";
 import { SIM_COUNTERPARTIES } from "../../platform/simulation/fx-sim-counterparties.ts";
 import { generateSimTrade } from "../../platform/simulation/fx-sim-generator.ts";
 import { FxRateEngine } from "../../platform/simulation/fx-sim-rates.ts";
-import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx.ts";
 
 // ---------------------------------------------------------------------------
 // FrontEndTradeSpec — the 1:1 form-field projection.
