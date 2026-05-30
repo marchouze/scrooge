@@ -4084,9 +4084,7 @@ const server = Bun.serve({
         });
       }
       inactivityAlerts.sort((a, b) => (b.atMs ?? 0) - (a.atMs ?? 0));
-      const inactivityAlertsOut = inactivityAlerts
-        .slice(0, 30)
-        .map(({ atMs, ...rest }) => rest);
+      const inactivityAlertsOut = inactivityAlerts.slice(0, 30).map(({ atMs, ...rest }) => rest);
 
       return jsonResponse({
         asOf: cachedState.asOf,
