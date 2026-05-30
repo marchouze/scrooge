@@ -278,6 +278,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // T-01 carve-out.
   // Citation: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, P4-SECURITY-DESIGNED-IN.
   "platform/market-risk/cva-engine.test.ts",
+  // DTCC SAFE API adapter unit tests (#903 — SafeApiAdapter seam). Co-located
+  // with the simulator per the per-module test convention; `simulators/` is not
+  // a blanket carve-out dir because it also holds production simulator code
+  // (e.g. sarb-prudential.ts) that must stay gated. Raw EventStore(":memory:")
+  // here is a build-phase test fixture, not a production access path. T-01
+  // carve-out. Citation: P4-SECURITY-DESIGNED-IN, ORG-CY-09.
+  "simulators/dtcc-safe-api.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
