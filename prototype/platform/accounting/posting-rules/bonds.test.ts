@@ -83,7 +83,7 @@ describe("PR-BOND-001: Banking-book bond trade booking", () => {
     expect(debitLeg?.accountId).toBe(BOND_ACCOUNTS.BOND_ASSET_BANKING);
   });
 
-  it("credits Nostro ZAR (ACC-1100-001)", () => {
+  it("credits Nostro ZAR (ACC-1200-001)", () => {
     const legs = bondBankingBookJournals(event);
     const creditLeg = legs.find((l) => l.debitCredit === "credit");
     expect(creditLeg?.accountId).toBe(BOND_ACCOUNTS.NOSTRO_ZAR);
@@ -137,7 +137,7 @@ describe("PR-BOND-001T: Trading-book bond trade booking", () => {
     expect(debitLeg?.accountId).toBe(BOND_ACCOUNTS.BOND_ASSET_TRADING);
   });
 
-  it("credits Nostro ZAR (ACC-1100-001)", () => {
+  it("credits Nostro ZAR (ACC-1200-001)", () => {
     const legs = bondTradingBookJournals(event);
     const creditLeg = legs.find((l) => l.debitCredit === "credit");
     expect(creditLeg?.accountId).toBe(BOND_ACCOUNTS.NOSTRO_ZAR);

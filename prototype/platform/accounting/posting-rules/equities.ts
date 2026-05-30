@@ -23,7 +23,7 @@
 //   ACC-3200-005  Dividend Receivable            (asset, debit normal)
 //   ACC-3200-006  Dividend Income                (income, credit normal)
 //   ACC-3200-007  Withholding Tax Payable — Dividends (liability, credit normal)
-//   ACC-1100-001  Nostro — ZAR (SARB operational) (asset, debit normal)
+//   ACC-1200-001  Nostro (ZAR correspondent; settlement cash, D-COA-CURRENCY-DECOUPLING) (asset, debit normal)
 //   ACC-5000-002  Retained Earnings              (equity, credit normal)
 //
 // IFRS 9 references:
@@ -59,7 +59,7 @@ const EQUITY_ACCOUNTS = {
   DIVIDEND_RECEIVABLE: "ACC-3200-005",
   DIVIDEND_INCOME: "ACC-3200-006",
   WITHHOLDING_TAX_PAYABLE: "ACC-3200-007",
-  NOSTRO_ZAR: "ACC-1100-001",
+  NOSTRO_ZAR: "ACC-1200-001",
   RETAINED_EARNINGS: "ACC-5000-002",
 } as const;
 

@@ -38,7 +38,10 @@
 //     - Coins and banknotes (cash)
 //     - SARB reserves / central-bank deposits (Reg 26(7)(a)(i))
 //     - SA government and SARB securities with 0% RW (Reg 26(7)(a)(ii))
-//     → ACC-1100-001: Nostro — ZAR (SARB operational) — central-bank reserves
+//     → ACC-1100-001: Central Bank Reserve Account — reserve/settlement
+//       balance held AT the SARB; custodian-derived Level-1 (currency and the
+//       SARB identity are both separate fields, never in the name).
+//       (D-COA-CURRENCY-DECOUPLING, 2026-05-30.)
 //     → ACC-3100-001: Bond Asset — Banking Book (Amortised Cost) — qualifies as
 //       Level 1 where the bonds are SA government (0% RW); tagged level-1.
 //       NOTE: if the bond portfolio holds non-0%-RW bonds this should be level-2a.
@@ -58,6 +61,33 @@
 //   NOT HQLA (no tag):
 //     - FX settlement suspense, trading receivables/payables, settlement-failed
 //       receivables, payment suspense, IRD derivatives, P&L accounts — none qualify.
+//
+// ## Currency-decoupling (D-COA-CURRENCY-DECOUPLING, CEO-approved 2026-05-30)
+//
+// Account names are currency-free. Currency is a first-class FIELD (`currency`),
+// never embedded in `name`. The authoritative per-balance currency is the
+// currency dimension on each ledger entry (`SubLedgerLeg.currency`); the
+// account-level `currency` field is the account's *designated* currency
+// (omitted only for genuinely multi-currency pool accounts). ZAR is just
+// another currency account; its role as the bank's reporting/base currency is
+// presentation, not data (Principle 5).
+//
+// Key consequences of this rework:
+//   - ACC-1100-001 repurposed as the Central Bank Reserve Account (held AT the
+//     SARB; NOT a nostro). The SARB identity lives in `custodianPartyId`, the
+//     currency in `currency` — never in the name. Level-1 cash HQLA is PRESERVED
+//     (custodian-derived: central-bank custodian → Level-1).
+//   - ACC-1200-001 is the everyday ZAR correspondent nostro and the FX
+//     settlement target for ZAR (correspondent custodian → NOT Level-1).
+//   - ACC-1100-002 (USD) / ACC-1100-003 (EUR) were duplicate correspondent
+//     nostros; merged into ACC-1200-002 / ACC-1200-003. The 1100 ids stay
+//     resolvable (clean, currency-free `Nostro` name + `currency` field) so
+//     historical ledger entries still render a sensible name; new postings
+//     target the 1200 ids. Events are immutable — history is never rewritten.
+//
+// No code keys account lookups by `name` — everything keys by `id` — so the
+// several accounts now sharing the name "Nostro" (differing by id + currency)
+// is intended and safe.
 //
 // Authors: Bea (General Ledger Engineer, engineering)
 //   + Anya (Data / analytics engineer, engineering) — `isin` field added for
@@ -88,6 +118,35 @@ export interface CoaAccountEntry {
   readonly name: string;
   readonly category: string;
   readonly side: "debit" | "credit";
+  /**
+   * The account's designated ISO-4217 currency.
+   *
+   * Currency is a SEPARATE DIMENSION — it is NEVER part of the account `name`
+   * (D-COA-CURRENCY-DECOUPLING, CEO-approved 2026-05-30). Account names such as
+   * "Nostro — USD" or "FX Trading Receivable — ZAR" were defects: they embedded
+   * currency into the human-readable name. Names are now currency-free; the
+   * currency lives here.
+   *
+   * The AUTHORITATIVE per-balance currency is the currency dimension carried on
+   * each ledger entry (`SubLedgerLeg.currency`), not this field. This field is
+   * the account's *designated* currency: the single currency a single-currency
+   * account is expected to hold. It is the COA-level declaration of intent; the
+   * ledger entry is the source of truth for any actual balance.
+   *
+   * OMITTED only for genuinely multi-currency pool accounts (e.g. the "FCY"
+   * FX-trading pool accounts ACC-2100-002 / ACC-2100-004) where per-entry
+   * currency is authoritative and no single designated currency applies. An
+   * omitted `currency` on such a pool account is CORRECT, not a gap.
+   *
+   * ZAR is the bank's operational reporting/base currency, which is why renders
+   * carry ZAR-equivalent columns — but that is presentation, not data
+   * (Principle 5: reporting currency is presentation, not data). From a COA
+   * perspective ZAR is just another currency account.
+   *
+   * Authority: D-COA-CURRENCY-DECOUPLING (CEO-approved 2026-05-30).
+   * Citations: Principle 5 (multi-currency from day one).
+   */
+  readonly currency?: string;
   /**
    * HQLA tier per BCBS D295 §49–§54 / Reg 26(7).
    * Absent = not HQLA-eligible; excluded from BA 325 HQLA stock scan.
@@ -192,6 +251,13 @@ export const CoaAccountEntrySchema = z.object({
   name: z.string().min(1),
   category: z.string().min(1),
   side: z.enum(["debit", "credit"]),
+  // D-COA-CURRENCY-DECOUPLING (2026-05-30): the account's designated currency,
+  // as a first-class dimension. Currency is NEVER part of `name`. Omitted only
+  // for genuinely multi-currency pool accounts (per-entry currency authoritative).
+  currency: z
+    .string()
+    .regex(/^[A-Z]{3}$/)
+    .optional(),
   hqlaLevel: z.enum(["level-1", "level-2a", "level-2b"]).optional(),
   hqlaSubCategory: z.string().optional(),
   hqlaAssetSpecificFactor: z.number().min(0).max(1).optional(),
@@ -220,51 +286,76 @@ export const CoaAccountEntrySchema = z.object({
  */
 export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
-  // 1100 — SARB operational & nostro accounts
+  // 1100 — Central-bank reserve, settlement suspense, deprecated nostros
+  //
+  // D-COA-CURRENCY-DECOUPLING (2026-05-30):
+  //   - ACC-1100-001 is REPURPOSED as the Central Bank Reserve Account (held
+  //     AT the SARB). It is NOT a nostro. Currency and the SARB identity are
+  //     both separate fields (`currency`, `custodianPartyId`) — never in the
+  //     name.
+  //   - ACC-1100-002 / ACC-1100-003 (USD / EUR correspondent nostros) are
+  //     DEPRECATED: they duplicated ACC-1200-002 / ACC-1200-003 and are merged
+  //     into the 1200 range. Kept resolvable so historical ledger entries still
+  //     render a sensible name; new postings must target the 1200 ids.
   // ------------------------------------------------------------------
   {
     id: "ACC-1100-001",
-    name: "Nostro — ZAR (SARB operational)",
+    // Central-bank reserve / settlement balance held AT the SARB — a reserve
+    // sub-type of asset-cash, NOT a nostro. The SARB identity lives in
+    // `custodianPartyId` (separate field), never in the name; the currency
+    // lives in `currency` (separate field), never in the name.
+    name: "Central Bank Reserve Account",
     category: "asset-cash",
+    currency: "ZAR",
     side: "debit",
     // HQLA tier is DERIVED from the custodian, not authored here. This account
-    // holds cash at the SARB; the SARB Party is classified `central-bank`, so
-    // the BA 325 cash-HQLA fold derives Level-1 (Reg 26(7)(a)(i); BCBS D295
-    // §50(a)). The previous authored `hqlaLevel: "level-1"` tag was removed in
-    // the custodian-derived rework (2026-05-29) to close the authored-tag
-    // failure mode — risk must derive its figures from the source (Principle 1).
+    // holds the bank's reserve/settlement balance at the SARB; the SARB Party
+    // is classified `central-bank`, so the BA 325 cash-HQLA fold derives
+    // Level-1 (Reg 26(7)(a)(i); BCBS D295 §50(a)). The previous authored
+    // `hqlaLevel: "level-1"` tag was removed in the custodian-derived rework
+    // (2026-05-29) — risk must derive its figures from the source (Principle 1).
+    // NOTE: this is NOT the FX settlement account for ZAR. ZAR settles through
+    // the correspondent nostro ACC-1200-001. The reserve account is funded /
+    // swept separately.
     custodianPartyId: "urn:party:legal-entity:sarb",
   },
   {
     id: "ACC-1100-002",
-    name: "Nostro — USD (correspondent)",
+    // DEPRECATED — merged into ACC-1200-002 (D-COA-CURRENCY-DECOUPLING,
+    // 2026-05-30). USD/EUR 1100 nostros duplicated the 1200 correspondent
+    // nostros. New postings MUST target ACC-1200-002. Kept resolvable (clean,
+    // currency-free name + `currency` field) so historical ledger entries still
+    // render a sensible name. Events are immutable — history is never rewritten.
+    name: "Nostro",
     category: "asset-cash",
+    currency: "USD",
     side: "debit",
-    // Correspondent-bank nostro in USD. NOT central-bank reserves; does not
-    // qualify as Level-1. May qualify for Level-2A/2B depending on
-    // counterparty credit quality, but build-phase scope is ZAR LCR only.
-    // Leave untagged until Mira's WS-INSTRUMENT-ANALYSES lands the mapping.
   },
   {
     id: "ACC-1100-003",
-    name: "Nostro — EUR (correspondent)",
+    // DEPRECATED — merged into ACC-1200-003 (D-COA-CURRENCY-DECOUPLING,
+    // 2026-05-30). See ACC-1100-002 rationale. New postings MUST target
+    // ACC-1200-003.
+    name: "Nostro",
     category: "asset-cash",
+    currency: "EUR",
     side: "debit",
-    // Same rationale as ACC-1100-002. Untagged.
   },
   {
     id: "ACC-1100-004",
-    name: "FX Settlement Suspense — ZAR",
+    name: "FX Settlement Suspense",
     category: "asset-suspense",
+    currency: "ZAR",
     side: "debit",
-    // Settlement suspense: transient; not HQLA-eligible.
+    // Settlement suspense: transient; not HQLA-eligible. Suspense, NOT a nostro.
   },
   {
     id: "ACC-1100-005",
-    name: "FX Settlement Suspense — USD",
+    name: "FX Settlement Suspense",
     category: "asset-suspense",
+    currency: "USD",
     side: "debit",
-    // Settlement suspense: transient; not HQLA-eligible.
+    // Settlement suspense: transient; not HQLA-eligible. Suspense, NOT a nostro.
   },
 
   // ------------------------------------------------------------------
@@ -272,23 +363,31 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-1200-001",
-    name: "Nostro — ZAR (correspondent)",
+    name: "Nostro",
     category: "asset-cash",
+    currency: "ZAR",
     side: "debit",
-    // Correspondent-bank nostro in ZAR. NOT central-bank reserves.
-    // Not tagged as HQLA at build phase; see ACC-1100-002 rationale.
+    // The everyday ZAR correspondent nostro and the FX settlement target for
+    // ZAR. NOT central-bank reserves (that is ACC-1100-001) — correspondent
+    // custodian, so NOT Level-1 HQLA. No ZAR correspondent Party is registered
+    // in the Party register yet, so `custodianPartyId` is left unset; populate
+    // it when the ZAR correspondent is onboarded as a Party.
   },
   {
     id: "ACC-1200-002",
-    name: "Nostro — USD (correspondent)",
+    name: "Nostro",
     category: "asset-cash",
+    currency: "USD",
     side: "debit",
+    // Correspondent-bank nostro in USD (canonical; ACC-1100-002 merged here).
   },
   {
     id: "ACC-1200-003",
-    name: "Nostro — EUR (correspondent)",
+    name: "Nostro",
     category: "asset-cash",
+    currency: "EUR",
     side: "debit",
+    // Correspondent-bank nostro in EUR (canonical; ACC-1100-003 merged here).
   },
 
   // ------------------------------------------------------------------
@@ -296,39 +395,48 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-2100-001",
-    name: "FX Trading Receivable — ZAR",
+    name: "FX Trading Receivable",
     category: "asset-receivable",
+    currency: "ZAR",
     side: "debit",
     // Trading receivable: not HQLA (not a qualifying liquid asset).
   },
   {
     id: "ACC-2100-002",
-    name: "FX Trading Receivable — FCY",
+    name: "FX Trading Receivable",
     category: "asset-receivable",
+    // Genuinely multi-currency FCY pool account: per-entry currency
+    // (SubLedgerLeg.currency) is authoritative. `currency` is intentionally
+    // OMITTED — this is correct, not a gap (D-COA-CURRENCY-DECOUPLING).
     side: "debit",
   },
   {
     id: "ACC-2100-003",
-    name: "FX Trading Payable — ZAR",
+    name: "FX Trading Payable",
     category: "liability-payable",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-2100-004",
-    name: "FX Trading Payable — FCY",
+    name: "FX Trading Payable",
     category: "liability-payable",
+    // Genuinely multi-currency FCY pool account: per-entry currency is
+    // authoritative; `currency` intentionally OMITTED (D-COA-CURRENCY-DECOUPLING).
     side: "credit",
   },
   {
     id: "ACC-2100-005",
     name: "Unrealised FX P&L — FVTPL",
     category: "income-trading",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-2100-006",
     name: "Realised FX P&L",
     category: "income-trading",
+    currency: "ZAR",
     side: "credit",
   },
 
@@ -337,14 +445,16 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-2200-001",
-    name: "Customer Payables — ZAR",
+    name: "Customer Payables",
     category: "liability-payable",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-2200-002",
-    name: "Customer Payables — USD",
+    name: "Customer Payables",
     category: "liability-payable",
+    currency: "USD",
     side: "credit",
   },
 
@@ -353,26 +463,35 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-2300-001",
-    name: "Settlement-Failed Receivable — ZAR",
+    name: "Settlement-Failed Receivable",
     category: "asset-receivable",
+    currency: "ZAR",
     side: "debit",
   },
   {
     id: "ACC-2300-002",
-    name: "Settlement-Failed Receivable — USD",
+    name: "Settlement-Failed Receivable",
     category: "asset-receivable",
+    currency: "USD",
     side: "debit",
   },
   {
     id: "ACC-2300-003",
+    // "Settlement-Failed" is a descriptor of what the allowance is against, not
+    // a currency token — retained. The allowance is carried in ZAR (functional
+    // currency) per IAS 21 §23.
     name: "ECL Allowance — Settlement-Failed",
     category: "asset-other",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-2300-004",
+    // "FX Settlement" is a descriptor (the expense relates to FX settlement
+    // failures), not a currency token — retained.
     name: "Credit Loss Expense — FX Settlement",
     category: "expense-impairment",
+    currency: "ZAR",
     side: "debit",
   },
 
@@ -381,14 +500,16 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-2400-001",
-    name: "Payment Suspense — ZAR",
+    name: "Payment Suspense",
     category: "asset-suspense",
+    currency: "ZAR",
     side: "debit",
   },
   {
     id: "ACC-2400-002",
-    name: "Payment Suspense — USD",
+    name: "Payment Suspense",
     category: "asset-suspense",
+    currency: "USD",
     side: "debit",
   },
 
@@ -397,8 +518,10 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-3100-001",
+    // Non-currency parenthetical "(Amortised Cost)" retained — IFRS classification.
     name: "Bond Asset — Banking Book (Amortised Cost)",
     category: "asset-investment",
+    currency: "ZAR",
     side: "debit",
     // Level 1 HQLA at build phase: banking-book bonds assumed to be SA government
     // bonds (R186 / R2030) with 0% SARB risk weight per BCBS D295 §49(c) /
@@ -412,6 +535,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3100-002",
     name: "Bond Asset — Trading Book (FVTPL)",
     category: "asset-trading",
+    currency: "ZAR",
     side: "debit",
     // Level 1 HQLA at build phase: same assumption as ACC-3100-001.
     // Trading-book government bonds qualify per BCBS D295 §49(c).
@@ -421,8 +545,10 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   },
   {
     id: "ACC-3100-003",
+    // "— Bonds" is an instrument-class descriptor, not a currency token.
     name: "Accrued Interest Receivable — Bonds",
     category: "asset-receivable",
+    currency: "ZAR",
     side: "debit",
     // Accrued interest: a receivable, not a liquid asset. Not HQLA.
   },
@@ -430,6 +556,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3100-004",
     name: "Bond Discount/Premium Unamortised",
     category: "asset-other",
+    currency: "ZAR",
     side: "debit",
     // Discount/premium adjustment account. Not HQLA.
   },
@@ -437,18 +564,21 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3100-005",
     name: "Unrealised P&L — Bonds (FVTPL)",
     category: "income-trading",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-3100-006",
     name: "Realised P&L — Bonds",
     category: "income-trading",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-4101-001",
     name: "Interest Income (EIR) — Bonds",
     category: "income-interest",
+    currency: "ZAR",
     side: "credit",
   },
 
@@ -459,6 +589,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3200-001",
     name: "Equity Asset — FVTPL",
     category: "asset-trading",
+    currency: "ZAR",
     side: "debit",
     // Equities: potentially Level-2B if they meet BCBS D295 §54 criteria
     // (included in major stock index, traded on recognised exchange, not issued
@@ -469,6 +600,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3200-002",
     name: "Equity Asset — FVOCI",
     category: "asset-investment",
+    currency: "ZAR",
     side: "debit",
     // Same as ACC-3200-001. Untagged at build phase.
   },
@@ -476,30 +608,35 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3200-003",
     name: "Unrealised P&L — Equities (FVTPL)",
     category: "income-trading",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-3200-004",
     name: "OCI Reserve — Equities (FVOCI)",
     category: "equity",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-3200-005",
     name: "Dividend Receivable",
     category: "asset-receivable",
+    currency: "ZAR",
     side: "debit",
   },
   {
     id: "ACC-3200-006",
     name: "Dividend Income",
     category: "income-other",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-3200-007",
     name: "Withholding Tax Payable — Dividends",
     category: "liability-other",
+    currency: "ZAR",
     side: "credit",
   },
 
@@ -510,6 +647,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3300-001",
     name: "Swap Asset — FVTPL (Positive NPV)",
     category: "asset-derivative",
+    currency: "ZAR",
     side: "debit",
     // Derivative (swap): not a qualifying liquid asset under BCBS D295.
   },
@@ -517,12 +655,14 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-3300-002",
     name: "Swap Liability — FVTPL (Negative NPV)",
     category: "liability-derivative",
+    currency: "ZAR",
     side: "credit",
   },
   {
     id: "ACC-3300-003",
     name: "Unrealised P&L — IRD (FVTPL)",
     category: "income-trading",
+    currency: "ZAR",
     side: "credit",
   },
 
@@ -531,15 +671,17 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-4100-001",
-    name: "Settlement Receivable — ZAR",
+    name: "Settlement Receivable",
     category: "asset-receivable",
+    currency: "ZAR",
     side: "debit",
     // Settlement receivable: not a liquid asset (contingent on counterparty). Not HQLA.
   },
   {
     id: "ACC-4100-002",
-    name: "Settlement Receivable — USD",
+    name: "Settlement Receivable",
     category: "asset-receivable",
+    currency: "USD",
     side: "debit",
   },
 
@@ -548,8 +690,9 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-1000-001",
-    name: "Bank — ZAR",
+    name: "Bank",
     category: "asset-cash",
+    currency: "ZAR",
     side: "debit",
     // Internal bank account. Not central-bank reserves — not HQLA.
   },
@@ -561,6 +704,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-5000-001",
     name: "Share Capital",
     category: "equity",
+    currency: "ZAR",
     side: "credit",
     // CET1 per BCBS Basel III §52(a): paid-up ordinary shares / common equity.
     // Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8); BCBS Basel III §52(a).
@@ -571,6 +715,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-5000-002",
     name: "Retained Earnings",
     category: "equity",
+    currency: "ZAR",
     side: "credit",
     // CET1 per BCBS Basel III §52(c): retained earnings.
     // Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8); BCBS Basel III §52(c).
@@ -601,8 +746,10 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
   {
     id: "ACC-5200-001",
+    // Non-currency parenthetical "(≥5yr remaining maturity)" retained — maturity descriptor.
     name: "Subordinated Debt — Tier 2 (≥5yr remaining maturity)",
     category: "liability-t2-capital",
+    currency: "ZAR",
     side: "credit",
     // T2 per BCBS Basel III §58; Reg 38(8)(b).
     // Subordinated debt with remaining contractual maturity ≥ 5 years.
@@ -614,6 +761,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-5200-002",
     name: "General Provisions — Qualifying Tier 2 (IFRS 9 Stage-1/2)",
     category: "liability-t2-capital",
+    currency: "ZAR",
     side: "credit",
     // T2 per BCBS Basel III §60: qualifying general provisions (Stage-1 + Stage-2
     // ECL allowances under IFRS 9) capped at 1.25% of credit RWA.

@@ -26,7 +26,7 @@
 //   ACC-3300-001  Swap Asset — FVTPL (Positive NPV)   (asset, debit normal)
 //   ACC-3300-002  Swap Liability — FVTPL (Negative NPV)(liability, credit normal)
 //   ACC-3300-003  Unrealised P&L — IRD (FVTPL)         (income, credit normal)
-//   ACC-1100-001  Nostro — ZAR (SARB operational)      (asset, debit normal)
+//   ACC-1200-001  Nostro (ZAR correspondent; settlement cash, D-COA-CURRENCY-DECOUPLING)      (asset, debit normal)
 //
 // Authority:
 //   - D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)

@@ -108,7 +108,7 @@ describe("PR-EQ-001: equityTradeBookingJournals", () => {
     const dr = legs.find((l) => l.debitCredit === "debit");
     const cr = legs.find((l) => l.debitCredit === "credit");
     expect(dr?.accountId).toBe("ACC-3200-001");
-    expect(cr?.accountId).toBe("ACC-1100-001");
+    expect(cr?.accountId).toBe("ACC-1200-001");
     expect(dr?.amountMinor).toBe(15_000_000);
   });
 });

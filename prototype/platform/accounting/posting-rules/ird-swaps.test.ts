@@ -231,7 +231,7 @@ describe("PR-IRS-003: irdSwapCouponJournals", () => {
 
     const dr = legs.find((l) => l.debitCredit === "debit");
     const cr = legs.find((l) => l.debitCredit === "credit");
-    expect(dr?.accountId).toBe("ACC-1100-001");
+    expect(dr?.accountId).toBe("ACC-1200-001");
     expect(cr?.accountId).toBe("ACC-3300-001");
     expect(dr?.amountMinor).toBe(30_000_00);
   });
@@ -244,7 +244,7 @@ describe("PR-IRS-003: irdSwapCouponJournals", () => {
     const dr = legs.find((l) => l.debitCredit === "debit");
     const cr = legs.find((l) => l.debitCredit === "credit");
     expect(dr?.accountId).toBe("ACC-3300-002");
-    expect(cr?.accountId).toBe("ACC-1100-001");
+    expect(cr?.accountId).toBe("ACC-1200-001");
     expect(dr?.amountMinor).toBe(20_000_00);
   });
 });
@@ -273,7 +273,7 @@ describe("PR-IRS-TERM: irdSwapTerminationJournals", () => {
     expect(legs).toHaveLength(3);
     assertBalanced(legs);
 
-    const nostroDr = legs.find((l) => l.accountId === "ACC-1100-001");
+    const nostroDr = legs.find((l) => l.accountId === "ACC-1200-001");
     const assetCr = legs.find((l) => l.accountId === "ACC-3300-001");
     const pnlCr = legs.find((l) => l.accountId === "ACC-3300-003");
     expect(nostroDr?.debitCredit).toBe("debit");
@@ -314,7 +314,7 @@ describe("PR-IRS-TERM: irdSwapTerminationJournals", () => {
     assertBalanced(legs);
 
     const liabDr = legs.find((l) => l.accountId === "ACC-3300-002");
-    const nostroCr = legs.find((l) => l.accountId === "ACC-1100-001");
+    const nostroCr = legs.find((l) => l.accountId === "ACC-1200-001");
     expect(liabDr?.debitCredit).toBe("debit");
     expect(liabDr?.amountMinor).toBe(400_000);
     expect(nostroCr?.debitCredit).toBe("credit");

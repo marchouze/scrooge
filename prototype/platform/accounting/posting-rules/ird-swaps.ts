@@ -16,7 +16,7 @@
 //   ACC-3300-001  Swap Asset — FVTPL (Positive NPV) (asset, debit normal)
 //   ACC-3300-002  Swap Liability — FVTPL (Negative NPV) (liability, credit normal)
 //   ACC-3300-003  Unrealised P&L — IRD (FVTPL) (income, credit normal)
-//   ACC-1100-001  Nostro — ZAR (SARB operational) (asset, debit normal)
+//   ACC-1200-001  Nostro (ZAR correspondent; settlement cash, D-COA-CURRENCY-DECOUPLING) (asset, debit normal)
 //
 // IFRS 9 references:
 //   §3.2.3   Derecognition of financial assets
@@ -47,7 +47,7 @@ const IRD_ACCOUNTS = {
   SWAP_ASSET_FVTPL: "ACC-3300-001",
   SWAP_LIABILITY_FVTPL: "ACC-3300-002",
   UNREALISED_PNL_IRD: "ACC-3300-003",
-  NOSTRO_ZAR: "ACC-1100-001",
+  NOSTRO_ZAR: "ACC-1200-001",
 } as const;
 
 // ---------------------------------------------------------------------------

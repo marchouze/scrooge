@@ -57,7 +57,7 @@ const BUILD_PHASE_DEFAULT_IFRS_CLASSIFICATIONS: readonly IfrsAccountClassificati
   {
     leafAccountId: "ACC-1100-001",
     accountClass: "asset",
-    lineLabel: "Cash and balances at SARB",
+    lineLabel: "Central Bank Reserve Account",
     cashFlowClass: "operating",
   },
   // FX Trading Receivables (assets)
