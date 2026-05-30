@@ -43,11 +43,7 @@ function makeBreachEvent(
   };
 }
 
-function makeSufficiencyEvent(
-  counterpartyId: string,
-  checkDate: string,
-  isSufficient: boolean,
-) {
+function makeSufficiencyEvent(counterpartyId: string, checkDate: string, isSufficient: boolean) {
   return {
     event_id: `suff-${checkDate}-${counterpartyId}`,
     type: "CollateralSufficiencyChecked",
@@ -119,7 +115,15 @@ describe("odp-collateral-segregation-breach-staleness", () => {
   it("passes when a sufficiency breach is remediated by a later sufficient check", () => {
     const pastDeadline = new Date(NOW.getTime() - 2 * 86_400_000).toISOString();
     const breaches = [
-      makeBreachEvent("B-002", COUNTERPARTY_A, "sufficiency", "material", pastDeadline, undefined, "2026-05-27T09:00:00.000Z"),
+      makeBreachEvent(
+        "B-002",
+        COUNTERPARTY_A,
+        "sufficiency",
+        "material",
+        pastDeadline,
+        undefined,
+        "2026-05-27T09:00:00.000Z",
+      ),
     ];
     const sufficiencyEvents = [
       makeSufficiencyEvent(COUNTERPARTY_A, "2026-05-29", true), // after breach
@@ -149,8 +153,8 @@ describe("odp-collateral-segregation-breach-staleness", () => {
     expect(result.ok).toBe(false);
     const fails = result.violations.filter((v) => v.severity === "fail");
     expect(fails).toHaveLength(1);
-    expect(fails[0].subject).toContain("B-003");
-    expect(fails[0].message).toContain("PAST its remediation deadline");
+    expect(fails.at(0)?.subject).toContain("B-003");
+    expect(fails.at(0)?.message).toContain("PAST its remediation deadline");
   });
 
   it("warns when a material breach is approaching deadline (within 24h)", () => {
@@ -168,7 +172,7 @@ describe("odp-collateral-segregation-breach-staleness", () => {
     expect(result.ok).toBe(true); // warns don't fail CI
     const warns = result.violations.filter((v) => v.severity === "warn");
     expect(warns).toHaveLength(1);
-    expect(warns[0].message).toContain("approaching its remediation deadline");
+    expect(warns.at(0)?.message).toContain("approaching its remediation deadline");
   });
 
   it("passes when a commingling breach is resolved by lock release", () => {
@@ -202,8 +206,8 @@ describe("odp-collateral-segregation-breach-staleness", () => {
     expect(result.ok).toBe(false);
     const fails = result.violations.filter((v) => v.severity === "fail");
     expect(fails).toHaveLength(1);
-    expect(fails[0].message).toContain("PAST its remediation deadline");
-    expect(fails[0].message).toContain("ORG-ODP-COND-010");
+    expect(fails.at(0)?.message).toContain("PAST its remediation deadline");
+    expect(fails.at(0)?.message).toContain("ORG-ODP-COND-010");
   });
 
   it("warns for missing breachId", () => {
@@ -233,7 +237,7 @@ describe("odp-collateral-segregation-breach-staleness", () => {
     });
     const warns = result.violations.filter((v) => v.severity === "warn");
     expect(warns.length).toBeGreaterThan(0);
-    expect(warns[0].message).toContain("missing");
+    expect(warns.at(0)?.message).toContain("missing");
   });
 
   it("passes when breach is within deadline (no remediation yet required)", () => {

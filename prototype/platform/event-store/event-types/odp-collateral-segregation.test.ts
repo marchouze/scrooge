@@ -21,7 +21,7 @@ import {
 } from "./odp-collateral-segregation";
 
 const CITATIONS = ["ORG-ODP-COND-010", "urn:regulation:odp:cs-2-2018"];
-const ACTOR = { id: "devon", name: "Devon", role: "coo" };
+const ACTOR = { type: "service" as const, id: "devon" };
 const ENTITY = "hoz-bank";
 const AS_OF = "2026-05-30T09:00:00.000Z";
 const COUNTERPARTY = "party:lei:ABCDEF123456";
@@ -445,16 +445,18 @@ describe("computeAdjustedCollateralValue", () => {
   });
 
   it("applies FX conversion for non-base currency (USD→ZAR)", () => {
-    // USD 1M (minor: 1_000_000_00), 0% haircut, FX rate 18.35
-    const result = computeAdjustedCollateralValue(1_000_000_00, 0.0, 18.35);
-    // 1_000_000_00 × 1.0 × 18.35 = 1835000000 (minor ZAR)
-    expect(result).toBe(1_835_000_000_00);
+    // USD 1M: 100_000_000 minor units (1M × 100 cents/dollar)
+    // 0% haircut, FX rate 18.35 → ZAR 18.35M = 1_835_000_000 ZAR cents
+    const result = computeAdjustedCollateralValue(100_000_000, 0.0, 18.35);
+    // 100_000_000 × 1.0 × 18.35 = 1_835_000_000
+    expect(result).toBe(1_835_000_000);
   });
 
   it("combines haircut + FX (USD bond, 2% haircut, rate 18.35)", () => {
-    // USD 1M, 2% haircut, FX 18.35 → ZAR 17.983M (floor)
-    const result = computeAdjustedCollateralValue(1_000_000_00, 0.02, 18.35);
-    expect(result).toBe(Math.floor(1_000_000_00 * 0.98 * 18.35));
+    // USD 1M: 100_000_000 minor units; 2% haircut; FX 18.35 → ZAR ~17.983M
+    const nominal = 100_000_000;
+    const result = computeAdjustedCollateralValue(nominal, 0.02, 18.35);
+    expect(result).toBe(Math.floor(nominal * 0.98 * 18.35));
   });
 
   it("returns 0 for 100% haircut", () => {

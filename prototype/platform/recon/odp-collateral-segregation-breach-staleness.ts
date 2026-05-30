@@ -144,10 +144,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: b.event_id,
         severity: "warn",
-        message:
-          `CollateralSegregationBreachRaised event ${b.event_id} is missing ` +
-          `breachId, counterpartyId, or remediationDeadline. Cannot assert remediation. ` +
-          `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
+        message: `CollateralSegregationBreachRaised event ${b.event_id} is missing breachId, counterpartyId, or remediationDeadline. Cannot assert remediation. Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
       });
       continue;
     }
@@ -181,25 +178,14 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `breach:${breachId}`,
         severity: "fail",
-        message:
-          `CRITICAL: CollateralSegregationBreachRaised breachId="${breachId}" ` +
-          `(counterparty="${cpid}", kind="${breachKind ?? "?"}", severity="${severity}") ` +
-          `is PAST its remediation deadline (${deadlineStr}). ` +
-          `Overdue by: ${hoursOverdue.toFixed(1)}h. ` +
-          `Required: remediate the breach OR escalate to CRO (Helena, Chief Risk Officer, risk). ` +
-          `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
+        message: `CRITICAL: CollateralSegregationBreachRaised breachId="${breachId}" (counterparty="${cpid}", kind="${breachKind ?? "?"}", severity="${severity}") is PAST its remediation deadline (${deadlineStr}). Overdue by: ${hoursOverdue.toFixed(1)}h. Required: remediate the breach OR escalate to CRO (Helena, Chief Risk Officer, risk). Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
       });
     } else if (msUntilDeadline <= APPROACHING_DEADLINE_HOURS * MS_PER_HOUR) {
       const hoursRemaining = msUntilDeadline / MS_PER_HOUR;
       violations.push({
         subject: `breach:${breachId}`,
         severity: "warn",
-        message:
-          `CollateralSegregationBreachRaised breachId="${breachId}" ` +
-          `(counterparty="${cpid}", kind="${breachKind ?? "?"}") ` +
-          `is approaching its remediation deadline. ` +
-          `Hours remaining: ${hoursRemaining.toFixed(1)}h. ` +
-          `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
+        message: `CollateralSegregationBreachRaised breachId="${breachId}" (counterparty="${cpid}", kind="${breachKind ?? "?"}") is approaching its remediation deadline. Hours remaining: ${hoursRemaining.toFixed(1)}h. Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
       });
     }
     // else: within deadline — OK

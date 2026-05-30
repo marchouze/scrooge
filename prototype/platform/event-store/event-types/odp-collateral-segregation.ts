@@ -101,9 +101,11 @@ export type LockSource = z.infer<typeof lockSourceSchema>;
 /**
  * CollateralAssetKind — the asset class of the locked collateral.
  * Derived from the eligible-collateral schedule categories in IsdaCsaElected.
+ * Uses the same category codes as EligibleCollateralItem.category in
+ * isda-schedule-csa.ts for direct matching (cash-ccy, not "cash").
  */
 const collateralAssetKindSchema = z.enum([
-  "cash",
+  "cash-ccy",
   "govt-bond-za",
   "govt-bond-g10",
   "corp-bond-ig",
@@ -112,7 +114,7 @@ const collateralAssetKindSchema = z.enum([
   "hqla-level1",
   "hqla-level2a",
   "hqla-level2b",
-  "other",
+  "bespoke",
 ]);
 export type CollateralAssetKind = z.infer<typeof collateralAssetKindSchema>;
 
@@ -279,11 +281,11 @@ export function makeCollateralSegregationLocked(args: {
 // ---------------------------------------------------------------------------
 
 const lockReleaseReasonSchema = z.enum([
-  "margin-returned",    // exposure fell below threshold + MTA; return amount due
-  "substitution-out",   // locked asset substituted; new lock covers replacement
-  "csa-terminated",     // CSA terminated; all locks released
-  "trade-matured",      // underlying trade(s) matured; collateral no longer required
-  "manual-release",     // manual release by operations (reason required)
+  "margin-returned", // exposure fell below threshold + MTA; return amount due
+  "substitution-out", // locked asset substituted; new lock covers replacement
+  "csa-terminated", // CSA terminated; all locks released
+  "trade-matured", // underlying trade(s) matured; collateral no longer required
+  "manual-release", // manual release by operations (reason required)
 ]);
 export type LockReleaseReason = z.infer<typeof lockReleaseReasonSchema>;
 
@@ -564,11 +566,11 @@ export function makeCollateralSubstitutionApproved(args: {
 // ---------------------------------------------------------------------------
 
 const substitutionRejectionReasonSchema = z.enum([
-  "ineligible-asset",          // incoming asset not on CSA eligible-collateral schedule
-  "insufficient-value",        // incoming adjusted value < outgoing adjusted value
-  "outside-valuation-window",  // request received outside the CSA valuation time window
+  "ineligible-asset", // incoming asset not on CSA eligible-collateral schedule
+  "insufficient-value", // incoming adjusted value < outgoing adjusted value
+  "outside-valuation-window", // request received outside the CSA valuation time window
   "substitution-right-suspended", // substitution right suspended (e.g. Close-Out period)
-  "csa-terminated",            // CSA terminated before substitution could be processed
+  "csa-terminated", // CSA terminated before substitution could be processed
 ]);
 export type SubstitutionRejectionReason = z.infer<typeof substitutionRejectionReasonSchema>;
 
@@ -975,9 +977,9 @@ export function computeBreachRemediationDeadline(
 ): string {
   const MS_PER_DAY = 86_400_000;
   const calendarDaysMap: Record<SegregationBreachKind, number> = {
-    commingling: 0,    // same day
-    sufficiency: 1,    // T+1
-    ineligible: 9,     // approx 5 business days
+    commingling: 0, // same day
+    sufficiency: 1, // T+1
+    ineligible: 9, // approx 5 business days
     "lock-missing": 1, // T+1
   };
   const days = calendarDaysMap[breachKind];
@@ -1003,5 +1005,5 @@ export const ODP_COLLATERAL_SEGREGATION_TYPED_EVENT_TYPES = [
 export type OdpCollateralSegregationEventType =
   (typeof ODP_COLLATERAL_SEGREGATION_TYPED_EVENT_TYPES)[number];
 
-// Re-export shape types for consumers
-export type { LockReleaseReason, SubstitutionRejectionReason };
+// Note: LockReleaseReason and SubstitutionRejectionReason are already exported above
+// as named types from the Zod schema inferences. No re-export needed.

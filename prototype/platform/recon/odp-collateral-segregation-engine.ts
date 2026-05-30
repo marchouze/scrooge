@@ -59,7 +59,9 @@
 //
 // Author: Devon (COO, operations)
 
+import type { EligibleCollateralItem } from "../event-store/event-types/isda-schedule-csa";
 import {
+  type BreachSeverity,
   type CollateralSegregationBreachRaisedPayload,
   type CollateralSufficiencyCheckedPayload,
   type SegMoneyAmount,
@@ -67,7 +69,6 @@ import {
   computeBreachRemediationDeadline,
   computeMarginRequirement,
 } from "../event-store/event-types/odp-collateral-segregation";
-import type { EligibleCollateralItem } from "../event-store/event-types/isda-schedule-csa";
 
 // ---------------------------------------------------------------------------
 // Minimal event shapes (testable with plain objects)
@@ -175,9 +176,7 @@ export function resolveFxRate(
   const rate = fxRates[currency];
   if (rate === undefined || rate <= 0) {
     throw new Error(
-      `FX rate missing for ${currency}→${baseCurrency}. ` +
-        "Provide fxRates in SegregationEngineOpts. " +
-        "Authority: ORG-ODP-COND-010; Principle 5 (multi-currency).",
+      `FX rate missing for ${currency}→${baseCurrency}. Provide fxRates in SegregationEngineOpts. Authority: ORG-ODP-COND-010; Principle 5 (multi-currency).`,
     );
   }
   return rate;
@@ -338,9 +337,7 @@ export interface ComminglingViolation {
  *
  * Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.
  */
-export function checkCommingling(
-  activeLocks: Map<string, ActiveLock>,
-): ComminglingViolation[] {
+export function checkCommingling(activeLocks: Map<string, ActiveLock>): ComminglingViolation[] {
   // Group locks by lockId — should be unique
   const locksByLockId = new Map<string, ActiveLock[]>();
   for (const lock of activeLocks.values()) {
@@ -359,11 +356,7 @@ export function checkCommingling(
           lockId,
           lockEventId: lock.lockEventId,
           lockedCounterpartyId: lock.counterpartyId,
-          description:
-            `Commingling detected: lockId="${lockId}" serves multiple counterparties ` +
-            `(${counterpartyIds.join(", ")}). Collateral for one counterparty MUST NOT ` +
-            `satisfy another counterparty's exposure. ` +
-            `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
+          description: `Commingling detected: lockId="${lockId}" serves multiple counterparties (${counterpartyIds.join(", ")}). Collateral for one counterparty MUST NOT satisfy another counterparty's exposure. Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
         });
       }
     }
@@ -455,10 +448,7 @@ export function runSufficiencyCheck(input: SufficiencyCheckInput): SufficiencyCh
     totalAdjustedMinor += adjusted;
   }
 
-  const marginReqMinor = computeMarginRequirement(
-    netExposureMinor,
-    csaState.thresholdPartyBMinor,
-  );
+  const marginReqMinor = computeMarginRequirement(netExposureMinor, csaState.thresholdPartyBMinor);
   const surplusMinor = totalAdjustedMinor - marginReqMinor;
   const isSufficient = surplusMinor >= 0;
 
@@ -499,7 +489,7 @@ export function runSufficiencyCheck(input: SufficiencyCheckInput): SufficiencyCh
 
   // Build breach payload (caller assigns breachId and emits)
   const shortfall = Math.abs(surplusMinor);
-  const severity = shortfall > marginReqMinor * 0.1 ? "critical" : "material";
+  const severity: BreachSeverity = shortfall > marginReqMinor * 0.1 ? "critical" : "material";
   const remediationDeadline = computeBreachRemediationDeadline("sufficiency", now);
 
   const breach: SufficiencyCheckResult["breach"] = {
@@ -512,19 +502,11 @@ export function runSufficiencyCheck(input: SufficiencyCheckInput): SufficiencyCh
     adjustedCollateralValue: baseMoney(totalAdjustedMinor),
     marginRequirement: baseMoney(marginReqMinor),
     shortfallMinor: shortfall,
-    description:
-      `Collateral sufficiency breach: adjusted collateral value ` +
-      `${baseCurrency} ${(totalAdjustedMinor / 100).toFixed(2)} ` +
-      `< margin requirement ${baseCurrency} ${(marginReqMinor / 100).toFixed(2)}. ` +
-      `Shortfall: ${baseCurrency} ${(shortfall / 100).toFixed(2)}. ` +
-      `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
-    remediationRequired:
-      `Post additional collateral of ${baseCurrency} ${(shortfall / 100).toFixed(2)} ` +
-      `by T+1 settlement date.`,
+    description: `Collateral sufficiency breach: adjusted collateral value ${baseCurrency} ${(totalAdjustedMinor / 100).toFixed(2)} < margin requirement ${baseCurrency} ${(marginReqMinor / 100).toFixed(2)}. Shortfall: ${baseCurrency} ${(shortfall / 100).toFixed(2)}. Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
+    remediationRequired: `Post additional collateral of ${baseCurrency} ${(shortfall / 100).toFixed(2)} by T+1 settlement date.`,
     remediationDeadline,
     requiresCroEscalation: severity === "critical",
-    croEscalationTarget:
-      severity === "critical" ? "Helena (Chief Risk Officer, risk)" : undefined,
+    croEscalationTarget: severity === "critical" ? "Helena (Chief Risk Officer, risk)" : undefined,
   };
 
   return {
@@ -619,10 +601,7 @@ export function validateSubstitution(
       incomingAdjustedValueMinor: 0,
       valueSurplusMinor: -outgoingAdjustedValueMinor,
       rejectionReason: "ineligible-asset",
-      rejectionNote:
-        `Incoming asset kind "${incomingAssetKind}" is not on the CSA ` +
-        `eligible-collateral schedule for counterparty ${csaState.counterpartyId}. ` +
-        `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12; ISDA CSA Para 4.`,
+      rejectionNote: `Incoming asset kind "${incomingAssetKind}" is not on the CSA eligible-collateral schedule for counterparty ${csaState.counterpartyId}. Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12; ISDA CSA Para 4.`,
     };
   }
 
@@ -640,10 +619,7 @@ export function validateSubstitution(
       incomingAdjustedValueMinor: 0,
       valueSurplusMinor: -outgoingAdjustedValueMinor,
       rejectionReason: "ineligible-asset",
-      rejectionNote:
-        `FX rate missing for ${incomingCurrency}→${csaState.baseCurrency}. ` +
-        `Cannot compute adjusted value for substitution. ` +
-        `Authority: ORG-ODP-COND-010; Principle 5 (multi-currency).`,
+      rejectionNote: `FX rate missing for ${incomingCurrency}→${csaState.baseCurrency}. Cannot compute adjusted value for substitution. Authority: ORG-ODP-COND-010; Principle 5 (multi-currency).`,
     };
   }
 
@@ -663,13 +639,7 @@ export function validateSubstitution(
       incomingAdjustedValueMinor: incomingAdjustedMinor,
       valueSurplusMinor: surplus,
       rejectionReason: "insufficient-value",
-      rejectionNote:
-        `Incoming adjusted value ${csaState.baseCurrency} ` +
-        `${(incomingAdjustedMinor / 100).toFixed(2)} ` +
-        `< outgoing adjusted value ${csaState.baseCurrency} ` +
-        `${(outgoingAdjustedValueMinor / 100).toFixed(2)}. ` +
-        `Shortfall: ${csaState.baseCurrency} ${(Math.abs(surplus) / 100).toFixed(2)}. ` +
-        `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12; ISDA CSA Para 4.`,
+      rejectionNote: `Incoming adjusted value ${csaState.baseCurrency} ${(incomingAdjustedMinor / 100).toFixed(2)} < outgoing adjusted value ${csaState.baseCurrency} ${(outgoingAdjustedValueMinor / 100).toFixed(2)}. Shortfall: ${csaState.baseCurrency} ${(Math.abs(surplus) / 100).toFixed(2)}. Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12; ISDA CSA Para 4.`,
     };
   }
 
@@ -711,9 +681,7 @@ export function buildComminglingBreachPayload(
     severity: "critical",
     lockId: violation.lockId,
     description: violation.description,
-    remediationRequired:
-      `Immediately release lockId="${violation.lockId}" from all counterparty associations ` +
-      `except the originating counterparty. Review lock creation audit trail.`,
+    remediationRequired: `Immediately release lockId="${violation.lockId}" from all counterparty associations except the originating counterparty. Review lock creation audit trail.`,
     remediationDeadline: computeBreachRemediationDeadline("commingling", now),
     requiresCroEscalation: true,
     croEscalationTarget: "Helena (Chief Risk Officer, risk)",
@@ -737,7 +705,8 @@ export function buildMissingLockBreachPayload(
 ): Omit<CollateralSegregationBreachRaisedPayload, "breachId"> & {
   readonly _breachIdSuffix: string;
 } {
-  const severity = uncoveredExposureMinor > 0 ? "material" : "minor";
+  // lock-missing is at most material (not critical — no commingling)
+  const severity: BreachSeverity = uncoveredExposureMinor > 0 ? "material" : "minor";
   return {
     _breachIdSuffix: `${new Date(now).toISOString().slice(0, 10).replace(/-/g, "")}-${counterpartyId}-LOCK-MISSING`,
     counterpartyId,
@@ -745,19 +714,12 @@ export function buildMissingLockBreachPayload(
     severity,
     csaEventId,
     marginRequirement: { currency: baseCurrency, amountMinor: uncoveredExposureMinor },
-    description:
-      `Active CSA (csaEventId=${csaEventId}) for counterparty ${counterpartyId} ` +
-      `has net exposure ${baseCurrency} ${(uncoveredExposureMinor / 100).toFixed(2)} ` +
-      `above threshold, but no CollateralSegregationLocked event covers this exposure. ` +
-      `Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
-    remediationRequired:
-      `Emit a CollateralSegregationLocked event for at least ` +
-      `${baseCurrency} ${(uncoveredExposureMinor / 100).toFixed(2)} ` +
-      `against counterparty ${counterpartyId} CSA.`,
+    description: `Active CSA (csaEventId=${csaEventId}) for counterparty ${counterpartyId} has net exposure ${baseCurrency} ${(uncoveredExposureMinor / 100).toFixed(2)} above threshold, but no CollateralSegregationLocked event covers this exposure. Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.`,
+    remediationRequired: `Emit a CollateralSegregationLocked event for at least ${baseCurrency} ${(uncoveredExposureMinor / 100).toFixed(2)} against counterparty ${counterpartyId} CSA.`,
     remediationDeadline: computeBreachRemediationDeadline("lock-missing", now),
-    requiresCroEscalation: severity === "critical",
-    croEscalationTarget:
-      severity === "critical" ? "Helena (Chief Risk Officer, risk)" : undefined,
+    // lock-missing severity is always "minor" or "material" — never critical
+    requiresCroEscalation: false,
+    croEscalationTarget: undefined,
   };
 }
 
@@ -799,9 +761,6 @@ function safeEligibleCollateral(v: unknown): EligibleCollateralItem[] {
   if (!Array.isArray(v)) return [];
   return v.filter(
     (item): item is EligibleCollateralItem =>
-      item !== null &&
-      typeof item === "object" &&
-      "category" in item &&
-      "haircutDecimal" in item,
+      item !== null && typeof item === "object" && "category" in item && "haircutDecimal" in item,
   );
 }

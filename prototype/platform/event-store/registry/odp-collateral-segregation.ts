@@ -85,11 +85,7 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
     replay: "idempotent-terminal",
     retention: RETENTION_ACCOUNTING_7Y,
     payloadSchema: collateralSegregationReleasedPayloadSchema,
-    citationsHint: [
-      "ORG-ODP-COND-010",
-      "urn:regulation:odp:cs-2-2018",
-      "ISDA-CSA-2016-VM",
-    ],
+    citationsHint: ["ORG-ODP-COND-010", "urn:regulation:odp:cs-2-2018", "ISDA-CSA-2016-VM"],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
   },
 

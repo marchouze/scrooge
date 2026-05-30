@@ -9,6 +9,8 @@ import { describe, expect, it } from "bun:test";
 
 import type { EligibleCollateralItem } from "../event-store/event-types/isda-schedule-csa";
 import {
+  type ActiveLock,
+  type CsaState,
   buildComminglingBreachPayload,
   buildMissingLockBreachPayload,
   checkCommingling,
@@ -17,8 +19,6 @@ import {
   resolveFxRate,
   runSufficiencyCheck,
   validateSubstitution,
-  type ActiveLock,
-  type CsaState,
 } from "./odp-collateral-segregation-engine";
 
 // ---------------------------------------------------------------------------
@@ -43,13 +43,13 @@ function makeMinimalCsaEvent(counterpartyId: string, eventId: string, asOf: stri
       mtaPartyA: { currency: "ZAR", amountMinor: 50_000_00 },
       mtaPartyB: { currency: "ZAR", amountMinor: 50_000_00 },
       eligibleCollateralPartyA: [
-        { category: "govt-bond-za", haircutDecimal: 0.02, currency: "ZAR" },
-        { category: "cash", haircutDecimal: 0.0, currency: "ZAR" },
+        { category: "govt-bond-za", haircutDecimal: 0.02 },
+        { category: "cash-ccy", haircutDecimal: 0.0, currency: "ZAR" },
       ],
       eligibleCollateralPartyB: [
-        { category: "govt-bond-za", haircutDecimal: 0.02, currency: "ZAR" },
-        { category: "cash", haircutDecimal: 0.0, currency: "ZAR" },
-        { category: "govt-bond-g10", haircutDecimal: 0.04, currency: undefined },
+        { category: "govt-bond-za", haircutDecimal: 0.02 },
+        { category: "cash-ccy", haircutDecimal: 0.0, currency: "ZAR" },
+        { category: "govt-bond-g10", haircutDecimal: 0.04 },
       ],
       imSegregationRequired: false,
     },
@@ -109,7 +109,7 @@ function makeReleaseEvent(lockId: string) {
 
 const ELIGIBLE_COLLATERAL_PARTY_B: EligibleCollateralItem[] = [
   { category: "govt-bond-za", haircutDecimal: 0.02 },
-  { category: "cash", haircutDecimal: 0.0 },
+  { category: "cash-ccy", haircutDecimal: 0.0, currency: "ZAR" },
   { category: "govt-bond-g10", haircutDecimal: 0.04 },
 ];
 
@@ -124,7 +124,7 @@ function makeCsaState(counterpartyId: string, overrides: Partial<CsaState> = {})
     mtaPartyBMinor: 50_000_00,
     eligibleCollateralPartyA: [
       { category: "govt-bond-za", haircutDecimal: 0.02 },
-      { category: "cash", haircutDecimal: 0.0 },
+      { category: "cash-ccy", haircutDecimal: 0.0, currency: "ZAR" },
     ],
     eligibleCollateralPartyB: ELIGIBLE_COLLATERAL_PARTY_B,
     imSegregationRequired: false,
@@ -169,9 +169,9 @@ describe("foldCsaState", () => {
 
     const state = result.get(COUNTERPARTY_A);
     expect(state).toBeDefined();
-    expect(state!.csaEventId).toBe(CSA_EVENT_A);
-    expect(state!.baseCurrency).toBe("ZAR");
-    expect(state!.thresholdPartyBMinor).toBe(0);
+    expect(state?.csaEventId).toBe(CSA_EVENT_A);
+    expect(state?.baseCurrency).toBe("ZAR");
+    expect(state?.thresholdPartyBMinor).toBe(0);
   });
 
   it("keeps only the most-recent event when multiple events exist for the same counterparty", () => {
@@ -180,7 +180,7 @@ describe("foldCsaState", () => {
       makeMinimalCsaEvent(COUNTERPARTY_A, CSA_EVENT_A, "2026-05-30T09:00:00.000Z"),
     ];
     const result = foldCsaState(events, []);
-    expect(result.get(COUNTERPARTY_A)!.csaEventId).toBe(CSA_EVENT_A);
+    expect(result.get(COUNTERPARTY_A)?.csaEventId).toBe(CSA_EVENT_A);
   });
 
   it("excludes superseded CSA events", () => {
@@ -256,14 +256,8 @@ describe("checkCommingling", () => {
 
   it("passes when each lock serves a unique counterparty", () => {
     const locks = new Map<string, ActiveLock>([
-      [
-        "L-001",
-        makeActiveLock("L-001", COUNTERPARTY_A, 10_000_000_00, 0.02, 1.0, 9_800_000_00),
-      ],
-      [
-        "L-002",
-        makeActiveLock("L-002", COUNTERPARTY_B, 5_000_000_00, 0.02, 1.0, 4_900_000_00),
-      ],
+      ["L-001", makeActiveLock("L-001", COUNTERPARTY_A, 10_000_000_00, 0.02, 1.0, 9_800_000_00)],
+      ["L-002", makeActiveLock("L-002", COUNTERPARTY_B, 5_000_000_00, 0.02, 1.0, 4_900_000_00)],
     ]);
     const violations = checkCommingling(locks);
     expect(violations).toHaveLength(0);
@@ -271,21 +265,12 @@ describe("checkCommingling", () => {
 
   it("detects commingling when the same lockId serves two counterparties", () => {
     // Duplicate lockId intentionally serving two different counterparties
-    const locks = new Map<string, ActiveLock>([
-      [
-        "L-001",
-        makeActiveLock("L-001", COUNTERPARTY_A, 10_000_000_00, 0.02, 1.0, 9_800_000_00),
-      ],
-    ]);
-    // Manually inject a second entry with the same lockId but different counterparty
-    // (simulates a corrupted lock ID)
-    const lockA = locks.get("L-001")!;
-    const lockACopy = { ...lockA, counterpartyId: COUNTERPARTY_B, lockEventId: "lock-event-L-001b" };
-    // Create a new map with both versions
-    const comingledLocks = new Map<string, ActiveLock>([
-      ["L-001", lockA],
-      ["L-001-dup", lockACopy], // same lockId, different counterparty
-    ]);
+    const lockA = makeActiveLock("L-001", COUNTERPARTY_A, 10_000_000_00, 0.02, 1.0, 9_800_000_00);
+    const lockACopy = {
+      ...lockA,
+      counterpartyId: COUNTERPARTY_B,
+      lockEventId: "lock-event-L-001b",
+    };
     // checkCommingling groups by lockId (not map key), so inject both under "L-001"
     const locksWithDup: Map<string, ActiveLock> = new Map([
       ["L-001", { ...lockA }],
@@ -293,8 +278,8 @@ describe("checkCommingling", () => {
     ]);
     const violations = checkCommingling(locksWithDup);
     expect(violations.length).toBeGreaterThan(0);
-    expect(violations[0].lockId).toBe("L-001");
-    expect(violations[0].description).toContain("Commingling detected");
+    expect(violations.at(0)?.lockId).toBe("L-001");
+    expect(violations.at(0)?.description).toContain("Commingling detected");
   });
 });
 
@@ -352,9 +337,7 @@ describe("runSufficiencyCheck", () => {
   });
 
   it("returns insufficient when collateral is below margin requirement", () => {
-    const locks = [
-      makeActiveLock("L-001", COUNTERPARTY_A, 8_000_000_00, 0.02, 1.0, 7_840_000_00),
-    ];
+    const locks = [makeActiveLock("L-001", COUNTERPARTY_A, 8_000_000_00, 0.02, 1.0, 7_840_000_00)];
     const result = runSufficiencyCheck({
       counterpartyId: COUNTERPARTY_A,
       csaState,
@@ -368,7 +351,7 @@ describe("runSufficiencyCheck", () => {
     expect(result.isSufficient).toBe(false);
     expect(result.surplusMinor).toBeLessThan(0);
     expect(result.breach).toBeDefined();
-    expect(result.breach!.breachKind).toBe("sufficiency");
+    expect(result.breach?.breachKind).toBe("sufficiency");
   });
 
   it("applies FX rates for non-ZAR collateral (USD bonds)", () => {
@@ -432,7 +415,18 @@ describe("runSufficiencyCheck", () => {
   });
 
   it("includes FX rates used in event payload", () => {
-    const usdLock = makeActiveLock("L-USD", COUNTERPARTY_A, 1_000_000_00, 0.0, 18.35, 1_835_000_000_00, "USD");
+    // 100M USD cents × 18.35 = 1_835_000_000 ZAR cents (no haircut)
+    const usdNominal = 100_000_000;
+    const usdAdjusted = Math.floor(usdNominal * 1.0 * 18.35); // = 1_835_000_000
+    const usdLock = makeActiveLock(
+      "L-USD",
+      COUNTERPARTY_A,
+      usdNominal,
+      0.0,
+      18.35,
+      usdAdjusted,
+      "USD",
+    );
     const result = runSufficiencyCheck({
       counterpartyId: COUNTERPARTY_A,
       csaState,
@@ -562,7 +556,7 @@ describe("validateSubstitution", () => {
   it("approves cash substitution (0% haircut)", () => {
     const result = validateSubstitution({
       csaState,
-      incomingAssetKind: "cash",
+      incomingAssetKind: "cash-ccy",
       incomingNominalAmountMinor: 10_000_000_00,
       incomingCurrency: "ZAR",
       outgoingAdjustedValueMinor: 9_800_000_00,
