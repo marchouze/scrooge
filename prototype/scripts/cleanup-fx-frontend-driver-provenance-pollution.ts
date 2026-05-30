@@ -318,13 +318,14 @@ function main(argv: ReadonlyArray<string>): number {
     return 1;
   }
 
+  const residueSuffix = dryRun
+    ? ""
+    : `; production residue for trades+postings=${result.productionResidue.length}`;
   process.stdout.write(
     `${PIPELINE}: ${dryRun ? "dry-run" : "apply"} ok — ` +
       `trades reclassified=${result.tradesReclassified} (already-clean=${result.tradesAlreadyClean}), ` +
       `postings reclassified=${result.postingsReclassified} (already-clean=${result.postingsAlreadyClean}), ` +
-      `audit events=${result.auditEventsEmitted}` +
-      (dryRun ? "" : `; production residue for trades+postings=${result.productionResidue.length}`) +
-      "\n",
+      `audit events=${result.auditEventsEmitted}${residueSuffix}\n`,
   );
   return 0;
 }
