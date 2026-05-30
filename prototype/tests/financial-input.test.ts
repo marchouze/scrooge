@@ -15,6 +15,8 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { BUCKET_MID_YEARS } from "../platform/alm/eve";
+import { BUCKET_YEAR_FRACTION } from "../platform/alm/nii";
 import { type FundingPosition, type HQLAPosition, computeLCR } from "../platform/liquidity/lcr";
 import { type ASFItem, type RSFItem, computeNSFR } from "../platform/liquidity/nsfr";
 import { run as runCalcNoSilentZero } from "../platform/recon/calc-no-silent-zero";
@@ -97,6 +99,42 @@ describe("computeNSFR fails loudly on an unknown category", () => {
     const asf: ASFItem[] = [{ amountZar: 1_000_000, category: "tier1-capital" }];
     const rsf = [{ amountZar: 500_000, category: "drifted-rsf" }] as unknown as RSFItem[];
     expect(() => computeNSFR(asf, rsf)).toThrow(/nsfr\.rsf: no weight for category/);
+  });
+});
+
+describe("computeNII — BUCKET_YEAR_FRACTION fails loudly on an unknown bucket", () => {
+  it("returns correct year fraction for all valid REPRICING_BUCKETS", () => {
+    expect(requireWeight(BUCKET_YEAR_FRACTION, "ON", "BUCKET_YEAR_FRACTION")).toBeCloseTo(1 / 365);
+    expect(requireWeight(BUCKET_YEAR_FRACTION, "1Y", "BUCKET_YEAR_FRACTION")).toBe(1);
+    expect(requireWeight(BUCKET_YEAR_FRACTION, "10Y+", "BUCKET_YEAR_FRACTION")).toBe(1);
+  });
+
+  it("throws loudly on an unknown bucket instead of silently returning 1", () => {
+    expect(() =>
+      requireWeight(
+        BUCKET_YEAR_FRACTION as Readonly<Record<string, number>>,
+        "UNKNOWN_BUCKET",
+        "BUCKET_YEAR_FRACTION",
+      ),
+    ).toThrow(/BUCKET_YEAR_FRACTION: no weight for category "UNKNOWN_BUCKET"/);
+  });
+});
+
+describe("computeEVE — BUCKET_MID_YEARS fails loudly on an unknown bucket", () => {
+  it("returns correct mid-year for all valid REPRICING_BUCKETS", () => {
+    expect(requireWeight(BUCKET_MID_YEARS, "ON", "BUCKET_MID_YEARS")).toBeCloseTo(1 / 365);
+    expect(requireWeight(BUCKET_MID_YEARS, "1Y", "BUCKET_MID_YEARS")).toBe(1);
+    expect(requireWeight(BUCKET_MID_YEARS, "10Y+", "BUCKET_MID_YEARS")).toBe(10);
+  });
+
+  it("throws loudly on an unknown bucket instead of silently returning 1", () => {
+    expect(() =>
+      requireWeight(
+        BUCKET_MID_YEARS as Readonly<Record<string, number>>,
+        "UNKNOWN_BUCKET",
+        "BUCKET_MID_YEARS",
+      ),
+    ).toThrow(/BUCKET_MID_YEARS: no weight for category "UNKNOWN_BUCKET"/);
   });
 });
 

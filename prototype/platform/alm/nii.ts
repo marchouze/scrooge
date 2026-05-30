@@ -43,6 +43,7 @@
 //   Nadia (Independent-validation engineer).
 
 import type { EventStore } from "../event-store/store";
+import { requireWeight } from "../types/financial-input";
 import { type REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";
 
 // ---------------------------------------------------------------------------
@@ -110,7 +111,7 @@ export interface NIIReport {
  *
  * Production will use actual coupon schedules and reset dates.
  */
-const BUCKET_YEAR_FRACTION: Record<(typeof REPRICING_BUCKETS)[number], number> = {
+export const BUCKET_YEAR_FRACTION: Record<(typeof REPRICING_BUCKETS)[number], number> = {
   ON: 1 / 365,
   "1M": 1 / 12,
   "3M": 3 / 12,
@@ -157,7 +158,7 @@ export function computeNII(eventStore: EventStore, asOf: string): NIIReport {
 
     for (const row of gapSchedule.rows) {
       const netGap = row.rsaZar - row.rslZar;
-      const yearFrac = BUCKET_YEAR_FRACTION[row.bucket] ?? 1;
+      const yearFrac = requireWeight(BUCKET_YEAR_FRACTION, row.bucket, "BUCKET_YEAR_FRACTION");
 
       baseNii += netGap * BASE_RATE * yearFrac;
       shockedNii += netGap * (BASE_RATE + shock) * yearFrac;
