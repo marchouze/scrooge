@@ -104,9 +104,12 @@ const raviConfirm = makeAgentDecision({
   citations: ["RAS-B3", "EXCON-OECD-FX-001"],
   payload: {
     decisionId: `RAVI-NOP-RECOMPUTE-${TRADE_DATE}`,
-    decidedBy: "agent:ravi:intraday-stress",
+    // `decidedBy` must resolve to a registered agent (recon:agent-scope) — the
+    // runner sub-id `agent:ravi:intraday-stress` is the actor, not the agent urn.
+    decidedBy: "agent:ravi",
     what: "Recompute B3 NOP post-Saskia unwind and confirm limit compliance",
-    inScopeBy: "agent:ravi:intraday-stress",
+    // `inScopeBy` must match an entry in Ravi's registered `decisionsInScope`.
+    inScopeBy: "Approve daily LCR / NSFR / IRRBB / FX position attestation",
     options: ["compliant", "still-breaching"],
     chosen: "compliant",
     rationale: `Post-unwind B3 NOP = ZAR ${(B3_AFTER / 1e6).toFixed(1)}M (${utilPct}% of ZAR ${(B3_LIMIT / 1e6).toFixed(0)}M limit). Saskia executed 2 tranches: USD 2.00M + USD 1.27M at ${RATE} ZAR/USD (settle ${SETTLE_DATE}). Reduction: ZAR ${(totalZar / 1e6).toFixed(2)}M. B3 now within target ZAR 180M. Breach ESC-FX-B3-${TRADE_DATE} resolved.`,
