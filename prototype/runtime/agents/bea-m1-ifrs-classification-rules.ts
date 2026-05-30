@@ -266,13 +266,23 @@ export interface SubLedgerPosting {
   readonly citations: readonly string[];
 }
 
+// Chart-of-accounts leaf accounts for the M1 equity posting rules. Both are
+// canonical entries in `platform/accounting/chart-of-accounts.json`:
+//   ACC-3200-001 — Equity Asset — FVTPL (asset, debit normal)
+//   ACC-3200-008 — Equity Trade Settlement Suspense / Pending Settlement
+//                  (liability, credit normal; nets out on settlement-date)
+// These replace the former `ACC-equity-position-stub` / `ACC-pending-
+// settlement-stub` placeholders, which predated the equity block of the
+// chart of accounts (Bea Substrate Gap §3 — closed 2026-05-30).
+const ACC_EQUITY_POSITION_FVTPL = "ACC-3200-001";
+const ACC_EQUITY_PENDING_SETTLEMENT = "ACC-3200-008";
+
 /**
  * Trade-date booking per IAS 1 / IFRS 9. For a buy: debit equity-position
- * (asset), credit pending-settlement (liability); reverse for sell. Real
- * GL accounts are stubbed (`ACC-equities-buy-stub` etc.) — the chart of
- * accounts (`platform/accounting/chart-of-accounts.schema.json`) currently
- * holds only ACC-1100-001; equity-book accounts arrive when the close
- * engine substrate lands (Bea Substrate Gap §3, target M2).
+ * (`ACC-3200-001`, FVTPL asset), credit pending-settlement (`ACC-3200-008`,
+ * settlement-suspense liability); reverse for sell. The settlement-suspense
+ * account nets to zero once `deriveSettlementPosting` confirms the cash leg
+ * on settlement-date (T+3 JSE).
  */
 function deriveTradeDatePosting(
   tradeId: string,
@@ -286,8 +296,8 @@ function deriveTradeDatePosting(
     postingType: "trade-date-booking",
     legs: [
       {
-        debit: isBuy ? "ACC-equity-position-stub" : "ACC-pending-settlement-stub",
-        credit: isBuy ? "ACC-pending-settlement-stub" : "ACC-equity-position-stub",
+        debit: isBuy ? ACC_EQUITY_POSITION_FVTPL : ACC_EQUITY_PENDING_SETTLEMENT,
+        credit: isBuy ? ACC_EQUITY_PENDING_SETTLEMENT : ACC_EQUITY_POSITION_FVTPL,
         currency: consideration.currency,
         amountMinor: consideration.amountMinor,
         memo: `Trade-date ${payload.side} ${payload.instrument.identifier.value} on ${payload.venue}`,
@@ -315,8 +325,8 @@ function deriveSettlementPosting(
     postingType: "settlement-confirmation",
     legs: [
       {
-        debit: isReceive ? "ACC-1100-001" : "ACC-pending-settlement-stub",
-        credit: isReceive ? "ACC-pending-settlement-stub" : "ACC-1100-001",
+        debit: isReceive ? "ACC-1100-001" : ACC_EQUITY_PENDING_SETTLEMENT,
+        credit: isReceive ? ACC_EQUITY_PENDING_SETTLEMENT : "ACC-1100-001",
         currency: netCash.currency,
         amountMinor: Math.abs(netCash.amountMinor),
         memo: `Settlement ${side} ${tradeId}`,

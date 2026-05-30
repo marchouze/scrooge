@@ -144,7 +144,53 @@ const COA: ChartOfAccountsEntry[] = [
     // (PR-FX-LIFECYCLE-CLOSE; IAS 21 §28) (Atlas COA-source completion, 2026-05-30).
     sourceEventTypes: ["FxPositionRevalued", "FxSettlementConfirmed", "SettlementConfirmed"],
   },
+  // Canonical equity-book accounts (chart-of-accounts.json). The seed-period
+  // trial balance carried these balances under the legacy placeholder account
+  // IDs ACC-equity-position-stub / ACC-pending-settlement-stub, which predated
+  // the equity block of the chart of accounts. The M1 posting rules
+  // (runtime/agents/bea-m1-ifrs-classification-rules.ts) now post to these
+  // canonical leaves, and the frozen seed trial balance is reclassified onto
+  // them at load time via LEGACY_STUB_RECLASSIFICATION below
+  // (Bea Substrate Gap §3 — closed 2026-05-30; IAS 8 reclassification).
+  {
+    accountId: "ACC-3200-001",
+    name: "Equity Asset — FVTPL",
+    currency: "multi",
+    ifrsClassification: "fvtpl",
+    ifrsClassificationStatus: "in-force",
+    sourceEventTypes: ["EquityTradeBooked", "EquityTradeExecuted", "EquitySettlementInstructed"],
+  },
+  {
+    accountId: "ACC-3200-008",
+    name: "Equity Trade Settlement Suspense (Pending Settlement)",
+    currency: "multi",
+    ifrsClassification: "amortised-cost",
+    ifrsClassificationStatus: "in-force",
+    sourceEventTypes: ["EquityTradeBooked", "EquitySettlementInstructed"],
+  },
 ];
+
+// ---------------------------------------------------------------------------
+// Legacy stub-account reclassification (IAS 8) — period 2026-05-SEED
+// ---------------------------------------------------------------------------
+// The 2026-05-SEED equity postings were emitted by the M1 handler before the
+// equity block of the chart of accounts existed, so they referenced two
+// non-canonical placeholder account IDs. The underlying trades are real and
+// in-period (their source events resolve in the store — they are NOT retired
+// orphans), so the balances are correct; only the account labels were
+// placeholders. We reclassify each placeholder onto its canonical chart-of-
+// accounts leaf at TB-load time (append-only: the frozen TrialBalanceSnapshotted
+// event 6d7f3925 is left untouched; this is a derived render of it):
+//   ACC-equity-position-stub   → ACC-3200-001 (Equity Asset — FVTPL)
+//   ACC-pending-settlement-stub → ACC-3200-008 (Equity Trade Settlement Suspense)
+// The M1 posting rules now emit to these canonical leaves directly, so no
+// future period reproduces the placeholders.
+// Authority: PROC-FIN-BSS-01 §1; chart-of-accounts.json; IAS 8 (reclassification);
+//   Principles/1-events-are-truth.md (frozen snapshot preserved; view derived).
+const LEGACY_STUB_RECLASSIFICATION: Record<string, string> = {
+  "ACC-equity-position-stub": "ACC-3200-001",
+  "ACC-pending-settlement-stub": "ACC-3200-008",
+};
 
 // ---------------------------------------------------------------------------
 // Event loading helpers
@@ -174,13 +220,48 @@ const tbPayload = tbEvent.payload as {
   rows: Array<{ leafAccountId: string; currency: string; amountMinor: number }>;
 };
 
+// Reclassify legacy placeholder account IDs onto their canonical chart-of-
+// accounts leaves (see LEGACY_STUB_RECLASSIFICATION). Rows that collapse onto
+// the same (account, currency) after remap are summed; balances and currencies
+// are otherwise unchanged, so the per-currency double-entry totals are preserved.
+const reclassifiedByKey = new Map<
+  string,
+  { leafAccountId: string; currency: string; amountMinor: number }
+>();
+let reclassifiedRowCount = 0;
+for (const r of tbPayload.rows) {
+  const mapped = LEGACY_STUB_RECLASSIFICATION[r.leafAccountId];
+  const leafAccountId = mapped ?? r.leafAccountId;
+  if (mapped) reclassifiedRowCount++;
+  const key = `${leafAccountId}|${r.currency}`;
+  const existing = reclassifiedByKey.get(key);
+  if (existing) {
+    existing.amountMinor += r.amountMinor;
+  } else {
+    reclassifiedByKey.set(key, {
+      leafAccountId,
+      currency: r.currency,
+      amountMinor: r.amountMinor,
+    });
+  }
+}
+
 const trialBalance: TrialBalance = {
-  rows: tbPayload.rows.map((r) => ({
-    leafAccountId: r.leafAccountId,
-    currency: r.currency,
-    amountMinor: r.amountMinor,
-  })),
+  rows: [...reclassifiedByKey.values()],
 };
+
+if (reclassifiedRowCount > 0) {
+  console.log("\n=== STEP 1: LEGACY STUB-ACCOUNT RECLASSIFICATION (IAS 8) ===");
+  for (const [stub, real] of Object.entries(LEGACY_STUB_RECLASSIFICATION)) {
+    console.log(`  ${stub} → ${real}`);
+  }
+  console.log(
+    `  Reclassified ${reclassifiedRowCount} frozen TB row(s) onto canonical chart-of-accounts leaves.`,
+  );
+  console.log(
+    "  Frozen TrialBalanceSnapshotted 6d7f3925 left untouched (append-only; derived render).\n",
+  );
+}
 
 // Double-entry check
 const currencyTotals = new Map<string, number>();

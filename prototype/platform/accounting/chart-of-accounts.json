@@ -229,6 +229,12 @@
       "category": "liability",
       "side": "credit"
     },
+    {
+      "id": "ACC-3200-008",
+      "name": "Equity Trade Settlement Suspense (Pending Settlement)",
+      "category": "liability",
+      "side": "credit"
+    },
 
     {
       "id": "ACC-3300-001",
