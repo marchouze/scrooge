@@ -174,6 +174,10 @@ export {
   ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY,
   OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY,
 } from "./isda-odp";
+// WS-ODP-PORTFOLIO-RECON — portfolio reconciliation substrate events.
+// 5 recon-run events + 3 break/dispute lifecycle events (8 total).
+// Authority: ORG-ODP-COND-007; urn:regulation:odp:cs-2-2018 §9.
+export { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -230,6 +234,7 @@ import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
+import { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
@@ -404,6 +409,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   //   CrossCurrencySwapTradeBooked.
   // Authority: ORG-ODP-COND-005; ISDA 2006/2000 Definitions; BCBS d317.
   ...OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY,
+  // WS-ODP-PORTFOLIO-RECON — ODP portfolio reconciliation substrate events.
+  // 5 recon-run events + 3 break/dispute lifecycle events (8 total).
+  // Authority: ORG-ODP-COND-007; urn:regulation:odp:cs-2-2018 §9.
+  ...ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

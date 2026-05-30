@@ -289,6 +289,15 @@ export * from "./isda-schedule-csa";
 //   ISDA 2006 Definitions; ISDA 2000 Definitions; BCBS d317 (SA-CCR).
 // Author: Imani (General Counsel, legal).
 export * from "./otc-confirmations";
+// WS-ODP-PORTFOLIO-RECON — ODP portfolio reconciliation substrate events.
+// OdpMtmVsGlReconRun, OdpExposureVsCsaReconRun,
+//   OdpCollateralVsCustodyReconRun, OdpCreditLimitVsAllocatedReconRun,
+//   OdpNettingSetVsSettlementReconRun,
+//   OdpReconBreakRaised, OdpReconDisputeOpened, OdpReconDisputeResolved.
+// Authority: ORG-ODP-COND-007; urn:regulation:odp:cs-2-2018 §9
+//   (portfolio reconciliation and dispute resolution).
+// Author: Devon (COO, operations).
+export * from "./odp-portfolio-recon";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -403,6 +412,7 @@ import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-ex
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { MTM_TYPED_EVENT_TYPES } from "./mtm";
 import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
+import { ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES } from "./odp-portfolio-recon";
 import { OTC_CONFIRMATIONS_TYPED_EVENT_TYPES } from "./otc-confirmations";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
@@ -572,6 +582,10 @@ export const TYPED_EVENT_TYPES = [
   // Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018 §§ 3, 7;
   //   ISDA 2006 Definitions; ISDA 2000 Definitions; BCBS d317 (SA-CCR).
   ...OTC_CONFIRMATIONS_TYPED_EVENT_TYPES,
+  // WS-ODP-PORTFOLIO-RECON — ODP portfolio reconciliation substrate events.
+  // 5 recon-run events + 3 break/dispute lifecycle events (8 total).
+  // Authority: ORG-ODP-COND-007; urn:regulation:odp:cs-2-2018 §9.
+  ...ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
