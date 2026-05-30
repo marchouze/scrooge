@@ -51,15 +51,19 @@
 // fallback). All emission scripts in this codebase follow the same pattern —
 // see feedback_event_store_wrong_path.md.
 
-import { newEventId, nowUtc } from "../platform/core/types";
 import { eventStore } from "../platform/composition";
-import { buildPhaseFixtureTag, simulatedTag, type ProvenanceTag } from "../platform/event-store/provenance";
-import type { Event } from "../platform/event-store/types";
+import { newEventId, nowUtc } from "../platform/core/types";
 import type { OfficialMarkAdoptedPayload } from "../platform/event-store/event-types/valuation";
 import {
+  type ProvenanceTag,
+  buildPhaseFixtureTag,
+  simulatedTag,
+} from "../platform/event-store/provenance";
+import type { Event } from "../platform/event-store/types";
+import {
+  type FxTradeExecutedPayload,
   makeFxSettlementInstructed,
   makeSettlementConfirmed,
-  type FxTradeExecutedPayload,
 } from "../platform/markets/cdm/fx";
 import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
 
@@ -69,11 +73,7 @@ import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:atlas:backfill-fx-post-trade-lifecycle" };
-const CITATIONS = [
-  "D-FX-CLS-MEMBERSHIP",
-  "D-MARKETS-SCHEMA-FOUNDATION",
-  "D-FX-AD-STATUS",
-] as const;
+const CITATIONS = ["D-FX-CLS-MEMBERSHIP", "D-MARKETS-SCHEMA-FOUNDATION", "D-FX-AD-STATUS"] as const;
 
 const SIM_CORRESPONDENT = {
   partyId: "CORRESPONDENT-BANK-001",
@@ -171,7 +171,10 @@ function main(): void {
       case "FxTradeExecuted": {
         const p = e.payload as unknown as FxTradeExecutedPayload;
         const tradeId = p.tradeId.value;
-        const rawProv = e.provenance as { kind?: string; scenario?: string; sourceLineage?: string } | null | undefined;
+        const rawProv = e.provenance as
+          | { kind?: string; scenario?: string; sourceLineage?: string }
+          | null
+          | undefined;
         const kind = rawProv?.kind ?? "build-phase-fixture";
         if (kind !== "build-phase-fixture" && kind !== "simulated") {
           // Production trade — the live subscriber handles these; skip backfill.

@@ -99,8 +99,7 @@ export function run(): FxLifecycleParityResult {
         // Extract settlement date from legs[0] (canonical location per backfill).
         const legs = p.legs as Array<Record<string, unknown>> | undefined;
         const leg0 = legs?.[0];
-        const settlementDateIso =
-          (leg0?.settlementDate as { iso?: string } | undefined)?.iso ?? "";
+        const settlementDateIso = (leg0?.settlementDate as { iso?: string } | undefined)?.iso ?? "";
         trades.set(tradeId, { tradeId, settlementDateIso });
         break;
       }
@@ -143,26 +142,22 @@ export function run(): FxLifecycleParityResult {
       failCount++;
       violations.push({
         subject: `trade:${tradeId}`,
-        message:
-          `FX lifecycle parity violation: FxTradeExecuted (tradeId=${tradeId}, settlementDate=${info.settlementDateIso}) has no FxSettlementInstructed. ` +
-          `Seed/fixture trades emitted via direct store.append bypass runPostTradeLifecycle. ` +
-          `Run backfill-fx-post-trade-lifecycle to repair. ` +
-          `Authority: D-FX-CLS-MEMBERSHIP, D-MARKETS-SCHEMA-FOUNDATION.`,
+        message: `FX lifecycle parity violation: FxTradeExecuted (tradeId=${tradeId}, settlementDate=${info.settlementDateIso}) has no FxSettlementInstructed. Seed/fixture trades emitted via direct store.append bypass runPostTradeLifecycle. Run backfill-fx-post-trade-lifecycle to repair. Authority: D-FX-CLS-MEMBERSHIP, D-MARKETS-SCHEMA-FOUNDATION.`,
         severity: "fail",
       });
       continue;
     }
 
     // WARN: instructed but no SettlementConfirmed and settlement date is past the advisory cutoff.
-    if (!confirmed.has(tradeId) && info.settlementDateIso && info.settlementDateIso <= advisoryCutoff) {
+    if (
+      !confirmed.has(tradeId) &&
+      info.settlementDateIso &&
+      info.settlementDateIso <= advisoryCutoff
+    ) {
       unconfirmedAdvisoryCount++;
       violations.push({
         subject: `trade:${tradeId}`,
-        message:
-          `FX lifecycle advisory: FxTradeExecuted (tradeId=${tradeId}, settlementDate=${info.settlementDateIso}) is instructed but has no SettlementConfirmed, and settlementDate ≤ today − ${UNCONFIRMED_ADVISORY_DAYS} days (cutoff=${advisoryCutoff}). ` +
-          `This trade may be awaiting settleMaturedTrades or a correspondent confirmation. ` +
-          `Investigate if the trade remains unconfirmed beyond normal processing windows. ` +
-          `Authority: D-FX-CLS-MEMBERSHIP.`,
+        message: `FX lifecycle advisory: FxTradeExecuted (tradeId=${tradeId}, settlementDate=${info.settlementDateIso}) is instructed but has no SettlementConfirmed, and settlementDate ≤ today − ${UNCONFIRMED_ADVISORY_DAYS} days (cutoff=${advisoryCutoff}). This trade may be awaiting settleMaturedTrades or a correspondent confirmation. Investigate if the trade remains unconfirmed beyond normal processing windows. Authority: D-FX-CLS-MEMBERSHIP.`,
         severity: "warn",
       });
     }

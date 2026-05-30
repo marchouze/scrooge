@@ -115,8 +115,16 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   fallback only activates in production paths where caller omits nowIso.
 //   Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Author: Scrooge (Chief of Staff), 2026-05-28.
+//
+// 2026-05-30 — Bumped 61 → 62 (FX lifecycle parity backfill PR):
+//   dashboard/markets-fx-npa.ts:62 — injectable default
+//   `nowIso: string = new Date().toISOString()` added by the NPA attestation
+//   badge PR (#539). Approved injectable-default pattern (same as 60→61 bump);
+//   wall-clock fallback only activates in production paths where caller omits
+//   nowIso. Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
+//   Author: Atlas (Core banking platform architect, engineering), 2026-05-30.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 61;
+const KNOWN_VIOLATIONS_SNAPSHOT = 62;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
