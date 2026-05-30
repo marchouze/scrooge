@@ -7,10 +7,10 @@
 // unchanged EOD snapshot (the /quote endpoint's free-tier behaviour).
 //
 // Free-tier credit cost: 1 credit per data point returned, per symbol.
-// At outputsize=2, interval=1h: 2 bars × 6 symbols = 12 credits/run.
-// At hourly cadence: 12 × 24 = 288 credits/day — well under the 800/day cap.
+// At outputsize=2, interval=1h: 2 bars × 8 symbols = 16 credits/run.
+// At hourly cadence: 16 × 24 = 384 credits/day — well under the 800/day cap.
 //
-// Authority: D-MARKETS-SCHEMA-FOUNDATION
+// Authority: D-MARKETS-SCHEMA-FOUNDATION, D-FX-CROSS-PAIRS-PRODUCTION-INGEST
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,6 +31,12 @@ export interface RawTwelveDataQuote {
 // Target pairs
 // ---------------------------------------------------------------------------
 
+// The six ZAR pairs the bank quotes against its home currency, plus the two
+// non-ZAR G10 crosses (EUR/USD, GBP/USD) the FX sim's STANDARD_PAIRS trades.
+// The crosses are ingested directly (not ZAR-triangulated) so live cross
+// positions get a genuine production mark + unrealised P&L — the MTM lookup
+// (lookupQuoteWithInverse) resolves only the direct pair + inverse, with no
+// ZAR triangulation. Authority: D-FX-CROSS-PAIRS-PRODUCTION-INGEST.
 export const TWELVE_DATA_TARGET_PAIRS = [
   "USD/ZAR",
   "EUR/ZAR",
@@ -38,6 +44,8 @@ export const TWELVE_DATA_TARGET_PAIRS = [
   "JPY/ZAR",
   "CHF/ZAR",
   "AUD/ZAR",
+  "EUR/USD",
+  "GBP/USD",
 ] as const;
 
 // Same synthetic bid/ask spread as fx-rates-parse.ts — the free Twelve Data

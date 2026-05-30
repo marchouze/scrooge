@@ -7,7 +7,9 @@
 //
 // Two-tier tolerance schedule (per D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22):
 //
-//   Tier 1 — USD/ZAR, ZAR/USD, EUR/ZAR, ZAR/EUR, GBP/ZAR, ZAR/GBP:
+//   Tier 1 — liquid majors: the ZAR crosses (USD/ZAR, ZAR/USD, EUR/ZAR,
+//   ZAR/EUR, GBP/ZAR, ZAR/GBP) plus the two deepest G10 crosses (EUR/USD,
+//   USD/EUR, GBP/USD, USD/GBP):
 //     Relative: |primary - secondary| / primary > 0.0075 (0.75%)
 //     Absolute: |primary - secondary| × (notionalMinor / 100) > 200_000 ZAR
 //
@@ -57,9 +59,19 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Tier 1 instruments — liquid ZAR crosses with tighter IPV tolerance (0.75%).
+ * Tier 1 instruments — liquid majors with tighter IPV tolerance (0.75%).
  * All other instruments fall into Tier 2 (1.00% relative tolerance).
- * Authority: D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22
+ *
+ * The set covers the ZAR crosses the bank quotes against its home currency
+ * (both directions) plus EUR/USD and GBP/USD (both directions). EUR/USD and
+ * GBP/USD are the two deepest, most-liquid G10 crosses in the market, with
+ * the same "reliable multi-source quotes" property that justifies the tighter
+ * Tier-1 band — so they belong in Tier 1 rather than the wider Tier-2 default
+ * reserved for thinner markets. The absolute ZAR threshold is unchanged and
+ * applies to all tiers via the notional-derived divergenceZar.
+ *
+ * Authority: D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22,
+ *   D-FX-CROSS-PAIRS-PRODUCTION-INGEST (EUR/USD + GBP/USD added)
  */
 export const TIER_1_PAIRS: ReadonlySet<string> = new Set([
   "USD/ZAR",
@@ -68,6 +80,10 @@ export const TIER_1_PAIRS: ReadonlySet<string> = new Set([
   "ZAR/EUR",
   "GBP/ZAR",
   "ZAR/GBP",
+  "EUR/USD",
+  "USD/EUR",
+  "GBP/USD",
+  "USD/GBP",
 ]);
 
 /** Tier 1 relative tolerance: 0.75%. */
@@ -91,13 +107,14 @@ export interface IpvThresholds {
 /**
  * Return the IPV thresholds applicable to the given instrument.
  *
- * Tier 1 (USD/ZAR, ZAR/USD, EUR/ZAR, ZAR/EUR, GBP/ZAR, ZAR/GBP):
+ * Tier 1 (ZAR crosses both directions + EUR/USD, USD/EUR, GBP/USD, USD/GBP):
  *   pctThreshold = 0.0075, zarThreshold = 200_000
  *
  * Tier 2 (all other / unknown):
  *   pctThreshold = 0.0100, zarThreshold = 200_000
  *
- * Authority: D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22
+ * Authority: D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22,
+ *   D-FX-CROSS-PAIRS-PRODUCTION-INGEST
  */
 export function getIpvThresholds(instrument: string): IpvThresholds {
   const isTier1 = TIER_1_PAIRS.has(instrument);

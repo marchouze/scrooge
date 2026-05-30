@@ -48,6 +48,9 @@ const FIXTURE = {
   "JPY/ZAR": makeSymbolEntry("JPY/ZAR", "0.1039", "0.1038"),
   "CHF/ZAR": makeSymbolEntry("CHF/ZAR", "20.9500", "20.9300"),
   "AUD/ZAR": makeSymbolEntry("AUD/ZAR", "11.7800", "11.7700"),
+  // Non-ZAR G10 crosses ingested directly per D-FX-CROSS-PAIRS-PRODUCTION-INGEST.
+  "EUR/USD": makeSymbolEntry("EUR/USD", "1.1605", "1.1598"),
+  "GBP/USD": makeSymbolEntry("GBP/USD", "1.3440", "1.3432"),
 };
 
 // ---------------------------------------------------------------------------
@@ -55,16 +58,24 @@ const FIXTURE = {
 // ---------------------------------------------------------------------------
 
 describe("parseTwelveDataTimeSeriesResponse", () => {
-  it("returns 2 bars × 6 pairs = 12 quotes", () => {
+  it("returns 2 bars × 8 pairs = 16 quotes", () => {
     const quotes = parseTwelveDataTimeSeriesResponse(FIXTURE);
-    expect(quotes).toHaveLength(12);
+    expect(quotes).toHaveLength(16);
   });
 
-  it("covers all 6 target pairs", () => {
+  it("covers all 8 target pairs", () => {
     const quotes = parseTwelveDataTimeSeriesResponse(FIXTURE);
     for (const target of TWELVE_DATA_TARGET_PAIRS) {
       expect(quotes.some((q) => q.pair === target)).toBe(true);
     }
+  });
+
+  it("parses the non-ZAR G10 crosses (EUR/USD, GBP/USD)", () => {
+    const quotes = parseTwelveDataTimeSeriesResponse(FIXTURE);
+    const eurusd = quotes.find((q) => q.pair === "EUR/USD" && q.timestamp === TS1);
+    const gbpusd = quotes.find((q) => q.pair === "GBP/USD" && q.timestamp === TS1);
+    expect(eurusd?.mid).toBeCloseTo(1.1605, 4);
+    expect(gbpusd?.mid).toBeCloseTo(1.344, 4);
   });
 
   it("parses `close` (string) as numeric mid", () => {
