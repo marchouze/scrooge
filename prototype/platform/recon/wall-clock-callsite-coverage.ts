@@ -123,8 +123,18 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   wall-clock fallback only activates in production paths where caller omits
 //   nowIso. Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Author: Atlas (Core banking platform architect, engineering), 2026-05-30.
+//
+// 2026-05-30 — Bumped 62 → 63 (PR #898, WS-ODP-PORTFOLIO-RECON):
+//   platform/recon/odp-portfolio-recon-dispute-staleness.ts:144 — injectable
+//   default `const now = opts.now ?? new Date()` added by the ODP portfolio
+//   reconciliation dispute-staleness gate. Approved injectable-default pattern
+//   (same as the 61→62 bump); the wall-clock fallback only activates when a
+//   caller omits `opts.now` (production paths), while every scenario/test
+//   passes a fixed `now`. Clock-abstraction cleanup deferred to
+//   D-PROVENANCE-FILTER-ENFORCEMENT.
+//   Author: Scrooge (Chief of Staff), 2026-05-30.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 62;
+const KNOWN_VIOLATIONS_SNAPSHOT = 63;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

@@ -87,7 +87,7 @@ export interface RunOpts {
   breakEvents?: Iterable<MinimalEvent>;
   disputeOpenedEvents?: Iterable<MinimalEvent>;
   disputeResolvedEvents?: Iterable<MinimalEvent>;
-  /** Wall-clock anchor for deadline comparison. Defaults to new Date(). */
+  /** Wall-clock anchor for deadline comparison. Defaults to the current instant. */
   now?: Date;
 }
 
