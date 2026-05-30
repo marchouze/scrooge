@@ -262,7 +262,7 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
   const sign = headroomMinor >= 0 ? "" : "−";
 
   const rwaSource = rwaResult.buildPhaseFallback
-    ? `RWA: ICAAP v1 build-phase constant (${rwaResult.tradeCount} trades in store — fallback active)`
+    ? "RWA: build-phase constant (no booked trades in store; D-RWA-LIVE-POSITIONS-PROJECTION-V1 fallback)"
     : `RWA: live positions (${rwaResult.tradeCount} trade events; D-RWA-LIVE-POSITIONS-PROJECTION-V1)`;
 
   let note: string;

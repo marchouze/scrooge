@@ -70,9 +70,9 @@
 import { coaToCapitalClassifications } from "../../accounting/coa-registry";
 import type { TrialBalanceSnapshotRow } from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
-import { computeRwaFromPositions, toRwaDecomposition } from "../../projections/rwa-from-positions";
 import { BUILD_PHASE_TOTAL_RWA_MINOR } from "../../projections/capital-metrics";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
+import { computeRwaFromPositions, toRwaDecomposition } from "../../projections/rwa-from-positions";
 import {
   BA_700_BANK_ENTITIES,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,

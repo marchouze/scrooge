@@ -60,20 +60,23 @@
 //   D-REGULATORY-READINESS-GATE-PLAN (CEO-approved 2026-05-10)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import { rwaInstrumentClassWeights } from "../config/financial-constants";
 import type { BondTradeExecutedPayload } from "../event-store/event-types/bond-accounting";
-import type { InterbankLoanPlacedPayload, RepoTradeOpenedPayload } from "../event-store/event-types/repo-mmd-ibl";
+import type {
+  InterbankLoanPlacedPayload,
+  RepoTradeOpenedPayload,
+} from "../event-store/event-types/repo-mmd-ibl";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
-import { rwaInstrumentClassWeights } from "../config/financial-constants";
-import { requireWeight } from "../types/financial-input";
 import {
-  RWA_BANK_ENTITIES,
   type CreditExposure,
+  RWA_BANK_ENTITIES,
   type RwaEngineOutput,
   type TradingBookPosition,
   computeRwa,
 } from "../risk/rwa-engine";
+import { requireWeight } from "../types/financial-input";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 
 // ---------------------------------------------------------------------------
@@ -152,7 +155,10 @@ function makeZeroOutput(asOf: string): RwaEngineOutput {
  * @param eventStore  Singleton event store.
  * @param asOf        ISO 8601 as-of timestamp (used for replay filter + engine meta).
  */
-export function computeRwaFromPositions(eventStore: EventStore, asOf: string): RwaFromPositionsResult {
+export function computeRwaFromPositions(
+  eventStore: EventStore,
+  asOf: string,
+): RwaFromPositionsResult {
   // Load market-risk weights from the canonical registry (CRO-owned,
   // cited — same pattern as rwa-delta.ts).
   const RWA_WEIGHTS = rwaInstrumentClassWeights();
@@ -189,7 +195,9 @@ export function computeRwaFromPositions(eventStore: EventStore, asOf: string): R
       counterpartyType,
       eadMinor: p.nominalMinor,
       currency: p.currency ?? FUNCTIONAL_CURRENCY,
-      ratingBucket: isRsaGovtBond ? undefined : "unrated",
+      // exactOptionalPropertyTypes: omit ratingBucket for sovereign (0% weight;
+      // undefined is not assignable to optional CreditRatingBucket with exactOptional).
+      ...(isRsaGovtBond ? {} : { ratingBucket: "unrated" as const }),
       residualMaturity: "long-term",
       note: `BondTradeExecuted tradeId=${p.tradeId} isin=${p.bondIsin}`,
     });
