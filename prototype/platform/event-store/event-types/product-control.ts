@@ -66,8 +66,29 @@ export const dailyPnLReportGeneratedPayloadSchema = z.object({
   reportDate: z.string().min(1),
   /** Desk identifier (e.g. "FX-SPOT"). */
   deskId: z.string().min(1),
-  /** Total unrealised P&L (ZAR minor units) across all open positions. */
+  /**
+   * Total unrealised P&L (ZAR minor units) across all *markable* open
+   * positions. NOTE: when `unrealisedComplete` is false this figure EXCLUDES
+   * one or more live positions that had no usable mark — it is a partial sum,
+   * not a complete one. A consumer must read `unrealisedComplete` before
+   * presenting this as the headline; a live-but-unmarkable position must never
+   * be read as contributing a real 0 (Trusted-Figures no-silent-zero).
+   */
   totalUnrealisedPnlZarMinor: z.number().int(),
+  /**
+   * False when ≥1 live position could not be marked (markStatus
+   * "unavailable") and was therefore excluded from `totalUnrealisedPnlZarMinor`.
+   * The aggregate is then *incomplete* (degraded), and the figure must be
+   * surfaced via /api/data-failures + the global banner rather than presented
+   * as a clean complete number. True when every live position carried a usable
+   * mark.
+   * Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (no silent zero).
+   */
+  unrealisedComplete: z.boolean(),
+  /** Count of live positions excluded from unrealised P&L for want of a mark. */
+  unmarkableLivePositions: z.number().int().nonnegative(),
+  /** Trade IDs of the live positions excluded from unrealised P&L. */
+  unmarkableLiveTradeIds: z.array(z.string()),
   /** Total realised P&L (ZAR minor units) from confirmed settlements. */
   totalRealisedPnlZarMinor: z.number().int(),
   /** totalUnrealisedPnlZarMinor + totalRealisedPnlZarMinor. */

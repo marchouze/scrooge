@@ -38,6 +38,7 @@ import type { EventStore } from "../event-store/store";
 import { toCanonicalPair } from "../market-data/canonical-pair";
 import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import { type FinancialInput, absent, present } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -66,6 +67,15 @@ export interface DailyPnLResult {
   payload: DailyPnLReportGeneratedPayload;
   trades: TradeDetailRow[];
   marksUnavailableCount: number;
+  /**
+   * The headline unrealised P&L as a `FinancialInput` (no-silent-zero
+   * primitive). `present` when every live position was markable; `absent`
+   * (degraded) when ≥1 live position had no usable mark — the partial sum is
+   * still carried on the payload, but this wrapper forces a consumer to handle
+   * the incompleteness rather than read the number as complete.
+   * Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
+   */
+  totalUnrealised: FinancialInput<number>;
 }
 
 // ---------------------------------------------------------------------------
@@ -209,6 +219,10 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   let activePositions = 0;
   let cancelledPositions = 0;
   let marksUnavailableCount = 0;
+  // Live positions that could not be marked. These are NOT folded into
+  // `totalUnrealised` as a silent 0 — they are excluded and counted so the
+  // aggregate can declare itself incomplete (no-silent-zero).
+  const unmarkableLiveTradeIds: string[] = [];
 
   for (const [tradeId, trade] of tradeMap) {
     // Per-trade `pair` retains the booked direction (for trader-audit
@@ -230,38 +244,55 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
     const bookId = trade.bookId;
     const reval = latestRevalByTrade.get(tradeId);
     const realised = realisedByTrade.get(tradeId) ?? 0;
-    const unrealised = reval?.unrealisedPnlZarMinor ?? 0;
     const nearLeg = trade.legs.find((l) => l.legKind === "near") ?? trade.legs[0];
     const bookRate = nearLeg?.rate.amount ?? 0;
     const revalRate = reval?.revalRate ?? null;
 
+    // Determine status first, then derive the mark quality. The unrealised P&L
+    // is read from the reval ONLY when a mark exists; a missing mark on a LIVE
+    // position is NOT coerced to a silent 0 — it is excluded from the aggregate
+    // and counted, so the headline figure can declare itself incomplete
+    // (Trusted-Figures no-silent-zero; D-TRUSTED-FIGURES-PROGRAM-V1).
     let status: "live" | "settled" | "cancelled";
     if (cancelledIds.has(tradeId)) {
       status = "cancelled";
       cancelledPositions++;
     } else if (settledIds.has(tradeId)) {
       status = "settled";
-      // Settled positions contribute realised P&L but no unrealised.
-      totalRealised += realised;
     } else {
       status = "live";
       activePositions++;
-      totalUnrealised += unrealised;
-      totalRealised += realised;
     }
 
     const markStatus = status === "cancelled" ? ("unavailable" as const) : deriveMarkStatus(reval);
-    if (status === "live" && markStatus === "unavailable") {
+    const liveUnmarkable = status === "live" && markStatus === "unavailable";
+    if (liveUnmarkable) {
       marksUnavailableCount++;
+      unmarkableLiveTradeIds.push(tradeId);
     }
 
-    // Unrealised P&L is only carried by live positions. Settled trades have
-    // crystallised their P&L into realised (a stale FxPositionRevalued may
+    // Fold realised for every non-cancelled position.
+    if (status === "settled" || status === "live") {
+      totalRealised += realised;
+    }
+    // Fold unrealised ONLY for a markable live position. A live position with
+    // no usable mark contributes NOTHING here (not a 0) — it is tracked in
+    // `unmarkableLiveTradeIds` and surfaced as a data failure instead.
+    if (status === "live" && !liveUnmarkable && reval) {
+      totalUnrealised += reval.unrealisedPnlZarMinor;
+    }
+
+    // Unrealised P&L is only carried by markable live positions. Settled trades
+    // have crystallised their P&L into realised (a stale FxPositionRevalued may
     // still sit in the log if the daily MTM ran before settlement was
-    // recorded), and cancelled trades carry none. Zeroing here keeps the
-    // per-trade rows and the by-pair/counterparty/book breakdowns reconciled
-    // with the top-level totalUnrealised, which already excludes non-live.
-    const unrealisedForReporting = status === "live" ? unrealised : 0;
+    // recorded), and cancelled trades carry none. Unmarkable live positions
+    // report 0 in the per-row unrealised column but are flagged
+    // markStatus:"unavailable" — the badge, not the number, is the signal.
+    // Zeroing here keeps the per-trade rows and the by-pair/counterparty/book
+    // breakdowns reconciled with the top-level totalUnrealised, which excludes
+    // both non-live AND unmarkable-live positions.
+    const unrealisedForReporting =
+      status === "live" && !liveUnmarkable && reval ? reval.unrealisedPnlZarMinor : 0;
 
     trades.push({
       tradeId,
@@ -342,11 +373,16 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   const generatedAt = nowUtc();
   const reportId = `pnl:${reportDate}:${newEventId().slice(0, 8)}`;
 
+  const unrealisedComplete = unmarkableLiveTradeIds.length === 0;
+
   const payload: DailyPnLReportGeneratedPayload = {
     reportId,
     reportDate,
     deskId: DESK_ID,
     totalUnrealisedPnlZarMinor: totalUnrealised,
+    unrealisedComplete,
+    unmarkableLivePositions: unmarkableLiveTradeIds.length,
+    unmarkableLiveTradeIds,
     totalRealisedPnlZarMinor: totalRealised,
     totalPnlZarMinor: totalUnrealised + totalRealised,
     activePositions,
@@ -358,7 +394,24 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
     generatedBy: ENGINE_ACTOR.id,
   };
 
-  return { payload, trades, marksUnavailableCount };
+  // The headline unrealised P&L as a no-silent-zero FinancialInput: present
+  // (complete) when every live position was markable; absent (degraded) when
+  // ≥1 live position had no usable mark, so a consumer cannot read the partial
+  // sum as a complete figure. The partial sum stays on the payload for display
+  // alongside the incompleteness signal.
+  const totalUnrealisedInput: FinancialInput<number> = unrealisedComplete
+    ? present(totalUnrealised, "product-control/daily-pnl: FxPositionRevalued per live position")
+    : absent(
+        `${unmarkableLiveTradeIds.length} live position(s) had no usable mark — unrealised P&L is incomplete (excludes ${unmarkableLiveTradeIds.join(", ")})`,
+        "FxPositionRevalued (production mark) for every live FX position",
+      );
+
+  return {
+    payload,
+    trades,
+    marksUnavailableCount,
+    totalUnrealised: totalUnrealisedInput,
+  };
 }
 
 /**
