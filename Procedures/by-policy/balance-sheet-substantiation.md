@@ -1,6 +1,6 @@
 ---
 id: PROC-FIN-BSS-01
-policy-parent: — Accounting Policies (IFRS) v0.1 (STUB)
+policy-parent: FIN-BSS-01 — Balance Sheet Substantiation Policy v1.0 (APPROVED)
 last-reviewed: 2026-05-12
 status: POPULATED
 ---
@@ -17,7 +17,7 @@ status: POPULATED
 
 ## 1. Source policy
 
-`Owner Inbox/2026-05-06_core-policies-finance.md` — Accounting Policies (IFRS) v0.1 (STUB).
+`Policies/balance-sheet-substantiation-policy-v1.md` — Balance Sheet Substantiation Policy (FIN-BSS-01 v1.0, APPROVED, D-BALANCE-SHEET-SUBSTANTIATION-POLICY-V1).
 
 Section references:
 - §2 Cash and equivalents — substantiation of ACC-1100-xxx accounts.
