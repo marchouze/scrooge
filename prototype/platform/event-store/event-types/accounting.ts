@@ -576,6 +576,75 @@ export function makeManualJournalEntry(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// SubLedgerPostingRemediationRecorded
+//
+// Append-only remediation record (Principle 1) that closes a set of orphaned
+// SubLedgerPostingEmitted fixtures whose `sourceEventId` no longer resolves to
+// any event in the store — because the triggering primary events (sim-trade-*
+// FxTradeExecuted, UUID FxSettlement*) were retired in prior seed-trade-
+// retirement / test-run-1-pollution cleanup sessions.
+//
+// The record enumerates EVERY remediated source-event-id (no silent cap) and
+// names the balanced reversal postings that neutralise the orphans' GL
+// contribution. This is the canonical anchor that
+// `recon:posting-source-id-canonical` consults to distinguish a documented,
+// remediated residual from a live Principle-1 violation.
+//
+// Surfaced by: BalanceSheetSubstantiationCompleted 7175ebcb (period
+// 2026-05-SEED); SubstrateAlert alert:integrity:bss-posting-noncanonical-
+// source-ids (event 875c84c6).
+//
+// Authority: PROC-FIN-BSS-01 §3a; FIN-BSS-01; Principles/1-events-are-truth.md.
+// Author: Atlas (Core banking platform architect, engineering).
+// ---------------------------------------------------------------------------
+
+export const subLedgerPostingRemediationRecordedPayloadSchema = z.object({
+  /** Stable id for this remediation exercise. */
+  remediationId: z.string().min(1),
+  /** Accounting period the remediated postings belong to (free-form id). */
+  periodId: z.string().min(1),
+  /** event_id of the SubstrateAlert that surfaced the gap. */
+  surfacingAlertEventId: z.string().min(1),
+  /**
+   * Every distinct retired source-event-id that an orphaned posting referenced
+   * and that this record formally remediates. Enumerated in full — the recon
+   * gate reads this list, so the residual is never a silent cap.
+   */
+  remediatedSourceEventIds: z.array(z.string().min(1)).min(1),
+  /** Count of orphaned postings neutralised by the reversal entries. */
+  orphanPostingCount: z.number().int().nonnegative(),
+  /** Count of balanced reversal postings emitted to neutralise the orphans. */
+  reversalPostingCount: z.number().int().nonnegative(),
+  /** Human-readable rationale for the remediation approach. */
+  rationale: z.string().min(1),
+});
+
+export type SubLedgerPostingRemediationRecordedPayload = z.infer<
+  typeof subLedgerPostingRemediationRecordedPayloadSchema
+>;
+
+export function makeSubLedgerPostingRemediationRecorded(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: SubLedgerPostingRemediationRecordedPayload;
+  eventId?: string;
+  provenance?: Event["provenance"];
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SubLedgerPostingRemediationRecorded",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: subLedgerPostingRemediationRecordedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+}
+
 export const ACCOUNTING_TYPED_EVENT_TYPES = [
   "BankAccountOpened",
   "BankAccountConfigured",
@@ -586,5 +655,6 @@ export const ACCOUNTING_TYPED_EVENT_TYPES = [
   "BalanceSheetSubstantiationCompleted",
   "BAReturnGenerationTriggered",
   "ManualJournalEntry",
+  "SubLedgerPostingRemediationRecorded",
 ] as const;
 export type AccountingEventType = (typeof ACCOUNTING_TYPED_EVENT_TYPES)[number];

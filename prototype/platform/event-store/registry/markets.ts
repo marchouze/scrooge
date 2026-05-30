@@ -76,6 +76,7 @@ import {
   baReturnGenerationTriggeredPayloadSchema,
   balanceSheetSubstantiationCompletedPayloadSchema,
   manualJournalEntryPayloadSchema,
+  subLedgerPostingRemediationRecordedPayloadSchema,
 } from "../event-types/accounting";
 import { ifrsClassificationAppliedPayloadSchema } from "../event-types/agent-substrate-extended";
 import {
@@ -900,6 +901,28 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["IAS-1", "IAS-8", "PROC-FIN-MC-01"],
     retention: RETENTION_ACCOUNTING_7Y,
     source: "platform/accounting/gl-projection.ts; dashboard/gl-view.ts",
+  },
+  {
+    // SubLedgerPostingRemediationRecorded — append-only remediation record that
+    // closes orphaned SubLedgerPostingEmitted fixtures whose sourceEventId no
+    // longer resolves (retired primary events). Enumerates every remediated
+    // source-event-id (no silent cap) and names the balanced reversal postings
+    // that neutralise the orphans. Consulted by recon:posting-source-id-canonical.
+    //
+    // Surfaced by: BalanceSheetSubstantiationCompleted 7175ebcb (2026-05-SEED);
+    // SubstrateAlert alert:integrity:bss-posting-noncanonical-source-ids.
+    // Authority: PROC-FIN-BSS-01 §3a; FIN-BSS-01; Principles/1-events-are-truth.md.
+    // Author: Atlas (Core banking platform architect, engineering).
+    type: "SubLedgerPostingRemediationRecorded",
+    class: "markets",
+    payloadSchema: subLedgerPostingRemediationRecordedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Bea", "Camille", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["PROC-FIN-BSS-01", "FIN-BSS-01", "IAS-8"],
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "platform/event-store/event-types/accounting.ts (factory); scripts/remediate-seed-orphan-postings.ts; PROC-FIN-BSS-01 §3a",
   },
 ];
 
