@@ -299,7 +299,12 @@ async function handleRepoBooking(body: TradeBookBody): Promise<Response> {
   };
 
   try {
-    await beaGlPostingEngine(ctx);
+    // Scope GL posting to THIS trade's own event. Without this, the engine
+    // replays and reprocesses the whole store's posting backlog inline on the
+    // request thread — at production store size that blocks the single-threaded
+    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
+    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
+    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return jsonResponse({
@@ -411,7 +416,12 @@ async function handleMMDBooking(body: TradeBookBody): Promise<Response> {
   };
 
   try {
-    await beaGlPostingEngine(ctx);
+    // Scope GL posting to THIS trade's own event. Without this, the engine
+    // replays and reprocesses the whole store's posting backlog inline on the
+    // request thread — at production store size that blocks the single-threaded
+    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
+    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
+    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return jsonResponse({
@@ -518,7 +528,12 @@ async function handleIBLBooking(body: TradeBookBody): Promise<Response> {
   };
 
   try {
-    await beaGlPostingEngine(ctx);
+    // Scope GL posting to THIS trade's own event. Without this, the engine
+    // replays and reprocesses the whole store's posting backlog inline on the
+    // request thread — at production store size that blocks the single-threaded
+    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
+    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
+    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return jsonResponse({
@@ -661,7 +676,12 @@ async function handleEquityBooking(body: TradeBookBody): Promise<Response> {
   };
 
   try {
-    await beaGlPostingEngine(ctx);
+    // Scope GL posting to THIS trade's own event. Without this, the engine
+    // replays and reprocesses the whole store's posting backlog inline on the
+    // request thread — at production store size that blocks the single-threaded
+    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
+    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
+    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return jsonResponse({
@@ -807,7 +827,12 @@ async function handleBondBooking(body: TradeBookBody): Promise<Response> {
   };
 
   try {
-    await beaGlPostingEngine(ctx);
+    // Scope GL posting to THIS trade's own event. Without this, the engine
+    // replays and reprocesses the whole store's posting backlog inline on the
+    // request thread — at production store size that blocks the single-threaded
+    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
+    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
+    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return jsonResponse({
@@ -987,7 +1012,12 @@ async function handleIRSBooking(body: TradeBookBody): Promise<Response> {
   };
 
   try {
-    await beaGlPostingEngine(ctx);
+    // Scope GL posting to THIS trade's own event. Without this, the engine
+    // replays and reprocesses the whole store's posting backlog inline on the
+    // request thread — at production store size that blocks the single-threaded
+    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
+    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
+    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return jsonResponse({
@@ -1235,7 +1265,12 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
   };
 
   try {
-    await beaGlPostingEngine(ctx);
+    // Scope GL posting to THIS trade's own event. Without this, the engine
+    // replays and reprocesses the whole store's posting backlog inline on the
+    // request thread — at production store size that blocks the single-threaded
+    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
+    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
+    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
   } catch (err) {
     // GL engine failure should not block the trade booking — the trade event is
     // already appended and idempotency means a later run-posting-engine call
