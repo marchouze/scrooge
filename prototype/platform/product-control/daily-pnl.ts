@@ -25,7 +25,6 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import { newEventId, nowUtc } from "../core/types";
-import { type FinancialInput, absent, present } from "../types/financial-input";
 import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
 import { makeDailyPnLReportGenerated } from "../event-store/event-types/product-control";
 import type {
@@ -39,6 +38,7 @@ import type { EventStore } from "../event-store/store";
 import { toCanonicalPair } from "../market-data/canonical-pair";
 import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import { type FinancialInput, absent, present } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
 // Public interface

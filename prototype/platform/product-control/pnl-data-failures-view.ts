@@ -56,9 +56,7 @@ export function buildPnLDataFailuresView(
       modelId: "product-control:daily-pnl",
       owningAgent: "Bea (Accounting & financial reporting engineer, engineering)",
       status: "degraded",
-      missingInputs: payload.unmarkableLiveTradeIds.map(
-        (tid) => `mark for live position ${tid}`,
-      ),
+      missingInputs: payload.unmarkableLiveTradeIds.map((tid) => `mark for live position ${tid}`),
       asOf: payload.generatedAt,
     },
   ];
