@@ -23,9 +23,12 @@
 //   The `UtiAllocatorOptions.safeApiAdapter` field accepts an optional
 //   `SafeApiAdapter` interface. When present and `opts.preferSafe === true`,
 //   the allocator calls the adapter instead of computing SHA-256. The event
-//   `utiSource` is set to "dtcc-safe-api". This seam is NOT YET WIRED
-//   (substrate gap — see `safeApiAdapter` JSDoc). Build-phase substrate uses
-//   the SHA-256 path exclusively.
+//   `utiSource` is set to "dtcc-safe-api". A concrete implementation is wired
+//   at `simulators/dtcc-safe-api.ts` (`DtccSafeApiAdapter`) — it calls the
+//   DTCC SAFE UTI API behind an injectable HTTP client (no live calls in
+//   tests) and emits `TradeUtiAllocated{ utiSource: "dtcc-safe-api" }`.
+//   The default build-phase path remains the deterministic SHA-256 below;
+//   the SAFE path is opt-in via `preferSafe` + an injected adapter.
 //
 // COUNTERPARTY-ISSUED SEAM:
 //   When `opts.counterpartyUti` is provided, the allocator records that UTI
@@ -68,12 +71,15 @@ export interface UtiAllocationResult {
 }
 
 /**
- * DTCC SAFE API adapter interface — design seam for future wiring.
+ * DTCC SAFE API adapter interface — the seam shared by the SHA-256 path and
+ * the SAFE-API path at the `allocateUti()` call site.
  *
- * Substrate gap: the DTCC SAFE API integration is NOT yet built. This
- * interface defines the contract so the SHA-256 path and the SAFE-API path
- * share the same `allocateUti()` call site. When the SAFE API adapter is
- * wired, inject an implementation here.
+ * Concrete implementation: `DtccSafeApiAdapter` in
+ * `simulators/dtcc-safe-api.ts`. It performs the DTCC SAFE UTI-generation
+ * call behind an injectable HTTP client (`SafeApiHttpClient`) so tests make
+ * no live network call, and its `allocateAndEmit()` records the canonical
+ * `TradeUtiAllocated{ utiSource: "dtcc-safe-api" }` event. Inject an instance
+ * via `UtiAllocatorOptions.safeApiAdapter` with `preferSafe: true`.
  */
 export interface SafeApiAdapter {
   /**
@@ -109,8 +115,9 @@ export interface UtiAllocatorOptions {
   preferSafe?: boolean;
 
   /**
-   * DTCC SAFE API adapter — injected in production when the SAFE integration
-   * is wired. Absent in the build phase (substrate gap).
+   * DTCC SAFE API adapter — inject `DtccSafeApiAdapter`
+   * (`simulators/dtcc-safe-api.ts`) to route allocation through DTCC SAFE.
+   * Absent by default; the build-phase substrate uses the SHA-256 path.
    */
   safeApiAdapter?: SafeApiAdapter;
 
@@ -205,7 +212,7 @@ export async function allocateUti(
     };
   }
 
-  // Path 2: DTCC SAFE API (design seam — not yet wired)
+  // Path 2: DTCC SAFE API (wired — see simulators/dtcc-safe-api.ts)
   if (opts.preferSafe && opts.safeApiAdapter) {
     const safeUti = await opts.safeApiAdapter.requestUti(tradeId, bankLei);
     return {
