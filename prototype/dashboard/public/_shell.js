@@ -91,6 +91,7 @@
         { label: "Agents", href: "/agents.html" },
         { label: "Fleet", href: "/fleet.html" },
         { label: "Activity", href: "/activity.html" },
+        { label: "Autonomy", href: "/autonomy.html" },
         { label: "Architecture", href: "/architecture.html" },
         { label: "Performance", href: "/performance.html" },
         { label: "Taxonomy", href: "/taxonomy.html" },
