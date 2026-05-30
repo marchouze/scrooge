@@ -1,9 +1,27 @@
 {
   "accounts": [
-    { "id": "ACC-1000-001", "name": "Bank", "currency": "ZAR", "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-1000-001",
+      "name": "Bank",
+      "currency": "ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
 
-    { "id": "ACC-5000-001", "name": "Share Capital", "currency": "ZAR", "category": "equity", "side": "credit" },
-    { "id": "ACC-5000-002", "name": "Retained Earnings", "currency": "ZAR", "category": "equity", "side": "credit" },
+    {
+      "id": "ACC-5000-001",
+      "name": "Share Capital",
+      "currency": "ZAR",
+      "category": "equity",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-5000-002",
+      "name": "Retained Earnings",
+      "currency": "ZAR",
+      "category": "equity",
+      "side": "credit"
+    },
 
     {
       "id": "ACC-5200-001",
@@ -111,7 +129,13 @@
       "category": "income",
       "side": "credit"
     },
-    { "id": "ACC-2100-006", "name": "Realised FX P&L", "currency": "ZAR", "category": "income", "side": "credit" },
+    {
+      "id": "ACC-2100-006",
+      "name": "Realised FX P&L",
+      "currency": "ZAR",
+      "category": "income",
+      "side": "credit"
+    },
 
     {
       "id": "ACC-2300-001",
@@ -237,8 +261,20 @@
       "side": "credit"
     },
 
-    { "id": "ACC-3200-001", "name": "Equity Asset — FVTPL", "currency": "ZAR", "category": "asset", "side": "debit" },
-    { "id": "ACC-3200-002", "name": "Equity Asset — FVOCI", "currency": "ZAR", "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-3200-001",
+      "name": "Equity Asset — FVTPL",
+      "currency": "ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3200-002",
+      "name": "Equity Asset — FVOCI",
+      "currency": "ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
     {
       "id": "ACC-3200-003",
       "name": "Unrealised P&L — Equities (FVTPL)",
@@ -253,8 +289,20 @@
       "category": "equity",
       "side": "credit"
     },
-    { "id": "ACC-3200-005", "name": "Dividend Receivable", "currency": "ZAR", "category": "asset", "side": "debit" },
-    { "id": "ACC-3200-006", "name": "Dividend Income", "currency": "ZAR", "category": "income", "side": "credit" },
+    {
+      "id": "ACC-3200-005",
+      "name": "Dividend Receivable",
+      "currency": "ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3200-006",
+      "name": "Dividend Income",
+      "currency": "ZAR",
+      "category": "income",
+      "side": "credit"
+    },
     {
       "id": "ACC-3200-007",
       "name": "Withholding Tax Payable — Dividends",
@@ -313,7 +361,13 @@
       "category": "asset",
       "side": "debit"
     },
-    { "id": "ACC-5100-004", "name": "Repo Accrued Interest", "currency": "ZAR", "category": "asset", "side": "debit" },
+    {
+      "id": "ACC-5100-004",
+      "name": "Repo Accrued Interest",
+      "currency": "ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
     {
       "id": "ACC-5100-005",
       "name": "Repo Interest Income / Expense",
@@ -386,6 +440,12 @@
       "category": "asset",
       "side": "debit"
     },
-    { "id": "ACC-7100-004", "name": "IBL Interest Income", "currency": "ZAR", "category": "income", "side": "credit" }
+    {
+      "id": "ACC-7100-004",
+      "name": "IBL Interest Income",
+      "currency": "ZAR",
+      "category": "income",
+      "side": "credit"
+    }
   ]
 }
