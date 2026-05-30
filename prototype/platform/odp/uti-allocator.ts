@@ -228,7 +228,10 @@ export async function allocateUti(
  * Will throw if `opts.preferSafe && opts.safeApiAdapter` is set (use
  * `allocateUti()` for the async SAFE path).
  */
-export function allocateUtiSync(tradeId: string, opts: UtiAllocatorOptions = {}): UtiAllocationResult {
+export function allocateUtiSync(
+  tradeId: string,
+  opts: UtiAllocatorOptions = {},
+): UtiAllocationResult {
   const bankLei = opts.bankLei ?? HOZ_BANK_LEI;
 
   if (opts.counterpartyUti) {
@@ -283,7 +286,10 @@ export function computeT1SubmissionDeadline(
 ): { deadline: string; withinDeadline: boolean } {
   // T+1 = next calendar day after trade date
   // SAST = UTC+2 — 16:00 SAST = 14:00 UTC
-  const [year, month, day] = tradeDate.split("-").map(Number);
+  const parts = tradeDate.split("-").map(Number);
+  const year = parts[0] ?? 1970;
+  const month = parts[1] ?? 1;
+  const day = parts[2] ?? 1;
   // Next calendar day:
   const t1 = new Date(Date.UTC(year, month - 1, day + 1, 14, 0, 0, 0));
   const deadline = t1.toISOString();

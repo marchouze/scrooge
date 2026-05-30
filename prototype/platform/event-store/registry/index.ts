@@ -185,6 +185,13 @@ export { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon"
 //   CollateralSegregationBreachRaised.
 // Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.
 export { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
+// WS-ODP-UMOJA-UTI — UTI allocation + submission lifecycle + repo-recon events.
+// TradeUtiAllocated + OdpTradeReportPrepared + OdpReportSubmissionAttempted/Accepted/Rejected +
+//   OdpReportAmendmentRequested/Submitted + OdpRepoReconRun + OdpRepoReconBreakRaised +
+//   OdpRepoReconDisputeOpened/Resolved + UmojaPortalTokenRefreshed (12 total).
+// Authority: ORG-ODP-RPT-003; ORG-MK-RPT-002; urn:regulation:odp:cs-3-2018;
+//   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
+export { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -243,6 +250,7 @@ import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 import { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
 import { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
+import { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
@@ -425,6 +433,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // 7 events: lock/release/substitution(3)/sufficiency/breach.
   // Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.
   ...ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY,
+  // WS-ODP-UMOJA-UTI — UTI allocation + submission lifecycle + repo-recon events.
+  // 12 events: TradeUtiAllocated through UmojaPortalTokenRefreshed.
+  // Authority: ORG-ODP-RPT-003; ORG-MK-RPT-002; urn:regulation:odp:cs-3-2018;
+  //   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
+  ...ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

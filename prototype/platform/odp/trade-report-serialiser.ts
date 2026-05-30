@@ -36,14 +36,14 @@
 //
 // Author: Devon (COO, operations)
 
-import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
-import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
 import type {
   BasisSwapTradeBookedPayload,
   CrossCurrencySwapTradeBookedPayload,
   FraTradeBookedPayload,
   SwaptionTradeBookedPayload,
 } from "../event-store/event-types/otc-confirmations";
+import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
 
 // ---------------------------------------------------------------------------
 // XML envelope helpers
@@ -61,14 +61,37 @@ function xmlEscape(value: string | number | boolean | null | undefined): string 
     .replace(/'/g, "&apos;");
 }
 
+/**
+ * Extract a string date from a CDM date object or a plain string.
+ * CDM dates are `{ iso: string, calendar: string }`.
+ * Plain string dates are returned as-is.
+ */
+function extractDate(d: unknown): string {
+  if (typeof d === "string") return d;
+  if (d !== null && typeof d === "object" && "iso" in (d as Record<string, unknown>)) {
+    return String((d as Record<string, unknown>).iso);
+  }
+  return String(d ?? "");
+}
+
+/**
+ * Extract a string identifier from a CDM Identifier object or a plain string.
+ * CDM identifiers are `{ scheme: string, value: string }`.
+ * Plain string identifiers are returned as-is.
+ */
+function extractId(id: unknown): string {
+  if (typeof id === "string") return id;
+  if (id !== null && typeof id === "object" && "value" in (id as Record<string, unknown>)) {
+    return String((id as Record<string, unknown>).value);
+  }
+  return String(id ?? "");
+}
+
 /** Wrap content in an XML element. */
-function el(tag: string, content: string, attrs: Record<string, string> = ""): string {
-  const attrStr =
-    typeof attrs === "object"
-      ? Object.entries(attrs)
-          .map(([k, v]) => ` ${k}="${xmlEscape(v)}"`)
-          .join("")
-      : "";
+function el(tag: string, content: string, attrs: Record<string, string> = {}): string {
+  const attrStr = Object.entries(attrs)
+    .map(([k, v]) => ` ${k}="${xmlEscape(v)}"`)
+    .join("");
   if (!content && content !== "0") return `<${tag}${attrStr}/>`;
   return `<${tag}${attrStr}>${content}</${tag}>`;
 }
@@ -111,17 +134,17 @@ function buildEnvelope(meta: ReportMetadata, bodyXml: string): string {
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<TradeReport xmlns="${ns}" version="1.0">`,
-    `  <Meta>`,
+    "  <Meta>",
     `    ${el("BankLei", meta.bankLei)}`,
     `    ${el("UTI", meta.uti)}`,
     `    ${el("ReportDate", meta.reportDate)}`,
     `    ${el("SerialisedAt", meta.serialisedAt)}`,
     `    ${el("ActionType", meta.actionType.toUpperCase())}`,
-    `  </Meta>`,
-    `  <Trade>`,
+    "  </Meta>",
+    "  <Trade>",
     `    ${bodyXml}`,
-    `  </Trade>`,
-    `</TradeReport>`,
+    "  </Trade>",
+    "</TradeReport>",
   ].join("\n");
 }
 
@@ -151,35 +174,38 @@ export function serialiseFxTradeReport(input: FxTradeReportInput): string {
   const { meta, payload, counterpartyLei } = input;
   const cp = payload.counterparty;
 
+  // FxTradeExecuted uses legs[] (near/far) with currencyPair.base/quote
+  const nearLeg = payload.legs.find((l) => l.legKind === "near");
+  const farLeg = payload.legs.find((l) => l.legKind === "far");
+
   const bodyXml = [
     el("ProductType", "FX"),
-    el("ProductSubType", xmlEscape(payload.bookType ?? "FX-spot")),
-    `<TradeHeader>`,
-    `  ${el("TradeId", payload.tradeId)}`,
-    `  ${el("TradeDate", payload.tradeDate)}`,
+    el("ProductSubType", xmlEscape(payload.productTaxonomy ?? "FX-spot")),
+    "<TradeHeader>",
+    `  ${el("TradeId", extractId(payload.tradeId))}`,
+    `  ${el("TradeDate", extractDate(payload.tradeDate))}`,
     `  ${el("BookId", payload.bookId)}`,
-    `  ${el("TraderRef", payload.traderRef ?? "")}`,
-    `</TradeHeader>`,
-    `<CounterpartyDetails>`,
+    `  ${el("TraderRef", payload.trader ?? "")}`,
+    "</TradeHeader>",
+    "<CounterpartyDetails>",
     `  ${el("Name", xmlEscape(cp.partyId ?? ""))}`,
-    counterpartyLei ? `  ${el("LEI", counterpartyLei)}` : `  <!-- CounterpartyLEI: not yet resolved -->`,
-    `</CounterpartyDetails>`,
-    `<FxDetails>`,
-    `  <CurrencyPair>`,
-    `    ${el("BaseCurrency", payload.currencyPair.baseCurrency)}`,
-    `    ${el("QuoteCurrency", payload.currencyPair.quoteCurrency)}`,
-    `  </CurrencyPair>`,
-    `  ${el("NearLegAmount", formatAmount(payload.amount.amountMinor))}`,
-    `  ${el("NearLegCurrency", payload.amount.currency)}`,
-    `  ${el("NearLegRate", String(payload.rate))}`,
-    `  ${el("NearLegSettlementDate", payload.settlementDate)}`,
-    payload.farLegAmount != null
-      ? `  ${el("FarLegAmount", formatAmount(payload.farLegAmount.amountMinor))}`
-      : "",
-    payload.farLegSettlementDate
-      ? `  ${el("FarLegSettlementDate", payload.farLegSettlementDate)}`
-      : "",
-    `</FxDetails>`,
+    counterpartyLei
+      ? `  ${el("LEI", counterpartyLei)}`
+      : "  <!-- CounterpartyLEI: not yet resolved -->",
+    "</CounterpartyDetails>",
+    "<FxDetails>",
+    `  ${el("Side", payload.side)}`,
+    "  <CurrencyPair>",
+    `    ${el("BaseCurrency", payload.currencyPair.base)}`,
+    `    ${el("QuoteCurrency", payload.currencyPair.quote)}`,
+    "  </CurrencyPair>",
+    nearLeg ? `  ${el("NearLegNotional", formatAmount(nearLeg.notional.amountMinor))}` : "",
+    nearLeg ? `  ${el("NearLegCurrency", nearLeg.payCurrency)}` : "",
+    nearLeg ? `  ${el("NearLegRate", String(nearLeg.rate.amount))}` : "",
+    nearLeg ? `  ${el("NearLegSettlementDate", extractDate(nearLeg.settlementDate))}` : "",
+    farLeg ? `  ${el("FarLegNotional", formatAmount(farLeg.notional.amountMinor))}` : "",
+    farLeg ? `  ${el("FarLegSettlementDate", extractDate(farLeg.settlementDate))}` : "",
+    "</FxDetails>",
   ]
     .filter((l) => l !== "")
     .join("\n    ");
@@ -214,27 +240,29 @@ export function serialiseIrsTradeReport(input: IrsTradeReportInput): string {
 
   const bodyXml = [
     el("ProductType", "IRS"),
-    `<TradeHeader>`,
-    `  ${el("TradeId", payload.tradeId)}`,
-    `  ${el("TradeDate", payload.tradeDate)}`,
+    "<TradeHeader>",
+    `  ${el("TradeId", extractId(payload.tradeId))}`,
+    `  ${el("TradeDate", extractDate(payload.tradeDate))}`,
     `  ${el("BookId", payload.bookId)}`,
     `  ${el("TraderRef", payload.traderRef ?? "")}`,
-    `</TradeHeader>`,
-    `<CounterpartyDetails>`,
+    "</TradeHeader>",
+    "<CounterpartyDetails>",
     `  ${el("Name", xmlEscape(cp.partyId ?? ""))}`,
-    counterpartyLei ? `  ${el("LEI", counterpartyLei)}` : `  <!-- CounterpartyLEI: not yet resolved -->`,
-    `</CounterpartyDetails>`,
-    `<IrsDetails>`,
+    counterpartyLei
+      ? `  ${el("LEI", counterpartyLei)}`
+      : "  <!-- CounterpartyLEI: not yet resolved -->",
+    "</CounterpartyDetails>",
+    "<IrsDetails>",
     `  ${el("Notional", formatAmount(payload.notional.amountMinor))}`,
     `  ${el("NotionalCurrency", payload.notional.currency)}`,
     `  ${el("FixedRate", String(payload.fixedRate))}`,
     `  ${el("FloatingIndex", payload.floatingIndex)}`,
     `  ${el("BankPayLeg", payload.bankPays)}`,
-    `  ${el("EffectiveDate", payload.effectiveDate)}`,
-    `  ${el("MaturityDate", payload.maturityDate)}`,
+    `  ${el("EffectiveDate", extractDate(payload.effectiveDate))}`,
+    `  ${el("MaturityDate", extractDate(payload.maturityDate))}`,
     `  ${el("PaymentFrequency", payload.paymentFrequency)}`,
     `  ${el("DayCountConvention", payload.dayCountConvention)}`,
-    `</IrsDetails>`,
+    "</IrsDetails>",
   ].join("\n    ");
 
   return buildEnvelope(meta, bodyXml);
@@ -256,27 +284,29 @@ export function serialiseFraTradeReport(input: FraTradeReportInput): string {
 
   const bodyXml = [
     el("ProductType", "FRA"),
-    `<TradeHeader>`,
-    `  ${el("TradeId", payload.tradeId)}`,
-    `  ${el("TradeDate", payload.tradeDate)}`,
+    "<TradeHeader>",
+    `  ${el("TradeId", extractId(payload.tradeId))}`,
+    `  ${el("TradeDate", extractDate(payload.tradeDate))}`,
     `  ${el("BookId", payload.bookId)}`,
     `  ${el("TraderRef", payload.traderRef ?? "")}`,
-    `</TradeHeader>`,
-    `<CounterpartyDetails>`,
+    "</TradeHeader>",
+    "<CounterpartyDetails>",
     `  ${el("Name", xmlEscape(cp.partyId ?? ""))}`,
-    counterpartyLei ? `  ${el("LEI", counterpartyLei)}` : `  <!-- CounterpartyLEI: not yet resolved -->`,
-    `</CounterpartyDetails>`,
-    `<FraDetails>`,
+    counterpartyLei
+      ? `  ${el("LEI", counterpartyLei)}`
+      : "  <!-- CounterpartyLEI: not yet resolved -->",
+    "</CounterpartyDetails>",
+    "<FraDetails>",
     `  ${el("Notional", formatAmount(payload.notional.amountMinor))}`,
     `  ${el("NotionalCurrency", payload.notional.currency)}`,
     `  ${el("ContractRate", String(payload.contractRate))}`,
     `  ${el("FloatingIndex", payload.floatingIndex)}`,
     `  ${el("BankPaysFixed", String(payload.bankPaysFixed))}`,
-    `  ${el("SettlementDate", payload.settlementDate)}`,
-    `  ${el("FixingDate", payload.fixingDate)}`,
-    `  ${el("MaturityDate", payload.maturityDate)}`,
+    `  ${el("SettlementDate", extractDate(payload.settlementDate))}`,
+    `  ${el("FixingDate", extractDate(payload.fixingDate))}`,
+    `  ${el("MaturityDate", extractDate(payload.maturityDate))}`,
     `  ${el("DayCountConvention", payload.dayCountConvention)}`,
-    `</FraDetails>`,
+    "</FraDetails>",
   ].join("\n    ");
 
   return buildEnvelope(meta, bodyXml);
@@ -298,36 +328,38 @@ export function serialiseSwaptionTradeReport(input: SwaptionTradeReportInput): s
 
   const bodyXml = [
     el("ProductType", "SWAPTION"),
-    `<TradeHeader>`,
-    `  ${el("TradeId", payload.tradeId)}`,
-    `  ${el("TradeDate", payload.tradeDate)}`,
+    "<TradeHeader>",
+    `  ${el("TradeId", extractId(payload.tradeId))}`,
+    `  ${el("TradeDate", extractDate(payload.tradeDate))}`,
     `  ${el("BookId", payload.bookId)}`,
     `  ${el("TraderRef", payload.traderRef ?? "")}`,
-    `</TradeHeader>`,
-    `<CounterpartyDetails>`,
+    "</TradeHeader>",
+    "<CounterpartyDetails>",
     `  ${el("Name", xmlEscape(cp.partyId ?? ""))}`,
-    counterpartyLei ? `  ${el("LEI", counterpartyLei)}` : `  <!-- CounterpartyLEI: not yet resolved -->`,
-    `</CounterpartyDetails>`,
-    `<SwaptionDetails>`,
+    counterpartyLei
+      ? `  ${el("LEI", counterpartyLei)}`
+      : "  <!-- CounterpartyLEI: not yet resolved -->",
+    "</CounterpartyDetails>",
+    "<SwaptionDetails>",
     `  ${el("OptionStyle", payload.optionStyle)}`,
     `  ${el("BankIsBuyer", String(payload.bankIsBuyer))}`,
     `  ${el("Premium", formatAmount(payload.premium.amountMinor))}`,
     `  ${el("PremiumCurrency", payload.premium.currency)}`,
-    `  ${el("PremiumPaymentDate", payload.premiumPaymentDate)}`,
-    `  ${el("ExpiryDate", payload.expiryDate)}`,
+    `  ${el("PremiumPaymentDate", extractDate(payload.premiumPaymentDate))}`,
+    `  ${el("ExpiryDate", extractDate(payload.expiryDate))}`,
     `  ${el("SettlementMethod", payload.settlementMethod)}`,
-    `  <UnderlyingSwap>`,
+    "  <UnderlyingSwap>",
     `    ${el("Notional", formatAmount(payload.underlyingNotional.amountMinor))}`,
     `    ${el("NotionalCurrency", payload.underlyingNotional.currency)}`,
     `    ${el("FixedRate", String(payload.underlyingFixedRate))}`,
     `    ${el("FloatingIndex", payload.underlyingFloatingIndex)}`,
     `    ${el("BankPayLeg", payload.underlyingBankPaysFixed)}`,
-    `    ${el("EffectiveDate", payload.underlyingEffectiveDate)}`,
-    `    ${el("MaturityDate", payload.underlyingMaturityDate)}`,
+    `    ${el("EffectiveDate", extractDate(payload.underlyingEffectiveDate))}`,
+    `    ${el("MaturityDate", extractDate(payload.underlyingMaturityDate))}`,
     `    ${el("PaymentFrequency", payload.underlyingPaymentFrequency)}`,
     `    ${el("DayCountConvention", payload.underlyingDayCountConvention)}`,
-    `  </UnderlyingSwap>`,
-    `</SwaptionDetails>`,
+    "  </UnderlyingSwap>",
+    "</SwaptionDetails>",
   ].join("\n    ");
 
   return buildEnvelope(meta, bodyXml);
@@ -349,32 +381,34 @@ export function serialiseBasisSwapTradeReport(input: BasisSwapTradeReportInput):
 
   const bodyXml = [
     el("ProductType", "BASIS-SWAP"),
-    `<TradeHeader>`,
-    `  ${el("TradeId", payload.tradeId)}`,
-    `  ${el("TradeDate", payload.tradeDate)}`,
+    "<TradeHeader>",
+    `  ${el("TradeId", extractId(payload.tradeId))}`,
+    `  ${el("TradeDate", extractDate(payload.tradeDate))}`,
     `  ${el("BookId", payload.bookId)}`,
     `  ${el("TraderRef", payload.traderRef ?? "")}`,
-    `</TradeHeader>`,
-    `<CounterpartyDetails>`,
+    "</TradeHeader>",
+    "<CounterpartyDetails>",
     `  ${el("Name", xmlEscape(cp.partyId ?? ""))}`,
-    counterpartyLei ? `  ${el("LEI", counterpartyLei)}` : `  <!-- CounterpartyLEI: not yet resolved -->`,
-    `</CounterpartyDetails>`,
-    `<BasisSwapDetails>`,
+    counterpartyLei
+      ? `  ${el("LEI", counterpartyLei)}`
+      : "  <!-- CounterpartyLEI: not yet resolved -->",
+    "</CounterpartyDetails>",
+    "<BasisSwapDetails>",
     `  ${el("Notional", formatAmount(payload.notional.amountMinor))}`,
     `  ${el("NotionalCurrency", payload.notional.currency)}`,
-    `  ${el("EffectiveDate", payload.effectiveDate)}`,
-    `  ${el("MaturityDate", payload.maturityDate)}`,
-    `  <PayLeg>`,
+    `  ${el("EffectiveDate", extractDate(payload.effectiveDate))}`,
+    `  ${el("MaturityDate", extractDate(payload.maturityDate))}`,
+    "  <PayLeg>",
     `    ${el("FloatingIndex", payload.payLeg.floatingIndex)}`,
     `    ${el("SpreadBps", String(payload.payLeg.spreadBps))}`,
     `    ${el("PaymentFrequency", payload.payLeg.paymentFrequency)}`,
-    `  </PayLeg>`,
-    `  <ReceiveLeg>`,
+    "  </PayLeg>",
+    "  <ReceiveLeg>",
     `    ${el("FloatingIndex", payload.receiveLeg.floatingIndex)}`,
     `    ${el("SpreadBps", String(payload.receiveLeg.spreadBps))}`,
     `    ${el("PaymentFrequency", payload.receiveLeg.paymentFrequency)}`,
-    `  </ReceiveLeg>`,
-    `</BasisSwapDetails>`,
+    "  </ReceiveLeg>",
+    "</BasisSwapDetails>",
   ].join("\n    ");
 
   return buildEnvelope(meta, bodyXml);
@@ -396,23 +430,25 @@ export function serialiseCcsTradeReport(input: CrossCurrencySwapTradeReportInput
 
   const bodyXml = [
     el("ProductType", "CCS"),
-    `<TradeHeader>`,
-    `  ${el("TradeId", payload.tradeId)}`,
-    `  ${el("TradeDate", payload.tradeDate)}`,
+    "<TradeHeader>",
+    `  ${el("TradeId", extractId(payload.tradeId))}`,
+    `  ${el("TradeDate", extractDate(payload.tradeDate))}`,
     `  ${el("BookId", payload.bookId)}`,
     `  ${el("TraderRef", payload.traderRef ?? "")}`,
-    `</TradeHeader>`,
-    `<CounterpartyDetails>`,
+    "</TradeHeader>",
+    "<CounterpartyDetails>",
     `  ${el("Name", xmlEscape(cp.partyId ?? ""))}`,
-    counterpartyLei ? `  ${el("LEI", counterpartyLei)}` : `  <!-- CounterpartyLEI: not yet resolved -->`,
-    `</CounterpartyDetails>`,
-    `<CcsDetails>`,
-    `  ${el("EffectiveDate", payload.effectiveDate)}`,
-    `  ${el("MaturityDate", payload.maturityDate)}`,
+    counterpartyLei
+      ? `  ${el("LEI", counterpartyLei)}`
+      : "  <!-- CounterpartyLEI: not yet resolved -->",
+    "</CounterpartyDetails>",
+    "<CcsDetails>",
+    `  ${el("EffectiveDate", extractDate(payload.effectiveDate))}`,
+    `  ${el("MaturityDate", extractDate(payload.maturityDate))}`,
     `  ${el("InitialFxRate", String(payload.initialFxRate))}`,
     `  ${el("InitialNotionalExchange", String(payload.initialNotionalExchange))}`,
     `  ${el("FinalNotionalExchange", String(payload.finalNotionalExchange))}`,
-    `  <PayLeg>`,
+    "  <PayLeg>",
     `    ${el("Currency", payload.payLeg.currency)}`,
     `    ${el("Notional", formatAmount(payload.payLeg.notional.amountMinor))}`,
     `    ${el("LegType", payload.payLeg.legType)}`,
@@ -422,8 +458,8 @@ export function serialiseCcsTradeReport(input: CrossCurrencySwapTradeReportInput
     payload.payLeg.floatingIndex != null
       ? `    ${el("FloatingIndex", payload.payLeg.floatingIndex)}`
       : "",
-    `  </PayLeg>`,
-    `  <ReceiveLeg>`,
+    "  </PayLeg>",
+    "  <ReceiveLeg>",
     `    ${el("Currency", payload.receiveLeg.currency)}`,
     `    ${el("Notional", formatAmount(payload.receiveLeg.notional.amountMinor))}`,
     `    ${el("LegType", payload.receiveLeg.legType)}`,
@@ -433,8 +469,8 @@ export function serialiseCcsTradeReport(input: CrossCurrencySwapTradeReportInput
     payload.receiveLeg.floatingIndex != null
       ? `    ${el("FloatingIndex", payload.receiveLeg.floatingIndex)}`
       : "",
-    `  </ReceiveLeg>`,
-    `</CcsDetails>`,
+    "  </ReceiveLeg>",
+    "</CcsDetails>",
   ]
     .filter((l) => l !== "")
     .join("\n    ");

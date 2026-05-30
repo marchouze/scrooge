@@ -123,9 +123,7 @@ interface ValidationFailure {
   errorMessages: string[];
 }
 
-function validatePayload(
-  payload: UmojaSubmissionPayload,
-): ValidationResult | ValidationFailure {
+function validatePayload(payload: UmojaSubmissionPayload): ValidationResult | ValidationFailure {
   const errorCodes: string[] = [];
   const errorMessages: string[] = [];
 

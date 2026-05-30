@@ -764,11 +764,11 @@ export function makeOdpRepoReconRun(args: {
 // ---------------------------------------------------------------------------
 
 const repoBreakTypeSchema = z.enum([
-  "missing-in-repo",       // Submitted but not visible in repository
+  "missing-in-repo", // Submitted but not visible in repository
   "missing-in-submission", // In repository but no matching submission found
-  "uti-mismatch",          // UTI in submission ≠ UTI in repository
-  "field-mismatch",        // One or more reportable fields differ
-  "status-mismatch",       // Report status (new/modified/cancelled) differs
+  "uti-mismatch", // UTI in submission ≠ UTI in repository
+  "field-mismatch", // One or more reportable fields differ
+  "status-mismatch", // Report status (new/modified/cancelled) differs
 ]);
 export type OdpRepoBreakType = z.infer<typeof repoBreakTypeSchema>;
 
@@ -915,10 +915,10 @@ export function makeOdpRepoReconDisputeOpened(args: {
 // ---------------------------------------------------------------------------
 
 const repoDisputeResolutionOutcomeSchema = z.enum([
-  "resubmitted-accepted",  // Corrected report was submitted and accepted
-  "repository-corrected",  // Umoja portal corrected the repository view
-  "no-action-required",    // Investigation showed no actual mismatch
-  "escalated-to-cco",      // Deadline breached; escalated to CCO (Zara)
+  "resubmitted-accepted", // Corrected report was submitted and accepted
+  "repository-corrected", // Umoja portal corrected the repository view
+  "no-action-required", // Investigation showed no actual mismatch
+  "escalated-to-cco", // Deadline breached; escalated to CCO (Zara)
 ]);
 export type OdpRepoDisputeResolutionOutcome = z.infer<typeof repoDisputeResolutionOutcomeSchema>;
 
@@ -1072,6 +1072,3 @@ export const ODP_UMOJA_UTI_TYPED_EVENT_TYPES = [
 ] as const;
 
 export type OdpUmojaUtiEventType = (typeof ODP_UMOJA_UTI_TYPED_EVENT_TYPES)[number];
-
-// Re-export sub-types for consumers
-export type { OdpRepoReconOutcome };

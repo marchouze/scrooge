@@ -295,7 +295,8 @@ describe("makeTradeUtiAllocated", () => {
         reportingNotional: { currency: "ZAR", amountMinor: 100_000_000_00 },
       },
     });
-    expect(event.payload.reportingNotional?.currency).toBe("ZAR");
+    const notional = event.payload.reportingNotional as { currency: string } | undefined;
+    expect(notional?.currency).toBe("ZAR");
   });
 });
 
