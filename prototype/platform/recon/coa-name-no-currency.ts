@@ -65,7 +65,10 @@ function loadJsonAccounts(): NamedAccount[] {
   };
   const accounts = parsed.accounts ?? [];
   return accounts
-    .filter((a): a is { id: string; name: string } => typeof a.id === "string" && typeof a.name === "string")
+    .filter(
+      (a): a is { id: string; name: string } =>
+        typeof a.id === "string" && typeof a.name === "string",
+    )
     .map((a) => ({ id: a.id, name: a.name }));
 }
 
