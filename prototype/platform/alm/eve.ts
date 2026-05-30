@@ -214,7 +214,11 @@ export function computeEVE(eventStore: EventStore, asOf: string): EVEReport {
       const row = gapSchedule.rows[i];
       if (!row) continue;
       const netCashflow = row.rsaZar - row.rslZar; // Same as gapZar
-      const years = requireWeight(BUCKET_MID_YEARS, row.bucket, "BUCKET_MID_YEARS");
+      const years = requireWeight(
+        BUCKET_MID_YEARS as Record<string, number>,
+        row.bucket,
+        "eve.BUCKET_MID_YEARS",
+      );
       const shift = bucketShift(label, row.bucket, i);
 
       baseNpv += netCashflow * discountFactor(BASE_RATE, years);
