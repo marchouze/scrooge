@@ -1,7 +1,7 @@
 ---
 agent: Vera
 trigger: overnight-recon
-asOf: 2026-05-30T02:13:55.046Z
+asOf: 2026-05-30T03:23:30.872Z
 decision-required: false
 ---
 
@@ -56,13 +56,13 @@ Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operat
 
 ## Vera's narrative
 
-**Partial pass.** The four primary pipelines I own — mandate-ownership, decision-event, dashboard-derivation, and prose-duplication — all reconcile cleanly at this run (995 assertions, zero violations). The failures sit in adjacent pipelines: `agent-scope` is FAIL with two substantive violations, and `permission-gate-default` is technically PASS at the gate but carries a cluster of 19 warn-level findings that I am no longer comfortable treating as noise.
+**Headline: partial pass.** My four owned pipelines (mandate-ownership, decision-event, dashboard-derivation, prose-duplication) all reconcile clean — 995 assertions, zero violations, and notably no empty-event-store substrate noise from the decision-event pipeline this run (342 dashboard-resolved decisions all matched backing `CeoDecision` events). The partial qualifier comes from two fail-severity findings on the adjacent `agent-scope` pipeline, which I do not own but which surfaces on the same recon surface.
 
-The substantive findings, ranked: (1) **`agent-decision:RAVI-NOP-RECOMPUTE-2026-05-28`** — an autonomous NOP-recompute decision was emitted by `agent:ravi:intraday-stress`, an actor with no matching `AgentRegistered` event. That is an unregistered agent making a binding decision and violates P6-AUTONOMOUS-BY-DEFAULT directly; it is the most serious finding on the run. (2) **`agent-decision:EITAN-FX-REDUCE-2026-05-28`** — the `inScopeBy` field references the agent identifier rather than a registered decision-scope tag from Eitan's `decisionsInScope`. Whether that is a data-shape bug in the emitter or a genuine out-of-scope action needs to be triaged on the artifact; either way the recon is right to fail it. (3) The **19-actor permission-gate cluster** (T-12, ORG-CY-09, P4-SECURITY-DESIGNED-IN) spans Tomás, Mira, Owen, Sade, Senna, Bea, Atlas (×3), Rohan (×3), Helena, Anya, Nadia and three dispatch/seed actors appending without a published `PermissionPolicy`. Individually each is a warn; collectively this is a control gap and I am escalating it on cluster grounds per my own routing rule. The 201 `event-type-registry-coverage` info findings are dead/unconsumed factories from the A0 schema freeze — annotate-or-prune housekeeping per F-032, not a control failure, and explicitly tolerated by the registry header. No substrate-context (empty-event-store) symptoms were present on this run; the decision-event pipeline reconciled fully.
+**Substantive findings (fail, route to Thandiwe as CAE):** (1) `agent-decision:EITAN-FX-REDUCE-2026-05-28` — Eitan resolved an FX-position adjustment that is not in his registered `decisionsInScope` set. Either the decision was out-of-mandate (a P6 / IIA-IPPF breach worth a finding against Eitan's persona spec) or his `decisionsInScope` is stale and needs an explicit amendment event — Thandiwe to determine which. (2) `agent-decision:RAVI-NOP-RECOMPUTE-2026-05-28` — sub-agent `agent:ravi:intraday-stress` made an autonomous decision without a prior `AgentRegistered` event. Unregistered actors making decisions is a hard P6 breach and must not recur; the appended record should be quarantined until provenance is established. These two are clustered enough (same recon window, both agent-identity/scope) that I'd want Thandiwe to look at them together rather than as isolated incidents.
 
-Routing: the two agent-scope fails and the T-12 permission-policy cluster to **Thandiwe** as CAE; the 201 registry-coverage infos remain tracked, not escalated.
+**Substrate-context / cluster noise (warn / info, tracked not escalated):** `permission-gate-default` has 19 warns — agent actors appending events without published PermissionPolicies (T-12). That is a known build-phase carve-out per `Owner Inbox/2026-05-10_senna-rashida_agent-runtime-substrate-threat-model.md` (T-01) and ORG-CY-09, closing when sub-agent policy publication lands; however it has *clustered* (19 actors, not 3-4), which crosses my "track but don't escalate unless they cluster" threshold — I'm flagging it to Senna/Rashida for either a batch `publish:sub-agent-policies` run or an explicit `ACCEPTED_NO_POLICY_ACTORS` carve-out list with citations, not escalating to Thandiwe yet. `event-type-registry-coverage` has 201 info-only findings (unused `make*` factories from the A0 schema freeze) — pure build-phase dead-code / pre-wiring noise per the registry.ts header tolerance, not a control finding.
 
-**Recommendation:** Continue cadence, but raise a fail-severity finding to Thandiwe for the unregistered `agent:ravi:intraday-stress` decision and the T-12 PermissionPolicy cluster — both before the next goal-loop tick.
+**Recommendation:** Continue cadence on my four pipelines; Thandiwe to triage the two `agent-scope` fails this cycle and Senna/Rashida to clear the permission-gate cluster before it grows further.
 
 ## Substrate
 
