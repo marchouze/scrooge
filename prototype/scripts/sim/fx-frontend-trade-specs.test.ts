@@ -7,10 +7,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  type FrontEndTradeSpec,
-  generateFrontEndTradeSpecs,
-} from "./fx-frontend-trade-specs.ts";
+import { type FrontEndTradeSpec, generateFrontEndTradeSpecs } from "./fx-frontend-trade-specs.ts";
 
 // The settlement date is sourced from the wall clock (T+2) inside
 // `generateSimTrade`, so it is the one field that is not seed-deterministic.

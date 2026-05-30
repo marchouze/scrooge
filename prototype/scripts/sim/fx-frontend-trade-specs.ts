@@ -155,8 +155,7 @@ export function generateFrontEndTradeSpecs(opts: FrontEndSpecOptions): FrontEndT
   const rng = mulberry32(opts.seed);
   const rateEngine = new FxRateEngine();
   const bookId = "BK-FX-MM-SIM-001";
-  const pairsFilter =
-    opts.pairs && opts.pairs.length > 0 ? Array.from(opts.pairs) : undefined;
+  const pairsFilter = opts.pairs && opts.pairs.length > 0 ? Array.from(opts.pairs) : undefined;
 
   const specs: FrontEndTradeSpec[] = [];
   for (let i = 0; i < opts.count; i++) {
