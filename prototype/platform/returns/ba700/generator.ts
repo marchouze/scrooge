@@ -70,6 +70,8 @@
 import { coaToCapitalClassifications } from "../../accounting/coa-registry";
 import type { TrialBalanceSnapshotRow } from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
+import { computeRwaFromPositions, toRwaDecomposition } from "../../projections/rwa-from-positions";
+import { BUILD_PHASE_TOTAL_RWA_MINOR } from "../../projections/capital-metrics";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
 import {
   BA_700_BANK_ENTITIES,
@@ -325,10 +327,15 @@ export interface GenerateBA700ReturnInput {
    */
   readonly untilSequence?: number;
   /**
-   * RWA decomposition — caller-supplied at v0.
-   * TODO: wire from RwaComputed event (W2 Slice 3 engine).
+   * RWA decomposition.  Optional: when omitted, `generateBA700Return` computes
+   * RWA from booked positions via `computeRwaFromPositions()` (D-RWA-LIVE-
+   * POSITIONS-PROJECTION-V1, CEO-approved 2026-05-30).  Falls back to
+   * BUILD_PHASE_TOTAL_RWA_MINOR when no trades are in the store.
+   *
+   * Callers may still override by passing an explicit `RwaDecomposition` —
+   * useful for scenarios, tests, and backcalculation.
    */
-  readonly rwa: RwaDecomposition;
+  readonly rwa?: RwaDecomposition;
   /** Buffer requirements. Defaults to build-phase BCBS minimums + 2.5% CCB. */
   readonly bufferRequirements?: BufferRequirements;
 }
@@ -416,7 +423,35 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
   }
 
   // -------------------------------------------------------------------------
-  // Step 3: generate the capital-adequacy section via the events-first adapter.
+  // Step 3a: resolve RWA decomposition.
+  // When the caller does not supply an explicit `rwa`, derive it from booked
+  // positions via `computeRwaFromPositions()` (D-RWA-LIVE-POSITIONS-PROJECTION-V1).
+  // Falls back to BUILD_PHASE_TOTAL_RWA_MINOR when no trades are in the store.
+  // -------------------------------------------------------------------------
+  let resolvedRwa: RwaDecomposition;
+  if (input.rwa !== undefined) {
+    resolvedRwa = input.rwa;
+  } else {
+    const rwaResult = computeRwaFromPositions(input.eventStore, input.reportingDate);
+    if (rwaResult.buildPhaseFallback) {
+      // No trades in store — use ICAAP v1 total as the build-phase denominator.
+      // The generator sums creditRwaMinor + marketRwaMinor + operationalRwaMinor;
+      // pack the entire ICAAP constant into creditRwaMinor with zeros elsewhere so
+      // the total equals the ICAAP v1 figure.  source="fixture-rehearsal" signals
+      // the BA700 status → "insufficient-data".
+      resolvedRwa = {
+        creditRwaMinor: BUILD_PHASE_TOTAL_RWA_MINOR,
+        marketRwaMinor: 0,
+        operationalRwaMinor: 0,
+        source: "fixture-rehearsal",
+      };
+    } else {
+      resolvedRwa = toRwaDecomposition(rwaResult);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Step 3b: generate the capital-adequacy section via the events-first adapter.
   // -------------------------------------------------------------------------
   const rawOutput = generateBa700CapitalFromEvents(input.eventStore, {
     entity: input.entityId,
@@ -427,7 +462,7 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
     periodEnd: input.periodEnd,
     classifications: resolvedClassifications,
     deductions: input.deductions ?? [],
-    rwa: input.rwa,
+    rwa: resolvedRwa,
     bufferRequirements: input.bufferRequirements ?? BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
     ...(input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {}),
   });
