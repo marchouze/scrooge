@@ -151,7 +151,7 @@
       "name": "Ravi",
       "role": "Treasury / ALM engineer",
       "type": "engineering",
-      "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, SAMOS funding",
+      "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, correspondent settlement-account (nostro) funding",
       "reportsTo": "Eitan",
       "workflowFile": "agent-runtime-ravi-alm-readiness.yml",
       "workflowTrigger": "alm-readiness"
@@ -267,7 +267,7 @@
       "name": "Eitan",
       "role": "Treasurer",
       "type": "governance",
-      "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, SAMOS funding, capital actions (operational), ALCO chair",
+      "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, correspondent settlement-account (nostro) funding, capital actions (operational), ALCO chair",
       "reportsTo": "CEO",
       "workflowFile": "agent-runtime-eitan-liquidity-snapshot.yml",
       "workflowTrigger": "liquidity-snapshot"
