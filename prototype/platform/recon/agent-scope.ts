@@ -129,13 +129,25 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
 
   // Gather AgentDecision events and assert scope.
+  //
+  // Dedup to the *latest* event per `decisionId`. `replay` yields in
+  // sequence-ascending order, so a later append (a Principle-1 correction —
+  // events are immutable, so a malformed decision is superseded by re-emitting
+  // the same `decisionId` with corrected fields, never by deletion) overwrites
+  // an earlier one. This mirrors the latest-per-`agentUrn` handling above for
+  // `AgentRegistered` spec versions. Asserting on every historical event would
+  // make a corrected decision fail forever on its superseded predecessor.
   const violations: ReconViolation[] = [];
 
   try {
+    const latestByDecisionId = new Map<string, AgentDecisionEvent>();
     for (const e of store.replay({ type: "AgentDecision" })) {
       const ev = e as unknown as AgentDecisionEvent;
       if (!ev.payload?.decisionId) continue;
+      latestByDecisionId.set(ev.payload.decisionId, ev);
+    }
 
+    for (const ev of latestByDecisionId.values()) {
       result.asserted++;
       const { decisionId, decidedBy, inScopeBy } = ev.payload;
       const subject = `agent-decision:${decisionId}`;

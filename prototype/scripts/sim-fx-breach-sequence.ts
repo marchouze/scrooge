@@ -56,7 +56,9 @@ const eitanDecision = makeAgentDecision({
     decisionId: `EITAN-FX-REDUCE-${AS_OF_DATE}`,
     decidedBy: "agent:eitan",
     what: `Instruct Saskia to reduce FX NOP by ZAR ${(REDUCTION_NEEDED_ZAR / 1e6).toFixed(1)}M — target NOP ≤ ZAR ${(TARGET_NOP_ZAR / 1e6).toFixed(0)}M. Execute via OTC USD/ZAR sells through correspondent. Settlement T+2. Book: FX-TRADING.`,
-    inScopeBy: "agent:eitan",
+    // `inScopeBy` must match an entry in Eitan's registered `decisionsInScope`
+    // (asserted by recon:agent-scope) — it is the mandate that authorizes the act.
+    inScopeBy: "Approve FX-position adjustments within Excon",
     options: ["reduce-nop-via-usd-zar-sell", "request-limit-recalibration", "escalate-only"],
     chosen: "reduce-nop-via-usd-zar-sell",
     rationale: `B3 NOP ZAR ${(B3_CURRENT_ZAR / 1e6).toFixed(1)}M exceeds RAS limit ZAR ${(B3_LIMIT_ZAR / 1e6).toFixed(0)}M by ${((BREACH_PCT - 1) * 100).toFixed(1)}%. Intraday unwind within Eitan §9 authority. Target ZAR ${(TARGET_NOP_ZAR / 1e6).toFixed(0)}M preserves 10% headroom per ALCO standing practice. Limit recalibration deferred — requires Helena sign-off, >24h timeline.`,

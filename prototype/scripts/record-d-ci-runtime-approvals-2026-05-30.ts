@@ -9,8 +9,8 @@
 //
 // Authority: CEO (marc@tgv.co.za) via scrooge:session-delegation.
 
-import { recordDecision } from "../runtime/decisions/record";
 import { clock } from "../platform/composition";
+import { recordDecision } from "../runtime/decisions/record";
 
 const ts = clock.now();
 
@@ -40,8 +40,7 @@ const r2 = recordDecision(
     phase: "approved",
     authority: "CEO",
     authorityRef: "marc@tgv.co.za",
-    title:
-      "Runtime language for licence-day — Bun vs Node evaluation deferred to M8 cloud-lift",
+    title: "Runtime language for licence-day — Bun vs Node evaluation deferred to M8 cloud-lift",
     category: "engineering",
     recommendation:
       "Defer runtime language (Bun vs Node) evaluation to the M8 cloud-lift stage; use Bun through the build phase; decision must be made before the first Container App deploy",
