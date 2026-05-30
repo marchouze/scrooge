@@ -29,4 +29,10 @@ const result = recordDecision(
   },
   clock.now(),
 );
-console.log(JSON.stringify({ eventId: result.eventId, decisionId: "D-FX-CROSS-PAIRS-PRODUCTION-INGEST" }, null, 2));
+console.log(
+  JSON.stringify(
+    { eventId: result.eventId, decisionId: "D-FX-CROSS-PAIRS-PRODUCTION-INGEST" },
+    null,
+    2,
+  ),
+);
