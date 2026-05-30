@@ -96,7 +96,7 @@ map** below (confirmed live on the page), then submits.
 | Spec source | Form control | Action |
 |---|---|---|
 | `formFields["tb-product"]` = `"fx"` | product-type `<select>` | select **"FX Spot"** (value `fx`). |
-| `provenanceMode` = `"simulated"` | radio `name="provenanceMode" value="simulated"` | **click the Simulated radio.** |
+| `provenanceMode` = `"simulated"` | radio `name="provenanceMode" value="simulated"` | **set via `form_input(<simulated-radio-ref>, true)`** — see the booking-mode procedure below. **Do NOT** raw-click the input. |
 | `base` | `#tb-base` | select base currency. |
 | `quote` | `#tb-quote` | select quote currency. |
 | `notionalAmount` | `#tb-notional` | type the amount. |
@@ -108,6 +108,59 @@ map** below (confirmed live on the page), then submits.
 | `traderRef` = `sim:counterparty-fx-request` | `#tb-trader-ref` | type the trader ref. |
 | — | `#tb-form` submit ("Book Trade") | **submit.** |
 
+### Booking-mode (provenance) selection — MANDATORY procedure
+
+> **This step has a known defect trap. Follow it exactly.** Two simulated test
+> trades (`MAN-1780135556707-A2F877A9`, `MAN-1780136862743-A7951042`) were booked
+> tagged `production` because the documented "click the Simulated radio" step
+> silently failed. They were reclassified after the fact by
+> `scripts/cleanup-fx-frontend-driver-provenance-pollution.ts`.
+
+The booking-mode control on `/trade-book.html` is a pair of **visually-hidden**
+radios styled via `.tb-side-label`:
+
+```html
+<input type="radio" name="provenanceMode" value="production" checked>
+<input type="radio" name="provenanceMode" value="simulated">
+```
+
+Because the `<input>` is visually hidden, a **raw browser click on the input does
+NOT register** — the form stays on its default `production`. Do all four of the
+following, in order:
+
+1. **Set, do not click.** Select Simulated via
+   `form_input(<simulated-radio-ref>, true)` — NOT a coordinate/element click on
+   the hidden input. (Clicking the *visible label* also works; the hidden input
+   does not.)
+2. **Pre-submit gate (assert the `:checked` value).** Before submitting, run JS
+   and require the result to be exactly `"simulated"`:
+
+   ```js
+   document.querySelector('input[name="provenanceMode"]:checked')?.value
+   // must === 'simulated' — DO NOT submit otherwise; re-apply step 1 and re-check.
+   ```
+
+3. **The on-screen "BOOKING MODE: …" label is NOT a reliable indicator.** During
+   validation it showed the *opposite* of the true checked state in both
+   directions. **Trust the `:checked` radio value (step 2), never the label
+   text.**
+4. **Post-submit provenance verification.** After the `Booked: <tradeId> ·
+   event: <eventId>` banner (below), confirm the **persisted event's provenance
+   is `simulated`** before treating the booking as good — query the event store
+   by the returned `event_id` (or by `tradeId`), e.g.:
+
+   ```bash
+   BANK_EVENT_DB=$HOME/.local/share/bank/event.db \
+     sqlite3 "$BANK_EVENT_DB" \
+     "SELECT json_extract(provenance,'\$.kind') FROM events WHERE event_id='<eventId>';"
+   # must print 'simulated'. If it prints 'production', the booking is polluted:
+   # reclassify with scripts/cleanup-fx-frontend-driver-provenance-pollution.ts
+   # (after adding the new event_id to its target list) before proceeding.
+   ```
+
+   A `production`-tagged simulated test trade contaminates the production-only FX
+   position / PnL / GL views and must be remediated, not left.
+
 ### Read back the confirmation
 
 On success a green banner shows:
@@ -118,7 +171,8 @@ Booked: <tradeId> · event: <eventId>
 
 Read it back as confirmation for each booked spec. (The live proof-of-chain booking
 was `MAN-1780135556707-A2F877A9`, sub-second after the PR #912 per-booking wedge
-fix.)
+fix.) Then run the **post-submit provenance verification** in step 4 above before
+treating the booking as good.
 
 ### Suggested loop
 
