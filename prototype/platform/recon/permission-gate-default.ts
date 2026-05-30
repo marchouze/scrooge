@@ -336,6 +336,11 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // no production access path.
   // Citation: D-MARKETS-SCHEMA-FOUNDATION, P4-SECURITY-DESIGNED-IN.
   "platform/simulation/env-sim/",
+  // 3rd-party simulator hub unit tests — per-module tests build in-memory
+  // stores for registry / lifecycle / feed-projection scenario assertion.
+  // T-01 carve-out; no production access path.
+  // Citation: D-MARKETS-SCHEMA-FOUNDATION, P4-SECURITY-DESIGNED-IN.
+  "platform/simulation/hub/",
   // Liquidity projection unit tests — per-module fixture stores for multi-horizon
   // LCR/NSFR scenario assertion (empty-store baseline, SAGB HQLA, provider caching).
   // T-01 carve-out; no production access path.

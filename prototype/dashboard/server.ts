@@ -109,6 +109,7 @@ import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-
 import { MarketDataStore } from "../platform/market-data/store";
 import { computeCva } from "../platform/market-risk/cva-engine";
 import { computeMarketRisk } from "../platform/market-risk/var-engine";
+import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { checkModelApproved } from "../platform/model-registry/calculation-binding";
 import { buildCalculationPerformed } from "../platform/model-registry/calculation-emit";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
@@ -134,6 +135,7 @@ import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-p
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
+import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
 import type { FinancialInput } from "../platform/types/financial-input";
 import {
@@ -238,9 +240,10 @@ import {
   RfqBodySchema,
   StartWorkstreamBodySchema,
 } from "./server-schemas";
+import { registerSimHubRoutes } from "./sim-hub-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
-import { registerTradeBookRoutes } from "./trade-book-view";
+import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
@@ -316,9 +319,43 @@ const marketDataStore = new MarketDataStore(marketDataDbPath);
 
 let cachedState: DashboardState = bootDerive();
 
-// FX market-making simulation engine — module-level singleton.
+// Map a generated FX sim payload onto the normal trade-booking request shape, so
+// a simulated counterparty trade initiation books exactly like a manual trade.
+function fxPayloadToBookBody(payload: FxTradeExecutedPayload): TradeBookBody {
+  const leg = payload.legs[0];
+  return {
+    productType: "fx",
+    provenanceMode: "simulated",
+    currencyPair: { base: payload.currencyPair.base, quote: payload.currencyPair.quote },
+    side: payload.side,
+    notionalAmount: leg ? leg.notional.amountMinor / 1_000_000 : 0,
+    notionalCurrency: leg ? leg.notional.currency : payload.currencyPair.base,
+    rate: leg ? leg.rate.amount : 0,
+    settlementDate: leg ? leg.settlementDate.iso : "",
+    counterpartyName: payload.counterparty.name,
+    counterpartyLei: payload.counterparty.partyId,
+    traderRef: "sim:counterparty-fx-request",
+  } as TradeBookBody;
+}
+
+// FX market-making engine — module-level singleton. Trade EXECUTION is routed
+// through the bank's NORMAL booking path (bookFxTrade) so simulated counterparty
+// initiations book exactly like manual/real trades. Nothing auto-starts at boot;
+// the operator drives every simulator from /sim-hub.
 // Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
-const fxSimEngine = new FxSimEngine(eventStore, { marketDataStore });
+const fxSimEngine = new FxSimEngine(eventStore, {
+  marketDataStore,
+  executeFxTrade: (payload) => {
+    void bookFxTrade(fxPayloadToBookBody(payload)).catch((err: unknown) => {
+      console.error("[sim] FX booking via normal path failed:", err);
+    });
+  },
+});
+
+// Centralised 3rd-party simulator hub — registers the FX-counterparty stimulus
+// plus the external sub-simulators (market data, nostro, correspondent, SARB
+// ack) behind one registry, reusing the live fxSimEngine instance.
+const simHub = buildDefaultHub({ eventStore, envSimEngine: fxSimEngine });
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
@@ -4062,7 +4099,24 @@ const server = Bun.serve({
     }
     // FX simulator control panel page.
     if (req.method === "GET" && url.pathname === "/fx-sim") {
-      return serveStatic("/fx-sim.html");
+      // FX simulator folded into the 3rd-party simulator hub.
+      return new Response(null, { status: 302, headers: { Location: "/sim-hub" } });
+    }
+
+    // ----- 3rd-party simulator hub routes -----
+    if (url.pathname.startsWith("/api/sim/")) {
+      const hubResponse = await registerSimHubRoutes(
+        url.pathname,
+        req.method,
+        url.searchParams,
+        req,
+        simHub,
+      );
+      if (hubResponse) return hubResponse;
+    }
+
+    if (req.method === "GET" && url.pathname === "/sim-hub") {
+      return serveStatic("/sim-hub.html");
     }
     // Market data — reference/time-series ticks (MarketDataStore).
     // Authority: D-MARKETS-SCHEMA-FOUNDATION.

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3rd-Party Simulators — Scrooge Bank</title>
+  <meta name="description" content="Centralised control panel for every 3rd-party (external) simulator — counterparties, correspondents, custodians, regulators, market data.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .sim-intro {
+      font: var(--text-body);
+      color: var(--color-text-secondary);
+      margin: var(--space-1) 0 var(--space-6);
+      max-width: 70ch;
+    }
+    .sim-domain-title {
+      font: var(--text-h2);
+      color: var(--color-text-primary);
+      margin: var(--space-6) 0 var(--space-3);
+      text-transform: capitalize;
+    }
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--space-4, 16px);
+    }
+    .sim-card {
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: 8px;
+      padding: var(--space-4, 16px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3, 12px);
+    }
+    .sim-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-2, 8px);
+    }
+    .sim-card-name { font-weight: 600; font-size: 0.95rem; color: var(--color-text, #111827); }
+    .sim-card-desc { font-size: 0.78rem; color: var(--color-text-secondary, #6b7280); line-height: 1.4; }
+    .sim-status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+      background: #fef9c3; color: #854d0e; white-space: nowrap;
+    }
+    .sim-status-badge.running { background: #dcfce7; color: #166534; }
+    .sim-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .sim-dot.pulse { animation: simpulse 1.2s infinite; }
+    @keyframes simpulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .sim-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+    .sim-stat-label { font-size: 0.68rem; color: var(--color-text-secondary, #6b7280); }
+    .sim-stat-value { font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .sim-stat-value.mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; }
+    .sim-config { display: flex; flex-wrap: wrap; gap: var(--space-2, 8px); }
+    .sim-config-field { display: flex; flex-direction: column; gap: 2px; }
+    .sim-config-field label { font-size: 0.68rem; color: var(--color-text-secondary, #6b7280); }
+    .sim-config-field input, .sim-config-field select {
+      padding: 5px 8px; border: 1px solid var(--color-border, #e5e7eb); border-radius: 6px;
+      font-size: 0.8rem; background: var(--color-bg, #fff); color: var(--color-text, #111827); width: 130px;
+    }
+    .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+    .sim-btn {
+      display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 6px;
+      border: 1px solid transparent; font-size: 0.8rem; font-weight: 500; cursor: pointer;
+    }
+    .sim-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .sim-btn-start { background: var(--color-accent, #0ea5e9); color: #fff; }
+    .sim-btn-stop { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .sim-btn-fire { background: var(--color-surface-secondary, #f1f5f9); color: var(--color-text, #111827); border-color: var(--color-border, #e5e7eb); }
+    .sim-err { font-size: 0.72rem; color: #991b1b; }
+    .sim-extra:empty { display: none; }
+    .sim-rm { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+    .sim-rm-head { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--color-text-secondary, #6b7280); }
+    .sim-rm-bar { background: var(--color-surface-secondary, #f1f5f9); border-radius: 4px; height: 8px; overflow: hidden; }
+    .sim-rm-bar > div { height: 100%; border-radius: 4px; transition: width 0.4s, background 0.4s; }
+    .sim-rm-stats { font-size: 0.7rem; color: var(--color-text-secondary, #6b7280); }
+    .sim-rates { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .sim-rate { font-size: 0.7rem; font-family: 'IBM Plex Mono', monospace; background: var(--color-surface-secondary, #f9fafb); border: 1px solid var(--color-border, #e5e7eb); border-radius: 4px; padding: 2px 6px; }
+    .sim-last { font-size: 0.7rem; color: var(--color-text-secondary, #6b7280); margin-top: 4px; }
+    .sim-feed-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    .sim-feed-table th, .sim-feed-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--color-border, #eee); }
+    .sim-feed-table th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary, #6b7280); }
+    .sim-feed-table td.mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">3rd-Party Simulators</h1>
+      <p class="sim-intro">
+        Centralised control panel for everything <strong>external</strong> the bank interacts with —
+        counterparties requesting trades, correspondents and custodians sending advices and statements,
+        regulators acknowledging submissions, and market-data feeds. Each simulator only ever appends
+        <code>simulated</code> events; everything below is derived from the event store.
+        The bank's own <em>internal</em> FX market-maker (which responds to counterparty requests)
+        lives at <a href="/fx-sim">/fx-sim</a>.
+      </p>
+    </div>
+
+    <div id="domains"><p style="color:var(--color-text-secondary)">Loading simulators…</p></div>
+
+    <h2 class="sim-domain-title" style="text-transform:none">Recently-emitted simulated events</h2>
+    <div class="sim-card">
+      <table class="sim-feed-table">
+        <thead><tr><th>As-of</th><th>Type</th><th>Actor</th><th>Scenario</th></tr></thead>
+        <tbody id="feedBody"><tr><td colspan="4" style="color:var(--color-text-secondary)">No events yet.</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "3rd-Party Simulators" });</script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/sim-hub.js"></script>
+</body>
+</html>

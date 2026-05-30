@@ -40,7 +40,7 @@
         { label: "Trade Booking", href: "/trade-book.html" },
         { label: "FX Desk", href: "/markets/fx/desk.html" },
         { label: "FX Risk", href: "/markets/fx/risk.html" },
-        { label: "FX Simulator", href: "/fx-sim" },
+        { label: "3rd-Party Simulators", href: "/sim-hub" },
         { label: "Market Data", href: "/market-data" },
         { label: "KYC Onboarding", href: "/kyc-onboarding" },
         { label: "KYC Clients", href: "/kyc-clients" },

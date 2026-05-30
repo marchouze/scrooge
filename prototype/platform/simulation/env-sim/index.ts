@@ -18,6 +18,7 @@ import { randomUUID } from "node:crypto";
 import { nowUtc } from "../../core/types";
 import type { EventStore } from "../../event-store/store";
 import { MarketDataStore, lookupQuoteWithInverse } from "../../market-data/store";
+import type { FxTradeExecutedPayload } from "../../markets/cdm/fx";
 import {
   getFxNetPositions,
   getLimitUtilisations,
@@ -66,6 +67,15 @@ export interface EnvSimOptions {
    *     when the trade's settlementDate (T+2) arrives.
    */
   settlementMode?: "realtime" | "accelerated";
+  /**
+   * Execution hook. When provided, fireTrade() routes the generated trade
+   * through this callback (the bank's normal booking path) INSTEAD of appending
+   * FxTradeExecuted + running the bespoke post-trade lifecycle. The 3rd-party
+   * simulator hub wires this to bookFxTrade so simulated counterparty trade
+   * initiations book exactly like a manual/real trade. When unset, the legacy
+   * append + lifecycle path runs (standalone / tests).
+   */
+  executeFxTrade?: (payload: FxTradeExecutedPayload, asOf: string, counterpartyBic: string) => void;
 }
 
 export interface EnvSimStatus {
@@ -137,6 +147,11 @@ export class EnvSimEngine {
     settlementMode: "realtime" | "accelerated";
     seed?: number;
     counterpartyProfiles?: CounterpartyBehaviorProfile[];
+    executeFxTrade?: (
+      payload: FxTradeExecutedPayload,
+      asOf: string,
+      counterpartyBic: string,
+    ) => void;
   };
   private readonly rateEngine: FxRateEngine;
   private readonly rng: () => number;
@@ -148,6 +163,7 @@ export class EnvSimEngine {
   private readonly regulatoryAckSim: RegulatoryAckSim;
 
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private tradeLoopRunning = false;
   private status: EnvSimStatus;
 
   constructor(store: EventStore, options?: EnvSimOptions) {
@@ -164,6 +180,7 @@ export class EnvSimEngine {
       ...(options?.counterpartyProfiles !== undefined
         ? { counterpartyProfiles: options.counterpartyProfiles }
         : {}),
+      ...(options?.executeFxTrade !== undefined ? { executeFxTrade: options.executeFxTrade } : {}),
     };
 
     // Seeded PRNG or Math.random.
@@ -227,6 +244,28 @@ export class EnvSimEngine {
   }
 
   // ---------------------------------------------------------------------------
+  // Sub-simulator accessors — exposed so the ThirdPartySimHub can register each
+  // external sub-simulator as an individually-controllable module. Additive;
+  // these do not change engine behaviour.
+  // ---------------------------------------------------------------------------
+
+  get marketDataSimulator(): MarketDataSimulator {
+    return this.marketDataSim;
+  }
+
+  get nostroStatementSimulator(): NostroStatementSimulator {
+    return this.nostroSim;
+  }
+
+  get correspondentAdviceSimulator(): CorrespondentAdviceSim {
+    return this.correspondentSim;
+  }
+
+  get regulatoryAckSimulator(): RegulatoryAckSim {
+    return this.regulatoryAckSim;
+  }
+
+  // ---------------------------------------------------------------------------
   // Risk monitor — computes trade direction to stay within B3 limit
   // ---------------------------------------------------------------------------
 
@@ -242,7 +281,7 @@ export class EnvSimEngine {
    *  4. Map to the trade direction that reduces the position.
    *  5. Bias probability: green → none; amber → 70%; red → 95%.
    */
-  private computeRiskDirection(): {
+  computeFxRiskDirection(): {
     forcedSide?: "buy" | "sell";
     eligiblePairsFilter?: string[];
     mode: "normal" | "reducing" | "force-reduce";
@@ -318,20 +357,25 @@ export class EnvSimEngine {
    * Start the engine and all sub-simulators. Idempotent.
    * Optional `config` overrides accepted for backward compatibility with FxSimEngine callers.
    */
-  start(config?: {
+  /**
+   * Start ONLY the FX trade-generation loop (no sub-simulators). Used by the
+   * 3rd-party simulator hub's counterparty-fx-request module. Idempotent.
+   */
+  startTradeLoop(config?: {
     minIntervalMs?: number;
     maxIntervalMs?: number;
     bookId?: string;
     settlementMode?: "realtime" | "accelerated";
   }): EnvSimStatus {
-    if (this.status.running) return { ...this.status };
+    if (this.tradeLoopRunning) return this.getStatus();
 
-    // Apply config overrides for backward compat.
+    // Apply config overrides.
     if (config?.minIntervalMs !== undefined) this.opts.minIntervalMs = config.minIntervalMs;
     if (config?.maxIntervalMs !== undefined) this.opts.maxIntervalMs = config.maxIntervalMs;
     if (config?.bookId !== undefined) this.opts.bookId = config.bookId;
     if (config?.settlementMode !== undefined) this.opts.settlementMode = config.settlementMode;
 
+    this.tradeLoopRunning = true;
     this.status = {
       ...this.status,
       running: true,
@@ -344,8 +388,37 @@ export class EnvSimEngine {
         settlementMode: this.opts.settlementMode,
       },
     };
-
     this.scheduleNext();
+    return this.getStatus();
+  }
+
+  /** Stop ONLY the FX trade-generation loop. Idempotent. */
+  stopTradeLoop(): EnvSimStatus {
+    if (!this.tradeLoopRunning) return this.getStatus();
+    this.tradeLoopRunning = false;
+    if (this.timer !== null) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+    this.status = { ...this.status, running: false, stoppedAt: nowUtc() };
+    return this.getStatus();
+  }
+
+  isTradeLoopRunning(): boolean {
+    return this.tradeLoopRunning;
+  }
+
+  /**
+   * Start the trade loop AND all sub-simulators. Idempotent. Retained for
+   * back-compat with the legacy /api/fx-sim/* control panel.
+   */
+  start(config?: {
+    minIntervalMs?: number;
+    maxIntervalMs?: number;
+    bookId?: string;
+    settlementMode?: "realtime" | "accelerated";
+  }): EnvSimStatus {
+    this.startTradeLoop(config);
     this.marketDataSim.start();
     this.nostroSim.start();
     // correspondentSim handles MT202s for realtime mode only; in accelerated mode
@@ -358,14 +431,9 @@ export class EnvSimEngine {
     return this.getStatus();
   }
 
-  /** Stop the engine and all sub-simulators. Idempotent. */
+  /** Stop the trade loop and all sub-simulators. Idempotent. */
   stop(): EnvSimStatus {
-    if (!this.status.running) return { ...this.status };
-
-    if (this.timer !== null) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
+    this.stopTradeLoop();
 
     this.marketDataSim.stop();
     this.nostroSim.stop();
@@ -374,8 +442,6 @@ export class EnvSimEngine {
 
     this.status = {
       ...this.status,
-      running: false,
-      stoppedAt: nowUtc(),
       subSimulators: {
         marketData: false,
         nostroStatement: false,
@@ -391,7 +457,7 @@ export class EnvSimEngine {
   getStatus(): EnvSimStatus {
     // Always compute a fresh risk monitor reading so callers (e.g. /api/fx-sim/status)
     // see current B3 even when the sim is stopped between ticks.
-    const { mode, b3Row } = this.computeRiskDirection();
+    const { mode, b3Row } = this.computeFxRiskDirection();
     return {
       ...this.status,
       riskMonitor: {
@@ -424,32 +490,36 @@ export class EnvSimEngine {
       ...(opts?.forcedSide ? { forcedSide: opts.forcedSide } : {}),
       ...(opts?.eligiblePairsFilter ? { eligiblePairsFilter: opts.eligiblePairsFilter } : {}),
     });
-    const eventId = `sim-trade-${randomUUID()}`;
     const asOf = nowUtc();
-
-    this.store.append({
-      event_id: eventId,
-      type: "FxTradeExecuted",
-      as_of: asOf,
-      entity: "LE-ZA-HOZ-BANK",
-      actor: { type: "service", id: "agent:env:fx-sim-engine" },
-      citations: ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"],
-      payload: payload as unknown as Record<string, unknown>,
-    });
-
     const cp = SIM_COUNTERPARTIES.find((c) => c.partyId === payload.counterparty.partyId);
     const counterpartyBic = cp?.bic ?? "SBZAZAJJXXX";
 
-    runPostTradeLifecycle(
-      this.store,
-      payload,
-      asOf,
-      "BANKZAJJXXX",
-      counterpartyBic,
-      (partyId) => this.profileMap.get(partyId) ?? this.profileMap.get("*"),
-      this.rng,
-      this.opts.settlementMode,
-    );
+    if (this.opts.executeFxTrade) {
+      // Route execution through the bank's normal booking path (hub wiring).
+      this.opts.executeFxTrade(payload, asOf, counterpartyBic);
+    } else {
+      // Legacy path: append FxTradeExecuted + run the bespoke post-trade lifecycle.
+      this.store.append({
+        event_id: `sim-trade-${randomUUID()}`,
+        type: "FxTradeExecuted",
+        as_of: asOf,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:env:fx-sim-engine" },
+        citations: ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"],
+        payload: payload as unknown as Record<string, unknown>,
+      });
+
+      runPostTradeLifecycle(
+        this.store,
+        payload,
+        asOf,
+        "BANKZAJJXXX",
+        counterpartyBic,
+        (partyId) => this.profileMap.get(partyId) ?? this.profileMap.get("*"),
+        this.rng,
+        this.opts.settlementMode,
+      );
+    }
 
     const tradeIdValue = payload.tradeId.value;
     const pair = `${payload.currencyPair.base}/${payload.currencyPair.quote}`;
@@ -481,7 +551,7 @@ export class EnvSimEngine {
   private async scheduledFire(): Promise<void> {
     try {
       // Run risk monitor before every trade — computes forced side + pair filter.
-      const { forcedSide, eligiblePairsFilter, mode, b3Row } = this.computeRiskDirection();
+      const { forcedSide, eligiblePairsFilter, mode, b3Row } = this.computeFxRiskDirection();
 
       // Update the risk monitor section of status.
       this.status = {
@@ -509,7 +579,7 @@ export class EnvSimEngine {
       };
     }
 
-    if (this.status.running) {
+    if (this.tradeLoopRunning) {
       this.scheduleNext();
     }
   }

@@ -64,7 +64,7 @@ function isValidDate(s: string): boolean {
 // Request body types
 // ---------------------------------------------------------------------------
 
-interface TradeBookBody {
+export interface TradeBookBody {
   productType?: unknown;
   provenanceMode?: unknown;
   // FX Spot fields
@@ -1039,6 +1039,26 @@ export async function handleTradeBook(req: Request, _store: EventStore): Promise
       break; // fall through to existing FX handler below
   }
 
+  // FX (default) — route through the shared booking core.
+  const fxResult = await bookFxTrade(body);
+  return jsonResponse(fxResult, fxResult.ok ? 200 : 400);
+}
+
+export interface BookFxTradeResult {
+  ok: boolean;
+  tradeId?: string;
+  eventId?: string;
+  error?: string;
+  glWarning?: string;
+}
+
+/**
+ * Shared FX booking core. Used by the manual /api/trades/book route AND by the
+ * 3rd-party simulator hub, so a simulated counterparty trade initiation books
+ * exactly like a manual/real trade — same event, actor, provenance lineage, and
+ * inline GL posting. Pass provenanceMode:"simulated" to tag it simulator-generated.
+ */
+export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResult> {
   // ----- Validate FX fields -----
 
   const base =
@@ -1049,55 +1069,49 @@ export async function handleTradeBook(req: Request, _store: EventStore): Promise
       : "";
 
   if (!base || base.length < 2) {
-    return jsonResponse({ ok: false, error: "currencyPair.base is required" }, 400);
+    return { ok: false, error: "currencyPair.base is required" };
   }
   if (!quote || quote.length < 2) {
-    return jsonResponse({ ok: false, error: "currencyPair.quote is required" }, 400);
+    return { ok: false, error: "currencyPair.quote is required" };
   }
   if (base === quote) {
-    return jsonResponse({ ok: false, error: "currencyPair.base and .quote must differ" }, 400);
+    return { ok: false, error: "currencyPair.base and .quote must differ" };
   }
   if (body.side !== "buy" && body.side !== "sell") {
-    return jsonResponse({ ok: false, error: "side must be 'buy' or 'sell'" }, 400);
+    return { ok: false, error: "side must be 'buy' or 'sell'" };
   }
   const side = body.side as "buy" | "sell";
 
   const notionalAmount =
     typeof body.notionalAmount === "number" ? body.notionalAmount : Number(body.notionalAmount);
   if (!Number.isFinite(notionalAmount) || notionalAmount <= 0) {
-    return jsonResponse({ ok: false, error: "notionalAmount must be a positive number" }, 400);
+    return { ok: false, error: "notionalAmount must be a positive number" };
   }
 
   const notionalCurrency =
     typeof body.notionalCurrency === "string" ? body.notionalCurrency.trim().toUpperCase() : "";
   if (notionalCurrency !== base && notionalCurrency !== quote) {
-    return jsonResponse(
-      { ok: false, error: "notionalCurrency must match base or quote currency" },
-      400,
-    );
+    return { ok: false, error: "notionalCurrency must match base or quote currency" };
   }
 
   const rate = typeof body.rate === "number" ? body.rate : Number(body.rate);
   if (!Number.isFinite(rate) || rate <= 0) {
-    return jsonResponse({ ok: false, error: "rate must be a positive number" }, 400);
+    return { ok: false, error: "rate must be a positive number" };
   }
 
   const settlementDate = typeof body.settlementDate === "string" ? body.settlementDate : "";
   if (!isValidDate(settlementDate)) {
-    return jsonResponse(
-      { ok: false, error: "settlementDate must be a valid YYYY-MM-DD date" },
-      400,
-    );
+    return { ok: false, error: "settlementDate must be a valid YYYY-MM-DD date" };
   }
   const todayIso = clock.now().slice(0, 10);
   if (settlementDate < todayIso) {
-    return jsonResponse({ ok: false, error: "settlementDate must be >= today" }, 400);
+    return { ok: false, error: "settlementDate must be >= today" };
   }
 
   const counterpartyName =
     typeof body.counterpartyName === "string" ? body.counterpartyName.trim() : "";
   if (!counterpartyName) {
-    return jsonResponse({ ok: false, error: "counterpartyName is required" }, 400);
+    return { ok: false, error: "counterpartyName is required" };
   }
 
   const counterpartyLei =
@@ -1223,19 +1237,14 @@ export async function handleTradeBook(req: Request, _store: EventStore): Promise
   try {
     await beaGlPostingEngine(ctx);
   } catch (err) {
-    // GL engine failure should not block the trade booking response — the
-    // trade event is already appended and idempotency means a subsequent
-    // run-posting-engine call will catch it.
+    // GL engine failure should not block the trade booking — the trade event is
+    // already appended and idempotency means a later run-posting-engine call
+    // will catch it.
     const msg = err instanceof Error ? err.message : String(err);
-    return jsonResponse({
-      ok: true,
-      tradeId,
-      eventId,
-      glWarning: `Trade booked but GL engine error: ${msg}`,
-    });
+    return { ok: true, tradeId, eventId, glWarning: `Trade booked but GL engine error: ${msg}` };
   }
 
-  return jsonResponse({ ok: true, tradeId, eventId });
+  return { ok: true, tradeId, eventId };
 }
 
 // ---------------------------------------------------------------------------
