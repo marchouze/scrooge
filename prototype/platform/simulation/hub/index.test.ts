@@ -179,31 +179,34 @@ describe("ThirdPartySimHub default roster (env-sim adapters)", () => {
     expect(ids).toContain("regulatory-ack");
   });
 
-  it("counterparty-fx-request fire executes the internal MM (FxTradeExecuted)", async () => {
-    await hub.fire("counterparty-fx-request", "request-one");
+  it("counterparty-fx-request does NOT book in-process (retired); fire returns front-end guidance", async () => {
+    // D-FX-SIM-FRONTEND-INPUT-DRIVER: the in-process trade loop is retired —
+    // counterparty FX trades now enter via the front-end driver. The hub fire
+    // action is informational only and emits NO FxTradeExecuted event.
+    const res = await hub.fire("counterparty-fx-request", "how-to");
+    expect(res.ok).toBe(true);
+    expect(String(res.detail)).toContain("fx-frontend-trade-specs");
     const events = [...store.replay()];
-    expect(events.some((e) => e.type === "FxTradeExecuted")).toBe(true);
-    const feed = hub.recentSimulatedEvents(50);
-    expect(feed.some((e) => e.type === "FxTradeExecuted")).toBe(true);
-    expect(hub.status("counterparty-fx-request").eventsEmitted).toBeGreaterThanOrEqual(1);
+    expect(events.some((e) => e.type === "FxTradeExecuted")).toBe(false);
+    expect(hub.status("counterparty-fx-request").eventsEmitted).toBe(0);
   });
 
-  it("routes FX execution through the injected executor (normal booking path)", async () => {
-    const store2 = new EventStore(":memory:");
-    let captured: unknown = null;
-    const engine2 = new EnvSimEngine(store2, {
-      seed: 7,
-      executeFxTrade: (payload) => {
-        captured = payload;
-      },
-    });
-    const hub2 = buildDefaultHub({ eventStore: store2, envSimEngine: engine2 });
-    await hub2.fire("counterparty-fx-request", "request-one");
-    // The executor was invoked …
-    expect(captured).not.toBeNull();
-    // … and the engine did NOT append FxTradeExecuted itself (execution delegated).
-    const types = [...store2.replay()].map((e) => e.type);
-    expect(types.includes("FxTradeExecuted")).toBe(false);
+  it("counterparty-fx-request start/stop are no-ops (booking enters via front-end)", () => {
+    expect(hub.status("counterparty-fx-request").running).toBe(false);
+    hub.start("counterparty-fx-request");
+    // No internal loop is driven — it stays not-running and emits nothing.
+    expect(hub.status("counterparty-fx-request").running).toBe(false);
+    expect([...store.replay()].some((e) => e.type === "FxTradeExecuted")).toBe(false);
+    hub.stop("counterparty-fx-request");
+    expect(hub.status("counterparty-fx-request").running).toBe(false);
+  });
+
+  it("counterparty-fx-request status surfaces the front-end input path + risk context", () => {
+    const extra = hub.status("counterparty-fx-request").extra ?? {};
+    expect(String(extra.paramGenerator)).toContain("fx-frontend-trade-specs");
+    expect(String(extra.driverProcedure)).toContain("fx-frontend-driver/README.md");
+    // Read-only internal-MM risk context is still exposed.
+    expect(extra).toHaveProperty("riskMonitor");
   });
 
   it("toggles a loop sub-sim via the hub", () => {

@@ -109,7 +109,6 @@ import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-
 import { MarketDataStore } from "../platform/market-data/store";
 import { computeCva } from "../platform/market-risk/cva-engine";
 import { computeMarketRisk } from "../platform/market-risk/var-engine";
-import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { checkModelApproved } from "../platform/model-registry/calculation-binding";
 import { buildCalculationPerformed } from "../platform/model-registry/calculation-emit";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
@@ -243,7 +242,7 @@ import {
 import { registerSimHubRoutes } from "./sim-hub-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
-import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
+import { registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
@@ -319,37 +318,21 @@ const marketDataStore = new MarketDataStore(marketDataDbPath);
 
 let cachedState: DashboardState = bootDerive();
 
-// Map a generated FX sim payload onto the normal trade-booking request shape, so
-// a simulated counterparty trade initiation books exactly like a manual trade.
-function fxPayloadToBookBody(payload: FxTradeExecutedPayload): TradeBookBody {
-  const leg = payload.legs[0];
-  return {
-    productType: "fx",
-    provenanceMode: "simulated",
-    currencyPair: { base: payload.currencyPair.base, quote: payload.currencyPair.quote },
-    side: payload.side,
-    notionalAmount: leg ? leg.notional.amountMinor / 1_000_000 : 0,
-    notionalCurrency: leg ? leg.notional.currency : payload.currencyPair.base,
-    rate: leg ? leg.rate.amount : 0,
-    settlementDate: leg ? leg.settlementDate.iso : "",
-    counterpartyName: payload.counterparty.name,
-    counterpartyLei: payload.counterparty.partyId,
-    traderRef: "sim:counterparty-fx-request",
-  } as TradeBookBody;
-}
-
-// FX market-making engine — module-level singleton. Trade EXECUTION is routed
-// through the bank's NORMAL booking path (bookFxTrade) so simulated counterparty
-// initiations book exactly like manual/real trades. Nothing auto-starts at boot;
-// the operator drives every simulator from /sim-hub.
-// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
+// FX market-making engine — module-level singleton. Hosts the still-live
+// external sub-simulators (market data feed, nostro, correspondent advice, SARB
+// ack) consumed by the 3rd-party simulator hub.
+//
+// The in-process counterparty FX trade loop is RETIRED
+// (D-FX-SIM-FRONTEND-INPUT-DRIVER, CEO-approved 2026-05-30): counterparty FX
+// trades now enter via the front-end (an agent drives /trade-book.html with
+// Claude-in-Chrome from `scripts/sim/fx-frontend-trade-specs.ts` specs). No
+// `executeFxTrade` callback is wired, the hub's counterparty module no longer
+// drives the loop, and the /api/fx-sim/{start,stop} routes are 410 — so there is
+// exactly ONE counterparty FX booking path (the front-end), not two.
+// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION;
+//   D-FX-SIM-FRONTEND-INPUT-DRIVER.
 const fxSimEngine = new FxSimEngine(eventStore, {
   marketDataStore,
-  executeFxTrade: (payload) => {
-    void bookFxTrade(fxPayloadToBookBody(payload)).catch((err: unknown) => {
-      console.error("[sim] FX booking via normal path failed:", err);
-    });
-  },
 });
 
 // Centralised 3rd-party simulator hub — registers the FX-counterparty stimulus

@@ -12,105 +12,89 @@ import { nowUtc } from "../../../core/types";
 import type { EnvSimEngine } from "../../env-sim/index";
 import type { SimStatus, SimulatorModule } from "../types";
 
-/** Map a validated hub config object onto EnvSimEngine.start()'s shape. */
-function toEngineConfig(config?: Record<string, unknown>): {
-  minIntervalMs?: number;
-  maxIntervalMs?: number;
-  bookId?: string;
-  settlementMode?: "realtime" | "accelerated";
-} {
-  const c: {
-    minIntervalMs?: number;
-    maxIntervalMs?: number;
-    bookId?: string;
-    settlementMode?: "realtime" | "accelerated";
-  } = {};
-  if (typeof config?.minIntervalMs === "number") c.minIntervalMs = config.minIntervalMs;
-  if (typeof config?.maxIntervalMs === "number") c.maxIntervalMs = config.maxIntervalMs;
-  if (typeof config?.bookId === "string") c.bookId = config.bookId;
-  if (config?.settlementMode === "realtime" || config?.settlementMode === "accelerated") {
-    c.settlementMode = config.settlementMode;
-  }
-  return c;
-}
-
 /**
- * Counterparty FX request-to-trade — the EXTERNAL stimulus. When running, it
- * represents counterparties continuously requesting FX trades; the bank's
- * internal market-maker (EnvSimEngine) executes the fills. The internal MM
- * view (risk monitor, rates) remains at /fx-sim. A full RFQ→quote→fill
- * handshake with a dedicated CounterpartyTradeRequested event is a follow-up.
+ * Counterparty FX request-to-trade — the EXTERNAL stimulus.
+ *
+ * INPUT PATH (D-FX-SIM-FRONTEND-INPUT-DRIVER, CEO-approved 2026-05-30):
+ * a 3rd-party simulator models an actor OUTSIDE the bank, so the faithful
+ * realisation is for the counterparty to transact through the bank's external
+ * web front-end — `/trade-book.html` — exactly as a real external party would,
+ * NOT via an internal `bookFxTrade` call. Trades now enter via the reusable
+ * front-end browser-driver:
+ *
+ *   1. `scripts/sim/fx-frontend-trade-specs.ts` emits N deterministic specs
+ *      (every spec tagged provenance=simulated), each mapping 1:1 onto the
+ *      trade-book form fields.
+ *   2. An agent drives Claude-in-Chrome over `/trade-book.html`, filling and
+ *      submitting the form per spec — see
+ *      `platform/simulation/fx-frontend-driver/README.md`.
+ *
+ * The previous in-process auto-booking (`engine.startTradeLoop` / `fireTrade`
+ * → `executeFxTrade` → `bookFxTrade`) is RETIRED for this module: keeping it
+ * alongside the front-end path would be two live booking paths for the same
+ * scope (duplicate-trade risk; CLAUDE.md "One dispatch path per scope"). The
+ * in-process coupling was also the per-booking wedge vector fixed in PR #912.
+ *
+ * The bank's INTERNAL market-maker (EnvSimEngine risk monitor, rates) remains
+ * at /fx-sim; `engine` is retained here only to surface that read-only risk
+ * context — this module no longer drives its trade loop.
+ *
+ * SUBSTRATE GAP (named, not hidden): a fully autonomous UNATTENDED run needs an
+ * agent runtime — a Bun server process cannot invoke the Claude-in-Chrome MCP
+ * tool. Until that runtime lands these runs are agent-executed /
+ * Scrooge-coordinated. Roadmap item, not a blocker.
  */
 export function makeCounterpartyFxRequestModule(engine: EnvSimEngine): SimulatorModule {
   return {
     id: "counterparty-fx-request",
-    label: "Counterparty FX request-to-trade",
+    label: "Counterparty FX request-to-trade (front-end input)",
     domain: "counterparty",
     description:
-      "External counterparties requesting FX spot trades. Each initiation is booked through the bank's NORMAL trade-booking path (same as a manual/real trade, tagged simulated), then the internal market-maker risk monitor steers direction to stay within the B3 limit.",
-    mode: "loop+fire",
-    configSchema: [
-      {
-        key: "minIntervalMs",
-        label: "Min interval (ms)",
-        type: "number",
-        default: 2000,
-        min: 100,
-        max: 600000,
-      },
-      {
-        key: "maxIntervalMs",
-        label: "Max interval (ms)",
-        type: "number",
-        default: 8000,
-        min: 100,
-        max: 600000,
-      },
-      { key: "bookId", label: "Book ID", type: "text", default: "BK-FX-MM-SIM-001" },
-      {
-        key: "settlementMode",
-        label: "Settlement",
-        type: "select",
-        default: "accelerated",
-        options: ["accelerated", "realtime"],
-        help: "accelerated: full lifecycle at T+0. realtime: settles at T+2.",
-      },
-    ],
-    fireActions: [{ id: "request-one", label: "Send one request" }],
-    // Trades book through the normal path (actor "operator"); the engine's own
-    // tradesGenerated counter is authoritative, so no event-derived override.
+      "External counterparties requesting FX spot trades. Trades now ENTER VIA THE FRONT-END: an agent runs scripts/sim/fx-frontend-trade-specs.ts to generate deterministic simulated specs, then drives Claude-in-Chrome over /trade-book.html to book each one (see platform/simulation/fx-frontend-driver/README.md). The in-process auto-booking is retired — the front-end is the canonical input path. Autonomous unattended browser runs require an agent runtime (substrate gap).",
+    // No internal loop/fire — booking is driven externally through the browser.
+    mode: "fire",
+    configSchema: [],
+    fireActions: [{ id: "how-to", label: "How to book (front-end driver)" }],
+    // Front-end-booked FX trades carry actor "operator" (same as a manual/real
+    // trade), so they are NOT attributable to a sim actor id here; the hub's
+    // event-derived count would otherwise also catch genuine manual trades.
     eventActorIds: [],
-    start(config) {
-      engine.startTradeLoop(toEngineConfig(config));
+    // Booking is external; the in-process loop is retired. start/stop are no-ops
+    // kept only to satisfy the lifecycle contract.
+    start() {
+      /* retired — booking enters via the front-end driver */
     },
     stop() {
-      engine.stopTradeLoop();
+      /* retired — booking enters via the front-end driver */
     },
     isRunning() {
-      return engine.isTradeLoopRunning();
+      return false;
     },
     async fire(actionId) {
-      if (actionId !== "request-one") return { ok: false, detail: `unknown action '${actionId}'` };
-      engine.fireTrade();
-      return { ok: true };
+      if (actionId !== "how-to") return { ok: false, detail: `unknown action '${actionId}'` };
+      return {
+        ok: true,
+        detail:
+          "Booking enters via the front-end. Run: `bun run scripts/sim/fx-frontend-trade-specs.ts --count <n> --seed <s>` then have an agent drive /trade-book.html via Claude-in-Chrome per platform/simulation/fx-frontend-driver/README.md.",
+      };
     },
     getStatus(): SimStatus {
+      // Read-only internal MM risk context (rates / B3 steering) for the panel;
+      // this module no longer drives the engine's trade loop, so it reports as
+      // not running and emits nothing in-process.
       const s = engine.getStatus();
       return {
         id: "counterparty-fx-request",
-        running: s.running,
-        eventsEmitted: s.tradesGenerated,
-        lastEventAt: s.lastTradeAt,
-        lastEventType: s.lastTradeId ? "FxTradeExecuted" : null,
-        lastError: s.errorsCount > 0 ? `${s.errorsCount} error(s)` : null,
-        startedAt: s.startedAt,
+        running: false,
+        eventsEmitted: 0,
+        lastEventAt: null,
+        lastEventType: null,
+        lastError: null,
+        startedAt: null,
         extra: {
-          lastTradeId: s.lastTradeId,
-          lastPair: s.lastPair,
-          lastSide: s.lastSide,
-          lastRate: s.lastRate,
-          lastCounterparty: s.lastCounterparty,
-          settlementMode: s.config.settlementMode,
+          inputPath: "front-end (/trade-book.html via Claude-in-Chrome)",
+          paramGenerator: "scripts/sim/fx-frontend-trade-specs.ts",
+          driverProcedure: "platform/simulation/fx-frontend-driver/README.md",
           riskMonitor: s.riskMonitor,
         },
       };
