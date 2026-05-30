@@ -7,8 +7,10 @@
 //
 // Cadence: hourly at minute 5 (offset from open-er-api's daily 02:00
 // UTC to avoid clashing). Twelve Data free tier permits 800 req/day and
-// 8 req/min; /time_series at outputsize=2 costs 12 credits/run (2 bars ×
-// 6 symbols), so 24 hourly fires/day = 288 credits/day — under the cap.
+// 8 req/min; /time_series at outputsize=2 costs 16 credits/run (2 bars ×
+// 8 symbols — 6 ZAR pairs + EUR/USD + GBP/USD per
+// D-FX-CROSS-PAIRS-PRODUCTION-INGEST), so 24 hourly fires/day = 384
+// credits/day — under the cap.
 //
 // Env var requirement:
 //   BANK_TWELVEDATA_API_KEY — required. The launchd plist installed at
@@ -35,7 +37,8 @@
 //     domain events.
 //   - On missing-key path: at most one SubstrateAlert per UTC hour.
 //
-// Authority: D-MARKETS-SCHEMA-FOUNDATION, D-AGENT-AUTONOMY-OPERATIONAL.
+// Authority: D-MARKETS-SCHEMA-FOUNDATION, D-AGENT-AUTONOMY-OPERATIONAL,
+//   D-FX-CROSS-PAIRS-PRODUCTION-INGEST.
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";

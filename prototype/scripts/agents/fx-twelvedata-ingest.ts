@@ -17,10 +17,11 @@
 //     unchanged operator-facing behaviour for manual / ad-hoc runs.
 //
 // Free-tier credit cost: 1 credit per data point returned per symbol.
-// outputsize=2 × 6 symbols = 12 credits/run; hourly cadence = 288/day —
-// well under the 800/day cap.
+// outputsize=2 × 8 symbols = 16 credits/run; hourly cadence = 384/day —
+// well under the 800/day cap. (8 symbols = 6 ZAR pairs + EUR/USD + GBP/USD
+// per D-FX-CROSS-PAIRS-PRODUCTION-INGEST.)
 //
-// Authority: D-MARKETS-SCHEMA-FOUNDATION
+// Authority: D-MARKETS-SCHEMA-FOUNDATION, D-FX-CROSS-PAIRS-PRODUCTION-INGEST
 //
 // Usage:
 //   BANK_TWELVEDATA_API_KEY=<key> bun run scripts/agents/fx-twelvedata-ingest.ts
@@ -38,7 +39,7 @@ import { TWELVE_DATA_TARGET_PAIRS, parseTwelveDataTimeSeriesResponse } from "./f
 const TWELVE_DATA_BASE = "https://api.twelvedata.com/time_series";
 // Fetch the 2 most-recent hourly bars per symbol. Each hourly poll adds the
 // newest bar while the previous bar acts as overlap for dedup correctness.
-// Credit cost: outputsize × symbols = 2 × 6 = 12 credits/run.
+// Credit cost: outputsize × symbols = 2 × 8 = 16 credits/run.
 const TWELVE_DATA_INTERVAL = "1h";
 const TWELVE_DATA_OUTPUTSIZE = 2;
 const SOURCE = "twelve-data";
