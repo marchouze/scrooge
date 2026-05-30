@@ -1138,3 +1138,106 @@ describe("Regression — idempotency: running the engine twice emits 0 new posti
     expect(after2).toBe(after1);
   });
 });
+
+// ===========================================================================
+// Regression — booking-path scoping (event-loop-wedge fix).
+//
+// A single trade booking must post ONLY its own legs and must NOT reprocess
+// the institution's entire posting/cancellation backlog inline on the request
+// thread. Before the fix, beaGlPostingEngine replayed and reprocessed the whole
+// store on every booking; the FxTradeCancelled arm full-replayed the entire
+// store per posting per cancellation (O(store^2)), wedging the single-threaded
+// event loop for minutes at production store size.
+//
+// These tests pin the contract structurally (O(1) postings per booking; the
+// backlog is NOT flushed) so the regression cannot silently return as the store
+// grows. A latency budget would be flaky under CI load; asserting the emitted
+// posting *count* is the robust invariant.
+//
+// Authority: fix(trade-booking) — bound GL/accounting work per booking.
+// ===========================================================================
+
+describe("Regression — booking-path scoping bounds GL work per booking", () => {
+  it("scopeToEventIds processes ONLY the triggering trade — the other pending trade is untouched", async () => {
+    const asOf = "2026-05-24T10:00:00.000Z";
+    const tradeA = makeMinimalFxTradeExecuted({
+      tradeId: `REG-SCOPE-A-${newEventId()}`,
+      asOf,
+    });
+    const tradeB = makeMinimalFxTradeExecuted({
+      tradeId: `REG-SCOPE-B-${newEventId()}`,
+      asOf,
+    });
+    compositionEventStore.append(tradeA);
+    compositionEventStore.append(tradeB);
+
+    // Run scoped to trade A only (the booking-path contract).
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-05-24T11:00:00.000Z"), {
+      scopeToEventIds: [tradeA.event_id],
+    });
+    expect(result.ok).toBe(true);
+
+    // Trade A posts; trade B does NOT (its booking is left for its own scoped run).
+    expect(postingsForSource(tradeA.event_id)).toHaveLength(1);
+    expect(postingsForSource(tradeB.event_id)).toHaveLength(0);
+    // Exactly one posting emitted by this run — O(1), not a backlog flush.
+    expect(result.eventsEmitted).toBe(1);
+  });
+
+  it("a scoped booking does NOT reprocess a pending cancellation backlog inline", async () => {
+    const asOf = "2026-05-24T10:00:00.000Z";
+
+    // Seed a trade + an UNPOSTED cancellation that, under full replay, would
+    // trigger the (previously O(store^2)) cancellation reconstruction.
+    const staleTradeId = `REG-SCOPE-STALE-${newEventId()}`;
+    const staleTrade = makeMinimalFxTradeExecuted({ tradeId: staleTradeId, asOf });
+    compositionEventStore.append(staleTrade);
+    const staleCancel = makeFxTradeCancelled({
+      asOf: "2026-05-24T10:30:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId: staleTradeId,
+        reason: "scope-backlog-test",
+        cancelledBy: "agent:test",
+        originalEventId: staleTrade.event_id,
+      },
+    });
+    compositionEventStore.append(staleCancel);
+
+    // Now "book" a brand-new trade and run the engine scoped to it only.
+    const freshTrade = makeMinimalFxTradeExecuted({
+      tradeId: `REG-SCOPE-FRESH-${newEventId()}`,
+      asOf,
+    });
+    compositionEventStore.append(freshTrade);
+
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-05-24T11:00:00.000Z"), {
+      scopeToEventIds: [freshTrade.event_id],
+    });
+    expect(result.ok).toBe(true);
+
+    // The fresh trade is posted; the pending cancellation backlog is NOT flushed
+    // inline — that work belongs on the backfill/cron cadence, off the booking
+    // thread.
+    expect(postingsForSource(freshTrade.event_id)).toHaveLength(1);
+    expect(postingsForSource(staleCancel.event_id)).toHaveLength(0);
+    expect(result.eventsEmitted).toBe(1);
+  });
+
+  it("an unscoped (backfill/cron) run still processes the full backlog — scoping is opt-in", async () => {
+    const asOf = "2026-05-24T10:00:00.000Z";
+    const t1 = makeMinimalFxTradeExecuted({ tradeId: `REG-UNSCOPED-1-${newEventId()}`, asOf });
+    const t2 = makeMinimalFxTradeExecuted({ tradeId: `REG-UNSCOPED-2-${newEventId()}`, asOf });
+    compositionEventStore.append(t1);
+    compositionEventStore.append(t2);
+
+    // No scopeToEventIds → full replay (backfill / cron behaviour preserved).
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-05-24T11:00:00.000Z"));
+    expect(result.ok).toBe(true);
+
+    expect(postingsForSource(t1.event_id)).toHaveLength(1);
+    expect(postingsForSource(t2.event_id)).toHaveLength(1);
+  });
+});
