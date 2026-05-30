@@ -172,7 +172,10 @@ function buildWorkflowMap(rosterPath: string): WorkflowMaps {
   }
 }
 
-const ROSTER_PATH = join(dirname(fileURLToPath(import.meta.url)), "../Team/_team-roster.json");
+// dashboard/ sits under prototype/, but the canonical roster lives at the
+// repo root (Team/_team-roster.json) — two levels up, not one. The previous
+// "../Team" resolved to prototype/Team (ENOENT), silently emptying WORKFLOW_MAP.
+const ROSTER_PATH = join(dirname(fileURLToPath(import.meta.url)), "../../Team/_team-roster.json");
 const { byFile: WORKFLOW_MAP, byDisplayName: NAME_MAP } = buildWorkflowMap(ROSTER_PATH);
 
 function durationMs(status: string, createdAt: string, updatedAt: string): number | null {
