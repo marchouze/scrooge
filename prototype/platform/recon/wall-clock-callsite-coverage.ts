@@ -133,8 +133,17 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   passes a fixed `now`. Clock-abstraction cleanup deferred to
 //   D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Author: Scrooge (Chief of Staff), 2026-05-30.
+//
+// 2026-05-30 — Bumped 63 → 64 (WS-ODP-COLLATERAL-SEGREGATION):
+//   platform/recon/odp-collateral-segregation-breach-staleness.ts:91 — injectable
+//   default `const now = opts.now ?? new Date()` added by the ODP collateral
+//   segregation breach-staleness gate. Same approved injectable-default pattern
+//   as the 62→63 bump; wall-clock fallback only activates when opts.now is
+//   omitted (production). All tests inject a fixed `now`. Clock-abstraction
+//   cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
+//   Author: Devon (COO, operations), 2026-05-30.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 63;
+const KNOWN_VIOLATIONS_SNAPSHOT = 64;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

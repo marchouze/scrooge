@@ -298,6 +298,15 @@ export * from "./otc-confirmations";
 //   (portfolio reconciliation and dispute resolution).
 // Author: Devon (COO, operations).
 export * from "./odp-portfolio-recon";
+// WS-ODP-COLLATERAL-SEGREGATION — ODP collateral segregation enforcement events.
+// CollateralSegregationLocked, CollateralSegregationReleased,
+//   CollateralSubstitutionRequested, CollateralSubstitutionApproved,
+//   CollateralSubstitutionRejected, CollateralSufficiencyChecked,
+//   CollateralSegregationBreachRaised.
+// Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12
+//   (segregation and rehypothecation controls); ISDA 1994/2016 VM CSA.
+// Author: Devon (COO, operations).
+export * from "./odp-collateral-segregation";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER

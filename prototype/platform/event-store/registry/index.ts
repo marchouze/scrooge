@@ -178,6 +178,13 @@ export {
 // 5 recon-run events + 3 break/dispute lifecycle events (8 total).
 // Authority: ORG-ODP-COND-007; urn:regulation:odp:cs-2-2018 §9.
 export { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
+// WS-ODP-COLLATERAL-SEGREGATION — collateral segregation enforcement events.
+// CollateralSegregationLocked, CollateralSegregationReleased,
+//   CollateralSubstitutionRequested, CollateralSubstitutionApproved,
+//   CollateralSubstitutionRejected, CollateralSufficiencyChecked,
+//   CollateralSegregationBreachRaised.
+// Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.
+export { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -234,6 +241,7 @@ import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
+import { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
 import { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
@@ -413,6 +421,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // 5 recon-run events + 3 break/dispute lifecycle events (8 total).
   // Authority: ORG-ODP-COND-007; urn:regulation:odp:cs-2-2018 §9.
   ...ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY,
+  // WS-ODP-COLLATERAL-SEGREGATION — collateral segregation enforcement events.
+  // 7 events: lock/release/substitution(3)/sufficiency/breach.
+  // Authority: ORG-ODP-COND-010; urn:regulation:odp:cs-2-2018 §12.
+  ...ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
