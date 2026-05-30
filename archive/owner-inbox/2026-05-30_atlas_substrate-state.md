@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-05-30T01:01:06.858Z
+asOf: 2026-05-30T02:00:47.708Z
 decision-required: false
 ---
 
@@ -9,27 +9,27 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 120270 events across 172 types; 31/31 personas have operating specs; 128 runtime handlers registered; 509 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 120433 events across 172 types; 31/31 personas have operating specs; 128 runtime handlers registered; 509 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120270
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120433
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 44284 | 2026-05-27 | 2026-05-29 |
 | `InboundMessageReceived` | 13423 | 2026-05-25 | 2026-05-28 |
-| `SubstrateAgentRunStarted` | 5568 | 2026-05-25 | 2026-05-30 |
-| `BusDispatched` | 5474 | 2026-05-25 | 2026-05-30 |
-| `SubstrateAgentRunCompleted` | 5406 | 2026-05-25 | 2026-05-30 |
+| `SubstrateAgentRunStarted` | 5602 | 2026-05-25 | 2026-05-30 |
+| `BusDispatched` | 5508 | 2026-05-25 | 2026-05-30 |
+| `SubstrateAgentRunCompleted` | 5440 | 2026-05-25 | 2026-05-30 |
 | `GatewayCheckRequested` | 4074 | 2026-05-09 | 2026-05-20 |
 | `SubLedgerPostingEmitted` | 2857 | 2026-05-09 | 2026-05-29 |
 | `Decision` | 2677 | 2026-04-30 | 2026-05-29 |
 | `GatewayCheckCompleted` | 2496 | 2026-05-17 | 2026-05-20 |
-| `RiskRaised` | 1972 | 2025-12-01 | 2026-05-30 |
+| `RiskRaised` | 1979 | 2025-12-01 | 2026-05-30 |
 | `OrderProposed` | 1650 | 2026-05-09 | 2026-05-20 |
 | `ISDACSAAssessmentCompleted` | 1490 | 2024-01-01 | 2026-05-20 |
-| `LegacyFanoutShadowed` | 1418 | 2026-05-25 | 2026-05-30 |
+| `LegacyFanoutShadowed` | 1451 | 2026-05-25 | 2026-05-30 |
 | `CreditLimitLoaded` | 1327 | 2024-01-01 | 2026-05-21 |
 | `CreditLimitApplicationSubmitted` | 1308 | 2024-01-01 | 2026-05-20 |
 | `CreditLimitApproved` | 1308 | 2024-01-01 | 2026-05-20 |
@@ -37,22 +37,22 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120270
 | `CreditAnalysisCompleted` | 990 | 2024-01-01 | 2026-05-20 |
 | `CreditLimitProposed` | 990 | 2024-01-01 | 2026-05-20 |
 | `CcrReplacementCostComputed` | 873 | 2026-05-18 | 2026-05-20 |
-| `WorkstreamRegistered` | 860 | 2026-05-07 | 2026-05-30 |
+| `WorkstreamRegistered` | 868 | 2026-05-07 | 2026-05-30 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
 | `FxTradeExecuted` | 685 | 2026-05-17 | 2026-05-28 |
-| `DashboardProjectionRefreshed` | 631 | 2026-05-25 | 2026-05-30 |
+| `DashboardProjectionRefreshed` | 640 | 2026-05-25 | 2026-05-30 |
 | `SubstrateAlert` | 610 | 2025-01-01 | 2026-05-29 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `ReconResult` | 558 | 2026-05-07 | 2026-05-29 |
 | `ClientCandidateRegistered` | 544 | 2026-05-25 | 2026-05-29 |
-| `ScheduledTrigger` | 541 | 2026-05-25 | 2026-05-30 |
+| `ScheduledTrigger` | 542 | 2026-05-25 | 2026-05-30 |
 | `CounterpartyFaisClassified` | 500 | 2026-05-01 | 2026-05-17 |
 | `KYCIdentityCollected` | 492 | 2026-05-25 | 2026-05-29 |
 | `KYCIdentityVerified` | 492 | 2026-05-25 | 2026-05-29 |
 | `KYCSanctionsPEPScreened` | 492 | 2026-05-25 | 2026-05-29 |
 | `KYCDecisionMade` | 491 | 2026-05-25 | 2026-05-29 |
-| `AgentGoalEvaluated` | 445 | 2026-05-25 | 2026-05-30 |
+| `AgentGoalEvaluated` | 446 | 2026-05-25 | 2026-05-30 |
 | `ClientRejected` | 419 | 2026-05-25 | 2026-05-29 |
 | `FxPositionRevalued` | 408 | 2026-05-28 | 2026-05-29 |
 | `OfficialMarkAdopted` | 406 | 2026-05-28 | 2026-05-29 |
@@ -88,13 +88,13 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120270
 | `OrderApprovedAtGateway` | 117 | 2026-05-17 | 2026-05-17 |
 | `OrderRejectedAtGateway` | 117 | 2026-05-17 | 2026-05-17 |
 | `IntradayHQLAStressProjection` | 112 | 2026-05-26 | 2026-05-29 |
-| `SubstrateStateSnapshot` | 107 | 2026-05-07 | 2026-05-30 |
+| `SubstrateStateSnapshot` | 108 | 2026-05-07 | 2026-05-30 |
 | `CreditLimitBreached` | 90 | 2026-05-22 | 2026-05-22 |
 | `CreditLimitBreachDisposed` | 90 | 2026-05-23 | 2026-05-23 |
 | `LiquidityLimitBreached` | 90 | 2026-05-21 | 2026-05-23 |
 | `LiquidityLimitBreachDisposed` | 90 | 2026-05-22 | 2026-05-24 |
 | `Feedback` | 90 | 2026-05-10 | 2026-05-10 |
-| `AgentGoalSelected` | 88 | 2026-05-25 | 2026-05-30 |
+| `AgentGoalSelected` | 89 | 2026-05-25 | 2026-05-30 |
 | `PartyRelationshipAsserted` | 81 | 2026-05-19 | 2026-05-26 |
 | `AgentEscalation` | 77 | 2026-05-07 | 2026-05-28 |
 | `DailyPnLReportGenerated` | 73 | 2026-05-25 | 2026-05-29 |
@@ -343,13 +343,13 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-The substrate is mature and load-bearing: 120,270 events across 172 types in the host-local store, 31/31 personas with operating specs, 128 registered runtime handlers across all standing agents, and the four foundational gaps (typed payloads, projection-cache persistence, citation gate, Claude narrative integration) now closed or downgraded to adoption work. The shape that's still genuinely missing is structural rather than coverage: a substrate-native scheduler, a cross-process event bus, and the Neon hardening conditions that gate any sensitive-data flow.
+The substrate is materially populated and load-bearing: 120,433 events across 172 types, 31/31 personas specced, 128 runtime handlers registered. The decision-grade primitives are now in play — `AgentEscalation` (77), `AgentDecision` (3), `WorkstreamRegistered` (868), `WorkstreamCompleted` (7), `AgentEscalationDecided` (13) — meaning the typed-payload gap is no longer theoretical; handlers are emitting against the schemas. What is still closing is downstream consumption of those types; what is blocking nothing today but will block at M8 is the absence of a cross-process event bus and a typed scheduler.
 
-The most consequential shifts since last week's snapshot: first, `ProvenanceReclassified` has become the single largest event class at 44,284 — the reclassification pass is now the dominant signal in the store and downstream consumers should expect that volume to persist. Second, `AgentEscalation` is real substrate (77 events, 13 `AgentEscalationDecided`), and a wave of new readiness-snapshot types (`ALMReadinessSnapshot`, `PaymentsReadinessSnapshot`, `LegalReadinessSnapshot`, `OperationalResilienceSnapshot`, `CyberResilienceSnapshot`, `POPIAControlsSnapshot`, `TaxReadinessSnapshot`, `MarketsReadinessSnapshot`, `FinancialPositionSnapshot`, `AuditCommitteePackPrepped`) has landed at single-digit counts from Ravi, Tomas, Imani, Devon, Rashida, Iris, Yael, Saskia, Camille, and Thandiwe — the readiness-snapshot pattern is now substrate-wide. Third, `WorkstreamRegistered` has reached 860 and `WorkstreamCompleted` 7; the workstream lifecycle now has both ends emitting events, which unblocks the dashboard's curated-seed retirement end-to-end.
+The consequential deltas this week: (1) the model-risk lifecycle has come online end-to-end — `ModelRegistered` (3), `ModelSubmitted` (16), `ModelTierClassified` (16), `ValidationMethodologyPublished` (4), `ValidationFindingRaised` (1), `ModelValidationApproved` (19) — Nadia's validation-cycle handler is now substrate, not aspiration. (2) The ALM/liquidity stack landed as first-class events: `LCRComputed`, `NSFRComputed`, `FtpCurvePublished`, `ALMRunCompleted` (14 each), plus `IntradayHQLAStressProjection` (112) and `LCRRatioProjection` (4), wiring Ravi's handlers into the canonical store. (3) `ProvenanceReclassified` exploded to 44,284 over three days — that is a reclassification sweep, not steady-state, and Anya/Scrooge should confirm it has quiesced before next week's snapshot.
 
-Load-bearing gaps, ranked by downstream impact: (1) the Neon hardening conditions §5.1/§5.2 — these gate every sensitive-data event flow that lands after M1, and the deferral only holds while payloads stay non-sensitive; KYC, party, and POPIA flows are already pushing that boundary. (2) Cross-process event-bus — `BusDispatched` (5,474) and `LegacyFanoutShadowed` (1,418) show the in-process fanout is carrying real load, but event-driven dispatch across workflows is still M8 work, and that is what would let Vera's audit pipelines and Anya's projection refresh react to `AgentEscalation` and `WorkstreamCompleted` from sibling workflows rather than only from their own parent run. (3) A2.1 substrate scheduler — cron remains an interim substrate; the off-the-hour pinning is holding, but `ScheduledTrigger` (541 events) already proves the typed-trigger shape works in-process, and the cron shims are now the only non-substrate path on the hot loop. Owner Inbox at 509 deliverables is high but is a Scrooge/Devon throughput concern, not a substrate gap.
+Load-bearing gaps, ranked by what they block downstream: `AgentEscalation` is defined and emitting (77 events, latest 2026-05-28), so Vera's audit pipelines #14/#15 are unblocked at the substrate layer — the remaining work is on Vera's side to consume. `WorkstreamRegistered` (868) and `WorkstreamCompleted` (7) are both flowing, so the dashboard's curated-seed retirement has its substrate; the 868:7 ratio says workstreams are being opened far faster than closed, which is a Devon/Owen governance signal, not a substrate defect. The remaining structural gap with real downstream cost is the **scheduler**: GH Actions cron is still the trigger plane, `ScheduledTrigger` is being emitted (542) but only as a shadow record, not as the dispatch mechanism — every silent cron drop is invisible until a snapshot diff catches it. Neon hardening conditions §5.1/§5.2 remain deferred and are only load-bearing the moment sensitive-data events begin to flow; that gate must precede any KYC/PII payload promotion.
 
-Next: stand up the A2.1 Bun-process scheduler so `ScheduledTrigger` becomes the canonical trigger source and cron files retire to shims.
+Next: stand up A2.1 — the Bun-process scheduler emitting `ScheduledTrigger` as the dispatch event — so the cron shims can retire and trigger reliability becomes a substrate property rather than a GitHub Actions hope.
 
 ## Provenance
 
