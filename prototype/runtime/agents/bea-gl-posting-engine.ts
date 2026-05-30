@@ -245,14 +245,84 @@ function buildPostedKeySet(): Set<IdempotencyKey> {
   return keys;
 }
 
+/**
+ * Indexes used by the cancellation arm (PR-FX-CANCEL) to reconstruct a
+ * cancelled trade's booking legs and cumulative unrealised P&L.
+ *
+ * Built ONCE per engine run. The previous implementation full-replayed the
+ * entire event store (~124k events) once *per posting* (~3.9k) *per
+ * cancellation* — an O(store²) blow-up that wedged the single-threaded event
+ * loop for minutes on every booking, because the engine replays all events on
+ * every run. These two flat maps make cancellation reconstruction O(postings)
+ * with O(1) lookups instead.
+ */
+interface CancellationIndex {
+  /** sourceEventId → that source event's `tradeId` (normalised to string). */
+  readonly tradeIdBySourceEvent: Map<string, string>;
+  /** All SubLedgerPostingEmitted events, materialised once. */
+  readonly postings: readonly import("../../platform/event-store/types").Event[];
+}
+
+function normaliseTradeId(tradeId: unknown): string {
+  if (typeof tradeId === "string") return tradeId;
+  if (tradeId && typeof tradeId === "object" && "value" in tradeId) {
+    const v = (tradeId as { value?: unknown }).value;
+    return typeof v === "string" ? v : "";
+  }
+  return "";
+}
+
+function buildCancellationIndex(): CancellationIndex {
+  // One full pass to map every event_id → its tradeId (string). This replaces
+  // the per-posting `[...eventStore.replay({})].filter(...)` full-store scan.
+  const tradeIdBySourceEvent = new Map<string, string>();
+  for (const ev of eventStore.replay({})) {
+    const tid = normaliseTradeId((ev.payload as { tradeId?: unknown }).tradeId);
+    if (tid) tradeIdBySourceEvent.set(ev.event_id, tid);
+  }
+  const postings = [...eventStore.replay({ type: "SubLedgerPostingEmitted" })];
+  return { tradeIdBySourceEvent, postings };
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
 
-export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRunOutput> {
+/**
+ * Options for {@link beaGlPostingEngine}.
+ *
+ * `scopeToEventIds` — when set, the engine processes ONLY source events whose
+ * `event_id` is in this set. The booking path (`bookFxTrade` and the other
+ * per-product handlers) passes the single just-appended trade's `eventId` so a
+ * booking posts O(1) legs for its own trade and never re-runs the institution's
+ * entire posting backlog inline on the request thread.
+ *
+ * When unset (the default), the engine replays ALL subscribed events — the
+ * correct behaviour for explicit backfill / cron / on-request reconciliation
+ * runs. Idempotency (the `${sourceEventId}:${postingType}` posting-key set) is
+ * built over the full store in BOTH modes, so a scoped booking run that races a
+ * concurrent backfill still cannot double-post.
+ */
+export interface BeaGlPostingOptions {
+  /** Restrict processing to these source-event ids (booking-path scoping). */
+  readonly scopeToEventIds?: readonly string[];
+}
+
+export async function beaGlPostingEngine(
+  ctx: AgentRunContext,
+  opts: BeaGlPostingOptions = {},
+): Promise<AgentRunOutput> {
+  const scopeSet =
+    opts.scopeToEventIds && opts.scopeToEventIds.length > 0
+      ? new Set<string>(opts.scopeToEventIds)
+      : undefined;
+
   // Replay ALL subscribed events from the store (not just triggering set) so
   // that on-request / backfill runs pick up everything, and idempotency
-  // remains correct regardless of trigger batch size.
+  // remains correct regardless of trigger batch size. When `scopeSet` is
+  // present (booking path), the per-event loop below skips everything outside
+  // the scope — the replay still materialises only indexed-by-type rows, so the
+  // scoped path is bounded by the count of subscribed events, not the store.
   const sourceEvents = [
     ...eventStore.replay({ type: "PaymentInitiated" }),
     ...eventStore.replay({ type: "PaymentSettled" }),
@@ -308,8 +378,23 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
   let skipped = 0;
   const errors: string[] = [];
 
+  // Cancellation leg-reconstruction needs to look up postings by their source
+  // trade and the source events behind those postings. Building these indexes
+  // ONCE per run (rather than full-replaying the store per posting, per
+  // cancellation — the O(store²) wedge fixed here) keeps even a full backfill
+  // run bounded. Lazily built: only cancellation events touch them.
+  let cancellationIndex: CancellationIndex | undefined;
+  const getCancellationIndex = (): CancellationIndex => {
+    if (!cancellationIndex) cancellationIndex = buildCancellationIndex();
+    return cancellationIndex;
+  };
+
   for (const e of sourceEvents) {
     if (!SUBSCRIBED_TYPES.has(e.type)) continue;
+    // Booking-path scoping: when invoked for a single just-booked trade, process
+    // only that trade's own event. Backfill / cron runs leave scopeSet undefined
+    // and process everything.
+    if (scopeSet && !scopeSet.has(e.event_id)) continue;
 
     try {
       // -----------------------------------------------------------------------
@@ -484,17 +569,18 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
         const payload = e.payload as TradeCancelledPayload | FxTradeCancelledPayload;
         // Gather all prior SubLedgerPostingEmitted for this trade to reconstruct
         // booking legs and cumulative unrealised P&L.
-        const allPostings = [...eventStore.replay({ type: "SubLedgerPostingEmitted" })];
-        const tradePostings = allPostings.filter((ev) => {
-          const p = ev.payload as { sourceEventId?: unknown };
-          return typeof p.sourceEventId === "string" && ev.payload !== undefined;
-        });
+        //
+        // Uses the per-run cancellation index (postings materialised once;
+        // sourceEventId → tradeId map built once) instead of full-replaying the
+        // entire store for every posting — the O(store²) wedge that previously
+        // blocked the event loop for minutes on every booking.
+        const cidx = getCancellationIndex();
         // For cancellation we need to compute cumulative net unrealised P&L.
         // We do this by summing all revaluation postings linked to this tradeId.
         let cumulativeUnrealisedPnlZarMinor = 0;
         const bookingLegs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[] =
           [];
-        for (const p of tradePostings) {
+        for (const p of cidx.postings) {
           const pp = p.payload as {
             postingType?: string;
             legs?: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
@@ -503,25 +589,15 @@ export async function beaGlPostingEngine(ctx: AgentRunContext): Promise<AgentRun
           if (typeof pp.postingType !== "string" || !Array.isArray(pp.legs)) continue;
           const sourceEventId = (p.payload as { sourceEventId?: string }).sourceEventId;
           if (!sourceEventId) continue;
-          // Look up the source event to check tradeId
-          const srcEvents = [...eventStore.replay({})].filter(
-            (ev) => ev.event_id === sourceEventId,
-          );
-          if (srcEvents.length === 0) continue;
-          // tradeId on source events may be either a string (TradeCancelled,
+          // Look up the source event's tradeId via the prebuilt index. tradeId on
+          // source events may be either a string (TradeCancelled,
           // FxPositionRevalued, etc.) or an identifier object with `{value}`
-          // (FxTradeExecuted — see fxTradeBookingJournals call site above).
-          // Normalise both shapes to the string form before comparison —
-          // otherwise the booking-leg lookup silently returns nothing and
-          // the cancellation produces zero legs.
-          const srcPayload = srcEvents[0]?.payload as {
-            tradeId?: string | { value?: string };
-          };
-          const srcTradeIdValue =
-            typeof srcPayload.tradeId === "string"
-              ? srcPayload.tradeId
-              : (srcPayload.tradeId?.value ?? "");
-          if (srcTradeIdValue !== payload.tradeId) continue;
+          // (FxTradeExecuted — see fxTradeBookingJournals call site above); the
+          // index already normalised both shapes to the string form. A source
+          // event not present in the index has no tradeId — skip it (same effect
+          // as the previous "source event not found / no tradeId" continue).
+          const srcTradeIdValue = cidx.tradeIdBySourceEvent.get(sourceEventId);
+          if (!srcTradeIdValue || srcTradeIdValue !== payload.tradeId) continue;
 
           if (pp.postingType === "trade-booking") {
             bookingLegs.push(...pp.legs);
