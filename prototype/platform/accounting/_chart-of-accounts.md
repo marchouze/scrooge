@@ -27,11 +27,11 @@ The single populated account below is the worked example. Subsequent population 
 
 ---
 
-## ACC-1100-001 — Cash and balances at SARB (operational, ZAR)
+## ACC-1100-001 — Central Bank Reserve Account
 
 ```yaml
 id: ACC-1100-001
-name: "Cash and balances at SARB — operational, ZAR"
+name: "Central Bank Reserve Account"
 category: asset-cash-equivalents
 side: debit
 ifrsClassification: amortised-cost
@@ -102,7 +102,7 @@ Vera's planned chart-of-accounts recon (Wave-4 candidate) asserts: (a) every acc
 
 ```yaml
 id: ACC-2100-001
-name: "FX Trading Receivable — ZAR"
+name: "FX Trading Receivable"
 category: asset-trading
 side: debit
 ifrsClassification: fvtpl
@@ -139,7 +139,7 @@ citations:
 
 ```yaml
 id: ACC-2100-002
-name: "FX Trading Receivable — USD"
+name: "FX Trading Receivable"
 category: asset-trading
 side: debit
 ifrsClassification: fvtpl
@@ -167,7 +167,7 @@ citations:
 
 ```yaml
 id: ACC-2100-003
-name: "FX Trading Payable — ZAR"
+name: "FX Trading Payable"
 category: liability-trading
 side: credit
 ifrsClassification: fvtpl
@@ -195,7 +195,7 @@ citations:
 
 ```yaml
 id: ACC-2100-004
-name: "FX Trading Payable — USD"
+name: "FX Trading Payable"
 category: liability-trading
 side: credit
 ifrsClassification: fvtpl
@@ -272,11 +272,11 @@ citations:
     regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
 ```
 
-### ACC-1100-002 — Nostro — USD (Correspondent)
+### ACC-1100-002 — Nostro (USD) — DEPRECATED, merged to ACC-1200-002
 
 ```yaml
 id: ACC-1100-002
-name: "Nostro — USD (correspondent bank)"
+name: "Nostro"
 category: asset-cash-equivalents
 side: debit
 ifrsClassification: amortised-cost
@@ -307,11 +307,11 @@ citations:
     regulationId: D-MARKETS-CAPITAL-TIME-SHAPE
 ```
 
-### ACC-1100-003 — Nostro — EUR (Correspondent)
+### ACC-1100-003 — Nostro (EUR) — DEPRECATED, merged to ACC-1200-003
 
 ```yaml
 id: ACC-1100-003
-name: "Nostro — EUR (correspondent bank)"
+name: "Nostro"
 category: asset-cash-equivalents
 side: debit
 ifrsClassification: amortised-cost
@@ -340,7 +340,7 @@ citations:
 
 ```yaml
 id: ACC-1100-004
-name: "FX Settlement Suspense — ZAR"
+name: "FX Settlement Suspense"
 category: asset-suspense
 side: debit
 ifrsClassification: amortised-cost
@@ -367,7 +367,7 @@ citations:
 
 ```yaml
 id: ACC-1100-005
-name: "FX Settlement Suspense — USD"
+name: "FX Settlement Suspense"
 category: asset-suspense
 side: debit
 ifrsClassification: amortised-cost
@@ -401,7 +401,7 @@ These accounts host the IFRS-9 default-recognition treatment of a failed FX sett
 
 ```yaml
 id: ACC-2300-001
-name: "Settlement-Failed Receivable — ZAR (amortised cost, credit-impaired)"
+name: "Settlement-Failed Receivable (amortised cost, credit-impaired)"
 category: asset-receivable
 side: debit
 ifrsClassification: amortised-cost
@@ -444,7 +444,7 @@ citations:
 
 ```yaml
 id: ACC-2300-002
-name: "Settlement-Failed Receivable — USD (amortised cost, credit-impaired)"
+name: "Settlement-Failed Receivable (amortised cost, credit-impaired)"
 category: asset-receivable
 side: debit
 ifrsClassification: amortised-cost
@@ -635,7 +635,7 @@ citations:
 
 ```yaml
 id: ACC-2200-001
-name: "Customer Payables — ZAR"
+name: "Customer Payables"
 category: liability-payable
 side: credit
 ifrsClassification: amortised-cost
@@ -664,7 +664,7 @@ citations:
 
 ```yaml
 id: ACC-2200-002
-name: "Customer Payables — USD"
+name: "Customer Payables"
 category: liability-payable
 side: credit
 ifrsClassification: amortised-cost
@@ -693,7 +693,7 @@ citations:
 
 ```yaml
 id: ACC-2400-001
-name: "Payment Suspense — ZAR"
+name: "Payment Suspense"
 category: liability-suspense
 side: credit
 ifrsClassification: n-a
@@ -720,7 +720,7 @@ citations:
 
 ```yaml
 id: ACC-2400-002
-name: "Payment Suspense — USD"
+name: "Payment Suspense"
 category: liability-suspense
 side: credit
 ifrsClassification: n-a
@@ -747,7 +747,7 @@ citations:
 
 ```yaml
 id: ACC-4100-001
-name: "Settlement Receivable — ZAR"
+name: "Settlement Receivable"
 category: asset-receivable
 side: debit
 ifrsClassification: amortised-cost
@@ -776,7 +776,7 @@ citations:
 
 ```yaml
 id: ACC-4100-002
-name: "Settlement Receivable — USD"
+name: "Settlement Receivable"
 category: asset-receivable
 side: debit
 ifrsClassification: amortised-cost

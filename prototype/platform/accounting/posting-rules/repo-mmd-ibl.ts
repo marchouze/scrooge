@@ -35,7 +35,7 @@
 // currency, per call. All amounts in ZAR minor units (cents) unless noted.
 //
 // Chart-of-accounts references (ACC-NNNN-NNN):
-//   ACC-1100-001  Nostro ZAR (SARB operational) — canonical Nostro used by FX rules
+//   ACC-1200-001  Nostro (ZAR correspondent; settlement cash, D-COA-CURRENCY-DECOUPLING) — canonical Nostro used by FX rules
 //   ACC-5100-001  Repo Asset (secured borrowing receivable)
 //   ACC-5100-002  Repo Liability (secured borrowing payable — alternate entry point)
 //   ACC-5100-003  Repo Collateral Memo (off-balance-sheet collateral tracking)
@@ -85,7 +85,7 @@ import type { SubLedgerLeg } from "../fx-accounting-types";
 // ---------------------------------------------------------------------------
 
 /** Nostro ZAR — matches FX_ACCOUNTS.NOSTRO_ZAR in fx-spot.ts (ACC-1100-001). */
-const NOSTRO_ZAR = "ACC-1100-001";
+const NOSTRO_ZAR = "ACC-1200-001";
 
 /** Repo sub-ledger accounts. */
 const REPO = {

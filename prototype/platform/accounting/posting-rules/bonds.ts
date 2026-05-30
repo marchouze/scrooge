@@ -23,7 +23,7 @@
 //   ACC-3100-005  Unrealised P&L — Bonds (FVTPL)
 //   ACC-3100-006  Realised P&L — Bonds
 //   ACC-4101-001  Interest Income (EIR)
-//   ACC-1100-001  Nostro ZAR (cash leg)
+//   ACC-1200-001  Nostro (ZAR correspondent; cash leg, D-COA-CURRENCY-DECOUPLING)
 //
 // Authority:
 //   - D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
@@ -56,7 +56,7 @@ export const BOND_ACCOUNTS = {
   REALISED_PNL: "ACC-3100-006",
   INTEREST_INCOME_EIR: "ACC-4101-001",
   // Cash
-  NOSTRO_ZAR: "ACC-1100-001",
+  NOSTRO_ZAR: "ACC-1200-001",
 } as const;
 
 // ---------------------------------------------------------------------------
