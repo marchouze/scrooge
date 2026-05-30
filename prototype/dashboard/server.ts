@@ -3869,6 +3869,238 @@ const server = Bun.serve({
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
+    // ---------- Autonomy view — GET /api/autonomy ----------
+    // Isolates genuinely-autonomous agent activity (substrate = "agent-runtime")
+    // from the scheduler heartbeat and Scrooge-coordinated in-session runs, so the
+    // CEO can see — and watch climb — how much the bank is running itself.
+    //
+    // READ-ONLY: replays the live shared event store; emits no new events.
+    // Authority: D-AGENT-AUTONOMY-COHORT-2-PILOT (CEO-approved 2026-05-30).
+    // Author: Noa (Intranet Product Owner & UI Architect, engineering),
+    // brief brief:noa:add-autonomy-dashboard-view-autonomous-activity-:2026-05-30.
+    //
+    // Substrate lives on AgentRunStarted payloads; AgentRunCompleted does not carry
+    // it. So each run is classified by its Started event's substrate, and completion
+    // data (outcome, duration, deliverables) is joined back by runId.
+    if (url.pathname === "/api/autonomy" && req.method === "GET") {
+      type AgentRef = { name?: string; position?: string; agentId?: string };
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const nowMs = Date.now();
+
+      const tsMs = (s: unknown): number | null => {
+        if (typeof s !== "string" || !s) return null;
+        const t = Date.parse(s);
+        return Number.isNaN(t) ? null : t;
+      };
+      const durationLabel = (startMs: number | null, endMs: number | null): string | undefined => {
+        if (startMs === null || endMs === null || endMs < startMs) return undefined;
+        const secs = Math.round((endMs - startMs) / 1000);
+        if (secs < 60) return `${secs}s`;
+        const mins = Math.floor(secs / 60);
+        const remSecs = secs % 60;
+        if (mins < 60) return `${mins}m ${remSecs}s`;
+        const hours = Math.floor(mins / 60);
+        return `${hours}h ${mins % 60}m`;
+      };
+
+      // Index Started events by runId, capturing substrate + start metadata.
+      type StartedMeta = {
+        runId: string;
+        briefId?: string;
+        agent: AgentRef;
+        substrate: string;
+        startedAt?: string;
+        startedMs: number | null;
+      };
+      const startedByRun = new Map<string, StartedMeta>();
+      for (const ev of eventStore.replay({ type: "AgentRunStarted" })) {
+        const p = (ev.payload ?? {}) as Record<string, unknown>;
+        const runId = typeof p.runId === "string" ? p.runId : null;
+        if (!runId) continue;
+        const startedAt = typeof p.startedAt === "string" ? p.startedAt : undefined;
+        startedByRun.set(runId, {
+          runId,
+          briefId: typeof p.briefId === "string" ? p.briefId : undefined,
+          agent: (p.agent ?? {}) as AgentRef,
+          substrate: typeof p.substrate === "string" ? p.substrate : "unknown",
+          startedAt,
+          startedMs: tsMs(startedAt) ?? tsMs(ev.as_of),
+        });
+      }
+
+      // Index Completed events by runId.
+      type CompletedMeta = {
+        outcome?: string;
+        completedAt?: string;
+        completedMs: number | null;
+        deliverableCount: number;
+        briefId?: string;
+        agent?: AgentRef;
+      };
+      const completedByRun = new Map<string, CompletedMeta>();
+      for (const ev of eventStore.replay({ type: "AgentRunCompleted" })) {
+        const p = (ev.payload ?? {}) as Record<string, unknown>;
+        const runId = typeof p.runId === "string" ? p.runId : null;
+        if (!runId) continue;
+        const completedAt = typeof p.completedAt === "string" ? p.completedAt : undefined;
+        const hashes = Array.isArray(p.deliverableDocumentHashes)
+          ? p.deliverableDocumentHashes
+          : [];
+        completedByRun.set(runId, {
+          outcome: typeof p.outcome === "string" ? p.outcome : undefined,
+          completedAt,
+          completedMs: tsMs(completedAt) ?? tsMs(ev.as_of),
+          deliverableCount: hashes.length,
+          briefId: typeof p.briefId === "string" ? p.briefId : undefined,
+          agent: (p.agent ?? undefined) as AgentRef | undefined,
+        });
+      }
+
+      // ── 1. Autonomy ratio (all-time + last-7-days) ─────────────────
+      // Count runs by substrate class. A run is counted once (by its Started
+      // event). Recency keyed on startedMs.
+      let autoAll = 0;
+      let coordAll = 0;
+      let autoWk = 0;
+      let coordWk = 0;
+      for (const meta of startedByRun.values()) {
+        const isAuto = meta.substrate === "agent-runtime";
+        const isCoord = meta.substrate === "scrooge-coordinated-in-session";
+        if (!isAuto && !isCoord) continue;
+        if (isAuto) autoAll++;
+        else coordAll++;
+        const recent = meta.startedMs !== null && nowMs - meta.startedMs <= SEVEN_DAYS_MS;
+        if (recent) {
+          if (isAuto) autoWk++;
+          else coordWk++;
+        }
+      }
+
+      // ── 2. Autonomous run feed (agent-runtime only, newest first) ──
+      const autonomousRuns = [...startedByRun.values()]
+        .filter((m) => m.substrate === "agent-runtime")
+        .sort((a, b) => (b.startedMs ?? 0) - (a.startedMs ?? 0))
+        .map((m) => {
+          const comp = completedByRun.get(m.runId);
+          return {
+            runId: m.runId,
+            agentName: m.agent?.name ?? comp?.agent?.name ?? "",
+            agentPosition: m.agent?.position ?? comp?.agent?.position ?? "",
+            briefId: m.briefId ?? comp?.briefId ?? "",
+            startedAt: m.startedAt,
+            completedAt: comp?.completedAt,
+            outcome: comp?.outcome,
+            deliverableCount: comp?.deliverableCount ?? 0,
+            durationLabel: durationLabel(m.startedMs, comp?.completedMs ?? null),
+          };
+        });
+
+      // ── 3. Goal-loop heartbeat-vs-action split (per agent) ─────────
+      type GoalAgg = { agentUrn: string; evaluated: number; deferred: number };
+      const goalByAgent = new Map<string, GoalAgg>();
+      const ensureGoal = (urn: string): GoalAgg => {
+        let g = goalByAgent.get(urn);
+        if (!g) {
+          g = { agentUrn: urn, evaluated: 0, deferred: 0 };
+          goalByAgent.set(urn, g);
+        }
+        return g;
+      };
+      for (const ev of eventStore.replay({ type: "AgentGoalEvaluated" })) {
+        const p = (ev.payload ?? {}) as Record<string, unknown>;
+        const urn = typeof p.agentUrn === "string" ? p.agentUrn : "unknown";
+        ensureGoal(urn).evaluated++;
+      }
+      for (const ev of eventStore.replay({ type: "AgentGoalDeferred" })) {
+        const p = (ev.payload ?? {}) as Record<string, unknown>;
+        const urn = typeof p.agentUrn === "string" ? p.agentUrn : "unknown";
+        ensureGoal(urn).deferred++;
+      }
+      const goalLoop = [...goalByAgent.values()]
+        .map((g) => {
+          // Evaluated events are total goal-loop iterations; deferred is the
+          // subset that took no action. "Acted" = evaluated minus deferred,
+          // floored at 0 (defensive against any out-of-window deferrals).
+          const acted = Math.max(0, g.evaluated - g.deferred);
+          const denom = g.evaluated > 0 ? g.evaluated : g.deferred;
+          const deferRatio = denom > 0 ? g.deferred / denom : 0;
+          return {
+            agentUrn: g.agentUrn,
+            agentName: g.agentUrn.replace(/^agent:/, ""),
+            evaluated: g.evaluated,
+            deferred: g.deferred,
+            acted,
+            deferRatio,
+          };
+        })
+        .sort((a, b) => b.deferred + b.evaluated - (a.deferred + a.evaluated));
+
+      // ── 4. Scheduler heartbeat (last N, demoted in the UI) ─────────
+      const HEARTBEAT_LIMIT = 20;
+      const allTicks: Array<{
+        agentUrn?: string;
+        triggerId?: string;
+        cronExpression?: string;
+        firedAt?: string;
+        firedMs: number | null;
+      }> = [];
+      let heartbeatTotal = 0;
+      for (const ev of eventStore.replay({ type: "ScheduledTrigger" })) {
+        heartbeatTotal++;
+        const p = (ev.payload ?? {}) as Record<string, unknown>;
+        const firedAt = typeof p.firedAt === "string" ? p.firedAt : undefined;
+        allTicks.push({
+          agentUrn: typeof p.agentUrn === "string" ? p.agentUrn : undefined,
+          triggerId: typeof p.triggerId === "string" ? p.triggerId : undefined,
+          cronExpression: typeof p.cronExpression === "string" ? p.cronExpression : undefined,
+          firedAt,
+          firedMs: tsMs(firedAt) ?? tsMs(ev.as_of),
+        });
+      }
+      const heartbeatRecent = allTicks
+        .sort((a, b) => (b.firedMs ?? 0) - (a.firedMs ?? 0))
+        .slice(0, HEARTBEAT_LIMIT)
+        .map(({ firedMs, ...rest }) => rest);
+
+      // ── 5. Autonomy-relevant alerts (inactivity) ───────────────────
+      const inactivityAlerts: Array<{
+        alertId?: string;
+        agentUrn?: string;
+        severity?: string;
+        details?: string;
+        at?: string;
+        atMs: number | null;
+      }> = [];
+      for (const ev of eventStore.replay({ type: "SubstrateAlert" })) {
+        const p = (ev.payload ?? {}) as Record<string, unknown>;
+        if (p.alertClass !== "inactivity") continue;
+        inactivityAlerts.push({
+          alertId: typeof p.alertId === "string" ? p.alertId : undefined,
+          agentUrn: typeof p.agentUrn === "string" ? p.agentUrn : undefined,
+          severity: typeof p.severity === "string" ? p.severity : undefined,
+          details: typeof p.details === "string" ? p.details : undefined,
+          at: ev.as_of,
+          atMs: tsMs(ev.as_of),
+        });
+      }
+      inactivityAlerts.sort((a, b) => (b.atMs ?? 0) - (a.atMs ?? 0));
+      const inactivityAlertsOut = inactivityAlerts
+        .slice(0, 30)
+        .map(({ atMs, ...rest }) => rest);
+
+      return jsonResponse({
+        asOf: cachedState.asOf,
+        ratio: {
+          allTime: { autonomous: autoAll, coordinated: coordAll },
+          last7Days: { autonomous: autoWk, coordinated: coordWk },
+        },
+        autonomousRuns,
+        goalLoop,
+        heartbeat: { totalCount: heartbeatTotal, recent: heartbeatRecent },
+        inactivityAlerts: inactivityAlertsOut,
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
     // Decisions register — all authorities (CEO, CRO, CoSec, Agent, etc.).
     // Authority: D-DECISIONS-FRAMEWORK-REDESIGN (unified Decision event type).
     if (url.pathname === "/api/decisions-register" && req.method === "GET") {
