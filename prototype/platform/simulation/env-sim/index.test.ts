@@ -134,7 +134,7 @@ describe("MarketDataSimulator", () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 200));
     sim.stop();
 
-    const ticks = mdStore.query({ dataType: "fx-quote" });
+    const ticks = mdStore.query({ dataType: "fx-quote", provenance: "simulated" });
     expect(ticks.length).toBeGreaterThan(0);
   });
 
@@ -143,7 +143,7 @@ describe("MarketDataSimulator", () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 100));
     sim.stop();
 
-    const ticks = mdStore.query({ dataType: "fx-quote" });
+    const ticks = mdStore.query({ dataType: "fx-quote", provenance: "simulated" });
     expect(ticks.length).toBeGreaterThan(0);
     const tick = ticks[0];
     expect(tick).toBeDefined();

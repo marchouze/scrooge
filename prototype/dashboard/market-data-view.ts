@@ -33,7 +33,10 @@ function buildFacets(store: MarketDataStore): FacetsCache {
   // dedicated `distinct(column)` helper and adding one is outside this
   // scope; 5000 covers the live working set and the sample auto-refreshes
   // every FACETS_TTL_MS via the cache.
-  const sample = store.query({ limit: 5000 });
+  // Operator-facing facet builder: deliberately spans ALL provenance so the
+  // dashboard can surface both production and simulated feeds. This is an
+  // EXPLICIT opt-out of the production-only default — never a valuation read.
+  const sample = store.query({ limit: 5000, provenance: "all" });
   const sources = new Set<string>();
   const instruments = new Set<string>();
   const dataTypes = new Set<string>();
@@ -74,8 +77,11 @@ export function registerMarketDataRoutes(
     const instrument = searchParams.get("instrument") ?? undefined;
     const dataType = searchParams.get("dataType") ?? undefined;
     const provenanceRaw = searchParams.get("provenance") ?? undefined;
-    const provenance =
-      provenanceRaw === "production" || provenanceRaw === "simulated" ? provenanceRaw : undefined;
+    // Operator-facing list: when the operator does not pick a provenance facet,
+    // show ALL provenance explicitly (preserving prior UI behaviour) rather than
+    // silently inheriting the store's production-only default.
+    const provenance: "production" | "simulated" | "all" =
+      provenanceRaw === "production" || provenanceRaw === "simulated" ? provenanceRaw : "all";
 
     const limitRaw = Number(searchParams.get("limit") ?? "200");
     const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 1000) : 200;
