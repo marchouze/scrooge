@@ -164,10 +164,10 @@ function makeLoopSubSim(args: {
 export function makeMarketDataFeedModule(engine: EnvSimEngine): SimulatorModule {
   return makeLoopSubSim({
     id: "market-data-feed",
-    label: "Market-data feed (FX ticks)",
+    label: "Synthetic FX feed (simulated ticks)",
     domain: "market-data",
     description:
-      "External FX price feed. Emits bid/mid/ask ticks for the standard pairs to the market-data store (reference data — not the event store).",
+      'SIMULATED FX price feed — emits bid/mid/ask ticks tagged provenance="simulated" for the standard pairs to the market-data store (reference data, not the event store). Isolated from the real MTM/valuation source: every valuation read filters to provenance="production", so these synthetic ticks can never reach a real mark. Drives the FX trade-sim loop and risk monitor at high frequency without burning Twelve Data free-tier credits.',
     eventActorIds: [], // writes to MarketDataStore, not the event store
     sub: engine.marketDataSimulator,
   });

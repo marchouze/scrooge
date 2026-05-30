@@ -56,11 +56,27 @@ export interface MarketDataTick {
   ingestedAt: string; // ISO 8601
 }
 
+/**
+ * Provenance selector for reads.
+ *
+ *  - `"production"` — only real/live ticks (the SAFE DEFAULT; valuation reads).
+ *  - `"simulated"` — only simulated ticks (sim-hub synthetic feeds).
+ *  - `"all"` — every provenance, mixed. An EXPLICIT opt-in for non-valuation
+ *    surfaces (e.g. the operator-facing market-data dashboard facet builder).
+ *    Never use `"all"` on a valuation / MTM / rate-reference read.
+ */
+export type ProvenanceSelector = "production" | "simulated" | "all";
+
 export interface MarketDataQueryOptions {
   source?: string;
   instrument?: string;
   dataType?: string;
-  provenance?: "production" | "simulated";
+  /**
+   * Provenance filter. When OMITTED, defaults to `"production"` so a forgotten
+   * filter can never silently mix simulated ticks into a valuation read
+   * (safe-by-omission). Pass `"simulated"` or `"all"` to opt out explicitly.
+   */
+  provenance?: ProvenanceSelector;
   from?: string;
   to?: string;
   limit?: number;
@@ -118,31 +134,45 @@ export class MarketDataStore {
   /**
    * Get the latest tick for a (source, instrument) pair, optionally bounded
    * by `asOf` (returns the most recent tick with as_of <= asOf).
+   *
+   * `provenance` defaults to `"production"` — a read that omits it can never
+   * silently adopt a simulated tick (the sim emits every few seconds, so by
+   * recency a sim tick would otherwise win). Pass `"simulated"` or `"all"` to
+   * opt out of the production-only default explicitly.
    */
-  getLatest(source: string, instrument: string, asOf?: string): MarketDataTick | undefined {
-    let row: Record<string, unknown> | null;
+  getLatest(
+    source: string,
+    instrument: string,
+    asOf?: string,
+    provenance: ProvenanceSelector = "production",
+  ): MarketDataTick | undefined {
+    const conditions = ["source = ?", "instrument = ?"];
+    const params: (string | number)[] = [source, instrument];
     if (asOf !== undefined) {
-      row = this.db
-        .prepare(
-          `SELECT * FROM market_data_ticks
-           WHERE source = ? AND instrument = ? AND as_of <= ?
-           ORDER BY as_of DESC LIMIT 1`,
-        )
-        .get(source, instrument, asOf) as Record<string, unknown> | null;
-    } else {
-      row = this.db
-        .prepare(
-          `SELECT * FROM market_data_ticks
-           WHERE source = ? AND instrument = ?
-           ORDER BY as_of DESC LIMIT 1`,
-        )
-        .get(source, instrument) as Record<string, unknown> | null;
+      conditions.push("as_of <= ?");
+      params.push(asOf);
     }
+    if (provenance !== "all") {
+      conditions.push("provenance = ?");
+      params.push(provenance);
+    }
+    const row = this.db
+      .prepare(
+        `SELECT * FROM market_data_ticks
+         WHERE ${conditions.join(" AND ")}
+         ORDER BY as_of DESC LIMIT 1`,
+      )
+      .get(...params) as Record<string, unknown> | null;
     return row ? this.rowToTick(row) : undefined;
   }
 
   /**
    * Query ticks with optional filters.
+   *
+   * `provenance` defaults to `"production"` when omitted (safe-by-omission) so
+   * a forgotten filter never silently mixes simulated ticks into a valuation
+   * read. Pass `"simulated"` for sim-only, or `"all"` to opt explicitly into
+   * mixed provenance (operator/dashboard surfaces only — never valuation).
    */
   query(opts: MarketDataQueryOptions = {}): MarketDataTick[] {
     const conditions: string[] = [];
@@ -160,9 +190,11 @@ export class MarketDataStore {
       conditions.push("data_type = ?");
       params.push(opts.dataType);
     }
-    if (opts.provenance !== undefined) {
+    // Production-only by default; only "all" skips the provenance filter.
+    const provenance: ProvenanceSelector = opts.provenance ?? "production";
+    if (provenance !== "all") {
       conditions.push("provenance = ?");
-      params.push(opts.provenance);
+      params.push(provenance);
     }
     if (opts.from !== undefined) {
       conditions.push("as_of >= ?");

@@ -29,6 +29,27 @@ function writePlatformFile(protoDir: string, filename: string, content: string):
   writeFileSync(join(protoDir, "platform", filename), content, "utf8");
 }
 
+/** Write a synthetic `platform/market-data/store.ts` for the signature assertion. */
+function writeStore(protoDir: string, content: string): void {
+  mkdirSync(join(protoDir, "platform", "market-data"), { recursive: true });
+  writeFileSync(join(protoDir, "platform", "market-data", "store.ts"), content, "utf8");
+}
+
+const STORE_WITH_DEFAULTS = [
+  "export class MarketDataStore {",
+  "  getLatest(",
+  "    source: string,",
+  "    instrument: string,",
+  "    asOf?: string,",
+  '    provenance: ProvenanceSelector = "production",',
+  "  ): MarketDataTick | undefined { return undefined; }",
+  "  query(opts: MarketDataQueryOptions = {}): MarketDataTick[] {",
+  '    const provenance: ProvenanceSelector = opts.provenance ?? "production";',
+  "    return [];",
+  "  }",
+  "}",
+].join("\n");
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -154,5 +175,66 @@ describe("recon:market-data-provenance-gate", () => {
     // in its signature), so it will be flagged unless provenance is not
     // required for getLatest. Here we test that callsChecked >= 2.
     expect(result.callsChecked).toBeGreaterThanOrEqual(2);
+  });
+
+  // -------------------------------------------------------------------------
+  // Structural signature assertion (D-MARKET-DATA-PROVENANCE-ISOLATION-HARDENING)
+  // -------------------------------------------------------------------------
+
+  it("passes when store.ts keeps production-only defaults on getLatest and query", () => {
+    const protoDir = makeTempProto();
+    writeStore(protoDir, STORE_WITH_DEFAULTS);
+
+    const result = run({ prototypeDir: protoDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.violations).toHaveLength(0);
+  });
+
+  it("fails when getLatest drops the production-default provenance parameter", () => {
+    const protoDir = makeTempProto();
+    writeStore(
+      protoDir,
+      [
+        "export class MarketDataStore {",
+        "  getLatest(source: string, instrument: string, asOf?: string): MarketDataTick | undefined { return undefined; }",
+        "  query(opts: MarketDataQueryOptions = {}): MarketDataTick[] {",
+        '    const provenance: ProvenanceSelector = opts.provenance ?? "production";',
+        "    return [];",
+        "  }",
+        "}",
+      ].join("\n"),
+    );
+
+    const result = run({ prototypeDir: protoDir });
+
+    expect(result.ok).toBe(false);
+    expect(result.violations.some((v) => v.subject.endsWith("store.ts:getLatest"))).toBe(true);
+  });
+
+  it("fails when query() no longer defaults to production", () => {
+    const protoDir = makeTempProto();
+    writeStore(
+      protoDir,
+      [
+        "export class MarketDataStore {",
+        "  getLatest(",
+        "    source: string,",
+        "    instrument: string,",
+        "    asOf?: string,",
+        '    provenance: ProvenanceSelector = "production",',
+        "  ): MarketDataTick | undefined { return undefined; }",
+        "  query(opts: MarketDataQueryOptions = {}): MarketDataTick[] {",
+        "    if (opts.provenance !== undefined) { /* all-provenance when omitted */ }",
+        "    return [];",
+        "  }",
+        "}",
+      ].join("\n"),
+    );
+
+    const result = run({ prototypeDir: protoDir });
+
+    expect(result.ok).toBe(false);
+    expect(result.violations.some((v) => v.subject.endsWith("store.ts:query"))).toBe(true);
   });
 });

@@ -17,8 +17,21 @@
 //      when the containing line or the two lines above contain "existing",
 //      "dedup", or "existingIds".
 //
+// SECOND ASSERTION (D-MARKET-DATA-PROVENANCE-ISOLATION-HARDENING, 2026-05-30):
+// the call-site grep is a convention nudge, not the load-bearing guarantee. The
+// real guarantee is that the MarketDataStore READ surface is production-only by
+// default at the type/signature level, so a forgotten filter can never silently
+// adopt a simulated tick. This pipeline now ALSO structurally asserts that
+// `store.ts` keeps:
+//   - `getLatest(... provenance: ... = "production")` — a default-production
+//     provenance parameter, and
+//   - `query()` defaulting to `"production"` when `opts.provenance` is omitted.
+// If a future edit drops either default, this gate fails even if no call-site
+// changed.
+//
 // Authority:
-//   D-MARKETS-SCHEMA-FOUNDATION; Policies/valuation-policy-v1.md §4.3
+//   D-MARKETS-SCHEMA-FOUNDATION; D-MARKET-DATA-PROVENANCE-ISOLATION-HARDENING;
+//   Policies/valuation-policy-v1.md §4.3
 //
 // Author: Vera (Internal audit / continuous-assurance engineer, engineering)
 
@@ -192,6 +205,77 @@ function scanFiles(prototypeDir: string): ProvenanceViolation[] {
 }
 
 // ---------------------------------------------------------------------------
+// Structural signature assertion
+// ---------------------------------------------------------------------------
+
+/**
+ * Assert that `platform/market-data/store.ts` keeps the production-only default
+ * on both read methods. Returns a list of violations (empty when intact).
+ *
+ * We assert against the source text (not a runtime probe) so the gate has no
+ * dependency on a live store and can run in the static recon suite.
+ */
+function assertStoreSignatures(prototypeDir: string): ReconViolation[] {
+  const storePath = resolve(prototypeDir, "platform/market-data/store.ts");
+  const rel = "platform/market-data/store.ts";
+  // When store.ts is absent (e.g. the recon's own temp-dir unit tests that scan
+  // synthetic fixtures), there is nothing to assert — skip rather than fail.
+  if (!existsSync(storePath)) return [];
+  let src: string;
+  try {
+    src = readFileSync(storePath, "utf8");
+  } catch {
+    return [
+      {
+        subject: rel,
+        message: `Cannot read ${rel} to verify production-only default signatures.`,
+        severity: "fail" as const,
+      },
+    ];
+  }
+
+  // Normalise whitespace so multi-line signatures collapse to a single line.
+  const flat = src.replace(/\s+/g, " ");
+  const violations: ReconViolation[] = [];
+
+  // 1. getLatest must carry a provenance parameter defaulting to "production".
+  //    Matches: provenance: <type> = "production"  (within the getLatest sig).
+  const getLatestDefault = /getLatest\s*\([^)]*provenance\s*:\s*[^=)]*=\s*["']production["']/.test(
+    flat,
+  );
+  if (!getLatestDefault) {
+    violations.push({
+      subject: `${rel}:getLatest`,
+      message: [
+        "MarketDataStore.getLatest() must declare a `provenance` parameter defaulting to",
+        '"production" so a read that omits it can never silently adopt a simulated tick.',
+        'Expected signature shape: getLatest(source, instrument, asOf?, provenance = "production").',
+        "Authority: D-MARKET-DATA-PROVENANCE-ISOLATION-HARDENING.",
+      ].join("\n"),
+      severity: "fail" as const,
+    });
+  }
+
+  // 2. query() must default to production when opts.provenance is omitted.
+  //    Matches: opts.provenance ?? "production"
+  const queryDefault = /opts\.provenance\s*\?\?\s*["']production["']/.test(flat);
+  if (!queryDefault) {
+    violations.push({
+      subject: `${rel}:query`,
+      message: [
+        'MarketDataStore.query() must default to provenance "production" when omitted',
+        '(expected: `opts.provenance ?? "production"`), so a forgotten filter cannot mix',
+        'simulated ticks into a valuation read. Use the explicit "all" selector to opt out.',
+        "Authority: D-MARKET-DATA-PROVENANCE-ISOLATION-HARDENING.",
+      ].join("\n"),
+      severity: "fail" as const,
+    });
+  }
+
+  return violations;
+}
+
+// ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
 
@@ -248,6 +332,10 @@ export function run(opts: RunOpts = {}): ReconResult & { callsChecked: number } 
     ].join("\n"),
     severity: "fail" as const,
   }));
+
+  // Fold in the structural signature assertion: production-only-by-default must
+  // survive future edits to the store regardless of any call-site change.
+  reconViolations.push(...assertStoreSignatures(prototypeDir));
 
   result.violations = reconViolations;
   result.ok = reconViolations.length === 0;
