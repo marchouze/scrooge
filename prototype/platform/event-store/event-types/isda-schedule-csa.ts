@@ -95,14 +95,7 @@ type CsaFormType = z.infer<typeof csaFormTypeSchema>;
  * SA-law is permitted per the ODP's own Schedule template; English law
  * is the ISDA Master standard.
  */
-const governingLawSchema = z.enum([
-  "English",
-  "NY",
-  "SA",
-  "Japanese",
-  "French",
-  "German",
-]);
+const governingLawSchema = z.enum(["English", "NY", "SA", "Japanese", "French", "German"]);
 type GoverningLaw = z.infer<typeof governingLawSchema>;
 
 // ---------------------------------------------------------------------------
@@ -630,11 +623,11 @@ export function makeIsdaCsaElected(args: {
 // ---------------------------------------------------------------------------
 
 const csaSupersessionReasonSchema = z.enum([
-  "replaced-by-new-form",  // e.g. 1994-NY → 2016-VM migration
+  "replaced-by-new-form", // e.g. 1994-NY → 2016-VM migration
   "counterparty-terminated",
-  "regulatory-mandate",    // e.g. UMR phase-in
+  "regulatory-mandate", // e.g. UMR phase-in
   "mutual-agreement",
-  "default",               // CSA terminated on Event of Default / ETD
+  "default", // CSA terminated on Event of Default / ETD
 ]);
 type CsaSupersessionReason = z.infer<typeof csaSupersessionReasonSchema>;
 
@@ -671,9 +664,7 @@ export function makeIsdaCsaSuperseded(args: {
   eventId?: string;
 }): Event {
   if (!args.citations || args.citations.length === 0) {
-    throw new Error(
-      "IsdaCsaSuperseded requires at least one citation (Principle 2).",
-    );
+    throw new Error("IsdaCsaSuperseded requires at least one citation (Principle 2).");
   }
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),

@@ -40,13 +40,13 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
-import { type Actor, type Event, eventSchema } from "../types";
 import {
   cdmDateSchema,
   identifierSchema,
   moneySchema,
   partySchema,
 } from "../../markets/cdm/primitives";
+import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
 // Shared sub-schemas (local — extending the cdm/primitives pattern)
@@ -80,12 +80,7 @@ type IrdFloatingIndex = z.infer<typeof irdFloatingIndexSchema>;
 /**
  * DayCountConvention — aligned with IRS conventions.
  */
-const dayCountConventionSchema = z.enum([
-  "ACT/365",
-  "ACT/360",
-  "30/360",
-  "ACT/ACT-ISDA",
-]);
+const dayCountConventionSchema = z.enum(["ACT/365", "ACT/360", "30/360", "ACT/ACT-ISDA"]);
 
 /**
  * BusinessDayConvention — date-adjustment rules for payment and reset dates.
@@ -520,9 +515,7 @@ export const crossCurrencySwapTradeBookedPayloadSchema = z
     /**
      * Reset date convention for MTM-CCS. ISO-8601 dates or null for non-MTM.
      */
-    mtmResetDates: z
-      .array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
-      .default([]),
+    mtmResetDates: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).default([]),
     /** Trading book identifier. */
     bookId: z.string().min(1),
     /** Financial Instrument entity reference. Optional. */
@@ -532,10 +525,9 @@ export const crossCurrencySwapTradeBookedPayloadSchema = z
     /** UTI (allocated post-execution). */
     uti: z.string().optional(),
   })
-  .refine(
-    (d) => d.payLeg.currency !== d.receiveLeg.currency,
-    { message: "CrossCurrencySwap payLeg and receiveLeg must have different currencies" },
-  );
+  .refine((d) => d.payLeg.currency !== d.receiveLeg.currency, {
+    message: "CrossCurrencySwap payLeg and receiveLeg must have different currencies",
+  });
 
 export type CrossCurrencySwapTradeBookedPayload = z.infer<
   typeof crossCurrencySwapTradeBookedPayloadSchema

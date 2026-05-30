@@ -165,6 +165,15 @@ export { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-run
 // threat-model gate, key-ceremony attestation, governance-seat-run completion.
 // Authority: PA/FSCA Joint Standard 2 of 2024; POPIA s.19–22; Principle 4.
 export { CISO_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./ciso-governance";
+// WS-ODP-ISDA-ANNEXURES — ISDA Schedule + CSA elections + non-IRS OTC confirms.
+// IsdaScheduleElected, IsdaCsaElected, IsdaCsaSuperseded,
+//   FraTradeBooked, SwaptionTradeBooked, BasisSwapTradeBooked,
+//   CrossCurrencySwapTradeBooked.
+// Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018; BCBS d317.
+export {
+  ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY,
+  OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY,
+} from "./isda-odp";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -203,6 +212,10 @@ import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
+import {
+  ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY,
+  OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY,
+} from "./isda-odp";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import { LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY } from "./liquidity-limit";
@@ -382,6 +395,15 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // threat-model gate, key-ceremony attestation, governance-seat-run completion.
   // Authority: PA/FSCA Joint Standard 2 of 2024; POPIA s.19–22; Principle 4.
   ...CISO_GOVERNANCE_EVENT_TYPES_REGISTRY,
+  // WS-ODP-ISDA-ANNEXURES — ISDA Schedule + CSA elections.
+  // IsdaScheduleElected, IsdaCsaElected, IsdaCsaSuperseded.
+  // Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018; BCBS d317.
+  ...ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY,
+  // WS-ODP-ISDA-ANNEXURES — non-IRS OTC confirmation events.
+  // FraTradeBooked, SwaptionTradeBooked, BasisSwapTradeBooked,
+  //   CrossCurrencySwapTradeBooked.
+  // Authority: ORG-ODP-COND-005; ISDA 2006/2000 Definitions; BCBS d317.
+  ...OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

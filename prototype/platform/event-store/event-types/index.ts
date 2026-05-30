@@ -393,6 +393,7 @@ import { IFRS_POLICY_THRESHOLDS_TYPED_EVENT_TYPES } from "./ifrs-policy-threshol
 import { ILAAP_TYPED_EVENT_TYPES } from "./ilaap";
 import { INTRANET_EVENT_TYPES } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES } from "./ird-accounting";
+import { ISDA_SCHEDULE_CSA_TYPED_EVENT_TYPES } from "./isda-schedule-csa";
 import { KYC_TYPED_EVENT_TYPES } from "./kyc";
 import { LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES } from "./legal-documentation";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
@@ -402,6 +403,7 @@ import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-ex
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { MTM_TYPED_EVENT_TYPES } from "./mtm";
 import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
+import { OTC_CONFIRMATIONS_TYPED_EVENT_TYPES } from "./otc-confirmations";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";
 import { PLATFORM_TYPED_EVENT_TYPES } from "./platform";
@@ -420,8 +422,6 @@ import { SETTLEMENT_TYPED_EVENT_TYPES } from "./settlement";
 import { TRADE_MATURED_EVENT_TYPES } from "./trade-matured";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
 import { VALUATION_TYPED_EVENT_TYPES } from "./valuation";
-import { ISDA_SCHEDULE_CSA_TYPED_EVENT_TYPES } from "./isda-schedule-csa";
-import { OTC_CONFIRMATIONS_TYPED_EVENT_TYPES } from "./otc-confirmations";
 
 export const TYPED_EVENT_TYPES = [
   ...AGENT_TYPED_EVENT_TYPES,
