@@ -39,6 +39,7 @@ import { getFinancialConstant } from "../config/financial-constants";
 import { type Money, minor } from "../core/money";
 import { ZAR } from "../core/types";
 import type { EventStore } from "../event-store/store";
+import { computeRwaFromPositions } from "./rwa-from-positions";
 
 // ---------------------------------------------------------------------------
 // Constants — owned in platform/config/financial-constants.ts (objective 2 of
@@ -228,19 +229,24 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
   let totalRwaMinor: number;
   let buildPhase: boolean;
 
+  // Live RWA from booked positions (D-RWA-LIVE-POSITIONS-PROJECTION-V1).
+  // Falls back to the ICAAP v1 constant when the store has no trade events.
+  const rwaResult = computeRwaFromPositions(eventStore, asOf);
+  const liveRwaMinor = rwaResult.buildPhaseFallback
+    ? BUILD_PHASE_TOTAL_RWA_MINOR
+    : rwaResult.output.totalRwaMinor;
+
   if (live !== null) {
     // Live mode: capital position from event store
     availableCapitalMinor = live.availableCapitalMinor;
     accruedChargesMinor = live.accruedChargesMinor;
-    // RWA projection is not yet a live event-sourced value; use build-phase
-    // denominator until W2 Slice 3 RWA engine lands.
-    totalRwaMinor = BUILD_PHASE_TOTAL_RWA_MINOR;
+    totalRwaMinor = liveRwaMinor;
     buildPhase = false;
   } else {
     // Build-phase fallback: ICAAP v1 confirmed baseline (D-MARKETS-CAPITAL-TIME-SHAPE)
     availableCapitalMinor = BUILD_PHASE_TOTAL_CAPITAL_MINOR;
     accruedChargesMinor = 0;
-    totalRwaMinor = BUILD_PHASE_TOTAL_RWA_MINOR;
+    totalRwaMinor = liveRwaMinor;
     buildPhase = true;
   }
 
@@ -255,11 +261,15 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
   const capitalFmt = `R${(availableCapitalMinor / 100).toLocaleString("en-ZA", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   const sign = headroomMinor >= 0 ? "" : "−";
 
+  const rwaSource = rwaResult.buildPhaseFallback
+    ? "RWA: build-phase constant (no booked trades in store; D-RWA-LIVE-POSITIONS-PROJECTION-V1 fallback)"
+    : `RWA: live positions (${rwaResult.tradeCount} trade events; D-RWA-LIVE-POSITIONS-PROJECTION-V1)`;
+
   let note: string;
   if (buildPhase) {
-    note = `Build-phase baseline (ICAAP v1, D-MARKETS-CAPITAL-TIME-SHAPE 2026-05-12): capital ${capitalFmt}, headroom ${sign}${headroomFmt}, CET1 ratio ${cet1RatioPct}. No live CapitalEvent events in store; build-phase confirmed figures used. Status: ${status}${critical ? " (critical — below TICR)" : ""}.`;
+    note = `Build-phase baseline (ICAAP v1, D-MARKETS-CAPITAL-TIME-SHAPE 2026-05-12): capital ${capitalFmt}, headroom ${sign}${headroomFmt}, CET1 ratio ${cet1RatioPct}. No live CapitalEvent events in store; build-phase confirmed figures used. ${rwaSource}. Status: ${status}${critical ? " (critical — below TICR)" : ""}.`;
   } else {
-    note = `Live capital position derived from CapitalEvent events: capital ${capitalFmt}, headroom ${sign}${headroomFmt}, CET1 ratio ${cet1RatioPct}. TICR = R${(TICR_MINOR / 100).toLocaleString("en-ZA")}. Status: ${status}${critical ? " (critical — below TICR)" : ""}.`;
+    note = `Live capital position derived from CapitalEvent events: capital ${capitalFmt}, headroom ${sign}${headroomFmt}, CET1 ratio ${cet1RatioPct}. TICR = R${(TICR_MINOR / 100).toLocaleString("en-ZA")}. ${rwaSource}. Status: ${status}${critical ? " (critical — below TICR)" : ""}.`;
   }
 
   return {
