@@ -118,6 +118,7 @@ import {
 } from "../platform/model-registry/expected-event-watchdog";
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
+import { buildPnLDataFailuresView } from "../platform/product-control/pnl-data-failures-view";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import { getALMPositionSnapshot } from "../platform/projections/alm-positions";
 import {
@@ -3045,7 +3046,14 @@ const server = Bun.serve({
       // missing required/optional input), so the figure renders "value
       // unavailable" with the missing inputs named — never a silent 0.
       // Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
-      const failures = buildDataFailuresView(eventStore);
+      const modelFailures = buildDataFailuresView(eventStore);
+      // Product-control daily P&L — the headline unrealised figure is computed
+      // outside CALC_BINDINGS but obeys the same no-silent-zero discipline: a
+      // live FX position with no usable mark makes the aggregate incomplete
+      // rather than contributing a silent 0. Folded into the same `failures`
+      // section. Authority: D-TRUSTED-FIGURES-PROGRAM-V1; WS-TRUSTED-FIGURES.
+      const pnlFailures = buildPnLDataFailuresView(eventStore, nowUtc().slice(0, 10));
+      const failures = [...modelFailures, ...pnlFailures];
       // Expected-event gaps — the other silent-gap shape: an event that should
       // have been emitted but wasn't (no degraded calc to show; figure reads
       // from stale/absent state). Surfaced in the same banner.
@@ -3555,11 +3563,21 @@ const server = Bun.serve({
         payload: freshPayload,
         trades,
         marksUnavailableCount,
+        totalUnrealised,
       } = computeDailyPnL(eventStore, reportDate);
+      // Surface the headline-unrealised completeness explicitly (no-silent-zero,
+      // D-TRUSTED-FIGURES-PROGRAM-V1). Computed fresh so the signal is honest
+      // even if `latestReport` is a stale persisted payload predating this
+      // field. `unrealisedComplete: false` means the figure EXCLUDES ≥1
+      // unmarkable live position and must not be read as a complete number.
       return jsonResponse({
         report: latestReport ?? freshPayload,
         trades,
         marksUnavailableCount,
+        unrealisedComplete: freshPayload.unrealisedComplete,
+        unmarkableLivePositions: freshPayload.unmarkableLivePositions,
+        unmarkableLiveTradeIds: freshPayload.unmarkableLiveTradeIds,
+        unrealisedFigureState: totalUnrealised.present ? "complete" : "incomplete",
         asOf: nowUtc(),
         pageProvenance: eventDerivedPageProvenance(),
       });
