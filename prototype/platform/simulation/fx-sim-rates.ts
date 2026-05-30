@@ -68,10 +68,15 @@ export class FxRateEngine {
   /**
    * Advance the rate for `pair` by one random-walk step and return bid/mid/ask.
    * bpsChange = ((rand() + rand()) / 2 - 0.5) × 0.0004 → ±20 bps, gaussian-ish.
+   *
+   * An optional `rng` may be threaded in so callers that need deterministic,
+   * seed-reproducible walks (e.g. the front-end param-generator) get a fully
+   * repeatable sequence. When omitted it falls back to `Math.random` — the
+   * historical behaviour, unchanged for the live market-making loop.
    */
-  tick(pair: string): FxRate {
+  tick(pair: string, rng: () => number = Math.random): FxRate {
     const last = this.midRates.get(pair) ?? this.inferMid(pair);
-    const bpsChange = ((Math.random() + Math.random()) / 2 - 0.5) * 0.0004;
+    const bpsChange = ((rng() + rng()) / 2 - 0.5) * 0.0004;
     const mid = last * (1 + bpsChange);
     this.midRates.set(pair, mid);
     return this.buildRate(pair, mid);
