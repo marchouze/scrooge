@@ -72,9 +72,7 @@ function main(): number {
       actor: ACTOR,
       citations: CITATIONS,
     });
-    console.log(
-      `✓ Period closed — event_id=${closeResult.accountingPeriodClosedEvent.event_id}`,
-    );
+    console.log(`✓ Period closed — event_id=${closeResult.accountingPeriodClosedEvent.event_id}`);
     console.log(
       `  Trial balance: ${closeResult.trialBalance.rows.length} rows, uptoSequence=${closeResult.trialBalance.uptoSequence}`,
     );
