@@ -229,6 +229,20 @@ export interface FindingSummary {
   asOf: string; // ISO 8601 — when raised
 }
 
+/** Open issue from the issues-and-actions tracker (AuditIssueOpened/Closed projection). */
+export interface OpenIssueSummary {
+  issueId: string;
+  findingId: string;
+  title: string;
+  severity: string; // "low" | "medium" | "high" | "critical"
+  category: string;
+  agentId: string;
+  raisedBy: string;
+  remediationOwner?: string;
+  targetCloseDate?: string;
+  openedAt: string; // ISO 8601
+}
+
 export interface DecisionCommentSummary {
   eventId: string;
   decisionId: string;
@@ -596,6 +610,8 @@ export interface DashboardState {
   prototype: PrototypeStatus;
   risks: readonly string[];
   findings: readonly FindingSummary[];
+  /** Open issues from the issues-and-actions tracker (AuditIssueOpened/Closed projection). */
+  openIssues: readonly OpenIssueSummary[];
   runtimeHandlers: readonly RuntimeHandlerInfo[];
   /** Comments per decisionId — append-only thread, oldest first. */
   decisionComments: Readonly<Record<string, readonly DecisionCommentSummary[]>>;

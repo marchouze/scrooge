@@ -136,16 +136,16 @@ Rohan's model outputs are consumed by Vera's continuous-controls assurance pipel
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-05-31.
 
 - **No real positions yet.** Per CLAUDE.md "build phase vs licence-day": no real customers, no real trading. Build-phase work runs against synthetic positions to validate the risk substrate end-to-end. Real risk computation begins at licence-day.
 - **ECL engine not yet substrate.** IFRS 9 staging logic prototyped; PD / LGD / EAD models in design; no production engine yet. Owner: Rohan + Bea. Target: pre-licence go-live readiness gate.
 - **Operational-risk module scope confirmed active (D-OPRISK-ENGINEER-ROLE approved 2026-05-21):** loss-event taxonomy, Risk Return §3 generation, Pillar 3 §3.6 inputs, SMA RWA computation. Dedicated operational-risk engineer seat deferred to licence-day (D-OPRISK-ENGINEER-ROLE-LICENCE-DAY). Helena (Chief Risk Officer, governance) sponsors; Vera (Internal audit engineer, engineering) provides third-line continuous-assurance coverage.
-- **Risk engine modules** — market / credit / liquidity / operational all in build-only against synthetic positions. Owner: Rohan. Target: pre-licence.
+- **Risk engine modules** — VaR engine live (`platform/market-risk/var-engine.ts`), CVA engine live (`platform/market-risk/cva-engine.ts`), RWA projection live (`platform/projections/rwa-from-positions.ts`, `capital-metrics.ts`). Credit-limit engine live (recon:credit-limit-*). SA-CCR EAD, FRTB sensitivities, and ECL production engines remain unbuilt — all running against synthetic positions. Owner: Rohan. Target: pre-licence (SA-CCR, ECL); see FRTB below.
 - **Stress-test engine** — designed; partial. Scenario library prototyped; replay engine not yet event-driven. Owner: Rohan + Atlas. Target: pre-licence.
 - **SA-CCR engine** — designed; not yet built. Owner: Rohan. Target: pre-licence (mandatory for OTC IRD trading).
-- **FRTB sensitivity engine** — designed; not yet built. FRTB transition is a forward roadmap item; standardised approach prioritised for first-licence cycle. Owner: Rohan. Target: post-licence.
-- **Model registry** — designed; partial. Currently lives as Markdown methodology documents cross-referenced from procedure files. Owner: Rohan + Anya. Target: M2.
+- **FRTB-SA GIRR sensitivity engine** — designed; not yet built. Escalated from post-licence to **pre-licence** per Helena (Chief Risk Officer) CRO opinion 2026-05-31: FRTB-SA GIRR is mandatory before licence-day for IRS / rate-product trading. Standardised approach (SA-MR) remains interim capital proxy (6.25× notional risk-weight). Owner: Rohan. Target: pre-licence.
+- **Model registry** — ✅ **partial-closed 2026-05-29.** Typed calculation-provenance registry live at `platform/model-registry/calculation-provenance.ts`; CALC_BINDINGS expanded to 11 keys (model-registry-scope-closure). Markdown methodology documents replaced by typed entries. Remaining gap: production-use enforcement via Nadia's `ModelValidationApproved` veto is methodology-only until typed validation events land. Owner: Rohan + Anya + Nadia. Target: pre-licence.
 - **ICAAP / ILAAP run as paper exercise** during build-only.
 
 ## 17. Change log
@@ -157,3 +157,4 @@ Rohan's model outputs are consumed by Vera's continuous-controls assurance pipel
 | v1.1 | 2026-05-07 | Rohan (via Scrooge) | Risk taxonomy v0 and model registry v0 substrates landed at `prototype/platform/risk/_risk-taxonomy.md` and `prototype/platform/risk/_model-registry.md` (with JSON schemas). Procedure `ecl-stage-projection-refresh.md` populated as keystone of Rohan's first end-to-end Reg→RAS+Policy→Procedure→Capability chain (PROC-RSK-EC-01). One stub policy (Provisioning / IFRS 9 ECL) bundled at `Owner Inbox/2026-05-07_rohan_risk-policies-bundle-v0.md`; RAS reused unchanged. Substrate Gap §8 (model registry) status update: registry substrate live; M2-grade typed-file form still planned. |
 | v1.2 | 2026-05-14 | Rohan (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
 | v1.3 | 2026-05-21 | Owen (Company Secretary, via Scrooge) | D-OPRISK-ENGINEER-ROLE Option B (CEO-approved 2026-05-21) confirmed: operational-risk module scope (loss-event taxonomy, Risk Return §3, Pillar 3 §3.6, SMA RWA) is active under Rohan; dedicated seat deferred to licence-day. Note added to §16 Substrate gaps. |
+| v1.4 | 2026-05-31 | Vera (Internal audit / continuous-assurance engineer, via Scrooge) | §16 staleness audit (brief:vera:16-substrate-gap-staleness-audit-findings-spec-c:2026-05-31). Corrections: (1) Risk engine modules — VaR/CVA/RWA engines now live, partial-close noted; (2) Model registry — partial-closed 2026-05-29 (calculation-provenance.ts + CALC_BINDINGS expanded); (3) FRTB target escalated from post-licence to pre-licence per Helena (CRO) opinion 2026-05-31. Review date updated to 2026-05-31. |

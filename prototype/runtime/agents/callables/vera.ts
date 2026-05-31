@@ -6,6 +6,7 @@ import type { AgentRunHandler } from "../../types";
 import veraCodebaseQualityReview from "../vera-codebase-quality-review";
 import veraEventTriage from "../vera-event-triage";
 import veraGoalLoop from "../vera-goal-loop";
+import veraIssuesTracker from "../vera-issues-tracker";
 import veraOvernightRecon from "../vera-overnight-recon";
 
 export const VERA_CALLABLES: Record<string, AgentRunHandler> = {
@@ -13,4 +14,5 @@ export const VERA_CALLABLES: Record<string, AgentRunHandler> = {
   "vera:codebase-quality-review": veraCodebaseQualityReview,
   "vera:goal-loop": veraGoalLoop,
   "vera:event-triage": veraEventTriage,
+  "vera:issues-tracker": veraIssuesTracker,
 };
