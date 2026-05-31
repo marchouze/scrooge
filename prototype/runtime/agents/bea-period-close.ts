@@ -21,8 +21,9 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering) +
 //         Atlas (Platform Engineer, engineering)
 
-import { openPeriod } from "../../platform/accounting/period-close-handler";
+import { closePeriod, openPeriod } from "../../platform/accounting/period-close";
 import { eventStore, logger } from "../../platform/composition";
+import { nowUtc } from "../../platform/core/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -118,6 +119,45 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         { periodId, entity: ENTITY },
         "bea:period-close — build-phase posture: no SubLedgerPostingEmitted events; period open, close deferred",
       );
+    } else if (ctx.asOf.slice(0, 10) >= periodEnd) {
+      // Licence-day posture: postings exist and we are on or past the last
+      // calendar day of the period — run the full close transaction.
+
+      // Guard: skip if already closed (idempotent-terminal).
+      let alreadyClosed = false;
+      for (const e of eventStore.replay({ entity: ENTITY, type: "AccountingPeriodClosed" })) {
+        const p = e.payload as Record<string, unknown>;
+        if (p.periodId === periodId) {
+          alreadyClosed = true;
+          logger.info(
+            { periodId, entity: ENTITY, eventId: e.event_id },
+            "bea:period-close — period already closed (no-op)",
+          );
+          break;
+        }
+      }
+
+      if (!alreadyClosed) {
+        const closeResult = closePeriod({
+          eventStore,
+          entity: ENTITY,
+          periodId,
+          closedAt: nowUtc(),
+          actor: ACTOR,
+          citations: CITATIONS,
+        });
+        eventsEmitted += 2; // TrialBalanceSnapshotted + AccountingPeriodClosed
+        logger.info(
+          {
+            periodId,
+            entity: ENTITY,
+            closedEventId: closeResult.accountingPeriodClosedEvent.event_id,
+            tbRows: closeResult.trialBalance.rows.length,
+            uptoSequence: closeResult.trialBalance.uptoSequence,
+          },
+          "bea:period-close — AccountingPeriodClosed appended",
+        );
+      }
     }
   }
 
@@ -125,7 +165,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted,
     summary: ctx.dryRun
       ? `dry-run: period-close handler checked for ${monthlyPeriodId(ENTITY, ctx.asOf)}`
-      : `period ${monthlyPeriodId(ENTITY, ctx.asOf)} — open event emitted (${eventsEmitted} events). Build-phase: close deferred until first SubLedgerPostingEmitted.`,
+      : `period ${monthlyPeriodId(ENTITY, ctx.asOf)} — ${eventsEmitted} events emitted`,
     ok: true,
   };
 };
