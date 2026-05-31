@@ -32,9 +32,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
-import {
-  makeIrdSwapTerminated,
-} from "../platform/event-store/event-types/ird-accounting";
+import { makeIrdSwapTerminated } from "../platform/event-store/event-types/ird-accounting";
 import {
   makeInterbankLoanMatured,
   makeInterbankLoanPlaced,
@@ -310,7 +308,10 @@ describe("rwa-from-positions — FX spot trade", () => {
 // IRS booking helper
 // ---------------------------------------------------------------------------
 
-function appendIrsTrade(store: EventStore, opts: { notionalMinor?: number; tradeIdValue?: string } = {}): string {
+function appendIrsTrade(
+  store: EventStore,
+  opts: { notionalMinor?: number; tradeIdValue?: string } = {},
+): string {
   const tradeIdValue = opts.tradeIdValue ?? `IRS-TEST-${newEventId().slice(0, 8)}`;
   store.append(
     makeIrsTradeBooked({
