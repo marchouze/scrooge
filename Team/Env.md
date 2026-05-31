@@ -124,6 +124,8 @@ Env generates events consumed by Tomas (reconciliation), Bea (accounting), and V
 
 ## 16. Substrate gaps (current state)
 
+> Reviewed 2026-05-31.
+
 - **No real market data feed** — `FxRateEngine` uses a bounded random walk from seed rates. Live Bloomberg/Reuters/CME feed integration not yet designed. Owner: Kai (Trading systems engineer) for feed consumption; Devon for platform integration.
 - **No real SWIFT connectivity** — all MT messages are generated locally. Live SWIFT BIC directory, FIN message validation, and GPI tracking not yet implemented. Owner: Tomas (Operations & payments engineer).
 - **Stochastic profiles are illustrative** — `settlementFailureProbability`, `settlementDelayDays`, and `rejectionProbability` in built-in profiles are not calibrated to real counterparty SLA data. Live SLA data integration deferred to post-licence. Owner: Devon + Tomas.
@@ -135,3 +137,4 @@ Env generates events consumed by Tomas (reconciliation), Bea (accounting), and V
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v1.0 | 2026-05-19 | Devon (Chief Operating Officer, engineering) | Initial 17-section agent spec. EnvSimEngine absorbs FxSimEngine; adds MarketDataSimulator, NostroStatementSimulator, CorrespondentAdviceSim, RegulatoryAckSim; stochastic counterparty profiles; seeded PRNG. |
+| v1.1 | 2026-05-31 | Vera (Internal audit / continuous-assurance engineer, via Scrooge) | §16 staleness audit (brief:vera:16-substrate-gap-staleness-audit-findings-spec-c:2026-05-31). Added "Reviewed 2026-05-31" note — Env.md was omitted from the 2026-05-14 mandate review sweep. All five substrate gaps confirmed still valid (no live feeds, no real SWIFT, stochastic profiles illustrative, nostro hardcoded, no autonomous scheduling). |

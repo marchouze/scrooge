@@ -137,9 +137,9 @@ Camille is the first-line executive for finance; Helena (Chief Risk Officer) cha
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-05-31.
 
-- **BA-return generator** — not yet built. Quarterly BA returns currently assembled by Bea under audit-pack discipline; gap captured. Owner: Bea + Anya + Atlas.
+- **BA-return generator** — ✅ **partially closed 2026-05-29–31.** BA 700 (capital adequacy) generator live at `platform/returns/ba700/generator.ts` + `reporting/ba-700-*.ts`; BA 325 (LCR) return engine live at `platform/liquidity/`; `recon:ba-returns-vs-gl-balances` gate live. BA 100 / 200 / 300 / 900 cell-map wiring still pending. Owner: Bea + Anya + Atlas.
 - **AC-pack generator** — not yet built. AC pack is authored, not generated. Owner: Camille (template) + Owen (governance flow) + Atlas.
 - **ICAAP capital engine** — not yet built (also Helena's gap). Owner: Helena + Camille + Bea + Atlas.
 - **Capital-plan tooling** — not yet built. Plan refreshes are authored. Owner: Camille + Eitan + Atlas.
@@ -153,3 +153,4 @@ Camille is the first-line executive for finance; Helena (Chief Risk Officer) cha
 | v0.1 | 2026-05-06 | Nolan | Initial character sheet from CFO hire confirmation. |
 | v1.0 | 2026-05-07 | Camille (via Scrooge) | Upgraded to agent operating spec under Principle 6; declared monthly close as cadence anchor; named Bea + Yael as primary escalation sources; sections 6–17 added; sections 1–5 preserved. |
 | v1.1 | 2026-05-14 | Camille (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
+| v1.2 | 2026-05-31 | Vera (Internal audit / continuous-assurance engineer, via Scrooge) | §16 staleness audit (brief:vera:16-substrate-gap-staleness-audit-findings-spec-c:2026-05-31). BA-return generator: BA700/BA325 engines live (partial-close); BA100/200/300/900 still pending. Review date updated to 2026-05-31. |

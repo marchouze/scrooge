@@ -134,9 +134,9 @@ Helena's BRC chair role and her CRO accountability mean any BRC paper authored b
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-17.
+> Reviewed 2026-05-31.
 
-- **Risk-appetite monitoring projection** — partially built. The risk-appetite-watch handler is live (autonomous daily run confirmed 2026-05-16 under `D-FLEET-ROLLOUT-SEQUENCING`); however, only 3 of 13 RAS lines are measurable via event store (zero-appetite procedural gates via Mira). The 6 unmeasured lines — including all three tier-1 prudential lines (LCR, NSFR, CET1) — remain unbuilt. Measurement substrate gap: Rohan (market/credit limits) + Ravi (LCR/NSFR) + Bea (CET1). BRC paper gap-inventory and activation plan to be tabled at next BRC cycle. Owner: Rohan + Ravi + Bea + Atlas (substrate). Target: M1.
+- **Risk-appetite monitoring projection** — partially built. The risk-appetite-watch handler is live (autonomous daily run). As of 2026-05-31: LCR/NSFR engines live (`platform/liquidity/`, D-TREASURY-GAPS-WAVE1 2026-05-19); CET1/RWA now measurable via `platform/projections/rwa-from-positions.ts` + `capital-metrics.ts` (2026-05-29–31). Tier-1 prudential triad is now measurable in substrate. Remaining unmeasured: market/credit limit lines (Rohan — VaR/CVA live but limit-breach detection against appetite lines not yet wired as event-store assertions). Estimated 6–8 of 13 lines now measurable (up from 3 on 2026-05-17); full gap re-inventory deferred to next BRC cycle. Owner: Rohan + Atlas (substrate). Target: M1.
 - **ICAAP / ILAAP engine** — not built; current pack is authored, not generated. Owner: Helena (specification) + Bea (financial inputs) + Atlas (substrate). Target: pre-licence ICAAP cycle.
 - **BRC-paper generator** — not built; current pack would be authored. Owner: Helena (templates) + Owen (governance flow) + Atlas (substrate). Target: pre-first-Board.
 - **Supervisory-correspondence register** — exists in concept; no substrate. Owner: Helena + Owen. Target: pre-licence.
@@ -152,3 +152,4 @@ Helena's BRC chair role and her CRO accountability mean any BRC paper authored b
 | v1.0 | 2026-05-07 | Helena (via Scrooge) | Upgraded to agent operating spec under Principle 6. |
 | v1.1 | 2026-05-14 | Helena (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending; independent model-validation function noted as now staffed (Nadia hired). |
 | v1.2 | 2026-05-17 | Owen (via Scrooge) | §16 updated to reflect: risk-appetite-watch handler now live (autonomous daily run confirmed 2026-05-16); monitoring baseline framework filed (`2026-05-15_helena_risk-appetite-monitoring.md`); measurement-substrate gap inventory (6/13 lines unmeasured, tier-1 prudential triad unbuilt) and climate-substrate gap registered. |
+| v1.3 | 2026-05-31 | Vera (Internal audit / continuous-assurance engineer, via Scrooge) | §16 staleness audit (brief:vera:16-substrate-gap-staleness-audit-findings-spec-c:2026-05-31). RAS measurability updated: LCR/NSFR engines live (D-TREASURY-GAPS-WAVE1 2026-05-19); CET1/RWA measurable via rwa-from-positions.ts + capital-metrics.ts (2026-05-29–31). "Tier-1 prudential triad unbuilt" statement removed; estimated 6–8/13 lines now measurable. Review date updated to 2026-05-31. |
