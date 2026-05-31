@@ -97,7 +97,7 @@ Eitan does **not** measure risk or set appetite (Helena), report financials or o
 
 ## 11. Outputs
 
-- **Events emitted:** `AgentDecision` (settlement-account funding, LCR / NSFR / IRRBB sign-offs, repo-book, hedge-programme, ALCO, FX, FTP, collateral approvals); `AgentEscalation` (upward); `RiskRaised` (liquidity / IRRBB / FX risks booked into Helena's taxonomy); `WorkstreamRegistered` (capital actions; FTP refreshes).
+- **Events emitted:** `AgentDecision` (settlement-account funding, LCR / NSFR / IRRBB sign-offs, repo-book, hedge-programme, ALCO, FX, FTP, collateral approvals); `LiquiditySnapshot` (daily liquidity rollup emitted by `eitan:liquidity-snapshot`; the goal-loop's planned event under the risk/treasury autonomous pilot); `AgentEscalation` (upward); `RiskRaised` (liquidity / IRRBB / FX risks booked into Helena's taxonomy); `WorkstreamRegistered` (capital actions; FTP refreshes).
 - **Registers maintained:** treasury-limits register; HQLA inventory register; collateral register; FTP register; capital-actions register (operational); ALCO minutes (with Owen as secretariat).
 - **Deliverables:** ALCO pack (generated, P6 downward); daily funding-state event note; quarterly ILAAP outputs; quarterly FTP review; quarterly capital-action review note (Owner Inbox).
 

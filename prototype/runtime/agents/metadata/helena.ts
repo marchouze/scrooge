@@ -10,9 +10,13 @@ export const HELENA_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "30 4 * * *",
   }),
-  // helena:goal-loop — no cron; shadow mode for first cohort ticks (on-request only).
-  // Cohort-3 agent. Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Helena", "goal-loop", "on-request"),
+  // helena:goal-loop — daily 04:47 UTC; autonomous promotion (risk/treasury pilot),
+  // placed after helena:risk-appetite-watch (04:30) so a same-day RiskAppetiteSnapshot exists.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3; D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+  entry("Helena", "goal-loop", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "47 4 * * *",
+  }),
   entry("Helena", "event-triage", "event-driven", {
     subscribesTo: [
       "AppetiteBreach",
