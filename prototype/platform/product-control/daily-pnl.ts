@@ -107,14 +107,29 @@ const CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "IFRS-9-§5.7.1", "D-MARKETS-S
  * Compute the daily P&L report for `reportDate` (YYYY-MM-DD).
  *
  * Pure read — no appends. The caller decides whether to persist.
+ *
+ * `asOfBound` (optional, ISO 8601 inclusive upper bound on `event.as_of`):
+ * when supplied, every event replay is bounded to events at or before that
+ * instant, yielding a point-in-time P&L *as of* that moment. The P&L
+ * Attribution engine uses this to take two genuinely-distinct snapshots
+ * (end-of-prior-day and end-of-report-day) so the day-over-day move is real
+ * rather than two reads of the same full history. Omitted ⟹ unbounded (the
+ * current full-history total), preserving the original single-arg behaviour.
  */
-export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnLResult {
+export function computeDailyPnL(
+  store: EventStore,
+  reportDate: string,
+  asOfBound?: string,
+): DailyPnLResult {
+  // Replay filter shared by every fold below — bounds the universe to events
+  // at or before `asOfBound` when supplied (point-in-time), else unbounded.
+  const bound = asOfBound !== undefined ? { asOf: asOfBound } : {};
   // -------------------------------------------------------------------------
   // 1. Collect cancelled trade IDs (graceful — event may not exist yet).
   // -------------------------------------------------------------------------
   const cancelledIds = new Set<string>();
   try {
-    for (const e of store.replay({ type: "FxTradeCancelled" })) {
+    for (const e of store.replay({ type: "FxTradeCancelled", ...bound })) {
       const p = e.payload as { tradeId?: string | { value?: string } };
       const tid = p.tradeId;
       const idStr =
@@ -131,7 +146,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   // 2. Collect all FX trades.
   // -------------------------------------------------------------------------
   const tradeMap = new Map<string, FxTradeExecutedPayload>();
-  for (const e of store.replay({ type: "FxTradeExecuted" })) {
+  for (const e of store.replay({ type: "FxTradeExecuted", ...bound })) {
     const p = e.payload as unknown as FxTradeExecutedPayload;
     const tradeId = p.tradeId.value;
     tradeMap.set(tradeId, p);
@@ -148,14 +163,14 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   // -------------------------------------------------------------------------
   const settledIds = new Set<string>();
   const realisedByTrade = new Map<string, number>(); // tradeId → ZAR minor
-  for (const e of store.replay({ type: "TradeMatured" })) {
+  for (const e of store.replay({ type: "TradeMatured", ...bound })) {
     const p = e.payload as unknown as TradeMaturedFxSpotPayload;
     settledIds.add(p.tradeId);
     // Accumulate — a trade may have multiple legs settled.
     const existing = realisedByTrade.get(p.tradeId) ?? 0;
     realisedByTrade.set(p.tradeId, existing + p.realisedPnlZarMinor);
   }
-  for (const e of store.replay({ type: "SettlementConfirmed" })) {
+  for (const e of store.replay({ type: "SettlementConfirmed", ...bound })) {
     const p = e.payload as { tradeId?: unknown; realisedPnlDelta?: unknown };
     if (typeof p.tradeId !== "string") continue;
     settledIds.add(p.tradeId);
@@ -174,7 +189,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   //   corrections via new event type).
   const correctedTradeIds = new Set<string>();
   try {
-    for (const e of store.replay({ type: "SettlementRealisedPnlCorrected" })) {
+    for (const e of store.replay({ type: "SettlementRealisedPnlCorrected", ...bound })) {
       const p = e.payload as unknown as SettlementRealisedPnlCorrectedPayload;
       if (!p.tradeId) continue;
       // Apply only the latest correction per trade (last-write-wins in replay order).
@@ -189,7 +204,7 @@ export function computeDailyPnL(store: EventStore, reportDate: string): DailyPnL
   // 4. Collect latest unrealised P&L per trade (max revaluedAt).
   // -------------------------------------------------------------------------
   const latestRevalByTrade = new Map<string, FxPositionRevaluedPayload>();
-  for (const e of store.replay({ type: "FxPositionRevalued" })) {
+  for (const e of store.replay({ type: "FxPositionRevalued", ...bound })) {
     const p = e.payload as unknown as FxPositionRevaluedPayload;
     if (cancelledIds.has(p.tradeId)) continue;
     const existing = latestRevalByTrade.get(p.tradeId);

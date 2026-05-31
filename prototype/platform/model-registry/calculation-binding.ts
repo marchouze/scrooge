@@ -420,6 +420,54 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
       },
     ],
   },
+  "pnl-attribution": {
+    calcKey: "pnl-attribution",
+    figure: "Product Control P&L Attribution (FX-spot clean-P&L Explain)",
+    modelId: "model:pnl-attribution-fx-v1",
+    modelVersion: "1.0.0",
+    // The P&L Explain decomposes the day-over-day clean-P&L move into additive
+    // components (new-trade, market-move, carry, realised, residual). The
+    // attribution *figure* is a Product Control / financial-reporting figure
+    // owned by Camille (CFO) per the decision-authority routing table (CFO:
+    // finance close / P&L). Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (Camille
+    // CFO recommendation R1), IFRS-9 §5.7.1, FRTB-PLA.
+    owningAgent: "Camille (Chief Financial Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "IFRS-9-§5.7.1", "FRTB-PLA"],
+    inputContract: [
+      {
+        // Market-move marks are REQUIRED: the market-move component is derived
+        // from the per-position FxPositionRevalued delta on reportDate, cross-
+        // checked against OfficialMarkAdopted deltas per instrumentKey. A live
+        // position with no usable prior-day mark is excluded (no-silent-zero)
+        // and forces the figure to degrade with breachType "incomplete-inputs".
+        name: "marketMoveMarks",
+        required: true,
+        unit: "ZAR-minor",
+        expectedFrom:
+          "FxPositionRevalued.unrealisedPnlZarMinor (per-position daily delta) + OfficialMarkAdopted (per-instrumentKey mark delta) dated reportDate",
+      },
+      {
+        // The prior-day DailyPnLReportGenerated total is REQUIRED — the actual
+        // move is totalPnl(reportDate) − totalPnl(priorReportDate). Without the
+        // prior total the move cannot be measured (status `failed`).
+        name: "priorDayTotal",
+        required: true,
+        unit: "ZAR-minor",
+        expectedFrom:
+          "prior-date computeDailyPnL total (the DailyPnLReportGenerated total for priorReportDate)",
+      },
+      {
+        // Carry/funding is OPTIONAL → degraded: the MVP has no FTP curve, so the
+        // carry component is absent (NOT a silent 0) and the figure degrades.
+        name: "ftpCurve",
+        required: false,
+        unit: "ZAR-minor",
+        expectedFrom:
+          "FtpCurvePublished for the FX-SPOT funding tenor on reportDate (absent in the MVP → carry component degraded, never zeroed)",
+      },
+    ],
+  },
 } as const;
 
 /** Look up a binding by calc key. Throws (loud) on an unknown key. */

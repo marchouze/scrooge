@@ -67,7 +67,10 @@ const IMPORT_REQUIRE_WEIGHT =
 // asserts they route absence through the FinancialInput data-failure path
 // instead.
 // -------------------------------------------------------------------------
-const FIGURE_FILES = ["prototype/platform/product-control/daily-pnl.ts"];
+const FIGURE_FILES = [
+  "prototype/platform/product-control/daily-pnl.ts",
+  "prototype/platform/product-control/pnl-attribution.ts",
+];
 
 /** `import { ... present|absent|FinancialInput ... } from ".../financial-input"`. */
 const IMPORT_FINANCIAL_INPUT =
