@@ -43,8 +43,12 @@
 // The recon pipeline warns (not fails) for missing step IDs per the
 // build-phase tolerance.
 //
-// Shadow mode: shadowMode: true until cohort validation passes
-// (per spec §4 "Build runs in shadow mode for first two substrate ticks").
+// Live (shadow mode removed 2026-05-31): Bea exited cohort-2 shadow mode after
+// validation (spec §4 "first two substrate ticks" — Bea has had 15+). When the
+// goal-loop selects a decision the bea:accounting-readiness handler now runs
+// live and emits; it is dry-run ONLY when the loop deferred/escalated (no
+// decision to execute) or when --dry-run is passed explicitly.
+// Authority: D-AGENT-AUTONOMY-COHORT-2-PILOT (CEO-approved 2026-05-30).
 //
 // Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
 // Author: Atlas (Core banking platform architect) — wiring.
@@ -268,11 +272,11 @@ function getWorldStateReader(): LocalAgentWorldStateReader {
 // circular dependency through handler-callables.ts). Calls the underlying
 // bea:accounting-readiness handler directly via its imported callable.
 //
-// Shadow mode: shadowMode: true until cohort validation passes.
-// In dry-run mode the goal-loop events are still emitted (so the shadow-mode
-// trace is testable per spec §4 "Build runs in shadow mode for the first two
-// substrate ticks"), but the bea:accounting-readiness handler is called with
-// dryRun=true.
+// Live: when the goal-loop selects a decision, the bea:accounting-readiness
+// handler runs for real and emits. The handler is dry-run only when the loop
+// deferred/escalated (no decision to execute) or when ctx.dryRun is set
+// (--dry-run flag). Goal-loop events (AgentGoalEvaluated / AgentGoalSelected /
+// AgentGoalDeferred) are always emitted regardless.
 // ---------------------------------------------------------------------------
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
@@ -323,13 +327,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     "bea:goal-loop — goal-loop iteration complete",
   );
 
-  // If escalation or deferred — run handler in dry-run mode (shadow trace).
+  // Run the handler live when the loop selected a decision; dry-run only when
+  // it deferred/escalated (nothing to execute) or --dry-run was passed.
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
 
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (cohort-2 first ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
     dryRun: ctx.dryRun || !shouldRunHandler,
   };
 
