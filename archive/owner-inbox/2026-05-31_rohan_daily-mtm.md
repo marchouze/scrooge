@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: daily-mtm
-asOf: 2026-05-31T08:10:15.541Z
+asOf: 2026-05-31T08:43:07.426Z
 decision-required: false
 ---
 
@@ -9,13 +9,13 @@ decision-required: false
 
 Autonomous EOD mark-to-market run per `Team/Rohan.md` operating spec § 6 (Cadence). Wraps the legacy `scripts/mtm-run.ts` logic into a scheduled handler (cron `0 18 * * 1-5` — 18:00 UTC weekdays = after JSE 17:00 SAST close). Reversal-then-reval pair is atomic per `D-EVENT-VIEW-BOUNDARY-WIRE` Slice B.1 — every position-day either carries one `FxPositionRevalued` event (live or stale-mark) or none, so Bea's posting engine never reverses without a paired forward.
 
-**Headline:** 9 live · 0 stale-mark · 0 unvalued · net unrealised P&L delta ZAR -134 312 027,28 · runId `1e502d71-db71-4a04-ba0a-eb151d81efc2`.
+**Headline:** 9 live · 0 stale-mark · 0 unvalued · net unrealised P&L delta ZAR -133 938 873,97 · runId `c6d81ea7-87c6-4132-9311-61e4a4bb4377`.
 
 ## Position detail
 
 | Trade | Pair | Outcome | Book rate | Mark rate | P&L delta (ZAR) | Source |
 |---|---|---|---:|---:|---:|---|
-| `MAN-1780125752357-9C453CFE` | EUR/USD | revalued | 1.0801 | 1.1659 | -373 153,31 | twelve-data |
+| `MAN-1780125752357-9C453CFE` | EUR/USD | revalued | 1.0801 | 1.1659 | 0,00 | twelve-data |
 | `MAN-1780126252413-834BD51A` | GBP/ZAR | revalued | 22.1309 | 21.8637 | 845 238,65 | twelve-data |
 | `MAN-1780128914273-DAEFE6FA` | GBP/ZAR | revalued | 21.8465 | 21.8637 | 465 961,60 | twelve-data |
 | `MAN-1780129423980-93B4BAED` | GBP/ZAR | revalued | 21.8521 | 21.8637 | -48 757,69 | twelve-data |
