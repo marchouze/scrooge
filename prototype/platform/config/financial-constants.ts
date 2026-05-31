@@ -611,6 +611,42 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     owningRole: "Chief Financial Officer",
     citation: "FRTB-PLA",
   },
+  // ── Product Control P&L commentary threshold — CFO ────────────────────────
+  // Threshold above which a single day's total P&L move triggers a "large-move"
+  // commentary requirement in the P&L sign-off & commentary engine (Slice 4).
+  // Calibrated at ZAR 50,000 (5,000,000 minor) — material for a build-phase
+  // trading book. Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CFO R4).
+  {
+    key: "product-control.pnl-commentary.large-move-threshold-minor",
+    value: 5_000_000,
+    unit: "zar-minor",
+    category: "product-control-tolerance",
+    label: "P&L commentary large-move threshold",
+    description:
+      "ZAR 50,000 (5,000,000 minor) threshold above which a single-day total P&L move " +
+      "requires a 'large-move' commentary from product control. Calibrated for the " +
+      "build-phase trading book size.",
+    owningRole: "Chief Financial Officer",
+    citation: "D-TRUSTED-FIGURES-PROGRAM-V1",
+  },
+  // ── Product Control flash-vs-actual reconciliation tolerance — CFO ─────────
+  // Tolerance for the T+1 flash-vs-actual P&L reconciliation: a variance within
+  // ZAR 10,000 (1,000,000 minor) is acceptable rounding / booking-timing noise.
+  // A larger variance indicates mark staleness or material booking delays.
+  // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CFO R4); FIN-BSS-01.
+  {
+    key: "product-control.pnl-flash-reconciliation.tolerance-minor",
+    value: 1_000_000,
+    unit: "zar-minor",
+    category: "product-control-tolerance",
+    label: "Flash P&L vs actual reconciliation tolerance",
+    description:
+      "ZAR 10,000 (1,000,000 minor) tolerance for the T+1 flash-vs-actual P&L reconciliation. " +
+      "A variance within this band is acceptable intraday timing / mark-rounding noise; " +
+      "a variance beyond it indicates potential mark staleness or booking delays.",
+    owningRole: "Chief Financial Officer",
+    citation: "FIN-BSS-01",
+  },
 ];
 
 const BY_KEY: ReadonlyMap<string, FinancialConstant> = new Map(
