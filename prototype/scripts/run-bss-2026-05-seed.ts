@@ -370,10 +370,7 @@ const FIXTURE_SOURCE_TYPES = [
 ];
 const fixtureSourceEventIds = new Set<string>();
 for (const e of allEvents) {
-  if (
-    FIXTURE_SOURCE_TYPES.includes(e.type) &&
-    e.provenance?.kind === "build-phase-fixture"
-  ) {
+  if (FIXTURE_SOURCE_TYPES.includes(e.type) && e.provenance?.kind === "build-phase-fixture") {
     fixtureSourceEventIds.add(e.event_id);
   }
 }
