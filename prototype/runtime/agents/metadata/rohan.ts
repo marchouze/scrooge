@@ -21,9 +21,13 @@ export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "0 18 * * 1-5",
   }),
-  // rohan:goal-loop — no cron; shadow mode for cohort-3 first ticks (on-request only).
-  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
-  entry("Rohan", "goal-loop", "on-request"),
+  // rohan:goal-loop — daily 06:17 UTC; autonomous promotion (risk/treasury pilot),
+  // placed after rohan:risk-run (03:43) so a same-day RiskRunCompleted exists.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3; D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+  entry("Rohan", "goal-loop", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "17 6 * * *",
+  }),
   // S7-Targeted #4 — Rohan's backtest harness (v0). Event-driven on BacktestRequested.
   entry("Rohan", "backtest-harness", "event-driven", {
     subscribesTo: ["BacktestRequested"],

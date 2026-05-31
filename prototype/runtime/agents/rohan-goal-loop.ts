@@ -1,26 +1,40 @@
 // runtime/agents/rohan-goal-loop.ts
 //
-// Rohan (Risk engineer) goal-loop — cohort-3.
+// Rohan (Risk engineer) goal-loop — autonomous (risk/treasury pilot).
 //
 // Phase 3 of D-AGENT-AUTONOMY-OPERATIONAL Slice 3: Rohan is wired into the
 // goal-loop substrate. This run-handler is the integration point that:
 //   1. Materialises a WorldStateSnapshot for agent:rohan.
-//   2. Runs Rohan's rule-engine goal deriver (no LLM calls — cohort-3
-//      rule-engine constraint per spec §3.4 "MUST NOT — LLM cost-cap").
+//   2. Runs Rohan's rule-engine goal deriver (no LLM calls — rule-engine
+//      constraint per spec §3.4 "MUST NOT — LLM cost-cap").
 //   3. Passes the result through `runWithGoal`, which wraps it with the
 //      AgentGoalLoopRunner's validation + event emission + handler dispatch.
 //
 // Rule-engine logic (§3.4 "MAY use: pure rule engine"):
-//   - If no RiskRunCompleted event in the last 24 hours
+//   - Candidate 0 (event-reactive): open unhandled briefs addressed to Rohan
+//     (>30 min old) → select "Sign daily limit-utilisation" (Rohan's broadest
+//     in-scope risk-engineering decision, the analog of Bea's posting-rule
+//     catch-all). Mirrors Bea's candidate-0 so Rohan reacts to his real
+//     backlog instead of looping on one cadence goal.
+//   - Candidate 1 (cadence): no RiskRunCompleted event in the last 24 hours
 //     → select "Sign daily limit-utilisation".
-//   - Else if open RiskRaised events not yet resolved
+//   - Candidate 2: open RiskRaised events not yet resolved
 //     → select "Raise a RiskRaised event on a detected risk".
-//   - Else if no ICAAPSubmissionDrafted in the last 7 days
+//   - Candidate 3: no ICAAPSubmissionDrafted in the last 7 days
 //     → select "Sign RWA / RWA-attribution submission to Camille"
 //       (closest §9 equivalent to "Generate ICAAP snapshot" in build phase;
 //       the ICAAP substrate is a paper exercise during build — per §16
 //       "ICAAP / ILAAP run as paper exercise during build-only").
 //   - Otherwise → defer (null outcome).
+//
+// Three-way coherence (the Bea unjam): every candidate routes to the wired
+// rohan:risk-run handler, whose SOLE emitted event is RiskRunCompleted. Each
+// candidate therefore declares plannedEvents: [RiskRunCompleted] — keeping its
+// distinct §9 goal label but the event the handler can actually emit. The
+// prior cascade declared RiskRaised (candidate 2) and ICAAPSubmissionDrafted
+// (candidate 3) — events rohan:risk-run never emits — which would jam the loop
+// exactly as Bea's old SubLedgerReconciled / CloseCycleCompleted did. Those
+// real events return when a handler that emits them is wired (§16 gaps).
 //
 // The goal candidates use Rohan's §9 decisions-in-scope row labels exactly
 // as they appear in Team/Rohan.md (the spec's closed-set per T-NEW).
@@ -32,8 +46,10 @@
 // The recon pipeline warns (not fails) for missing step IDs per the
 // build-phase tolerance.
 //
-// Shadow mode: shadowMode: true for cohort-3 until cohort validation passes
-// (per spec §4 "Build runs in shadow mode for the first two substrate ticks").
+// Live: when the goal-loop selects a decision the rohan:risk-run handler runs
+// for real and emits; it is dry-run ONLY when the loop deferred/escalated (no
+// decision to execute) or when --dry-run is passed explicitly.
+// Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
 //
 // Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
 // Author: Atlas (Core banking platform architect) — wiring.
@@ -46,11 +62,18 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
+import type { EventStore } from "../../platform/event-store/store";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying risk-run handler directly to avoid the circular
 // dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
 import rohanRiskRun from "./rohan-risk-run";
+
+// Authority cited on the brief-bound run-lifecycle events this loop emits.
+// Rohan's autonomous (cohort) promotion mirrors Bea's cohort-2 pilot.
+const RISK_TREASURY_AUTHORITY = "D-AGENT-AUTONOMY-RISK-TREASURY-PILOT" as const;
 
 // ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Rohan
@@ -70,8 +93,10 @@ const ROHAN_PROCEDURE_STEP_ID = "daily-risk-run:step-1";
 // §9 row labels from Team/Rohan.md (closed-set per T-NEW).
 // Candidate 1: daily risk-run goal.
 const DAILY_RISK_RUN_GOAL = "Sign daily limit-utilisation" as const;
-// Candidate 2: open risk-findings goal.
-const RISK_FINDINGS_GOAL = "Raise a RiskRaised event on a detected risk" as const;
+// Candidate 2: open risk-findings goal. Must match Team/Rohan.md §9 row 7
+// VERBATIM (backticks included) or the closed-set (T-NEW) check fails and the
+// candidate silently defers — which also short-circuits candidate 3.
+const RISK_FINDINGS_GOAL = "Raise a `RiskRaised` event on a detected risk" as const;
 // Candidate 3: ICAAP snapshot goal — closest §9 equivalent in build phase
 // (ICAAP as paper exercise per §16; RWA-attribution submission gates the
 // capital-readiness attestation that is the build-phase ICAAP proxy).
@@ -132,6 +157,58 @@ function lastIcaapSubmissionDraftedMs(): number | undefined {
   return latest;
 }
 
+/**
+ * Returns the open (not yet started/completed) briefs addressed to Rohan,
+ * older than `minAgeMs` (default 30 min), oldest-first. Mirrors Bea's
+ * `openBriefsListForBea`: a brief is "handled" once any AgentRunStarted or
+ * AgentRunCompleted carries its briefId. This is the candidate that makes
+ * Rohan's loop react to his real backlog instead of looping on one cadence
+ * goal. Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+ */
+export function openBriefsListForRohan(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): AgentBriefIssuedPayload[] {
+  const handledBriefIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  const open: Array<{ asOfMs: number; payload: AgentBriefIssuedPayload }> = [];
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as AgentBriefIssuedPayload;
+    const briefId = String(p.briefId ?? e.event_id);
+    if (
+      !String(p.issuedTo?.name ?? "")
+        .toLowerCase()
+        .includes("rohan")
+    )
+      continue;
+    if (handledBriefIds.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (Number.isNaN(t) || Date.now() - t <= minAgeMs) continue;
+    open.push({ asOfMs: t, payload: p });
+  }
+  // Oldest first — FIFO drain.
+  open.sort((a, b) => a.asOfMs - b.asOfMs);
+  return open.map((o) => o.payload);
+}
+
+/**
+ * Count of open briefs addressed to Rohan, older than `minAgeMs`. Drives the
+ * deriver's candidate-0. Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+ */
+export function openBriefsAddressedToRohan(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): number {
+  return openBriefsListForRohan(store, minAgeMs).length;
+}
+
 // ---------------------------------------------------------------------------
 // Goal deriver
 // ---------------------------------------------------------------------------
@@ -178,6 +255,40 @@ export const rohanGoalDeriver: GoalDeriver = async (
     }
     return true;
   };
+
+  // Candidate 0 (event-reactive): open unhandled briefs addressed to Rohan.
+  // Checked before the cadence candidates so Rohan reacts to his real backlog.
+  // Routes to rohan:risk-run (sole event: RiskRunCompleted) under his broadest
+  // in-scope decision. Mirrors Bea's candidate-0.
+  const pendingBriefCount = openBriefsAddressedToRohan();
+  if (pendingBriefCount > 0) {
+    if (!validateGoal(DAILY_RISK_RUN_GOAL)) return null;
+    logger.info(
+      { agentUrn: args.agent.urn, pendingBriefCount },
+      "rohan-goal-deriver: candidate-0 — open unhandled briefs addressed to Rohan — selecting daily risk-run goal",
+    );
+    return {
+      kind: "decision",
+      chosen: DAILY_RISK_RUN_GOAL,
+      rationale: `Candidate 0: ${pendingBriefCount} open brief(s) addressed to Rohan (older than 30min) not yet started or completed. "${DAILY_RISK_RUN_GOAL}" is Rohan's broadest in-scope risk-engineering decision covering open risk-run / limit-utilisation / readiness work. Picking up pending briefs.`,
+      mandateCitations: [
+        { section: "9-decisions-in-scope", rowKey: DAILY_RISK_RUN_GOAL, specHash },
+      ],
+      procedureCitations: [
+        {
+          procedurePath: ROHAN_PROCEDURE_PATH,
+          stepId,
+          procedureHash: specHash,
+        },
+      ],
+      plannedEvents: [
+        {
+          type: "RiskRunCompleted",
+          payloadPreview: { agentUrn: args.agent.urn, trigger: "rohan-goal-loop" },
+        },
+      ],
+    };
+  }
 
   // Candidate 1: if no RiskRunCompleted in last 24h, select daily risk-run
   // goal. Rohan's §6 inactivity SLA: daily risk run must produce a
@@ -235,7 +346,7 @@ export const rohanGoalDeriver: GoalDeriver = async (
       kind: "decision",
       chosen: RISK_FINDINGS_GOAL,
       rationale:
-        "Open RiskRaised events detected in the event store that have not been resolved. Rohan's §9 mandate (Raise a RiskRaised event on a detected risk) requires the risk-run handler to process open risk findings. Selecting risk-findings goal to trigger the rohan:risk-run handler.",
+        "Open RiskRaised events detected in the event store that have not been resolved. Rohan's §9 mandate (Raise a RiskRaised event on a detected risk) requires the risk-run handler to process open risk findings into the next run pack. Selecting risk-findings goal to trigger the rohan:risk-run handler.",
       mandateCitations: [
         {
           section: "9-decisions-in-scope",
@@ -250,9 +361,13 @@ export const rohanGoalDeriver: GoalDeriver = async (
           procedureHash: specHash,
         },
       ],
+      // Three-way coherence: rohan:risk-run's sole emitted event is
+      // RiskRunCompleted. The run pack surfaces the open RiskRaised finding;
+      // a dedicated RiskRaised-emitting handler is a §16 substrate gap, at
+      // which point this candidate's plannedEvent returns to RiskRaised.
       plannedEvents: [
         {
-          type: "RiskRaised",
+          type: "RiskRunCompleted",
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "rohan-goal-loop",
@@ -293,9 +408,13 @@ export const rohanGoalDeriver: GoalDeriver = async (
           procedureHash: specHash,
         },
       ],
+      // Three-way coherence: rohan:risk-run's sole emitted event is
+      // RiskRunCompleted (the build-phase capital-readiness attestation). The
+      // real ICAAPSubmissionDrafted event returns when an ICAAP-emitting
+      // handler is wired (§16 gap — ICAAP is a paper exercise during build).
       plannedEvents: [
         {
-          type: "ICAAPSubmissionDrafted",
+          type: "RiskRunCompleted",
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "rohan-goal-loop",
@@ -320,6 +439,141 @@ export const rohanGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound dispatch (D-AGENT-AUTONOMY-RISK-TREASURY-PILOT — triage-and-route)
+//
+// When candidate-0 fires (open briefs addressed to Rohan), the loop binds a run
+// to the specific oldest brief and emits the dispatch lifecycle so the brief is
+// no longer re-picked every tick. The rule engine NEVER fakes delivery:
+//
+//   - Self-executable (risk-run attestation class): runs the risk-run handler
+//     live and closes outcome="delivered".
+//   - Everything else (code / judgement work the rule engine cannot perform):
+//     closes outcome="blocked", surfaces the substrate gap, and routes the brief
+//     to the engineering-execution substrate via followOnRoutes. The brief is
+//     handed off, not silently dropped — the blocked run + route is the audit
+//     trail an executor (Scrooge-coordinated or future LLM substrate) picks up.
+// ---------------------------------------------------------------------------
+
+// Emit run-lifecycle events under Rohan's parent agent identity (matches the
+// dispatch CLI's `agent:${slug}` actor). agent:rohan has a published permission
+// policy, so the non-privileged AgentRunStarted/Completed types take the
+// allow-by-default path with NO legacy bypass.
+const ROHAN_GOAL_LOOP_ACTOR = { type: "service", id: "agent:rohan" } as const;
+
+/**
+ * A brief is self-executable by Rohan's wired rule-engine capability only if it
+ * explicitly asks for the daily risk-run / limit-utilisation readiness
+ * attestation AND requires no code-PR output. Deliberately narrow: the only
+ * deterministic deliverable Rohan's goal-loop owns today is the
+ * RiskRunCompleted attestation. Everything else is routed.
+ */
+export function isSelfExecutableByRohan(brief: AgentBriefIssuedPayload): boolean {
+  const needsCode = brief.expectedOutputs.some((o) => o.kind === "code-pr");
+  if (needsCode) return false;
+  return /risk[\s-]?run|risk[\s-]?readiness|limit[\s-]?utilisation/i.test(brief.title);
+}
+
+/**
+ * Bind a run to one open brief and emit AgentRunStarted → AgentRunCompleted.
+ * Returns the number of run-lifecycle events emitted plus a summary fragment.
+ */
+async function dispatchBriefBoundRun(
+  ctx: AgentRunContext,
+  brief: AgentBriefIssuedPayload,
+  iterationId: string,
+  remainingOpen: number,
+): Promise<{ eventsEmitted: number; summary: string }> {
+  const runId = `run:rohan:goal-loop:${iterationId}`;
+  const agent = brief.issuedTo; // issuedTo IS Rohan — keep the ref consistent.
+
+  recordAgentRunStarted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      startedAt: ctx.asOf,
+      substrate: "agent-runtime",
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: ROHAN_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+
+  let eventsEmitted = 1;
+
+  if (isSelfExecutableByRohan(brief)) {
+    // Genuinely completable — run the risk-run handler live and deliver.
+    const handlerOutput = await rohanRiskRun({ ...ctx, dryRun: false });
+    eventsEmitted += handlerOutput.eventsEmitted;
+    recordAgentRunCompleted(
+      {
+        runId,
+        briefId: brief.briefId,
+        agent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `Rohan goal-loop delivered the daily risk-run attestation for brief ${brief.briefId} ("${brief.title}"). ${handlerOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: [RISK_TREASURY_AUTHORITY],
+        followOnRoutes: [],
+        citations: [RISK_TREASURY_AUTHORITY],
+        actor: ROHAN_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    eventsEmitted += 1;
+    logger.info(
+      { briefId: brief.briefId, runId, remainingOpen },
+      "rohan:goal-loop — brief delivered (risk-run attestation class)",
+    );
+    return {
+      eventsEmitted,
+      summary: `brief ${brief.briefId} delivered (risk-run); ${remainingOpen} open brief(s) remain`,
+    };
+  }
+
+  // Not executable by the rule engine — triage, block, and route to the
+  // engineering-execution substrate. NEVER faked as delivered.
+  const routeKind = brief.expectedOutputs.some((o) => o.kind === "code-pr") ? "code-pr" : "agent";
+  const gap = `Rohan goal-loop (rule-engine) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work outside the rule-engine capability. Routed to the engineering-execution substrate (LLM-backed dispatched run). This is the goal-loop→dispatched-run substrate gap.`;
+  recordAgentRunCompleted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      completedAt: ctx.asOf,
+      outcome: "blocked",
+      deliverableBodies: [],
+      substrateGapsSurfaced: [gap],
+      deliverableCitations: [RISK_TREASURY_AUTHORITY],
+      followOnRoutes: [
+        {
+          kind: routeKind,
+          target: "engineering-execution-substrate",
+          directive: `Execute brief ${brief.briefId}: ${brief.title}${
+            brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
+          }. Triaged and routed by Rohan's autonomous goal-loop; requires an engineering-execution run.`,
+        },
+      ],
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: ROHAN_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+  eventsEmitted += 1;
+  logger.info(
+    { briefId: brief.briefId, runId, routeKind, remainingOpen },
+    "rohan:goal-loop — brief triaged + routed to engineering-execution substrate (blocked, gap surfaced)",
+  );
+  return {
+    eventsEmitted,
+    summary: `brief ${brief.briefId} routed→executor (blocked); ${remainingOpen} open brief(s) remain`,
+  };
+}
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -341,17 +595,17 @@ function getWorldStateReader(): LocalAgentWorldStateReader {
 // circular dependency through handler-callables.ts). Calls the underlying
 // rohan:risk-run handler directly via its imported callable.
 //
-// Shadow mode: shadowMode: true for cohort-3 first ticks.
-// In dry-run mode the goal-loop events are still emitted (so the shadow-mode
-// trace is testable per spec §4 "Build runs in shadow mode for the first two
-// substrate ticks"), but the rohan:risk-run handler is called with
-// dryRun=true.
+// Live: when the goal-loop selects a decision, the rohan:risk-run handler runs
+// for real and emits. The handler is dry-run only when the loop
+// deferred/escalated (no decision to execute) or when ctx.dryRun is set
+// (--dry-run flag). Goal-loop events (AgentGoalEvaluated / AgentGoalSelected /
+// AgentGoalDeferred) are always emitted regardless.
 // ---------------------------------------------------------------------------
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   logger.info(
     { agent: ctx.agent, trigger: ctx.trigger.id, dryRun: ctx.dryRun },
-    "rohan:goal-loop — starting goal-loop cohort-3 run",
+    "rohan:goal-loop — starting goal-loop run",
   );
 
   const agentUrn = "agent:rohan";
@@ -396,13 +650,31 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     "rohan:goal-loop — goal-loop iteration complete",
   );
 
-  // If escalation or deferred — run handler in dry-run mode (shadow trace).
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
 
+  // Brief-bound dispatch path: when the loop selected a decision and there is
+  // an open brief addressed to Rohan, bind a run to the oldest brief and emit
+  // its dispatch lifecycle (triage-and-route) instead of only the cadence
+  // attestation. Skipped under --dry-run (no real run-lifecycle side-effects).
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForRohan() : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(ctx, brief, iterationId, openBriefs.length - 1);
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "rohan:goal-loop — run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
+
+  // Cadence path: no open brief — run the risk-run attestation live when the
+  // loop selected a decision; dry-run only when it deferred or --dry-run was set.
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (cohort-3 first ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
     dryRun: ctx.dryRun || !shouldRunHandler,
   };
 
@@ -417,13 +689,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "rohan:goal-loop — cohort-3 run complete",
+    "rohan:goal-loop — run complete (cadence)",
   );
 
   return {
     eventsEmitted: handlerOutput.eventsEmitted + goalEventsEmitted,
     ok: handlerOutput.ok,
-    summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
+    summary: `goal-loop: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
     ...(handlerOutput.deliverable ? { deliverable: handlerOutput.deliverable } : {}),
   };
 };
