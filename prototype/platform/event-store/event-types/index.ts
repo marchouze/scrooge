@@ -559,9 +559,11 @@ export const TYPED_EVENT_TYPES = [
   // ALCOPackGenerated, IntradayHQLAStressProjection.
   // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
   ...ALCO_TYPED_EVENT_TYPES,
-  // Product Control — daily FX P&L report event.
-  // DailyPnLReportGenerated — aggregated unrealised + realised P&L.
-  // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
+  // Product Control — daily FX P&L report, attribution, sign-off & commentary.
+  // DailyPnLReportGenerated, PnLAttributionGenerated, PnLAttributionExceptionRaised,
+  // PnLSignedOff, PnLCommentaryRecorded, PnLFlashRecorded, PnLFlashActualReconciled.
+  // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1; D-TRUSTED-FIGURES-PROGRAM-V1;
+  //   FIN-BSS-01; FRTB-PLA.
   ...PRODUCT_CONTROL_EVENT_TYPES,
   // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
