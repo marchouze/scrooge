@@ -42,6 +42,7 @@ const CALC_FILES = [
   "prototype/platform/markets/products/rwa-delta.ts",
   "prototype/platform/market-risk/var-engine.ts",
   "prototype/platform/market-risk/cva-engine.ts",
+  "prototype/platform/market-risk/valuation-adjustment-engine.ts",
   "prototype/platform/alm/nii.ts",
   "prototype/platform/alm/eve.ts",
 ];

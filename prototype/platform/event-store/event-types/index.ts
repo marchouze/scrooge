@@ -318,6 +318,14 @@ export * from "./odp-collateral-segregation";
 //   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
 // Author: Devon (COO, operations).
 export * from "./odp-umoja-uti";
+// WS-PRODUCT-CONTROL — valuation-adjustment / prudent-valuation reserve family.
+// ValuationAdjustmentComputed (one per adjustmentType), Day1PnLDeferralRecorded
+//   (IFRS 13 Level-3 day-1 P&L deferral), PrudentValuationAvaAggregated (AVA
+//   umbrella — sums populated AVAs via the no-silent-zero contract).
+// Authority: Camille (CFO) recommendation R2; IFRS 13; accounting-policies-
+//   ifrs-v1 §3.3; valuation-policy-v1 §7; CRR Art 105 / SA-Basel prudent-valuation;
+//   D-TRUSTED-FIGURES-PROGRAM-V1. Author: Rohan (Risk engineer, engineering).
+export * from "./valuation-adjustment";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -453,6 +461,7 @@ import { SETTLEMENT_TYPED_EVENT_TYPES } from "./settlement";
 import { TRADE_MATURED_EVENT_TYPES } from "./trade-matured";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
 import { VALUATION_TYPED_EVENT_TYPES } from "./valuation";
+import { VALUATION_ADJUSTMENT_TYPED_EVENT_TYPES } from "./valuation-adjustment";
 
 export const TYPED_EVENT_TYPES = [
   ...AGENT_TYPED_EVENT_TYPES,
@@ -615,6 +624,11 @@ export const TYPED_EVENT_TYPES = [
   // Authority: ORG-ODP-RPT-003; ORG-MK-RPT-002; urn:regulation:odp:cs-3-2018;
   //   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
   ...ODP_UMOJA_UTI_TYPED_EVENT_TYPES,
+  // WS-PRODUCT-CONTROL — valuation-adjustment / prudent-valuation reserve family.
+  // ValuationAdjustmentComputed, Day1PnLDeferralRecorded, PrudentValuationAvaAggregated.
+  // Authority: Camille (CFO) recommendation R2; IFRS 13; accounting-policies-ifrs-v1 §3.3;
+  //   valuation-policy-v1 §7; CRR Art 105 / SA-Basel prudent-valuation; D-TRUSTED-FIGURES-PROGRAM-V1.
+  ...VALUATION_ADJUSTMENT_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
