@@ -152,8 +152,19 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Authority: ORG-ODP-RPT-003; urn:regulation:odp:cs-3-2018 §6.
 //   Author: Devon (COO, operations), 2026-05-30.
+//
+// 2026-05-31 — Reduced 65 → 64 (clock-abstraction cleanup):
+//   dashboard/markets-fx-npa.ts:62 — the injectable default
+//   `nowIso: string = new Date().toISOString()` (added by PR #539 without a
+//   ratchet bump, which silently failed CI until the snapshot was bumped as a
+//   stopgap) is now routed through the approved clock helper `nowUtc()` from
+//   platform/core/types. One genuine wall-clock callsite removed; locking the
+//   lower floor per the convention above. Authority: feedback "Wall-clock
+//   ratchet trap"; D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
+//   Author: Kai (Trading systems engineer, engineering — reports to Saskia,
+//   Head of Global Markets), 2026-05-31.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 65;
+const KNOWN_VIOLATIONS_SNAPSHOT = 64;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
