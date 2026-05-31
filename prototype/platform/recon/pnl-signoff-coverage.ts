@@ -11,6 +11,16 @@
 //       (same linkedAttributionId). An unresolved exception with no commentary
 //       is a control gap — commentary is a mandatory response to a breach.
 //
+// Posture for pre-Slice-4 historical reports:
+//   DailyPnLReportGenerated events that predate the sign-off engine deployment
+//   (before SIGNOFF_ENGINE_DEPLOYMENT_DATE) cannot have PnLSignedOff events —
+//   the sign-off engine didn't exist when they were emitted. These historical
+//   reports are downgraded from `fail` to `warn` so the recon is
+//   forward-compatible: it enforces the sign-off requirement from deployment
+//   day onward while acknowledging the pre-deployment gap without breaking CI.
+//   The commentary-pairing assertion (b) applies to all dates — exceptions
+//   before this date should have been commented at the time.
+//
 // Empty-store posture: on a fresh runner with no DailyPnLReportGenerated
 // events (GitHub Actions first boot), missing-event findings are downgraded to
 // `info` and `ok` stays true — an empty bench has never run the P&L engine,
@@ -24,6 +34,15 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 //   — pipeline contract per Vera (Internal audit engineer, engineering).
+
+/**
+ * The date from which the sign-off engine is deployed and the sign-off
+ * requirement is enforced (Slice 4 deployment date). DailyPnLReportGenerated
+ * events for dates BEFORE this date are downgraded from `fail` to `warn`
+ * because the sign-off engine did not exist when those reports were emitted.
+ * Authority: brief:bea:p-l-sign-off-commentary-slice-4:2026-05-31.
+ */
+const SIGNOFF_ENGINE_DEPLOYMENT_DATE = "2026-05-31";
 
 import { eventStore as defaultEventStore } from "../composition";
 import type {
@@ -94,11 +113,17 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   for (const reportDate of reportDates) {
     // (a) Sign-off coverage — every reportDate must have a PnLSignedOff.
+    // Reports on or before the sign-off engine deployment date are downgraded
+    // to `warn`: historical reports emitted before the sign-off engine was
+    // deployed cannot carry a paired PnLSignedOff event. The deployment date
+    // itself is also `warn` because the daily run may have emitted the report
+    // before Slice 4 was deployed (the sign-off engine runs post-merge).
     if (!signOffByDate.has(reportDate)) {
+      const isPreDeployment = reportDate <= SIGNOFF_ENGINE_DEPLOYMENT_DATE;
       violations.push({
         subject: reportDate,
-        message: `DailyPnLReportGenerated exists for ${reportDate} but no PnLSignedOff event was found for the same reportDate. Every EOD P&L report must be formally signed off (trader or product-control role) before the day closes.`,
-        severity: "fail",
+        message: `DailyPnLReportGenerated exists for ${reportDate} but no PnLSignedOff event was found for the same reportDate. Every EOD P&L report must be formally signed off (trader or product-control role) before the day closes.${isPreDeployment ? ` (report on/before Slice-4 deployment date ${SIGNOFF_ENGINE_DEPLOYMENT_DATE} — downgraded to warn; will enforce fail from next run)` : ""}`,
+        severity: isPreDeployment ? "warn" : "fail",
       });
     }
 
