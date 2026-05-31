@@ -56,6 +56,7 @@ import type {
   FxTradeExecutedPayload,
   SettlementConfirmedPayload,
 } from "../platform/markets/cdm/fx";
+import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
 import { checkIpvTolerance } from "../platform/markets/ipv-tolerance";
 import {
   adoptFxMark,
@@ -242,10 +243,36 @@ async function main(): Promise<void> {
     // Book rate normalisation (same logic as fx-revaluation.ts).
     const legRate = nearLeg.rate.amount;
     const bookRate = nearLeg.rate.currency === trade.currencyPair.quote ? legRate : 1 / legRate;
-    const notionalBaseMinor = nearLeg.notional.amountMinor;
+    // Use baseAmountMinor() so BUY trades (where notional may hold the quote
+    // currency amount) are handled correctly.
+    const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
+    // "sell" = bank is short base: P&L > 0 when midRate < bookRate.
+    const sideSign = trade.side === "buy" ? 1 : -1;
+
+    // For cross-currency pairs (quote ≠ ZAR), (primaryRate − bookRate) is in
+    // quote-currency units, not ZAR. Resolve per-currency ZAR rates so the
+    // result is always in ZAR minor units (same approach as rohan-daily-mtm.ts).
+    const quoteCcy = trade.currencyPair.quote;
+    const quoteIsZar = quoteCcy === "ZAR";
+    function resolveZarRate(ccy: string): number | null {
+      if (ccy === "ZAR") return 1;
+      const r = lookupQuoteWithInverse(mdStore, `${ccy}/ZAR`, { provenance: "production" });
+      return r !== null ? r.rate : null;
+    }
+    const zarRateBase = resolveZarRate(trade.currencyPair.base);
+    if (zarRateBase === null) {
+      positionsSkipped++;
+      skippedReasons.push(
+        `${tradeId} (${currencyPairStr}): no ZAR rate for base ${trade.currencyPair.base}`,
+      );
+      continue;
+    }
+    const zarRateBase_book = quoteIsZar ? bookRate : bookRate * (resolveZarRate(quoteCcy) ?? 0);
 
     // Compute P&L delta.
-    const unrealisedPnlZarMinor = Math.round(notionalBaseMinor * (primaryRate - bookRate));
+    const unrealisedPnlZarMinor = Math.round(
+      sideSign * notionalBaseMinor * (zarRateBase - zarRateBase_book),
+    );
 
     // Emit OfficialMarkAdopted (Slice B.1) — pin the elected rate to the
     // active valuation policy before emitting the position revaluation.
