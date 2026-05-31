@@ -1,16 +1,20 @@
 // runtime/agents/ravi-goal-loop.ts
 //
-// Ravi (Treasury / ALM engineer) goal-loop — cohort-3.
+// Ravi (Treasury / ALM engineer) goal-loop — autonomous (risk/treasury pilot).
 //
 // Phase 3 of D-AGENT-AUTONOMY-OPERATIONAL Slice 3: Ravi is wired into the
 // goal-loop substrate. This run-handler is the integration point that:
 //   1. Materialises a WorldStateSnapshot for agent:ravi.
-//   2. Runs Ravi's rule-engine goal deriver (no LLM calls — cohort-3
-//      rule-engine constraint per spec §3.4 "MUST NOT — LLM cost-cap").
+//   2. Runs Ravi's rule-engine goal deriver (no LLM calls — rule-engine
+//      constraint per spec §3.4 "MUST NOT — LLM cost-cap").
 //   3. Passes the result through `runWithGoal`, which wraps it with the
 //      AgentGoalLoopRunner's validation + event emission + handler dispatch.
 //
 // Rule-engine logic (§3.4 "MAY use: pure rule engine"):
+//   Candidate 0 (event-reactive) — open unhandled briefs addressed to Ravi
+//     (>30 min old) → goal: "Approve daily LCR / NSFR / IRRBB / FX position
+//     attestation" (Ravi's broadest in-scope ALM decision). Mirrors Bea's
+//     candidate-0 so the loop reacts to its real backlog.
 //   Rule 1 — No `ALMReadinessSnapshot` event in past 24h
 //     → goal: "Approve daily LCR / NSFR / IRRBB / FX position attestation"
 //     (priority HIGH; daily ALM-readiness SLA per §6)
@@ -24,6 +28,15 @@
 //     outstanding) → goal: "Run hedge programmes within RAS"
 //     (priority MEDIUM; hedge-programme review cadence)
 //
+// Three-way coherence (the Bea unjam): every candidate routes to the wired
+// ravi:alm-readiness handler, whose SOLE emitted event is ALMReadinessSnapshot.
+// Each candidate therefore declares plannedEvents: [ALMReadinessSnapshot] —
+// keeping its distinct §9 goal label but the event the handler actually emits.
+// Rules 2 and 4 previously declared FTPRatePublished / HedgeExecuted — events
+// ravi:alm-readiness never emits — which would jam the loop exactly as Bea's
+// old SubLedgerReconciled / CloseCycleCompleted did. Those real events return
+// when a handler that emits them is wired (§16 gaps).
+//
 // The goal candidates use Ravi's §9 decisions-in-scope row labels exactly
 // as they appear in Team/Ravi.md (the spec's closed-set per T-NEW).
 //
@@ -34,8 +47,10 @@
 // The recon pipeline warns (not fails) for missing step IDs per the
 // build-phase tolerance.
 //
-// Shadow mode: shadowMode: true for cohort-3 until cohort validation passes
-// (per spec §4 "Build runs in shadow mode for the first two substrate ticks").
+// Live: when the goal-loop selects a decision the ravi:alm-readiness handler
+// runs for real and emits; it is dry-run ONLY when the loop deferred/escalated
+// (no decision to execute) or when --dry-run is passed explicitly.
+// Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
 //
 // Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
 // Author: Atlas (Core banking platform architect) — wiring.
@@ -48,11 +63,18 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
+import type { EventStore } from "../../platform/event-store/store";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying ALM-readiness handler directly to avoid the circular
 // dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
 import raviAlmReadiness from "./ravi-alm-readiness";
+
+// Authority cited on the brief-bound run-lifecycle events this loop emits.
+// Ravi's autonomous (cohort) promotion mirrors Rohan's risk/treasury pilot.
+const RISK_TREASURY_AUTHORITY = "D-AGENT-AUTONOMY-RISK-TREASURY-PILOT" as const;
 
 // ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Ravi
@@ -187,6 +209,58 @@ function lastHedgeExecutedMs(): number | undefined {
   return latest;
 }
 
+/**
+ * Returns the open (not yet started/completed) briefs addressed to Ravi,
+ * older than `minAgeMs` (default 30 min), oldest-first. Mirrors Bea's
+ * `openBriefsListForBea`: a brief is "handled" once any AgentRunStarted or
+ * AgentRunCompleted carries its briefId. This is the candidate that makes
+ * Ravi's loop react to his real backlog instead of looping on cadence goals.
+ * Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+ */
+export function openBriefsListForRavi(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): AgentBriefIssuedPayload[] {
+  const handledBriefIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  const open: Array<{ asOfMs: number; payload: AgentBriefIssuedPayload }> = [];
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as AgentBriefIssuedPayload;
+    const briefId = String(p.briefId ?? e.event_id);
+    if (
+      !String(p.issuedTo?.name ?? "")
+        .toLowerCase()
+        .includes("ravi")
+    )
+      continue;
+    if (handledBriefIds.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (Number.isNaN(t) || Date.now() - t <= minAgeMs) continue;
+    open.push({ asOfMs: t, payload: p });
+  }
+  // Oldest first — FIFO drain.
+  open.sort((a, b) => a.asOfMs - b.asOfMs);
+  return open.map((o) => o.payload);
+}
+
+/**
+ * Count of open briefs addressed to Ravi, older than `minAgeMs`. Drives the
+ * deriver's candidate-0. Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+ */
+export function openBriefsAddressedToRavi(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): number {
+  return openBriefsListForRavi(store, minAgeMs).length;
+}
+
 // ---------------------------------------------------------------------------
 // Goal deriver
 // ---------------------------------------------------------------------------
@@ -233,6 +307,42 @@ export const raviGoalDeriver: GoalDeriver = async (
     }
     return true;
   };
+
+  // ---------------------------------------------------------------------------
+  // Candidate 0 (event-reactive): open unhandled briefs addressed to Ravi.
+  // Checked before the cadence rules so Ravi reacts to his real backlog. Routes
+  // to ravi:alm-readiness (sole event: ALMReadinessSnapshot) under his broadest
+  // in-scope decision. Mirrors Bea's candidate-0.
+  // ---------------------------------------------------------------------------
+  const pendingBriefCount = openBriefsAddressedToRavi();
+  if (pendingBriefCount > 0) {
+    if (!validateGoal(ALM_ATTESTATION_GOAL)) return null;
+    logger.info(
+      { agentUrn: args.agent.urn, pendingBriefCount },
+      "ravi-goal-deriver: candidate-0 — open unhandled briefs addressed to Ravi — selecting ALM attestation goal",
+    );
+    return {
+      kind: "decision",
+      chosen: ALM_ATTESTATION_GOAL,
+      rationale: `Candidate 0: ${pendingBriefCount} open brief(s) addressed to Ravi (older than 30min) not yet started or completed. "${ALM_ATTESTATION_GOAL}" is Ravi's broadest in-scope ALM decision covering open liquidity / IRRBB / FTP / readiness work. Picking up pending briefs.`,
+      mandateCitations: [
+        { section: "9-decisions-in-scope", rowKey: ALM_ATTESTATION_GOAL, specHash },
+      ],
+      procedureCitations: [
+        {
+          procedurePath: RAVI_PROCEDURE_PATH,
+          stepId,
+          procedureHash: specHash,
+        },
+      ],
+      plannedEvents: [
+        {
+          type: "ALMReadinessSnapshot",
+          payloadPreview: { agentUrn: args.agent.urn, trigger: "ravi-goal-loop" },
+        },
+      ],
+    };
+  }
 
   // ---------------------------------------------------------------------------
   // Rule 1: No ALMReadinessSnapshot in past 24h → ALM attestation goal (HIGH)
@@ -304,9 +414,13 @@ export const raviGoalDeriver: GoalDeriver = async (
           procedureHash: specHash,
         },
       ],
+      // Three-way coherence: ravi:alm-readiness's sole emitted event is
+      // ALMReadinessSnapshot (the readiness pack surfaces the FTP gap). The
+      // real FTPRatePublished event returns when an FTP-emitting handler is
+      // wired (§16 gap).
       plannedEvents: [
         {
-          type: "FTPRatePublished",
+          type: "ALMReadinessSnapshot",
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "ravi-goal-loop",
@@ -391,9 +505,13 @@ export const raviGoalDeriver: GoalDeriver = async (
           procedureHash: specHash,
         },
       ],
+      // Three-way coherence: ravi:alm-readiness's sole emitted event is
+      // ALMReadinessSnapshot (the readiness pack surfaces the hedge-review
+      // gap). The real HedgeExecuted event returns when a hedge-executing
+      // handler is wired (§16 gap).
       plannedEvents: [
         {
-          type: "HedgeExecuted",
+          type: "ALMReadinessSnapshot",
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "ravi-goal-loop",
@@ -422,6 +540,141 @@ export const raviGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound dispatch (D-AGENT-AUTONOMY-RISK-TREASURY-PILOT — triage-and-route)
+//
+// When candidate-0 fires (open briefs addressed to Ravi), the loop binds a run
+// to the specific oldest brief and emits the dispatch lifecycle so the brief is
+// no longer re-picked every tick. The rule engine NEVER fakes delivery:
+//
+//   - Self-executable (ALM-readiness attestation class): runs the alm-readiness
+//     handler live and closes outcome="delivered".
+//   - Everything else (code / judgement work the rule engine cannot perform):
+//     closes outcome="blocked", surfaces the substrate gap, and routes the brief
+//     to the engineering-execution substrate via followOnRoutes. The brief is
+//     handed off, not silently dropped — the blocked run + route is the audit
+//     trail an executor (Scrooge-coordinated or future LLM substrate) picks up.
+// ---------------------------------------------------------------------------
+
+// Emit run-lifecycle events under Ravi's parent agent identity (matches the
+// dispatch CLI's `agent:${slug}` actor). agent:ravi has a published permission
+// policy, so the non-privileged AgentRunStarted/Completed types take the
+// allow-by-default path with NO legacy bypass.
+const RAVI_GOAL_LOOP_ACTOR = { type: "service", id: "agent:ravi" } as const;
+
+/**
+ * A brief is self-executable by Ravi's wired rule-engine capability only if it
+ * explicitly asks for the daily ALM-readiness attestation AND requires no
+ * code-PR output. Deliberately narrow: the only deterministic deliverable
+ * Ravi's goal-loop owns today is the ALMReadinessSnapshot. Everything else is
+ * routed.
+ */
+export function isSelfExecutableByRavi(brief: AgentBriefIssuedPayload): boolean {
+  const needsCode = brief.expectedOutputs.some((o) => o.kind === "code-pr");
+  if (needsCode) return false;
+  return /alm[\s-]?readiness|alm[\s-]?run|liquidity/i.test(brief.title);
+}
+
+/**
+ * Bind a run to one open brief and emit AgentRunStarted → AgentRunCompleted.
+ * Returns the number of run-lifecycle events emitted plus a summary fragment.
+ */
+async function dispatchBriefBoundRun(
+  ctx: AgentRunContext,
+  brief: AgentBriefIssuedPayload,
+  iterationId: string,
+  remainingOpen: number,
+): Promise<{ eventsEmitted: number; summary: string }> {
+  const runId = `run:ravi:goal-loop:${iterationId}`;
+  const agent = brief.issuedTo; // issuedTo IS Ravi — keep the ref consistent.
+
+  recordAgentRunStarted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      startedAt: ctx.asOf,
+      substrate: "agent-runtime",
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: RAVI_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+
+  let eventsEmitted = 1;
+
+  if (isSelfExecutableByRavi(brief)) {
+    // Genuinely completable — run the alm-readiness handler live and deliver.
+    const handlerOutput = await raviAlmReadiness({ ...ctx, dryRun: false });
+    eventsEmitted += handlerOutput.eventsEmitted;
+    recordAgentRunCompleted(
+      {
+        runId,
+        briefId: brief.briefId,
+        agent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `Ravi goal-loop delivered the ALM-readiness attestation for brief ${brief.briefId} ("${brief.title}"). ${handlerOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: [RISK_TREASURY_AUTHORITY],
+        followOnRoutes: [],
+        citations: [RISK_TREASURY_AUTHORITY],
+        actor: RAVI_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    eventsEmitted += 1;
+    logger.info(
+      { briefId: brief.briefId, runId, remainingOpen },
+      "ravi:goal-loop — brief delivered (alm-readiness attestation class)",
+    );
+    return {
+      eventsEmitted,
+      summary: `brief ${brief.briefId} delivered (alm-readiness); ${remainingOpen} open brief(s) remain`,
+    };
+  }
+
+  // Not executable by the rule engine — triage, block, and route to the
+  // engineering-execution substrate. NEVER faked as delivered.
+  const routeKind = brief.expectedOutputs.some((o) => o.kind === "code-pr") ? "code-pr" : "agent";
+  const gap = `Ravi goal-loop (rule-engine) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work outside the rule-engine capability. Routed to the engineering-execution substrate (LLM-backed dispatched run). This is the goal-loop→dispatched-run substrate gap.`;
+  recordAgentRunCompleted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      completedAt: ctx.asOf,
+      outcome: "blocked",
+      deliverableBodies: [],
+      substrateGapsSurfaced: [gap],
+      deliverableCitations: [RISK_TREASURY_AUTHORITY],
+      followOnRoutes: [
+        {
+          kind: routeKind,
+          target: "engineering-execution-substrate",
+          directive: `Execute brief ${brief.briefId}: ${brief.title}${
+            brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
+          }. Triaged and routed by Ravi's autonomous goal-loop; requires an engineering-execution run.`,
+        },
+      ],
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: RAVI_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+  eventsEmitted += 1;
+  logger.info(
+    { briefId: brief.briefId, runId, routeKind, remainingOpen },
+    "ravi:goal-loop — brief triaged + routed to engineering-execution substrate (blocked, gap surfaced)",
+  );
+  return {
+    eventsEmitted,
+    summary: `brief ${brief.briefId} routed→executor (blocked); ${remainingOpen} open brief(s) remain`,
+  };
+}
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -443,17 +696,17 @@ function getWorldStateReader(): LocalAgentWorldStateReader {
 // circular dependency through handler-callables.ts). Calls the underlying
 // ravi:alm-readiness handler directly via its imported callable.
 //
-// Shadow mode: shadowMode: true for cohort-3 first ticks.
-// In dry-run mode the goal-loop events are still emitted (so the shadow-mode
-// trace is testable per spec §4 "Build runs in shadow mode for the first two
-// substrate ticks"), but the ravi:alm-readiness handler is called with
-// dryRun=true.
+// Live: when the goal-loop selects a decision, the ravi:alm-readiness handler
+// runs for real and emits. The handler is dry-run only when the loop
+// deferred/escalated (no decision to execute) or when ctx.dryRun is set
+// (--dry-run flag). Goal-loop events (AgentGoalEvaluated / AgentGoalSelected /
+// AgentGoalDeferred) are always emitted regardless.
 // ---------------------------------------------------------------------------
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   logger.info(
     { agent: ctx.agent, trigger: ctx.trigger.id, dryRun: ctx.dryRun },
-    "ravi:goal-loop — starting goal-loop cohort-3 run",
+    "ravi:goal-loop — starting goal-loop run",
   );
 
   const agentUrn = "agent:ravi";
@@ -498,13 +751,31 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     "ravi:goal-loop — goal-loop iteration complete",
   );
 
-  // If escalation or deferred — run handler in dry-run mode (shadow trace).
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
 
+  // Brief-bound dispatch path: when the loop selected a decision and there is
+  // an open brief addressed to Ravi, bind a run to the oldest brief and emit
+  // its dispatch lifecycle (triage-and-route) instead of only the cadence
+  // attestation. Skipped under --dry-run (no real run-lifecycle side-effects).
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForRavi() : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(ctx, brief, iterationId, openBriefs.length - 1);
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "ravi:goal-loop — run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
+
+  // Cadence path: no open brief — run the alm-readiness attestation live when
+  // the loop selected a decision; dry-run only when it deferred or --dry-run.
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (cohort-3 first ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
     dryRun: ctx.dryRun || !shouldRunHandler,
   };
 
@@ -519,13 +790,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "ravi:goal-loop — cohort-3 run complete",
+    "ravi:goal-loop — run complete (cadence)",
   );
 
   return {
     eventsEmitted: handlerOutput.eventsEmitted + goalEventsEmitted,
     ok: handlerOutput.ok,
-    summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
+    summary: `goal-loop: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
     ...(handlerOutput.deliverable ? { deliverable: handlerOutput.deliverable } : {}),
   };
 };

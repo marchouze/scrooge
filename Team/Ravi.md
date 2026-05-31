@@ -96,7 +96,7 @@ Ravi does **not** measure ECL or own RWA (Rohan), book trades into the OMS (Kai)
 
 ## 11. Outputs
 
-- **Events emitted:** `ALMRunCompleted`, `SAMOSFundingPlanned`, `RepoExecuted`, `HedgeExecuted`, `FundingCurvePublished`, `FTPRatePublished`, `LiquidityReallocated`, `LiquidityWatchCheckpoint`, `CollateralSubstituted`, `HQLACompositionAssessed`, `AgentEscalation`, `AgentDecision`.
+- **Events emitted:** `ALMRunCompleted`, `ALMReadinessSnapshot` (build-phase ALM readiness attestation emitted by `ravi:alm-readiness`; the goal-loop's planned event under the risk/treasury autonomous pilot), `SAMOSFundingPlanned`, `RepoExecuted`, `HedgeExecuted`, `FundingCurvePublished`, `FTPRatePublished`, `LiquidityReallocated`, `LiquidityWatchCheckpoint`, `CollateralSubstituted`, `HQLACompositionAssessed`, `AgentEscalation`, `AgentDecision`.
 - **Registers maintained:** FTP-curve register; counterparty-funding register; HQLA-eligibility register; hedge-designation register; collateral-eligibility register.
 - **Deliverables:** daily ALM pack (Owner Inbox; Eitan-facing); weekly FTP-rate publication; monthly ALCO pack (generated, with Eitan); quarterly ILAAP submission draft (Eitan signs).
 
