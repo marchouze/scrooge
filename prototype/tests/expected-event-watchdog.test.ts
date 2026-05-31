@@ -74,7 +74,7 @@ function seedAllExpectedEvents(store: EventStore): void {
         totalPnlZarMinor: 0,
         activePositions: 0,
         cancelledPositions: 0,
-        byPair: [],
+        byCurrency: [],
         byCounterparty: [],
         byBook: [],
         generatedAt: AS_OF,

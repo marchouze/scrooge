@@ -41,13 +41,44 @@ import { type Actor, type Event, eventSchema } from "../types";
 // Sub-shapes — aggregation slices
 // ---------------------------------------------------------------------------
 
+/**
+ * @deprecated Use `pnlByCurrencySchema` / `PnLByCurrency` instead.
+ * Retained for backward compatibility with old `DailyPnLReportGenerated`
+ * snapshot events that pre-date the per-currency ZAR MTM change
+ * (brief:bea:per-currency-zar-mtm-bycurrency-aggregation-full:2026-05-31).
+ * Old events containing `byPair` still parse via `.passthrough()` on the
+ * outer payload schema.
+ */
 export const pnlByPairSchema = z.object({
   pair: z.string().min(1),
   tradeCount: z.number().int().nonnegative(),
   unrealisedPnlZarMinor: z.number().int(),
   realisedPnlZarMinor: z.number().int(),
 });
+/** @deprecated See `pnlByPairSchema`. */
 export type PnLByPair = z.infer<typeof pnlByPairSchema>;
+
+/**
+ * Per-currency P&L aggregation row.
+ *
+ * Each non-ZAR currency that appears in the book (as base or quote) gets its
+ * own row. For a EUR/USD trade, both EUR and USD get separate rows; USD/ZAR
+ * gets a USD row only (ZAR is the base currency and is not reported separately
+ * since P&L is already expressed in ZAR).
+ *
+ * Authority: IAS-21-§28, IFRS-9-§5.7.1, CEO instruction 2026-05-31.
+ */
+export const pnlByCurrencySchema = z.object({
+  /** ISO 4217 currency code (non-ZAR currency in the trade book). */
+  currency: z.string().min(1),
+  /** Number of trades contributing to this currency row. */
+  tradeCount: z.number().int().nonnegative(),
+  /** Unrealised P&L contribution from this currency leg (ZAR minor units). */
+  unrealisedPnlZarMinor: z.number().int(),
+  /** Realised P&L contribution from this currency (ZAR minor units). */
+  realisedPnlZarMinor: z.number().int(),
+});
+export type PnLByCurrency = z.infer<typeof pnlByCurrencySchema>;
 
 export const pnlByCounterpartySchema = z.object({
   counterpartyId: z.string().min(1),
@@ -115,8 +146,13 @@ export const dailyPnLReportGeneratedPayloadSchema = z.object({
   activePositions: z.number().int().nonnegative(),
   /** Number of trades cancelled (excluded from P&L). */
   cancelledPositions: z.number().int().nonnegative(),
-  /** P&L breakdown by currency pair. */
-  byPair: z.array(pnlByPairSchema),
+  /**
+   * P&L breakdown by non-ZAR currency (per-currency ZAR MTM).
+   * Each non-ZAR currency in the book (as base or quote) has its own row,
+   * valued against ZAR independently via the CCY/ZAR closing rate.
+   * Authority: IAS-21-§28; CEO instruction 2026-05-31.
+   */
+  byCurrency: z.array(pnlByCurrencySchema),
   /** P&L breakdown by counterparty. */
   byCounterparty: z.array(pnlByCounterpartySchema),
   /** P&L breakdown by trading book. */

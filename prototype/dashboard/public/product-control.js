@@ -2,9 +2,9 @@
 //
 // Fetches /api/product-control/daily-pnl and /api/product-control/report-history,
 // renders tiles (total P&L, unrealised, active positions, cancelled),
-// tables (by pair, by counterparty, trade-level detail, report history).
+// tables (by currency, by counterparty, trade-level detail, report history).
 //
-// Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
+// Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1; IAS-21-§28.
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 (() => {
@@ -14,13 +14,79 @@
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-    return `${zar < 0 ? "−" : ""}ZAR ${abs}`;
+    return `${zar < 0 ? "−" : ""}ZAR ${abs}`;
+  }
+
+  function numFmt(minor, ccy) {
+    const amount = minor / 100;
+    const abs = Math.abs(amount).toLocaleString("en-ZA", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return `${ccy} ${amount < 0 ? "−" : ""}${abs}`;
   }
 
   function pnlColour(minor) {
     if (minor < 0) return "var(--color-danger)";
     if (minor > 0) return "var(--color-success)";
     return "var(--color-text-secondary)";
+  }
+
+  function tradeModalBody(t) {
+    const rows = [
+      ["Trade ID", `<code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code>`],
+      ["Side", t.side ? (t.side.charAt(0).toUpperCase() + t.side.slice(1)) : "—"],
+      [
+        "Base",
+        t.baseCurrency && t.notionalBaseMinor != null
+          ? numFmt(t.notionalBaseMinor, t.baseCurrency)
+          : (t.baseCurrency || "—"),
+      ],
+      [
+        "Quote",
+        t.quoteCurrency && t.notionalQuoteMinor != null
+          ? numFmt(t.notionalQuoteMinor, t.quoteCurrency)
+          : (t.quoteCurrency || "—"),
+      ],
+      [
+        "Book Rate",
+        typeof t.bookRate === "number" ? t.bookRate.toFixed(6) : "—",
+      ],
+      [
+        "Reval Rate",
+        t.revalRate != null ? t.revalRate.toFixed(6) : "—",
+      ],
+      ["Trade Date", t.tradeDate || "—"],
+      ["Settle Date", t.settleDate || "—"],
+      [
+        "Counterparty",
+        SC.esc(t.counterpartyName || t.counterpartyId || "—"),
+      ],
+      [
+        "Unrealised P&L",
+        t.status === "cancelled"
+          ? "—"
+          : t.markStatus === "unavailable"
+            ? `<span style="color:#ff4d4f;font-style:italic">⚠ no mark</span>`
+            : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`,
+      ],
+      [
+        "Realised P&L",
+        zarFmt(t.realisedPnlZarMinor || 0),
+      ],
+      [
+        "Status",
+        `${SC.renderBadge(t.status || "live")}${t.markStatus && t.markStatus !== "live" ? ` <small style="opacity:.7">(mark: ${SC.esc(t.markStatus)})</small>` : ""}`,
+      ],
+    ];
+
+    const tableRows = rows
+      .map(
+        ([label, value]) =>
+          `<tr><td style="padding:4px 12px 4px 0;color:var(--color-text-secondary);white-space:nowrap;vertical-align:top">${label}</td><td style="padding:4px 0;vertical-align:top">${value}</td></tr>`,
+      )
+      .join("");
+    return `<table style="border-collapse:collapse;width:100%;font:var(--text-body)">${tableRows}</table>`;
   }
 
   async function load() {
@@ -77,18 +143,18 @@
         '<p style="color:var(--color-text-secondary)">No P&L data available. Execute some FX trades to populate this page.</p>';
     }
 
-    // ── By currency pair ───────────────────────────────────────────────────
-    const pairEl = document.getElementById("pc-by-pair");
-    if (pairEl && report?.byPair?.length) {
-      pairEl.innerHTML = SC.renderSectionHeader("P&L by Currency Pair", null);
+    // ── By currency ────────────────────────────────────────────────────────
+    const ccyEl = document.getElementById("pc-by-currency");
+    if (ccyEl && report?.byCurrency?.length) {
+      ccyEl.innerHTML = SC.renderSectionHeader("P&L by Currency", null);
       const tableWrap = document.createElement("div");
-      pairEl.appendChild(tableWrap);
+      ccyEl.appendChild(tableWrap);
       SC.renderTable({
         container: tableWrap,
-        headers: ["Pair", "Trades", "Unrealised P&L (ZAR)", "Realised P&L (ZAR)", "Total (ZAR)"],
-        rows: report.byPair.map((r) => ({
+        headers: ["Currency", "Trades", "Unrealised P&L (ZAR)", "Realised P&L (ZAR)", "Total (ZAR)"],
+        rows: report.byCurrency.map((r) => ({
           cells: [
-            r.pair,
+            `<strong>${SC.esc(r.currency)}</strong>`,
             String(r.tradeCount),
             `<span style="color:${pnlColour(r.unrealisedPnlZarMinor)}">${zarFmt(r.unrealisedPnlZarMinor)}</span>`,
             zarFmt(r.realisedPnlZarMinor),
@@ -98,13 +164,13 @@
         })),
         onRowClick: (r) =>
           SC.openModal({
-            title: `P&L — ${r.pair}`,
+            title: `P&L — ${r.currency}`,
             body: `<pre style="font:13px/1.6 var(--font-mono);white-space:pre-wrap">${SC.esc(JSON.stringify(r, null, 2))}</pre>`,
           }),
         emptyMessage: "No positions",
       });
-    } else if (pairEl && report) {
-      pairEl.innerHTML = `${SC.renderSectionHeader("P&L by Currency Pair", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No pair data.</p>`;
+    } else if (ccyEl && report) {
+      ccyEl.innerHTML = `${SC.renderSectionHeader("P&L by Currency", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No currency data.</p>`;
     }
 
     // ── By counterparty ────────────────────────────────────────────────────
@@ -136,14 +202,12 @@
       cpEl.innerHTML = `${SC.renderSectionHeader("P&L by Counterparty", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No counterparty data.</p>`;
     }
 
-    // ── Trade-level detail (live positions only) ───────────────────────────
+    // ── Trade-level detail (all positions) ─────────────────────────────────
     const tradesEl = document.getElementById("pc-trades");
     if (tradesEl && pnlData?.trades) {
-      // Only open positions carry unrealised MTM. Settled/cancelled trades
-      // have crystallised (or zeroed) their P&L and belong to the realised
-      // history, not the live trade book.
-      const liveTrades = pnlData.trades.filter((t) => t.status === "live");
-      tradesEl.innerHTML = SC.renderSectionHeader("Trade-Level Detail — Live Positions", null);
+      // Show ALL trades — live, settled, and cancelled. Grey out non-live.
+      const allTrades = pnlData.trades;
+      tradesEl.innerHTML = SC.renderSectionHeader("Trade-Level Detail — All Positions", null);
       const tableWrap = document.createElement("div");
       tradesEl.appendChild(tableWrap);
       SC.renderTable({
@@ -157,13 +221,9 @@
           "Unrealised P&L (ZAR)",
           "Status",
         ],
-        rows: liveTrades.map((t) => ({
-          cells: [
-            `<code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code>`,
-            SC.esc(t.pair),
-            SC.esc(t.side),
-            typeof t.bookRate === "number" ? t.bookRate.toFixed(6) : "—",
-            t.revalRate != null ? t.revalRate.toFixed(6) : "—",
+        rows: allTrades.map((t) => {
+          const dimStyle = t.status !== "live" ? ' style="opacity:0.6"' : "";
+          const pnlCell =
             t.status === "cancelled"
               ? `<span style="color:var(--color-text-disabled)">—</span>`
               : t.markStatus === "unavailable"
@@ -172,17 +232,24 @@
                   ? `<span style="color:#d48806" title="Stale mark — overnight carry-forward from prior close">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">stale</small></span>`
                   : t.markStatus === "overnight"
                     ? `<span style="color:#d48806" title="Overnight close proxy — no live feed">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">close</small></span>`
-                    : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`,
-            SC.renderBadge(
+                    : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`;
+          const cells = [
+            `<span${dimStyle}><code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code></span>`,
+            `<span${dimStyle}>${SC.esc(t.pair)}</span>`,
+            `<span${dimStyle}>${SC.esc(t.side)}</span>`,
+            `<span${dimStyle}>${typeof t.bookRate === "number" ? t.bookRate.toFixed(6) : "—"}</span>`,
+            `<span${dimStyle}>${t.revalRate != null ? t.revalRate.toFixed(6) : "—"}</span>`,
+            `<span${dimStyle}>${pnlCell}</span>`,
+            `<span${dimStyle}>${SC.renderBadge(
               t.status === "cancelled" ? "cancelled" : t.status === "settled" ? "settled" : "live",
-            ),
-          ],
-          data: t,
-        })),
+            )}</span>`,
+          ];
+          return { cells, data: t };
+        }),
         onRowClick: (t) =>
           SC.openModal({
             title: `Trade ${t.tradeId}`,
-            body: `<pre style="font:13px/1.6 var(--font-mono);white-space:pre-wrap">${SC.esc(JSON.stringify(t, null, 2))}</pre>`,
+            body: tradeModalBody(t),
           }),
         emptyMessage: "No trades",
       });

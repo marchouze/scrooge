@@ -57,7 +57,7 @@ import {
 } from "../../platform/event-store/event-types/fx-accounting";
 import { makeMtmRunCompleted } from "../../platform/event-store/event-types/mtm";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
-import { MarketDataStore } from "../../platform/market-data/store";
+import { MarketDataStore, lookupQuoteWithInverse } from "../../platform/market-data/store";
 import { runValuationAdjustments } from "../../platform/market-risk/valuation-adjustment-engine";
 import type {
   FxTradeExecutedPayload,
@@ -240,7 +240,43 @@ function revalueOnePosition(args: {
   // means the bank is short the base: P&L > 0 when midRate < bookRate.
   const sideSign = trade.side === "buy" ? 1 : -1;
 
+  const baseCcy = trade.currencyPair.base; // e.g. "EUR"
+  const quoteCcy = trade.currencyPair.quote; // e.g. "USD"
+  const quoteIsZar = quoteCcy === "ZAR";
+
+  // Helper: resolve CCY/ZAR rate from MarketDataStore. Uses
+  // lookupQuoteWithInverse so that either EUR/ZAR or ZAR/EUR stored in the
+  // DB will work. Returns null if no usable tick is found.
+  function resolveZarRate(
+    ccy: string,
+    provenance: "production" | "simulated" | undefined,
+  ): number | null {
+    if (ccy === "ZAR") return 1; // ZAR/ZAR = 1 by definition
+    const pair = `${ccy}/ZAR`;
+    const result = lookupQuoteWithInverse(mdStore, pair, { provenance: provenance ?? "production" });
+    return result !== null ? result.rate : null;
+  }
+
   // ---- 1. Try fresh production tick ----------------------------------------
+  // Per-currency ZAR MTM: resolve EUR/ZAR and USD/ZAR independently, then
+  // compute P&L as:
+  //   base leg:  sideSign × notionalBase × (zarRateBase_today − zarRateBase_book)
+  //   quote leg: −sideSign × notionalQuote × (zarRateQuote_today − zarRateQuote_book)
+  //
+  // For the book rates: zarRateBase_book = bookRate (for a ZAR-quoted pair
+  // this is already CCY/ZAR). For non-ZAR-quoted crosses we must resolve
+  // the book-time CCY/ZAR rate. As a pragmatic approximation during the
+  // build phase (no historical ZAR rate for book date), use the CURRENT
+  // zarRateBase tick as zarRateBase_book too — i.e. the "new-trade P&L" is
+  // zero on the first reval. This matches the stale-mark fallback behaviour
+  // for same-day trades where no prior mark exists.
+  //
+  // For ZAR-quoted pairs (e.g. USD/ZAR), the cross-rate issue does not apply:
+  //   - zarRateBase = current USD/ZAR mid
+  //   - zarRateQuote = 0 (ZAR leg; no conversion needed)
+  //   - P&L = sideSign × notionalBase × (zarRateBase_today − bookRate)
+  // This is identical to the legacy formula for ZAR-quoted pairs.
+
   const productionTicks = mdStore.query({
     provenance: "production",
     instrument: currencyPair,
@@ -249,30 +285,88 @@ function revalueOnePosition(args: {
   });
 
   const tick = productionTicks[0];
-  if (tick) {
-    const tickPayload = tick.payload as Record<string, unknown>;
-    const midRate = extractMidRate(tickPayload);
 
-    if (midRate !== undefined && midRate > 0 && isFreshTick(tick.asOf, asOf)) {
-      // Fresh production tick — emit OfficialMarkAdopted + FxPositionRevalued.
-      adoptFxMark({
-        store: eventStore as unknown as import("../../platform/event-store/store").EventStore,
-        asOf,
-        tick,
-        markDecimal: midRate.toFixed(6),
-        policyVersionRef,
-      });
+  // Resolve per-currency ZAR rates and compute per-currency P&L.
+  // Returns null if any required rate is unavailable (trade is unmarkable).
+  function computePerCurrencyPnl(provenance: "production" | "simulated" | undefined): {
+    unrealisedPnlZarMinor: number;
+    revalRate: number; // cross-pair rate (base/quote) used for bookRate comparison
+    zarRateBase: number;
+    zarRateQuote: number; // 0 if quote is ZAR
+  } | null {
+    const zarRateBase = resolveZarRate(baseCcy, provenance);
+    if (zarRateBase === null) return null;
 
-      const unrealisedPnlZarMinor = Math.round(sideSign * notionalBaseMinor * (midRate - bookRate));
+    const zarRateQuote = quoteIsZar ? 0 : resolveZarRate(quoteCcy, provenance);
+    if (zarRateQuote === null) return null;
+
+    // notionalQuoteMinor: the quote-currency notional in minor units.
+    // For a BUY base/quote, the quote leg is the pay leg.
+    // Use nearLeg counterNotional if currency matches quote, else notional.
+    const qLeg = nearLeg;
+    let notionalQuoteMinor: number;
+    if (qLeg.notional.currency === quoteCcy) {
+      notionalQuoteMinor = qLeg.notional.amountMinor;
+    } else if (qLeg.counterNotional && qLeg.counterNotional.currency === quoteCcy) {
+      notionalQuoteMinor = qLeg.counterNotional.amountMinor;
+    } else {
+      // Fallback: derive from notional × book rate
+      notionalQuoteMinor = Math.round(notionalBaseMinor * bookRate);
+    }
+
+    // Compute book-time ZAR rates. For ZAR-quoted pairs, zarRateBase_book = bookRate.
+    // For crosses, approximate: use zarRateBase / zarRateQuote × bookRate
+    // (the cross rate implies zarRateBase = bookRate × zarRateQuote).
+    // On first reval with no historical ZAR rate, assume zarRateBase_book
+    // ≈ current zarRateBase (zero first-day P&L for the cross legs — conservative).
+    const zarRateBase_book = quoteIsZar ? bookRate : zarRateBase; // first-reval conservative
+    const zarRateQuote_book = quoteIsZar ? 0 : zarRateQuote; // first-reval conservative
+
+    // P&L = base_leg_pnl − quote_leg_pnl (quote is a contra-leg)
+    const basePnl = Math.round(sideSign * notionalBaseMinor * (zarRateBase - zarRateBase_book));
+    const quotePnl = quoteIsZar
+      ? 0
+      : Math.round(sideSign * notionalQuoteMinor * (zarRateQuote - zarRateQuote_book));
+    const unrealisedPnlZarMinor = basePnl - quotePnl;
+
+    // Synthetic cross-rate for bookRate compat on the event (revalRate ≈ zarRateBase/zarRateQuote if non-ZAR)
+    const revalRate = quoteIsZar ? zarRateBase : zarRateQuote > 0 ? zarRateBase / zarRateQuote : zarRateBase;
+
+    return { unrealisedPnlZarMinor, revalRate, zarRateBase, zarRateQuote };
+  }
+
+  if (tick && isFreshTick(tick.asOf, asOf)) {
+    // Fresh production tick — try per-currency ZAR computation.
+    const perCcyResult = computePerCurrencyPnl("production");
+
+    if (perCcyResult !== null) {
+      const { unrealisedPnlZarMinor, revalRate, zarRateBase, zarRateQuote } = perCcyResult;
+
+      // Emit OfficialMarkAdopted for the cross-pair tick (preserving existing
+      // mark-adoption semantics — adopts the direct cross rate as official mark).
+      const tickPayload = tick.payload as Record<string, unknown>;
+      const midRate = extractMidRate(tickPayload);
+      if (midRate !== undefined && midRate > 0) {
+        adoptFxMark({
+          store: eventStore as unknown as import("../../platform/event-store/store").EventStore,
+          asOf,
+          tick,
+          markDecimal: midRate.toFixed(6),
+          policyVersionRef,
+        });
+      }
+
       const revalPayload: FxPositionRevaluedPayload = {
         tradeId,
         currencyPair,
         bookRate,
-        revalRate: midRate,
+        revalRate,
         notionalBaseMinor,
         unrealisedPnlZarMinor,
         revaluedAt,
         rateSource: tick.source,
+        zarRateBase,
+        zarRateQuote,
       };
 
       eventStore.append(
@@ -291,11 +385,12 @@ function revalueOnePosition(args: {
         tradeId,
         currencyPair,
         bookRate,
-        markRate: midRate,
+        markRate: revalRate,
         pnlDeltaMinor: unrealisedPnlZarMinor,
         rateSource: tick.source,
       };
     }
+    // zarRateBase/zarRateQuote not found — fall through to stale-mark / skip.
   }
 
   // ---- 2. No fresh production tick — try stale-mark carry-forward ----------
@@ -353,20 +448,21 @@ function revalueOnePosition(args: {
   // only current marks get adopted. Increment positionsStaleMark (not
   // positionsValued) — this is not a live mark.
   if (tick) {
-    const tickPayload = tick.payload as Record<string, unknown>;
-    const midRate = extractMidRate(tickPayload);
-    if (midRate !== undefined && midRate > 0) {
-      const unrealisedPnlZarMinor = Math.round(sideSign * notionalBaseMinor * (midRate - bookRate));
+    const perCcyResult = computePerCurrencyPnl("production");
+    if (perCcyResult !== null) {
+      const { unrealisedPnlZarMinor, revalRate, zarRateBase, zarRateQuote } = perCcyResult;
       const rateSource = `overnight-close:${tick.asOf.slice(0, 10)}:${tick.source}`;
       const revalPayload: FxPositionRevaluedPayload = {
         tradeId,
         currencyPair,
         bookRate,
-        revalRate: midRate,
+        revalRate,
         notionalBaseMinor,
         unrealisedPnlZarMinor,
         revaluedAt,
         rateSource,
+        zarRateBase,
+        zarRateQuote,
       };
 
       eventStore.append(
@@ -385,7 +481,7 @@ function revalueOnePosition(args: {
         tradeId,
         currencyPair,
         bookRate,
-        markRate: midRate,
+        markRate: revalRate,
         pnlDeltaMinor: unrealisedPnlZarMinor,
         rateSource,
       };
