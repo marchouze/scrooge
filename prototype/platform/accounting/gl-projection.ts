@@ -251,7 +251,10 @@ export function buildGlView(
       e.type === "FxPositionRevalued" ||
       e.type === "TradeMatured" ||
       e.type === "PrincipalPayment" ||
-      e.type === "SettlementConfirmed"
+      e.type === "SettlementConfirmed" ||
+      // Remediation events are also source events for duplicate-reversal-correction
+      // postings; include them so their fixture status is captured.
+      e.type === "SubLedgerPostingRemediationRecorded"
     ) {
       sourceEventMap.set(e.event_id, e.payload as Record<string, unknown>);
       if (e.provenance?.kind === "build-phase-fixture") {
