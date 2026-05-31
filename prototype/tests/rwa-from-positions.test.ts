@@ -18,6 +18,13 @@
 //   9. BondTradeExecuted side="sell" → not counted (no credit exposure on short).
 //  10. toRwaDecomposition maps output to RwaDecomposition shape with correct source.
 //
+// Settlement-netting tests (11–15):
+//  11. Repo: open + RepoEndLegSettled → excluded from RWA (tradeCount 0).
+//  12. IBL:  place + InterbankLoanMatured → excluded from RWA (tradeCount 0).
+//  13. FX:   execute + SettlementConfirmed → excluded from RWA (tradeCount 0).
+//  14. IRS:  book + IrdSwapTerminated → excluded from RWA (tradeCount 0).
+//  15. Partial: 3 repos opened, 1 settled → only 2 count.
+//
 // Authority: D-RWA-LIVE-POSITIONS-PROJECTION-V1 (CEO-approved 2026-05-30)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
@@ -25,10 +32,19 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
-import { makeRepoTradeOpened } from "../platform/event-store/event-types/repo-mmd-ibl";
-import { makeInterbankLoanPlaced } from "../platform/event-store/event-types/repo-mmd-ibl";
+import {
+  makeIrdSwapTerminated,
+} from "../platform/event-store/event-types/ird-accounting";
+import {
+  makeInterbankLoanMatured,
+  makeInterbankLoanPlaced,
+  makeRepoEndLegSettled,
+  makeRepoTradeOpened,
+} from "../platform/event-store/event-types/repo-mmd-ibl";
+import { makeTradeMatured } from "../platform/event-store/event-types/trade-matured";
 import { EventStore } from "../platform/event-store/store";
-import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
+import { makeFxTradeExecuted, makeSettlementConfirmed } from "../platform/markets/cdm/fx";
+import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { computeCapitalMetrics } from "../platform/projections/capital-metrics";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
@@ -291,6 +307,43 @@ describe("rwa-from-positions — FX spot trade", () => {
 });
 
 // ---------------------------------------------------------------------------
+// IRS booking helper
+// ---------------------------------------------------------------------------
+
+function appendIrsTrade(store: EventStore, opts: { notionalMinor?: number; tradeIdValue?: string } = {}): string {
+  const tradeIdValue = opts.tradeIdValue ?? `IRS-TEST-${newEventId().slice(0, 8)}`;
+  store.append(
+    makeIrsTradeBooked({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        tradeId: { scheme: "internal", value: tradeIdValue },
+        counterparty: {
+          partyId: "urn:party:legal-entity:standard-bank-za",
+          name: "Standard Bank ZA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+        },
+        notional: { currency: "ZAR", amountMinor: opts.notionalMinor ?? 10_000_000_00 },
+        fixedRate: 0.085,
+        floatingIndex: "JIBAR-3M",
+        bankPays: "fixed",
+        tradeDate: { iso: "2026-05-30", calendar: "JIHCAL" as const },
+        effectiveDate: { iso: "2026-06-01", calendar: "JIHCAL" as const },
+        maturityDate: { iso: "2031-06-01", calendar: "JIHCAL" as const },
+        paymentFrequency: "quarterly",
+        dayCountConvention: "ACT/365",
+        bookId: "BOOK-IRS-001",
+        traderRef: "trader:test",
+      },
+    }),
+  );
+  return tradeIdValue;
+}
+
+// ---------------------------------------------------------------------------
 // 5. RepoTradeOpened → creditRwaMinor > 0 (bank 75% unrated)
 // ---------------------------------------------------------------------------
 
@@ -431,5 +484,340 @@ describe("toRwaDecomposition", () => {
 
     expect(decomp.source).toBe("live-positions");
     expect(decomp.creditRwaMinor).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11. Repo: open + RepoEndLegSettled → excluded from RWA
+// ---------------------------------------------------------------------------
+
+describe("rwa-from-positions — settlement netting: repo", () => {
+  it("RepoTradeOpened + RepoEndLegSettled → tradeCount 0, buildPhaseFallback true", () => {
+    const store = new EventStore(":memory:");
+    const tradeId = `repo-settle-${newEventId().slice(0, 8)}`;
+
+    store.append(
+      makeRepoTradeOpened({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId,
+          counterpartyLei: "ABSA-ZA-001",
+          startLegSettlementDate: "2026-05-28",
+          endLegSettlementDate: "2026-05-30",
+          startLegCashZar: 5_000_000_00,
+          repurchasePriceZar: 5_010_000_00,
+          repoRateDecimal: 0.0825,
+          collateralIsin: "ZAG000149037",
+          collateralFaceValue: 5_200_000_00,
+          collateralHaircutPct: 2.0,
+          bookId: "BOOK-TREASURY",
+          traderRef: "trader:test",
+          instrumentRef: "fi:repo:ZAR-001",
+        },
+      }),
+    );
+
+    store.append(
+      makeRepoEndLegSettled({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: { tradeId, repurchasePriceZar: 5_010_000_00 },
+      }),
+    );
+
+    const result = computeRwaFromPositions(store, AS_OF);
+    expect(result.tradeCount).toBe(0);
+    expect(result.buildPhaseFallback).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 12. IBL: place + InterbankLoanMatured → excluded from RWA
+// ---------------------------------------------------------------------------
+
+describe("rwa-from-positions — settlement netting: IBL", () => {
+  it("InterbankLoanPlaced + InterbankLoanMatured → tradeCount 0, buildPhaseFallback true", () => {
+    const store = new EventStore(":memory:");
+    const placementId = `ibl-mature-${newEventId().slice(0, 8)}`;
+
+    store.append(
+      makeInterbankLoanPlaced({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          placementId,
+          counterpartyLei: "NEDBANK-ZA-001",
+          principalZar: 3_000_000_00,
+          rateDecimal: 0.079,
+          startDate: "2026-05-23",
+          maturityDate: "2026-05-30",
+          placementType: "fixed-term",
+          bookId: "BOOK-TREASURY",
+          instrumentRef: "fi:ibl:ZAR-001",
+        },
+      }),
+    );
+
+    store.append(
+      makeInterbankLoanMatured({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          placementId,
+          principalZar: 3_000_000_00,
+          interestReceivedZar: 45_000,
+        },
+      }),
+    );
+
+    const result = computeRwaFromPositions(store, AS_OF);
+    expect(result.tradeCount).toBe(0);
+    expect(result.buildPhaseFallback).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 13. FX: execute + SettlementConfirmed → excluded from RWA
+// ---------------------------------------------------------------------------
+
+describe("rwa-from-positions — settlement netting: FX", () => {
+  it("FxTradeExecuted + SettlementConfirmed → tradeCount 0, buildPhaseFallback true", () => {
+    const store = new EventStore(":memory:");
+    const tradeIdValue = `FX-SETTLE-${newEventId().slice(0, 8)}`;
+
+    store.append(
+      makeFxTradeExecuted({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: { scheme: "INTERNAL", value: tradeIdValue },
+          productTaxonomy: "FX-spot",
+          currencyPair: { base: "USD", quote: "ZAR" },
+          side: "buy",
+          legs: [
+            {
+              legKind: "near",
+              payCurrency: "ZAR",
+              receiveCurrency: "USD",
+              notional: { currency: "ZAR", amountMinor: 18_000_000 },
+              counterNotional: { currency: "USD", amountMinor: 1_000_000 },
+              rate: { currency: "ZAR", amount: 18 },
+              settlementDate: { iso: "2026-06-01", calendar: "JIHCAL" },
+            },
+          ],
+          tradeDate: { iso: "2026-05-30", calendar: "JIHCAL" },
+          counterparty: {
+            partyId: "urn:party:legal-entity:standard-bank-za",
+            name: "Standard Bank ZA",
+            role: "counterparty",
+            jurisdiction: "ZA",
+          },
+          venue: "OTC",
+          trader: "trader:test",
+          bookId: "BOOK-FX-MARKETS-LP",
+          bookType: "trading",
+          settlementForm: "physical",
+          settlementPath: "correspondent",
+          finsurvCategory: "ODP-001",
+          clientFlowRef: "test:flow-001",
+        },
+      }),
+    );
+
+    store.append(
+      makeSettlementConfirmed({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: tradeIdValue,
+          currencyPair: "ZAR/USD",
+          settledDate: "2026-06-01",
+          realisedPnlDelta: 0,
+          settlementRef: "SWIFT-TEST-001",
+          citations: CITATIONS,
+        },
+      }),
+    );
+
+    const result = computeRwaFromPositions(store, AS_OF);
+    expect(result.tradeCount).toBe(0);
+    expect(result.buildPhaseFallback).toBe(true);
+  });
+
+  it("FxTradeExecuted + TradeMatured{productKind:fx-spot} → tradeCount 0", () => {
+    const store = new EventStore(":memory:");
+    const tradeIdValue = `FX-MATURE-${newEventId().slice(0, 8)}`;
+
+    store.append(
+      makeFxTradeExecuted({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: { scheme: "INTERNAL", value: tradeIdValue },
+          productTaxonomy: "FX-spot",
+          currencyPair: { base: "USD", quote: "ZAR" },
+          side: "buy",
+          legs: [
+            {
+              legKind: "near",
+              payCurrency: "ZAR",
+              receiveCurrency: "USD",
+              notional: { currency: "ZAR", amountMinor: 18_000_000 },
+              counterNotional: { currency: "USD", amountMinor: 1_000_000 },
+              rate: { currency: "ZAR", amount: 18 },
+              settlementDate: { iso: "2026-06-01", calendar: "JIHCAL" },
+            },
+          ],
+          tradeDate: { iso: "2026-05-30", calendar: "JIHCAL" },
+          counterparty: {
+            partyId: "urn:party:legal-entity:standard-bank-za",
+            name: "Standard Bank ZA",
+            role: "counterparty",
+            jurisdiction: "ZA",
+          },
+          venue: "OTC",
+          trader: "trader:test",
+          bookId: "BOOK-FX-MARKETS-LP",
+          bookType: "trading",
+          settlementForm: "physical",
+          settlementPath: "correspondent",
+          finsurvCategory: "ODP-001",
+          clientFlowRef: "test:flow-001",
+        },
+      }),
+    );
+
+    store.append(
+      makeTradeMatured({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          productKind: "fx-spot",
+          tradeId: tradeIdValue,
+          currencyPair: "ZAR/USD",
+          legKind: "near",
+          settledBaseCurrencyMinor: 1_000_000,
+          settledQuoteCurrencyMinor: -18_000_000,
+          settledAt: AS_OF,
+          nostroAccountBase: "ACC-1200-001",
+          nostroAccountQuote: "ACC-1200-002",
+          realisedPnlZarMinor: 0,
+        },
+      }),
+    );
+
+    const result = computeRwaFromPositions(store, AS_OF);
+    expect(result.tradeCount).toBe(0);
+    expect(result.buildPhaseFallback).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 14. IRS: book + IrdSwapTerminated → excluded from RWA
+// ---------------------------------------------------------------------------
+
+describe("rwa-from-positions — settlement netting: IRS", () => {
+  it("IrsTradeBooked + IrdSwapTerminated → tradeCount 0, buildPhaseFallback true", () => {
+    const store = new EventStore(":memory:");
+    const tradeIdValue = `IRS-TERM-${newEventId().slice(0, 8)}`;
+
+    appendIrsTrade(store, { tradeIdValue });
+
+    store.append(
+      makeIrdSwapTerminated({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: tradeIdValue,
+          terminationPaymentMinor: 0,
+          carryingNpvAtTerminationMinor: 0,
+          realisedPnlMinor: 0,
+          terminationDate: "2026-05-30",
+          currency: "ZAR",
+        },
+      }),
+    );
+
+    const result = computeRwaFromPositions(store, AS_OF);
+    expect(result.tradeCount).toBe(0);
+    expect(result.buildPhaseFallback).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 15. Partial netting: 3 repos opened, 1 settled → only 2 count
+// ---------------------------------------------------------------------------
+
+describe("rwa-from-positions — partial settlement netting", () => {
+  it("3 repos opened, 1 settled → tradeCount 2, creditRwa = 2 × expected", () => {
+    const store = new EventStore(":memory:");
+    const cashZar = 5_000_000_00; // R5m each
+
+    const settledId = `repo-settled-${newEventId().slice(0, 8)}`;
+    const openId1 = `repo-open-1-${newEventId().slice(0, 8)}`;
+    const openId2 = `repo-open-2-${newEventId().slice(0, 8)}`;
+
+    const makeRepo = (tradeId: string) =>
+      makeRepoTradeOpened({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId,
+          counterpartyLei: "ABSA-ZA-001",
+          startLegSettlementDate: "2026-05-30",
+          endLegSettlementDate: "2026-06-30",
+          startLegCashZar: cashZar,
+          repurchasePriceZar: 5_020_000_00,
+          repoRateDecimal: 0.0825,
+          collateralIsin: "ZAG000149037",
+          collateralFaceValue: 5_200_000_00,
+          collateralHaircutPct: 2.0,
+          bookId: "BOOK-TREASURY",
+          traderRef: "trader:test",
+          instrumentRef: "fi:repo:ZAR-001",
+        },
+      });
+
+    store.append(makeRepo(settledId));
+    store.append(makeRepo(openId1));
+    store.append(makeRepo(openId2));
+
+    store.append(
+      makeRepoEndLegSettled({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: { tradeId: settledId, repurchasePriceZar: 5_020_000_00 },
+      }),
+    );
+
+    const result = computeRwaFromPositions(store, AS_OF);
+    expect(result.tradeCount).toBe(2);
+    expect(result.buildPhaseFallback).toBe(false);
+    // Two open repos at 75% RW bank unrated
+    const expectedCreditRwa = Math.round(cashZar * 0.75) * 2;
+    expect(result.output.credit.totalMinor).toBe(expectedCreditRwa);
   });
 });
