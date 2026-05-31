@@ -249,6 +249,12 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
       // Cancelled trades: no position, no credit exposure.
       if (tradeIdValue && cancelledTradeIds.has(tradeIdValue)) continue;
 
+      // Build-phase fixtures (CONDUCT-TEST, SIM backfill, scenario seeds) are
+      // excluded from live limit utilisation — they exist for substrate testing
+      // only and are never real positions. Only 'production' and 'simulated'
+      // (operator-booked) trades contribute.
+      if (e.provenance?.kind === "build-phase-fixture") continue;
+
       const asOf = e.as_of;
 
       // B3 — signed net position per currency (near leg).
