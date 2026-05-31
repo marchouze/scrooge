@@ -87,21 +87,18 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
 
   // Empty-store posture: no attribution events on a fresh bench → info, ok.
+  // Reuse the `result` base (its asOf comes from emptyResult) so this pipeline
+  // holds no direct wall-clock callsite.
   if (attributions.length === 0) {
-    return {
-      pipeline: PIPELINE,
-      ok: true,
-      asserted: 0,
-      violations: [
-        {
-          subject: PIPELINE,
-          message:
-            "No PnLAttributionGenerated events in the store — the P&L attribution engine has not run on this bench yet (fresh-runner posture). Run runPnLAttribution() to populate.",
-          severity: "info",
-        },
-      ],
-      asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
-    };
+    result.violations = [
+      {
+        subject: PIPELINE,
+        message:
+          "No PnLAttributionGenerated events in the store — the P&L attribution engine has not run on this bench yet (fresh-runner posture). Run runPnLAttribution() to populate.",
+        severity: "info",
+      },
+    ];
+    return result;
   }
 
   result.asserted = attributions.length;
