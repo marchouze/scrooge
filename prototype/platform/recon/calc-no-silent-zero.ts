@@ -70,6 +70,10 @@ const IMPORT_REQUIRE_WEIGHT =
 const FIGURE_FILES = [
   "prototype/platform/product-control/daily-pnl.ts",
   "prototype/platform/product-control/pnl-attribution.ts",
+  // All-asset-class position source (brief:bea:all-asset-class-p-l-ipv-coverage-mvp):
+  // the cross-asset unrealised total is a figure aggregate — every position's
+  // mark must route through present()/absent(), never a silent `?? 0`.
+  "prototype/platform/product-control/position-source.ts",
 ];
 
 /** `import { ... present|absent|FinancialInput ... } from ".../financial-input"`. */

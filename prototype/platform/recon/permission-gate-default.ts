@@ -292,6 +292,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // assertions, not a production access path. T-01 carve-out.
   // Citation: D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
   "platform/product-control/pnl-attribution.test.ts",
+  // All-asset-class position-source test. Raw EventStore(":memory:") is a
+  // build-phase fixture for the FX-passthrough / bond-marking / no-silent-zero
+  // assertions, not a production access path. T-01 carve-out.
+  // Citation: brief:bea:all-asset-class-p-l-ipv-coverage-mvp:2026-05-31,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/product-control/position-source.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

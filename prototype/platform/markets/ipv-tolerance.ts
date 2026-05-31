@@ -23,14 +23,37 @@
 // The absolute threshold converts notionalMinor (cents) to rand by dividing
 // by 100 before multiplying by the rate spread — this gives a ZAR exposure.
 //
+// ---------------------------------------------------------------------------
+// All-asset-class extension (brief:bea:all-asset-class-p-l-ipv-coverage-mvp)
+// ---------------------------------------------------------------------------
+//
+// The FX-spot two-tier schedule above is preserved EXACTLY (see TIER_1_PAIRS /
+// getIpvThresholds). The bank also trades JSE bonds, JSE-listed equities and
+// OTC IRD, each priced from a different parameter type (price / curve point /
+// vol point / credit spread) and sitting at a different IFRS-13 fair-value
+// level. IPV tolerance must therefore vary by BOTH the IFRS-13 level (a Level-1
+// quoted print needs a far tighter band than a Level-3 model output) AND the
+// parameter type being verified.
+//
+// `getIpvScheduleTolerance(level, parameterType)` returns the relative band for
+// any (IFRS-13 level, parameter type) pair, covering all three levels. The
+// FX-spot path is unaffected — FX continues to route through getIpvThresholds /
+// checkIpvTolerance with its instrument-tier schedule; the new schedule governs
+// bond / equity / IRD IPV.
+//
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
 //   - D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
 //   - pricing-policy-v1.md §5.2 (IPV tolerance table)
+//   - valuation-policy-v1 §7.3 (IPV frequency by IFRS-13 level)
+//   - accounting-policies-ifrs-v1 §3.3 (IFRS-13 fair-value hierarchy)
 //   - BCBS 239 (risk-data aggregation — independent price verification)
 //   - D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22 (CEO-approved 2026-05-22)
+//   - Camille (CFO, governance) recommendation R3 (all-asset-class P&L + IPV)
 //
-// Author: Rohan (Market risk engineer, engineering)
+// Author: Rohan (Market risk engineer, engineering); all-asset-class extension
+//   by Bea (Accounting & financial reporting engineer, engineering) with
+//   Rohan's risk inputs.
 
 // ---------------------------------------------------------------------------
 // Thresholds (sourced from pricing-policy-v1.md §5.2, recalibrated per
@@ -190,5 +213,144 @@ export function checkIpvTolerance(
     return { pass: false, divergencePct, divergenceZar, breachThreshold: "zar" };
   }
 
+  return { pass: true, divergencePct, divergenceZar, breachThreshold: null };
+}
+
+// ===========================================================================
+// All-asset-class IPV schedule — per IFRS-13 level + per parameter type
+// ===========================================================================
+//
+// The FX-spot schedule above is instrument-tier driven (TIER_1_PAIRS). For
+// bonds, equities and OTC IRD the IPV band is driven instead by (a) the
+// IFRS-13 fair-value level of the mark and (b) the parameter type being
+// verified. This is the standard product-control approach: a Level-1 quoted
+// equity print is verified far more tightly than a Level-3 model-derived
+// credit-spread input.
+
+/**
+ * IFRS-13 fair-value hierarchy level. Mirrors `FairValueLevel` in
+ * event-store/event-types/valuation.ts (kept as a local literal union so this
+ * module has no dependency on the event-store layer).
+ */
+export type IfrsFairValueLevel = "1" | "2" | "3";
+
+/**
+ * The parameter type whose mark is being independently verified. Aligned with
+ * OfficialMarkAdopted.markType plus `credit-spread` (an IRD/bond input that has
+ * no OfficialMarkAdopted markType yet — see substrate gaps).
+ *   price         — bond clean price / equity closing print
+ *   curve-point   — interest-rate curve point (IRD NPV)
+ *   vol-point     — volatility surface point (options; reserved)
+ *   credit-spread — issuer / counterparty credit spread (bond / IRD CVA input)
+ */
+export type IpvParameterType = "price" | "curve-point" | "vol-point" | "credit-spread";
+
+export const IPV_PARAMETER_TYPES: readonly IpvParameterType[] = [
+  "price",
+  "curve-point",
+  "vol-point",
+  "credit-spread",
+] as const;
+
+export const IFRS_FAIR_VALUE_LEVELS: readonly IfrsFairValueLevel[] = ["1", "2", "3"] as const;
+
+/**
+ * Per-(IFRS-13 level × parameter type) relative tolerance band, expressed as a
+ * fraction (0.0050 = 0.50%). The grid is intentionally COMPLETE — every level
+ * has a band for every parameter type — so the recon can assert full coverage.
+ *
+ * Calibration rationale (build-phase, conservative — to be retightened at
+ * commencement of trading against consolidated production feeds):
+ *   - Tighter at Level 1 (observable quoted prices) than Level 3 (model).
+ *   - Curve points and vol points carry wider bands than outright prices
+ *     because small input moves compound through the pricing model.
+ *   - Credit spreads are the widest — thin secondary observability, the
+ *     dominant Level-3 driver for bond / IRD CVA.
+ * A Level-1 vol-point / Level-1 credit-spread is unusual (these inputs are
+ * almost never Level 1) but the grid carries a band so the verification path
+ * never hits an undefined lookup; the recon asserts no hole exists.
+ *
+ * Authority: valuation-policy-v1 §7.3; pricing-policy-v1 §5.2/§5.3;
+ *   accounting-policies-ifrs-v1 §3.3; D-IPV-TOLERANCE-SCHEDULE-FX-SPOT-2026-05-22
+ *   (FX-spot tiers, preserved separately above).
+ */
+export const IPV_SCHEDULE_PCT: Readonly<
+  Record<IfrsFairValueLevel, Readonly<Record<IpvParameterType, number>>>
+> = {
+  // Level 1 — quoted prices in active markets.
+  "1": {
+    price: 0.0025, // 0.25% — JSE-listed equity / liquid bond close
+    "curve-point": 0.005, // 0.50%
+    "vol-point": 0.0075, // 0.75%
+    "credit-spread": 0.0075, // 0.75%
+  },
+  // Level 2 — observable inputs other than quoted prices.
+  "2": {
+    price: 0.005, // 0.50% — matrix-priced bond / less-liquid line
+    "curve-point": 0.0075, // 0.75% — JSE swap curve point
+    "vol-point": 0.01, // 1.00%
+    "credit-spread": 0.0125, // 1.25%
+  },
+  // Level 3 — unobservable / model inputs; widest bands, enhanced IPV.
+  "3": {
+    price: 0.01, // 1.00%
+    "curve-point": 0.0125, // 1.25%
+    "vol-point": 0.015, // 1.50%
+    "credit-spread": 0.02, // 2.00% — dominant Level-3 driver
+  },
+} as const;
+
+/**
+ * The absolute ZAR exposure threshold for the all-asset-class schedule. Reuses
+ * the same `IPV_ZAR_THRESHOLD` as the FX-spot schedule so the absolute leg is
+ * consistent across asset classes — a divergence whose ZAR exposure exceeds the
+ * band is a breach regardless of how tight the relative band is.
+ */
+export const IPV_SCHEDULE_ZAR_THRESHOLD = IPV_ZAR_THRESHOLD;
+
+/**
+ * Return the IPV thresholds for an (IFRS-13 level, parameter type) pair. The
+ * grid is complete by construction; the lookup therefore never returns
+ * undefined. Use this for bond / equity / IRD IPV. (FX-spot keeps using
+ * `getIpvThresholds(instrument)`.)
+ */
+export function getIpvScheduleTolerance(
+  level: IfrsFairValueLevel,
+  parameterType: IpvParameterType,
+): IpvThresholds {
+  return {
+    pctThreshold: IPV_SCHEDULE_PCT[level][parameterType],
+    zarThreshold: IPV_SCHEDULE_ZAR_THRESHOLD,
+  };
+}
+
+/**
+ * Check an all-asset-class position's primary mark against an independent
+ * secondary, using the (IFRS-13 level × parameter type) schedule. Mirrors
+ * `checkIpvTolerance` but selects the band from the schedule grid instead of
+ * the FX instrument tier.
+ *
+ * @throws Error if primaryRate is zero (division-by-zero guard).
+ */
+export function checkIpvScheduleTolerance(
+  primaryRate: number,
+  secondaryRate: number,
+  notionalMinor: number,
+  level: IfrsFairValueLevel,
+  parameterType: IpvParameterType,
+): IpvCheckResult {
+  if (primaryRate === 0) {
+    throw new Error("checkIpvScheduleTolerance: primaryRate must not be zero");
+  }
+  const { pctThreshold, zarThreshold } = getIpvScheduleTolerance(level, parameterType);
+  const delta = Math.abs(primaryRate - secondaryRate);
+  const divergencePct = delta / primaryRate;
+  const divergenceZar = delta * (notionalMinor / 100);
+  if (divergencePct > pctThreshold) {
+    return { pass: false, divergencePct, divergenceZar, breachThreshold: "pct" };
+  }
+  if (divergenceZar > zarThreshold) {
+    return { pass: false, divergencePct, divergenceZar, breachThreshold: "zar" };
+  }
   return { pass: true, divergencePct, divergenceZar, breachThreshold: null };
 }
