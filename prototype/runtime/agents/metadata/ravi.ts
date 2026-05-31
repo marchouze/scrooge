@@ -49,8 +49,13 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
   // Ravi: SARB repo + prime rate ingest — build-phase fixture, on-request.
   // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8; D-MARKETS-SCHEMA-FOUNDATION.
   entry("Ravi", "repo-rate-ingest", "on-request"),
-  // ravi:goal-loop — cohort-3 (on-request only).
-  entry("Ravi", "goal-loop", "on-request"),
+  // ravi:goal-loop — daily 06:23 UTC; autonomous promotion (risk/treasury pilot),
+  // placed after ravi:alm-readiness (05:37) so a same-day ALMReadinessSnapshot exists.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3; D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+  entry("Ravi", "goal-loop", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "23 6 * * *",
+  }),
   entry("Ravi", "event-triage", "event-driven", {
     subscribesTo: [
       "TradePosted",
