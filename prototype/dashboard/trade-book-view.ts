@@ -1163,7 +1163,13 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
   // Convert major → minor units (× 1,000,000 per Principle 5 minor-unit convention)
   const SCALE = 1_000_000;
   const notionalAmountMinor = Math.round(notionalAmount * SCALE);
-  const counterNotionalMinor = Math.round(notionalAmountMinor * rate);
+  // rate = quote-per-base (D-FX-QUOTING-CONVENTION). Direction depends on notional currency:
+  //   notional in base  → counter (quote) = notional × rate
+  //   notional in quote → counter (base)  = notional / rate
+  const counterNotionalMinor =
+    notionalCurrency === base
+      ? Math.round(notionalAmountMinor * rate)
+      : Math.round(notionalAmountMinor / rate);
 
   // Determine pay/receive from the bank's perspective:
   //   buy  → bank pays quote currency to receive base currency
