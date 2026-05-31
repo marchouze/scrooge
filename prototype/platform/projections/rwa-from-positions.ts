@@ -19,6 +19,7 @@
 //   RepoTradeOpened        → CreditExposure
 //     counterpartyType = "bank" (secured lending to a bank counterparty)
 //     eadMinor          = startLegCashZar (principal of secured asset leg)
+//     Closed by:  RepoEndLegSettled, RepoTradeTerminatedEarly  (both carry tradeId)
 //
 //   DepositTaken           → CreditExposure (liability-side — 0 credit risk to bank)
 //     NOTE: deposits are inflows (liabilities); they carry 0 credit-risk RWA
@@ -27,16 +28,19 @@
 //   InterbankLoanPlaced    → CreditExposure
 //     counterpartyType = "bank" (lending principal to another institution)
 //     eadMinor          = principalZar (principal of interbank asset)
+//     Closed by:  InterbankLoanMatured, InterbankLoanRecalledEarly  (both carry placementId)
 //
 //   FxTradeExecuted        → TradingBookPosition
 //     riskType          = "fx"
 //     notionalMinor     = near-leg notional.amountMinor (base-currency notional)
 //     marketRiskWeight  = rwaInstrumentClassWeights()["FX-spot"] (registry)
+//     Closed by:  SettlementConfirmed (tradeId string), TradeMatured{productKind:"fx-spot"} (tradeId string)
 //
 //   IrsTradeBooked         → TradingBookPosition
 //     riskType          = "interest-rate"
 //     notionalMinor     = notional.amountMinor
 //     marketRiskWeight  = rwaInstrumentClassWeights()["OTC-IRD"]
+//     Closed by:  IrdSwapTerminated (tradeId string)
 //
 //   EquityTradeBooked      → TradingBookPosition
 //     riskType          = "equity"
@@ -78,6 +82,18 @@ import {
 } from "../risk/rwa-engine";
 import { requireWeight } from "../types/financial-input";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
+
+// ---------------------------------------------------------------------------
+// Helper — extract a plain-string trade ID from an identifier that may be
+// either a CDM Identifier object ({scheme, value}) or already a string.
+// ---------------------------------------------------------------------------
+
+function resolveTradeId(raw: unknown): string {
+  if (raw !== null && typeof raw === "object" && "value" in (raw as object)) {
+    return String((raw as { value: unknown }).value);
+  }
+  return String(raw);
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -169,15 +185,65 @@ export function computeRwaFromPositions(
 
   const provenanceFilter = defaultProvenanceFilter();
 
+  // =========================================================================
+  // Pass 1 — collect closed trade IDs per product.
+  //
+  // Done before the booking-event passes so that a single linear scan of each
+  // closing-event type suffices.  Sets are keyed on the same identifier that
+  // the opening event uses (tradeId for Repo/FX/IRS; placementId for IBL).
+  // =========================================================================
+
+  // --- Repo closures: RepoEndLegSettled + RepoTradeTerminatedEarly ----------
+  const closedRepoIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "RepoEndLegSettled", asOf })) {
+    const p = ev.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") closedRepoIds.add(p.tradeId);
+  }
+  for (const ev of eventStore.replay({ type: "RepoTradeTerminatedEarly", asOf })) {
+    const p = ev.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") closedRepoIds.add(p.tradeId);
+  }
+
+  // --- IBL closures: InterbankLoanMatured + InterbankLoanRecalledEarly ------
+  const closedIblIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "InterbankLoanMatured", asOf })) {
+    const p = ev.payload as { placementId?: unknown };
+    if (typeof p.placementId === "string") closedIblIds.add(p.placementId);
+  }
+  for (const ev of eventStore.replay({ type: "InterbankLoanRecalledEarly", asOf })) {
+    const p = ev.payload as { placementId?: unknown };
+    if (typeof p.placementId === "string") closedIblIds.add(p.placementId);
+  }
+
+  // --- FX closures: SettlementConfirmed + TradeMatured{productKind:fx-spot} -
+  const closedFxIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "SettlementConfirmed", asOf })) {
+    const p = ev.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
+  }
+  for (const ev of eventStore.replay({ type: "TradeMatured", asOf })) {
+    const p = ev.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
+  }
+
+  // --- IRS closures: IrdSwapTerminated (tradeId is a plain string) ----------
+  const closedIrsIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "IrdSwapTerminated", asOf })) {
+    const p = ev.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") closedIrsIds.add(p.tradeId);
+  }
+
+  // =========================================================================
+  // Pass 2 — build exposures, skipping any closed position.
+  // =========================================================================
+
   // -------------------------------------------------------------------------
   // 1. BondTradeExecuted → CreditExposure
   //    Bonds in the banking book are FVOCI or amortised-cost assets — credit
   //    exposure at face value (nominalMinor).  Risk weight depends on issuer:
   //    "ZAG" ISIN prefix = RSA government bond = 0% (sovereign-domestic-currency
   //    per CRE20 + SARB national discretion); otherwise "corporate-ig" (65%).
-  //    BondSold events are *not* reversed here — the projection is additive for
-  //    now (gap: a full net position projection should cancel sales; flagged in
-  //    placeholders below).
+  //    BondSold events are skipped (side="sell" check below).
   // -------------------------------------------------------------------------
 
   for (const ev of eventStore.replay({ type: "BondTradeExecuted", asOf })) {
@@ -209,14 +275,14 @@ export function computeRwaFromPositions(
   //    Repo = secured lending.  The bank's credit exposure is the cash
   //    advanced (startLegCashZar).  Counterparty type = "bank" (repos are
   //    predominantly interbank).  Risk weight = bank unrated, long-term = 75%.
-  //    Gap: no reversal for RepoEndLegSettled (could double-count on replay
-  //    after settlement — flagged in placeholders).
+  //    Settled / terminated repos are excluded (closedRepoIds first pass).
   // -------------------------------------------------------------------------
 
   for (const ev of eventStore.replay({ type: "RepoTradeOpened", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as unknown as RepoTradeOpenedPayload;
     if (!p.tradeId || !p.startLegCashZar) continue;
+    if (closedRepoIds.has(p.tradeId)) continue; // settled or terminated
 
     creditExposures.push({
       counterpartyId: p.counterpartyLei ?? p.tradeId,
@@ -235,13 +301,14 @@ export function computeRwaFromPositions(
   //    Bank lends to another institution.  Credit exposure = principal placed
   //    (principalZar).  Counterparty type = "bank" (interbank lending).
   //    Risk weight = bank unrated, long-term = 75%.
-  //    Gap: no reversal for InterbankLoanMatured — same note as Repo above.
+  //    Matured / recalled loans are excluded (closedIblIds first pass).
   // -------------------------------------------------------------------------
 
   for (const ev of eventStore.replay({ type: "InterbankLoanPlaced", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as unknown as InterbankLoanPlacedPayload;
     if (!p.placementId || !p.principalZar) continue;
+    if (closedIblIds.has(p.placementId)) continue; // matured or recalled
 
     const maturityBucket: "short-term" | "long-term" =
       p.placementType === "call" ? "short-term" : "long-term";
@@ -263,6 +330,7 @@ export function computeRwaFromPositions(
   //    FX = market-risk position.  Notional = near-leg base-currency
   //    notional.amountMinor.  marketRiskWeight sourced from registry
   //    "FX-spot" entry (CRO-owned).
+  //    Settled trades are excluded (closedFxIds first pass).
   // -------------------------------------------------------------------------
 
   const fxWeight = requireWeight(RWA_WEIGHTS, "FX-spot", RWA_WEIGHT_TABLE_LABEL);
@@ -272,6 +340,9 @@ export function computeRwaFromPositions(
     const p = ev.payload as unknown as FxTradeExecutedPayload;
     if (!p.tradeId || !p.legs || p.legs.length === 0) continue;
 
+    const tradeIdValue = resolveTradeId(p.tradeId);
+    if (closedFxIds.has(tradeIdValue)) continue; // settled
+
     // Near-leg is always index 0 per the CDM schema.
     const nearLeg = p.legs[0];
     const notionalMinor = nearLeg?.notional?.amountMinor;
@@ -279,10 +350,6 @@ export function computeRwaFromPositions(
 
     const currency = nearLeg?.notional?.currency ?? FUNCTIONAL_CURRENCY;
     const side = p.side === "sell" ? ("short" as const) : ("long" as const);
-    const tradeIdValue =
-      typeof p.tradeId === "object" && p.tradeId !== null && "value" in p.tradeId
-        ? (p.tradeId as { value: string }).value
-        : String(p.tradeId);
 
     tradingBookPositions.push({
       positionId: `fx-${tradeIdValue}`,
@@ -300,6 +367,7 @@ export function computeRwaFromPositions(
   // 5. IrsTradeBooked → TradingBookPosition
   //    IRS = interest-rate market-risk.  Notional = notional.amountMinor.
   //    marketRiskWeight sourced from registry "OTC-IRD" entry.
+  //    Terminated swaps are excluded (closedIrsIds first pass).
   // -------------------------------------------------------------------------
 
   const irsWeight = requireWeight(RWA_WEIGHTS, "OTC-IRD", RWA_WEIGHT_TABLE_LABEL);
@@ -309,13 +377,11 @@ export function computeRwaFromPositions(
     const p = ev.payload as unknown as IrsTradeBookedPayload;
     if (!p.tradeId || !p.notional?.amountMinor) continue;
 
+    const tradeIdValue = resolveTradeId(p.tradeId);
+    if (closedIrsIds.has(tradeIdValue)) continue; // terminated
+
     const notionalMinor = p.notional.amountMinor;
     if (notionalMinor <= 0) continue;
-
-    const tradeIdValue =
-      typeof p.tradeId === "object" && p.tradeId !== null && "value" in p.tradeId
-        ? (p.tradeId as { value: string }).value
-        : String(p.tradeId);
 
     tradingBookPositions.push({
       positionId: `irs-${tradeIdValue}`,
