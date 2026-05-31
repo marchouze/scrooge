@@ -253,7 +253,9 @@ function revalueOnePosition(args: {
   ): number | null {
     if (ccy === "ZAR") return 1; // ZAR/ZAR = 1 by definition
     const pair = `${ccy}/ZAR`;
-    const result = lookupQuoteWithInverse(mdStore, pair, { provenance: provenance ?? "production" });
+    const result = lookupQuoteWithInverse(mdStore, pair, {
+      provenance: provenance ?? "production",
+    });
     return result !== null ? result.rate : null;
   }
 
@@ -303,7 +305,9 @@ function revalueOnePosition(args: {
     // notionalQuoteMinor: the quote-currency notional in minor units.
     // For a BUY base/quote, the quote leg is the pay leg.
     // Use nearLeg counterNotional if currency matches quote, else notional.
-    const qLeg = nearLeg;
+    // nearLeg is guaranteed non-null here (early return above guards it).
+    // biome-ignore lint: nearLeg non-null guaranteed by early-return guard above
+    const qLeg = nearLeg!;
     let notionalQuoteMinor: number;
     if (qLeg.notional.currency === quoteCcy) {
       notionalQuoteMinor = qLeg.notional.amountMinor;
@@ -330,7 +334,11 @@ function revalueOnePosition(args: {
     const unrealisedPnlZarMinor = basePnl - quotePnl;
 
     // Synthetic cross-rate for bookRate compat on the event (revalRate ≈ zarRateBase/zarRateQuote if non-ZAR)
-    const revalRate = quoteIsZar ? zarRateBase : zarRateQuote > 0 ? zarRateBase / zarRateQuote : zarRateBase;
+    const revalRate = quoteIsZar
+      ? zarRateBase
+      : zarRateQuote > 0
+        ? zarRateBase / zarRateQuote
+        : zarRateBase;
 
     return { unrealisedPnlZarMinor, revalRate, zarRateBase, zarRateQuote };
   }

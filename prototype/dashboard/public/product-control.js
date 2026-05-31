@@ -35,33 +35,24 @@
   function tradeModalBody(t) {
     const rows = [
       ["Trade ID", `<code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code>`],
-      ["Side", t.side ? (t.side.charAt(0).toUpperCase() + t.side.slice(1)) : "—"],
+      ["Side", t.side ? t.side.charAt(0).toUpperCase() + t.side.slice(1) : "—"],
       [
         "Base",
         t.baseCurrency && t.notionalBaseMinor != null
           ? numFmt(t.notionalBaseMinor, t.baseCurrency)
-          : (t.baseCurrency || "—"),
+          : t.baseCurrency || "—",
       ],
       [
         "Quote",
         t.quoteCurrency && t.notionalQuoteMinor != null
           ? numFmt(t.notionalQuoteMinor, t.quoteCurrency)
-          : (t.quoteCurrency || "—"),
+          : t.quoteCurrency || "—",
       ],
-      [
-        "Book Rate",
-        typeof t.bookRate === "number" ? t.bookRate.toFixed(6) : "—",
-      ],
-      [
-        "Reval Rate",
-        t.revalRate != null ? t.revalRate.toFixed(6) : "—",
-      ],
+      ["Book Rate", typeof t.bookRate === "number" ? t.bookRate.toFixed(6) : "—"],
+      ["Reval Rate", t.revalRate != null ? t.revalRate.toFixed(6) : "—"],
       ["Trade Date", t.tradeDate || "—"],
       ["Settle Date", t.settleDate || "—"],
-      [
-        "Counterparty",
-        SC.esc(t.counterpartyName || t.counterpartyId || "—"),
-      ],
+      ["Counterparty", SC.esc(t.counterpartyName || t.counterpartyId || "—")],
       [
         "Unrealised P&L",
         t.status === "cancelled"
@@ -70,10 +61,7 @@
             ? `<span style="color:#ff4d4f;font-style:italic">⚠ no mark</span>`
             : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`,
       ],
-      [
-        "Realised P&L",
-        zarFmt(t.realisedPnlZarMinor || 0),
-      ],
+      ["Realised P&L", zarFmt(t.realisedPnlZarMinor || 0)],
       [
         "Status",
         `${SC.renderBadge(t.status || "live")}${t.markStatus && t.markStatus !== "live" ? ` <small style="opacity:.7">(mark: ${SC.esc(t.markStatus)})</small>` : ""}`,
@@ -151,7 +139,13 @@
       ccyEl.appendChild(tableWrap);
       SC.renderTable({
         container: tableWrap,
-        headers: ["Currency", "Trades", "Unrealised P&L (ZAR)", "Realised P&L (ZAR)", "Total (ZAR)"],
+        headers: [
+          "Currency",
+          "Trades",
+          "Unrealised P&L (ZAR)",
+          "Realised P&L (ZAR)",
+          "Total (ZAR)",
+        ],
         rows: report.byCurrency.map((r) => ({
           cells: [
             `<strong>${SC.esc(r.currency)}</strong>`,

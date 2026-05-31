@@ -1839,11 +1839,11 @@ async function runPhase6(): Promise<PhaseResult> {
       `status=${opDelayTrade?.status}`,
     );
 
-    const usdZarPairRow = pnl.payload.byPair.find((p) => p.pair === "USD/ZAR");
+    const usdCurrencyRow = pnl.payload.byCurrency.find((r) => r.currency === "USD");
     r.assert(
-      "Block B — byPair aggregation: USD/ZAR row carries all 4 trades",
-      usdZarPairRow?.tradeCount === 4,
-      `usd-zar tradeCount=${usdZarPairRow?.tradeCount}`,
+      "Block B — byCurrency aggregation: USD row carries all 4 trades",
+      usdCurrencyRow?.tradeCount === 4,
+      `usd tradeCount=${usdCurrencyRow?.tradeCount}`,
     );
 
     const standardBankRow = pnl.payload.byCounterparty.find(

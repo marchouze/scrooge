@@ -362,8 +362,7 @@ export function computeDailyPnL(
       // Determine per-currency unrealised P&L split.
       // If the reval event has zarRateBase/zarRateQuote, split accurately.
       // Fallback for legacy events: attribute full unrealised to base only.
-      const hasPerCcyRates =
-        reval?.zarRateBase !== undefined && reval?.zarRateQuote !== undefined;
+      const hasPerCcyRates = reval?.zarRateBase !== undefined && reval?.zarRateQuote !== undefined;
 
       const baseUnrealised = (() => {
         if (!hasPerCcyRates || !reval) return unrealisedForReporting;

@@ -22,29 +22,29 @@ function ccyRow(currency: string, n = 1): PnLByCurrency {
 
 describe("assertByCurrencyPresent", () => {
   it("present (non-empty array): no violations", () => {
-    expect(assertByCurrencyPresent([ccyRow("USD")], true, "test")).toHaveLength(0);
+    expect(assertByCurrencyPresent([ccyRow("USD")], "test")).toHaveLength(0);
   });
 
-  it("present (empty array, no trade data): no violations", () => {
-    expect(assertByCurrencyPresent([], false, "test")).toHaveLength(0);
+  it("present (empty array): no violations", () => {
+    expect(assertByCurrencyPresent([], "test")).toHaveLength(0);
   });
 
   it("undefined (missing): one fail violation (default severity)", () => {
-    const violations = assertByCurrencyPresent(undefined, false, "test");
+    const violations = assertByCurrencyPresent(undefined, "test");
     expect(violations).toHaveLength(1);
     expect(violations[0]?.severity).toBe("fail");
     expect(violations[0]?.message).toContain("byCurrency");
   });
 
   it("undefined with info severity: one info violation", () => {
-    const violations = assertByCurrencyPresent(undefined, false, "test", "info");
+    const violations = assertByCurrencyPresent(undefined, "test", "info");
     expect(violations).toHaveLength(1);
     expect(violations[0]?.severity).toBe("info");
   });
 
   it("multiple currencies in array: no violations", () => {
     expect(
-      assertByCurrencyPresent([ccyRow("USD"), ccyRow("EUR"), ccyRow("GBP")], true, "test"),
+      assertByCurrencyPresent([ccyRow("USD"), ccyRow("EUR"), ccyRow("GBP")], "test"),
     ).toHaveLength(0);
   });
 });
@@ -113,7 +113,9 @@ describe("run() — pipeline assertions", () => {
             reportId: "pnl:2026-05-21:abc",
             reportDate: "2026-05-21",
             // byPair present, byCurrency absent → pre-migration event
-            byPair: [{ pair: "USD/ZAR", tradeCount: 1, unrealisedPnlZarMinor: 0, realisedPnlZarMinor: 0 }],
+            byPair: [
+              { pair: "USD/ZAR", tradeCount: 1, unrealisedPnlZarMinor: 0, realisedPnlZarMinor: 0 },
+            ],
           },
         },
       ],
@@ -200,8 +202,8 @@ describe("EUR/USD byCurrency split test", () => {
               legKind: "near",
               payCurrency: "USD",
               receiveCurrency: "EUR",
-              notional: { currency: "EUR", amountMinor: 10_000_000 }, // 100,000 EUR
-              counterNotional: { currency: "USD", amountMinor: 10_850_000 }, // 108,500 USD
+              notional: { currency: "USD", amountMinor: 10_850_000 }, // 108,500 USD (pay)
+              counterNotional: { currency: "EUR", amountMinor: 10_000_000 }, // 100,000 EUR (receive)
               rate: { amount: 1.085, currency: "USD" },
               settlementDate: { iso: "2099-12-31", calendar: "JIHCAL" },
             },

@@ -70,7 +70,6 @@ export interface RunOpts {
  */
 export function assertByCurrencyPresent(
   byCurrency: ReadonlyArray<PnLByCurrency> | undefined,
-  hasTradeData: boolean,
   subjectPrefix: string,
   severity: "fail" | "info" = "fail",
 ): ReconViolation[] {
@@ -79,7 +78,8 @@ export function assertByCurrencyPresent(
       {
         subject: subjectPrefix,
         severity,
-        message: `DailyPnLReportGenerated is missing the \`byCurrency\` array. This indicates the report was generated before the per-currency ZAR MTM migration (CEO instruction 2026-05-31; IAS-21-§28). New reports must include \`byCurrency\`. Authority: brief:bea:per-currency-zar-mtm-bycurrency-aggregation-full:2026-05-31.`,
+        message:
+          "DailyPnLReportGenerated is missing the `byCurrency` array. This indicates the report was generated before the per-currency ZAR MTM migration (CEO instruction 2026-05-31; IAS-21-§28). New reports must include `byCurrency`. Authority: brief:bea:per-currency-zar-mtm-bycurrency-aggregation-full:2026-05-31.",
       },
     ];
   }
@@ -111,15 +111,13 @@ export function run(opts: RunOpts = {}): ReconResult {
     result.asserted++;
     // An injected liveByCurrency satisfies the assertion (caller controls it).
     // No violation: byCurrency is present.
-    violations.push(...assertByCurrencyPresent(opts.liveByCurrency, false, "live-recompute", "fail"));
+    violations.push(...assertByCurrencyPresent(opts.liveByCurrency, "live-recompute", "fail"));
   } else if (!opts.skipLiveRecompute) {
     try {
       const today = opts.today ?? new Date().toISOString().slice(0, 10);
       const { payload } = computeDailyPnL(eventStore, today);
       result.asserted++;
-      violations.push(
-        ...assertByCurrencyPresent(payload.byCurrency, payload.activePositions > 0, "live-recompute", "fail"),
-      );
+      violations.push(...assertByCurrencyPresent(payload.byCurrency, "live-recompute", "fail"));
     } catch (err) {
       violations.push({
         subject: "live-recompute",
@@ -136,14 +134,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   for (const ev of events) {
     result.asserted++;
     const subject = `DailyPnLReportGenerated:${ev.payload.reportId ?? ev.event_id}`;
-    violations.push(
-      ...assertByCurrencyPresent(
-        ev.payload.byCurrency,
-        false, // hasTradeData unknown for historical events
-        subject,
-        "info",
-      ),
-    );
+    violations.push(...assertByCurrencyPresent(ev.payload.byCurrency, subject, "info"));
   }
 
   result.violations = violations;

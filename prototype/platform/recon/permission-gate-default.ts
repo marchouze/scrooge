@@ -305,6 +305,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: brief:bea:all-asset-class-p-l-ipv-coverage-mvp:2026-05-31,
   // P4-SECURITY-DESIGNED-IN.
   "platform/product-control/position-source.test.ts",
+  // Per-currency ZAR MTM byCurrency recon test. Raw EventStore(":memory:") is
+  // a build-phase fixture for the EUR/USD byCurrency split assertion, not a
+  // production access path. T-01 carve-out.
+  // Citation: brief:bea:per-currency-zar-mtm-bycurrency-aggregation-full:2026-05-31,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/recon/fx-pair-canonical-aggregation.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
