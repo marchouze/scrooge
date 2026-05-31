@@ -49,6 +49,7 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 | Scheduled wake-up — daily close at 17:00 SAST | Runtime scheduler | Close-cycle completed by 22:00 UTC |
 | Scheduled wake-up — month-end close | Runtime scheduler | Auditor pack ready within 1 working day of month-end |
 | Scheduled wake-up — quarter-end | Runtime scheduler | BA-return draft ready within 5 working days |
+| Scheduled wake-up — daily product-control run at 19:00 UTC weekdays (product-control-daily; after Rohan's 18:00 UTC MTM) | Runtime scheduler | `DailyPnLReportGenerated` + `PnLAttributionGenerated` (plus a `PnLAttributionExceptionRaised` when the attribution is not clean) emitted by 20:00 UTC |
 | `IFRS9ECLPublished` event | Event store (Rohan) | ECL stage / overlay reflected in close within 1 working day |
 | `TaxClassificationPublished` event | Event store (Yael) | Deferred-tax posting within 1 working day |
 | `RestatementProposed` event | Event store | Restatement-handling procedure invoked within 1 working day |

@@ -46,6 +46,7 @@ Rohan shares the IFRS 9 ECL methodology surface with Bea, and the pre-trade gate
 | Trigger | Source | Response SLA |
 |---|---|---|
 | Scheduled wake-up — daily risk run 06:00 UTC | Runtime scheduler | Run completed by 08:00 UTC |
+| Scheduled wake-up — daily MTM 18:00 UTC weekdays (daily-mtm) | Runtime scheduler | EOD revaluation (`FxPositionRevalued`, `OfficialMarkAdopted`, `MtmRunCompleted`) plus the valuation-adjustment / prudent-valuation reserve run (`ValuationAdjustmentComputed` per category + `PrudentValuationAvaAggregated` umbrella, consuming the freshly-adopted marks + IPV variances) completed by 20:00 UTC |
 | Scheduled wake-up — weekly model-monitoring Monday 07:00 UTC | Runtime scheduler | Drift report by Monday 09:00 UTC |
 | Scheduled wake-up — monthly stress-test cycle | Runtime scheduler | Stress-test pack ready within 5 working days |
 | Scheduled wake-up — quarterly RWA / annual ICAAP | Runtime scheduler | Submission draft per regulatory calendar |

@@ -47,10 +47,13 @@
 //   brief:rohan:valuation-adjustment-prudent-valuation-reserve-f:2026-05-31
 //   (WS-PRODUCT-CONTROL).
 
-import type {
-  AvaCategoryLine,
-  Ifrs13Level,
-  ValuationAdjustmentType,
+import { newEventId, nowUtc } from "../core/types";
+import {
+  type AvaCategoryLine,
+  type Ifrs13Level,
+  type ValuationAdjustmentType,
+  makePrudentValuationAvaAggregated,
+  makeValuationAdjustmentComputed,
 } from "../event-store/event-types/valuation-adjustment";
 import type { EventStore } from "../event-store/store";
 import { toCanonicalPair } from "../market-data/canonical-pair";
@@ -509,3 +512,116 @@ export const VALUATION_ADJUSTMENT_ENGINE = {
   id: ENGINE_ID,
   actorId: ENGINE_ACTOR_ID,
 } as const;
+
+// ---------------------------------------------------------------------------
+// Run wrapper (append) — mirrors runDailyPnLReport / runPnLAttribution
+// ---------------------------------------------------------------------------
+
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
+const ENGINE_ACTOR = {
+  type: "service" as const,
+  id: ENGINE_ACTOR_ID,
+};
+const CITATIONS = [
+  "D-TRUSTED-FIGURES-PROGRAM-V1",
+  "IFRS-13",
+  "valuation-policy-v1-§7",
+  "CRR-Art-105",
+];
+
+/**
+ * Run the valuation-adjustment / prudent-valuation reserve engine for
+ * `clockNow`'s date: compute the per-category adjustments + the AVA umbrella
+ * (pure read) and APPEND the resulting events:
+ *
+ *   - one `ValuationAdjustmentComputed` per adjustment category (close-out,
+ *     day-1-deferral, CVA, market-price-uncertainty, model-risk, concentration);
+ *   - one `PrudentValuationAvaAggregated` umbrella event summing the populated
+ *     categories (no-silent-zero — absent categories recorded, never folded as 0).
+ *
+ * `Day1PnLDeferralRecorded` is the INPUT to the day-1 reserve (recorded upstream
+ * when a Level-3 mark is taken), not an output of this run — the engine reads
+ * those events, it does not synthesise them, so this wrapper does not emit them.
+ *
+ * The CVA category needs a `MarketDataStore`. The handler passes the same store
+ * it already opened (from `BANK_MARKET_DATA_DB`); when unavailable the caller may
+ * pass a throwaway in-memory store — the CVA category then degrades to absent
+ * loudly (no silent 0), which is the correct no-mark posture.
+ *
+ * Returns the number of events appended so the caller can fold it into its run
+ * summary.
+ *
+ * Authority: Camille (CFO) recommendation R2; IFRS 13; valuation-policy-v1 §7;
+ *   CRR Art 105 / SA-Basel prudent-valuation equivalent; D-TRUSTED-FIGURES-PROGRAM-V1.
+ * Author: Rohan (Risk engineer, engineering).
+ */
+export function runValuationAdjustments(
+  store: EventStore,
+  clockNow: () => string,
+  marketData: MarketDataStore,
+): number {
+  const asOf = clockNow();
+  const valuationDate = asOf.slice(0, 10);
+  const report = computeValuationAdjustments({ eventStore: store, marketData, asOf });
+  const computedAt = nowUtc();
+
+  let eventsEmitted = 0;
+
+  // One ValuationAdjustmentComputed per category — present carries the value;
+  // absent carries amount 0 with `complete:false` + the absentReason so a
+  // consumer cannot read the 0 as a real figure (no-silent-zero contract).
+  for (const adj of report.adjustments) {
+    const amount = adj.amount;
+    const complete = isPresent(amount);
+    store.append(
+      makeValuationAdjustmentComputed({
+        asOf: valuationDate,
+        entity: BANK_ENTITY,
+        actor: ENGINE_ACTOR,
+        citations: CITATIONS,
+        payload: {
+          adjustmentId: `vadj:${adj.adjustmentType}:${valuationDate}:${newEventId().slice(0, 8)}`,
+          valuationDate,
+          adjustmentType: adj.adjustmentType,
+          amountZarMinor: complete ? amount.value : 0,
+          complete,
+          ...(complete ? {} : { absentReason: amount.reason }),
+          instrumentScope: adj.instrumentScope,
+          ifrs13Level: adj.ifrs13Level,
+          lineage: complete
+            ? amount.lineage
+            : `absent: ${amount.reason}; expected from ${amount.expectedFrom}`,
+          computedAt,
+          computedBy: ENGINE_ACTOR.id,
+        },
+      }),
+    );
+    eventsEmitted += 1;
+  }
+
+  // The prudent-valuation AVA umbrella — sums the populated categories only.
+  const populated = report.avaCategories.filter((c) => c.present).length;
+  const absentCount = report.avaCategories.length - populated;
+  const totalAvaZarMinor = isPresent(report.totalAva) ? report.totalAva.value : 0;
+  store.append(
+    makePrudentValuationAvaAggregated({
+      asOf: valuationDate,
+      entity: BANK_ENTITY,
+      actor: ENGINE_ACTOR,
+      citations: CITATIONS,
+      payload: {
+        aggregationId: `pva:${valuationDate}:${newEventId().slice(0, 8)}`,
+        valuationDate,
+        totalAvaZarMinor,
+        categories: [...report.avaCategories],
+        populatedCategories: populated,
+        absentCategories: absentCount,
+        aggregatedAt: computedAt,
+        aggregatedBy: ENGINE_ACTOR.id,
+      },
+    }),
+  );
+  eventsEmitted += 1;
+
+  return eventsEmitted;
+}

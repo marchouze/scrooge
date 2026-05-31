@@ -197,6 +197,7 @@
     "gl:backfill-postings": "bun run scripts/gl/backfill-postings.ts",
     "agent:bea-accounting-readiness": "bun run runtime/run.ts --agent Bea --trigger accounting-readiness",
     "agent:bea-period-close": "bun run runtime/run.ts --agent Bea --trigger period-close",
+    "agent:bea-product-control-daily": "bun run runtime/run.ts --agent Bea --trigger product-control-daily",
     "agent:yael-tax-readiness": "bun run runtime/run.ts --agent Yael --trigger tax-readiness",
     "agent:tomas-payments-readiness": "bun run runtime/run.ts --agent Tomas --trigger payments-readiness",
     "agent:tomas-daily-reconciliation": "bun run runtime/run.ts --agent Tomas --trigger daily-reconciliation",

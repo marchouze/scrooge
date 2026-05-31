@@ -10,6 +10,7 @@ import { beaGlPostingEngine } from "../bea-gl-posting-engine";
 import beaGoalLoop from "../bea-goal-loop";
 import beaM1IfrsClassificationRules from "../bea-m1-ifrs-classification-rules";
 import beaPeriodClose from "../bea-period-close";
+import beaProductControlDaily from "../bea-product-control-daily";
 
 export const BEA_CALLABLES: Record<string, AgentRunHandler> = {
   "bea:goal-loop": beaGoalLoop,
@@ -19,4 +20,5 @@ export const BEA_CALLABLES: Record<string, AgentRunHandler> = {
   "bea:m1-ifrs-classification-rules": beaM1IfrsClassificationRules,
   "bea:event-triage": beaEventTriage,
   "bea:period-close": beaPeriodClose,
+  "bea:product-control-daily": beaProductControlDaily,
 };
