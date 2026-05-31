@@ -51,6 +51,7 @@ const VALID_CATEGORIES: ReadonlySet<ConstantCategory> = new Set<ConstantCategory
   "capital-threshold",
   "leverage-threshold",
   "rwa-instrument-weight",
+  "product-control-tolerance",
 ]);
 
 /** Calc files that must read calibration from the registry, not inline it. */

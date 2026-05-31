@@ -567,6 +567,34 @@ const MODELS: ReadonlyArray<CalcModelDef> = [
       "RISK-MRP-01 §1.1; every model class is now registered + bound.",
     expiryDate: "2027-05-29",
   },
+  // -- Product Control P&L Attribution (brief:bea:p-l-attribution-engine-fx-spot-mvp) --
+  {
+    modelId: "model:pnl-attribution-fx-v1",
+    version: "1.0.0",
+    tier: 1,
+    description:
+      "Product Control P&L Attribution engine (computePnLAttribution), FX-spot MVP. Decomposes the " +
+      "day-over-day clean-P&L move into additive, reconciling components: new-trade P&L (trades " +
+      "booked on reportDate), market-move P&L (Σ FxPositionRevalued delta on reportDate, cross-" +
+      "checked against OfficialMarkAdopted per-instrumentKey deltas), carry/funding (MVP placeholder " +
+      "— absent when no FTP curve covers the desk funding tenor, never a silent 0), realised P&L " +
+      "(settlement increment), and an unexplained residual. The additive invariant " +
+      "actualMove === newTrade + marketMove + carry + realised + residual is enforced both by a " +
+      "zod .refine at event construction and by recon:pnl-attribution-reconciles. A live position " +
+      "with no usable prior-day mark is excluded from market-move (tracked in unattributablePositions), " +
+      "never folded in as 0. Full-reval / P&L-vector method (no Greeks); the non-FX extension adds a " +
+      "risk-factor sensitivity sub-split on the component object without reshaping the event.",
+    methodologyDescription:
+      "pnl-attribution-fx-v1.0-additive-newtrade-marketmove-carry-realised-residual-full-reval-no-silent-zero",
+    tierRationale:
+      "Tier-1 under SR 11-7 §V and D-TRUSTED-FIGURES-PROGRAM-V1: the P&L Explain is the Product " +
+      "Control control that validates the daily clean-P&L figure feeding the income statement — an " +
+      "unexplained residual beyond tolerance is a loud control signal (FRTB-PLA analogue), and a " +
+      "misstated attribution would let a P&L error pass unexplained. Figure ownership: Camille (CFO) " +
+      "per the decision-authority routing table (CFO: finance close / P&L). Full independent " +
+      "validation applies.",
+    expiryDate: "2027-05-31",
+  },
 ] as const;
 
 // ---------------------------------------------------------------------------

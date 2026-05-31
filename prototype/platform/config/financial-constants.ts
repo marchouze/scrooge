@@ -42,7 +42,8 @@ export type ConstantCategory =
   | "capital-baseline"
   | "capital-threshold"
   | "leverage-threshold"
-  | "rwa-instrument-weight";
+  | "rwa-instrument-weight"
+  | "product-control-tolerance";
 
 export interface FinancialConstant {
   /** Stable dotted key. Calc files address constants by this key. */
@@ -577,6 +578,38 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     description: "Market-RWA weight for South African government bond positions (0% RW sovereign).",
     owningRole: "Chief Risk Officer",
     citation: "Reg38-CRE20",
+  },
+
+  // ── Product Control P&L-attribution tolerance — CFO ───────────────────────
+  // The unexplained-residual tolerance for the day-over-day P&L Explain
+  // (FRTB-PLA analogue). A residual within tolerance is acceptable rounding /
+  // de-minimis noise; a breach raises a typed PnLAttributionExceptionRaised.
+  // Two-part band: a ZAR 1.00 rounding floor (integer ZAR-minor arithmetic
+  // accumulates ≤ cent-level dust across components) PLUS a bps-of-notional
+  // band the engine adds on top of the floor (scales the floor with desk size).
+  {
+    key: "product-control.pnl-attribution.residual-floor-minor",
+    value: 100,
+    unit: "zar-minor",
+    category: "product-control-tolerance",
+    label: "P&L-attribution residual floor",
+    description:
+      "ZAR 1.00 (100 minor) rounding floor on the unexplained residual of the daily P&L Explain. " +
+      "Below this the residual is de-minimis integer-arithmetic dust, not an attribution gap.",
+    owningRole: "Chief Financial Officer",
+    citation: "D-TRUSTED-FIGURES-PROGRAM-V1",
+  },
+  {
+    key: "product-control.pnl-attribution.residual-band-bps",
+    value: 0.5,
+    unit: "percentage-points",
+    category: "product-control-tolerance",
+    label: "P&L-attribution residual band (bps of notional)",
+    description:
+      "0.5 basis points of the desk's gross live notional, added on top of the rounding floor to " +
+      "scale the residual tolerance with desk size (FRTB-PLA materiality analogue).",
+    owningRole: "Chief Financial Officer",
+    citation: "FRTB-PLA",
   },
 ];
 
