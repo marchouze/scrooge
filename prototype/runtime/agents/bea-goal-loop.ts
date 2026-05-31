@@ -12,15 +12,26 @@
 //      AgentGoalLoopRunner's validation + event emission + handler dispatch.
 //
 // Rule-engine logic (§3.4 "MAY use: pure rule engine"):
-//   - If no SubLedgerReconciled event in the last 24 hours
-//     → select "Sign sub-ledger reconciliation".
-//   - Else if there are open accounting period items (CloseCycleCompleted
-//     older than 24h with no superseding close within that window)
-//     → select "Approve close-cycle completion".
-//   - Else if no AccountingReadinessSnapshot in the last 24 hours
-//     → select "Approve a posting rule for an event type" (the trial-
-//     balance equivalent in build phase; gates the first sub-ledger entry).
+//   - Candidate 0 (event-reactive): open unhandled briefs addressed to Bea
+//     (>30 min old) → select "Approve a posting rule for an event type"
+//     (Bea's broadest in-scope accounting-engineering decision, the analog of
+//     Atlas's "platform-design PR" catch-all). Mirrors Atlas's candidate-0a.
+//   - Candidate 1 (cadence): no AccountingReadinessSnapshot in the last 24h
+//     → select "Approve a posting rule for an event type" (the trial-balance
+//     equivalent in build phase; this is the only event the wired
+//     bea:accounting-readiness handler actually emits).
 //   - Otherwise → defer (null outcome).
+//
+// 2026-05-31 fix (D-AGENT-AUTONOMY-COHORT-2-PILOT): the prior cascade gated
+// candidates 1 & 2 on SubLedgerReconciled / CloseCycleCompleted — events that
+// the wired handler (bea:accounting-readiness) NEVER emits. Since neither is
+// ever produced, the deriver jammed permanently on candidate 1 ("Sign sub-
+// ledger reconciliation"): every tick saw "no recon in 24h", re-selected it,
+// the handler emitted only an AccountingReadinessSnapshot, and the loop
+// repeated forever — while Bea's real backlog of open briefs went unread.
+// The loop is now (a) brief-aware and (b) cadence-gated only on the event its
+// handler can actually emit. The SubLedger-reconciliation and close-cycle
+// goals return when their handlers exist (§16 substrate gaps).
 //
 // The goal candidates use Bea's §9 decisions-in-scope row labels exactly
 // as they appear in Team/Bea.md (the spec's closed-set per T-NEW).
@@ -46,6 +57,7 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { EventStore } from "../../platform/event-store/store";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying accounting-readiness handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
@@ -67,35 +79,47 @@ const BEA_PROCEDURE_PATH = "Procedures/by-policy/accounting-close.md";
 // Coverage-gap step-ID form per _step-id-convention.md §5.
 const BEA_PROCEDURE_STEP_ID = "accounting-close:step-1";
 
-// §9 row labels from Team/Bea.md (closed-set per T-NEW).
-const SUBLEDGER_RECON_GOAL = "Sign sub-ledger reconciliation" as const;
-const CLOSE_CYCLE_GOAL = "Approve close-cycle completion" as const;
+// §9 row label from Team/Bea.md (closed-set per T-NEW). This is Bea's broadest
+// in-scope accounting-engineering decision and the only goal whose planned
+// event (AccountingReadinessSnapshot) the wired handler actually emits.
 const POSTING_RULE_GOAL = "Approve a posting rule for an event type" as const;
 
 // ---------------------------------------------------------------------------
 // Goal-derivation rule engine
 // ---------------------------------------------------------------------------
 
-function lastSubLedgerReconciledMs(): number | undefined {
-  let latest: number | undefined;
-  for (const e of eventStore.replay({ type: "SubLedgerReconciled" })) {
-    const t = new Date(e.as_of).getTime();
-    if (!Number.isNaN(t) && (latest === undefined || t > latest)) {
-      latest = t;
-    }
+/**
+ * Returns the count of open (not yet started/completed) briefs addressed to
+ * Bea, older than `minAgeMs` (default 30 min). Mirrors Atlas's
+ * `openBriefsAddressedToAtlas`: a brief is "handled" once any AgentRunStarted
+ * or AgentRunCompleted carries its briefId. This is the candidate that makes
+ * Bea's loop react to her real backlog instead of looping on one cadence goal.
+ * Authority: D-AGENT-AUTONOMY-COHORT-2-PILOT.
+ */
+export function openBriefsAddressedToBea(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): number {
+  const handledBriefIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
   }
-  return latest;
-}
-
-function lastCloseCycleCompletedMs(): number | undefined {
-  let latest: number | undefined;
-  for (const e of eventStore.replay({ type: "CloseCycleCompleted" })) {
-    const t = new Date(e.as_of).getTime();
-    if (!Number.isNaN(t) && (latest === undefined || t > latest)) {
-      latest = t;
-    }
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
   }
-  return latest;
+  let count = 0;
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as Record<string, unknown>;
+    const briefId = String(p.briefId ?? e.event_id);
+    const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
+    if (!toName.toLowerCase().includes("bea")) continue;
+    if (handledBriefIds.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (!Number.isNaN(t) && Date.now() - t > minAgeMs) count++;
+  }
+  return count;
 }
 
 function lastAccountingReadinessSnapshotMs(): number | undefined {
@@ -152,136 +176,68 @@ export const beaGoalDeriver: GoalDeriver = async (
     return true;
   };
 
-  // Candidate 1: if no SubLedgerReconciled in last 24h, select
-  // sub-ledger reconciliation goal. The weekly drift check (§6 cadence)
-  // must produce a SubLedgerDriftChecked event every 7 days; in build
-  // phase the reconciliation goal fires more frequently to validate the
-  // pipeline end-to-end.
-  const lastRecon = lastSubLedgerReconciledMs();
-  const needsRecon = lastRecon === undefined || Date.now() - lastRecon > TWENTY_FOUR_HOURS_MS;
+  // Build the posting-rule goal outcome — shared by candidates 0 and 1.
+  // Both route to the bea:accounting-readiness handler, whose sole emitted
+  // event is AccountingReadinessSnapshot (the build-phase trial-balance
+  // equivalent). plannedEvents therefore declares exactly that event — the
+  // prior mismatch (declaring SubLedgerReconciled / CloseCycleCompleted while
+  // the handler emitted only AccountingReadinessSnapshot) was the root of the
+  // permanent jam.
+  const postingRuleOutcome = (rationale: string): GoalLoopOutcome => ({
+    kind: "decision",
+    chosen: POSTING_RULE_GOAL,
+    rationale,
+    mandateCitations: [{ section: "9-decisions-in-scope", rowKey: POSTING_RULE_GOAL, specHash }],
+    procedureCitations: [
+      {
+        procedurePath: BEA_PROCEDURE_PATH,
+        stepId,
+        // SHA-256 of the procedure file is unknown at runtime without
+        // reading it; use the spec hash as a proxy (coverage-gap).
+        procedureHash: specHash,
+      },
+    ],
+    plannedEvents: [
+      {
+        type: "AccountingReadinessSnapshot",
+        payloadPreview: { agentUrn: args.agent.urn, trigger: "bea-goal-loop" },
+      },
+    ],
+  });
 
-  if (needsRecon) {
-    if (!validateGoal(SUBLEDGER_RECON_GOAL)) return null;
-
-    return {
-      kind: "decision",
-      chosen: SUBLEDGER_RECON_GOAL,
-      rationale: `No SubLedgerReconciled event in the last 24h (last seen: ${lastRecon ? new Date(lastRecon).toISOString() : "never"}). Bea's reconciliation cadence (§6: weekly drift check Monday 06:00 UTC; inactivity SLA: SubLedgerDriftChecked every 7 days) requires a sub-ledger reconciliation. Selecting sub-ledger reconciliation goal to trigger the bea:accounting-readiness handler.`,
-      mandateCitations: [
-        {
-          section: "9-decisions-in-scope",
-          rowKey: SUBLEDGER_RECON_GOAL,
-          specHash,
-        },
-      ],
-      procedureCitations: [
-        {
-          procedurePath: BEA_PROCEDURE_PATH,
-          stepId,
-          // SHA-256 of the procedure file is unknown at runtime without
-          // reading it; use the spec hash as a proxy (coverage-gap).
-          procedureHash: specHash,
-        },
-      ],
-      plannedEvents: [
-        {
-          type: "SubLedgerReconciled",
-          payloadPreview: {
-            agentUrn: args.agent.urn,
-            trigger: "bea-goal-loop",
-          },
-        },
-      ],
-    };
+  // Candidate 0 (event-reactive): open unhandled briefs addressed to Bea.
+  // Checked before the cadence candidate so Bea reacts to her real backlog.
+  const pendingBriefCount = openBriefsAddressedToBea();
+  if (pendingBriefCount > 0) {
+    if (!validateGoal(POSTING_RULE_GOAL)) return null;
+    logger.info(
+      { agentUrn: args.agent.urn, pendingBriefCount },
+      "bea-goal-deriver: candidate-0 — open unhandled briefs addressed to Bea — selecting posting-rule goal",
+    );
+    return postingRuleOutcome(
+      `Candidate 0: ${pendingBriefCount} open brief(s) addressed to Bea (older than 30min) not yet started or completed. "${POSTING_RULE_GOAL}" is Bea's broadest in-scope accounting-engineering decision covering open posting / classification / projection work. Picking up pending briefs.`,
+    );
   }
 
-  // Candidate 2: if there are open accounting period items
-  // (CloseCycleCompleted older than 24h), select close-cycle goal.
-  const lastClose = lastCloseCycleCompletedMs();
-  const hasOpenPeriodItems =
-    lastClose === undefined || Date.now() - lastClose > TWENTY_FOUR_HOURS_MS;
-
-  if (hasOpenPeriodItems) {
-    if (!validateGoal(CLOSE_CYCLE_GOAL)) return null;
-
-    return {
-      kind: "decision",
-      chosen: CLOSE_CYCLE_GOAL,
-      rationale: `Open accounting period items detected: no CloseCycleCompleted event in the last 24h (last seen: ${lastClose ? new Date(lastClose).toISOString() : "never"}). Bea's daily close SLA (§6: daily close at 17:00 SAST; CloseCycleCompleted by 22:00 UTC) requires a close-cycle completion. Selecting close-cycle goal to trigger the bea:accounting-readiness handler.`,
-      mandateCitations: [
-        {
-          section: "9-decisions-in-scope",
-          rowKey: CLOSE_CYCLE_GOAL,
-          specHash,
-        },
-      ],
-      procedureCitations: [
-        {
-          procedurePath: BEA_PROCEDURE_PATH,
-          stepId,
-          procedureHash: specHash,
-        },
-      ],
-      plannedEvents: [
-        {
-          type: "CloseCycleCompleted",
-          payloadPreview: {
-            agentUrn: args.agent.urn,
-            trigger: "bea-goal-loop",
-          },
-        },
-      ],
-    };
-  }
-
-  // Candidate 3: if no AccountingReadinessSnapshot (trial-balance equivalent
-  // in build phase) in the last 24h, select posting-rule goal.
-  // This is the build-phase proxy for "Generate trial balance snapshot":
-  // until the close engine is wired, the AccountingReadinessSnapshot
-  // produced by bea:accounting-readiness is the trial-balance equivalent.
+  // Candidate 1 (cadence): if no AccountingReadinessSnapshot in last 24h,
+  // select posting-rule goal. This is the build-phase proxy for "Generate
+  // trial balance snapshot" and the only event bea:accounting-readiness emits.
   const lastSnapshot = lastAccountingReadinessSnapshotMs();
   const needsSnapshot =
     lastSnapshot === undefined || Date.now() - lastSnapshot > TWENTY_FOUR_HOURS_MS;
 
   if (needsSnapshot) {
     if (!validateGoal(POSTING_RULE_GOAL)) return null;
-
-    return {
-      kind: "decision",
-      chosen: POSTING_RULE_GOAL,
-      rationale: `No AccountingReadinessSnapshot in the last 24h (last seen: ${lastSnapshot ? new Date(lastSnapshot).toISOString() : "never"}). In build phase, the AccountingReadinessSnapshot is the trial-balance equivalent: it validates the posting-rule substrate and surfaces accounting cycle gaps. Selecting posting-rule goal to trigger the bea:accounting-readiness handler and produce the daily readiness attestation.`,
-      mandateCitations: [
-        {
-          section: "9-decisions-in-scope",
-          rowKey: POSTING_RULE_GOAL,
-          specHash,
-        },
-      ],
-      procedureCitations: [
-        {
-          procedurePath: BEA_PROCEDURE_PATH,
-          stepId,
-          procedureHash: specHash,
-        },
-      ],
-      plannedEvents: [
-        {
-          type: "AccountingReadinessSnapshot",
-          payloadPreview: {
-            agentUrn: args.agent.urn,
-            trigger: "bea-goal-loop",
-          },
-        },
-      ],
-    };
+    return postingRuleOutcome(
+      `Candidate 1 (cadence): no AccountingReadinessSnapshot in the last 24h (last seen: ${lastSnapshot ? new Date(lastSnapshot).toISOString() : "never"}). In build phase the AccountingReadinessSnapshot is the trial-balance equivalent: it validates the posting-rule substrate and surfaces accounting cycle gaps. Selecting posting-rule goal to trigger the bea:accounting-readiness handler and produce the daily readiness attestation.`,
+    );
   }
 
   // No goal justified.
   logger.info(
     {
       agentUrn: args.agent.urn,
-      lastReconAgo: lastRecon ? `${Math.round((Date.now() - lastRecon) / 60_000)}min` : "never",
-      lastCloseAgo: lastClose ? `${Math.round((Date.now() - lastClose) / 60_000)}min` : "never",
+      pendingBriefCount,
       lastSnapshotAgo: lastSnapshot
         ? `${Math.round((Date.now() - lastSnapshot) / 60_000)}min`
         : "never",
