@@ -22,6 +22,7 @@
 // Author: Kai (Trading systems engineer, engineering — reports to Saskia,
 //         Head of Global Markets) · Saskia (Head of Global Markets, governance).
 
+import { nowUtc } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 
 export type NpaStatus = "approved" | "withheld" | "pending";
@@ -59,7 +60,7 @@ export type FxProductCode = (typeof FX_PRODUCT_CODES)[number];
  */
 export function buildNpaView(
   store: Pick<EventStore, "replay">,
-  nowIso: string = new Date().toISOString(),
+  nowIso: string = nowUtc(),
 ): NpaView {
   type Fold = {
     status: NpaStatus;
