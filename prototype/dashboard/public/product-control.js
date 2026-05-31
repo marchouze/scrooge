@@ -77,6 +77,44 @@
     return `<table style="border-collapse:collapse;width:100%;font:var(--text-body)">${tableRows}</table>`;
   }
 
+  const TRADE_HEADERS = [
+    "Trade ID",
+    "Pair",
+    "Side",
+    "Book Rate",
+    "Reval Rate",
+    "Unrealised P&L (ZAR)",
+    "Status",
+  ];
+
+  // Build a single trade-detail table row ({cells, data}) — shared by the full
+  // list and the live-only filtered view.
+  function tradeRow(t) {
+    const dimStyle = t.status !== "live" ? ' style="opacity:0.6"' : "";
+    const pnlCell =
+      t.status === "cancelled"
+        ? `<span style="color:var(--color-text-disabled)">—</span>`
+        : t.markStatus === "unavailable"
+          ? `<span style="color:#ff4d4f;font-style:italic" title="No mark available — MTM data missing">⚠ no mark</span>`
+          : t.markStatus === "stale"
+            ? `<span style="color:#d48806" title="Stale mark — overnight carry-forward from prior close">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">stale</small></span>`
+            : t.markStatus === "overnight"
+              ? `<span style="color:#d48806" title="Overnight close proxy — no live feed">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">close</small></span>`
+              : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`;
+    const cells = [
+      `<span${dimStyle}><code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code></span>`,
+      `<span${dimStyle}>${SC.esc(t.pair)}</span>`,
+      `<span${dimStyle}>${SC.esc(t.side)}</span>`,
+      `<span${dimStyle}>${typeof t.bookRate === "number" ? t.bookRate.toFixed(6) : "—"}</span>`,
+      `<span${dimStyle}>${t.revalRate != null ? t.revalRate.toFixed(6) : "—"}</span>`,
+      `<span${dimStyle}>${pnlCell}</span>`,
+      `<span${dimStyle}>${SC.renderBadge(
+        t.status === "cancelled" ? "cancelled" : t.status === "settled" ? "settled" : "live",
+      )}</span>`,
+    ];
+    return { cells, data: t };
+  }
+
   async function load() {
     const [pnlData, history] = await Promise.all([
       fetch("/api/product-control/daily-pnl").then((r) => (r.ok ? r.json() : null)),
@@ -185,68 +223,57 @@
           ],
           data: r,
         })),
-        onRowClick: (r) =>
-          SC.openModal({
-            title: r.counterpartyName || r.counterpartyId,
-            body: `<pre style="font:13px/1.6 var(--font-mono);white-space:pre-wrap">${SC.esc(JSON.stringify(r, null, 2))}</pre>`,
-          }),
+        onRowClick: (r) => {
+          // Drill down to the full trade list backing this counterparty's P&L.
+          window.location.href = `/product-control-counterparty.html?cp=${encodeURIComponent(r.counterpartyId)}`;
+        },
         emptyMessage: "No counterparty data",
       });
     } else if (cpEl && report) {
       cpEl.innerHTML = `${SC.renderSectionHeader("P&L by Counterparty", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No counterparty data.</p>`;
     }
 
-    // ── Trade-level detail (all positions) ─────────────────────────────────
+    // ── Trade-level detail (all positions, with live-only filter) ──────────
     const tradesEl = document.getElementById("pc-trades");
     if (tradesEl && pnlData?.trades) {
-      // Show ALL trades — live, settled, and cancelled. Grey out non-live.
+      // Show ALL trades by default — live, settled, and cancelled (non-live
+      // greyed out) — with a filter to restrict the list to live trades only.
       const allTrades = pnlData.trades;
-      tradesEl.innerHTML = SC.renderSectionHeader("Trade-Level Detail — All Positions", null);
+      tradesEl.innerHTML = SC.renderSectionHeader("Trade-Level Detail", null);
+
+      const toolbar = document.createElement("div");
+      toolbar.style.cssText =
+        "display:flex;align-items:center;gap:var(--space-3);margin:var(--space-2) 0 var(--space-3)";
+      toolbar.innerHTML =
+        `<label style="display:flex;align-items:center;gap:6px;font:var(--text-body);cursor:pointer">` +
+        `<input type="checkbox" id="pc-live-only"> Live trades only</label>` +
+        `<span id="pc-trade-count" style="color:var(--color-text-secondary);font:var(--text-small)"></span>`;
+      tradesEl.appendChild(toolbar);
+
       const tableWrap = document.createElement("div");
       tradesEl.appendChild(tableWrap);
-      SC.renderTable({
-        container: tableWrap,
-        headers: [
-          "Trade ID",
-          "Pair",
-          "Side",
-          "Book Rate",
-          "Reval Rate",
-          "Unrealised P&L (ZAR)",
-          "Status",
-        ],
-        rows: allTrades.map((t) => {
-          const dimStyle = t.status !== "live" ? ' style="opacity:0.6"' : "";
-          const pnlCell =
-            t.status === "cancelled"
-              ? `<span style="color:var(--color-text-disabled)">—</span>`
-              : t.markStatus === "unavailable"
-                ? `<span style="color:#ff4d4f;font-style:italic" title="No mark available — MTM data missing">⚠ no mark</span>`
-                : t.markStatus === "stale"
-                  ? `<span style="color:#d48806" title="Stale mark — overnight carry-forward from prior close">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">stale</small></span>`
-                  : t.markStatus === "overnight"
-                    ? `<span style="color:#d48806" title="Overnight close proxy — no live feed">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">close</small></span>`
-                    : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`;
-          const cells = [
-            `<span${dimStyle}><code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code></span>`,
-            `<span${dimStyle}>${SC.esc(t.pair)}</span>`,
-            `<span${dimStyle}>${SC.esc(t.side)}</span>`,
-            `<span${dimStyle}>${typeof t.bookRate === "number" ? t.bookRate.toFixed(6) : "—"}</span>`,
-            `<span${dimStyle}>${t.revalRate != null ? t.revalRate.toFixed(6) : "—"}</span>`,
-            `<span${dimStyle}>${pnlCell}</span>`,
-            `<span${dimStyle}>${SC.renderBadge(
-              t.status === "cancelled" ? "cancelled" : t.status === "settled" ? "settled" : "live",
-            )}</span>`,
-          ];
-          return { cells, data: t };
-        }),
-        onRowClick: (t) =>
-          SC.openModal({
-            title: `Trade ${t.tradeId}`,
-            body: tradeModalBody(t),
-          }),
-        emptyMessage: "No trades",
-      });
+
+      function renderTrades(liveOnly) {
+        const shown = liveOnly ? allTrades.filter((t) => t.status === "live") : allTrades;
+        const countEl = document.getElementById("pc-trade-count");
+        if (countEl) countEl.textContent = `Showing ${shown.length} of ${allTrades.length} trade(s)`;
+        SC.renderTable({
+          container: tableWrap,
+          headers: TRADE_HEADERS,
+          rows: shown.map(tradeRow),
+          onRowClick: (t) =>
+            SC.openModal({
+              title: `Trade ${t.tradeId}`,
+              body: tradeModalBody(t),
+            }),
+          emptyMessage: liveOnly ? "No live trades" : "No trades",
+        });
+      }
+
+      renderTrades(false);
+      const liveOnlyCb = document.getElementById("pc-live-only");
+      if (liveOnlyCb)
+        liveOnlyCb.addEventListener("change", () => renderTrades(liveOnlyCb.checked));
     }
 
     // ── Report history (closing report per day) ────────────────────────────
