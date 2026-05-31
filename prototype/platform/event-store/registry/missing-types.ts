@@ -79,6 +79,7 @@ import {
   fxSettlementFailedPayloadSchema,
   fxTradeCancelledPayloadSchema,
   missedExpectedReceiptPayloadSchema,
+  realisedPnlRecognisedPayloadSchema,
   settlementFailedPayloadSchema,
   settlementFailureClassifiedPayloadSchema,
   settlementReversedPayloadSchema,
@@ -229,6 +230,19 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
+  },
+  {
+    // Realised P&L crystallised on close-out of a desk FX cash instrument
+    // (fi:csh:<CCY>:<bookId>); IAS 21 §28. Emitted by rohan:daily-mtm from the
+    // currency-position projection (CEO instruction 2026-05-31).
+    type: "RealisedPnlRecognised",
+    class: "markets",
+    payloadSchema: realisedPnlRecognisedPayloadSchema,
+    issuer: "Rohan",
+    subscribers: ["Bea", "Camille", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source: "platform/event-store/event-types/fx-accounting.ts (RealisedPnlRecognised)",
   },
   {
     // Generic lifecycle-terminal event — confirms a trade has matured /

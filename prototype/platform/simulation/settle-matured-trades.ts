@@ -12,11 +12,9 @@
 // Author: Devon (Chief Operating Officer, engineering)
 
 import { newEventId } from "../core/types";
-import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { makePrincipalPayment, makeSettlementConfirmed } from "../markets/cdm/fx";
-import { baseAmountMinor } from "../markets/cdm/fx-helpers";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -177,42 +175,20 @@ export function settleMaturedTrades(store: EventStore, todayIso: string): number
       }),
     );
 
-    // Realised P&L: (settlementRate − bookRate) × notional_base_minor (IAS 21 §28).
-    let realisedPnlDelta = 0;
-    if (trade) {
-      const nearLeg = trade.legs.find((l) => l.legKind === "near") ?? trade.legs[0];
-      if (nearLeg) {
-        const bookRate = nearLeg.rate.amount;
-        const notionalBaseMinor = baseAmountMinor(nearLeg, trade.currencyPair);
-        let settlementRate = bookRate;
-        let latestMarkAsOf = "";
-        try {
-          for (const ev of store.replay({ type: "OfficialMarkAdopted" })) {
-            const m = ev.payload as unknown as OfficialMarkAdoptedPayload;
-            if (
-              m.markType === "fx-rate" &&
-              m.instrumentKey === currencyPairStr &&
-              m.markAsOf.slice(0, 10) <= settlementDate
-            ) {
-              if (m.markAsOf > latestMarkAsOf) {
-                latestMarkAsOf = m.markAsOf;
-                settlementRate = Number.parseFloat(m.mark);
-              }
-            }
-          }
-        } catch {
-          // No marks found — use book rate (zero P&L).
-        }
-        if (settlementRate > 0 && bookRate > 0) {
-          const ratio = settlementRate / bookRate;
-          if (ratio > 5 || ratio < 0.2) settlementRate = 1 / settlementRate;
-        }
-        const isBuy = trade.side === "buy";
-        realisedPnlDelta = Math.round(
-          (isBuy ? 1 : -1) * (settlementRate - bookRate) * Math.abs(notionalBaseMinor),
-        );
-      }
-    }
+    // Realised P&L is NOT crystallised at settlement. An opening settlement
+    // (e.g. buying USD) realises nothing — the desk now HOLDS the USD; its P&L
+    // lives in the daily mark-to-market of the FX cash instrument
+    // (fi:csh:<CCY>:<bookId>) and only crystallises when the position is later
+    // CLOSED OUT (selling the USD back). That close-out realised P&L is emitted
+    // as a RealisedPnlRecognised event by the daily MTM run, sourced from the
+    // currency-position projection's weighted-average cost. The legacy
+    // (settlementRate − bookRate) × notional calc here was both wrong (it
+    // double-counted against the cash-instrument reval) and broken (no mark
+    // at/before the settle date → fell back to book rate → always 0).
+    //
+    // Authority: IAS 21 §28; D-FINANCIAL-INSTRUMENT-ENTITY; CEO instruction
+    //   2026-05-31 (FX cash as a financial instrument).
+    const realisedPnlDelta = 0;
 
     store.append(
       makeSettlementConfirmed({

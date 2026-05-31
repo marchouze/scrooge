@@ -238,6 +238,64 @@
       cpEl.innerHTML = `${SC.renderSectionHeader("P&L by Counterparty", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No counterparty data.</p>`;
     }
 
+    // ── Desk FX cash instruments (settled foreign-currency inventory) ──────
+    // The desk's settled foreign currency is a financial instrument, revalued
+    // daily against ZAR (CEO instruction 2026-05-31; IAS 21 §28).
+    const cashEl = document.getElementById("pc-cash");
+    if (cashEl) {
+      const cash = await fetch("/api/product-control/desk-cash").then((r) =>
+        r.ok ? r.json() : null,
+      );
+      const positions = (cash?.positions || []).filter((p) => p.fcyQuantityMinor !== 0);
+      if (positions.length) {
+        cashEl.innerHTML = SC.renderSectionHeader("Desk FX Cash Instruments", null);
+        const note = document.createElement("p");
+        note.style.cssText =
+          "font:var(--text-small);color:var(--color-text-secondary);margin:0 0 var(--space-3)";
+        note.textContent =
+          "Settled foreign-currency cash held by each desk, marked to ZAR at the current rate (IAS 21 §28). Unrealised = holding × (current rate − weighted-avg cost).";
+        cashEl.appendChild(note);
+        const tableWrap = document.createElement("div");
+        cashEl.appendChild(tableWrap);
+        SC.renderTable({
+          container: tableWrap,
+          headers: [
+            "Instrument",
+            "Book",
+            "Currency",
+            "Holding",
+            "Avg Cost (ZAR/ccy)",
+            "Mark (ZAR/ccy)",
+            "ZAR Value",
+            "Unrealised P&L (ZAR)",
+            "Realised P&L (ZAR)",
+          ],
+          rows: positions.map((p) => ({
+            cells: [
+              `<code style="font:12px var(--font-mono)">${SC.esc(p.instrumentId)}</code>`,
+              SC.esc(p.bookId),
+              `<strong>${SC.esc(p.currency)}</strong>`,
+              numFmt(p.fcyQuantityMinor, p.currency),
+              typeof p.avgCostZarRate === "number" ? p.avgCostZarRate.toFixed(6) : "—",
+              p.markRate != null ? p.markRate.toFixed(6) : "—",
+              p.zarValueMinor != null ? zarFmt(p.zarValueMinor) : "—",
+              p.unrealisedMarkable
+                ? `<span style="color:${pnlColour(p.unrealisedPnlZarMinor)}">${zarFmt(p.unrealisedPnlZarMinor)}</span>`
+                : `<span style="color:#ff4d4f;font-style:italic" title="No CCY/ZAR mark — cannot revalue">⚠ no mark</span>`,
+              `<span style="color:${pnlColour(p.realisedZarMinorCumulative)}">${zarFmt(p.realisedZarMinorCumulative)}</span>`,
+            ],
+            data: p,
+          })),
+          onRowClick: (p) =>
+            SC.openModal({
+              title: p.instrumentId,
+              body: `<pre style="font:13px/1.6 var(--font-mono);white-space:pre-wrap">${SC.esc(JSON.stringify(p, null, 2))}</pre>`,
+            }),
+          emptyMessage: "No settled FX cash positions",
+        });
+      }
+    }
+
     // ── Trade-level detail (all positions, with live-only filter) ──────────
     const tradesEl = document.getElementById("pc-trades");
     if (tradesEl && pnlData?.trades) {

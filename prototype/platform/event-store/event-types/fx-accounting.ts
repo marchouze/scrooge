@@ -613,11 +613,91 @@ export function makeSettlementFailureClassified(args: {
 }
 
 // ---------------------------------------------------------------------------
+// RealisedPnlRecognised
+//
+// Emitted when a settled FX trade CLOSES OUT part or all of a desk's
+// foreign-currency cash instrument (the `fi:csh:<CCY>:<bookId>` position
+// accumulated from prior settled trades). Realised P&L crystallises on
+// close-out — NOT at each settlement: an opening purchase of USD realises
+// nothing (the desk still holds the USD); selling that USD back realises
+// `(disposalCostZarRate − weighted-avg avgCostZarRate) × amountClosed`.
+//
+// This replaces the broken `SettlementConfirmed.realisedPnlDelta` (which was
+// always 0 — see settle-matured-trades.ts) as the canonical realised-P&L
+// source for the FX-spot desk. The cash instrument is a first-class
+// FinancialInstrument (ACTUS CSH); its realised P&L is recorded here so the
+// figure is a durable event, never a view-time calc (Principle 1).
+//
+// Authority:
+//   - IAS 21 §28 (exchange differences on settlement of monetary items)
+//   - IFRS 9 §5.7.1 (FVTPL P&L recognition)
+//   - D-FINANCIAL-INSTRUMENT-ENTITY (CSH cash instrument)
+//   - CEO instruction 2026-05-31 (FX cash as a financial instrument)
+// ---------------------------------------------------------------------------
+
+export const realisedPnlRecognisedPayloadSchema = z.object({
+  /** The CSH cash instrument whose close-out crystallised this P&L. */
+  instrumentId: z.string().min(1),
+  /** Owning trading book / desk. */
+  bookId: z.string().min(1),
+  /** ISO 4217 foreign currency of the cash instrument. */
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
+  /**
+   * Amount of the FCY position closed out, in minor units (always positive —
+   * the magnitude of the reduction).
+   */
+  amountClosedMinor: z.number().int().nonnegative(),
+  /** Weighted-average ZAR cost rate of the position before close-out (ZAR per FCY). */
+  avgCostZarRate: z.number(),
+  /** ZAR proceeds rate realised on the disposing trade (ZAR per FCY). */
+  disposalCostZarRate: z.number(),
+  /**
+   * Realised P&L in ZAR minor units (signed; positive = gain):
+   * (disposalCostZarRate − avgCostZarRate) × amountClosedMinor.
+   */
+  realisedPnlZarMinor: z.number().int(),
+  /** The settled trade whose settlement disposed of (part of) the position. */
+  sourceTradeId: z.string().min(1),
+  /** ISO 8601 timestamp the close-out was recognised. */
+  recognisedAt: z.string().min(1),
+});
+
+export type RealisedPnlRecognisedPayload = z.infer<typeof realisedPnlRecognisedPayloadSchema>;
+
+export function makeRealisedPnlRecognised(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RealisedPnlRecognisedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "RealisedPnlRecognised requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RealisedPnlRecognised",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: realisedPnlRecognisedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
 export const FX_ACCOUNTING_EVENT_TYPES = [
   "FxPositionRevalued",
+  "RealisedPnlRecognised",
   "SubLedgerPostingEmitted",
   "SettlementFailed",
   "SettlementReversed",
