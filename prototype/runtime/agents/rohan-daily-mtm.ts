@@ -321,12 +321,11 @@ function revalueOnePosition(args: {
     }
 
     // Compute book-time ZAR rates. For ZAR-quoted pairs, zarRateBase_book = bookRate.
-    // For crosses, approximate: use zarRateBase / zarRateQuote × bookRate
-    // (the cross rate implies zarRateBase = bookRate × zarRateQuote).
-    // On first reval with no historical ZAR rate, assume zarRateBase_book
-    // ≈ current zarRateBase (zero first-day P&L for the cross legs — conservative).
-    const zarRateBase_book = quoteIsZar ? bookRate : zarRateBase; // first-reval conservative
-    const zarRateQuote_book = quoteIsZar ? 0 : zarRateQuote; // first-reval conservative
+    // For crosses, derive via the cross-rate identity: zarRateBase = bookRate × zarRateQuote.
+    // (e.g. EUR/ZAR_book = EUR/USD_book × USD/ZAR_today — pins USD/ZAR at today,
+    // conservative, but correctly captures the EUR/USD move in ZAR terms.)
+    const zarRateBase_book = quoteIsZar ? bookRate : bookRate * zarRateQuote;
+    const zarRateQuote_book = quoteIsZar ? 0 : zarRateQuote;
 
     // P&L = base_leg_pnl − quote_leg_pnl (quote is a contra-leg)
     const basePnl = Math.round(sideSign * notionalBaseMinor * (zarRateBase - zarRateBase_book));
