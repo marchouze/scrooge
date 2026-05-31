@@ -40,6 +40,7 @@
 //   brief:rohan:valuation-adjustment-prudent-valuation-reserve-f:2026-05-31.
 
 import { eventStore } from "../composition";
+import { nowUtc } from "../core/types";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "valuation-adjustment-additive";
@@ -126,7 +127,7 @@ export function run(opts: RunOpts = {}): ReconResult {
           severity: "info",
         },
       ],
-      asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
+      asOf: nowUtc(),
     };
   }
 

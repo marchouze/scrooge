@@ -152,20 +152,8 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Authority: ORG-ODP-RPT-003; urn:regulation:odp:cs-3-2018 §6.
 //   Author: Devon (COO, operations), 2026-05-30.
-//
-// 2026-05-31 — Bumped 65 → 66 (baseline drift correction, WS-PRODUCT-CONTROL):
-//   dashboard/markets-fx-npa.ts:62 — `nowIso: string = new Date().toISOString()`
-//   injectable-default parameter on `buildNpaView`, already on main (PR #539,
-//   "feat(fx): Slice 7 — NPA attestation badge"). The snapshot lagged behind the
-//   committed code: the callsite is the approved injectable-default pattern (the
-//   wall-clock fallback only fires when a caller omits `nowIso`; production
-//   callers pass an explicit value). Surfaced — and corrected here — while
-//   landing the valuation-adjustment / reserve framework; the callsite itself is
-//   outside that change's scope. Clock-abstraction cleanup of the dashboard
-//   default deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
-//   Author: Rohan (Risk engineer, engineering), 2026-05-31.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 66;
+const KNOWN_VIOLATIONS_SNAPSHOT = 65;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
