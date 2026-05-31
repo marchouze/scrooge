@@ -256,7 +256,8 @@
       function renderTrades(liveOnly) {
         const shown = liveOnly ? allTrades.filter((t) => t.status === "live") : allTrades;
         const countEl = document.getElementById("pc-trade-count");
-        if (countEl) countEl.textContent = `Showing ${shown.length} of ${allTrades.length} trade(s)`;
+        if (countEl)
+          countEl.textContent = `Showing ${shown.length} of ${allTrades.length} trade(s)`;
         SC.renderTable({
           container: tableWrap,
           headers: TRADE_HEADERS,
@@ -272,8 +273,7 @@
 
       renderTrades(false);
       const liveOnlyCb = document.getElementById("pc-live-only");
-      if (liveOnlyCb)
-        liveOnlyCb.addEventListener("change", () => renderTrades(liveOnlyCb.checked));
+      if (liveOnlyCb) liveOnlyCb.addEventListener("change", () => renderTrades(liveOnlyCb.checked));
     }
 
     // ── Report history (closing report per day) ────────────────────────────

@@ -189,8 +189,7 @@
       function renderTrades(liveOnly) {
         const shown = liveOnly ? allForCp.filter((t) => t.status === "live") : allForCp;
         const countEl = document.getElementById("pc-cp-trade-count");
-        if (countEl)
-          countEl.textContent = `Showing ${shown.length} of ${allForCp.length} trade(s)`;
+        if (countEl) countEl.textContent = `Showing ${shown.length} of ${allForCp.length} trade(s)`;
         SC.renderTable({
           container: tableWrap,
           headers: TRADE_HEADERS,
@@ -206,8 +205,7 @@
 
       renderTrades(false);
       const liveOnlyCb = document.getElementById("pc-cp-live-only");
-      if (liveOnlyCb)
-        liveOnlyCb.addEventListener("change", () => renderTrades(liveOnlyCb.checked));
+      if (liveOnlyCb) liveOnlyCb.addEventListener("change", () => renderTrades(liveOnlyCb.checked));
     }
   }
 
