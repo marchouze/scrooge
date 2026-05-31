@@ -102,10 +102,9 @@
             : t.markStatus === "overnight"
               ? `<span style="color:#d48806" title="Overnight close proxy — no live feed">${zarFmt(t.unrealisedPnlZarMinor)} <small style="opacity:.7">close</small></span>`
               : `<span style="color:${pnlColour(t.unrealisedPnlZarMinor)}">${zarFmt(t.unrealisedPnlZarMinor)}</span>`;
-    const realisedCell =
-      t.realisedPnlZarMinor
-        ? `<span style="color:${pnlColour(t.realisedPnlZarMinor)}">${zarFmt(t.realisedPnlZarMinor)}</span>`
-        : `<span style="color:var(--color-text-secondary)">—</span>`;
+    const realisedCell = t.realisedPnlZarMinor
+      ? `<span style="color:${pnlColour(t.realisedPnlZarMinor)}">${zarFmt(t.realisedPnlZarMinor)}</span>`
+      : `<span style="color:var(--color-text-secondary)">—</span>`;
     const cells = [
       `<span${dimStyle}><code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code></span>`,
       `<span${dimStyle}>${SC.esc(t.pair)}</span>`,
