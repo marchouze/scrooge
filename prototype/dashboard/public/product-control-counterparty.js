@@ -93,7 +93,7 @@
   function tradeRow(t) {
     const dimStyle = t.status !== "live" ? ' style="opacity:0.6"' : "";
     const pnlCell =
-      t.status === "cancelled"
+      t.status === "cancelled" || t.status === "settled"
         ? `<span style="color:var(--color-text-disabled)">—</span>`
         : t.markStatus === "unavailable"
           ? `<span style="color:#ff4d4f;font-style:italic" title="No mark available — MTM data missing">⚠ no mark</span>`
