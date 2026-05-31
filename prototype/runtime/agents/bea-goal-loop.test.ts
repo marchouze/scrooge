@@ -16,7 +16,13 @@
 //   - readiness-attestation title, no code-pr → self-executable (delivered)
 //   - non-readiness title, no code-pr → not self-executable (routed)
 //
+//   findOpenRunIdsForAgent (single-flight guard helper):
+//   - AgentRunStarted with no AgentRunCompleted → returns the runId
+//   - AgentRunStarted + AgentRunCompleted → not returned (closed)
+//   - AgentRunStarted older than maxAgeMs → not returned (too old to be live)
+//
 // Authority: D-AGENT-AUTONOMY-COHORT-2-PILOT (CEO-approved 2026-05-30).
+//            D-BEA-GOAL-LOOP-SINGLE-FLIGHT (CEO-approved 2026-05-31).
 // Author: Atlas (Core banking platform architect) — wiring.
 //         Bea (Accounting & financial reporting engineer) — goal-deriver rules.
 
@@ -31,6 +37,7 @@ import {
 } from "../../platform/event-store/event-types/agent";
 import { EventStore } from "../../platform/event-store/store";
 import {
+  findOpenRunIdsForAgent,
   isSelfExecutableByBea,
   openBriefsAddressedToBea,
   openBriefsListForBea,
@@ -204,5 +211,101 @@ describe("isSelfExecutableByBea", () => {
     expect(
       isSelfExecutableByBea(brief("Map BA700 return cells to projections", "register-row")),
     ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findOpenRunIdsForAgent (single-flight guard)
+// ---------------------------------------------------------------------------
+
+describe("findOpenRunIdsForAgent", () => {
+  it("single-flight guard: aborts if an open AgentRunStarted already exists", () => {
+    const store = makeStore();
+    const runId = "run:bea:goal-loop:test-single-flight-001";
+    // Seed an AgentRunStarted for agent:bea without a matching AgentRunCompleted.
+    store.append(
+      makeAgentRunStarted({
+        asOf: minsAgoIso(5),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          runId,
+          briefId: "brief-sf-001",
+          agent: BEA_REF,
+          startedAt: minsAgoIso(5),
+          substrate: "agent-runtime",
+        },
+      }),
+    );
+    // The guard must report the open runId (using a short maxAgeMs so the
+    // 5-min-old run is within the window).
+    const openIds = findOpenRunIdsForAgent(store, "agent:bea", 60 * 60 * 1000);
+    expect(openIds).toContain(runId);
+    expect(openIds.length).toBeGreaterThan(0);
+  });
+
+  it("does NOT flag a run that has a matching AgentRunCompleted", () => {
+    const store = makeStore();
+    const runId = "run:bea:goal-loop:test-single-flight-002";
+    store.append(
+      makeAgentRunStarted({
+        asOf: minsAgoIso(10),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          runId,
+          briefId: "brief-sf-002",
+          agent: BEA_REF,
+          startedAt: minsAgoIso(10),
+          substrate: "agent-runtime",
+        },
+      }),
+    );
+    store.append(
+      makeAgentRunCompleted({
+        asOf: minsAgoIso(5),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          runId,
+          briefId: "brief-sf-002",
+          agent: BEA_REF,
+          completedAt: minsAgoIso(5),
+          outcome: "delivered",
+          deliverableDocumentHashes: [],
+          substrateGapsSurfaced: [],
+          citations: BASE_CITATIONS,
+          followOnRoutes: [],
+        },
+      }),
+    );
+    const openIds = findOpenRunIdsForAgent(store, "agent:bea", 60 * 60 * 1000);
+    expect(openIds).not.toContain(runId);
+  });
+
+  it("does NOT flag a run older than maxAgeMs (phantom guard)", () => {
+    const store = makeStore();
+    const runId = "run:bea:goal-loop:test-single-flight-003";
+    // Started 3 hours ago — beyond the 2h default maxAgeMs window.
+    store.append(
+      makeAgentRunStarted({
+        asOf: minsAgoIso(180),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          runId,
+          briefId: "brief-sf-003",
+          agent: BEA_REF,
+          startedAt: minsAgoIso(180),
+          substrate: "agent-runtime",
+        },
+      }),
+    );
+    const openIds = findOpenRunIdsForAgent(store, "agent:bea", 2 * 60 * 60 * 1000);
+    expect(openIds).not.toContain(runId);
   });
 });

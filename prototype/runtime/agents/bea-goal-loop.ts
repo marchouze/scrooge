@@ -74,6 +74,63 @@ import beaAccountingReadiness from "./bea-accounting-readiness";
 const COHORT_2_AUTHORITY = "D-AGENT-AUTONOMY-COHORT-2-PILOT" as const;
 
 // ---------------------------------------------------------------------------
+// Single-flight guard
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns runIds for `AgentRunStarted` events for the given agentId that have
+ * no matching `AgentRunCompleted` and whose `startedAt` is less than
+ * `maxAgeMs` old. Uses `new Date(payload.startedAt).getTime()` for the age
+ * comparison — elapsed-time arithmetic against a stored timestamp, the same
+ * pattern as the cadence-floor check in goal-loop.ts. Allowed per the
+ * wall-clock exemption for elapsed-ms guards.
+ *
+ * Authority: D-BEA-GOAL-LOOP-SINGLE-FLIGHT (CEO-approved 2026-05-31).
+ */
+export function findOpenRunIdsForAgent(
+  store: EventStore,
+  agentId: string,
+  maxAgeMs = 2 * 60 * 60 * 1000,
+): string[] {
+  const startedRunIds = new Map<string, number>(); // runId → startedAt ms
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const p = e.payload as Record<string, unknown>;
+    if (String(p.agent && (p.agent as Record<string, unknown>).id ?? "") !== agentId) {
+      // The agent reference in AgentRunStarted is {name, position}, not agentId.
+      // Fall back to matching the agentId embedded in the runId string.
+    }
+    const runId = String(p.runId ?? "");
+    if (!runId) continue;
+    // Match agent by agentId field (if present) or by runId prefix convention.
+    const agentRef = p.agent as Record<string, unknown> | undefined;
+    const payloadAgentId = String(agentRef?.agentId ?? "");
+    // The dispatch CLI embeds agent:bea in runId prefix; also accept explicit agentId field.
+    if (payloadAgentId !== agentId && !runId.includes(agentId.replace("agent:", ""))) continue;
+    const startedAt = String(p.startedAt ?? e.as_of);
+    const t = new Date(startedAt).getTime();
+    if (!Number.isNaN(t)) {
+      startedRunIds.set(runId, t);
+    }
+  }
+
+  const completedRunIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const p = e.payload as Record<string, unknown>;
+    const runId = String(p.runId ?? "");
+    if (runId) completedRunIds.add(runId);
+  }
+
+  const nowMs = Date.now(); // elapsed-time guard: how long ago did the run start?
+  const openRunIds: string[] = [];
+  for (const [runId, startedAtMs] of startedRunIds) {
+    if (completedRunIds.has(runId)) continue;
+    if (nowMs - startedAtMs > maxAgeMs) continue; // too old — likely a phantom; skip
+    openRunIds.push(runId);
+  }
+  return openRunIds;
+}
+
+// ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Bea
 // ---------------------------------------------------------------------------
 
@@ -442,6 +499,14 @@ function getWorldStateReader(): LocalAgentWorldStateReader {
 // ---------------------------------------------------------------------------
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
+  // Single-flight guard: abort if a run for agent:bea is already open.
+  // Authority: D-BEA-GOAL-LOOP-SINGLE-FLIGHT (CEO-approved 2026-05-31).
+  const openRunIds = findOpenRunIdsForAgent(eventStore, 'agent:bea');
+  if (openRunIds.length > 0) {
+    logger.warn({ openRunIds }, 'bea:goal-loop — single-flight guard: open run(s) detected, aborting tick');
+    return { eventsEmitted: 0, ok: true, summary: `single-flight guard: aborted; open run(s) already exist: ${openRunIds.join(', ')}` };
+  }
+
   logger.info(
     { agent: ctx.agent, trigger: ctx.trigger.id, dryRun: ctx.dryRun },
     "bea:goal-loop — starting goal-loop cohort-2 run",
