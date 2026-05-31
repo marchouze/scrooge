@@ -48,6 +48,7 @@
 //   — pipeline contract per Vera (Internal audit engineer, engineering).
 
 import { eventStore as defaultEventStore } from "../composition";
+import { nowUtc } from "../core/types";
 import type { EventStore } from "../event-store/store";
 import {
   IFRS_FAIR_VALUE_LEVELS,
@@ -90,7 +91,7 @@ function isWellFormedFinancialInput(input: unknown): boolean {
 
 export function run(opts: RunOpts = {}): ReconResult {
   const store = opts.store ?? defaultEventStore;
-  const reportDate = opts.reportDate ?? new Date().toISOString().slice(0, 10);
+  const reportDate = opts.reportDate ?? nowUtc().slice(0, 10);
   const result: ReconResult = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
   let asserted = 0;

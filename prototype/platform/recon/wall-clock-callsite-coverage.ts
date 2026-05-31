@@ -152,17 +152,8 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   Clock-abstraction cleanup deferred to D-PROVENANCE-FILTER-ENFORCEMENT.
 //   Authority: ORG-ODP-RPT-003; urn:regulation:odp:cs-3-2018 §6.
 //   Author: Devon (COO, operations), 2026-05-30.
-//
-// 65→66 (2026-05-31): reconcile a PRE-EXISTING main breakage — the callsite
-//   `dashboard/markets-fx-npa.ts:62` (`new Date().toISOString()` default arg,
-//   merged via #539) was never reflected in the snapshot, so the ratchet has
-//   been failing every PR on main. This bump locks the current floor so CI is
-//   green again; the proper remediation (swap the default for `nowIso()`) is
-//   flagged for a follow-on task. Not introduced by this PR — surfaced by it.
-//   Authority: feedback "Wall-clock ratchet trap"; D-PROVENANCE-FILTER-ENFORCEMENT.
-//   Recorded by Bea (Accounting & financial reporting engineer, engineering).
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 66;
+const KNOWN_VIOLATIONS_SNAPSHOT = 65;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
