@@ -85,12 +85,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
     const ageHours = (ageMs / (60 * 60 * 1000)).toFixed(2);
     const startedAt = new Date(startedAtMs).toISOString();
-    const message =
-      `Orphan AgentRunStarted detected: runId="${runId}" agent="${agentId}" startedAt=${startedAt} ` +
-      `(${ageHours}h ago) has no matching AgentRunCompleted. ` +
-      `Root cause: concurrent goal-loop ticks without a single-flight guard (D-BEA-GOAL-LOOP-SINGLE-FLIGHT). ` +
-      `Remediation: manually emit AgentRunCompleted with outcome="blocked" and ` +
-      `substrateGapsSurfaced=["orphan run: no completion event emitted"].`;
+    const message = `Orphan AgentRunStarted detected: runId="${runId}" agent="${agentId}" startedAt=${startedAt} (${ageHours}h ago) has no matching AgentRunCompleted. Root cause: concurrent goal-loop ticks without a single-flight guard (D-BEA-GOAL-LOOP-SINGLE-FLIGHT). Remediation: manually emit AgentRunCompleted with outcome="blocked" and substrateGapsSurfaced=["orphan run: no completion event emitted"].`;
 
     violations.push({
       subject: `orphan-run:${runId}`,
@@ -107,7 +102,10 @@ export function run(opts: RunOpts = {}): ReconResult {
             actor: ACTOR,
             citations: CITATIONS,
             payload: {
-              alertId: `alert:integrity:orphan-run-${runId.replace(/[^a-z0-9-]/gi, "-").toLowerCase().slice(0, 60)}`,
+              alertId: `alert:integrity:orphan-run-${runId
+                .replace(/[^a-z0-9-]/gi, "-")
+                .toLowerCase()
+                .slice(0, 60)}`,
               alertClass: "integrity",
               severity: "high",
               details: message,

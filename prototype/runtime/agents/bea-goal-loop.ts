@@ -95,13 +95,11 @@ export function findOpenRunIdsForAgent(
   const startedRunIds = new Map<string, number>(); // runId → startedAt ms
   for (const e of store.replay({ type: "AgentRunStarted" })) {
     const p = e.payload as Record<string, unknown>;
-    if (String(p.agent && (p.agent as Record<string, unknown>).id ?? "") !== agentId) {
-      // The agent reference in AgentRunStarted is {name, position}, not agentId.
-      // Fall back to matching the agentId embedded in the runId string.
-    }
     const runId = String(p.runId ?? "");
     if (!runId) continue;
     // Match agent by agentId field (if present) or by runId prefix convention.
+    // The agent reference in AgentRunStarted is {name, position}, not agentId;
+    // we fall back to matching the agentId embedded in the runId string.
     const agentRef = p.agent as Record<string, unknown> | undefined;
     const payloadAgentId = String(agentRef?.agentId ?? "");
     // The dispatch CLI embeds agent:bea in runId prefix; also accept explicit agentId field.
@@ -501,10 +499,17 @@ function getWorldStateReader(): LocalAgentWorldStateReader {
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // Single-flight guard: abort if a run for agent:bea is already open.
   // Authority: D-BEA-GOAL-LOOP-SINGLE-FLIGHT (CEO-approved 2026-05-31).
-  const openRunIds = findOpenRunIdsForAgent(eventStore, 'agent:bea');
+  const openRunIds = findOpenRunIdsForAgent(eventStore, "agent:bea");
   if (openRunIds.length > 0) {
-    logger.warn({ openRunIds }, 'bea:goal-loop — single-flight guard: open run(s) detected, aborting tick');
-    return { eventsEmitted: 0, ok: true, summary: `single-flight guard: aborted; open run(s) already exist: ${openRunIds.join(', ')}` };
+    logger.warn(
+      { openRunIds },
+      "bea:goal-loop — single-flight guard: open run(s) detected, aborting tick",
+    );
+    return {
+      eventsEmitted: 0,
+      ok: true,
+      summary: `single-flight guard: aborted; open run(s) already exist: ${openRunIds.join(", ")}`,
+    };
   }
 
   logger.info(
