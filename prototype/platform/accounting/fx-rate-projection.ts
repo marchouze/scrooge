@@ -59,17 +59,25 @@ export function buildRateMap(events: readonly Event[]): RateMap {
       if (!payCurrency || !receiveCurrency || typeof rate?.amount !== "number") continue;
       if (payCurrency === receiveCurrency) continue;
 
-      const rateAmount = rate.amount; // receiveCurrency per 1 payCurrency
+      // Per D-FX-QUOTING-CONVENTION: rate.amount = quote per 1 base; rate.currency = quote.
+      // The two leg currencies are the pair; the quote currency is identified by rate.currency.
+      // We must NOT use payCurrency/receiveCurrency to anchor direction — those flip for
+      // buy vs sell trades and would invert the stored rate for one trade direction.
+      const quoteCcy = typeof rate.currency === "string" ? rate.currency : "";
+      const baseCcy = payCurrency === quoteCcy ? receiveCurrency : payCurrency;
+      if (!quoteCcy || baseCcy === quoteCcy) continue;
 
-      // Store from→to
-      if (!rateMap.has(payCurrency)) rateMap.set(payCurrency, new Map());
-      // biome-ignore lint/style/noNonNullAssertion: just set above
-      rateMap.get(payCurrency)!.set(receiveCurrency, rateAmount);
+      const rateAmount = rate.amount; // quoteCcy per 1 baseCcy
 
-      // Store to→from (inverse)
-      if (!rateMap.has(receiveCurrency)) rateMap.set(receiveCurrency, new Map());
+      // base → quote
+      if (!rateMap.has(baseCcy)) rateMap.set(baseCcy, new Map());
       // biome-ignore lint/style/noNonNullAssertion: just set above
-      rateMap.get(receiveCurrency)!.set(payCurrency, 1 / rateAmount);
+      rateMap.get(baseCcy)!.set(quoteCcy, rateAmount);
+
+      // quote → base (inverse)
+      if (!rateMap.has(quoteCcy)) rateMap.set(quoteCcy, new Map());
+      // biome-ignore lint/style/noNonNullAssertion: just set above
+      rateMap.get(quoteCcy)!.set(baseCcy, 1 / rateAmount);
     }
   }
 
