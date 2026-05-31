@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Control — Counterparty Trades — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" data-provenance-source="/api/product-control/daily-pnl" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <a href="/product-control.html" style="font:var(--text-small);color:var(--color-text-secondary);text-decoration:none">← Product Control</a>
+      <h1 class="page-title" id="pc-cp-title">Counterparty Trades</h1>
+      <p style="font:var(--text-body);color:var(--color-text-secondary);margin:var(--space-1) 0 0">Trades comprising the P&amp;L for this counterparty</p>
+    </div>
+    <div class="page-body">
+      <div id="pc-cp-tiles" style="display:flex;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6)"></div>
+      <div id="pc-cp-trades" style="margin-bottom:var(--space-8)"></div>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Product Control" });</script>
+  <script src="/product-control-counterparty.js"></script>
+</body>
+</html>
