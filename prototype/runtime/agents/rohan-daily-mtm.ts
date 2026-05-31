@@ -54,6 +54,7 @@ import {
   type FxPositionRevaluedPayload,
   type FxTradeCancelledPayload,
   makeFxPositionRevalued,
+  makeRealisedPnlRecognised,
 } from "../../platform/event-store/event-types/fx-accounting";
 import { makeMtmRunCompleted } from "../../platform/event-store/event-types/mtm";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
@@ -64,6 +65,7 @@ import type {
   SettlementConfirmedPayload,
 } from "../../platform/markets/cdm/fx";
 import { baseAmountMinor } from "../../platform/markets/cdm/fx-helpers";
+import { computeCurrencyPositions } from "../../platform/projections/markets/currency-position";
 import {
   adoptFxMark,
   resolveActivePolicyVersionRef,
@@ -734,6 +736,56 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       skippedReasons.push(
         "valuation-adjustment run skipped — MarketDataStore unavailable (CVA category needs it)",
       );
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Desk FX cash-instrument realised P&L. Settled trades that CLOSE OUT a
+  // desk's foreign-currency cash position (fi:csh:<CCY>:<bookId>) crystallise
+  // realised P&L = (disposalRate − weighted-avg cost) × amountClosed. Emit one
+  // RealisedPnlRecognised per close-out, idempotently (skip trades that already
+  // have one). This is the canonical realised source now that
+  // SettlementConfirmed.realisedPnlDelta is 0 (opening settlements realise
+  // nothing). Authority: IAS 21 §28; D-FINANCIAL-INSTRUMENT-ENTITY.
+  // -------------------------------------------------------------------------
+  if (!ctx.dryRun) {
+    try {
+      const alreadyRecognised = new Set<string>();
+      for (const e of eventStore.replay({ type: "RealisedPnlRecognised" })) {
+        const p = e.payload as { sourceTradeId?: string };
+        if (p.sourceTradeId) alreadyRecognised.add(p.sourceTradeId);
+      }
+      const { realisations } = computeCurrencyPositions(
+        eventStore as unknown as import("../../platform/event-store/store").EventStore,
+      );
+      for (const r of realisations) {
+        if (alreadyRecognised.has(r.sourceTradeId)) continue;
+        eventStore.append(
+          makeRealisedPnlRecognised({
+            asOf,
+            entity: r.entity,
+            actor: ENGINE_ACTOR,
+            citations: CITATIONS,
+            payload: {
+              instrumentId: r.instrumentId,
+              bookId: r.bookId,
+              currency: r.currency,
+              amountClosedMinor: r.amountClosedMinor,
+              avgCostZarRate: r.avgCostZarRate,
+              disposalCostZarRate: r.disposalCostZarRate,
+              realisedPnlZarMinor: r.realisedPnlZarMinor,
+              sourceTradeId: r.sourceTradeId,
+              recognisedAt: r.recognisedAt,
+            },
+            eventId: newEventId(),
+          }),
+        );
+        eventsEmitted += 1;
+        alreadyRecognised.add(r.sourceTradeId);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error({ error: msg }, "rohan:daily-mtm — cash-instrument realised P&L emit failed");
     }
   }
 

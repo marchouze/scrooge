@@ -46,3 +46,16 @@ export type {
   UnifiedPositionState,
 } from "./unified-position";
 export { unifiedPositionInitial, unifiedPositionProjection } from "./unified-position";
+
+// FX cash-inventory — settled foreign-currency position as a CSH instrument
+// (CEO instruction 2026-05-31; IAS 21 §23/§28).
+export type {
+  CurrencyPositionResult,
+  CurrencyPositionRow,
+  DeskCashRealisation,
+} from "./currency-position";
+export {
+  REPORTING_CURRENCY,
+  cashInstrumentId,
+  computeCurrencyPositions,
+} from "./currency-position";

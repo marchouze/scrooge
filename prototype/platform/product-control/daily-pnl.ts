@@ -428,6 +428,38 @@ export function computeDailyPnL(
   }
 
   // -------------------------------------------------------------------------
+  // 5b. Fold desk FX cash-instrument realised P&L (close-outs). This is the
+  // canonical realised source now that SettlementConfirmed.realisedPnlDelta is
+  // 0 (opening settlements realise nothing — realised crystallises when a
+  // settled trade CLOSES OUT a desk's FX cash position). Added to the headline
+  // total AND the by-book / by-currency breakdowns so they stay reconciled.
+  // Authority: IAS 21 §28; D-FINANCIAL-INSTRUMENT-ENTITY; CEO 2026-05-31.
+  // -------------------------------------------------------------------------
+  try {
+    for (const e of store.replay({ type: "RealisedPnlRecognised", ...bound })) {
+      const p = e.payload as {
+        bookId?: string;
+        currency?: string;
+        realisedPnlZarMinor?: number;
+      };
+      if (typeof p.realisedPnlZarMinor !== "number") continue;
+      totalRealised += p.realisedPnlZarMinor;
+      if (p.bookId) {
+        const br = byBookMap.get(p.bookId) ?? { trades: 0, unrealised: 0, realised: 0 };
+        br.realised += p.realisedPnlZarMinor;
+        byBookMap.set(p.bookId, br);
+      }
+      if (p.currency && p.currency !== "ZAR") {
+        const cr = byCurrencyMap.get(p.currency) ?? { trades: 0, unrealised: 0, realised: 0 };
+        cr.realised += p.realisedPnlZarMinor;
+        byCurrencyMap.set(p.currency, cr);
+      }
+    }
+  } catch {
+    // RealisedPnlRecognised not yet registered — silently continue.
+  }
+
+  // -------------------------------------------------------------------------
   // 6. Build aggregation arrays.
   // -------------------------------------------------------------------------
   const byCurrency: PnLByCurrency[] = [...byCurrencyMap.entries()]

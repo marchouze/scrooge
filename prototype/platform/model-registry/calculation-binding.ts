@@ -468,6 +468,51 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
       },
     ],
   },
+  "fx-cash-reval": {
+    calcKey: "fx-cash-reval",
+    figure:
+      "Desk FX Cash-Instrument Revaluation (settled foreign-currency inventory marked to ZAR)",
+    modelId: "model:fx-cash-reval-v1",
+    modelVersion: "1.0.0",
+    // The desk's settled foreign currency is a financial instrument
+    // (fi:csh:<CCY>:<bookId>) revalued daily against ZAR (CEO instruction
+    // 2026-05-31; IAS 21 §28). A Product Control / financial-reporting figure
+    // owned by Camille (CFO) per the decision-authority routing table.
+    owningAgent: "Camille (Chief Financial Officer)",
+    outputUnit: "ZAR-minor",
+    citations: [PROGRAM, "IAS-21-§28", "IFRS-9-§5.7.1", "D-FINANCIAL-INSTRUMENT-ENTITY"],
+    inputContract: [
+      {
+        // The held FCY quantity is derived from settled PrincipalPayment legs.
+        // An empty cash inventory is a legitimate "no settled FX" state, so the
+        // quantity is OPTIONAL → degraded (never a silent 0).
+        name: "fcyQuantityMinor",
+        required: false,
+        unit: "FCY-minor",
+        expectedFrom:
+          "currency-position projection (computeCurrencyPositions): Σ settled PrincipalPayment FCY legs per (entity, book, currency)",
+      },
+      {
+        // The weighted-average ZAR cost is derived alongside the quantity from
+        // the ZAR consideration on each settlement; OPTIONAL → degraded.
+        name: "avgCostZarRate",
+        required: false,
+        unit: "ratio",
+        expectedFrom:
+          "currency-position projection: weighted-average ZAR-per-FCY cost from the ZAR PrincipalPayment leg ÷ FCY leg at each settlement",
+      },
+      {
+        // The current CCY/ZAR mark is REQUIRED to revalue a HELD position. A
+        // non-flat position with no mark is excluded (no-silent-zero) and the
+        // figure degrades — it is never marked at cost or zeroed.
+        name: "markRate",
+        required: true,
+        unit: "ratio",
+        expectedFrom:
+          'OfficialMarkAdopted{markType:"fx-rate", instrumentKey:"<CCY>/ZAR"} — the same production mark that prices live FX trades',
+      },
+    ],
+  },
 } as const;
 
 /** Look up a binding by calc key. Throws (loud) on an unknown key. */
