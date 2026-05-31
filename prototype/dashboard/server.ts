@@ -671,7 +671,10 @@ function emitAgedItemAlerts(
   }
 
   // Build a minimal trial balance from the filtered postings (net per account+currency).
-  const netByKey = new Map<string, { leafAccountId: string; currency: string; amountMinor: number }>();
+  const netByKey = new Map<
+    string,
+    { leafAccountId: string; currency: string; amountMinor: number }
+  >();
   for (const posting of allPostings) {
     for (const leg of posting.legs) {
       const key = `${leg.accountId}|${leg.currency}`;
@@ -680,8 +683,7 @@ function emitAgedItemAlerts(
         currency: leg.currency,
         amountMinor: 0,
       };
-      existing.amountMinor +=
-        leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      existing.amountMinor += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
       netByKey.set(key, existing);
     }
   }
