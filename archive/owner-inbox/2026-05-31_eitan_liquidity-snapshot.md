@@ -1,7 +1,7 @@
 ---
 agent: Eitan
 trigger: liquidity-snapshot
-asOf: 2026-05-31T06:53:15.241Z
+asOf: 2026-05-31T09:43:32.207Z
 decision-required: false
 ---
 
@@ -76,7 +76,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 |---|---|
 | `ALCODecision` | 0 |
 | `HedgeProgrammeApproved` | 0 |
-| Prior `LiquiditySnapshot` (this agent) | 4 |
+| Prior `LiquiditySnapshot` (this agent) | 6 |
 
 ## Substrate gaps (build-phase)
 
@@ -91,11 +91,11 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 
 ## Eitan's narrative
 
-Register coverage stands at 39 liquidity-adjacent obligations indexed; this is the fifth consecutive daily heartbeat and degraded-mode is doing what it was designed to do — substituting for the live LCR/NSFR engine while the projection schemas are still being authored. Of those 39, the entire BCBS 248 / LCR / NSFR / IRRBB stack (ORG-PR-LCR-001 through -010, ORG-PR-NSFR-001 through -012, ORG-PR-36, -43, ORG-PR-RETURNS-003/-004/-005/-006/-015, ORG-PR-P3-001) is sitting in the "indexed but not yet runtime-bound" tier — none of these are PARTIAL in the procedural sense, they are pre-procedure. That is the honest state and I am not going to dress it up.
+Register coverage stands at 39 liquidity-related obligations indexed; the engine produced only one non-zero event class in the last 24h — `IRRBBChecked` at 10 — and zero across `HQLAReported`, `LiquidityReport`, `LCRRatioProjection`, `NSFRRatioProjection`, `FXPositionReported`, `CapitalAction` and `SAMOSFundingApproved`. That profile is consistent with build-phase degraded mode functioning as the daily-funding-event SLA stand-in: this is the sixth consecutive `LiquiditySnapshot` from this agent in seven days, so the heartbeat itself is honouring the § 6 inactivity-SLA on the Treasurer chair. Read as target-state these zeros would be material; read as build-phase they are expected, with the caveat below.
 
-The one signal that did land in the last 24h is `IRRBBChecked: 10`, which means Rohan's IRRBB measurement loop is emitting against ORG-PR-11 / ORG-PR-RETURNS-015 / ORG-PR-P3-001 — good, but ten checks with zero `ALCODecision` or `HedgeProgrammeApproved` over a rolling 7-day window means I have no governance event to point back at if any of those checks tripped a Δ-EVE or Δ-NII band. That is the most consequential gap for ALCO chair attention: the measurement is louder than the governance response. Conversely, zero `LCRRatioProjection` / `NSFRRatioProjection` / `HQLAReported` / `LiquidityReport` is fine for now — those obligations (ORG-PR-LCR-008 monthly LCR, ORG-PR-NSFR-001 NSFR formula, ORG-PR-LCR-001 HQLA maintenance) require Ravi's projection layer to land first; and zero `SAMOSFundingApproved` is also fine pre-engine, but the moment the funding rail goes live a 24h gap there is a § 6 inactivity-SLA breach against ORG-PR-08 and I want that wired into the heartbeat now, not retrofitted.
+Most consequential, ranked by where degraded-mode is load-bearing: (1) six obligations carry `[TBD]` URNs — `ORG-PR-06`, `-07`, `-08` (Funding Strategy), `-11` (IRRBB), `-14` (ILAAP) and `-15` (Funding Strategy) — and these are the policy-anchored items that the planned `Procedures/by-policy/lcr-nsfr-liquidity-stress.md` and the IRRBB procedure both need to cite. Until those URNs resolve to PA directives, the URN-cited siblings (`ORG-PR-36`, `-43`, `-LCR-001..010`, `-NSFR-001..012`) are doing all the citation work and the policy-anchored obligations cannot be transitioned out of PARTIAL. (2) The `IRRBBChecked: 10` reading is genuine signal — IRRBB substrate is producing, which means `ORG-PR-11` and `ORG-PR-RETURNS-015` (BA 340) have a path to live ratios ahead of LCR/NSFR. Worth telling ALCO. (3) Zero `SAMOSFundingApproved` and zero `FXPositionReported` are tolerable now; once Ravi's engine lands, persistent zeros on either become § 6 inactivity-SLA breaches against `ORG-PR-08` and the FX position governance respectively — flagged here so we don't forget the rule change.
 
-Next substrate steps in order: (i) land `LCRRatioProjection` schema first — it is the highest-leverage projection because it unblocks ORG-PR-LCR-001, -004, -006, -008 and ORG-PR-36 simultaneously, and gives me a numerator I can quote at ALCO; (ii) NSFR projection second against ORG-PR-NSFR-001 / ORG-PR-43; (iii) before either of those, the IRRBB → ALCODecision linkage needs a minimal event-type so the 10 daily checks have somewhere to escalate to under ORG-PR-11. ALCO prep item I am carrying into the next pack: a written note that we are operating five days into degraded-mode with the IRRBB loop live and the LCR/NSFR loop dark, and that this asymmetry is the binding constraint — not a funding-cost issue, a control-architecture issue.
+Next substrate steps, concrete and in order: (a) resolve the six `[TBD]` URNs against PA D1/D4/D5/D6 — I will table this for the next ALCO prep and ask Owen to confirm the canonical PA citations for Liquidity Risk Management Policy, Funding Strategy Policy, IRRBB Policy and ILAAP; (b) land `LCRRatioProjection` schema first (before NSFR), because `ORG-PR-LCR-006` (75% inflow cap), `-LCR-004` (HQLA summation cap) and `-LCR-007` (Rand-reporting / FX conversion) are the highest-friction calculation rules and projection design will surface gaps in Bea's BA 110 wiring earlier than NSFR will; (c) next ALCO pack item that follows: a one-page degraded-mode coverage matrix mapping the 39 obligations to event-class producers, so Camille and I can co-sign which controls are heartbeat-substituted versus engine-live before we transition any obligation out of PARTIAL.
 
 ## Provenance
 
