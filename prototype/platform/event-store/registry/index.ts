@@ -116,6 +116,8 @@ export { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 export { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 // MTM engine event-type registry rows.
 export { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
+// Valuation-adjustment / prudent-valuation reserve event-type registry rows.
+export { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — policy-version-in-force registry row.
 // Authority: D-EVENT-VIEW-BOUNDARY-WIRE (CEO-approved 2026-05-20).
 export { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
@@ -268,6 +270,7 @@ import { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
+import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
@@ -364,6 +367,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // MTM engine events — MtmRunCompleted, IpvExceptionRaised.
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
   ...MTM_EVENT_TYPES_REGISTRY,
+  // Valuation-adjustment / prudent-valuation reserve event types.
+  // ValuationAdjustmentComputed, Day1PnLDeferralRecorded, PrudentValuationAvaAggregated.
+  // Authority: Camille (CFO) R2; IFRS 13; valuation-policy-v1 §7; CRR Art 105;
+  //   D-TRUSTED-FIGURES-PROGRAM-V1.
+  ...VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY,
   // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — policy-version-in-force registry row.
   // PolicyVersionActivated (generic umbrella covering valuation / accounting-
   // IFRS / fx-translation). Authority: D-EVENT-VIEW-BOUNDARY-WIRE.

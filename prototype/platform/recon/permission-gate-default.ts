@@ -279,6 +279,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // T-01 carve-out.
   // Citation: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, P4-SECURITY-DESIGNED-IN.
   "platform/market-risk/cva-engine.test.ts",
+  // Valuation-adjustment / prudent-valuation reserve engine unit tests
+  // (WS-PRODUCT-CONTROL; Camille CFO R2). Co-located per-module test convention.
+  // Raw EventStore(":memory:") is a build-phase fixture for the close-out /
+  // day-1 / IPV-AVA / umbrella-additivity assertions, not a production access
+  // path. T-01 carve-out.
+  // Citation: IFRS-13, CRR-Art-105, P4-SECURITY-DESIGNED-IN.
+  "platform/market-risk/valuation-adjustment-engine.test.ts",
   // DTCC SAFE API adapter unit tests (#903 — SafeApiAdapter seam). Co-located
   // with the simulator per the per-module test convention; `simulators/` is not
   // a blanket carve-out dir because it also holds production simulator code
