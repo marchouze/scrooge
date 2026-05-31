@@ -252,6 +252,9 @@ export function buildGlView(
       e.type === "TradeMatured" ||
       e.type === "PrincipalPayment" ||
       e.type === "SettlementConfirmed" ||
+      // Cancellation events source the PR-FX-CANCEL reversal postings; include
+      // so fixture cancellations are filtered alongside their original bookings.
+      e.type === "FxTradeCancelled" ||
       // Remediation events are also source events for duplicate-reversal-correction
       // postings; include them so their fixture status is captured.
       e.type === "SubLedgerPostingRemediationRecorded"
