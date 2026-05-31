@@ -206,39 +206,39 @@ function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosit
       };
     }
   }
-  if (latestSnapshot) {
-    const { l1Zar, l2aZar, l2bZar } = latestSnapshot.payload;
-    const positions: HQLAPosition[] = [];
-    if (l1Zar > 0) positions.push({ amountZar: l1Zar, tier: "L1" });
-    if (l2aZar > 0) positions.push({ amountZar: l2aZar, tier: "L2a" });
-    if (l2bZar > 0) positions.push({ amountZar: l2bZar, tier: "L2b" });
-    return positions;
-  }
-
-  // Fallback: aggregate positions by ISIN — latest trade event wins.
-  const positionMap = new Map<string, RawPosition>();
-
-  for (const event of eventStore.replay({ type: "TradeBooked" })) {
-    if (event.as_of > asOf) continue;
-    const raw = extractRawPosition(event.type, event.payload as Record<string, unknown>);
-    if (!raw) continue;
-    positionMap.set(raw.isin, raw);
-  }
-  for (const event of eventStore.replay({ type: "TradeSettled" })) {
-    if (event.as_of > asOf) continue;
-    const raw = extractRawPosition(event.type, event.payload as Record<string, unknown>);
-    if (!raw) continue;
-    positionMap.set(raw.isin, raw);
-  }
-
   const out: HQLAPosition[] = [];
-  for (const raw of positionMap.values()) {
-    const classification = classifyHQLA(raw.descriptor);
-    if (classification.level === "non-HQLA") continue;
-    out.push({
-      amountZar: raw.marketValueZar,
-      tier: classification.level,
-    });
+
+  if (latestSnapshot) {
+    // Snapshot covers security positions only (TradeBooked/TradeSettled with ISINs).
+    const { l1Zar, l2aZar, l2bZar } = latestSnapshot.payload;
+    if (l1Zar > 0) out.push({ amountZar: l1Zar, tier: "L1" });
+    if (l2aZar > 0) out.push({ amountZar: l2aZar, tier: "L2a" });
+    if (l2bZar > 0) out.push({ amountZar: l2bZar, tier: "L2b" });
+  } else {
+    // Fallback: aggregate positions by ISIN — latest trade event wins.
+    const positionMap = new Map<string, RawPosition>();
+
+    for (const event of eventStore.replay({ type: "TradeBooked" })) {
+      if (event.as_of > asOf) continue;
+      const raw = extractRawPosition(event.type, event.payload as Record<string, unknown>);
+      if (!raw) continue;
+      positionMap.set(raw.isin, raw);
+    }
+    for (const event of eventStore.replay({ type: "TradeSettled" })) {
+      if (event.as_of > asOf) continue;
+      const raw = extractRawPosition(event.type, event.payload as Record<string, unknown>);
+      if (!raw) continue;
+      positionMap.set(raw.isin, raw);
+    }
+
+    for (const raw of positionMap.values()) {
+      const classification = classifyHQLA(raw.descriptor);
+      if (classification.level === "non-HQLA") continue;
+      out.push({
+        amountZar: raw.marketValueZar,
+        tier: classification.level,
+      });
+    }
   }
 
   // Repo cash proceeds (Level-1): cash received by the bank on the start leg
@@ -246,6 +246,7 @@ function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosit
   // the counterparty, but the cash sits free in the bank's account (BCBS
   // D295 §50 — ZAR central bank reserves / unrestricted cash = L1). Subtract
   // repos that have already matured or been terminated early.
+  // NB: always runs — the security snapshot does not capture repo cash.
   const closedRepoIds = new Set<string>();
   for (const ev of eventStore.replay({ type: "RepoEndLegSettled" })) {
     if (ev.as_of > asOf) continue;
