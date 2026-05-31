@@ -47,9 +47,7 @@
 
 import { getFinancialConstant } from "../config/financial-constants";
 import { newEventId, nowUtc } from "../core/types";
-import { buildCalculationPerformed } from "../model-registry/calculation-emit";
 import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
-import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import {
   type AttributionComponent,
   type PnLAttributionExceptionRaisedPayload,
@@ -57,8 +55,10 @@ import {
   makePnLAttributionExceptionRaised,
   makePnLAttributionGenerated,
 } from "../event-store/event-types/product-control";
+import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import { buildCalculationPerformed } from "../model-registry/calculation-emit";
 import { type FinancialInput, absent, isPresent, present } from "../types/financial-input";
 import { computeDailyPnL } from "./daily-pnl";
 
@@ -111,6 +111,11 @@ function dayOf(iso: string): string {
   return iso.slice(0, 10);
 }
 
+/** Inclusive end-of-day ISO instant for `YYYY-MM-DD` (point-in-time bound). */
+function endOfDay(day: string): string {
+  return `${day}T23:59:59.999Z`;
+}
+
 /**
  * Resolve the residual tolerance (ZAR minor) from the registry-backed
  * constants: a ZAR 1.00 rounding floor PLUS a bps-of-notional band. Both come
@@ -139,11 +144,6 @@ function component(
     // extension populates this without reshaping the event.
     subComponents: [],
   };
-}
-
-interface PriorMarkLookup {
-  /** instrumentKey → adopted mark (decimal) on the prior date, or absence. */
-  byInstrument: Map<string, number>;
 }
 
 /**
@@ -177,16 +177,24 @@ export function computePnLAttribution(
   priorReportDate: string,
 ): PnLAttributionResult {
   // -------------------------------------------------------------------------
-  // 0. Two full daily-P&L snapshots — reuse the governed daily-pnl engine.
+  // 0. Two point-in-time daily-P&L snapshots — reuse the governed daily-pnl
+  //    engine, each bounded as-of the END of its respective day so the
+  //    day-over-day move is real (not two reads of the same full history).
   // -------------------------------------------------------------------------
-  const today = computeDailyPnL(store, reportDate);
-  const prior = computeDailyPnL(store, priorReportDate);
+  const today = computeDailyPnL(store, reportDate, endOfDay(reportDate));
+  const prior = computeDailyPnL(store, priorReportDate, endOfDay(priorReportDate));
 
-  const actualMoveZarMinor =
-    today.payload.totalPnlZarMinor - prior.payload.totalPnlZarMinor;
+  // The day-over-day clean-P&L move to explain. The unrealised half attributes
+  // to new-trade + market-move; the realised half attributes to the realised
+  // component (the realised-level diff below); any gap lands in the residual.
+  const actualMoveZarMinor = today.payload.totalPnlZarMinor - prior.payload.totalPnlZarMinor;
 
   // -------------------------------------------------------------------------
-  // 1. Index trades + the per-position revaluation deltas dated reportDate.
+  // 1. Index trades + the two snapshots' per-trade unrealised LEVELS. The
+  //    daily-pnl engine carries each position's unrealised P&L as a level
+  //    (the latest reval's value as of the snapshot day), so the per-position
+  //    day-over-day move is the difference of the two levels — guaranteeing the
+  //    components reconcile to the unrealised move.
   // -------------------------------------------------------------------------
   const tradeMap = new Map<string, FxTradeExecutedPayload>();
   for (const e of store.replay({ type: "FxTradeExecuted" })) {
@@ -194,23 +202,30 @@ export function computePnLAttribution(
     tradeMap.set(p.tradeId.value, p);
   }
 
-  // Cancelled trades are excluded from attribution (mirror daily-pnl).
-  const cancelledIds = new Set<string>();
-  try {
-    for (const e of store.replay({ type: "FxTradeCancelled" })) {
-      const p = e.payload as { tradeId?: unknown };
-      if (typeof p.tradeId === "string") cancelledIds.add(p.tradeId);
-    }
-  } catch {
-    // FxTradeCancelled not registered — continue.
+  // Per-trade unrealised LEVELS in each snapshot. A trade that has left the
+  // live book by reportDate (settled/cancelled) has a today-level of 0 — the
+  // drop from its prior level is a genuine unrealised move (the crystallisation
+  // leg), captured here and offset by the realised increment below so the two
+  // halves of a settlement net correctly.
+  const priorLevelByTrade = new Map<string, number>();
+  for (const row of prior.trades) {
+    if (row.status === "cancelled") continue;
+    priorLevelByTrade.set(row.tradeId, row.unrealisedPnlZarMinor);
+  }
+  const todayLevelByTrade = new Map<string, number>();
+  const todayStatusByTrade = new Map<string, "live" | "settled" | "cancelled">();
+  for (const row of today.trades) {
+    todayLevelByTrade.set(row.tradeId, row.unrealisedPnlZarMinor);
+    todayStatusByTrade.set(row.tradeId, row.status);
   }
 
-  // Latest reval per trade DATED reportDate (the day's MTM move per position).
+  // Latest reval per trade DATED reportDate — used only to detect that the
+  // position was actually revalued on reportDate (a fresh mark, not a stale
+  // carry-forward) and to total gross notional for the tolerance band.
   const revalOnReportDateByTrade = new Map<string, FxPositionRevaluedPayload>();
   for (const e of store.replay({ type: "FxPositionRevalued" })) {
     const p = e.payload as unknown as FxPositionRevaluedPayload;
     if (dayOf(p.revaluedAt) !== reportDate) continue;
-    if (cancelledIds.has(p.tradeId)) continue;
     const existing = revalOnReportDateByTrade.get(p.tradeId);
     if (!existing || p.revaluedAt > existing.revaluedAt) {
       revalOnReportDateByTrade.set(p.tradeId, p);
@@ -223,37 +238,53 @@ export function computePnLAttribution(
   // -------------------------------------------------------------------------
   // 2. New-trade vs market-move split, with the no-silent-zero prior-mark gate.
   //
-  // For each non-cancelled trade that has a reval dated reportDate:
-  //   - booked ON reportDate            → new-trade P&L
-  //   - booked BEFORE reportDate (existing position) → market-move P&L, BUT
-  //     only if a usable prior-day mark exists for its instrument. If not, the
-  //     position is unattributable: excluded from market-move (NOT zeroed) and
-  //     tracked so the figure declares itself incomplete.
+  // For each non-cancelled live/settled position in today's snapshot:
+  //   - booked ON reportDate → new-trade P&L: its full unrealised LEVEL today
+  //     (no prior level to net against).
+  //   - booked BEFORE reportDate (existing position) → market-move P&L: the
+  //     change in its unrealised level (today − prior), BUT only if a usable
+  //     prior-day mark exists for its instrument. If not, the position is
+  //     unattributable: EXCLUDED from market-move (NOT zeroed) and tracked so
+  //     the figure declares itself incomplete.
   // -------------------------------------------------------------------------
   let newTradeZarMinor = 0;
   let marketMoveZarMinor = 0;
   let grossLiveNotionalZarMinor = 0;
   const unattributablePositions: string[] = [];
 
-  for (const [tradeId, reval] of revalOnReportDateByTrade) {
+  // Iterate the UNION of trades present in either snapshot so a position that
+  // appears today (new trade) and one that left today (settled) are both seen.
+  const allTradeIds = new Set<string>([...priorLevelByTrade.keys(), ...todayLevelByTrade.keys()]);
+
+  for (const tradeId of allTradeIds) {
     const trade = tradeMap.get(tradeId);
-    if (!trade) continue; // reval with no booking — skip (not attributable here)
+    if (!trade) continue;
+    // A position cancelled by reportDate carries no P&L in either component.
+    if (todayStatusByTrade.get(tradeId) === "cancelled") continue;
 
-    grossLiveNotionalZarMinor += Math.abs(reval.notionalBaseMinor);
+    const reval = revalOnReportDateByTrade.get(tradeId);
+    if (reval) grossLiveNotionalZarMinor += Math.abs(reval.notionalBaseMinor);
 
+    const todayLevel = todayLevelByTrade.get(tradeId) ?? 0; // 0 if gone from book
+    const priorLevel = priorLevelByTrade.get(tradeId);
     const bookedOnReportDate = dayOf(trade.tradeDate.iso) === reportDate;
-    if (bookedOnReportDate) {
-      // New trade: its day-one revaluation delta IS the new-trade P&L.
-      newTradeZarMinor += reval.unrealisedPnlZarMinor;
+
+    if (bookedOnReportDate && priorLevel === undefined) {
+      // New trade: its full unrealised level today IS the new-trade P&L (it had
+      // no position yesterday to net against).
+      newTradeZarMinor += todayLevel;
       continue;
     }
 
-    // Existing position → market-move. Look up the prior-day mark for this
-    // instrument as a FinancialInput. This is the ONLY silent-zero collapse
-    // risk in the engine.
+    // Existing position → market-move (the change in its unrealised level,
+    // including any crystallisation drop to 0 on settlement). Look up the
+    // prior-day mark as a FinancialInput. This is the ONLY silent-zero collapse
+    // risk in the engine. A position that was already settled BEFORE the prior
+    // date (priorLevel 0, todayLevel 0) contributes nothing and needs no mark.
+    if ((priorLevel ?? 0) === 0 && todayLevel === 0) continue;
     const priorMark = priorMarkFor(trade, priorMarks);
     if (isPresent(priorMark)) {
-      marketMoveZarMinor += reval.unrealisedPnlZarMinor;
+      marketMoveZarMinor += todayLevel - (priorLevel ?? 0);
     } else {
       // EXCLUDE — do not add 0. Track so the aggregate is declared incomplete.
       unattributablePositions.push(tradeId);
@@ -291,8 +322,7 @@ export function computePnLAttribution(
   //    control signal (raises an exception), not an invariant violation.
   // -------------------------------------------------------------------------
   const residualZarMinor =
-    actualMoveZarMinor -
-    (newTradeZarMinor + marketMoveZarMinor + carryZarMinor + realisedZarMinor);
+    actualMoveZarMinor - (newTradeZarMinor + marketMoveZarMinor + carryZarMinor + realisedZarMinor);
 
   const toleranceZarMinor = resolveToleranceZarMinor(grossLiveNotionalZarMinor);
   const residualWithinTolerance = Math.abs(residualZarMinor) <= toleranceZarMinor;
@@ -418,19 +448,13 @@ function resolveCarry(store: EventStore, reportDate: string): FinancialInput<num
         (p.tenor === FX_SPOT_FUNDING_TENOR || p.tenor === undefined) &&
         (typeof p.asOf !== "string" || dayOf(p.asOf) === reportDate);
       if (covers && typeof p.carryZarMinor === "number") {
-        return present(
-          p.carryZarMinor,
-          `FtpCurvePublished FX-SPOT carry for ${reportDate}`,
-        );
+        return present(p.carryZarMinor, `FtpCurvePublished FX-SPOT carry for ${reportDate}`);
       }
     }
   } catch {
     // FtpCurvePublished not registered — fall through to absence.
   }
-  return absent(
-    `no FTP curve for FX-SPOT funding on ${reportDate}`,
-    "FtpCurvePublished",
-  );
+  return absent(`no FTP curve for FX-SPOT funding on ${reportDate}`, "FtpCurvePublished");
 }
 
 // ---------------------------------------------------------------------------

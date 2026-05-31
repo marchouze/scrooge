@@ -286,6 +286,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // here is a build-phase test fixture, not a production access path. T-01
   // carve-out. Citation: P4-SECURITY-DESIGNED-IN, ORG-CY-09.
   "simulators/dtcc-safe-api.test.ts",
+  // P&L Attribution engine unit tests (brief:bea:p-l-attribution-engine-fx-spot-mvp).
+  // Co-located per the per-module test convention. Raw EventStore(":memory:") is a
+  // build-phase fixture for the additive-reconciliation / no-silent-zero / exception
+  // assertions, not a production access path. T-01 carve-out.
+  // Citation: D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/product-control/pnl-attribution.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

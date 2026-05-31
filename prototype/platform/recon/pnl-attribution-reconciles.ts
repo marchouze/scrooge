@@ -56,14 +56,17 @@ function componentSum(p: PnLAttributionGeneratedPayload): number {
   );
 }
 
-function anyComponentIncomplete(p: PnLAttributionGeneratedPayload): boolean {
-  const comps: AttributionComponent[] = [
-    p.newTrade,
-    p.marketMove,
-    p.carry,
-    p.realised,
-    p.residual,
-  ];
+/**
+ * True when a component whose incompleteness represents a CONTROL failure is
+ * incomplete. `carry` is deliberately EXCLUDED: in the FX-spot MVP carry is an
+ * expected, documented absence (no FTP curve substrate) surfaced via the
+ * CalculationPerformed `degraded` status — it is not a control breach and must
+ * not force every clean run to carry an exception. market-move incompleteness
+ * (a missing per-position mark) IS a control failure and must pair with a
+ * PnLAttributionExceptionRaised{breachType:"incomplete-inputs"}.
+ */
+function controlComponentIncomplete(p: PnLAttributionGeneratedPayload): boolean {
+  const comps: AttributionComponent[] = [p.newTrade, p.marketMove, p.realised, p.residual];
   return comps.some((c) => !c.complete);
 }
 
@@ -125,11 +128,11 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
 
     // (c) Exception pairing — an unclean attribution must pair with an exception.
-    const unclean = !p.residualWithinTolerance || anyComponentIncomplete(p);
+    const unclean = !p.residualWithinTolerance || controlComponentIncomplete(p);
     if (unclean && !exceptionsByAttribution.has(p.attributionId)) {
       violations.push({
         subject: p.attributionId,
-        message: `attribution is unclean (residualWithinTolerance=${p.residualWithinTolerance}, anyComponentIncomplete=${anyComponentIncomplete(p)}) but has no paired PnLAttributionExceptionRaised event. Every unclean attribution must emit a typed exception (residual-breach or incomplete-inputs).`,
+        message: `attribution is unclean (residualWithinTolerance=${p.residualWithinTolerance}, controlComponentIncomplete=${controlComponentIncomplete(p)}) but has no paired PnLAttributionExceptionRaised event. Every unclean attribution must emit a typed exception (residual-breach or incomplete-inputs).`,
         severity: "fail",
       });
     }
