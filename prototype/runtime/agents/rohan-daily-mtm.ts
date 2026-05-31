@@ -58,6 +58,7 @@ import {
 import { makeMtmRunCompleted } from "../../platform/event-store/event-types/mtm";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import { MarketDataStore } from "../../platform/market-data/store";
+import { runValuationAdjustments } from "../../platform/market-risk/valuation-adjustment-engine";
 import type {
   FxTradeExecutedPayload,
   SettlementConfirmedPayload,
@@ -604,6 +605,32 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       }),
     );
     eventsEmitted += 1;
+
+    // ---------------------------------------------------------------------
+    // Valuation-adjustment / prudent-valuation reserve run (Camille CFO R2).
+    // Runs AFTER mark adoption + IPV checks above: the reserves consume the
+    // freshly-adopted marks (close-out reserve over the live FX-spot book) and
+    // the IpvExceptionRaised variances (market-price-uncertainty AVA). Wrapped
+    // in try/catch so a reserve-engine failure does not abort the MTM run.
+    // Requires a MarketDataStore (CVA category); only invoked when one is open.
+    if (mdStore) {
+      try {
+        const vadjEvents = runValuationAdjustments(eventStore, () => asOf, mdStore);
+        eventsEmitted += vadjEvents;
+        logger.info(
+          { agent: ctx.agent, vadjEvents },
+          "rohan:daily-mtm — valuation-adjustment reserve run complete",
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        logger.error({ error: msg }, "rohan:daily-mtm — valuation-adjustment run failed");
+        skippedReasons.push(`valuation-adjustment run failed: ${msg}`);
+      }
+    } else {
+      skippedReasons.push(
+        "valuation-adjustment run skipped — MarketDataStore unavailable (CVA category needs it)",
+      );
+    }
   }
 
   if (mdStore) mdStore.close();

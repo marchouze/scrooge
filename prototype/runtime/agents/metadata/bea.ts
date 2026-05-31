@@ -59,4 +59,14 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "30 5 * * *",
   }),
+  // Daily product-control run — wires the three product-control engines
+  // (daily P&L, P&L attribution; valuation-adjustment via Rohan's MTM) into a
+  // live daily cadence. Cron: 19:00 UTC weekdays = after Rohan's 18:00 UTC MTM
+  // so the P&L engines read the freshest EOD marks.
+  // Authority: Camille (CFO) R1/R3; D-TRUSTED-FIGURES-PROGRAM-V1; Principle 6.
+  // Brief: brief:bea:wire-product-control-engines-into-daily-cadence:2026-05-31.
+  entry("Bea", "product-control-daily", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 19 * * 1-5",
+  }),
 ];
