@@ -54,6 +54,10 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 // shared canonical store (config file → ~/.local/share/bank/event.db).
 import "../platform/event-store/resolve-event-db-boot";
 
+import {
+  type ChartOfAccountsEntry,
+  checkAgedItems,
+} from "../platform/accounting/gl-subledger-recon";
 import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
 import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
@@ -69,6 +73,8 @@ import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
 import { makeBalanceSheetProjected } from "../platform/event-store/event-types/balance-sheet";
+import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
+import { makeSubstrateAlert } from "../platform/event-store/event-types/platform";
 import {
   makeProductApproved,
   makeProductDimensionAttested,
@@ -88,12 +94,6 @@ import {
 } from "../platform/event-store/event-types/seed-management";
 import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import type { Event } from "../platform/event-store/types";
-import {
-  type ChartOfAccountsEntry,
-  checkAgedItems,
-} from "../platform/accounting/gl-subledger-recon";
-import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
-import { makeSubstrateAlert } from "../platform/event-store/event-types/platform";
 import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
 import {
   DEFAULT_HORIZON_DAYS,
