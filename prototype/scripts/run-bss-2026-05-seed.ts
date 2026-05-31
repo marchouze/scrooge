@@ -108,7 +108,14 @@ const COA: ChartOfAccountsEntry[] = [
     ifrsClassificationStatus: "in-force",
     // FxPositionRevalued posts FVTPL revaluation gain/loss to the receivable
     // (Atlas COA-source completion, 2026-05-30).
-    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed", "FxPositionRevalued"],
+    // SubLedgerPostingRemediationRecorded: append-only correction postings that
+    // neutralise retired-fixture orphans on this account (Bea, 2026-05-31).
+    sourceEventTypes: [
+      "FxTradeExecuted",
+      "FxSettlementConfirmed",
+      "FxPositionRevalued",
+      "SubLedgerPostingRemediationRecorded",
+    ],
   },
   {
     accountId: "ACC-2100-002",
@@ -116,7 +123,14 @@ const COA: ChartOfAccountsEntry[] = [
     currency: "multi",
     ifrsClassification: "fvtpl",
     ifrsClassificationStatus: "in-force",
-    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+    // SubLedgerPostingRemediationRecorded: append-only correction postings
+    // that neutralise retired-fixture orphans on this account (Bea, 2026-05-31).
+    clearanceHorizonDays: 2,
+    sourceEventTypes: [
+      "FxTradeExecuted",
+      "FxSettlementConfirmed",
+      "SubLedgerPostingRemediationRecorded",
+    ],
   },
   {
     accountId: "ACC-2100-003",
@@ -124,7 +138,13 @@ const COA: ChartOfAccountsEntry[] = [
     currency: "ZAR",
     ifrsClassification: "fvtpl",
     ifrsClassificationStatus: "in-force",
-    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+    // SubLedgerPostingRemediationRecorded: append-only correction postings
+    // that neutralise retired-fixture orphans on this account (Bea, 2026-05-31).
+    sourceEventTypes: [
+      "FxTradeExecuted",
+      "FxSettlementConfirmed",
+      "SubLedgerPostingRemediationRecorded",
+    ],
   },
   {
     accountId: "ACC-2100-004",
@@ -132,7 +152,13 @@ const COA: ChartOfAccountsEntry[] = [
     currency: "multi",
     ifrsClassification: "fvtpl",
     ifrsClassificationStatus: "in-force",
-    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+    // SubLedgerPostingRemediationRecorded: append-only correction postings
+    // that neutralise retired-fixture orphans on this account (Bea, 2026-05-31).
+    sourceEventTypes: [
+      "FxTradeExecuted",
+      "FxSettlementConfirmed",
+      "SubLedgerPostingRemediationRecorded",
+    ],
   },
   {
     accountId: "ACC-2100-006",
@@ -330,11 +356,35 @@ for (const e of replayType("SubLedgerPostingRemediationRecorded")) {
   if (Array.isArray(list)) for (const id of list) remediatedSourceIds.add(id);
 }
 
+// Build fixture source-event set (same pattern as gl-projection.ts sourceEventIsFixture).
+// Postings whose sourceEventId resolves to a build-phase-fixture source event are
+// excluded from the dataset so that CONDUCT-TEST entries don't inflate Step 3c
+// aged-item checks. Authority: PROC-FIN-BSS-01; Principle 1.
+const FIXTURE_SOURCE_TYPES = [
+  "FxTradeExecuted",
+  "FxPositionRevalued",
+  "TradeMatured",
+  "PrincipalPayment",
+  "SettlementConfirmed",
+  "SubLedgerPostingRemediationRecorded",
+];
+const fixtureSourceEventIds = new Set<string>();
+for (const e of allEvents) {
+  if (FIXTURE_SOURCE_TYPES.includes(e.type) && e.provenance?.kind === "build-phase-fixture") {
+    fixtureSourceEventIds.add(e.event_id);
+  }
+}
+
 // 180 seed-period postings are missing postedAt (pre-schema fix).
 // Exclude them from aged-item check; include in trace check.
 const postingEventsRaw = replayType("SubLedgerPostingEmitted");
-const postingPayloads: SubLedgerPostingEmittedPayload[] = postingEventsRaw.map(
+const postingPayloadsRaw: SubLedgerPostingEmittedPayload[] = postingEventsRaw.map(
   (e) => e.payload as SubLedgerPostingEmittedPayload,
+);
+// Filter out postings whose source event is a build-phase fixture so that
+// CONDUCT-TEST entries do not cause false Step 3c aged-item findings.
+const postingPayloads: SubLedgerPostingEmittedPayload[] = postingPayloadsRaw.filter(
+  (p) => !p.sourceEventId || !fixtureSourceEventIds.has(p.sourceEventId),
 );
 const postingPayloadsWithPostedAt = postingPayloads.filter((p) => !!p.postedAt);
 
@@ -407,6 +457,10 @@ const affectedAccountsOtherPhantom = new Set(otherPhantomUntraced.map((u) => u.a
 const allPhantomAccounts = new Set([...affectedAccountsSimTrade, ...affectedAccountsOtherPhantom]);
 
 console.log("=== STEP 3a: SOURCE-EVENT TRACE ===");
+console.log(`  Total postings (raw):         ${postingPayloadsRaw.length}`);
+console.log(
+  `  Fixture-sourced excluded:     ${postingPayloadsRaw.length - postingPayloads.length} (build-phase-fixture source events)`,
+);
 console.log(`  Total postings loaded:        ${postingPayloads.length}`);
 console.log(`  Primary events indexed:       ${primaryEventsMap.size}`);
 console.log(`  Traced:                       ${traceResult.traced.length}`);

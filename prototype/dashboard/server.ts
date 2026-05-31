@@ -54,6 +54,10 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 // shared canonical store (config file → ~/.local/share/bank/event.db).
 import "../platform/event-store/resolve-event-db-boot";
 
+import {
+  type ChartOfAccountsEntry,
+  checkAgedItems,
+} from "../platform/accounting/gl-subledger-recon";
 import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
 import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
 import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
@@ -69,6 +73,8 @@ import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
 import { makeBalanceSheetProjected } from "../platform/event-store/event-types/balance-sheet";
+import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
+import { makeSubstrateAlert } from "../platform/event-store/event-types/platform";
 import {
   makeProductApproved,
   makeProductDimensionAttested,
@@ -554,6 +560,194 @@ function buildTreasuryMetrics() {
       };
     })(),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Continuous aging watchdog (PROC-FIN-BSS-01 §5 step 3c)
+// ---------------------------------------------------------------------------
+//
+// The step-3c aged-item check was previously only called during period-close.
+// A $185B open residual on ACC-2100-002 went undetected for 14 days because
+// no continuous check existed.
+//
+// This function runs on every `refresh()` cycle. It:
+//   1. Replays all SubLedgerPostingEmitted events and builds a provenance-filtered
+//      posting list (same fixture guard as run-bss-2026-05-seed.ts).
+//   2. Builds a minimal trial balance from those postings.
+//   3. Calls checkAgedItems for accounts with clearanceHorizonDays.
+//   4. For each aged item, emits SubstrateAlert{alertClass:"integrity"} using an
+//      idempotent alertId — one alert per distinct residual, not per derive cycle.
+//
+// Authority: FIN-BSS-01; PROC-FIN-BSS-01; Principle 1.
+// Brief: brief:bea:bss-provenance-filter-continuous-aging-watchdog:2026-05-31
+
+// Minimal COA subset for the continuous aging watchdog — only accounts with
+// clearanceHorizonDays set. Kept here (not shared with BSS script) so the
+// watchdog is self-contained and the script's full COA can evolve independently.
+const AGING_WATCHDOG_COA: ChartOfAccountsEntry[] = [
+  {
+    accountId: "ACC-1100-004",
+    name: "FX Settlement Suspense — ZAR",
+    currency: "ZAR",
+    ifrsClassification: "amortised-cost",
+    ifrsClassificationStatus: "in-force",
+    clearanceHorizonDays: 2,
+    shouldNetToZeroAtPeriodEnd: true,
+    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+  },
+  {
+    accountId: "ACC-1100-005",
+    name: "FX Settlement Suspense — USD",
+    currency: "USD",
+    ifrsClassification: "amortised-cost",
+    ifrsClassificationStatus: "in-force",
+    clearanceHorizonDays: 2,
+    shouldNetToZeroAtPeriodEnd: true,
+    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+  },
+  {
+    accountId: "ACC-2100-002",
+    name: "FX Receivables — Foreign CCY",
+    currency: "multi",
+    ifrsClassification: "fvtpl",
+    ifrsClassificationStatus: "in-force",
+    clearanceHorizonDays: 2,
+    sourceEventTypes: ["FxTradeExecuted", "FxSettlementConfirmed"],
+  },
+];
+// Note: ACC-2200-001 (Customer Payables, ZAR) has no clearanceHorizonDays in the
+// canonical chart-of-accounts and is not eligible for aging checks.
+
+// Source event types whose build-phase-fixture instances should be excluded
+// from the aging watchdog posting list (mirrors FIXTURE_SOURCE_TYPES in
+// run-bss-2026-05-seed.ts).
+const WATCHDOG_FIXTURE_SOURCE_TYPES = new Set([
+  "FxTradeExecuted",
+  "FxPositionRevalued",
+  "TradeMatured",
+  "PrincipalPayment",
+  "SettlementConfirmed",
+  "SubLedgerPostingRemediationRecorded",
+]);
+
+const WATCHDOG_ENTITY = "LE-ZA-HOZ-BANK";
+const WATCHDOG_ACTOR_AGING = {
+  type: "service" as const,
+  id: "agent:bea:aging-watchdog",
+};
+const WATCHDOG_CITATIONS = ["FIN-BSS-01", "PROC-FIN-BSS-01", "Principle 1"];
+
+/**
+ * Emit a `SubstrateAlert{alertClass:"integrity",severity:"high"}` for each
+ * aged open residual found in the provenance-filtered posting stream.
+ *
+ * Idempotent: an alertId already present in the log is skipped.
+ *
+ * Returns `{ emitted, skipped, clean }` counts.
+ */
+function emitAgedItemAlerts(
+  store: typeof eventStore,
+  asOf: string,
+): { emitted: number; skipped: number; clean: number } {
+  // Step 1 — build fixture source-event set so build-phase-fixture postings
+  // are excluded (prevents CONDUCT-TEST entries from firing as aged items).
+  const fixtureSourceIds = new Set<string>();
+  for (const ev of store.replay({})) {
+    if (
+      WATCHDOG_FIXTURE_SOURCE_TYPES.has(ev.type) &&
+      ev.provenance?.kind === "build-phase-fixture"
+    ) {
+      fixtureSourceIds.add(ev.event_id);
+    }
+  }
+
+  // Replay SubLedgerPostingEmitted and filter out fixture-sourced postings.
+  const allPostings: SubLedgerPostingEmittedPayload[] = [];
+  for (const ev of store.replay({ type: "SubLedgerPostingEmitted" })) {
+    const p = ev.payload as SubLedgerPostingEmittedPayload;
+    if (!p.postedAt) continue; // skip pre-schema postings missing postedAt
+    if (p.sourceEventId && fixtureSourceIds.has(p.sourceEventId)) continue;
+    allPostings.push(p);
+  }
+
+  // Build a minimal trial balance from the filtered postings (net per account+currency).
+  const netByKey = new Map<
+    string,
+    { leafAccountId: string; currency: string; amountMinor: number }
+  >();
+  for (const posting of allPostings) {
+    for (const leg of posting.legs) {
+      const key = `${leg.accountId}|${leg.currency}`;
+      const existing = netByKey.get(key) ?? {
+        leafAccountId: leg.accountId,
+        currency: leg.currency,
+        amountMinor: 0,
+      };
+      existing.amountMinor += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      netByKey.set(key, existing);
+    }
+  }
+  const trialBalance = { rows: [...netByKey.values()] };
+
+  // Step 2 — collect confirmed source event IDs (same logic as BSS script).
+  const confirmedSourceEventIds = new Set<string>();
+  for (const type of ["SettlementConfirmed", "FxSettlementConfirmed", "TradeMatured"]) {
+    for (const ev of store.replay({ type })) {
+      confirmedSourceEventIds.add(ev.event_id);
+    }
+  }
+
+  // Step 3 — run checkAgedItems over the watchdog COA subset.
+  const agedResult = checkAgedItems({
+    trialBalance,
+    chartOfAccounts: AGING_WATCHDOG_COA,
+    asOf: asOf.slice(0, 10),
+    postingEvents: allPostings,
+    confirmedSourceEventIds,
+  });
+
+  // Step 4 — collect already-emitted alertIds (idempotency guard).
+  const existingAlertIds = new Set<string>();
+  for (const ev of store.replay({ type: "SubstrateAlert" })) {
+    const id = (ev.payload as { alertId?: string }).alertId;
+    if (id) existingAlertIds.add(id);
+  }
+
+  let emitted = 0;
+  let skipped = 0;
+
+  // Step 5 — emit one SubstrateAlert per distinct aged residual.
+  for (const item of agedResult.aged) {
+    // Build a slug that is stable for this account+currency+oldest-date residual.
+    const slug = [
+      "aged-item",
+      item.accountId.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+      item.currency.toLowerCase(),
+      item.oldestPostingDate.replace(/-/g, ""),
+    ].join("-");
+    const alertId = `alert:integrity:${slug}`;
+    if (existingAlertIds.has(alertId)) {
+      skipped++;
+      continue;
+    }
+    store.append(
+      makeSubstrateAlert({
+        asOf,
+        entity: WATCHDOG_ENTITY,
+        actor: WATCHDOG_ACTOR_AGING,
+        citations: WATCHDOG_CITATIONS,
+        payload: {
+          alertId,
+          alertClass: "integrity",
+          severity: "high",
+          details: `Aged open residual: account=${item.accountId} ccy=${item.currency} ageDays=${item.ageCalendarDays} (threshold=${item.clearanceHorizonDays}d) amountMinor=${item.amountMinor} oldestPostingDate=${item.oldestPostingDate}. PROC-FIN-BSS-01 §5 step 3c.`,
+        },
+      }),
+    );
+    emitted++;
+  }
+
+  return { emitted, skipped, clean: agedResult.clean.length };
 }
 
 function bootDerive(): DashboardState {
@@ -1164,6 +1358,22 @@ function refresh(reason: string): void {
       { reason, asOf: next.asOf, runtimePath: RUNTIME_STATE_PATH },
       "dashboard re-derived",
     );
+    // Continuous aging watchdog (PROC-FIN-BSS-01 §5 step 3c).
+    // Replays and provenance-filters postings; emits a SubstrateAlert{integrity}
+    // for each open residual that has exceeded its clearanceHorizonDays.
+    // Idempotent by alertId — one alert per distinct residual, not per cycle.
+    // Authority: FIN-BSS-01; PROC-FIN-BSS-01; Principle 1.
+    try {
+      const aging = emitAgedItemAlerts(eventStore, nowUtc());
+      if (aging.emitted > 0) {
+        logger.warn(
+          { emitted: aging.emitted, skipped: aging.skipped, clean: aging.clean },
+          "aging-watchdog: aged open residuals found — SubstrateAlert(integrity) emitted",
+        );
+      }
+    } catch (agingErr) {
+      logger.warn({ err: (agingErr as Error).message }, "aging-watchdog: check skipped");
+    }
   } catch (e) {
     // Failing closed: keep serving the previous state, log loudly.
     logger.error(
