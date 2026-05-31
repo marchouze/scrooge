@@ -242,6 +242,9 @@ export function buildGlView(
   // PR-FX-LIFECYCLE-CLOSE post against (2026-05-20 circularity fix —
   // TradeMatured retained for back-compat with legacy tests).
   const sourceEventMap = new Map<string, Record<string, unknown>>();
+  // Separately track whether each source event is a build-phase fixture so
+  // GL postings derived from fixture trades can be excluded (same rule as B3).
+  const sourceEventIsFixture = new Set<string>();
   for (const e of events) {
     if (
       e.type === "FxTradeExecuted" ||
@@ -251,6 +254,9 @@ export function buildGlView(
       e.type === "SettlementConfirmed"
     ) {
       sourceEventMap.set(e.event_id, e.payload as Record<string, unknown>);
+      if (e.provenance?.kind === "build-phase-fixture") {
+        sourceEventIsFixture.add(e.event_id);
+      }
     }
   }
 
@@ -270,6 +276,12 @@ export function buildGlView(
     const p = event.payload as Record<string, unknown>;
 
     if (event.type === "SubLedgerPostingEmitted") {
+      // Exclude postings whose source trade is a build-phase fixture.
+      // The posting's own provenance is not reliable (all backfill postings
+      // share the same scenario tag regardless of trade type). Instead check
+      // the provenance of the source FxTradeExecuted / lifecycle event.
+      const srcId = typeof p.sourceEventId === "string" ? p.sourceEventId : undefined;
+      if (srcId && sourceEventIsFixture.has(srcId)) continue;
       const postedAt = typeof p.postedAt === "string" ? p.postedAt : event.as_of;
       if (postedAt > asOf) continue;
       const rawLegs = Array.isArray(p.legs) ? p.legs : [];
