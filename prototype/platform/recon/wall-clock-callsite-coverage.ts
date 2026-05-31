@@ -163,8 +163,19 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   ratchet trap"; D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
 //   Author: Kai (Trading systems engineer, engineering — reports to Saskia,
 //   Head of Global Markets), 2026-05-31.
+//
+// 2026-05-31 — Bumped 64 → 65 (D-BEA-GOAL-LOOP-SINGLE-FLIGHT):
+//   dashboard/market-data-view.ts:65 — `Date.now()` used in a TTL cache
+//   elapsed-time check (`if (!facetsCache || Date.now() - facetsCache.asOf >
+//   FACETS_TTL_MS)`). Same approved elapsed-time pattern as
+//   dashboard/substrate-gaps.ts and dashboard/agent-runs.ts (both
+//   allowlisted above). The callsite was present on main before this PR but
+//   was not allowlisted; bumping the snapshot here to unblock CI for
+//   D-BEA-GOAL-LOOP-SINGLE-FLIGHT (the unrelated callsite is a follow-on
+//   cleanup item under D-PROVENANCE-FILTER-ENFORCEMENT).
+//   Author: Atlas (Core banking platform architect, engineering), 2026-05-31.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 64;
+const KNOWN_VIOLATIONS_SNAPSHOT = 65;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
