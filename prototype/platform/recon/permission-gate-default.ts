@@ -231,6 +231,7 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   "runtime/agents/vera-goal-loop.test.ts",
   "runtime/agents/atlas-goal-loop.test.ts",
   "runtime/agents/owen-goal-loop.test.ts",
+  "runtime/agents/bea-goal-loop.test.ts",
   // Climate-risk projection unit tests — co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for scenario assertion,
   // not a production access path. T-01 carve-out.
