@@ -738,11 +738,7 @@ function emitAgedItemAlerts(
           alertId,
           alertClass: "integrity",
           severity: "high",
-          details:
-            `Aged open residual: account=${item.accountId} ccy=${item.currency}` +
-            ` ageDays=${item.ageCalendarDays} (threshold=${item.clearanceHorizonDays}d)` +
-            ` amountMinor=${item.amountMinor} oldestPostingDate=${item.oldestPostingDate}.` +
-            ` PROC-FIN-BSS-01 §5 step 3c.`,
+          details: `Aged open residual: account=${item.accountId} ccy=${item.currency} ageDays=${item.ageCalendarDays} (threshold=${item.clearanceHorizonDays}d) amountMinor=${item.amountMinor} oldestPostingDate=${item.oldestPostingDate}. PROC-FIN-BSS-01 §5 step 3c.`,
         },
       }),
     );
