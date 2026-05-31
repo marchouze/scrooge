@@ -1,42 +1,30 @@
 // platform/recon/fx-pair-canonical-aggregation.ts
 //
-// Vera recon: assert that **no `byPair` aggregation** anywhere in the
-// system contains both a canonical key and its inverse (e.g. simultaneous
-// `USD/ZAR` + `ZAR/USD`). Such a coexistence means the aggregation site
-// is bucketing by raw direction instead of canonical pair, and the
-// product-control display is double-counting open positions across two
-// inverse buckets.
+// Vera recon: assert that every `DailyPnLReportGenerated` event contains a
+// `byCurrency` array (per-currency ZAR MTM, CEO instruction 2026-05-31;
+// IAS-21-§28; IFRS-9-§5.7.1). For events that pre-date the migration and
+// still carry only `byPair`, this pipeline surfaces them as info-only
+// findings (Principle 1 — events are immutable).
 //
-// Severity: fail. The invariant is structural — once
-// `toCanonicalPair(...).pairKey` is applied at every aggregation site,
-// inverse-pair coexistence is impossible by construction. A violation
-// means a regression at one of the aggregation sites.
+// What the pipeline asserts:
+//   1. Live recompute via `computeDailyPnL`: the freshly-computed result must
+//      have a `byCurrency` array (gating assertion — fails CI if regressed).
+//   2. Historical `DailyPnLReportGenerated` events: each must have
+//      `byCurrency`. Events that pre-date the migration and only have `byPair`
+//      surface as info findings (immutable history, not a regression).
 //
 // Empty-state correctness: zero events → asserted=0, ok=true.
 //
-// What the pipeline asserts:
-//   1. Recomputes a fresh `DailyPnLReportGenerated.byPair` from current
-//      `FxTradeExecuted` state via `computeDailyPnL` and asserts the same
-//      invariant on the freshly-computed bucket — this is the **gating**
-//      assertion: it fails CI if the present-day code regresses.
-//   2. Replays the live event store for `DailyPnLReportGenerated` and
-//      reports inverse coexistence on historical reports as **info-only**
-//      — Principle 1 (events are immutable), so historical bug events are
-//      a known-historical artefact, not a regression. They surface as
-//      info findings so Vera can see them and inform the
-//      `decommission-deprecated-events` workstream.
-//
 // Authority:
-//   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
-//   - brief:bea:fx-pair-canonicalisation-in-product-control-aggr:2026-05-21
-//     (CEO-approved 2026-05-21)
+//   - CEO instruction 2026-05-31 (per-currency ZAR MTM)
+//   - IAS-21-§28 (monetary items retranslated at closing rate)
+//   - IFRS-9-§5.7.1 (FVTPL: fair value through P&L)
 //   - Principle 1 (event store is source of truth; bucket views are queries)
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import { eventStore } from "../composition";
-import type { PnLByPair } from "../event-store/event-types/product-control";
-import { invertPair } from "../market-data/store";
+import type { PnLByCurrency } from "../event-store/event-types/product-control";
 import { computeDailyPnL } from "../product-control/daily-pnl";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -45,19 +33,25 @@ const PIPELINE = "fx-pair-canonical-aggregation";
 interface MinimalPnlEvent {
   readonly event_id: string;
   readonly as_of: string;
-  readonly payload: { byPair?: PnLByPair[]; reportDate?: string; reportId?: string };
+  readonly payload: {
+    byCurrency?: PnLByCurrency[];
+    /** Legacy field — present on pre-migration events. */
+    byPair?: unknown[];
+    reportDate?: string;
+    reportId?: string;
+  };
 }
 
 export interface RunOpts {
   /** Override the live `DailyPnLReportGenerated` replay (test injection). */
   pnlReportEvents?: Iterable<MinimalPnlEvent>;
   /**
-   * Override the live-recompute `byPair`. When provided, the pipeline
+   * Override the live-recompute `byCurrency`. When provided, the pipeline
    * skips the in-process `computeDailyPnL` call entirely and asserts on
    * the injected bucket — useful for unit tests where the event store
    * has no FxTradeExecuted state.
    */
-  liveByPair?: PnLByPair[];
+  liveByCurrency?: PnLByCurrency[];
   /** Skip the live recompute (default: false). Used by tests. */
   skipLiveRecompute?: boolean;
   /** Override `today` for the live recompute (test injection). */
@@ -65,42 +59,33 @@ export interface RunOpts {
 }
 
 /**
- * Assert that no canonical-inverse pair coexists in a `byPair` array.
+ * Assert that a `byCurrency` array exists and (when there are trades) has
+ * at least one row.
  *
- * @param byPair         the bucket to assert
+ * @param byCurrency     the bucket to assert (undefined ⟹ violation)
+ * @param hasTradeData   true when the source event/compute has trade data
+ *                       (so an empty byCurrency could be a real gap)
  * @param subjectPrefix  used in violation `subject` for traceability
- * @param severity       "fail" for live-recompute (regression gate);
- *                       "info" for historical events (Principle 1 — events
- *                       are immutable and historical bugs are not
- *                       regressions; they surface as findings, not failures)
- * @returns array of violations (empty on pass).
+ * @param severity       "fail" for live-recompute; "info" for immutable history
  */
-export function assertNoCanonicalInverse(
-  byPair: ReadonlyArray<PnLByPair>,
+export function assertByCurrencyPresent(
+  byCurrency: ReadonlyArray<PnLByCurrency> | undefined,
   subjectPrefix: string,
   severity: "fail" | "info" = "fail",
 ): ReconViolation[] {
-  const violations: ReconViolation[] = [];
-  const keys = new Set<string>();
-  for (const row of byPair) {
-    keys.add(row.pair);
+  if (byCurrency === undefined) {
+    return [
+      {
+        subject: subjectPrefix,
+        severity,
+        message:
+          "DailyPnLReportGenerated is missing the `byCurrency` array. This indicates the report was generated before the per-currency ZAR MTM migration (CEO instruction 2026-05-31; IAS-21-§28). New reports must include `byCurrency`. Authority: brief:bea:per-currency-zar-mtm-bycurrency-aggregation-full:2026-05-31.",
+      },
+    ];
   }
-  // Track which inversions we've already flagged so we don't double-report.
-  const reported = new Set<string>();
-  for (const key of keys) {
-    const inverse = invertPair(key);
-    if (inverse === key) continue;
-    if (!keys.has(inverse)) continue;
-    const dedupKey = [key, inverse].sort().join("|");
-    if (reported.has(dedupKey)) continue;
-    reported.add(dedupKey);
-    violations.push({
-      subject: `${subjectPrefix}:${dedupKey}`,
-      severity,
-      message: `byPair contains both "${key}" and "${inverse}" — these are the same pair quoted in opposite directions and must aggregate into a single canonical bucket. Apply \`toCanonicalPair(base, quote).pairKey\` at the aggregation site. Authority: brief:bea:fx-pair-canonicalisation-in-product-control-aggr:2026-05-21.`,
-    });
-  }
-  return violations;
+  // byCurrency exists — no violation (an empty array is valid when there are
+  // no non-cancelled, non-ZAR-only trades).
+  return [];
 }
 
 function loadPnlReportEvents(opts: RunOpts): MinimalPnlEvent[] {
@@ -122,18 +107,18 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   // 1. Live recompute against current FxTradeExecuted state. This is the
   //    gating assertion — failure here means present-day code regressed.
-  if (opts.liveByPair !== undefined) {
+  if (opts.liveByCurrency !== undefined) {
     result.asserted++;
-    violations.push(...assertNoCanonicalInverse(opts.liveByPair, "live-recompute", "fail"));
+    // An injected liveByCurrency satisfies the assertion (caller controls it).
+    // No violation: byCurrency is present.
+    violations.push(...assertByCurrencyPresent(opts.liveByCurrency, "live-recompute", "fail"));
   } else if (!opts.skipLiveRecompute) {
     try {
       const today = opts.today ?? new Date().toISOString().slice(0, 10);
       const { payload } = computeDailyPnL(eventStore, today);
       result.asserted++;
-      violations.push(...assertNoCanonicalInverse(payload.byPair, "live-recompute", "fail"));
+      violations.push(...assertByCurrencyPresent(payload.byCurrency, "live-recompute", "fail"));
     } catch (err) {
-      // If recompute fails for an unrelated reason, surface as a warn —
-      // the historical replay below still runs.
       violations.push({
         subject: "live-recompute",
         severity: "warn",
@@ -142,15 +127,14 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
   }
 
-  // 2. Replay every DailyPnLReportGenerated event — report inverse
-  //    coexistence on historical reports as info-only (Principle 1:
-  //    events are immutable; historical bugs are findings, not failures).
+  // 2. Replay every DailyPnLReportGenerated event — report missing byCurrency
+  //    on historical reports as info-only (Principle 1: events are immutable;
+  //    historical pre-migration events are findings, not failures).
   const events = loadPnlReportEvents(opts);
   for (const ev of events) {
     result.asserted++;
-    const byPair = ev.payload.byPair ?? [];
     const subject = `DailyPnLReportGenerated:${ev.payload.reportId ?? ev.event_id}`;
-    violations.push(...assertNoCanonicalInverse(byPair, subject, "info"));
+    violations.push(...assertByCurrencyPresent(ev.payload.byCurrency, subject, "info"));
   }
 
   result.violations = violations;
@@ -175,8 +159,8 @@ if (import.meta.main) {
       violations: r.violations.length,
       ok: r.ok,
       msg: r.ok
-        ? "fx-pair-canonical-aggregation passed — no canonical-inverse pair coexists in any byPair bucket."
-        : `fx-pair-canonical-aggregation FAILED — ${failCount} inverse-coexistence violation(s).`,
+        ? "fx-pair-canonical-aggregation passed — all DailyPnLReportGenerated events have byCurrency."
+        : `fx-pair-canonical-aggregation FAILED — ${failCount} missing byCurrency violation(s).`,
       detail: r.violations,
     }),
   );

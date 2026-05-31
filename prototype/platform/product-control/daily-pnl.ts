@@ -31,11 +31,10 @@ import type {
   DailyPnLReportGeneratedPayload,
   PnLByBook,
   PnLByCounterparty,
-  PnLByPair,
+  PnLByCurrency,
 } from "../event-store/event-types/product-control";
 import type { TradeMaturedFxSpotPayload } from "../event-store/event-types/trade-matured";
 import type { EventStore } from "../event-store/store";
-import { toCanonicalPair } from "../market-data/canonical-pair";
 import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { type FinancialInput, absent, present } from "../types/financial-input";
@@ -61,6 +60,18 @@ export interface TradeDetailRow {
   status: "live" | "settled" | "cancelled";
   /** Data quality of the unrealised P&L mark. */
   markStatus: "live" | "stale" | "overnight" | "unavailable";
+  /** ISO YYYY-MM-DD trade date. */
+  tradeDate: string;
+  /** ISO YYYY-MM-DD settlement date (near leg). */
+  settleDate: string;
+  /** ISO 4217 base currency of the pair. */
+  baseCurrency: string;
+  /** ISO 4217 quote currency of the pair. */
+  quoteCurrency: string;
+  /** Base-currency notional in minor units. */
+  notionalBaseMinor: number;
+  /** Quote-currency notional in minor units. */
+  notionalQuoteMinor: number;
 }
 
 export interface DailyPnLResult {
@@ -217,7 +228,7 @@ export function computeDailyPnL(
   // 5. Build per-trade detail rows.
   // -------------------------------------------------------------------------
   const trades: TradeDetailRow[] = [];
-  const byPairMap = new Map<string, { trades: number; unrealised: number; realised: number }>();
+  const byCurrencyMap = new Map<string, { trades: number; unrealised: number; realised: number }>();
   const byCounterpartyMap = new Map<
     string,
     {
@@ -241,19 +252,12 @@ export function computeDailyPnL(
 
   for (const [tradeId, trade] of tradeMap) {
     // Per-trade `pair` retains the booked direction (for trader-audit
-    // visibility in the trades grid). The aggregation key below uses the
-    // **canonical** form so that "buy USD/ZAR" and "sell ZAR/USD" land in
-    // the same bucket (Marc, 2026-05-21 — brief:bea:fx-pair-canonicalisation-
-    // in-product-control-aggr:2026-05-21). P&L sums are in ZAR minor
-    // (functional currency) and are sign-stable across pair-direction flips
-    // because the per-trade P&L was already computed with the right sign
-    // for the trade's booked side downstream — only the bucket *key* needs
-    // canonicalisation; the numbers don't.
+    // visibility in the trades grid). byCurrency keying is by ISO 4217 code,
+    // not pair direction — direction-stable by construction.
     const pair = `${trade.currencyPair.base}/${trade.currencyPair.quote}`;
-    const canonicalPairKey = toCanonicalPair(
-      trade.currencyPair.base,
-      trade.currencyPair.quote,
-    ).pairKey;
+    const baseCcy = trade.currencyPair.base;
+    const quoteCcy = trade.currencyPair.quote;
+
     const cid = trade.counterparty.partyId;
     const cname = trade.counterparty.name ?? cid;
     const bookId = trade.bookId;
@@ -262,6 +266,24 @@ export function computeDailyPnL(
     const nearLeg = trade.legs.find((l) => l.legKind === "near") ?? trade.legs[0];
     const bookRate = nearLeg?.rate.amount ?? 0;
     const revalRate = reval?.revalRate ?? null;
+
+    // Trade economics fields (for trade detail modal)
+    const tradeDate = trade.tradeDate?.iso ?? "";
+    const settleDate = nearLeg?.settlementDate?.iso ?? "";
+    const notionalBaseMinor = (() => {
+      if (!nearLeg) return 0;
+      if (nearLeg.notional.currency === baseCcy) return nearLeg.notional.amountMinor;
+      if (nearLeg.counterNotional && nearLeg.counterNotional.currency === baseCcy)
+        return nearLeg.counterNotional.amountMinor;
+      return nearLeg.notional.amountMinor;
+    })();
+    const notionalQuoteMinor = (() => {
+      if (!nearLeg) return 0;
+      if (nearLeg.notional.currency === quoteCcy) return nearLeg.notional.amountMinor;
+      if (nearLeg.counterNotional && nearLeg.counterNotional.currency === quoteCcy)
+        return nearLeg.counterNotional.amountMinor;
+      return nearLeg.counterNotional?.amountMinor ?? 0;
+    })();
 
     // Determine status first, then derive the mark quality. The unrealised P&L
     // is read from the reval ONLY when a mark exists; a missing mark on a LIVE
@@ -303,7 +325,7 @@ export function computeDailyPnL(
     // recorded), and cancelled trades carry none. Unmarkable live positions
     // report 0 in the per-row unrealised column but are flagged
     // markStatus:"unavailable" — the badge, not the number, is the signal.
-    // Zeroing here keeps the per-trade rows and the by-pair/counterparty/book
+    // Zeroing here keeps the per-trade rows and the by-currency/counterparty/book
     // breakdowns reconciled with the top-level totalUnrealised, which excludes
     // both non-live AND unmarkable-live positions.
     const unrealisedForReporting =
@@ -322,20 +344,67 @@ export function computeDailyPnL(
       realisedPnlZarMinor: status === "cancelled" ? 0 : realised,
       status,
       markStatus,
+      tradeDate,
+      settleDate,
+      baseCurrency: baseCcy,
+      quoteCurrency: quoteCcy,
+      notionalBaseMinor,
+      notionalQuoteMinor,
     });
 
     if (status !== "cancelled") {
-      // Aggregate by **canonical** pair so direct and inverse directions
-      // share a single bucket. P&L is ZAR-functional and direction-stable.
-      const pairRow = byPairMap.get(canonicalPairKey) ?? {
-        trades: 0,
-        unrealised: 0,
-        realised: 0,
-      };
-      pairRow.trades++;
-      pairRow.unrealised += unrealisedForReporting;
-      pairRow.realised += realised;
-      byPairMap.set(canonicalPairKey, pairRow);
+      // -----------------------------------------------------------------------
+      // Aggregate by currency (per-currency ZAR MTM).
+      // Each non-ZAR currency in the trade gets its own bucket.
+      // Authority: IAS-21-§28, CEO instruction 2026-05-31.
+      // -----------------------------------------------------------------------
+
+      // Determine per-currency unrealised P&L split.
+      // If the reval event has zarRateBase/zarRateQuote, split accurately.
+      // Fallback for legacy events: attribute full unrealised to base only.
+      const hasPerCcyRates = reval?.zarRateBase !== undefined && reval?.zarRateQuote !== undefined;
+
+      const baseUnrealised = (() => {
+        if (!hasPerCcyRates || !reval) return unrealisedForReporting;
+        // With per-currency rates: base contribution = full P&L minus quote contribution.
+        // The quote leg contribution is encoded in unrealisedPnlZarMinor as the net,
+        // so we reconstruct the split from the zarRate fields.
+        // For ZAR-quoted pairs (zarRateQuote = 0), all P&L is on the base leg.
+        if (reval.zarRateQuote === 0) return unrealisedForReporting;
+        // For cross pairs: attribute pro-rata by notional ratio (base : quote).
+        // Approximation: base/(base+quote) of total (direction-signed).
+        const total = notionalBaseMinor + notionalQuoteMinor;
+        if (total === 0) return unrealisedForReporting;
+        return Math.round((unrealisedForReporting * notionalBaseMinor) / total);
+      })();
+
+      const quoteUnrealised = (() => {
+        if (!hasPerCcyRates || !reval || reval.zarRateQuote === 0) return 0;
+        return unrealisedForReporting - baseUnrealised;
+      })();
+
+      // For realised: bucket under receive currency.
+      // BUY = receive base; SELL = receive quote.
+      const realisedBaseCcy = trade.side === "buy" ? realised : 0;
+      const realisedQuoteCcy = trade.side === "sell" ? realised : 0;
+
+      // Base currency bucket (always non-ZAR for cross pairs; skip if base IS ZAR).
+      if (baseCcy !== "ZAR") {
+        const bRow = byCurrencyMap.get(baseCcy) ?? { trades: 0, unrealised: 0, realised: 0 };
+        bRow.trades++;
+        bRow.unrealised += baseUnrealised;
+        bRow.realised += realisedBaseCcy;
+        byCurrencyMap.set(baseCcy, bRow);
+      }
+
+      // Quote currency bucket (skip if quote IS ZAR — it's the reporting currency).
+      if (quoteCcy !== "ZAR") {
+        const qRow = byCurrencyMap.get(quoteCcy) ?? { trades: 0, unrealised: 0, realised: 0 };
+        qRow.trades++;
+        qRow.unrealised += quoteUnrealised;
+        qRow.realised += realisedQuoteCcy;
+        byCurrencyMap.set(quoteCcy, qRow);
+      }
 
       // Aggregate by counterparty.
       const cpRow = byCounterpartyMap.get(cid) ?? {
@@ -361,12 +430,14 @@ export function computeDailyPnL(
   // -------------------------------------------------------------------------
   // 6. Build aggregation arrays.
   // -------------------------------------------------------------------------
-  const byPair: PnLByPair[] = [...byPairMap.entries()].map(([pair, v]) => ({
-    pair,
-    tradeCount: v.trades,
-    unrealisedPnlZarMinor: v.unrealised,
-    realisedPnlZarMinor: v.realised,
-  }));
+  const byCurrency: PnLByCurrency[] = [...byCurrencyMap.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([currency, v]) => ({
+      currency,
+      tradeCount: v.trades,
+      unrealisedPnlZarMinor: v.unrealised,
+      realisedPnlZarMinor: v.realised,
+    }));
 
   const byCounterparty: PnLByCounterparty[] = [...byCounterpartyMap.entries()].map(
     ([counterpartyId, v]) => ({
@@ -402,7 +473,7 @@ export function computeDailyPnL(
     totalPnlZarMinor: totalUnrealised + totalRealised,
     activePositions,
     cancelledPositions,
-    byPair,
+    byCurrency,
     byCounterparty,
     byBook,
     generatedAt,

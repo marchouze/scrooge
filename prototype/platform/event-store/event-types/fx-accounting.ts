@@ -75,6 +75,20 @@ export const fxPositionRevaluedPayloadSchema = z.object({
    * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
    */
   instrumentId: z.string().min(1).optional(),
+  /**
+   * The CCY/ZAR rate used to value the **base** currency leg against ZAR.
+   * Per IAS-21-§28 + IAS-9-§5.7.1: each currency leg is independently
+   * translated at the closing CCY/ZAR rate rather than via a cross rate.
+   * Absent for legacy events emitted before the per-currency ZAR MTM change
+   * (brief:bea:per-currency-zar-mtm-bycurrency-aggregation-full:2026-05-31).
+   */
+  zarRateBase: z.number().positive().optional(),
+  /**
+   * The CCY/ZAR rate used to value the **quote** currency leg against ZAR.
+   * Zero when the quote currency IS ZAR (so the quote leg already values in
+   * ZAR and no additional translation is needed). Absent for legacy events.
+   */
+  zarRateQuote: z.number().nonnegative().optional(),
 });
 
 export type FxPositionRevaluedPayload = z.infer<typeof fxPositionRevaluedPayloadSchema>;
