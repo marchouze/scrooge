@@ -121,9 +121,10 @@
   }
 
   async function load() {
-    const [pnlData, history] = await Promise.all([
+    const [pnlData, history, cashData] = await Promise.all([
       fetch("/api/product-control/daily-pnl").then((r) => (r.ok ? r.json() : null)),
       fetch("/api/product-control/report-history").then((r) => (r.ok ? r.json() : null)),
+      fetch("/api/product-control/desk-cash").then((r) => (r.ok ? r.json() : null)),
     ]);
 
     const report = pnlData?.report;
@@ -140,11 +141,16 @@
 
     // ── Summary tiles ──────────────────────────────────────────────────────
     if (tilesEl && report) {
+      // Realised P&L: prefer the directly-derived cash figure (computeCurrencyPositions
+      // → PrincipalPayment events — always correct) over the event-sourced report value
+      // (RealisedPnlRecognised events — only present if the daily MTM run has fired).
+      const realisedZarMinor = cashData?.totalRealisedZarMinor ?? report.totalRealisedPnlZarMinor;
+      const totalZarMinor = report.totalUnrealisedPnlZarMinor + realisedZarMinor;
       const tiles = [
         SC.renderTile({
           label: "Total P&L",
-          value: zarFmt(report.totalPnlZarMinor),
-          status: report.totalPnlZarMinor < 0 ? "danger" : "ok",
+          value: zarFmt(totalZarMinor),
+          status: totalZarMinor < 0 ? "danger" : "ok",
         }),
         SC.renderTile({
           label: "Unrealised P&L",
@@ -153,8 +159,8 @@
         }),
         SC.renderTile({
           label: "Realised P&L",
-          value: zarFmt(report.totalRealisedPnlZarMinor),
-          status: report.totalRealisedPnlZarMinor < 0 ? "danger" : "ok",
+          value: zarFmt(realisedZarMinor),
+          status: realisedZarMinor < 0 ? "danger" : "ok",
         }),
         SC.renderTile({
           label: "Active Positions",
@@ -243,9 +249,7 @@
     // daily against ZAR (CEO instruction 2026-05-31; IAS 21 §28).
     const cashEl = document.getElementById("pc-cash");
     if (cashEl) {
-      const cash = await fetch("/api/product-control/desk-cash").then((r) =>
-        r.ok ? r.json() : null,
-      );
+      const cash = cashData;
       const positions = (cash?.positions || []).filter((p) => p.fcyQuantityMinor !== 0);
       if (positions.length) {
         cashEl.innerHTML = SC.renderSectionHeader("Desk FX Cash Instruments", null);

@@ -112,6 +112,7 @@ import {
 } from "../platform/model-registry/expected-event-watchdog";
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
+import { computeDeskCashPositions } from "../platform/product-control/desk-cash-positions";
 import { buildPnLDataFailuresView } from "../platform/product-control/pnl-data-failures-view";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
 import { getALMPositionSnapshot } from "../platform/projections/alm-positions";
@@ -131,6 +132,7 @@ import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
+import { isPresent } from "../platform/types/financial-input";
 import {
   buildDecisionsRegister,
   buildOpenDecisionsFromEscalations,
@@ -3352,6 +3354,37 @@ const server = Bun.serve({
       return jsonResponse({
         reports,
         total: reports.length,
+        asOf: nowUtc(),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/product-control/desk-cash" && req.method === "GET") {
+      // Desk FX cash instruments — each desk's settled foreign-currency cash
+      // inventory priced to ZAR (IAS 21 §28). Pure read; no appends.
+      // FinancialInput<number> is flattened at the API boundary into
+      // { unrealisedMarkable: boolean, unrealisedPnlZarMinor: number }.
+      // Authority: D-FX-SALES-TRADING-FRONTEND; IAS 21 §28; D-TRUSTED-FIGURES-PROGRAM-V1.
+      const set = computeDeskCashPositions(eventStore);
+      const positions = set.positions.map((p) => ({
+        instrumentId: p.instrumentId,
+        entity: p.entity,
+        bookId: p.bookId,
+        currency: p.currency,
+        fcyQuantityMinor: p.fcyQuantityMinor,
+        avgCostZarRate: p.avgCostZarRate,
+        markRate: p.markRate,
+        zarValueMinor: p.zarValueMinor,
+        unrealisedMarkable: isPresent(p.unrealisedPnlZarMinor),
+        unrealisedPnlZarMinor: isPresent(p.unrealisedPnlZarMinor)
+          ? p.unrealisedPnlZarMinor.value
+          : 0,
+        realisedZarMinorCumulative: p.realisedZarMinorCumulative,
+      }));
+      return jsonResponse({
+        positions,
+        totalRealisedZarMinor: set.totalRealisedZarMinor,
+        markableUnrealisedZarMinor: set.markableUnrealisedZarMinor,
+        unmarkableKeys: set.unmarkableKeys,
         asOf: nowUtc(),
         pageProvenance: eventDerivedPageProvenance(),
       });
