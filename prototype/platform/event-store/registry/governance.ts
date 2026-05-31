@@ -89,6 +89,10 @@ import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/ana
 import { auditFindingPayloadSchema } from "../event-types/audit";
 import { entityReclassifiedPayloadSchema } from "../event-types/entity-reclassified";
 import {
+  auditIssueClosedPayloadSchema,
+  auditIssueOpenedPayloadSchema,
+} from "../event-types/governance-extended";
+import {
   dataProjectionSnapshotPayloadSchema,
   governanceCyclePrepPayloadSchema,
   inboxHygieneSweepPayloadSchema,
@@ -196,6 +200,28 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditFindingPayloadSchema,
+  },
+  {
+    type: "AuditIssueOpened",
+    class: "audit",
+    issuer: "Vera",
+    subscribers: ["Thandiwe", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "prototype/platform/event-store/event-types/audit.ts",
+    payloadSchema: auditIssueOpenedPayloadSchema,
+  },
+  {
+    type: "AuditIssueClosed",
+    class: "audit",
+    issuer: "Vera",
+    subscribers: ["Thandiwe", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-AGENT-AUTONOMY-OPERATIONAL"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "prototype/platform/event-store/event-types/audit.ts",
+    payloadSchema: auditIssueClosedPayloadSchema,
   },
   {
     type: "ReconResult",

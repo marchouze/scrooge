@@ -24,4 +24,11 @@ export const VERA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Vera", "event-triage", "event-driven", {
     subscribesTo: ["CeoDecision"],
   }),
+  // vera:issues-tracker — auto-opens AuditIssueOpened for each AuditFinding
+  // that has no existing open issue. Closes the issues-and-actions tracker
+  // substrate gap (Team/Vera.md §16, Team/Thandiwe.md §16).
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3.
+  entry("Vera", "issues-tracker", "event-driven", {
+    subscribesTo: ["AuditFinding"],
+  }),
 ];

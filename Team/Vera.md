@@ -126,11 +126,12 @@ Active conflicts register entries (as of 2026-05-07):
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-05-31.
 
 - **Opinion-pack generator** — not yet built; quarterly opinion-pack is pure-function-ready but rendering is manual. Owner: Vera. Target: ~6 weeks (co-timed with M2).
 - **SSE / push notifications on red pipelines** — dashboard polls the registry; pipelines surface at next poll. Owner: Atlas (substrate). Target: agent-runtime substrate phase.
 - **Agent-runtime substrate** — scheduler is live; Wave-4 pipelines #14, #15 are gated on `AgentEscalation` and `AgentDecision` event types, which are now defined. Full pipeline wiring awaits event-trigger bus. Owner: Atlas.
+- **Issues-and-actions tracker** — ✅ **closed 2026-05-31.** `AuditIssueOpened` + `AuditIssueClosed` event schemas live in `platform/event-store/event-types/audit.ts`; `buildOpenIssues()` projection in `platform/projections/issues-tracker.ts`; `vera:issues-tracker` handler subscribes to `AuditFinding` and auto-opens issues; open-issues register surfaced in dashboard state (`openIssues`) and rendered on audit.html.
 - **Conflict-of-interest auto-detection** — conflicts register is curated, not generated. Defer until the conflict surface is large enough to merit pipeline support.
 - **F-034 (Vera P2)** — `recon:circular-deps` script added to `package.json` but not yet in the `ci` chain (5 existing cycles block it). Once Atlas resolves the taxonomy barrel cycles, Vera wires the gate into CI. Owner: Vera (CI gate) + Atlas (cycle resolution).
 - **F-035 (Vera P2) — closed-via-gate 2026-05-21.** During the 2026-05-21 MTM bug-fix arc a direct SQL `DELETE` against the live event store was observed in-session and queued as a memo finding (memory `project_continuation_2026_05_21_mtm_gl_bugfix`). The append-only contract of Principle 1 was enforced only by convention. **Closure:** typed recon pipeline `recon:event-store-append-only` (this PR) — three-signal triangulation (row-count regression, max-sequence regression, interior-gap regression at flat row count) against a persisted baseline at `.local/recon/event-store-append-only.json`. Wired into the `ci` chain so any future DELETE on `events` fails CI with the precise delta. Owner: Vera. Status: closed-via-gate.
@@ -144,3 +145,4 @@ Active conflicts register entries (as of 2026-05-07):
 | v1.1 | 2026-05-14 | Vera (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note; stale "Step 2 of Principle-7 rollout" language replaced with current agent-runtime status. |
 | v1.2 | 2026-05-14 | Vera (via Scrooge) | P2/P3 triage — substrate gap F-034 (circular-deps CI gate) recorded. |
 | v1.3 | 2026-05-21 | Vera (via Scrooge) | Substrate gap F-035 (SQL-DELETE on event store) recorded and closed-via-gate via the `recon:event-store-append-only` pipeline (this PR). |
+| v1.4 | 2026-05-31 | Vera (via Scrooge) | Issues-and-actions tracker substrate landed: `AuditIssueOpened`/`AuditIssueClosed` events, `buildOpenIssues()` projection, `vera:issues-tracker` handler, dashboard integration. Gap closed. Review date updated to 2026-05-31. |

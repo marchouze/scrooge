@@ -89,9 +89,20 @@ export const auditIssueOpenedPayloadSchema = z.object({
   severity: z.enum(["low", "medium", "high", "critical"]),
   openedBy: z.string().min(1),
   openedAt: z.string().min(1),
+  /** AuditFinding.findingId that triggered this issue. */
   auditFindingRef: z.string().optional(),
   dueDate: z.string().optional(),
   description: z.string().optional(),
+  // Extended fields (2026-05-31) — added to support the issues-and-actions
+  // tracker projection (platform/projections/issues-tracker.ts).
+  /** AuditFinding category (mirrors AuditFindingCategory). */
+  category: z.string().optional(),
+  /** Agent URN the issue is addressed to — e.g. "agent:rohan". */
+  addressedTo: z.string().optional(),
+  /** Bare agent name — matches AgentRegistered.agentId. */
+  agentId: z.string().optional(),
+  /** Agent or human responsible for remediation (may differ from addressedTo). */
+  remediationOwner: z.string().optional(),
 });
 
 export type AuditIssueOpenedPayload = z.infer<typeof auditIssueOpenedPayloadSchema>;
@@ -126,6 +137,9 @@ export const auditIssueClosedPayloadSchema = z.object({
   closedAt: z.string().min(1),
   managementActionVerified: z.boolean(),
   closureNotes: z.string().optional(),
+  // Extended fields (2026-05-31).
+  /** Resolution classification. */
+  resolution: z.enum(["remediated", "risk-accepted", "duplicate", "invalid"]).optional(),
 });
 
 export type AuditIssueClosedPayload = z.infer<typeof auditIssueClosedPayloadSchema>;

@@ -122,6 +122,45 @@
 </p>`;
   }
 
+  function renderOpenIssuesTable(issues) {
+    if (!Array.isArray(issues) || !issues.length) {
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No open issues. Issues are automatically opened when Vera emits an AuditFinding without an existing open issue (vera:issues-tracker handler).</p>`;
+    }
+    const rows = issues
+      .slice(0, 50)
+      .map((i) => {
+        const sev = (i.severity || "").toLowerCase();
+        const sevStatus =
+          sev === "critical" || sev === "high"
+            ? "flagged"
+            : sev === "medium"
+              ? "pending"
+              : "unknown";
+        const when = i.openedAt ? i.openedAt.slice(0, 10) : "–";
+        const owner = i.remediationOwner ?? i.agentId ?? "–";
+        const due = i.targetCloseDate ?? "–";
+        return `<tr>
+  <td><code style="font-size:var(--type-caption)">${i.issueId || "–"}</code></td>
+  <td style="max-width:280px">${i.title || "–"}</td>
+  <td><span class="status-badge" data-status="${sevStatus}">${i.severity || "–"}</span></td>
+  <td style="font-size:var(--type-caption)">${owner}</td>
+  <td style="font-size:var(--type-caption);white-space:nowrap">${when}</td>
+  <td style="font-size:var(--type-caption);white-space:nowrap">${due}</td>
+</tr>`;
+      })
+      .join("");
+
+    return `<div class="dept-table-wrap">
+  <table class="dept-table" aria-label="Open audit issues">
+    <thead><tr><th>Issue ID</th><th>Title</th><th>Severity</th><th>Owner</th><th>Opened</th><th>Target close</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</div>
+<p style="margin-top:var(--space-3);font-size:var(--type-small)">
+  ${issues.length} open issue(s). Close via <code>AuditIssueClosed</code> event (vera:issues-tracker handler).
+</p>`;
+  }
+
   function renderFindingsTable(findings) {
     if (!findings.length) {
       return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">No AuditFinding events in the event store. Vera Wave-4 recon pipelines and Mira citation gate emit these events; typed AuditFinding event registry is Wave-4 work.</p>`;
@@ -224,6 +263,18 @@
     const asOf = state?.asOf;
     const tickStr = asOf ? `${new Date(asOf).toISOString().slice(0, 16).replace("T", " ")}Z` : "–";
     setMetric("audit-last-tick", tickStr, "muted");
+
+    // --- Open issues table (AuditIssueOpened/Closed projection) -
+    const issuesTableEl = document.getElementById("audit-issues-body");
+    if (issuesTableEl) {
+      const openIssues = Array.isArray(state?.openIssues) ? state.openIssues : [];
+      issuesTableEl.innerHTML = renderOpenIssuesTable(openIssues);
+      setMetric(
+        "audit-open-issues",
+        String(openIssues.length || "–"),
+        openIssues.length > 0 ? "warn" : "muted",
+      );
+    }
 
     // --- Open findings table -------------------------------------
     const findingsTableEl = document.getElementById("audit-findings-body");

@@ -63,6 +63,7 @@ function mk(opens: OpenDecision[] = [sampleOpen], inFlight: InFlightItem[] = [])
     prototype: { ciStatus: "green", tests: 0, modules: [], next: [] },
     risks: [],
     findings: [],
+    openIssues: [],
     runtimeHandlers: [],
     decisionComments: {},
     limitUtilisations: [],

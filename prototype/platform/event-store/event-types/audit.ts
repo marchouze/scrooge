@@ -88,5 +88,14 @@ export function makeAuditFinding(args: {
   });
 }
 
-export const AUDIT_TYPED_EVENT_TYPES = ["AuditFinding"] as const;
+// AuditIssueOpened and AuditIssueClosed live in
+// platform/event-store/event-types/governance-extended.ts (pre-existing stubs
+// enhanced 2026-05-31 with richer payload fields). Re-exported from the barrel
+// index. Do not duplicate here.
+
+export const AUDIT_TYPED_EVENT_TYPES = [
+  "AuditFinding",
+  "AuditIssueOpened",
+  "AuditIssueClosed",
+] as const;
 export type AuditEventType = (typeof AUDIT_TYPED_EVENT_TYPES)[number];

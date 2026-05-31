@@ -53,6 +53,7 @@ import type {
   InFlightItem,
   LimitUtilisationStateSummary,
   OpenDecision,
+  OpenIssueSummary,
   OpenSeat,
   Person,
   Policy,
@@ -138,6 +139,8 @@ export interface EventSource {
   workstreamRegistrations(): WorkstreamRegisteredEventSummary[];
   agentEscalations(): AgentEscalationEventSummary[];
   auditFindings(): AuditFindingEventSummary[];
+  /** Open issues from the AuditIssueOpened/Closed projection. Optional for backwards compat. */
+  openIssues?(): OpenIssueSummary[];
   decisionComments(): DecisionCommentEventSummary[];
   // D-DECISIONS-FRAMEWORK-REDESIGN Slice A — read the events-only
   // decisions register directly. The dashboard switches to this in lieu
@@ -398,6 +401,29 @@ export function eventSourceFromStore(store: EventStore): EventSource {
         });
       }
       return out;
+    },
+    openIssues(): OpenIssueSummary[] {
+      const open = new Map<string, OpenIssueSummary>();
+      for (const e of store.replay({ type: "AuditIssueOpened" })) {
+        const p = e.payload as Record<string, unknown>;
+        open.set(String(p.issueId ?? e.event_id), {
+          issueId: String(p.issueId ?? e.event_id),
+          findingId: String(p.findingId ?? ""),
+          title: String(p.title ?? "(no title)"),
+          severity: String(p.severity ?? "medium"),
+          category: String(p.category ?? "other"),
+          agentId: String(p.agentId ?? ""),
+          raisedBy: String(p.raisedBy ?? e.actor.id),
+          ...(p.remediationOwner ? { remediationOwner: String(p.remediationOwner) } : {}),
+          ...(p.targetCloseDate ? { targetCloseDate: String(p.targetCloseDate) } : {}),
+          openedAt: e.as_of,
+        });
+      }
+      for (const e of store.replay({ type: "AuditIssueClosed" })) {
+        const p = e.payload as Record<string, unknown>;
+        open.delete(String(p.issueId ?? ""));
+      }
+      return Array.from(open.values()).sort((a, b) => (a.openedAt < b.openedAt ? 1 : -1));
     },
   };
 }
@@ -1371,6 +1397,20 @@ export function deriveState(opts: DeriveOpts): DashboardState {
     prototype: curated.prototype,
     risks: curated.risks,
     findings: findingsSorted,
+    openIssues: (opts.events.openIssues?.() ?? []).map(
+      (i): OpenIssueSummary => ({
+        issueId: i.issueId,
+        findingId: i.findingId,
+        title: i.title,
+        severity: i.severity,
+        category: i.category,
+        agentId: i.agentId,
+        raisedBy: i.raisedBy,
+        ...(i.remediationOwner ? { remediationOwner: i.remediationOwner } : {}),
+        ...(i.targetCloseDate ? { targetCloseDate: i.targetCloseDate } : {}),
+        openedAt: i.openedAt,
+      }),
+    ),
     runtimeHandlers: RUNTIME_HANDLERS,
     decisionComments: commentsByDecisionId,
     limitUtilisations: opts.limitUtilisations ?? [],
