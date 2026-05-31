@@ -262,13 +262,17 @@ async function main(): Promise<void> {
     const zarRateBase = resolveZarRate(trade.currencyPair.base);
     if (zarRateBase === null) {
       positionsSkipped++;
-      skippedReasons.push(`${tradeId} (${currencyPairStr}): no ZAR rate for base ${trade.currencyPair.base}`);
+      skippedReasons.push(
+        `${tradeId} (${currencyPairStr}): no ZAR rate for base ${trade.currencyPair.base}`,
+      );
       continue;
     }
     const zarRateBase_book = quoteIsZar ? bookRate : bookRate * (resolveZarRate(quoteCcy) ?? 0);
 
     // Compute P&L delta.
-    const unrealisedPnlZarMinor = Math.round(sideSign * notionalBaseMinor * (zarRateBase - zarRateBase_book));
+    const unrealisedPnlZarMinor = Math.round(
+      sideSign * notionalBaseMinor * (zarRateBase - zarRateBase_book),
+    );
 
     // Emit OfficialMarkAdopted (Slice B.1) — pin the elected rate to the
     // active valuation policy before emitting the position revaluation.
