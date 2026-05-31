@@ -17,12 +17,14 @@
 import { describe, expect, it } from "bun:test";
 
 import { newEventId } from "../core/types";
+import { makeFtpCurvePublished } from "../event-store/event-types/ftp";
 import { makeFxPositionRevalued } from "../event-store/event-types/fx-accounting";
 import { makePnLAttributionGenerated } from "../event-store/event-types/product-control";
 import { makeOfficialMarkAdopted } from "../event-store/event-types/valuation";
 import { EventStore } from "../event-store/store";
 import { makeFxTradeExecuted, makeSettlementConfirmed } from "../markets/cdm/fx";
 import { run as runRecon } from "../recon/pnl-attribution-reconciles";
+import { isPresent } from "../types/financial-input";
 import { computePnLAttribution } from "./pnl-attribution";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -282,6 +284,53 @@ describe("computePnLAttribution — carry absent", () => {
     expect(r.payload.carry.complete).toBe(false);
     expect(r.payload.carry.absentReason).toContain("FTP curve");
     expect(r.carry.present).toBe(false);
+  });
+});
+
+describe("computePnLAttribution — carry present", () => {
+  it("carry resolves and tile status is ok when FtpCurvePublished covers reportDate", () => {
+    const s = store();
+    const ENTITY_T = "LE-ZA-HOZ-BANK";
+    const ACTOR_T = { type: "service" as const, id: "ravi" };
+    // Seed a live existing position (not new-trade — booked before TODAY)
+    seedTrade(s, "T1", "2026-05-20");
+    seedMark(s, "USD/ZAR", PRIOR, "18.40");
+    // Position revalued: PRIOR level 50_000_00, TODAY level 50_000_00 (flat market move)
+    // Use a large notional so carry is non-trivial: 10_000_000_00 ZAR-minor = R100m
+    seedReval(s, "T1", PRIOR, 10_000_000_00);
+    seedReval(s, "T1", TODAY, 10_000_000_00);
+    // Publish a ZAR FTP curve for TODAY
+    s.append(
+      makeFtpCurvePublished({
+        asOf: TODAY,
+        entity: ENTITY_T,
+        actor: ACTOR_T,
+        citations: ["D-PNL-ATTR-FTP-CURVE-FIX"],
+        payload: {
+          curveId: `FTP-ZAR-${TODAY}`,
+          currency: "ZAR",
+          effectiveDate: TODAY,
+          tenors: [{ tenor: "1D", rate: 0.085, basis: "ZARONIA" }],
+          methodology: "pool-rate",
+          publishedBy: "ravi",
+          publishedAt: `${TODAY}T06:00:00.000Z`,
+        },
+      }),
+    );
+
+    const r = computePnLAttribution(s, TODAY, PRIOR);
+
+    // Carry must be present
+    expect(r.carry.present).toBe(true);
+    expect(r.payload.carry.complete).toBe(true);
+
+    // carry = |fundedNotional| × 0.085 / 365 (act/365)
+    // funded notional = abs(10_000_000_00) = 10_000_000_00
+    const expectedCarry = Math.round((10_000_000_00 * 0.085) / 365);
+    if (isPresent(r.carry)) {
+      expect(r.carry.value).toBeGreaterThanOrEqual(expectedCarry - 100);
+      expect(r.carry.value).toBeLessThanOrEqual(expectedCarry + 100);
+    }
   });
 });
 

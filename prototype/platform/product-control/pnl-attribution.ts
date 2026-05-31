@@ -15,8 +15,8 @@
 //      PnlZarMinor whose revaluedAt is on reportDate, for trades booked BEFORE
 //      reportDate. Cross-checked against OfficialMarkAdopted per-instrumentKey
 //      deltas between prior and report date.
-//   3. Carry/funding — MVP placeholder. Absent (NOT 0) when no FtpCurvePublished
-//      event covers the FX-SPOT funding tenor for reportDate.
+//   3. Carry/funding — derived from FtpCurvePublished (ZAR, overnight tenor ON/1D).
+//      Absent (NOT 0) when no matching curve is in the event store.
 //   4. Realised P&L — settlement increment: totalRealised(reportDate) −
 //      totalRealised(priorDate), cross-checked against SettlementConfirmed /
 //      TradeMatured dated reportDate.
@@ -47,6 +47,7 @@
 
 import { getFinancialConstant } from "../config/financial-constants";
 import { newEventId, nowUtc } from "../core/types";
+import type { FtpCurvePublishedPayload } from "../event-store/event-types/ftp";
 import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
 import {
   type AttributionComponent,
@@ -303,10 +304,15 @@ export function computePnLAttribution(
       );
 
   // -------------------------------------------------------------------------
-  // 3. Carry/funding — MVP placeholder. Absent unless an FtpCurvePublished
-  //    event covers the FX-SPOT funding tenor for reportDate. NEVER a silent 0.
+  // 3. Carry/funding — resolved from FtpCurvePublished (ZAR, overnight tenor).
+  //    Funded notional = Σ |unrealisedPnlZarMinor| for positions on reportDate.
+  //    Carry = fundedNotional × overnightRate × (1/365). NEVER a silent 0.
   // -------------------------------------------------------------------------
-  const carryInput = resolveCarry(store, reportDate);
+  let fundedNotionalZarMinor = 0;
+  for (const reval of revalOnReportDateByTrade.values()) {
+    fundedNotionalZarMinor += Math.abs(reval.unrealisedPnlZarMinor ?? 0);
+  }
+  const carryInput = resolveCarry(store, reportDate, fundedNotionalZarMinor);
   const carryZarMinor = isPresent(carryInput) ? carryInput.value : 0;
   const carryComplete = isPresent(carryInput);
 
@@ -427,34 +433,39 @@ function priorMarkFor(
 }
 
 /**
- * Resolve the carry/funding component as a FinancialInput. The MVP has no FTP
- * curve substrate: unless an `FtpCurvePublished` event covers the FX-SPOT
- * funding tenor for reportDate, carry is ABSENT (degraded), never a silent 0.
+ * Resolve the carry/funding component as a FinancialInput.
+ *
+ * Reads the canonical FtpCurvePublished schema: matches on currency=ZAR +
+ * effectiveDate=reportDate, then looks up the overnight rate (tenor "ON" or "1D").
+ * Carry = fundedNotionalZarMinor × overnightRate × (1/365) [act/365, ZAR convention].
+ *
+ * Returns absent — never a silent 0 — when no matching curve or no overnight tenor.
  */
-function resolveCarry(store: EventStore, reportDate: string): FinancialInput<number> {
-  // The FtpCurvePublished event does not exist in the build-phase substrate.
-  // Replay defensively: if it is ever registered and an event covers the
-  // FX-SPOT funding tenor for reportDate, fold it; otherwise declare absence.
+function resolveCarry(
+  store: EventStore,
+  reportDate: string,
+  fundedNotionalZarMinor: number,
+): FinancialInput<number> {
   try {
     for (const e of store.replay({ type: "FtpCurvePublished" })) {
-      const p = e.payload as {
-        deskId?: unknown;
-        tenor?: unknown;
-        asOf?: unknown;
-        carryZarMinor?: unknown;
-      };
-      const covers =
-        (p.deskId === DESK_ID || p.deskId === undefined) &&
-        (p.tenor === FX_SPOT_FUNDING_TENOR || p.tenor === undefined) &&
-        (typeof p.asOf !== "string" || dayOf(p.asOf) === reportDate);
-      if (covers && typeof p.carryZarMinor === "number") {
-        return present(p.carryZarMinor, `FtpCurvePublished FX-SPOT carry for ${reportDate}`);
-      }
+      const p = e.payload as FtpCurvePublishedPayload;
+      if (p.currency !== "ZAR" || p.effectiveDate !== reportDate) continue;
+      const overnight =
+        p.tenors.find((t) => t.tenor === "ON") ?? p.tenors.find((t) => t.tenor === "1D");
+      if (!overnight) continue;
+      const carryZarMinor = Math.round(fundedNotionalZarMinor * overnight.rate * (1 / 365));
+      return present(
+        carryZarMinor,
+        `FtpCurvePublished ZAR carry for ${reportDate}: ${overnight.tenor} @ ${(overnight.rate * 100).toFixed(2)}% × ${fundedNotionalZarMinor} funded ZAR-minor (act/365)`,
+      );
     }
   } catch {
     // FtpCurvePublished not registered — fall through to absence.
   }
-  return absent(`no FTP curve for FX-SPOT funding on ${reportDate}`, "FtpCurvePublished");
+  return absent(
+    `no FtpCurvePublished for ZAR on ${reportDate} with overnight tenor (ON or 1D)`,
+    "FtpCurvePublished (currency=ZAR, effectiveDate=reportDate, tenor=ON or 1D)",
+  );
 }
 
 // ---------------------------------------------------------------------------

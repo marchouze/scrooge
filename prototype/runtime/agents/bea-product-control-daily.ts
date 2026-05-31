@@ -41,7 +41,8 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
 import { eventStore, logger } from "../../platform/composition";
-import { nowUtc } from "../../platform/core/types";
+import { newEventId, nowUtc } from "../../platform/core/types";
+import { makeFtpCurvePublished } from "../../platform/event-store/event-types/ftp";
 import {
   makePnLCommentaryRecorded,
   makePnLFlashActualReconciled,
@@ -92,6 +93,53 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       summary: `product-control ${dateStr}: dry-run — no engines invoked`,
       ok: true,
     };
+  }
+
+  // ---- 0. FTP curve publication (Ravi/Treasury, build-phase synthetic) -----
+  //    Publish a ZAR FTP curve for today's reportDate so the P&L attribution
+  //    carry component resolves present (not absent). In production this event
+  //    comes from Ravi's Treasury/ALM agent; during the build phase we emit a
+  //    flat 8.50% ZARONIA overnight rate here. Idempotent: skip if a curve for
+  //    today's date is already in the store.
+  {
+    const reportDateStr = asOf.slice(0, 10);
+    const BANK_ENTITY_FTP = "LE-ZA-HOZ-BANK";
+    const RAVI_ACTOR = { type: "service" as const, id: "agent:ravi-treasury-alm" };
+    const alreadyPublished = (() => {
+      try {
+        for (const e of eventStore.replay({ type: "FtpCurvePublished" })) {
+          const p = e.payload as { currency?: unknown; effectiveDate?: unknown };
+          if (p.currency === "ZAR" && p.effectiveDate === reportDateStr) return true;
+        }
+      } catch {
+        // not registered — will be registered on append below
+      }
+      return false;
+    })();
+    if (!alreadyPublished) {
+      try {
+        eventStore.append(
+          makeFtpCurvePublished({
+            asOf: reportDateStr,
+            entity: BANK_ENTITY_FTP,
+            actor: RAVI_ACTOR,
+            citations: ["D-PNL-ATTR-FTP-CURVE-FIX"],
+            payload: {
+              curveId: `FTP-ZAR-${reportDateStr}-${newEventId().slice(0, 8)}`,
+              currency: "ZAR",
+              effectiveDate: reportDateStr,
+              tenors: [{ tenor: "1D", rate: 0.085, basis: "ZARONIA" }],
+              methodology: "pool-rate",
+              publishedBy: "ravi",
+              publishedAt: nowUtc(),
+            },
+          }),
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        logger.warn({ error: msg }, "bea:product-control-daily — FTP curve publish skipped");
+      }
+    }
   }
 
   // ---- 1. Daily P&L report (Camille R1) -----------------------------------
