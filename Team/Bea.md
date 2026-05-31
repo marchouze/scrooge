@@ -99,7 +99,7 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 
 ## 11. Outputs
 
-- **Events emitted:** `PostingRulePublished`, `IFRSClassificationAssigned`, `IfrsClassificationApplied` (M1 — listed equities; per `D-MARKETS-SCHEMA-FOUNDATION`), `SubLedgerPostingEmitted` (M1), `FVHierarchyAssigned`, `JournalEntryPosted`, `SubLedgerReconciled`, `CloseCycleCompleted`, `BalanceSheetSubstantiationCompleted` (monthly — per PROC-FIN-BSS-01), `BAReturnCellMapped`, `BAReturnGenerated`, `AuditPackReady`, `RestatementBooked`, `AgentEscalation`, `AgentDecision`.
+- **Events emitted:** `PostingRulePublished`, `IFRSClassificationAssigned`, `IfrsClassificationApplied` (M1 — listed equities; per `D-MARKETS-SCHEMA-FOUNDATION`), `SubLedgerPostingEmitted` (M1), `FVHierarchyAssigned`, `JournalEntryPosted`, `SubLedgerReconciled`, `CloseCycleCompleted`, `BalanceSheetSubstantiationCompleted` (monthly — per PROC-FIN-BSS-01), `AccountingReadinessSnapshot` (build-phase trial-balance / readiness attestation emitted by `bea:accounting-readiness`; the goal-loop's planned event during cohort-2), `BAReturnCellMapped`, `BAReturnGenerated`, `AuditPackReady`, `RestatementBooked`, `AgentEscalation`, `AgentDecision`.
 - **Registers maintained:** chart of accounts; posting-rule register; IFRS-classification register; FV-hierarchy register; BA-return cell-map register.
 - **Deliverables:** daily close report (Owner Inbox); monthly balance sheet substantiation working paper (Owner Inbox — `YYYY-MM-DD_bea_balance-sheet-substantiation-<periodId>.md`); monthly auditor pack (queries, not assemblies); quarterly BA-return packs (BA 100, BA 200, BA 300, BA 700); annual statutory AFS; XBRL pack.
 
