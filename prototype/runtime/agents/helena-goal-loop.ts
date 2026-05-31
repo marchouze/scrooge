@@ -1,16 +1,20 @@
 // runtime/agents/helena-goal-loop.ts
 //
-// Helena (Chief Risk Officer, governance) goal-loop — cohort-3 deriver.
+// Helena (Chief Risk Officer, governance) goal-loop — autonomous (risk/treasury pilot).
 //
 // Phase 3 of D-AGENT-AUTONOMY-OPERATIONAL Slice 3: Helena is wired into
 // the goal-loop substrate as a governance-seat agent. This run-handler:
 //   1. Materialises a WorldStateSnapshot for agent:helena.
-//   2. Runs Helena's rule-engine goal deriver (no LLM calls — cohort
-//      rule-engine constraint per spec §3.4 "MUST NOT — LLM cost-cap").
+//   2. Runs Helena's rule-engine goal deriver (no LLM calls — rule-engine
+//      constraint per spec §3.4 "MUST NOT — LLM cost-cap").
 //   3. Passes the result through `runWithGoal`, which wraps it with the
 //      AgentGoalLoopRunner's validation + event emission + handler dispatch.
 //
 // Rule-engine logic (§3.4 "MAY use: pure rule engine"):
+//   - Candidate 0 (event-reactive): open unhandled briefs addressed to Helena
+//     (>30 min old) → select "Approve appetite-line operationalisation within
+//     Board-approved framework" (§9 row 1; Helena's broadest in-scope risk
+//     decision). Mirrors Bea's candidate-0.
 //   - If no `RiskAppetiteSnapshot` in the last 24h →
 //     select "Approve appetite-line operationalisation within Board-approved
 //     framework" goal (§9 row 1) — triggers the risk-appetite-watch handler.
@@ -22,10 +26,24 @@
 //     review cadence and the substrate gap.
 //   - Otherwise → defer (null outcome).
 //
+// Three-way coherence (the Bea unjam): every candidate routes to the wired
+// helena:risk-appetite-watch handler, whose primary emitted event is
+// RiskAppetiteSnapshot. Each candidate therefore declares plannedEvents:
+// [RiskAppetiteSnapshot] — keeping its distinct §9 goal label but the event
+// the handler actually emits. Candidates 2 and 3 previously declared
+// AppetiteBreachDisposed / IcaapSnapshot — events the handler never emits —
+// which would jam the loop. RiskAppetiteSnapshot is now also declared in §11
+// (Team/Helena.md), without which the §11 permission-gate pre-check rejects
+// every candidate (the layer that kept this loop silently deferring). The
+// real breach/ICAAP events return when handlers that emit them are wired (§16).
+//
 // Goal candidates use Helena's §9 decisions-in-scope row labels exactly as
 // they appear in Team/Helena.md (the spec's closed-set per T-NEW).
 //
-// Shadow mode: shadowMode is true for the first cohort ticks.
+// Live: when the goal-loop selects a decision the helena:risk-appetite-watch
+// handler runs for real and emits; it is dry-run ONLY when the loop
+// deferred/escalated or when --dry-run is passed explicitly.
+// Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
 //
 // Procedure citations: Helena owns Procedures/by-policy/procedures-rmf-governance.md
 // (planned) and Procedures/by-policy/stress-test-cycle.md (planned).
@@ -44,11 +62,17 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
+import type { EventStore } from "../../platform/event-store/store";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying risk-appetite-watch handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
 import helenaRiskAppetiteWatch from "./helena-risk-appetite-watch";
+
+// Authority cited on the brief-bound run-lifecycle events this loop emits.
+const RISK_TREASURY_AUTHORITY = "D-AGENT-AUTONOMY-RISK-TREASURY-PILOT" as const;
 
 // ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Helena
@@ -127,6 +151,51 @@ function lastIcaapSnapshotMs(): number | undefined {
   return latest;
 }
 
+/**
+ * Returns the open (not yet started/completed) briefs addressed to Helena,
+ * older than `minAgeMs` (default 30 min), oldest-first. Mirrors Bea's
+ * `openBriefsListForBea`. Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+ */
+export function openBriefsListForHelena(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): AgentBriefIssuedPayload[] {
+  const handledBriefIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  const open: Array<{ asOfMs: number; payload: AgentBriefIssuedPayload }> = [];
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as AgentBriefIssuedPayload;
+    const briefId = String(p.briefId ?? e.event_id);
+    if (
+      !String(p.issuedTo?.name ?? "")
+        .toLowerCase()
+        .includes("helena")
+    )
+      continue;
+    if (handledBriefIds.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (Number.isNaN(t) || Date.now() - t <= minAgeMs) continue;
+    open.push({ asOfMs: t, payload: p });
+  }
+  open.sort((a, b) => a.asOfMs - b.asOfMs);
+  return open.map((o) => o.payload);
+}
+
+/** Count of open briefs addressed to Helena. Drives candidate-0. */
+export function openBriefsAddressedToHelena(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): number {
+  return openBriefsListForHelena(store, minAgeMs).length;
+}
+
 export const helenaGoalDeriver: GoalDeriver = async (
   args: RunWithGoalArgs,
 ): Promise<GoalLoopOutcome> => {
@@ -160,6 +229,33 @@ export const helenaGoalDeriver: GoalDeriver = async (
       procedureHash: specHash,
     };
   };
+
+  // Candidate 0 (event-reactive): open unhandled briefs addressed to Helena.
+  // Checked before cadence candidates so Helena reacts to her real backlog.
+  // Routes to helena:risk-appetite-watch (event: RiskAppetiteSnapshot) under
+  // her broadest in-scope decision. Mirrors Bea's candidate-0.
+  const pendingBriefCount = openBriefsAddressedToHelena();
+  if (pendingBriefCount > 0 && spec.decisionsInScope.includes(RAS_CALIBRATION_GOAL)) {
+    logger.info(
+      { agentUrn: args.agent.urn, pendingBriefCount },
+      "helena-goal-deriver: candidate-0 — open unhandled briefs addressed to Helena — selecting RAS calibration goal",
+    );
+    return {
+      kind: "decision",
+      chosen: RAS_CALIBRATION_GOAL,
+      rationale: `Candidate 0: ${pendingBriefCount} open brief(s) addressed to Helena (older than 30min) not yet started or completed. "${RAS_CALIBRATION_GOAL}" is Helena's broadest in-scope risk decision covering open appetite / breach / model-risk work. Picking up pending briefs.`,
+      mandateCitations: [
+        { section: "9-decisions-in-scope", rowKey: RAS_CALIBRATION_GOAL, specHash },
+      ],
+      procedureCitations: [buildProcedureCitation(HELENA_RMF_PROCEDURE_PATH, HELENA_RMF_STEP_ID)],
+      plannedEvents: [
+        {
+          type: "RiskAppetiteSnapshot",
+          payloadPreview: { agentUrn: args.agent.urn, trigger: "helena-goal-loop:candidate-0" },
+        },
+      ],
+    };
+  }
 
   // Candidate 1: No RiskAppetiteSnapshot in last 24h →
   // trigger the RAS calibration / appetite-watch goal.
@@ -251,9 +347,13 @@ export const helenaGoalDeriver: GoalDeriver = async (
         },
       ],
       procedureCitations: [buildProcedureCitation(HELENA_RMF_PROCEDURE_PATH, HELENA_RMF_STEP_ID)],
+      // Three-way coherence: helena:risk-appetite-watch emits RiskAppetiteSnapshot
+      // (the snapshot surfaces the open breach; it also emits AgentEscalation for
+      // Tier-1). A dedicated AppetiteBreachDisposed-emitting handler is a §16 gap,
+      // at which point this candidate's plannedEvent returns to AppetiteBreachDisposed.
       plannedEvents: [
         {
-          type: "AppetiteBreachDisposed",
+          type: "RiskAppetiteSnapshot",
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "helena-goal-loop:open-risks",
@@ -308,9 +408,12 @@ export const helenaGoalDeriver: GoalDeriver = async (
       procedureCitations: [
         buildProcedureCitation(HELENA_ICAAP_PROCEDURE_PATH, HELENA_ICAAP_STEP_ID),
       ],
+      // Three-way coherence: helena:risk-appetite-watch's emitted event is
+      // RiskAppetiteSnapshot. The real IcaapSnapshot event returns when an
+      // ICAAP engine that emits it is wired (§16 gap — ICAAP not yet built).
       plannedEvents: [
         {
-          type: "IcaapSnapshot",
+          type: "RiskAppetiteSnapshot",
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "helena-goal-loop:icaap-review",
@@ -333,6 +436,119 @@ export const helenaGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound dispatch (D-AGENT-AUTONOMY-RISK-TREASURY-PILOT — triage-and-route)
+// Self-executable risk-appetite attestations close delivered; everything else
+// closes blocked + routes to the engineering-execution substrate. Never fakes
+// delivery. Mirrors Bea / Rohan / Ravi.
+// ---------------------------------------------------------------------------
+
+const HELENA_GOAL_LOOP_ACTOR = { type: "service", id: "agent:helena" } as const;
+
+/**
+ * Self-executable only if the brief asks for the risk-appetite / RAS readiness
+ * attestation AND needs no code-PR. The only deterministic deliverable Helena's
+ * goal-loop owns today is the RiskAppetiteSnapshot.
+ */
+export function isSelfExecutableByHelena(brief: AgentBriefIssuedPayload): boolean {
+  const needsCode = brief.expectedOutputs.some((o) => o.kind === "code-pr");
+  if (needsCode) return false;
+  return /risk[\s-]?appetite|appetite|\bras\b/i.test(brief.title);
+}
+
+async function dispatchBriefBoundRun(
+  ctx: AgentRunContext,
+  brief: AgentBriefIssuedPayload,
+  iterationId: string,
+  remainingOpen: number,
+): Promise<{ eventsEmitted: number; summary: string }> {
+  const runId = `run:helena:goal-loop:${iterationId}`;
+  const agent = brief.issuedTo;
+
+  recordAgentRunStarted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      startedAt: ctx.asOf,
+      substrate: "agent-runtime",
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: HELENA_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+
+  let eventsEmitted = 1;
+
+  if (isSelfExecutableByHelena(brief)) {
+    const handlerOutput = await helenaRiskAppetiteWatch({ ...ctx, dryRun: false });
+    eventsEmitted += handlerOutput.eventsEmitted;
+    recordAgentRunCompleted(
+      {
+        runId,
+        briefId: brief.briefId,
+        agent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `Helena goal-loop delivered the risk-appetite attestation for brief ${brief.briefId} ("${brief.title}"). ${handlerOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: [RISK_TREASURY_AUTHORITY],
+        followOnRoutes: [],
+        citations: [RISK_TREASURY_AUTHORITY],
+        actor: HELENA_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    eventsEmitted += 1;
+    logger.info(
+      { briefId: brief.briefId, runId, remainingOpen },
+      "helena:goal-loop — brief delivered (risk-appetite attestation class)",
+    );
+    return {
+      eventsEmitted,
+      summary: `brief ${brief.briefId} delivered (risk-appetite); ${remainingOpen} open brief(s) remain`,
+    };
+  }
+
+  const routeKind = brief.expectedOutputs.some((o) => o.kind === "code-pr") ? "code-pr" : "agent";
+  const gap = `Helena goal-loop (rule-engine) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work outside the rule-engine capability. Routed to the engineering-execution substrate. This is the goal-loop→dispatched-run substrate gap.`;
+  recordAgentRunCompleted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      completedAt: ctx.asOf,
+      outcome: "blocked",
+      deliverableBodies: [],
+      substrateGapsSurfaced: [gap],
+      deliverableCitations: [RISK_TREASURY_AUTHORITY],
+      followOnRoutes: [
+        {
+          kind: routeKind,
+          target: "engineering-execution-substrate",
+          directive: `Execute brief ${brief.briefId}: ${brief.title}${
+            brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
+          }. Triaged and routed by Helena's autonomous goal-loop; requires an engineering-execution run.`,
+        },
+      ],
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: HELENA_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+  eventsEmitted += 1;
+  logger.info(
+    { briefId: brief.briefId, runId, routeKind, remainingOpen },
+    "helena:goal-loop — brief triaged + routed to engineering-execution substrate (blocked, gap surfaced)",
+  );
+  return {
+    eventsEmitted,
+    summary: `brief ${brief.briefId} routed→executor (blocked); ${remainingOpen} open brief(s) remain`,
+  };
+}
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -354,16 +570,16 @@ function getWorldStateReader(): LocalAgentWorldStateReader {
 // circular dependency through handler-callables.ts). Calls the underlying
 // helena:risk-appetite-watch handler directly via its imported callable.
 //
-// Shadow mode: shadowMode is true for the first cohort ticks. The goal-loop
-// events are still emitted (so the shadow-mode trace is testable per spec
-// §4 "Build runs in shadow mode for the first two substrate ticks"), but the
-// helena:risk-appetite-watch handler is called with dryRun=true.
+// Live: when the goal-loop selects a decision the helena:risk-appetite-watch
+// handler runs for real and emits. The handler is dry-run only when the loop
+// deferred/escalated or when ctx.dryRun is set. Goal-loop events are always
+// emitted regardless.
 // ---------------------------------------------------------------------------
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   logger.info(
     { agent: ctx.agent, trigger: ctx.trigger.id, dryRun: ctx.dryRun },
-    "helena:goal-loop — starting goal-loop cohort-3 run",
+    "helena:goal-loop — starting goal-loop run",
   );
 
   const agentUrn = "agent:helena";
@@ -408,13 +624,30 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     "helena:goal-loop — goal-loop iteration complete",
   );
 
-  // If deferred or escalation — run the handler in dry-run mode (shadow trace).
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
 
+  // Brief-bound dispatch path: when the loop selected a decision and there is
+  // an open brief addressed to Helena, bind a run to the oldest brief and emit
+  // its dispatch lifecycle (triage-and-route). Skipped under --dry-run.
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForHelena() : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(ctx, brief, iterationId, openBriefs.length - 1);
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "helena:goal-loop — run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
+
+  // Cadence path: no open brief — run the risk-appetite attestation live when
+  // the loop selected a decision; dry-run only when it deferred or --dry-run.
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (first cohort ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
     dryRun: ctx.dryRun || !shouldRunHandler,
   };
 
@@ -429,13 +662,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "helena:goal-loop — cohort-3 run complete",
+    "helena:goal-loop — run complete (cadence)",
   );
 
   return {
     eventsEmitted: handlerOutput.eventsEmitted + goalEventsEmitted,
     ok: handlerOutput.ok,
-    summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
+    summary: `goal-loop: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
     ...(handlerOutput.deliverable ? { deliverable: handlerOutput.deliverable } : {}),
   };
 };

@@ -95,7 +95,7 @@ Helena does **not** measure risk (Rohan), build security controls (Senna), curat
 
 ## 11. Outputs
 
-- **Events emitted:** `AppetiteLineApproved`, `AppetiteBreachDisposed`, `ModelRiskApproved`, `BrcPaperApproved`, `StressScenarioApproved`, `SupervisoryResponseApproved`, `RiskPolicyChanged`, `AgentEscalation` (where Helena is the issuing agent).
+- **Events emitted:** `AppetiteLineApproved`, `AppetiteBreachDisposed`, `ModelRiskApproved`, `BrcPaperApproved`, `StressScenarioApproved`, `SupervisoryResponseApproved`, `RiskPolicyChanged`, `RiskAppetiteSnapshot` (daily appetite-monitoring rollup emitted by `helena:risk-appetite-watch`; the goal-loop's planned event under the risk/treasury autonomous pilot), `AgentEscalation` (where Helena is the issuing agent).
 - **Registers maintained:** Risk Appetite Statement & Framework (curator); risk taxonomy; supervisory-correspondence register (jointly with Owen).
 - **Deliverables:** quarterly BRC pack inputs (generated, not assembled); signed ICAAP / ILAAP; supervisory-letter responses; annual risk-strategy paper to Board.
 

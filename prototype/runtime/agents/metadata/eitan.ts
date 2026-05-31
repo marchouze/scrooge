@@ -10,8 +10,13 @@ export const EITAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "53 6 * * *",
   }),
-  // eitan:goal-loop — cohort-3 (on-request only).
-  entry("Eitan", "goal-loop", "on-request"),
+  // eitan:goal-loop — daily 07:13 UTC; autonomous promotion (risk/treasury pilot),
+  // placed after eitan:liquidity-snapshot (06:53) so a same-day LiquiditySnapshot exists.
+  // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3; D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+  entry("Eitan", "goal-loop", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "13 7 * * *",
+  }),
   entry("Eitan", "event-triage", "event-driven", {
     subscribesTo: [
       "IRRBBExcursion",

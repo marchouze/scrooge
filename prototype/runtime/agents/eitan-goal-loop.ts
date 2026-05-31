@@ -1,16 +1,19 @@
 // runtime/agents/eitan-goal-loop.ts
 //
-// Eitan (Treasurer) goal-loop — cohort-3.
+// Eitan (Treasurer) goal-loop — autonomous (risk/treasury pilot).
 //
 // Phase 3 of D-AGENT-AUTONOMY-OPERATIONAL Slice 3: Eitan is wired into the
 // goal-loop substrate. This run-handler is the integration point that:
 //   1. Materialises a WorldStateSnapshot for agent:eitan.
-//   2. Runs Eitan's rule-engine goal deriver (no LLM calls — cohort-3
-//      rule-engine constraint per spec §3.4 "MUST NOT — LLM cost-cap").
+//   2. Runs Eitan's rule-engine goal deriver (no LLM calls — rule-engine
+//      constraint per spec §3.4 "MUST NOT — LLM cost-cap").
 //   3. Passes the result through `runWithGoal`, which wraps it with the
 //      AgentGoalLoopRunner's validation + event emission + handler dispatch.
 //
 // Rule-engine logic (§3.4 "MAY use: pure rule engine"):
+//   - Candidate 0 (event-reactive): open unhandled briefs addressed to Eitan
+//     (>30 min old) → select "Sign LCR / NSFR / IRRBB submissions to Camille"
+//     (Eitan's broadest in-scope treasury decision). Mirrors Bea's candidate-0.
 //   - Rule 1: If no LiquiditySnapshot event from Eitan in the last 24h
 //     → select "Sign LCR / NSFR / IRRBB submissions to Camille" (priority HIGH,
 //       mapped to `liquidity-snapshot` goal driving the liquidity-snapshot handler).
@@ -23,6 +26,17 @@
 //     → select "Chair ALCO; approve treasury limits within Helena's RAS"
 //     (priority MEDIUM — `alco-cycle-prep` goal).
 //
+// Three-way coherence (the Bea unjam): every candidate routes to the wired
+// eitan:liquidity-snapshot handler, whose sole emitted event is LiquiditySnapshot.
+// Each candidate therefore declares plannedEvents: [LiquiditySnapshot] — keeping
+// its distinct §9 goal label but the event the handler actually emits. Rules 2
+// and 4 previously declared FTPRatePublished / ALCOMinutesApproved — events the
+// handler never emits — which would jam the loop. LiquiditySnapshot is now also
+// declared in §11 (Team/Eitan.md), without which the §11 permission-gate
+// pre-check rejects every candidate (the layer that kept this loop silently
+// deferring). The real FTP/ALCO events return when handlers that emit them are
+// wired (§16 gaps).
+//
 // The goal candidates use Eitan's §9 decisions-in-scope row labels exactly
 // as they appear in Team/Eitan.md (the spec's closed-set per T-NEW).
 //
@@ -32,8 +46,10 @@
 // The recon pipeline warns (not fails) for missing step IDs per the
 // build-phase tolerance.
 //
-// Shadow mode: shadowMode: true for cohort-3 until cohort validation passes
-// (per spec §4 "Build runs in shadow mode for the first two substrate ticks").
+// Live: when the goal-loop selects a decision the eitan:liquidity-snapshot
+// handler runs for real and emits; it is dry-run ONLY when the loop
+// deferred/escalated or when --dry-run is passed explicitly.
+// Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
 //
 // Authority: D-AGENT-AUTONOMY-OPERATIONAL (CEO-approved 2026-05-11) Slice 3.
 // Author: Atlas (Core banking platform architect) — wiring.
@@ -46,11 +62,17 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
+import type { EventStore } from "../../platform/event-store/store";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying liquidity-snapshot handler directly to avoid the circular
 // dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
 import eitanLiquiditySnapshot from "./eitan-liquidity-snapshot";
+
+// Authority cited on the brief-bound run-lifecycle events this loop emits.
+const RISK_TREASURY_AUTHORITY = "D-AGENT-AUTONOMY-RISK-TREASURY-PILOT" as const;
 
 // ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Eitan
@@ -160,6 +182,51 @@ function lastALCOMinutesApprovedMs(): number | undefined {
   return latest;
 }
 
+/**
+ * Returns the open (not yet started/completed) briefs addressed to Eitan,
+ * older than `minAgeMs` (default 30 min), oldest-first. Mirrors Bea's
+ * `openBriefsListForBea`. Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+ */
+export function openBriefsListForEitan(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): AgentBriefIssuedPayload[] {
+  const handledBriefIds = new Set<string>();
+  for (const e of store.replay({ type: "AgentRunCompleted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  for (const e of store.replay({ type: "AgentRunStarted" })) {
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
+    if (id) handledBriefIds.add(id);
+  }
+  const open: Array<{ asOfMs: number; payload: AgentBriefIssuedPayload }> = [];
+  for (const e of store.replay({ type: "AgentBriefIssued" })) {
+    const p = e.payload as AgentBriefIssuedPayload;
+    const briefId = String(p.briefId ?? e.event_id);
+    if (
+      !String(p.issuedTo?.name ?? "")
+        .toLowerCase()
+        .includes("eitan")
+    )
+      continue;
+    if (handledBriefIds.has(briefId)) continue;
+    const t = new Date(e.as_of).getTime();
+    if (Number.isNaN(t) || Date.now() - t <= minAgeMs) continue;
+    open.push({ asOfMs: t, payload: p });
+  }
+  open.sort((a, b) => a.asOfMs - b.asOfMs);
+  return open.map((o) => o.payload);
+}
+
+/** Count of open briefs addressed to Eitan. Drives candidate-0. */
+export function openBriefsAddressedToEitan(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): number {
+  return openBriefsListForEitan(store, minAgeMs).length;
+}
+
 // ---------------------------------------------------------------------------
 // Goal deriver
 // ---------------------------------------------------------------------------
@@ -207,6 +274,36 @@ export const eitanGoalDeriver: GoalDeriver = async (
     }
     return true;
   };
+
+  // Candidate 0 (event-reactive): open unhandled briefs addressed to Eitan.
+  // Checked before cadence rules so Eitan reacts to his real backlog. Routes to
+  // eitan:liquidity-snapshot (event: LiquiditySnapshot) under his broadest
+  // in-scope decision. Mirrors Bea's candidate-0.
+  const pendingBriefCount = openBriefsAddressedToEitan();
+  if (pendingBriefCount > 0) {
+    if (!validateGoal(LCR_NSFR_IRRBB_GOAL)) return null;
+    logger.info(
+      { agentUrn: args.agent.urn, pendingBriefCount },
+      "eitan-goal-deriver: candidate-0 — open unhandled briefs addressed to Eitan — selecting LCR/NSFR/IRRBB goal",
+    );
+    return {
+      kind: "decision",
+      chosen: LCR_NSFR_IRRBB_GOAL,
+      rationale: `Candidate 0: ${pendingBriefCount} open brief(s) addressed to Eitan (older than 30min) not yet started or completed. "${LCR_NSFR_IRRBB_GOAL}" is Eitan's broadest in-scope treasury decision covering open liquidity / FTP / ALCO work. Picking up pending briefs.`,
+      mandateCitations: [
+        { section: "9-decisions-in-scope", rowKey: LCR_NSFR_IRRBB_GOAL, specHash },
+      ],
+      procedureCitations: [
+        { procedurePath: EITAN_PROCEDURE_PATH, stepId, procedureHash: specHash },
+      ],
+      plannedEvents: [
+        {
+          type: "LiquiditySnapshot",
+          payloadPreview: { agentUrn: args.agent.urn, trigger: "eitan-goal-loop:candidate-0" },
+        },
+      ],
+    };
+  }
 
   // Rule 1: if no LiquiditySnapshot event in last 24h, select LCR/NSFR/IRRBB
   // sign-off goal. Eitan's §6 inactivity SLA: daily liquidity snapshot must
@@ -280,12 +377,15 @@ export const eitanGoalDeriver: GoalDeriver = async (
           procedureHash: specHash,
         },
       ],
+      // Three-way coherence: eitan:liquidity-snapshot's sole emitted event is
+      // LiquiditySnapshot (the snapshot surfaces the FTP-refresh gap). The real
+      // FTPRatePublished event returns when an FTP-emitting handler is wired (§16 gap).
       plannedEvents: [
         {
-          type: "FTPRatePublished",
+          type: "LiquiditySnapshot",
           payloadPreview: {
             agentUrn: args.agent.urn,
-            trigger: "eitan-goal-loop",
+            trigger: "eitan-goal-loop:ftp-refresh",
           },
         },
       ],
@@ -363,12 +463,16 @@ export const eitanGoalDeriver: GoalDeriver = async (
           procedureHash: specHash,
         },
       ],
+      // Three-way coherence: eitan:liquidity-snapshot's sole emitted event is
+      // LiquiditySnapshot (the snapshot surfaces the ALCO-cycle gap). The real
+      // ALCOMinutesApproved event returns when an ALCO handler that emits it is
+      // wired (§16 gap).
       plannedEvents: [
         {
-          type: "ALCOMinutesApproved",
+          type: "LiquiditySnapshot",
           payloadPreview: {
             agentUrn: args.agent.urn,
-            trigger: "eitan-goal-loop",
+            trigger: "eitan-goal-loop:alco-prep",
           },
         },
       ],
@@ -395,6 +499,119 @@ export const eitanGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound dispatch (D-AGENT-AUTONOMY-RISK-TREASURY-PILOT — triage-and-route)
+// Self-executable liquidity/ALM attestations close delivered; everything else
+// closes blocked + routes to the engineering-execution substrate. Never fakes
+// delivery. Mirrors Bea / Rohan / Ravi / Helena.
+// ---------------------------------------------------------------------------
+
+const EITAN_GOAL_LOOP_ACTOR = { type: "service", id: "agent:eitan" } as const;
+
+/**
+ * Self-executable only if the brief asks for the liquidity / LCR / NSFR / ALCO
+ * readiness attestation AND needs no code-PR. The only deterministic
+ * deliverable Eitan's goal-loop owns today is the LiquiditySnapshot.
+ */
+export function isSelfExecutableByEitan(brief: AgentBriefIssuedPayload): boolean {
+  const needsCode = brief.expectedOutputs.some((o) => o.kind === "code-pr");
+  if (needsCode) return false;
+  return /liquidity|lcr|nsfr|irrbb|alco|treasury/i.test(brief.title);
+}
+
+async function dispatchBriefBoundRun(
+  ctx: AgentRunContext,
+  brief: AgentBriefIssuedPayload,
+  iterationId: string,
+  remainingOpen: number,
+): Promise<{ eventsEmitted: number; summary: string }> {
+  const runId = `run:eitan:goal-loop:${iterationId}`;
+  const agent = brief.issuedTo;
+
+  recordAgentRunStarted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      startedAt: ctx.asOf,
+      substrate: "agent-runtime",
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: EITAN_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+
+  let eventsEmitted = 1;
+
+  if (isSelfExecutableByEitan(brief)) {
+    const handlerOutput = await eitanLiquiditySnapshot({ ...ctx, dryRun: false });
+    eventsEmitted += handlerOutput.eventsEmitted;
+    recordAgentRunCompleted(
+      {
+        runId,
+        briefId: brief.briefId,
+        agent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `Eitan goal-loop delivered the liquidity attestation for brief ${brief.briefId} ("${brief.title}"). ${handlerOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: [RISK_TREASURY_AUTHORITY],
+        followOnRoutes: [],
+        citations: [RISK_TREASURY_AUTHORITY],
+        actor: EITAN_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    eventsEmitted += 1;
+    logger.info(
+      { briefId: brief.briefId, runId, remainingOpen },
+      "eitan:goal-loop — brief delivered (liquidity attestation class)",
+    );
+    return {
+      eventsEmitted,
+      summary: `brief ${brief.briefId} delivered (liquidity); ${remainingOpen} open brief(s) remain`,
+    };
+  }
+
+  const routeKind = brief.expectedOutputs.some((o) => o.kind === "code-pr") ? "code-pr" : "agent";
+  const gap = `Eitan goal-loop (rule-engine) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work outside the rule-engine capability. Routed to the engineering-execution substrate. This is the goal-loop→dispatched-run substrate gap.`;
+  recordAgentRunCompleted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      completedAt: ctx.asOf,
+      outcome: "blocked",
+      deliverableBodies: [],
+      substrateGapsSurfaced: [gap],
+      deliverableCitations: [RISK_TREASURY_AUTHORITY],
+      followOnRoutes: [
+        {
+          kind: routeKind,
+          target: "engineering-execution-substrate",
+          directive: `Execute brief ${brief.briefId}: ${brief.title}${
+            brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
+          }. Triaged and routed by Eitan's autonomous goal-loop; requires an engineering-execution run.`,
+        },
+      ],
+      citations: [RISK_TREASURY_AUTHORITY],
+      actor: EITAN_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+  eventsEmitted += 1;
+  logger.info(
+    { briefId: brief.briefId, runId, routeKind, remainingOpen },
+    "eitan:goal-loop — brief triaged + routed to engineering-execution substrate (blocked, gap surfaced)",
+  );
+  return {
+    eventsEmitted,
+    summary: `brief ${brief.briefId} routed→executor (blocked); ${remainingOpen} open brief(s) remain`,
+  };
+}
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -416,17 +633,16 @@ function getWorldStateReader(): LocalAgentWorldStateReader {
 // circular dependency through handler-callables.ts). Calls the underlying
 // eitan:liquidity-snapshot handler directly via its imported callable.
 //
-// Shadow mode: shadowMode: true for cohort-3 first ticks.
-// In dry-run mode the goal-loop events are still emitted (so the shadow-mode
-// trace is testable per spec §4 "Build runs in shadow mode for the first two
-// substrate ticks"), but the eitan:liquidity-snapshot handler is called with
-// dryRun=true.
+// Live: when the goal-loop selects a decision the eitan:liquidity-snapshot
+// handler runs for real and emits. The handler is dry-run only when the loop
+// deferred/escalated or when ctx.dryRun is set. Goal-loop events are always
+// emitted regardless.
 // ---------------------------------------------------------------------------
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   logger.info(
     { agent: ctx.agent, trigger: ctx.trigger.id, dryRun: ctx.dryRun },
-    "eitan:goal-loop — starting goal-loop cohort-3 run",
+    "eitan:goal-loop — starting goal-loop run",
   );
 
   const agentUrn = "agent:eitan";
@@ -471,13 +687,30 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     "eitan:goal-loop — goal-loop iteration complete",
   );
 
-  // If escalation or deferred — run handler in dry-run mode (shadow trace).
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
 
+  // Brief-bound dispatch path: when the loop selected a decision and there is
+  // an open brief addressed to Eitan, bind a run to the oldest brief and emit
+  // its dispatch lifecycle (triage-and-route). Skipped under --dry-run.
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForEitan() : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(ctx, brief, iterationId, openBriefs.length - 1);
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "eitan:goal-loop — run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
+
+  // Cadence path: no open brief — run the liquidity attestation live when the
+  // loop selected a decision; dry-run only when it deferred or --dry-run.
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (cohort-3 first ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
     dryRun: ctx.dryRun || !shouldRunHandler,
   };
 
@@ -492,13 +725,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "eitan:goal-loop — cohort-3 run complete",
+    "eitan:goal-loop — run complete (cadence)",
   );
 
   return {
     eventsEmitted: handlerOutput.eventsEmitted + goalEventsEmitted,
     ok: handlerOutput.ok,
-    summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
+    summary: `goal-loop: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${handlerOutput.summary}`,
     ...(handlerOutput.deliverable ? { deliverable: handlerOutput.deliverable } : {}),
   };
 };
