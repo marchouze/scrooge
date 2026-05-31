@@ -61,12 +61,17 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying accounting-readiness handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
 import beaAccountingReadiness from "./bea-accounting-readiness";
+
+// Authority cited on the brief-bound run-lifecycle events this loop emits.
+const COHORT_2_AUTHORITY = "D-AGENT-AUTONOMY-COHORT-2-PILOT" as const;
 
 // ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Bea
@@ -100,10 +105,10 @@ const POSTING_RULE_GOAL = "Approve a posting rule for an event type" as const;
  * Bea's loop react to her real backlog instead of looping on one cadence goal.
  * Authority: D-AGENT-AUTONOMY-COHORT-2-PILOT.
  */
-export function openBriefsAddressedToBea(
+export function openBriefsListForBea(
   store: EventStore = eventStore,
   minAgeMs = 30 * 60 * 1000,
-): number {
+): AgentBriefIssuedPayload[] {
   const handledBriefIds = new Set<string>();
   for (const e of store.replay({ type: "AgentRunCompleted" })) {
     const id = String((e.payload as Record<string, unknown>).briefId ?? "");
@@ -113,17 +118,37 @@ export function openBriefsAddressedToBea(
     const id = String((e.payload as Record<string, unknown>).briefId ?? "");
     if (id) handledBriefIds.add(id);
   }
-  let count = 0;
+  const open: Array<{ asOfMs: number; payload: AgentBriefIssuedPayload }> = [];
   for (const e of store.replay({ type: "AgentBriefIssued" })) {
-    const p = e.payload as Record<string, unknown>;
+    const p = e.payload as AgentBriefIssuedPayload;
     const briefId = String(p.briefId ?? e.event_id);
-    const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
-    if (!toName.toLowerCase().includes("bea")) continue;
+    if (
+      !String(p.issuedTo?.name ?? "")
+        .toLowerCase()
+        .includes("bea")
+    )
+      continue;
     if (handledBriefIds.has(briefId)) continue;
     const t = new Date(e.as_of).getTime();
-    if (!Number.isNaN(t) && Date.now() - t > minAgeMs) count++;
+    if (Number.isNaN(t) || Date.now() - t <= minAgeMs) continue;
+    open.push({ asOfMs: t, payload: p });
   }
-  return count;
+  // Oldest first — FIFO drain.
+  open.sort((a, b) => a.asOfMs - b.asOfMs);
+  return open.map((o) => o.payload);
+}
+
+/**
+ * Count of open (not yet started/completed) briefs addressed to Bea, older than
+ * `minAgeMs`. Mirrors Atlas's `openBriefsAddressedToAtlas`: a brief is "handled"
+ * once any AgentRunStarted or AgentRunCompleted carries its briefId. Drives the
+ * deriver's candidate-0. Authority: D-AGENT-AUTONOMY-COHORT-2-PILOT.
+ */
+export function openBriefsAddressedToBea(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): number {
+  return openBriefsListForBea(store, minAgeMs).length;
 }
 
 function lastAccountingReadinessSnapshotMs(): number | undefined {
@@ -251,6 +276,143 @@ export const beaGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound dispatch (D-AGENT-AUTONOMY-COHORT-2-PILOT — triage-and-route)
+//
+// When candidate-0 fires (open briefs addressed to Bea), the loop binds a run
+// to the specific oldest brief and emits the dispatch lifecycle so the brief is
+// no longer re-picked every tick. The rule engine NEVER fakes delivery:
+//
+//   - Self-executable (readiness-attestation class): runs the readiness handler
+//     live and closes outcome="delivered".
+//   - Everything else (code / engineering work the rule engine cannot perform):
+//     closes outcome="blocked", surfaces the substrate gap, and routes the brief
+//     to the engineering-execution substrate via followOnRoutes. The brief is
+//     handed off, not silently dropped — the blocked run + route is the audit
+//     trail an executor (Scrooge-coordinated or future LLM substrate) picks up.
+// ---------------------------------------------------------------------------
+
+// Emit run-lifecycle events under Bea's parent agent identity (matches the
+// dispatch CLI's `agent:${slug}` actor). agent:bea has a published permission
+// policy, so the non-privileged AgentRunStarted/Completed types take the
+// Option-C allow-by-default path with NO legacy bypass — keeping the F-031
+// permission-gate-default recon at zero bypasses. (An unpublished sub-actor
+// like agent:bea:goal-loop would instead record a legacy bypass.)
+const BEA_GOAL_LOOP_ACTOR = { type: "service", id: "agent:bea" } as const;
+
+/**
+ * A brief is self-executable by Bea's wired rule-engine capability only if it
+ * explicitly asks for the accounting-readiness attestation AND requires no
+ * code-PR output. Deliberately narrow: the only deterministic deliverable Bea's
+ * goal-loop owns today is the AccountingReadinessSnapshot. Everything else is
+ * routed. (BSS / reconciliation handlers extend this set when wired — §16.)
+ */
+export function isSelfExecutableByBea(brief: AgentBriefIssuedPayload): boolean {
+  const needsCode = brief.expectedOutputs.some((o) => o.kind === "code-pr");
+  if (needsCode) return false;
+  return /readiness|accounting[\s-]?readiness/i.test(brief.title);
+}
+
+/**
+ * Bind a run to one open brief and emit AgentRunStarted → AgentRunCompleted.
+ * Returns the number of run-lifecycle events emitted plus a summary fragment.
+ */
+async function dispatchBriefBoundRun(
+  ctx: AgentRunContext,
+  brief: AgentBriefIssuedPayload,
+  iterationId: string,
+  remainingOpen: number,
+): Promise<{ eventsEmitted: number; summary: string }> {
+  const runId = `run:bea:goal-loop:${iterationId}`;
+  const agent = brief.issuedTo; // issuedTo IS Bea — keep the ref consistent.
+
+  recordAgentRunStarted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      startedAt: ctx.asOf,
+      substrate: "agent-runtime",
+      citations: [COHORT_2_AUTHORITY],
+      actor: BEA_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+
+  let eventsEmitted = 1;
+
+  if (isSelfExecutableByBea(brief)) {
+    // Genuinely completable — run the readiness handler live and deliver.
+    const handlerOutput = await beaAccountingReadiness({ ...ctx, dryRun: false });
+    eventsEmitted += handlerOutput.eventsEmitted;
+    recordAgentRunCompleted(
+      {
+        runId,
+        briefId: brief.briefId,
+        agent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `Bea goal-loop delivered the accounting-readiness attestation for brief ${brief.briefId} ("${brief.title}"). ${handlerOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: [COHORT_2_AUTHORITY],
+        followOnRoutes: [],
+        citations: [COHORT_2_AUTHORITY],
+        actor: BEA_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    eventsEmitted += 1;
+    logger.info(
+      { briefId: brief.briefId, runId, remainingOpen },
+      "bea:goal-loop — brief delivered (readiness-attestation class)",
+    );
+    return {
+      eventsEmitted,
+      summary: `brief ${brief.briefId} delivered (readiness); ${remainingOpen} open brief(s) remain`,
+    };
+  }
+
+  // Not executable by the rule engine — triage, block, and route to the
+  // engineering-execution substrate. NEVER faked as delivered.
+  const routeKind = brief.expectedOutputs.some((o) => o.kind === "code-pr") ? "code-pr" : "agent";
+  const gap = `Bea goal-loop (rule-engine, cohort-2) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work outside the rule-engine capability. Routed to the engineering-execution substrate (LLM-backed dispatched run). This is the cohort-2 goal-loop→dispatched-run substrate gap.`;
+  recordAgentRunCompleted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      completedAt: ctx.asOf,
+      outcome: "blocked",
+      deliverableBodies: [],
+      substrateGapsSurfaced: [gap],
+      deliverableCitations: [COHORT_2_AUTHORITY],
+      followOnRoutes: [
+        {
+          kind: routeKind,
+          target: "engineering-execution-substrate",
+          directive: `Execute brief ${brief.briefId}: ${brief.title}${
+            brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
+          }. Triaged and routed by Bea's autonomous goal-loop; requires an engineering-execution run.`,
+        },
+      ],
+      citations: [COHORT_2_AUTHORITY],
+      actor: BEA_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+  eventsEmitted += 1;
+  logger.info(
+    { briefId: brief.briefId, runId, routeKind, remainingOpen },
+    "bea:goal-loop — brief triaged + routed to engineering-execution substrate (blocked, gap surfaced)",
+  );
+  return {
+    eventsEmitted,
+    summary: `brief ${brief.briefId} routed→executor (blocked); ${remainingOpen} open brief(s) remain`,
+  };
+}
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -327,10 +489,29 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     "bea:goal-loop — goal-loop iteration complete",
   );
 
-  // Run the handler live when the loop selected a decision; dry-run only when
-  // it deferred/escalated (nothing to execute) or --dry-run was passed.
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
 
+  // Brief-bound dispatch path: when the loop selected a decision and there is
+  // an open brief addressed to Bea, bind a run to the oldest brief and emit its
+  // dispatch lifecycle (triage-and-route) instead of only the cadence
+  // attestation. Skipped under --dry-run (no real run-lifecycle side-effects).
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForBea() : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(ctx, brief, iterationId, openBriefs.length - 1);
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "bea:goal-loop — cohort-2 run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop cohort-2: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
+
+  // Cadence path: no open brief — run the readiness attestation live when the
+  // loop selected a decision; dry-run only when it deferred or --dry-run was set.
   const handlerCtx: AgentRunContext = {
     ...ctx,
     dryRun: ctx.dryRun || !shouldRunHandler,
@@ -347,7 +528,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "bea:goal-loop — cohort-2 run complete",
+    "bea:goal-loop — cohort-2 run complete (cadence)",
   );
 
   return {
