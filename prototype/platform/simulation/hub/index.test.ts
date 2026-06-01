@@ -163,20 +163,21 @@ describe("ThirdPartySimHub default roster (env-sim adapters)", () => {
   beforeEach(() => {
     store = new EventStore(":memory:");
     engine = new EnvSimEngine(store, { seed: 42 });
-    hub = buildDefaultHub({ eventStore: store, envSimEngine: engine });
+    ({ hub } = buildDefaultHub({ eventStore: store, envSimEngine: engine }));
   });
 
   afterEach(() => {
     engine.stop();
   });
 
-  it("registers the five core-slice modules across domains", () => {
+  it("registers the six core-slice modules across domains", () => {
     const ids = hub.list().flatMap((g) => g.simulators.map((s) => s.id));
     expect(ids).toContain("counterparty-fx-request");
     expect(ids).toContain("market-data-feed");
     expect(ids).toContain("nostro-statement");
     expect(ids).toContain("correspondent-advice");
     expect(ids).toContain("regulatory-ack");
+    expect(ids).toContain("stdbank-custodian-sim");
   });
 
   it("counterparty-fx-request does NOT book in-process (retired); fire returns front-end guidance", async () => {

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bond Trading — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+<style>
+  .bt-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--space-6);
+  }
+  .bt-page h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .bt-lede {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-6);
+  }
+  .bt-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+  .bt-section h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-4) 0;
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .bt-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  .bt-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .bt-form input,
+  .bt-form select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+  .bt-form input:focus,
+  .bt-form select:focus {
+    outline: 2px solid var(--accent);
+    border-color: var(--accent);
+  }
+  .bt-radio-group {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    padding-top: 4px;
+  }
+  .bt-radio-group label {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .bt-full-row {
+    grid-column: 1 / -1;
+  }
+  .bt-submit-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    margin-top: var(--space-2);
+  }
+  .bt-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .bt-btn:hover { background: var(--accent-deep); }
+  .bt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .bt-result {
+    display: none;
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    border: 1px solid transparent;
+  }
+  .bt-result.ok {
+    background: #0d2d1a;
+    border-color: #1a5c34;
+    color: #6ee7a0;
+    display: block;
+  }
+  .bt-result.err {
+    background: #2d0d0d;
+    border-color: #5c1a1a;
+    color: #f87171;
+    display: block;
+  }
+  /* Tables */
+  .bt-table-wrap {
+    overflow-x: auto;
+  }
+  .bt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .bt-table th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .bt-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .bt-table tr:last-child td { border-bottom: none; }
+  .bt-empty {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: var(--space-4) 0;
+    text-align: center;
+  }
+  /* Status badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-grey     { background: #3a3a3a; color: #aaa; }
+  .badge-amber    { background: #3d2d00; color: #f5c518; }
+  .badge-green    { background: #0d2d1a; color: #6ee7a0; }
+  .badge-green-deep { background: #062010; color: #34d399; }
+  .badge-red      { background: #2d0d0d; color: #f87171; }
+  .badge-blue     { background: #0d1a3d; color: #93c5fd; }
+  .hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .refresh-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    float: right;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="bt-page">
+  <h1>Bond Trading <span data-provenance-badge="page-top" aria-label="Provenance badge"></span></h1>
+  <p class="bt-lede">
+    JSE IRC — bilateral trade booking. Trades agreed offline are booked here.
+    Settlement instructs Standard Bank (custodian) via simulated STRATE DvP.
+    Build-phase internal test scope (D-NPA-SAGB-BOND-INTERNAL-TEST).
+  </p>
+
+  <!-- ── Section 1: Book Bilateral Trade ── -->
+  <div class="bt-section">
+    <h2>Book Bilaterally Agreed Trade</h2>
+    <form id="bt-form">
+      <div class="bt-form">
+        <!-- ISIN selector -->
+        <label>
+          Bond (ISIN)
+          <select id="bt-isin" name="isin" required>
+            <option value="">— select bond —</option>
+            <option value="ZAG000030108">R186 — 10.5% 2026-12-21 (ZAG000030108)</option>
+            <option value="ZAG000057547">R2030 — 7.75% 2030-01-31 (ZAG000057547)</option>
+            <option value="ZAG000074989">R2040 — 9.0% 2040-01-31 (ZAG000074989)</option>
+          </select>
+        </label>
+
+        <!-- Side -->
+        <label>
+          Side
+          <div class="bt-radio-group">
+            <label><input type="radio" name="side" value="buy" checked> Buy</label>
+            <label><input type="radio" name="side" value="sell"> Sell</label>
+          </div>
+        </label>
+
+        <!-- Nominal -->
+        <label>
+          Nominal (ZAR face value)
+          <input type="number" id="bt-nominal" name="nominal" min="1000000" step="1000000"
+            placeholder="e.g. 10000000" required>
+          <span class="hint">Minimum R1,000,000 face value</span>
+        </label>
+
+        <!-- Clean price -->
+        <label>
+          Clean Price (% of face)
+          <input type="number" id="bt-clean-price" name="cleanPricePct"
+            min="0.001" max="200" step="0.001" placeholder="e.g. 98.500" required>
+        </label>
+
+        <!-- Accrued interest -->
+        <label>
+          Accrued Interest (ZAR cents)
+          <input type="number" id="bt-accrued" name="accruedInterestMinor"
+            min="0" step="1" value="0" required>
+          <span class="hint">Enter 0 if on a coupon date</span>
+        </label>
+
+        <!-- Settlement date -->
+        <label>
+          Settlement Date
+          <input type="date" id="bt-settlement-date" name="settlementDate" required>
+          <span class="hint">T+3 from trade date (pre-filled)</span>
+        </label>
+
+        <!-- Portfolio -->
+        <label>
+          Portfolio
+          <select id="bt-portfolio" name="portfolio" required>
+            <option value="trading-book">Trading Book</option>
+            <option value="banking-book">Banking Book</option>
+          </select>
+        </label>
+
+        <!-- Coupon rate (auto-fill from ISIN) -->
+        <label>
+          Coupon Rate (decimal)
+          <input type="number" id="bt-coupon-rate" name="couponRate"
+            min="0" max="1" step="0.0001" placeholder="e.g. 0.1050" required>
+          <span class="hint">Auto-filled from ISIN selection</span>
+        </label>
+
+        <!-- Maturity date (auto-fill from ISIN) -->
+        <label>
+          Maturity Date
+          <input type="date" id="bt-maturity-date" name="maturityDate" required>
+          <span class="hint">Auto-filled from ISIN selection</span>
+        </label>
+
+        <!-- Counterparty LEI -->
+        <label>
+          Counterparty LEI
+          <input type="text" id="bt-counterparty-lei" name="counterpartyLei"
+            maxlength="20" placeholder="20-char LEI" required>
+          <span class="hint">LEI of the dealing counterparty</span>
+        </label>
+
+        <!-- Provenance -->
+        <label>
+          Booking Mode
+          <select id="bt-provenance" name="provenanceMode">
+            <option value="simulated">Simulated</option>
+            <option value="production">Production</option>
+          </select>
+        </label>
+
+        <div class="bt-submit-row">
+          <button type="submit" class="bt-btn" id="bt-submit-btn">Book Trade</button>
+        </div>
+      </div>
+    </form>
+    <div id="bt-result" class="bt-result"></div>
+  </div>
+
+  <!-- ── Section 2: Trade Blotter ── -->
+  <div class="bt-section">
+    <h2>
+      Trade Blotter + Settlement Status
+      <span class="refresh-note" id="trades-refresh-note"></span>
+    </h2>
+    <div class="bt-table-wrap">
+      <table class="bt-table" id="trades-table">
+        <thead>
+          <tr>
+            <th>Trade ID</th>
+            <th>ISIN</th>
+            <th>Side</th>
+            <th>Nominal (R)</th>
+            <th>Clean Price %</th>
+            <th>Portfolio</th>
+            <th>Booked At</th>
+            <th>Settlement Date</th>
+            <th>Settlement</th>
+          </tr>
+        </thead>
+        <tbody id="trades-tbody">
+          <tr><td colspan="9" class="bt-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Section 3: Bond Positions ── -->
+  <div class="bt-section">
+    <h2>
+      Bond Positions
+      <span class="refresh-note" id="positions-refresh-note"></span>
+    </h2>
+    <div class="bt-table-wrap">
+      <table class="bt-table" id="positions-table">
+        <thead>
+          <tr>
+            <th>ISIN</th>
+            <th>Description</th>
+            <th>Portfolio</th>
+            <th>Nominal (R)</th>
+            <th>Last Price %</th>
+            <th>MTM (R)</th>
+            <th>Unrealised P&amp;L (R)</th>
+            <th>HQLA</th>
+          </tr>
+        </thead>
+        <tbody id="positions-tbody">
+          <tr><td colspan="8" class="bt-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="/provenance-badge.js"></script>
+<script src="/_shell.js"></script>
+<script>
+initShell({ title: "Bond Trading" });
+
+// ── Bond metadata (ISIN → coupon + maturity) ──────────────────────────────
+const BOND_META = {
+  "ZAG000030108": { couponRate: 0.1050, maturityDate: "2026-12-21" },
+  "ZAG000057547": { couponRate: 0.0775, maturityDate: "2030-01-31" },
+  "ZAG000074989": { couponRate: 0.0900, maturityDate: "2040-01-31" },
+};
+
+// ── Default settlement date: today + 3 calendar days ──────────────────────
+function todayPlusDays(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+document.getElementById("bt-settlement-date").value = todayPlusDays(3);
+
+// ── Auto-fill coupon + maturity on ISIN change ─────────────────────────────
+document.getElementById("bt-isin").addEventListener("change", function() {
+  const meta = BOND_META[this.value];
+  if (meta) {
+    document.getElementById("bt-coupon-rate").value = meta.couponRate;
+    document.getElementById("bt-maturity-date").value = meta.maturityDate;
+  }
+});
+
+// ── Form submission ───────────────────────────────────────────────────────
+document.getElementById("bt-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById("bt-submit-btn");
+  const result = document.getElementById("bt-result");
+  btn.disabled = true;
+  result.className = "bt-result";
+  result.textContent = "Booking…";
+  result.style.display = "block";
+
+  const isin = document.getElementById("bt-isin").value;
+  const side = document.querySelector('input[name="side"]:checked').value;
+  const nominalZar = Number(document.getElementById("bt-nominal").value);
+  const cleanPricePct = Number(document.getElementById("bt-clean-price").value);
+  const accruedInterestMinor = Number(document.getElementById("bt-accrued").value) || 0;
+  const settlementDate = document.getElementById("bt-settlement-date").value;
+  const portfolio = document.getElementById("bt-portfolio").value;
+  const couponRate = Number(document.getElementById("bt-coupon-rate").value);
+  const maturityDate = document.getElementById("bt-maturity-date").value;
+  const counterpartyLei = document.getElementById("bt-counterparty-lei").value.trim();
+  const provenanceMode = document.getElementById("bt-provenance").value;
+
+  // nominalMinor = face value in ZAR cents (1 ZAR = 100 cents)
+  const nominalMinor = Math.round(nominalZar * 100);
+  const tradeId = "BT-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+
+  try {
+    const resp = await fetch("/api/bonds/book-bilateral", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tradeId,
+        isin,
+        side,
+        nominalMinor,
+        cleanPricePct,
+        accruedInterestMinor,
+        settlementDate,
+        portfolio,
+        couponRate,
+        maturityDate,
+        counterpartyLei,
+        provenanceMode,
+      }),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      const zarFmt = (n) => "R " + (n / 100).toLocaleString("en-ZA", { maximumFractionDigits: 2 });
+      result.className = "bt-result ok";
+      result.innerHTML =
+        `<strong>Trade booked.</strong><br>` +
+        `Trade ID: <code>${data.tradeId}</code><br>` +
+        `Settlement ID: <code>${data.settlementId}</code><br>` +
+        `Settlement Date: ${data.settlementDate}<br>` +
+        `Dirty Consideration: ${zarFmt(data.dirtyConsiderationZarMinor)}` +
+        (data.glWarning ? `<br><em style="color:#f5c518">GL warning: ${data.glWarning}</em>` : "");
+      refreshTrades();
+      refreshPositions();
+    } else {
+      result.className = "bt-result err";
+      result.textContent = "Error: " + (data.error || JSON.stringify(data));
+    }
+  } catch (err) {
+    result.className = "bt-result err";
+    result.textContent = "Network error: " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ── Formatting helpers ────────────────────────────────────────────────────
+function fmtZar(minor) {
+  if (minor == null) return "—";
+  const val = minor / 100;
+  const sign = val < 0 ? "-" : "";
+  return sign + "R " + Math.abs(val).toLocaleString("en-ZA", { maximumFractionDigits: 0 });
+}
+
+function fmtPct(v) {
+  return v != null ? v.toFixed(3) + "%" : "—";
+}
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  return iso.slice(0, 10);
+}
+
+function fmtTime(iso) {
+  if (!iso) return "—";
+  return iso.replace("T", " ").slice(0, 19);
+}
+
+function settlementBadge(status) {
+  if (!status) return '<span class="badge badge-grey">—</span>';
+  const map = {
+    instructed: "badge-amber",
+    confirmed: "badge-green-deep",
+    failed: "badge-red",
+  };
+  return `<span class="badge ${map[status] || "badge-grey"}">${status}</span>`;
+}
+
+function sideBadge(side) {
+  return side === "buy"
+    ? '<span class="badge badge-blue">BUY</span>'
+    : '<span class="badge badge-red">SELL</span>';
+}
+
+function hqlaBadge(level) {
+  if (level === "L1") return '<span class="badge badge-green">L1</span>';
+  if (level === "L2a") return '<span class="badge badge-blue">L2a</span>';
+  if (level === "L2b") return '<span class="badge badge-amber">L2b</span>';
+  return '<span class="badge badge-grey">—</span>';
+}
+
+// ── Trade Blotter ─────────────────────────────────────────────────────────
+async function refreshTrades() {
+  try {
+    const resp = await fetch("/api/bonds/trades");
+    const data = await resp.json();
+    const tbody = document.getElementById("trades-tbody");
+    const note = document.getElementById("trades-refresh-note");
+    note.textContent = "Refreshed " + new Date().toLocaleTimeString("en-ZA");
+
+    if (!data.trades || data.trades.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="bt-empty">No bond trades booked yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.trades.map(t => `
+      <tr>
+        <td><code style="font-size:0.75rem">${t.tradeId}</code></td>
+        <td>${t.isin}</td>
+        <td>${sideBadge(t.side)}</td>
+        <td style="text-align:right">${fmtZar(t.nominalMinor)}</td>
+        <td style="text-align:right">${fmtPct(t.cleanPricePercent)}</td>
+        <td>${t.portfolio}</td>
+        <td style="white-space:nowrap">${fmtTime(t.executedAt)}</td>
+        <td>${fmtDate(t.settlementDate)}</td>
+        <td>${settlementBadge(t.settlementStatus)}</td>
+      </tr>
+    `).join("");
+  } catch (err) {
+    document.getElementById("trades-tbody").innerHTML =
+      `<tr><td colspan="9" class="bt-empty" style="color:var(--danger)">Error: ${err.message}</td></tr>`;
+  }
+}
+
+// ── Bond Positions ────────────────────────────────────────────────────────
+async function refreshPositions() {
+  try {
+    const resp = await fetch("/api/bonds/positions");
+    const data = await resp.json();
+    const tbody = document.getElementById("positions-tbody");
+    const note = document.getElementById("positions-refresh-note");
+    note.textContent = "Refreshed " + new Date().toLocaleTimeString("en-ZA");
+
+    if (!data.positions || data.positions.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="bt-empty">No bond positions yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.positions.map(p => {
+      const pnlStyle = p.unrealisedPnlMinor >= 0
+        ? "color:#6ee7a0" : "color:#f87171";
+      return `
+        <tr>
+          <td><code>${p.isin}</code></td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+              title="${p.description}">${p.description}</td>
+          <td>${p.portfolio}</td>
+          <td style="text-align:right">${fmtZar(p.nominalMinor)}</td>
+          <td style="text-align:right">${fmtPct(p.lastCleanPricePct)}</td>
+          <td style="text-align:right">${fmtZar(p.markToMarketMinor)}</td>
+          <td style="text-align:right;${pnlStyle}">${fmtZar(p.unrealisedPnlMinor)}</td>
+          <td>${hqlaBadge(p.hqlaLevel)}</td>
+        </tr>
+      `;
+    }).join("");
+  } catch (err) {
+    document.getElementById("positions-tbody").innerHTML =
+      `<tr><td colspan="8" class="bt-empty" style="color:var(--danger)">Error: ${err.message}</td></tr>`;
+  }
+}
+
+// ── Auto-refresh ──────────────────────────────────────────────────────────
+refreshTrades();
+refreshPositions();
+setInterval(refreshTrades, 3000);
+setInterval(refreshPositions, 5000);
+</script>
+</body>
+</html>
