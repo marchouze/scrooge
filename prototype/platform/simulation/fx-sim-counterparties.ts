@@ -29,6 +29,10 @@ export interface SimCounterparty extends Party {
   maxNotionalMinor: number;
   /** SWIFT BIC (11 chars) for this counterparty. Used in MT300 FX confirmation. */
   bic: string;
+  /** ISO 17442 LEI. Populated for real (non-sim) counterparties; absent for fictional ones. */
+  lei?: string;
+  /** True = fictional build-phase counterparty; false/absent = real onboarded counterparty. */
+  isSim?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -44,9 +48,10 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "ZA",
     bic: "SBZAZAJJXXX",
+    isSim: true,
     eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
-    minNotionalMinor: 100_000_00, // 1M ZAR in cents
-    maxNotionalMinor: 5_000_000_00, // 50M ZAR in cents
+    minNotionalMinor: 100_000_00,
+    maxNotionalMinor: 5_000_000_00,
   },
   {
     partyId: "SIMASAZA000000002ZA",
@@ -54,9 +59,10 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "ZA",
     bic: "ABSAZAJJXXX",
+    isSim: true,
     eligiblePairs: ["USD/ZAR", "EUR/ZAR"],
-    minNotionalMinor: 50_000_00, // 500K ZAR in cents
-    maxNotionalMinor: 2_000_000_00, // 20M ZAR in cents
+    minNotionalMinor: 50_000_00,
+    maxNotionalMinor: 2_000_000_00,
   },
   {
     partyId: "SIMBCLGB0000000003GB",
@@ -64,9 +70,10 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "GB",
     bic: "BARCGB22XXX",
+    isSim: true,
     eligiblePairs: ["USD/ZAR", "GBP/ZAR", "EUR/USD"],
-    minNotionalMinor: 200_000_00, // 2M GBP/ZAR minor (using cents as representative)
-    maxNotionalMinor: 10_000_000_00, // 100M
+    minNotionalMinor: 200_000_00,
+    maxNotionalMinor: 10_000_000_00,
   },
   {
     partyId: "SIMDBKDE0000000004DE",
@@ -74,9 +81,10 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "DE",
     bic: "DEUTDEDBXXX",
+    isSim: true,
     eligiblePairs: ["EUR/ZAR", "EUR/USD"],
-    minNotionalMinor: 100_000_00, // 1M EUR/ZAR minor
-    maxNotionalMinor: 8_000_000_00, // 80M
+    minNotionalMinor: 100_000_00,
+    maxNotionalMinor: 8_000_000_00,
   },
   {
     partyId: "SIMJPMUS0000000005US",
@@ -84,9 +92,10 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "US",
     bic: "CHASUS33XXX",
+    isSim: true,
     eligiblePairs: ["USD/ZAR", "EUR/USD", "EUR/ZAR"],
-    minNotionalMinor: 500_000_00, // 5M ZAR minor
-    maxNotionalMinor: 20_000_000_00, // 200M
+    minNotionalMinor: 500_000_00,
+    maxNotionalMinor: 20_000_000_00,
   },
   {
     partyId: "SIMNEDSA0000000006ZA",
@@ -94,8 +103,47 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     role: "counterparty",
     jurisdiction: "ZA",
     bic: "NEDSZAJJXXX",
+    isSim: true,
     eligiblePairs: ["USD/ZAR", "GBP/ZAR"],
-    minNotionalMinor: 50_000_00, // 500K ZAR minor
-    maxNotionalMinor: 3_000_000_00, // 30M ZAR
+    minNotionalMinor: 50_000_00,
+    maxNotionalMinor: 3_000_000_00,
   },
+];
+
+/**
+ * Real (onboarded) counterparties from the party register.
+ * Used when provenance = "production" or alongside sim counterparties in the
+ * combined list.
+ */
+export const REAL_COUNTERPARTIES: SimCounterparty[] = [
+  {
+    partyId: "urn:party:legal-entity:standard-bank-za",
+    name: "Standard Bank Corporate Treasury",
+    role: "counterparty",
+    jurisdiction: "ZA",
+    bic: "SBZAZAJJXXX",
+    lei: "QFC8ZCW3Q5PRXU1XTM60",
+    isSim: false,
+    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"],
+    minNotionalMinor: 500_000_00,
+    maxNotionalMinor: 20_000_000_00,
+  },
+  {
+    partyId: "urn:party:legal-entity:investec-bank-za",
+    name: "Investec Bank Treasury",
+    role: "counterparty",
+    jurisdiction: "ZA",
+    bic: "IVESZAJJXXX",
+    lei: "549300RH5FFHO48FXT69",
+    isSim: false,
+    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD"],
+    minNotionalMinor: 200_000_00,
+    maxNotionalMinor: 10_000_000_00,
+  },
+];
+
+/** All FX counterparties: sim + real. Use this in the sim engine. */
+export const ALL_FX_COUNTERPARTIES: SimCounterparty[] = [
+  ...SIM_COUNTERPARTIES,
+  ...REAL_COUNTERPARTIES,
 ];

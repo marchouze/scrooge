@@ -24,13 +24,14 @@ import {
   getLimitUtilisations,
   rebuildLimitUtilisation,
 } from "../../projections/markets/limit-utilisation";
-import { SIM_COUNTERPARTIES } from "../fx-sim-counterparties";
+import { ALL_FX_COUNTERPARTIES } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
 import { FxRateEngine } from "../fx-sim-rates";
 import { runPostTradeLifecycle } from "../post-trade-lifecycle";
 import { CorrespondentAdviceSim } from "./correspondent-advice-sim";
 import type { CounterpartyBehaviorProfile } from "./counterparty-profiles";
 import { mulberry32 } from "./counterparty-profiles";
+import { STANDARD_PAIRS } from "./market-data-sim";
 import { MarketDataSimulator } from "./market-data-sim";
 import { NostroStatementSimulator } from "./nostro-statement-sim";
 import { RegulatoryAckSim } from "./regulatory-ack-sim";
@@ -68,14 +69,38 @@ export interface EnvSimOptions {
    */
   settlementMode?: "realtime" | "accelerated";
   /**
+   * Minimum notional in USD major units (e.g. 500_000 = $500k).
+   * Passed to generateSimTrade; uses legacy per-counterparty range when absent.
+   */
+  notionalUsdMin?: number;
+  /**
+   * Maximum notional in USD major units (e.g. 5_000_000 = $5M).
+   * Passed to generateSimTrade; uses legacy per-counterparty range when absent.
+   */
+  notionalUsdMax?: number;
+  /**
+   * Provenance of generated trades. "simulated" (default) tags trades with
+   * provenance.kind:"simulated"; "production" tags them as real trades.
+   */
+  provenance?: "simulated" | "production";
+  /**
    * Execution hook. When provided, fireTrade() routes the generated trade
    * through this callback (the bank's normal booking path) INSTEAD of appending
    * FxTradeExecuted + running the bespoke post-trade lifecycle. The 3rd-party
    * simulator hub wires this to bookFxTrade so simulated counterparty trade
    * initiations book exactly like a manual/real trade. When unset, the legacy
    * append + lifecycle path runs (standalone / tests).
+   *
+   * The fourth argument is the provenance mode configured on the engine, so the
+   * callback can pass it through to bookFxTrade as provenanceMode.
    */
-  executeFxTrade?: (payload: FxTradeExecutedPayload, asOf: string, counterpartyBic: string) => void;
+  executeFxTrade?: (
+    payload: FxTradeExecutedPayload,
+    asOf: string,
+    counterpartyBic: string,
+    provenanceMode: "simulated" | "production",
+    settlementMode: "realtime" | "accelerated",
+  ) => void;
 }
 
 export interface EnvSimStatus {
@@ -120,6 +145,22 @@ export interface EnvSimStatus {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Return the set of FX pairs currently available in the market data store.
+ * Queries both production and simulated ticks so the sim works regardless of
+ * which feed is active. Falls back to STANDARD_PAIRS when the store is empty.
+ */
+function getAvailableFxPairs(store: MarketDataStore): string[] {
+  const ticks = store.query({ dataType: "fx-quote", provenance: "all", limit: 500 });
+  const seen = new Set<string>();
+  for (const tick of ticks) seen.add(tick.instrument);
+  return seen.size > 0 ? [...seen] : [...STANDARD_PAIRS];
+}
+
+// ---------------------------------------------------------------------------
 // Default options
 // ---------------------------------------------------------------------------
 
@@ -145,12 +186,17 @@ export class EnvSimEngine {
     marketDataIntervalMs: number;
     nostroStatementIntervalMs: number;
     settlementMode: "realtime" | "accelerated";
+    provenance: "simulated" | "production";
+    notionalUsdMin?: number;
+    notionalUsdMax?: number;
     seed?: number;
     counterpartyProfiles?: CounterpartyBehaviorProfile[];
     executeFxTrade?: (
       payload: FxTradeExecutedPayload,
       asOf: string,
       counterpartyBic: string,
+      provenanceMode: "simulated" | "production",
+      settlementMode: "realtime" | "accelerated",
     ) => void;
   };
   private readonly rateEngine: FxRateEngine;
@@ -176,6 +222,9 @@ export class EnvSimEngine {
       nostroStatementIntervalMs:
         options?.nostroStatementIntervalMs ?? DEFAULTS.nostroStatementIntervalMs,
       settlementMode: options?.settlementMode ?? "accelerated",
+      provenance: options?.provenance ?? "simulated",
+      ...(options?.notionalUsdMin !== undefined ? { notionalUsdMin: options.notionalUsdMin } : {}),
+      ...(options?.notionalUsdMax !== undefined ? { notionalUsdMax: options.notionalUsdMax } : {}),
       ...(options?.seed !== undefined ? { seed: options.seed } : {}),
       ...(options?.counterpartyProfiles !== undefined
         ? { counterpartyProfiles: options.counterpartyProfiles }
@@ -366,6 +415,9 @@ export class EnvSimEngine {
     maxIntervalMs?: number;
     bookId?: string;
     settlementMode?: "realtime" | "accelerated";
+    provenance?: "simulated" | "production";
+    notionalUsdMin?: number;
+    notionalUsdMax?: number;
   }): EnvSimStatus {
     if (this.tradeLoopRunning) return this.getStatus();
 
@@ -374,6 +426,9 @@ export class EnvSimEngine {
     if (config?.maxIntervalMs !== undefined) this.opts.maxIntervalMs = config.maxIntervalMs;
     if (config?.bookId !== undefined) this.opts.bookId = config.bookId;
     if (config?.settlementMode !== undefined) this.opts.settlementMode = config.settlementMode;
+    if (config?.provenance !== undefined) this.opts.provenance = config.provenance;
+    if (config?.notionalUsdMin !== undefined) this.opts.notionalUsdMin = config.notionalUsdMin;
+    if (config?.notionalUsdMax !== undefined) this.opts.notionalUsdMax = config.notionalUsdMax;
 
     this.tradeLoopRunning = true;
     this.status = {
@@ -484,19 +539,31 @@ export class EnvSimEngine {
    * runs the risk monitor to determine the optimal trade direction.
    */
   fireTrade(opts?: { forcedSide?: "buy" | "sell"; eligiblePairsFilter?: string[] }): void {
-    const payload = generateSimTrade(this.rateEngine, SIM_COUNTERPARTIES, this.opts.bookId, {
+    // Get available pairs from market data store; fall back to STANDARD_PAIRS.
+    const availablePairs = getAvailableFxPairs(this.marketDataStore);
+
+    const payload = generateSimTrade(this.rateEngine, ALL_FX_COUNTERPARTIES, this.opts.bookId, {
       rng: this.rng,
       marketDataStore: this.marketDataStore,
+      availablePairs,
+      ...(this.opts.notionalUsdMin !== undefined
+        ? { notionalUsdMin: this.opts.notionalUsdMin }
+        : {}),
+      ...(this.opts.notionalUsdMax !== undefined
+        ? { notionalUsdMax: this.opts.notionalUsdMax }
+        : {}),
       ...(opts?.forcedSide ? { forcedSide: opts.forcedSide } : {}),
       ...(opts?.eligiblePairsFilter ? { eligiblePairsFilter: opts.eligiblePairsFilter } : {}),
     });
     const asOf = nowUtc();
-    const cp = SIM_COUNTERPARTIES.find((c) => c.partyId === payload.counterparty.partyId);
+    const cp = ALL_FX_COUNTERPARTIES.find((c) => c.partyId === payload.counterparty.partyId);
     const counterpartyBic = cp?.bic ?? "SBZAZAJJXXX";
+    const provenanceMode = this.opts.provenance;
+    const settlementMode = this.opts.settlementMode;
 
     if (this.opts.executeFxTrade) {
       // Route execution through the bank's normal booking path (hub wiring).
-      this.opts.executeFxTrade(payload, asOf, counterpartyBic);
+      this.opts.executeFxTrade(payload, asOf, counterpartyBic, provenanceMode, settlementMode);
     } else {
       // Legacy path: append FxTradeExecuted + run the bespoke post-trade lifecycle.
       this.store.append({

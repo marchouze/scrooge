@@ -308,6 +308,18 @@
         <input type="date" id="tb-settlement" name="settlementDate">
       </div>
 
+      <div class="tb-field">
+        <label>Settlement mode</label>
+        <div class="tb-side-group">
+          <label class="tb-side-label">
+            <input type="radio" name="settlementMode" value="accelerated" checked> Accelerated (T+0)
+          </label>
+          <label class="tb-side-label">
+            <input type="radio" name="settlementMode" value="realtime"> Real-time (T+2)
+          </label>
+        </div>
+      </div>
+
       <!-- Counterparty -->
       <div class="tb-field tb-form-full">
         <label for="tb-cpty-select">Counterparty</label>
@@ -1031,12 +1043,14 @@ function showProductFields(type) {
     const productType = productTypeSelect ? productTypeSelect.value : 'fx';
     const data = new FormData(form);
     const provenanceMode = (document.querySelector('input[name="provenanceMode"]:checked') || {}).value || 'production';
+    const settlementMode = (document.querySelector('input[name="settlementMode"]:checked') || {}).value || 'accelerated';
 
     let body;
     if (productType === 'fx') {
       body = {
         productType: 'fx',
         provenanceMode,
+        settlementMode,
         currencyPair: {
           base: data.get('base'),
           quote: data.get('quote'),

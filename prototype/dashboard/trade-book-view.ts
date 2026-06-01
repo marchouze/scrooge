@@ -27,7 +27,10 @@ import type { ProvenanceTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import { makeEquityTradeBooked } from "../platform/markets/cdm/equity";
 import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
+import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
+import { ALL_FX_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
+import { runPostTradeLifecycle } from "../platform/simulation/post-trade-lifecycle";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
 
@@ -67,6 +70,7 @@ function isValidDate(s: string): boolean {
 export interface TradeBookBody {
   productType?: unknown;
   provenanceMode?: unknown;
+  settlementMode?: "realtime" | "accelerated";
   // FX Spot fields
   currencyPair?: { base?: unknown; quote?: unknown };
   side?: unknown;
@@ -1193,66 +1197,62 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
 
   const eventId = newEventId();
 
+  const tradePayload: FxTradeExecutedPayload = {
+    tradeId: {
+      scheme: "internal-manual",
+      value: tradeId,
+    },
+    productTaxonomy: "FX-spot",
+    currencyPair: { base, quote },
+    side,
+    legs: [
+      {
+        legKind: "near",
+        payCurrency: notionalCurrencyForLeg,
+        receiveCurrency: counterNotionalCurrencyForLeg,
+        notional: {
+          currency: notionalCurrencyForLeg,
+          amountMinor: notionalAmountMinor,
+        },
+        counterNotional: {
+          currency: counterNotionalCurrencyForLeg,
+          amountMinor: counterNotionalMinor,
+        },
+        rate: {
+          currency: quote,
+          amount: rate,
+        },
+        settlementDate: {
+          iso: settlementDate,
+          calendar: "JIHCAL",
+        },
+      },
+    ],
+    tradeDate: {
+      iso: today,
+      calendar: "JIHCAL",
+    },
+    bookId: "BK-FX-MM-001",
+    bookType: "trading",
+    venue: "OTC",
+    settlementForm: "physical",
+    settlementPath: "correspondent",
+    trader: traderRef,
+    counterparty: {
+      partyId: counterpartyLei ?? "MANUAL-CPTY",
+      name: counterpartyName,
+      role: "counterparty",
+    },
+    clientFlowRef: `client-trade:manual-${tradeId}`,
+  };
+
   const tradeEvent = makeFxTradeExecuted({
     asOf,
     entity: "LE-ZA-HOZ-BANK",
     actor: { type: "human", id: "operator" },
     citations: ["D-MANUAL-TRADE-BOOKING", "D-TRADE-LIFECYCLE-IFRS-CHAIN"],
     eventId,
-    payload: {
-      tradeId: {
-        scheme: "internal-manual",
-        value: tradeId,
-      },
-      productTaxonomy: "FX-spot",
-      currencyPair: { base, quote },
-      side,
-      legs: [
-        {
-          legKind: "near",
-          payCurrency: notionalCurrencyForLeg,
-          receiveCurrency: counterNotionalCurrencyForLeg,
-          notional: {
-            currency: notionalCurrencyForLeg,
-            amountMinor: notionalAmountMinor,
-          },
-          counterNotional: {
-            currency: counterNotionalCurrencyForLeg,
-            amountMinor: counterNotionalMinor,
-          },
-          rate: {
-            currency: quote,
-            amount: rate,
-          },
-          settlementDate: {
-            iso: settlementDate,
-            calendar: "JIHCAL",
-          },
-        },
-      ],
-      tradeDate: {
-        iso: today,
-        calendar: "JIHCAL",
-      },
-      bookId: "BK-FX-MM-001",
-      bookType: "trading",
-      venue: "OTC",
-      settlementForm: "physical",
-      settlementPath: "correspondent",
-      trader: traderRef,
-      counterparty: {
-        partyId: counterpartyLei ?? "MANUAL-CPTY",
-        name: counterpartyName,
-        role: "counterparty",
-      },
-      // No-prop attribution (G-3). Manual trade-book entry defaults to a
-      // client-flow ref derived from the trade id. The /trade-book.html
-      // form does not yet surface a clientFlowRef / hedgeProgrammeRef
-      // selector — adding the field is out of scope for G-3.
-      // TODO(G-3 follow-on): add an explicit attribution selector to the
-      // manual booking form so operators can mark hedge-programme trades.
-      clientFlowRef: `client-trade:manual-${tradeId}`,
-    },
+    payload: tradePayload,
   });
 
   // Attach manual provenance — resolved from provenanceMode in the request body.
@@ -1283,6 +1283,29 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
     // will catch it.
     const msg = err instanceof Error ? err.message : String(err);
     return { ok: true, tradeId, eventId, glWarning: `Trade booked but GL engine error: ${msg}` };
+  }
+
+  // ----- Post-trade lifecycle -----
+  const resolvedSettlementMode = body.settlementMode === "realtime" ? "realtime" : "accelerated";
+
+  const cpBic =
+    ALL_FX_COUNTERPARTIES.find((c) => c.lei === counterpartyLei || c.name === counterpartyName)
+      ?.bic ?? "SBZAZAJJXXX";
+
+  try {
+    runPostTradeLifecycle(
+      eventStore,
+      tradePayload,
+      asOf,
+      "BANKZAJJXXX",
+      cpBic,
+      undefined,
+      Math.random,
+      resolvedSettlementMode,
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: true, tradeId, eventId, glWarning: `Trade booked but lifecycle error: ${msg}` };
   }
 
   return { ok: true, tradeId, eventId };
