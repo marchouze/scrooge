@@ -455,7 +455,7 @@
     <!-- ================================================================ -->
     <!-- IB Placement fields                                              -->
     <!-- ================================================================ -->
-    <div id="ib-fields" style="display:none; grid-column: 1 / -1;">
+    <div id="ib-placement-fields" style="display:none; grid-column: 1 / -1;">
       <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
 
         <div class="tb-field">
@@ -548,7 +548,7 @@
         </div>
 
       </div>
-    </div><!-- /#ib-fields -->
+    </div><!-- /#ib-placement-fields -->
 
     <!-- ================================================================ -->
     <!-- Equity (M1) fields                                             -->
@@ -834,7 +834,7 @@
 // Product-type field visibility toggle.
 // Called by the product-type <select> onchange handler.
 function showProductFields(type) {
-  const sections = ['fx-fields', 'repo-fields', 'mmd-fields', 'ib-fields', 'equity-fields', 'bond-fields', 'irs-fields'];
+  const sections = ['fx-fields', 'repo-fields', 'mmd-fields', 'ib-placement-fields', 'equity-fields', 'bond-fields', 'irs-fields'];
   sections.forEach(function(id) {
     const el = document.getElementById(id);
     if (el) el.style.display = (id === type + '-fields') ? '' : 'none';
