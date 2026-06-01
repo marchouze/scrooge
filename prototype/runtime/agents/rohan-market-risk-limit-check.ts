@@ -41,8 +41,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
+import { newEventId } from "../../platform/core/types";
 import {
   type GatewayCheckCompletedPayload,
+  makeAgentEscalation,
   makeGatewayCheckCompleted,
 } from "../../platform/event-store/event-types";
 import type { Event } from "../../platform/event-store/types";
@@ -148,6 +150,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   const limits = loadRiskLimitsStub(ctx.repoRoot);
+  const date = ctx.asOf.slice(0, 10);
 
   let eventsEmitted = 0;
   let passed = 0;
@@ -357,6 +360,29 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted += 1;
     if (isBreached) {
       failed += 1;
+      eventStore.append(
+        makeAgentEscalation({
+          asOf: ctx.asOf,
+          entity: "LE-ZA-HOZ-BANK",
+          actor: HANDLER_ACTOR,
+          citations: [...RISK_CITATIONS, "D-BUILD-PHASE-SYNTHETIC-RESPONSE"],
+          eventId: newEventId(),
+          payload: {
+            escalationId: `MARKET-RISK-LIMIT-BREACH-${orderId}-${date}`,
+            raisedBy: "agent:rohan:market-risk-limit-check",
+            question: `${rejectionReason ?? "Market-risk limit breached"} Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
+            options: [
+              "Cancel the order (no action required on the book)",
+              "Seek a limit exception from Helena (CRO) and re-submit",
+              "Reduce order size to bring pro-forma exposure within limit",
+            ],
+            blockedBy: `${rejectionReason ?? "Market-risk limit breached"} Build-phase synthetic: no real capital at risk; response chain under rehearsal.`,
+            severity: "high",
+            routedTo: "agent:helena + agent:rohan",
+          },
+        }),
+      );
+      eventsEmitted += 1;
     } else {
       passed += 1;
     }
@@ -367,6 +393,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       triggering: riskCheckRequests.length,
       passed,
       failed,
+      escalations: failed,
       skipped,
       eventsEmitted,
     },

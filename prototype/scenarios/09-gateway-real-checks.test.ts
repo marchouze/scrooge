@@ -1082,7 +1082,8 @@ describe("rohan:market-risk-limit-check (slice 4)", () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(result.eventsEmitted).toBe(1);
+    // 2 events: GatewayCheckCompleted{reject} + AgentEscalation (D-BUILD-PHASE-SYNTHETIC-RESPONSE)
+    expect(result.eventsEmitted).toBe(2);
 
     for (const e of eventStore.replay({ type: "GatewayCheckCompleted" })) {
       const p = e.payload as {
