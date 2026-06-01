@@ -9,9 +9,8 @@
 // web surface* as a genuine 3rd party, not via an internal `bookFxTrade` call.
 //
 // Reuses the existing simulation logic verbatim — no behaviour is re-implemented:
-//   - `FxRateEngine`       (platform/simulation/fx-sim-rates.ts)
-//   - `SIM_COUNTERPARTIES` (platform/simulation/fx-sim-counterparties.ts)
-//   - `generateSimTrade`   (platform/simulation/fx-sim-generator.ts)
+//   - `FxRateEngine`    (platform/simulation/fx-sim-rates.ts)
+//   - `generateSimTrade` (platform/simulation/fx-sim-generator.ts)
 //
 // Determinism (Principle 1 discipline): a seeded mulberry32 RNG is threaded into
 // `generateSimTrade` — NO `Math.random`, NO `Date.now()` in the generation path.
@@ -29,9 +28,23 @@
 
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx.ts";
 import { mulberry32 } from "../../platform/simulation/env-sim/counterparty-profiles.ts";
-import { SIM_COUNTERPARTIES } from "../../platform/simulation/fx-sim-counterparties.ts";
+import type { SimCounterparty } from "../../platform/simulation/fx-sim-counterparties.ts";
 import { generateSimTrade } from "../../platform/simulation/fx-sim-generator.ts";
 import { FxRateEngine } from "../../platform/simulation/fx-sim-rates.ts";
+
+// Minimal counterparties for deterministic spec generation (no party register needed).
+const SPEC_COUNTERPARTIES: SimCounterparty[] = [
+  {
+    partyId: "urn:party:legal-entity:std-bank-za",
+    name: "Standard Bank Corporate Treasury",
+    role: "counterparty",
+    jurisdiction: "ZA",
+    bic: "SBZAZAJJXXX",
+    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
+    minNotionalMinor: 0,
+    maxNotionalMinor: 0,
+  },
+];
 
 // ---------------------------------------------------------------------------
 // FrontEndTradeSpec — the 1:1 form-field projection.
@@ -159,7 +172,7 @@ export function generateFrontEndTradeSpecs(opts: FrontEndSpecOptions): FrontEndT
 
   const specs: FrontEndTradeSpec[] = [];
   for (let i = 0; i < opts.count; i++) {
-    const payload = generateSimTrade(rateEngine, SIM_COUNTERPARTIES, bookId, {
+    const payload = generateSimTrade(rateEngine, SPEC_COUNTERPARTIES, bookId, {
       rng,
       ...(pairsFilter ? { eligiblePairsFilter: pairsFilter } : {}),
     });

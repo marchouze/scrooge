@@ -63,7 +63,6 @@ describe("run() — pipeline assertions", () => {
       fxTradeEvents: [],
       seedKeys: [],
       midRateKeys: [],
-      counterparties: [],
       standardPairs: [],
     });
     expect(r.asserted).toBe(0);
@@ -82,13 +81,12 @@ describe("run() — pipeline assertions", () => {
       ],
       seedKeys: ["USD/ZAR", "EUR/USD", "EUR/ZAR"],
       midRateKeys: ["USD/ZAR", "EUR/USD"],
-      counterparties: [{ name: "cp1", eligiblePairs: ["USD/ZAR", "EUR/USD"] }],
       standardPairs: ["USD/ZAR", "EUR/ZAR"],
     });
     expect(r.violations).toHaveLength(0);
     expect(r.ok).toBe(true);
-    // 1 event + 3 seed keys + 2 mid + 2 counterparty pairs + 2 standard = 10.
-    expect(r.asserted).toBe(10);
+    // 1 event + 3 seed keys + 2 mid + 2 standard = 8.
+    expect(r.asserted).toBe(8);
   });
 
   it("non-canonical event payload (ZAR/USD) is flagged as warn", () => {
@@ -102,7 +100,6 @@ describe("run() — pipeline assertions", () => {
       ],
       seedKeys: [],
       midRateKeys: [],
-      counterparties: [],
       standardPairs: [],
     });
     expect(r.violations).toHaveLength(1);
@@ -119,7 +116,6 @@ describe("run() — pipeline assertions", () => {
       fxTradeEvents: [],
       seedKeys: ["ZAR/EUR"],
       midRateKeys: [],
-      counterparties: [],
       standardPairs: [],
     });
     expect(r.violations).toHaveLength(1);
@@ -127,25 +123,11 @@ describe("run() — pipeline assertions", () => {
     expect(r.violations[0]?.message).toContain("EUR/ZAR");
   });
 
-  it("non-canonical eligiblePairs (USD/EUR on counterparty) is flagged", () => {
-    const r = run({
-      fxTradeEvents: [],
-      seedKeys: [],
-      midRateKeys: [],
-      counterparties: [{ name: "JPM-Sim", eligiblePairs: ["USD/EUR"] }],
-      standardPairs: [],
-    });
-    expect(r.violations).toHaveLength(1);
-    expect(r.violations[0]?.subject).toBe("fx-sim-counterparties:JPM-Sim:USD/EUR");
-    expect(r.violations[0]?.message).toContain("EUR/USD");
-  });
-
   it("malformed pair string (no slash) is flagged as warn", () => {
     const r = run({
       fxTradeEvents: [],
       seedKeys: ["USDZAR"],
       midRateKeys: [],
-      counterparties: [],
       standardPairs: [],
     });
     expect(r.violations).toHaveLength(1);
@@ -157,7 +139,6 @@ describe("run() — pipeline assertions", () => {
       fxTradeEvents: [],
       seedKeys: [],
       midRateKeys: [],
-      counterparties: [],
       standardPairs: ["ZAR/USD"],
     });
     expect(r.violations).toHaveLength(1);

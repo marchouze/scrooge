@@ -9,11 +9,25 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { EventStore } from "../../event-store/store";
 import { MarketDataStore } from "../../market-data/store";
+import type { SimCounterparty } from "../fx-sim-counterparties";
 import { FxRateEngine } from "../fx-sim-rates";
 import { type CounterpartyBehaviorProfile, mulberry32 } from "./counterparty-profiles";
 import { EnvSimEngine } from "./index";
 import { MarketDataSimulator } from "./market-data-sim";
 import { NostroStatementSimulator } from "./nostro-statement-sim";
+
+const TEST_COUNTERPARTIES: SimCounterparty[] = [
+  {
+    partyId: "urn:party:test:alpha-za",
+    name: "Alpha Test Bank ZA",
+    role: "counterparty",
+    jurisdiction: "ZA",
+    bic: "ALPTZAJJXXX",
+    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
+    minNotionalMinor: 100_000_00,
+    maxNotionalMinor: 5_000_000_00,
+  },
+];
 
 // ---------------------------------------------------------------------------
 // In-memory event store helper
@@ -84,6 +98,7 @@ describe("EnvSimEngine — stochastic failure", () => {
     const engine = new EnvSimEngine(store, {
       seed: 99,
       counterpartyProfiles: [failProfile],
+      getCounterparties: () => TEST_COUNTERPARTIES,
     });
 
     engine.fireTrade();

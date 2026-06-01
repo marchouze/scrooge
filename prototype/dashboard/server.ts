@@ -131,7 +131,7 @@ import {
 import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-policy-coverage";
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
-import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
+
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";

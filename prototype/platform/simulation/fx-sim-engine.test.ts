@@ -11,10 +11,33 @@ const vi = { fn: mock, spyOn, useFakeTimers: () => {}, useRealTimers: () => {} }
 
 import type { EventStore } from "../event-store/store";
 import { fxTradeExecutedPayloadSchema } from "../markets/cdm/fx";
-import { SIM_COUNTERPARTIES } from "./fx-sim-counterparties";
+import type { SimCounterparty } from "./fx-sim-counterparties";
 import { FxSimEngine } from "./fx-sim-engine";
 import { generateSimTrade } from "./fx-sim-generator";
 import { FxRateEngine } from "./fx-sim-rates";
+
+const TEST_COUNTERPARTIES: SimCounterparty[] = [
+  {
+    partyId: "urn:party:test:alpha-za",
+    name: "Alpha Test Bank ZA",
+    role: "counterparty",
+    jurisdiction: "ZA",
+    bic: "ALPTZAJJXXX",
+    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
+    minNotionalMinor: 100_000_00,
+    maxNotionalMinor: 5_000_000_00,
+  },
+  {
+    partyId: "urn:party:test:beta-gb",
+    name: "Beta Test Bank GB",
+    role: "counterparty",
+    jurisdiction: "GB",
+    bic: "BETAGB22XXX",
+    eligiblePairs: ["GBP/ZAR", "EUR/USD"],
+    minNotionalMinor: 200_000_00,
+    maxNotionalMinor: 10_000_000_00,
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Mock event store
@@ -35,13 +58,13 @@ function makeMockStore() {
 describe("generateSimTrade", () => {
   it("returns a valid payload — tradeId starts with SIM-", () => {
     const engine = new FxRateEngine();
-    const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
+    const payload = generateSimTrade(engine, TEST_COUNTERPARTIES, "BK-TEST");
     expect(payload.tradeId.value).toMatch(/^SIM-/);
   });
 
   it("legs has exactly 1 entry for FX-spot", () => {
     const engine = new FxRateEngine();
-    const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
+    const payload = generateSimTrade(engine, TEST_COUNTERPARTIES, "BK-TEST");
     expect(payload.legs).toHaveLength(1);
   });
 
@@ -49,11 +72,11 @@ describe("generateSimTrade", () => {
     const engine = new FxRateEngine();
     // Run multiple times to get a statistical sample
     for (let i = 0; i < 20; i++) {
-      const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
+      const payload = generateSimTrade(engine, TEST_COUNTERPARTIES, "BK-TEST");
       const tradeBase = payload.currencyPair.base;
       const tradeQuote = payload.currencyPair.quote;
       const pair = `${tradeBase}/${tradeQuote}`;
-      const cp = SIM_COUNTERPARTIES.find((c) => c.name === payload.counterparty.name);
+      const cp = TEST_COUNTERPARTIES.find((c) => c.name === payload.counterparty.name);
       expect(cp).toBeDefined();
       expect(cp?.eligiblePairs).toContain(pair);
     }
@@ -61,7 +84,7 @@ describe("generateSimTrade", () => {
 
   it("counterNotional is consistent with rate (quote-per-base) by side within 1%", () => {
     const engine = new FxRateEngine();
-    const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
+    const payload = generateSimTrade(engine, TEST_COUNTERPARTIES, "BK-TEST");
     const leg = payload.legs[0];
     expect(leg).toBeDefined();
     if (!leg) return;
@@ -78,7 +101,7 @@ describe("generateSimTrade", () => {
 
   it("productTaxonomy is FX-spot and settlementForm is physical", () => {
     const engine = new FxRateEngine();
-    const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
+    const payload = generateSimTrade(engine, TEST_COUNTERPARTIES, "BK-TEST");
     expect(payload.productTaxonomy).toBe("FX-spot");
     expect(payload.settlementForm).toBe("physical");
   });
@@ -89,7 +112,7 @@ describe("generateSimTrade", () => {
   it("generated payload satisfies the D-FX-QUOTING-CONVENTION Zod refinement (50 samples)", () => {
     const engine = new FxRateEngine();
     for (let i = 0; i < 50; i++) {
-      const payload = generateSimTrade(engine, SIM_COUNTERPARTIES, "BK-TEST");
+      const payload = generateSimTrade(engine, TEST_COUNTERPARTIES, "BK-TEST");
       const parsed = fxTradeExecutedPayloadSchema.safeParse(payload);
       if (!parsed.success) {
         // Surface the first failure with full detail for debugging.
@@ -105,14 +128,14 @@ describe("generateSimTrade", () => {
   // of the rate.currency = quote / counter-derivation contract.
   it("BUY trade on USD/ZAR: rate.currency = ZAR, rate.amount ≈ mid, counter ≈ notional / mid", () => {
     const engine = new FxRateEngine();
-    const usdZarOnly = SIM_COUNTERPARTIES.filter((cp) =>
+    const usdZarOnly = TEST_COUNTERPARTIES.filter((cp) =>
       cp.eligiblePairs.every((p) => p === "USD/ZAR"),
     );
     // If no USD/ZAR-only counterparty, fall back to one whose first pair is USD/ZAR.
     const cps =
       usdZarOnly.length > 0
         ? usdZarOnly
-        : SIM_COUNTERPARTIES.filter((cp) => cp.eligiblePairs.includes("USD/ZAR"));
+        : TEST_COUNTERPARTIES.filter((cp) => cp.eligiblePairs.includes("USD/ZAR"));
     expect(cps.length).toBeGreaterThan(0);
 
     // Force BUY by retrying generation until we get one (Math.random sampled).
@@ -189,7 +212,7 @@ describe("FxSimEngine", () => {
 
   beforeEach(() => {
     store = makeMockStore();
-    engine = new FxSimEngine(store);
+    engine = new FxSimEngine(store, { getCounterparties: () => TEST_COUNTERPARTIES });
     vi.useFakeTimers();
   });
 
