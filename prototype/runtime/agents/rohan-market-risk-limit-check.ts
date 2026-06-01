@@ -86,15 +86,17 @@ function computeCurrentExposure(): Map<string, number> {
 
   for (const e of eventStore.replay({ type: "EquityTradeBooked" })) {
     const p = e.payload as {
-      instrument?: { id?: string };
+      instrument?: { identifier?: { value?: string }; id?: string };
       side?: string;
       consideration?: { amountMinor?: number; currency?: string };
       quantity?: { amount?: number };
       price?: { amount?: number; currency?: string };
     };
 
-    // Extract instrument identifier
-    const instrumentId = p.instrument?.id;
+    // Extract instrument identifier. CDM canonical path is
+    // instrument.identifier.value (an object with scheme + value); fall back to
+    // instrument.id for backwards compatibility with any legacy events.
+    const instrumentId = p.instrument?.identifier?.value ?? p.instrument?.id;
     if (!instrumentId) continue;
 
     // Compute notional in ZAR. Use consideration.amountMinor if available
