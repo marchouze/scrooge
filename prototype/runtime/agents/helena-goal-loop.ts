@@ -64,6 +64,10 @@ import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-s
 import { eventStore, logger } from "../../platform/composition";
 import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
+
+// Threshold: if unmeasured lines persist for this many consecutive runs,
+// Helena's goal-loop surfaces the gap as a formal escalation candidate.
+const UNMEASURED_ESCALATION_THRESHOLD = 3;
 import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying risk-appetite-watch handler directly to avoid the
@@ -149,6 +153,31 @@ function lastIcaapSnapshotMs(): number | undefined {
     }
   }
   return latest;
+}
+
+/**
+ * Count of consecutive tail RiskAppetiteSnapshot runs that reported
+ * unmeasuredCount > 0. Used to detect chronic substrate gaps that
+ * have not been escalated or remediated.
+ *
+ * Returns 0 if all recent snapshots are fully measured, or if no
+ * snapshots exist yet.
+ */
+export function consecutiveUnmeasuredRunCount(store: EventStore = eventStore): number {
+  const counts: number[] = [];
+  for (const e of store.replay({ type: "RiskAppetiteSnapshot" })) {
+    const p = e.payload as Record<string, unknown>;
+    counts.push(typeof p.unmeasuredCount === "number" ? p.unmeasuredCount : 0);
+  }
+  let consecutive = 0;
+  for (let i = counts.length - 1; i >= 0; i--) {
+    if ((counts[i] ?? 0) > 0) {
+      consecutive++;
+    } else {
+      break;
+    }
+  }
+  return consecutive;
 }
 
 /**
@@ -417,6 +446,46 @@ export const helenaGoalDeriver: GoalDeriver = async (
           payloadPreview: {
             agentUrn: args.agent.urn,
             trigger: "helena-goal-loop:icaap-review",
+          },
+        },
+      ],
+    };
+  }
+
+  // Candidate 4: Persistent unmeasured appetite lines → formal escalation.
+  // Helena's mandate (§3, §9) requires she govern the framework completeness;
+  // §16 names the gap owners (Senna + Atlas for cyber; validation function +
+  // Atlas for model). If the gap persists for >= THRESHOLD consecutive runs
+  // without a dispatched engineering brief, Helena selects the RAS calibration
+  // goal so the risk-appetite-watch handler can emit a scoped AgentEscalation
+  // routing Scrooge to dispatch the build work.
+  //
+  // Three-way coherence: still declares RiskAppetiteSnapshot as plannedEvent
+  // (the watch handler always emits it); the escalation is an *additional*
+  // event emitted by the watch handler when the persistent-gap flag is set.
+  const unmeasuredRunCount = consecutiveUnmeasuredRunCount();
+  if (
+    unmeasuredRunCount >= UNMEASURED_ESCALATION_THRESHOLD &&
+    spec.decisionsInScope.includes(RAS_CALIBRATION_GOAL)
+  ) {
+    logger.info(
+      { agentUrn: args.agent.urn, unmeasuredRunCount, threshold: UNMEASURED_ESCALATION_THRESHOLD },
+      "helena-goal-deriver: candidate-4 — persistent unmeasured appetite lines — selecting RAS calibration goal for escalation",
+    );
+    return {
+      kind: "decision",
+      chosen: RAS_CALIBRATION_GOAL,
+      rationale: `${unmeasuredRunCount} consecutive RiskAppetiteSnapshot runs have reported unmeasured appetite lines with no engineering dispatch observed. Helena's mandate (§3, §16) requires she surface this as a formal substrate-gap escalation to Scrooge. Selecting "${RAS_CALIBRATION_GOAL}" so the risk-appetite-watch handler emits a scoped AgentEscalation routing the measurement-substrate build to the responsible engineers (Senna + Atlas for RAS §B6 cyber line; independent validation function + Atlas for RAS §B7 model-tier line).`,
+      mandateCitations: [
+        { section: "9-decisions-in-scope", rowKey: RAS_CALIBRATION_GOAL, specHash },
+      ],
+      procedureCitations: [buildProcedureCitation(HELENA_RMF_PROCEDURE_PATH, HELENA_RMF_STEP_ID)],
+      plannedEvents: [
+        {
+          type: "RiskAppetiteSnapshot",
+          payloadPreview: {
+            agentUrn: args.agent.urn,
+            trigger: "helena-goal-loop:persistent-unmeasured-escalation",
           },
         },
       ],

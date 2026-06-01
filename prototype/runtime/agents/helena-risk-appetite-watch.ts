@@ -40,6 +40,11 @@ import { resolve } from "node:path";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
+
+// How many consecutive RiskAppetiteSnapshot runs with unmeasuredCount > 0
+// before Helena emits a formal substrate-gap escalation to Scrooge.
+// Must match the threshold in helena-goal-loop.ts.
+const UNMEASURED_ESCALATION_THRESHOLD = 3;
 import { computeLCR } from "../../platform/liquidity/lcr";
 import { computeNSFR } from "../../platform/liquidity/nsfr";
 import { getALMPositionSnapshot } from "../../platform/projections/alm-positions";
@@ -680,6 +685,36 @@ function buildReportMarkdown(
   return lines.join("\n");
 }
 
+function consecutiveUnmeasuredSnapshotCount(): number {
+  const counts: number[] = [];
+  for (const e of eventStore.replay({ type: "RiskAppetiteSnapshot" })) {
+    const p = e.payload as Record<string, unknown>;
+    counts.push(typeof p.unmeasuredCount === "number" ? p.unmeasuredCount : 0);
+  }
+  let consecutive = 0;
+  for (let i = counts.length - 1; i >= 0; i--) {
+    if ((counts[i] ?? 0) > 0) {
+      consecutive++;
+    } else {
+      break;
+    }
+  }
+  return consecutive;
+}
+
+// Returns true if Helena already raised an unmeasured-lines escalation
+// within the last 24 hours, preventing escalation flood.
+function hasRecentUnmeasuredEscalation(): boolean {
+  const windowMs = 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - windowMs;
+  for (const e of eventStore.replay({ type: "AgentEscalation" })) {
+    const p = e.payload as Record<string, unknown>;
+    if (!String(p.escalationId ?? "").includes("unmeasured-lines")) continue;
+    if (new Date(e.as_of).getTime() > cutoff) return true;
+  }
+  return false;
+}
+
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const snap = buildSnapshot(ctx.asOf);
 
@@ -746,6 +781,56 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         }),
       );
       eventsEmitted++;
+    }
+
+    // Persistent unmeasured appetite lines → escalate to Scrooge for
+    // engineering dispatch. Helena governs; she cannot build measurement
+    // substrate herself (§3: "Helena does not measure risk"). This
+    // escalation routes the gap to the engineering-execution substrate.
+    //
+    // De-duplicated: only emits if no unmeasured-lines escalation was
+    // raised in the last 24h (prevents flood on every goal-loop tick).
+    //
+    // Unmeasured lines today (from lineStatuses above):
+    //   - appetite:operational:cyber-severity-tiers (RAS §B6)
+    //     Owner: Senna (CISO, engineering) + Atlas (platform substrate)
+    //   - appetite:model:tier-discipline (RAS §B7)
+    //     Owner: Independent Validation function + Atlas (platform substrate)
+    if (snap.unmeasuredCount > 0 && !hasRecentUnmeasuredEscalation()) {
+      const consecutiveCount = consecutiveUnmeasuredSnapshotCount();
+      if (consecutiveCount >= UNMEASURED_ESCALATION_THRESHOLD) {
+        const unmeasuredLineIds = snap.lineStates
+          .filter((s) => s.status === "unmeasured")
+          .map((s) => `${s.line.id} (${s.line.rasSection}, owner: ${s.line.measurementOwner})`)
+          .join("; ");
+        eventStore.append(
+          makeAgentEscalation({
+            asOf: ctx.asOf,
+            entity: "LE-ZA-HOZ-BANK",
+            actor: { type: "service", id: "agent:helena:risk-appetite-watch" },
+            citations: EVENT_CITATIONS,
+            payload: {
+              escalationId: `escalation:helena:unmeasured-lines-${fmtDateUTC(ctx.asOf)}`,
+              raisedBy: "Helena",
+              question: `${snap.unmeasuredCount} appetite line(s) have been unmeasured for ${consecutiveCount} consecutive runs. Helena cannot build the measurement substrate (§3); engineering dispatch required. Lines: ${unmeasuredLineIds}.`,
+              options: [
+                "Dispatch Senna + Atlas to build cyber-incident severity measurement substrate (RAS §B6)",
+                "Dispatch independent validation function + Atlas to build model-tier discipline measurement substrate (RAS §B7)",
+                "Defer to M1 milestone (accept substrate gap; record in §16)",
+              ],
+              blockedBy:
+                "Engineering build work required. Scrooge to dispatch Senna (CISO eng) + Atlas for RAS §B6; Atlas + model-validation substrate owner for RAS §B7.",
+              severity: "medium",
+              routedTo: "agent:scrooge",
+            },
+          }),
+        );
+        eventsEmitted++;
+        logger.info(
+          { unmeasuredCount: snap.unmeasuredCount, consecutiveCount },
+          "helena:risk-appetite-watch — persistent unmeasured lines escalation emitted to Scrooge",
+        );
+      }
     }
   }
 
