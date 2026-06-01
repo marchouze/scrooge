@@ -225,13 +225,19 @@ export function buildPartyProjection(eventStore: EventStore, asOf?: string): Par
         if (!partyId) break;
         const m = parties.get(partyId);
         if (!m) break;
-        // The PartyAttributeChanged event records before/after document
-        // hashes; the projection knows the before/after value via the
-        // document store at query time. We mark the record as touched
-        // here without dereferencing the doc store — display code shows
-        // the latest known shape from the registration + classifications.
-        // (Future extension: accept a doc-store accessor and resolve the
-        // latest-snapshot shape into the displayed record.)
+        // Apply inline kindAttributesPatch when present (build-phase back-fill
+        // path — no doc-store yet). Fields are merged last-write-wins into the
+        // existing kindAttributes. Doc-store-backed updates remain a future
+        // extension (accept a doc-store accessor and resolve the snapshot).
+        const patch = p.kindAttributesPatch as Record<string, unknown> | undefined;
+        if (patch && m.kindAttributes?.kind === "legal-entity") {
+          const attrs = m.kindAttributes as unknown as Record<string, unknown>;
+          if (patch.bic !== undefined) attrs.bic = patch.bic;
+          if (patch.authorisedProducts !== undefined)
+            attrs.authorisedProducts = patch.authorisedProducts;
+          if (patch.eligibleFxPairs !== undefined) attrs.eligibleFxPairs = patch.eligibleFxPairs;
+          if (patch.buildPhaseStatus !== undefined) attrs.buildPhaseStatus = patch.buildPhaseStatus;
+        }
         break;
       }
       case "PartyClassified": {
