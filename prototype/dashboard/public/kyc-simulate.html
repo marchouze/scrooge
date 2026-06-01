@@ -8,53 +8,115 @@
   <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
 <style>
-  .sim-panel { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 24px 28px; max-width: 560px; }
-  .sim-panel h2 { font-family: var(--serif); font-size: 20px; color: var(--primary); margin: 0 0 18px; }
+  /* Band/section layout */
+  .band { margin-bottom: var(--space-8); }
+  .band-head { margin-bottom: var(--space-3); display: flex; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; }
+  .band-head h1 { font: var(--text-h1); color: var(--color-text-primary); }
+  .band-head h2 { font: var(--text-h2); color: var(--color-text-primary); }
+  .band-sub { font: var(--text-caption); color: var(--color-text-secondary); }
+  .muted { color: var(--color-text-secondary); font: var(--text-body); margin-bottom: var(--space-4); line-height: 1.6; }
 
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 12.5px; font-weight: 600; color: #444; margin-bottom: 5px; }
+  /* Form card */
+  .sim-panel {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+    max-width: 560px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .form-group { margin-bottom: var(--space-4); }
+  .form-group label {
+    display: block;
+    font: var(--text-body);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+  }
   .form-group select, .form-group input[type="number"] {
-    width: 100%; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 4px;
-    font-size: 13.5px; font-family: var(--sans); box-sizing: border-box; background: #fff;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    font: var(--text-body);
+    box-sizing: border-box;
+    background: var(--color-bg);
+    color: var(--color-text-primary);
   }
-  .form-group select:focus, .form-group input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .form-group select:focus, .form-group input:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
 
-  .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .toggle-row label { font-size: 13.5px; font-weight: 600; color: #444; cursor: pointer; }
-  .toggle-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color 120ms, background 120ms;
+  }
+  .toggle-row:hover { border-color: var(--color-border-strong); background: var(--color-surface-raised); }
+  .toggle-row label {
+    font: var(--text-body);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    cursor: pointer;
+  }
+  .toggle-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; accent-color: var(--color-accent); }
 
-  .btn { display: inline-block; padding: 9px 20px; border-radius: 4px; border: 1px solid; font-size: 13.5px; cursor: pointer; font-family: var(--sans); }
-  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .btn-primary:hover { background: var(--accent-deep); }
+  /* Button — do not override global .btn; add only disabled state */
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #generateBtn { padding: 11px 28px; font-size: 14px; }
 
-  .scenario-desc { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.4; }
-
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; white-space: nowrap; }
-  .badge-blue   { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
-  .badge-amber  { background: #fff3e0; color: #8a4a00; border: 1px solid #f5d5a0; }
-  .badge-green  { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
-  .badge-red    { background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; }
-  .badge-grey   { background: #f5f5f5; color: #555; border: 1px solid #e0e0e0; }
-
-  .results-table-wrap { overflow-x: auto; margin-top: 20px; }
-  table.results-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  table.results-table th, table.results-table td {
-    border-bottom: 1px solid #eee; padding: 7px 9px; vertical-align: top; text-align: left;
+  .scenario-desc {
+    font: var(--text-caption);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-2);
+    line-height: 1.5;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--color-border-strong);
   }
-  table.results-table th { background: #fafafa; font-weight: 600; color: #444; }
-  table.results-table code { font-size: 11px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
-  table.results-table tr:hover { background: #fafcff; }
 
-  .loading-state { display: none; align-items: center; gap: 10px; color: #555; font-size: 14px; padding: 20px 0; }
+  /* Badges */
+  .badge-blue   { background: var(--color-info-bg);    color: var(--color-info);    border: 1px solid #cae0f5; }
+  .badge-amber  { background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid #f5d5a0; }
+  .badge-green  { background: var(--color-success-bg); color: var(--color-success); border: 1px solid #bce0c0; }
+  .badge-red    { background: var(--color-danger-bg);  color: var(--color-danger);  border: 1px solid #f3c1bc; }
+  .badge-grey   { background: var(--color-surface-raised); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+
+  /* Results table */
+  .results-table-wrap { overflow-x: auto; margin-top: var(--space-5); }
+  table.results-table { width: 100%; border-collapse: collapse; font: var(--text-body); }
+  table.results-table th, table.results-table td {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-2) var(--space-3);
+    vertical-align: top;
+    text-align: left;
+  }
+  table.results-table th { background: var(--color-surface); font-weight: 600; color: var(--color-text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  table.results-table code { font-size: 11px; background: var(--color-surface-raised); padding: 1px 4px; border-radius: var(--radius-sm); }
+  table.results-table tr:hover { background: var(--color-surface); }
+
+  /* Loading */
+  .loading-state { display: none; align-items: center; gap: var(--space-3); color: var(--color-text-secondary); font: var(--text-body); padding: var(--space-5) 0; }
   .loading-state.show { display: flex; }
-  .spinner { width: 20px; height: 20px; border: 2px solid #ccc; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--color-border-strong); border-top-color: var(--color-accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .toast { position: fixed; bottom: 24px; right: 24px; background: #222; color: #fff; padding: 12px 20px; border-radius: 6px; font-size: 13.5px; z-index: 999; display: none; }
+  /* Toast */
+  .toast { position: fixed; bottom: var(--space-6); right: var(--space-6); background: var(--color-text-primary); color: #fff; padding: var(--space-3) var(--space-5); border-radius: var(--radius-md); font: var(--text-body); z-index: 999; display: none; box-shadow: var(--shadow-md); }
   .toast.show { display: block; }
-  .toast.success { background: var(--good); }
-  .toast.error { background: var(--danger); }
+  .toast.success { background: var(--color-success); }
+  .toast.error { background: var(--color-danger); }
 </style>
 </head>
 <body data-provenance-content="none">
