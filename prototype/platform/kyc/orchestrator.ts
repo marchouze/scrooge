@@ -38,6 +38,7 @@
 // Authors: Atlas (Core banking platform architect, engineering) +
 //   Mira (Compliance / RegTech engineer, engineering).
 
+import { makePartyRegistered } from "../../domains/party/factories";
 import { eventStore } from "../composition";
 import { newEventId, nowUtc } from "../core/types";
 import { makeClientCandidateRegistered } from "../event-store/event-types/aml-popia-extended";
@@ -666,6 +667,31 @@ async function stepDecisionMade(
     });
     eventStore.append(acceptedEvt);
 
+    // Register the accepted client as a Party in the master counterparty store.
+    const partyEvt = makePartyRegistered({
+      asOf,
+      entity: ENTITY,
+      actor: ORCHESTRATOR_ACTOR,
+      citations: [...KYC_CITATIONS, "D-PARTY-REGISTER"],
+      payload: {
+        partyId: `urn:party:legal-entity:${clientId}` as `urn:party:legal-entity:${string}`,
+        kind: "legal-entity",
+        displayName: input.entityName,
+        jurisdictions: [input.jurisdiction],
+        citations: [...KYC_CITATIONS, "D-PARTY-REGISTER"],
+        kindAttributes: {
+          kind: "legal-entity",
+          entityForm: "Ltd",
+          parentPartyId: null,
+          primaryRegulator: "other",
+          regimeAnchor: [
+            `KYC-onboarded counterparty; registration number ${input.registrationNumber}`,
+          ],
+        },
+      },
+    });
+    eventStore.append(partyEvt);
+
     const lawfulEvt = makeLawfulProcessingRegistered({
       asOf,
       entity: ENTITY,
@@ -945,6 +971,31 @@ export class KYCOrchestrator {
         },
       });
       eventStore.append(acceptedEvt);
+
+      // Register the accepted client in the master counterparty store.
+      const partyEvt = makePartyRegistered({
+        asOf,
+        entity: ENTITY,
+        actor: { type: "human", id: decidedBy },
+        citations: [...KYC_CITATIONS, "D-PARTY-REGISTER"],
+        payload: {
+          partyId: `urn:party:legal-entity:${clientId}` as `urn:party:legal-entity:${string}`,
+          kind: "legal-entity",
+          displayName: input?.entityName ?? candidateId,
+          jurisdictions: [input?.jurisdiction ?? "ZA"],
+          citations: [...KYC_CITATIONS, "D-PARTY-REGISTER"],
+          kindAttributes: {
+            kind: "legal-entity",
+            entityForm: "Ltd",
+            parentPartyId: null,
+            primaryRegulator: "other",
+            regimeAnchor: [
+              `KYC-onboarded counterparty${input?.registrationNumber ? `; registration number ${input.registrationNumber}` : ""}`,
+            ],
+          },
+        },
+      });
+      eventStore.append(partyEvt);
 
       const lawfulEvt = makeLawfulProcessingRegistered({
         asOf,
