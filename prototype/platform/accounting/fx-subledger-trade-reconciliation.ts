@@ -470,3 +470,121 @@ export function computeFxSubledgerRebuild(
     canonicalTradeIds,
   };
 }
+
+// ---------------------------------------------------------------------------
+// FX cash-leg restate — ACC-1100-001 (CEO direction 2026-06-01)
+//
+// The ACC-2100 rebuild restated the FX receivable/payable sub-ledger but left
+// the FX *cash* leg untouched. ACC-1100-001 (Central Bank Reserve) carries the
+// mirror half of the same orphan corruption: FX principal-payment /
+// lifecycle-close postings that settled FX cash through the reserve account
+// instead of the ACC-1200 correspondent nostros — a D-COA-CURRENCY-DECOUPLING
+// (2026-05-30) violation. Per that decision FX must NEVER post to ACC-1100-001,
+// so the canonical FX contribution to the reserve account is zero.
+//
+// This computes the restate that moves the non-fixture FX-postingType residue
+// off ACC-1100-001 into the same suspense (ACC-2100-009). Because that residue
+// is the exact mirror of the ZAR suspense balance, the move collapses the ZAR
+// suspense toward zero. Legitimate non-FX activity on the account (none today)
+// is preserved — only FX-classified posting types are swept.
+// ---------------------------------------------------------------------------
+
+/** Account FX must never post to (FX settles through the ACC-1200 nostros). */
+export const FX_MISROUTED_RESERVE = "ACC-1100-001";
+
+/** Posting types that represent FX-lifecycle movements (must not sit on the reserve). */
+const FX_POSTING_TYPES = new Set<string>([
+  "trade-booking",
+  "revaluation",
+  "settlement",
+  "settlement-confirmation",
+  "fx-principal-payment",
+  "fx-lifecycle-close",
+  "fx-settlement-reversal",
+  "cancellation",
+  "reversal",
+  "duplicate-reversal-correction",
+]);
+
+/**
+ * Normalise a raw SubLedgerPostingEmitted leg into canonical legs — mirroring
+ * `buildGlView`. Old-format legs carry `{debit, credit, amountMinor, currency}`
+ * (one object = one journal) and expand into two canonical legs; new-format
+ * legs carry `{accountId, debitCredit, amountMinor, currency}`.
+ */
+function normaliseLeg(raw: unknown): SubLedgerLeg[] {
+  const r = raw as Record<string, unknown>;
+  if (typeof r.accountId === "string") return [r as unknown as SubLedgerLeg];
+  if (typeof r.debit === "string" && typeof r.credit === "string") {
+    const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
+    const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
+    return [
+      { accountId: r.debit, debitCredit: "debit", amountMinor: amt, currency: ccy },
+      { accountId: r.credit, debitCredit: "credit", amountMinor: amt, currency: ccy },
+    ];
+  }
+  return [];
+}
+
+export interface CashLegRestateResult {
+  /** FX residue currently mis-routed onto the reserve account, per currency. */
+  readonly residue: readonly FootprintEntry[];
+  /** Balanced legs that sweep the residue off the reserve into the suspense. */
+  readonly restateLegs: readonly SubLedgerLeg[];
+}
+
+/**
+ * Compute the FX cash-leg restate for ACC-1100-001.
+ *
+ * Sums the non-fixture, FX-postingType `SubLedgerPostingEmitted` legs on the
+ * reserve account per currency (the mis-routed residue), and returns balanced
+ * legs that zero them against the ACC-2100-009 suspense. Pure over the event log.
+ *
+ * Targets the NON-FIXTURE residue deliberately: fixture postings are excluded by
+ * the GL projection's (now-complete) fixture filter, so the corrective journal
+ * must not double-count them.
+ */
+export function computeFxMisroutedCashRestate(events: readonly Event[]): CashLegRestateResult {
+  const fixtureEvents = new Set<string>();
+  for (const e of events) {
+    if (e.provenance?.kind === "build-phase-fixture") fixtureEvents.add(e.event_id);
+  }
+
+  const byCcy = new Map<string, number>();
+  for (const e of events) {
+    if (e.type !== "SubLedgerPostingEmitted") continue;
+    const p = e.payload as { sourceEventId?: unknown; postingType?: unknown; legs?: unknown };
+    const src = typeof p.sourceEventId === "string" ? p.sourceEventId : undefined;
+    if (src && fixtureEvents.has(src)) continue; // fixture-sourced → excluded
+    if (typeof p.postingType !== "string" || !FX_POSTING_TYPES.has(p.postingType)) continue;
+    for (const raw of Array.isArray(p.legs) ? p.legs : []) {
+      for (const leg of normaliseLeg(raw)) {
+        if (leg.accountId !== FX_MISROUTED_RESERVE) continue;
+        const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+        byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0) + signed);
+      }
+    }
+  }
+
+  const residue: FootprintEntry[] = [];
+  const restateLegs: SubLedgerLeg[] = [];
+  for (const [currency, net] of [...byCcy].sort()) {
+    if (net === 0) continue;
+    residue.push({ accountId: FX_MISROUTED_RESERVE, currency, netDebitMinor: net });
+    // Sweep the residue off the reserve (post the opposite) and into suspense.
+    restateLegs.push({
+      accountId: FX_MISROUTED_RESERVE,
+      currency,
+      debitCredit: net > 0 ? "credit" : "debit",
+      amountMinor: Math.abs(net),
+    });
+    restateLegs.push({
+      accountId: FX_REMEDIATION_SUSPENSE,
+      currency,
+      debitCredit: net > 0 ? "debit" : "credit",
+      amountMinor: Math.abs(net),
+    });
+  }
+
+  return { residue, restateLegs };
+}

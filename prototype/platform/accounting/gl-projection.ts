@@ -246,6 +246,16 @@ export function buildGlView(
   // GL postings derived from fixture trades can be excluded (same rule as B3).
   const sourceEventIsFixture = new Set<string>();
   for (const e of events) {
+    // Fixture detection covers EVERY event type. A fixture SubLedgerPostingEmitted
+    // can be sourced from a DepositTaken / InterbankLoanPlaced / RepoTradeOpened
+    // (and any other) event — not only the FX-lifecycle types whose payloads we
+    // keep for description rendering below. Limiting fixture detection to the FX
+    // set leaked fixture deposit / IBL / repo postings into the live GL (e.g.
+    // ACC-1100-001 inflated by ~R44M of fixture postings). Detect fixtures by
+    // provenance across all events; keep the description map FX-scoped.
+    if (e.provenance?.kind === "build-phase-fixture") {
+      sourceEventIsFixture.add(e.event_id);
+    }
     if (
       e.type === "FxTradeExecuted" ||
       e.type === "FxPositionRevalued" ||
@@ -260,9 +270,6 @@ export function buildGlView(
       e.type === "SubLedgerPostingRemediationRecorded"
     ) {
       sourceEventMap.set(e.event_id, e.payload as Record<string, unknown>);
-      if (e.provenance?.kind === "build-phase-fixture") {
-        sourceEventIsFixture.add(e.event_id);
-      }
     }
   }
 

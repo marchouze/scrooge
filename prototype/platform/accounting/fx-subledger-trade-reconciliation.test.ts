@@ -3,7 +3,9 @@
 import { describe, expect, test } from "bun:test";
 import type { Event } from "../event-store/types";
 import {
+  FX_MISROUTED_RESERVE,
   FX_REMEDIATION_SUSPENSE,
+  computeFxMisroutedCashRestate,
   computeFxSubledgerRebuild,
   computeFxSubledgerReconciliation,
 } from "./fx-subledger-trade-reconciliation";
@@ -183,5 +185,80 @@ describe("computeFxSubledgerRebuild", () => {
     );
     expect(susLeg?.debitCredit).toBe("debit");
     expect(susLeg?.amountMinor).toBe(12345);
+  });
+});
+
+describe("computeFxMisroutedCashRestate", () => {
+  function cashPosting(
+    postingType: string,
+    accountId: string,
+    dc: "debit" | "credit",
+    amt: number,
+    prov = "simulated",
+    oldFormat = false,
+  ) {
+    const leg = oldFormat
+      ? dc === "credit"
+        ? { debit: "ACC-stub-000", credit: accountId, amountMinor: amt, currency: "ZAR" }
+        : { debit: accountId, credit: "ACC-stub-000", amountMinor: amt, currency: "ZAR" }
+      : { accountId, debitCredit: dc, amountMinor: amt, currency: "ZAR" };
+    return ev(
+      "SubLedgerPostingEmitted",
+      {
+        sourceEventId: "orphan-src-not-in-store",
+        postingType,
+        postedAt: "2026-05-31T00:00:00.000Z",
+        legs: [leg],
+      },
+      prov,
+    );
+  }
+
+  test("sweeps new- and old-format FX residue off ACC-1100-001 to suspense, balanced", () => {
+    const events = [
+      cashPosting("fx-principal-payment", FX_MISROUTED_RESERVE, "credit", 1000), // new-format
+      cashPosting(
+        "settlement-confirmation",
+        FX_MISROUTED_RESERVE,
+        "credit",
+        250,
+        "simulated",
+        true,
+      ), // old-format
+    ];
+    const { residue, restateLegs } = computeFxMisroutedCashRestate(events);
+    const zar = residue.find((r) => r.currency === "ZAR");
+    expect(zar?.netDebitMinor).toBe(-1250); // both credits net to -1250
+    // reserve leg debits +1250, suspense leg credits +1250 → balanced, reserve → 0
+    const reserveLeg = restateLegs.find((l) => l.accountId === FX_MISROUTED_RESERVE);
+    const suspenseLeg = restateLegs.find((l) => l.accountId === FX_REMEDIATION_SUSPENSE);
+    // reserve holds a -1250 (credit) residue → sweep posts Dr reserve / Cr suspense.
+    expect(reserveLeg?.debitCredit).toBe("debit");
+    expect(reserveLeg?.amountMinor).toBe(1250);
+    expect(suspenseLeg?.debitCredit).toBe("credit");
+    expect(suspenseLeg?.amountMinor).toBe(1250);
+  });
+
+  test("ignores fixture-sourced postings and non-FX posting types", () => {
+    const fixtureSrc = ev("SettlementConfirmed", { tradeId: "X" }, "build-phase-fixture");
+    const fixtureSourcedPosting = ev(
+      "SubLedgerPostingEmitted",
+      {
+        sourceEventId: fixtureSrc.event_id,
+        postingType: "fx-principal-payment",
+        legs: [
+          {
+            accountId: FX_MISROUTED_RESERVE,
+            debitCredit: "credit",
+            amountMinor: 999,
+            currency: "ZAR",
+          },
+        ],
+      },
+      "simulated",
+    );
+    const events = [fixtureSrc, fixtureSourcedPosting];
+    const { restateLegs } = computeFxMisroutedCashRestate(events);
+    expect(restateLegs).toHaveLength(0);
   });
 });
