@@ -332,11 +332,13 @@ let cachedState: DashboardState = bootDerive();
 function fxPayloadToBookBody(
   payload: FxTradeExecutedPayload,
   provenanceMode: "simulated" | "production",
+  settlementMode: "realtime" | "accelerated",
 ): TradeBookBody {
   const leg = payload.legs[0];
   return {
     productType: "fx",
     provenanceMode,
+    settlementMode,
     currencyPair: { base: payload.currencyPair.base, quote: payload.currencyPair.quote },
     side: payload.side,
     notionalAmount: leg ? leg.notional.amountMinor / 1_000_000 : 0,
@@ -351,10 +353,12 @@ function fxPayloadToBookBody(
 
 const fxSimEngine = new FxSimEngine(eventStore, {
   marketDataStore,
-  executeFxTrade: (payload, _asOf, _counterpartyBic, provenanceMode) => {
-    void bookFxTrade(fxPayloadToBookBody(payload, provenanceMode)).catch((err: unknown) => {
-      console.error("[sim] FX booking via normal path failed:", err);
-    });
+  executeFxTrade: (payload, _asOf, _counterpartyBic, provenanceMode, settlementMode) => {
+    void bookFxTrade(fxPayloadToBookBody(payload, provenanceMode, settlementMode)).catch(
+      (err: unknown) => {
+        console.error("[sim] FX booking via normal path failed:", err);
+      },
+    );
   },
 });
 

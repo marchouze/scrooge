@@ -99,6 +99,7 @@ export interface EnvSimOptions {
     asOf: string,
     counterpartyBic: string,
     provenanceMode: "simulated" | "production",
+    settlementMode: "realtime" | "accelerated",
   ) => void;
 }
 
@@ -195,6 +196,7 @@ export class EnvSimEngine {
       asOf: string,
       counterpartyBic: string,
       provenanceMode: "simulated" | "production",
+      settlementMode: "realtime" | "accelerated",
     ) => void;
   };
   private readonly rateEngine: FxRateEngine;
@@ -553,10 +555,11 @@ export class EnvSimEngine {
     const cp = ALL_FX_COUNTERPARTIES.find((c) => c.partyId === payload.counterparty.partyId);
     const counterpartyBic = cp?.bic ?? "SBZAZAJJXXX";
     const provenanceMode = this.opts.provenance;
+    const settlementMode = this.opts.settlementMode;
 
     if (this.opts.executeFxTrade) {
       // Route execution through the bank's normal booking path (hub wiring).
-      this.opts.executeFxTrade(payload, asOf, counterpartyBic, provenanceMode);
+      this.opts.executeFxTrade(payload, asOf, counterpartyBic, provenanceMode, settlementMode);
     } else {
       // Legacy path: append FxTradeExecuted + run the bespoke post-trade lifecycle.
       this.store.append({

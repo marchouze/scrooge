@@ -63,6 +63,14 @@ export function makeCounterpartyFxRequestModule(engine: EnvSimEngine): Simulator
         help: "Maximum trade notional in USD equivalent",
       },
       {
+        key: "settlementMode",
+        label: "Settlement mode",
+        type: "select",
+        default: "accelerated",
+        options: ["accelerated", "realtime"],
+        help: "accelerated = full lifecycle fires at T+0; realtime = only instructions at T+0, payments at T+2",
+      },
+      {
         key: "minIntervalMs",
         label: "Min interval (ms)",
         type: "number",
@@ -88,6 +96,8 @@ export function makeCounterpartyFxRequestModule(engine: EnvSimEngine): Simulator
         typeof config?.minNotionalUsd === "number" ? config.minNotionalUsd : 500_000;
       const maxNotionalUsd =
         typeof config?.maxNotionalUsd === "number" ? config.maxNotionalUsd : 5_000_000;
+      const settlementMode =
+        config?.settlementMode === "realtime" ? "realtime" : ("accelerated" as const);
       const minIntervalMs =
         typeof config?.minIntervalMs === "number" ? config.minIntervalMs : 2_000;
       const maxIntervalMs =
@@ -98,6 +108,7 @@ export function makeCounterpartyFxRequestModule(engine: EnvSimEngine): Simulator
       lastError = null;
       engine.startTradeLoop({
         provenance,
+        settlementMode,
         notionalUsdMin: minNotionalUsd,
         notionalUsdMax: maxNotionalUsd,
         minIntervalMs,
