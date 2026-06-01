@@ -9,6 +9,7 @@
 
 import type { EventStore } from "../../event-store/store";
 import type { EnvSimEngine } from "../env-sim/index";
+import { StdbankCustodianSim } from "../stdbank-custodian-sim/index";
 import {
   makeCorrespondentAdviceModule,
   makeCounterpartyFxRequestModule,
@@ -21,12 +22,15 @@ import { ThirdPartySimHub } from "./index";
 export function buildDefaultHub(args: {
   eventStore: EventStore;
   envSimEngine: EnvSimEngine;
-}): ThirdPartySimHub {
+}): { hub: ThirdPartySimHub; custodianSim: StdbankCustodianSim } {
   const hub = new ThirdPartySimHub({ eventStore: args.eventStore });
   hub.register(makeCounterpartyFxRequestModule(args.envSimEngine));
   hub.register(makeMarketDataFeedModule(args.envSimEngine));
   hub.register(makeNostroStatementModule(args.envSimEngine));
   hub.register(makeCorrespondentAdviceModule(args.envSimEngine));
   hub.register(makeRegulatoryAckModule(args.envSimEngine));
-  return hub;
+  const custodianSim = new StdbankCustodianSim(args.eventStore);
+  custodianSim.start();
+  hub.register(custodianSim);
+  return { hub, custodianSim };
 }

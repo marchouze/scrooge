@@ -147,7 +147,7 @@ All instruments not listed above are impermissible until a New Product Approval 
 
 ### 4.3 Payments and settlement
 
-The bank is **not** a direct participant in the National Payment System (NPS). All payments route via a correspondent bank. The bank does not hold a SAMOS account and does not seek direct BankservAfrica membership in the build phase. This correspondent-bank model constrains settlement risk to a bilateral correspondent relationship rather than NPS-level systemic exposure.
+The bank is **not** a direct participant in the National Payment System (NPS). All payments route via a correspondent bank. The bank does not hold a direct NPS settlement account and does not seek direct BankservAfrica membership in the build phase. This correspondent-bank model constrains settlement risk to a bilateral correspondent relationship rather than NPS-level systemic exposure.
 
 ### 4.4 Legal entity structure
 

@@ -38,6 +38,7 @@
       group: "Markets",
       pages: [
         { label: "Trade Booking", href: "/trade-book.html" },
+        { label: "Bond Trading", href: "/bond-trading.html" },
         { label: "FX Desk", href: "/markets/fx/desk.html" },
         { label: "FX Risk", href: "/markets/fx/risk.html" },
         { label: "3rd-Party Simulators", href: "/sim-hub" },

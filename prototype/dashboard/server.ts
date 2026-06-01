@@ -179,6 +179,7 @@ import {
   TREASURY_REPO_TRADE_PAYLOADS,
 } from "../seeds/treasury/trade-seeds";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
+import { registerBondGatewayRoutes } from "./bond-gateway";
 import { buildConfigView } from "./config-view";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { registerFxSimRoutes } from "./fx-sim-view";
@@ -340,7 +341,7 @@ const fxSimEngine = new FxSimEngine(eventStore, {
 // Centralised 3rd-party simulator hub — registers the FX-counterparty stimulus
 // plus the external sub-simulators (market data, nostro, correspondent, SARB
 // ack) behind one registry, reusing the live fxSimEngine instance.
-const simHub = buildDefaultHub({ eventStore, envSimEngine: fxSimEngine });
+const { hub: simHub, custodianSim } = buildDefaultHub({ eventStore, envSimEngine: fxSimEngine });
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
@@ -4317,6 +4318,18 @@ const server = Bun.serve({
         eventStore,
       );
       if (tradeBookResponse) return tradeBookResponse;
+    }
+    // JSE IRC bond bilateral booking + settlement routes.
+    // Authority: D-NPA-SAGB-BOND-INTERNAL-TEST (CEO-approved 2026-05-26).
+    if (url.pathname.startsWith("/api/bonds/")) {
+      const bondResponse = await registerBondGatewayRoutes(
+        url.pathname,
+        req.method,
+        req,
+        eventStore,
+        custodianSim,
+      );
+      if (bondResponse) return bondResponse;
     }
     // FX market-making simulation engine routes.
     // Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.

@@ -81,7 +81,7 @@ export const intradayHQLAStressProjectionPayloadSchema = z.object({
   asOf: z.string().min(1),
   /** Stress scenario. */
   scenario: z.enum(["BAU", "stress"]),
-  /** SAMOS settlement window label (SA clock time). */
+  /** NPS settlement window label (SA clock time). */
   windowLabel: z.string().min(1),
   /** Projected HQLA buffer at end of this window (ZAR). */
   projectedHQLAZar: z.number(),

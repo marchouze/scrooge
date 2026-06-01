@@ -90,7 +90,7 @@ function buildReportMarkdown(
   lines.push("## Build-phase posture");
   lines.push("");
   lines.push(
-    "The bank is an indirect payments participant (memory: project_indirect_participant_posture.md). Correspondent bank model — SAMOS / BankservAfrica / CLS access is via sponsor banks. Live event flows (SettlementInstructionReceived, PaymentSettled, JournalEntryPosted) activate at licence-day. In build phase, counts reflect synthetic or seeded events only.",
+    "The bank is an indirect payments participant (memory: project_indirect_participant_posture.md). Correspondent bank model — NPS RTGS / BankservAfrica / CLS access is via sponsor banks. Live event flows (SettlementInstructionReceived, PaymentSettled, JournalEntryPosted) activate at licence-day. In build phase, counts reflect synthetic or seeded events only.",
   );
   lines.push("");
 

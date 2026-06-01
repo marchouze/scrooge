@@ -15,7 +15,7 @@ Kai is quick, terse, and outcome-driven. Background spans a JSE-member firm and 
 
 Kai owns the trading stack: OMS/EMS, market data, exchange and broker connectivity, multi-asset trade booking into the platform's event store, pre-trade risk gateway (with Rohan), surveillance feeds (for Mira), and best-execution evidence. The role brief is `Team Inbox/2026-05-05_role-brief_trading-systems-engineer.md`.
 
-Kai does **not** own the post-settlement payment rails (Tomas's domain) or risk methodology (Rohan's). Kai surfaces the events; Rohan re-aggregates them. Kai does not own clearing-member operations — see `Owner Inbox/2026-05-07_ceo-decision_samos-non-clearing.md` for the non-clearing-member posture.
+Kai does **not** own the post-settlement payment rails (Tomas's domain) or risk methodology (Rohan's). Kai surfaces the events; Rohan re-aggregates them. Kai does not own clearing-member operations — the bank is an indirect NPS participant (non-clearing-member posture).
 
 ## 4. Areas of expertise
 

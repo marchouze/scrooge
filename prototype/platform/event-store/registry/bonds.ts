@@ -23,6 +23,11 @@ import {
   bondSoldPayloadSchema,
   bondTradeExecutedPayloadSchema,
 } from "../event-types/bond-accounting";
+import {
+  bondCustodianSettlementConfirmedPayloadSchema,
+  bondCustodianSettlementFailedPayloadSchema,
+  bondSettlementInstructedPayloadSchema,
+} from "../event-types/bond-settlement";
 import { RETENTION_JSE_TRADE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
 
@@ -90,5 +95,42 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondSoldPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-3-2-3"],
     source: "platform/event-store/event-types/bond-accounting.ts",
+  },
+  // -------------------------------------------------------------------------
+  // Bond settlement lifecycle (Standard Bank custodian / STRATE DvP)
+  // Authority: D-NPA-SAGB-BOND-INTERNAL-TEST (CEO-approved 2026-05-26)
+  // -------------------------------------------------------------------------
+  {
+    type: "BondSettlementInstructed",
+    class: "markets",
+    issuer: "Bea",
+    subscribers: ["Bea", "Devon", "Helena", "Atlas"],
+    replay: "cumulative-fold",
+    retention: RETENTION_JSE_TRADE_7Y,
+    payloadSchema: bondSettlementInstructedPayloadSchema,
+    citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "D-NPA-SAGB-BOND-INTERNAL-TEST"],
+    source: "platform/event-store/event-types/bond-settlement.ts",
+  },
+  {
+    type: "BondCustodianSettlementConfirmed",
+    class: "markets",
+    issuer: "Bea",
+    subscribers: ["Bea", "Devon", "Helena", "Atlas"],
+    replay: "idempotent-terminal",
+    retention: RETENTION_JSE_TRADE_7Y,
+    payloadSchema: bondCustodianSettlementConfirmedPayloadSchema,
+    citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "D-NPA-SAGB-BOND-INTERNAL-TEST"],
+    source: "platform/event-store/event-types/bond-settlement.ts",
+  },
+  {
+    type: "BondCustodianSettlementFailed",
+    class: "markets",
+    issuer: "Bea",
+    subscribers: ["Bea", "Devon", "Helena", "Atlas"],
+    replay: "idempotent-terminal",
+    retention: RETENTION_JSE_TRADE_7Y,
+    payloadSchema: bondCustodianSettlementFailedPayloadSchema,
+    citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "D-NPA-SAGB-BOND-INTERNAL-TEST"],
+    source: "platform/event-store/event-types/bond-settlement.ts",
   },
 ];

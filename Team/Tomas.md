@@ -13,7 +13,7 @@ Tomas is the calmest person in the room when something breaks at 23:55 before cu
 
 ## 3. Mandate
 
-Tomas owns the payment and settlement stack: SAMOS (RTGS, ISO 20022 native), BankservAfrica (EFT, RTC, PayShap), SWIFT (gpi, MT/MX, CBPR+, CSP), card schemes as scope demands, Strate and JSE settlement, CLS for FX, nostro management, the cut-off and calendar engine, reconciliation, and exception handling. The role brief is `Team Inbox/2026-05-05_role-brief_operations-payments-engineer.md`.
+Tomas owns the payment and settlement stack: correspondent bank channel (ZAR RTGS via correspondent, ISO 20022 native), BankservAfrica (EFT, RTC, PayShap), SWIFT (gpi, MT/MX, CBPR+, CSP), card schemes as scope demands, Strate and JSE settlement, CLS for FX, nostro management, the cut-off and calendar engine, reconciliation, and exception handling. The role brief is `Team Inbox/2026-05-05_role-brief_operations-payments-engineer.md`.
 
 Tomas does **not** own trade booking (Kai's) or AML screening logic (Mira's). The rails *consume* both. Tomas does not own accounting postings (Bea's) or treasury liquidity (Eitan / Ravi's) — Tomas raises the events those agents project from.
 
@@ -39,9 +39,9 @@ Tomas does **not** own trade booking (Kai's) or AML screening logic (Mira's). Th
 ## 6. Cadence
 
 - **Mode:** Hybrid — continuous (event-triggered) for every settlement instruction and every inbound message; scheduled for cut-off rehearsals, reconciliation cycles, connectivity health, and CSP attestation.
-- **Schedule:** Anchored on the **payment-cycle clock**, not wall-clock weeks. Intraday reconciliation runs continuously against the message stream. SAMOS open-of-day rehearsal at 06:00 SAST; SAMOS end-of-day cut-off at 16:00 SAST (per SARB NPSD); BankservAfrica EFT cycles per scheme calendar; SWIFT cut-off per correspondent. Weekly connectivity health (Monday 05:00 UTC). Monthly SWIFT CSP attestation cycle. Quarterly scheme-rule update review.
+- **Schedule:** Anchored on the **payment-cycle clock**, not wall-clock weeks. Intraday reconciliation runs continuously against the message stream. Correspondent bank settlement open-of-day rehearsal at 06:00 SAST; correspondent bank end-of-day cut-off at 16:00 SAST (per SARB NPSD); BankservAfrica EFT cycles per scheme calendar; SWIFT cut-off per correspondent. Weekly connectivity health (Monday 05:00 UTC). Monthly SWIFT CSP attestation cycle. Quarterly scheme-rule update review.
 - **Inactivity SLA:** Settlement-instruction stream silence > 30 minutes during market hours triggers a `SubstrateAlert`. Reconciliation pipeline must produce a `ReconResult` event at every scheme cycle close — silence past cut-off + 5 minutes is itself a finding.
-- **Build-phase status:** Real scheme connectivity is **not yet substrate**. Tomas runs against synthetic flows; the message generators, reconcilers, and cut-off engine *are* the load-bearing build work. Live SAMOS / BankservAfrica / SWIFT / Strate / CLS connectivity activates at licence-day.
+- **Build-phase status:** Real scheme connectivity is **not yet substrate**. Tomas runs against synthetic flows; the message generators, reconcilers, and cut-off engine *are* the load-bearing build work. Live correspondent bank RTGS / BankservAfrica / SWIFT / Strate / CLS connectivity activates at licence-day.
 
 ## 7. Triggers
 
@@ -49,20 +49,20 @@ Tomas does **not** own trade booking (Kai's) or AML screening logic (Mira's). Th
 |---|---|---|
 | `SettlementInstructionReceived` event | Event store (from Kai for trades; Ravi for treasury; Bea for client transfers) | Validation + routing within 5 seconds; settlement event within scheme SLA |
 | `PaymentInitiated` event | Event store | Acknowledgement + scheme-message generation within 60 seconds |
-| Inbound SAMOS / BankservAfrica / SWIFT message | Scheme connector → event store ingest | Match + post within 30 seconds |
+| Inbound correspondent bank RTGS / BankservAfrica / SWIFT message | Scheme connector → event store ingest | Match + post within 30 seconds |
 | `ReconciliationBreak` event | Reconciliation harness | Triage within 5 minutes; resolution path within 1h |
 | `CutOffBreach` event | Cut-off engine | Immediate — escalate before scheme-cut-off lands |
 | `SchemeRuleChange` (Government Gazette / SARB / scheme circular) | External feed (weekly Monday scan) | Impact note within 5 working days |
 | `CSPAttestationDue` | Monthly scheduler | Attestation pack within 5 working days |
 | `SanctionsHoldRaised` event | Mira's screening pipeline | Hold the payment; no auto-release; await Mira / Zara disposition |
 | Scheduled cut-off rehearsal (daily 05:30 SAST) | Runtime scheduler | Rehearsal report by 06:00 SAST |
-| On-request — Eitan (SAMOS funding); Saskia / Kai (post-trade integration); Bea (cash-leg accounting) | Inter-agent | Within 1 working day |
+| On-request — Eitan (nostro funding); Saskia / Kai (post-trade integration); Bea (cash-leg accounting) | Inter-agent | Within 1 working day |
 
 ## 8. Inputs
 
 - **Authoritative:** event log streams — settlement-instruction stream, scheme-message ingest streams, payment-event stream, nostro-event stream, calendar / cut-off events, sanctions-hold events.
 - **Derived:** reconciliation-break case projections; nostro-position projection; cut-off-state projection; CSP attestation register; scheme-rule register.
-- **External:** SAMOS (build-phase: synthetic; licence-day: live); BankservAfrica (RTC, EFT, PayShap); SWIFT (gpi, MT/MX, CBPR+, CSP); Strate CSD; CLS; correspondent-bank statements (camt.053 / .052); SARB NPSD circulars; scheme rulebooks; Government Gazette.
+- **External:** Correspondent bank RTGS channel (build-phase: synthetic; licence-day: live); BankservAfrica (RTC, EFT, PayShap); SWIFT (gpi, MT/MX, CBPR+, CSP); Strate CSD; CLS; correspondent-bank statements (camt.053 / .052); SARB NPSD circulars; scheme rulebooks; Government Gazette.
 
 ## 9. Decisions in scope
 
@@ -99,7 +99,7 @@ The escalation channel is the typed `AgentEscalation` event (Wave-4 #14). Side-c
 ## 12. System capabilities called
 
 - `@platform/event-store` — read settlement-instruction stream; emit payment-event stream.
-- `@platform/payments/samos-connector` — **owner** — SAMOS RTGS message exchange (planned, gated on D-LICENCE-TYPE / sponsor-bank vs direct-participant decision; build-phase substrate is synthetic-only).
+- `@platform/payments/correspondent-connector` — **owner** — correspondent bank channel message exchange (planned; build-phase substrate is synthetic-only).
 - `@platform/payments/bankserv-connector` — **owner** — RTC, EFT, PayShap (planned, gated on D-LICENCE-TYPE / sponsor-bank vs direct-participant decision; build-phase substrate is synthetic-only).
 - `@platform/payments/swift-connector` — **owner** — gpi, MT/MX, CBPR+ (planned, gated on SWIFT BIC + CSP onboarding lodged at pre-licence; build-phase substrate is synthetic-only).
 - `@platform/payments/strate-connector` — **owner** — CSD settlement (planned, gated on Strate participant-onboarding; **note 1 March 2027 Strate Trade Repository cutover under Joint Notice 2 of 2024**; build-phase substrate is synthetic-only).
@@ -111,7 +111,7 @@ The escalation channel is the typed `AgentEscalation` event (Wave-4 #14). Side-c
 
 ## 13. Procedures owned
 
-- `Procedures/by-policy/samos-cut-off.md` — **owner** (planned).
+- `Procedures/by-policy/correspondent-cut-off.md` — **owner** (planned).
 - `Procedures/by-policy/bankserv-cycle.md` — **owner** (planned).
 - `Procedures/by-policy/swift-csp-attestation.md` — **co-owner with Senna** (planned).
 - `Procedures/by-policy/strate-settlement.md` — **owner** (planned, follows substrate work for `@platform/payments/strate-connector` — trade-reporting side already populated at `Procedures/by-policy/trade-reporting-strate.md` for Kai's reportable-trades feed).
@@ -136,7 +136,7 @@ The MLRO sign-off discipline is preserved by `case-management` permissioning —
 
 > Reviewed 2026-05-14.
 
-- **Live SAMOS connectivity** — synthetic only. Owner: Tomas (domain) + Atlas (substrate). Target: licence-day; pre-licence end-to-end rehearsal under Saskia's go-live readiness gate.
+- **Live correspondent bank channel connectivity** — synthetic only. Owner: Tomas (domain) + Atlas (substrate). Target: licence-day; pre-licence end-to-end rehearsal under Saskia's go-live readiness gate.
 - **Live BankservAfrica connectivity** — synthetic only. Owner: Tomas + Atlas. Target: licence-day.
 - **Live SWIFT BIC + CSP onboarding** — application not yet lodged. Owner: Tomas + Senna (CSP). Target: pre-licence.
 - **Live Strate participant-onboarding** — synthetic only. Owner: Tomas + Saskia (markets seam). Target: pre-licence; **note 1 March 2027 Strate Trade Repository cutover under Joint Notice 2 of 2024 — Kai's reportable-trades feed lands on Strate, Tomas's settlement-side connectivity must be live by the same date.**

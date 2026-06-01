@@ -445,7 +445,7 @@ export const RISK_TAXONOMY: ReadonlyArray<RiskTaxonomyNode> = [
     name: "Intraday-liquidity risk",
     owner: OWNER_INHERIT,
     definition:
-      "Risk that the bank cannot meet payment and settlement obligations at the moment they fall due during the operating day (SAMOS-funding scale).",
+      "Risk that the bank cannot meet payment and settlement obligations at the moment they fall due during the operating day (correspondent RTGS-funding scale).",
   },
   {
     code: "RT-LQ.CN",

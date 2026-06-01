@@ -26,7 +26,7 @@ status: POPULATED
 | `ORG-FC-*` (sanctions screening, exact ID per Mira's register) | Sanctions screening before payment dispatch. | Step 4 (sanctions gate). |
 | `ORG-PS-01..` (PROPOSED — Mira to register Domain N) | NPS Act 78/1998 — payment-system participation. | Procedure currently uses `statute` direct reference. |
 | `National Payment System Act 78/1998` (direct statute) | Recognition of payment-system participants and sponsor / settlement-bank designation. | Procedure's indirect-participant relay model. |
-| `SAMOS Rule Book — current version` (scheme rulebook) | SAMOS participant rules; sponsor-relayed flows. | Step 5 (sponsor envelope). |
+| `NPS Rule Book — current version` (scheme rulebook) | NPS participant rules; sponsor-relayed flows. | Step 5 (sponsor envelope). |
 | `ISO 20022 — pacs.008.001.10` (standard) | Customer Credit Transfer message schema. | Step 3 (message generation). |
 
 > **Substrate gap:** the obligations register has no Domain N — Payment systems today; citations to NPS Act and SARB NPSD directives are direct-statute / scheme-rulebook references in the bundle. Mira ask is open in the Owner Inbox bundle.
@@ -35,7 +35,7 @@ status: POPULATED
 
 Govern the lifecycle of every outbound payment instruction the bank originates as principal, under the indirect-participant posture. The procedure is the keystone of Tomas's payments substrate: every other Tomas procedure (cut-off rehearsal, reconciliation-break handling, nostro management, scheme-rule cycle) consumes events this procedure emits. When this procedure runs cleanly end-to-end, the rest of the payments substrate has reliable inputs.
 
-In the build phase the procedure runs against synthetic instructions; the message catalogue, sponsor-bank operating-model register, cut-off engine, and reconciliation harness are exercised end-to-end. Live SAMOS / BankservAfrica connectivity and live sponsor relationships activate at licence-day under Saskia's pre-licence go-live readiness gate.
+In the build phase the procedure runs against synthetic instructions; the message catalogue, sponsor-bank operating-model register, cut-off engine, and reconciliation harness are exercised end-to-end. Live correspondent bank RTGS / BankservAfrica connectivity and live sponsor relationships activate at licence-day under Saskia's pre-licence go-live readiness gate.
 
 ## 4. Trigger
 
@@ -92,7 +92,7 @@ In the build phase the procedure runs against synthetic instructions; the messag
 
 ## 10. Related procedures
 
-- `Procedures/by-policy/samos-cut-off.md` — **planned (Tomas-owned)** — the cut-off rehearsal procedure that exercises Step 6 daily.
+- `Procedures/by-policy/correspondent-cut-off.md` — **planned (Tomas-owned)** — the cut-off rehearsal procedure that exercises Step 6 daily.
 - `Procedures/by-policy/reconciliation-break-handling.md` — **planned (Tomas-owned)** — handles `ReconciliationBreak` events Step 9 may produce.
 - `Procedures/by-policy/sanctions-screening.md` — **populated (Mira-owned)** — the screening pipeline Step 4 calls.
 - `Procedures/by-policy/posting-rule-publication.md` — **populated (Bea-owned)** — produces the posting rules that consume `PaymentSettled` events.

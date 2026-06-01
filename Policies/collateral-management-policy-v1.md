@@ -54,7 +54,7 @@ This policy establishes the bank's framework for managing collateral across OTC 
 - Exchange-traded and centrally-cleared transactions (governed by CCP / JSE Clear rules — see `ORG-JSE-IRC-03`)
 - Unsecured interbank credit facilities (governed by the Credit Risk Policy)
 
-The bank is an indirect participant in critical market infrastructures (CLS, SAMOS). All collateral movements for centrally-cleared OTC positions are effected via the bank's sponsor / correspondent bank. The indirect-participant operating posture is recorded in memory `project_indirect_participant_posture.md`.
+The bank is an indirect NPS participant in critical market infrastructures (CLS, NPS RTGS). All collateral movements for centrally-cleared OTC positions are effected via the bank's sponsor / correspondent bank. The indirect-participant operating posture is recorded in memory `project_indirect_participant_posture.md`.
 
 ---
 

@@ -148,7 +148,7 @@ In the build phase, with the Board Risk Committee (BRC) not yet constituted, the
 
 The strategic analysis section of the Recovery Plan identifies:
 
-**Business model summary.** Hoz Bank Limited is an institutional global-markets trading bank operating on a JSE bonds, equities, and OTC interest rate derivatives mandate. Client base: institutional (no retail). Balance sheet: trading-book dominant. Funding: wholesale institutional. Capital: target R300m CET1 at licence-day. Indirect participant in SAMOS and CLS via sponsor / correspondent banks.
+**Business model summary.** Hoz Bank Limited is an institutional global-markets trading bank operating on a JSE bonds, equities, and OTC interest rate derivatives mandate. Client base: institutional (no retail). Balance sheet: trading-book dominant. Funding: wholesale institutional. Capital: target R300m CET1 at licence-day. Indirect NPS participant in NPS RTGS and CLS via sponsor / correspondent banks.
 
 **Critical Economic Functions.** At the scale and business model of Hoz Bank Limited at licence-day, the following functions are identified as candidate CEFs pending PA D1/2015 review:
 
@@ -160,7 +160,7 @@ The strategic analysis section of the Recovery Plan identifies:
 
 **Group structure.** The group structure is simple — two operating subsidiaries (Hoz Bank Limited and Hoz Securities Limited) under a non-operating holding company (Hoz Group Limited). There are no cross-jurisdictional operations. Intra-group exposures are limited to the holding company's equity investment and a management services agreement. This simplicity is a recovery-positive feature — separation, if required, does not require complex cross-border coordination.
 
-**Interdependencies.** Key operational interdependencies are: the bank's indirect-participant link to SAMOS via its settlement sponsor; the JSE membership and clearing arrangements; and the technology platform running on the bank's cloud substrate. Each is a dependency that, if severed, would impair the bank's ability to transact. Recovery preparatory measures per §3.5 address each.
+**Interdependencies.** Key operational interdependencies are: the bank's indirect-participant link to the NPS RTGS via its correspondent bank; the JSE membership and clearing arrangements; and the technology platform running on the bank's cloud substrate. Each is a dependency that, if severed, would impair the bank's ability to transact. Recovery preparatory measures per §3.5 address each.
 
 ### 3.4 Communication and disclosure plan
 
@@ -269,7 +269,7 @@ The inventory is divided into three categories: capital actions, liquidity actio
 
 | Option | Description | Capacity estimate | Execution time | Pre-conditions | Dependencies | Risks | Owner |
 |---|---|---|---|---|---|---|---|
-| LA1 — Drawdown of HQLA liquidity buffer | Conversion of HQLA (Level 1 and Level 2A) to cash in the 30-day stress window | The full HQLA buffer, less the LCR floor reserve; estimated at plan cycle against the HQLA pool composition | 1–3 business days for government securities via SAMOS repo; same-day for cash | HQLA pool must be unencumbered; SAMOS indirect-participant access via settlement sponsor | Eitan + Ravi; settlement sponsor; SAMOS access | Haircut widening on Level 2A assets under severe stress; settlement sponsor credit risk | Eitan + Helena |
+| LA1 — Drawdown of HQLA liquidity buffer | Conversion of HQLA (Level 1 and Level 2A) to cash in the 30-day stress window | The full HQLA buffer, less the LCR floor reserve; estimated at plan cycle against the HQLA pool composition | 1–3 business days for government securities via government-securities repo; same-day for cash | HQLA pool must be unencumbered; NPS access (via correspondent) via settlement sponsor | Eitan + Ravi; settlement sponsor; NPS access (via correspondent) | Haircut widening on Level 2A assets under severe stress; settlement sponsor credit risk | Eitan + Helena |
 | LA2 — Repo / secured funding | Secured borrowing against eligible collateral (government securities, eligible corporate bonds) via bilateral repo or JSE Repo market | Collateral pool available for repo at plan cycle; amount net of haircuts | 1–2 days | Counterparty bilateral repo agreements; JSE Repo market access | Eitan + Ravi; bilateral GMRA counterparties (Imani legal documentation); JSE membership | Repo counterparty withdrawal in stress; margin calls on existing repos requiring additional collateral | Eitan + Imani |
 | LA3 — Asset disposal for liquidity | Sale of liquid assets to generate cash beyond the HQLA buffer | Dependent on available liquid assets beyond HQLA; calibrated at plan cycle | 1 day (JSE-listed government bonds); 3–5 days (other assets) | Available unencumbered assets above HQLA minimum; market liquidity | Eitan + Saskia; market counterparties | Fire-sale pricing; liquidity signal to market | Eitan + Camille |
 | LA4 — Contingency credit facility activation | Drawdown of pre-arranged contingency credit lines from correspondent / sponsor banks | Facility sizes agreed in credit agreements; calibrated at plan cycle | 1–3 days (subject to facility terms) | Credit facility agreements in place and undrawn; counterparty credit conditions not impaired | Eitan + Imani (facility agreements); correspondent bank credit | Facility withdrawal by lender under Material Adverse Change clause; fee and pricing implications | Eitan + Camille |
@@ -431,7 +431,7 @@ The resolvability assessment for Hoz Bank Limited is conducted annually as part 
 | Separability of critical functions | Positive: CEFs (§3.3) are separable by asset class; no operational interdependency that prevents partial resolution | CEF mapping per §3.3 |
 | Intra-group financial dependencies | Moderate: holding company equity investment; management services agreement; resolution impact is bounded to group equity | Intra-group agreement register — Owen |
 | Loss-absorbing capacity | Build-phase: target R300m CET1 at licence-day; TLAC framework `[citation: TBC — PA TLAC requirement, if any, for SA banks at this scale; Imani route]` | Capital Plan v1 ([Owner Inbox/2026-05-07_camille_capital-plan-v1.md](2026-05-07_camille_capital-plan-v1.md)) |
-| Operational continuity in resolution | Moderate: operational continuity depends on indirect-participant infrastructure (SAMOS settlement sponsor, JSE clearing); Resolution Authority would need to maintain these relationships or transfer them to an acquirer | Operational-readiness preparatory measures per §3.5 |
+| Operational continuity in resolution | Moderate: operational continuity depends on indirect-participant infrastructure (correspondent bank settlement, JSE clearing); Resolution Authority would need to maintain these relationships or transfer them to an acquirer | Operational-readiness preparatory measures per §3.5 |
 | Valuation capability | Build-phase: internal mark-to-model and mark-to-market capabilities sufficient for an independent valuer; IFRS 9 / FVTPL governance per Bea (Accounting & financial reporting engineer, under Camille) | Reporting-capability spec ([Owner Inbox/2026-05-06_reporting-capability-spec.md](2026-05-06_reporting-capability-spec.md)) |
 | Access to financial market infrastructure | Moderate: indirect participant — resolution would need to manage sponsor / correspondent bank relationships; direct participation is harder to maintain in resolution | Indirect-participant posture (`D-INDIRECT-PARTICIPANT-POSTURE`) |
 
@@ -447,7 +447,7 @@ The Resolution Authority may require the bank to maintain a resolution informati
 | Balance sheet | Consolidated and solo balance sheets; major asset and liability classes; off-balance-sheet exposures | Camille + Bea | Quarterly BA-form-series outputs |
 | Trading book positions | Open positions by asset class; counterparty identity; close-out netting agreements (ISDA / GMRA) | Saskia (Head of Global Markets) + Imani | Daily position snapshot per trading-book substrate |
 | Funding profile | Liability maturity profile; funding source diversification; HQLA pool composition | Eitan + Ravi | ILAAP liquidity-side substrate output |
-| Critical contracts | Settlement sponsor agreement; JSE membership agreement; SAMOS participation agreement; ISDA master agreements; GMRA agreements | Imani + Owen | Contract register — Imani Domain C |
+| Critical contracts | Settlement sponsor agreement; JSE membership agreement; NPS correspondent-participant agreement; ISDA master agreements; GMRA agreements | Imani + Owen | Contract register — Imani Domain C |
 | IT system map | System inventory; data flows; DR capability; cloud substrate architecture | Atlas (Platform engineer) + Devon | Technology register |
 | Recovery Plan | Current annual Recovery Plan | Helena + Owen | This document series |
 | Key personnel | Recovery Committee members; operational deputies; PA supervisory contact | Owen | Party register per `D-PARTY-REGISTER` |

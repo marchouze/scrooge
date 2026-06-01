@@ -2,7 +2,7 @@
 //
 // Intraday HQLA-stress projection engine — BCBS 248 framework.
 //
-// Runs two scenarios (BAU + stress) across four SAMOS settlement windows
+// Runs two scenarios (BAU + stress) across four NPS settlement windows
 // per calendar day (SA time: 09:00, 12:00, 15:00, 16:30). For each
 // window the engine computes:
 //
@@ -27,9 +27,9 @@
 //   liquidity floor. Future: read from `RASCalibrationChange` events once
 //   the RAS event substrate lands.
 //
-// SAMOS is accessed via correspondent bank (indirect-participant operating
+// NPS settlement is accessed via correspondent bank (indirect-participant operating
 // posture — memory: `project_indirect_participant_posture.md`). The window
-// labels reflect SAMOS settlement session times; actual settlement messages
+// labels reflect NPS settlement session times; actual settlement messages
 // route through the correspondent connector (Tomas's scope).
 //
 // Authority: D-TREASURY-GAPS-WAVE1; BCBS 248 (Monitoring tools for intraday
@@ -42,8 +42,8 @@ import { getCollateralInventory } from "../collateral";
 // Types
 // ---------------------------------------------------------------------------
 
-/** The four SAMOS settlement windows, expressed as SA clock time labels. */
-export type SAMOSWindow = "09:00" | "12:00" | "15:00" | "16:30";
+/** The four NPS settlement windows, expressed as SA clock time labels. */
+export type SettlementWindow = "09:00" | "12:00" | "15:00" | "16:30";
 
 /** The two stress scenarios per BCBS 248. */
 export type IntradayScenario = "BAU" | "stress";
@@ -53,8 +53,8 @@ export type IntradayWindowStatus = "green" | "amber" | "red" | "no-positions";
 
 /** Projection result for one window in one scenario. */
 export interface IntradayWindowResult {
-  /** SAMOS settlement window label. */
-  windowLabel: SAMOSWindow;
+  /** NPS settlement window label (SA clock time). */
+  windowLabel: SettlementWindow;
   /** Scenario this result belongs to. */
   scenario: IntradayScenario;
   /** HQLA inflows in this window (ZAR). */
@@ -95,8 +95,8 @@ export interface IntradayStressResult {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** SAMOS settlement windows in chronological order. */
-export const SAMOS_WINDOWS: readonly SAMOSWindow[] = ["09:00", "12:00", "15:00", "16:30"];
+/** NPS settlement windows in chronological order. */
+export const SETTLEMENT_WINDOWS: readonly SettlementWindow[] = ["09:00", "12:00", "15:00", "16:30"];
 
 /**
  * RAS intraday liquidity floor — ZAR 50,000,000 (50m).
@@ -156,8 +156,8 @@ function computeWindowsForScenario(
   const results: IntradayWindowResult[] = [];
   let cumulativeNet = 0;
 
-  for (let i = 0; i < SAMOS_WINDOWS.length; i++) {
-    const windowLabel = SAMOS_WINDOWS[i] as SAMOSWindow;
+  for (let i = 0; i < SETTLEMENT_WINDOWS.length; i++) {
+    const windowLabel = SETTLEMENT_WINDOWS[i] as SettlementWindow;
     const rawInflow = windowInflows[i] ?? 0;
     const rawOutflow = windowOutflows[i] ?? 0;
 
@@ -213,8 +213,8 @@ export function runIntradayStress(asOf: string): IntradayStressResult {
   // Build-phase: no scheduled inflows or outflows exist in the event store.
   // Spread evenly across the four windows (all zero in build phase).
   // Future: read PaymentScheduled / ReceiptScheduled events and bucket by window.
-  const bauInflows: number[] = SAMOS_WINDOWS.map(() => 0);
-  const bauOutflows: number[] = SAMOS_WINDOWS.map(() => 0);
+  const bauInflows: number[] = SETTLEMENT_WINDOWS.map(() => 0);
+  const bauOutflows: number[] = SETTLEMENT_WINDOWS.map(() => 0);
 
   const bauWindows = computeWindowsForScenario(
     bauInflows,

@@ -189,12 +189,12 @@ import {
   liquiditySnapshotPayloadSchema,
   marketsReadinessSnapshotPayloadSchema,
   modelRegisteredPayloadSchema,
+  nostroFundingShortfallPayloadSchema,
   nsfrRatioProjectionPayloadSchema,
   operationalResilienceSnapshotPayloadSchema,
   paymentsReadinessSnapshotPayloadSchema,
   rasCalibrationChangePayloadSchema,
   riskAppetiteSnapshotPayloadSchema,
-  samosFundingShortfallPayloadSchema,
   taxReadinessSnapshotPayloadSchema,
 } from "../event-types/risk-treasury-extended";
 import {
@@ -762,9 +762,9 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     // Emitted by the SAMOS interface when a funding shortfall is detected
     // at the central bank settlement window.
-    type: "SAMOSFundingShortfall",
+    type: "NostroFundingShortfall",
     class: "markets",
-    payloadSchema: samosFundingShortfallPayloadSchema,
+    payloadSchema: nostroFundingShortfallPayloadSchema,
     issuer: "Ravi",
     subscribers: ["Ravi"],
     replay: "append-only-audit",

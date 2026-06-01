@@ -30,7 +30,7 @@
 // the §9 table is refined — consistent with the coverage-gap tolerance in
 // _step-id-convention.md §5.
 //
-// Procedure citations: Tomas owns Procedures/by-policy/samos-cut-off.md (§13
+// Procedure citations: Tomas owns Procedures/by-policy/correspondent-cut-off.md (§13
 // "planned"). Since these files do not yet have step anchors (pre-backfill
 // coverage-gap per _step-id-convention.md §5), we use the coverage-gap form:
 // `stepId: "samos-cut-off:step-1"` as a placeholder. The recon pipeline warns
@@ -67,9 +67,9 @@ const TOMAS_SPEC_PATH = resolve(
 );
 
 // Procedure path for Tomas's primary owned procedure (§13).
-const TOMAS_PROCEDURE_PATH = "Procedures/by-policy/samos-cut-off.md";
+const TOMAS_PROCEDURE_PATH = "Procedures/by-policy/correspondent-cut-off.md";
 // Coverage-gap step-ID form per _step-id-convention.md §5.
-const TOMAS_PROCEDURE_STEP_ID = "samos-cut-off:step-1";
+const TOMAS_PROCEDURE_STEP_ID = "correspondent-cut-off:step-1";
 
 // Rule 1 goal: payments-readiness — triggered when no PaymentSettlementSnapshot in 24h.
 // Maps to Tomas's §9 row "Reconciliation-break disposition (auto-match / case open)" as
@@ -286,7 +286,7 @@ export const tomasGoalDeriver: GoalDeriver = async (
       return {
         kind: "decision",
         chosen: PAYMENTS_READINESS_GOAL,
-        rationale: `No PaymentSettlementSnapshot event in the last 24h (last seen: ${lastSettlementSnapshot ? new Date(lastSettlementSnapshot).toISOString() : "never"}). Tomas's §6 cadence requires a daily payments-readiness run (SAMOS open-of-day rehearsal at 06:00 SAST; SAMOS end-of-day cut-off at 16:00 SAST per SARB NPSD). Selecting payments-readiness goal to trigger the tomas:payments-readiness handler.`,
+        rationale: `No PaymentSettlementSnapshot event in the last 24h (last seen: ${lastSettlementSnapshot ? new Date(lastSettlementSnapshot).toISOString() : "never"}). Tomas's §6 cadence requires a daily payments-readiness run (Correspondent bank settlement open-of-day rehearsal at 06:00 SAST; correspondent bank end-of-day cut-off at 16:00 SAST per SARB NPSD). Selecting payments-readiness goal to trigger the tomas:payments-readiness handler.`,
         mandateCitations: [
           {
             section: "9-decisions-in-scope",

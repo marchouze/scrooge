@@ -36,7 +36,7 @@
 //       (Herstatt risk; counterparty whitelist; correspondent-routed
 //       settlement default).
 //   §4. `project_indirect_participant_posture.md` — bank accesses CLS /
-//       SAMOS via correspondent; never direct.
+//       NPS settlement via correspondent; never direct.
 //   §5. BCBS d226 — Supervisory guidance for managing settlement risk in
 //       foreign-exchange transactions.
 //   §6. Banks Act 94 of 1990 Reg 39 — documented BCP procedures for
