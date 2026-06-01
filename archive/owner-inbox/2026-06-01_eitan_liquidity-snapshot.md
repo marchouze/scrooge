@@ -1,7 +1,7 @@
 ---
 agent: Eitan
 trigger: liquidity-snapshot
-asOf: 2026-06-01T06:53:17.575Z
+asOf: 2026-06-01T07:13:54.341Z
 decision-required: false
 ---
 
@@ -76,7 +76,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 |---|---|
 | `ALCODecision` | 0 |
 | `HedgeProgrammeApproved` | 0 |
-| Prior `LiquiditySnapshot` (this agent) | 7 |
+| Prior `LiquiditySnapshot` (this agent) | 8 |
 
 ## Substrate gaps (build-phase)
 
@@ -91,11 +91,11 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 
 ## Eitan's narrative
 
-Register coverage at 39 liquidity-related obligations indexed, none in PARTIAL — but the leading suite (ORG-PR-06/07/08/11/14/15) remains `[TBD]` against policy owners not yet drafted, so coverage is *catalogued* not *operational*. Against the daily expectation, the last 24h landed 1 `LCRRatioProjection`, 10 `IRRBBChecked`, and zero on `HQLAReported`, `LiquidityReport`, `NSFRRatioProjection`, `FXPositionReported`, `NostroFundingApproved`. Seven prior `LiquiditySnapshot` runs over seven days confirms degraded-mode is functioning as the daily-funding-event SLA stand-in — the heartbeat is alive even where the engine is not.
+Register coverage holds at 39 liquidity-touching obligations indexed (ORG-PR-06/07/08/11/14/15 plus the full PA D1-2022 LCR, D1-2023 NSFR, D5-2025 BA-110/120/125/130/340 returns, D1-2024 Pillar 3 IRRBB, and D4-2021 stress-sim families); none are flagged PARTIAL today, which means the obligations slice itself is clean and degraded-mode is the only thing standing between us and a live ratio. In the last 24h the heartbeat fired (8 prior `LiquiditySnapshot` runs over 7d, daily cadence intact) and the IRRBB sensor produced 10 `IRRBBChecked` events — so the daily-funding-event SLA stand-in *is* functioning for IRRBB. It is not yet functioning for LCR, NSFR, HQLA, nostro funding or FX: zero `HQLAReported`, zero `NSFRRatioProjection`, zero `FXPositionReported`, zero `NostroFundingApproved`, one `LCRRatioProjection`. In build-phase that is expected; what it means operationally is that ORG-PR-LCR-001/008, ORG-PR-NSFR-001/005, ORG-PR-36 and ORG-PR-43 are all currently evidenced by *heartbeat plus register membership*, not by a queryable ratio.
 
-The load-bearing observation is ORG-PR-LCR-001 / ORG-PR-LCR-008 (D1/2022 LCR maintenance and monthly calculation): a single `LCRRatioProjection` over 24h is build-phase-acceptable from Rohan's stub, but it has no `HQLAReported` upstream and no `NSFRRatioProjection` companion — meaning ORG-PR-NSFR-001 (D1/2023 formula) and ORG-PR-43 still have no projection emitter at all, and ORG-PR-LCR-007 (Rand-currency reporting) cannot be evidenced without `FXPositionReported`. The 10 `IRRBBChecked` against zero `ALCODecision` and zero `HedgeProgrammeApproved` over 7 days is the excursion worth chair attention: ORG-PR-11 and ORG-PR-RETURNS-015 (BA 340) imply IRRBB telemetry should be *driving* ALCO decisions or be explicitly noted as within-appetite — silent IRRBB is fine while we're in build, but once Ravi's engine lands, ten checks with no decision trail is a § 6 inactivity-SLA breach waiting to happen. Zero `NostroFundingApproved` is benign now; it becomes the same breach the day the SAMOS funding pathway goes live.
+The consequential observation is concentrated on the LCR/NSFR axis. ORG-PR-LCR-008 (monthly LCR calculation) and ORG-PR-NSFR-001 (NSFR formula) are the gating projections for BA 325 / BA 326 / BA 330 compilation under ORG-PR-RETURNS-003/004/006 and for the quarterly Pillar 3 LCR disclosure under ORG-PR-LCR-002/009 — until `LCRRatioProjection` and `NSFRRatioProjection` emit on a regular cadence with HQLA / inflow-cap / ASF / RSF decomposition, ORG-PR-LCR-004 (HQLA summation cap), ORG-PR-LCR-006 (75% inflow cap) and ORG-PR-NSFR-004 (ZAR financial-corporate ASF phase-out) cannot be independently verified from the event log and remain narrative-only. The single `LCRRatioProjection` in the window is a useful proof-of-life but not a series. Separately, zero `FXPositionReported` against a live FX book is the next inactivity-SLA risk once the engine lands — flagging now so it does not surprise ALCO; IRRBB is the only sensor currently meeting what the target-state daily review expects to see.
 
-Next substrate steps, in order: (1) land the `NSFRRatioProjection` schema alongside Rohan — the D1/2023 obligations (ORG-PR-NSFR-001 through -011) have no emitter and that is the largest single coverage gap in the slice; (2) wire `HQLAReported` as the upstream feeder for both `LCRRatioProjection` and the BA 110 / BA 325 pipeline (ORG-PR-RETURNS-003, ORG-PR-LCR-001); (3) draft the Liquidity Risk Management Policy stub so ORG-PR-06/07/08/14/15 can move off `[TBD]` — without that policy anchor, ORG-PR-36, ORG-PR-43 and the LCR/NSFR procedure file (`Procedures/by-policy/lcr-nsfr-liquidity-stress.md`, still planned) have no parent to attach to. ALCO prep item for the next cycle: an IRRBB-telemetry-to-decision mapping note, so the ten daily checks resolve into either a within-appetite attestation or a decision event — whichever Helena's appetite statement requires.
+Next substrate step, in order: (1) land the `LCRRatioProjection` schema with HQLA-stock, net-cash-outflow, inflow-cap-binding-flag and currency-of-denomination fields — this is the one projection that unlocks ORG-PR-LCR-001/004/006/007/008 evidencing simultaneously, and Rohan owns the computation engine; (2) follow immediately with `NSFRRatioProjection` (ASF / RSF decomposition with the ORG-PR-NSFR-004 phase-out date dependency baked in); (3) add `HQLAReported` and `FXPositionReported` daily emitters so the § 6 inactivity SLA has something other than IRRBB to bite on. ALCO prep item that follows: a one-page degraded-mode attestation for the next ALCO confirming the heartbeat-as-SLA-substitute is documented, time-boxed to engine cut-over, and that ORG-PR-LCR-010 (non-compliance reporting) escalation path is rehearsed before the first live ratio prints.
 
 ## Provenance
 
