@@ -136,6 +136,7 @@ import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-p
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
+import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
 import { isPresent } from "../platform/types/financial-input";
@@ -245,7 +246,7 @@ import {
 import { registerSimHubRoutes } from "./sim-hub-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
-import { registerTradeBookRoutes } from "./trade-book-view";
+import { bookFxTrade, registerTradeBookRoutes, type TradeBookBody } from "./trade-book-view";
 import type { DashboardState } from "./types";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
@@ -322,20 +323,39 @@ const marketDataStore = new MarketDataStore(marketDataDbPath);
 let cachedState: DashboardState = bootDerive();
 
 // FX market-making engine — module-level singleton. Hosts the still-live
-// external sub-simulators (market data feed, nostro, correspondent advice, SARB
-// ack) consumed by the 3rd-party simulator hub.
-//
-// The in-process counterparty FX trade loop is RETIRED
-// (D-FX-SIM-FRONTEND-INPUT-DRIVER, CEO-approved 2026-05-30): counterparty FX
-// trades now enter via the front-end (an agent drives /trade-book.html with
-// Claude-in-Chrome from `scripts/sim/fx-frontend-trade-specs.ts` specs). No
-// `executeFxTrade` callback is wired, the hub's counterparty module no longer
-// drives the loop, and the /api/fx-sim/{start,stop} routes are 410 — so there is
-// exactly ONE counterparty FX booking path (the front-end), not two.
-// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION;
-//   D-FX-SIM-FRONTEND-INPUT-DRIVER.
+// FX market-making engine — hosts sub-simulators (market data, nostro, correspondent,
+// SARB ack) and the in-process counterparty FX trade loop driven from /sim-hub.
+// Trades route through bookFxTrade (same path as manual desk) tagged with
+// whichever provenance the operator configures.
+// Authority: D-FX-SALES-TRADING-FRONTEND; D-MARKETS-SCHEMA-FOUNDATION.
+
+function fxPayloadToBookBody(
+  payload: FxTradeExecutedPayload,
+  provenanceMode: "simulated" | "production",
+): TradeBookBody {
+  const leg = payload.legs[0];
+  return {
+    productType: "fx",
+    provenanceMode,
+    currencyPair: { base: payload.currencyPair.base, quote: payload.currencyPair.quote },
+    side: payload.side,
+    notionalAmount: leg ? leg.notional.amountMinor / 1_000_000 : 0,
+    notionalCurrency: leg ? leg.notional.currency : payload.currencyPair.base,
+    rate: leg ? leg.rate.amount : 0,
+    settlementDate: leg ? leg.settlementDate.iso : "",
+    counterpartyName: payload.counterparty.name,
+    counterpartyLei: payload.counterparty.partyId,
+    traderRef: "sim:counterparty-fx-request",
+  };
+}
+
 const fxSimEngine = new FxSimEngine(eventStore, {
   marketDataStore,
+  executeFxTrade: (payload, _asOf, _counterpartyBic, provenanceMode) => {
+    void bookFxTrade(fxPayloadToBookBody(payload, provenanceMode)).catch((err: unknown) => {
+      console.error("[sim] FX booking via normal path failed:", err);
+    });
+  },
 });
 
 // Centralised 3rd-party simulator hub — registers the FX-counterparty stimulus
