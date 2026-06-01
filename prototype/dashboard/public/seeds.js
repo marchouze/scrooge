@@ -12,7 +12,6 @@
   const esc = (s) => SC.esc(String(s ?? ""));
 
   function kindColour(kind) {
-    if (kind === "treasury-positions") return "var(--color-accent, #1668dc)";
     if (kind === "balance-sheet") return "var(--color-accent, #1668dc)";
     if (kind === "model-governance") return "var(--color-warning, #d48806)";
     if (kind === "npa-attestation") return "var(--color-warning, #d48806)";

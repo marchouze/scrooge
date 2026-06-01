@@ -117,23 +117,6 @@ export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
     citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
   },
   {
-    seedId: "treasury-positions",
-    bootFn: "bootTreasurySeeds",
-    title: "Treasury positions (REPO / MMD / IBL)",
-    description:
-      "Emits repo trades, money-market deposits, interbank placements and funding lines so getALMPositionSnapshot derives live LCR/NSFR values. Superseded automatically if the treasury sim scenario has run.",
-    kind: "treasury-positions",
-    emittedEventTypes: [
-      "RepoTradeOpened",
-      "DepositTaken",
-      "InterbankLoanPlaced",
-      "FundingLineDrawn",
-    ],
-    descopable: true,
-    replaceWith: { label: "Trade book (author real-simulated)", href: "/trade-book.html" },
-    citations: ["WS1-PR1a", "WS2"],
-  },
-  {
     seedId: "balance-sheet-baseline",
     bootFn: "bootBalanceSheetSeed",
     title: "Balance-sheet baseline (NSFR)",
