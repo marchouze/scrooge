@@ -135,6 +135,7 @@ import {
 } from "../platform/projections/markets";
 import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-policy-coverage";
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
+import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
@@ -353,6 +354,7 @@ function fxPayloadToBookBody(
 
 const fxSimEngine = new FxSimEngine(eventStore, {
   marketDataStore,
+  getCounterparties: () => getActiveFxCounterparties(eventStore),
   executeFxTrade: (payload, _asOf, _counterpartyBic, provenanceMode, settlementMode) => {
     void bookFxTrade(fxPayloadToBookBody(payload, provenanceMode, settlementMode)).catch(
       (err: unknown) => {
@@ -3445,13 +3447,10 @@ const server = Bun.serve({
       // Build name lookup: counterpartyId → display name
       const nameMap = new Map<string, string>();
       // (a) KYC clients
+      // KYC-accepted clients (non-simulated) — canonical source
       const kycView = buildKycClientsView(eventStore);
       for (const c of kycView.clients) {
         nameMap.set(c.clientId, c.entityName);
-      }
-      // (b) fx-sim counterparties
-      for (const c of SIM_COUNTERPARTIES) {
-        nameMap.set(c.partyId, c.name);
       }
 
       const enriched = view.counterparties.map((c) => ({

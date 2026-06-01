@@ -1,49 +1,103 @@
 // platform/simulation/fx-sim-counterparties.ts
 //
-// Seeded fictional counterparties for the FX market-making simulation engine.
-// These are synthetic institutional banks used exclusively in build-phase
-// simulation runs. No real LEIs, no real counterparties.
+// FX counterparty types and party-register-derived counterparty accessors.
 //
-// Authority: D-FX-SALES-TRADING-FRONTEND (D-FX-BOOK-BOUNDARY — bookType
-//   required on every FX TradeExecuted); D-MARKETS-SCHEMA-FOUNDATION;
-//   ACI Model Code §2 (currency-pair quotation convention).
+// The party register is the single master counterparty store (Principle 2).
+// This module provides:
+//  - `SimCounterparty` — the interface the sim engine uses
+//  - `fxCounterpartiesFromPartyRegister(projection)` — all FX-eligible
+//    parties (real + sim) from the party register
+//  - `SIM_COUNTERPARTIES` — build-phase sim counterparties only (static
+//    fallback for tests and cold-start)
 //
-// Pair representation: all `eligiblePairs` entries are major-first per the
-// ACI hierarchy (EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > others).
-// e.g. `USD/ZAR`, not `ZAR/USD`. Asserted by `recon:fx-pair-direction`.
-//
+// Authority: D-FX-SALES-TRADING-FRONTEND; D-FX-BOOK-BOUNDARY;
+//   D-MARKETS-SCHEMA-FOUNDATION.
 // Author: Devon (Chief Operating Officer, engineering)
 
+import type { PartyProjection } from "../identity/party-projection";
 import type { Party } from "../markets/cdm/primitives";
 
 // ---------------------------------------------------------------------------
-// SimCounterparty — extends the CDM Party with simulation metadata.
+// SimCounterparty — CDM Party enriched with FX sim metadata
 // ---------------------------------------------------------------------------
 
 export interface SimCounterparty extends Party {
   /** Currency pairs this counterparty is eligible to trade. Format: "BASE/QUOTE". */
   eligiblePairs: string[];
-  /** Minimum notional for a single trade, in the first pair's base currency minor units. */
+  /** Minimum notional in minor units (legacy; ignored when notionalUsdMin/Max set on the engine). */
   minNotionalMinor: number;
-  /** Maximum notional for a single trade, in the first pair's base currency minor units. */
+  /** Maximum notional in minor units (legacy; ignored when notionalUsdMin/Max set on the engine). */
   maxNotionalMinor: number;
-  /** SWIFT BIC (11 chars) for this counterparty. Used in MT300 FX confirmation. */
+  /** SWIFT BIC (11 chars). */
   bic: string;
-  /** ISO 17442 LEI. Populated for real (non-sim) counterparties; absent for fictional ones. */
+  /** ISO 17442 LEI. Present for real counterparties. */
   lei?: string;
-  /** True = fictional build-phase counterparty; false/absent = real onboarded counterparty. */
+  /** True = build-phase fictitious counterparty (party register buildPhaseStatus: "sim"). */
   isSim?: boolean;
 }
 
 // ---------------------------------------------------------------------------
-// SIM_COUNTERPARTIES — 6 fictional institutional banks.
-// LEIs are 20 alphanumeric characters (ISO 17442 standard).
-// All are fictional; no real institution is represented.
+// Party-register-derived accessors
+// ---------------------------------------------------------------------------
+
+/**
+ * All FX-eligible counterparties from the party register — real + sim.
+ *
+ * Includes any legal-entity Party that has:
+ *   - bic set
+ *   - "fx-spot" in authorisedProducts
+ */
+export function fxCounterpartiesFromPartyRegister(projection: PartyProjection): SimCounterparty[] {
+  const result: SimCounterparty[] = [];
+
+  for (const record of projection.parties.values()) {
+    if (record.kind !== "legal-entity") continue;
+    const attrs = record.kindAttributes;
+    if (attrs.kind !== "legal-entity") continue;
+    if (!attrs.bic) continue;
+    if (!attrs.authorisedProducts?.includes("fx-spot")) continue;
+
+    const eligiblePairs =
+      attrs.eligibleFxPairs && attrs.eligibleFxPairs.length > 0
+        ? [...attrs.eligibleFxPairs]
+        : ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"];
+
+    result.push({
+      partyId: record.partyId,
+      name: record.displayName,
+      role: "counterparty",
+      jurisdiction: record.jurisdictions[0] ?? "ZA",
+      bic: attrs.bic,
+      ...(attrs.lei !== undefined ? { lei: attrs.lei } : {}),
+      isSim: attrs.buildPhaseStatus === "sim",
+      eligiblePairs,
+      minNotionalMinor: 0,
+      maxNotionalMinor: 0,
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Production-only FX counterparties (buildPhaseStatus absent or "active").
+ * Used when provenance = "production" trades must not reference sim banks.
+ */
+export function realFxCounterpartiesFromPartyRegister(
+  projection: PartyProjection,
+): SimCounterparty[] {
+  return fxCounterpartiesFromPartyRegister(projection).filter((c) => !c.isSim);
+}
+
+// ---------------------------------------------------------------------------
+// Static fallback — mirrors the 6 sim banks in the party register seed.
+// Used directly in tests (no live event store) and as the cold-start
+// fallback when getActiveFxCounterparties finds no party register entries.
 // ---------------------------------------------------------------------------
 
 export const SIM_COUNTERPARTIES: SimCounterparty[] = [
   {
-    partyId: "SIMSAZA0000000001ZA",
+    partyId: "urn:party:legal-entity:std-sim-za",
     name: "Standard Simulated Bank SA",
     role: "counterparty",
     jurisdiction: "ZA",
@@ -54,7 +108,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     maxNotionalMinor: 5_000_000_00,
   },
   {
-    partyId: "SIMASAZA000000002ZA",
+    partyId: "urn:party:legal-entity:absa-sim-za",
     name: "Absa Simulated Bank SA",
     role: "counterparty",
     jurisdiction: "ZA",
@@ -65,7 +119,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     maxNotionalMinor: 2_000_000_00,
   },
   {
-    partyId: "SIMBCLGB0000000003GB",
+    partyId: "urn:party:legal-entity:barclays-sim-gb",
     name: "Barclays Simulated London",
     role: "counterparty",
     jurisdiction: "GB",
@@ -76,7 +130,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     maxNotionalMinor: 10_000_000_00,
   },
   {
-    partyId: "SIMDBKDE0000000004DE",
+    partyId: "urn:party:legal-entity:deutsche-sim-de",
     name: "Deutsche Simulated Frankfurt",
     role: "counterparty",
     jurisdiction: "DE",
@@ -87,7 +141,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     maxNotionalMinor: 8_000_000_00,
   },
   {
-    partyId: "SIMJPMUS0000000005US",
+    partyId: "urn:party:legal-entity:jpm-sim-us",
     name: "JPMorgan Simulated New York",
     role: "counterparty",
     jurisdiction: "US",
@@ -98,7 +152,7 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     maxNotionalMinor: 20_000_000_00,
   },
   {
-    partyId: "SIMNEDSA0000000006ZA",
+    partyId: "urn:party:legal-entity:nedbank-sim-za",
     name: "Nedbank Simulated SA",
     role: "counterparty",
     jurisdiction: "ZA",
@@ -108,42 +162,4 @@ export const SIM_COUNTERPARTIES: SimCounterparty[] = [
     minNotionalMinor: 50_000_00,
     maxNotionalMinor: 3_000_000_00,
   },
-];
-
-/**
- * Real (onboarded) counterparties from the party register.
- * Used when provenance = "production" or alongside sim counterparties in the
- * combined list.
- */
-export const REAL_COUNTERPARTIES: SimCounterparty[] = [
-  {
-    partyId: "urn:party:legal-entity:standard-bank-za",
-    name: "Standard Bank Corporate Treasury",
-    role: "counterparty",
-    jurisdiction: "ZA",
-    bic: "SBZAZAJJXXX",
-    lei: "QFC8ZCW3Q5PRXU1XTM60",
-    isSim: false,
-    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"],
-    minNotionalMinor: 500_000_00,
-    maxNotionalMinor: 20_000_000_00,
-  },
-  {
-    partyId: "urn:party:legal-entity:investec-bank-za",
-    name: "Investec Bank Treasury",
-    role: "counterparty",
-    jurisdiction: "ZA",
-    bic: "IVESZAJJXXX",
-    lei: "549300RH5FFHO48FXT69",
-    isSim: false,
-    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD"],
-    minNotionalMinor: 200_000_00,
-    maxNotionalMinor: 10_000_000_00,
-  },
-];
-
-/** All FX counterparties: sim + real. Use this in the sim engine. */
-export const ALL_FX_COUNTERPARTIES: SimCounterparty[] = [
-  ...SIM_COUNTERPARTIES,
-  ...REAL_COUNTERPARTIES,
 ];

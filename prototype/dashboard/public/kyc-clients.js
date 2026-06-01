@@ -37,11 +37,6 @@ function catBadge(cat) {
   return `<span class="badge ${map[cat] ?? "badge-grey"}">${esc(cat ?? "—")}</span>`;
 }
 
-function simBadge(simulated) {
-  if (!simulated) return "";
-  return `<span class="badge badge-sim" title="Simulated counterparty — build-phase FX-sim bank">sim</span>`;
-}
-
 // ---------------------------------------------------------------------------
 // Fetch
 
@@ -103,14 +98,20 @@ function renderTable(clients) {
 
   tbody.innerHTML = clients
     .map((c) => {
-      const truncId = c.clientId.length > 16 ? `${c.clientId.slice(0, 16)}…` : c.clientId;
+      const products =
+        Array.isArray(c.authorisedProducts) && c.authorisedProducts.length
+          ? c.authorisedProducts
+              .map((p) => `<span class="badge badge-grey">${esc(p)}</span>`)
+              .join(" ")
+          : "—";
       return `<tr onclick="window.location.href='/kyc-clients/${encodeURIComponent(c.clientId)}'" title="${esc(c.clientId)}">
-      <td><code>${esc(truncId)}</code></td>
-      <td>${esc(c.entityName ?? "—")} ${simBadge(c.simulated)}</td>
-      <td>${esc(c.entityType ?? "—")}</td>
+      <td>${esc(c.entityName ?? "—")}</td>
+      <td><code>${esc(c.bic ?? "—")}</code></td>
+      <td><code>${esc(c.lei ?? "—")}</code></td>
       <td>${esc(c.jurisdiction ?? "—")}</td>
       <td>${riskBadge(c.riskBand)}</td>
       <td>${catBadge(c.category)}</td>
+      <td>${products}</td>
       <td>${fmtDate(c.onboardedAt)}</td>
       <td>${fmtDate(c.nextRefreshDue)}</td>
       <td><a class="btn btn-outline btn-sm" href="/kyc-clients/${encodeURIComponent(c.clientId)}" onclick="event.stopPropagation()">View</a></td>
@@ -141,10 +142,12 @@ function exportCSV() {
   const headers = [
     "clientId",
     "entityName",
-    "entityType",
+    "bic",
+    "lei",
     "jurisdiction",
     "riskBand",
     "category",
+    "authorisedProducts",
     "onboardedAt",
     "nextRefreshDue",
   ];

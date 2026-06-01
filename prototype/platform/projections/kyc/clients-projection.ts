@@ -70,7 +70,7 @@ export interface ClientState {
   /**
    * True when this client was onboarded as a simulated counterparty (build-phase
    * FX-sim banks). Simulated clients go through the full KYC event chain but are
-   * marked so the UI can show a "sim" badge distinguishing them from real clients.
+   * excluded from the default /api/kyc/clients list.
    */
   readonly simulated: boolean;
   /** KYC candidateId that produced this client — used to correlate ClientRejected tombstones. */

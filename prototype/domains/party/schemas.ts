@@ -146,6 +146,10 @@ const legalEntityAttrsSchema = z.object({
     .string()
     .regex(/^[A-Z0-9]{20}$/, "lei must be a 20-char uppercase alphanumeric ISO 17442 identifier")
     .optional(),
+  bic: z.string().optional(),
+  authorisedProducts: z.array(z.string()).optional(),
+  eligibleFxPairs: z.array(z.string()).optional(),
+  buildPhaseStatus: z.enum(["active", "sim"]).optional(),
 });
 
 const agentAttrsSchema = z.object({
