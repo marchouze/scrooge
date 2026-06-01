@@ -27,6 +27,7 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { makeAgentEscalation } from "../../platform/event-store/event-types";
 import {
   makeLCRComputed,
   makeNSFRComputed,
@@ -180,6 +181,64 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         },
       });
       eventStore.append(lcrProjectionEvent);
+      eventsEmitted++;
+    }
+
+    // -----------------------------------------------------------------------
+    // D-BUILD-PHASE-SYNTHETIC-RESPONSE: below-minimum breach triggers
+    // synthetic escalation — response chain rehearsal.
+    // -----------------------------------------------------------------------
+    if (lcrT30.status === "below-minimum") {
+      const lcrEscalationId = `LCR-BREACH-${date}`;
+      const lcrEscalationEvent = makeAgentEscalation({
+        asOf: ctx.asOf,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:anya:liquidity-projection" },
+        citations: [...EVENT_CITATIONS, "D-BUILD-PHASE-SYNTHETIC-RESPONSE"],
+        eventId: newEventId(),
+        payload: {
+          escalationId: lcrEscalationId,
+          raisedBy: "agent:anya:liquidity-projection",
+          question: `LCR is below the 100% regulatory minimum (BA 325 §11). Management action required. Current ratio: ${lcrT30.lcrRatioPct?.toFixed(1)}% (HQLA R${lcrT30.hqlaZar.toLocaleString()}, net outflows R${lcrT30.netCashOutflowsZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
+          options: [
+            "Increase HQLA via repo or FX swap (Ravi)",
+            "Reduce short-term contractual outflows (Ravi + Eitan)",
+            "Invoke ILAAP contingency funding plan (Eitan)",
+          ],
+          blockedBy:
+            "LCR below 100% regulatory minimum (BA 325 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
+          severity: "high",
+          routedTo: "agent:ravi + agent:eitan + agent:helena",
+        },
+      });
+      eventStore.append(lcrEscalationEvent);
+      eventsEmitted++;
+    }
+
+    if (nsfrT30.status === "below-minimum") {
+      const nsfrEscalationId = `NSFR-BREACH-${date}`;
+      const nsfrEscalationEvent = makeAgentEscalation({
+        asOf: ctx.asOf,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:anya:liquidity-projection" },
+        citations: [...EVENT_CITATIONS, "D-BUILD-PHASE-SYNTHETIC-RESPONSE"],
+        eventId: newEventId(),
+        payload: {
+          escalationId: nsfrEscalationId,
+          raisedBy: "agent:anya:liquidity-projection",
+          question: `NSFR is below the 100% regulatory minimum (BA 326 §11). Management action required. Current ratio: ${nsfrT30.nsfrRatioPct?.toFixed(1)}% (ASF R${nsfrT30.asfZar.toLocaleString()}, RSF R${nsfrT30.rsfZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
+          options: [
+            "Increase stable funding sources (Ravi + Eitan)",
+            "Reduce required stable funding via asset composition (Ravi)",
+            "Invoke contingency funding plan (Eitan)",
+          ],
+          blockedBy:
+            "NSFR below 100% regulatory minimum (BA 326 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
+          severity: "high",
+          routedTo: "agent:ravi + agent:eitan + agent:helena",
+        },
+      });
+      eventStore.append(nsfrEscalationEvent);
       eventsEmitted++;
     }
 
