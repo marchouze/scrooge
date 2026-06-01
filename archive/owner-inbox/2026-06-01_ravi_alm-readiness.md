@@ -1,7 +1,7 @@
 ---
 agent: Ravi
 trigger: alm-readiness
-asOf: 2026-06-01T05:37:05.400Z
+asOf: 2026-06-01T06:23:55.552Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous run of Ravi's daily ALM-readiness attestation per `Team/Ravi.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Seventeenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Engineer-side counterpart to Eitan's `LiquiditySnapshot` — Eitan reports counts of liquidity / treasury events the ALCO chair would consume; Ravi reports the substrate-readiness state for each ALM pipeline (LCR, NSFR, IRRBB, FX position, FTP, collateral, SAMOS funding) the engineer would build to make those events real.
 
-**Headline:** 9 ALM pipelines tracked · readiness 0 ready / 1 drafting / 8 specified / 0 not-yet-specified · 7 Ravi-owned obligations indexed (0 PARTIAL / drafting) · 192 ALM-domain events (last 7d).
+**Headline:** 9 ALM pipelines tracked · readiness 0 ready / 1 drafting / 8 specified / 0 not-yet-specified · 7 Ravi-owned obligations indexed (0 PARTIAL / drafting) · 202 ALM-domain events (last 7d).
 
 ## Eitan's latest snapshot
 
@@ -60,11 +60,11 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 | `HQLAObserved` | 0 |
 | `LCRComputed` | 16 |
 | `NSFRComputed` | 16 |
-| `IRRBBChecked` | 160 |
+| `IRRBBChecked` | 170 |
 | `FXPositionReported` | 0 |
 | `CollateralUpdated` | 0 |
 | `FundingDrawnDown` | 0 |
-| Prior `ALMReadinessSnapshot` (this agent) | 5 |
+| Prior `ALMReadinessSnapshot` (this agent) | 6 |
 
 ## Substrate gaps surfaced this run
 
@@ -78,11 +78,11 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 
 ## Ravi's narrative
 
-ALM-projection substrate is in pre-first-event state across the board: zero `HQLAObserved`, `FXPositionReported`, `CollateralUpdated`, `FundingDrawnDown` in the last seven days, and Eitan's 24h shadow shows zero of every consumed event. The 16 `LCRComputed` / 16 `NSFRComputed` / 160 `IRRBBChecked` in the 7-day window are engine self-test traffic against synthetic books, not postable measurements — they do not retire the Reg 26 / Reg 27 / BCBS d365 obligations. The load-bearing block on Eitan's first end-to-end live LCR / NSFR sign-off is `alm:hqla-inventory`: until the HQLA inventory projection with Banks Act Reg 26 Level-1 / 2A / 2B classification and haircuts emits a real `HQLAObserved`, the LCR numerator is unfounded and `alm:lcr-net-outflow` cannot produce a signable `LCRComputed`. Degraded-mode is operating cleanly as the daily-funding-event SLA stand-in — Eitan's snapshot is consuming Ravi-side "no postable events, substrate state X" attestations in lieu of `HQLAReported` / `LiquidityReport` / `SAMOSFundingApproved`, which is the correct posture in build phase but is not a substitute for the Reg 26 / Reg 27 sign-off path.
+ALM-projection substrate is in build phase: nine pipelines specified, one (FTP attribution) drafting, zero `HQLAObserved` / `FXPositionReported` / `CollateralUpdated` / `FundingDrawnDown` events in the last seven days, and Eitan's 24h shadow flat across every counter. The load-bearing block on the first end-to-end live LCR / NSFR sign-off is `alm:hqla-inventory` — until the Banks Act Reg 26 classification table is wired against the synthetic balance and `HQLAObserved` starts emitting, the LCR numerator is unobservable and the 16 `LCRComputed` events in the window are running off placeholder inventory, not a postable HQLA stream. NSFR is one tier behind: the ASF / RSF factor tables per Banks Act Reg 27 / BCBS d335 are specified but not built, so the 16 `NSFRComputed` events are similarly synthetic. Degraded-mode is functioning as the daily-funding-event SLA stand-in — the seven-day `IRRBBChecked` count (170) confirms the projection runtime itself is alive; what's missing is the upstream postable event substrate, not the engines.
 
-Three observations rank above the rest. (1) `alm:hqla-inventory` is one engineering ticket from green: the Reg 26 eligibility table is specifiable today against the synthetic capital line, and emitting first `HQLAObserved` unblocks `alm:lcr-net-outflow` and the `ORG-PR-06` / `ORG-PR-14` (ILAAP) projection chain in a single step. (2) `alm:ftp-attribution` is the only pipeline in `drafting` rather than `specified` — the curve registry is drafted but ZARONIA / JIBAR / OIS / FX market-rate feed ingestion is deferred to vendor selection, which is the binding gap on the first FTP cycle and on `ORG-PR-08` / `ORG-PR-15` (Funding Strategy attribution). (3) `alm:samos-funding` cannot emit `FundingDrawnDown` until the correspondent-bank-mediated SAMOS connector contract with Tomas exists; per the indirect-participant posture this is *not* direct SAMOS membership, and `ORG-MK-08` (Excon / Funding Strategy) plus the BCBS 248 intraday-monitoring expectation both ride on that connector. `ORG-PR-11` (IRRBB) is the easier of the policy-owner obligations to retire next, since the 160 self-test `IRRBBChecked` events mean the BCBS d365 EVE / NII engine is closest to postable-event readiness once shock scenarios are specified.
+Three observations rank above the rest. First, `alm:hqla-inventory` is genuinely one engineering ticket from green — the Reg 26 Level-1 / 2A / 2B eligibility table plus haircut application against the synthetic capital line — and unblocks both `alm:lcr-net-outflow` and the LCR-ratio half of `ORG-PR-06` / `ORG-PR-14` (ILAAP) in a single move. Second, `alm:ftp-attribution` is the only pipeline in `drafting` rather than `specified`, and its binding gap is not engine logic but market-rate feed ingestion — ZARONIA, JIBAR, OIS, FX — deferred to vendor selection; until those land, the FTP curve register cannot produce postable per-transaction attribution, which leaves `ORG-PR-08` and `ORG-PR-15` (Funding Strategy Policy) without an engine-side anchor. Third, `alm:samos-funding` is correctly scoped to the indirect-participant posture per BCBS 248 intraday expectations — direct SAMOS membership is out of scope — but the correspondent-bank-mediated connector contract with Tomas is undrafted, and `ORG-MK-08` (Excon / Funding Strategy, joint with Zara) plus the FX-position pipeline both wait on a Currency & Exchanges Manual A.4 categorisation that has no FX-denominated event to land against yet.
 
-Next engineering moves, in dependency order: (a) ticket the Banks Act Reg 26 HQLA-eligibility table (Level-1, Level-2A 15%, Level-2B 25/50% haircuts) and wire the HQLA inventory projection against the synthetic capital line to emit `HQLAObserved` — this is the single highest-leverage move and unblocks `LCRComputed` for Eitan's first live sign-off under Banks Act 94 of 1990 s 72; (b) co-specify the Reg 27 ASF / RSF factor tables in the same sprint so `NSFRComputed` follows from the same synthetic liability / asset book; (c) draft the correspondent-bank SAMOS-mediation API contract with Tomas (request / settlement-confirmation / intraday-position semantics per BCBS 248) so `FundingDrawnDown` has a real source; (d) open the ZARONIA / JIBAR / OIS / FX market-data vendor decision with Eitan — until that is closed, FTP attribution stays in drafting and `ORG-PR-08` / `ORG-PR-15` cannot move off PARTIAL; (e) specify the BCBS d365 EVE shock scenarios against the synthetic banking book to convert the 160 self-test `IRRBBChecked` events into a defensible first measurement for `ORG-PR-11`. Currency & Exchanges Manual A.4 position categories for `alm:fx-position` can wait until the first FX-denominated event lands — not on today's critical path.
+Next engineering move, in order: (1) specify and ship the Banks Act Reg 26 HQLA-eligibility table and emit first `HQLAObserved` against the synthetic balance — this is the single ticket that converts the `LCRComputed` shadow into a real numerator and unblocks Eitan's first measured LCR sign-off under `ORG-PR-06` / `ORG-PR-14`; (2) in parallel, specify ASF / RSF tables per Banks Act Reg 27 / BCBS d335 so the NSFR engine fires the moment a synthetic liability book lands; (3) draft the correspondent-bank SAMOS-mediation API contract with Tomas (request schema, intraday-position callback, settlement-finality semantics per BCBS 248) so `FundingDrawnDown` has somewhere to come from when the first funding cycle runs; and (4) open the ZARONIA / JIBAR / OIS feed-vendor ticket — FTP attribution cannot exit `drafting` without it, and `ORG-PR-08` / `ORG-PR-15` stay engine-unanchored until it does. EVE-shock scenarios per BCBS d365 against synthetic banking-book positions remain the right next step on `alm:irrbb-repricing-gap` for `ORG-PR-11`, but they sit behind the HQLA ticket on Eitan's critical path.
 
 ## Provenance
 
