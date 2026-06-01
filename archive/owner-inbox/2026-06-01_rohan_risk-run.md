@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: risk-run
-asOf: 2026-06-01T05:03:18.128Z
+asOf: 2026-06-01T06:17:37.650Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the engineer-side of Helena's measurement-substrate gap.
 
-**Headline:** 13 appetite lines tracked · measurement readiness 0 ready / 3 drafting / 7 specified / 3 not-yet-specified · 0 position events (last 7d) · 798 RiskRaised events.
+**Headline:** 13 appetite lines tracked · measurement readiness 0 ready / 3 drafting / 7 specified / 3 not-yet-specified · 0 position events (last 7d) · 812 RiskRaised events.
 
 ## Helena's latest snapshot
 
@@ -47,8 +47,8 @@ _Build-phase posture: zero position events. Kai's M1 CDM TypeScript bindings (in
 
 | Severity | Count |
 |---|---|
-| medium | 570 |
-| high | 228 |
+| medium | 580 |
+| high | 232 |
 
 ## Substrate gaps surfaced this run
 
@@ -62,7 +62,11 @@ _Build-phase posture: zero position events. Kai's M1 CDM TypeScript bindings (in
 
 ## Rohan's narrative
 
-_Narrative generation failed (api error undefined: Connection error.)._
+Measurement substrate is in build phase: zero position events in the last 7 days, zero measurements firing, and of 13 appetite lines inventoried in Helena's 2026-06-01 snapshot, none are running end-to-end against real data. The load-bearing block on Helena's first measured RAS run is **appetite:capital:cet1-buffer**: the capital-base projection per Banks Act 94 of 1990 Reg 38 sits at the intersection of Bea's accounting substrate (CET1 numerator) and my RWA engines (denominator), and until it exists no Pillar 1 / Pillar 2A / buffer line in RAS § B3 can be quantified. LCR and NSFR (Ravi-owned, Reg 26 and BCBS NSFR 2014) are one classification-table ticket plus a projection-runtime away from green against the synthetic balance — closer to firing than CET1, but they don't on their own constitute a measured RAS pack.
+
+Two secondary observations worth flagging. First, 812 RiskRaised events in seven days with no mapping from event taxonomy to appetite-line owner — that is an orphan-event problem, not a measurement problem, and it needs a router from RiskRaised → appetite-line key before Helena's pack can walk them. Second, the **model registry itself does not yet exist**, which gates appetite:model:tier-discipline (RAS § B5) and means trading-VaR v0, when Kai's CDM bindings land under D-MARKETS-SCHEMA-FOUNDATION, will be *modelled* but neither *registered* nor *independently validated* — and therefore not production-eligible for ICAAP measurement under the spirit of BCBS Market Risk Framework / FRTB internal-models approval. Independent Validation is a Nolan hire, not an engineering ticket, but the registry substrate is mine and is blocking.
+
+Next engineering moves, in order: (1) draft `capital-base-projection v0` against the synthetic seed — CET1 derivation per Reg 38, RWA stubs for credit (BCBS Credit Risk Framework SA) and market (FRTB SA) returning zero until portfolios activate, IFRS 9 ECL deduction stubbed at zero, so the line can fire end-to-end and CET1-buffer measurement turns green the moment Bea's capital line is real; (2) stand up `model-registry v0` as empty substrate with tier / owner / validation-state fields, so trading-VaR v0 and SA-CCR have a registration target on arrival and the tier-discipline appetite line has something to measure against; (3) build the RiskRaised → appetite-line router so the 812-event backlog stops being orphaned in Helena's pack. Climate (PA GN 1 of 2024) and the two concentration lines remain correctly deferred — no engineering action this cycle.
 
 ## Provenance
 
