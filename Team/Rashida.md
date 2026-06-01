@@ -27,7 +27,7 @@ Rashida does **not** run risk taxonomy ownership (Helena), compliance / RMCP (Za
 - Detection-engineering oversight — SIEM / EDR / XDR architecture, MITRE ATT&CK fluency.
 - Incident command — has commanded a regulator-reportable event through SARB / PA notification.
 - Secure SDLC + supply chain — SLSA-aligned verification, sigstore, SBOM governance.
-- Trading-floor security — surveillance-pipeline integrity, dealer-mandate authorisation, exchange / SAMOS / SWIFT connectivity hardening.
+- Trading-floor security — surveillance-pipeline integrity, dealer-mandate authorisation, exchange / NPS / SWIFT connectivity hardening.
 - Banks Act 94 of 1990, BCBS operational-resilience principles, King IV IT-governance, ISO/IEC 27001, NIST CSF 2.0.
 
 ## 5. Working style

@@ -65,7 +65,7 @@ This procedure has four sub-functions:
 - **Per `PaymentInitiated` event:** update the projected outbound position (projected balance = opening balance − sum of `PaymentInitiated.amount` not yet settled).
 - **Per `PaymentSettled` event:** confirm actual outflow; update confirmed balance; reconcile against projection.
 - **Per `CutOffCheckPassed` / `SchemeCycleCheckPassed` event:** consume intraday dispatch events from PROC-PAY-SCO-01 and PROC-PAY-BSC-01 to update projected balance.
-- **End-of-day:** after SAMOS afternoon cycle and BankservAfrica final batch close — run full reconciliation against correspondent statement.
+- **End-of-day:** after the NPS RTGS afternoon cycle and BankservAfrica final batch close — run full reconciliation against correspondent statement.
 - **Alert threshold:** when projected nostro balance falls below the intraday minimum threshold (set by ALCO under the Funding Strategy), emit `NostroAlertThresholdBreached`.
 - **Maintenance trigger:** when account details, authorised signatories, or operating limits require amendment — managed by Tomas with Imani (legal & contracts engineer) for operating contract updates.
 
@@ -92,7 +92,7 @@ This procedure has four sub-functions:
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| C1 | **Obtain correspondent end-of-day statement.** After final SAMOS cycle and BankservAfrica batch close, retrieve the correspondent's end-of-day balance statement (MT940 or camt.053). Parse: closing balance, all debit and credit entries for the business date, reference identifiers. | system | `@platform/payments/nostro` | Target receipt: within 30 minutes of the correspondent's statement generation time (per operating contract SLA). |
+| C1 | **Obtain correspondent end-of-day statement.** After the final NPS RTGS settlement cycle and BankservAfrica batch close, retrieve the correspondent's end-of-day balance statement (MT940 or camt.053). Parse: closing balance, all debit and credit entries for the business date, reference identifiers. | system | `@platform/payments/nostro` | Target receipt: within 30 minutes of the correspondent's statement generation time (per operating contract SLA). |
 | C2 | **Reconcile statement entries to payment events.** For each debit entry on the statement: match to a `PaymentSettled` event by payment reference / UETR. For each credit entry: match to an inbound payment event (or treasury inflow). Flag unmatched entries as `NostroUnmatchedEntry { direction, amount, statementRef }`. | system | `@platform/payments/nostro`; `@platform/event-store` | Unmatched debit = potential unknown payment — escalate immediately. Unmatched credit = potential inbound not yet booked — escalate to Bea (financial-reporting engineer) for posting. |
 | C3 | **Reconcile closing balance.** Assert: correspondent closing balance = opening balance − total confirmed outflows + total confirmed inflows (per bank's own event log). Tolerance: zero (any difference is a break). If break detected, emit `NostroReconciliationBreak` and escalate per §7. | system + Tomas (payments engineer) | `@platform/payments/nostro` | `NostroReconciliationBreak` is also consumed by PROC-PAY-RBH-01 as a nostro-leg break. |
 | C4 | **Emit `NostroEoDReconciliationComplete`.** On clean reconciliation, record: `{ date, openingBalance, closingBalance, totalOutflows, totalInflows, entryCount, matchedCount, unmatchedCount }`. Feed to PROC-RISK-ILF-01 and Bea's month-end close (PROC-FIN-MC-01 — planned). | system | `@platform/payments/nostro`; `@platform/event-store` | If unmatched entries remain outstanding, the event is emitted with `status: "partial"` and the outstanding items are listed. Full clean-up must occur before next business day's opening. |
@@ -172,7 +172,7 @@ Build-phase: nostro substrate reads synthetic balances from `_sponsor-bank-opera
 - `Procedures/by-policy/intraday-liquidity-funding.md` (PROC-RISK-ILF-01) — named dependency: Step 1 consumes `NostroOpeningBalance` event. Intraday snapshots feed the BCBS monitoring metrics.
 - `Procedures/by-policy/outbound-payment-sponsor-bank-channel.md` (PROC-OPS-PS-01) — `PaymentInitiated` and `PaymentSettled` events drive intraday balance updates (sub-function B).
 - `Procedures/by-policy/reconciliation-break-handling.md` (PROC-PAY-RBH-01) — `NostroReconciliationBreak` is consumed as a nostro-leg break; PROC-PAY-RBH-01 Step 5 queries this procedure's nostro feed.
-- `Procedures/by-policy/samos-cut-off.md` (PROC-PAY-SCO-01) — `CutOffCheckPassed` events update projected nostro balance.
+- `Procedures/by-policy/correspondent-cut-off.md` (PROC-PAY-SCO-01) — `CutOffCheckPassed` events update projected nostro balance.
 - `Procedures/by-policy/bankserv-cycle.md` (PROC-PAY-BSC-01) — `SchemeCycleCheckPassed` events update projected nostro balance.
 
 ## Change log

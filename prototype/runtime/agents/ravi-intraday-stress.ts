@@ -3,7 +3,7 @@
 // Ravi's intraday HQLA-stress projection handler.
 //
 // Each run:
-//   1. Calls `runIntradayStress(asOf)` — BAU + stress, 4 SAMOS windows.
+//   1. Calls `runIntradayStress(asOf)` — BAU + stress, 4 NPS settlement windows.
 //   2. Emits 8 `IntradayHQLAStressProjection` events (4 windows × 2 scenarios).
 //   3. If any stress-scenario window status is "red": emits one
 //      `HQLACompositionDrift` event with severity "breach".
@@ -17,9 +17,9 @@
 //   produce non-zero outputs when the collateral inventory populates and
 //   payment/receipt schedule events land.
 //
-//   SAMOS is accessed via correspondent bank (indirect-participant operating
+//   NPS settlement is accessed via correspondent bank (indirect-participant operating
 //   posture — memory: `project_indirect_participant_posture.md`). Window labels
-//   reflect SAMOS settlement sessions; actual messages route through Tomas's
+//   reflect NPS settlement sessions; actual messages route through Tomas's
 //   correspondent connector.
 //
 // Authority: D-TREASURY-GAPS-WAVE1; BCBS 248 (intraday liquidity monitoring,
@@ -70,7 +70,7 @@ function buildReportMarkdown(
     lines.push(`## ${label}`);
     lines.push("");
     lines.push(
-      "| SAMOS window | Inflow (ZAR) | Outflow (ZAR) | Cumulative net (ZAR) | Projected HQLA (ZAR) | Floor (ZAR) | Status |",
+      "| NPS settlement window | Inflow (ZAR) | Outflow (ZAR) | Cumulative net (ZAR) | Projected HQLA (ZAR) | Floor (ZAR) | Status |",
     );
     lines.push("|---|---|---|---|---|---|---|");
     for (const w of windows) {
@@ -116,7 +116,7 @@ function buildReportMarkdown(
     "- RAS intraday floor of ZAR 50,000,000 is a build-phase constant per Helena's RAS. Future: read from `RASCalibrationChange` events.",
   );
   lines.push(
-    "- SAMOS accessed via correspondent bank (indirect-participant posture). Window times reflect SAMOS settlement sessions; messages route through Tomas's correspondent connector.",
+    "- NPS settlement accessed via correspondent bank (indirect-participant posture). Window times reflect NPS settlement sessions; messages route through Tomas's correspondent connector.",
   );
   lines.push(
     "- Inflows / outflows will populate when `PaymentScheduled` / `ReceiptScheduled` events land.",
@@ -179,7 +179,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         payload: {
           alertId,
           detectedAt: ctx.asOf,
-          policyBandBreached: `${redWindows.length} SAMOS window(s) project negative HQLA under BCBS 248 stress`,
+          policyBandBreached: `${redWindows.length} NPS settlement window(s) project negative HQLA under BCBS 248 stress`,
           severity: "breach",
         },
       });

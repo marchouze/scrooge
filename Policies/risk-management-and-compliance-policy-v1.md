@@ -103,7 +103,7 @@ The Bank conducts a **Business Risk Assessment** (**BRA**) at the following cade
 | Client typology | Institutional-only counterparties (per `project_strategic_foundation.md`): JSE members, licensed banks, asset managers, pension funds. No retail clients. |
 | Product families | JSE bonds / equities spot; OTC interest-rate derivatives (IRD); FX (via sponsor / correspondent bank per `project_indirect_participant_posture.md`). No cash transactions above the CTR threshold are anticipated (institutional-only; no branch cash); the CTR obligation is retained as a control regardless. |
 | Delivery channels | Electronic / algorithmic; no physical branch cash handling. |
-| Geographic footprint | SA single-branch; cross-border flows via CMI-access sponsor banks (SAMOS, CLS indirect access); potential UK Bribery Act extra-territorial exposure for UK-connected counterparties. |
+| Geographic footprint | SA single-branch; cross-border flows via CMI-access sponsor banks (NPS RTGS / BankservAfrica via correspondent, CLS indirect access); potential UK Bribery Act extra-territorial exposure for UK-connected counterparties. |
 | Correspondent / sponsor-bank channel | Sponsor-bank FX channel carries concentration and settlement risk; AML screen runs on the pre-trade counterparty master, not only at onboarding. |
 | Proliferation-financing (CPF) | FATF Rec. 7 explicit expectation (PA Communication 1/2025): the Bank screens against UN Security Council targeted-financial-sanctions lists and maintains CPF risk indicators in the transaction-monitoring rule set alongside ML/TF typologies. |
 

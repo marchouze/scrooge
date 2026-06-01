@@ -77,8 +77,8 @@ function deriveSwitchTestActive(events: readonly Event[]): boolean {
 
 /**
  * Extract primary and backup correspondent names from the routing table.
- * "Primary" = the first non-SAMOS correspondent (USD by convention).
- * "Backup" = the second non-SAMOS correspondent (EUR by convention).
+ * "Primary" = the first non-RTGS correspondent (USD by convention).
+ * "Backup" = the second non-RTGS correspondent (EUR by convention).
  * Returns null for each slot if the table is empty.
  */
 function deriveCorrespondentSummary(asOf: string): {
@@ -87,10 +87,11 @@ function deriveCorrespondentSummary(asOf: string): {
   asOf: string;
 } {
   const rows = getCorrespondentRouting();
-  // Filter to SWIFT / CLS correspondents (not the SAMOS RTGS leg)
-  const nonSamos = rows.filter((r) => r.scheme !== "SAMOS");
-  const primary = nonSamos[0]?.correspondentBank ?? null;
-  const backup = nonSamos[1]?.correspondentBank ?? null;
+  // Filter to SWIFT / CLS correspondents (not the RTGS leg)
+  // scheme 'SAMOS' = correspondent bank's RTGS leg, not a direct connection
+  const swiftCorrespondents = rows.filter((r) => r.scheme !== "SAMOS");
+  const primary = swiftCorrespondents[0]?.correspondentBank ?? null;
+  const backup = swiftCorrespondents[1]?.correspondentBank ?? null;
   return { primary, backup, asOf };
 }
 

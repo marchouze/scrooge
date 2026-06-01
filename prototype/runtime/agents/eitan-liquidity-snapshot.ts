@@ -50,7 +50,7 @@ Your voice is calm under stress and unsentimental about funding cost. You quote 
 Your task is to write a written narrative — one to three short paragraphs — that:
 
 - Names the headline at the top: register coverage, what's expected daily versus what landed in the last 24h, and whether degraded-mode is functioning as the daily-funding-event SLA stand-in.
-- Picks the 1–3 most consequential observations: an obligation in PARTIAL state that gates a downstream procedure, an event-type the daily review expects but doesn't see (zero \`LCRRatioProjection\` is fine in build-phase, zero \`SAMOSFundingApproved\` once the engine lands is a § 6 inactivity-SLA breach), an FX or IRRBB excursion event that warrants ALCO chair attention.
+- Picks the 1–3 most consequential observations: an obligation in PARTIAL state that gates a downstream procedure, an event-type the daily review expects but doesn't see (zero \`LCRRatioProjection\` is fine in build-phase, zero \`NostroFundingApproved\` once the engine lands is a § 6 inactivity-SLA breach), an FX or IRRBB excursion event that warrants ALCO chair attention.
 - Names what's needed next — a specific substrate gap to close, a projection schema to land first, the next ALCO prep item that follows. Be concrete.
 
 Cite obligation IDs (\`ORG-PR-06\` / \`-07\` / \`-08\` / \`-11\` / \`-14\` / \`-15\`) when calling out specifics. The obligations register and Ravi's / Anya's projections are the canonical authoring locations; your narrative is interpretation, not new substance.
@@ -76,7 +76,7 @@ interface EitanDigest {
   irrbbCheckedLast24h: number;
   fxPositionReportedLast24h: number;
   capitalActionLast24h: number;
-  samosFundingApprovedLast24h: number;
+  nostroFundingApprovedLast24h: number;
   alcoDecisionLast7d: number;
   hedgeProgrammeApprovedLast7d: number;
   priorSnapshotsLast7d: number;
@@ -159,7 +159,7 @@ function buildDigest(ctx: AgentRunContext): EitanDigest {
     irrbbCheckedLast24h: countSince("IRRBBChecked", since24h),
     fxPositionReportedLast24h: countSince("FXPositionReported", since24h),
     capitalActionLast24h: countSince("CapitalAction", since24h),
-    samosFundingApprovedLast24h: countSince("SAMOSFundingApproved", since24h),
+    nostroFundingApprovedLast24h: countSince("NostroFundingApproved", since24h),
     alcoDecisionLast7d: countSince("ALCODecision", since7d),
     hedgeProgrammeApprovedLast7d: countSince("HedgeProgrammeApproved", since7d),
     priorSnapshotsLast7d: countSince("LiquiditySnapshot", since7d),
@@ -185,7 +185,7 @@ function buildNarrativeInput(ctx: AgentRunContext, d: EitanDigest): string {
   lines.push(`  - IRRBBChecked: ${d.irrbbCheckedLast24h}`);
   lines.push(`  - FXPositionReported: ${d.fxPositionReportedLast24h}`);
   lines.push(`  - CapitalAction: ${d.capitalActionLast24h}`);
-  lines.push(`  - SAMOSFundingApproved: ${d.samosFundingApprovedLast24h}`);
+  lines.push(`  - NostroFundingApproved: ${d.nostroFundingApprovedLast24h}`);
   lines.push("");
   lines.push("treasury events (last 7 days):");
   lines.push(`  - ALCODecision: ${d.alcoDecisionLast7d}`);
@@ -214,7 +214,7 @@ function buildReportMarkdown(
   );
   lines.push("");
   lines.push(
-    `**Headline:** ${d.liquidityObligations.length} liquidity-related obligation${d.liquidityObligations.length === 1 ? "" : "s"} indexed (${d.liquidityPartial} PARTIAL / deferred) · ${d.lcrProjectionLast24h} LCR / ${d.nsfrProjectionLast24h} NSFR projection event${d.nsfrProjectionLast24h === 1 ? "" : "s"} · ${d.samosFundingApprovedLast24h} \`SAMOSFundingApproved\` event${d.samosFundingApprovedLast24h === 1 ? "" : "s"} in the last 24h · ${d.alcoDecisionLast7d} \`ALCODecision\` event${d.alcoDecisionLast7d === 1 ? "" : "s"} in the last 7 days.`,
+    `**Headline:** ${d.liquidityObligations.length} liquidity-related obligation${d.liquidityObligations.length === 1 ? "" : "s"} indexed (${d.liquidityPartial} PARTIAL / deferred) · ${d.lcrProjectionLast24h} LCR / ${d.nsfrProjectionLast24h} NSFR projection event${d.nsfrProjectionLast24h === 1 ? "" : "s"} · ${d.nostroFundingApprovedLast24h} \`NostroFundingApproved\` event${d.nostroFundingApprovedLast24h === 1 ? "" : "s"} in the last 24h · ${d.alcoDecisionLast7d} \`ALCODecision\` event${d.alcoDecisionLast7d === 1 ? "" : "s"} in the last 7 days.`,
   );
   lines.push("");
 
@@ -245,7 +245,7 @@ function buildReportMarkdown(
   lines.push(`| \`IRRBBChecked\` | ${d.irrbbCheckedLast24h} |`);
   lines.push(`| \`FXPositionReported\` | ${d.fxPositionReportedLast24h} |`);
   lines.push(`| \`CapitalAction\` | ${d.capitalActionLast24h} |`);
-  lines.push(`| \`SAMOSFundingApproved\` | ${d.samosFundingApprovedLast24h} |`);
+  lines.push(`| \`NostroFundingApproved\` | ${d.nostroFundingApprovedLast24h} |`);
   lines.push("");
   lines.push(
     "_Build-only context: no live treasury position; no real SAMOS account; no live HQLA portfolio. Zero counts on every row are expected and not a substrate alarm. Once Ravi's ALM engine and Anya's liquidity-projection engine land, the daily expectation moves from heartbeat-only to real ratio sign-off._",
@@ -304,7 +304,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    "Read `Regulations/_obligations-register.md` for liquidity-related rows (ORG-PR-06 / -07 / -08 / -11 / -14 / -15 plus any LCR / NSFR / BCBS 248 / IRRBB / liquidity citations). Replayed `HQLAReported`, `LiquidityReport`, `LCRRatioProjection`, `NSFRRatioProjection`, `IRRBBChecked`, `FXPositionReported`, `CapitalAction`, `SAMOSFundingApproved`, `ALCODecision`, `HedgeProgrammeApproved`, `LiquiditySnapshot` from the host event store.",
+    "Read `Regulations/_obligations-register.md` for liquidity-related rows (ORG-PR-06 / -07 / -08 / -11 / -14 / -15 plus any LCR / NSFR / BCBS 248 / IRRBB / liquidity citations). Replayed `HQLAReported`, `LiquidityReport`, `LCRRatioProjection`, `NSFRRatioProjection`, `IRRBBChecked`, `FXPositionReported`, `CapitalAction`, `NostroFundingApproved`, `ALCODecision`, `HedgeProgrammeApproved`, `LiquiditySnapshot` from the host event store.",
   );
   lines.push("");
   return lines.join("\n");
@@ -382,7 +382,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       liquidityObligations: digest.liquidityObligations.length,
       lcr24h: digest.lcrProjectionLast24h,
       nsfr24h: digest.nsfrProjectionLast24h,
-      samos24h: digest.samosFundingApprovedLast24h,
+      nostro24h: digest.nostroFundingApprovedLast24h,
     },
     "eitan:liquidity-snapshot — digest built",
   );
@@ -390,7 +390,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   return {
     eventsEmitted,
     ...(deliverable ? { deliverable } : {}),
-    summary: `${digest.liquidityObligations.length} liquidity obligations · ${digest.lcrProjectionLast24h} LCR / ${digest.nsfrProjectionLast24h} NSFR / ${digest.samosFundingApprovedLast24h} SAMOS-fund events (24h) · ${digest.alcoDecisionLast7d} ALCO decisions (7d).`,
+    summary: `${digest.liquidityObligations.length} liquidity obligations · ${digest.lcrProjectionLast24h} LCR / ${digest.nsfrProjectionLast24h} NSFR / ${digest.nostroFundingApprovedLast24h} nostro-fund events (24h) · ${digest.alcoDecisionLast7d} ALCO decisions (7d).`,
     ok: true,
   };
 };

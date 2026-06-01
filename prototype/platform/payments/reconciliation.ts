@@ -165,7 +165,7 @@ function isWithin4HoursTimestamp(anchorStr: string, nowStr: string): boolean {
  * relative to `nowStr` (ISO 8601 timestamp). Timing breaks are self-correcting;
  * nostro breaks require investigation.
  *
- * Business rationale: SAMOS/correspondent windows close same-day; a missing leg
+ * Business rationale: NPS/correspondent windows close same-day; a missing leg
  * for today's or a future settlement date is within the timing tolerance window.
  */
 function isSettlementDateTodayOrFuture(settlementDate: string, nowStr: string): boolean {

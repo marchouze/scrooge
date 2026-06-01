@@ -80,7 +80,7 @@
       "name": "Tomas",
       "role": "Operations & payments engineer",
       "type": "engineering",
-      "expertise": "SAMOS, BankservAfrica, SWIFT, ISO 20022, reconciliation, cut-off engineering",
+      "expertise": "Correspondent bank channel, BankservAfrica, SWIFT, ISO 20022, reconciliation, cut-off engineering",
       "reportsTo": "Devon",
       "workflowFiles": ["agent-runtime-tomas-daily-reconciliation.yml", "agent-runtime-tomas-payments-readiness.yml"],
       "workflowTriggers": ["daily-reconciliation", "payments-readiness"]

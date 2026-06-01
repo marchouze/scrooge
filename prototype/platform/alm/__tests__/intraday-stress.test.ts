@@ -19,7 +19,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { INTRADAY_FLOOR_ZAR, SAMOS_WINDOWS, runIntradayStress } from "../intraday-stress";
+import { INTRADAY_FLOOR_ZAR, SETTLEMENT_WINDOWS, runIntradayStress } from "../intraday-stress";
 
 // ---------------------------------------------------------------------------
 // Helper: inject a synthetic HQLA position by appending to the singleton
@@ -79,14 +79,14 @@ describe("runIntradayStress — zero-position baseline (build phase)", () => {
     expect(result.stress).toHaveLength(4);
   });
 
-  it("BAU window labels match SAMOS_WINDOWS order", () => {
+  it("BAU window labels match SETTLEMENT_WINDOWS order", () => {
     const labels = result.bau.map((w) => w.windowLabel);
-    expect(labels).toEqual([...SAMOS_WINDOWS]);
+    expect(labels).toEqual([...SETTLEMENT_WINDOWS]);
   });
 
-  it("stress window labels match SAMOS_WINDOWS order", () => {
+  it("stress window labels match SETTLEMENT_WINDOWS order", () => {
     const labels = result.stress.map((w) => w.windowLabel);
-    expect(labels).toEqual([...SAMOS_WINDOWS]);
+    expect(labels).toEqual([...SETTLEMENT_WINDOWS]);
   });
 
   it("all BAU windows have status=no-positions when HQLA = 0", () => {
@@ -249,15 +249,15 @@ describe("BCBS 248 stress factor arithmetic", () => {
 // Test 5: SAMOS_WINDOWS constant
 // ---------------------------------------------------------------------------
 
-describe("SAMOS_WINDOWS constant", () => {
+describe("SETTLEMENT_WINDOWS constant", () => {
   it("has exactly 4 windows", () => {
-    expect(SAMOS_WINDOWS).toHaveLength(4);
+    expect(SETTLEMENT_WINDOWS).toHaveLength(4);
   });
 
   it("windows are in chronological order", () => {
-    expect(SAMOS_WINDOWS[0]).toBe("09:00");
-    expect(SAMOS_WINDOWS[1]).toBe("12:00");
-    expect(SAMOS_WINDOWS[2]).toBe("15:00");
-    expect(SAMOS_WINDOWS[3]).toBe("16:30");
+    expect(SETTLEMENT_WINDOWS[0]).toBe("09:00");
+    expect(SETTLEMENT_WINDOWS[1]).toBe("12:00");
+    expect(SETTLEMENT_WINDOWS[2]).toBe("15:00");
+    expect(SETTLEMENT_WINDOWS[3]).toBe("16:30");
   });
 });

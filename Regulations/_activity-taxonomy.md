@@ -31,7 +31,7 @@ This register is the **markdown render** of the canonical activity taxonomy. The
 | Code | Label | Description |
 |------|-------|-------------|
 | `ACT-BANK-DEPOSIT` | Deposit-taking | Deposit-taking under Banks Act §11 |
-| `ACT-BANK-PAYMENT` | Payment processing | Payment processing via SAMOS / sponsor-bank channel (indirect participant posture) |
+| `ACT-BANK-PAYMENT` | Payment processing | Payment processing via correspondent bank / sponsor-bank channel (indirect NPS participant posture) |
 | `ACT-BANK-NOSTRO` | Nostro & correspondent management | Nostro account management and correspondent-bank relationships |
 
 ### Client

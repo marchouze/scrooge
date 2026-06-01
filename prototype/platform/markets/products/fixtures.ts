@@ -770,7 +770,7 @@ export const M6_MMD_DEPOSIT_FIXTURE: Product = {
     jurisdictionMatrix: ["ZA"],
   },
   operationalReadiness: {
-    settlementPath: "SAMOS via correspondent T+0",
+    settlementPath: "via correspondent T+0",
     reconciliationCadence: "daily",
     substrateCompletenessGate: "WS1-exit",
   },
@@ -847,7 +847,7 @@ export const M7_FUNDING_LINE_FIXTURE: Product = {
     jurisdictionMatrix: ["ZA"],
   },
   operationalReadiness: {
-    settlementPath: "SAMOS via correspondent T+0",
+    settlementPath: "via correspondent T+0",
     reconciliationCadence: "daily",
     substrateCompletenessGate: "WS1-exit",
   },
@@ -930,7 +930,7 @@ export const M8_IBL_FIXTURE: Product = {
     jurisdictionMatrix: ["ZA"],
   },
   operationalReadiness: {
-    settlementPath: "SAMOS via correspondent T+0",
+    settlementPath: "via correspondent T+0",
     reconciliationCadence: "daily",
     substrateCompletenessGate: "WS1-exit",
   },

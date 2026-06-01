@@ -163,7 +163,7 @@ The bank maintains a **business-wide risk assessment (BWRA)** that identifies, a
 
 - **Products and services:** institutional bonds/equities, OTC interest-rate derivatives (IRD), FX (B-cluster, concentrated; accessed via correspondent banks), repo. No retail products; no cash-intensive products at go-live. The institutional-only client base substantially reduces exposure to the ML typologies most prevalent in the retail channel.
 - **Customer base:** institutional counterparties only (per `project_strategic_foundation.md`). No natural-person retail clients. Predominant customer types: asset managers, pension funds, corporates, financial institutions. Elevated ML concern for: foreign financial institutions in high-risk corridors, shell-company counterparties with complex beneficial-ownership structures, counterparties in FATF-identified high-risk jurisdictions.
-- **Delivery channels:** no cash; no anonymous digital channels. Trades executed electronically; settlement via SAMOS (indirect access through sponsor bank per `project_indirect_participant_posture.md`); FX via correspondent.
+- **Delivery channels:** no cash; no anonymous digital channels. Trades executed electronically; settlement via the correspondent bank (indirect NPS participant per `project_indirect_participant_posture.md`); FX via correspondent.
 - **Geographic exposure:** primary — South Africa. Cross-border exposure through institutional counterparties' home jurisdictions; USD settlement via correspondent (OFAC exposure). High-risk jurisdictions per FATF black/grey lists trigger EDD by default.
 
 The BWRA is a document-substrate artefact; reviewed annually; every review cycle emits `RmcpTypologyReviewed` event per the RMCP attestable spec §2.3.
@@ -327,7 +327,7 @@ Conservative dispatch applies: if the previous refresh was within the window but
 
 **Statutory anchor:** FIC Act s.21F; FATF Recommendation 13.
 
-The bank's indirect CMI access posture (via sponsor / correspondent banks; per `project_indirect_participant_posture.md`) means the bank engages correspondent banks for SAMOS settlement and FX execution. These relationships carry correspondent-banking risk.
+The bank's indirect CMI access posture (via sponsor / correspondent banks; per `project_indirect_participant_posture.md`) means the bank engages correspondent banks for correspondent bank settlement and FX execution. These relationships carry correspondent-banking risk.
 
 Before establishing any foreign correspondent relationship:
 

@@ -39,7 +39,7 @@ BANK PROFILE:
 - Holds both a banking licence (Banks Act 94/1990) and an FSP licence (Category I, FAIS Act 37/2002)
 - Operates exclusively with institutional counterparties — no retail clients
 - Activities: JSE-listed bonds and equities, OTC interest rate derivatives (IRD), FX spot
-- Does not directly join CLS or SAMOS (uses correspondent banks)
+- Does not directly join CLS or NPS (uses correspondent banks)
 - No physical branches beyond registered office
 - AI-agent-operated; human staff at licence-day is statutory minimum (~5-10 people)
 

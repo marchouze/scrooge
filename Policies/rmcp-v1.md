@@ -430,7 +430,7 @@ The Bank conducts a **Business Risk Assessment (BRA)** at the following cadence:
 | Client typology | Institutional-only counterparties (per `project_strategic_foundation.md`): JSE members, licensed banks, asset managers, pension funds. No retail clients. |
 | Product families | JSE bonds / equities spot; OTC interest-rate derivatives (IRD); FX (via sponsor / correspondent bank per `project_indirect_participant_posture.md`). No cash transactions above CTR threshold anticipated (institutional-only; no branch cash); CTR control maintained regardless. |
 | Delivery channels | Electronic / algorithmic; no physical branch cash handling. |
-| Geographic footprint | SA single-branch; cross-border flows via CMI-access sponsor banks (SAMOS, CLS indirect access); potential UK Bribery Act extra-territorial exposure for UK-connected counterparties. |
+| Geographic footprint | SA single-branch; cross-border flows via CMI-access sponsor banks (NPS RTGS / BankservAfrica via correspondent, CLS indirect access); potential UK Bribery Act extra-territorial exposure for UK-connected counterparties. |
 | Correspondent / sponsor-bank channel | Sponsor-bank FX channel carries concentration and settlement risk; AML screen runs on the pre-trade counterparty master, not only at onboarding. |
 | CPF risk | FATF Rec. 7 explicit expectation (PA Communication 1/2025): the Bank screens against UN Security Council targeted-financial-sanctions lists and maintains CPF risk indicators in the transaction-monitoring rule set alongside ML/TF typologies. |
 
@@ -549,7 +549,7 @@ Any POCDATARA match triggers:
 - Register row [`ORG-FC-17`](../Regulations/_obligations-register.md) (FATF Rec. 16 wire transfers).
 - **Wolfsberg Group — Correspondent Banking Principles (2023)** — interpretive guidance on correspondent due diligence standards.
 
-The Bank accesses critical market infrastructure (SAMOS, CLS) via **sponsor / correspondent banks** (per `project_indirect_participant_posture.md`). This posture means the Bank is both a **respondent bank** (receiving correspondent services) and may act as a **correspondent bank** for certain clients. Both relationships are governed by this section.
+The Bank accesses critical market infrastructure (NPS RTGS via correspondent, CLS) via **sponsor / correspondent banks** (per `project_indirect_participant_posture.md`). This posture means the Bank is both a **respondent bank** (receiving correspondent services) and may act as a **correspondent bank** for certain clients. Both relationships are governed by this section.
 
 ### 10.2 Due diligence on correspondent institutions
 
@@ -596,7 +596,7 @@ For wire transfers executed through correspondent / sponsor-bank channels, the B
 - Wire transfers missing required originator / beneficiary information are rejected or returned;
 - Records of originator and beneficiary information are retained per §3 (5-year floor).
 
-The wire-transfer obligation is partially a sponsor-bank obligation (for SAMOS / CLS indirect access); the Bank contractually requires its sponsor banks to comply with FATF Rec. 16 as a condition of the correspondent agreement.
+The wire-transfer obligation is partially a sponsor-bank obligation (for NPS RTGS / CLS indirect access via correspondent); the Bank contractually requires its sponsor banks to comply with FATF Rec. 16 as a condition of the correspondent agreement.
 
 ---
 

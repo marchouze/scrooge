@@ -61,7 +61,7 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "TradePosted",
       "FundingDrawn",
       "DepositReceived",
-      "SAMOSFundingShortfall",
+      "NostroFundingShortfall",
       "HQLACompositionDrift",
       "IRRBBExcursion",
       "FXPositionBreach",
