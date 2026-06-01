@@ -44,6 +44,14 @@ function parsePair(pair: string): { base: string; quote: string } {
 }
 
 /**
+ * Number of minor units per one major unit for a currency.
+ * JPY has no subunit (1 yen = 1 minor); all other traded currencies here use 100.
+ */
+function currencyMinorFactor(ccy: string): number {
+  return ccy === "JPY" ? 1 : 100;
+}
+
+/**
  * Convert a USD amount to major units of `targetCcy` using market data.
  * Uses lookupQuoteWithInverse so both direct and inverse stored ticks work.
  * Falls back to 1:1 when no rate is available (should not happen in practice
@@ -230,7 +238,7 @@ export function generateSimTrade(
     const usdAmount =
       options.notionalUsdMin + rng() * (options.notionalUsdMax - options.notionalUsdMin);
     const payMajor = usdToMajor(usdAmount, payCurrency, options.marketDataStore, rng, rateEngine);
-    notionalMinor = Math.round(payMajor * 1_000_000);
+    notionalMinor = Math.round(payMajor * currencyMinorFactor(payCurrency));
   } else {
     const rangeMinor = cp.maxNotionalMinor - cp.minNotionalMinor;
     notionalMinor = Math.round(cp.minNotionalMinor + rng() * rangeMinor);
