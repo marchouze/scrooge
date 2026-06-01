@@ -280,6 +280,7 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "RepoTradeOpened", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as RepoTradeOpenedPayload;
     if (!p.tradeId || !p.startLegCashZar) continue;
     if (closedRepoIds.has(p.tradeId)) continue; // settled or terminated
@@ -306,6 +307,7 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "InterbankLoanPlaced", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as InterbankLoanPlacedPayload;
     if (!p.placementId || !p.principalZar) continue;
     if (closedIblIds.has(p.placementId)) continue; // matured or recalled
