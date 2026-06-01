@@ -24,7 +24,7 @@ import {
   getLimitUtilisations,
   rebuildLimitUtilisation,
 } from "../../projections/markets/limit-utilisation";
-import { ALL_FX_COUNTERPARTIES } from "../fx-sim-counterparties";
+import { SIM_COUNTERPARTIES, type SimCounterparty } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
 import { FxRateEngine } from "../fx-sim-rates";
 import { runPostTradeLifecycle } from "../post-trade-lifecycle";
@@ -94,6 +94,13 @@ export interface EnvSimOptions {
    * The fourth argument is the provenance mode configured on the engine, so the
    * callback can pass it through to bookFxTrade as provenanceMode.
    */
+  /**
+   * Counterparty source. When provided, each `fireTrade()` call invokes this
+   * to get the current live counterparty list — enabling KYC-derived counterparties
+   * without restarting the engine. Falls back to `SIM_COUNTERPARTIES` when absent.
+   * The server wires this to `getActiveFxCounterparties(eventStore)`.
+   */
+  getCounterparties?: () => SimCounterparty[];
   executeFxTrade?: (
     payload: FxTradeExecutedPayload,
     asOf: string,
@@ -191,6 +198,7 @@ export class EnvSimEngine {
     notionalUsdMax?: number;
     seed?: number;
     counterpartyProfiles?: CounterpartyBehaviorProfile[];
+    getCounterparties?: () => SimCounterparty[];
     executeFxTrade?: (
       payload: FxTradeExecutedPayload,
       asOf: string,
@@ -228,6 +236,9 @@ export class EnvSimEngine {
       ...(options?.seed !== undefined ? { seed: options.seed } : {}),
       ...(options?.counterpartyProfiles !== undefined
         ? { counterpartyProfiles: options.counterpartyProfiles }
+        : {}),
+      ...(options?.getCounterparties !== undefined
+        ? { getCounterparties: options.getCounterparties }
         : {}),
       ...(options?.executeFxTrade !== undefined ? { executeFxTrade: options.executeFxTrade } : {}),
     };
@@ -539,10 +550,12 @@ export class EnvSimEngine {
    * runs the risk monitor to determine the optimal trade direction.
    */
   fireTrade(opts?: { forcedSide?: "buy" | "sell"; eligiblePairsFilter?: string[] }): void {
+    // Resolve live counterparty list from KYC (via injected callback) or fall back to sim banks.
+    const counterparties = this.opts.getCounterparties?.() ?? SIM_COUNTERPARTIES;
     // Get available pairs from market data store; fall back to STANDARD_PAIRS.
     const availablePairs = getAvailableFxPairs(this.marketDataStore);
 
-    const payload = generateSimTrade(this.rateEngine, ALL_FX_COUNTERPARTIES, this.opts.bookId, {
+    const payload = generateSimTrade(this.rateEngine, counterparties, this.opts.bookId, {
       rng: this.rng,
       marketDataStore: this.marketDataStore,
       availablePairs,
@@ -556,7 +569,7 @@ export class EnvSimEngine {
       ...(opts?.eligiblePairsFilter ? { eligiblePairsFilter: opts.eligiblePairsFilter } : {}),
     });
     const asOf = nowUtc();
-    const cp = ALL_FX_COUNTERPARTIES.find((c) => c.partyId === payload.counterparty.partyId);
+    const cp = counterparties.find((c) => c.partyId === payload.counterparty.partyId);
     const counterpartyBic = cp?.bic ?? "SBZAZAJJXXX";
     const provenanceMode = this.opts.provenance;
     const settlementMode = this.opts.settlementMode;

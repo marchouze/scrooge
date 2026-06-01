@@ -41,7 +41,10 @@ export interface KycClientsView {
 export function buildKycClientsView(store: Pick<EventStore, "replay">): KycClientsView {
   const projector = new LocalProjector(store as EventStore);
   const stateMap = projector.build(clientsProjection);
-  const clients = [...stateMap.values()];
+  // Simulated (build-phase fictitious) counterparties are excluded from the
+  // canonical client register — they exist in the event store for substrate
+  // testing purposes only.
+  const clients = [...stateMap.values()].filter((c) => !c.simulated);
 
   return {
     asOf: nowUtc(),

@@ -439,6 +439,23 @@ export const clientAcceptedPayloadSchema = z
     riskBand: z.enum(["low", "medium", "high"]).optional(),
     category: z.enum(["EC", "PC"]).optional(), // Eligible Counterparty | Professional Client
     acceptedAt: z.string().min(1).optional(),
+    /** SWIFT BIC-11 for the counterparty. Required for institutional clients. */
+    bic: z.string().optional(),
+    /** ISO 17442 LEI (20 chars). */
+    lei: z.string().optional(),
+    /**
+     * Product / service codes this client is authorised to transact in with the
+     * bank. Examples: "fx-spot", "fx-forward", "repo", "mmd", "ibl", "bond",
+     * "equity", "irs". Used to gate the FX sim loop (requires "fx-spot") and
+     * surfaces in the counterparty detail view.
+     */
+    authorisedProducts: z.array(z.string()).optional(),
+    /**
+     * FX pairs this client is eligible to trade. Format: "BASE/QUOTE" per ACI
+     * Model Code (major-first). Drives the sim engine's pair picker when picking
+     * from KYC-derived counterparties. Empty = all available pairs.
+     */
+    eligibleFxPairs: z.array(z.string()).optional(),
   })
   .passthrough();
 
