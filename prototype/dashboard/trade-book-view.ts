@@ -1133,13 +1133,27 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
     return { ok: false, error: "rate must be a positive number" };
   }
 
-  const settlementDate = typeof body.settlementDate === "string" ? body.settlementDate : "";
-  if (!isValidDate(settlementDate)) {
-    return { ok: false, error: "settlementDate must be a valid YYYY-MM-DD date" };
-  }
   const todayIso = clock.now().slice(0, 10);
-  if (settlementDate < todayIso) {
-    return { ok: false, error: "settlementDate must be >= today" };
+
+  // Resolve settlement mode early — accelerated sets value date = today so all
+  // lifecycle events (PrincipalPayment, SettlementConfirmed) naturally carry
+  // today's as_of rather than a future-dated as_of that is out of sync with the
+  // booking timestamp.
+  const resolvedSettlementMode: "realtime" | "accelerated" =
+    body.settlementMode === "realtime" ? "realtime" : "accelerated";
+
+  let settlementDate: string;
+  if (resolvedSettlementMode === "accelerated") {
+    settlementDate = todayIso;
+  } else {
+    const rawSettlementDate = typeof body.settlementDate === "string" ? body.settlementDate : "";
+    if (!isValidDate(rawSettlementDate)) {
+      return { ok: false, error: "settlementDate must be a valid YYYY-MM-DD date" };
+    }
+    if (rawSettlementDate < todayIso) {
+      return { ok: false, error: "settlementDate must be >= today" };
+    }
+    settlementDate = rawSettlementDate;
   }
 
   const counterpartyName =
@@ -1286,8 +1300,6 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
   }
 
   // ----- Post-trade lifecycle -----
-  const resolvedSettlementMode = body.settlementMode === "realtime" ? "realtime" : "accelerated";
-
   const cpBic =
     getActiveFxCounterparties(eventStore).find(
       (c) => c.lei === counterpartyLei || c.name === counterpartyName,
