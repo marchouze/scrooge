@@ -271,6 +271,7 @@
       issued ${esc(fmtTs(row.issuedAt))}
     `;
     $("drawerBody").innerHTML = '<p class="muted">Loading directive + run timeline…</p>';
+    $("briefDrawer").style.display = "flex";
     $("briefDrawer").hidden = false;
 
     const [directive, allRuns] = await Promise.all([
@@ -330,6 +331,7 @@
 
   function closeDrawer() {
     $("briefDrawer").hidden = true;
+    $("briefDrawer").style.display = "";
   }
 
   // ------------------------------------------------------------------
