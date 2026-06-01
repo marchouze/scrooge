@@ -459,8 +459,8 @@ async function handleIBLBooking(body: TradeBookBody): Promise<Response> {
 
   const rateDecimal =
     typeof body.rateDecimal === "number" ? body.rateDecimal : Number(body.rateDecimal);
-  if (!Number.isFinite(rateDecimal) || rateDecimal <= 0)
-    return jsonResponse({ ok: false, error: "rateDecimal must be a positive number" }, 400);
+  if (!Number.isFinite(rateDecimal) || rateDecimal < 0)
+    return jsonResponse({ ok: false, error: "rateDecimal must be a non-negative number" }, 400);
 
   const startDate = typeof body.startDate === "string" ? body.startDate : "";
   if (!isValidDate(startDate))
