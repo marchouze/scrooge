@@ -28,9 +28,9 @@ import type { EventStore } from "../platform/event-store/store";
 import { makeEquityTradeBooked } from "../platform/markets/cdm/equity";
 import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
+import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { ALL_FX_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { runPostTradeLifecycle } from "../platform/simulation/post-trade-lifecycle";
-import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
 
@@ -1286,13 +1286,11 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
   }
 
   // ----- Post-trade lifecycle -----
-  const resolvedSettlementMode =
-    body.settlementMode === "realtime" ? "realtime" : "accelerated";
+  const resolvedSettlementMode = body.settlementMode === "realtime" ? "realtime" : "accelerated";
 
   const cpBic =
-    ALL_FX_COUNTERPARTIES.find(
-      (c) => c.lei === counterpartyLei || c.name === counterpartyName,
-    )?.bic ?? "SBZAZAJJXXX";
+    ALL_FX_COUNTERPARTIES.find((c) => c.lei === counterpartyLei || c.name === counterpartyName)
+      ?.bic ?? "SBZAZAJJXXX";
 
   try {
     runPostTradeLifecycle(

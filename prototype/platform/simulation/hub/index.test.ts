@@ -180,33 +180,30 @@ describe("ThirdPartySimHub default roster (env-sim adapters)", () => {
     expect(ids).toContain("stdbank-custodian-sim");
   });
 
-  it("counterparty-fx-request does NOT book in-process (retired); fire returns front-end guidance", async () => {
-    // D-FX-SIM-FRONTEND-INPUT-DRIVER: the in-process trade loop is retired —
-    // counterparty FX trades now enter via the front-end driver. The hub fire
-    // action is informational only and emits NO FxTradeExecuted event.
-    const res = await hub.fire("counterparty-fx-request", "how-to");
-    expect(res.ok).toBe(true);
-    expect(String(res.detail)).toContain("fx-frontend-trade-specs");
-    const events = [...store.replay()];
-    expect(events.some((e) => e.type === "FxTradeExecuted")).toBe(false);
-    expect(hub.status("counterparty-fx-request").eventsEmitted).toBe(0);
+  it("counterparty-fx-request is a loop+fire module with configSchema covering provenance/notional/settlement/frequency", () => {
+    const reg = hub.list().flatMap((g) => g.simulators);
+    const desc = reg.find((s) => s.id === "counterparty-fx-request");
+    expect(desc).toBeDefined();
+    expect(desc?.mode).toBe("loop+fire");
+    const keys = desc?.configSchema.map((f) => f.key) ?? [];
+    expect(keys).toContain("provenance");
+    expect(keys).toContain("minNotionalUsd");
+    expect(keys).toContain("maxNotionalUsd");
+    expect(keys).toContain("settlementMode");
+    expect(keys).toContain("minIntervalMs");
+    expect(keys).toContain("maxIntervalMs");
   });
 
-  it("counterparty-fx-request start/stop are no-ops (booking enters via front-end)", () => {
+  it("counterparty-fx-request start/stop drive the engine trade loop", () => {
     expect(hub.status("counterparty-fx-request").running).toBe(false);
     hub.start("counterparty-fx-request");
-    // No internal loop is driven — it stays not-running and emits nothing.
-    expect(hub.status("counterparty-fx-request").running).toBe(false);
-    expect([...store.replay()].some((e) => e.type === "FxTradeExecuted")).toBe(false);
+    expect(hub.status("counterparty-fx-request").running).toBe(true);
     hub.stop("counterparty-fx-request");
     expect(hub.status("counterparty-fx-request").running).toBe(false);
   });
 
-  it("counterparty-fx-request status surfaces the front-end input path + risk context", () => {
+  it("counterparty-fx-request status exposes risk monitor context", () => {
     const extra = hub.status("counterparty-fx-request").extra ?? {};
-    expect(String(extra.paramGenerator)).toContain("fx-frontend-trade-specs");
-    expect(String(extra.driverProcedure)).toContain("fx-frontend-driver/README.md");
-    // Read-only internal-MM risk context is still exposed.
     expect(extra).toHaveProperty("riskMonitor");
   });
 

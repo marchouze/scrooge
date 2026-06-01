@@ -26,12 +26,12 @@ import {
 } from "../../projections/markets/limit-utilisation";
 import { ALL_FX_COUNTERPARTIES } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
-import { STANDARD_PAIRS } from "./market-data-sim";
 import { FxRateEngine } from "../fx-sim-rates";
 import { runPostTradeLifecycle } from "../post-trade-lifecycle";
 import { CorrespondentAdviceSim } from "./correspondent-advice-sim";
 import type { CounterpartyBehaviorProfile } from "./counterparty-profiles";
 import { mulberry32 } from "./counterparty-profiles";
+import { STANDARD_PAIRS } from "./market-data-sim";
 import { MarketDataSimulator } from "./market-data-sim";
 import { NostroStatementSimulator } from "./nostro-statement-sim";
 import { RegulatoryAckSim } from "./regulatory-ack-sim";
@@ -546,8 +546,12 @@ export class EnvSimEngine {
       rng: this.rng,
       marketDataStore: this.marketDataStore,
       availablePairs,
-      ...(this.opts.notionalUsdMin !== undefined ? { notionalUsdMin: this.opts.notionalUsdMin } : {}),
-      ...(this.opts.notionalUsdMax !== undefined ? { notionalUsdMax: this.opts.notionalUsdMax } : {}),
+      ...(this.opts.notionalUsdMin !== undefined
+        ? { notionalUsdMin: this.opts.notionalUsdMin }
+        : {}),
+      ...(this.opts.notionalUsdMax !== undefined
+        ? { notionalUsdMax: this.opts.notionalUsdMax }
+        : {}),
       ...(opts?.forcedSide ? { forcedSide: opts.forcedSide } : {}),
       ...(opts?.eligiblePairsFilter ? { eligiblePairsFilter: opts.eligiblePairsFilter } : {}),
     });

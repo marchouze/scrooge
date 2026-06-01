@@ -58,15 +58,17 @@ function usdToMajor(
 ): number {
   if (targetCcy === "USD") return usdAmount;
   // lookupQuoteWithInverse(store, "EUR/USD").rate = USD per EUR → EUR = USD / rate
-  const q = lookupQuoteWithInverse(store, `${targetCcy}/USD`, { provenance: "simulated" })
-    ?? lookupQuoteWithInverse(store, `${targetCcy}/USD`, { provenance: "production" });
+  const q =
+    lookupQuoteWithInverse(store, `${targetCcy}/USD`, { provenance: "simulated" }) ??
+    lookupQuoteWithInverse(store, `${targetCcy}/USD`, { provenance: "production" });
   if (q && q.rate > 0) return usdAmount / q.rate;
   // Fallback: try via ZAR cross (USD → ZAR → targetCcy)
   const usdZar = lookupQuoteWithInverse(store, "USD/ZAR", { provenance: "all" as "simulated" });
   if (usdZar && usdZar.rate > 0) {
     const zarAmount = usdAmount * usdZar.rate;
-    const zarToCcy = lookupQuoteWithInverse(store, `ZAR/${targetCcy}`, { provenance: "all" as "simulated" })
-      ?? lookupQuoteWithInverse(store, `${targetCcy}/ZAR`, { provenance: "all" as "simulated" });
+    const zarToCcy =
+      lookupQuoteWithInverse(store, `ZAR/${targetCcy}`, { provenance: "all" as "simulated" }) ??
+      lookupQuoteWithInverse(store, `${targetCcy}/ZAR`, { provenance: "all" as "simulated" });
     if (zarToCcy && zarToCcy.rate > 0) {
       const pairStr = `ZAR/${targetCcy}`;
       const slash = pairStr.indexOf("/");
@@ -79,7 +81,8 @@ function usdToMajor(
     }
   }
   // Last resort: use rate engine
-  void rng; void rateEngine;
+  void rng;
+  void rateEngine;
   return usdAmount;
 }
 
@@ -137,7 +140,12 @@ export function generateSimTrade(
   // 1. Determine the pair pool.
   //    When `availablePairs` is provided (hub sim loop) we pick from those.
   //    Otherwise fall back to the legacy counterparty-eligiblePairs path.
+  // When availablePairs is provided: pick pair from that pool, counterparty independently.
+  // Legacy path (no availablePairs): pick counterparty first, then pair from its eligible set
+  //   so the counterparty is always eligible to trade the selected pair.
   let pairPool: readonly string[];
+  let cp: SimCounterparty;
+
   if (options?.availablePairs && options.availablePairs.length > 0) {
     pairPool = options.availablePairs;
     if (options.eligiblePairsFilter && options.eligiblePairsFilter.length > 0) {
@@ -145,6 +153,9 @@ export function generateSimTrade(
       const filtered = pairPool.filter((p) => filter.has(p));
       if (filtered.length > 0) pairPool = filtered;
     }
+    const picked = counterparties[Math.floor(rng() * counterparties.length)];
+    if (!picked) throw new Error("no counterparties available");
+    cp = picked;
   } else {
     // Legacy path: pick counterparty first, then pair from its eligible set.
     let eligible = counterparties;
@@ -153,9 +164,10 @@ export function generateSimTrade(
       const filtered = counterparties.filter((c) => c.eligiblePairs.some((p) => filter.has(p)));
       if (filtered.length > 0) eligible = filtered;
     }
-    const legacyCp = eligible[Math.floor(rng() * eligible.length)];
-    if (!legacyCp) throw new Error("no counterparties available");
-    pairPool = legacyCp.eligiblePairs;
+    const picked = eligible[Math.floor(rng() * eligible.length)];
+    if (!picked) throw new Error("no counterparties available");
+    cp = picked;
+    pairPool = cp.eligiblePairs;
     if (options?.eligiblePairsFilter && options.eligiblePairsFilter.length > 0) {
       const filter = new Set(options.eligiblePairsFilter);
       const filtered = pairPool.filter((p) => filter.has(p));
@@ -165,10 +177,6 @@ export function generateSimTrade(
 
   const pair = pairPool[Math.floor(rng() * pairPool.length)];
   if (!pair) throw new Error("no pairs available");
-
-  // 2. Pick a random counterparty from the full list (decoupled from pair when availablePairs used).
-  const cp = counterparties[Math.floor(rng() * counterparties.length)];
-  if (!cp) throw new Error("no counterparties available");
 
   // 3. Side — use forcedSide when the risk monitor directs it; otherwise random.
   const side: "buy" | "sell" = options?.forcedSide ?? (rng() < 0.5 ? "buy" : "sell");

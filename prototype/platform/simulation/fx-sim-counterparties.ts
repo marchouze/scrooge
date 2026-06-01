@@ -125,8 +125,8 @@ export const REAL_COUNTERPARTIES: SimCounterparty[] = [
     lei: "QFC8ZCW3Q5PRXU1XTM60",
     isSim: false,
     eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"],
-    minNotionalMinor: 0,
-    maxNotionalMinor: 0,
+    minNotionalMinor: 500_000_00,
+    maxNotionalMinor: 20_000_000_00,
   },
   {
     partyId: "urn:party:legal-entity:investec-bank-za",
@@ -137,8 +137,8 @@ export const REAL_COUNTERPARTIES: SimCounterparty[] = [
     lei: "549300RH5FFHO48FXT69",
     isSim: false,
     eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD"],
-    minNotionalMinor: 0,
-    maxNotionalMinor: 0,
+    minNotionalMinor: 200_000_00,
+    maxNotionalMinor: 10_000_000_00,
   },
 ];
 

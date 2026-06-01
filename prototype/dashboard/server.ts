@@ -110,6 +110,7 @@ import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
+import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { emitAllCalculationProvenance } from "../platform/model-registry/calculation-provenance";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
 import {
@@ -136,7 +137,6 @@ import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-p
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
-import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
 import { isPresent } from "../platform/types/financial-input";
@@ -246,7 +246,7 @@ import {
 import { registerSimHubRoutes } from "./sim-hub-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
-import { bookFxTrade, registerTradeBookRoutes, type TradeBookBody } from "./trade-book-view";
+import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);

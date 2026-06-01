@@ -25,7 +25,6 @@ import type { SimStatus, SimulatorModule } from "../types";
  */
 export function makeCounterpartyFxRequestModule(engine: EnvSimEngine): SimulatorModule {
   let startedAt: string | null = null;
-  let tradesGenerated = 0;
   let lastError: string | null = null;
 
   return {
@@ -104,7 +103,6 @@ export function makeCounterpartyFxRequestModule(engine: EnvSimEngine): Simulator
         typeof config?.maxIntervalMs === "number" ? config.maxIntervalMs : 8_000;
 
       if (!engine.isTradeLoopRunning()) startedAt = nowUtc();
-      tradesGenerated = 0;
       lastError = null;
       engine.startTradeLoop({
         provenance,
@@ -125,7 +123,6 @@ export function makeCounterpartyFxRequestModule(engine: EnvSimEngine): Simulator
       if (actionId !== "fire-trade") return { ok: false, detail: `unknown action '${actionId}'` };
       try {
         engine.fireTrade();
-        tradesGenerated += 1;
         return { ok: true, detail: "trade fired" };
       } catch (err) {
         lastError = err instanceof Error ? err.message : String(err);
