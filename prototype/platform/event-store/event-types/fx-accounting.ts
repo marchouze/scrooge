@@ -209,6 +209,8 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "cancellation-reversal",
       "settlement-confirmation",
       "trade-date-booking",
+      // Capital lifecycle posting types (equity issuance, capital injection)
+      "capital-injection",
     ]),
     legs: z.array(subLedgerLegSchema).min(2),
     /** ISO 8601 timestamp when the posting was generated. */
