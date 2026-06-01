@@ -183,7 +183,12 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   // excluded from the gap schedule.
   // ---------------------------------------------------------------------------
 
-  const repoOpenEvents = [...eventStore.replay({ type: "RepoTradeOpened" })];
+  const isFixture = (e: { provenance?: unknown }) =>
+    (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
+
+  const repoOpenEvents = [...eventStore.replay({ type: "RepoTradeOpened" })].filter(
+    (e) => !isFixture(e),
+  );
   const repoEndLegIds = new Set(
     [...eventStore.replay({ type: "RepoEndLegSettled" })].map(
       (e) => (e.payload as Record<string, unknown>).tradeId as string,
@@ -222,7 +227,9 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   // (DepositMatured / DepositWithdrawnEarly) mark the deposit as closed.
   // ---------------------------------------------------------------------------
 
-  const depositOpenEvents = [...eventStore.replay({ type: "DepositTaken" })];
+  const depositOpenEvents = [...eventStore.replay({ type: "DepositTaken" })].filter(
+    (e) => !isFixture(e),
+  );
   const depositMaturedIds = new Set(
     [...eventStore.replay({ type: "DepositMatured" })].map(
       (e) => (e.payload as Record<string, unknown>).depositId as string,
@@ -263,7 +270,9 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   // as closed.
   // ---------------------------------------------------------------------------
 
-  const iblOpenEvents = [...eventStore.replay({ type: "InterbankLoanPlaced" })];
+  const iblOpenEvents = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter(
+    (e) => !isFixture(e),
+  );
   const iblMaturedIds = new Set(
     [...eventStore.replay({ type: "InterbankLoanMatured" })].map(
       (e) => (e.payload as Record<string, unknown>).placementId as string,
