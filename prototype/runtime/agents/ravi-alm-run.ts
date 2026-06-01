@@ -31,7 +31,9 @@ import type { EVEShockLabel } from "../../platform/alm";
 import type { NIIShockLabel } from "../../platform/alm";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import { makeAgentEscalation } from "../../platform/event-store/event-types";
 import { makeALMRunCompleted, makeIRRBBChecked } from "../../platform/event-store/event-types/alm";
+import { runLiquidityProjection } from "../../platform/liquidity/projection";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
@@ -62,6 +64,21 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const date = fmtDateUTC(ctx.asOf);
   const runId = `ALM-RUN-${date}`;
 
+  // ----- Liquidity projection — LCR/NSFR status feeds overallStatus -----
+
+  const liquidityProjection = runLiquidityProjection(ctx.asOf);
+  const lcrT30 = liquidityProjection.horizons.find((h) => h.horizonDays === 30)?.lcr;
+  const nsfrT30 = liquidityProjection.horizons.find((h) => h.horizonDays === 30)?.nsfr;
+
+  const lcrRatio = lcrT30?.lcrRatioPct ?? null;
+  const nsfrRatio = nsfrT30?.nsfrRatioPct ?? null;
+  const overallStatus: "green" | "amber" | "red" =
+    (lcrRatio !== null && lcrRatio < 100) || (nsfrRatio !== null && nsfrRatio < 100)
+      ? "red"
+      : (lcrRatio !== null && lcrRatio < 110) || (nsfrRatio !== null && nsfrRatio < 110)
+        ? "amber"
+        : "green";
+
   // ----- Step 1-3: compute all three ALM metrics -----
 
   const gapSchedule = computeRepricingGap(eventStore, ctx.asOf);
@@ -87,7 +104,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         eveWorstDeltaZar: eveReport.worstCaseDeltaEveZar,
         niiWorstDeltaZar: niiReport.worstCaseDeltaNiiZar,
         currency: "ZAR",
-        overallStatus: "green", // Build phase: zero positions → no breaches.
+        overallStatus,
       },
     });
     eventStore.append(runEvent);
@@ -140,6 +157,34 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         },
       });
       eventStore.append(checkEvent);
+      eventsEmitted += 1;
+    }
+
+    // D-BUILD-PHASE-SYNTHETIC-RESPONSE: LCR below-minimum triggers synthetic
+    // escalation from the ALM run — response chain rehearsal.
+    if (lcrT30?.status === "below-minimum") {
+      const almLcrEscalationEvent = makeAgentEscalation({
+        asOf: ctx.asOf,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:ravi:alm-run" },
+        citations: [...EVENT_CITATIONS, "D-BUILD-PHASE-SYNTHETIC-RESPONSE"],
+        eventId: newEventId(),
+        payload: {
+          escalationId: `ALM-LCR-BREACH-${date}`,
+          raisedBy: "agent:ravi:alm-run",
+          question: `ALM run detected LCR below the 100% regulatory minimum (BA 325 §11). Management action required. Current ratio: ${lcrT30.lcrRatioPct?.toFixed(1)}% (HQLA R${lcrT30.hqlaZar.toLocaleString()}, net outflows R${lcrT30.netCashOutflowsZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
+          options: [
+            "Increase HQLA via repo or FX swap (Ravi)",
+            "Reduce short-term contractual outflows (Ravi + Eitan)",
+            "Invoke ILAAP contingency funding plan (Eitan)",
+          ],
+          blockedBy:
+            "LCR below 100% regulatory minimum (BA 325 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
+          severity: "high",
+          routedTo: "agent:ravi + agent:eitan + agent:helena",
+        },
+      });
+      eventStore.append(almLcrEscalationEvent);
       eventsEmitted += 1;
     }
   }
