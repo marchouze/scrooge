@@ -136,6 +136,13 @@
       "category": "income",
       "side": "credit"
     },
+    {
+      "id": "ACC-2100-009",
+      "name": "FX Sub-Ledger Build-Phase Remediation Suspense",
+      "currency": "ZAR",
+      "category": "asset",
+      "side": "debit"
+    },
 
     {
       "id": "ACC-2300-001",
