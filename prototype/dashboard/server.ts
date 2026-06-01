@@ -141,6 +141,7 @@ import {
   buildOpenDecisionsFromEscalations,
   decisionsSourceFromStore,
 } from "../projections/decisions";
+import beaFxPostingEngine from "../runtime/agents/bea-fx-posting-engine";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
@@ -1264,6 +1265,22 @@ function refresh(reason: string): void {
     } catch (agingErr) {
       logger.warn({ err: (agingErr as Error).message }, "aging-watchdog: check skipped");
     }
+
+    // GL posting engine — catch-all for any events (cancellations, sim trades,
+    // script-emitted events) that weren't posted inline. Idempotent: already-
+    // posted events are skipped. Fire-and-forget so the refresh cycle is not
+    // blocked; errors are logged but do not abort derivation.
+    const glCtx = {
+      agent: "Bea",
+      trigger: { kind: "scheduled" as const, id: "refresh-cycle-gl-catch-all" },
+      asOf: nowUtc(),
+      repoRoot: process.cwd(),
+      ownerInboxDir: `${process.cwd()}/Owner Inbox`,
+      dryRun: false,
+    };
+    Promise.all([beaGlPostingEngine(glCtx), beaFxPostingEngine(glCtx)]).catch((err) => {
+      logger.warn({ err: (err as Error).message }, "refresh: GL posting engine error");
+    });
   } catch (e) {
     // Failing closed: keep serving the previous state, log loudly.
     logger.error(
