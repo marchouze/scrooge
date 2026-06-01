@@ -395,6 +395,13 @@ export async function beaGlPostingEngine(
     // only that trade's own event. Backfill / cron runs leave scopeSet undefined
     // and process everything.
     if (scopeSet && !scopeSet.has(e.event_id)) continue;
+    // Skip build-phase-fixture source events — their postings are excluded from
+    // the GL projection (gl-projection.ts sourceEventIsFixture guard) and should
+    // never be emitted in the first place.
+    if ((e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") {
+      skipped += 1;
+      continue;
+    }
 
     try {
       // -----------------------------------------------------------------------

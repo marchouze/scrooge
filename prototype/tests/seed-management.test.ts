@@ -40,9 +40,9 @@ describe("loadDescopedSeedIds", () => {
 
   it("folds SeedDescoped events", () => {
     const store = new EventStore();
-    descope(store, "treasury-positions");
+    descope(store, "npa-attestations");
     const set = loadDescopedSeedIds(store);
-    expect(set.has("treasury-positions")).toBe(true);
+    expect(set.has("npa-attestations")).toBe(true);
     expect(set.size).toBe(1);
   });
 
@@ -70,11 +70,11 @@ describe("buildSeedsView", () => {
 
   it("marks a seed descoped and carries the descope record", () => {
     const store = new EventStore();
-    descope(store, "treasury-positions", "replaced by sim trades");
+    descope(store, "npa-attestations", "replaced by sim trades");
     const view = buildSeedsView(store);
-    const treasury = view.find((s) => s.seedId === "treasury-positions");
-    expect(treasury?.descoped).toBe(true);
-    expect(treasury?.descope?.reason).toBe("replaced by sim trades");
+    const entry = view.find((s) => s.seedId === "npa-attestations");
+    expect(entry?.descoped).toBe(true);
+    expect(entry?.descope?.reason).toBe("replaced by sim trades");
   });
 });
 
@@ -87,7 +87,7 @@ describe("recon:seed-manifest-parity", () => {
   });
 
   it("flags a manifest entry whose boot wiring is absent", () => {
-    // Point the gate at a server-source stub missing the treasury wiring.
+    // Stub wires only model-registry; all other manifest seeds should be flagged.
     const stub = `function bootDerive() {
       runSeed("model-registry", bootModelRegistry);
     }`;
@@ -96,7 +96,7 @@ describe("recon:seed-manifest-parity", () => {
     try {
       const result = runSeedManifestParity({ serverPath: tmp });
       expect(result.ok).toBe(false);
-      expect(result.violations.some((v) => v.subject === "treasury-positions")).toBe(true);
+      expect(result.violations.some((v) => v.subject === "npa-attestations")).toBe(true);
     } finally {
       require("node:fs").unlinkSync(tmp);
     }

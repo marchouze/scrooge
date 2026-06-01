@@ -82,12 +82,7 @@ import {
   makeProductDimensionNarrativeRequested,
   makeProductProposalRegistered,
 } from "../platform/event-store/event-types/product";
-import {
-  makeDepositTaken,
-  makeFundingLineDrawn,
-  makeInterbankLoanPlaced,
-  makeRepoTradeOpened,
-} from "../platform/event-store/event-types/repo-mmd-ibl";
+
 import {
   makeSeedDescoped,
   makeSeedPromotedToSimulated,
@@ -173,13 +168,6 @@ import {
 } from "../seeds/models/model-validation-seed";
 import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import { buildSeedsView } from "../seeds/seeds-view";
-import {
-  TRADE_SEEDS_CITATIONS,
-  TREASURY_DEPOSIT_TAKEN_PAYLOADS,
-  TREASURY_FUNDING_LINE_PAYLOADS,
-  TREASURY_IBL_PLACED_PAYLOADS,
-  TREASURY_REPO_TRADE_PAYLOADS,
-} from "../seeds/treasury/trade-seeds";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { registerBondGatewayRoutes } from "./bond-gateway";
 import { buildConfigView } from "./config-view";
@@ -302,18 +290,6 @@ function ensureRuntimeDir(path: string): void {
     mkdirSync(dir, { recursive: true });
   }
 }
-
-// Sim trade IDs emitted by scenarios/14-treasury-trades.ts.
-// Declared before bootDerive() call to avoid TDZ (bootTreasurySeeds references these).
-const TREASURY_SIM_TRADE_IDS = ["REPO-SIM-001"] as const;
-const TREASURY_SIM_DEPOSIT_IDS = ["MMD-SIM-001"] as const;
-const TREASURY_SIM_PLACEMENT_IDS = ["IBL-SIM-001", "IBL-SIM-002"] as const;
-const TREASURY_SIM_FUNDING_LINE_IDS = ["FL-SIM-001"] as const;
-
-const TREASURY_BOOT_PROVENANCE = buildPhaseFixtureTag({
-  sourceLineage: "seeds/treasury/trade-seeds.ts",
-  tags: ["boot-seed", "superseded-by:scenario-14"],
-});
 
 // MarketDataStore — must be declared before bootDerive() to avoid TDZ
 // (getLimitUtilisations references it during boot derivation).
@@ -523,7 +499,11 @@ function buildTreasuryMetrics() {
     },
     // Repo Book — fold RepoTradeOpened, subtract terminal events
     repoBook: (() => {
-      const repoOpened = [...eventStore.replay({ type: "RepoTradeOpened" })];
+      const isFixture = (e: { provenance?: unknown }) =>
+        (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
+      const repoOpened = [...eventStore.replay({ type: "RepoTradeOpened" })].filter(
+        (e) => !isFixture(e),
+      );
       const repoTerminals = new Set([
         ...[...eventStore.replay({ type: "RepoEndLegSettled" })].map((e) => e.payload.tradeId),
         ...[...eventStore.replay({ type: "RepoTradeTerminatedEarly" })].map(
@@ -547,7 +527,11 @@ function buildTreasuryMetrics() {
     })(),
     // Deposit Book — fold DepositTaken, subtract terminal events
     depositBook: (() => {
-      const depositsOpened = [...eventStore.replay({ type: "DepositTaken" })];
+      const isFixture = (e: { provenance?: unknown }) =>
+        (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
+      const depositsOpened = [...eventStore.replay({ type: "DepositTaken" })].filter(
+        (e) => !isFixture(e),
+      );
       const depositTerminals = new Set([
         ...[...eventStore.replay({ type: "DepositMatured" })].map((e) => e.payload.depositId),
         ...[...eventStore.replay({ type: "DepositWithdrawnEarly" })].map(
@@ -563,7 +547,11 @@ function buildTreasuryMetrics() {
     })(),
     // IB Placement Book — fold InterbankLoanPlaced, subtract terminal events, split by type
     ibPlacementBook: (() => {
-      const iblOpened = [...eventStore.replay({ type: "InterbankLoanPlaced" })];
+      const isFixture = (e: { provenance?: unknown }) =>
+        (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
+      const iblOpened = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter(
+        (e) => !isFixture(e),
+      );
       const iblTerminals = new Set([
         ...[...eventStore.replay({ type: "InterbankLoanMatured" })].map(
           (e) => e.payload.placementId,
@@ -835,9 +823,7 @@ function bootDerive(): DashboardState {
     // Must run BEFORE trade seeds that reference these products.
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     runSeed("npa-attestations", bootNpaAttestations);
-    // Treasury seed events — emit REPO, MMD, IBL positions idempotently.
-    // Required by getALMPositionSnapshot so LCR/NSFR compute live values.
-    runSeed("treasury-positions", bootTreasurySeeds);
+
     // Balance-sheet seed — emit BalanceSheetProjected for build-phase NSFR baseline.
     runSeed("balance-sheet-baseline", bootBalanceSheetSeed);
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
@@ -1062,129 +1048,6 @@ function bootModelRegisteredSeeds(): void {
     logger.debug(
       { skipped: result.skipped.length },
       "model-registered-seed: idempotent boot; all events already present",
-    );
-  }
-}
-
-/**
- * Idempotently emit the treasury trade seed events (REPO-001, MMD-001,
- * IBL-001, IBL-002) so that getALMPositionSnapshot can derive live
- * LCR/NSFR values from the event store.
- *
- * Idempotency key: each event type + its business ID (tradeId, depositId,
- * placementId). We replay the relevant event types and collect the IDs that
- * are already present; only missing positions are emitted.
- *
- * Authority: WS1-PR1a (trade seeds); WS2 (ALM data wiring).
- */
-function bootTreasurySeeds(): void {
-  const ENTITY = "LE-BANK-SA";
-  const ACTOR = { type: "system" as const, id: "system:boot", name: "Boot seed runner" } as const;
-
-  // ── Collect existing business IDs to avoid duplicate emissions ──────────
-  const existingTradeIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "RepoTradeOpened" })) {
-    const p = ev.payload as { tradeId?: string };
-    if (p.tradeId) existingTradeIds.add(p.tradeId);
-  }
-
-  const existingDepositIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "DepositTaken" })) {
-    const p = ev.payload as { depositId?: string };
-    if (p.depositId) existingDepositIds.add(p.depositId);
-  }
-
-  const existingPlacementIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "InterbankLoanPlaced" })) {
-    const p = ev.payload as { placementId?: string };
-    if (p.placementId) existingPlacementIds.add(p.placementId);
-  }
-
-  const existingFundingLineIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "FundingLineDrawn" })) {
-    const p = ev.payload as { fundingLineId?: string };
-    if (p.fundingLineId) existingFundingLineIds.add(p.fundingLineId);
-  }
-
-  // If the sim scenario (scenarios/12-treasury-trades.ts) has already run,
-  // its trades supersede the boot seeds. Skip boot emission entirely.
-  const simPresent =
-    TREASURY_SIM_TRADE_IDS.some((id) => existingTradeIds.has(id)) ||
-    TREASURY_SIM_DEPOSIT_IDS.some((id) => existingDepositIds.has(id)) ||
-    TREASURY_SIM_PLACEMENT_IDS.some((id) => existingPlacementIds.has(id)) ||
-    TREASURY_SIM_FUNDING_LINE_IDS.some((id) => existingFundingLineIds.has(id));
-  if (simPresent) {
-    logger.debug("treasury-seeds: sim scenario present; boot seeds suppressed");
-    return;
-  }
-
-  let emitted = 0;
-
-  // Use current time so events are not filtered out by the asOf guard in projections.
-  const seedAsOf = nowUtc();
-
-  for (const payload of TREASURY_REPO_TRADE_PAYLOADS) {
-    if (existingTradeIds.has(payload.tradeId)) continue;
-    const ev = makeRepoTradeOpened({
-      asOf: seedAsOf,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: [...TRADE_SEEDS_CITATIONS],
-      payload,
-    });
-    ev.provenance = TREASURY_BOOT_PROVENANCE;
-    eventStore.append(ev);
-    emitted++;
-  }
-
-  for (const payload of TREASURY_DEPOSIT_TAKEN_PAYLOADS) {
-    if (existingDepositIds.has(payload.depositId)) continue;
-    const ev = makeDepositTaken({
-      asOf: seedAsOf,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: [...TRADE_SEEDS_CITATIONS],
-      payload,
-    });
-    ev.provenance = TREASURY_BOOT_PROVENANCE;
-    eventStore.append(ev);
-    emitted++;
-  }
-
-  for (const payload of TREASURY_IBL_PLACED_PAYLOADS) {
-    if (existingPlacementIds.has(payload.placementId)) continue;
-    const ev = makeInterbankLoanPlaced({
-      asOf: seedAsOf,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: [...TRADE_SEEDS_CITATIONS],
-      payload,
-    });
-    ev.provenance = TREASURY_BOOT_PROVENANCE;
-    eventStore.append(ev);
-    emitted++;
-  }
-
-  for (const payload of TREASURY_FUNDING_LINE_PAYLOADS) {
-    if (existingFundingLineIds.has(payload.fundingLineId)) continue;
-    const ev = makeFundingLineDrawn({
-      asOf: seedAsOf,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: [...TRADE_SEEDS_CITATIONS],
-      payload,
-    });
-    ev.provenance = TREASURY_BOOT_PROVENANCE;
-    eventStore.append(ev);
-    emitted++;
-  }
-
-  if (emitted === 0) {
-    logger.debug("treasury-seeds: idempotent boot; no events emitted");
-  } else {
-    logger.info(
-      { emitted },
-      `treasury-seeds: ${emitted} seed event(s) emitted (build-phase-fixture)`,
     );
   }
 }
