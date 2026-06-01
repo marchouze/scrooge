@@ -464,9 +464,36 @@
         </div>
 
         <div class="tb-field">
-          <label for="ib-cpty-lei">Counterparty LEI</label>
-          <input type="text" id="ib-cpty-lei" name="ib_counterpartyLei" placeholder="INV000000000000000001">
+          <label for="ib-placement-type">Placement type</label>
+          <select id="ib-placement-type" name="ib_placementType">
+            <option value="fixed-term" selected>Fixed-term</option>
+            <option value="call">Call</option>
+          </select>
         </div>
+
+        <!-- Counterparty -->
+        <div class="tb-section-header">Counterparty</div>
+
+        <div class="tb-field tb-form-full">
+          <label for="ib-cpty-select">Counterparty</label>
+          <select id="ib-cpty-select" style="margin-bottom:var(--space-2)">
+            <option value="">Loading clients…</option>
+          </select>
+          <input type="text" id="ib-cpty-name" name="ib_counterpartyName" placeholder="Enter counterparty name" style="display:none">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-cpty-lei">Counterparty LEI <span class="tb-optional">(optional)</span></label>
+          <input type="text" id="ib-cpty-lei" name="ib_counterpartyLei" placeholder="529900T8BM49AURSDO55" maxlength="20">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-cpty-id">Counterparty ID <span class="tb-optional">(blank = LEI)</span></label>
+          <input type="text" id="ib-cpty-id" name="ib_counterpartyId" placeholder="LEI or internal ID">
+        </div>
+
+        <!-- Terms -->
+        <div class="tb-section-header">Terms</div>
 
         <div class="tb-field">
           <label for="ib-principal">Principal ZAR (cents)</label>
@@ -479,7 +506,12 @@
         </div>
 
         <div class="tb-field">
-          <label for="ib-start-date">Start date</label>
+          <label for="ib-trade-date">Trade date</label>
+          <input type="date" id="ib-trade-date" name="ib_tradeDate">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-start-date">Value / start date</label>
           <input type="date" id="ib-start-date" name="ib_startDate">
         </div>
 
@@ -489,16 +521,25 @@
         </div>
 
         <div class="tb-field">
-          <label for="ib-placement-type">Placement type</label>
-          <select id="ib-placement-type" name="ib_placementType">
-            <option value="fixed-term" selected>Fixed-term</option>
-            <option value="call">Call</option>
+          <label for="ib-day-count">Day count</label>
+          <select id="ib-day-count" name="ib_dayCount">
+            <option value="ACT/365" selected>ACT/365</option>
+            <option value="ACT/360">ACT/360</option>
+            <option value="30/360">30/360</option>
           </select>
         </div>
+
+        <!-- Booking -->
+        <div class="tb-section-header">Booking</div>
 
         <div class="tb-field">
           <label for="ib-book-id">Book ID</label>
           <input type="text" id="ib-book-id" name="ib_bookId" value="TREASURY">
+        </div>
+
+        <div class="tb-field">
+          <label for="ib-trader-ref">Trader ref</label>
+          <input type="text" id="ib-trader-ref" name="ib_traderRef" value="manual-desk">
         </div>
 
         <div class="tb-field tb-form-full">
@@ -812,12 +853,61 @@ function showProductFields(type) {
     settlementInput.min = new Date().toISOString().slice(0, 10);
   }
 
-  // Default repo start and IB start dates to today
-  const repoStartInput = document.getElementById('repo-start-date');
-  const ibStartInput   = document.getElementById('ib-start-date');
+  // Default repo start and IB start/trade dates to today
+  const repoStartInput  = document.getElementById('repo-start-date');
+  const ibStartInput    = document.getElementById('ib-start-date');
+  const ibTradeDateInput = document.getElementById('ib-trade-date');
   const todayIso = new Date().toISOString().slice(0, 10);
-  if (repoStartInput) repoStartInput.value = todayIso;
-  if (ibStartInput)   ibStartInput.value   = todayIso;
+  if (repoStartInput)   repoStartInput.value   = todayIso;
+  if (ibStartInput)     ibStartInput.value     = todayIso;
+  if (ibTradeDateInput) ibTradeDateInput.value  = todayIso;
+
+  // IB Placement counterparty dropdown — populated from KYC clients
+  const ibCptySelect = document.getElementById('ib-cpty-select');
+  const ibCptyInput  = document.getElementById('ib-cpty-name');
+  const ibCptyLei    = document.getElementById('ib-cpty-lei');
+
+  function syncIbCptyName() {
+    const val = ibCptySelect.value;
+    if (val === '__other__') {
+      ibCptyInput.style.display = '';
+      ibCptyInput.value = '';
+      ibCptyInput.focus();
+    } else {
+      ibCptyInput.style.display = 'none';
+      ibCptyInput.value = val;
+    }
+  }
+  if (ibCptySelect) ibCptySelect.addEventListener('change', syncIbCptyName);
+
+  (async () => {
+    try {
+      const res = await fetch('/api/kyc/clients');
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      const clients = data.clients || [];
+
+      ibCptySelect.innerHTML = '';
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '— select counterparty —';
+      blank.disabled = true; blank.selected = true;
+      ibCptySelect.appendChild(blank);
+
+      clients.forEach((c) => {
+        const opt = document.createElement('option');
+        opt.value = c.entityName;
+        opt.textContent = c.entityName + (c.jurisdiction ? ' (' + c.jurisdiction + ')' : '');
+        ibCptySelect.appendChild(opt);
+      });
+
+      const other = document.createElement('option');
+      other.value = '__other__'; other.textContent = 'Other (type name)…';
+      ibCptySelect.appendChild(other);
+    } catch (_) {
+      if (ibCptySelect) ibCptySelect.style.display = 'none';
+      if (ibCptyInput)  { ibCptyInput.style.display = ''; ibCptyInput.placeholder = 'Counterparty name'; }
+    }
+  })();
 
   // Default equity/bond/IRS date fields
   const eqTradeDateInput      = document.getElementById('eq-trade-date');
@@ -1005,13 +1095,18 @@ function showProductFields(type) {
         productType: 'ib-placement',
         provenanceMode,
         placementId: data.get('ib_placementId'),
-        counterpartyLei: data.get('ib_counterpartyLei'),
+        counterpartyName: data.get('ib_counterpartyName'),
+        counterpartyLei: data.get('ib_counterpartyLei') || undefined,
+        counterpartyId: data.get('ib_counterpartyId') || undefined,
         principalZar: parseInt(data.get('ib_principalZar'), 10),
         rateDecimal: parseFloat(data.get('ib_ratePct')) / 100,
+        tradeDate: data.get('ib_tradeDate'),
         startDate: data.get('ib_startDate'),
         maturityDate: data.get('ib_maturityDate') || null,
         placementType: data.get('ib_placementType'),
+        dayCount: data.get('ib_dayCount') || 'ACT/365',
         bookId: data.get('ib_bookId') || 'TREASURY',
+        traderRef: data.get('ib_traderRef') || undefined,
         instrumentRef: data.get('ib_instrumentRef') || 'fi:pam:IBL-1M-001',
       };
     } else if (productType === 'equity') {
