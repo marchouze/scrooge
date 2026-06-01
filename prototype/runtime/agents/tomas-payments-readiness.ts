@@ -17,7 +17,7 @@
 //      pipelines aren't yet emitting events.
 //   2. Counts payments-domain events in the last 7 days:
 //      PaymentInitiated, PaymentSettled, ReconciliationCompleted,
-//      CutoffMissed, SAMOSWindowEntered, SWIFTMessageProcessed. Most
+//      CutoffMissed, SettlementWindowEntered, SWIFTMessageProcessed. Most
 //      are zero in build phase — the rails are not yet wired; the
 //      build-phase posture is indirect-participant (memory:
 //      project_indirect_participant_posture.md), so the bank goes via
@@ -42,7 +42,7 @@
 //     contract". The readiness map below reflects that posture.
 //   - Real scheme connectivity is not yet substrate. Tomas runs against
 //     synthetic flows; the message generators, reconcilers, and cut-off
-//     engine *are* the load-bearing build work. Live SAMOS /
+//     engine *are* the load-bearing build work. Live
 //     BankservAfrica / SWIFT / Strate / CLS connectivity activates at
 //     licence-day, with the indirect-participant model deciding which
 //     onboarding paths fire and which collapse to a sponsor-bank seam.
@@ -98,7 +98,7 @@ interface PaymentsEventCounts {
   readonly paymentSettledLast7d: number;
   readonly reconciliationCompletedLast7d: number;
   readonly cutoffMissedLast7d: number;
-  readonly samosWindowEnteredLast7d: number;
+  readonly settlementWindowEnteredLast7d: number;
   readonly swiftMessageProcessedLast7d: number;
 }
 
@@ -209,7 +209,7 @@ function buildCapabilityReadinessMap(): readonly CapabilityReadiness[] {
       label: "SAMOS-RTL gateway (RTGS message exchange)",
       engineerSideState: "specified",
       substrateRequired:
-        "@platform/payments/samos-connector — synthetic pacs.009 / pacs.002 round-trip against SAMOS-rehearsal endpoint. Indirect-participant: sponsor-bank API seam may collapse to a thin adapter.",
+        "@platform/payments/correspondent-connector — synthetic pacs.009 / pacs.002 round-trip against correspondent-rehearsal endpoint. The correspondent-bank API seam; no direct NPS connection.",
       nextEngineeringStep:
         "Draft synthetic SAMOS gateway with pacs.009 envelope shape; pair to cut-off engine 06:00 / 16:00 SAST windows.",
     },
@@ -304,7 +304,7 @@ function readPaymentsEventCounts(sinceIso: string): PaymentsEventCounts {
   for (const e of eventStore.replay({ type: "CutoffMissed" })) {
     if (e.as_of >= sinceIso) cutoffMissed++;
   }
-  for (const e of eventStore.replay({ type: "SAMOSWindowEntered" })) {
+  for (const e of eventStore.replay({ type: "SettlementWindowEntered" })) {
     if (e.as_of >= sinceIso) samosEntered++;
   }
   for (const e of eventStore.replay({ type: "SWIFTMessageProcessed" })) {
@@ -315,7 +315,7 @@ function readPaymentsEventCounts(sinceIso: string): PaymentsEventCounts {
     paymentSettledLast7d: settled,
     reconciliationCompletedLast7d: reconCompleted,
     cutoffMissedLast7d: cutoffMissed,
-    samosWindowEnteredLast7d: samosEntered,
+    settlementWindowEnteredLast7d: samosEntered,
     swiftMessageProcessedLast7d: swiftProcessed,
   };
 }
@@ -365,7 +365,7 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: TomasSnapshot): string 
   lines.push(`  PaymentSettled: ${snap.events.paymentSettledLast7d}`);
   lines.push(`  ReconciliationCompleted: ${snap.events.reconciliationCompletedLast7d}`);
   lines.push(`  CutoffMissed: ${snap.events.cutoffMissedLast7d}`);
-  lines.push(`  SAMOSWindowEntered: ${snap.events.samosWindowEnteredLast7d}`);
+  lines.push(`  SettlementWindowEntered: ${snap.events.settlementWindowEnteredLast7d}`);
   lines.push(`  SWIFTMessageProcessed: ${snap.events.swiftMessageProcessedLast7d}`);
   lines.push("");
   lines.push("Capability readiness:");
@@ -412,7 +412,7 @@ function buildReportMarkdown(
     snap.events.paymentSettledLast7d +
     snap.events.reconciliationCompletedLast7d +
     snap.events.cutoffMissedLast7d +
-    snap.events.samosWindowEnteredLast7d +
+    snap.events.settlementWindowEnteredLast7d +
     snap.events.swiftMessageProcessedLast7d;
   lines.push(
     `**Headline:** ${snap.capabilities.length} payments capabilities tracked · readiness ${readyN} ready / ${draftingN} drafting / ${specifiedN} specified / ${unspecifiedN} not-yet-specified · ${settledTotal} payments-domain event${settledTotal === 1 ? "" : "s"} (last 7d) · ${snap.obligations.length} obligation line${snap.obligations.length === 1 ? "" : "s"} on Tomas's mandate surface · indirect-participant posture (no direct SAMOS / CLS membership in build phase).`,
@@ -460,12 +460,12 @@ function buildReportMarkdown(
   lines.push(`| \`PaymentSettled\` | ${snap.events.paymentSettledLast7d} |`);
   lines.push(`| \`ReconciliationCompleted\` | ${snap.events.reconciliationCompletedLast7d} |`);
   lines.push(`| \`CutoffMissed\` | ${snap.events.cutoffMissedLast7d} |`);
-  lines.push(`| \`SAMOSWindowEntered\` | ${snap.events.samosWindowEnteredLast7d} |`);
+  lines.push(`| \`SettlementWindowEntered\` | ${snap.events.settlementWindowEnteredLast7d} |`);
   lines.push(`| \`SWIFTMessageProcessed\` | ${snap.events.swiftMessageProcessedLast7d} |`);
   lines.push("");
   if (settledTotal === 0) {
     lines.push(
-      "_Build-phase posture: zero payments-domain events. The rails are not yet wired — synthetic generators are the load-bearing build work. The bank's indirect-participant model means SAMOS / CLS access lands via sponsor banks, not direct membership; live event flow activates at licence-day under Saskia's go-live readiness gate._",
+      "_Build-phase posture: zero payments-domain events. The rails are not yet wired — synthetic generators are the load-bearing build work. The bank's indirect-participant model means NPS RTGS / BankservAfrica / CLS access lands via sponsor banks, not direct membership; live event flow activates at licence-day under Saskia's go-live readiness gate._",
     );
     lines.push("");
   }
@@ -521,7 +521,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    'Devon\'s latest `OperationalResilienceSnapshot` via `eventStore.replay({type:"OperationalResilienceSnapshot"})` (max as_of); obligation shadow curated from `Team/Tomas.md` cross-referenced to NPS Act 78 of 1998, scheme rulebooks, SWIFT CSP 2024, ISO 20022, and PASA standards; capability-readiness map curated by Tomas; payments-domain event counts via `eventStore.replay({type:...})` filtered to last 7 days (`PaymentInitiated`, `PaymentSettled`, `ReconciliationCompleted`, `CutoffMissed`, `SAMOSWindowEntered`, `SWIFTMessageProcessed`).',
+    'Devon\'s latest `OperationalResilienceSnapshot` via `eventStore.replay({type:"OperationalResilienceSnapshot"})` (max as_of); obligation shadow curated from `Team/Tomas.md` cross-referenced to NPS Act 78 of 1998, scheme rulebooks, SWIFT CSP 2024, ISO 20022, and PASA standards; capability-readiness map curated by Tomas; payments-domain event counts via `eventStore.replay({type:...})` filtered to last 7 days (`PaymentInitiated`, `PaymentSettled`, `ReconciliationCompleted`, `CutoffMissed`, `SettlementWindowEntered`, `SWIFTMessageProcessed`).',
   );
   lines.push("");
   return lines.join("\n");

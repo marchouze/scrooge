@@ -187,7 +187,7 @@ describe("diff — spec → handler", () => {
   it("flags scheduled-coverage gap once per persona (not per scheduled row)", () => {
     const r = triggerSpecHandlerSymmetry({
       specTriggers: [
-        specRow("Eitan", "Scheduled wake-up — daily SAMOS funding review", "scheduled"),
+        specRow("Eitan", "Scheduled wake-up — daily nostro funding review", "scheduled"),
         specRow("Eitan", "Scheduled wake-up — monthly ALCO", "scheduled"),
         specRow("Eitan", "Scheduled wake-up — quarterly ILAAP", "scheduled"),
       ],

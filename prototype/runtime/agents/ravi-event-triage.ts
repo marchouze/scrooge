@@ -8,7 +8,7 @@
 // events; this handler is the corresponding runtime entry-point.
 //
 // Subscribed events (per Ravi's Team/Ravi.md §7):
-//   TradePosted, FundingDrawn, DepositReceived, SAMOSFundingShortfall,
+//   TradePosted, FundingDrawn, DepositReceived, NostroFundingShortfall,
 //   HQLACompositionDrift, IRRBBExcursion, FXPositionBreach, HedgeIneffective
 //
 // Stub behaviour: logs receipt of triggering events and acknowledges.
@@ -24,7 +24,7 @@ const SUBSCRIBED_EVENTS = [
   "TradePosted",
   "FundingDrawn",
   "DepositReceived",
-  "SAMOSFundingShortfall",
+  "NostroFundingShortfall",
   "HQLACompositionDrift",
   "IRRBBExcursion",
   "FXPositionBreach",

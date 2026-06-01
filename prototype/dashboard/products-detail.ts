@@ -124,7 +124,7 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
       "NSFRComputed",
       "IntradayHQLAStressProjection",
       "HQLACompositionDrift",
-      "SAMOSFundingShortfall",
+      "NostroFundingShortfall",
     ],
   },
   {

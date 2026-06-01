@@ -170,7 +170,7 @@ describe("handler-schema-parity: tomas:payments-readiness", () => {
       paymentSettledLast7d: 0,
       reconciliationCompletedLast7d: 0,
       cutoffMissedLast7d: 0,
-      samosWindowEnteredLast7d: 0,
+      settlementWindowEnteredLast7d: 0,
       swiftMessageProcessedLast7d: 0,
       latestDevonSnapshot: null,
       runTrigger: "payments-readiness",

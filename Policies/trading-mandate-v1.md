@@ -104,7 +104,7 @@ The bank operates under a **positive-enumeration principle**: only instruments e
 | South African Government Bonds (SAGB) | Fixed-rate nominal bonds issued by the National Treasury; listed on the JSE Interest Rate Market | ACT/365 SA | T+3 (Strate bond settlement) | JSE Debt Listings Requirements (`ORG-MK-16`); FMA s.5 |
 | SA Corporate bonds (investment grade) | JSE-listed fixed and floating rate corporate bonds, investment-grade only (≥ BBB- domestic rating or equivalent) | ACT/365 SA (fixed); ACT/365 SA with JIBAR reset (floating) | T+3 (Strate bond settlement) | JSE Debt Listings Requirements (`ORG-MK-16`) |
 | SA Parastatal / SOC bonds | Bonds issued by SOCs with explicit or implicit government backing; JSE-listed | ACT/365 SA | T+3 | JSE Debt Listings Requirements (`ORG-MK-16`) |
-| Treasury bills (T-bills) | Short-dated SARB-issued / National Treasury T-bills; used for HQLA / liquidity management | Discount / ACT/365 | T+1 (SAMOS-settling instruments via correspondent) | Banks Act; `ORG-PR-04` (HQLA quality) |
+| Treasury bills (T-bills) | Short-dated SARB-issued / National Treasury T-bills; used for HQLA / liquidity management | Discount / ACT/365 | T+1 (NPS RTGS-settling instruments via correspondent) | Banks Act; `ORG-PR-04` (HQLA quality) |
 | Repo / reverse repo (SAGBs, T-bills) | Bilateral repos / reverse repos against SAGB and T-bill collateral; GMRA 2011 SA Schedule governed | Per repo term | Same-day or T+1 | ICMA GMRA 2011 SA Schedule (`ORG-MK-13`); `ORG-PR-23` (SA-CCR exposure) |
 
 **Not permitted on JSE Bond Desk (v1):**

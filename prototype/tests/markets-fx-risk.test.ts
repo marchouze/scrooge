@@ -124,7 +124,7 @@ describe("buildRiskView — empty store", () => {
 
   it("returns null primary and backup for empty store (no SettlementInstructionRouted events)", () => {
     // The static seed has correspondents; they only return null if filtering
-    // non-SAMOS produces no rows. With the static seed, primary is set.
+    // non-correspondent produces no rows. With the static seed, primary is set.
     // This test verifies the function does not crash and returns sensible defaults.
     const store = freshStore();
     const view = buildRiskView(store);

@@ -324,7 +324,7 @@ export const LEGACY_PRE_A1_EVENT_TYPES: ReadonlySet<string> = new Set([
   "RiskRunCompleted",
   "RoleResearchQueueSnapshot",
   "RuntimeUrnEvent",
-  "SAMOSWindowEntered",
+  "SettlementWindowEntered",
   "SARSGuidanceScanned",
   "SBOMAccepted",
   "SBOMRejected",

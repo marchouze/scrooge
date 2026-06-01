@@ -271,7 +271,7 @@ The funding-profile dashboard is produced by Ravi's ALM engine on a daily basis;
 
 Per BCBS 248 (*Monitoring tools for intraday liquidity management*, April 2013) and `ORG-PR-08`, the bank maintains the ability to monitor, manage, and report its intraday liquidity position — both under normal conditions and under stress.
 
-`Hoz Bank Limited` operates as an **indirect SAMOS participant** (per `D-SAMOS-NON-CLEARING`, CEO-approved 2026-05-07). ZAR settlement flows through a sponsor/correspondent bank. The bank's intraday liquidity framework is calibrated against this indirect-participant posture: the relevant intraday exposures are the flows between `Hoz Bank Limited` and its SAMOS sponsor, not direct SAMOS real-time gross settlement (RTGS) exposures.
+`Hoz Bank Limited` operates as an **indirect NPS participant** (per `D-SAMOS-NON-CLEARING`, CEO-approved 2026-05-07). ZAR settlement flows through a sponsor/correspondent bank. The bank's intraday liquidity framework is calibrated against this indirect-participant posture: the relevant intraday exposures are the flows between `Hoz Bank Limited` and its correspondent bank, not direct NPS RTGS exposures.
 
 ### 4.2 Intraday liquidity monitoring tools (BCBS 248)
 
@@ -279,9 +279,9 @@ The bank implements the seven BCBS 248 intraday monitoring tools:
 
 | Tool | BCBS 248 Reference | Hoz Bank Application |
 |---|---|---|
-| 1. Daily maximum intraday liquidity usage | Monitor § 16 `[citation: TBC]` | Peak net cumulative flow to/from the SAMOS sponsor during each business day; reported in the end-of-day liquidity report |
-| 2. Available intraday liquidity at the start of day | Monitor § 17 `[citation: TBC]` | Pre-positioned HQLA + undrawn credit lines with the SAMOS sponsor available for intraday use |
-| 3. Total payments | Monitor § 18 `[citation: TBC]` | Total value of all outgoing ZAR payments routed via the SAMOS sponsor in the day |
+| 1. Daily maximum intraday liquidity usage | Monitor § 16 `[citation: TBC]` | Peak net cumulative flow to/from the correspondent bank during each business day; reported in the end-of-day liquidity report |
+| 2. Available intraday liquidity at the start of day | Monitor § 17 `[citation: TBC]` | Pre-positioned HQLA + undrawn credit lines with the correspondent bank available for intraday use |
+| 3. Total payments | Monitor § 18 `[citation: TBC]` | Total value of all outgoing ZAR payments routed via the correspondent bank in the day |
 | 4. Time-specific and other critical obligations | Monitor § 19 `[citation: TBC]` | Settlement obligations with defined deadlines (BondservAfrica cut-offs; JSE settlement cycles; SWIFT MT202COV cut-offs) |
 | 5. Value of customer payments made on behalf of financial institution customers | Monitor § 20 `[citation: TBC]` | Agency-settlement flows for institutional clients (post-licence-day; nil in build-phase) |
 | 6. Intraday credit lines extended to customers | Monitor § 21 `[citation: TBC]` | Intraday credit lines granted to institutional counterparties; tracked as contingent outflows |
@@ -291,7 +291,7 @@ The seven tools are implemented in the intraday-liquidity monitoring substrate (
 
 ### 4.3 Intraday liquidity buffer
 
-The bank maintains a dedicated **intraday liquidity buffer** — pre-positioned liquidity available to meet intraday settlement obligations without recourse to intraday credit from the SAMOS sponsor.
+The bank maintains a dedicated **intraday liquidity buffer** — pre-positioned liquidity available to meet intraday settlement obligations without recourse to intraday credit from the correspondent bank.
 
 **Buffer sizing.** The intraday liquidity buffer is sized at:
 
@@ -299,7 +299,7 @@ The bank maintains a dedicated **intraday liquidity buffer** — pre-positioned 
 - **Target:** 120% of the backward-looking 99th-percentile peak (the +20% margin provides a stress cushion above the historical peak).
 
 The buffer is held in:
-- ZAR cash (SARB reserve balance via the SAMOS sponsor account); and / or
+- ZAR cash (SARB reserve balance via the correspondent bank's account); and / or
 - Overnight government bonds that can be converted to cash at the start of each business day.
 
 Eitan reviews the buffer size monthly. Buffer-sizing decisions are ALCO-level approvals (Eitan chair).
@@ -308,7 +308,7 @@ Eitan reviews the buffer size monthly. Buffer-sizing decisions are ALCO-level ap
 
 End-of-day targets:
 
-1. **Zero net intraday credit from the SAMOS sponsor.** The bank aims to end each business day with no outstanding intraday credit obligation to its SAMOS sponsor. Any end-of-day net credit position is a High-severity intraday event per §9.2.
+1. **Zero net intraday credit from the correspondent bank.** The bank aims to end each business day with no outstanding intraday credit obligation to its correspondent bank. Any end-of-day net credit position is a High-severity intraday event per §9.2.
 2. **Intraday buffer replenishment.** Any drawdown on the intraday buffer during the day is replenished before the start of the following business day. If replenishment is not possible, the deficit is reported to ALCO within 2 hours of end-of-day and a plan for same-day / next-day restoration is presented.
 3. **HQLA stock check.** End-of-day HQLA stock is reconciled against the LCR buffer requirement. Any shortfall triggers the LCR breach escalation procedure (§9.3).
 
@@ -361,9 +361,9 @@ The trigger thresholds above are the **policy default thresholds**. ALCO may set
 
 **Tier 1 (same-day) — Intraday measures:**
 
-1. **HQLA repo.** Repo out Level-1 HQLA (SAGBs) with the SAMOS sponsor or any BondservAfrica-clearing counterparty to generate same-day ZAR liquidity.
-2. **Intraday credit line drawdown.** Draw on the pre-arranged intraday credit line with the SAMOS sponsor (if intraday credit line is in place post-licence-day).
-3. **Payment-flow optimisation.** Reschedule non-time-critical outgoing payments to the end of the business day to allow incoming funds to land first. Time-critical payments (BondservAfrica, SAMOS cut-offs) are never deferred.
+1. **HQLA repo.** Repo out Level-1 HQLA (SAGBs) via government-securities repo with the correspondent bank or any BondservAfrica-clearing counterparty to generate same-day ZAR liquidity.
+2. **Intraday credit line drawdown.** Draw on the pre-arranged intraday credit line with the correspondent bank (if intraday credit line is in place post-licence-day).
+3. **Payment-flow optimisation.** Reschedule non-time-critical outgoing payments to the end of the business day to allow incoming funds to land first. Time-critical payments (BondservAfrica, settlement cut-offs) are never deferred.
 
 **Tier 2 (1–30 days) — Short-term measures:**
 

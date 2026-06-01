@@ -87,7 +87,7 @@ interface EitanLiquidityShadow {
   readonly nsfrProjectionLast24h: number;
   readonly irrbbCheckedLast24h: number;
   readonly fxPositionReportedLast24h: number;
-  readonly samosFundingApprovedLast24h: number;
+  readonly nostroFundingApprovedLast24h: number;
 }
 
 interface PipelineReadiness {
@@ -153,7 +153,7 @@ function readLatestEitanSnapshot(): {
       nsfrProjectionLast24h: num("nsfrProjectionLast24h"),
       irrbbCheckedLast24h: num("irrbbCheckedLast24h"),
       fxPositionReportedLast24h: num("fxPositionReportedLast24h"),
-      samosFundingApprovedLast24h: num("samosFundingApprovedLast24h"),
+      nostroFundingApprovedLast24h: num("nostroFundingApprovedLast24h"),
     },
   };
 }
@@ -352,7 +352,7 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: RaviSnapshot): string {
     lines.push(`  - NSFRRatioProjection: ${snap.eitanShadow.nsfrProjectionLast24h}`);
     lines.push(`  - IRRBBChecked: ${snap.eitanShadow.irrbbCheckedLast24h}`);
     lines.push(`  - FXPositionReported: ${snap.eitanShadow.fxPositionReportedLast24h}`);
-    lines.push(`  - SAMOSFundingApproved: ${snap.eitanShadow.samosFundingApprovedLast24h}`);
+    lines.push(`  - NostroFundingApproved: ${snap.eitanShadow.nostroFundingApprovedLast24h}`);
   }
   lines.push("");
   lines.push(`Ravi-owned obligations indexed: ${snap.raviObligations.length}`);
@@ -435,7 +435,7 @@ function buildReportMarkdown(
     lines.push(`| \`NSFRRatioProjection\` | ${snap.eitanShadow.nsfrProjectionLast24h} |`);
     lines.push(`| \`IRRBBChecked\` | ${snap.eitanShadow.irrbbCheckedLast24h} |`);
     lines.push(`| \`FXPositionReported\` | ${snap.eitanShadow.fxPositionReportedLast24h} |`);
-    lines.push(`| \`SAMOSFundingApproved\` | ${snap.eitanShadow.samosFundingApprovedLast24h} |`);
+    lines.push(`| \`NostroFundingApproved\` | ${snap.eitanShadow.nostroFundingApprovedLast24h} |`);
     lines.push("");
     lines.push(
       "Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side; Ravi reports the engineer side. Together they close the read-side ↔ build-side loop on the ALM-projection substrate.",

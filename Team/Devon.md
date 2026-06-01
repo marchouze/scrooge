@@ -27,7 +27,7 @@ Devon does **not** govern risk-taking measurement (Helena), finance (Camille), c
 - SARB Directive 3 of 2018 on cloud and offshoring.
 - Governance over technology delivery in a build-not-buy context.
 - Incident command at executive level — payments, settlement, customer outage.
-- BankservAfrica, SAMOS, SWIFT, ISO 20022 operational realities.
+- BankservAfrica, NPS correspondent channel, SWIFT, ISO 20022 operational realities.
 - Capacity planning and engineering workforce sequencing.
 
 ## 5. Working style
@@ -68,7 +68,7 @@ Devon does **not** govern risk-taking measurement (Helena), finance (Camille), c
 
 - **Authoritative:** event log streams (incident events, SLO events, change events, capacity events, resilience-test events, agent-escalation events from the engineering bench).
 - **Derived:** platform-state projection; SLO dashboards; change-register; resilience-test register; obligations register (operational-resilience scope); agents-dashboard rollup of bench state.
-- **External:** Azure / cloud-provider status feeds (post-migration); BankservAfrica / SAMOS / SWIFT operational notices; PA / FSCA operational-resilience expectations.
+- **External:** Azure / cloud-provider status feeds (post-migration); BankservAfrica / NPS / SWIFT operational notices; PA / FSCA operational-resilience expectations.
 
 ## 9. Decisions in scope
 

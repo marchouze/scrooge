@@ -15,7 +15,7 @@ citations:
   - Exchange Control Regulations (outbound payments)
 author: Devon (Chief Operating Officer, governance) + Tomas (Operations & payments engineer, engineering)
 date: 2026-05-22
-summary: Payments and Settlement Policy governing Hoz Bank's correspondent-bank-only payment channel, STRATE T+2 equity and bond settlement, DVP principle, settlement fail management, intraday liquidity management, SAMOS cut-off adherence, nostro-funded outbound payment authorisation, and typed events for payment and settlement lifecycle. COMMENCEMENT-BIND.
+summary: Payments and Settlement Policy governing Hoz Bank's correspondent-bank-only payment channel, STRATE T+2 equity and bond settlement, DVP principle, settlement fail management, intraday liquidity management, settlement cut-off adherence, nostro-funded outbound payment authorisation, and typed events for payment and settlement lifecycle. COMMENCEMENT-BIND.
 decision-required: false
 riskTaxonomy:
   - RT-OR
@@ -25,7 +25,7 @@ riskTaxonomy:
 # Payments and Settlement Policy v1
 
 > **Authors.** Devon (Chief Operating Officer, governance) — lead; Tomas (Operations & payments engineer, engineering) — co-author.
-> **Standing authority.** `D-REGULATORY-READINESS-GATE-PLAN` (CEO-approved 2026-05-10). Implements the payment and settlement risk management obligations under the National Payment System Act 78 of 1998, Banks Act 94 of 1990 s.60, and the SARB NPS Framework. The Bank's indirect-participant posture (confirmed per `project_indirect_participant_posture.md`; payments model per `project_payments_correspondent_model.md`) shapes every provision: the Bank does not directly join SAMOS, BankservAfrica, or STRATE as a direct participant — all payments route via correspondent bank; STRATE settlement is accessed through a custodian/settlement agent.
+> **Standing authority.** `D-REGULATORY-READINESS-GATE-PLAN` (CEO-approved 2026-05-10). Implements the payment and settlement risk management obligations under the National Payment System Act 78 of 1998, Banks Act 94 of 1990 s.60, and the SARB NPS Framework. The Bank's indirect-participant posture (confirmed per `project_indirect_participant_posture.md`; payments model per `project_payments_correspondent_model.md`) shapes every provision: the Bank does not directly join NPS RTGS, BankservAfrica, or STRATE as a direct participant — all payments route via correspondent bank; STRATE settlement is accessed through a custodian/settlement agent.
 > **Obligations closed.** Payment settlement risk management (Banks Act s.60); intraday liquidity monitoring (Regulations Relating to Banks reg.26); Exchange Control payment reporting (Exchange Control Regulations).
 > **Status.** COMMENCEMENT-BIND. The payment and settlement infrastructure is only operationally required from the first client transaction. Build-phase substrate (payment instruction handler, settlement confirmation handler, nostro reconciliation) is being built under `D-REGULATORY-READINESS-GATE-PLAN`. This policy is preparation for compliance, not compliance itself.
 > **Identity discipline.** CLAUDE.md "Dispatch discipline" — every agent reference pairs name + position on first mention; subsequent same-artefact references may use the bare name.
@@ -40,13 +40,13 @@ riskTaxonomy:
 
 This policy governs how Hoz Bank Limited (the "Bank") instructs, monitors, and settles payments and financial instrument transactions. Its purpose is to ensure that: (i) all payment and settlement activity is routed through approved channels; (ii) settlement risk is managed within the Bank's Risk Appetite Statement; (iii) intraday liquidity is sufficient to meet settlement obligations; (iv) settlement fails are identified promptly and resolved within prescribed timeframes; and (v) Exchange Control reporting obligations are met for all cross-border payment flows.
 
-The policy reflects the Bank's confirmed indirect-participant operating posture. The Bank is not a direct participant in SAMOS, BankservAfrica, or the STRATE central securities depository. Payment instructions route exclusively through the Bank's approved correspondent bank channel. Settlement of JSE-listed bonds and equities occurs through STRATE, accessed via the Bank's appointed settlement agent and STRATE member. This is not a temporary constraint — it is the Bank's deliberate operating model for the institutional client franchise.
+The policy reflects the Bank's confirmed indirect-participant operating posture. The Bank is not a direct NPS participant in NPS RTGS, BankservAfrica, or the STRATE central securities depository. Payment instructions route exclusively through the Bank's approved correspondent bank channel. Settlement of JSE-listed bonds and equities occurs through STRATE, accessed via the Bank's appointed settlement agent and STRATE member. This is not a temporary constraint — it is the Bank's deliberate operating model for the institutional client franchise.
 
-The policy sits at the *policy* layer of the Reg → Policy → Procedure → System Capability chain (Principle 2). Procedures under this policy — including `Procedures/operations/settlement-failure-bcp.md`, `Procedures/by-policy/intraday-liquidity-funding.md`, and `Procedures/by-policy/samos-cut-off.md` — operationalise the principles set here. The payment instruction handler, settlement confirmation engine, and nostro reconciliation harness are the system capabilities that execute those procedures.
+The policy sits at the *policy* layer of the Reg → Policy → Procedure → System Capability chain (Principle 2). Procedures under this policy — including `Procedures/operations/settlement-failure-bcp.md`, `Procedures/by-policy/intraday-liquidity-funding.md`, and `Procedures/by-policy/correspondent-cut-off.md` — operationalise the principles set here. The payment instruction handler, settlement confirmation engine, and nostro reconciliation harness are the system capabilities that execute those procedures.
 
 ### Principles
 
-- **Correspondent bank channel is the sole payment route.** The Bank processes all outbound and inbound payments exclusively through its approved correspondent bank(s). No direct SAMOS, SWIFT RTGS, or BankservAfrica participation. The correspondent bank list is maintained under the Nostro and Correspondent Banking Policy; any change to the approved correspondent bank for payment routing requires COO approval and a typed event.
+- **Correspondent bank channel is the sole payment route.** The Bank processes all outbound and inbound payments exclusively through its approved correspondent bank(s). No direct NPS RTGS or BankservAfrica participation. The correspondent bank list is maintained under the Nostro and Correspondent Banking Policy; any change to the approved correspondent bank for payment routing requires COO approval and a typed event.
 - **DVP is the settlement principle for securities.** All securities transactions settle on a Delivery-versus-Payment (DVP) basis through STRATE. Pre-funded gross settlement applies; no net settlement of securities exposures outside of STRATE's multilateral net balance structure. The Bank does not extend or receive intraday credit for securities settlement purposes outside of the STRATE rules.
 - **T+2 for equities and bonds.** Settlement of JSE-listed equities and bonds occurs on the second business day following the trade date (T+2), consistent with STRATE settlement rules and JSE Rules.
 - **Intraday liquidity must cover settlement obligations.** At the start of each settlement day, Tomas (Operations & payments engineer, engineering) verifies, via the intraday liquidity position report, that the Bank's nostro balance with its correspondent is sufficient to fund all expected settlement obligations for the day, plus a buffer as defined in `Procedures/by-policy/intraday-liquidity-funding.md`. Insufficient nostro funding triggers immediate escalation to Eitan (Treasurer, governance) and Devon.
@@ -58,7 +58,7 @@ The policy sits at the *policy* layer of the Reg → Policy → Procedure → Sy
 
 Devon (Chief Operating Officer, governance) is the policy owner and has ultimate accountability for payment and settlement operations. Devon approves changes to the approved correspondent bank list and authorises payments above the limits defined in §2.3 (outbound payment authorisation matrix).
 
-Tomas (Operations & payments engineer, engineering) is the operational lead for payment and settlement. Tomas owns: the daily intraday liquidity check; payment instruction generation and validation; settlement fail identification and escalation; nostro reconciliation (per Nostro and Correspondent Banking Policy); SAMOS cut-off schedule adherence; Exchange Control compliance pre-check.
+Tomas (Operations & payments engineer, engineering) is the operational lead for payment and settlement. Tomas owns: the daily intraday liquidity check; payment instruction generation and validation; settlement fail identification and escalation; nostro reconciliation (per Nostro and Correspondent Banking Policy); settlement cut-off schedule adherence; Exchange Control compliance pre-check.
 
 Eitan (Treasurer, governance) manages intraday funding requirements and nostro pool sizing. Eitan's ALCO reporting includes daily settlement exposure and intraday peak usage against the nostro buffer.
 
@@ -76,7 +76,7 @@ Vera (internal audit engineer — reports functionally to Thandiwe (Chief Audit 
 
 The Bank's sole payment channel is the correspondent bank appointed under the Nostro and Correspondent Banking Policy. The correspondent bank's SWIFT BIC, account details, cut-off times, and fee schedule are held in the approved correspondent bank register (maintained by Tomas, subject to Devon's change approval).
 
-All outbound ZAR payments route via the correspondent bank to SAMOS, which the correspondent bank accesses directly as a SAMOS participant. All outbound foreign currency payments route via the correspondent bank's correspondent network (for currency pairs where the Bank does not hold a nostro account) or via the Bank's own nostro account at a foreign correspondent, where one is maintained.
+All outbound ZAR payments route via the correspondent bank to the NPS RTGS, which the correspondent bank accesses directly as an NPS participant. All outbound foreign currency payments route via the correspondent bank's correspondent network (for currency pairs where the Bank does not hold a nostro account) or via the Bank's own nostro account at a foreign correspondent, where one is maintained.
 
 No alternative payment channel may be used without prior COO approval and an updated correspondent bank register entry.
 
@@ -127,11 +127,11 @@ A settlement fail occurs when, at the STRATE settlement cut-off on T+2, either t
 6. Fail charges: STRATE's fail charges accrue from T+2 on open fails; these are charged back to the counterparty where a counterparty fail applies, or absorbed as an operational risk loss event where an internal fail.
 7. Every fail resolved before T+5 is recorded with a `SettlementConfirmed` event tagged with the actual settlement date. Fails resolved after T+5 additionally require a root-cause analysis filed to the operational risk register.
 
-### 3.3 SAMOS Cut-Off Adherence
+### 3.3 Settlement Cut-Off Adherence
 
-SAMOS (South African Multiple Option Settlement) operates on specific daily cut-off schedules for ZAR-denominated RTGS payments. The Bank's correspondent bank transmits ZAR payments on the Bank's behalf within these cut-off windows. Tomas maintains the SAMOS cut-off schedule (per `Procedures/by-policy/samos-cut-off.md`) and ensures all payment instructions are transmitted to the correspondent bank with sufficient lead time.
+The NPS RTGS operates on specific daily cut-off schedules for ZAR-denominated RTGS payments. The Bank's correspondent bank transmits ZAR payments on the Bank's behalf within these cut-off windows. Tomas maintains the settlement cut-off schedule (per `Procedures/by-policy/correspondent-cut-off.md`) and ensures all payment instructions are transmitted to the correspondent bank with sufficient lead time.
 
-Late instructions that miss the SAMOS cut-off are queued for the next available settlement window; Tomas notifies the counterparty and Devon of any late-cut-off instruction and the reason.
+Late instructions that miss the settlement cut-off are queued for the next available settlement window; Tomas notifies the counterparty and Devon of any late-cut-off instruction and the reason.
 
 ---
 
@@ -189,7 +189,7 @@ All events are appended to the shared event store (Principle 1; cross-worktree s
 - **Payment instruction handler.** Generates, validates, and transmits ISO 20022 payment instructions to the correspondent bank's SWIFT interface. Discharge exit signal: `PaymentInstructed { paymentId, amount, currency, beneficiary, correspondentRef, exconRef }` event on synthetic fixture.
 - **Settlement confirmation engine.** Receives STRATE settlement confirmations from the settlement agent and emits `SettlementConfirmed` events. Gap: automated settlement agent interface (STRATE API or settlement agent report parser) — currently manual; automation is a roadmap item.
 - **Intraday liquidity monitor.** Real-time nostro balance monitor with automated alert. Discharge exit signal: alert fires when nostro < 110% of remaining obligations.
-- **Procedures pending full authoring:** `Procedures/operations/settlement-failure-bcp.md`, `Procedures/by-policy/intraday-liquidity-funding.md`, `Procedures/by-policy/samos-cut-off.md` — referenced herein as at the procedures layer; full content to be authored by Tomas under Devon's direction.
+- **Procedures pending full authoring:** `Procedures/operations/settlement-failure-bcp.md`, `Procedures/by-policy/intraday-liquidity-funding.md`, `Procedures/by-policy/correspondent-cut-off.md` — referenced herein as at the procedures layer; full content to be authored by Tomas under Devon's direction.
 
 ---
 
@@ -197,4 +197,4 @@ All events are appended to the shared event store (Principle 1; cross-worktree s
 
 | Version | Date | Author | Change |
 |---|---|---|---|
-| v1 | 2026-05-22 | Devon (Chief Operating Officer, governance) + Tomas (Operations & payments engineer, engineering) | Initial policy authored. Six operative sections: (1) Overarching — correspondent bank as sole channel, DVP principle, T+2 settlement, intraday liquidity, fail management, events-first accounting, Exchange Control compliance; (2) Payment Channels and Authorisation — correspondent bank channel, SWIFT connectivity, outbound payment authorisation matrix; (3) Settlement Framework — STRATE T+2, settlement fail management, SAMOS cut-off adherence; (4) Intraday Liquidity Management; (5) Exchange Control — Outbound Payments; (6) Typed events. |
+| v1 | 2026-05-22 | Devon (Chief Operating Officer, governance) + Tomas (Operations & payments engineer, engineering) | Initial policy authored. Six operative sections: (1) Overarching — correspondent bank as sole channel, DVP principle, T+2 settlement, intraday liquidity, fail management, events-first accounting, Exchange Control compliance; (2) Payment Channels and Authorisation — correspondent bank channel, SWIFT connectivity, outbound payment authorisation matrix; (3) Settlement Framework — STRATE T+2, settlement fail management, settlement cut-off adherence; (4) Intraday Liquidity Management; (5) Exchange Control — Outbound Payments; (6) Typed events. |

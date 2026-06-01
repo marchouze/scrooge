@@ -58,7 +58,7 @@ Settlement date conventions differ by product (SAGB T+3, FX spot T+2, repo T+0/T
 Update the Substrate gaps section (last reviewed 2026-05-14) to:
 - Mark "ALM engine" as ✅ closed 2026-05-19 (mirrors the Treasurer's entry).
 - Mark "Collateral inventory substrate" as ✅ closed 2026-05-19 (HQLA classifier + inventory projection live).
-- Retain remaining open gaps: FTP engine (indicative rates only; live market-data feed deferred), FTP curve sources, SAMOS interface (operations & payments engineer + treasury/ALM engineer; pre-licence mandatory), hedge-accounting integration, and the partial `SettlementInstructionIssued` / `BalanceSheetProjected` ALM gaps now partially addressed by this PR.
+- Retain remaining open gaps: FTP engine (indicative rates only; live market-data feed deferred), FTP curve sources, Correspondent settlement interface (operations & payments engineer + treasury/ALM engineer; pre-licence mandatory), hedge-accounting integration, and the partial `SettlementInstructionIssued` / `BalanceSheetProjected` ALM gaps now partially addressed by this PR.
 - Add a §17 change log entry: `v1.2 | 2026-05-25 | treasury/ALM engineer (via Scrooge) | §16 updated: ALM engine + collateral inventory gaps closed per D-TREASURY-GAPS-WAVE1 (closed 2026-05-19). SettlementInstructionIssued gap partially closed — T+2 settlement outflows now derived from TradeBooked events.`
 
 ### Step 4 — Update stale handler substrate-gaps section

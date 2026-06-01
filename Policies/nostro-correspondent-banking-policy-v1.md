@@ -40,7 +40,7 @@ riskTaxonomy:
 
 ### Purpose
 
-This policy governs Hoz Bank Limited's (the "Bank's") nostro account infrastructure and correspondent banking relationships. A nostro account is a foreign currency account held by the Bank at a foreign bank (or a ZAR account held at a domestic bank for correspondent-mediated SAMOS access) in the Bank's name. The correspondent bank is the financial institution that holds the nostro account on the Bank's behalf and executes payments on the Bank's instruction.
+This policy governs Hoz Bank Limited's (the "Bank's") nostro account infrastructure and correspondent banking relationships. A nostro account is a foreign currency account held by the Bank at a foreign bank (or a ZAR account held at a domestic bank for correspondent-mediated NPS access (via correspondent)) in the Bank's name. The correspondent bank is the financial institution that holds the nostro account on the Bank's behalf and executes payments on the Bank's instruction.
 
 The Bank's indirect-participant posture makes correspondent banking relationships existentially important: without an approved, operational correspondent bank, the Bank cannot process any client payment, fund any settlement, or hold any foreign currency position. The Bank therefore applies a higher standard of due diligence, monitoring, and governance to correspondent banking relationships than to ordinary counterparty relationships.
 
@@ -48,7 +48,7 @@ The policy applies to all nostro accounts (ZAR and foreign currency) and all cor
 
 ### Principles
 
-- **Approved correspondent bank list is CEO-controlled.** The list of approved correspondent banks — covering which banks, in which currencies, for which purposes (ZAR SAMOS access; USD; EUR; GBP; etc.) — may only be changed with CEO approval. Devon proposes additions or removals; Zara (Chief Compliance Officer, governance) confirms AML/CFT due diligence; CEO approves. A `NostroAccountOpened` or `NostroAccountClosed` typed event is the canonical record of every change.
+- **Approved correspondent bank list is CEO-controlled.** The list of approved correspondent banks — covering which banks, in which currencies, for which purposes (ZAR NPS access (via correspondent); USD; EUR; GBP; etc.) — may only be changed with CEO approval. Devon proposes additions or removals; Zara (Chief Compliance Officer, governance) confirms AML/CFT due diligence; CEO approves. A `NostroAccountOpened` or `NostroAccountClosed` typed event is the canonical record of every change.
 - **Annual due diligence by Zara.** Every correspondent banking relationship is subject to an annual AML/CFT risk assessment by Zara, consistent with FIC Act s.21B enhanced due diligence requirements and FATF Correspondent Banking Guidance (October 2016). Zara issues a due diligence findings report to Devon and to the CEO. A correspondent bank that fails the annual due diligence is suspended pending remediation; continued suspension beyond 30 days triggers a CEO-level decision on termination and replacement.
 - **Same-day nostro reconciliation.** The nostro balance for every active nostro account is reconciled daily, same-day, by Tomas against the SWIFT MT940/MT950 statement or equivalent electronic balance report from the correspondent bank. A `NostroReconciliationCompleted { accountId, correspondentBank, date, openingBalance, closingBalance, breakCount }` event is emitted at the end of each business day. Unreconciled items (breaks) are investigated within T+1 and escalated per the Reconciliation and Break Management Policy.
 - **Nostro credit exposure is counterparty credit risk.** The nostro balance held at any correspondent bank is an unsecured credit exposure to that bank. Eitan monitors the aggregate nostro balance per correspondent bank against the credit limit assigned under the concentration risk framework (references `Policies/credit-risk-policy-v1.md`). Nostro balances in excess of the approved credit limit require Eitan's notification to Helena and an intraday reduction plan.
@@ -94,7 +94,7 @@ Zara's annual due diligence findings are reported to Devon and the CEO. A corres
 
 ### 2.3 Static Data Management
 
-The approved correspondent bank register holds, for each correspondent: SWIFT BIC, account number, account currency, purpose, cut-off times (ZAR SAMOS, USD Fedwire, EUR TARGET2, etc.), fee schedule, ISDA/GMRA/GMSLA agreement status, and emergency contact details.
+The approved correspondent bank register holds, for each correspondent: SWIFT BIC, account number, account currency, purpose, cut-off times (ZAR NPS RTGS / BankservAfrica, USD Fedwire, EUR TARGET2, etc.), fee schedule, ISDA/GMRA/GMSLA agreement status, and emergency contact details.
 
 Static data changes (change of account number, BIC update, cut-off revision) are made by Tomas with Devon's written approval. Static data changes are not routine operational tasks; they require the same dual-approval as payment authorisation at the relevant amount tier, applied to the data change rather than a payment.
 

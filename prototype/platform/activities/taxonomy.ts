@@ -27,7 +27,7 @@ export const ACTIVITY_CODES = [
   "ACT-TRADE-OTC-CREDIT", // OTC credit derivatives
   // Banking
   "ACT-BANK-DEPOSIT", // Deposit-taking
-  "ACT-BANK-PAYMENT", // Payment processing (SAMOS / sponsor-bank channel)
+  "ACT-BANK-PAYMENT", // Payment processing (NPS / sponsor-bank channel)
   "ACT-BANK-NOSTRO", // Nostro & correspondent management
   // Client
   "ACT-CLIENT-ONBOARD", // Counterparty/client onboarding (KYC, CDD, EDD)

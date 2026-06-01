@@ -10,7 +10,7 @@
 //   IcaapIlaapInputReady, CapitalActionTrigger, CapitalEvent,
 //   LCRRatioProjection, NSFRRatioProjection, HQLACompositionDrift,
 //   LiquiditySnapshot, CurveSourceAnomaly, CutOffBreach,
-//   SAMOSFundingShortfall, ModelRegistered
+//   NostroFundingShortfall, ModelRegistered
 //
 // Authority: F-032 (event-type-registry-coverage recon).
 // Author: Atlas (Core banking platform architect, engineering)
@@ -888,10 +888,10 @@ export function makeCutOffBreach(args: {
 }
 
 // ---------------------------------------------------------------------------
-// SAMOSFundingShortfall
+// NostroFundingShortfall
 // ---------------------------------------------------------------------------
 
-export const samosFundingShortfallPayloadSchema = z.object({
+export const nostroFundingShortfallPayloadSchema = z.object({
   shortfallId: z.string().min(1),
   settlementWindow: z.string().min(1),
   shortfallAmount: z.number().positive(),
@@ -901,24 +901,24 @@ export const samosFundingShortfallPayloadSchema = z.object({
   escalatedTo: z.string().optional(),
 });
 
-export type SAMOSFundingShortfallPayload = z.infer<typeof samosFundingShortfallPayloadSchema>;
+export type NostroFundingShortfallPayload = z.infer<typeof nostroFundingShortfallPayloadSchema>;
 
-export function makeSAMOSFundingShortfall(args: {
+export function makeNostroFundingShortfall(args: {
   asOf: string;
   entity: string;
   actor: Actor;
   citations: string[];
-  payload: SAMOSFundingShortfallPayload;
+  payload: NostroFundingShortfallPayload;
   eventId?: string;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
-    type: "SAMOSFundingShortfall",
+    type: "NostroFundingShortfall",
     as_of: args.asOf,
     entity: args.entity,
     actor: args.actor,
     citations: args.citations,
-    payload: samosFundingShortfallPayloadSchema.parse(args.payload),
+    payload: nostroFundingShortfallPayloadSchema.parse(args.payload),
   });
 }
 
@@ -986,6 +986,6 @@ export const RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES = [
   "LiquiditySnapshot",
   "CurveSourceAnomaly",
   "CutOffBreach",
-  "SAMOSFundingShortfall",
+  "NostroFundingShortfall",
   "ModelRegistered",
 ] as const;

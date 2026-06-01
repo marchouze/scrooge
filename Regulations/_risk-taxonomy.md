@@ -136,7 +136,7 @@ Each level-1 expanded with its level-2 nodes. Definitions are 1–2 sentences.
 |---|---|---|
 | `RT-LQ.FN` | Funding-liquidity risk | Risk that the bank cannot meet cash obligations as they fall due without producing material losses. Captured in LCR + NSFR + idiosyncratic stress. |
 | `RT-LQ.MK` | Market-liquidity risk | Risk that the bank cannot liquidate positions at or near the prevailing market price (HQLA composition; trading-book exit costs). |
-| `RT-LQ.IN` | Intraday-liquidity risk | Risk that the bank cannot meet payment and settlement obligations at the moment they fall due during the operating day (SAMOS-funding scale). |
+| `RT-LQ.IN` | Intraday-liquidity risk | Risk that the bank cannot meet payment and settlement obligations at the moment they fall due during the operating day (intraday-settlement scale). |
 | `RT-LQ.CN` | Funding-concentration risk | Risk from disproportionate reliance on a single funding counterparty, tenor, currency, or product. |
 | `RT-LQ.CR` | Cross-currency funding risk | Risk of loss from FX-swap-implied funding mismatches across significant currencies. |
 
