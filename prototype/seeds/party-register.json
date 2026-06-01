@@ -1,9 +1,9 @@
 {
   "$schema": "Regulations/_party-register.md",
-  "asOf": "2026-05-29",
-  "source": "D-PARTY-REGISTER PR 3 (CEO-approved 2026-05-11) — Marc CEO seat live; 2026-05-20 add Standard Bank + Investec for FX-spot controlled-launch (PR #634 + PR #637); 2026-05-29 add SARB as central-bank custodian for custodian-derived HQLA",
+  "asOf": "2026-06-01",
+  "source": "D-PARTY-REGISTER PR 3 (CEO-approved 2026-05-11) — Marc CEO seat live; 2026-05-20 add Standard Bank + Investec for FX-spot controlled-launch (PR #634 + PR #637); 2026-05-29 add SARB as central-bank custodian for custodian-derived HQLA; 2026-06-01 add bic/authorisedProducts/eligibleFxPairs to institutional counterparties; add 6 sim counterparties",
   "totals": {
-    "legal-entity": 6,
+    "legal-entity": 12,
     "agent": 27,
     "natural-person": 1
   },
@@ -117,7 +117,10 @@
             "Companies Act 71 of 2008 (Ltd, public)",
             "FAIS Act 37 of 2002 (where applicable)"
           ],
-          "lei": "549300RH5FFHO48FXT69"
+          "lei": "549300RH5FFHO48FXT69",
+          "bic": "IVESZAJJXXX",
+          "authorisedProducts": ["fx-spot", "fx-forward", "repo"],
+          "eligibleFxPairs": ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD"]
         },
         "registeredAt": "2026-05-20T00:00:00.000Z"
       },
@@ -137,9 +140,126 @@
             "Companies Act 71 of 2008 (Ltd, public)",
             "FAIS Act 37 of 2002 (FSP 11287)"
           ],
-          "lei": "QFC8ZCW3Q5PRXU1XTM60"
+          "lei": "QFC8ZCW3Q5PRXU1XTM60",
+          "bic": "SBZAZAJJXXX",
+          "authorisedProducts": ["fx-spot", "fx-forward", "repo", "bond"],
+          "eligibleFxPairs": ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"]
         },
         "registeredAt": "2026-05-20T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:std-sim-za",
+        "displayName": "Standard Simulated Bank SA",
+        "legalName": "Standard Simulated Bank SA (build-phase fictitious)",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "PA",
+          "regimeAnchor": ["Build-phase simulation — not a real institution"],
+          "bic": "SBZAZAJJXXX",
+          "authorisedProducts": ["fx-spot"],
+          "eligibleFxPairs": ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
+          "buildPhaseStatus": "sim"
+        },
+        "registeredAt": "2026-06-01T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:absa-sim-za",
+        "displayName": "Absa Simulated Bank SA",
+        "legalName": "Absa Simulated Bank SA (build-phase fictitious)",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "PA",
+          "regimeAnchor": ["Build-phase simulation — not a real institution"],
+          "bic": "ABSAZAJJXXX",
+          "authorisedProducts": ["fx-spot"],
+          "eligibleFxPairs": ["USD/ZAR", "EUR/ZAR"],
+          "buildPhaseStatus": "sim"
+        },
+        "registeredAt": "2026-06-01T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:barclays-sim-gb",
+        "displayName": "Barclays Simulated London",
+        "legalName": "Barclays Simulated London (build-phase fictitious)",
+        "jurisdictions": ["GB"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "other",
+          "regimeAnchor": ["Build-phase simulation — not a real institution"],
+          "bic": "BARCGB22XXX",
+          "authorisedProducts": ["fx-spot"],
+          "eligibleFxPairs": ["USD/ZAR", "GBP/ZAR", "EUR/USD"],
+          "buildPhaseStatus": "sim"
+        },
+        "registeredAt": "2026-06-01T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:deutsche-sim-de",
+        "displayName": "Deutsche Simulated Frankfurt",
+        "legalName": "Deutsche Simulated Frankfurt (build-phase fictitious)",
+        "jurisdictions": ["DE"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "other",
+          "regimeAnchor": ["Build-phase simulation — not a real institution"],
+          "bic": "DEUTDEDBXXX",
+          "authorisedProducts": ["fx-spot"],
+          "eligibleFxPairs": ["EUR/ZAR", "EUR/USD"],
+          "buildPhaseStatus": "sim"
+        },
+        "registeredAt": "2026-06-01T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:jpm-sim-us",
+        "displayName": "JPMorgan Simulated New York",
+        "legalName": "JPMorgan Simulated New York (build-phase fictitious)",
+        "jurisdictions": ["US"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "other",
+          "regimeAnchor": ["Build-phase simulation — not a real institution"],
+          "bic": "CHASUS33XXX",
+          "authorisedProducts": ["fx-spot"],
+          "eligibleFxPairs": ["USD/ZAR", "EUR/USD", "EUR/ZAR"],
+          "buildPhaseStatus": "sim"
+        },
+        "registeredAt": "2026-06-01T00:00:00.000Z"
+      },
+      {
+        "partyId": "urn:party:legal-entity:nedbank-sim-za",
+        "displayName": "Nedbank Simulated SA",
+        "legalName": "Nedbank Simulated SA (build-phase fictitious)",
+        "jurisdictions": ["ZA"],
+        "classifications": [],
+        "kindAttributes": {
+          "kind": "legal-entity",
+          "entityForm": "Ltd",
+          "parentPartyId": null,
+          "primaryRegulator": "PA",
+          "regimeAnchor": ["Build-phase simulation — not a real institution"],
+          "bic": "NEDSZAJJXXX",
+          "authorisedProducts": ["fx-spot"],
+          "eligibleFxPairs": ["USD/ZAR", "GBP/ZAR"],
+          "buildPhaseStatus": "sim"
+        },
+        "registeredAt": "2026-06-01T00:00:00.000Z"
       }
     ],
     "agent": [

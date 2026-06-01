@@ -75,20 +75,6 @@ export interface ClientState {
   readonly simulated: boolean;
   /** KYC candidateId that produced this client — used to correlate ClientRejected tombstones. */
   readonly candidateId?: string;
-  /** SWIFT BIC-11. Populated for institutional counterparties. */
-  readonly bic?: string;
-  /** ISO 17442 LEI (20 chars). */
-  readonly lei?: string;
-  /**
-   * Product / service codes this client is authorised to transact in.
-   * E.g. ["fx-spot", "repo", "bond"]. Drives FX counterparty eligibility checks.
-   */
-  readonly authorisedProducts?: readonly string[];
-  /**
-   * Explicit FX pair eligibility, e.g. ["USD/ZAR", "EUR/ZAR"]. Major-first per
-   * ACI Model Code. Empty = all available pairs.
-   */
-  readonly eligibleFxPairs?: readonly string[];
 }
 
 /** Full projection state — Map keyed by clientId. */
@@ -180,14 +166,6 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
 
   const category: ClientCategory = p.category === "EC" || p.category === "PC" ? p.category : "PC";
   const simulated = p.simulated === true;
-  const bic = typeof p.bic === "string" && p.bic ? p.bic : undefined;
-  const lei = typeof p.lei === "string" && p.lei ? p.lei : undefined;
-  const authorisedProducts = Array.isArray(p.authorisedProducts)
-    ? (p.authorisedProducts as unknown[]).filter((x): x is string => typeof x === "string")
-    : undefined;
-  const eligibleFxPairs = Array.isArray(p.eligibleFxPairs)
-    ? (p.eligibleFxPairs as unknown[]).filter((x): x is string => typeof x === "string")
-    : undefined;
 
   // DUPLICATE-ENTITYNAME GUARD (D-RECON-CLIENT-ENTITYNAME-UNIQUENESS):
   // If another active row already exists with the same entityName, skip this
@@ -222,10 +200,6 @@ function applyClientAccepted(state: ClientsProjectionState, e: Event): ClientsPr
     onboardedAt: acceptedAt,
     lastUpdatedAt: e.as_of,
     simulated,
-    ...(bic !== undefined ? { bic } : {}),
-    ...(lei !== undefined ? { lei } : {}),
-    ...(authorisedProducts !== undefined ? { authorisedProducts } : {}),
-    ...(eligibleFxPairs !== undefined ? { eligibleFxPairs } : {}),
   });
 }
 

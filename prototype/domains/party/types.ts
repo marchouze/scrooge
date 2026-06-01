@@ -180,6 +180,31 @@ export interface LegalEntityAttrs {
    * its own LEI and operates with EU-counterparty OTC derivatives.
    */
   readonly lei?: string;
+  /**
+   * SWIFT BIC-11 for the entity. Populated for institutional counterparties
+   * the bank trades with (interbank FX, correspondent banking). Absent for
+   * own-group entities and non-bank counterparties.
+   */
+  readonly bic?: string;
+  /**
+   * Product / service codes this entity is authorised to transact in with
+   * the bank. Examples: "fx-spot", "fx-forward", "repo", "mmd", "ibl",
+   * "bond", "equity", "irs". Canonical list — downstream eligibility checks
+   * gate on this field. Absent = not yet authorised for any products.
+   */
+  readonly authorisedProducts?: readonly string[];
+  /**
+   * FX pair eligibility (major-first per ACI Model Code hierarchy, e.g.
+   * "USD/ZAR", "EUR/ZAR"). Drives the FX sim engine's pair picker and the
+   * FX desk counterparty picker. Empty = all available pairs permitted.
+   */
+  readonly eligibleFxPairs?: readonly string[];
+  /**
+   * Build-phase classification. "sim" marks a fictitious build-phase
+   * counterparty that exists in the register for substrate testing only.
+   * Absent or "active" = real production counterparty.
+   */
+  readonly buildPhaseStatus?: "active" | "sim";
 }
 
 /**
