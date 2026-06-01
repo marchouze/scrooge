@@ -331,6 +331,11 @@ export const partyRegisteredPayloadSchema = z
 
 /**
  * 2 — `PartyAttributeChanged`.
+ *
+ * `beforeRef` / `afterRef` are optional pre-doc-store — provide when the
+ * document store is available. For inline `kindAttributesPatch` updates
+ * (build-phase only, until the doc-store lands), omit them and provide
+ * `kindAttributesPatch` instead.
  */
 export const partyAttributeChangedPayloadSchema = z.object({
   partyId: partyIdSchema,
@@ -343,9 +348,23 @@ export const partyAttributeChangedPayloadSchema = z.object({
     "tax-residency-removed",
     "kind-attribute",
   ]),
-  beforeRef: documentHashSchema,
-  afterRef: documentHashSchema,
+  beforeRef: documentHashSchema.optional(),
+  afterRef: documentHashSchema.optional(),
   citations: citationsSchema,
+  /**
+   * Inline kind-attribute patch — used for build-phase attribute back-fills
+   * where the doc-store is not yet available. The projection merges these
+   * fields into the record's `kindAttributes` (last-write wins per field).
+   * Only valid when `changeType === "kind-attribute"`.
+   */
+  kindAttributesPatch: z
+    .object({
+      bic: z.string().optional(),
+      authorisedProducts: z.array(z.string()).optional(),
+      eligibleFxPairs: z.array(z.string()).optional(),
+      buildPhaseStatus: z.enum(["active", "sim"]).optional(),
+    })
+    .optional(),
 });
 
 /**

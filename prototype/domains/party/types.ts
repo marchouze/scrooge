@@ -334,11 +334,22 @@ export interface PartyAttributeChangedPayload {
     | "tax-residency-added"
     | "tax-residency-removed"
     | "kind-attribute";
-  /** BLAKE3 hash of the prior value snapshot in the document store. */
-  readonly beforeRef: string;
-  /** BLAKE3 hash of the new value snapshot in the document store. */
-  readonly afterRef: string;
+  /** BLAKE3 hash of the prior value snapshot in the document store. Optional pre-doc-store. */
+  readonly beforeRef?: string;
+  /** BLAKE3 hash of the new value snapshot in the document store. Optional pre-doc-store. */
+  readonly afterRef?: string;
   readonly citations: readonly Citation[];
+  /**
+   * Inline kind-attribute patch for build-phase back-fills (no doc-store yet).
+   * Only valid when `changeType === "kind-attribute"`. Projection merges these
+   * fields into the record's `kindAttributes` (last-write wins per field).
+   */
+  readonly kindAttributesPatch?: {
+    readonly bic?: string;
+    readonly authorisedProducts?: readonly string[];
+    readonly eligibleFxPairs?: readonly string[];
+    readonly buildPhaseStatus?: "active" | "sim";
+  };
 }
 
 /**
