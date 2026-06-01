@@ -44,7 +44,6 @@ import { resolve } from "node:path";
 
 import { eventStore } from "../composition";
 import { STANDARD_PAIRS } from "../simulation/env-sim/market-data-sim";
-import { SIM_COUNTERPARTIES } from "../simulation/fx-sim-counterparties";
 import { SEED_MID_RATES_KEYS } from "../simulation/fx-sim-rates";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -111,8 +110,6 @@ export interface RunOpts {
   seedKeys?: Iterable<string>;
   /** Override the SEED_MID_RATES keys (test injection). */
   midRateKeys?: Iterable<string>;
-  /** Override the SIM_COUNTERPARTIES list (test injection). */
-  counterparties?: ReadonlyArray<{ name: string; eligiblePairs: ReadonlyArray<string> }>;
   /** Override the STANDARD_PAIRS list (test injection). */
   standardPairs?: ReadonlyArray<string>;
 }
@@ -245,16 +242,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     assertPairString(key, "fx-sim-rates:SEED_MID_RATES", violations);
   }
 
-  // 4. SIM_COUNTERPARTIES eligiblePairs.
-  const counterparties = opts.counterparties ?? SIM_COUNTERPARTIES;
-  for (const cp of counterparties) {
-    for (const p of cp.eligiblePairs) {
-      result.asserted++;
-      assertPairString(p, `fx-sim-counterparties:${cp.name}`, violations);
-    }
-  }
-
-  // 5. STANDARD_PAIRS.
+  // 4. STANDARD_PAIRS.
   const standardPairs = opts.standardPairs ?? STANDARD_PAIRS;
   for (const p of standardPairs) {
     result.asserted++;

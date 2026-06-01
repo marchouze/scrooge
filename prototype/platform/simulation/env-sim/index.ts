@@ -24,7 +24,7 @@ import {
   getLimitUtilisations,
   rebuildLimitUtilisation,
 } from "../../projections/markets/limit-utilisation";
-import { SIM_COUNTERPARTIES, type SimCounterparty } from "../fx-sim-counterparties";
+import type { SimCounterparty } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
 import { FxRateEngine } from "../fx-sim-rates";
 import { runPostTradeLifecycle } from "../post-trade-lifecycle";
@@ -550,8 +550,11 @@ export class EnvSimEngine {
    * runs the risk monitor to determine the optimal trade direction.
    */
   fireTrade(opts?: { forcedSide?: "buy" | "sell"; eligiblePairsFilter?: string[] }): void {
-    // Resolve live counterparty list from KYC (via injected callback) or fall back to sim banks.
-    const counterparties = this.opts.getCounterparties?.() ?? SIM_COUNTERPARTIES;
+    const counterparties = this.opts.getCounterparties?.() ?? [];
+    if (counterparties.length === 0) {
+      console.warn("[EnvSimEngine] fireTrade: no eligible counterparties — skipping trade");
+      return;
+    }
     // Get available pairs from market data store; fall back to STANDARD_PAIRS.
     const availablePairs = getAvailableFxPairs(this.marketDataStore);
 

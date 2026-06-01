@@ -1,9 +1,7 @@
 // scripts/seed-counterparty-eligibility.ts
 //
 // One-time seed: emits CounterpartyEligibilityScreened(institutional-eligible)
-// events for:
-//   (a) every unique KYC-onboarded client (from ClientOnboarded events)
-//   (b) every fx-sim counterparty (from platform/simulation/fx-sim-counterparties.ts)
+// events for every unique KYC-onboarded client (from ClientAccepted events).
 //
 // Idempotent: skips any counterpartyId that already has a passing screening
 // event in the store.
@@ -16,7 +14,6 @@
 import { buildCounterpartiesView } from "../dashboard/markets-fx-counterparties";
 import { makeCounterpartyEligibilityScreened } from "../platform/event-store/event-types/trading";
 import { EventStore } from "../platform/event-store/store";
-import { SIM_COUNTERPARTIES } from "../platform/simulation/fx-sim-counterparties";
 
 const dbPath = process.env.BANK_EVENT_DB_PATH ?? ".local/event.db";
 const store = new EventStore(dbPath);
@@ -44,17 +41,8 @@ for (const ev of store.replay()) {
 
 console.log(`KYC clients found: ${kycCandidates.length}`);
 
-// ── 3. Collect sim counterparties ───────────────────────────────────────────
-const simCandidates = SIM_COUNTERPARTIES.map((c) => ({
-  id: c.partyId,
-  name: c.name,
-  source: "fx-sim",
-}));
-
-console.log(`Sim counterparties: ${simCandidates.length}`);
-
-// ── 4. Merge and emit ───────────────────────────────────────────────────────
-const all = [...kycCandidates, ...simCandidates];
+// ── 3. Emit ─────────────────────────────────────────────────────────────────
+const all = [...kycCandidates];
 let emitted = 0;
 let skipped = 0;
 

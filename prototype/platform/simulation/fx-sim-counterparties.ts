@@ -7,8 +7,7 @@
 //  - `SimCounterparty` — the interface the sim engine uses
 //  - `fxCounterpartiesFromPartyRegister(projection)` — all FX-eligible
 //    parties (real + sim) from the party register
-//  - `SIM_COUNTERPARTIES` — build-phase sim counterparties only (static
-//    fallback for tests and cold-start)
+//  - `realFxCounterpartiesFromPartyRegister(projection)` — non-sim parties only
 //
 // Authority: D-FX-SALES-TRADING-FRONTEND; D-FX-BOOK-BOUNDARY;
 //   D-MARKETS-SCHEMA-FOUNDATION.
@@ -88,78 +87,3 @@ export function realFxCounterpartiesFromPartyRegister(
 ): SimCounterparty[] {
   return fxCounterpartiesFromPartyRegister(projection).filter((c) => !c.isSim);
 }
-
-// ---------------------------------------------------------------------------
-// Static fallback — mirrors the 6 sim banks in the party register seed.
-// Used directly in tests (no live event store) and as the cold-start
-// fallback when getActiveFxCounterparties finds no party register entries.
-// ---------------------------------------------------------------------------
-
-export const SIM_COUNTERPARTIES: SimCounterparty[] = [
-  {
-    partyId: "urn:party:legal-entity:std-sim-za",
-    name: "Standard Simulated Bank SA",
-    role: "counterparty",
-    jurisdiction: "ZA",
-    bic: "SBZAZAJJXXX",
-    isSim: true,
-    eligiblePairs: ["USD/ZAR", "EUR/ZAR", "GBP/ZAR"],
-    minNotionalMinor: 100_000_00,
-    maxNotionalMinor: 5_000_000_00,
-  },
-  {
-    partyId: "urn:party:legal-entity:absa-sim-za",
-    name: "Absa Simulated Bank SA",
-    role: "counterparty",
-    jurisdiction: "ZA",
-    bic: "ABSAZAJJXXX",
-    isSim: true,
-    eligiblePairs: ["USD/ZAR", "EUR/ZAR"],
-    minNotionalMinor: 50_000_00,
-    maxNotionalMinor: 2_000_000_00,
-  },
-  {
-    partyId: "urn:party:legal-entity:barclays-sim-gb",
-    name: "Barclays Simulated London",
-    role: "counterparty",
-    jurisdiction: "GB",
-    bic: "BARCGB22XXX",
-    isSim: true,
-    eligiblePairs: ["USD/ZAR", "GBP/ZAR", "EUR/USD"],
-    minNotionalMinor: 200_000_00,
-    maxNotionalMinor: 10_000_000_00,
-  },
-  {
-    partyId: "urn:party:legal-entity:deutsche-sim-de",
-    name: "Deutsche Simulated Frankfurt",
-    role: "counterparty",
-    jurisdiction: "DE",
-    bic: "DEUTDEDBXXX",
-    isSim: true,
-    eligiblePairs: ["EUR/ZAR", "EUR/USD"],
-    minNotionalMinor: 100_000_00,
-    maxNotionalMinor: 8_000_000_00,
-  },
-  {
-    partyId: "urn:party:legal-entity:jpm-sim-us",
-    name: "JPMorgan Simulated New York",
-    role: "counterparty",
-    jurisdiction: "US",
-    bic: "CHASUS33XXX",
-    isSim: true,
-    eligiblePairs: ["USD/ZAR", "EUR/USD", "EUR/ZAR"],
-    minNotionalMinor: 500_000_00,
-    maxNotionalMinor: 20_000_000_00,
-  },
-  {
-    partyId: "urn:party:legal-entity:nedbank-sim-za",
-    name: "Nedbank Simulated SA",
-    role: "counterparty",
-    jurisdiction: "ZA",
-    bic: "NEDSZAJJXXX",
-    isSim: true,
-    eligiblePairs: ["USD/ZAR", "GBP/ZAR"],
-    minNotionalMinor: 50_000_00,
-    maxNotionalMinor: 3_000_000_00,
-  },
-];

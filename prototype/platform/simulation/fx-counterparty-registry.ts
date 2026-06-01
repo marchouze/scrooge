@@ -12,23 +12,20 @@
 
 import type { EventStore } from "../event-store/store";
 import { buildPartyProjection } from "../identity/party-projection";
-import {
-  SIM_COUNTERPARTIES,
-  type SimCounterparty,
-  fxCounterpartiesFromPartyRegister,
-} from "./fx-sim-counterparties";
+import { type SimCounterparty, fxCounterpartiesFromPartyRegister } from "./fx-sim-counterparties";
 
 /**
  * Resolve the live list of FX-eligible counterparties from the party register.
  *
- * Returns all legal-entity parties with bic + "fx-spot" in authorisedProducts
- * (both real production parties and build-phase sim parties).
- *
- * Falls back to SIM_COUNTERPARTIES when the party register yields no results —
- * prevents the sim engine stalling in an empty event store (e.g. test runs).
+ * Returns real (non-sim) KYC-registered parties only. Falls back to the full
+ * register (including sim-tagged parties) only when no real parties exist yet.
+ * Returns an empty array when the party register has no FX-eligible entries at
+ * all — callers (sim engine fireTrade) must handle the empty case gracefully.
  */
 export function getActiveFxCounterparties(store: Pick<EventStore, "replay">): SimCounterparty[] {
   const projection = buildPartyProjection(store as EventStore);
   const fromRegister = fxCounterpartiesFromPartyRegister(projection);
-  return fromRegister.length > 0 ? fromRegister : [...SIM_COUNTERPARTIES];
+  if (fromRegister.length === 0) return [];
+  const realOnly = fromRegister.filter((c) => !c.isSim);
+  return realOnly.length > 0 ? realOnly : fromRegister;
 }
