@@ -92,9 +92,7 @@ describe("RAS §B6 cyber-severity coverage pipeline", () => {
     });
     expect(r.ok).toBe(false);
     expect(
-      r.violations.some(
-        (v) => v.severity === "fail" && v.message.includes(CYBER_LINE_ID),
-      ),
+      r.violations.some((v) => v.severity === "fail" && v.message.includes(CYBER_LINE_ID)),
     ).toBe(true);
     expect(r.violations.some((v) => v.message.includes("unmeasured"))).toBe(true);
   });

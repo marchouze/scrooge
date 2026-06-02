@@ -337,9 +337,7 @@ export function computeCyberSeverityPosture(
     parts.push("Open incident within initial 24h response window.");
   if (hasAmberPirMiss && !isRed) parts.push("P2 PIR overdue (P1 PIRs on time).");
 
-  parts.push(
-    `CY-IRP-01 §2.1 SLAs: P1 containment 4h / P2 containment 24h / PIR 14d. RAS §B6.`,
-  );
+  parts.push("CY-IRP-01 §2.1 SLAs: P1 containment 4h / P2 containment 24h / PIR 14d. RAS §B6.");
 
   const note = parts.join(" ");
 
