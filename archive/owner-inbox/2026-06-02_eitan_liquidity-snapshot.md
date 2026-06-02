@@ -1,7 +1,7 @@
 ---
 agent: Eitan
 trigger: liquidity-snapshot
-asOf: 2026-06-02T06:53:44.298Z
+asOf: 2026-06-02T07:13:36.240Z
 decision-required: false
 ---
 
@@ -76,7 +76,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 |---|---|
 | `ALCODecision` | 0 |
 | `HedgeProgrammeApproved` | 0 |
-| Prior `LiquiditySnapshot` (this agent) | 0 |
+| Prior `LiquiditySnapshot` (this agent) | 1 |
 
 ## Substrate gaps (build-phase)
 
@@ -91,7 +91,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 
 ## Eitan's narrative
 
-_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbdzZGezTir5DRNMJ2yLi"})._
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Cbe25pCzpCvek3cr6ZGTd"})._
 
 ## Provenance
 
