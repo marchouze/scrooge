@@ -21,7 +21,6 @@ import { newEventId } from "../../platform/core/types";
 import {
   makeAgentDecision,
   makeAgentEscalation,
-  makeRiskRaised,
   makeWorkstreamRegistered,
 } from "../../platform/event-store/event-types";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
@@ -179,13 +178,50 @@ function recentDeliverablesCount(ownerInboxDir: string): number {
 // once one exists (per Vera spec § 16, planned recon pipeline #13).
 const KNOWN_SUBSTRATE_GAPS: readonly string[] = [
   "Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite remains canonical-shape on every host. Bidirectional sync runs before/after every agent workflow via `bun run event-store:sync`. Senna threat model APPROVED for build-phase use under exception `TM-NEON-EVENT-STORE-001` (Owen's substrate-exception register). Hardening conditions §5.1 (role downgrade to SELECT+INSERT) and §5.2 (IP allowlist) deferred while events remain non-sensitive; required before any sensitive-data event flows. M8 cloud lift swaps Neon for Neon-on-Azure or Azure Postgres without code change.",
-  "Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised — DEFINED in `platform/event-store/event-types.ts` with Zod payload schemas and typed `make<Type>` factories. Atlas now emits one RiskRaised per substrate gap on his weekly run, exercising the schema. The remaining three types are available for handlers to adopt as their decision / escalation / workstream paths are wired; Vera's audit pipelines #14/#15 and the dashboard's curated-seed retirement now have substrate to consume.",
+  "Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised + closure family (RiskResolved / RiskAccepted / RiskMitigated) — DEFINED in `platform/event-store/event-types/risk.ts` + `.../event-types.ts` with Zod payload schemas and typed `make<Type>` factories. Substrate gaps surface on the SubstrateStateSnapshot `gaps[]` status inventory + per-gap WorkstreamRegistered events; they are NOT risk-register findings, so Atlas no longer emits RiskRaised for them (WS-RISK-REGISTER-CLOSURE). The closure family lets goal-loops resolve a risk register by riskId pairing. Vera's audit pipelines #14/#15 and the dashboard's curated-seed retirement now have substrate to consume.",
   "Runtime trigger kinds: scheduled, event-driven, and on-request are all first-class in `runtime/run.ts`. Event-driven dispatch fans out in-process from a parent run when the parent appended an event type a downstream handler subscribes to; cross-process / cross-workflow event-bus is M8 cloud-lift work. On-request handlers are dispatched via `bun run agent:<slug>` or workflow_dispatch with no schedule (first example: `mira:citation-gate`).",
   "Claude API integration for agent-narrative output: ROLLED OUT. All seven runtime handlers (Vera, Atlas, Mira, Owen, Senna, Anya, Scrooge) call `tryGenerateNarrative` after their mechanical pass. Each has a stable persona-grounded system prompt cached as the prefix; per-run state is the volatile suffix. Requires ANTHROPIC_API_KEY in the host env or GitHub Actions secret; runs degrade gracefully when unset.",
   "Projection-cache persistence: closed by `anya:projection-refresh`, an event-driven handler subscribed to SubstrateStateSnapshot / WorkstreamRegistered / WorkstreamCompleted / CeoDecision. Re-derives the dashboard projection from canonical sources + the live event store and writes it to the runtime cache `prototype/.local/dashboard-state.json` (gitignored). D-EVENT-STORE-SCALING Slice 3a (PR #138, 2026-05-10) split this runtime path off the previously-committed seed; Slice 3b (same day) removed the seed from the commit graph entirely — the recon harness now derives + asserts internal consistency at recon time rather than comparing against a stored cache.",
   "Citation gate: now wrapped as `mira:citation-gate` (on-request). Walks the event store, emits `CitationGatePassed` / `CitationGateFailed` and one `AuditFinding` per missing-citation event. Workflow at `.github/workflows/agent-runtime-mira-citation-gate.yml` (workflow_dispatch only — the gate is also still part of the `ci` script for synchronous CI verification).",
   "GitHub Actions cron unreliability — interim substrate. GH Actions silently dropped Anya 03:00 UTC + Scrooge 04:00 UTC daily slots overnight 2026-05-07/08; Vera 02:00 UTC fired 2h46m late. All ten scheduled workflows re-pinned 2026-05-08 to off-the-hour distinct minutes (Vera 02:13, Anya 03:17, Scrooge 04:27, Helena 04:30, Devon Mon 05:23, Zara Mon 05:30, Atlas Mon 06:19, Owen Tue 07:31, Mira Wed 07:29, Senna Thu 07:37). Permanent fix is A2.1 — substrate scheduler emitting typed `ScheduledTrigger` events from a Bun process — at which point cron files become thin shims or retire entirely.",
 ];
+
+/** One substrate-status row in the SubstrateStateSnapshot `gaps[]` inventory. */
+export interface SubstrateGapStatus {
+  readonly index: number;
+  readonly description: string;
+  readonly severity: "medium" | "high";
+  readonly status: "planned" | "in-flight";
+  readonly mitigation: "none" | "partial";
+}
+
+/**
+ * Maps the raw substrate-gap descriptions to the structured status inventory.
+ * Substrate gaps are forward engineering work, NOT risk-register findings
+ * (WS-RISK-REGISTER-CLOSURE) — the `severity` field is a planning heuristic
+ * ("which gaps have the widest blast radius"), not a risk-appetite measure.
+ * Pure: no event is emitted here; the handler folds the result into the
+ * SubstrateStateSnapshot `gaps[]` field + per-gap WorkstreamRegistered events.
+ */
+export function buildGapInventory(gaps: readonly string[]): SubstrateGapStatus[] {
+  const out: SubstrateGapStatus[] = [];
+  for (let i = 0; i < gaps.length; i++) {
+    const gap = gaps[i];
+    if (!gap) continue;
+    const high = /load-bearing|blocking|Vera pipelines|gate/i.test(gap);
+    const closed =
+      /ROLLED OUT|rolled out|first-class|DEFINED|defined in|now closed|now built/i.test(gap);
+    const truncated = gap.length > 240 ? `${gap.slice(0, 237)}...` : gap;
+    out.push({
+      index: i + 1,
+      description: truncated,
+      severity: high ? "high" : "medium",
+      status: closed ? "in-flight" : "planned",
+      mitigation: closed || /APPROVED|approved/i.test(gap) ? "partial" : "none",
+    });
+  }
+  return out;
+}
 
 function buildState(ctx: AgentRunContext): SubstrateState {
   const teamDir = resolve(ctx.repoRoot, "Team");
@@ -355,6 +391,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const state = buildState(ctx);
 
   let eventsEmitted = 0;
+  // Per-gap substrate-status inventory. Substrate gaps are forward
+  // engineering work, NOT risk-register findings (WS-RISK-REGISTER-CLOSURE):
+  // they ride on the SubstrateStateSnapshot status surface + their own
+  // WorkstreamRegistered events, never on RiskRaised.
+  const gapInventory = buildGapInventory(state.knownSubstrateGaps);
+
   if (!ctx.dryRun) {
     eventStore.append({
       event_id: newEventId(),
@@ -373,6 +415,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         },
         runtimeHandlerCount: state.runtimeHandlers.length,
         substrateGapCount: state.knownSubstrateGaps.length,
+        gaps: gapInventory,
         runTrigger: ctx.trigger.id,
       },
     });
@@ -559,45 +602,15 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     );
     eventsEmitted++;
 
-    // Emit one RiskRaised + one WorkstreamRegistered per substrate gap.
-    // Each gap is simultaneously (a) a forward risk — a control not yet
-    // substrate-complete — and (b) a body of engineering work the bank
-    // is committed to. The two events feed two different dashboard
-    // surfaces: RiskRaised → risks; WorkstreamRegistered → inFlight.
-    // Severity heuristic: gaps containing "load-bearing" / "blocking" /
-    // "Vera pipelines" → high; others → medium. The classification is
-    // conservative; Helena's risk-cycle reconciliation refines later.
+    // Emit one WorkstreamRegistered per substrate gap. Each gap is a body of
+    // engineering work the bank is committed to; it surfaces on the inFlight
+    // panel of the dashboard. The gap is NOT a risk-register finding —
+    // substrate-status now rides on the SubstrateStateSnapshot `gaps[]`
+    // inventory above, not on RiskRaised (WS-RISK-REGISTER-CLOSURE). Status:
+    // closed gaps register as "in-flight" with mitigation in place; open gaps
+    // as "planned".
     const atlasActor = { type: "service" as const, id: "agent:atlas:substrate-state" };
-    for (let i = 0; i < state.knownSubstrateGaps.length; i++) {
-      const gap = state.knownSubstrateGaps[i];
-      if (!gap) continue;
-      const high = /load-bearing|blocking|Vera pipelines|gate/i.test(gap);
-      const closed =
-        /ROLLED OUT|rolled out|first-class|DEFINED|defined in|now closed|now built/i.test(gap);
-      const truncated = gap.length > 240 ? `${gap.slice(0, 237)}...` : gap;
-      eventStore.append(
-        makeRiskRaised({
-          asOf: ctx.asOf,
-          entity: "LE-ZA-HOZ-BANK",
-          actor: atlasActor,
-          citations: EVENT_CITATIONS,
-          payload: {
-            riskId: `risk:atlas:substrate-gap-${i + 1}`,
-            raisedBy: "Atlas",
-            description: truncated,
-            category: "operational/substrate",
-            severity: high ? "high" : "medium",
-            likelihood: "almost-certain",
-            mitigation: closed || /APPROVED|approved/i.test(gap) ? "partial" : "none",
-            relatedTo: "Atlas substrate-gap inventory",
-          },
-        }),
-      );
-      eventsEmitted++;
-
-      // WorkstreamRegistered event — surfaces the gap on the inFlight
-      // panel of the dashboard. Status: closed gaps register as
-      // "in-flight" with mitigation in place; open gaps as "planned".
+    for (const gap of gapInventory) {
       eventStore.append(
         makeWorkstreamRegistered({
           asOf: ctx.asOf,
@@ -605,11 +618,11 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
           actor: atlasActor,
           citations: EVENT_CITATIONS,
           payload: {
-            workstreamId: `workstream:atlas:substrate-gap-${i + 1}`,
-            title: truncated.split(".")[0]?.slice(0, 80) ?? `Substrate gap ${i + 1}`,
+            workstreamId: `workstream:atlas:substrate-gap-${gap.index}`,
+            title: gap.description.split(".")[0]?.slice(0, 80) ?? `Substrate gap ${gap.index}`,
             owner: "Atlas",
-            status: closed ? "in-flight" : "planned",
-            summary: truncated,
+            status: gap.status,
+            summary: gap.description,
             scopedBy: "Owner Inbox/2026-05-07_atlas_substrate-state.md",
           },
         }),

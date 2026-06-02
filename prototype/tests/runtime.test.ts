@@ -132,18 +132,33 @@ describe("runtime — Atlas substrate-state handler", () => {
     expect(result.summary).toMatch(/events.*personas.*spec-ready/);
   });
 
-  it("writes a deliverable + emits a SubstrateStateSnapshot event when not in dry-run", async () => {
+  it("writes a deliverable + emits a SubstrateStateSnapshot carrying gaps[]; emits NO RiskRaised", async () => {
     const ctx = makeContext({ dryRun: false });
+    // Count RiskRaised before — substrate gaps are NOT risk-register findings
+    // (WS-RISK-REGISTER-CLOSURE), so the handler must add none.
+    const countRiskRaised = (): number => {
+      let n = 0;
+      for (const _e of eventStore.replay({ type: "RiskRaised" })) n++;
+      return n;
+    };
+    const riskRaisedBefore = countRiskRaised();
     try {
       const result = await atlasSubstrateState(ctx);
       expect(result.ok).toBe(true);
       expect(result.deliverable).toMatch(/^Owner Inbox\/2026-05-07_atlas_substrate-state\.md$/);
       expect(existsSync(join(ctx.ownerInboxDir, "2026-05-07_atlas_substrate-state.md"))).toBe(true);
-      // 1 SubstrateStateSnapshot + 2 events per substrate gap (RiskRaised
-      // + WorkstreamRegistered). Gap inventory evolves; assert the shape
-      // (≥ 1 baseline + even gap-pair count) rather than a fixed number.
+      // 1 SubstrateStateSnapshot + one WorkstreamRegistered per gap (+ 0–2
+      // conditional escalations). At minimum the snapshot is emitted.
       expect(result.eventsEmitted).toBeGreaterThanOrEqual(1);
-      expect((result.eventsEmitted - 1) % 2).toBe(0);
+      // The handler must not raise any RiskRaised events.
+      expect(countRiskRaised()).toBe(riskRaisedBefore);
+      // The most recent SubstrateStateSnapshot carries the gaps[] inventory.
+      let lastSnapshot: Record<string, unknown> | undefined;
+      for (const e of eventStore.replay({ type: "SubstrateStateSnapshot" })) {
+        lastSnapshot = e.payload as Record<string, unknown>;
+      }
+      expect(Array.isArray(lastSnapshot?.gaps)).toBe(true);
+      expect((lastSnapshot?.gaps as unknown[]).length).toBeGreaterThanOrEqual(1);
     } finally {
       rmSync(ctx.ownerInboxDir, { recursive: true, force: true });
     }
