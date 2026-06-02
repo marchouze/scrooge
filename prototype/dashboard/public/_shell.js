@@ -38,6 +38,7 @@
     {
       group: "Markets",
       pages: [
+        { label: "Instruments", href: "/instruments" },
         { label: "Trade Booking", href: "/trade-book.html" },
         { label: "Bond Trading", href: "/bond-trading.html" },
         { label: "FX Desk", href: "/markets/fx/desk.html" },

@@ -161,6 +161,7 @@ import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } f
 import { registerFxSimRoutes } from "./fx-sim-view";
 import { registerGlRoutes } from "./gl-view";
 import { registerGraphRoutes } from "./graph-view";
+import { registerInstrumentRoutes } from "./instruments-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
 import {
   buildKycCandidateDetailView,
@@ -3872,6 +3873,17 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/gl") {
       return serveStatic("/gl.html");
     }
+    // Financial-instrument register pages.
+    // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+    if (req.method === "GET" && url.pathname === "/instruments/new") {
+      return serveStatic("/instruments-new.html");
+    }
+    if (
+      req.method === "GET" &&
+      (url.pathname === "/instruments" || url.pathname === "/instruments/")
+    ) {
+      return serveStatic("/instruments.html");
+    }
     // Manual FX trade booking route.
     // Authority: D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19).
     {
@@ -3882,6 +3894,18 @@ const server = Bun.serve({
         eventStore,
       );
       if (tradeBookResponse) return tradeBookResponse;
+    }
+    // Financial-instrument register routes (security master read + define).
+    // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
+    {
+      const instrumentResponse = await registerInstrumentRoutes(
+        url.pathname,
+        req.method,
+        req,
+        eventStore,
+        url.searchParams,
+      );
+      if (instrumentResponse) return instrumentResponse;
     }
     // JSE IRC bond bilateral booking + settlement routes.
     // Authority: D-NPA-SAGB-BOND-INTERNAL-TEST (CEO-approved 2026-05-26).

@@ -240,6 +240,14 @@
     <!-- ================================================================ -->
     <div id="fx-fields">
 
+      <!-- Instrument (currency pair) selector -->
+      <div class="tb-field tb-form-full">
+        <label for="tb-fx-instrument">Instrument <span class="tb-optional">(currency pair)</span></label>
+        <select id="tb-fx-instrument" data-instrument-type="fx">
+          <option value="">— select pair —</option>
+        </select>
+      </div>
+
       <!-- Currency pair -->
       <div class="tb-field">
         <label for="tb-base">Base currency</label>
@@ -347,6 +355,11 @@
     <div id="repo-fields" style="display:none; grid-column: 1 / -1;">
       <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
 
+        <div class="tb-field tb-form-full">
+          <label for="repo-instrument">Instrument</label>
+          <select id="repo-instrument" data-instrument-type="repo"><option value="">— select instrument —</option></select>
+        </div>
+
         <div class="tb-field">
           <label for="repo-trade-id">Trade ID</label>
           <input type="text" id="repo-trade-id" name="repo_tradeId" placeholder="REPO-001">
@@ -416,6 +429,11 @@
     <div id="mmd-fields" style="display:none; grid-column: 1 / -1;">
       <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
 
+        <div class="tb-field tb-form-full">
+          <label for="mmd-instrument">Instrument</label>
+          <select id="mmd-instrument" data-instrument-type="mmd"><option value="">— select instrument —</option></select>
+        </div>
+
         <div class="tb-field">
           <label for="mmd-deposit-id">Deposit ID</label>
           <input type="text" id="mmd-deposit-id" name="mmd_depositId" placeholder="MMD-001">
@@ -469,6 +487,11 @@
     <!-- ================================================================ -->
     <div id="ib-placement-fields" style="display:none; grid-column: 1 / -1;">
       <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field tb-form-full">
+          <label for="ib-instrument">Instrument</label>
+          <select id="ib-instrument" data-instrument-type="ib-placement"><option value="">— select instrument —</option></select>
+        </div>
 
         <div class="tb-field">
           <label for="ib-placement-id">Placement ID</label>
@@ -568,6 +591,11 @@
     <div id="equity-fields" style="display:none; grid-column: 1 / -1;">
       <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
 
+        <div class="tb-field tb-form-full">
+          <label for="eq-instrument">Instrument</label>
+          <select id="eq-instrument" data-instrument-type="equity"><option value="">— select instrument —</option></select>
+        </div>
+
         <div class="tb-field">
           <label for="eq-trade-id">Trade ID</label>
           <input type="text" id="eq-trade-id" name="eq_tradeId" placeholder="EQ-001">
@@ -649,6 +677,11 @@
     <div id="bond-fields" style="display:none; grid-column: 1 / -1;">
       <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
 
+        <div class="tb-field tb-form-full">
+          <label for="bond-instrument">Instrument</label>
+          <select id="bond-instrument" data-instrument-type="bond"><option value="">— select instrument —</option></select>
+        </div>
+
         <div class="tb-field">
           <label for="bond-trade-id">Trade ID</label>
           <input type="text" id="bond-trade-id" name="bond_tradeId" placeholder="BOND-001">
@@ -727,6 +760,11 @@
     <!-- ================================================================ -->
     <div id="irs-fields" style="display:none; grid-column: 1 / -1;">
       <div class="tb-form" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+        <div class="tb-field tb-form-full">
+          <label for="irs-instrument">Instrument</label>
+          <select id="irs-instrument" data-instrument-type="irs"><option value="">— select instrument —</option></select>
+        </div>
 
         <div class="tb-field">
           <label for="irs-trade-id">Trade ID</label>
@@ -1206,6 +1244,84 @@ function showProductFields(type) {
       submitBtn.textContent = 'Book Trade';
     }
   });
+})();
+</script>
+
+<script>
+// Instrument selector wiring — populates each product section's instrument
+// dropdown from the security master (/api/instruments) and pre-fills the
+// trade fields on selection. Free-text inputs remain editable as a fallback.
+(function () {
+  const selects = Array.from(document.querySelectorAll('select[data-instrument-type]'));
+  if (!selects.length) return;
+
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.value = v; };
+  const setRadio = (name, v) => { const el = document.querySelector('input[name="' + name + '"][value="' + v + '"]'); if (el) el.checked = true; };
+  const pct = (x) => parseFloat((Number(x) * 100).toFixed(6)); // decimal → percent
+
+  selects.forEach((sel) => {
+    sel.addEventListener('change', () => {
+      const opt = sel.options[sel.selectedIndex];
+      if (!opt || !opt.dataset.inst) return;
+      const i = JSON.parse(opt.dataset.inst);
+      const t = i.contractTerms || {};
+      switch (sel.dataset.instrumentType) {
+        case 'fx':
+          setVal('tb-base', t.baseCurrency);
+          setVal('tb-quote', t.quoteCurrency);
+          { const b = document.getElementById('tb-base'); if (b) b.dispatchEvent(new Event('change')); }
+          break;
+        case 'bond':
+          setVal('bond-isin', i.isin);
+          if (t.nominalInterestRate != null) setVal('bond-coupon-rate', t.nominalInterestRate);
+          setVal('bond-maturity-date', i.maturityDate);
+          break;
+        case 'equity':
+          setVal('eq-isin', i.isin);
+          setVal('eq-exchange', t.exchange);
+          break;
+        case 'irs':
+          if (t.fixedRate != null) setVal('irs-fixed-rate-pct', pct(t.fixedRate));
+          setVal('irs-floating-index', t.floatingIndex);
+          if (t.bankPays) setRadio('irs_bankPays', t.bankPays);
+          setVal('irs-payment-frequency', t.paymentFrequency);
+          setVal('irs-day-count', t.dayCountConvention);
+          setVal('irs-maturity-date', i.maturityDate);
+          break;
+        case 'repo':
+          setVal('repo-instrument-ref', i.instrumentId);
+          break;
+        case 'mmd':
+          setVal('mmd-instrument-ref', i.instrumentId);
+          if (t.nominalInterestRate != null) setVal('mmd-rate', pct(t.nominalInterestRate));
+          setVal('mmd-maturity', i.maturityDate);
+          break;
+        case 'ib-placement':
+          setVal('ib-instrument-ref', i.instrumentId);
+          if (t.nominalInterestRate != null) setVal('ib-rate', pct(t.nominalInterestRate));
+          setVal('ib-maturity-date', i.maturityDate);
+          break;
+      }
+    });
+  });
+
+  fetch('/api/instruments')
+    .then((r) => r.json())
+    .then((data) => {
+      const byCat = {};
+      (data.instruments || []).forEach((i) => { (byCat[i.category] = byCat[i.category] || []).push(i); });
+      selects.forEach((sel) => {
+        const list = byCat[sel.dataset.instrumentType] || [];
+        list.forEach((i) => {
+          const opt = document.createElement('option');
+          opt.value = i.instrumentId;
+          opt.textContent = i.name + (i.isin ? ' · ' + i.isin : '') + ' — ' + i.instrumentId;
+          opt.dataset.inst = JSON.stringify(i);
+          sel.appendChild(opt);
+        });
+      });
+    })
+    .catch(() => {});
 })();
 </script>
   </main>

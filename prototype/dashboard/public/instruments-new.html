@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add Instrument — Scrooge Bank</title>
+  <meta name="description" content="Define a new financial instrument in the security master.">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+<style>
+  .in-page { max-width: 680px; margin: 0 auto; padding: var(--space-6); }
+  .in-page h1 { font: var(--text-h1); color: var(--color-text-primary); margin-bottom: var(--space-2); }
+  .in-lede { color: var(--color-text-secondary); font: var(--text-body); margin-bottom: var(--space-5); line-height: 1.6; }
+  .in-back { display: inline-block; font: var(--text-body); color: var(--color-accent); text-decoration: none; margin-bottom: var(--space-3); }
+  .in-back:hover { text-decoration: underline; }
+  .in-form { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  .in-full { grid-column: 1 / -1; }
+  .in-field { display: flex; flex-direction: column; gap: var(--space-1); }
+  .in-field label { font-size: 0.8rem; font-weight: 600; color: var(--color-text-primary); }
+  .in-field .opt { font-weight: 400; font-style: italic; color: var(--color-text-secondary); }
+  .in-field input, .in-field select {
+    padding: 9px 10px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm);
+    font: var(--text-body); background: var(--color-bg); color: var(--color-text-primary);
+  }
+  .in-field input:focus, .in-field select:focus { outline: 2px solid var(--color-accent); outline-offset: -1px; }
+  .in-section { grid-column: 1 / -1; font-size: 0.74rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--color-text-secondary); padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border); margin-top: var(--space-3); }
+  .in-side-group { display: flex; gap: var(--space-2); }
+  .in-side-label { flex: 1; display: flex; align-items: center; gap: var(--space-2); padding: 9px var(--space-3);
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm); cursor: pointer;
+    font-weight: 500; color: var(--color-text-secondary); }
+  .in-side-label:has(input:checked) { background: var(--color-accent); color: #fff; border-color: var(--color-accent); font-weight: 600; }
+  .in-side-label:has(input[value="production"]:checked) { background: var(--color-warning); border-color: var(--color-warning); }
+  .in-side-label input { display: none; }
+  .in-submit-row { grid-column: 1 / -1; margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+  .in-btn { padding: 12px 36px; background: var(--color-accent); color: #fff; border: none; border-radius: var(--radius-md);
+    cursor: pointer; font-size: 1rem; font-weight: 700; box-shadow: var(--shadow-sm); }
+  .in-btn:hover { background: var(--color-accent-hover); }
+  .in-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .in-result { display: none; grid-column: 1 / -1; margin-top: var(--space-4); padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md); border-left: 4px solid transparent; }
+  .in-result.success { background: var(--color-success-bg); color: var(--color-success); border-left-color: var(--color-success); }
+  .in-result.error { background: var(--color-danger-bg); color: var(--color-danger); border-left-color: var(--color-danger); }
+</style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="in-page">
+      <a class="in-back" href="/instruments">← Financial Instruments</a>
+      <h1>Add Instrument</h1>
+      <p class="in-lede">Define a new instrument in the security master. On submit a
+        <code>FinancialInstrumentDefined</code> event is emitted (plus a
+        <code>FinancialInstrumentClassified</code> overlay if you fill the classification block).</p>
+
+      <form class="in-form" id="in-form" autocomplete="off" novalidate>
+        <div class="in-field in-full">
+          <label for="in-category">Instrument type</label>
+          <select id="in-category" name="category">
+            <option value="bond">Bond (PAM)</option>
+            <option value="equity">Equity (STK)</option>
+            <option value="irs">Interest Rate Swap (IRS)</option>
+            <option value="repo">Repo (PAM)</option>
+            <option value="mmd">Money Market Deposit (PAM)</option>
+            <option value="ib-placement">IB Placement (PAM)</option>
+          </select>
+        </div>
+
+        <div class="in-field in-full">
+          <label>Recording mode</label>
+          <div class="in-side-group">
+            <label class="in-side-label"><input type="radio" name="provenanceMode" value="build-phase-fixture" checked> Reference (build-phase)</label>
+            <label class="in-side-label"><input type="radio" name="provenanceMode" value="production"> Production</label>
+          </div>
+        </div>
+
+        <div class="in-section">Identity</div>
+        <div class="in-field">
+          <label for="in-id">Instrument ID</label>
+          <input type="text" id="in-id" name="instrumentId" placeholder="fi:bond:ZAG000000000">
+        </div>
+        <div class="in-field">
+          <label for="in-currency">Currency</label>
+          <select id="in-currency" name="currency">
+            <option value="ZAR" selected>ZAR</option><option value="USD">USD</option>
+            <option value="EUR">EUR</option><option value="GBP">GBP</option><option value="JPY">JPY</option>
+          </select>
+        </div>
+        <div class="in-field">
+          <label for="in-jurisdiction">Jurisdiction</label>
+          <input type="text" id="in-jurisdiction" name="jurisdiction" value="ZA" maxlength="2">
+        </div>
+        <div class="in-field">
+          <label for="in-legal-entity">Legal entity</label>
+          <input type="text" id="in-legal-entity" name="legalEntityId" value="LE-ZA-HOZ-BANK">
+        </div>
+        <div class="in-field" data-show="bond equity">
+          <label for="in-isin">ISIN <span class="opt">(12 chars)</span></label>
+          <input type="text" id="in-isin" name="isin" maxlength="12" placeholder="ZAG000000000">
+        </div>
+        <div class="in-field" data-show="bond equity">
+          <label for="in-cfi">CFI code <span class="opt">(6 chars, optional)</span></label>
+          <input type="text" id="in-cfi" name="cfiCode" maxlength="6" placeholder="DBFUFR">
+        </div>
+        <div class="in-field" data-show="bond repo mmd ib-placement">
+          <label for="in-issuer-lei">Issuer LEI <span class="opt">(optional)</span></label>
+          <input type="text" id="in-issuer-lei" name="issuerLei" placeholder="ZA-GOVT-LEI">
+        </div>
+        <div class="in-field" data-show="repo mmd ib-placement">
+          <label for="in-product-ref">Product ref (NPA) <span class="opt">(optional)</span></label>
+          <input type="text" id="in-product-ref" name="productRef" placeholder="REPO-ZAR-001">
+        </div>
+        <div class="in-field" data-show="bond irs mmd ib-placement">
+          <label for="in-maturity">Maturity date</label>
+          <input type="date" id="in-maturity" name="maturityDate">
+        </div>
+
+        <!-- PAM terms: bond / repo / mmd / ib-placement -->
+        <div class="in-section" data-show="bond repo mmd ib-placement">Terms (PAM)</div>
+        <div class="in-field" data-show="bond repo mmd ib-placement">
+          <label for="in-pam-rate">Nominal interest rate <span class="opt">(decimal, e.g. 0.085)</span></label>
+          <input type="number" id="in-pam-rate" name="pam_nominalInterestRate" min="0" max="1" step="0.0001" placeholder="0.085">
+        </div>
+        <div class="in-field" data-show="bond repo mmd ib-placement">
+          <label for="in-pam-dcc">Day count</label>
+          <select id="in-pam-dcc" name="pam_dayCountConvention">
+            <option value="ACT/365" selected>ACT/365</option><option value="ACT/360">ACT/360</option><option value="30/360">30/360</option>
+          </select>
+        </div>
+        <div class="in-field" data-show="bond repo mmd ib-placement">
+          <label for="in-pam-freq">Payment frequency</label>
+          <select id="in-pam-freq" name="pam_paymentFrequency">
+            <option value="semi-annual" selected>Semi-annual</option><option value="quarterly">Quarterly</option>
+            <option value="monthly">Monthly</option><option value="annual">Annual</option>
+          </select>
+        </div>
+
+        <!-- STK terms: equity -->
+        <div class="in-section" data-show="equity">Terms (STK)</div>
+        <div class="in-field" data-show="equity">
+          <label for="in-stk-div">Dividend frequency</label>
+          <select id="in-stk-div" name="stk_dividendFrequency">
+            <option value="semi-annual" selected>Semi-annual</option><option value="annual">Annual</option>
+            <option value="quarterly">Quarterly</option><option value="variable">Variable</option><option value="none">None</option>
+          </select>
+        </div>
+        <div class="in-field" data-show="equity">
+          <label for="in-stk-exch">Exchange</label>
+          <input type="text" id="in-stk-exch" name="stk_exchange" value="JSE">
+        </div>
+
+        <!-- IRS terms -->
+        <div class="in-section" data-show="irs">Terms (IRS)</div>
+        <div class="in-field" data-show="irs">
+          <label for="in-irs-fixed">Fixed rate <span class="opt">(decimal, e.g. 0.085)</span></label>
+          <input type="number" id="in-irs-fixed" name="irs_fixedRate" min="0" step="0.0001" placeholder="0.085">
+        </div>
+        <div class="in-field" data-show="irs">
+          <label for="in-irs-index">Floating index</label>
+          <select id="in-irs-index" name="irs_floatingIndex">
+            <option value="JIBAR-3M" selected>JIBAR-3M</option><option value="JIBAR-1M">JIBAR-1M</option><option value="ZARONIA">ZARONIA</option>
+          </select>
+        </div>
+        <div class="in-field" data-show="irs">
+          <label for="in-irs-pays">Bank pays</label>
+          <select id="in-irs-pays" name="irs_bankPays"><option value="fixed" selected>Fixed</option><option value="floating">Floating</option></select>
+        </div>
+        <div class="in-field" data-show="irs">
+          <label for="in-irs-freq">Payment frequency</label>
+          <select id="in-irs-freq" name="irs_paymentFrequency">
+            <option value="quarterly" selected>Quarterly</option><option value="monthly">Monthly</option>
+            <option value="semi-annual">Semi-annual</option><option value="annual">Annual</option>
+          </select>
+        </div>
+        <div class="in-field" data-show="irs">
+          <label for="in-irs-dcc">Day count</label>
+          <select id="in-irs-dcc" name="irs_dayCountConvention">
+            <option value="ACT/365" selected>ACT/365</option><option value="ACT/360">ACT/360</option><option value="30/360">30/360</option>
+          </select>
+        </div>
+
+        <!-- Optional classification -->
+        <div class="in-section in-full">
+          <label style="text-transform:none;letter-spacing:0;font-weight:600;cursor:pointer">
+            <input type="checkbox" id="in-classify-toggle"> Add regulatory / accounting classification
+          </label>
+        </div>
+        <div class="in-field" data-cls>
+          <label for="in-hqla">HQLA level</label>
+          <select id="in-hqla" name="hqlaLevel">
+            <option value="non-hqla" selected>non-hqla</option><option value="level-1">level-1</option>
+            <option value="level-2a">level-2a</option><option value="level-2b">level-2b</option>
+          </select>
+        </div>
+        <div class="in-field" data-cls>
+          <label for="in-rw">Basel risk weight</label>
+          <select id="in-rw" name="baselRiskWeight">
+            <option value="0pct">0pct</option><option value="20pct">20pct</option><option value="50pct">50pct</option>
+            <option value="100pct" selected>100pct</option><option value="150pct">150pct</option><option value="deducted">deducted</option>
+          </select>
+        </div>
+        <div class="in-field" data-cls>
+          <label for="in-ifrs9">IFRS 9 category</label>
+          <select id="in-ifrs9" name="ifrs9Category">
+            <option value="fvtpl" selected>fvtpl</option><option value="amortised-cost">amortised-cost</option>
+            <option value="fvtoci">fvtoci</option><option value="n-a">n-a</option>
+          </select>
+        </div>
+        <div class="in-field" data-cls>
+          <label for="in-saccr">SA-CCR asset class</label>
+          <select id="in-saccr" name="saCcrAssetClass">
+            <option value="n-a" selected>n-a</option><option value="interest-rate">interest-rate</option><option value="fx">fx</option>
+            <option value="credit">credit</option><option value="equity">equity</option><option value="commodity">commodity</option>
+          </select>
+        </div>
+        <div class="in-field in-full" data-cls>
+          <label for="in-rationale">Rationale</label>
+          <input type="text" id="in-rationale" name="rationale" placeholder="Classification rationale">
+        </div>
+
+        <div class="in-submit-row"><button type="submit" class="in-btn" id="in-submit">Define Instrument</button></div>
+        <div class="in-result" id="in-result" role="alert"></div>
+      </form>
+    </div>
+  </main>
+
+<script>
+(function () {
+  const form = document.getElementById('in-form');
+  const catSel = document.getElementById('in-category');
+  const idInput = document.getElementById('in-id');
+  const submitBtn = document.getElementById('in-submit');
+  const resultDiv = document.getElementById('in-result');
+  const clsToggle = document.getElementById('in-classify-toggle');
+
+  const ID_PREFIX = {
+    bond: 'fi:bond:', equity: 'fi:equity:JSE:', irs: 'fi:irs:ZAR-',
+    repo: 'fi:pam:REPO-', mmd: 'fi:pam:MMD-', 'ib-placement': 'fi:pam:IBL-',
+  };
+  const SUBTYPE = { irs: 'compositional' };
+
+  function applyVisibility() {
+    const cat = catSel.value;
+    document.querySelectorAll('[data-show]').forEach((el) => {
+      el.style.display = el.dataset.show.split(' ').includes(cat) ? '' : 'none';
+    });
+  }
+  function applyClassVisibility() {
+    const on = clsToggle.checked;
+    document.querySelectorAll('[data-cls]').forEach((el) => { el.style.display = on ? '' : 'none'; });
+  }
+  function syncIdPrefix() {
+    const pfx = ID_PREFIX[catSel.value] || 'fi:';
+    // Only overwrite if empty or still a known prefix.
+    const cur = idInput.value;
+    const isPrefixOnly = Object.values(ID_PREFIX).includes(cur) || cur === '';
+    if (isPrefixOnly) idInput.value = pfx;
+    idInput.placeholder = pfx + '…';
+  }
+
+  catSel.addEventListener('change', () => { applyVisibility(); syncIdPrefix(); });
+  clsToggle.addEventListener('change', applyClassVisibility);
+
+  // Honour ?type= from the list page.
+  const presetType = new URLSearchParams(location.search).get('type');
+  if (presetType && [...catSel.options].some((o) => o.value === presetType)) catSel.value = presetType;
+  applyVisibility(); applyClassVisibility(); syncIdPrefix();
+
+  function buildContractTerms(cat, d) {
+    if (cat === 'equity') return { dividendFrequency: d.get('stk_dividendFrequency'), exchange: d.get('stk_exchange') || undefined };
+    if (cat === 'irs') return {
+      fixedRate: Number(d.get('irs_fixedRate')),
+      floatingIndex: d.get('irs_floatingIndex'),
+      bankPays: d.get('irs_bankPays'),
+      paymentFrequency: d.get('irs_paymentFrequency'),
+      dayCountConvention: d.get('irs_dayCountConvention'),
+    };
+    // PAM: bond / repo / mmd / ib-placement
+    return {
+      nominalInterestRate: Number(d.get('pam_nominalInterestRate')),
+      dayCountConvention: d.get('pam_dayCountConvention'),
+      paymentFrequency: d.get('pam_paymentFrequency'),
+    };
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    resultDiv.style.display = 'none';
+    submitBtn.disabled = true; submitBtn.textContent = 'Defining…';
+    const d = new FormData(form);
+    const cat = catSel.value;
+    const body = {
+      category: cat,
+      provenanceMode: d.get('provenanceMode'),
+      instrumentId: (d.get('instrumentId') || '').trim(),
+      instrumentSubtype: SUBTYPE[cat] || 'atomic',
+      currency: d.get('currency'),
+      jurisdiction: (d.get('jurisdiction') || '').trim(),
+      legalEntityId: (d.get('legalEntityId') || '').trim(),
+      isin: (d.get('isin') || '').trim() || undefined,
+      cfiCode: (d.get('cfiCode') || '').trim() || undefined,
+      issuerLei: (d.get('issuerLei') || '').trim() || undefined,
+      productRef: (d.get('productRef') || '').trim() || undefined,
+      maturityDate: d.get('maturityDate') || undefined,
+      contractTerms: buildContractTerms(cat, d),
+    };
+    if (clsToggle.checked) {
+      body.classification = {
+        hqlaLevel: d.get('hqlaLevel'), baselRiskWeight: d.get('baselRiskWeight'),
+        ifrs9Category: d.get('ifrs9Category'), saCcrAssetClass: d.get('saCcrAssetClass'),
+        rationale: (d.get('rationale') || '').trim() || undefined,
+      };
+    }
+    try {
+      const res = await fetch('/api/instruments', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      resultDiv.style.display = 'block';
+      if (json.ok) {
+        resultDiv.className = 'in-result success';
+        resultDiv.innerHTML = `Defined <strong>${body.instrumentId}</strong> · event <code>${json.eventId}</code>`
+          + (json.classificationError ? `<br><em>classification warning: ${json.classificationError}</em>` : '')
+          + `<br><a href="/instruments?type=${encodeURIComponent(cat)}">View ${cat} instruments →</a>`;
+      } else {
+        resultDiv.className = 'in-result error';
+        resultDiv.textContent = json.error || 'Unknown error';
+      }
+    } catch (err) {
+      resultDiv.style.display = 'block';
+      resultDiv.className = 'in-result error';
+      resultDiv.textContent = 'Network error: ' + err.message;
+    } finally {
+      submitBtn.disabled = false; submitBtn.textContent = 'Define Instrument';
+    }
+  });
+})();
+</script>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Add Instrument" });</script>
+</body>
+</html>
