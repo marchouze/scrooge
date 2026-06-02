@@ -230,11 +230,7 @@ export function makeRasLineCalibrated(args: {
 
 // Closure event types that pair to a RiskRaised `riskId`. A finding is open
 // only while none of these carry its riskId.
-export const RISK_CLOSURE_EVENT_TYPES = [
-  "RiskResolved",
-  "RiskAccepted",
-  "RiskMitigated",
-] as const;
+export const RISK_CLOSURE_EVENT_TYPES = ["RiskResolved", "RiskAccepted", "RiskMitigated"] as const;
 export type RiskClosureEventType = (typeof RISK_CLOSURE_EVENT_TYPES)[number];
 
 export const RISK_TYPED_EVENT_TYPES = [
