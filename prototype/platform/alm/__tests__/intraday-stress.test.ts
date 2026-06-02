@@ -19,6 +19,8 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { makeFundingDrawnDown } from "../../event-store/event-types/ifrs-accounting-extended";
+import { EventStore } from "../../event-store/store";
 import { INTRADAY_FLOOR_ZAR, SETTLEMENT_WINDOWS, runIntradayStress } from "../intraday-stress";
 
 // ---------------------------------------------------------------------------
@@ -259,5 +261,79 @@ describe("SETTLEMENT_WINDOWS constant", () => {
     expect(SETTLEMENT_WINDOWS[1]).toBe("12:00");
     expect(SETTLEMENT_WINDOWS[2]).toBe("15:00");
     expect(SETTLEMENT_WINDOWS[3]).toBe("16:30");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test 6: FundingDrawnDown stream drives per-window outflows (correspondent-funding)
+// ---------------------------------------------------------------------------
+
+describe("runIntradayStress — FundingDrawnDown stream folds into per-window outflows", () => {
+  const asOf = "2026-06-02T05:00:00.000Z";
+
+  function drawAt(store: EventStore, drawnAtIso: string, amount: number): void {
+    store.append(
+      makeFundingDrawnDown({
+        asOf: drawnAtIso,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:env:correspondent-nostro-sim" },
+        citations: ["BCBS-248"],
+        payload: {
+          drawdownId: `DRAW-${drawnAtIso}`,
+          facilityId: "CORRESPONDENT-INTRADAY-LINE",
+          amount,
+          currency: "ZAR",
+          drawnAt: drawnAtIso,
+          ftpAttributionRequired: true,
+        },
+      }),
+    );
+  }
+
+  it("buckets draws into the correct SAST settlement window (UTC+2)", () => {
+    const store = new EventStore();
+    // SA time = UTC+2:
+    drawAt(store, "2026-06-02T07:00:00.000Z", 10_000_000); // SA 09:00 → window 0
+    drawAt(store, "2026-06-02T11:00:00.000Z", 20_000_000); // SA 13:00 → window 1
+    drawAt(store, "2026-06-02T13:00:00.000Z", 5_000_000); // SA 15:00 → window 2
+    drawAt(store, "2026-06-02T15:00:00.000Z", 7_000_000); // SA 17:00 → window 3
+
+    const result = runIntradayStress(asOf, store);
+    expect(result.bau.map((w) => w.outflowZar)).toEqual([
+      10_000_000, 20_000_000, 5_000_000, 7_000_000,
+    ]);
+    // Stress scenario uplifts outflows by 15%.
+    expect(result.stress[0]?.outflowZar).toBeCloseTo(10_000_000 * 1.15, 2);
+  });
+
+  it("ignores non-ZAR draws and draws dated on a different day", () => {
+    const store = new EventStore();
+    drawAt(store, "2026-06-02T07:00:00.000Z", 8_000_000); // valid → window 0
+    drawAt(store, "2026-06-01T07:00:00.000Z", 99_000_000); // prior day → ignored
+    // Non-ZAR draw → ignored.
+    store.append(
+      makeFundingDrawnDown({
+        asOf,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:env:correspondent-nostro-sim" },
+        citations: ["BCBS-248"],
+        payload: {
+          drawdownId: "DRAW-USD",
+          facilityId: "CORRESPONDENT-INTRADAY-LINE",
+          amount: 50_000_000,
+          currency: "USD",
+          drawnAt: "2026-06-02T07:30:00.000Z",
+          ftpAttributionRequired: true,
+        },
+      }),
+    );
+
+    const result = runIntradayStress(asOf, store);
+    expect(result.bau.map((w) => w.outflowZar)).toEqual([8_000_000, 0, 0, 0]);
+  });
+
+  it("without an event store, outflows are zero (build-phase baseline preserved)", () => {
+    const result = runIntradayStress(asOf);
+    expect(result.bau.every((w) => w.outflowZar === 0)).toBe(true);
   });
 });
