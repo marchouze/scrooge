@@ -31,7 +31,9 @@ import { makeFundingDrawnDown } from "../../event-store/event-types/ifrs-account
 import { makeInboundMessageReceived } from "../../event-store/event-types/payments";
 import type { EventStore } from "../../event-store/store";
 import { type Mt942Entry, generateMt942 } from "../../payments/swift-mt/mt942";
+import type { SimConfigField, SimFireAction, SimStatus, SimulatorModule } from "../hub/types";
 
+const SIM_ID = "correspondent-nostro-sim";
 const ACTOR = { type: "service" as const, id: "agent:env:correspondent-nostro-sim" };
 const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-FX-CLS-MEMBERSHIP", "BCBS-248"];
@@ -66,14 +68,41 @@ export interface CorrespondentNostroTickResult {
   readonly drawnAmountMinor: bigint;
 }
 
-export class CorrespondentNostroSimulator {
+export class CorrespondentNostroSimulator implements SimulatorModule {
+  readonly id = SIM_ID;
+  readonly label = "Correspondent Bank — Intraday Nostro (MT942)";
+  readonly domain = "payments" as const;
+  readonly description =
+    "Stands in for the correspondent bank's intraday SWIFT reporting (and Tomas's production SWIFT connector). Each tick emits an MT942 Interim Transaction Report as InboundMessageReceived and tracks the running ZAR nostro balance; when the balance breaches the RAS intraday floor it emits FundingDrawnDown (the correspondent draws on the bank's intraday line). Feeds BCBS 248 intraday-stress monitoring.";
+  readonly mode = "loop+fire" as const;
+
+  readonly configSchema: readonly SimConfigField[] = [
+    {
+      key: "interval_ms",
+      label: "Interim-report interval (ms)",
+      type: "number",
+      default: 60000,
+      min: 1000,
+      max: 3600000,
+      help: "Milliseconds between MT942 interim transaction reports.",
+    },
+  ];
+
+  readonly fireActions: readonly SimFireAction[] = [
+    { id: "tick", label: "Emit interim report now" },
+  ];
+
+  readonly eventActorIds: readonly string[] = [ACTOR.id];
+
   private readonly store: EventStore;
   private readonly rng: () => number;
-  private readonly intervalMs: number;
+  private intervalMs: number;
   private balanceMinor: bigint;
   private statementSeq = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
+  private startedAt: string | null = null;
+  private lastError: string | null = null;
 
   constructor(deps: CorrespondentNostroSimDeps) {
     this.store = deps.store;
@@ -82,9 +111,13 @@ export class CorrespondentNostroSimulator {
     this.balanceMinor = deps.openingBalanceMinor ?? 80_000_000_00n;
   }
 
-  start(): void {
+  start(config?: Record<string, unknown>): void {
+    if (config && typeof config.interval_ms === "number" && config.interval_ms > 0) {
+      this.intervalMs = config.interval_ms;
+    }
     if (this.running) return;
     this.running = true;
+    this.startedAt = nowUtc();
     this.timer = setInterval(() => {
       this.tick();
     }, this.intervalMs);
@@ -101,6 +134,37 @@ export class CorrespondentNostroSimulator {
 
   isRunning(): boolean {
     return this.running;
+  }
+
+  async fire(
+    actionId: string,
+    _args?: Record<string, unknown>,
+  ): Promise<{ ok: boolean; detail?: unknown }> {
+    if (actionId !== "tick") return { ok: false, detail: `unknown action '${actionId}'` };
+    try {
+      const r = this.tick();
+      return { ok: true, detail: r };
+    } catch (err) {
+      this.lastError = err instanceof Error ? err.message : String(err);
+      return { ok: false, detail: this.lastError };
+    }
+  }
+
+  getStatus(): SimStatus {
+    return {
+      id: this.id,
+      running: this.running,
+      // Event-derived by the hub via eventActorIds (Principle 1).
+      eventsEmitted: 0,
+      lastEventAt: null,
+      lastEventType: null,
+      lastError: this.lastError,
+      startedAt: this.startedAt,
+      extra: {
+        interval_ms: this.intervalMs,
+        balanceZar: Number(this.balanceMinor) / 100,
+      },
+    };
   }
 
   /**

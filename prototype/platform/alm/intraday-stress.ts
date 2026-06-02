@@ -37,6 +37,8 @@
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import { getCollateralInventory } from "../collateral";
+import type { FundingDrawnDownPayload } from "../event-store/event-types/ifrs-accounting-extended";
+import type { EventStore } from "../event-store/store";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -185,6 +187,47 @@ function computeWindowsForScenario(
   return results;
 }
 
+/**
+ * Map a `drawnAt` ISO instant to the NPS settlement window it falls in.
+ * SA local time = UTC + 2. A draw before 12:00 SAST lands in the 09:00 window,
+ * before 15:00 in the 12:00 window, before 16:30 in the 15:00 window, else 16:30.
+ */
+function windowIndexForInstant(drawnAtIso: string): number {
+  const d = new Date(drawnAtIso);
+  // SA local time (UTC+2) — minutes-since-midnight.
+  const saMinutes = (d.getUTCHours() * 60 + d.getUTCMinutes() + 120) % (24 * 60);
+  if (saMinutes < 12 * 60) return 0; // 09:00 window
+  if (saMinutes < 15 * 60) return 1; // 12:00 window
+  if (saMinutes < 16 * 60 + 30) return 2; // 15:00 window
+  return 3; // 16:30 window
+}
+
+/**
+ * Fold `FundingDrawnDown` events dated on `asOf`'s day into per-window ZAR
+ * outflows. Each draw is the correspondent funding an intraday net-outflow
+ * shortfall (reported via MT942), so it is the bank's intraday outflow pressure
+ * for BCBS 248 monitoring. Returns a length-4 array (ZAR major) aligned to
+ * SETTLEMENT_WINDOWS. Empty/absent store → all zeros (build-phase posture).
+ */
+function foldFundingDrawsByWindow(eventStore: EventStore, asOf: string): number[] {
+  const outflows = SETTLEMENT_WINDOWS.map(() => 0);
+  const day = asOf.slice(0, 10);
+  try {
+    for (const ev of eventStore.replay({ type: "FundingDrawnDown" })) {
+      const p = ev.payload as unknown as FundingDrawnDownPayload;
+      if (p.currency !== "ZAR") continue;
+      if (typeof p.drawnAt !== "string" || p.drawnAt.slice(0, 10) !== day) continue;
+      const amount = Number(p.amount);
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+      const idx = windowIndexForInstant(p.drawnAt);
+      outflows[idx] = (outflows[idx] ?? 0) + amount;
+    }
+  } catch {
+    // FundingDrawnDown not registered in a test mock — leave zeros.
+  }
+  return outflows;
+}
+
 // ---------------------------------------------------------------------------
 // Engine — exported entry point
 // ---------------------------------------------------------------------------
@@ -197,24 +240,30 @@ function computeWindowsForScenario(
  * all window statuses are "no-positions" — the correct production posture
  * (Principle 1: events are the only source of truth; no synthetic state).
  *
- * BAU inflows / outflows are zero in build phase (no scheduled receipts or
- * payments in the event store). The engine will produce non-zero flows when
- * `PaymentScheduled` / `ReceiptScheduled` events land.
+ * Per-window outflows are folded from `FundingDrawnDown` events (the
+ * correspondent funding intraday net-outflow shortfalls, reported via MT942 —
+ * see `CorrespondentNostroSimulator`) when an `eventStore` is supplied; without
+ * one (or with no draws) outflows are zero, the correct build-phase baseline.
+ * Inflows remain zero pending a scheduled-receipts feed.
  *
- * @param asOf ISO 8601 business date string (e.g. "2026-05-19T05:00:00.000Z").
+ * @param asOf       ISO 8601 business date string (e.g. "2026-05-19T05:00:00.000Z").
+ * @param eventStore Optional event store — when present, `FundingDrawnDown`
+ *                   events dated on `asOf`'s day drive per-window outflows.
  */
-export function runIntradayStress(asOf: string): IntradayStressResult {
+export function runIntradayStress(asOf: string, eventStore?: EventStore): IntradayStressResult {
   const floorZar = INTRADAY_FLOOR_ZAR;
 
   // Seed the starting HQLA buffer from the collateral inventory.
   const inventory = getCollateralInventory(asOf);
   const startingHQLAZar = inventory.totalHQLAZar;
 
-  // Build-phase: no scheduled inflows or outflows exist in the event store.
-  // Spread evenly across the four windows (all zero in build phase).
-  // Future: read PaymentScheduled / ReceiptScheduled events and bucket by window.
+  // Inflows are zero pending a scheduled-receipts feed. Outflows are folded from
+  // FundingDrawnDown events (correspondent intraday funding draws) when an event
+  // store is supplied — zero otherwise (build-phase baseline).
   const bauInflows: number[] = SETTLEMENT_WINDOWS.map(() => 0);
-  const bauOutflows: number[] = SETTLEMENT_WINDOWS.map(() => 0);
+  const bauOutflows: number[] = eventStore
+    ? foldFundingDrawsByWindow(eventStore, asOf)
+    : SETTLEMENT_WINDOWS.map(() => 0);
 
   const bauWindows = computeWindowsForScenario(
     bauInflows,
