@@ -26,11 +26,11 @@ import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 import { MarketDataStore } from "../platform/market-data/store";
+import { seedCalcModels } from "../platform/model-registry/calc-model-definitions";
 import { CALC_BINDINGS } from "../platform/model-registry/calculation-binding";
 import { emitAllCalculationProvenance } from "../platform/model-registry/calculation-provenance";
 import { runPnLAttribution } from "../platform/product-control/pnl-attribution";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
-import { seedCalcModels } from "../seeds/models/calc-model-seed";
 
 // Bindings NOT emitted by the boot provenance suite (emitAllCalculationProvenance):
 // they are emitted by their own engine's run wrapper. The guardrail drives those

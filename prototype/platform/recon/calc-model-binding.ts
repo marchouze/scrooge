@@ -22,7 +22,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { EventStore } from "@platform/event-store/store";
-import { seedCalcModels } from "../../seeds/models/calc-model-seed";
+import { seedCalcModels } from "../model-registry/calc-model-definitions";
 import {
   allCalcKeys,
   checkModelApproved,
@@ -82,7 +82,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!approval.ok) {
       violations.push({
         subject: calcKey,
-        message: `figure "${binding.figure}" (calcKey \`${calcKey}\`) is not derivable from an approved model: ${approval.reason}. Every surfaced figure must bind to an owned, registered, approved model (authority: D-TRUSTED-FIGURES-PROGRAM-V1). Remediation: register + approve \`${binding.modelId}\` in seeds/models/calc-model-seed.ts.`,
+        message: `figure "${binding.figure}" (calcKey \`${calcKey}\`) is not derivable from an approved model: ${approval.reason}. Every surfaced figure must bind to an owned, registered, approved model (authority: D-TRUSTED-FIGURES-PROGRAM-V1). Remediation: register + approve \`${binding.modelId}\` via scripts/run-calc-model-seed.ts.`,
         severity: "fail",
       });
     }
