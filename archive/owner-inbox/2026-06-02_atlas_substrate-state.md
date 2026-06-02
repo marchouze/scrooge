@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-02T02:24:54.867Z
+asOf: 2026-06-02T05:29:16.965Z
 decision-required: false
 ---
 
@@ -9,45 +9,45 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 58515 events across 125 types; 31/31 personas have operating specs; 130 runtime handlers registered; 558 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 58862 events across 125 types; 31/31 personas have operating specs; 130 runtime handlers registered; 559 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 58515
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 58862
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 8161 | 2026-05-25 | 2026-06-02 |
-| `SubstrateAgentRunCompleted` | 7994 | 2026-05-25 | 2026-06-02 |
-| `BusDispatched` | 6649 | 2026-05-25 | 2026-06-02 |
-| `LegacyFanoutShadowed` | 3521 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAgentRunStarted` | 8205 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAgentRunCompleted` | 8038 | 2026-05-25 | 2026-06-02 |
+| `BusDispatched` | 6693 | 2026-05-25 | 2026-06-02 |
+| `LegacyFanoutShadowed` | 3563 | 2026-05-25 | 2026-06-02 |
 | `Decision` | 2715 | 2026-04-30 | 2026-06-01 |
-| `RiskRaised` | 2448 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1404 | 2026-05-07 | 2026-06-02 |
-| `RecordFiled` | 1289 | 2026-05-05 | 2026-06-01 |
-| `DashboardProjectionRefreshed` | 1243 | 2026-05-25 | 2026-06-02 |
+| `RiskRaised` | 2455 | 2025-12-01 | 2026-06-02 |
+| `WorkstreamRegistered` | 1412 | 2026-05-07 | 2026-06-02 |
+| `RecordFiled` | 1320 | 2026-05-05 | 2026-06-02 |
+| `DashboardProjectionRefreshed` | 1252 | 2026-05-25 | 2026-06-02 |
 | `SubstrateAlert` | 1065 | 2025-01-01 | 2026-06-01 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
-| `ScheduledTrigger` | 718 | 2026-05-25 | 2026-06-02 |
-| `ReconResult` | 648 | 2026-05-07 | 2026-06-01 |
-| `AgentGoalEvaluated` | 599 | 2026-05-25 | 2026-06-02 |
+| `ScheduledTrigger` | 733 | 2026-05-25 | 2026-06-02 |
+| `ReconResult` | 666 | 2026-05-07 | 2026-06-02 |
+| `AgentGoalEvaluated` | 609 | 2026-05-25 | 2026-06-02 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 519 | 2026-05-25 | 2026-06-01 |
 | `OfficialMarkAdopted` | 464 | 2026-05-28 | 2026-05-31 |
-| `AgentGoalDeferred` | 418 | 2026-05-25 | 2026-06-01 |
+| `AgentGoalDeferred` | 426 | 2026-05-25 | 2026-06-02 |
 | `CalculationPerformed` | 408 | 2026-06-01 | 2026-06-01 |
 | `PermissionPolicyPublished` | 325 | 2026-05-25 | 2026-06-01 |
 | `AgentRunCompleted` | 284 | 2026-05-10 | 2026-06-01 |
 | `AgentBriefIssued` | 275 | 2026-05-10 | 2026-06-01 |
-| `AgentRunStarted` | 273 | 2026-05-10 | 2026-06-01 |
+| `AgentRunStarted` | 275 | 2026-05-10 | 2026-06-02 |
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
-| `AgentPerformanceEvaluated` | 184 | 2026-05-25 | 2026-06-01 |
-| `AgentFeedbackIssued` | 184 | 2026-05-25 | 2026-06-01 |
-| `AgentGoalSelected` | 181 | 2026-05-25 | 2026-06-02 |
+| `AgentPerformanceEvaluated` | 215 | 2026-05-25 | 2026-06-02 |
+| `AgentFeedbackIssued` | 215 | 2026-05-25 | 2026-06-02 |
+| `AgentGoalSelected` | 183 | 2026-05-25 | 2026-06-02 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
-| `SubstrateStateSnapshot` | 175 | 2026-05-07 | 2026-06-02 |
+| `SubstrateStateSnapshot` | 176 | 2026-05-07 | 2026-06-02 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 162 | 2026-05-25 | 2026-06-01 |
 | `DecisionRequested` | 135 | 2026-05-10 | 2026-05-10 |
@@ -298,7 +298,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbdhdR3tz8uNUZ8ejgk1F"})._
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Cbdt8AFdXCr3mdSDiXsjw"})._
 
 ## Provenance
 
