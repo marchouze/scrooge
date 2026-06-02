@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-02T08:00:09.304Z
+asOf: 2026-06-02T09:00:29.066Z
 decision-required: false
 ---
 
@@ -9,30 +9,30 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 59914 events across 136 types; 31/31 personas have operating specs; 130 runtime handlers registered; 573 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 60085 events across 136 types; 31/31 personas have operating specs; 130 runtime handlers registered; 573 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 59914
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 60085
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 8380 | 2026-05-25 | 2026-06-02 |
-| `SubstrateAgentRunCompleted` | 8212 | 2026-05-25 | 2026-06-02 |
-| `BusDispatched` | 6867 | 2026-05-25 | 2026-06-02 |
-| `LegacyFanoutShadowed` | 3705 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAgentRunStarted` | 8416 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAgentRunCompleted` | 8248 | 2026-05-25 | 2026-06-02 |
+| `BusDispatched` | 6903 | 2026-05-25 | 2026-06-02 |
+| `LegacyFanoutShadowed` | 3738 | 2026-05-25 | 2026-06-02 |
 | `Decision` | 2720 | 2026-04-30 | 2026-06-02 |
-| `RiskRaised` | 2476 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1436 | 2026-05-07 | 2026-06-02 |
+| `RiskRaised` | 2483 | 2025-12-01 | 2026-06-02 |
+| `WorkstreamRegistered` | 1444 | 2026-05-07 | 2026-06-02 |
 | `RecordFiled` | 1351 | 2026-05-05 | 2026-06-02 |
-| `DashboardProjectionRefreshed` | 1279 | 2026-05-25 | 2026-06-02 |
+| `DashboardProjectionRefreshed` | 1288 | 2026-05-25 | 2026-06-02 |
 | `SubstrateAlert` | 1097 | 2025-01-01 | 2026-06-02 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
-| `ScheduledTrigger` | 752 | 2026-05-25 | 2026-06-02 |
+| `ScheduledTrigger` | 755 | 2026-05-25 | 2026-06-02 |
 | `ReconResult` | 666 | 2026-05-07 | 2026-06-02 |
-| `AgentGoalEvaluated` | 622 | 2026-05-25 | 2026-06-02 |
+| `AgentGoalEvaluated` | 623 | 2026-05-25 | 2026-06-02 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 550 | 2026-05-25 | 2026-06-02 |
 | `CalculationPerformed` | 474 | 2026-06-01 | 2026-06-02 |
@@ -45,9 +45,9 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 59914
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
 | `AgentPerformanceEvaluated` | 215 | 2026-05-25 | 2026-06-02 |
 | `AgentFeedbackIssued` | 215 | 2026-05-25 | 2026-06-02 |
-| `AgentGoalSelected` | 191 | 2026-05-25 | 2026-06-02 |
+| `AgentGoalSelected` | 192 | 2026-05-25 | 2026-06-02 |
+| `SubstrateStateSnapshot` | 180 | 2026-05-07 | 2026-06-02 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
-| `SubstrateStateSnapshot` | 179 | 2026-05-07 | 2026-06-02 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 163 | 2026-05-25 | 2026-06-02 |
 | `DecisionRequested` | 135 | 2026-05-10 | 2026-05-10 |
@@ -309,7 +309,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Cbe5dU9EyScSps6QqU1AE"})._
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbeAEH1xSRxiETv1KAkd9"})._
 
 ## Provenance
 
