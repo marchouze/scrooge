@@ -49,6 +49,8 @@
 //
 // Author: Ravi (Treasury / ALM engineer, engineering)
 
+import { readFileSync } from "node:fs";
+
 import type { MarketDataStore } from "./store";
 import type { JibarFixingPayload } from "./types";
 
@@ -269,4 +271,45 @@ export function runJibarFixingIngestAll(
       marketDataStore: opts.marketDataStore,
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Convenience: load the on-disk fixture and ingest it in one pass
+// ---------------------------------------------------------------------------
+
+export interface IngestJibarFixingFixtureResult {
+  readonly ticksAppended: number;
+  readonly ticksSkippedAsDuplicate: number;
+  readonly datesProcessed: number;
+}
+
+/**
+ * Load the JIBAR 3M fixing fixture JSON at `fixturePath` and ingest every
+ * fixing into `marketDataStore`. Idempotent (deterministic tick ids →
+ * INSERT OR IGNORE). Shared by the dashboard boot path so the JIBAR 3M
+ * benchmark is surfaced on the market-data dashboard alongside FX.
+ *
+ * Throws if the fixture is missing or malformed (loud — a silent absence
+ * would leave the Rates section empty without explanation).
+ */
+export function ingestJibarFixingFixtureFromFile(
+  marketDataStore: MarketDataStore,
+  fixturePath: string,
+): IngestJibarFixingFixtureResult {
+  const raw = readFileSync(fixturePath, "utf8");
+  const fixture = JSON.parse(raw) as JibarFixingFixtureShape;
+  if (!fixture.instrument || !fixture.fixings || Object.keys(fixture.fixings).length === 0) {
+    throw new Error(
+      `ingestJibarFixingFixtureFromFile: fixture at ${fixturePath} is malformed (missing instrument / fixings)`,
+    );
+  }
+  const source = makeFixtureJibarFixingSource(fixture);
+  const results = runJibarFixingIngestAll({ source, marketDataStore });
+  let ticksAppended = 0;
+  let ticksSkippedAsDuplicate = 0;
+  for (const r of results) {
+    ticksAppended += r.ticksAppended;
+    ticksSkippedAsDuplicate += r.ticksSkippedAsDuplicate;
+  }
+  return { ticksAppended, ticksSkippedAsDuplicate, datesProcessed: results.length };
 }

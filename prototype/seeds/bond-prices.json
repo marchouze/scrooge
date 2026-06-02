@@ -1,0 +1,56 @@
+{
+  "_comment": "Build-phase static SA government bond end-of-day reference prices — business days from 2026-05-21 through 2026-06-01. Clean price is a percentage of par (e.g. 101.45 = 101.45% of nominal); yield is decimal (0.0802 = 8.02%). Used by the build-phase bond-price ingester (platform/market-data/bond-price-ingester.ts) to seed reference-price ticks into MarketDataStore for the market-data dashboard's Bonds section. These are REFERENCE prices for display; bond valuation/MTM continues to flow through OfficialMarkAdopted events.",
+  "_authority": "D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07); D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22) Slice 10; JSE-RULES-BONDS.",
+  "_provenance": "Build-phase fixture variant. Production JSE Debt Market price feed is sequenced post-licence. Ticks carry provenance=production in MarketDataStore (JSE Debt Market is an exchange-grade source) and fixingVariant=build-phase-fixture in payload.",
+  "_instruments": "R186 (ZAG000030108, 10.5% due 2026-12-21) trades above par on its high coupon / short residual maturity (~7mo), yield ~8.0%. R2030 (ZAG000057547, 7.75% due 2030-01-31) below par, yield ~9.2%. R2040 (ZAG000074989, 9.0% due 2040-01-31) below par, yield ~10.5%.",
+  "_exclusions": "Weekends excluded (2026-05-23, 2026-05-24, 2026-05-30, 2026-05-31).",
+  "source": "JSE-DEBT",
+  "refTime": "17:00:00+02:00",
+  "instruments": [
+    { "isin": "ZAG000030108", "bondCode": "R186" },
+    { "isin": "ZAG000057547", "bondCode": "R2030" },
+    { "isin": "ZAG000074989", "bondCode": "R2040" }
+  ],
+  "prices": {
+    "2026-05-21": {
+      "ZAG000030108": { "cleanPrice": "101.48", "yield": "0.0803" },
+      "ZAG000057547": { "cleanPrice": "94.92", "yield": "0.0921" },
+      "ZAG000074989": { "cleanPrice": "88.15", "yield": "0.1049" }
+    },
+    "2026-05-22": {
+      "ZAG000030108": { "cleanPrice": "101.52", "yield": "0.0801" },
+      "ZAG000057547": { "cleanPrice": "95.07", "yield": "0.0918" },
+      "ZAG000074989": { "cleanPrice": "88.34", "yield": "0.1046" }
+    },
+    "2026-05-25": {
+      "ZAG000030108": { "cleanPrice": "101.45", "yield": "0.0804" },
+      "ZAG000057547": { "cleanPrice": "94.81", "yield": "0.0923" },
+      "ZAG000074989": { "cleanPrice": "87.98", "yield": "0.1052" }
+    },
+    "2026-05-26": {
+      "ZAG000030108": { "cleanPrice": "101.55", "yield": "0.0800" },
+      "ZAG000057547": { "cleanPrice": "95.18", "yield": "0.0916" },
+      "ZAG000074989": { "cleanPrice": "88.51", "yield": "0.1043" }
+    },
+    "2026-05-27": {
+      "ZAG000030108": { "cleanPrice": "101.50", "yield": "0.0802" },
+      "ZAG000057547": { "cleanPrice": "95.02", "yield": "0.0919" },
+      "ZAG000074989": { "cleanPrice": "88.27", "yield": "0.1047" }
+    },
+    "2026-05-28": {
+      "ZAG000030108": { "cleanPrice": "101.58", "yield": "0.0799" },
+      "ZAG000057547": { "cleanPrice": "95.29", "yield": "0.0914" },
+      "ZAG000074989": { "cleanPrice": "88.63", "yield": "0.1041" }
+    },
+    "2026-05-29": {
+      "ZAG000030108": { "cleanPrice": "101.53", "yield": "0.0801" },
+      "ZAG000057547": { "cleanPrice": "95.11", "yield": "0.0917" },
+      "ZAG000074989": { "cleanPrice": "88.40", "yield": "0.1045" }
+    },
+    "2026-06-01": {
+      "ZAG000030108": { "cleanPrice": "101.61", "yield": "0.0798" },
+      "ZAG000057547": { "cleanPrice": "95.36", "yield": "0.0913" },
+      "ZAG000074989": { "cleanPrice": "88.72", "yield": "0.1040" }
+    }
+  }
+}

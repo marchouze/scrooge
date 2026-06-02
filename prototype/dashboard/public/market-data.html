@@ -25,6 +25,11 @@
     .md-prov.sim { background:var(--color-warning-bg); color:var(--color-warning); }
     .md-row { cursor:pointer; }
     .md-row:hover { background:var(--color-bg-hover, rgba(0,0,0,0.03)); }
+    .md-section { margin-bottom:var(--space-5); }
+    .md-section table tbody tr { cursor:pointer; }
+    .md-val { font-family:var(--font-mono); font-size:12px; font-weight:600; }
+    .md-explorer { margin-top:var(--space-5); border-top:1px solid var(--color-border); padding-top:var(--space-4); }
+    .md-explorer > summary { cursor:pointer; font:var(--text-body); font-weight:600; color:var(--color-text-primary); margin-bottom:var(--space-3); }
   </style>
 </head>
 <body>
@@ -36,9 +41,19 @@
     </div>
     <div class="page-body">
       <p style="color:var(--color-text-secondary);font:var(--text-caption);margin-top:0;margin-bottom:var(--space-3)">
-        Reference / time-series ticks from <code>MarketDataStore</code> (FX quotes, equity quotes,
-        SENS announcements, news). Most recent first. Authority: <strong>D-MARKETS-SCHEMA-FOUNDATION</strong>.
+        Reference / time-series ticks from <code>MarketDataStore</code>, grouped by asset class.
+        Each section shows the latest tick per instrument. Authority: <strong>D-MARKETS-SCHEMA-FOUNDATION</strong>.
       </p>
+
+      <!-- Asset-class sections: latest tick per instrument (FX / Rates / Bonds / Other) -->
+      <div id="md-section-fx" class="md-section"></div>
+      <div id="md-section-rates" class="md-section"></div>
+      <div id="md-section-bonds" class="md-section"></div>
+      <div id="md-section-other" class="md-section"></div>
+
+      <!-- Full tick explorer: the original filterable / searchable recency table -->
+      <details class="md-explorer">
+        <summary>All ticks — filter &amp; search the full time series</summary>
       <div class="md-toolbar">
         <input type="search" id="md-search" placeholder="Search instrument or payload…" autocomplete="off">
         <select id="md-source"><option value="">All sources</option></select>
@@ -76,6 +91,7 @@
         </table>
       </div>
       <p id="md-hint" style="color:var(--color-text-secondary);font:var(--text-caption);margin-top:var(--space-3)">Click any row to see the full tick JSON.</p>
+      </details>
     </div>
   </main>
   <script src="/_shell.js"></script>

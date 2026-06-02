@@ -215,6 +215,34 @@ export class MarketDataStore {
     return rows.map((r) => this.rowToTick(r));
   }
 
+  /**
+   * Return the single most-recent tick for every distinct `(source, instrument)`
+   * pair, newest first. This is the canonical "latest per instrument" read used
+   * by operator surfaces (e.g. the market-data dashboard's asset-class sections)
+   * that need one current row per feed rather than a recency-windowed list —
+   * without it, a continuously-ingested feed (FX) buries stale-but-valid feeds
+   * (rate fixings) below the row limit.
+   *
+   * `provenance` defaults to `"production"` (safe-by-omission, consistent with
+   * `query()` / `getLatest()`). Pass `"all"` to opt explicitly into mixed
+   * provenance for a display surface — never on a valuation read.
+   */
+  latestPerInstrument(opts: { provenance?: ProvenanceSelector } = {}): MarketDataTick[] {
+    const provenance: ProvenanceSelector = opts.provenance ?? "production";
+    const where = provenance !== "all" ? "WHERE provenance = ?" : "";
+    const params: string[] = provenance !== "all" ? [provenance] : [];
+    const rows = this.db
+      .prepare(
+        `SELECT id, source, instrument, data_type, provenance, as_of, payload, ingested_at FROM (
+           SELECT *, ROW_NUMBER() OVER (PARTITION BY source, instrument ORDER BY as_of DESC) AS rn
+           FROM market_data_ticks ${where}
+         ) WHERE rn = 1
+         ORDER BY as_of DESC`,
+      )
+      .all(...params) as Record<string, unknown>[];
+    return rows.map((r) => this.rowToTick(r));
+  }
+
   /** Close the underlying SQLite connection. */
   close(): void {
     this.db.close();

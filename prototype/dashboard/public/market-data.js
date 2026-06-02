@@ -173,6 +173,105 @@
     }
   }
 
+  // ── Asset-class sections (latest tick per instrument) ────────────
+  const SECTIONS = [
+    { key: "fx", title: "FX", containerId: "md-section-fx" },
+    { key: "rates", title: "Rates", containerId: "md-section-rates" },
+    { key: "bonds", title: "Bonds", containerId: "md-section-bonds" },
+    { key: "other", title: "Other", containerId: "md-section-other" },
+  ];
+
+  function pct(decimalStr) {
+    const n = Number(decimalStr);
+    if (!Number.isFinite(n)) return esc(String(decimalStr));
+    return `${(n * 100).toFixed(3)}%`;
+  }
+
+  // Derive a compact human-readable headline value per data type. Falls back
+  // to the raw payload preview for unknown types so nothing is hidden.
+  function summariseTick(tick) {
+    const p = tick.payload || {};
+    switch (tick.dataType) {
+      case "fx-quote":
+        return p.mid != null ? String(p.mid) : payloadPreview(p);
+      case "zaronia-rate":
+      case "jibar-fixing":
+        return p.rate != null ? pct(p.rate) : payloadPreview(p);
+      case "repo-prime-rate":
+        return p.repoRate != null
+          ? `repo ${pct(p.repoRate)} · prime ${pct(p.primeRate)}`
+          : payloadPreview(p);
+      case "swap-curve-snapshot": {
+        const tenors = p.tenors ? Object.keys(p.tenors).length : 0;
+        const node = p.tenors && p.tenors["3M"] != null ? `3M ${pct(p.tenors["3M"])}` : "";
+        return tenors ? `${tenors} tenors${node ? ` · ${node}` : ""}` : payloadPreview(p);
+      }
+      case "bond-price":
+        return p.cleanPrice != null
+          ? `${p.cleanPrice}${p.yieldToMaturity != null ? ` · ytm ${pct(p.yieldToMaturity)}` : ""}`
+          : payloadPreview(p);
+      default:
+        return payloadPreview(p);
+    }
+  }
+
+  // Bonds carry the human bond code in payload; show it next to the ISIN.
+  function instrumentLabel(tick) {
+    const code = tick.payload?.bondCode;
+    return code
+      ? `${esc(tick.instrument)} <span style="color:var(--color-text-secondary)">(${esc(code)})</span>`
+      : esc(tick.instrument);
+  }
+
+  function renderSection(section, ticks) {
+    const container = document.getElementById(section.containerId);
+    if (!container) return;
+    container.innerHTML = window.SC?.renderSectionHeader
+      ? window.SC.renderSectionHeader(`${section.title} (${ticks.length})`)
+      : `<h2>${esc(section.title)} (${ticks.length})</h2>`;
+    const tableHost = document.createElement("div");
+    container.appendChild(tableHost);
+
+    if (window.SC?.renderTable) {
+      window.SC.renderTable({
+        container: tableHost,
+        headers: ["as_of", "Instrument", "Source", "Value", "Prov"],
+        rows: ticks.map((t) => ({
+          cells: [
+            esc(fmtTs(t.asOf)),
+            instrumentLabel(t),
+            `<span class="md-source">${esc(t.source)}</span>`,
+            `<span class="md-val">${esc(summariseTick(t))}</span>`,
+            provBadge(t.provenance),
+          ],
+          data: t,
+        })),
+        onRowClick: (t) => showDetail(t),
+        emptyMessage: `No ${section.title} data ingested yet.`,
+      });
+    }
+  }
+
+  async function loadSections() {
+    try {
+      const r = await fetch("/api/market-data/by-class", {
+        headers: { Accept: "application/json" },
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      for (const section of SECTIONS) {
+        renderSection(section, Array.isArray(d[section.key]) ? d[section.key] : []);
+      }
+    } catch (e) {
+      for (const section of SECTIONS) {
+        const container = document.getElementById(section.containerId);
+        if (container) {
+          container.innerHTML = `<div class="table-empty">Failed to load ${esc(section.title)}: ${esc(String(e))}</div>`;
+        }
+      }
+    }
+  }
+
   // ── Wiring ───────────────────────────────────────────────────────
   let searchTimer = null;
   searchInput.addEventListener("input", () => {
@@ -208,7 +307,7 @@
     refreshBtn.disabled = true;
     refreshBtn.textContent = "Refreshing…";
     try {
-      await Promise.all([loadFacets(), load()]);
+      await Promise.all([loadFacets(), load(), loadSections()]);
     } finally {
       refreshBtn.disabled = false;
       refreshBtn.textContent = "Refresh";
@@ -232,6 +331,7 @@
   });
 
   // ── Boot ─────────────────────────────────────────────────────────
+  loadSections();
   loadFacets();
   load();
 })();
