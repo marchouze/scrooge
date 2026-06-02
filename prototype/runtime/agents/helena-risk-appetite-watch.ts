@@ -50,6 +50,7 @@ import { computeNSFR } from "../../platform/liquidity/nsfr";
 import { getALMPositionSnapshot } from "../../platform/projections/alm-positions";
 import { computeCapitalMetrics } from "../../platform/projections/capital-metrics";
 import { getClimateRiskMetric } from "../../platform/projections/climate-risk-projection";
+import { computeCyberSeverityPosture } from "../../platform/projections/cyber-incident-severity";
 import { computeLeverageRatioMetrics } from "../../platform/projections/leverage-ratio-metrics";
 import { getModelTierDisciplineMetric } from "../../platform/projections/model-tier-discipline";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
@@ -358,6 +359,7 @@ function statusForLine(
   leverageMetrics?: ReturnType<typeof computeLeverageRatioMetrics>,
   liquidityMetric?: ReturnType<typeof buildLiquidityMetric>,
   modelTierMetric?: ReturnType<typeof getModelTierDisciplineMetric>,
+  cyberPosture?: ReturnType<typeof computeCyberSeverityPosture>,
 ): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
@@ -485,6 +487,28 @@ function statusForLine(
     };
   }
 
+  // appetite:operational:cyber-severity-tiers — measured by Senna's
+  // cyber-incident-severity projection. Reads IncidentClassified,
+  // IncidentContained, and PostIncidentReviewCompleted events and maps
+  // to RAG per CY-IRP-01 §2.1 + §7.2 KRIs.
+  // Build-phase posture: zero incidents → green by construction.
+  // Authority: D-RAS (2026-05-06); RAS §B6; CY-IRP-01;
+  //   brief:senna:build-cyber-incident-severity-measurement-substr:2026-06-01.
+  if (line.id === "appetite:operational:cyber-severity-tiers" && cyberPosture !== undefined) {
+    if (cyberPosture.status === "no-incidents") {
+      return {
+        line,
+        status: "green",
+        note: "No incidents in build phase; cyber-severity appetite satisfied by construction. RAS §B6.",
+      };
+    }
+    return {
+      line,
+      status: cyberPosture.status,
+      note: cyberPosture.note,
+    };
+  }
+
   // Everything else: unmeasured pending Rohan / Bea / Ravi measurement
   // substrate. Build-phase n/a is *not* the same as unmeasured — n/a
   // means structurally not applicable yet (no book, no portfolio); we
@@ -577,6 +601,15 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   //   brief:atlas:build-model-tier-discipline-measurement-substrat:2026-06-01.
   const modelTierMetric = getModelTierDisciplineMetric(eventStore);
 
+  // Compute cyber-incident severity posture (Senna's cyber-incident-
+  // severity projection — closes the appetite:operational:cyber-severity-tiers
+  // unmeasured gap).
+  // Build-phase posture: zero IncidentClassified events → green by
+  // construction (no incidents to measure).
+  // Authority: D-RAS (2026-05-06); RAS §B6; CY-IRP-01;
+  //   brief:senna:build-cyber-incident-severity-measurement-substr:2026-06-01.
+  const cyberPosture = computeCyberSeverityPosture(eventStore, asOfIso);
+
   const lineStates = APPETITE_LINES.map((line) =>
     statusForLine(
       line,
@@ -585,6 +618,7 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
       leverageMetrics,
       liquidityMetric,
       modelTierMetric,
+      cyberPosture,
     ),
   );
   const measuredCount = lineStates.filter(
