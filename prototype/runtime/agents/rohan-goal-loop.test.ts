@@ -217,3 +217,25 @@ describe("isSelfExecutableByRohan", () => {
     ).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Follow-on routing: non-self-executable briefs are classified for routing
+// (D-AGENT-AUTONOMY-COHORT-2-PILOT — routeBlockedBrief wiring)
+// ---------------------------------------------------------------------------
+
+describe("rohan goal-loop — follow-on routing classification", () => {
+  it("a code-pr brief is classified as NOT self-executable (routes to executor)", () => {
+    const b: AgentBriefIssuedPayload = {
+      briefId: "brief:rohan:code-pr-routing-test:2026-06-02",
+      issuedTo: ROHAN_REF,
+      issuedBy: SCROOGE_REF,
+      title: "Implement the FRTB-SA GIRR bucket mapping",
+      directiveDocumentHash: BRIEF_DOC_HASH,
+      priority: "now",
+      expectedOutputs: [{ kind: "code-pr", description: "PR implementing bucket mapping" }],
+    };
+    // Must be false → dispatcher emits AgentRunCompleted{outcome:"blocked"}
+    // and then calls routeBlockedBrief which issues the follow-on brief.
+    expect(isSelfExecutableByRohan(b)).toBe(false);
+  });
+});

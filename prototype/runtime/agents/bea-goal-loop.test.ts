@@ -309,3 +309,30 @@ describe("findOpenRunIdsForAgent", () => {
     expect(openIds).not.toContain(runId);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Follow-on routing: non-self-executable briefs are classified for routing
+// (D-AGENT-AUTONOMY-COHORT-2-PILOT — routeBlockedBrief wiring)
+// ---------------------------------------------------------------------------
+
+describe("bea goal-loop — follow-on routing classification", () => {
+  // `dispatchBriefBoundRun` is private; we verify the routing gate via the
+  // exported `isSelfExecutableByBea` classifier. A brief that is NOT
+  // self-executable triggers the blocked path, which calls `routeBlockedBrief`
+  // and emits an AgentBriefIssued for the follow-on executor. The full
+  // emission test lives in platform/records/brief-router.test.ts.
+  it("a code-pr brief is classified as NOT self-executable (routes to executor)", () => {
+    const brief: AgentBriefIssuedPayload = {
+      briefId: "brief:bea:code-pr-routing-test:2026-06-02",
+      issuedTo: BEA_REF,
+      issuedBy: SCROOGE_REF,
+      title: "Implement a new GL posting rule for bond settlement",
+      directiveDocumentHash: BRIEF_DOC_HASH,
+      priority: "now",
+      expectedOutputs: [{ kind: "code-pr", description: "PR with posting rule" }],
+    };
+    // Must be false → dispatcher emits AgentRunCompleted{outcome:"blocked"}
+    // and then calls routeBlockedBrief which issues the follow-on brief.
+    expect(isSelfExecutableByBea(brief)).toBe(false);
+  });
+});

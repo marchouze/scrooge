@@ -64,6 +64,7 @@ import { eventStore, logger } from "../../platform/composition";
 import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
 import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
+import { routeBlockedBrief } from "../../platform/records/brief-router";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying accounting-readiness handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
@@ -433,6 +434,15 @@ async function dispatchBriefBoundRun(
   // engineering-execution substrate. NEVER faked as delivered.
   const routeKind = brief.expectedOutputs.some((o) => o.kind === "code-pr") ? "code-pr" : "agent";
   const gap = `Bea goal-loop (rule-engine, cohort-2) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work outside the rule-engine capability. Routed to the engineering-execution substrate (LLM-backed dispatched run). This is the cohort-2 goal-loop→dispatched-run substrate gap.`;
+  const followOnRoutes = [
+    {
+      kind: routeKind as "code-pr" | "agent",
+      target: "engineering-execution-substrate",
+      directive: `Execute brief ${brief.briefId}: ${brief.title}${
+        brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
+      }. Triaged and routed by Bea's autonomous goal-loop; requires an engineering-execution run.`,
+    },
+  ];
   recordAgentRunCompleted(
     {
       runId,
@@ -443,28 +453,43 @@ async function dispatchBriefBoundRun(
       deliverableBodies: [],
       substrateGapsSurfaced: [gap],
       deliverableCitations: [COHORT_2_AUTHORITY],
-      followOnRoutes: [
-        {
-          kind: routeKind,
-          target: "engineering-execution-substrate",
-          directive: `Execute brief ${brief.briefId}: ${brief.title}${
-            brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
-          }. Triaged and routed by Bea's autonomous goal-loop; requires an engineering-execution run.`,
-        },
-      ],
+      followOnRoutes,
       citations: [COHORT_2_AUTHORITY],
       actor: BEA_GOAL_LOOP_ACTOR,
     },
     ctx.asOf,
   );
   eventsEmitted += 1;
+
+  // Auto-issue follow-on briefs for each blocked route so the next executor
+  // picks them up on its next tick (D-AGENT-AUTONOMY-COHORT-2-PILOT).
+  let followOnBriefsIssued = 0;
+  for (const route of followOnRoutes) {
+    const routeResult = routeBlockedBrief({
+      blockedRunId: runId,
+      route,
+      parentBriefId: brief.briefId,
+      parentBriefTitle: brief.title,
+      issuedBy: agent,
+      asOf: ctx.asOf,
+    });
+    if (!routeResult.alreadyExists) {
+      followOnBriefsIssued++;
+      logger.info(
+        { blockedRunId: runId, routeBriefId: routeResult.briefId, routeKind: route.kind },
+        "bea:goal-loop — follow-on brief issued for blocked route",
+      );
+    }
+  }
+  eventsEmitted += followOnBriefsIssued; // AgentBriefIssued counts as emitted event
+
   logger.info(
     { briefId: brief.briefId, runId, routeKind, remainingOpen },
     "bea:goal-loop — brief triaged + routed to engineering-execution substrate (blocked, gap surfaced)",
   );
   return {
     eventsEmitted,
-    summary: `brief ${brief.briefId} routed→executor (blocked); ${remainingOpen} open brief(s) remain`,
+    summary: `brief ${brief.briefId} routed→executor (blocked); followOnBriefs=${followOnBriefsIssued}; ${remainingOpen} open brief(s) remain`,
   };
 }
 
