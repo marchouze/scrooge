@@ -292,6 +292,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // here is a build-phase test fixture, not a production access path. T-01
   // carve-out. Citation: P4-SECURITY-DESIGNED-IN, ORG-CY-09.
   "simulators/dtcc-safe-api.test.ts",
+  // Mark-adoption engine unit + integration tests (daily feed-universe FX marks).
+  // Co-located per the per-module test convention. Raw EventStore(":memory:") is a
+  // build-phase fixture for the adoption / idempotency / no-silent-mark and the
+  // P&L-attribution-marketMove assertions, not a production access path. T-01 carve-out.
+  // Citation: D-EVENT-VIEW-BOUNDARY-WIRE, D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/valuation/mark-adoption-engine.test.ts",
   // P&L Attribution engine unit tests (brief:bea:p-l-attribution-engine-fx-spot-mvp).
   // Co-located per the per-module test convention. Raw EventStore(":memory:") is a
   // build-phase fixture for the additive-reconciliation / no-silent-zero / exception

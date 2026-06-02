@@ -69,6 +69,7 @@ import { baseAmountMinor } from "../../platform/markets/cdm/fx-helpers";
 import { runEodIrsRevaluation } from "../../platform/markets/eod/irs-revaluation";
 import { computeCurrencyPositions } from "../../platform/projections/markets/currency-position";
 import {
+  adoptDailyOfficialFxMarks,
   adoptFxMark,
   resolveActivePolicyVersionRef,
 } from "../../platform/valuation/mark-adoption-engine";
@@ -684,6 +685,25 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
   } else {
     skippedReasons.push("MarketDataStore unavailable (BANK_MARKET_DATA_DB unset)");
+  }
+
+  // Adopt a daily official mark for EVERY pair in the production feed, before
+  // the per-position loop — decoupled from position revaluation so a pair the
+  // desk has just started trading already carries a prior-day official mark
+  // (without this, Product-Control P&L Attribution fails "missing marketMoveMarks"
+  // for any freshly-traded pair). Idempotent; skips pairs already marked for the
+  // elected tick's day. Authority: D-EVENT-VIEW-BOUNDARY-WIRE; D-TRUSTED-FIGURES-PROGRAM-V1.
+  if (mdStore && !ctx.dryRun && policyVersionRef) {
+    const marks = adoptDailyOfficialFxMarks(
+      eventStore as unknown as import("../../platform/event-store/store").EventStore,
+      mdStore,
+      asOf,
+      policyVersionRef,
+    );
+    logger.info(
+      { adopted: marks.adopted, skipped: marks.skipped.length, noRate: marks.noRate },
+      "rohan:daily-mtm — daily official FX marks adopted (feed universe)",
+    );
   }
 
   if (mdStore && !ctx.dryRun) {
