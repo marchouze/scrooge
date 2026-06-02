@@ -70,11 +70,11 @@ describe("buildSeedsView", () => {
 
   it("marks a seed descoped and carries the descope record", () => {
     const store = new EventStore();
-    descope(store, "balance-sheet-baseline", "replaced by sim trades");
+    descope(store, "calc-models", "replaced by rohan callable");
     const view = buildSeedsView(store);
-    const entry = view.find((s) => s.seedId === "balance-sheet-baseline");
+    const entry = view.find((s) => s.seedId === "calc-models");
     expect(entry?.descoped).toBe(true);
-    expect(entry?.descope?.reason).toBe("replaced by sim trades");
+    expect(entry?.descope?.reason).toBe("replaced by rohan callable");
   });
 });
 
@@ -96,7 +96,7 @@ describe("recon:seed-manifest-parity", () => {
     try {
       const result = runSeedManifestParity({ serverPath: tmp });
       expect(result.ok).toBe(false);
-      expect(result.violations.some((v) => v.subject === "balance-sheet-baseline")).toBe(true);
+      expect(result.violations.some((v) => v.subject === "calc-models")).toBe(true);
     } finally {
       require("node:fs").unlinkSync(tmp);
     }

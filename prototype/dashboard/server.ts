@@ -72,7 +72,6 @@ import type { BankConfigPaths, BankConfigServer } from "../platform/config/schem
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
-import { makeBalanceSheetProjected } from "../platform/event-store/event-types/balance-sheet";
 import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
 import { makeSubstrateAlert } from "../platform/event-store/event-types/platform";
 import {
@@ -87,7 +86,6 @@ import {
   makeSeedDescoped,
   makeSeedPromotedToSimulated,
 } from "../platform/event-store/event-types/seed-management";
-import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import type { Event } from "../platform/event-store/types";
 import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
 import {
@@ -157,11 +155,6 @@ import {
 import { runAgent } from "../runtime/run";
 import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
-import {
-  BALANCE_SHEET_SEED_AS_OF,
-  BALANCE_SHEET_SEED_CITATIONS,
-  BALANCE_SHEET_SEED_PAYLOAD,
-} from "../seeds/alm/balance-sheet-seed";
 import { loadDescopedSeedIds } from "../seeds/descope";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { seedCalcModels } from "../seeds/models/calc-model-seed";
@@ -820,8 +813,6 @@ function bootDerive(): DashboardState {
     // Distinct modelIds from the pricing-model seeds; order-independent of them.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
     runSeed("calc-models", bootCalcModels);
-    // Balance-sheet seed — emit BalanceSheetProjected for build-phase NSFR baseline.
-    runSeed("balance-sheet-baseline", bootBalanceSheetSeed);
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
     // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
@@ -1025,54 +1016,6 @@ function bootModelRegisteredSeeds(): void {
       "model-registered-seed: idempotent boot; all events already present",
     );
   }
-}
-
-/**
- * Idempotently emit the build-phase BalanceSheetProjected seed event so that
- * getALMPositionSnapshot can derive NSFR ASF/RSF values and the substrate gap
- * is cleared from the dashboard.
- *
- * Idempotency key: projectionId in the event payload. Replays existing
- * BalanceSheetProjected events; skips emission if the seed projectionId is
- * already present.
- *
- * Authority: BA 326; BCBS D396; D-TREASURY-GAPS-WAVE1.
- */
-function bootBalanceSheetSeed(): void {
-  const ENTITY = "LE-BANK-SA";
-  const ACTOR = {
-    type: "system" as const,
-    id: "system:boot",
-    name: "Boot seed runner",
-  } as const;
-
-  const existingProjectionIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "BalanceSheetProjected" })) {
-    const p = ev.payload as { projectionId?: string };
-    if (p.projectionId) existingProjectionIds.add(p.projectionId);
-  }
-
-  if (existingProjectionIds.has(BALANCE_SHEET_SEED_PAYLOAD.projectionId)) {
-    logger.debug("balance-sheet-seed: idempotent boot; seed already present");
-    return;
-  }
-
-  const ev = makeBalanceSheetProjected({
-    asOf: BALANCE_SHEET_SEED_AS_OF,
-    entity: ENTITY,
-    actor: ACTOR,
-    citations: [...BALANCE_SHEET_SEED_CITATIONS],
-    payload: BALANCE_SHEET_SEED_PAYLOAD,
-  });
-  ev.provenance = buildPhaseFixtureTag({
-    sourceLineage: "seeds/alm/balance-sheet-seed.ts",
-    tags: ["boot-seed", "build-phase-baseline"],
-  });
-  eventStore.append(ev);
-  logger.info(
-    { projectionId: BALANCE_SHEET_SEED_PAYLOAD.projectionId },
-    "balance-sheet-seed: 1 seed event emitted (build-phase-fixture)",
-  );
 }
 
 /**

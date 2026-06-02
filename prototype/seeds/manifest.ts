@@ -15,13 +15,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 /** Classification of what a seed populates. */
-export type SeedKind =
-  | "model-governance"
-  | "treasury-positions"
-  | "balance-sheet"
-  | "npa-attestation"
-  | "party-graph"
-  | "fleet-identity";
+export type SeedKind = "model-governance" | "treasury-positions" | "party-graph" | "fleet-identity";
 
 /** A pointer to the authoring UI that replaces a seed with real-simulated events. */
 export interface SeedReplaceTarget {
@@ -104,17 +98,6 @@ export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
     emittedEventTypes: ["ModelSubmitted", "ModelTierClassified", "ModelValidationApproved"],
     descopable: true,
     citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
-  },
-  {
-    seedId: "balance-sheet-baseline",
-    bootFn: "bootBalanceSheetSeed",
-    title: "Balance-sheet baseline (NSFR)",
-    description:
-      "Emits a single BalanceSheetProjected event providing the build-phase NSFR ASF/RSF baseline.",
-    kind: "balance-sheet",
-    emittedEventTypes: ["BalanceSheetProjected"],
-    descopable: true,
-    citations: ["D-TREASURY-GAPS-WAVE1"],
   },
   {
     seedId: "fleet-identity",
