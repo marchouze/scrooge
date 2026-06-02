@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Financial Instruments — Scrooge Bank</title>
+  <meta name="description" content="The bank's financial-instrument register — instrument types the bank transacts in and the instruments set up under each.">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+<style>
+  .fi-page { max-width: 1040px; margin: 0 auto; padding: var(--space-6); }
+  .fi-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
+  .fi-page h1 { font: var(--text-h1); color: var(--color-text-primary); margin-bottom: var(--space-2); }
+  .fi-lede { color: var(--color-text-secondary); font: var(--text-body); margin-bottom: var(--space-6); line-height: 1.6; max-width: 70ch; }
+  .fi-btn {
+    display: inline-block; padding: 10px 20px; background: var(--color-accent); color: #fff;
+    border: none; border-radius: var(--radius-md); cursor: pointer; font: var(--text-body);
+    font-weight: 700; text-decoration: none; white-space: nowrap; box-shadow: var(--shadow-sm);
+  }
+  .fi-btn:hover { background: var(--color-accent-hover); }
+  .fi-btn-outline {
+    background: transparent; color: var(--color-accent); border: 1px solid var(--color-border-strong);
+    box-shadow: none; font-weight: 600;
+  }
+  .fi-btn-outline:hover { background: var(--color-surface); }
+
+  /* Type tiles */
+  .fi-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); }
+  .fi-tile {
+    display: block; text-decoration: none; padding: var(--space-5);
+    border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    background: var(--color-bg); transition: border-color 120ms, box-shadow 120ms; color: inherit;
+  }
+  .fi-tile:hover { border-color: var(--color-accent); box-shadow: var(--shadow-sm); }
+  .fi-tile .fi-tile-label { font: var(--text-h3); color: var(--color-text-primary); font-weight: 700; }
+  .fi-tile .fi-tile-count { font: var(--text-h1); color: var(--color-accent); font-weight: 800; margin-top: var(--space-2); }
+  .fi-tile .fi-tile-sub { font: var(--text-caption); color: var(--color-text-secondary); margin-top: var(--space-1); }
+
+  /* Table */
+  .fi-back { display: inline-block; font: var(--text-body); color: var(--color-accent); text-decoration: none; margin-bottom: var(--space-3); }
+  .fi-back:hover { text-decoration: underline; }
+  table.fi-table { width: 100%; border-collapse: collapse; font: var(--text-body); }
+  .fi-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--color-text-secondary); padding: var(--space-2) var(--space-3); border-bottom: 2px solid var(--color-border); }
+  .fi-table td { padding: var(--space-3); border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  .fi-table tr.fi-detail-row td { background: var(--color-surface); }
+  .fi-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
+  .fi-toggle { cursor: pointer; color: var(--color-accent); background: none; border: none; font: var(--text-body); padding: 0; }
+  .fi-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 600;
+    background: var(--color-surface); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+  .fi-ref-note { font: var(--text-caption); color: var(--color-text-secondary); font-style: italic; }
+  .fi-kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px var(--space-4); font-size: 0.85rem; }
+  .fi-kv dt { color: var(--color-text-secondary); }
+  .fi-empty { color: var(--color-text-secondary); padding: var(--space-6); text-align: center; border: 1px dashed var(--color-border); border-radius: var(--radius-md); }
+</style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="fi-page" id="fi-root">
+      <p class="fi-lede">Loading…</p>
+    </div>
+  </main>
+
+<script>
+(function () {
+  const root = document.getElementById('fi-root');
+  const params = new URLSearchParams(location.search);
+  const type = params.get('type');
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+  async function load() {
+    let data;
+    try {
+      const res = await fetch('/api/instruments' + (type ? ('?type=' + encodeURIComponent(type)) : ''));
+      if (!res.ok) throw new Error(res.status);
+      data = await res.json();
+    } catch (err) {
+      root.innerHTML = '<p class="fi-lede">Failed to load instruments: ' + esc(err.message) + '</p>';
+      return;
+    }
+    type ? renderList(data) : renderIndex(data);
+  }
+
+  function renderIndex(data) {
+    const tiles = (data.types || []).map((t) =>
+      `<a class="fi-tile" href="/instruments?type=${encodeURIComponent(t.id)}">
+         <div class="fi-tile-label">${esc(t.label)}</div>
+         <div class="fi-tile-count">${t.count}</div>
+         <div class="fi-tile-sub">${t.count === 1 ? '1 instrument' : t.count + ' instruments'}${t.addable ? '' : ' · reference'}</div>
+       </a>`).join('');
+    root.innerHTML = `
+      <div class="fi-head">
+        <div>
+          <h1>Financial Instruments</h1>
+          <p class="fi-lede">Instrument types the bank is able to transact in. Select a type to see the
+            instruments set up under it (regardless of any position held). New instruments are recorded as
+            <code>FinancialInstrumentDefined</code> events in the security master (Principle 1).</p>
+        </div>
+        <a class="fi-btn" href="/instruments/new">+ Add instrument</a>
+      </div>
+      <div class="fi-tiles">${tiles}</div>`;
+  }
+
+  const fmtZar = (minor) => minor == null ? '—' : 'R' + (minor / 100).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  const fmtQty = (minor) => minor == null ? '—' : (minor / 100).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+  function typeNote(id) {
+    if (id === 'fx') return 'The tradeable currency pairs. An FX outright is not a pre-defined instrument — it decomposes into the per-currency Cash instruments below, which product control marks to value the position.';
+    if (id === 'cash') return 'Settled-cash inventory the bank holds, reconstructed from FX settlement legs (PrincipalPayment). This is the instrument product control marks to ZAR (IAS 21 §28) to value FX positions. It materialises as FX trades settle.';
+    return '';
+  }
+
+  function renderList(data) {
+    const insts = data.instruments || [];
+    const typeMeta = (data.types || []).find((t) => t.id === type) || { label: type, addable: false };
+    const isCash = type === 'cash';
+    const rows = insts.length ? insts.map((i, idx) => rowHtml(i, idx, isCash)).join('') : '';
+    const note = typeNote(type);
+    const header = isCash
+      ? `<th>Instrument ID</th><th>Ccy</th><th>FCY qty</th><th>Mark (CCY/ZAR)</th><th>ZAR value</th><th>Unrealised P&L</th><th></th>`
+      : `<th>Instrument ID</th><th>Name</th><th>ISIN</th><th>Ccy</th><th>Maturity</th><th>IFRS 9</th><th>HQLA</th><th></th>`;
+    root.innerHTML = `
+      <a class="fi-back" href="/instruments">← All instrument types</a>
+      <div class="fi-head">
+        <div>
+          <h1>${esc(typeMeta.label)}</h1>
+          <p class="fi-lede">${insts.length} instrument${insts.length === 1 ? '' : 's'} set up under this type.
+            ${note ? `<span class="fi-ref-note">${esc(note)}</span>` : ''}</p>
+        </div>
+        ${typeMeta.addable ? `<a class="fi-btn" href="/instruments/new?type=${encodeURIComponent(type)}">+ Add ${esc(typeMeta.label)}</a>` : ''}
+      </div>
+      ${insts.length
+        ? `<table class="fi-table">
+             <thead><tr>${header}</tr></thead>
+             <tbody>${rows}</tbody>
+           </table>`
+        : `<div class="fi-empty">No instruments of this type yet.${typeMeta.addable ? ' Use “Add instrument” to set one up.' : isCash ? ' Cash instruments appear here once FX trades settle.' : ''}</div>`}`;
+
+    root.querySelectorAll('.fi-toggle').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const detail = document.getElementById('detail-' + btn.dataset.idx);
+        if (detail) detail.style.display = detail.style.display === 'none' ? '' : 'none';
+      });
+    });
+  }
+
+  function rowHtml(i, idx, isCash) {
+    const cls = i.classification;
+    const v = i.valuation;
+    const terms = Object.entries(i.contractTerms || {})
+      .map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(typeof val === 'object' ? JSON.stringify(val) : val)}</dd>`).join('');
+    const clsKv = cls
+      ? `<dt>HQLA level</dt><dd>${esc(cls.hqlaLevel)}</dd>
+         <dt>Basel risk weight</dt><dd>${esc(cls.baselRiskWeight)}</dd>
+         <dt>IFRS 9 category</dt><dd>${esc(cls.ifrs9Category)}</dd>
+         <dt>SA-CCR asset class</dt><dd>${esc(cls.saCcrAssetClass)}</dd>
+         ${cls.effectiveDate ? `<dt>Effective</dt><dd>${esc(cls.effectiveDate)}</dd>` : ''}`
+      : '';
+    const valKv = v
+      ? `<dt>Book</dt><dd>${esc(v.bookId)}</dd>
+         <dt>FCY quantity</dt><dd>${fmtQty(v.fcyQuantityMinor)} ${esc(i.currency)}</dd>
+         <dt>Mark (CCY/ZAR)</dt><dd>${v.markRate == null ? '— no production mark (no silent zero)' : esc(v.markRate)}</dd>
+         <dt>ZAR value (IAS 21 §28)</dt><dd>${fmtZar(v.zarValueMinor)}</dd>
+         <dt>Unrealised P&L</dt><dd>${v.markable ? fmtZar(v.unrealisedPnlZarMinor) : '— unmarkable'}</dd>
+         <dt>Realised P&L (cum.)</dt><dd>${fmtZar(v.realisedZarMinorCumulative)}</dd>`
+      : '';
+    const mainCells = isCash
+      ? `<td class="fi-mono">${esc(i.instrumentId)}</td>
+         <td>${esc(i.currency)}</td>
+         <td>${fmtQty(v && v.fcyQuantityMinor)}</td>
+         <td>${v && v.markRate != null ? esc(v.markRate) : '—'}</td>
+         <td>${fmtZar(v && v.zarValueMinor)}</td>
+         <td>${v && v.markable ? fmtZar(v.unrealisedPnlZarMinor) : '—'}</td>`
+      : `<td class="fi-mono">${esc(i.instrumentId)}${i.reference ? ' <span class="fi-badge">ref</span>' : ''}</td>
+         <td>${esc(i.name)}</td>
+         <td class="fi-mono">${esc(i.isin || '—')}</td>
+         <td>${esc(i.currency)}</td>
+         <td>${esc(i.maturityDate || '—')}</td>
+         <td>${esc(cls ? cls.ifrs9Category : '—')}</td>
+         <td>${esc(cls ? cls.hqlaLevel : '—')}</td>`;
+    return `
+      <tr>
+        ${mainCells}
+        <td><button class="fi-toggle" data-idx="${idx}">Details</button></td>
+      </tr>
+      <tr class="fi-detail-row" id="detail-${idx}" style="display:none">
+        <td colspan="8">
+          <div class="fi-kv">
+            <dt>ACTUS type</dt><dd>${esc(i.actusContractType || '—')} · ${esc(i.instrumentSubtype || '—')}</dd>
+            ${i.cfiCode ? `<dt>CFI code</dt><dd>${esc(i.cfiCode)}</dd>` : ''}
+            ${i.legalEntityId ? `<dt>Legal entity</dt><dd>${esc(i.legalEntityId)}</dd>` : ''}
+            ${i.productRef ? `<dt>Product (NPA)</dt><dd>${esc(i.productRef)}</dd>` : ''}
+            ${terms}
+            ${valKv}
+            ${clsKv || (v ? '' : '<dt>Classification</dt><dd>— not classified —</dd>')}
+          </div>
+        </td>
+      </tr>`;
+  }
+
+  load();
+})();
+</script>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Financial Instruments" });</script>
+</body>
+</html>
