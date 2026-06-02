@@ -34,3 +34,9 @@ export {
   type SupersedeBriefInput,
   type SupersedeBriefResult,
 } from "./helpers";
+
+export {
+  routeBlockedBrief,
+  type RouteBlockedBriefInput,
+  type RouteBlockedBriefResult,
+} from "./brief-router";
