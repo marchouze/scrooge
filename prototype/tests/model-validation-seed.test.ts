@@ -24,7 +24,7 @@ import { LocalModelRegistry } from "../platform/model-registry/index";
 import {
   seedModelValidations,
   seedValidationMethodologies,
-} from "../seeds/models/model-validation-seed";
+} from "../platform/model-registry/pricing-model-definitions";
 
 // ---------------------------------------------------------------------------
 // Shared test helpers

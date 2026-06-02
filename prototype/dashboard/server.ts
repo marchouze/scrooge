@@ -155,14 +155,7 @@ import {
 import { runAgent } from "../runtime/run";
 import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
-import { loadDescopedSeedIds } from "../seeds/descope";
 import { getSeedManifestEntry } from "../seeds/manifest";
-import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
-import { seedModelRegistry } from "../seeds/models/model-registry-seed";
-import {
-  seedModelValidations,
-  seedValidationMethodologies,
-} from "../seeds/models/model-validation-seed";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { registerBondGatewayRoutes } from "./bond-gateway";
@@ -769,44 +762,12 @@ function bootDerive(): DashboardState {
     // symmetry). The call is kept for backwards-compat but emits nothing.
     backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
 
-    // D-TRUSTED-FIGURES-PROGRAM-V1 objective 1 — seed descoping. An operator can
-    // emit SeedDescoped (or SeedPromotedToSimulated) via /api/seeds to stop a
-    // descopable boot seed from re-emitting. runSeed() consults that set; a
-    // descoped seed is skipped (and logged), never silently. The seedId strings
-    // here are the canonical keys in seeds/manifest.ts (recon:seed-manifest-parity).
-    const descopedSeeds = loadDescopedSeedIds(eventStore);
-    const runSeed = (seedId: string, fn: () => void): void => {
-      if (descopedSeeds.has(seedId)) {
-        logger.info({ seedId }, "boot-seed: descoped — skipped at boot (SeedDescoped)");
-        return;
-      }
-      fn();
-    };
-
-    // Structural backfills (fleet identity, party graph) are NOT descopable —
-    // the agent/party axes the whole substrate rests on depend on them.
+    // Structural backfills (fleet identity, party graph).
     bootFleetRegistration();
     // D-PARTY-REGISTER PR 2 — backfill the unified Party graph from
     // existing legal-entity / counterparty / agent / signatory streams.
     // Idempotent (keyed by source-event id); re-boot is a no-op.
     bootPartyBackfill();
-    // Model registry seed — submit and tier-classify 3 pricing models (SAGB DCF,
-    // ZARONIA OIS+IRS-PV, FX forward IRP). Must run BEFORE model-validation-seed
-    // and BEFORE NPA attestation seeds that read model validation status.
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-registry", bootModelRegistry);
-    // Model validation seed — emit ValidationMethodologyPublished (Tier-2 + Tier-3)
-    // and ModelValidationApproved for the 3 build-phase models idempotently.
-    // Must run AFTER bootModelRegistry() (models must exist) and BEFORE
-    // seedValidatedModelRiskUpgrades in the NPA platform module checks for approvals.
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-validation", bootModelValidationSeeds);
-    // ModelRegistered seed — emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
-    // and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
-    // Complements model-registry-seed (ModelSubmitted) and model-validation-seed (v0.1).
-    // Must run AFTER bootModelValidationSeeds().
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-registered", bootModelRegisteredSeeds);
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
     // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
@@ -857,34 +818,6 @@ function bootDerive(): DashboardState {
 }
 
 /**
- * Idempotently emit ProductApproved events for M1–M4 products.
- *
- * Called before `bootTreasurySeeds()` so that trade seeds which reference
- * M1–M4 products (equity, bond, repo, IRS, FX swap) find the NPA gate
- * already passed. Idempotent — products with an existing ProductApproved
- * event are skipped silently.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelRegistry(): void {
-  const result = seedModelRegistry(eventStore);
-  if (result.submitted.length > 0 || result.tierClassified.length > 0) {
-    logger.info(
-      {
-        submitted: result.submitted.length,
-        tierClassified: result.tierClassified.length,
-        skipped: result.skipped.length,
-      },
-      "model-registry-seed: models submitted and tier-classified",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "model-registry-seed: idempotent boot; all models already registered",
-    );
-  }
-}
-
 /**
  * Emit one CalculationPerformed event per surfaced regulatory figure
  * (LCR / NSFR / CET1 / RWA / ECL / IRRBB ΔEVE / IRRBB ΔNII) on each boot cycle — the calculation-history provenance
@@ -912,76 +845,6 @@ function emitCalculationProvenance(): void {
     actor: { type: "service" as const, id: "agent:atlas:calc-provenance" },
     logger,
   });
-}
-
-/**
- * Idempotently emit ValidationMethodologyPublished (Tier-2 + Tier-3 v0.1) and
- * ModelValidationApproved for the 3 build-phase models.
- *
- * Called after the NPA product approvals are in place (gate already satisfied).
- * Idempotent — models with existing ModelValidationApproved events are skipped.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelValidationSeeds(): void {
-  const methResult = seedValidationMethodologies(eventStore);
-  if (methResult.published.length > 0) {
-    logger.info(
-      { published: methResult.published.length, skipped: methResult.skipped.length },
-      "model-validation-seed: methodology published",
-    );
-  } else {
-    logger.debug(
-      { skipped: methResult.skipped.length },
-      "model-validation-seed: idempotent boot; methodologies already published",
-    );
-  }
-
-  const valResult = seedModelValidations(eventStore);
-  if (valResult.approved.length > 0) {
-    logger.info(
-      { approved: valResult.approved.length, skipped: valResult.skipped.length },
-      "model-validation-seed: model validations approved",
-    );
-  } else {
-    logger.debug(
-      { skipped: valResult.skipped.length },
-      "model-validation-seed: idempotent boot; all models already approved or not yet registered",
-    );
-  }
-}
-
-/**
- * Idempotent seed: emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
- * and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
- *
- * Called after bootModelValidationSeeds() — complements (not replaces) the existing
- * ModelSubmitted and v0.1 methodology events.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelRegisteredSeeds(): void {
-  const result = seedModelRegisteredEvents(eventStore);
-  const total =
-    result.modelRegistered.length +
-    result.methodologiesPublished.length +
-    result.validationsApproved.length;
-  if (total > 0) {
-    logger.info(
-      {
-        modelRegistered: result.modelRegistered.length,
-        methodologiesPublished: result.methodologiesPublished.length,
-        validationsApproved: result.validationsApproved.length,
-        skipped: result.skipped.length,
-      },
-      "model-registered-seed: ModelRegistered + methodology v1 + validation approved emitted",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "model-registered-seed: idempotent boot; all events already present",
-    );
-  }
 }
 
 /**

@@ -15,7 +15,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 /** Classification of what a seed populates. */
-export type SeedKind = "model-governance" | "treasury-positions" | "party-graph" | "fleet-identity";
+export type SeedKind = "treasury-positions" | "party-graph" | "fleet-identity";
 
 /** A pointer to the authoring UI that replaces a seed with real-simulated events. */
 export interface SeedReplaceTarget {
@@ -51,43 +51,6 @@ export interface SeedManifestEntry {
 }
 
 export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
-  {
-    seedId: "model-registry",
-    bootFn: "bootModelRegistry",
-    title: "Pricing model registry",
-    description:
-      "Submits and tier-classifies the 3 build-phase pricing models (SAGB DCF, ZARONIA OIS+IRS-PV, FX forward IRP). Gates the NPA + validation seeds that read model status.",
-    kind: "model-governance",
-    emittedEventTypes: ["ModelSubmitted", "ModelTierClassified"],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
-  {
-    seedId: "model-validation",
-    bootFn: "bootModelValidationSeeds",
-    title: "Model validation (v0.1)",
-    description:
-      "Publishes Tier-2 + Tier-3 validation methodologies (v0.1) and approves the 3 build-phase pricing models so the NPA gate can pass.",
-    kind: "model-governance",
-    emittedEventTypes: ["ValidationMethodologyPublished", "ModelValidationApproved"],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
-  {
-    seedId: "model-registered",
-    bootFn: "bootModelRegisteredSeeds",
-    title: "Model registration (IRS/FX gap closure)",
-    description:
-      "Emits ModelRegistered ×3, methodology v1 ×2, and ModelValidationApproved ×3 for IRS ZARONIA + FX swap model-risk gap closure. Complements the v0.1 validation seed.",
-    kind: "model-governance",
-    emittedEventTypes: [
-      "ModelRegistered",
-      "ValidationMethodologyPublished",
-      "ModelValidationApproved",
-    ],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
   {
     seedId: "fleet-identity",
     bootFn: "bootFleetRegistration",

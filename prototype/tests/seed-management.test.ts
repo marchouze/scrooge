@@ -70,11 +70,11 @@ describe("buildSeedsView", () => {
 
   it("marks a seed descoped and carries the descope record", () => {
     const store = new EventStore();
-    descope(store, "model-registry", "replaced by platform module");
+    descope(store, "fleet-identity", "replaced by ceremony script");
     const view = buildSeedsView(store);
-    const entry = view.find((s) => s.seedId === "model-registry");
+    const entry = view.find((s) => s.seedId === "fleet-identity");
     expect(entry?.descoped).toBe(true);
-    expect(entry?.descope?.reason).toBe("replaced by platform module");
+    expect(entry?.descope?.reason).toBe("replaced by ceremony script");
   });
 });
 
@@ -87,9 +87,9 @@ describe("recon:seed-manifest-parity", () => {
   });
 
   it("flags a manifest entry whose boot wiring is absent", () => {
-    // Stub wires only model-registry; all other manifest seeds should be flagged.
+    // Stub wires nothing from the manifest; both structural seeds should be flagged.
     const stub = `function bootDerive() {
-      runSeed("model-registry", bootModelRegistry);
+      // intentionally empty — no structural seed boot calls
     }`;
     const tmp = `${import.meta.dir}/.tmp-seed-parity-stub.ts`;
     require("node:fs").writeFileSync(tmp, stub);
