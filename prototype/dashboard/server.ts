@@ -157,7 +157,6 @@ import { runPartyBackfill } from "../scripts/party-backfill";
 import { registerFleet } from "../scripts/register-fleet";
 import { loadDescopedSeedIds } from "../seeds/descope";
 import { getSeedManifestEntry } from "../seeds/manifest";
-import { seedCalcModels } from "../seeds/models/calc-model-seed";
 import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
 import { seedModelRegistry } from "../seeds/models/model-registry-seed";
 import {
@@ -808,11 +807,6 @@ function bootDerive(): DashboardState {
     // Must run AFTER bootModelValidationSeeds().
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     runSeed("model-registered", bootModelRegisteredSeeds);
-    // Calc-model seed — register + approve the three regulatory-metric models
-    // (LCR/NSFR/CET1) that calculation-binding.ts binds surfaced figures to.
-    // Distinct modelIds from the pricing-model seeds; order-independent of them.
-    // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
-    runSeed("calc-models", bootCalcModels);
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
     // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
@@ -887,34 +881,6 @@ function bootModelRegistry(): void {
     logger.debug(
       { skipped: result.skipped.length },
       "model-registry-seed: idempotent boot; all models already registered",
-    );
-  }
-}
-
-/**
- * Idempotently register + approve the three regulatory-metric calc models
- * (LCR / NSFR / CET1) that calculation-binding.ts binds surfaced figures to.
- * Without these, checkModelApproved() is a loud failure for every regulatory
- * figure. Submit (Rohan) → classifyTier + approveValidation (Nadia).
- *
- * Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
- */
-function bootCalcModels(): void {
-  const result = seedCalcModels(eventStore);
-  if (result.submitted.length > 0 || result.approved.length > 0) {
-    logger.info(
-      {
-        submitted: result.submitted.length,
-        tierClassified: result.tierClassified.length,
-        approved: result.approved.length,
-        skipped: result.skipped.length,
-      },
-      "calc-model-seed: regulatory-metric models registered and approved",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "calc-model-seed: idempotent boot; all calc models already approved",
     );
   }
 }

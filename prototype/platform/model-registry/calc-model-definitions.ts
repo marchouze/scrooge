@@ -1,11 +1,11 @@
-// seeds/models/calc-model-seed.ts
+// platform/model-registry/calc-model-definitions.ts
 //
-// Idempotent seed: registers and approves the three regulatory-metric
-// calculation models that calculation-binding.ts binds surfaced figures to.
-// Without these, checkModelApproved() fails loudly for LCR / NSFR / CET1 —
-// a regulator-facing figure may not derive from an ungoverned model.
+// Canonical definitions for the 19 regulatory-metric calculation models that
+// calculation-binding.ts binds surfaced figures to. Previously lived in
+// seeds/models/calc-model-seed.ts; moved here so the model definitions are a
+// first-class platform module rather than a boot-seed artefact.
 //
-// Models seeded (each: ModelSubmitted → ModelTierClassified → ModelValidationApproved):
+// Models registered (each: ModelSubmitted → ModelTierClassified → ModelValidationApproved):
 //   1. model:lcr-ba325-v1               — Liquidity Coverage Ratio (Tier-1, BA 325)
 //   2. model:nsfr-ba325-v1              — Net Stable Funding Ratio (Tier-1, BA 325)
 //   3. model:capital-cet1-ba700-v1      — CET1 Capital Ratio (Tier-1, BA 700)
@@ -26,112 +26,17 @@
 //  18. model:cva-exposure-epe-v1        — CVA exposure / EPE sub-model (Tier-1, BCBS d424 BA-CVA)
 //  19. model:cva-engine-v1              — counterparty CVA engine (Tier-1, BCBS d424 / IFRS 13)
 //
-// These are regulatory-submission models (LCR/NSFR → BA 325; CET1/RWA → BA 700) and
-// therefore Tier-1 under SR 11-7 §V: a misstated figure feeds a statutory return.
-//
-// `model:rwa-sa-v1` (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, CEO session-delegation
-// 2026-05-29) makes RWA a first-class governed figure. RWA was previously only an
-// *input* to the CET1 binding — the denominator of every capital ratio — but was
-// not itself a registered, owned, approved model. Closing that gap removes a live
-// control weakness: under D-TRUSTED-FIGURES-PROGRAM-V1 every surfaced figure must
-// trace to an approved model, and RWA is the most consequential capital figure the
-// bank computes. Methodology ownership for RWA sits with Helena (CRO) per the
-// decision-authority routing table (CRO: RWA / risk) — distinct from the CFO-owned
-// liquidity/capital-ratio figures above; that ownership is carried on the calc
-// binding, not the registry submit actor.
-//
-// Registry governance flow mirrors model-registry-seed + model-validation-seed:
-// Rohan (model builder, first line) submits; Nadia (independent validator, second
-// line) classifies the tier and approves. Methodology ownership for the LCR/NSFR/
-// CET1 figures sits with Camille (CFO) per the decision-authority routing table
-// (CFO: liquidity / capital calibration); RWA ownership sits with Helena (CRO).
-// Ownership is carried on the calc binding, not the registry submit actor.
-//
-// Idempotent: models already submitted / tier-classified / approved are skipped.
-// Must run alongside the other model seeds in bootDerive(); order-independent of
-// the pricing-model seeds (distinct modelIds).
-//
-// The six IFRS 9 ECL models (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 2) are the ECL
-// governance suite mandated by RISK-MRP-01 (Model Risk Policy v1) §5: staging (SICR),
-// PD, LGD, EAD, macroeconomic overlay, and the ECL computation engine. All are Tier-1
-// under SR 11-7 §V and RISK-MRP-01 §2.1 — IFRS 9 ECL models affect published financial
-// statements and regulatory capital. Methodology accountability sits with Helena (CRO)
-// per RISK-MRP-01 §3.4 (Helena approves all Tier-1 model validations); the impairment
-// *figure* (the provision booked to the AFS) is owned by Camille (CFO) per the
-// decision-authority routing table, and Camille confirms accounting-treatment
-// consistency per RISK-MRP-01 §3.4. Only the ECL computation engine is bound as a
-// *surfaced* figure in CALC_BINDINGS (calcKey `ecl`); the five component models are
-// registered + governed but consumed by the engine, not surfaced directly.
-//
-// The three IRRBB models (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 3) close the
-// model-scope gap declared by RISK-MRP-01 (Model Risk Policy v1) §1.1: IRRBB is
-// in declared model scope, but ΔEVE (economic-value sensitivity) and ΔNII
-// (12-month earnings sensitivity) were ungoverned figures. The repricing/
-// behavioural model (model:irrbb-repricing-v1) carries the repricing-bucket
-// assignment + behavioural assumptions (NMD decay, prepayment) — owned by Eitan
-// (Treasurer) as the ALM repricing/behavioural input owner. The EVE engine
-// (model:irrbb-eve-engine-v1) is bound as the surfaced `irrbb-eve` figure
-// (owned by Helena, CRO); the NII engine (model:irrbb-nii-engine-v1) is bound as
-// the surfaced `irrbb-nii` figure (owned by Camille, CFO — the ΔNII earnings
-// figure). All three are Tier-1 under SR 11-7 §V and RISK-MRP-01 §2: IRRBB
-// feeds Pillar-2 capital, the ICAAP and the BA 330 IRRBB return. Methodology
-// accountability sits with Helena (CRO) per RISK-MRP-01 §3.4.
-//
-// The four market-risk models (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 4) close
-// the final declared model-scope gap in RISK-MRP-01 §1.1: market-risk models
-// (VaR, Stressed VaR, Expected Shortfall) were in declared scope but ungoverned
-// and uncomputed. The P&L / sensitivity model (model:market-risk-pnl-sensitivity-v1)
-// derives the live trading-book risk-factor exposure vector; the VaR engine
-// (model:market-risk-var-hs-v1, surfaced calcKey `var`), the SVaR engine
-// (model:market-risk-svar-hs-v1, calcKey `svar`) and the ES engine
-// (model:market-risk-es-hs-v1, calcKey `es`) compute the three surfaced figures
-// by historical simulation. All four are Tier-1 under SR 11-7 §V and RISK-MRP-01
-// §2: market risk feeds the RAS market-risk limits and potential Pillar-1 /
-// Pillar-2 market-risk capital. Market-risk figures are CRO-owned per the
-// decision-authority routing table, so methodology accountability AND figure
-// ownership both sit with Helena (CRO); the historical return window is supplied
-// by Ravi (market-data infrastructure engineer). The prescribed FRTB
-// standardised-approach inputs (risk-weight buckets, correlation parameters) are
-// regulatory-prescribed constants, not bank models, and are intentionally out of
-// model-registry scope.
-//
-// The two CVA models (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5 — the FINAL
-// slice; it CLOSES WS-MODEL-REGISTRY-SCOPE-CLOSURE) close the last declared
-// model-scope class in RISK-MRP-01 §1.1: counterparty-credit-risk / CVA. CVA was
-// referenced only as an optional passthrough input (`cvaRwaMinor`) to the `rwa`
-// binding (BA 600 owns the regulatory RWA charge) — there was no governed `cva`
-// figure and no registered CVA model. The CVA exposure / EPE sub-model
-// (model:cva-exposure-epe-v1) derives the per-counterparty netted positive EAD
-// over the live uncollateralised OTC book (IRS + FX forward/swap, spot excluded);
-// the CVA engine (model:cva-engine-v1, surfaced calcKey `cva`) aggregates the
-// standardised CVA = Σ LGD × EAD × PD × discount across counterparties. Both are
-// Tier-1 under SR 11-7 §V and RISK-MRP-01 §2: CVA feeds the counterparty-credit-
-// risk appetite and the BA-CVA / IFRS 13 fair-value adjustment. CVA is CRO-owned
-// per the decision-authority routing table, so methodology accountability AND
-// figure ownership both sit with Helena (CRO); the counterparty credit-spread
-// inputs are supplied by Ravi (market-data infrastructure engineer). The
-// prescribed inputs the engine would otherwise consume (SA-CCR supervisory
-// factors, BA 325 haircuts, SA risk-weight tables) are regulatory-prescribed
-// constants, NOT bank models, and are intentionally out of model-registry scope
-// (per the Slice-5 exclusions). With these two models landed, every RISK-MRP-01
-// §1.1 model class is registered + bound and CALC_BINDINGS is fully coherent with
-// the declared model scope.
-//
 // Authority:
 //   - D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
-//   - D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (CEO session-delegation 2026-05-29) — RWA + ECL suite + IRRBB + market-risk.
+//   - D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (CEO session-delegation 2026-05-29).
 // Author: Atlas (substrate), coordinating Rohan (Risk systems engineer, builder)
-//   + Nadia (Independent-validation engineer, validator); RWA + ECL-suite + IRRBB
-//   slices coordinated by Helena (Chief Risk Officer, governance — model-risk-policy
-//   owner), with Camille (Chief Financial Officer, governance) confirming IFRS 9
-//   accounting treatment for the ECL suite + owning the ΔNII earnings figure, and
-//   Eitan (Treasurer) owning the IRRBB repricing/behavioural inputs.
+//   + Nadia (Independent-validation engineer, validator).
 
 import { createHash } from "node:crypto";
 
-import type { EventStore } from "../../platform/event-store/store";
-import type { Actor } from "../../platform/event-store/types";
-import { LocalModelRegistry } from "../../platform/model-registry/index";
+import type { EventStore } from "../event-store/store";
+import type { Actor } from "../event-store/types";
+import { LocalModelRegistry } from "./index";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -149,7 +54,7 @@ const CITATIONS = [
   "BANKS-ACT-94-1990",
 ];
 
-function methodologyHash(description: string): string {
+export function methodologyHash(description: string): string {
   return createHash("sha256").update(description).digest("hex");
 }
 
@@ -157,7 +62,7 @@ function methodologyHash(description: string): string {
 // Model definitions
 // ---------------------------------------------------------------------------
 
-interface CalcModelDef {
+export interface CalcModelDef {
   readonly modelId: string;
   readonly version: string;
   readonly tier: 1;
@@ -167,7 +72,7 @@ interface CalcModelDef {
   readonly expiryDate: string;
 }
 
-const MODELS: ReadonlyArray<CalcModelDef> = [
+export const MODELS: ReadonlyArray<CalcModelDef> = [
   {
     modelId: "model:lcr-ba325-v1",
     version: "1.0.0",
@@ -613,9 +518,9 @@ export interface CalcModelSeedResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Idempotently register + approve the three regulatory-metric calc models that
- * calculation-binding.ts depends on. Submits (Rohan), tier-classifies + approves
- * (Nadia). Already-present steps are skipped per-model.
+ * Idempotently register + approve the regulatory-metric calc models that
+ * calculation-binding.ts depends on. Submits (Rohan), tier-classifies +
+ * approves (Nadia). Already-present steps are skipped per-model.
  */
 export function seedCalcModels(store: EventStore): CalcModelSeedResult {
   const registry = new LocalModelRegistry({ eventStore: store });

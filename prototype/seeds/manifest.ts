@@ -89,17 +89,6 @@ export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
     citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
   },
   {
-    seedId: "calc-models",
-    bootFn: "bootCalcModels",
-    title: "Regulatory-metric calc models (LCR/NSFR/CET1)",
-    description:
-      "Registers + approves the 3 regulatory-metric models that calculation-binding.ts binds surfaced figures to. Without these, every regulatory figure is a loud unapproved-model failure.",
-    kind: "model-governance",
-    emittedEventTypes: ["ModelSubmitted", "ModelTierClassified", "ModelValidationApproved"],
-    descopable: true,
-    citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
-  },
-  {
     seedId: "fleet-identity",
     bootFn: "bootFleetRegistration",
     title: "Fleet registration (agent identity)",
