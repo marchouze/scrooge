@@ -245,34 +245,6 @@
       ccyEl.innerHTML = `${SC.renderSectionHeader("P&L by Currency", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No currency data.</p>`;
     }
 
-    // ── By counterparty ────────────────────────────────────────────────────
-    const cpEl = document.getElementById("pc-by-cp");
-    if (cpEl && report?.byCounterparty?.length) {
-      cpEl.innerHTML = SC.renderSectionHeader("P&L by Counterparty", null);
-      const tableWrap = document.createElement("div");
-      cpEl.appendChild(tableWrap);
-      SC.renderTable({
-        container: tableWrap,
-        headers: ["Counterparty", "Trades", "Unrealised P&L (ZAR)", "Total (ZAR)"],
-        rows: report.byCounterparty.map((r) => ({
-          cells: [
-            SC.esc(r.counterpartyName || r.counterpartyId),
-            String(r.tradeCount),
-            `<span style="color:${pnlColour(r.unrealisedPnlZarMinor)}">${zarFmt(r.unrealisedPnlZarMinor)}</span>`,
-            `<span style="color:${pnlColour(r.unrealisedPnlZarMinor + r.realisedPnlZarMinor)}">${zarFmt(r.unrealisedPnlZarMinor + r.realisedPnlZarMinor)}</span>`,
-          ],
-          data: r,
-        })),
-        onRowClick: (r) => {
-          // Drill down to the full trade list backing this counterparty's P&L.
-          window.location.href = `/product-control-counterparty.html?cp=${encodeURIComponent(r.counterpartyId)}`;
-        },
-        emptyMessage: "No counterparty data",
-      });
-    } else if (cpEl && report) {
-      cpEl.innerHTML = `${SC.renderSectionHeader("P&L by Counterparty", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No counterparty data.</p>`;
-    }
-
     // ── Desk FX cash instruments (settled foreign-currency inventory) ──────
     // The desk's settled foreign currency is a financial instrument, revalued
     // daily against ZAR (CEO instruction 2026-05-31; IAS 21 §28).
@@ -342,7 +314,7 @@
         "display:flex;align-items:center;gap:var(--space-3);margin:var(--space-2) 0 var(--space-3)";
       toolbar.innerHTML =
         `<label style="display:flex;align-items:center;gap:6px;font:var(--text-body);cursor:pointer">` +
-        `<input type="checkbox" id="pc-live-only"> Live trades only</label>` +
+        `<input type="checkbox" id="pc-live-only" checked> Live trades only</label>` +
         `<span id="pc-trade-count" style="color:var(--color-text-secondary);font:var(--text-small)"></span>`;
       tradesEl.appendChild(toolbar);
 
@@ -367,7 +339,7 @@
         });
       }
 
-      renderTrades(false);
+      renderTrades(true);
       const liveOnlyCb = document.getElementById("pc-live-only");
       if (liveOnlyCb) liveOnlyCb.addEventListener("change", () => renderTrades(liveOnlyCb.checked));
     }
