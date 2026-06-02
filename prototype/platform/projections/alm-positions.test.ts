@@ -21,6 +21,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { newEventId } from "../core/types";
+import { makeBondSold, makeBondTradeExecuted } from "../event-store/event-types/bond-accounting";
 import { EventStore } from "../event-store/store";
 import { ALM_POSITION_SOURCE_EVENTS, getALMPositionSnapshot } from "./alm-positions";
 
@@ -155,6 +156,150 @@ describe("alm-positions — fed HQLA path via TradeBooked", () => {
     // and still gap-flag it). What we do assert is that the build-phase flag
     // tracks the *aggregate* position count (non-empty HQLA → non-buildPhase).
     expect(snap.buildPhase).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2b. Bond inventory HQLA path via BondTradeExecuted
+// ---------------------------------------------------------------------------
+
+/** Append a `BondTradeExecuted` (the vocabulary the bond desk actually books). */
+function appendBondTradeExecuted(
+  store: EventStore,
+  args: {
+    bondIsin: string;
+    side: "buy" | "sell";
+    nominalMinor: number;
+    cleanPricePercent: number;
+    currency?: string;
+  },
+): string {
+  const tradeId = `bond-${newEventId().slice(0, 8)}`;
+  store.append(
+    makeBondTradeExecuted({
+      asOf: AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service", id: "agent:test" },
+      citations: ["D-RAS"],
+      payload: {
+        tradeId,
+        bondIsin: args.bondIsin,
+        side: args.side,
+        nominalMinor: args.nominalMinor,
+        cleanPricePercent: args.cleanPricePercent,
+        accruedInterestMinor: 0,
+        dirtyPricePercent: args.cleanPricePercent,
+        settlementDate: "2026-05-23",
+        portfolio: "banking-book",
+        couponRate: 0.085,
+        maturityDate: "2030-01-31",
+        currency: args.currency ?? "ZAR",
+        counterpartyLei: "SBZAZAJJXXX",
+        executedAt: AS_OF,
+      },
+    }),
+  );
+  return tradeId;
+}
+
+/** Append a zero CollateralInventorySnapshotted — the security snapshot the bond fold must survive. */
+function appendZeroCollateralSnapshot(store: EventStore): void {
+  store.append({
+    event_id: newEventId(),
+    type: "CollateralInventorySnapshotted",
+    as_of: AS_OF,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "service", id: "agent:test" },
+    citations: ["D-RAS"],
+    payload: {
+      snapshotId: "COLL-SNAP-TEST",
+      asOf: AS_OF,
+      totalHQLAZar: 0,
+      l1Zar: 0,
+      l2aZar: 0,
+      l2bZar: 0,
+      l2CapBreached: false,
+      l2bCapBreached: false,
+      securityCount: 0,
+      currency: "ZAR",
+    },
+  });
+}
+
+describe("alm-positions — bond inventory HQLA path via BondTradeExecuted", () => {
+  it("folds a ZAG sovereign bond into L1 HQLA even when a zero collateral snapshot exists", () => {
+    const store = makeStore();
+    // A zero security snapshot exists (the real-store condition that was shadowing
+    // the bond). The bond fold must run regardless and still surface the position.
+    appendZeroCollateralSnapshot(store);
+    appendBondTradeExecuted(store, {
+      bondIsin: "ZAG000125972",
+      side: "buy",
+      nominalMinor: 10_000_000, // R100,000 face
+      cleanPricePercent: 93.95,
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+
+    const l1 = snap.hqlaPositions.filter((p) => p.tier === "L1");
+    expect(l1.length).toBeGreaterThanOrEqual(1);
+    // Market value = 10_000_000 minor × 93.95% / 100 (minor→major) = 93,950 ZAR.
+    const l1Total = l1.reduce((s, p) => s + p.amountZar, 0);
+    expect(l1Total).toBeCloseTo(93_950, 2);
+    expect(snap.buildPhase).toBe(false);
+  });
+
+  it("excludes a sold bond and a sell-side bond from HQLA", () => {
+    const store = makeStore();
+    const soldTradeId = appendBondTradeExecuted(store, {
+      bondIsin: "ZAG000125972",
+      side: "buy",
+      nominalMinor: 10_000_000,
+      cleanPricePercent: 93.95,
+    });
+    // Sell-side booking — a short, never an HQLA asset.
+    appendBondTradeExecuted(store, {
+      bondIsin: "ZAG000999999",
+      side: "sell",
+      nominalMinor: 5_000_000,
+      cleanPricePercent: 99.0,
+    });
+    // The first bond is subsequently sold → derecognised.
+    store.append(
+      makeBondSold({
+        asOf: AS_OF,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:test" },
+        citations: ["D-RAS"],
+        payload: {
+          tradeId: soldTradeId,
+          bondIsin: "ZAG000125972",
+          side: "sell",
+          saleProceedsMinor: 9_400_000,
+          carryingAmountAtSaleMinor: 9_395_000,
+          realisedPnlMinor: 5_000,
+          settlementDate: "2026-05-23",
+          currency: "ZAR",
+        },
+      }),
+    );
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+    // Sold buy excluded + sell-side excluded → no bond HQLA remains.
+    expect(snap.hqlaPositions.length).toBe(0);
+  });
+
+  it("classifies a non-ZAG unrated corporate bond as non-HQLA (excluded)", () => {
+    const store = makeStore();
+    appendBondTradeExecuted(store, {
+      bondIsin: "XS0000000001", // non-ZAG, no rating on the booking event
+      side: "buy",
+      nominalMinor: 20_000_000,
+      cleanPricePercent: 98.0,
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+    expect(snap.hqlaPositions.length).toBe(0);
   });
 });
 
