@@ -51,6 +51,7 @@ import { getALMPositionSnapshot } from "../../platform/projections/alm-positions
 import { computeCapitalMetrics } from "../../platform/projections/capital-metrics";
 import { getClimateRiskMetric } from "../../platform/projections/climate-risk-projection";
 import { computeLeverageRatioMetrics } from "../../platform/projections/leverage-ratio-metrics";
+import { getModelTierDisciplineMetric } from "../../platform/projections/model-tier-discipline";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -356,6 +357,7 @@ function statusForLine(
   climateMetric?: ReturnType<typeof getClimateRiskMetric>,
   leverageMetrics?: ReturnType<typeof computeLeverageRatioMetrics>,
   liquidityMetric?: ReturnType<typeof buildLiquidityMetric>,
+  modelTierMetric?: ReturnType<typeof getModelTierDisciplineMetric>,
 ): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
@@ -457,6 +459,32 @@ function statusForLine(
     };
   }
 
+  // appetite:model:tier-discipline — measured by the model-tier-discipline
+  // projection. Reads the model registry event stream (ModelSubmitted,
+  // ModelTierClassified, ModelValidationApproved, ModelValidationWithheld,
+  // ValidationFindingRaised, ValidationFindingClosed) and computes the MRAS
+  // (Model Risk Appetite Score) per model-risk-policy-v1.md §6.1.
+  // Build-phase posture: empty registry → `no-models` → green by construction
+  // (no models deployed = no model risk). Status rises to amber/red as Rohan
+  // seeds models and Nadia runs validation.
+  // Authority: D-RAS (2026-05-06); RAS §B7;
+  //   brief:atlas:build-model-tier-discipline-measurement-substrat:2026-06-01.
+  if (line.id === "appetite:model:tier-discipline" && modelTierMetric !== undefined) {
+    if (modelTierMetric.status === "no-models") {
+      return {
+        line,
+        status: "green",
+        note: `No models deployed in build phase; model risk appetite satisfied by construction. RAS §B7. ${modelTierMetric.note}`,
+      };
+    }
+    const metricNote = modelTierMetric.note;
+    return {
+      line,
+      status: modelTierMetric.status,
+      note: metricNote,
+    };
+  }
+
   // Everything else: unmeasured pending Rohan / Bea / Ravi measurement
   // substrate. Build-phase n/a is *not* the same as unmeasured — n/a
   // means structurally not applicable yet (no book, no portfolio); we
@@ -540,8 +568,24 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   // Authority: D-RAS (2026-05-06); RAS §B3; RRTB Reg 26 (LCR); RRTB Reg 26A (NSFR).
   const liquidityMetric = buildLiquidityMetric(asOfIso);
 
+  // Compute model-tier-discipline metric (Atlas projection — closes the
+  // appetite:model:tier-discipline unmeasured gap). Reads from the
+  // LocalModelRegistry event stream (ModelSubmitted, ModelTierClassified,
+  // ModelValidationApproved/Withheld, ValidationFindingRaised/Closed).
+  // Build-phase posture: empty registry → `no-models` → green by construction.
+  // Authority: D-RAS (2026-05-06); RAS §B7;
+  //   brief:atlas:build-model-tier-discipline-measurement-substrat:2026-06-01.
+  const modelTierMetric = getModelTierDisciplineMetric(eventStore);
+
   const lineStates = APPETITE_LINES.map((line) =>
-    statusForLine(line, capitalMetrics, climateMetric, leverageMetrics, liquidityMetric),
+    statusForLine(
+      line,
+      capitalMetrics,
+      climateMetric,
+      leverageMetrics,
+      liquidityMetric,
+      modelTierMetric,
+    ),
   );
   const measuredCount = lineStates.filter(
     (s) => s.status === "green" || s.status === "amber" || s.status === "red",
