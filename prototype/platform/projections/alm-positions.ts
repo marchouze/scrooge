@@ -211,12 +211,39 @@ function extractRawPosition(type: string, payload: Record<string, unknown>): Raw
 // (readHQLAFromEventStore, buildFundingPositions, buildSettlementOutflows), so
 // the capital / ASF reads used by the NSFR fold are untouched — founding
 // capital is legitimate build-phase state and must keep counting toward ASF.
-function liveFlowView(store: EventStore): EventStore {
+// ---------------------------------------------------------------------------
+// Entity scoping — WS-LCR-ENGINE-RECONCILIATION (D-LCR-TILE-PROVENANCE follow-on)
+// ---------------------------------------------------------------------------
+// The LCR / NSFR the dashboard tile renders is a *bank* ratio: Regulation 26
+// (LCR) and 26A (NSFR) are bank-licence-bound, and the BA 325 generator
+// already refuses any entity other than `LE-ZA-HOZ-BANK`
+// (`BA_325_BANK_ENTITIES`, ba-325-lcr.ts:518). The LCR-feeding folds below
+// historically replayed the WHOLE store with no entity predicate, so a
+// non-fixture flow booked on a sibling legal entity (`LE-ZA-HOZ-SECURITIES`,
+// `LE-ZA-HOZ-GROUP`, or the legacy `LE-BANK-SA` identifier) would silently
+// leak into the bank's LCR numerator/denominator. That is a latent defect:
+// store-wide ≠ per-entity LCR.
+//
+// `liveFlowView(store, entity)` now narrows the replay to a single entity
+// when `entity` is supplied (in addition to dropping `build-phase-fixture`
+// events per D-LCR-TILE-PROVENANCE). When `entity` is omitted the behaviour
+// is unchanged (store-wide) — preserving every existing caller / test that
+// does not pass an entity. The scoping is applied ONLY inside the three
+// LCR/HQLA folds, never to the capital / ASF reads: the founding CapitalEvent
+// in the current store sits on the legacy `LE-BANK-SA` identifier, so blanket-
+// scoping the whole snapshot would zero Tier-1 ASF. The `LE-BANK-SA` vs
+// `LE-ZA-HOZ-BANK` split is itself a data-quality finding raised in the
+// reconciliation deliverable, not something this code papers over.
+function liveFlowView(store: EventStore, entity?: string): EventStore {
   return new Proxy(store, {
     get(target, prop, receiver) {
       if (prop === "replay") {
         return function* (opts?: Parameters<EventStore["replay"]>[0]) {
-          for (const ev of target.replay(opts)) {
+          // Inject the entity predicate at the SQL layer when supplied; an
+          // explicit `opts.entity` always wins (no caller does that today).
+          const scoped =
+            entity !== undefined ? { ...(opts ?? {}), entity: opts?.entity ?? entity } : opts;
+          for (const ev of target.replay(scoped)) {
             if (ev.provenance?.kind === "build-phase-fixture") continue;
             yield ev;
           }
@@ -228,8 +255,12 @@ function liveFlowView(store: EventStore): EventStore {
   });
 }
 
-function readHQLAFromEventStore(rawEventStore: EventStore, asOf: string): HQLAPosition[] {
-  const eventStore = liveFlowView(rawEventStore);
+function readHQLAFromEventStore(
+  rawEventStore: EventStore,
+  asOf: string,
+  entity?: string,
+): HQLAPosition[] {
+  const eventStore = liveFlowView(rawEventStore, entity);
   // Check for authoritative CollateralInventorySnapshotted events first.
   let latestSnapshot: { as_of: string; payload: CollateralSnapshotPayload } | null = null;
   for (const ev of eventStore.replay({ type: "CollateralInventorySnapshotted" })) {
@@ -407,13 +438,14 @@ interface InterbankLoanClosedPayload {
 function buildFundingPositions(
   rawEventStore: EventStore,
   asOf: string,
+  entity?: string,
 ): {
   positions: FundingPosition[];
   depositCount: number;
   fundingLineCount: number;
   iblCount: number;
 } {
-  const eventStore = liveFlowView(rawEventStore);
+  const eventStore = liveFlowView(rawEventStore, entity);
   const positions: FundingPosition[] = [];
 
   // -------------------------------------------------------------------------
@@ -546,8 +578,9 @@ function buildSettlementOutflows(
   rawEventStore: EventStore,
   asOf: string,
   horizonDays: number,
+  entity?: string,
 ): SettlementOutflowResult {
-  const eventStore = liveFlowView(rawEventStore);
+  const eventStore = liveFlowView(rawEventStore, entity);
   const asOfDate = new Date(asOf);
   const horizonDate = new Date(asOf);
   horizonDate.setUTCDate(horizonDate.getUTCDate() + horizonDays);
@@ -789,11 +822,23 @@ function buildRSFItems(
  *                      isolated in-memory store).
  * @param asOf        - ISO 8601 run timestamp.
  * @param horizonDays - projection horizon (0 = T+0, 30 = T+30, etc.).
+ * @param entity      - optional bank legal-entity short-id (e.g.
+ *                      `LE-ZA-HOZ-BANK`). When supplied, the LCR-feeding
+ *                      folds (HQLA, funding, settlement outflows) are
+ *                      narrowed to that entity — a per-entity LCR, matching
+ *                      the BA 325 generator's `LE-ZA-HOZ-BANK`-only scope.
+ *                      When omitted the snapshot is store-wide (legacy
+ *                      behaviour; every existing caller / test is unaffected).
+ *                      The ASF / RSF capital reads are intentionally NOT
+ *                      entity-scoped — see `liveFlowView`'s scoping note.
+ *                      Authority: WS-LCR-ENGINE-RECONCILIATION;
+ *                      D-LCR-TILE-PROVENANCE; Reg 26 / 26A (bank-licence-bound).
  */
 export function getALMPositionSnapshot(
   eventStore: EventStore,
   asOf: string,
   horizonDays: number,
+  entity?: string,
 ): ALMPositionSnapshot {
   const gaps: string[] = [];
 
@@ -804,7 +849,7 @@ export function getALMPositionSnapshot(
   // bond fold is what makes a banking-book ZAG sovereign bond count as L1 HQLA
   // (the bond desk books via BondTradeExecuted, not the older trade vocabulary).
   // -------------------------------------------------------------------------
-  const hqlaPositions = readHQLAFromEventStore(eventStore, asOf);
+  const hqlaPositions = readHQLAFromEventStore(eventStore, asOf, entity);
 
   // Detect whether any of the canonical HQLA-source events exist; if not,
   // record the gap. (`getCollateralInventory()` reads TradeBooked /
@@ -824,7 +869,7 @@ export function getALMPositionSnapshot(
     depositCount,
     fundingLineCount,
     iblCount,
-  } = buildFundingPositions(eventStore, asOf);
+  } = buildFundingPositions(eventStore, asOf, entity);
 
   if (
     depositCount === 0 &&
@@ -837,7 +882,7 @@ export function getALMPositionSnapshot(
 
   // Settlement outflows — fold TradeBooked buy-side with explicit settlementDate.
   // Trades without settlementDate are skipped; see buildSettlementOutflows.
-  const settlementResult = buildSettlementOutflows(eventStore, asOf, horizonDays);
+  const settlementResult = buildSettlementOutflows(eventStore, asOf, horizonDays, entity);
   const fundingPositions: FundingPosition[] = [
     ...rawFundingPositions,
     ...settlementResult.positions,

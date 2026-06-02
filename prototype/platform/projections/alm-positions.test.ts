@@ -694,3 +694,90 @@ describe("alm-positions — live-flow provenance gate (D-LCR-TILE-PROVENANCE)", 
     expect(Math.round(lcr.lcrRatioPct ?? 0)).toBe(500);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Entity scoping — WS-LCR-ENGINE-RECONCILIATION (D-LCR-TILE-PROVENANCE follow-on)
+// ---------------------------------------------------------------------------
+// Regression: the LCR the dashboard tile renders is a *bank* ratio (Reg 26 /
+// 26A are bank-licence-bound; the BA 325 generator refuses any entity other
+// than LE-ZA-HOZ-BANK). Before this fix the LCR-feeding folds replayed the
+// WHOLE store with no entity predicate, so a non-fixture flow booked on a
+// sibling legal entity (e.g. LE-ZA-HOZ-SECURITIES) leaked into the bank's
+// LCR numerator/denominator. The optional `entity` argument narrows the
+// HQLA / funding / settlement folds to one entity; omitting it preserves the
+// legacy store-wide behaviour.
+
+/** Append a DepositTaken on an arbitrary entity with explicit provenance. */
+function appendDepositOnEntity(
+  store: EventStore,
+  args: {
+    depositId: string;
+    entity: string;
+    principalZar: number; // minor units (cents)
+    provenance: ReturnType<typeof simulatedTag>;
+  },
+): void {
+  const base = makeDepositTaken({
+    asOf: AS_OF,
+    entity: args.entity,
+    actor: { type: "service", id: "agent:test" },
+    citations: ["D-RAS"],
+    payload: {
+      depositId: args.depositId,
+      counterpartyLei: "SBZAZAJJXXX",
+      principalZar: args.principalZar,
+      interestRateDecimal: 0.0795,
+      maturityDate: "2026-06-15",
+      depositCategory: "wholesale-non-operational",
+      bookId: "TREASURY",
+      instrumentRef: "MMD-ZAR-001",
+    },
+  });
+  store.append({ ...base, provenance: args.provenance });
+}
+
+describe("alm-positions — entity scoping (WS-LCR-ENGINE-RECONCILIATION)", () => {
+  it("store-wide (no entity arg) leaks a sibling-entity flow into the LCR fold", () => {
+    const store = makeStore();
+    // Bank deposit (R10m) — must always count.
+    appendDepositOnEntity(store, {
+      depositId: "MMD-BANK",
+      entity: "LE-ZA-HOZ-BANK",
+      principalZar: 1_000_000_000,
+      provenance: simulatedTag({ scenario: "rehearsal", sourceLineage: "scenario-runner:test" }),
+    });
+    // Sibling securities-firm deposit (R7m) — must NOT count toward the bank LCR.
+    appendDepositOnEntity(store, {
+      depositId: "MMD-SECURITIES",
+      entity: "LE-ZA-HOZ-SECURITIES",
+      principalZar: 700_000_000,
+      provenance: simulatedTag({ scenario: "rehearsal", sourceLineage: "scenario-runner:test" }),
+    });
+
+    // Legacy store-wide call: the R7m sibling deposit LEAKS in (the latent defect).
+    const wide = getALMPositionSnapshot(store, AS_OF, 30);
+    const wideFunding = wide.fundingPositions.reduce((s, p) => s + p.amountZar, 0);
+    expect(wideFunding).toBe(17_000_000);
+  });
+
+  it("entity-scoped (LE-ZA-HOZ-BANK) excludes the sibling-entity flow", () => {
+    const store = makeStore();
+    appendDepositOnEntity(store, {
+      depositId: "MMD-BANK",
+      entity: "LE-ZA-HOZ-BANK",
+      principalZar: 1_000_000_000, // R10m
+      provenance: simulatedTag({ scenario: "rehearsal", sourceLineage: "scenario-runner:test" }),
+    });
+    appendDepositOnEntity(store, {
+      depositId: "MMD-SECURITIES",
+      entity: "LE-ZA-HOZ-SECURITIES",
+      principalZar: 700_000_000, // R7m — sibling entity, must be excluded
+      provenance: simulatedTag({ scenario: "rehearsal", sourceLineage: "scenario-runner:test" }),
+    });
+
+    // Scoped call: only the bank's own R10m deposit feeds the LCR.
+    const scoped = getALMPositionSnapshot(store, AS_OF, 30, "LE-ZA-HOZ-BANK");
+    const scopedFunding = scoped.fundingPositions.reduce((s, p) => s + p.amountZar, 0);
+    expect(scopedFunding).toBe(10_000_000);
+  });
+});

@@ -370,7 +370,10 @@ function buildLiquidityMetrics(): {
   lcrStatus: string;
   nsfrStatus: string;
 } {
-  const snap = getALMPositionSnapshot(eventStore, nowUtc(), 30);
+  // Per-entity LCR: scope to the bank-licence entity, matching the BA 325
+  // generator's LE-ZA-HOZ-BANK-only scope (Reg 26 is bank-licence-bound).
+  // Authority: WS-LCR-ENGINE-RECONCILIATION; D-LCR-TILE-PROVENANCE.
+  const snap = getALMPositionSnapshot(eventStore, nowUtc(), 30, "LE-ZA-HOZ-BANK");
   const lcr = computeLCR(
     snap.hqlaPositions as import("../platform/liquidity/lcr").HQLAPosition[],
     snap.fundingPositions as import("../platform/liquidity/lcr").FundingPosition[],
@@ -393,8 +396,10 @@ function buildTreasuryMetrics() {
   // Capital
   const capital = computeCapitalMetrics(eventStore, asOf);
 
-  // ALM + liquidity
-  const almSnapshot = getALMPositionSnapshot(eventStore, asOf, 30);
+  // ALM + liquidity — per-entity, scoped to the bank-licence entity to match
+  // the BA 325 generator (Reg 26 / 26A are bank-licence-bound).
+  // Authority: WS-LCR-ENGINE-RECONCILIATION; D-LCR-TILE-PROVENANCE.
+  const almSnapshot = getALMPositionSnapshot(eventStore, asOf, 30, "LE-ZA-HOZ-BANK");
   const lcr = computeLCR(
     almSnapshot.hqlaPositions as import("../platform/liquidity/lcr").HQLAPosition[],
     almSnapshot.fundingPositions as import("../platform/liquidity/lcr").FundingPosition[],
