@@ -131,6 +131,23 @@ export const substrateStateSnapshotPayloadSchema = z
     runtimeHandlerCount: z.number().int().nonnegative().optional(),
     /** Count of open substrate gaps. */
     substrateGapCount: z.number().int().nonnegative().optional(),
+    /**
+     * Per-gap substrate-status inventory. Substrate gaps are forward
+     * engineering work, NOT risk-register findings — they live on this
+     * status surface (WS-RISK-REGISTER-CLOSURE), not on `RiskRaised`. The
+     * `severity` field is a planning heuristic, not a risk-appetite measure.
+     */
+    gaps: z
+      .array(
+        z.object({
+          index: z.number().int().nonnegative(),
+          description: z.string().min(1),
+          severity: z.enum(["medium", "high"]),
+          status: z.enum(["planned", "in-flight"]),
+          mitigation: z.enum(["none", "partial"]),
+        }),
+      )
+      .optional(),
     /** Trigger that initiated the snapshot. */
     runTrigger: z.string().optional(),
   })
