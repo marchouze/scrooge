@@ -2988,6 +2988,27 @@ const server = Bun.serve({
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
+    // Counterparty picker for manual trade booking — the full counterparty set
+    // from the party register (the master store, Principle 2), each carrying
+    // its LEI + BIC. Drives the trade-book.html counterparty dropdowns.
+    // Authority: D-PARTY-REGISTER; D-FX-SALES-TRADING-FRONTEND.
+    if (url.pathname === "/api/counterparties" && req.method === "GET") {
+      const counterparties = getActiveFxCounterparties(eventStore)
+        .map((c) => ({
+          partyId: c.partyId,
+          name: c.name,
+          lei: c.lei ?? null,
+          bic: c.bic ?? null,
+          jurisdiction: c.jurisdiction,
+          isSim: c.isSim ?? false,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      return jsonResponse({
+        counterparties,
+        asOf: nowUtc(),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
     if (url.pathname === "/api/markets/fx/quote" && req.method === "POST") {
       // FX desk Slice 2 — synthetic-quote stub. Returns a fixed-spread
       // bid/offer for ZAR/USD spot without appending any event.

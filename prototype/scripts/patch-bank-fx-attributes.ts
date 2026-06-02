@@ -152,6 +152,18 @@ const BANKS: BankEntry[] = [
 
 const FX_PAIRS = ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"];
 
+/**
+ * Deterministic simulated ISO 17442 LEI (20-char uppercase alphanumeric,
+ * matching the party schema regex `^[A-Z0-9]{20}$`). Seeded from the partyId
+ * tail so it is unique per entity and stable across re-runs. "529900" mimics a
+ * real LOU prefix; these are clearly build-phase simulated identifiers.
+ */
+function simulatedLei(partyId: string): string {
+  const tail = (partyId.split(":").pop() ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const base = `529900${tail}`.padEnd(18, "0").slice(0, 18);
+  return `${base}00`;
+}
+
 // ---------------------------------------------------------------------------
 // Emit
 // ---------------------------------------------------------------------------
@@ -168,6 +180,7 @@ for (const bank of BANKS) {
       changeType: "kind-attribute",
       citations: CITATIONS,
       kindAttributesPatch: {
+        lei: simulatedLei(bank.partyId),
         bic: bank.bic,
         authorisedProducts: ["fx-spot", "fx-forward"],
         eligibleFxPairs: FX_PAIRS,
@@ -176,7 +189,9 @@ for (const bank of BANKS) {
     },
   });
   store.append(evt);
-  console.log(`  ✓  ${bank.displayName.padEnd(36)} BIC: ${bank.bic}`);
+  console.log(
+    `  ✓  ${bank.displayName.padEnd(36)} BIC: ${bank.bic}  LEI: ${simulatedLei(bank.partyId)}`,
+  );
   emitted++;
 }
 

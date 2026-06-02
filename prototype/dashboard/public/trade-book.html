@@ -331,8 +331,8 @@
       <!-- Counterparty -->
       <div class="tb-field tb-form-full">
         <label for="tb-cpty-select">Counterparty</label>
-        <select id="tb-cpty-select" style="margin-bottom:var(--space-2)">
-          <option value="">Loading clients…</option>
+        <select id="tb-cpty-select" data-cpty-section="fx" style="margin-bottom:var(--space-2)">
+          <option value="">— select counterparty —</option>
         </select>
         <input type="text" id="tb-cpty-name" name="counterpartyName" placeholder="Enter counterparty name" style="display:none">
       </div>
@@ -363,6 +363,11 @@
         <div class="tb-field">
           <label for="repo-trade-id">Trade ID</label>
           <input type="text" id="repo-trade-id" name="repo_tradeId" placeholder="REPO-001">
+        </div>
+
+        <div class="tb-field tb-form-full">
+          <label for="repo-cpty-select">Counterparty</label>
+          <select id="repo-cpty-select" data-cpty-section="repo"><option value="">— select counterparty —</option></select>
         </div>
 
         <div class="tb-field">
@@ -444,6 +449,11 @@
           <input type="text" id="mmd-cpty-lei" name="mmd_counterpartyLei" placeholder="SBK000000000000000001">
         </div>
 
+        <div class="tb-field tb-form-full">
+          <label for="mmd-cpty-select">Counterparty</label>
+          <select id="mmd-cpty-select" data-cpty-section="mmd"><option value="">— select counterparty —</option></select>
+        </div>
+
         <div class="tb-field">
           <label for="mmd-principal">Principal ZAR (cents)</label>
           <input type="number" id="mmd-principal" name="mmd_principalZar" min="1" step="1" placeholder="500000000">
@@ -511,8 +521,8 @@
 
         <div class="tb-field tb-form-full">
           <label for="ib-cpty-select">Counterparty</label>
-          <select id="ib-cpty-select" style="margin-bottom:var(--space-2)">
-            <option value="">Loading clients…</option>
+          <select id="ib-cpty-select" data-cpty-section="ib-placement" style="margin-bottom:var(--space-2)">
+            <option value="">— select counterparty —</option>
           </select>
           <input type="text" id="ib-cpty-name" name="ib_counterpartyName" placeholder="Enter counterparty name" style="display:none">
         </div>
@@ -648,6 +658,11 @@
           <input type="date" id="eq-settlement-date" name="eq_settlementDate">
         </div>
 
+        <div class="tb-field tb-form-full">
+          <label for="eq-cpty-select">Counterparty</label>
+          <select id="eq-cpty-select" data-cpty-section="equity"><option value="">— select counterparty —</option></select>
+        </div>
+
         <div class="tb-field">
           <label for="eq-cpty-lei">Counterparty LEI</label>
           <input type="text" id="eq-cpty-lei" name="eq_counterpartyLei" placeholder="529900T8BM49AURSDO55">
@@ -747,6 +762,11 @@
           <input type="text" id="bond-cpty-lei" name="bond_counterpartyLei" placeholder="529900T8BM49AURSDO55">
         </div>
 
+        <div class="tb-field tb-form-full">
+          <label for="bond-cpty-select">Counterparty</label>
+          <select id="bond-cpty-select" data-cpty-section="bond"><option value="">— select counterparty —</option></select>
+        </div>
+
         <div class="tb-field">
           <label for="bond-book-id">Book ID</label>
           <input type="text" id="bond-book-id" name="bond_bookId" value="BOND-BOOK">
@@ -774,6 +794,11 @@
         <div class="tb-field">
           <label for="irs-book-id">Book ID</label>
           <input type="text" id="irs-book-id" name="irs_bookId" value="IRS-BOOK">
+        </div>
+
+        <div class="tb-field">
+          <label for="irs-cpty-select">Counterparty</label>
+          <select id="irs-cpty-select" data-cpty-section="irs"><option value="">— select counterparty —</option></select>
         </div>
 
         <div class="tb-field">
@@ -912,52 +937,8 @@ function showProductFields(type) {
   if (ibStartInput)     ibStartInput.value     = todayIso;
   if (ibTradeDateInput) ibTradeDateInput.value  = todayIso;
 
-  // IB Placement counterparty dropdown — populated from KYC clients
-  const ibCptySelect = document.getElementById('ib-cpty-select');
-  const ibCptyInput  = document.getElementById('ib-cpty-name');
-  const ibCptyLei    = document.getElementById('ib-cpty-lei');
-
-  function syncIbCptyName() {
-    const val = ibCptySelect.value;
-    if (val === '__other__') {
-      ibCptyInput.style.display = '';
-      ibCptyInput.value = '';
-      ibCptyInput.focus();
-    } else {
-      ibCptyInput.style.display = 'none';
-      ibCptyInput.value = val;
-    }
-  }
-  if (ibCptySelect) ibCptySelect.addEventListener('change', syncIbCptyName);
-
-  (async () => {
-    try {
-      const res = await fetch('/api/kyc/clients');
-      if (!res.ok) throw new Error(res.status);
-      const data = await res.json();
-      const clients = data.clients || [];
-
-      ibCptySelect.innerHTML = '';
-      const blank = document.createElement('option');
-      blank.value = ''; blank.textContent = '— select counterparty —';
-      blank.disabled = true; blank.selected = true;
-      ibCptySelect.appendChild(blank);
-
-      clients.forEach((c) => {
-        const opt = document.createElement('option');
-        opt.value = c.entityName;
-        opt.textContent = c.entityName + (c.jurisdiction ? ' (' + c.jurisdiction + ')' : '');
-        ibCptySelect.appendChild(opt);
-      });
-
-      const other = document.createElement('option');
-      other.value = '__other__'; other.textContent = 'Other (type name)…';
-      ibCptySelect.appendChild(other);
-    } catch (_) {
-      if (ibCptySelect) ibCptySelect.style.display = 'none';
-      if (ibCptyInput)  { ibCptyInput.style.display = ''; ibCptyInput.placeholder = 'Counterparty name'; }
-    }
-  })();
+  // (Counterparty dropdowns for every product section are populated by the
+  // unified counterparty-wiring block below, from /api/counterparties.)
 
   // Default equity/bond/IRS date fields
   const eqTradeDateInput      = document.getElementById('eq-trade-date');
@@ -978,69 +959,6 @@ function showProductFields(type) {
   if (bondSettleDateInput)   bondSettleDateInput.value   = t3Iso;
   if (irsTradeDateInput)     irsTradeDateInput.value     = todayIso;
   if (irsEffectiveDateInput) irsEffectiveDateInput.value = t2Iso;
-
-  // Populate counterparty select from onboarded KYC clients
-  const cptySelect = document.getElementById('tb-cpty-select');
-  const cptyInput  = document.getElementById('tb-cpty-name');
-  const leiInput   = document.getElementById('tb-cpty-lei');
-
-  function syncCptyName() {
-    const val = cptySelect.value;
-    if (val === '__other__') {
-      cptyInput.style.display = '';
-      cptyInput.value = '';
-      cptyInput.focus();
-    } else {
-      cptyInput.style.display = 'none';
-      cptyInput.value = val;
-    }
-  }
-  if (cptySelect) cptySelect.addEventListener('change', syncCptyName);
-
-  (async () => {
-    try {
-      const res = await fetch('/api/markets/fx/counterparties');
-      if (!res.ok) throw new Error(res.status);
-      const data = await res.json();
-      const counterparties = data.counterparties || [];
-
-      cptySelect.innerHTML = '';
-      const blank = document.createElement('option');
-      blank.value = '';
-      blank.textContent = '— select counterparty —';
-      blank.disabled = true;
-      blank.selected = true;
-      cptySelect.appendChild(blank);
-
-      counterparties.forEach((c) => {
-        const label = c.name || c.counterpartyId;
-        const opt = document.createElement('option');
-        opt.value = label;
-        opt.textContent = label;
-        opt.dataset.counterpartyId = c.counterpartyId;
-        cptySelect.appendChild(opt);
-      });
-
-      const other = document.createElement('option');
-      other.value = '__other__';
-      other.textContent = 'Other (type name)…';
-      cptySelect.appendChild(other);
-
-      cptySelect.addEventListener('change', () => {
-        const selected = cptySelect.options[cptySelect.selectedIndex];
-        if (selected && selected.dataset.lei && !leiInput.value) {
-          leiInput.value = selected.dataset.lei;
-        }
-      });
-
-    } catch (_) {
-      if (cptySelect) cptySelect.style.display = 'none';
-      if (cptyInput) {
-        cptyInput.style.display = '';
-        cptyInput.placeholder = 'Counterparty name';
-      }
-    }
-  })();
 
   // Sync notional currency options to base/quote selection
   const baseSelect = document.getElementById('tb-base');
@@ -1319,6 +1237,69 @@ function showProductFields(type) {
           opt.dataset.inst = JSON.stringify(i);
           sel.appendChild(opt);
         });
+      });
+    })
+    .catch(() => {});
+})();
+</script>
+
+<script>
+// Counterparty selector wiring — populates every product section's counterparty
+// dropdown from /api/counterparties (the party register, each carrying a
+// simulated LEI) and fills that section's LEI / name / id fields on selection.
+// Free-text fields stay editable; choose "Other" to enter a counterparty manually.
+(function () {
+  const selects = Array.from(document.querySelectorAll('select[data-cpty-section]'));
+  if (!selects.length) return;
+
+  // section → { lei, name?, id? } field element ids to populate.
+  const FIELDS = {
+    fx:             { lei: 'tb-cpty-lei',   name: 'tb-cpty-name' },
+    'ib-placement': { lei: 'ib-cpty-lei',   name: 'ib-cpty-name', id: 'ib-cpty-id' },
+    repo:           { lei: 'repo-cpty-lei' },
+    mmd:            { lei: 'mmd-cpty-lei' },
+    equity:         { lei: 'eq-cpty-lei',   name: 'eq-cpty-name', id: 'eq-cpty-id' },
+    bond:           { lei: 'bond-cpty-lei' },
+    irs:            { lei: 'irs-cpty-lei',  name: 'irs-cpty-name', id: 'irs-cpty-id' },
+  };
+
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  const showEl = (id) => { const el = document.getElementById(id); if (el) el.style.display = ''; };
+
+  selects.forEach((sel) => {
+    sel.addEventListener('change', () => {
+      const map = FIELDS[sel.dataset.cptySection] || {};
+      const opt = sel.options[sel.selectedIndex];
+      if (sel.value === '__other__') {
+        // Reveal any hidden name field and clear, for manual entry.
+        if (map.name) { showEl(map.name); setVal(map.name, ''); }
+        return;
+      }
+      if (!opt || !opt.dataset.cp) return;
+      const c = JSON.parse(opt.dataset.cp);
+      if (map.lei && c.lei) setVal(map.lei, c.lei);
+      if (map.name) { setVal(map.name, c.name); showEl(map.name); }
+      if (map.id) setVal(map.id, c.partyId);
+    });
+  });
+
+  fetch('/api/counterparties')
+    .then((r) => r.json())
+    .then((data) => {
+      const list = data.counterparties || [];
+      selects.forEach((sel) => {
+        // Keep the leading placeholder option; append counterparties + Other.
+        list.forEach((c) => {
+          const opt = document.createElement('option');
+          opt.value = c.partyId;
+          opt.textContent = c.name + (c.lei ? ' — ' + c.lei : '') + (c.isSim ? ' (sim)' : '');
+          opt.dataset.cp = JSON.stringify(c);
+          sel.appendChild(opt);
+        });
+        const other = document.createElement('option');
+        other.value = '__other__';
+        other.textContent = 'Other (enter manually)…';
+        sel.appendChild(other);
       });
     })
     .catch(() => {});
