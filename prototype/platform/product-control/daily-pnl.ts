@@ -89,6 +89,67 @@ export interface DailyPnLResult {
   totalUnrealised: FinancialInput<number>;
 }
 
+/** Why each unmarkable live position lacks a mark. */
+export interface MarksUnavailableBreakdown {
+  /** Total unmarkable live positions (=== `marksUnavailableCount`). */
+  count: number;
+  /**
+   * Positions whose pair HAS a production market-data tick — they are simply
+   * awaiting revaluation (e.g. booked since the last MTM run, or before the
+   * inline booking-time reval landed). NOT a feed gap.
+   */
+  awaitingReval: { count: number; tradeIds: string[]; pairs: string[] };
+  /**
+   * Positions whose pair has NO production tick at all — a genuine market-data
+   * feed gap. These are the only ones for which "MTM feed required" is true.
+   */
+  feedMissing: { count: number; tradeIds: string[]; pairs: string[] };
+}
+
+/**
+ * Split unmarkable live positions into "awaiting revaluation" (a mark exists,
+ * just not yet revalued) vs "feed missing" (no production tick for the pair),
+ * so the dashboard can state an honest cause instead of always asserting
+ * "MTM feed required". `hasProductionMark` probes the MarketDataStore for the
+ * pair (direction-aware) and is injected so this stays a pure, testable
+ * function. A trade whose pair cannot be resolved from `trades` is treated
+ * conservatively as feed-missing.
+ */
+export function classifyUnmarkable(
+  unmarkableLiveTradeIds: string[],
+  trades: TradeDetailRow[],
+  hasProductionMark: (pair: string) => boolean,
+): MarksUnavailableBreakdown {
+  const pairByTrade = new Map(trades.map((t) => [t.tradeId, t.pair]));
+  const awaitingTradeIds: string[] = [];
+  const awaitingPairs = new Set<string>();
+  const feedTradeIds: string[] = [];
+  const feedPairs = new Set<string>();
+  for (const id of unmarkableLiveTradeIds) {
+    const pair = pairByTrade.get(id);
+    if (pair !== undefined && hasProductionMark(pair)) {
+      awaitingTradeIds.push(id);
+      awaitingPairs.add(pair);
+    } else {
+      feedTradeIds.push(id);
+      if (pair !== undefined) feedPairs.add(pair);
+    }
+  }
+  return {
+    count: unmarkableLiveTradeIds.length,
+    awaitingReval: {
+      count: awaitingTradeIds.length,
+      tradeIds: awaitingTradeIds,
+      pairs: [...awaitingPairs].sort(),
+    },
+    feedMissing: {
+      count: feedTradeIds.length,
+      tradeIds: feedTradeIds,
+      pairs: [...feedPairs].sort(),
+    },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Engine
 // ---------------------------------------------------------------------------

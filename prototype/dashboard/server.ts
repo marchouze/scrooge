@@ -104,7 +104,7 @@ import type { NewCandidateInput } from "../platform/kyc/orchestrator";
 import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
-import { MarketDataStore } from "../platform/market-data/store";
+import { MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { emitAllCalculationProvenance } from "../platform/model-registry/calculation-provenance";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
@@ -113,7 +113,11 @@ import {
   emitExpectedEventGapAlerts,
 } from "../platform/model-registry/expected-event-watchdog";
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
-import { computeDailyPnL, runDailyPnLReport } from "../platform/product-control/daily-pnl";
+import {
+  classifyUnmarkable,
+  computeDailyPnL,
+  runDailyPnLReport,
+} from "../platform/product-control/daily-pnl";
 import { computeDeskCashPositions } from "../platform/product-control/desk-cash-positions";
 import { buildPnLDataFailuresView } from "../platform/product-control/pnl-data-failures-view";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
@@ -3440,6 +3444,16 @@ const server = Bun.serve({
         marksUnavailableCount,
         totalUnrealised,
       } = computeDailyPnL(eventStore, reportDate);
+      // Classify each unmarkable live position: a pair with a production tick
+      // is merely awaiting revaluation (not a feed gap); only a pair with no
+      // production tick at all genuinely needs an MTM feed. Lets the banner
+      // state an honest cause instead of always asserting "MTM feed required".
+      const marksUnavailable = classifyUnmarkable(
+        freshPayload.unmarkableLiveTradeIds,
+        trades,
+        (pair) =>
+          lookupQuoteWithInverse(marketDataStore, pair, { provenance: "production" }) !== null,
+      );
       // Surface the headline-unrealised completeness explicitly (no-silent-zero,
       // D-TRUSTED-FIGURES-PROGRAM-V1). Computed fresh so the signal is honest
       // even if `latestReport` is a stale persisted payload predating this
@@ -3449,6 +3463,7 @@ const server = Bun.serve({
         report: latestReport ?? freshPayload,
         trades,
         marksUnavailableCount,
+        marksUnavailable,
         unrealisedComplete: freshPayload.unrealisedComplete,
         unmarkableLivePositions: freshPayload.unmarkableLivePositions,
         unmarkableLiveTradeIds: freshPayload.unmarkableLiveTradeIds,
