@@ -119,19 +119,30 @@ function lastRiskRunCompletedMs(): number | undefined {
 }
 
 /**
- * Returns true if there are any RiskRaised events that have NOT been paired
- * with a matching RiskResolved (or equivalent closure) event.
+ * Returns true if there are any GENUINE (production-provenance) RiskRaised
+ * events that have NOT been paired with a matching RiskResolved (or equivalent
+ * closure) event.
  *
- * In the current build phase the closure event schema is not yet defined
- * (§16 "risk engine modules in build-only"). We detect open findings by
- * checking whether any RiskRaised event exists in the store; until a
- * RiskResolved family is emitted the count stays open.
+ * Provenance guard (mandatory for any fold over RiskRaised): build-phase-fixture
+ * and simulated events are synthetic test / backtest-harness data, NOT live
+ * findings. Counting them as open risks jammed candidate-2 permanently — the
+ * store holds thousands of synthetic RiskRaised entries (IFRS-9 staging
+ * fixtures, backtest-harness model risks, Atlas substrate-status records) and
+ * NO closure event type exists yet, so the unfiltered scan returned `true` on
+ * every tick forever. See the build-phase-fixture projection-pollution rule.
+ *
+ * In the current build phase the closure event schema is still not defined
+ * (§16 "risk engine modules in build-only"). Until a RiskResolved family is
+ * emitted, a genuine production-provenance RiskRaised stays open — but synthetic
+ * provenance is excluded so the candidate only fires on real findings.
  */
-function hasOpenRiskFindings(): boolean {
-  for (const _e of eventStore.replay({ type: "RiskRaised" })) {
-    // Any RiskRaised entry signals an open finding in build phase (no
-    // RiskResolved event type yet registered). Return immediately on the
-    // first match to avoid full-scan on large stores.
+export function hasOpenRiskFindings(store: EventStore = eventStore): boolean {
+  for (const e of store.replay({ type: "RiskRaised" })) {
+    const provKind = (e.provenance as { kind?: string } | null)?.kind;
+    // Skip synthetic test / simulated data — only genuine production-provenance
+    // findings count as open. Return on the first real match to avoid a
+    // full-scan on large stores.
+    if (provKind === "build-phase-fixture" || provKind === "simulated") continue;
     return true;
   }
   return false;
