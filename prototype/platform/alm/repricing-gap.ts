@@ -95,6 +95,17 @@ function classifyDays(days: number): RepricingBucket {
   return "10Y+";
 }
 
+/**
+ * Convert a ZAR minor-unit (cents) amount to whole rand. All `*Zar` integer
+ * fields on the deposit / repo / interbank-loan events are schema-declared in
+ * minor units (cents); the gap schedule is presented in rand. Without this the
+ * gap overstates every such position by 100× — e.g. a R10m deposit
+ * (1_000_000_000 cents) reported as R1.00bn.
+ */
+function minorToZar(minor: number): number {
+  return minor / 100;
+}
+
 // ---------------------------------------------------------------------------
 // Engine
 // ---------------------------------------------------------------------------
@@ -117,6 +128,12 @@ function classifyDays(days: number): RepricingBucket {
  *
  * This logic is intentionally simple for the build phase. Production will
  * enrich each leg with actual cashflow schedules per BCBS d365 §4.
+ *
+ * Units: all accumulators (`rsa` / `rsl`) hold whole rand. The deposit / repo
+ * / interbank-loan events carry `*Zar` amounts in minor units (cents) and are
+ * converted via `minorToZar` at point of entry. The `TradeBooked` `notional`
+ * stub below is treated as already-rand (no live emitter / schema yet); any
+ * future enrichment that sources a minor-unit notional must convert it too.
  */
 export function computeRepricingGap(eventStore: EventStore, asOf: string): RepricingGapSchedule {
   // Initialise zero accumulators for each bucket.
@@ -215,7 +232,7 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
       Math.round((endLegDate.getTime() - asOfDate.getTime()) / 86_400_000),
     );
     const bucket = classifyDays(daysToEnd);
-    rsa[bucket] = (rsa[bucket] ?? 0) + startLegCashZar;
+    rsa[bucket] = (rsa[bucket] ?? 0) + minorToZar(startLegCashZar);
     hasPositions = true;
   }
 
@@ -256,7 +273,7 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
       Math.round((maturityDate.getTime() - asOfDate.getTime()) / 86_400_000),
     );
     const bucket = classifyDays(daysToMaturity);
-    rsl[bucket] = (rsl[bucket] ?? 0) + principalZar;
+    rsl[bucket] = (rsl[bucket] ?? 0) + minorToZar(principalZar);
     hasPositions = true;
   }
 
@@ -307,7 +324,7 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
     }
 
     const bucket = classifyDays(daysToIblMaturity);
-    rsa[bucket] = (rsa[bucket] ?? 0) + principalZar;
+    rsa[bucket] = (rsa[bucket] ?? 0) + minorToZar(principalZar);
     hasPositions = true;
   }
 
