@@ -56,6 +56,8 @@
 //
 // Author: Ravi (Treasury / ALM engineer)
 
+import { readFileSync } from "node:fs";
+
 import type { MarketDataStore } from "./store";
 import type { ZaroniaRatePayload } from "./types";
 
@@ -302,4 +304,45 @@ export function runSarbZaroniaIngestAll(
       marketDataStore: opts.marketDataStore,
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Convenience: load the on-disk fixture and ingest it in one pass
+// ---------------------------------------------------------------------------
+
+export interface IngestZaroniaFixtureResult {
+  readonly ticksAppended: number;
+  readonly ticksSkippedAsDuplicate: number;
+  readonly datesProcessed: number;
+}
+
+/**
+ * Load the ZARONIA fixture JSON at `fixturePath` and ingest every fixing into
+ * `marketDataStore`. Idempotent (deterministic tick ids → INSERT OR IGNORE).
+ * Shared by `scripts/ingest-zaronia-rates.ts` and the dashboard boot path so
+ * the SARB ZARONIA overnight rate is available to the FTP curve publisher.
+ *
+ * Throws if the fixture is missing or malformed (loud — a silent absence would
+ * degrade the FTP curve and, downstream, the P&L attribution carry component).
+ */
+export function ingestZaroniaFixtureFromFile(
+  marketDataStore: MarketDataStore,
+  fixturePath: string,
+): IngestZaroniaFixtureResult {
+  const raw = readFileSync(fixturePath, "utf8");
+  const fixture = JSON.parse(raw) as SarbZaroniaFixtureShape;
+  if (!fixture.instrument || !fixture.fixings || Object.keys(fixture.fixings).length === 0) {
+    throw new Error(
+      `ingestZaroniaFixtureFromFile: fixture at ${fixturePath} is malformed (missing instrument / fixings)`,
+    );
+  }
+  const source = makeFixtureSarbZaroniaSource(fixture);
+  const results = runSarbZaroniaIngestAll({ source, marketDataStore });
+  let ticksAppended = 0;
+  let ticksSkippedAsDuplicate = 0;
+  for (const r of results) {
+    ticksAppended += r.ticksAppended;
+    ticksSkippedAsDuplicate += r.ticksSkippedAsDuplicate;
+  }
+  return { ticksAppended, ticksSkippedAsDuplicate, datesProcessed: results.length };
 }

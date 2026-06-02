@@ -79,6 +79,7 @@ import {
   makeProductProposalRegistered,
 } from "../platform/event-store/event-types/product";
 
+import { publishFtpCurveIfMissing } from "../platform/alm/ftp-curve-publisher";
 import {
   makeSeedDescoped,
   makeSeedPromotedToSimulated,
@@ -99,6 +100,7 @@ import type { NewCandidateInput } from "../platform/kyc/orchestrator";
 import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
+import { ingestZaroniaFixtureFromFile } from "../platform/market-data/sarb-zaronia-ingester";
 import { MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { emitAllCalculationProvenance } from "../platform/model-registry/calculation-provenance";
@@ -756,6 +758,31 @@ function bootDerive(): DashboardState {
     // by migrate:decisions-backfill (unified Decision events with proper
     // symmetry). The call is kept for backwards-compat but emits nothing.
     backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
+
+    // FTP curve — ensure the SARB ZARONIA overnight fixing is in the market-data
+    // store (idempotent ingest from the seed fixture), then publish today's ZAR
+    // FTP curve from the latest fixing. This is the funding-cost input the P&L
+    // attribution carry component resolves against — with the curve present, the
+    // pnl-attribution figure lifts from `degraded` (carry absent) to `ok`. No
+    // silent constant: a missing ZARONIA fixing leaves the curve unpublished and
+    // the carry degrades loudly. Runs BEFORE emitCalculationProvenance so the
+    // boot-suite pnl-attribution emitter sees the curve. Authority:
+    // D-PNL-ATTR-FTP-CURVE-FIX; D-TRUSTED-FIGURES-PROGRAM-V1.
+    try {
+      const zaroniaFixturePath = resolve(import.meta.dir, "..", "seeds", "zaronia-rates.json");
+      ingestZaroniaFixtureFromFile(marketDataStore, zaroniaFixturePath);
+      const ftp = publishFtpCurveIfMissing({
+        eventStore,
+        marketDataStore,
+        asOf: nowUtc(),
+        logger,
+      });
+      if (ftp.published) {
+        logger.info({ rate: ftp.rate }, "ftp-curve: ZAR overnight curve published from ZARONIA");
+      }
+    } catch (ftpErr) {
+      logger.warn({ err: (ftpErr as Error).message }, "ftp-curve: publish skipped");
+    }
 
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
     // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.

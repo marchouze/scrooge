@@ -25,65 +25,31 @@
 //
 // Author: Ravi (Treasury / ALM engineer)
 
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
-import {
-  type SarbZaroniaFixtureShape,
-  makeFixtureSarbZaroniaSource,
-  runSarbZaroniaIngestAll,
-} from "../platform/market-data/sarb-zaronia-ingester";
+import { ingestZaroniaFixtureFromFile } from "../platform/market-data/sarb-zaronia-ingester";
 import { MarketDataStore } from "../platform/market-data/store";
 
 const FIXTURE_PATH = resolve(import.meta.dir, "../seeds/zaronia-rates.json");
 
 function main(): number {
   const marketDbPath = resolveMarketDataDbPath().path;
-
-  // ---- Load fixture --------------------------------------------------------
-  let fixture: SarbZaroniaFixtureShape;
-  try {
-    const raw = readFileSync(FIXTURE_PATH, "utf8");
-    fixture = JSON.parse(raw) as SarbZaroniaFixtureShape;
-  } catch (err) {
-    console.error(`[ingest-zaronia-rates] ERROR: failed to load fixture — ${String(err)}`);
-    return 1;
-  }
-
-  if (!fixture.instrument || !fixture.fixings || Object.keys(fixture.fixings).length === 0) {
-    console.error(
-      "[ingest-zaronia-rates] ERROR: fixture is malformed (missing instrument / fixings)",
-    );
-    return 1;
-  }
-
-  // ---- Open store ----------------------------------------------------------
   const marketDataStore = new MarketDataStore(marketDbPath);
 
-  const source = makeFixtureSarbZaroniaSource(fixture);
-
-  console.log(
-    `[ingest-zaronia-rates] seeding SARB ZARONIA rates — ${source.allDates().length} dates`,
-  );
   console.log(`[ingest-zaronia-rates] market-data DB: ${marketDbPath}`);
 
-  // ---- Run -----------------------------------------------------------------
-  const results = runSarbZaroniaIngestAll({
-    source,
-    marketDataStore,
-  });
-
-  // ---- Summary -------------------------------------------------------------
-  let totalTicksAppended = 0;
-  let totalTicksSkipped = 0;
-  for (const r of results) {
-    totalTicksAppended += r.ticksAppended;
-    totalTicksSkipped += r.ticksSkippedAsDuplicate;
+  let result: { ticksAppended: number; ticksSkippedAsDuplicate: number; datesProcessed: number };
+  try {
+    result = ingestZaroniaFixtureFromFile(marketDataStore, FIXTURE_PATH);
+  } catch (err) {
+    console.error(`[ingest-zaronia-rates] ERROR: ${String(err)}`);
+    marketDataStore.close();
+    return 1;
   }
 
   console.log(
-    `[ingest-zaronia-rates] ticks: ${totalTicksAppended} appended, ${totalTicksSkipped} skipped (dup)`,
+    `[ingest-zaronia-rates] ${result.datesProcessed} dates — ticks: ${result.ticksAppended} appended, ${result.ticksSkippedAsDuplicate} skipped (dup)`,
   );
 
   marketDataStore.close();

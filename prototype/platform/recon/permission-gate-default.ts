@@ -298,6 +298,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // assertions, not a production access path. T-01 carve-out.
   // Citation: D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
   "platform/product-control/pnl-attribution.test.ts",
+  // FTP curve publisher unit tests (D-PNL-ATTR-FTP-CURVE-FIX). Co-located per
+  // the per-module test convention. Raw EventStore(":memory:") is a build-phase
+  // fixture for the ZARONIA-sourced / idempotent / no-silent-constant
+  // assertions, not a production access path. T-01 carve-out.
+  // Citation: D-PNL-ATTR-FTP-CURVE-FIX, D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/alm/ftp-curve-publisher.test.ts",
   // All-asset-class position-source test. Raw EventStore(":memory:") is a
   // build-phase fixture for the FX-passthrough / bond-marking / no-silent-zero
   // assertions, not a production access path. T-01 carve-out.
