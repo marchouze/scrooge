@@ -59,7 +59,6 @@ import {
 import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
-import { buildCalculationPerformed } from "../model-registry/calculation-emit";
 import { type FinancialInput, absent, isPresent, present } from "../types/financial-input";
 import { computeDailyPnL } from "./daily-pnl";
 
@@ -480,11 +479,7 @@ function resolveCarry(
 export function runPnLAttribution(store: EventStore, clockNow: () => string): void {
   const reportDate = clockNow().slice(0, 10);
   const priorReportDate = priorDay(reportDate);
-  const { payload, exception, marketMove, carry } = computePnLAttribution(
-    store,
-    reportDate,
-    priorReportDate,
-  );
+  const { payload, exception } = computePnLAttribution(store, reportDate, priorReportDate);
 
   store.append(
     makePnLAttributionGenerated({
@@ -496,40 +491,11 @@ export function runPnLAttribution(store: EventStore, clockNow: () => string): vo
     }),
   );
 
-  // Calculation-history provenance: bind the attribution figure to its owned
-  // model (model:pnl-attribution-fx-v1) and record status from input
-  // completeness. marketMoveMarks REQUIRED (absent → failed, output null);
-  // ftpCurve OPTIONAL (absent → degraded). The actual move is the surfaced
-  // output when status permits.
-  store.append(
-    buildCalculationPerformed({
-      asOf: reportDate,
-      entity: BANK_ENTITY,
-      actor: ENGINE_ACTOR,
-      calcKey: "pnl-attribution",
-      resolvedInputs: [
-        {
-          name: "marketMoveMarks",
-          value: isPresent(marketMove) ? marketMove.value : null,
-          missing: !isPresent(marketMove),
-        },
-        // The prior-day total always resolves here (computeDailyPnL on the prior
-        // date returns a total even from an empty book); a non-derivable prior
-        // total would surface upstream as a daily-pnl data failure.
-        {
-          name: "priorDayTotal",
-          value: payload.actualMoveZarMinor,
-          missing: false,
-        },
-        {
-          name: "ftpCurve",
-          value: isPresent(carry) ? carry.value : null,
-          missing: !isPresent(carry),
-        },
-      ],
-      output: payload.actualMoveZarMinor,
-    }),
-  );
+  // Note: CalculationPerformed provenance for pnl-attribution is now emitted by
+  // emitAllCalculationProvenance() (boot-suite path in calculation-provenance.ts)
+  // so the figure is always fresh on dashboard boot, even when this agent is idle.
+  // Do NOT emit buildCalculationPerformed here — that would double-emit on days
+  // when both the boot suite and this agent run.
 
   if (exception) {
     store.append(
@@ -544,8 +510,8 @@ export function runPnLAttribution(store: EventStore, clockNow: () => string): vo
   }
 }
 
-/** Prior calendar day (YYYY-MM-DD). */
-function priorDay(reportDate: string): string {
+/** Prior calendar day (YYYY-MM-DD). Exported for reuse in the boot-suite provenance emitter. */
+export function priorDay(reportDate: string): string {
   const d = new Date(`${reportDate}T00:00:00.000Z`);
   d.setUTCDate(d.getUTCDate() - 1);
   return d.toISOString().slice(0, 10);

@@ -81,7 +81,11 @@ import {
   computeRwa,
 } from "../risk/rwa-engine";
 import { requireWeight } from "../types/financial-input";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "./filter";
 
 // ---------------------------------------------------------------------------
 // Helper — extract a plain-string trade ID from an identifier that may be
@@ -174,6 +178,7 @@ function makeZeroOutput(asOf: string): RwaEngineOutput {
 export function computeRwaFromPositions(
   eventStore: EventStore,
   asOf: string,
+  filter?: ProvenanceFilter,
 ): RwaFromPositionsResult {
   // Load market-risk weights from the canonical registry (CRO-owned,
   // cited — same pattern as rwa-delta.ts).
@@ -183,7 +188,7 @@ export function computeRwaFromPositions(
   const tradingBookPositions: TradingBookPosition[] = [];
   const sourceEventIds: string[] = [];
 
-  const provenanceFilter = defaultProvenanceFilter();
+  const provenanceFilter = filter ?? defaultProvenanceFilter();
 
   // =========================================================================
   // Pass 1 — collect closed trade IDs per product.
@@ -248,6 +253,7 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "BondTradeExecuted", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as BondTradeExecutedPayload;
     if (!p.tradeId || !p.nominalMinor) continue;
     // Side "sell" means the bank is short the bond — skip (no credit asset).
@@ -339,6 +345,7 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as FxTradeExecutedPayload;
     if (!p.tradeId || !p.legs || p.legs.length === 0) continue;
 
