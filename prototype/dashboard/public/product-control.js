@@ -130,12 +130,41 @@
     const report = pnlData?.report;
 
     // ── Mark-unavailable warning banner ────────────────────────────────────
+    // Distinguish two causes (server-classified): positions awaiting
+    // revaluation (a production mark exists, just not yet revalued — e.g.
+    // booked since the last MTM run) vs a genuine feed gap (no production tick
+    // for the pair). Only the latter warrants "MTM feed required".
     const tilesEl = document.getElementById("pc-tiles");
+    const mu = pnlData?.marksUnavailable;
     if (tilesEl && pnlData?.marksUnavailableCount > 0) {
+      const feed = mu?.feedMissing;
+      const awaiting = mu?.awaitingReval;
+      const lines = [];
+      if (feed && feed.count > 0) {
+        const pairs = feed.pairs.length ? ` (${feed.pairs.join(", ")})` : "";
+        lines.push(
+          `⚠ ${feed.count} position(s) have no market-data feed${pairs} — MTM feed required; unrealised P&L excludes them.`,
+        );
+      }
+      if (awaiting && awaiting.count > 0) {
+        const pairs = awaiting.pairs.length ? ` (${awaiting.pairs.join(", ")})` : "";
+        lines.push(
+          `ℹ ${awaiting.count} position(s) awaiting revaluation${pairs} — a mark exists; they will be valued on the next MTM run. Unrealised P&L excludes them until then.`,
+        );
+      }
+      // Fallback when the breakdown is absent (older server payload).
+      if (lines.length === 0) {
+        lines.push(
+          `⚠ ${pnlData.marksUnavailableCount} position(s) have no mark — unrealised P&L is incomplete.`,
+        );
+      }
+      // Severity: red only when a genuine feed gap exists; amber for awaiting-only.
+      const isFeedGap = !!(feed && feed.count > 0) || !mu;
       const banner = document.createElement("div");
-      banner.style.cssText =
-        "background:#fff1f0;border:1px solid #ff4d4f;border-radius:4px;padding:8px 12px;margin-bottom:12px;font:var(--text-body)";
-      banner.textContent = `⚠ ${pnlData.marksUnavailableCount} position(s) have no mark — unrealised P&L is incomplete. MTM feed required.`;
+      banner.style.cssText = isFeedGap
+        ? "background:#fff1f0;border:1px solid #ff4d4f;border-radius:4px;padding:8px 12px;margin-bottom:12px;font:var(--text-body)"
+        : "background:#fffbe6;border:1px solid #faad14;border-radius:4px;padding:8px 12px;margin-bottom:12px;font:var(--text-body)";
+      banner.innerHTML = lines.map((l) => `<div>${l}</div>`).join("");
       tilesEl.before(banner);
     }
 
