@@ -1026,7 +1026,47 @@ async function handleDecide(req: Request): Promise<Response> {
     (d) => d.decisionId === body.decisionId && d.status === "open",
   );
   if (!openDecision) {
-    return jsonResponse({ error: `Decision not found or not open: ${body.decisionId}` }, 404);
+    // The dashboard surfaces open AgentEscalations as approvable "decisions"
+    // (buildOpenDecisionsFromEscalations) but they never appear in the RMS
+    // Decision fold. When the CEO disposes of one of these escalation-derived
+    // items, there is no backing Decision to resolve — the terminal artefact
+    // is AgentEscalationDecided. Without this fallback the disposition 404s
+    // ("Decision not found or not open"). Authority: GOV-FRAMEWORK-CEO-RESERVED.
+    const escResolvedIds = new Set(
+      [...eventStore.replay({ type: "CeoDecision" })]
+        .map((e) => String((e.payload as Record<string, unknown>).decisionId ?? ""))
+        .filter(Boolean),
+    );
+    const matchingEscalationOnly = listEscalations(eventStore, escResolvedIds).find(
+      (esc) => esc.escalationId === body.decisionId && esc.status !== "decided",
+    );
+    if (!matchingEscalationOnly) {
+      return jsonResponse({ error: `Decision not found or not open: ${body.decisionId}` }, 404);
+    }
+    try {
+      const escalationEvent = makeAgentEscalationDecided({
+        asOf: nowUtc(),
+        entity: matchingEscalationOnly.entity ?? "LE-ZA-HOZ-BANK",
+        actor: { type: "human", id: actor },
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+        eventId: `evt-escalation-decided-${newEventId()}`,
+        payload: {
+          escalationId: body.decisionId,
+          decidedBy: actor,
+          chosenOption: body.action,
+          rationale: body.outcome,
+        },
+      });
+      eventStore.append(escalationEvent);
+      logger.info(
+        { escalationId: body.decisionId, escalationEventId: escalationEvent.event_id },
+        "closed escalation via AgentEscalationDecided (no backing Decision)",
+      );
+    } catch (escalationErr) {
+      return jsonResponse({ error: (escalationErr as Error).message }, 400);
+    }
+    refresh("decide");
+    return jsonResponse({ ok: true, escalationId: body.decisionId, kind: "escalation-decided" });
   }
 
   // Route through the canonical unified-Decision recorder. The handler
