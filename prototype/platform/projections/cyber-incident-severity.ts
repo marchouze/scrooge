@@ -153,18 +153,17 @@ function daysBetween(from: string, to: string): number {
 /**
  * Compute the cyber-incident severity posture from the event store.
  *
- * The `asOf` parameter (ISO string) is used as the reference clock for
- * SLA elapsed-time and PIR deadline calculations. Defaults to the current
- * wall-clock time when omitted.
+ * The `asOf` parameter (ISO string) is the reference clock for SLA
+ * elapsed-time and PIR deadline calculations. It is required — the
+ * caller (Helena's appetite-watch handler) supplies its run-cycle
+ * `asOfIso`, and tests inject a fixed timestamp. No wall-clock default
+ * is taken here (Principle: injectable clock; wall-clock-callsite-coverage).
  *
  * @param store  — event store instance (injectable for tests)
- * @param asOf   — reference timestamp (ISO 8601); defaults to now
+ * @param asOf   — reference timestamp (ISO 8601)
  */
-export function computeCyberSeverityPosture(
-  store: EventStore,
-  asOf?: string,
-): CyberSeverityPosture {
-  const now = asOf ? new Date(asOf) : new Date();
+export function computeCyberSeverityPosture(store: EventStore, asOf: string): CyberSeverityPosture {
+  const now = new Date(asOf);
 
   // ------------------------------------------------------------------
   // 1. Build incident map from IncidentClassified events
