@@ -84,9 +84,7 @@ describe("RAS §B7 model-tier discipline coverage pipeline", () => {
     const r = rasB7Coverage({ events: [snap] });
     expect(r.ok).toBe(false);
     expect(
-      r.violations.some(
-        (v) => v.severity === "fail" && v.message.includes("unmeasured"),
-      ),
+      r.violations.some((v) => v.severity === "fail" && v.message.includes("unmeasured")),
     ).toBe(true);
   });
 
@@ -128,9 +126,7 @@ describe("RAS §B7 model-tier discipline coverage pipeline", () => {
     const r = rasB7Coverage({ events: [snap] });
     expect(r.ok).toBe(false);
     expect(
-      r.violations.some(
-        (v) => v.severity === "fail" && v.message.includes("lineStatuses"),
-      ),
+      r.violations.some((v) => v.severity === "fail" && v.message.includes("lineStatuses")),
     ).toBe(true);
   });
 
@@ -144,10 +140,7 @@ describe("RAS §B7 model-tier discipline coverage pipeline", () => {
     const r = rasB7Coverage({ events: [snap] });
     expect(r.ok).toBe(false);
     expect(
-      r.violations.some(
-        (v) =>
-          v.severity === "fail" && v.message.includes(MODEL_TIER_LINE_ID),
-      ),
+      r.violations.some((v) => v.severity === "fail" && v.message.includes(MODEL_TIER_LINE_ID)),
     ).toBe(true);
   });
 

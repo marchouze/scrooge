@@ -578,7 +578,14 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   const modelTierMetric = getModelTierDisciplineMetric(eventStore);
 
   const lineStates = APPETITE_LINES.map((line) =>
-    statusForLine(line, capitalMetrics, climateMetric, leverageMetrics, liquidityMetric, modelTierMetric),
+    statusForLine(
+      line,
+      capitalMetrics,
+      climateMetric,
+      leverageMetrics,
+      liquidityMetric,
+      modelTierMetric,
+    ),
   );
   const measuredCount = lineStates.filter(
     (s) => s.status === "green" || s.status === "amber" || s.status === "red",

@@ -34,9 +34,8 @@
 //   brief:atlas:build-model-tier-discipline-measurement-substrat:2026-06-01.
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { LocalModelRegistry } from "../model-registry/index";
-import type { ModelView } from "../model-registry/registry";
 import type { EventStore } from "../event-store/store";
+import { LocalModelRegistry } from "../model-registry/index";
 
 // ---------------------------------------------------------------------------
 // Output types
@@ -139,22 +138,16 @@ export function getModelTierDisciplineMetric(store: EventStore): ModelTierDiscip
   }
 
   // Tier-1 critical: any Tier-1 model with an open blocking finding.
-  const tier1WithOpenCritical = tier1Models.filter(
-    (m) => m.openBlockingFindingsCount > 0,
-  );
+  const tier1WithOpenCritical = tier1Models.filter((m) => m.openBlockingFindingsCount > 0);
 
   // Tier-1 validation discipline: validated = approved status.
   // Withheld validation is a Red signal (validation failed independently).
-  const tier1Unvalidated = tier1Models.filter(
-    (m) => m.validationStatus !== "approved",
-  );
+  const tier1Unvalidated = tier1Models.filter((m) => m.validationStatus !== "approved");
   const tier1Withheld = tier1Models.filter((m) => m.validationStatus === "withheld");
   const tier1AllValidated = tier1Unvalidated.length === 0;
 
   // Tier-2 validation: any Tier-2 not yet approved = Amber signal.
-  const tier2Unvalidated = tier2Models.filter(
-    (m) => m.validationStatus !== "approved",
-  );
+  const tier2Unvalidated = tier2Models.filter((m) => m.validationStatus !== "approved");
 
   // ---------------------------------------------------------------------------
   // MRAS determination — Red triggers evaluated first (highest severity).
