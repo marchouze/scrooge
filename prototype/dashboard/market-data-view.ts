@@ -9,13 +9,37 @@
 // store for reference/time-series data; per Principle 1 it lives outside
 // the event store).
 
-import type { MarketDataStore } from "../platform/market-data/store";
+import type { MarketDataStore, MarketDataTick } from "../platform/market-data/store";
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8" },
   });
+}
+
+/** Asset class a market-data tick belongs to, derived from its `dataType`. */
+type AssetClass = "fx" | "rates" | "bonds" | "other";
+
+/**
+ * Canonical dataType → asset-class map for the sectioned market-data view.
+ * A dataType absent from this map falls through to "other" (so a newly-added
+ * feed still surfaces — in the Other section — rather than disappearing).
+ */
+const ASSET_CLASS_BY_DATATYPE: Readonly<Record<string, AssetClass>> = {
+  "fx-quote": "fx",
+  "zaronia-rate": "rates",
+  "jibar-fixing": "rates",
+  "swap-curve-snapshot": "rates",
+  "repo-prime-rate": "rates",
+  "bond-price": "bonds",
+  "equity-quote": "other",
+  "sens-announcement": "other",
+  news: "other",
+};
+
+function assetClassOf(dataType: string): AssetClass {
+  return ASSET_CLASS_BY_DATATYPE[dataType] ?? "other";
 }
 
 interface FacetsCache {
@@ -69,6 +93,31 @@ export function registerMarketDataRoutes(
       sources: facetsCache.sources,
       instruments: facetsCache.instruments,
       dataTypes: facetsCache.dataTypes,
+    });
+  }
+
+  if (pathname === "/api/market-data/by-class") {
+    // Sectioned operator view: the single most-recent tick per (source,
+    // instrument), grouped by asset class. Provenance "all" is the same
+    // operator-facing opt-out used by the facet builder above (display
+    // surface, never a valuation read) — it ensures both production and
+    // simulated feeds surface, and that a stale-but-valid rate feed is not
+    // buried below a continuously-ingested FX feed.
+    const latest = marketDataStore.latestPerInstrument({ provenance: "all" });
+    const groups: Record<AssetClass, MarketDataTick[]> = {
+      fx: [],
+      rates: [],
+      bonds: [],
+      other: [],
+    };
+    for (const tick of latest) {
+      groups[assetClassOf(tick.dataType)].push(tick);
+    }
+    return jsonResponse({
+      fx: groups.fx,
+      rates: groups.rates,
+      bonds: groups.bonds,
+      other: groups.other,
     });
   }
 

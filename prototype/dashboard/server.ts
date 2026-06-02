@@ -99,7 +99,11 @@ import { KYCOrchestrator } from "../platform/kyc/orchestrator";
 import type { NewCandidateInput } from "../platform/kyc/orchestrator";
 import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
+import { ingestBondPriceFixtureFromFile } from "../platform/market-data/bond-price-ingester";
+import { ingestJibarFixingFixtureFromFile } from "../platform/market-data/jibar-fixing-ingester";
+import { ingestJibarSwapCurveFixtureFromFile } from "../platform/market-data/jibar-swap-curve-ingester";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
+import { ingestSarbRepoPrimeFixtureFromFile } from "../platform/market-data/sarb-repo-prime-ingester";
 import { ingestZaroniaFixtureFromFile } from "../platform/market-data/sarb-zaronia-ingester";
 import { MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
@@ -784,6 +788,65 @@ function bootDerive(): DashboardState {
       }
     } catch (ftpErr) {
       logger.warn({ err: (ftpErr as Error).message }, "ftp-curve: publish skipped");
+    }
+
+    // Market-data reference feeds — seed the rate + bond reference feeds that
+    // already have build-phase fixtures into the market-data store so the
+    // /market-data dashboard surfaces Rates (JIBAR 3M, ZAR swap curve, SARB
+    // repo/prime) and Bonds (SA government benchmarks) alongside FX, rather
+    // than FX-only. ZARONIA is already seeded above (FTP-curve path). Each
+    // ingest is idempotent (deterministic tick ids → INSERT OR IGNORE) and
+    // independently guarded so one malformed fixture never blocks the others
+    // — a skipped feed degrades loudly (warn), never silently. Authority:
+    // D-MARKETS-SCHEMA-FOUNDATION; D-FINANCIAL-INSTRUMENT-ENTITY Slice 10.
+    const seedsDir = resolve(import.meta.dir, "..", "seeds");
+    const referenceFeeds: ReadonlyArray<{
+      readonly label: string;
+      readonly run: () => { ticksAppended: number; ticksSkippedAsDuplicate: number };
+    }> = [
+      {
+        label: "jibar-fixing",
+        run: () =>
+          ingestJibarFixingFixtureFromFile(
+            marketDataStore,
+            resolve(seedsDir, "jibar-fixings.json"),
+          ),
+      },
+      {
+        label: "swap-curve",
+        run: () =>
+          ingestJibarSwapCurveFixtureFromFile(
+            marketDataStore,
+            resolve(seedsDir, "jibar-swap-curve.json"),
+          ),
+      },
+      {
+        label: "repo-prime",
+        run: () =>
+          ingestSarbRepoPrimeFixtureFromFile(
+            marketDataStore,
+            resolve(seedsDir, "sarb-repo-rate.json"),
+          ),
+      },
+      {
+        label: "bond-price",
+        run: () =>
+          ingestBondPriceFixtureFromFile(marketDataStore, resolve(seedsDir, "bond-prices.json")),
+      },
+    ];
+    for (const feed of referenceFeeds) {
+      try {
+        const r = feed.run();
+        logger.info(
+          { appended: r.ticksAppended, skipped: r.ticksSkippedAsDuplicate },
+          `market-data: ${feed.label} reference feed seeded`,
+        );
+      } catch (feedErr) {
+        logger.warn(
+          { err: (feedErr as Error).message },
+          `market-data: ${feed.label} reference feed seed skipped`,
+        );
+      }
     }
 
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.

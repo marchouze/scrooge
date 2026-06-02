@@ -113,6 +113,21 @@ export interface RepoPrimeRatePayload {
 }
 
 // ---------------------------------------------------------------------------
+// Bond reference price (JSE Debt Market / Bond Exchange of SA)
+// ---------------------------------------------------------------------------
+
+export interface BondPricePayload {
+  /** Clean price as a percentage of par, e.g. "101.52" for 101.52% of nominal */
+  cleanPrice: string;
+  /** Yield to maturity in decimal form, e.g. "0.0802" for 8.02% */
+  yieldToMaturity: string;
+  /** Human-readable bond code, e.g. "R186" (ISIN is carried in the tick's instrument field) */
+  bondCode: string;
+  /** Build-phase marker */
+  fixingVariant: "build-phase-fixture" | "live-jse-debt";
+}
+
+// ---------------------------------------------------------------------------
 // Canonical source identifiers
 // ---------------------------------------------------------------------------
 
@@ -126,4 +141,5 @@ export const MarketDataSources = {
   JIBAR_AFMA: "jibar-afma",
   JIBAR_SWAP_SARB: "jibar-swap-sarb",
   SARB_REPO: "sarb-repo",
+  JSE_DEBT: "jse-debt",
 } as const;

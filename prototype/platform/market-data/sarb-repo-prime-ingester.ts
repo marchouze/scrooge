@@ -48,6 +48,8 @@
 //
 // Author: Ravi (Treasury / ALM engineer, engineering)
 
+import { readFileSync } from "node:fs";
+
 import type { MarketDataStore } from "./store";
 import type { RepoPrimeRatePayload } from "./types";
 
@@ -253,4 +255,45 @@ export function runSarbRepoPrimeIngestAll(
       marketDataStore: opts.marketDataStore,
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Convenience: load the on-disk fixture and ingest it in one pass
+// ---------------------------------------------------------------------------
+
+export interface IngestSarbRepoPrimeFixtureResult {
+  readonly ticksAppended: number;
+  readonly ticksSkippedAsDuplicate: number;
+  readonly decisionsProcessed: number;
+}
+
+/**
+ * Load the SARB repo/prime fixture JSON at `fixturePath` and ingest every MPC
+ * decision into `marketDataStore` (one tick per decision date). Idempotent
+ * (deterministic tick ids → INSERT OR IGNORE). Shared by the dashboard boot
+ * path so the policy/prime rate is surfaced on the market-data dashboard's
+ * Rates section.
+ *
+ * Throws if the fixture is missing or malformed (loud).
+ */
+export function ingestSarbRepoPrimeFixtureFromFile(
+  marketDataStore: MarketDataStore,
+  fixturePath: string,
+): IngestSarbRepoPrimeFixtureResult {
+  const raw = readFileSync(fixturePath, "utf8");
+  const fixture = JSON.parse(raw) as SarbRepoFixtureShape;
+  if (!fixture.decisions || fixture.decisions.length === 0) {
+    throw new Error(
+      `ingestSarbRepoPrimeFixtureFromFile: fixture at ${fixturePath} is malformed (missing decisions)`,
+    );
+  }
+  const source = makeFixtureSarbRepoPrimeSource(fixture);
+  const results = runSarbRepoPrimeIngestAll({ source, marketDataStore });
+  let ticksAppended = 0;
+  let ticksSkippedAsDuplicate = 0;
+  for (const r of results) {
+    ticksAppended += r.ticksAppended;
+    ticksSkippedAsDuplicate += r.ticksSkippedAsDuplicate;
+  }
+  return { ticksAppended, ticksSkippedAsDuplicate, decisionsProcessed: results.length };
 }

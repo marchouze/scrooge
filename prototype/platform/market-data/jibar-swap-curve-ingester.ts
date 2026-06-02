@@ -47,6 +47,8 @@
 //
 // Author: Ravi (Treasury / ALM engineer, engineering)
 
+import { readFileSync } from "node:fs";
+
 import type { MarketDataStore } from "./store";
 import type { SwapCurveSnapshotPayload } from "./types";
 
@@ -271,4 +273,45 @@ export function runJibarSwapCurveIngestAll(
       marketDataStore: opts.marketDataStore,
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Convenience: load the on-disk fixture and ingest it in one pass
+// ---------------------------------------------------------------------------
+
+export interface IngestJibarSwapCurveFixtureResult {
+  readonly ticksAppended: number;
+  readonly ticksSkippedAsDuplicate: number;
+  readonly datesProcessed: number;
+}
+
+/**
+ * Load the JIBAR swap curve fixture JSON at `fixturePath` and ingest every
+ * curve snapshot into `marketDataStore`. Idempotent (deterministic tick ids →
+ * INSERT OR IGNORE). Shared by the dashboard boot path so the ZAR swap curve
+ * is surfaced on the market-data dashboard's Rates section.
+ *
+ * Throws if the fixture is missing or malformed (loud — a silent absence would
+ * leave the Rates section incomplete without explanation).
+ */
+export function ingestJibarSwapCurveFixtureFromFile(
+  marketDataStore: MarketDataStore,
+  fixturePath: string,
+): IngestJibarSwapCurveFixtureResult {
+  const raw = readFileSync(fixturePath, "utf8");
+  const fixture = JSON.parse(raw) as JibarSwapCurveFixtureShape;
+  if (!fixture.instrument || !fixture.curves || Object.keys(fixture.curves).length === 0) {
+    throw new Error(
+      `ingestJibarSwapCurveFixtureFromFile: fixture at ${fixturePath} is malformed (missing instrument / curves)`,
+    );
+  }
+  const source = makeFixtureJibarSwapCurveSource(fixture);
+  const results = runJibarSwapCurveIngestAll({ source, marketDataStore });
+  let ticksAppended = 0;
+  let ticksSkippedAsDuplicate = 0;
+  for (const r of results) {
+    ticksAppended += r.ticksAppended;
+    ticksSkippedAsDuplicate += r.ticksSkippedAsDuplicate;
+  }
+  return { ticksAppended, ticksSkippedAsDuplicate, datesProcessed: results.length };
 }
