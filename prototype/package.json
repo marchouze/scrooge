@@ -86,6 +86,7 @@
     "fix-outline": "bun run scripts/fix-regulation-outline.ts",
     "citation-gate": "bun run platform/citation/gate.ts",
     "mtm:run": "bun run scripts/mtm-run.ts",
+    "alm:correspondent-drawdown-seed": "bun run scripts/seed-correspondent-drawdown.ts",
     "recon:spread-benchmarking": "bun run platform/recon/spread-benchmarking.ts",
     "recon": "bun run platform/recon/recon-self-test.ts",
     "recon:mandate": "bun run platform/recon/mandate-ownership.ts",
