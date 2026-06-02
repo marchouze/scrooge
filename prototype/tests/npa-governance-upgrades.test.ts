@@ -14,7 +14,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { seedGovernanceDimensionUpgrades } from "../seeds/products/npa-attestation-seed";
+import { seedGovernanceDimensionUpgrades } from "../platform/markets/products/npa-dimension-upgrades";
 
 function newStore(): EventStore {
   return new EventStore();

@@ -106,17 +106,6 @@ export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
     citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
   },
   {
-    seedId: "npa-attestations",
-    bootFn: "bootNpaAttestations",
-    title: "NPA product approvals (M1–M4)",
-    description:
-      "Emits ProductApproved for the 5 core products (equity, bond, repo, IRS, FX swap). Required before trade seeds that reference these products.",
-    kind: "npa-attestation",
-    emittedEventTypes: ["ProductApproved"],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
-  {
     seedId: "balance-sheet-baseline",
     bootFn: "bootBalanceSheetSeed",
     title: "Balance-sheet baseline (NSFR)",

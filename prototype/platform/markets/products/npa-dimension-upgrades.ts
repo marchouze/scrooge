@@ -1,24 +1,17 @@
-// seeds/products/npa-attestation-seed.ts
+// platform/markets/products/npa-dimension-upgrades.ts
 //
-// Consolidated NPA attestation seed — calls `runNpaAttestation` for all 5
-// M1–M4 products in sequence. This is the canonical CI seed path.
+// Platform module: NPA dimension-upgrade functions.
 //
-// Products seeded (in order):
-//   1. prd:bank:equity:jse-equity-cash        — M1 listed equity (JSE cash)
-//   2. prd:bank:bond:sagb-fixed-coupon        — M2 listed bond (SAGB fixed coupon)
-//   3. prd:bank:bond:open-repo-gmra           — M2 repo (GMRA 2011)
-//   4. prd:bank:ird:vanilla-zar-fix-zaronia   — M3 OTC IRS (ZAR fixed vs ZARONIA)
-//   5. prd:bank:fx:fx-swap-usdzar             — M4 FX swap (USD/ZAR)
+// Extracts the upgrade passes from the retired npa-attestation-seed.ts boot seed
+// and re-homes them as a proper platform module. Each function is idempotent and
+// callable from scripts or future orchestration.
 //
-// Treasury products (REPO-ZAR-001, MMD-ZAR-001, IBL-FT-ZAR-001,
-// IBL-CALL-ZAR-001, prd:bank:fx:fx-spot-usdzar) are NOT duplicated here;
-// they are seeded by `seeds/treasury/npa-approvals-seed.ts` and
-// `scripts/run-npa-gate-fx-spot.ts` respectively.
-//
-// This seed must run BEFORE trade seeds that reference M1–M4 products.
-//
-// Idempotent: each call to runNpaAttestation skips products that already
-// have a ProductApproved event in the store.
+// Functions exported:
+//   seedModelRiskUpgrades()            — model-risk: equity + repo (no-model products)
+//   seedValidatedModelRiskUpgrades()   — model-risk: bond/IRS/FX when model validation present
+//   seedSubstrateReadyDimensionUpgrades() — market-risk/op-readiness/accounting/capital/legal
+//   seedGovernanceDimensionUpgrades()  — conduct/aml/infosec/privacy
+//   seedRemainingDimensionUpgrades()   — credit-risk/liquidity-risk/operational-risk
 //
 // Authority:
 //   - D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26)
@@ -27,145 +20,39 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { makeProductDimensionAttested } from "../../platform/event-store/event-types/product";
-import type { EventStore } from "../../platform/event-store/store";
-import type { ProductNpaDef } from "../../platform/markets/products/npa-attestation-runner";
-import { runNpaAttestation } from "../../platform/markets/products/npa-attestation-runner";
+import { makeProductDimensionAttested } from "../../event-store/event-types/product";
+import type { EventStore } from "../../event-store/store";
 
 // ---------------------------------------------------------------------------
-// Seed timestamp
+// Shared constants
 // ---------------------------------------------------------------------------
 
-const SEED_AS_OF = "2026-05-26T00:00:00.000Z";
+const DIM_BASE_CHAIN = [
+  "D-NEW-PRODUCT-APPROVAL-POLICY",
+  "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+  "D-PRODUCT-CONSTRUCTION-SLICES-4-8",
+] as const;
 
 // ---------------------------------------------------------------------------
-// Helper: build a fully design-attested dimension map
+// Slice 7 — model-risk upgrade (no-model products: equity + repo)
 // ---------------------------------------------------------------------------
 
-type DimMap = ProductNpaDef["dimensions"];
-
-function allDesignAttested(baseChain: string[]): DimMap {
-  return {
-    "market-risk": { result: "design-attested", citationChain: baseChain },
-    "credit-risk": { result: "design-attested", citationChain: baseChain },
-    "liquidity-risk": { result: "design-attested", citationChain: baseChain },
-    "operational-risk": { result: "design-attested", citationChain: baseChain },
-    "operational-readiness": { result: "design-attested", citationChain: baseChain },
-    accounting: { result: "design-attested", citationChain: baseChain },
-    capital: { result: "design-attested", citationChain: baseChain },
-    conduct: { result: "design-attested", citationChain: baseChain },
-    aml: { result: "design-attested", citationChain: baseChain },
-    "model-risk": { result: "design-attested", citationChain: baseChain },
-    legal: { result: "design-attested", citationChain: baseChain },
-    infosec: { result: "design-attested", citationChain: baseChain },
-    privacy: { result: "design-attested", citationChain: baseChain },
-    tax: { result: "design-attested", citationChain: baseChain },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// All 5 M1–M4 product definitions
-// ---------------------------------------------------------------------------
-
-const PRODUCTS: ProductNpaDef[] = [
-  // ─── 1. M1: JSE Listed Cash Equity ────────────────────────────────────────
+/** Products whose model-risk can be upgraded without a ModelValidationApproved event. */
+export const NO_MODEL_PRODUCTS: ReadonlyArray<{ productId: string; notes: string }> = [
   {
     productId: "prd:bank:equity:jse-equity-cash",
-    family: "listed-equity",
-    name: "JSE Listed Cash Equity (M1)",
-    version: "1.0.0",
-    proposedBy: "agent:atlas:npa-attestation-runner",
-    dimensions: {
-      ...allDesignAttested(["D-NEW-PRODUCT-APPROVAL-POLICY"]),
-      "market-risk": {
-        result: "implementation-attested",
-        citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "ORG-MK-09"],
-      },
-      "operational-readiness": {
-        result: "implementation-attested",
-        citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
-      },
-      accounting: {
-        result: "implementation-attested",
-        citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "ORG-MK-09"],
-      },
-      capital: {
-        result: "implementation-attested",
-        citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
-      },
-      legal: {
-        result: "implementation-attested",
-        citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
-      },
-    },
+    notes:
+      "No pricing model. JSE-quoted prices used directly. SR 11-7 §I model definition not met. Tier: N/A.",
   },
-
-  // ─── 2. M2: SAGB Fixed Coupon Bond ────────────────────────────────────────
-  {
-    productId: "prd:bank:bond:sagb-fixed-coupon",
-    family: "listed-bond",
-    name: "SAGB Fixed Coupon Bond (M2)",
-    version: "1.0.0",
-    proposedBy: "agent:atlas:npa-attestation-runner",
-    dimensions: allDesignAttested(["D-NEW-PRODUCT-APPROVAL-POLICY"]),
-  },
-
-  // ─── 3. M2: Open Repo (GMRA 2011) ─────────────────────────────────────────
   {
     productId: "prd:bank:bond:open-repo-gmra",
-    family: "repo",
-    name: "Open Repo (GMRA 2011, M2)",
-    version: "1.0.0",
-    proposedBy: "agent:atlas:npa-attestation-runner",
-    dimensions: allDesignAttested(["D-NEW-PRODUCT-APPROVAL-POLICY"]),
+    notes:
+      "No pricing model. Repo rate negotiated bilaterally; collateral valued at quoted prices. Tier: N/A.",
   },
+] as const;
 
-  // ─── 4. M3: Vanilla ZAR Fixed vs ZARONIA IRS ──────────────────────────────
-  {
-    productId: "prd:bank:ird:vanilla-zar-fix-zaronia",
-    family: "otc-ird",
-    name: "Vanilla ZAR Fixed vs ZARONIA IRS (M3)",
-    version: "1.0.0",
-    proposedBy: "agent:atlas:npa-attestation-runner",
-    dimensions: {
-      ...allDesignAttested(["D-NEW-PRODUCT-APPROVAL-POLICY"]),
-      capital: {
-        result: "implementation-attested",
-        citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
-      },
-      legal: {
-        result: "implementation-attested",
-        citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
-      },
-    },
-  },
-
-  // ─── 5. M4: FX Swap (USD/ZAR) ─────────────────────────────────────────────
-  {
-    productId: "prd:bank:fx:fx-swap-usdzar",
-    family: "fx",
-    name: "FX Swap (USD/ZAR, M4)",
-    version: "1.0.0",
-    proposedBy: "agent:atlas:npa-attestation-runner",
-    dimensions: allDesignAttested(["D-NEW-PRODUCT-APPROVAL-POLICY"]),
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Seed runner — called by the boot sequence
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Slice 7 — model-risk upgrade: no-model products
-// ---------------------------------------------------------------------------
-
-// Products whose model-risk can be upgraded to implementation-attested
-// because no pricing model is used (SR 11-7 model definition not met).
-// Products whose model-risk upgrade requires a ModelValidationApproved event
-// for the product's primary pricing model. Blocked products are retried on
-// every server boot — once Nadia's validation events land in the store the
-// upgrade fires automatically.
-const WITH_MODEL_PRODUCTS: ReadonlyArray<{
+/** Products whose model-risk upgrade requires a ModelValidationApproved event. */
+export const WITH_MODEL_PRODUCTS: ReadonlyArray<{
   productId: string;
   modelId: string;
 }> = [
@@ -180,19 +67,6 @@ const WITH_MODEL_PRODUCTS: ReadonlyArray<{
   {
     productId: "prd:bank:fx:fx-swap-usdzar",
     modelId: "model:fx-forward-irp-v1",
-  },
-] as const;
-
-const NO_MODEL_PRODUCTS: ReadonlyArray<{ productId: string; notes: string }> = [
-  {
-    productId: "prd:bank:equity:jse-equity-cash",
-    notes:
-      "No pricing model. JSE-quoted prices used directly. SR 11-7 §I model definition not met. Tier: N/A.",
-  },
-  {
-    productId: "prd:bank:bond:open-repo-gmra",
-    notes:
-      "No pricing model. Repo rate negotiated bilaterally; collateral valued at quoted prices. Tier: N/A.",
   },
 ] as const;
 
@@ -215,7 +89,6 @@ export function seedModelRiskUpgrades(store: EventStore): {
   const upgraded: string[] = [];
   const skipped: string[] = [];
 
-  // Single scan — check all no-model products in one pass.
   const alreadyUpgraded = new Set(
     Array.from(store.replay())
       .filter(
@@ -255,6 +128,10 @@ export function seedModelRiskUpgrades(store: EventStore): {
   return { upgraded, skipped };
 }
 
+// ---------------------------------------------------------------------------
+// Slice 7 — model-risk upgrade (model-using products: bond, IRS, FX)
+// ---------------------------------------------------------------------------
+
 export interface ValidatedModelRiskUpgradeResult {
   readonly upgraded: string[];
   readonly skipped: string[];
@@ -266,7 +143,7 @@ export interface ValidatedModelRiskUpgradeResult {
  * whose primary pricing model has a ModelValidationApproved event in the store.
  *
  * Products without an approved validation are returned in `blocked` and will be
- * upgraded on the next server boot after Nadia's validation events land.
+ * upgraded on the next run after the validation events land.
  * Idempotent: products already at implementation-attested are returned in `skipped`.
  */
 export function seedValidatedModelRiskUpgrades(store: EventStore): ValidatedModelRiskUpgradeResult {
@@ -328,43 +205,27 @@ export function seedValidatedModelRiskUpgrades(store: EventStore): ValidatedMode
 // ---------------------------------------------------------------------------
 // Substrate-ready dimension upgrades (PR-I)
 //
-// Upgrades specific (productId, dimension) pairs from design-attested →
+// Upgrades specific (productId, dimension) pairs from design-attested to
 // implementation-attested for the four non-equity products where the
-// required substrate now exists:
-//
-//   market-risk:          BESA/JSE quoted prices + BA 325 monitoring (bond,
-//                         repo); validated ZARONIA OIS + IRS-PV (IRS);
-//                         validated FX IRP + B3 NOP monitoring (FX swap).
-//   operational-readiness: trade booking live (PR #822) + ISDA confirm
-//                         generator (PR #820) + settlement scheduling.
-//   accounting:           IFRS 9 GL posting engine (Bea) + EIR + net-
-//                         settlement + MTM mark-to-model entries.
-//   capital:              SAGB → 0% SA risk weight (BA 200 standardised);
-//                         repo → standard Basel III haircut table;
-//                         FX swap → SA-CCR standardised formula.
-//   legal:                Bond → BESA market rules (standard terms);
-//                         repo → GMRA 2011 executed;
-//                         FX swap → ISDA 2002 + FX supplement.
-//
-// IRS capital + legal: already implementation-attested (PR #824).
+// required substrate now exists.
 // ---------------------------------------------------------------------------
 
-interface DimUpgrade {
+export interface DimUpgrade {
   readonly productId: string;
   readonly dimension: string;
   readonly citationChain: readonly string[];
 }
 
+export interface SubstrateReadyUpgradeResult {
+  readonly upgraded: string[]; // "productId:dimension"
+  readonly skipped: string[];
+}
+
 const DIM_UPGRADE_AS_OF = "2026-05-27T06:00:00.000Z";
 const DIM_UPGRADE_ACTOR = { type: "service" as const, id: "agent:atlas:npa-dimension-upgrade" };
-const DIM_BASE_CHAIN = [
-  "D-NEW-PRODUCT-APPROVAL-POLICY",
-  "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
-  "D-PRODUCT-CONSTRUCTION-SLICES-4-8",
-] as const;
 
 const SUBSTRATE_READY_UPGRADES: readonly DimUpgrade[] = [
-  // ── Bond (prd:bank:bond:sagb-fixed-coupon) ─────────────────────────────
+  // Bond (prd:bank:bond:sagb-fixed-coupon)
   {
     productId: "prd:bank:bond:sagb-fixed-coupon",
     dimension: "market-risk",
@@ -391,7 +252,7 @@ const SUBSTRATE_READY_UPGRADES: readonly DimUpgrade[] = [
     citationChain: [...DIM_BASE_CHAIN],
   },
 
-  // ── Repo (prd:bank:bond:open-repo-gmra) ────────────────────────────────
+  // Repo (prd:bank:bond:open-repo-gmra)
   {
     productId: "prd:bank:bond:open-repo-gmra",
     dimension: "market-risk",
@@ -418,7 +279,7 @@ const SUBSTRATE_READY_UPGRADES: readonly DimUpgrade[] = [
     citationChain: [...DIM_BASE_CHAIN],
   },
 
-  // ── IRS (prd:bank:ird:vanilla-zar-fix-zaronia) — capital+legal already ✓
+  // IRS (prd:bank:ird:vanilla-zar-fix-zaronia) — capital+legal already attested
   {
     productId: "prd:bank:ird:vanilla-zar-fix-zaronia",
     dimension: "market-risk",
@@ -435,7 +296,7 @@ const SUBSTRATE_READY_UPGRADES: readonly DimUpgrade[] = [
     citationChain: [...DIM_BASE_CHAIN, "ORG-AC-01"],
   },
 
-  // ── FX swap (prd:bank:fx:fx-swap-usdzar) ───────────────────────────────
+  // FX swap (prd:bank:fx:fx-swap-usdzar)
   {
     productId: "prd:bank:fx:fx-swap-usdzar",
     dimension: "market-risk",
@@ -463,11 +324,6 @@ const SUBSTRATE_READY_UPGRADES: readonly DimUpgrade[] = [
   },
 ];
 
-export interface SubstrateReadyUpgradeResult {
-  readonly upgraded: string[]; // "productId:dimension"
-  readonly skipped: string[];
-}
-
 /**
  * Upgrades (productId, dimension) pairs to implementation-attested where the
  * required substrate already exists in the codebase. Idempotent: pairs with an
@@ -481,7 +337,6 @@ export function seedSubstrateReadyDimensionUpgrades(
 
   const events = Array.from(store.replay());
 
-  // Build a Set of "productId:dimension" pairs already at implementation-attested.
   const alreadyUpgraded = new Set(
     events
       .filter(
@@ -523,19 +378,7 @@ export function seedSubstrateReadyDimensionUpgrades(
 // ---------------------------------------------------------------------------
 // Governance-policy dimension upgrades (PR-J)
 //
-// Upgrades conduct, aml, infosec, and privacy for all 5 products where the
-// required policy + procedure substrate is in place:
-//
-//   conduct:   trading-mandate-v1 (ORG-MK-01 market conduct); insider-
-//              trading-pa-dealing-policy (ORG-MK-05); market-abuse controls.
-//   aml:       aml-cft-policy-v1; FIC Act obligations (ORG-FC-02/03/04);
-//              Mira sanctions-screening + transaction-monitoring live.
-//   infosec:   secure-sdlc-policy-v1; PA/FSCA JS-2/2024 (ORG-CY-01/12/13);
-//              SIEM + threat-model gate + SBOM substrate.
-//   privacy:   popia-privacy-policy-v1; Information Officer appointed;
-//              POPIA ss.19–22 data-processing controls in place.
-//
-// Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE + D-NEW-PRODUCT-APPROVAL-POLICY
+// Upgrades conduct, aml, infosec, and privacy for all 5 products.
 // ---------------------------------------------------------------------------
 
 const GOVERNANCE_DIM_AS_OF = "2026-05-27T06:30:00.000Z";
@@ -619,20 +462,8 @@ export function seedGovernanceDimensionUpgrades(store: EventStore): SubstrateRea
 // ---------------------------------------------------------------------------
 // Remaining dimension upgrades (PR-K)
 //
-// Upgrades credit-risk, liquidity-risk, and operational-risk for all 5
-// products now that the required policy + procedure substrate is in place:
-//
-//   credit-risk:      credit-risk-policy-v1 + counterparty-credit-risk-policy-v1
-//                     (ORG-PR-09 CCR framework); ISDA CSA + GMRA margining;
-//                     SA-CCR standardised RWA formula.
-//   liquidity-risk:   liquidity-risk-management-policy-v1 (ORG-PR-01 LCR);
-//                     BA 300 liquidity framework; LCR/NSFR monitoring live.
-//   operational-risk: operational-risk-policy-v1 (ORG-PR-17 ORC framework);
-//                     risk-event register; secure-SDLC + SIEM controls in place.
-//
-// Tax (14th dimension): explicitly deferred to revenue-start (Yael's mandate).
-//
-// Authority: D-PRODUCT-CONSTRUCTION-SUBSTRATE + D-NEW-PRODUCT-APPROVAL-POLICY
+// Upgrades credit-risk, liquidity-risk, and operational-risk for all 5 products.
+// Tax is explicitly deferred to revenue-start (Yael's mandate).
 // ---------------------------------------------------------------------------
 
 const REMAINING_DIM_AS_OF = "2026-05-27T07:00:00.000Z";
@@ -711,54 +542,3 @@ export function seedRemainingDimensionUpgrades(store: EventStore): SubstrateRead
 
   return { upgraded, skipped };
 }
-
-export interface NpaAttestationSeedResult {
-  approved: string[];
-  skipped: string[];
-}
-
-/**
- * Run NPA attestation for all 5 M1–M4 products against the provided store.
- *
- * Idempotent — products with an existing ProductApproved event are skipped.
- * Must be called BEFORE trade seeds that reference M1–M4 products.
- */
-export function seedNpaAttestations(store: EventStore): NpaAttestationSeedResult {
-  const approved: string[] = [];
-  const skipped: string[] = [];
-
-  for (const def of PRODUCTS) {
-    const result = runNpaAttestation(store, def, SEED_AS_OF);
-    if (result.outcome === "skipped-already-approved") {
-      skipped.push(def.productId);
-    } else {
-      approved.push(def.productId);
-    }
-  }
-
-  // Slice 7: upgrade model-risk for no-model products (equity, repo).
-  seedModelRiskUpgrades(store);
-
-  // Slice 7: upgrade model-risk for model-using products (bond, IRS, FX) once
-  // ModelValidationApproved events are present. Blocked products are retried
-  // on every boot; no-op if validations have not yet landed.
-  seedValidatedModelRiskUpgrades(store);
-
-  // PR-I: upgrade substrate-ready dimensions (market-risk, operational-readiness,
-  // accounting, capital, legal) for bond, repo, IRS, FX where the required
-  // substrate exists in the codebase.
-  seedSubstrateReadyDimensionUpgrades(store);
-
-  // PR-J: upgrade governance-policy dimensions (conduct, aml, infosec, privacy)
-  // for all 5 products where policy + procedure substrate is in place.
-  seedGovernanceDimensionUpgrades(store);
-
-  // PR-K: upgrade credit-risk, liquidity-risk, and operational-risk for all 5
-  // products. Tax remains deferred to revenue-start (Yael's mandate).
-  seedRemainingDimensionUpgrades(store);
-
-  return { approved, skipped };
-}
-
-// Re-export definitions for use by test fixtures.
-export { PRODUCTS as NPA_ATTESTATION_SEED_PRODUCTS, SEED_AS_OF as NPA_ATTESTATION_SEED_AS_OF };

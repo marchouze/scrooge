@@ -171,7 +171,6 @@ import {
   seedModelValidations,
   seedValidationMethodologies,
 } from "../seeds/models/model-validation-seed";
-import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { registerBondGatewayRoutes } from "./bond-gateway";
@@ -807,7 +806,7 @@ function bootDerive(): DashboardState {
     // Model validation seed — emit ValidationMethodologyPublished (Tier-2 + Tier-3)
     // and ModelValidationApproved for the 3 build-phase models idempotently.
     // Must run AFTER bootModelRegistry() (models must exist) and BEFORE
-    // bootNpaAttestations() (seedValidatedModelRiskUpgrades checks for approvals).
+    // seedValidatedModelRiskUpgrades in the NPA platform module checks for approvals.
     // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
     runSeed("model-validation", bootModelValidationSeeds);
     // ModelRegistered seed — emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
@@ -821,14 +820,6 @@ function bootDerive(): DashboardState {
     // Distinct modelIds from the pricing-model seeds; order-independent of them.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
     runSeed("calc-models", bootCalcModels);
-    // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
-    // core products (equity, bond, repo, IRS, FX swap) idempotently.
-    // seedValidatedModelRiskUpgrades() upgrades bond/IRS/FX model-risk to
-    // implementation-attested when ModelValidationApproved events are present.
-    // Must run BEFORE trade seeds that reference these products.
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("npa-attestations", bootNpaAttestations);
-
     // Balance-sheet seed — emit BalanceSheetProjected for build-phase NSFR baseline.
     runSeed("balance-sheet-baseline", bootBalanceSheetSeed);
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
@@ -967,31 +958,10 @@ function emitCalculationProvenance(): void {
 }
 
 /**
- * Idempotently emit ProductApproved events for M1–M4 products.
- *
- * Called before `bootTreasurySeeds()` so that trade seeds which reference
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootNpaAttestations(): void {
-  const result = seedNpaAttestations(eventStore);
-  if (result.approved.length > 0) {
-    logger.info(
-      { approved: result.approved.length, skipped: result.skipped.length },
-      "npa-attestation-seed: M1–M4 products approved",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "npa-attestation-seed: idempotent boot; all products already approved",
-    );
-  }
-}
-
-/**
  * Idempotently emit ValidationMethodologyPublished (Tier-2 + Tier-3 v0.1) and
  * ModelValidationApproved for the 3 build-phase models.
  *
- * Called after bootNpaAttestations() so the NPA gate is already satisfied.
+ * Called after the NPA product approvals are in place (gate already satisfied).
  * Idempotent — models with existing ModelValidationApproved events are skipped.
  *
  * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
