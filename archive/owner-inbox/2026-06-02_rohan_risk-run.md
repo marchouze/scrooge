@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: risk-run
-asOf: 2026-06-02T05:30:02.696Z
+asOf: 2026-06-02T06:17:44.584Z
 decision-required: false
 ---
 
@@ -9,11 +9,11 @@ decision-required: false
 
 Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the engineer-side of Helena's measurement-substrate gap.
 
-**Headline:** 13 appetite lines tracked · measurement readiness 0 ready / 3 drafting / 7 specified / 3 not-yet-specified · 0 position events (last 7d) · 924 RiskRaised events.
+**Headline:** 13 appetite lines tracked · measurement readiness 0 ready / 3 drafting / 7 specified / 3 not-yet-specified · 0 position events (last 7d) · 903 RiskRaised events.
 
 ## Helena's latest snapshot
 
-Latest `RiskAppetiteSnapshot` event: 2026-06-02T05:29:55.297Z
+Latest `RiskAppetiteSnapshot` event: 2026-06-02T05:40:32.776Z
 
 Rohan's daily run pairs with Helena's daily run: Helena reports the appetite side; Rohan reports the engineer side. Together they close the read-side ↔ build-side loop on the RAS measurement substrate.
 
@@ -47,8 +47,8 @@ _Build-phase posture: zero position events. Kai's M1 CDM TypeScript bindings (in
 
 | Severity | Count |
 |---|---|
-| medium | 660 |
-| high | 264 |
+| medium | 645 |
+| high | 258 |
 
 ## Substrate gaps surfaced this run
 
@@ -62,7 +62,7 @@ _Build-phase posture: zero position events. Kai's M1 CDM TypeScript bindings (in
 
 ## Rohan's narrative
 
-_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbdtB6Vz9tuqN78JfV1mP"})._
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbdwpV9tkrCWnJRMiKPPd"})._
 
 ## Provenance
 
