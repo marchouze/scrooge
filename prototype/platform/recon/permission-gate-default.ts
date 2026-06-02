@@ -304,6 +304,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // assertions, not a production access path. T-01 carve-out.
   // Citation: D-PNL-ATTR-FTP-CURVE-FIX, D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
   "platform/alm/ftp-curve-publisher.test.ts",
+  // Correspondent-nostro SWIFT simulator unit tests (D-FX-CLS-MEMBERSHIP; BCBS 248).
+  // Co-located per the per-module test convention. Raw EventStore() is a
+  // build-phase fixture for the MT942-emission / floor-breach FundingDrawnDown
+  // assertions, not a production access path. T-01 carve-out.
+  // Citation: D-FX-CLS-MEMBERSHIP, BCBS-248, P4-SECURITY-DESIGNED-IN.
+  "platform/simulation/env-sim/correspondent-nostro-sim.test.ts",
   // All-asset-class position-source test. Raw EventStore(":memory:") is a
   // build-phase fixture for the FX-passthrough / bond-marking / no-silent-zero
   // assertions, not a production access path. T-01 carve-out.

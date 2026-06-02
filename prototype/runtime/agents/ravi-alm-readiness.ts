@@ -276,13 +276,13 @@ function buildPipelineReadiness(): readonly PipelineReadiness[] {
         "Specify eligibility schedule alignment with ISDA / GMRA collateral annexes (Imani co-owns); first `CollateralUpdated` event fires once first repo / GMRA contract executed.",
     },
     {
-      id: "alm:samos-funding",
-      label: "SAMOS funding-window position (correspondent-mediated)",
-      engineerSideState: "specified",
+      id: "alm:correspondent-funding",
+      label: "Correspondent-bank intraday nostro funding position",
+      engineerSideState: "drafting",
       substrateRequired:
-        "Correspondent-bank API contract for SAMOS-mediated funding (per indirect-participant posture — `project_indirect_participant_posture.md`). Owner: Tomas (connector); Ravi (funding-plan logic). NOT direct SAMOS membership.",
+        "Correspondent-bank SWIFT reporting ingested as the bank's intraday nostro position (per indirect-participant posture — `project_indirect_participant_posture.md`): the correspondent operates a ZAR nostro, makes payments on instruction, receives funds on the bank's behalf, and reports intraday via MT942 interim transaction reports (plus MT940 EOD, MT900/MT910 confirmations). Owner: Tomas (SWIFT connector); Ravi (funding-plan logic). NOT direct SAMOS / CLS membership.",
       nextEngineeringStep:
-        "Draft correspondent-bank API contract with Tomas; first `FundingDrawnDown` event fires once correspondent connector lands. Direct SAMOS membership is explicitly out of scope under indirect-participant operating posture.",
+        "Build-phase: `CorrespondentNostroSimulator` (platform/simulation/env-sim/correspondent-nostro-sim.ts) emits MT942 `InboundMessageReceived` per intraday window and `FundingDrawnDown` on an intraday floor breach — standing in for Tomas's production SWIFT connector. Next: wire `runIntradayStress` to fold the `FundingDrawnDown` / MT942 stream into per-window inflow/outflow (BCBS 248), and register the simulator in the third-party sim hub. Production seam: swap the simulator for the real correspondent SWIFT connector without touching the downstream pipeline.",
     },
   ];
 }
