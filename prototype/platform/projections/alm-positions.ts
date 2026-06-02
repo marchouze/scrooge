@@ -194,7 +194,42 @@ function extractRawPosition(type: string, payload: Record<string, unknown>): Raw
  * `computeLCR` applies the L2 / L2b caps + haircuts downstream). Returns
  * an empty array when no snapshot and no trades exist (build-phase default).
  */
-function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosition[] {
+// ---------------------------------------------------------------------------
+// Live-flow provenance gate — D-LCR-TILE-PROVENANCE (CEO directive 2026-06-02)
+// ---------------------------------------------------------------------------
+// The liquidity (LCR) tile reflects real *flows*: production flows plus
+// simulated flows that were booked as trades. It excludes artificially seeded
+// `build-phase-fixture` events (the opening fixtures the seed harness injects).
+//
+// This is deliberately NOT the `production-only` provenance mode — that mode
+// KEEPS build-phase-fixture and DROPS simulated, the opposite of what a
+// liquidity tile wants ("every flow someone actually booked, real or rehearsed,
+// but nothing the seed harness fabricated"). Untagged events default to
+// included, preserving pre-provenance-substrate behaviour.
+//
+// Applied only at the entry of the three LCR-feeding folds below
+// (readHQLAFromEventStore, buildFundingPositions, buildSettlementOutflows), so
+// the capital / ASF reads used by the NSFR fold are untouched — founding
+// capital is legitimate build-phase state and must keep counting toward ASF.
+function liveFlowView(store: EventStore): EventStore {
+  return new Proxy(store, {
+    get(target, prop, receiver) {
+      if (prop === "replay") {
+        return function* (opts?: Parameters<EventStore["replay"]>[0]) {
+          for (const ev of target.replay(opts)) {
+            if (ev.provenance?.kind === "build-phase-fixture") continue;
+            yield ev;
+          }
+        };
+      }
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
+function readHQLAFromEventStore(rawEventStore: EventStore, asOf: string): HQLAPosition[] {
+  const eventStore = liveFlowView(rawEventStore);
   // Check for authoritative CollateralInventorySnapshotted events first.
   let latestSnapshot: { as_of: string; payload: CollateralSnapshotPayload } | null = null;
   for (const ev of eventStore.replay({ type: "CollateralInventorySnapshotted" })) {
@@ -370,7 +405,7 @@ interface InterbankLoanClosedPayload {
  * units (rands) for FundingPosition.amountZar (which computeLCR treats as ZAR).
  */
 function buildFundingPositions(
-  eventStore: EventStore,
+  rawEventStore: EventStore,
   asOf: string,
 ): {
   positions: FundingPosition[];
@@ -378,6 +413,7 @@ function buildFundingPositions(
   fundingLineCount: number;
   iblCount: number;
 } {
+  const eventStore = liveFlowView(rawEventStore);
   const positions: FundingPosition[] = [];
 
   // -------------------------------------------------------------------------
@@ -507,10 +543,11 @@ interface SettlementInstructionPayload {
  * BA 325 §23 contractual-maturity outflow bucket.
  */
 function buildSettlementOutflows(
-  eventStore: EventStore,
+  rawEventStore: EventStore,
   asOf: string,
   horizonDays: number,
 ): SettlementOutflowResult {
+  const eventStore = liveFlowView(rawEventStore);
   const asOfDate = new Date(asOf);
   const horizonDate = new Date(asOf);
   horizonDate.setUTCDate(horizonDate.getUTCDate() + horizonDays);

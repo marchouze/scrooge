@@ -22,7 +22,10 @@ import { describe, expect, it } from "bun:test";
 
 import { newEventId } from "../core/types";
 import { makeBondSold, makeBondTradeExecuted } from "../event-store/event-types/bond-accounting";
+import { makeDepositTaken } from "../event-store/event-types/repo-mmd-ibl";
+import { buildPhaseFixtureTag, productionTag, simulatedTag } from "../event-store/provenance";
 import { EventStore } from "../event-store/store";
+import { computeLCR } from "../liquidity/lcr";
 import { ALM_POSITION_SOURCE_EVENTS, getALMPositionSnapshot } from "./alm-positions";
 
 const AS_OF = "2026-05-21T12:00:00.000Z";
@@ -539,5 +542,155 @@ describe("alm-positions — SettlementInstructionIssued outflow fold", () => {
       g.includes(ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut),
     );
     expect(gapEntry).toContain("0 settlement instructions within");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Live-flow provenance gate — D-LCR-TILE-PROVENANCE (CEO directive 2026-06-02)
+// ---------------------------------------------------------------------------
+// The LCR tile must reflect real (production) flows plus simulated flows
+// booked as trades, but exclude artificially seeded `build-phase-fixture`
+// flows. These tests pin the gate on both the numerator (HQLA) and the
+// denominator (funding) folds, and confirm the resulting ratio ignores the
+// seed fixtures.
+
+/** Append a `BondTradeExecuted` carrying an explicit provenance tag. */
+function appendBondWithProvenance(
+  store: EventStore,
+  args: {
+    bondIsin: string;
+    nominalMinor: number;
+    cleanPricePercent: number;
+    provenance: ReturnType<typeof simulatedTag>;
+  },
+): void {
+  const base = makeBondTradeExecuted({
+    asOf: AS_OF,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "service", id: "agent:test" },
+    citations: ["D-RAS"],
+    payload: {
+      tradeId: `bond-${newEventId().slice(0, 8)}`,
+      bondIsin: args.bondIsin,
+      side: "buy",
+      nominalMinor: args.nominalMinor,
+      cleanPricePercent: args.cleanPricePercent,
+      accruedInterestMinor: 0,
+      dirtyPricePercent: args.cleanPricePercent,
+      settlementDate: "2026-05-23",
+      portfolio: "banking-book",
+      couponRate: 0.085,
+      maturityDate: "2030-01-31",
+      currency: "ZAR",
+      counterpartyLei: "SBZAZAJJXXX",
+      executedAt: AS_OF,
+    },
+  });
+  store.append({ ...base, provenance: args.provenance });
+}
+
+/** Append a `DepositTaken` (wholesale-non-operational) with explicit provenance. */
+function appendDepositWithProvenance(
+  store: EventStore,
+  args: {
+    depositId: string;
+    principalZar: number; // minor units (cents)
+    provenance: ReturnType<typeof simulatedTag>;
+  },
+): void {
+  const base = makeDepositTaken({
+    asOf: AS_OF,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "service", id: "agent:test" },
+    citations: ["D-RAS"],
+    payload: {
+      depositId: args.depositId,
+      counterpartyLei: "SBZAZAJJXXX",
+      principalZar: args.principalZar,
+      interestRateDecimal: 0.0795,
+      maturityDate: "2026-06-15",
+      depositCategory: "wholesale-non-operational",
+      bookId: "TREASURY",
+      instrumentRef: "MMD-ZAR-001",
+    },
+  });
+  store.append({ ...base, provenance: args.provenance });
+}
+
+describe("alm-positions — live-flow provenance gate (D-LCR-TILE-PROVENANCE)", () => {
+  it("excludes build-phase-fixture HQLA but keeps simulated + production", () => {
+    const store = makeStore();
+    // Simulated bond (booked as a trade) — counts.
+    appendBondWithProvenance(store, {
+      bondIsin: "ZAG000030108",
+      nominalMinor: 5_000_000_000, // R50m face
+      cleanPricePercent: 100,
+      provenance: simulatedTag({ scenario: "rehearsal", sourceLineage: "scenario-runner:test" }),
+    });
+    // Artificially seeded bond — must NOT count.
+    appendBondWithProvenance(store, {
+      bondIsin: "ZAG000057547",
+      nominalMinor: 9_000_000_000, // R90m face — large, to make exclusion obvious
+      cleanPricePercent: 100,
+      provenance: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+    const totalHqla = snap.hqlaPositions.reduce((s, p) => s + p.amountZar, 0);
+    // Only the R50m simulated bond — the R90m fixture bond is filtered out.
+    expect(totalHqla).toBe(50_000_000);
+  });
+
+  it("excludes build-phase-fixture funding but keeps simulated", () => {
+    const store = makeStore();
+    appendDepositWithProvenance(store, {
+      depositId: "MMD-SIM",
+      principalZar: 1_000_000_000, // R10m
+      provenance: simulatedTag({ scenario: "rehearsal", sourceLineage: "scenario-runner:test" }),
+    });
+    appendDepositWithProvenance(store, {
+      depositId: "MMD-FIXTURE",
+      principalZar: 500_000_000, // R5m — seeded, must be excluded
+      provenance: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+    const totalFunding = snap.fundingPositions.reduce((s, p) => s + p.amountZar, 0);
+    expect(totalFunding).toBe(10_000_000); // only the simulated R10m deposit
+  });
+
+  it("computes the LCR ratio over live flows only, ignoring seed fixtures", () => {
+    const store = makeStore();
+    // HQLA: R50m simulated bond + R90m fixture bond (excluded).
+    appendBondWithProvenance(store, {
+      bondIsin: "ZAG000030108",
+      nominalMinor: 5_000_000_000,
+      cleanPricePercent: 100,
+      provenance: simulatedTag({ scenario: "rehearsal", sourceLineage: "scenario-runner:test" }),
+    });
+    appendBondWithProvenance(store, {
+      bondIsin: "ZAG000057547",
+      nominalMinor: 9_000_000_000,
+      cleanPricePercent: 100,
+      provenance: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+    });
+    // Funding: R10m production deposit + R5m fixture deposit (excluded).
+    appendDepositWithProvenance(store, {
+      depositId: "MMD-PROD",
+      principalZar: 1_000_000_000,
+      provenance: productionTag({ sourceLineage: "treasury-desk" }),
+    });
+    appendDepositWithProvenance(store, {
+      depositId: "MMD-FIXTURE",
+      principalZar: 500_000_000,
+      provenance: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+    const lcr = computeLCR([...snap.hqlaPositions], [...snap.fundingPositions]);
+    // HQLA R50m / net outflows R10m (100% run-off, no inflows) = 500%.
+    expect(lcr.hqlaZar).toBe(50_000_000);
+    expect(lcr.netCashOutflowsZar).toBe(10_000_000);
+    expect(Math.round(lcr.lcrRatioPct ?? 0)).toBe(500);
   });
 });
