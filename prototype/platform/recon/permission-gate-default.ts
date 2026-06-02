@@ -260,17 +260,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-325-LCR; P4-SECURITY-DESIGNED-IN.
   "platform/reporting/ba-325-lcr.test.ts",
-  // PR-G model-validation seed — emits ValidationMethodologyPublished + ModelValidationApproved
-  // at boot time from the Nadia validation sign-off seed. The seed is called from
-  // dashboard/server.ts (via bootModelValidationSeeds) which already holds the gated store;
-  // this seed file itself passes the raw store through from the caller.
+  // pricing-model-definitions — platform module containing seedValidationMethodologies,
+  // seedModelValidations, seedModelRegisteredEvents, and seedModelRegistry. Called from
+  // standalone scripts (scripts/run-model-*.ts) which receive the raw store; the retired
+  // boot seeds (model-validation-seed.ts, model-registered-seed.ts) have been removed.
   // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8, P4-SECURITY-DESIGNED-IN.
-  "seeds/models/model-validation-seed.ts",
-  // model-registered-seed — emits ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
-  // and ModelValidationApproved × 3 for IRS ZARONIA and FX swap gap closure. Called from
-  // dashboard/server.ts (via bootModelRegisteredSeeds) with the gated store.
-  // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8, P4-SECURITY-DESIGNED-IN.
-  "seeds/models/model-registered-seed.ts",
+  "platform/model-registry/pricing-model-definitions.ts",
   // Market-risk VaR/SVaR/ES engine unit tests — co-located per-module test
   // convention. Raw EventStore(":memory:") is a build-phase fixture for the
   // historical-simulation status-path assertions, not a production access

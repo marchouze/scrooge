@@ -19,7 +19,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
+import { seedModelRegisteredEvents } from "../platform/model-registry/pricing-model-definitions";
 
 /** Count events of a given type in the store. */
 function countEventsOfType(store: EventStore, type: string): number {

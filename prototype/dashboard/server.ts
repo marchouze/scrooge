@@ -165,12 +165,6 @@ import {
 import { loadDescopedSeedIds } from "../seeds/descope";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { seedCalcModels } from "../seeds/models/calc-model-seed";
-import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
-import { seedModelRegistry } from "../seeds/models/model-registry-seed";
-import {
-  seedModelValidations,
-  seedValidationMethodologies,
-} from "../seeds/models/model-validation-seed";
 import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
@@ -799,23 +793,6 @@ function bootDerive(): DashboardState {
     // existing legal-entity / counterparty / agent / signatory streams.
     // Idempotent (keyed by source-event id); re-boot is a no-op.
     bootPartyBackfill();
-    // Model registry seed — submit and tier-classify 3 pricing models (SAGB DCF,
-    // ZARONIA OIS+IRS-PV, FX forward IRP). Must run BEFORE model-validation-seed
-    // and BEFORE NPA attestation seeds that read model validation status.
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-registry", bootModelRegistry);
-    // Model validation seed — emit ValidationMethodologyPublished (Tier-2 + Tier-3)
-    // and ModelValidationApproved for the 3 build-phase models idempotently.
-    // Must run AFTER bootModelRegistry() (models must exist) and BEFORE
-    // bootNpaAttestations() (seedValidatedModelRiskUpgrades checks for approvals).
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-validation", bootModelValidationSeeds);
-    // ModelRegistered seed — emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
-    // and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
-    // Complements model-registry-seed (ModelSubmitted) and model-validation-seed (v0.1).
-    // Must run AFTER bootModelValidationSeeds().
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-registered", bootModelRegisteredSeeds);
     // Calc-model seed — register + approve the three regulatory-metric models
     // (LCR/NSFR/CET1) that calculation-binding.ts binds surfaced figures to.
     // Distinct modelIds from the pricing-model seeds; order-independent of them.
@@ -877,35 +854,6 @@ function bootDerive(): DashboardState {
   } catch (e) {
     logger.error({ err: (e as Error).message }, "initial derivation failed");
     throw e;
-  }
-}
-
-/**
- * Idempotently emit ProductApproved events for M1–M4 products.
- *
- * Called before `bootTreasurySeeds()` so that trade seeds which reference
- * M1–M4 products (equity, bond, repo, IRS, FX swap) find the NPA gate
- * already passed. Idempotent — products with an existing ProductApproved
- * event are skipped silently.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelRegistry(): void {
-  const result = seedModelRegistry(eventStore);
-  if (result.submitted.length > 0 || result.tierClassified.length > 0) {
-    logger.info(
-      {
-        submitted: result.submitted.length,
-        tierClassified: result.tierClassified.length,
-        skipped: result.skipped.length,
-      },
-      "model-registry-seed: models submitted and tier-classified",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "model-registry-seed: idempotent boot; all models already registered",
-    );
   }
 }
 
@@ -983,76 +931,6 @@ function bootNpaAttestations(): void {
     logger.debug(
       { skipped: result.skipped.length },
       "npa-attestation-seed: idempotent boot; all products already approved",
-    );
-  }
-}
-
-/**
- * Idempotently emit ValidationMethodologyPublished (Tier-2 + Tier-3 v0.1) and
- * ModelValidationApproved for the 3 build-phase models.
- *
- * Called after bootNpaAttestations() so the NPA gate is already satisfied.
- * Idempotent — models with existing ModelValidationApproved events are skipped.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelValidationSeeds(): void {
-  const methResult = seedValidationMethodologies(eventStore);
-  if (methResult.published.length > 0) {
-    logger.info(
-      { published: methResult.published.length, skipped: methResult.skipped.length },
-      "model-validation-seed: methodology published",
-    );
-  } else {
-    logger.debug(
-      { skipped: methResult.skipped.length },
-      "model-validation-seed: idempotent boot; methodologies already published",
-    );
-  }
-
-  const valResult = seedModelValidations(eventStore);
-  if (valResult.approved.length > 0) {
-    logger.info(
-      { approved: valResult.approved.length, skipped: valResult.skipped.length },
-      "model-validation-seed: model validations approved",
-    );
-  } else {
-    logger.debug(
-      { skipped: valResult.skipped.length },
-      "model-validation-seed: idempotent boot; all models already approved or not yet registered",
-    );
-  }
-}
-
-/**
- * Idempotent seed: emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
- * and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
- *
- * Called after bootModelValidationSeeds() — complements (not replaces) the existing
- * ModelSubmitted and v0.1 methodology events.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelRegisteredSeeds(): void {
-  const result = seedModelRegisteredEvents(eventStore);
-  const total =
-    result.modelRegistered.length +
-    result.methodologiesPublished.length +
-    result.validationsApproved.length;
-  if (total > 0) {
-    logger.info(
-      {
-        modelRegistered: result.modelRegistered.length,
-        methodologiesPublished: result.methodologiesPublished.length,
-        validationsApproved: result.validationsApproved.length,
-        skipped: result.skipped.length,
-      },
-      "model-registered-seed: ModelRegistered + methodology v1 + validation approved emitted",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "model-registered-seed: idempotent boot; all events already present",
     );
   }
 }
