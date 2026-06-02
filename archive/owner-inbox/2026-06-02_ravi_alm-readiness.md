@@ -1,7 +1,7 @@
 ---
 agent: Ravi
 trigger: alm-readiness
-asOf: 2026-06-02T05:37:19.098Z
+asOf: 2026-06-02T06:23:01.520Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous run of Ravi's daily ALM-readiness attestation per `Team/Ravi.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Seventeenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Engineer-side counterpart to Eitan's `LiquiditySnapshot` — Eitan reports counts of liquidity / treasury events the ALCO chair would consume; Ravi reports the substrate-readiness state for each ALM pipeline (LCR, NSFR, IRRBB, FX position, FTP, collateral, SAMOS funding) the engineer would build to make those events real.
 
-**Headline:** 9 ALM pipelines tracked · readiness 0 ready / 1 drafting / 8 specified / 0 not-yet-specified · 7 Ravi-owned obligations indexed (0 PARTIAL / drafting) · 4 ALM-domain events (last 7d).
+**Headline:** 9 ALM pipelines tracked · readiness 0 ready / 1 drafting / 8 specified / 0 not-yet-specified · 7 Ravi-owned obligations indexed (0 PARTIAL / drafting) · 14 ALM-domain events (last 7d).
 
 ## Eitan's latest snapshot
 
@@ -48,11 +48,11 @@ _No `LiquiditySnapshot` event in the store. Eitan's daily handler has not yet ru
 | `HQLAObserved` | 0 |
 | `LCRComputed` | 2 |
 | `NSFRComputed` | 2 |
-| `IRRBBChecked` | 0 |
+| `IRRBBChecked` | 10 |
 | `FXPositionReported` | 0 |
 | `CollateralUpdated` | 0 |
 | `FundingDrawnDown` | 0 |
-| Prior `ALMReadinessSnapshot` (this agent) | 7 |
+| Prior `ALMReadinessSnapshot` (this agent) | 8 |
 
 ## Substrate gaps surfaced this run
 
@@ -66,7 +66,7 @@ _No `LiquiditySnapshot` event in the store. Eitan's daily handler has not yet ru
 
 ## Ravi's narrative
 
-_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbdtjGPwdvM5K1ej3bP4M"})._
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbdxDkhusVCqT7SvrH1WV"})._
 
 ## Provenance
 
