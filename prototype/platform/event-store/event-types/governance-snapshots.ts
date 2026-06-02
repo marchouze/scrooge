@@ -141,6 +141,8 @@ export const substrateStateSnapshotPayloadSchema = z
       .array(
         z.object({
           index: z.number().int().nonnegative(),
+          /** Stable register id (WS-RISK-REGISTER-CLOSURE V2). */
+          id: z.string().min(1).optional(),
           description: z.string().min(1),
           severity: z.enum(["medium", "high"]),
           status: z.enum(["planned", "in-flight"]),
