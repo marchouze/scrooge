@@ -73,6 +73,47 @@ describe("CorrespondentNostroSimulator", () => {
     expect(dp.amount).toBeGreaterThan(0);
   });
 
+  it("emits a paired SettlementInstructionIssued (repayment leg) for each FundingDrawnDown", () => {
+    const store = new EventStore();
+    const sim = new CorrespondentNostroSimulator({
+      store,
+      rng: seededRng(7),
+      intervalMs: 1000,
+      openingBalanceMinor: 51_000_000_00n,
+    });
+
+    for (let i = 0; i < 5; i++) sim.tick();
+
+    const draws = [...store.replay({ type: "FundingDrawnDown" })];
+    const instructions = [...store.replay({ type: "SettlementInstructionIssued" })];
+    // One repayment instruction per drawdown.
+    expect(instructions.length).toBe(draws.length);
+    expect(instructions.length).toBeGreaterThanOrEqual(1);
+
+    for (const draw of draws) {
+      const dp = draw.payload as { drawdownId: string; amount: number; drawnAt: string };
+      const match = instructions.find(
+        (ev) =>
+          (ev.payload as { settlementInstructionId: string }).settlementInstructionId ===
+          `SI-REPAY-${dp.drawdownId}`,
+      );
+      expect(match).toBeDefined();
+      const ip = match?.payload as {
+        outflowAmountZar: number;
+        settlementDate: string;
+        counterpartyId: string;
+      };
+      // outflowAmountZar is MINOR units (cents) === drawdown amount × 100.
+      expect(ip.outflowAmountZar).toBe(Math.round(dp.amount * 100));
+      expect(ip.counterpartyId).toBe("SBZAZAJJXXX");
+      // Repayment is the next calendar day after the drawdown date.
+      const drawDay = new Date(dp.drawnAt);
+      const expected = new Date(drawDay);
+      expected.setUTCDate(expected.getUTCDate() + 1);
+      expect(ip.settlementDate.slice(0, 10)).toBe(expected.toISOString().slice(0, 10));
+    }
+  });
+
   it("tracks the running balance as opening + credits − debits across ticks", () => {
     const store = new EventStore();
     const sim = new CorrespondentNostroSimulator({

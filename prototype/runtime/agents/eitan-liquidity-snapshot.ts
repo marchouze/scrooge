@@ -282,7 +282,7 @@ function buildReportMarkdown(
     "- **ILAAP engine** — ✅ closed 2026-05-19. Four stress scenarios; `ILAAPSummaryCompleted` events; `atlas:ilaap-run` handler registered. Authority: D-TREASURY-GAPS-WAVE1.",
   );
   lines.push(
-    "- **Settlement outflows (BA 325 §23)** — partially closed 2026-05-25. `buildSettlementOutflows` folds `TradeBooked` buy-side events with explicit `settlementDate` into the LCR denominator. Remaining gap: `SettlementInstructionIssued` event class for non-trade contractual outflows. Owner: Ravi + Atlas.",
+    "- **Settlement outflows (BA 325 §23)** — closed 2026-06-02 for correspondent-bank obligations. `buildSettlementOutflows` folds `TradeBooked` buy-side events (explicit `settlementDate`) AND `SettlementInstructionIssued` events into the LCR denominator. The correspondent-nostro connector now emits a paired `SettlementInstructionIssued` repayment leg for each intraday `FundingDrawnDown` — putting correspondent funding into LCR with no double-count (`FundingDrawnDown` is not folded by `buildFundingPositions`). Remaining scope: maturing own-issued debt / other non-trade outflows. Owner: Ravi + Atlas.",
   );
   lines.push(
     "- **FTP curve generator (live market data)** — open. `ravi:ftp-curve-publish` runs with indicative ZAR rates (SARB repo + spreads). Live ZARONIA / JIBAR / SAGB feed deferred to vendor-selection. Owner: Ravi + Anya.",

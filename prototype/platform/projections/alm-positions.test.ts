@@ -470,3 +470,74 @@ describe("alm-positions — settlement outflow derivation", () => {
     expect(settlement).toBeUndefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// 5. SettlementInstructionIssued — non-trade contractual outflow (e.g.
+//    correspondent-funding repayment). outflowAmountZar is in MINOR units.
+// ---------------------------------------------------------------------------
+
+function appendSettlementInstructionIssued(
+  store: EventStore,
+  args: { settlementInstructionId: string; outflowAmountZar: number; settlementDate: string },
+): void {
+  store.append({
+    event_id: newEventId(),
+    type: "SettlementInstructionIssued",
+    as_of: AS_OF,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "service", id: "agent:test" },
+    citations: ["BANKS-REG-26"],
+    payload: {
+      settlementInstructionId: args.settlementInstructionId,
+      settlementDate: args.settlementDate,
+      outflowAmountZar: args.outflowAmountZar,
+      counterpartyId: "SBZAZAJJXXX",
+      description: "Correspondent intraday funding repayment",
+    },
+  });
+}
+
+describe("alm-positions — SettlementInstructionIssued outflow fold", () => {
+  it("folds an in-horizon instruction into fundingPositions and flips the gap string", () => {
+    const store = makeStore();
+    // R50m repayment (minor units = 50_000_000_00) within T+30 horizon.
+    appendSettlementInstructionIssued(store, {
+      settlementInstructionId: "SI-REPAY-DRAW-TEST01",
+      outflowAmountZar: 50_000_000_00,
+      settlementDate: "2026-05-25T12:00:00.000Z",
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+
+    // outflowAmountZar minor → major: 50_000_000_00 / 100 = 50_000_000 ZAR.
+    const pos = snap.fundingPositions.find(
+      (p) => p.category === "wholesale-non-operational" && p.amountZar === 50_000_000,
+    );
+    expect(pos).toBeDefined();
+
+    // Gap flips to the informational "settlement instruction(s) included" form.
+    const gapEntry = snap.gaps.find((g) =>
+      g.includes(ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut),
+    );
+    expect(gapEntry).toBeDefined();
+    expect(gapEntry).toContain("1 settlement instruction(s) included in LCR outflow");
+    expect(gapEntry).not.toContain("0 settlement instructions within");
+  });
+
+  it("excludes an instruction whose settlementDate is outside the horizon", () => {
+    const store = makeStore();
+    appendSettlementInstructionIssued(store, {
+      settlementInstructionId: "SI-REPAY-DRAW-TEST02",
+      outflowAmountZar: 50_000_000_00,
+      settlementDate: "2026-07-30T12:00:00.000Z", // > T+30
+    });
+
+    const snap = getALMPositionSnapshot(store, AS_OF, 30);
+
+    expect(snap.fundingPositions.length).toBe(0);
+    const gapEntry = snap.gaps.find((g) =>
+      g.includes(ALM_POSITION_SOURCE_EVENTS.fundingSettlementOut),
+    );
+    expect(gapEntry).toContain("0 settlement instructions within");
+  });
+});

@@ -15,20 +15,29 @@
 //      RAS intraday floor — the correspondent draws on the bank's funding line
 //      to cover the shortfall. This is the connector's structured output that
 //      the ALM intraday-stress pipeline consumes.
+//   3. A paired SettlementInstructionIssued event for the repayment leg of (2):
+//      drawing the correspondent intraday line creates a contractual obligation
+//      to repay it. This is a non-trade contractual outflow (outside the
+//      MMD/IBL/funding-line/trade stream) and is the ONLY path that puts
+//      correspondent funding into the LCR 30-day denominator — buildSettlementOutflows
+//      (Ravi, Treasury and ALM engineer) folds it; buildFundingPositions does not
+//      see FundingDrawnDown, so there is no double-count. Authority: BA 325 §23.
 //
 // Build-phase vs production: in production Tomas's connector ingests real MT942
-// messages and emits the same FundingDrawnDown events. Swapping the simulator
-// for the real connector does not change the downstream pipeline (production
-// seam). Provenance: emitted events are untagged → treated as `simulated` by the
-// projection-runtime provenance filter (build-phase posture).
+// messages and emits the same FundingDrawnDown + SettlementInstructionIssued
+// events. Swapping the simulator for the real connector does not change the
+// downstream pipeline (production seam). Provenance: emitted events are untagged
+// → treated as `simulated` by the projection-runtime provenance filter
+// (build-phase posture).
 //
 // Authority: D-FX-CLS-MEMBERSHIP; BCBS 248 (intraday liquidity monitoring);
-//   Banks Act 94 of 1990 Reg 26.
+//   Banks Act 94 of 1990 Reg 26; BA 325 §23 (LCR contractual outflows).
 // Author: Tomas (Operations & payments engineer, engineering)
 
 import { newEventId, nowUtc } from "../../core/types";
 import { makeFundingDrawnDown } from "../../event-store/event-types/ifrs-accounting-extended";
 import { makeInboundMessageReceived } from "../../event-store/event-types/payments";
+import { makeSettlementInstructionIssued } from "../../event-store/event-types/settlement";
 import type { EventStore } from "../../event-store/store";
 import { type Mt942Entry, generateMt942 } from "../../payments/swift-mt/mt942";
 import type { SimConfigField, SimFireAction, SimStatus, SimulatorModule } from "../hub/types";
@@ -37,6 +46,8 @@ const SIM_ID = "correspondent-nostro-sim";
 const ACTOR = { type: "service" as const, id: "agent:env:correspondent-nostro-sim" };
 const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-FX-CLS-MEMBERSHIP", "BCBS-248"];
+/** Repayment-leg citations — adds the LCR contractual-outflow authority (BA 325 §23 / Reg 26). */
+const REPAYMENT_CITATIONS = ["D-FX-CLS-MEMBERSHIP", "BCBS-248", "BANKS-REG-26"];
 const CORRESPONDENT_BIC = "SBZAZAJJXXX";
 const NOSTRO_IBAN = "ZA00BANK0000000000000";
 const NOSTRO_CURRENCY = "ZAR";
@@ -261,6 +272,7 @@ export class CorrespondentNostroSimulator implements SimulatorModule {
     let drawnAmountMinor = 0n;
     if (this.balanceMinor < INTRADAY_FLOOR_MINOR) {
       drawnAmountMinor = INTRADAY_FLOOR_MINOR - this.balanceMinor;
+      const drawdownId = `DRAW-${newEventId().slice(0, 12)}`;
       this.store.append(
         makeFundingDrawnDown({
           asOf: now,
@@ -268,7 +280,7 @@ export class CorrespondentNostroSimulator implements SimulatorModule {
           actor: ACTOR,
           citations: CITATIONS,
           payload: {
-            drawdownId: `DRAW-${newEventId().slice(0, 12)}`,
+            drawdownId,
             facilityId: FUNDING_FACILITY_ID,
             // amount is a major-unit number on this schema (minor→major).
             amount: Number(drawnAmountMinor) / 100,
@@ -278,6 +290,33 @@ export class CorrespondentNostroSimulator implements SimulatorModule {
           },
         }),
       );
+
+      // Repayment leg — drawing the intraday line creates a contractual
+      // obligation to repay it the next settlement day. Emitted as a non-trade
+      // SettlementInstructionIssued so it lands in the LCR 30-day contractual-
+      // outflow denominator (BA 325 §23) via buildSettlementOutflows. Settlement
+      // date is derived from the drawdown date + 1 calendar day — never a direct
+      // wall-clock read (nowUtc()-derived only). outflowAmountZar is in MINOR
+      // units (cents); the projection divides by 100. drawnAmountMinor is already
+      // minor, so we use it directly (NOT the major-unit FundingDrawnDown.amount).
+      const repaymentDate = new Date(reportDateTime);
+      repaymentDate.setUTCDate(repaymentDate.getUTCDate() + 1);
+      this.store.append(
+        makeSettlementInstructionIssued({
+          asOf: now,
+          entity: ENTITY,
+          actor: ACTOR,
+          citations: REPAYMENT_CITATIONS,
+          payload: {
+            settlementInstructionId: `SI-REPAY-${drawdownId}`,
+            settlementDate: repaymentDate.toISOString(),
+            outflowAmountZar: Number(drawnAmountMinor),
+            counterpartyId: CORRESPONDENT_BIC,
+            description: `Repayment of correspondent intraday funding drawdown ${drawdownId} on facility ${FUNDING_FACILITY_ID}`,
+          },
+        }),
+      );
+
       this.balanceMinor += drawnAmountMinor; // line draw restores the floor
       fundingDrawn = true;
     }
