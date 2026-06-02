@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk Register — Scrooge Bank</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/provenance-badge.css" />
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <div class="page-header">
+      <span data-provenance-badge="page-top" data-provenance-source="/api/risk-register" aria-label="Provenance badge"></span>
+      <h1 class="page-title">Risk Register</h1>
+      <p class="page-subtitle">
+        <code>RiskRaised</code> findings paired with their closure state
+        (<code>RiskResolved</code> / <code>RiskAccepted</code> / <code>RiskMitigated</code>)
+        by <code>riskId</code> — derived live from the event store (WS-RISK-REGISTER-CLOSURE).
+      </p>
+    </div>
+
+    <div id="summary-header"></div>
+    <div id="summary-tiles" class="tile-row"></div>
+
+    <div id="register-header"></div>
+    <div class="toolbar" style="margin:8px 0 12px; display:flex; gap:8px; align-items:center;">
+      <label style="display:flex; gap:6px; align-items:center; font-size:13px; color:var(--color-text-secondary)">
+        <input type="checkbox" id="include-synthetic" />
+        Include synthetic (build-phase / simulated) findings
+      </label>
+    </div>
+    <div id="findings-table"></div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Risk Register" });
+
+    async function sf(u) {
+      try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; } catch { return null; }
+    }
+
+    const STATUS_BADGE = { open: "warn", resolved: "ok", accepted: "info", mitigated: "active" };
+    const PROV_BADGE = { production: "populated", simulated: "draft", "build-phase-fixture": "paused" };
+    const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const shortDate = (iso) => (iso ? String(iso).slice(0, 10) : "—");
+
+    function renderSummary(summary) {
+      const el = document.getElementById("summary-tiles");
+      el.innerHTML = "";
+      if (!summary) {
+        el.innerHTML = `<p style="color:var(--color-text-secondary)">No risk-register data available.</p>`;
+        return;
+      }
+      const p = summary.production;
+      const tiles = [
+        { label: "Open (production)", value: p.open, status: p.open > 0 ? "warn" : "ok" },
+        { label: "Resolved", value: p.resolved, status: "ok" },
+        { label: "Accepted", value: p.accepted, status: "info" },
+        { label: "Mitigated", value: p.mitigated, status: "active" },
+        {
+          label: "Synthetic findings",
+          value: summary.byProvenance.simulated + summary.byProvenance["build-phase-fixture"],
+          sub: "build-phase / simulated — excluded from the register",
+          status: null,
+        },
+      ];
+      for (const t of tiles) el.appendChild(SC.renderTile(t));
+    }
+
+    function findingModalBody(f) {
+      const rows = {
+        "Risk ID": f.riskId,
+        Severity: f.severity,
+        Category: f.category,
+        "Raised by": f.raisedBy,
+        "Raised at": shortDate(f.raisedAt),
+        Provenance: f.provenance,
+        Status: f.status,
+      };
+      if (f.closure) {
+        rows["Closed via"] = f.closure.type;
+        rows["Closed by"] = f.closure.by;
+        rows["Closed at"] = shortDate(f.closure.at);
+        rows["Closure detail"] = f.closure.detail || "—";
+      }
+      const def = SC.renderDefList(rows);
+      return `<p style="margin:0 0 12px; color:var(--color-text-secondary)">${esc(f.description)}</p>${def}`;
+    }
+
+    function renderFindings(findings) {
+      const includeSynthetic = document.getElementById("include-synthetic").checked;
+      const rows = findings
+        .filter((f) => includeSynthetic || f.provenance === "production")
+        .map((f) => ({
+          cells: [
+            esc(f.riskId),
+            esc(f.severity),
+            esc(f.category),
+            esc(f.raisedBy),
+            `<span class="badge badge-${STATUS_BADGE[f.status] ?? "info"}">${esc(f.status)}</span>`,
+            `<span class="badge badge-${PROV_BADGE[f.provenance] ?? "info"}">${esc(f.provenance)}</span>`,
+            shortDate(f.raisedAt),
+          ],
+          data: f,
+        }));
+      SC.renderTable({
+        container: document.getElementById("findings-table"),
+        headers: ["Risk ID", "Severity", "Category", "Raised by", "Status", "Provenance", "Raised"],
+        rows,
+        onRowClick: (f) => SC.openModal({ title: f.riskId, body: findingModalBody(f) }),
+        emptyMessage: includeSynthetic
+          ? "No risk findings in the register."
+          : "0 production findings — the register is clean. Tick the box above to view synthetic build-phase findings.",
+      });
+    }
+
+    let lastView = null;
+    async function render() {
+      const view = await sf("/api/risk-register");
+      lastView = view;
+      renderSummary(view?.summary ?? null);
+      renderFindings(view?.findings ?? []);
+    }
+
+    (async () => {
+      document.getElementById("summary-header").innerHTML = SC.renderSectionHeader("Production register", null);
+      document.getElementById("register-header").innerHTML = SC.renderSectionHeader("Findings", null);
+      document.getElementById("include-synthetic").addEventListener("change", () => {
+        if (lastView) renderFindings(lastView.findings);
+      });
+      await render();
+      setInterval(render, 10000);
+    })();
+  </script>
+</body>
+</html>
