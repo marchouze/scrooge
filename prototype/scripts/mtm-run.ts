@@ -61,6 +61,7 @@ import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
 import { runEodIrsRevaluation } from "../platform/markets/eod/irs-revaluation";
 import { checkIpvTolerance } from "../platform/markets/ipv-tolerance";
 import {
+  adoptDailyOfficialFxMarks,
   adoptFxMark,
   resolveActivePolicyVersionRef,
 } from "../platform/valuation/mark-adoption-engine";
@@ -190,6 +191,17 @@ async function main(): Promise<void> {
     console.warn(
       "[mtm-run] WARN: no active PolicyVersionActivated for domain=valuation in event store. " +
         "OfficialMarkAdopted events will be skipped. Run `bun run backfill:policy-activations` to fix.",
+    );
+  }
+
+  // Adopt a daily official mark for EVERY pair in the production feed, before
+  // the per-position loop — decoupled from position revaluation so a freshly-
+  // traded pair already carries a prior-day official mark (Product-Control P&L
+  // Attribution otherwise fails "missing marketMoveMarks"). Idempotent.
+  if (policyVersionRef) {
+    const marks = adoptDailyOfficialFxMarks(store, mdStore, asOf, policyVersionRef);
+    console.log(
+      `[mtm-run] daily official FX marks — adopted ${marks.adopted.length} (${marks.adopted.join(", ") || "none"}), skipped ${marks.skipped.length} already-marked, ${marks.noRate.length} no-rate`,
     );
   }
 

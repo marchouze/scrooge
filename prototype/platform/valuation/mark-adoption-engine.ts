@@ -29,9 +29,10 @@
 // Author: Rohan (Market risk engineer, engineering)
 
 import { makeOfficialMarkAdopted } from "../event-store/event-types/valuation";
+import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
-import type { MarketDataTick } from "../market-data/store";
+import { type MarketDataStore, type MarketDataTick, extractMidRate } from "../market-data/store";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -143,4 +144,100 @@ export function adoptFxMark(opts: AdoptFxMarkOpts): Event | null {
 
   opts.store.append(event);
   return event;
+}
+
+// ---------------------------------------------------------------------------
+// Daily official FX marks — feed-universe marking (decoupled from positions)
+// ---------------------------------------------------------------------------
+
+/** `YYYY-MM-DD` day component of an ISO instant or a bare date string. */
+function dayOf(iso: string): string {
+  return iso.slice(0, 10);
+}
+
+export interface AdoptDailyOfficialFxMarksResult {
+  /** Instrument keys that received a fresh `OfficialMarkAdopted` this run. */
+  adopted: string[];
+  /** Instrument keys skipped because a mark for that (pair, day) already exists. */
+  skipped: string[];
+  /** Instrument keys skipped because no usable mid rate could be derived. */
+  noRate: string[];
+}
+
+/**
+ * Adopt an `OfficialMarkAdopted` fx-rate mark for EVERY FX pair present in the
+ * production market-data feed, dated at or before `asOf` — independent of
+ * whether a live position exists in that pair.
+ *
+ * Why this exists: `adoptFxMark` is otherwise only ever called as a side-effect
+ * of the daily MTM revaluing a *live position* with a fresh tick. A pair the
+ * desk starts trading therefore has NO official mark until at least one MTM run
+ * has revalued a position in it — and never a *prior-day* mark on day one. The
+ * Product-Control P&L Attribution engine requires a prior-day official mark for
+ * every existing position (no-silent-zero), so a freshly-traded pair makes the
+ * attribution fail with "missing input marketMoveMarks". Marking the whole feed
+ * universe daily (the standard product-control closing-marks process, already
+ * done for USD/ZAR by the SARB fixing ingester) guarantees prior-day marks
+ * always exist for any pair the bank can trade.
+ *
+ * Election: per distinct production fx-quote instrument, the latest tick whose
+ * `as_of` is at or before end-of-`asOf`-day. `markAsOf` flows through as that
+ * tick's `asOf` (so a 2026-06-01 tick yields a 2026-06-01 prior-day mark).
+ *
+ * Idempotent: skips any pair that already has an `OfficialMarkAdopted` fx-rate
+ * mark dated on the same day as the elected tick (the event log already carries
+ * many duplicate marks; this never adds more).
+ *
+ * Pure-ish: appends `OfficialMarkAdopted` events; no other side effects. Returns
+ * `{adopted, skipped, noRate}` purely for caller logging.
+ *
+ * Authority: D-EVENT-VIEW-BOUNDARY-WIRE; D-TRUSTED-FIGURES-PROGRAM-V1
+ *   (no-silent-zero — the prior-day mark must exist for the attribution to
+ *   read as complete); IFRS-13 (fair-value hierarchy).
+ */
+export function adoptDailyOfficialFxMarks(
+  store: EventStore,
+  mdStore: MarketDataStore,
+  asOf: string,
+  policyVersionRef: string | null,
+): AdoptDailyOfficialFxMarksResult {
+  const result: AdoptDailyOfficialFxMarksResult = { adopted: [], skipped: [], noRate: [] };
+  if (!policyVersionRef) return result;
+
+  // Existing fx-rate marks keyed by `${instrumentKey}|${day}` for idempotency.
+  const existing = new Set<string>();
+  for (const e of store.replay({ type: "OfficialMarkAdopted" })) {
+    const p = e.payload as unknown as OfficialMarkAdoptedPayload;
+    if (p.markType !== "fx-rate") continue;
+    existing.add(`${p.instrumentKey}|${dayOf(p.markAsOf)}`);
+  }
+
+  // Latest production fx-quote tick per instrument, bounded at or before asOf.
+  const toBound = `${dayOf(asOf)}T23:59:59.999Z`;
+  const latestByInstrument = new Map<string, MarketDataTick>();
+  for (const tick of mdStore.query({
+    dataType: "fx-quote",
+    provenance: "production",
+    to: toBound,
+  })) {
+    // query() returns ORDER BY as_of DESC — first occurrence per instrument is
+    // the latest tick at or before the bound.
+    if (!latestByInstrument.has(tick.instrument)) latestByInstrument.set(tick.instrument, tick);
+  }
+
+  for (const [instrument, tick] of latestByInstrument) {
+    if (existing.has(`${instrument}|${dayOf(tick.asOf)}`)) {
+      result.skipped.push(instrument);
+      continue;
+    }
+    const mid = extractMidRate(tick.payload);
+    if (mid === undefined || mid <= 0) {
+      result.noRate.push(instrument);
+      continue;
+    }
+    adoptFxMark({ store, asOf, tick, markDecimal: mid.toFixed(6), policyVersionRef });
+    result.adopted.push(instrument);
+  }
+
+  return result;
 }
