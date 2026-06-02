@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-02T15:00:54.088Z
+asOf: 2026-06-02T17:10:28.447Z
 decision-required: false
 ---
 
@@ -9,44 +9,45 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 61333 events across 141 types; 31/31 personas have operating specs; 130 runtime handlers registered; 573 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 62029 events across 144 types; 31/31 personas have operating specs; 130 runtime handlers registered; 573 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 61333
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 62029
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 8620 | 2026-05-25 | 2026-06-02 |
-| `SubstrateAgentRunCompleted` | 8452 | 2026-05-25 | 2026-06-02 |
-| `BusDispatched` | 7107 | 2026-05-25 | 2026-06-02 |
-| `LegacyFanoutShadowed` | 3936 | 2026-05-25 | 2026-06-02 |
-| `Decision` | 2720 | 2026-04-30 | 2026-06-02 |
+| `SubstrateAgentRunStarted` | 8688 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAgentRunCompleted` | 8520 | 2026-05-25 | 2026-06-02 |
+| `BusDispatched` | 7175 | 2026-05-25 | 2026-06-02 |
+| `LegacyFanoutShadowed` | 4002 | 2026-05-25 | 2026-06-02 |
+| `Decision` | 2722 | 2026-04-30 | 2026-06-02 |
 | `RiskRaised` | 2511 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1492 | 2026-05-07 | 2026-06-02 |
-| `RecordFiled` | 1353 | 2026-05-05 | 2026-06-02 |
-| `DashboardProjectionRefreshed` | 1342 | 2026-05-25 | 2026-06-02 |
-| `SubstrateAlert` | 1147 | 2025-01-01 | 2026-06-02 |
+| `WorkstreamRegistered` | 1508 | 2026-05-07 | 2026-06-02 |
+| `DashboardProjectionRefreshed` | 1360 | 2026-05-25 | 2026-06-02 |
+| `RecordFiled` | 1354 | 2026-05-05 | 2026-06-02 |
+| `SubstrateAlert` | 1163 | 2025-01-01 | 2026-06-02 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
-| `ScheduledTrigger` | 761 | 2026-05-25 | 2026-06-02 |
+| `ScheduledTrigger` | 763 | 2026-05-25 | 2026-06-02 |
+| `CalculationPerformed` | 738 | 2026-06-01 | 2026-06-02 |
 | `ReconResult` | 666 | 2026-05-07 | 2026-06-02 |
-| `CalculationPerformed` | 630 | 2026-06-01 | 2026-06-02 |
-| `AgentGoalEvaluated` | 629 | 2026-05-25 | 2026-06-02 |
+| `AgentGoalEvaluated` | 631 | 2026-05-25 | 2026-06-02 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 550 | 2026-05-25 | 2026-06-02 |
-| `OfficialMarkAdopted` | 464 | 2026-05-28 | 2026-05-31 |
+| `OfficialMarkAdopted` | 480 | 2026-05-28 | 2026-06-02 |
 | `AgentGoalDeferred` | 431 | 2026-05-25 | 2026-06-02 |
 | `PermissionPolicyPublished` | 325 | 2026-05-25 | 2026-06-01 |
 | `AgentRunCompleted` | 288 | 2026-05-10 | 2026-06-02 |
 | `AgentBriefIssued` | 277 | 2026-05-10 | 2026-06-02 |
 | `AgentRunStarted` | 277 | 2026-05-10 | 2026-06-02 |
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
+| `AuditFindingClosed` | 227 | 2026-06-02 | 2026-06-02 |
 | `AgentPerformanceEvaluated` | 215 | 2026-05-25 | 2026-06-02 |
 | `AgentFeedbackIssued` | 215 | 2026-05-25 | 2026-06-02 |
-| `AgentGoalSelected` | 198 | 2026-05-25 | 2026-06-02 |
-| `SubstrateStateSnapshot` | 186 | 2026-05-07 | 2026-06-02 |
+| `AgentGoalSelected` | 200 | 2026-05-25 | 2026-06-02 |
+| `SubstrateStateSnapshot` | 188 | 2026-05-07 | 2026-06-02 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 163 | 2026-05-25 | 2026-06-02 |
@@ -58,9 +59,9 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 61333
 | `AgentEscalation` | 81 | 2026-05-07 | 2026-06-02 |
 | `SubLedgerPostingEmitted` | 73 | 2026-06-01 | 2026-06-02 |
 | `DocumentRegistered` | 71 | 2026-05-11 | 2026-05-25 |
+| `DailyPnLReportGenerated` | 66 | 2026-06-01 | 2026-06-02 |
 | `PartyRegistered` | 65 | 2026-05-23 | 2026-06-01 |
 | `AgentRegistered` | 60 | 2026-05-26 | 2026-06-01 |
-| `DailyPnLReportGenerated` | 57 | 2026-06-01 | 2026-06-02 |
 | `ConflictOfInterestDisclosed` | 55 | 2026-05-17 | 2026-05-17 |
 | `DataProjectionSnapshot` | 53 | 2026-05-07 | 2026-06-02 |
 | `InboxHygieneSweep` | 53 | 2026-05-07 | 2026-06-02 |
@@ -89,14 +90,14 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 61333
 | `FxTradeCancelled` | 21 | 2026-06-01 | 2026-06-01 |
 | `AccountingReadinessSnapshot` | 19 | 2026-05-26 | 2026-06-02 |
 | `FtpCurvePublished` | 18 | 2026-05-26 | 2026-06-02 |
+| `AgentEscalationDecided` | 16 | 2026-05-26 | 2026-06-02 |
 | `RiskAppetiteSnapshot` | 16 | 2026-05-27 | 2026-06-02 |
-| `AgentEscalationDecided` | 14 | 2026-05-26 | 2026-05-30 |
 | `RegulatoryConceptExtracted` | 13 | 2026-05-25 | 2026-05-25 |
 | `AgentPromptOptimizationApplied` | 13 | 2026-05-27 | 2026-05-27 |
 | `FinancialInstrumentDefined` | 13 | 2026-06-02 | 2026-06-02 |
 | `ValuationAdjustmentComputed` | 12 | 2026-06-01 | 2026-06-02 |
 | `ObligationCandidateProposed` | 11 | 2026-05-25 | 2026-05-25 |
-| `InboundMessageReceived` | 10 | 2026-06-01 | 2026-06-02 |
+| `InboundMessageReceived` | 11 | 2026-06-01 | 2026-06-02 |
 | `MessageCorrelated` | 10 | 2026-06-01 | 2026-06-02 |
 | `IRRBBChecked` | 10 | 2026-06-02 | 2026-06-02 |
 | `ALMReadinessSnapshot` | 9 | 2026-05-29 | 2026-06-02 |
@@ -158,6 +159,8 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 61333
 | `CollateralInventorySnapshotted` | 1 | 2026-06-02 | 2026-06-02 |
 | `IrsTradeBooked` | 1 | 2026-06-02 | 2026-06-02 |
 | `IrsPositionRevalued` | 1 | 2026-06-02 | 2026-06-02 |
+| `FundingDrawnDown` | 1 | 2026-06-02 | 2026-06-02 |
+| `SettlementInstructionIssued` | 1 | 2026-06-02 | 2026-06-02 |
 
 ## Personas — operating-spec coverage
 
@@ -314,7 +317,13 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (api error undefined: Connection error.)._
+Substrate is materially complete and load-bearing: 62,029 events across 144 types, 31/31 personas with operating specs, 130 runtime handlers registered across 31 agents. The event store has graduated from a single-host sqlite file to cloud-shared Neon Postgres (under Senna's TM-NEON-EVENT-STORE-001 exception), and all three runtime trigger kinds — scheduled, event-driven, on-request — are first-class. What is still missing is no longer skeleton; it is hardening (Neon §5.1/§5.2 role + IP lockdown) and the M8 cloud-lift swap. Nothing in the snapshot is currently blocking another agent.
+
+The most consequential movements visible since the prior snapshot: (1) the `AgentEscalation` / `AgentDecision` / `WorkstreamRegistered` / `RiskRaised`+closure family is now backed by typed Zod schemas in `platform/event-store/event-types/`, with 81 `AgentEscalation`, 16 `AgentEscalationDecided`, 1,508 `WorkstreamRegistered`, 2,511 `RiskRaised` and 7 `RiskResolved` events actually in the store — Vera's audit pipelines #14/#15 and the dashboard's curated-seed retirement are no longer gated on substrate, they are gated on consumer wiring; (2) the projection-cache gap is fully closed — `anya:projection-refresh` has fired 1,360 times against the live store and the seed has been removed from the commit graph (D-EVENT-STORE-SCALING Slice 3b); (3) `mira:citation-gate` is wrapped as an on-request handler and the first non-trivial cross-handler event-driven fanout is visible (4,002 `LegacyFanoutShadowed` shadow events let us measure dispatch parity against the legacy path).
+
+The remaining load-bearing gap is **A2.1 — the substrate scheduler**. GitHub Actions cron is still the trigger of record for ten workflows; 763 `ScheduledTrigger` events exist but they are emitted by the cron-fired handlers, not by a substrate clock. The off-the-hour pin is interim, and every other piece of the runtime now assumes timely fan-out — Anya's projection refresh, Scrooge's inbox hygiene, Eitan's liquidity snapshot, Ravi's ALM run all hang off it. The Neon §5.1/§5.2 hardening is the second-ranked gap: non-blocking today because event payloads remain non-sensitive, but a hard precondition before KYC, party, or client-lifecycle event types (already in the store: 26× `KYCIdentityCollected`, 48× `ClientCandidateRegistered`, 65× `PartyRegistered`) carry anything beyond synthetic data.
+
+Next: stand up A2.1 as a Bun-resident scheduler emitting `ScheduledTrigger` from the substrate itself, and retire the cron files to thin shims.
 
 ## Provenance
 
