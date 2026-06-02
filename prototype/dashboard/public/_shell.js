@@ -31,6 +31,7 @@
       group: "Risk",
       pages: [
         { label: "Risk", href: "/risk.html" },
+        { label: "Risk Register", href: "/risk-register.html" },
         { label: "Models", href: "/models.html" },
       ],
     },

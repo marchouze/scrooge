@@ -204,6 +204,7 @@ import { buildProductListView } from "./products-view";
 import { saveState } from "./registry";
 import { buildInstrumentDetailView, buildInstrumentsListView } from "./regulation-reader-view";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
+import { buildRiskRegisterView } from "./risk-register";
 import {
   RMS_REGISTER_KEYS,
   buildRmsRegistersFold,
@@ -3021,6 +3022,13 @@ const server = Bun.serve({
       // project_product_lifecycle_npa_vs_engineering.md).
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10) Slice 7.
       return jsonResponse(buildNpaView(eventStore));
+    }
+    if (url.pathname === "/api/risk-register" && req.method === "GET") {
+      // Risk register — RiskRaised findings paired with their closure state
+      // (RiskResolved/RiskAccepted/RiskMitigated) by riskId. The canonical
+      // register is the production set; synthetic findings are flagged.
+      // Authority: WS-RISK-REGISTER-CLOSURE.
+      return jsonResponse(buildRiskRegisterView(eventStore));
     }
     if (url.pathname === "/api/markets/fx/risk" && req.method === "GET") {
       // FX desk Slice 5 — risk-officer view: rejection feed + correspondent
