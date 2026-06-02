@@ -34,7 +34,10 @@ import {
   makeAgentBriefIssued,
   makeAgentRunCompleted,
 } from "../../platform/event-store/event-types/agent";
-import { makeAuditFinding } from "../../platform/event-store/event-types/audit";
+import {
+  makeAuditFinding,
+  makeAuditFindingClosed,
+} from "../../platform/event-store/event-types/audit";
 import { EventStore } from "../../platform/event-store/store";
 import type { Event } from "../../platform/event-store/types";
 import {
@@ -179,6 +182,47 @@ describe("openAuditFindingIds", () => {
     appendAcknowledged(store, "F-003");
 
     expect(openAuditFindingIds(store).size).toBe(0);
+  });
+
+  it("removes finding when canonical AuditFindingClosed is present", () => {
+    const store = makeStore();
+    store.append(
+      makeAuditFinding({
+        asOf: hoursAgoIso(2),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          findingId: "F-004",
+          severity: "high",
+          category: "process",
+          addressedTo: "agent:atlas",
+          agentId: "atlas",
+          raisedBy: "agent:vera",
+          summary: "Test finding 004",
+          citations: [],
+        },
+      }),
+    );
+    store.append(
+      makeAuditFindingClosed({
+        asOf: nowIso(),
+        entity: BASE_ENTITY,
+        actor: { type: "human", id: "marc@tgv.co.za" },
+        citations: BASE_CITATIONS,
+        payload: {
+          findingId: "F-004",
+          disposition: "resolved",
+          verificationMethod: "recon-rerun",
+          closedBy: "agent:vera",
+          rationale: "Underlying cause fixed; source recon re-run shows 0 violations.",
+          citations: [],
+        },
+      }),
+    );
+
+    expect(openAuditFindingIds(store).size).toBe(0);
+    expect(openAuditFindingIds(store).has("F-004")).toBe(false);
   });
 
   it("keeps other open findings when only some are disposed", () => {

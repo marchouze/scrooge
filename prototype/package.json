@@ -282,6 +282,8 @@
     "ras:seed-mr-1-fx": "bun run scripts/seed-mr-1-fx-ras-schedule.ts",
     "fx-spot:seed-controlled-launch": "bun run scripts/seed-fx-spot-controlled-launch-limits.ts",
     "perf:raise-finding": "bun run scripts/raise-finding.ts",
+    "audit:close-finding": "bun run scripts/close-finding.ts",
+    "audit:close-all-findings": "bun run scripts/close-all-audit-findings.ts",
     "perf:apply-feedback": "bun run scripts/apply-agent-feedback.ts",
     "recon:circular-deps": "bunx madge --circular --extensions ts runtime/ platform/ dashboard/ domains/",
     "sarb:pdf-extract": "bun run platform/tools/sarb-pdf-extract.ts",

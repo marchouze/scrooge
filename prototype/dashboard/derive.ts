@@ -370,9 +370,19 @@ export function eventSourceFromStore(store: EventStore): EventSource {
         warn: "medium",
         info: "low",
       };
+      // Findings closed via AuditFindingClosed (PROC-AUD-FT-01 Step 8) are
+      // dropped from the open-findings projection — mirrors the
+      // AuditIssueOpened/Closed pattern in openIssues() below.
+      const closedFindingIds = new Set<string>();
+      for (const e of store.replay({ type: "AuditFindingClosed" })) {
+        const p = e.payload as Record<string, unknown>;
+        const id = String(p.findingId ?? "");
+        if (id) closedFindingIds.add(id);
+      }
       const out: AuditFindingEventSummary[] = [];
       for (const e of store.replay({ type: "AuditFinding" })) {
         const p = e.payload as Record<string, unknown>;
+        if (closedFindingIds.has(String(p.findingId ?? e.event_id))) continue;
         const rawSev = String(p.severity ?? "medium");
         const severity = sevMap[rawSev] ?? rawSev;
         // Prefer canonical `summary` (shape a); fall back to legacy
