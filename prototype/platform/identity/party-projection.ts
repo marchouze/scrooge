@@ -232,6 +232,7 @@ export function buildPartyProjection(eventStore: EventStore, asOf?: string): Par
         const patch = p.kindAttributesPatch as Record<string, unknown> | undefined;
         if (patch && m.kindAttributes?.kind === "legal-entity") {
           const attrs = m.kindAttributes as unknown as Record<string, unknown>;
+          if (patch.lei !== undefined) attrs.lei = patch.lei;
           if (patch.bic !== undefined) attrs.bic = patch.bic;
           if (patch.authorisedProducts !== undefined)
             attrs.authorisedProducts = patch.authorisedProducts;
