@@ -267,6 +267,56 @@ function readHQLAFromEventStore(eventStore: EventStore, asOf: string): HQLAPosit
     out.push({ amountZar: cashZar, tier: "L1" });
   }
 
+  // Bond positions (BondTradeExecuted): the banking-book bond inventory is HQLA
+  // when the issuer qualifies (BA 325 Annex 1). The bond desk books via
+  // BondTradeExecuted — NOT the older TradeBooked/TradeSettled vocabulary the
+  // CollateralInventorySnapshotted fold above covers — so this fold ALWAYS runs
+  // (additive, like repo cash) regardless of any security snapshot. Each open
+  // buy is classified through classifyHQLA: a ZAG-prefix ISIN is an SA sovereign
+  // bond (0% RW → L1, zero haircut); other ISINs are corporate bonds with no
+  // rating on the booking event → non-HQLA (conservative; a rating-bearing
+  // SecurityMaster feed would reclassify them). Sells / matured / sold positions
+  // are excluded. Market value = nominalMinor × cleanPricePercent / 100, in major
+  // ZAR. Authority: BA 325 Annex 1; BCBS D295 §50.
+  const closedBondTradeIds = new Set<string>();
+  for (const evType of ["BondSold", "BondMatured"] as const) {
+    for (const ev of eventStore.replay({ type: evType })) {
+      if (ev.as_of > asOf) continue;
+      const p = ev.payload as { tradeId?: string };
+      if (p.tradeId) closedBondTradeIds.add(p.tradeId);
+    }
+  }
+  for (const ev of eventStore.replay({ type: "BondTradeExecuted" })) {
+    if (ev.as_of > asOf) continue;
+    const p = ev.payload as {
+      tradeId?: string;
+      bondIsin?: string;
+      side?: string;
+      nominalMinor?: number;
+      cleanPricePercent?: number;
+      currency?: string;
+    };
+    if (!p.tradeId || !p.bondIsin || !p.nominalMinor) continue;
+    if (p.side === "sell") continue; // short — not an HQLA asset
+    if (closedBondTradeIds.has(p.tradeId)) continue; // sold or matured
+
+    const isRsaGovtBond = p.bondIsin.startsWith("ZAG");
+    const descriptor: SecurityDescriptor = {
+      isin: p.bondIsin,
+      issuer: isRsaGovtBond ? "Republic of South Africa" : "unknown",
+      assetClass: isRsaGovtBond ? "sovereign-bond" : "corporate-bond",
+      currency: p.currency ?? "ZAR",
+      // ZAG = SA government bond, 0% RW → L1. Corporate bonds carry no rating on
+      // the booking event, so they fall to non-HQLA (skipped below).
+      ...(isRsaGovtBond ? { riskWeight: 0 } : {}),
+    };
+    const classification = classifyHQLA(descriptor);
+    if (classification.level === "non-HQLA") continue;
+    const marketValueZar = (p.nominalMinor * (p.cleanPricePercent ?? 100)) / 100 / 100;
+    if (marketValueZar <= 0) continue;
+    out.push({ amountZar: marketValueZar, tier: classification.level });
+  }
+
   return out;
 }
 
@@ -711,10 +761,11 @@ export function getALMPositionSnapshot(
   const gaps: string[] = [];
 
   // -------------------------------------------------------------------------
-  // HQLA — fold TradeBooked / TradeSettled events through HQLA classifier.
-  // Partial wiring: full HQLA substrate (CollateralInventorySnapshotted) lands
-  // with Tomas + Atlas; until then, security positions from the trade stream
-  // are the only source. Build-phase empty by construction.
+  // HQLA — fold the security snapshot (CollateralInventorySnapshotted, or the
+  // legacy TradeBooked/TradeSettled stream) PLUS always-on repo-cash and
+  // BondTradeExecuted bond-inventory folds through the HQLA classifier. The
+  // bond fold is what makes a banking-book ZAG sovereign bond count as L1 HQLA
+  // (the bond desk books via BondTradeExecuted, not the older trade vocabulary).
   // -------------------------------------------------------------------------
   const hqlaPositions = readHQLAFromEventStore(eventStore, asOf);
 
