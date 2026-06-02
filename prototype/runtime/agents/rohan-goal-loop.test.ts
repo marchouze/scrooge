@@ -34,8 +34,10 @@ import {
   makeAgentRunCompleted,
   makeAgentRunStarted,
 } from "../../platform/event-store/event-types/agent";
+import { makeRiskRaised } from "../../platform/event-store/event-types/risk";
 import { EventStore } from "../../platform/event-store/store";
 import {
+  hasOpenRiskFindings,
   isSelfExecutableByRohan,
   openBriefsAddressedToRohan,
   openBriefsListForRohan,
@@ -237,5 +239,87 @@ describe("rohan goal-loop — follow-on routing classification", () => {
     // Must be false → dispatcher emits AgentRunCompleted{outcome:"blocked"}
     // and then calls routeBlockedBrief which issues the follow-on brief.
     expect(isSelfExecutableByRohan(b)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// hasOpenRiskFindings — provenance guard (candidate-2 trigger).
+//
+// Synthetic RiskRaised events (build-phase-fixture IFRS-9 staging fixtures,
+// simulated backtest-harness model risks, Atlas substrate-status records) must
+// NOT count as open findings. Counting them jammed candidate-2 permanently: the
+// store held thousands of synthetic RiskRaised entries and no closure event
+// type exists, so the unfiltered scan returned `true` on every tick forever.
+// Only genuine production-provenance findings count. See the build-phase-fixture
+// projection-pollution rule.
+// ---------------------------------------------------------------------------
+
+function appendRisk(
+  store: EventStore,
+  riskId: string,
+  provenance: {
+    kind: "production" | "simulated" | "build-phase-fixture";
+    scenario?: string;
+    sourceLineage: string;
+  },
+): void {
+  store.append({
+    ...makeRiskRaised({
+      asOf: minsAgoIso(1),
+      entity: BASE_ENTITY,
+      actor: BASE_ACTOR,
+      citations: BASE_CITATIONS,
+      payload: {
+        riskId,
+        raisedBy: BASE_ACTOR.id,
+        description: `risk ${riskId}`,
+        category: "credit",
+        severity: "medium",
+        likelihood: "possible",
+        mitigation: "none",
+      },
+    }),
+    provenance,
+  });
+}
+
+describe("rohan goal-loop — hasOpenRiskFindings provenance guard", () => {
+  it("empty store → no open findings", () => {
+    expect(hasOpenRiskFindings(makeStore())).toBe(false);
+  });
+
+  it("only build-phase-fixture RiskRaised → no open findings (the jam fix)", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:fixture:1", { kind: "build-phase-fixture", sourceLineage: "test-fixture" });
+    appendRisk(s, "risk:fixture:2", { kind: "build-phase-fixture", sourceLineage: "test-fixture" });
+    expect(hasOpenRiskFindings(s)).toBe(false);
+  });
+
+  it("only simulated RiskRaised → no open findings", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:sim:1", {
+      kind: "simulated",
+      scenario: "backtest-harness",
+      sourceLineage: "test-fixture",
+    });
+    expect(hasOpenRiskFindings(s)).toBe(false);
+  });
+
+  it("a genuine production-provenance RiskRaised → open finding", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:prod:1", { kind: "production", sourceLineage: "rohan:risk-run" });
+    expect(hasOpenRiskFindings(s)).toBe(true);
+  });
+
+  it("mixed store (synthetic + one production) → open finding (production wins)", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:fixture:1", { kind: "build-phase-fixture", sourceLineage: "test-fixture" });
+    appendRisk(s, "risk:sim:1", {
+      kind: "simulated",
+      scenario: "backtest-harness",
+      sourceLineage: "test-fixture",
+    });
+    appendRisk(s, "risk:prod:1", { kind: "production", sourceLineage: "rohan:risk-run" });
+    expect(hasOpenRiskFindings(s)).toBe(true);
   });
 });
