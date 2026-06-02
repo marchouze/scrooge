@@ -160,6 +160,12 @@ export function lastPlatformReconViolationMs(store: EventStore = eventStore): nu
  */
 export function openFindingsOwnedByAtlas(store: EventStore = eventStore): number {
   const disposed = new Set<string>();
+  // AuditFindingClosed — the canonical closure signal (PROC-AUD-FT-01 Step 8).
+  for (const e of store.replay({ type: "AuditFindingClosed" })) {
+    const p = e.payload as Record<string, unknown>;
+    disposed.add(String(p.findingId ?? ""));
+  }
+  // Legacy closure verbs — retained for back-compat.
   for (const e of store.replay({ type: "AuditFindingDisposed" })) {
     const p = e.payload as Record<string, unknown>;
     disposed.add(String(p.findingId ?? ""));

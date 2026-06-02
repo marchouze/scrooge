@@ -86,7 +86,7 @@ import {
   workstreamStartedPayloadSchema,
 } from "../event-types/agent-substrate-extended";
 import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
-import { auditFindingPayloadSchema } from "../event-types/audit";
+import { auditFindingClosedPayloadSchema, auditFindingPayloadSchema } from "../event-types/audit";
 import { entityReclassifiedPayloadSchema } from "../event-types/entity-reclassified";
 import {
   auditIssueClosedPayloadSchema,
@@ -200,6 +200,17 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditFindingPayloadSchema,
+  },
+  {
+    type: "AuditFindingClosed",
+    class: "audit",
+    issuer: "Vera",
+    subscribers: ["Thandiwe", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["PROC-AUD-FT-01", "D-AGENT-AUTONOMY-OPERATIONAL"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "prototype/platform/event-store/event-types/audit.ts",
+    payloadSchema: auditFindingClosedPayloadSchema,
   },
   {
     type: "AuditIssueOpened",

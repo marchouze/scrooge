@@ -125,6 +125,13 @@ export function openAuditFindingIds(store: EventStore = eventStore): Set<string>
     const id = String(p.findingId ?? e.event_id);
     open.add(id);
   }
+  // AuditFindingClosed — the canonical closure signal (PROC-AUD-FT-01 Step 8).
+  for (const e of store.replay({ type: "AuditFindingClosed" })) {
+    const p = e.payload as Record<string, unknown>;
+    open.delete(String(p.findingId ?? ""));
+  }
+  // AuditFindingDisposed / AuditFindingAcknowledged — retained for back-compat
+  // (legacy closure verbs; never emitted in production, but honoured if present).
   for (const e of store.replay({ type: "AuditFindingDisposed" })) {
     const p = e.payload as Record<string, unknown>;
     open.delete(String(p.findingId ?? ""));

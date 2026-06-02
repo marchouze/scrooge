@@ -116,17 +116,17 @@ function run() {
   try {
     db.exec("ALTER TABLE events ADD COLUMN aggregate_id TEXT");
   } catch {
-    /* ok */
+    /* column already exists — ALTER is idempotent across reruns, safe to ignore */
   }
   try {
     db.exec("ALTER TABLE events ADD COLUMN aggregate_label TEXT");
   } catch {
-    /* ok */
+    /* column already exists — ALTER is idempotent across reruns, safe to ignore */
   }
   try {
     db.exec("CREATE INDEX IF NOT EXISTS idx_events_aggregate_id ON events(aggregate_id)");
   } catch {
-    /* ok */
+    /* index create is best-effort; IF NOT EXISTS makes reruns safe to ignore */
   }
 
   const rows = db

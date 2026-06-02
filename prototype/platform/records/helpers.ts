@@ -55,8 +55,11 @@ import {
 } from "../event-store/event-types";
 import {
   type AuditFindingCategory,
+  type AuditFindingDisposition,
   type AuditFindingSeverity,
+  type AuditFindingVerificationMethod,
   makeAuditFinding,
+  makeAuditFindingClosed,
 } from "../event-store/event-types/audit";
 import type { Actor, Event } from "../event-store/types";
 
@@ -728,4 +731,64 @@ export function recordAuditFinding(
 
   eventStore.append(event);
   return findingId;
+}
+
+// ---------------------------------------------------------------------------
+// recordAuditFindingClosed — close an open AuditFinding (PROC-AUD-FT-01 Step 8)
+// ---------------------------------------------------------------------------
+
+export interface RecordAuditFindingClosedInput {
+  /** The `findingId` of the `AuditFinding` being closed. */
+  readonly findingId: string;
+  readonly disposition: AuditFindingDisposition;
+  readonly verificationMethod: AuditFindingVerificationMethod;
+  /** Actor who verified/closed the finding — e.g. "agent:vera". */
+  readonly closedBy: string;
+  /** Root cause, the fix, and the evidence the finding is resolved. */
+  readonly rationale: string;
+  readonly evidenceRef?: string;
+  /** CAE attestation text — required by Step 8 for P1/P2 closures. */
+  readonly thandiweAttestation?: string;
+  /**
+   * Actor who is *recording* the closure on the event envelope. Defaults to a
+   * human CEO/principal actor so the append bypasses the agent permission gate
+   * (closure is a CEO-directed governance act); `closedBy` carries the
+   * verification attribution (e.g. "agent:vera").
+   */
+  readonly recordedBy?: string;
+  readonly citations?: readonly string[];
+}
+
+/**
+ * Emit a typed `AuditFindingClosed` event for an open finding.
+ *
+ * Both consumers — `openAuditFindingIds()` (vera-goal-loop) and the dashboard
+ * `auditFindings()` projection — subtract a finding once a matching
+ * `AuditFindingClosed` exists. Closure is the production form of
+ * PROC-AUD-FT-01 Step 8 (verification + attestation).
+ *
+ * Authority: PROC-AUD-FT-01; D-AGENT-AUTONOMY-OPERATIONAL.
+ */
+export function recordAuditFindingClosed(input: RecordAuditFindingClosedInput, asOf: string): void {
+  const citations = [...(input.citations ?? ["PROC-AUD-FT-01", "D-AGENT-AUTONOMY-OPERATIONAL"])];
+  const recordedBy = input.recordedBy ?? "marc@tgv.co.za";
+
+  const event = makeAuditFindingClosed({
+    asOf,
+    entity: DEFAULT_ENTITY,
+    actor: { type: "human", id: recordedBy },
+    citations,
+    payload: {
+      findingId: input.findingId,
+      disposition: input.disposition,
+      verificationMethod: input.verificationMethod,
+      closedBy: input.closedBy,
+      rationale: input.rationale,
+      ...(input.evidenceRef ? { evidenceRef: input.evidenceRef } : {}),
+      ...(input.thandiweAttestation ? { thandiweAttestation: input.thandiweAttestation } : {}),
+      citations,
+    },
+  });
+
+  eventStore.append(event);
 }

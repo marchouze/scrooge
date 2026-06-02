@@ -93,8 +93,88 @@ export function makeAuditFinding(args: {
 // enhanced 2026-05-31 with richer payload fields). Re-exported from the barrel
 // index. Do not duplicate here.
 
+// ---------------------------------------------------------------------------
+// AuditFindingClosed
+// ---------------------------------------------------------------------------
+//
+// Closure event for the finding lifecycle — the production form of
+// PROC-AUD-FT-01 Step 8 ("Closure verification and attestation"). Until this
+// landed, `AuditFinding` events could be raised but never disposed, so every
+// finding ever recorded sat permanently "open" in `openAuditFindingIds()` and
+// the dashboard `auditFindings()` projection. This event is the canonical
+// closure signal; both consumers subtract a finding once a matching
+// `AuditFindingClosed` exists.
+//
+// Authority: PROC-AUD-FT-01 (Audit findings tracking and remediation);
+// D-AGENT-AUTONOMY-OPERATIONAL.
+
+/** How the finding was disposed of at closure. */
+export const auditFindingDispositionSchema = z.enum([
+  "resolved", // underlying cause fixed; recon/evidence confirms it no longer fires
+  "superseded", // replaced by a corrected event or a later finding
+  "false-positive", // finding was not a genuine deficiency
+  "acknowledged", // accepted/noted without code change (e.g. mitigated incident)
+]);
+export type AuditFindingDisposition = z.infer<typeof auditFindingDispositionSchema>;
+
+/** How closure was independently verified (PROC-AUD-FT-01 Step 8). */
+export const auditFindingVerificationMethodSchema = z.enum([
+  "recon-rerun", // the source recon pipeline was re-run and no longer fires
+  "evidence-review", // closure evidence reviewed (incident mitigation, decision, etc.)
+  "source-removed", // the cited source (file/site) no longer exists in the tree
+]);
+export type AuditFindingVerificationMethod = z.infer<typeof auditFindingVerificationMethodSchema>;
+
+export const auditFindingClosedPayloadSchema = z.object({
+  /** The `findingId` of the `AuditFinding` being closed. */
+  findingId: z.string().min(1),
+
+  /** Disposition reached at closure. */
+  disposition: auditFindingDispositionSchema,
+
+  /** How closure was independently verified. */
+  verificationMethod: auditFindingVerificationMethodSchema,
+
+  /** Actor who verified/closed the finding — e.g. "agent:vera". */
+  closedBy: z.string().min(1),
+
+  /** Narrative: root cause, the fix, and the evidence the finding is resolved. */
+  rationale: z.string().min(1),
+
+  /** PR, file path, event_id, or decision id evidencing the remediation. */
+  evidenceRef: z.string().optional(),
+
+  /** CAE (Thandiwe) attestation text — required by Step 8 for P1/P2 closures. */
+  thandiweAttestation: z.string().optional(),
+
+  /** Citations for this closure. */
+  citations: z.array(z.string()).default([]),
+});
+
+export type AuditFindingClosedPayload = z.infer<typeof auditFindingClosedPayloadSchema>;
+
+export function makeAuditFindingClosed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: AuditFindingClosedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "AuditFindingClosed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: auditFindingClosedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const AUDIT_TYPED_EVENT_TYPES = [
   "AuditFinding",
+  "AuditFindingClosed",
   "AuditIssueOpened",
   "AuditIssueClosed",
 ] as const;
