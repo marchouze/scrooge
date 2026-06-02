@@ -63,8 +63,8 @@ import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-s
 import { eventStore, logger } from "../../platform/composition";
 import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
-import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import { routeBlockedBrief } from "../../platform/records/brief-router";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying accounting-readiness handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.

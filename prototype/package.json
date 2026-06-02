@@ -67,7 +67,6 @@
     "scenario:gateway": "bun run scenarios/09-gateway-real-checks.ts",
     "scenario:irs-trade": "bun run scenarios/10-irs-trade.ts",
     "scenario:liquidity-ratios": "bun run scenarios/11-liquidity-ratios.ts",
-
     "scenario:conduct-surveillance": "bun run scenarios/12-conduct-surveillance.ts",
     "scenario:counterparty-exposure": "bun run scenarios/13-counterparty-exposure.ts",
     "scenario:fx-spot-internal-pre-licence-test": "rm -f .local/scenario-fx-spot-internal-pre-licence-test.db .local/scenario-fx-spot-internal-pre-licence-test.db-wal .local/scenario-fx-spot-internal-pre-licence-test.db-shm .local/scenario-fx-spot-internal-pre-licence-test-market-data.db .local/scenario-fx-spot-internal-pre-licence-test-market-data.db-wal .local/scenario-fx-spot-internal-pre-licence-test-market-data.db-shm && BANK_EVENT_DB=.local/scenario-fx-spot-internal-pre-licence-test.db BANK_MARKET_DATA_DB=.local/scenario-fx-spot-internal-pre-licence-test-market-data.db BANK_PERMISSION_GATE_DISABLED=true bun run scenarios/fx-spot-internal-pre-licence-test.ts",

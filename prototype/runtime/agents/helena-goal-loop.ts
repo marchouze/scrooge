@@ -64,13 +64,13 @@ import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-s
 import { eventStore, logger } from "../../platform/composition";
 import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
+import { routeBlockedBrief } from "../../platform/records/brief-router";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
+import type { AgentRunContext, AgentRunOutput } from "../types";
 
 // Threshold: if unmeasured lines persist for this many consecutive runs,
 // Helena's goal-loop surfaces the gap as a formal escalation candidate.
 const UNMEASURED_ESCALATION_THRESHOLD = 3;
-import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
-import { routeBlockedBrief } from "../../platform/records/brief-router";
-import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying risk-appetite-watch handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)

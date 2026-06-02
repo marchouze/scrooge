@@ -121,7 +121,7 @@ describe("routeBlockedBrief", () => {
     expect(threw).toBe(false);
     expect(result).toBeDefined();
     // Non-emit path: alreadyExists is false (no emit attempted)
-    expect(result!.alreadyExists).toBe(false);
+    expect(result?.alreadyExists).toBe(false);
   });
 
   it("decision route → skipped silently, alreadyExists: false, no throw", () => {
@@ -145,7 +145,7 @@ describe("routeBlockedBrief", () => {
 
     expect(threw).toBe(false);
     expect(result).toBeDefined();
-    expect(result!.alreadyExists).toBe(false);
+    expect(result?.alreadyExists).toBe(false);
   });
 
   it("agent route with known target (agent:bea) → briefId contains 'bea'", () => {

@@ -29,10 +29,9 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { createHash } from "node:crypto";
+import { eventStore as defaultStore, logger } from "../composition";
 import type { AgentRunCompletedFollowOnRoute, RmsAgentRef } from "../event-store/event-types/agent";
 import type { AgentBriefIssuedPayload } from "../event-store/event-types/agent";
-import { eventStore as defaultStore } from "../event-store/store";
-import { logger } from "../composition";
 import { recordBriefIssued } from "./helpers";
 import type { RecordHelperDeps } from "./helpers";
 
@@ -90,6 +89,7 @@ const KNOWN_AGENTS: Record<string, RmsAgentRef> = {
 };
 
 /** Atlas — the default target for `code-pr` routes. */
+// biome-ignore lint/style/noNonNullAssertion: ATLAS_REF is a hard-coded registry entry that always exists.
 const ATLAS_REF: RmsAgentRef = KNOWN_AGENTS["agent:atlas"]!;
 
 // ---------------------------------------------------------------------------
@@ -167,10 +167,7 @@ function deriveBriefId(
   const input = `${blockedRunId}:${routeKind}`;
   const hex8 = createHash("sha256").update(input).digest("hex").slice(0, 8);
   const dateSlug = asOf.slice(0, 10); // YYYY-MM-DD
-  const agentSlug = (target.agentId ?? `agent:${target.name.toLowerCase()}`).replace(
-    /^agent:/,
-    "",
-  );
+  const agentSlug = (target.agentId ?? `agent:${target.name.toLowerCase()}`).replace(/^agent:/, "");
   return `brief:${agentSlug}:route-${hex8}:${dateSlug}`;
 }
 
