@@ -516,6 +516,111 @@ function revalueOnePosition(args: {
 }
 
 // ---------------------------------------------------------------------------
+// Scoped single-trade revaluation — inline at booking time
+// ---------------------------------------------------------------------------
+
+/**
+ * Revalue a single freshly-booked FX position immediately, instead of waiting
+ * for the next scheduled daily MTM run. Reuses `revalueOnePosition`, which
+ * emits `FxPositionRevalued` (+ `OfficialMarkAdopted`) into the shared
+ * composition-root `eventStore`.
+ *
+ * Deliberately scoped: it takes the trade payload the caller already holds (no
+ * whole-store replay — the same O(1) discipline as the GL engine's
+ * `scopeToEventIds`) and omits the whole-portfolio machinery (`MtmRunCompleted`,
+ * the Owner-Inbox deliverable, the valuation-adjustment sweep). Those belong to
+ * the daily 18:00 UTC recon pass, which is unchanged and remains the backstop.
+ *
+ * Non-fatal by contract: callers wrap this in try/catch so a reval failure never
+ * blocks a booking. If no usable mark exists, a `SubstrateAlert` is emitted so
+ * the gap is surfaced rather than silently dropped.
+ *
+ * Authority: D-FX-MTM-REVAL-ON-BOOKING (CEO session-delegation 2026-06-02);
+ *   D-MARKETS-SCHEMA-FOUNDATION; IFRS-9-§5.7.1.
+ */
+export async function revalueTradeScoped(
+  trade: FxTradeExecutedPayload,
+  asOf: string,
+): Promise<void> {
+  const tradeId = trade.tradeId.value;
+
+  const marketDbPath = process.env.BANK_MARKET_DATA_DB;
+  if (!marketDbPath) {
+    logger.warn(
+      { tradeId },
+      "revalueTradeScoped — BANK_MARKET_DATA_DB not set; skipping inline reval (daily MTM run is the backstop)",
+    );
+    return;
+  }
+
+  let mdStore: MarketDataStore;
+  try {
+    mdStore = new MarketDataStore(marketDbPath);
+  } catch (err) {
+    logger.error(
+      { tradeId, error: err instanceof Error ? err.message : String(err) },
+      "revalueTradeScoped — failed to open MarketDataStore",
+    );
+    return;
+  }
+
+  const policyVersionRef = resolveActivePolicyVersionRef(
+    eventStore as unknown as import("../../platform/event-store/store").EventStore,
+  );
+
+  const result = revalueOnePosition({
+    tradeId,
+    trade,
+    mdStore,
+    asOf,
+    policyVersionRef,
+    // The booking timestamp is the natural revaluation timestamp; avoids a
+    // fresh `new Date()` (wall-clock) read inside the engine.
+    revaluedAt: asOf,
+  });
+
+  if (result.outcome === "skipped-no-mark") {
+    const dateStr = fmtDateUTC(asOf);
+    // Trade-scoped alertId — distinct per unmarkable booking so several on the
+    // same day do not collide on the daily run's date-keyed id. The slug must
+    // match `alert:<class>:<a-z0-9->`, so the trade id is lower-cased and any
+    // non-conforming character collapsed to a hyphen.
+    const tradeSlug = tradeId.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    eventStore.append(
+      makeSubstrateAlert({
+        asOf,
+        entity: BANK_ENTITY,
+        actor: ENGINE_ACTOR,
+        citations: SUBSTRATE_ALERT_CITATIONS,
+        payload: {
+          alertId: `alert:integrity:mtm-no-mark-${dateStr}-${tradeSlug}`,
+          alertClass: "integrity",
+          agentUrn: "urn:agent:rohan:daily-mtm",
+          details: `Inline reval ${dateStr}: trade ${tradeId} (${result.currencyPair}) booked with NO usable mark — no production tick and no prior FxPositionRevalued. Unrealised P&L is incomplete for this position until a feed tick or the daily MTM run covers it. MTM feed required.`,
+          severity: "high",
+        },
+        eventId: newEventId(),
+      }),
+    );
+    logger.warn(
+      { tradeId, currencyPair: result.currencyPair },
+      "revalueTradeScoped — no mark available; emitted SubstrateAlert",
+    );
+    return;
+  }
+
+  logger.info(
+    {
+      tradeId,
+      currencyPair: result.currencyPair,
+      outcome: result.outcome,
+      rateSource: result.rateSource,
+    },
+    "revalueTradeScoped — position marked inline at booking",
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
 

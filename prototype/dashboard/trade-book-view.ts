@@ -14,7 +14,7 @@
 
 import { randomBytes } from "node:crypto";
 
-import { clock, eventStore } from "../platform/composition";
+import { clock, eventStore, logger } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
 import {
@@ -32,6 +32,7 @@ import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
 import { runPostTradeLifecycle } from "../platform/simulation/post-trade-lifecycle";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
+import { revalueTradeScoped } from "../runtime/agents/rohan-daily-mtm";
 import type { AgentRunContext } from "../runtime/types";
 
 // ---------------------------------------------------------------------------
@@ -1297,6 +1298,22 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
     // will catch it.
     const msg = err instanceof Error ? err.message : String(err);
     return { ok: true, tradeId, eventId, glWarning: `Trade booked but GL engine error: ${msg}` };
+  }
+
+  // ----- Mark the freshly-booked position inline (MTM) -----
+  // Emit an FxPositionRevalued immediately, while the position is still open
+  // (before the lifecycle below may settle it), so it is not reported as
+  // "no mark" on the product-control dashboard until the next scheduled daily
+  // MTM run. Non-fatal: the daily 18:00 UTC run is the backstop.
+  // Authority: D-FX-MTM-REVAL-ON-BOOKING (CEO session-delegation 2026-06-02).
+  try {
+    await revalueTradeScoped(tradePayload, asOf);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(
+      { tradeId, eventId, err: msg },
+      "inline MTM reval failed — daily MTM run is the backstop",
+    );
   }
 
   // ----- Post-trade lifecycle -----
