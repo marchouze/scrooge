@@ -13,7 +13,8 @@
 //         source in MarketDataStore (cross-source variance); emits
 //         IpvExceptionRaised on breach.
 //   4. Logs "bond MTM: no JSE price feed connected — skipped".
-//   5. Logs "IRD MTM: no curve ingest connected — skipped".
+//   5. Runs EOD IRS mark-to-market revaluation (runEodIrsRevaluation over the
+//      open IRS book; static JIBAR curve seed, idempotent per valuationDate).
 //   6. Emits MtmRunCompleted.
 //   7. Prints a summary table to stdout.
 //   8. Exits 0.
@@ -57,6 +58,7 @@ import type {
   SettlementConfirmedPayload,
 } from "../platform/markets/cdm/fx";
 import { baseAmountMinor } from "../platform/markets/cdm/fx-helpers";
+import { runEodIrsRevaluation } from "../platform/markets/eod/irs-revaluation";
 import { checkIpvTolerance } from "../platform/markets/ipv-tolerance";
 import {
   adoptFxMark,
@@ -383,11 +385,25 @@ async function main(): Promise<void> {
   skippedReasons.push(bondSkipReason);
 
   // -------------------------------------------------------------------------
-  // IRD MTM — no curve ingest connected yet
-  // -------------------------------------------------------------------------
-  const irdSkipReason = "IRD MTM: no curve ingest connected — skipped";
-  console.warn(`[mtm-run] WARN: ${irdSkipReason}`);
-  skippedReasons.push(irdSkipReason);
+  // IRD MTM — EOD IRS mark-to-market revaluation.
+  //
+  // Drives runEodIrsRevaluation over the open IRS book, emitting
+  // IrsPositionRevalued per swap. The valuation uses the documented static
+  // JIBAR curve seed ([GAP-IRS-1] in jibar-curve-seed.ts) — the build-phase
+  // analogue of a live curve ingest. The engine is idempotent per
+  // valuationDate (a swap already revalued today is skipped), so re-running
+  // intraday after an EOD run is a no-op. Wiring this into the daily cycle
+  // keeps the CVA current-exposure leg (model:cva-exposure-epe-v1, which reads
+  // IrsPositionRevalued) fresh after each booking, rather than relying on a
+  // manual reval. Authority: D-MARKETS-SCHEMA-FOUNDATION; IFRS-9-§4.1.
+  const irsReval = runEodIrsRevaluation(store, asOf);
+  positionsValued += irsReval.revalued;
+  positionsSkipped += irsReval.skipped;
+  for (const err of irsReval.errors) skippedReasons.push(`IRS reval: ${err}`);
+  console.log(
+    `[mtm-run] IRS reval: ${irsReval.revalued} revalued, ${irsReval.skipped} skipped, ` +
+      `total MTM ZAR ${(irsReval.totalMtmZar / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+  );
 
   // -------------------------------------------------------------------------
   // Emit MtmRunCompleted

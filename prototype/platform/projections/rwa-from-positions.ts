@@ -34,7 +34,9 @@
 //     riskType          = "fx"
 //     notionalMinor     = near-leg notional.amountMinor (base-currency notional)
 //     marketRiskWeight  = rwaInstrumentClassWeights()["FX-spot"] (registry)
-//     Closed by:  SettlementConfirmed (tradeId string), TradeMatured{productKind:"fx-spot"} (tradeId string)
+//     Closed by:  SettlementConfirmed (tradeId string), TradeMatured{productKind:"fx-spot"} (tradeId string),
+//                 FxTradeCancelled (tradeId string) — a cancelled trade carries no
+//                 live market-risk position and must be excluded.
 //
 //   IrsTradeBooked         → TradingBookPosition
 //     riskType          = "interest-rate"
@@ -220,13 +222,21 @@ export function computeRwaFromPositions(
     if (typeof p.placementId === "string") closedIblIds.add(p.placementId);
   }
 
-  // --- FX closures: SettlementConfirmed + TradeMatured{productKind:fx-spot} -
+  // --- FX closures: SettlementConfirmed + TradeMatured{productKind:fx-spot}
+  //     + FxTradeCancelled. A cancelled trade is not a live market-risk
+  //     position; omitting it (the pre-fix behaviour) left cancelled — often
+  //     mis-scaled — notionals inflating market RWA. FxTradeCancelled carries a
+  //     plain-string tradeId (matches mtm-run + fx-subledger-reconciliation).
   const closedFxIds = new Set<string>();
   for (const ev of eventStore.replay({ type: "SettlementConfirmed", asOf })) {
     const p = ev.payload as { tradeId?: unknown };
     if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
   }
   for (const ev of eventStore.replay({ type: "TradeMatured", asOf })) {
+    const p = ev.payload as { tradeId?: unknown };
+    if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
+  }
+  for (const ev of eventStore.replay({ type: "FxTradeCancelled", asOf })) {
     const p = ev.payload as { tradeId?: unknown };
     if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
   }

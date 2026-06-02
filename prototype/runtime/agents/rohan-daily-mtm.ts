@@ -29,9 +29,10 @@
 //         feed. The reversal-then-reval pair stays atomic — every
 //         position-day carries one revaluation event, so Bea's posting
 //         engine cannot reverse without a paired forward.
-//   4. Preserves the existing "no JSE price feed connected" / "no curve
-//      ingest connected" honest substrate-gap markers for Bond / Equity /
-//      IRD in `skippedReasons[]` so the dashboard renders them.
+//   4. Preserves the existing "no JSE price feed connected" honest substrate-
+//      gap markers for Bond / Equity in `skippedReasons[]` so the dashboard
+//      renders them. IRD is now revalued on-cadence (runEodIrsRevaluation off
+//      the static JIBAR curve seed), no longer a skip marker.
 //   5. Emits one `MtmRunCompleted` event carrying the run summary.
 //   6. Writes the daily deliverable to Owner Inbox.
 //
@@ -65,6 +66,7 @@ import type {
   SettlementConfirmedPayload,
 } from "../../platform/markets/cdm/fx";
 import { baseAmountMinor } from "../../platform/markets/cdm/fx-helpers";
+import { runEodIrsRevaluation } from "../../platform/markets/eod/irs-revaluation";
 import { computeCurrencyPositions } from "../../platform/projections/markets/currency-position";
 import {
   adoptFxMark,
@@ -99,7 +101,6 @@ const SUBSTRATE_ALERT_CITATIONS = [
 ];
 
 const BOND_SKIP_REASON = "bond MTM: no JSE price feed connected — skipped";
-const IRD_SKIP_REASON = "IRD MTM: no curve ingest connected — skipped";
 const EQUITY_SKIP_REASON = "equity MTM: no JSE equity feed connected — skipped";
 
 // ---------------------------------------------------------------------------
@@ -726,13 +727,43 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   // -------------------------------------------------------------------------
-  // Honest skip messages for Bond / Equity / IRD — substrate gap markers,
-  // not bugs. Carried into MtmRunCompleted.skippedReasons[] so the
-  // dashboard renders them.
+  // Honest skip messages for Bond / Equity — substrate gap markers, not bugs.
+  // Carried into MtmRunCompleted.skippedReasons[] so the dashboard renders them.
   // -------------------------------------------------------------------------
   skippedReasons.push(BOND_SKIP_REASON);
   skippedReasons.push(EQUITY_SKIP_REASON);
-  skippedReasons.push(IRD_SKIP_REASON);
+
+  // -------------------------------------------------------------------------
+  // IRD MTM — EOD IRS mark-to-market revaluation on the daily cadence.
+  //
+  // runEodIrsRevaluation marks the open IRS book (emits IrsPositionRevalued
+  // per swap) off the documented static JIBAR curve seed ([GAP-IRS-1]) — the
+  // build-phase analogue of a live curve ingest. Idempotent per valuationDate,
+  // so a re-run within the same day is a no-op. This keeps the CVA current-
+  // exposure leg (model:cva-exposure-epe-v1, which reads IrsPositionRevalued)
+  // fresh after each booking. Gated on !dryRun — the engine appends directly.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION; IFRS-9-§4.1; BCBS-D365-IRRBB.
+  if (!ctx.dryRun) {
+    try {
+      const irsReval = runEodIrsRevaluation(eventStore, dateStr);
+      positionsValued += irsReval.revalued;
+      positionsSkipped += irsReval.skipped;
+      for (const err of irsReval.errors) skippedReasons.push(`IRS reval: ${err}`);
+      logger.info(
+        {
+          runId,
+          revalued: irsReval.revalued,
+          skipped: irsReval.skipped,
+          totalMtmZarMinor: irsReval.totalMtmZar,
+        },
+        "rohan:daily-mtm — IRS EOD revaluation complete",
+      );
+    } catch (err) {
+      skippedReasons.push(`IRS reval failed: ${String(err)}`);
+    }
+  } else {
+    skippedReasons.push("IRS reval: skipped (dry-run)");
+  }
 
   // -------------------------------------------------------------------------
   // Emit SubstrateAlert when any position fell back to stale-mark — this
