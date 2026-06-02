@@ -32,10 +32,12 @@ import { computeNSFR } from "../liquidity/nsfr";
 import type { MarketDataStore } from "../market-data/store";
 import { computeCva } from "../market-risk/cva-engine";
 import { computeMarketRisk } from "../market-risk/var-engine";
+import { computePnLAttribution, priorDay } from "../product-control/pnl-attribution";
 import { getALMPositionSnapshot } from "../projections/alm-positions";
 import { computeCapitalMetrics } from "../projections/capital-metrics";
 import { computeRwaFromPositions } from "../projections/rwa-from-positions";
 import type { FinancialInput } from "../types/financial-input";
+import { isPresent } from "../types/financial-input";
 import { checkModelApproved } from "./calculation-binding";
 import { buildCalculationPerformed } from "./calculation-emit";
 
@@ -167,7 +169,10 @@ export function emitAllCalculationProvenance(deps: EmitProvenanceDeps): void {
     // the required inputs; cvaRwaMinor is the optional BA-600 passthrough.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1; D-MODEL-REGISTRY-SCOPE-CLOSURE-V1;
     //   D-RWA-LIVE-POSITIONS-PROJECTION-V1 (Helena, Chief Risk Officer).
-    const rwa = computeRwaFromPositions(eventStore, asOf);
+    // Build phase: pass combined mode so simulated trades (from the sim hub)
+    // contribute to RWA alongside any production trades. Fixture events are
+    // excluded by the explicit build-phase-fixture guard in computeRwaFromPositions.
+    const rwa = computeRwaFromPositions(eventStore, asOf, { mode: "combined" });
     const rwaFallback = rwa.buildPhaseFallback;
     emitOne(
       "rwa",
@@ -332,6 +337,40 @@ export function emitAllCalculationProvenance(deps: EmitProvenanceDeps): void {
         },
       ],
       cva.cva.present ? Math.round(cva.cva.value * 100) : null,
+    );
+
+    // Product Control P&L Attribution — FX-spot clean-P&L Explain
+    // (model:pnl-attribution-fx-v1, Camille CFO). Boot-suite emitter uses
+    // computePnLAttribution (pure read) — operational events (PnLAttributionGenerated,
+    // PnLAttributionExceptionRaised) are emitted by runPnLAttribution() on Bea's
+    // daily cadence; this block only emits the CalculationPerformed provenance so
+    // the figure is always fresh on dashboard boot, even when Bea's agent is idle.
+    // NO SILENT ZEROS: marketMoveMarks REQUIRED — absent when unattributable
+    // positions exist (no usable prior-day mark); ftpCurve OPTIONAL — absent in the
+    // MVP (no FTP curve yet, carry = absent, never 0). Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
+    const reportDate = asOf.slice(0, 10);
+    const priorReportDate = priorDay(reportDate);
+    const pnlAttr = computePnLAttribution(eventStore, reportDate, priorReportDate);
+    emitOne(
+      "pnl-attribution",
+      [
+        {
+          name: "marketMoveMarks",
+          value: isPresent(pnlAttr.marketMove) ? pnlAttr.marketMove.value : null,
+          missing: !isPresent(pnlAttr.marketMove),
+        },
+        {
+          name: "priorDayTotal",
+          value: pnlAttr.payload.actualMoveZarMinor,
+          missing: false,
+        },
+        {
+          name: "ftpCurve",
+          value: isPresent(pnlAttr.carry) ? pnlAttr.carry.value : null,
+          missing: !isPresent(pnlAttr.carry),
+        },
+      ],
+      pnlAttr.payload.actualMoveZarMinor,
     );
   } catch (err) {
     logger.warn(

@@ -29,17 +29,7 @@ import { MarketDataStore } from "../platform/market-data/store";
 import { seedCalcModels } from "../platform/model-registry/calc-model-definitions";
 import { CALC_BINDINGS } from "../platform/model-registry/calculation-binding";
 import { emitAllCalculationProvenance } from "../platform/model-registry/calculation-provenance";
-import { runPnLAttribution } from "../platform/product-control/pnl-attribution";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
-
-// Bindings NOT emitted by the boot provenance suite (emitAllCalculationProvenance):
-// they are emitted by their own engine's run wrapper. The guardrail drives those
-// wrappers too, so a binding wired to NEITHER path still fails. The value is the
-// emitter the guardrail invokes for that key — adding a binding with no emitter
-// (the gap that let `rwa` ship without one) fails the coverage assertion below.
-const NON_BOOT_SUITE_EMITTERS: Record<string, "product-control-pnl-attribution"> = {
-  "pnl-attribution": "product-control-pnl-attribution",
-};
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-05-31T08:00:00.000Z";
@@ -102,11 +92,6 @@ describe("calc-provenance emission suite", () => {
       logger: silentLogger,
     });
 
-    // Non-boot-suite emitters — bindings emitted by their own engine's run
-    // wrapper rather than the boot suite. Drive each so the coverage assertion
-    // spans every emitter path, not just the boot suite.
-    runPnLAttribution(store, () => AS_OF);
-
     // Collect the modelIds for which a CalculationPerformed was emitted.
     const emittedModelIds = new Set(
       [...store.replay({ type: "CalculationPerformed" })].map(
@@ -114,20 +99,16 @@ describe("calc-provenance emission suite", () => {
       ),
     );
 
-    // Every bound figure MUST have produced an emission from SOME emitter path.
-    // This is the guardrail: a binding key wired to no emitter — boot suite or
-    // NON_BOOT_SUITE_EMITTERS — fails here (the gap that let `rwa` ship without
-    // an emitter). A new binding must either join the boot suite or register its
-    // emitter in NON_BOOT_SUITE_EMITTERS and have this test drive it.
+    // Every bound figure MUST have produced an emission from the boot suite.
+    // This is the guardrail: a binding key wired to no emitter fails here
+    // (the gap that let `rwa` ship without an emitter, and later let
+    // `pnl-attribution` run without a boot-suite emitter). A new binding
+    // must join the boot suite — emitAllCalculationProvenance() — to pass.
     const missing = Object.values(CALC_BINDINGS)
       .filter((b) => !emittedModelIds.has(b.modelId))
       .map((b) => `${b.calcKey} (${b.modelId})`);
 
     expect(missing).toEqual([]);
-    // Sanity: the non-boot-suite allow-list keys are real bindings.
-    for (const key of Object.keys(NON_BOOT_SUITE_EMITTERS)) {
-      expect(CALC_BINDINGS[key as keyof typeof CALC_BINDINGS]).toBeDefined();
-    }
   });
 
   it("emits the RWA figure (model:rwa-sa-v1) with a live total when trades exist (status ok)", () => {
