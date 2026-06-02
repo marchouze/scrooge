@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-02T12:00:16.810Z
+asOf: 2026-06-02T13:00:47.090Z
 decision-required: false
 ---
 
@@ -9,33 +9,33 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 60673 events across 139 types; 31/31 personas have operating specs; 130 runtime handlers registered; 573 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 60903 events across 139 types; 31/31 personas have operating specs; 130 runtime handlers registered; 573 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 60673
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 60903
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 8518 | 2026-05-25 | 2026-06-02 |
-| `SubstrateAgentRunCompleted` | 8350 | 2026-05-25 | 2026-06-02 |
-| `BusDispatched` | 7005 | 2026-05-25 | 2026-06-02 |
-| `LegacyFanoutShadowed` | 3837 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAgentRunStarted` | 8552 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAgentRunCompleted` | 8384 | 2026-05-25 | 2026-06-02 |
+| `BusDispatched` | 7039 | 2026-05-25 | 2026-06-02 |
+| `LegacyFanoutShadowed` | 3870 | 2026-05-25 | 2026-06-02 |
 | `Decision` | 2720 | 2026-04-30 | 2026-06-02 |
-| `RiskRaised` | 2504 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1468 | 2026-05-07 | 2026-06-02 |
+| `RiskRaised` | 2511 | 2025-12-01 | 2026-06-02 |
+| `WorkstreamRegistered` | 1476 | 2026-05-07 | 2026-06-02 |
 | `RecordFiled` | 1353 | 2026-05-05 | 2026-06-02 |
-| `DashboardProjectionRefreshed` | 1315 | 2026-05-25 | 2026-06-02 |
-| `SubstrateAlert` | 1114 | 2025-01-01 | 2026-06-02 |
+| `DashboardProjectionRefreshed` | 1324 | 2026-05-25 | 2026-06-02 |
+| `SubstrateAlert` | 1129 | 2025-01-01 | 2026-06-02 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
-| `ScheduledTrigger` | 758 | 2026-05-25 | 2026-06-02 |
+| `ScheduledTrigger` | 759 | 2026-05-25 | 2026-06-02 |
 | `ReconResult` | 666 | 2026-05-07 | 2026-06-02 |
-| `AgentGoalEvaluated` | 626 | 2026-05-25 | 2026-06-02 |
+| `AgentGoalEvaluated` | 627 | 2026-05-25 | 2026-06-02 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
+| `CalculationPerformed` | 558 | 2026-06-01 | 2026-06-02 |
 | `IdentityKeyRotated` | 550 | 2026-05-25 | 2026-06-02 |
-| `CalculationPerformed` | 510 | 2026-06-01 | 2026-06-02 |
 | `OfficialMarkAdopted` | 464 | 2026-05-28 | 2026-05-31 |
 | `AgentGoalDeferred` | 431 | 2026-05-25 | 2026-06-02 |
 | `PermissionPolicyPublished` | 325 | 2026-05-25 | 2026-06-01 |
@@ -45,8 +45,8 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 60673
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
 | `AgentPerformanceEvaluated` | 215 | 2026-05-25 | 2026-06-02 |
 | `AgentFeedbackIssued` | 215 | 2026-05-25 | 2026-06-02 |
-| `AgentGoalSelected` | 195 | 2026-05-25 | 2026-06-02 |
-| `SubstrateStateSnapshot` | 183 | 2026-05-07 | 2026-06-02 |
+| `AgentGoalSelected` | 196 | 2026-05-25 | 2026-06-02 |
+| `SubstrateStateSnapshot` | 184 | 2026-05-07 | 2026-06-02 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 163 | 2026-05-25 | 2026-06-02 |
@@ -63,9 +63,9 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 60673
 | `ConflictOfInterestDisclosed` | 55 | 2026-05-17 | 2026-05-17 |
 | `DataProjectionSnapshot` | 53 | 2026-05-07 | 2026-06-02 |
 | `InboxHygieneSweep` | 53 | 2026-05-07 | 2026-06-02 |
+| `DailyPnLReportGenerated` | 51 | 2026-06-01 | 2026-06-02 |
 | `BriefSuperseded` | 49 | 2026-05-10 | 2026-05-31 |
 | `ClientCandidateRegistered` | 48 | 2026-06-01 | 2026-06-01 |
-| `DailyPnLReportGenerated` | 47 | 2026-06-01 | 2026-06-02 |
 | `PaNotificationSubmitted` | 45 | 2026-05-11 | 2026-05-11 |
 | `ObligationsRegisterSnapshot` | 43 | 2026-05-07 | 2026-05-28 |
 | `SecuritySubstrateSnapshot` | 43 | 2026-05-07 | 2026-05-28 |
@@ -303,7 +303,7 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 60673
 Tracked engineering items that block agents from running fully autonomously. Each closes when the corresponding substrate work lands.
 
 - Event store: cloud-shared via Neon Postgres (`BANK_EVENT_DB_URL`); local sqlite remains canonical-shape on every host. Bidirectional sync runs before/after every agent workflow via `bun run event-store:sync`. Senna threat model APPROVED for build-phase use under exception `TM-NEON-EVENT-STORE-001` (Owen's substrate-exception register). Hardening conditions §5.1 (role downgrade to SELECT+INSERT) and §5.2 (IP allowlist) deferred while events remain non-sensitive; required before any sensitive-data event flows. M8 cloud lift swaps Neon for Neon-on-Azure or Azure Postgres without code change.
-- Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised — DEFINED in `platform/event-store/event-types.ts` with Zod payload schemas and typed `make<Type>` factories. Atlas now emits one RiskRaised per substrate gap on his weekly run, exercising the schema. The remaining three types are available for handlers to adopt as their decision / escalation / workstream paths are wired; Vera's audit pipelines #14/#15 and the dashboard's curated-seed retirement now have substrate to consume.
+- Typed event-payload schemas: AgentEscalation, AgentDecision, WorkstreamRegistered, RiskRaised + closure family (RiskResolved / RiskAccepted / RiskMitigated) — DEFINED in `platform/event-store/event-types/risk.ts` + `.../event-types.ts` with Zod payload schemas and typed `make<Type>` factories. Substrate gaps surface on the SubstrateStateSnapshot `gaps[]` status inventory + per-gap WorkstreamRegistered events; they are NOT risk-register findings, so Atlas no longer emits RiskRaised for them (WS-RISK-REGISTER-CLOSURE). The closure family lets goal-loops resolve a risk register by riskId pairing. Vera's audit pipelines #14/#15 and the dashboard's curated-seed retirement now have substrate to consume.
 - Runtime trigger kinds: scheduled, event-driven, and on-request are all first-class in `runtime/run.ts`. Event-driven dispatch fans out in-process from a parent run when the parent appended an event type a downstream handler subscribes to; cross-process / cross-workflow event-bus is M8 cloud-lift work. On-request handlers are dispatched via `bun run agent:<slug>` or workflow_dispatch with no schedule (first example: `mira:citation-gate`).
 - Claude API integration for agent-narrative output: ROLLED OUT. All seven runtime handlers (Vera, Atlas, Mira, Owen, Senna, Anya, Scrooge) call `tryGenerateNarrative` after their mechanical pass. Each has a stable persona-grounded system prompt cached as the prefix; per-run state is the volatile suffix. Requires ANTHROPIC_API_KEY in the host env or GitHub Actions secret; runs degrade gracefully when unset.
 - Projection-cache persistence: closed by `anya:projection-refresh`, an event-driven handler subscribed to SubstrateStateSnapshot / WorkstreamRegistered / WorkstreamCompleted / CeoDecision. Re-derives the dashboard projection from canonical sources + the live event store and writes it to the runtime cache `prototype/.local/dashboard-state.json` (gitignored). D-EVENT-STORE-SCALING Slice 3a (PR #138, 2026-05-10) split this runtime path off the previously-committed seed; Slice 3b (same day) removed the seed from the commit graph entirely — the recon harness now derives + asserts internal consistency at recon time rather than comparing against a stored cache.
@@ -312,7 +312,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbePwWcRVxxzk7znziaFo"})._
+_Narrative generation failed (credit exhausted: Anthropic credit balance exhausted: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CbeUZDAeqmzpiWLHinATz"})._
 
 ## Provenance
 
