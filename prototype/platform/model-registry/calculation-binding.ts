@@ -51,7 +51,7 @@ const PROGRAM = "D-TRUSTED-FIGURES-PROGRAM-V1";
 
 // ---------------------------------------------------------------------------
 // Bindings — the canonical registry of "which model computes which figure".
-// modelId values must be seeded (seeds/models/calc-model-seed.ts) so that
+// modelId values must be registered (platform/model-registry/calc-model-definitions.ts) so that
 // assertModelApproved() finds an `approved` model.
 // ---------------------------------------------------------------------------
 

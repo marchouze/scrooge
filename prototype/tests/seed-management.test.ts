@@ -62,43 +62,18 @@ describe("loadDescopedSeedIds", () => {
 });
 
 describe("buildSeedsView", () => {
-  it("lists every manifest seed with descoped=false on a fresh store", () => {
+  it("returns empty view on a fresh store (manifest is now empty)", () => {
     const view = buildSeedsView(new EventStore());
-    expect(view).toHaveLength(SEED_MANIFEST.length);
-    expect(view.every((s) => !s.descoped)).toBe(true);
-  });
-
-  it("marks a seed descoped and carries the descope record", () => {
-    const store = new EventStore();
-    descope(store, "npa-attestations", "replaced by sim trades");
-    const view = buildSeedsView(store);
-    const entry = view.find((s) => s.seedId === "npa-attestations");
-    expect(entry?.descoped).toBe(true);
-    expect(entry?.descope?.reason).toBe("replaced by sim trades");
+    expect(view).toHaveLength(0);
+    expect(SEED_MANIFEST.length).toBe(0);
   });
 });
 
 describe("recon:seed-manifest-parity", () => {
-  it("passes against the live bootDerive() wiring", () => {
+  it("passes against the live bootDerive() wiring (0 seeds asserted)", () => {
     const result = runSeedManifestParity();
     expect(result.violations.filter((v) => v.severity === "fail")).toHaveLength(0);
     expect(result.ok).toBe(true);
-    expect(result.asserted).toBe(SEED_MANIFEST.length);
-  });
-
-  it("flags a manifest entry whose boot wiring is absent", () => {
-    // Stub wires only model-registry; all other manifest seeds should be flagged.
-    const stub = `function bootDerive() {
-      runSeed("model-registry", bootModelRegistry);
-    }`;
-    const tmp = `${import.meta.dir}/.tmp-seed-parity-stub.ts`;
-    require("node:fs").writeFileSync(tmp, stub);
-    try {
-      const result = runSeedManifestParity({ serverPath: tmp });
-      expect(result.ok).toBe(false);
-      expect(result.violations.some((v) => v.subject === "npa-attestations")).toBe(true);
-    } finally {
-      require("node:fs").unlinkSync(tmp);
-    }
+    expect(result.asserted).toBe(0);
   });
 });

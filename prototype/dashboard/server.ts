@@ -58,9 +58,6 @@ import {
   type ChartOfAccountsEntry,
   checkAgedItems,
 } from "../platform/accounting/gl-subledger-recon";
-import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
-import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
-import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { computeEVE } from "../platform/alm/eve";
 import { computeNII } from "../platform/alm/nii";
 import { computeRepricingGap } from "../platform/alm/repricing-gap";
@@ -72,7 +69,6 @@ import type { BankConfigPaths, BankConfigServer } from "../platform/config/schem
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
-import { makeBalanceSheetProjected } from "../platform/event-store/event-types/balance-sheet";
 import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/event-types/fx-accounting";
 import { makeSubstrateAlert } from "../platform/event-store/event-types/platform";
 import {
@@ -87,7 +83,6 @@ import {
   makeSeedDescoped,
   makeSeedPromotedToSimulated,
 } from "../platform/event-store/event-types/seed-management";
-import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import type { Event } from "../platform/event-store/types";
 import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigger-bus";
 import {
@@ -155,23 +150,7 @@ import {
   recordDecisionComment,
 } from "../runtime/decisions/record";
 import { runAgent } from "../runtime/run";
-import { runPartyBackfill } from "../scripts/party-backfill";
-import { registerFleet } from "../scripts/register-fleet";
-import {
-  BALANCE_SHEET_SEED_AS_OF,
-  BALANCE_SHEET_SEED_CITATIONS,
-  BALANCE_SHEET_SEED_PAYLOAD,
-} from "../seeds/alm/balance-sheet-seed";
-import { loadDescopedSeedIds } from "../seeds/descope";
 import { getSeedManifestEntry } from "../seeds/manifest";
-import { seedCalcModels } from "../seeds/models/calc-model-seed";
-import { seedModelRegisteredEvents } from "../seeds/models/model-registered-seed";
-import { seedModelRegistry } from "../seeds/models/model-registry-seed";
-import {
-  seedModelValidations,
-  seedValidationMethodologies,
-} from "../seeds/models/model-validation-seed";
-import { seedNpaAttestations } from "../seeds/products/npa-attestation-seed";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { registerBondGatewayRoutes } from "./bond-gateway";
@@ -778,59 +757,6 @@ function bootDerive(): DashboardState {
     // symmetry). The call is kept for backwards-compat but emits nothing.
     backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
 
-    // D-TRUSTED-FIGURES-PROGRAM-V1 objective 1 — seed descoping. An operator can
-    // emit SeedDescoped (or SeedPromotedToSimulated) via /api/seeds to stop a
-    // descopable boot seed from re-emitting. runSeed() consults that set; a
-    // descoped seed is skipped (and logged), never silently. The seedId strings
-    // here are the canonical keys in seeds/manifest.ts (recon:seed-manifest-parity).
-    const descopedSeeds = loadDescopedSeedIds(eventStore);
-    const runSeed = (seedId: string, fn: () => void): void => {
-      if (descopedSeeds.has(seedId)) {
-        logger.info({ seedId }, "boot-seed: descoped — skipped at boot (SeedDescoped)");
-        return;
-      }
-      fn();
-    };
-
-    // Structural backfills (fleet identity, party graph) are NOT descopable —
-    // the agent/party axes the whole substrate rests on depend on them.
-    bootFleetRegistration();
-    // D-PARTY-REGISTER PR 2 — backfill the unified Party graph from
-    // existing legal-entity / counterparty / agent / signatory streams.
-    // Idempotent (keyed by source-event id); re-boot is a no-op.
-    bootPartyBackfill();
-    // Model registry seed — submit and tier-classify 3 pricing models (SAGB DCF,
-    // ZARONIA OIS+IRS-PV, FX forward IRP). Must run BEFORE model-validation-seed
-    // and BEFORE NPA attestation seeds that read model validation status.
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-registry", bootModelRegistry);
-    // Model validation seed — emit ValidationMethodologyPublished (Tier-2 + Tier-3)
-    // and ModelValidationApproved for the 3 build-phase models idempotently.
-    // Must run AFTER bootModelRegistry() (models must exist) and BEFORE
-    // bootNpaAttestations() (seedValidatedModelRiskUpgrades checks for approvals).
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-validation", bootModelValidationSeeds);
-    // ModelRegistered seed — emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
-    // and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
-    // Complements model-registry-seed (ModelSubmitted) and model-validation-seed (v0.1).
-    // Must run AFTER bootModelValidationSeeds().
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("model-registered", bootModelRegisteredSeeds);
-    // Calc-model seed — register + approve the three regulatory-metric models
-    // (LCR/NSFR/CET1) that calculation-binding.ts binds surfaced figures to.
-    // Distinct modelIds from the pricing-model seeds; order-independent of them.
-    // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
-    runSeed("calc-models", bootCalcModels);
-    // M1–M4 NPA attestation seeds — emit ProductApproved events for the 5
-    // core products (equity, bond, repo, IRS, FX swap) idempotently.
-    // seedValidatedModelRiskUpgrades() upgrades bond/IRS/FX model-risk to
-    // implementation-attested when ModelValidationApproved events are present.
-    // Must run BEFORE trade seeds that reference these products.
-    // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
-    runSeed("npa-attestations", bootNpaAttestations);
-
-    // Balance-sheet seed — emit BalanceSheetProjected for build-phase NSFR baseline.
-    runSeed("balance-sheet-baseline", bootBalanceSheetSeed);
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
     // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
@@ -881,62 +807,6 @@ function bootDerive(): DashboardState {
 }
 
 /**
- * Idempotently emit ProductApproved events for M1–M4 products.
- *
- * Called before `bootTreasurySeeds()` so that trade seeds which reference
- * M1–M4 products (equity, bond, repo, IRS, FX swap) find the NPA gate
- * already passed. Idempotent — products with an existing ProductApproved
- * event are skipped silently.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelRegistry(): void {
-  const result = seedModelRegistry(eventStore);
-  if (result.submitted.length > 0 || result.tierClassified.length > 0) {
-    logger.info(
-      {
-        submitted: result.submitted.length,
-        tierClassified: result.tierClassified.length,
-        skipped: result.skipped.length,
-      },
-      "model-registry-seed: models submitted and tier-classified",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "model-registry-seed: idempotent boot; all models already registered",
-    );
-  }
-}
-
-/**
- * Idempotently register + approve the three regulatory-metric calc models
- * (LCR / NSFR / CET1) that calculation-binding.ts binds surfaced figures to.
- * Without these, checkModelApproved() is a loud failure for every regulatory
- * figure. Submit (Rohan) → classifyTier + approveValidation (Nadia).
- *
- * Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
- */
-function bootCalcModels(): void {
-  const result = seedCalcModels(eventStore);
-  if (result.submitted.length > 0 || result.approved.length > 0) {
-    logger.info(
-      {
-        submitted: result.submitted.length,
-        tierClassified: result.tierClassified.length,
-        approved: result.approved.length,
-        skipped: result.skipped.length,
-      },
-      "calc-model-seed: regulatory-metric models registered and approved",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "calc-model-seed: idempotent boot; all calc models already approved",
-    );
-  }
-}
-
 /**
  * Emit one CalculationPerformed event per surfaced regulatory figure
  * (LCR / NSFR / CET1 / RWA / ECL / IRRBB ΔEVE / IRRBB ΔNII) on each boot cycle — the calculation-history provenance
@@ -964,265 +834,6 @@ function emitCalculationProvenance(): void {
     actor: { type: "service" as const, id: "agent:atlas:calc-provenance" },
     logger,
   });
-}
-
-/**
- * Idempotently emit ProductApproved events for M1–M4 products.
- *
- * Called before `bootTreasurySeeds()` so that trade seeds which reference
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootNpaAttestations(): void {
-  const result = seedNpaAttestations(eventStore);
-  if (result.approved.length > 0) {
-    logger.info(
-      { approved: result.approved.length, skipped: result.skipped.length },
-      "npa-attestation-seed: M1–M4 products approved",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "npa-attestation-seed: idempotent boot; all products already approved",
-    );
-  }
-}
-
-/**
- * Idempotently emit ValidationMethodologyPublished (Tier-2 + Tier-3 v0.1) and
- * ModelValidationApproved for the 3 build-phase models.
- *
- * Called after bootNpaAttestations() so the NPA gate is already satisfied.
- * Idempotent — models with existing ModelValidationApproved events are skipped.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelValidationSeeds(): void {
-  const methResult = seedValidationMethodologies(eventStore);
-  if (methResult.published.length > 0) {
-    logger.info(
-      { published: methResult.published.length, skipped: methResult.skipped.length },
-      "model-validation-seed: methodology published",
-    );
-  } else {
-    logger.debug(
-      { skipped: methResult.skipped.length },
-      "model-validation-seed: idempotent boot; methodologies already published",
-    );
-  }
-
-  const valResult = seedModelValidations(eventStore);
-  if (valResult.approved.length > 0) {
-    logger.info(
-      { approved: valResult.approved.length, skipped: valResult.skipped.length },
-      "model-validation-seed: model validations approved",
-    );
-  } else {
-    logger.debug(
-      { skipped: valResult.skipped.length },
-      "model-validation-seed: idempotent boot; all models already approved or not yet registered",
-    );
-  }
-}
-
-/**
- * Idempotent seed: emit ModelRegistered × 3, ValidationMethodologyPublished × 2 (v1),
- * and ModelValidationApproved × 3 for IRS ZARONIA and FX swap model-risk gap closure.
- *
- * Called after bootModelValidationSeeds() — complements (not replaces) the existing
- * ModelSubmitted and v0.1 methodology events.
- *
- * Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26).
- */
-function bootModelRegisteredSeeds(): void {
-  const result = seedModelRegisteredEvents(eventStore);
-  const total =
-    result.modelRegistered.length +
-    result.methodologiesPublished.length +
-    result.validationsApproved.length;
-  if (total > 0) {
-    logger.info(
-      {
-        modelRegistered: result.modelRegistered.length,
-        methodologiesPublished: result.methodologiesPublished.length,
-        validationsApproved: result.validationsApproved.length,
-        skipped: result.skipped.length,
-      },
-      "model-registered-seed: ModelRegistered + methodology v1 + validation approved emitted",
-    );
-  } else {
-    logger.debug(
-      { skipped: result.skipped.length },
-      "model-registered-seed: idempotent boot; all events already present",
-    );
-  }
-}
-
-/**
- * Idempotently emit the build-phase BalanceSheetProjected seed event so that
- * getALMPositionSnapshot can derive NSFR ASF/RSF values and the substrate gap
- * is cleared from the dashboard.
- *
- * Idempotency key: projectionId in the event payload. Replays existing
- * BalanceSheetProjected events; skips emission if the seed projectionId is
- * already present.
- *
- * Authority: BA 326; BCBS D396; D-TREASURY-GAPS-WAVE1.
- */
-function bootBalanceSheetSeed(): void {
-  const ENTITY = "LE-BANK-SA";
-  const ACTOR = {
-    type: "system" as const,
-    id: "system:boot",
-    name: "Boot seed runner",
-  } as const;
-
-  const existingProjectionIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "BalanceSheetProjected" })) {
-    const p = ev.payload as { projectionId?: string };
-    if (p.projectionId) existingProjectionIds.add(p.projectionId);
-  }
-
-  if (existingProjectionIds.has(BALANCE_SHEET_SEED_PAYLOAD.projectionId)) {
-    logger.debug("balance-sheet-seed: idempotent boot; seed already present");
-    return;
-  }
-
-  const ev = makeBalanceSheetProjected({
-    asOf: BALANCE_SHEET_SEED_AS_OF,
-    entity: ENTITY,
-    actor: ACTOR,
-    citations: [...BALANCE_SHEET_SEED_CITATIONS],
-    payload: BALANCE_SHEET_SEED_PAYLOAD,
-  });
-  ev.provenance = buildPhaseFixtureTag({
-    sourceLineage: "seeds/alm/balance-sheet-seed.ts",
-    tags: ["boot-seed", "build-phase-baseline"],
-  });
-  eventStore.append(ev);
-  logger.info(
-    { projectionId: BALANCE_SHEET_SEED_PAYLOAD.projectionId },
-    "balance-sheet-seed: 1 seed event emitted (build-phase-fixture)",
-  );
-}
-
-/**
- * S8 §3.1 + A4 — fleet registration on dashboard server boot.
- *
- * Drives `Team/_team-roster.json` (27 personas) through the agent
- * registry / identity issuer / permission-policy publisher. Idempotent
- * on re-boot — a fresh worktree boots a registered fleet without
- * manual intervention; subsequent boots emit zero events and log
- * skip-counts only.
- *
- * Failure mode: a registration failure is degraded-but-progressing —
- * the per-persona alert is in the event log (SubstrateAlert,
- * alertClass: integrity); the dashboard boot itself continues. We do
- * not re-throw because the fleet rollout is auxiliary to the
- * dashboard's primary responsibility (rendering the registry); even a
- * fully-failed rollout still permits the dashboard to serve cached
- * state from prior boots.
- */
-function bootFleetRegistration(): void {
-  if (process.env.BANK_DASHBOARD_FLEET_ROLLOUT_DISABLED === "true") return;
-  const teamDir = resolve(REPO_ROOT, "Team");
-  const rosterPath = resolve(teamDir, "_team-roster.json");
-  if (!existsSync(rosterPath)) {
-    logger.debug({ rosterPath }, "fleet-rollout: roster not found; skipping");
-    return;
-  }
-  try {
-    const registry = new LocalAgentRegistry({ eventStore });
-    const identity = new LocalAgentIdentityIssuer({
-      eventStore,
-      keyDir: process.env.BANK_AGENT_KEY_DIR ?? resolve(".local/keys"),
-    });
-    const publisher = new LocalPermissionPolicyPublisher({ eventStore });
-    const summary = registerFleet({
-      eventStore,
-      registry,
-      identity,
-      publisher,
-      rosterPath,
-      teamDir,
-    });
-    if (summary.emitted === 0) {
-      logger.debug(
-        {
-          total: summary.total,
-          unchanged: summary.unchanged,
-          failed: summary.failed,
-        },
-        "fleet-rollout: idempotent boot; no events emitted",
-      );
-    } else {
-      logger.info(
-        {
-          total: summary.total,
-          registered: summary.registered,
-          updated: summary.updated,
-          unchanged: summary.unchanged,
-          partial: summary.partial,
-          failed: summary.failed,
-          emitted: summary.emitted,
-        },
-        `fleet-rollout: ${summary.emitted} events emitted across ${summary.total} personas`,
-      );
-    }
-  } catch (e) {
-    logger.error(
-      { err: (e as Error).message },
-      "fleet-rollout: roster read or driver failure; boot continues",
-    );
-  }
-}
-
-/**
- * D-PARTY-REGISTER PR 2 — boot-time idempotent backfill into the unified
- * Party event family. Reads legal-entity seeds, the existing
- * CounterpartySoundingOpened / CounterpartyProspectRegistered stream
- * (folded for current lifecycle), the AgentRegistered stream (27
- * personas), the Team/_team-roster.json reports-to graph, and the
- * AuthorisedSignatoryAdded stream. Emits PartyRegistered +
- * PartyRelationshipAsserted + PartyClassified events tagged with
- * `backfillSourceEventId` so a second boot is a strict no-op.
- *
- * Failure mode: like fleet-rollout, a backfill failure logs but does
- * not throw — the dashboard's primary responsibility (rendering cached
- * state) continues. The next boot retries cleanly.
- */
-function bootPartyBackfill(): void {
-  if (process.env.BANK_DASHBOARD_PARTY_BACKFILL_DISABLED === "true") return;
-  try {
-    const summary = runPartyBackfill(eventStore);
-    const totalEmitted =
-      summary.legalEntityPartiesEmitted +
-      summary.counterpartyPartiesEmitted +
-      summary.agentPartiesEmitted +
-      summary.naturalPersonPartiesEmitted +
-      summary.relationshipsEmitted +
-      summary.classificationsEmitted;
-    if (totalEmitted === 0) {
-      logger.debug(
-        { skipped: summary.skipped },
-        "party-backfill: idempotent boot; no events emitted",
-      );
-      return;
-    }
-    logger.info(
-      {
-        legalEntities: summary.legalEntityPartiesEmitted,
-        counterparties: summary.counterpartyPartiesEmitted,
-        agents: summary.agentPartiesEmitted,
-        naturalPersons: summary.naturalPersonPartiesEmitted,
-        relationships: summary.relationshipsEmitted,
-        classifications: summary.classificationsEmitted,
-        skipped: summary.skipped,
-      },
-      "dashboard boot — backfilled Party events into unified graph",
-    );
-  } catch (e) {
-    logger.error({ err: (e as Error).message }, "party-backfill failed; boot continues");
-  }
 }
 
 function refresh(reason: string): void {

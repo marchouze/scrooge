@@ -15,13 +15,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 /** Classification of what a seed populates. */
-export type SeedKind =
-  | "model-governance"
-  | "treasury-positions"
-  | "balance-sheet"
-  | "npa-attestation"
-  | "party-graph"
-  | "fleet-identity";
+export type SeedKind = "treasury-positions";
 
 /** A pointer to the authoring UI that replaces a seed with real-simulated events. */
 export interface SeedReplaceTarget {
@@ -56,100 +50,7 @@ export interface SeedManifestEntry {
   citations: readonly string[];
 }
 
-export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
-  {
-    seedId: "model-registry",
-    bootFn: "bootModelRegistry",
-    title: "Pricing model registry",
-    description:
-      "Submits and tier-classifies the 3 build-phase pricing models (SAGB DCF, ZARONIA OIS+IRS-PV, FX forward IRP). Gates the NPA + validation seeds that read model status.",
-    kind: "model-governance",
-    emittedEventTypes: ["ModelSubmitted", "ModelTierClassified"],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
-  {
-    seedId: "model-validation",
-    bootFn: "bootModelValidationSeeds",
-    title: "Model validation (v0.1)",
-    description:
-      "Publishes Tier-2 + Tier-3 validation methodologies (v0.1) and approves the 3 build-phase pricing models so the NPA gate can pass.",
-    kind: "model-governance",
-    emittedEventTypes: ["ValidationMethodologyPublished", "ModelValidationApproved"],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
-  {
-    seedId: "model-registered",
-    bootFn: "bootModelRegisteredSeeds",
-    title: "Model registration (IRS/FX gap closure)",
-    description:
-      "Emits ModelRegistered ×3, methodology v1 ×2, and ModelValidationApproved ×3 for IRS ZARONIA + FX swap model-risk gap closure. Complements the v0.1 validation seed.",
-    kind: "model-governance",
-    emittedEventTypes: [
-      "ModelRegistered",
-      "ValidationMethodologyPublished",
-      "ModelValidationApproved",
-    ],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
-  {
-    seedId: "calc-models",
-    bootFn: "bootCalcModels",
-    title: "Regulatory-metric calc models (LCR/NSFR/CET1)",
-    description:
-      "Registers + approves the 3 regulatory-metric models that calculation-binding.ts binds surfaced figures to. Without these, every regulatory figure is a loud unapproved-model failure.",
-    kind: "model-governance",
-    emittedEventTypes: ["ModelSubmitted", "ModelTierClassified", "ModelValidationApproved"],
-    descopable: true,
-    citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
-  },
-  {
-    seedId: "npa-attestations",
-    bootFn: "bootNpaAttestations",
-    title: "NPA product approvals (M1–M4)",
-    description:
-      "Emits ProductApproved for the 5 core products (equity, bond, repo, IRS, FX swap). Required before trade seeds that reference these products.",
-    kind: "npa-attestation",
-    emittedEventTypes: ["ProductApproved"],
-    descopable: true,
-    citations: ["D-PRODUCT-CONSTRUCTION-SLICES-4-8"],
-  },
-  {
-    seedId: "balance-sheet-baseline",
-    bootFn: "bootBalanceSheetSeed",
-    title: "Balance-sheet baseline (NSFR)",
-    description:
-      "Emits a single BalanceSheetProjected event providing the build-phase NSFR ASF/RSF baseline.",
-    kind: "balance-sheet",
-    emittedEventTypes: ["BalanceSheetProjected"],
-    descopable: true,
-    citations: ["D-TREASURY-GAPS-WAVE1"],
-  },
-  {
-    seedId: "fleet-identity",
-    bootFn: "bootFleetRegistration",
-    title: "Fleet registration (agent identity)",
-    description:
-      "Registers the team roster through the agent registry / identity issuer / permission publisher. Structural identity backfill — not descopable (the whole agent axis depends on it).",
-    kind: "fleet-identity",
-    emittedEventTypes: ["AgentRegistered", "IdentityKeyRotated", "PermissionPolicyPublished"],
-    descopable: false,
-    citations: ["S8-A4"],
-  },
-  {
-    seedId: "party-graph",
-    bootFn: "bootPartyBackfill",
-    title: "Party graph backfill",
-    description:
-      "Backfills the unified Party event family (PartyRegistered / PartyRelationshipAsserted / PartyClassified) from legal-entity, counterparty, agent and signatory streams. Structural — not descopable.",
-    kind: "party-graph",
-    emittedEventTypes: ["PartyRegistered", "PartyRelationshipAsserted", "PartyClassified"],
-    descopable: false,
-    citations: ["D-PARTY-REGISTER"],
-  },
-];
+export const SEED_MANIFEST: readonly SeedManifestEntry[] = [];
 
 /** Look up a manifest entry by seedId. */
 export function getSeedManifestEntry(seedId: string): SeedManifestEntry | undefined {

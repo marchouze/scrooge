@@ -14,7 +14,7 @@ import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
 import { LocalModelRegistry } from "../platform/model-registry/index";
-import { seedModelRegistry } from "../seeds/models/model-registry-seed";
+import { seedModelRegistry } from "../platform/model-registry/pricing-model-definitions";
 
 function newStore(): EventStore {
   return new EventStore();
