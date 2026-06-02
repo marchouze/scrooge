@@ -26,6 +26,7 @@ import { type Subprocess, spawn } from "bun";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import type { DashboardState, OpenDecision } from "../dashboard/types";
+import { makeAgentEscalation } from "../platform/event-store/event-types/agent";
 import { makeDecision } from "../platform/event-store/event-types/decision";
 import { EventStore } from "../platform/event-store/store";
 
@@ -40,6 +41,7 @@ let eventDbPath: string;
 let serverProcess: Subprocess | undefined;
 let serverPort: number;
 let testDecisionId: string | undefined;
+let testEscalationId: string | undefined;
 let seedExistedBefore: boolean;
 
 async function findFreePort(): Promise<number> {
@@ -110,6 +112,29 @@ beforeAll(async () => {
           sourceDocHashes: [],
           citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
           recordedVia: "authoring-ui",
+        },
+      }),
+    );
+
+    // An open AgentEscalation. The dashboard surfaces these as approvable
+    // "decisions" (buildOpenDecisionsFromEscalations) but they never appear
+    // in the RMS Decision fold. Disposing of one must close the escalation
+    // via AgentEscalationDecided rather than 404 ("Decision not found").
+    testEscalationId = `ESC-RUNTIME-CACHE-TEST-${Date.now()}`;
+    store.append(
+      makeAgentEscalation({
+        asOf: "2026-05-10T00:00:00.000Z",
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:test:escalation-fixture" },
+        citations: ["GOV-FRAMEWORK-CEO-RESERVED"],
+        payload: {
+          escalationId: testEscalationId,
+          raisedBy: "agent:test:escalation-fixture",
+          question: "Synthetic escalation used by the runtime-cache integration test.",
+          options: ["Option A", "Option B"],
+          blockedBy: "Awaiting CEO disposition (test fixture).",
+          severity: "high",
+          routedTo: "agent:test",
         },
       }),
     );
@@ -216,6 +241,41 @@ describe("dashboard server — runtime-cache split (D-EVENT-STORE-SCALING Slice 
     if (!seedExistedBefore) {
       expect(existsSync(SEED_PATH)).toBe(false);
     }
+  });
+
+  // Escalation-derived open "decisions" carry no backing Decision in the
+  // RMS fold. Disposing of one via /api/decide must close the escalation
+  // (AgentEscalationDecided) and remove it from decisionsOpen — not 404.
+  it("disposes of an escalation-derived open decision by closing the escalation", async () => {
+    if (!testEscalationId) throw new Error("no testEscalationId");
+
+    // Sanity: the escalation surfaces as an open decision before disposition.
+    const before = (await (
+      await fetch(`http://127.0.0.1:${serverPort}/api/state`)
+    ).json()) as DashboardState;
+    expect(before.decisionsOpen.find((d) => d.id === testEscalationId)).toBeDefined();
+
+    const r = await fetch(`http://127.0.0.1:${serverPort}/api/decide`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        decisionId: testEscalationId,
+        action: "approve",
+        outcome: "Option A — escalation disposition integration test",
+        actor: "marc@tgv.co.za",
+      }),
+    });
+    expect(r.status).toBe(200);
+    const body = (await r.json()) as { ok: boolean; kind?: string; escalationId?: string };
+    expect(body.ok).toBe(true);
+    expect(body.kind).toBe("escalation-decided");
+    expect(body.escalationId).toBe(testEscalationId);
+
+    // The escalation no longer surfaces as an open decision.
+    const after = (await (
+      await fetch(`http://127.0.0.1:${serverPort}/api/state`)
+    ).json()) as DashboardState;
+    expect(after.decisionsOpen.find((d) => d.id === testEscalationId)).toBeUndefined();
   });
 
   // D-DECISIONS-FRAMEWORK-REDESIGN Slice B — `/api/decide` returns 401
