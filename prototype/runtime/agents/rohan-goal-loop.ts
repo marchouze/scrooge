@@ -63,6 +63,7 @@ import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
 import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
+import { RISK_CLOSURE_EVENT_TYPES } from "../../platform/event-store/event-types/risk";
 import type { EventStore } from "../../platform/event-store/store";
 import { routeBlockedBrief } from "../../platform/records/brief-router";
 import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
@@ -120,30 +121,40 @@ function lastRiskRunCompletedMs(): number | undefined {
 
 /**
  * Returns true if there are any GENUINE (production-provenance) RiskRaised
- * events that have NOT been paired with a matching RiskResolved (or equivalent
- * closure) event.
+ * events whose `riskId` has NOT been paired with a closure event
+ * (RiskResolved / RiskAccepted / RiskMitigated — `RISK_CLOSURE_EVENT_TYPES`).
+ *
+ * riskId pairing (WS-RISK-REGISTER-CLOSURE): a finding is open only while no
+ * closure event carries its riskId. Closing a riskId clears every RiskRaised
+ * that shares it (the Atlas substrate-gap ids, for instance, repeat each run).
  *
  * Provenance guard (mandatory for any fold over RiskRaised): build-phase-fixture
  * and simulated events are synthetic test / backtest-harness data, NOT live
  * findings. Counting them as open risks jammed candidate-2 permanently — the
  * store holds thousands of synthetic RiskRaised entries (IFRS-9 staging
- * fixtures, backtest-harness model risks, Atlas substrate-status records) and
- * NO closure event type exists yet, so the unfiltered scan returned `true` on
- * every tick forever. See the build-phase-fixture projection-pollution rule.
- *
- * In the current build phase the closure event schema is still not defined
- * (§16 "risk engine modules in build-only"). Until a RiskResolved family is
- * emitted, a genuine production-provenance RiskRaised stays open — but synthetic
- * provenance is excluded so the candidate only fires on real findings.
+ * fixtures, backtest-harness model risks, legacy Atlas substrate-status
+ * records). Synthetic provenance is excluded so the candidate only fires on
+ * real, unclosed findings. See the build-phase-fixture projection-pollution
+ * rule.
  */
 export function hasOpenRiskFindings(store: EventStore = eventStore): boolean {
+  // Collect every closed riskId across the closure family.
+  const closedRiskIds = new Set<string>();
+  for (const closureType of RISK_CLOSURE_EVENT_TYPES) {
+    for (const e of store.replay({ type: closureType })) {
+      const riskId = String((e.payload as { riskId?: unknown }).riskId ?? "");
+      if (riskId) closedRiskIds.add(riskId);
+    }
+  }
+
   for (const e of store.replay({ type: "RiskRaised" })) {
     const provKind = (e.provenance as { kind?: string } | null)?.kind;
     // Skip synthetic test / simulated data — only genuine production-provenance
-    // findings count as open. Return on the first real match to avoid a
-    // full-scan on large stores.
+    // findings count as open.
     if (provKind === "build-phase-fixture" || provKind === "simulated") continue;
-    return true;
+    const riskId = String((e.payload as { riskId?: unknown }).riskId ?? "");
+    // An unidentified RiskRaised cannot be closed by pairing — treat as open.
+    if (!riskId || !closedRiskIds.has(riskId)) return true;
   }
   return false;
 }
@@ -344,11 +355,12 @@ export const rohanGoalDeriver: GoalDeriver = async (
     };
   }
 
-  // Candidate 2: open RiskRaised events not yet resolved.
-  // In build phase, any un-resolved RiskRaised is treated as open (no
-  // RiskResolved event type yet registered — §16 substrate gap).
-  // This candidate fires the "Raise a RiskRaised event" goal which drives
-  // the risk-run handler to surface the open finding into the next run pack.
+  // Candidate 2: production-provenance RiskRaised events whose riskId has not
+  // been closed by a RiskResolved / RiskAccepted / RiskMitigated event.
+  // Closure pairing is by riskId (WS-RISK-REGISTER-CLOSURE); synthetic
+  // provenance is excluded. This candidate fires the "Raise a RiskRaised
+  // event" goal which drives the risk-run handler to surface the open finding
+  // into the next run pack.
   const openRiskFindings = hasOpenRiskFindings();
 
   if (openRiskFindings) {

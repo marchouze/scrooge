@@ -34,7 +34,12 @@ import {
   makeAgentRunCompleted,
   makeAgentRunStarted,
 } from "../../platform/event-store/event-types/agent";
-import { makeRiskRaised } from "../../platform/event-store/event-types/risk";
+import {
+  makeRiskAccepted,
+  makeRiskMitigated,
+  makeRiskRaised,
+  makeRiskResolved,
+} from "../../platform/event-store/event-types/risk";
 import { EventStore } from "../../platform/event-store/store";
 import {
   hasOpenRiskFindings,
@@ -321,5 +326,119 @@ describe("rohan goal-loop — hasOpenRiskFindings provenance guard", () => {
     });
     appendRisk(s, "risk:prod:1", { kind: "production", sourceLineage: "rohan:risk-run" });
     expect(hasOpenRiskFindings(s)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// hasOpenRiskFindings — closure-family riskId pairing (WS-RISK-REGISTER-CLOSURE).
+//
+// A production-provenance RiskRaised is open only while no closure event
+// (RiskResolved / RiskAccepted / RiskMitigated) carries its riskId. Closing a
+// riskId clears it regardless of how many RiskRaised events share that id.
+// ---------------------------------------------------------------------------
+
+describe("rohan goal-loop — hasOpenRiskFindings closure pairing", () => {
+  it("production RiskRaised paired with RiskResolved → closed", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:prod:1", { kind: "production", sourceLineage: "rohan:risk-run" });
+    s.append(
+      makeRiskResolved({
+        asOf: minsAgoIso(0),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          riskId: "risk:prod:1",
+          resolvedBy: BASE_ACTOR.id,
+          resolutionType: "fixed",
+          resolution: "remediated",
+        },
+      }),
+    );
+    expect(hasOpenRiskFindings(s)).toBe(false);
+  });
+
+  it("production RiskRaised paired with RiskAccepted → closed", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:prod:2", { kind: "production", sourceLineage: "rohan:risk-run" });
+    s.append(
+      makeRiskAccepted({
+        asOf: minsAgoIso(0),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          riskId: "risk:prod:2",
+          acceptedBy: "Helena",
+          rationale: "within appetite",
+          authority: "CRO",
+        },
+      }),
+    );
+    expect(hasOpenRiskFindings(s)).toBe(false);
+  });
+
+  it("production RiskRaised paired with RiskMitigated → closed", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:prod:3", { kind: "production", sourceLineage: "rohan:risk-run" });
+    s.append(
+      makeRiskMitigated({
+        asOf: minsAgoIso(0),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          riskId: "risk:prod:3",
+          mitigatedBy: BASE_ACTOR.id,
+          mitigatingControl: "hedge in place",
+          residualSeverity: "low",
+        },
+      }),
+    );
+    expect(hasOpenRiskFindings(s)).toBe(false);
+  });
+
+  it("production RiskRaised unclosed alongside a different closed riskId → still open", () => {
+    const s = makeStore();
+    appendRisk(s, "risk:prod:closed", { kind: "production", sourceLineage: "rohan:risk-run" });
+    appendRisk(s, "risk:prod:open", { kind: "production", sourceLineage: "rohan:risk-run" });
+    s.append(
+      makeRiskResolved({
+        asOf: minsAgoIso(0),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          riskId: "risk:prod:closed",
+          resolvedBy: BASE_ACTOR.id,
+          resolutionType: "fixed",
+          resolution: "remediated",
+        },
+      }),
+    );
+    expect(hasOpenRiskFindings(s)).toBe(true);
+  });
+
+  it("closure clears every RiskRaised sharing the riskId (repeated-id case)", () => {
+    const s = makeStore();
+    // Same riskId raised three times (mirrors Atlas substrate-gap repeats).
+    appendRisk(s, "risk:repeat", { kind: "production", sourceLineage: "rohan:risk-run" });
+    appendRisk(s, "risk:repeat", { kind: "production", sourceLineage: "rohan:risk-run" });
+    appendRisk(s, "risk:repeat", { kind: "production", sourceLineage: "rohan:risk-run" });
+    s.append(
+      makeRiskResolved({
+        asOf: minsAgoIso(0),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          riskId: "risk:repeat",
+          resolvedBy: BASE_ACTOR.id,
+          resolutionType: "reclassified",
+          resolution: "moved to status surface",
+        },
+      }),
+    );
+    expect(hasOpenRiskFindings(s)).toBe(false);
   });
 });
