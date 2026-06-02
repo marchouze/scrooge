@@ -58,9 +58,6 @@ import {
   type ChartOfAccountsEntry,
   checkAgedItems,
 } from "../platform/accounting/gl-subledger-recon";
-import { LocalAgentIdentityIssuer } from "../platform/agent-identity/issuer";
-import { LocalPermissionPolicyPublisher } from "../platform/agent-identity/permission-policy";
-import { LocalAgentRegistry } from "../platform/agent-runtime/registry";
 import { computeEVE } from "../platform/alm/eve";
 import { computeNII } from "../platform/alm/nii";
 import { computeRepricingGap } from "../platform/alm/repricing-gap";
@@ -153,8 +150,6 @@ import {
   recordDecisionComment,
 } from "../runtime/decisions/record";
 import { runAgent } from "../runtime/run";
-import { runPartyBackfill } from "../scripts/party-backfill";
-import { registerFleet } from "../scripts/register-fleet";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
@@ -762,12 +757,6 @@ function bootDerive(): DashboardState {
     // symmetry). The call is kept for backwards-compat but emits nothing.
     backfillCeoDecisionsFromRecords(SOURCES.ownerInboxDir, eventStore);
 
-    // Structural backfills (fleet identity, party graph).
-    bootFleetRegistration();
-    // D-PARTY-REGISTER PR 2 — backfill the unified Party graph from
-    // existing legal-entity / counterparty / agent / signatory streams.
-    // Idempotent (keyed by source-event id); re-boot is a no-op.
-    bootPartyBackfill();
     // Trusted-Figures provenance — emit CalculationPerformed for LCR/NSFR/CET1.
     // Runs after treasury + balance-sheet seeds so the ALM snapshot is populated.
     // Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
@@ -845,126 +834,6 @@ function emitCalculationProvenance(): void {
     actor: { type: "service" as const, id: "agent:atlas:calc-provenance" },
     logger,
   });
-}
-
-/**
- * S8 §3.1 + A4 — fleet registration on dashboard server boot.
- *
- * Drives `Team/_team-roster.json` (27 personas) through the agent
- * registry / identity issuer / permission-policy publisher. Idempotent
- * on re-boot — a fresh worktree boots a registered fleet without
- * manual intervention; subsequent boots emit zero events and log
- * skip-counts only.
- *
- * Failure mode: a registration failure is degraded-but-progressing —
- * the per-persona alert is in the event log (SubstrateAlert,
- * alertClass: integrity); the dashboard boot itself continues. We do
- * not re-throw because the fleet rollout is auxiliary to the
- * dashboard's primary responsibility (rendering the registry); even a
- * fully-failed rollout still permits the dashboard to serve cached
- * state from prior boots.
- */
-function bootFleetRegistration(): void {
-  if (process.env.BANK_DASHBOARD_FLEET_ROLLOUT_DISABLED === "true") return;
-  const teamDir = resolve(REPO_ROOT, "Team");
-  const rosterPath = resolve(teamDir, "_team-roster.json");
-  if (!existsSync(rosterPath)) {
-    logger.debug({ rosterPath }, "fleet-rollout: roster not found; skipping");
-    return;
-  }
-  try {
-    const registry = new LocalAgentRegistry({ eventStore });
-    const identity = new LocalAgentIdentityIssuer({
-      eventStore,
-      keyDir: process.env.BANK_AGENT_KEY_DIR ?? resolve(".local/keys"),
-    });
-    const publisher = new LocalPermissionPolicyPublisher({ eventStore });
-    const summary = registerFleet({
-      eventStore,
-      registry,
-      identity,
-      publisher,
-      rosterPath,
-      teamDir,
-    });
-    if (summary.emitted === 0) {
-      logger.debug(
-        {
-          total: summary.total,
-          unchanged: summary.unchanged,
-          failed: summary.failed,
-        },
-        "fleet-rollout: idempotent boot; no events emitted",
-      );
-    } else {
-      logger.info(
-        {
-          total: summary.total,
-          registered: summary.registered,
-          updated: summary.updated,
-          unchanged: summary.unchanged,
-          partial: summary.partial,
-          failed: summary.failed,
-          emitted: summary.emitted,
-        },
-        `fleet-rollout: ${summary.emitted} events emitted across ${summary.total} personas`,
-      );
-    }
-  } catch (e) {
-    logger.error(
-      { err: (e as Error).message },
-      "fleet-rollout: roster read or driver failure; boot continues",
-    );
-  }
-}
-
-/**
- * D-PARTY-REGISTER PR 2 — boot-time idempotent backfill into the unified
- * Party event family. Reads legal-entity seeds, the existing
- * CounterpartySoundingOpened / CounterpartyProspectRegistered stream
- * (folded for current lifecycle), the AgentRegistered stream (27
- * personas), the Team/_team-roster.json reports-to graph, and the
- * AuthorisedSignatoryAdded stream. Emits PartyRegistered +
- * PartyRelationshipAsserted + PartyClassified events tagged with
- * `backfillSourceEventId` so a second boot is a strict no-op.
- *
- * Failure mode: like fleet-rollout, a backfill failure logs but does
- * not throw — the dashboard's primary responsibility (rendering cached
- * state) continues. The next boot retries cleanly.
- */
-function bootPartyBackfill(): void {
-  if (process.env.BANK_DASHBOARD_PARTY_BACKFILL_DISABLED === "true") return;
-  try {
-    const summary = runPartyBackfill(eventStore);
-    const totalEmitted =
-      summary.legalEntityPartiesEmitted +
-      summary.counterpartyPartiesEmitted +
-      summary.agentPartiesEmitted +
-      summary.naturalPersonPartiesEmitted +
-      summary.relationshipsEmitted +
-      summary.classificationsEmitted;
-    if (totalEmitted === 0) {
-      logger.debug(
-        { skipped: summary.skipped },
-        "party-backfill: idempotent boot; no events emitted",
-      );
-      return;
-    }
-    logger.info(
-      {
-        legalEntities: summary.legalEntityPartiesEmitted,
-        counterparties: summary.counterpartyPartiesEmitted,
-        agents: summary.agentPartiesEmitted,
-        naturalPersons: summary.naturalPersonPartiesEmitted,
-        relationships: summary.relationshipsEmitted,
-        classifications: summary.classificationsEmitted,
-        skipped: summary.skipped,
-      },
-      "dashboard boot — backfilled Party events into unified graph",
-    );
-  } catch (e) {
-    logger.error({ err: (e as Error).message }, "party-backfill failed; boot continues");
-  }
 }
 
 function refresh(reason: string): void {

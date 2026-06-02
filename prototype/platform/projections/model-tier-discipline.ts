@@ -116,7 +116,7 @@ export function getModelTierDisciplineMetric(store: EventStore): ModelTierDiscip
       tier2Count: 0,
       tier3Count: 0,
       tier1AllValidated: true,
-      note: "No models in registry (zero ModelSubmitted events). Build phase: no models deployed → no model risk by construction. RAS §B7 appetite satisfied. Registry seed: prototype/seeds/models/model-registry-seed.ts.",
+      note: "No models in registry (zero ModelSubmitted events). Build phase: no models deployed → no model risk by construction. RAS §B7 appetite satisfied. Run scripts/run-model-registry-seed.ts to populate.",
     };
   }
 

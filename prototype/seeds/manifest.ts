@@ -15,7 +15,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 /** Classification of what a seed populates. */
-export type SeedKind = "treasury-positions" | "party-graph" | "fleet-identity";
+export type SeedKind = "treasury-positions";
 
 /** A pointer to the authoring UI that replaces a seed with real-simulated events. */
 export interface SeedReplaceTarget {
@@ -50,30 +50,7 @@ export interface SeedManifestEntry {
   citations: readonly string[];
 }
 
-export const SEED_MANIFEST: readonly SeedManifestEntry[] = [
-  {
-    seedId: "fleet-identity",
-    bootFn: "bootFleetRegistration",
-    title: "Fleet registration (agent identity)",
-    description:
-      "Registers the team roster through the agent registry / identity issuer / permission publisher. Structural identity backfill — not descopable (the whole agent axis depends on it).",
-    kind: "fleet-identity",
-    emittedEventTypes: ["AgentRegistered", "IdentityKeyRotated", "PermissionPolicyPublished"],
-    descopable: false,
-    citations: ["S8-A4"],
-  },
-  {
-    seedId: "party-graph",
-    bootFn: "bootPartyBackfill",
-    title: "Party graph backfill",
-    description:
-      "Backfills the unified Party event family (PartyRegistered / PartyRelationshipAsserted / PartyClassified) from legal-entity, counterparty, agent and signatory streams. Structural — not descopable.",
-    kind: "party-graph",
-    emittedEventTypes: ["PartyRegistered", "PartyRelationshipAsserted", "PartyClassified"],
-    descopable: false,
-    citations: ["D-PARTY-REGISTER"],
-  },
-];
+export const SEED_MANIFEST: readonly SeedManifestEntry[] = [];
 
 /** Look up a manifest entry by seedId. */
 export function getSeedManifestEntry(seedId: string): SeedManifestEntry | undefined {
