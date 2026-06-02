@@ -32,6 +32,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import { makeFxTradeCancelled } from "../platform/event-store/event-types/fx-accounting";
 import { makeIrdSwapTerminated } from "../platform/event-store/event-types/ird-accounting";
 import {
   makeInterbankLoanMatured,
@@ -720,6 +721,70 @@ describe("rwa-from-positions — settlement netting: FX", () => {
           nostroAccountBase: "ACC-1200-001",
           nostroAccountQuote: "ACC-1200-002",
           realisedPnlZarMinor: 0,
+        },
+      }),
+    );
+
+    const result = computeRwaFromPositions(store, AS_OF);
+    expect(result.tradeCount).toBe(0);
+    expect(result.buildPhaseFallback).toBe(true);
+  });
+
+  it("FxTradeExecuted + FxTradeCancelled → tradeCount 0, buildPhaseFallback true", () => {
+    const store = new EventStore(":memory:");
+    const tradeIdValue = `FX-CANCEL-${newEventId().slice(0, 8)}`;
+
+    const executed = makeFxTradeExecuted({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        tradeId: { scheme: "INTERNAL", value: tradeIdValue },
+        productTaxonomy: "FX-spot",
+        currencyPair: { base: "USD", quote: "ZAR" },
+        side: "buy",
+        legs: [
+          {
+            legKind: "near",
+            payCurrency: "ZAR",
+            receiveCurrency: "USD",
+            notional: { currency: "ZAR", amountMinor: 18_000_000 },
+            counterNotional: { currency: "USD", amountMinor: 1_000_000 },
+            rate: { currency: "ZAR", amount: 18 },
+            settlementDate: { iso: "2026-06-01", calendar: "JIHCAL" },
+          },
+        ],
+        tradeDate: { iso: "2026-05-30", calendar: "JIHCAL" },
+        counterparty: {
+          partyId: "urn:party:legal-entity:standard-bank-za",
+          name: "Standard Bank ZA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+        },
+        venue: "OTC",
+        trader: "trader:test",
+        bookId: "BOOK-FX-MARKETS-LP",
+        bookType: "trading",
+        settlementForm: "physical",
+        settlementPath: "correspondent",
+        finsurvCategory: "ODP-001",
+        clientFlowRef: "test:flow-001",
+      },
+    });
+    store.append(executed);
+
+    store.append(
+      makeFxTradeCancelled({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: tradeIdValue,
+          reason: "test cancellation — mis-scaled notional",
+          cancelledBy: "trader:test",
+          originalEventId: executed.event_id,
         },
       }),
     );
