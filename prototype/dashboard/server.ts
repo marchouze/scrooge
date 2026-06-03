@@ -97,6 +97,7 @@ import { buildFtpPortfolio } from "../platform/ftp/projection";
 import { buildPartyProjection, buildPartyTileSummary } from "../platform/identity/party-projection";
 import { KYCOrchestrator } from "../platform/kyc/orchestrator";
 import type { NewCandidateInput } from "../platform/kyc/orchestrator";
+import { isLiveInstance, resolveTradeLifecycle } from "../platform/lifecycle/trade-lifecycle-state";
 import { computeLCR } from "../platform/liquidity/lcr";
 import { computeNSFR } from "../platform/liquidity/nsfr";
 import { ingestBondPriceFixtureFromFile } from "../platform/market-data/bond-price-ingester";
@@ -515,13 +516,12 @@ function buildTreasuryMetrics() {
       const repoOpened = [...eventStore.replay({ type: "RepoTradeOpened" })].filter((e) =>
         eventInOperatingBook(e),
       );
-      const repoTerminals = new Set([
-        ...[...eventStore.replay({ type: "RepoEndLegSettled" })].map((e) => e.payload.tradeId),
-        ...[...eventStore.replay({ type: "RepoTradeTerminatedEarly" })].map(
-          (e) => e.payload.tradeId,
-        ),
+      const repoIdx = resolveTradeLifecycle([
+        ...eventStore.replay({ type: "RepoTradeOpened" }),
+        ...eventStore.replay({ type: "RepoEndLegSettled" }),
+        ...eventStore.replay({ type: "RepoTradeTerminatedEarly" }),
       ]);
-      const liveRepos = repoOpened.filter((e) => !repoTerminals.has(e.payload.tradeId));
+      const liveRepos = repoOpened.filter((e) => isLiveInstance(repoIdx.get(e.payload.tradeId)));
       const repoCashMinor = liveRepos.reduce((s, e) => s + e.payload.startLegCashZar, 0);
       const repoWeightedRate =
         liveRepos.length > 0
@@ -541,13 +541,14 @@ function buildTreasuryMetrics() {
       const depositsOpened = [...eventStore.replay({ type: "DepositTaken" })].filter((e) =>
         eventInOperatingBook(e),
       );
-      const depositTerminals = new Set([
-        ...[...eventStore.replay({ type: "DepositMatured" })].map((e) => e.payload.depositId),
-        ...[...eventStore.replay({ type: "DepositWithdrawnEarly" })].map(
-          (e) => e.payload.depositId,
-        ),
+      const depositIdx = resolveTradeLifecycle([
+        ...eventStore.replay({ type: "DepositTaken" }),
+        ...eventStore.replay({ type: "DepositMatured" }),
+        ...eventStore.replay({ type: "DepositWithdrawnEarly" }),
       ]);
-      const liveDeposits = depositsOpened.filter((e) => !depositTerminals.has(e.payload.depositId));
+      const liveDeposits = depositsOpened.filter((e) =>
+        isLiveInstance(depositIdx.get(e.payload.depositId)),
+      );
       const depositPrincipalMinor = liveDeposits.reduce((s, e) => s + e.payload.principalZar, 0);
       return {
         openCount: liveDeposits.length,
@@ -559,15 +560,12 @@ function buildTreasuryMetrics() {
       const iblOpened = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter((e) =>
         eventInOperatingBook(e),
       );
-      const iblTerminals = new Set([
-        ...[...eventStore.replay({ type: "InterbankLoanMatured" })].map(
-          (e) => e.payload.placementId,
-        ),
-        ...[...eventStore.replay({ type: "InterbankLoanRecalledEarly" })].map(
-          (e) => e.payload.placementId,
-        ),
+      const iblIdx = resolveTradeLifecycle([
+        ...eventStore.replay({ type: "InterbankLoanPlaced" }),
+        ...eventStore.replay({ type: "InterbankLoanMatured" }),
+        ...eventStore.replay({ type: "InterbankLoanRecalledEarly" }),
       ]);
-      const liveIBL = iblOpened.filter((e) => !iblTerminals.has(e.payload.placementId));
+      const liveIBL = iblOpened.filter((e) => isLiveInstance(iblIdx.get(e.payload.placementId)));
       const fixedTermMinor = liveIBL
         .filter((e) => e.payload.placementType === "fixed-term")
         .reduce((s, e) => s + e.payload.principalZar, 0);
