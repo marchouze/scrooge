@@ -541,40 +541,48 @@ describe("bankLifecyclePhase (Slice 1 stopgap)", () => {
   });
 });
 
-describe("defaultProvenanceFilter (lifecycle-aware)", () => {
+// D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE — defaultProvenanceFilter() now returns
+// the operating-book mode: production + operational-simulated in build phase,
+// holding out seed scaffolding (build-phase-fixture) + sandbox runs; production
+// only at commencement.
+describe("defaultProvenanceFilter (operating-book)", () => {
   const productionEvt = { provenance: productionTag({ sourceLineage: "ceo-decision-record" }) };
   const buildPhaseEvt = {
     provenance: buildPhaseFixtureTag({ sourceLineage: "synthetic-bank-seed:v3" }),
   };
-  const simulatedEvt = {
+  const operationalSimEvt = {
+    provenance: simulatedTag({
+      scenario: "01-hello-bank",
+      sourceLineage: "scenario-runner:01-hello-bank",
+    }),
+  };
+  const sandboxSimEvt = {
     provenance: simulatedTag({
       scenario: "stress-adverse",
       sourceLineage: "scenario-runner:stress-adverse",
     }),
   };
 
-  it("during build phase: accepts production AND build-phase-fixture", () => {
-    setBankLifecyclePhaseOverride("build-phase");
-    const filter = defaultProvenanceFilter();
-    expect(filter.mode).toBe("production-only");
-    expect(eventMatchesProvenanceFilter(productionEvt, filter)).toBe(true);
-    expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(true);
+  it("default mode is operating-book", () => {
+    expect(defaultProvenanceFilter().mode).toBe("operating-book");
   });
 
-  it("rejects simulated in BOTH lifecycle phases", () => {
+  it("build phase: accepts production + operational-simulated; rejects seed scaffolding + sandbox", () => {
     setBankLifecyclePhaseOverride("build-phase");
-    expect(eventMatchesProvenanceFilter(simulatedEvt, defaultProvenanceFilter())).toBe(false);
-
-    setBankLifecyclePhaseOverride("commencement");
-    expect(eventMatchesProvenanceFilter(simulatedEvt, defaultProvenanceFilter())).toBe(false);
+    const filter = defaultProvenanceFilter();
+    expect(eventMatchesProvenanceFilter(productionEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(operationalSimEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(false);
+    expect(eventMatchesProvenanceFilter(sandboxSimEvt, filter)).toBe(false);
   });
 
   it("at commencement-of-trading: accepts production only", () => {
     setBankLifecyclePhaseOverride("commencement");
     const filter = defaultProvenanceFilter();
     expect(eventMatchesProvenanceFilter(productionEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(operationalSimEvt, filter)).toBe(false);
     expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(false);
-    expect(eventMatchesProvenanceFilter(simulatedEvt, filter)).toBe(false);
+    expect(eventMatchesProvenanceFilter(sandboxSimEvt, filter)).toBe(false);
   });
 
   it("combined mode admits all three kinds in both phases", () => {
@@ -582,7 +590,7 @@ describe("defaultProvenanceFilter (lifecycle-aware)", () => {
     const filter = { mode: "combined" as const };
     expect(eventMatchesProvenanceFilter(productionEvt, filter)).toBe(true);
     expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(true);
-    expect(eventMatchesProvenanceFilter(simulatedEvt, filter)).toBe(true);
+    expect(eventMatchesProvenanceFilter(sandboxSimEvt, filter)).toBe(true);
 
     setBankLifecyclePhaseOverride("commencement");
     expect(eventMatchesProvenanceFilter(buildPhaseEvt, filter)).toBe(true);

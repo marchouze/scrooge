@@ -133,11 +133,11 @@ describe("pageProvenance — build phase", () => {
     await teardown(booted);
   });
 
-  it("/api/state attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
+  it("/api/state attaches pageProvenance.mode='operating-book' (event-derived default, D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/state");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("production-only");
+    expect(body.pageProvenance?.mode).toBe("operating-book");
   });
 
   it("/api/obligations attaches pageProvenance.mode='production-only' (constant)", async () => {
@@ -147,18 +147,18 @@ describe("pageProvenance — build phase", () => {
     expect(body.pageProvenance?.mode).toBe("production-only");
   });
 
-  it("/api/escalations attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
+  it("/api/escalations attaches pageProvenance.mode='operating-book' (event-derived default)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/escalations");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("production-only");
+    expect(body.pageProvenance?.mode).toBe("operating-book");
   });
 
-  it("/api/fleet attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
+  it("/api/fleet attaches pageProvenance.mode='operating-book' (event-derived default)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/fleet");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("production-only");
+    expect(body.pageProvenance?.mode).toBe("operating-book");
   });
 
   it("/api/agent-runs attaches pageProvenance.mode='production-only' (CI runs are real)", async () => {
@@ -184,11 +184,11 @@ describe("pageProvenance — build phase", () => {
     expect(body.pageProvenance).toBeNull();
   });
 
-  it("/api/rms attaches pageProvenance.mode='production-only' (always, per D-PROVENANCE-FILTER-ENFORCEMENT)", async () => {
+  it("/api/rms attaches pageProvenance.mode='operating-book' (event-derived default)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/rms");
     expect(body.pageProvenance).toBeDefined();
-    expect(body.pageProvenance?.mode).toBe("production-only");
+    expect(body.pageProvenance?.mode).toBe("operating-book");
   });
 });
 
@@ -203,10 +203,10 @@ describe("pageProvenance — licence-day phase flips event-derived endpoints", (
     await teardown(booted);
   });
 
-  it("/api/state flips to pageProvenance.mode='production-only' at licence-day", async () => {
+  it("/api/state stays pageProvenance.mode='operating-book' at licence-day (mode resolves to production-only behaviour at commencement)", async () => {
     if (!booted) throw new Error("server not booted");
     const body = await getJson(booted.port, "/api/state");
-    expect(body.pageProvenance?.mode).toBe("production-only");
+    expect(body.pageProvenance?.mode).toBe("operating-book");
   });
 
   it("/api/obligations stays production-only (constant, BANK_PHASE-independent)", async () => {

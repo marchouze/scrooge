@@ -25,6 +25,7 @@
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import type { EventStore } from "../event-store/store";
+import { eventInOperatingBook } from "../projections/filter";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -200,11 +201,11 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   // excluded from the gap schedule.
   // ---------------------------------------------------------------------------
 
-  const isFixture = (e: { provenance?: unknown }) =>
-    (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
-
-  const repoOpenEvents = [...eventStore.replay({ type: "RepoTradeOpened" })].filter(
-    (e) => !isFixture(e),
+  // Canonical operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE):
+  // exclude seed scaffolding (build-phase-fixture) + sandbox runs from the gap
+  // schedule; keep production + operational-simulated positions.
+  const repoOpenEvents = [...eventStore.replay({ type: "RepoTradeOpened" })].filter((e) =>
+    eventInOperatingBook(e),
   );
   const repoEndLegIds = new Set(
     [...eventStore.replay({ type: "RepoEndLegSettled" })].map(
@@ -244,8 +245,8 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   // (DepositMatured / DepositWithdrawnEarly) mark the deposit as closed.
   // ---------------------------------------------------------------------------
 
-  const depositOpenEvents = [...eventStore.replay({ type: "DepositTaken" })].filter(
-    (e) => !isFixture(e),
+  const depositOpenEvents = [...eventStore.replay({ type: "DepositTaken" })].filter((e) =>
+    eventInOperatingBook(e),
   );
   const depositMaturedIds = new Set(
     [...eventStore.replay({ type: "DepositMatured" })].map(
@@ -287,8 +288,8 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   // as closed.
   // ---------------------------------------------------------------------------
 
-  const iblOpenEvents = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter(
-    (e) => !isFixture(e),
+  const iblOpenEvents = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter((e) =>
+    eventInOperatingBook(e),
   );
   const iblMaturedIds = new Set(
     [...eventStore.replay({ type: "InterbankLoanMatured" })].map(

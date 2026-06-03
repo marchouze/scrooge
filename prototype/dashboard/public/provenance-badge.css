@@ -92,6 +92,18 @@
   background: #1e3a8a;
 }
 
+/* Operating-book — the canonical default (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE).
+   Teal; solid border. Production + operational-simulated (the live operating book). */
+.provenance-badge[data-mode="operating-book"] {
+  background: #e0f2f1;
+  color: #00695c;
+  border-color: #00695c;
+  border-style: solid;
+}
+.provenance-badge[data-mode="operating-book"] .provenance-badge-dot {
+  background: #00695c;
+}
+
 /* ---------------- Unknown / loading state --------------- */
 .provenance-badge[data-mode="unknown"] {
   background: #f3f3f3;

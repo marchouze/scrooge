@@ -139,22 +139,24 @@ export interface ProvenanceFilter {
 /**
  * Resolve the default `ProvenanceMode` for the current environment.
  *
- * Rules (per D-PROVENANCE-FILTER-ENFORCEMENT, CEO-approved 2026-05-12):
- *   `production-only` is the permanent default. Test / scenario data is
- *   tagged `kind:simulated` and excluded unless the caller explicitly opts
- *   into `combined` or `simulated-only` mode.
+ * Default: `operating-book` (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE PR3,
+ * CEO-approved 2026-06-03). The bank's live operating book is the canonical
+ * default for every projection / report — during build phase that means
+ * production + operational-simulated data (so all measurements and alerts
+ * exercise the real operating book, never suppressed merely for being
+ * simulated), holding out only seed scaffolding (`build-phase-fixture`) and
+ * sandbox runs (scenario / rehearsal / stress / test-pollution). At
+ * commencement it resolves to production-only automatically.
  *
- * The previous `BANK_PHASE`-derived `simulated-only` default pre-dated
- * the test-in-prod pattern: with simulated events tagged in the shared
- * store, the production projections must default to production-only so
- * that scenario runs do not pollute reporting figures.
+ * This supersedes the inclusion semantics of D-PROVENANCE-FILTER-ENFORCEMENT
+ * (which made `production-only` the permanent default and silently dropped the
+ * build-phase operating data); the legitimate concern behind that decision —
+ * scenario runs must not pollute reporting — is preserved exactly by the
+ * sandbox classifier (`isSandboxProvenance`). Callers needing a strict
+ * production view still request `production-only` explicitly.
  *
- * Process-local override hook: `setDefaultProvenanceModeOverride()` lets
- * tests pin the default without mutating the env var. The override
- * always wins when set.
- *
- * Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12,
- * event 52c83d18-8bab-4d10-bd6c-f52cc2a23887).
+ * Process-local override hook: `setDefaultProvenanceModeOverride()` lets tests
+ * pin the default; the override always wins when set.
  */
 let DEFAULT_MODE_OVERRIDE: ProvenanceMode | undefined;
 
@@ -164,10 +166,10 @@ export function setDefaultProvenanceModeOverride(value: ProvenanceMode | undefin
 
 export function defaultProvenanceMode(): ProvenanceMode {
   if (DEFAULT_MODE_OVERRIDE !== undefined) return DEFAULT_MODE_OVERRIDE;
-  // production-only is the permanent default: simulated events are
-  // tagged and excluded unless the caller explicitly opts into combined.
-  // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
-  return "production-only";
+  // operating-book is the canonical default (D-OPERATING-BOOK-PROVENANCE-
+  // ARCHITECTURE PR3): production + operational-simulated in build phase,
+  // production-only at commencement; seed scaffolding + sandbox always held out.
+  return "operating-book";
 }
 
 /**

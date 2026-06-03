@@ -119,7 +119,7 @@ describe("/api/provenance/mode — build phase (default)", () => {
     await teardown(booted);
   }, 30_000);
 
-  it("returns production-only filter (BANK_PHASE no longer changes default)", async () => {
+  it("returns operating-book filter (the canonical default, D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE)", async () => {
     if (!booted) throw new Error("server not booted");
     const r = await fetch(`http://127.0.0.1:${booted.port}/api/provenance/mode`);
     expect(r.ok).toBe(true);
@@ -131,7 +131,7 @@ describe("/api/provenance/mode — build phase (default)", () => {
     };
     expect(body.bankPhase).toBe("build");
     expect(body.filter).toBeDefined();
-    expect(body.filter.mode).toBe("production-only");
+    expect(body.filter.mode).toBe("operating-book");
     expect(body.sliceAuthority).toBe("D-DATA-PROVENANCE-SUBSTRATE-SLICE-3");
     expect(typeof body.asOf).toBe("string");
     // ISO-8601-ish — Date constructor must accept it.
@@ -150,7 +150,7 @@ describe("/api/provenance/mode — licence-day", () => {
     await teardown(booted);
   }, 30_000);
 
-  it("returns production-only when BANK_PHASE is licence-day", async () => {
+  it("returns operating-book when BANK_PHASE is licence-day (mode resolves to production-only at commencement)", async () => {
     if (!booted) throw new Error("server not booted");
     const r = await fetch(`http://127.0.0.1:${booted.port}/api/provenance/mode`);
     expect(r.ok).toBe(true);
@@ -159,6 +159,6 @@ describe("/api/provenance/mode — licence-day", () => {
       filter: { mode: string };
     };
     expect(body.bankPhase).toBe("licence-day");
-    expect(body.filter.mode).toBe("production-only");
+    expect(body.filter.mode).toBe("operating-book");
   });
 });
