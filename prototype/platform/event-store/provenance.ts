@@ -23,6 +23,11 @@
 import { z } from "zod";
 
 import type { Brand } from "../types/brand.ts";
+import {
+  type CategoryProvenanceMap,
+  DEFAULT_CATEGORY_POLICY,
+  categoryForEventType,
+} from "./provenance-category.ts";
 
 // ---------------------------------------------------------------------------
 // Branded primitives
@@ -247,13 +252,54 @@ export const PRE_SUBSTRATE_BACKFILL_TAG: ProvenanceTag = {
   sourceLineage: "pre-substrate-backfill",
 };
 
+// ---------------------------------------------------------------------------
+// Active category policy (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE Phase C).
+//
+// The settable bank-wide per-category policy is event-sourced (BankModePolicySet,
+// projected by projections/bank-mode.ts). To avoid coupling this low-level
+// module to the event store, the projection pins the active policy here at boot
+// (and on every set) via `setActiveCategoryPolicy`. When unpinned (e.g. during
+// the store-open soft-tagger, before boot-sync), the static DEFAULT applies —
+// which matches the legacy carve-out behaviour, so the default path is
+// behaviour-neutral.
+// ---------------------------------------------------------------------------
+
+let ACTIVE_CATEGORY_POLICY: CategoryProvenanceMap | undefined;
+
+/** Pin the active per-category provenance policy (called by the bank-mode boot-sync). */
+export function setActiveCategoryPolicy(policy: CategoryProvenanceMap | undefined): void {
+  ACTIVE_CATEGORY_POLICY = policy;
+}
+
+/** The active per-category policy, or the static default when unpinned. */
+export function activeCategoryPolicy(): CategoryProvenanceMap {
+  return ACTIVE_CATEGORY_POLICY ?? DEFAULT_CATEGORY_POLICY;
+}
+
 /**
- * Resolve the default provenance tag for an event of `eventType` that
- * was appended without an explicit `provenance` field. Carve-outs first;
- * fall back to the build-phase simulated tag.
+ * Resolve the default provenance tag for an event of `eventType` appended
+ * without an explicit `provenance` field.
+ *
+ * The provenance KIND is decided by the active per-category policy
+ * (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE Phase C): the event's category
+ * (`categoryForEventType`) is looked up in the policy. Production categories
+ * (governance / build under the default) return the carve-out tag when one
+ * exists (to preserve its sourceLineage) or a generic production tag; simulated
+ * (or unmapped) categories return the build-phase simulated tag. This
+ * generalises the frozen `PRODUCTION_CARVE_OUTS` map into the settable policy.
  */
 export function defaultProvenanceFor(eventType: string): ProvenanceTag {
-  return PRODUCTION_CARVE_OUTS[eventType] ?? PRE_SUBSTRATE_BACKFILL_TAG;
+  const category = categoryForEventType(eventType);
+  const provenanceKind = category ? activeCategoryPolicy()[category] : "simulated";
+  if (provenanceKind === "production") {
+    return (
+      PRODUCTION_CARVE_OUTS[eventType] ?? {
+        kind: "production",
+        sourceLineage: `category:${category}`,
+      }
+    );
+  }
+  return PRE_SUBSTRATE_BACKFILL_TAG;
 }
 
 // ---------------------------------------------------------------------------

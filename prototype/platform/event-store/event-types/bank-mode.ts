@@ -27,22 +27,15 @@ import { type Actor, type Event, eventSchema } from "../types";
 export const BANK_MODES = ["sim", "prod"] as const;
 export type BankMode = (typeof BANK_MODES)[number];
 
-/**
- * Provenance categories — the granularity axis for the per-category policy.
- * Each maps a family of event domains to its default provenance under the
- * current bank mode.
- */
-export const PROVENANCE_CATEGORIES = [
-  "governance", // decisions, briefs, agent runs, board/committee records
-  "build", // substrate, platform, schema, code, engineering decisions
-  "trading", // FX / bond / IRS / equity / repo trades
-  "accounting", // GL / sub-ledger postings
-  "counterparty", // counterparty / party register
-  "messaging", // correspondence, SWIFT, advices
-  "settlement", // settlement instructions / confirmations
-  "market-data", // rates / FX / bond price feeds
-] as const;
-export type ProvenanceCategory = (typeof PROVENANCE_CATEGORIES)[number];
+// Provenance categories — the granularity axis for the per-category policy.
+// Canonical taxonomy lives in the low-level provenance-category module (so the
+// event-store provenance layer can consult it without a cycle); re-exported here
+// for the schema + payload callers.
+export {
+  PROVENANCE_CATEGORIES,
+  type ProvenanceCategory,
+} from "../provenance-category";
+import { PROVENANCE_CATEGORIES } from "../provenance-category";
 
 export const categoryProvenanceSchema = z.object({
   category: z.enum(PROVENANCE_CATEGORIES),
