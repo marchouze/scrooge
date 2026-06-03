@@ -669,24 +669,23 @@ function emitAgedItemAlerts(
   store: typeof eventStore,
   asOf: string,
 ): { emitted: number; skipped: number; clean: number } {
-  // Step 1 — build fixture source-event set so build-phase-fixture postings
-  // are excluded (prevents CONDUCT-TEST entries from firing as aged items).
-  const fixtureSourceIds = new Set<string>();
+  // Step 1 — build out-of-book source-event set so seed-scaffolding / sandbox
+  // postings are excluded (prevents CONDUCT-TEST entries firing as aged items).
+  // Canonical operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE)
+  // replaces the inline build-phase-fixture check.
+  const outOfBookSourceIds = new Set<string>();
   for (const ev of store.replay({})) {
-    if (
-      WATCHDOG_FIXTURE_SOURCE_TYPES.has(ev.type) &&
-      ev.provenance?.kind === "build-phase-fixture"
-    ) {
-      fixtureSourceIds.add(ev.event_id);
+    if (WATCHDOG_FIXTURE_SOURCE_TYPES.has(ev.type) && !eventInOperatingBook(ev)) {
+      outOfBookSourceIds.add(ev.event_id);
     }
   }
 
-  // Replay SubLedgerPostingEmitted and filter out fixture-sourced postings.
+  // Replay SubLedgerPostingEmitted and filter out out-of-book-sourced postings.
   const allPostings: SubLedgerPostingEmittedPayload[] = [];
   for (const ev of store.replay({ type: "SubLedgerPostingEmitted" })) {
     const p = ev.payload as SubLedgerPostingEmittedPayload;
     if (!p.postedAt) continue; // skip pre-schema postings missing postedAt
-    if (p.sourceEventId && fixtureSourceIds.has(p.sourceEventId)) continue;
+    if (p.sourceEventId && outOfBookSourceIds.has(p.sourceEventId)) continue;
     allPostings.push(p);
   }
 
