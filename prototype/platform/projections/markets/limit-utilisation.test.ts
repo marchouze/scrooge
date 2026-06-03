@@ -15,9 +15,9 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { Event } from "../../event-store/types";
 import { makeRasLimitSchedulePublished } from "../../event-store/event-types/trading";
 import type { RasLimitRow } from "../../event-store/event-types/trading";
+import type { Event } from "../../event-store/types";
 import { makeFxTradeExecuted } from "../../markets/cdm/fx";
 import { getLimitUtilisations, rebuildLimitUtilisation } from "./limit-utilisation";
 

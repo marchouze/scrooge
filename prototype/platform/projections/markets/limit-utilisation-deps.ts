@@ -26,7 +26,10 @@ import type { LimitUtilisationDeps } from "./limit-utilisation";
  * input `undefined`, and the consuming row falls back to its stored limitValue
  * / folded accumulator rather than failing the whole derivation.
  */
-export function buildLimitUtilisationDeps(eventStore: EventStore, asOf: string): LimitUtilisationDeps {
+export function buildLimitUtilisationDeps(
+  eventStore: EventStore,
+  asOf: string,
+): LimitUtilisationDeps {
   let qualifyingCapitalZar: number | undefined;
   try {
     qualifyingCapitalZar = computeCapitalMetrics(eventStore, asOf).availableCapitalMinor / 100;
