@@ -109,6 +109,8 @@ interface TradeMeta {
   readonly bookId: string;
   readonly base: string;
   readonly quote: string;
+  /** ISO trade (transaction) date — anchors the cross-pair cost-basis mark. */
+  readonly tradeDate: string;
 }
 
 interface SettledLeg {
@@ -170,24 +172,56 @@ function foldFxMarksByDate(store: EventStore, bound: { asOf?: string }): Map<str
 }
 
 /**
- * The CCY/ZAR rate to use as a cross-pair leg's cost basis: the latest mark on
- * or before the leg's settlement day; failing that (settlement predates the
- * first mark) the earliest available mark. Returns undefined only when the
- * currency has NO mark at all — then the leg is skipped (no silent fabrication).
+ * The CCY/ZAR rate on a given day: the latest mark on or before `onDay`; failing
+ * that (the day predates the first mark) the earliest available mark. Returns
+ * undefined only when the currency has NO mark at all.
  */
-function imputedCostRate(
+function rateOnDay(
   marksByCcy: Map<string, DatedRate[]>,
   ccy: string,
-  settlementDay: string,
+  onDay: string,
 ): number | undefined {
   const arr = marksByCcy.get(ccy);
   if (!arr || arr.length === 0) return undefined;
   let chosen: number | undefined;
   for (const { day, rate } of arr) {
-    if (day <= settlementDay) chosen = rate;
+    if (day <= onDay) chosen = rate;
     else break;
   }
   return chosen ?? arr[0]?.rate;
+}
+
+/**
+ * Anchor-currency precedence for a cross-pair trade's ZAR consideration. The
+ * trade's ZAR value is fixed off the most-liquid-vs-ZAR leg's official mark at
+ * trade date; the OTHER leg's ZAR cost is then back-solved from the trade's
+ * executed amounts (so the executed cross rate — the desk's actual entry level —
+ * drives the cost, never a mid mark). The total desk P&L is anchor-INVARIANT;
+ * the choice only affects the per-currency P&L split.
+ */
+const CROSS_PAIR_ZAR_ANCHOR_PRECEDENCE = ["USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD"];
+
+/**
+ * Choose the cross-pair anchor: the highest-precedence leg currency that HAS a
+ * CCY/ZAR mark on `tradeDay` (so a trade is not skipped merely because the
+ * reference currency is unmarked while the other leg is markable). Returns the
+ * currency + its rate, or undefined when NO leg currency has any mark.
+ */
+function pickAnchor(
+  currencies: readonly string[],
+  marksByCcy: Map<string, DatedRate[]>,
+  tradeDay: string,
+): { currency: string; rate: number } | undefined {
+  const ordered = [...currencies].sort((a, b) => {
+    const ia = CROSS_PAIR_ZAR_ANCHOR_PRECEDENCE.indexOf(a);
+    const ib = CROSS_PAIR_ZAR_ANCHOR_PRECEDENCE.indexOf(b);
+    return (ia === -1 ? Number.MAX_SAFE_INTEGER : ia) - (ib === -1 ? Number.MAX_SAFE_INTEGER : ib);
+  });
+  for (const c of ordered) {
+    const rate = rateOnDay(marksByCcy, c, tradeDay);
+    if (rate !== undefined) return { currency: c, rate };
+  }
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -233,6 +267,7 @@ export function computeCurrencyPositions(
       bookId: p.bookId,
       base: p.currencyPair.base,
       quote: p.currencyPair.quote,
+      tradeDate: dayOf(p.tradeDate?.iso ?? e.as_of ?? ""),
     });
   }
 
@@ -365,25 +400,44 @@ export function computeCurrencyPositions(
         );
       }
     } else {
-      // Cross pair (no ZAR leg): impute each FCY leg's ZAR cost from the CCY/ZAR
-      // official mark at the leg's settlement day (D-FX-CROSS-PAIR-CASH-COST-BASIS,
-      // CEO-approved 2026-06-03). Both monetary balances are retranslated daily
-      // thereafter (IAS 21 §28). A currency with NO mark at all is skipped (no
-      // silent fabrication); the trade is fully skipped only if NEITHER leg prices.
-      let pricedAny = false;
-      for (const fcy of fcyLegs) {
-        const costRate = imputedCostRate(marksByCcy, fcy.currency, dayOf(fcy.settlementDate));
-        if (costRate === undefined) {
-          skipped.push({
-            tradeId,
-            reason: `cross pair ${meta.base}/${meta.quote}: no ${fcy.currency}/ZAR official mark to impute a ZAR cost basis for the ${fcy.currency} leg`,
-          });
-          continue;
-        }
-        pricedAny = true;
-        applyMovement(meta, tradeId, fcy.currency, fcy.netCash, costRate, fcy.settlementDate);
+      // Cross pair (no ZAR leg, e.g. GBP/USD): the cost basis must come from the
+      // TRADE that created the position — its EXECUTED amounts — not from a mark
+      // (D-FX-CROSS-PAIR-CASH-COST-BASIS, CEO-approved 2026-06-03; refined per CEO
+      // 2026-06-03 "cost comes from the trades, valued against the mark").
+      //
+      // Method: fix the trade's ZAR consideration off the most-liquid-vs-ZAR leg's
+      // official mark AT TRADE DATE (the anchor), then back-solve EVERY leg's ZAR
+      // cost rate from the trade's executed amounts — costRate = consideration ÷
+      // |leg|. This makes the executed cross rate (the desk's real entry level)
+      // drive the cost, so when the held balances are later valued at the current
+      // marks the dealing P&L emerges (it does NOT collapse to ~0 as a mark-as-cost
+      // basis would). The total desk P&L is anchor-INVARIANT; only the per-currency
+      // split depends on which leg anchors. Both balances retranslate daily (IAS 21
+      // §28). Skipped only when the anchor currency has no mark at all.
+      const anchor = pickAnchor(
+        fcyLegs.map((l) => l.currency),
+        marksByCcy,
+        meta.tradeDate,
+      );
+      const anchorLeg = anchor ? fcyLegs.find((l) => l.currency === anchor.currency) : undefined;
+      if (!anchor || !anchorLeg) {
+        skipped.push({
+          tradeId,
+          reason: `cross pair ${meta.base}/${meta.quote}: no leg currency has a CCY/ZAR official mark at trade date ${meta.tradeDate} to fix the ZAR consideration`,
+        });
+        continue;
       }
-      if (!pricedAny) continue;
+      const zarConsiderationMinor = Math.abs(anchorLeg.netCash) * anchor.rate;
+      for (const fcy of fcyLegs) {
+        applyMovement(
+          meta,
+          tradeId,
+          fcy.currency,
+          fcy.netCash,
+          zarConsiderationMinor / Math.abs(fcy.netCash),
+          fcy.settlementDate,
+        );
+      }
     }
   }
 

@@ -95,6 +95,7 @@ function settledGbpUsd(
         bookId: BOOK,
         side,
         currencyPair: { base: "GBP", quote: "USD" },
+        tradeDate: { iso: settlementDate, calendar: "JIHCAL" },
       },
     },
     {
@@ -210,53 +211,69 @@ describe("desk-cash-positions — marking to ZAR (no silent zero)", () => {
   });
 });
 
-describe("currency-position — cross-pair cost-basis imputation (D-FX-CROSS-PAIR-CASH-COST-BASIS)", () => {
-  it("forms GBP + USD cash positions from a settled GBP/USD cross, costed at settlement-day CCY/ZAR marks", () => {
-    // Buy GBP 1,000.00 / pay USD 1,358.20 (cross), with GBP/ZAR @ 21.50, USD/ZAR @ 16.00 on the settlement day.
+describe("currency-position — cross-pair cost basis from executed trades (D-FX-CROSS-PAIR-CASH-COST-BASIS)", () => {
+  it("costs each leg from the EXECUTED amounts, anchored on the reference (USD) mark at trade date — not a per-leg mark", () => {
+    // Buy GBP 1,000.00 / pay USD 1,358.20 (executed cross 1.3582), USD/ZAR @ 16.00.
+    // ZAR consideration = |USD leg| × 16.00 = 135820 × 16 = 2,173,120 ZAR minor.
+    //   USD cost rate = 2,173,120 / 135,820 = 16.00 (the anchor)
+    //   GBP cost rate = 2,173,120 / 100,000 = 21.7312 (= 16.00 × executed cross)
+    const { rows, skipped } = computeCurrencyPositions(
+      stubStore([
+        ...settledGbpUsd("X1", "buy", 100_000, 135_820, "2026-06-02"),
+        datedMark("USD", 16.0, "2026-06-02"),
+        datedMark("GBP", 99.0, "2026-06-02"), // present but NOT used for cost (USD anchors)
+      ]),
+    );
+    expect(skipped).toHaveLength(0);
+    const gbp = rows.find((r) => r.currency === "GBP");
+    const usd = rows.find((r) => r.currency === "USD");
+    expect(usd?.fcyQuantityMinor).toBe(-135_820);
+    expect(usd?.avgCostZarRate).toBeCloseTo(16.0, 6); // anchor leg = its own mark
+    expect(gbp?.fcyQuantityMinor).toBe(100_000);
+    expect(gbp?.avgCostZarRate).toBeCloseTo(16.0 * (135_820 / 100_000), 6); // executed-cross derived, NOT 99.0
+  });
+
+  it("falls back to the other leg as anchor when the reference currency is unmarked (both legs still price)", () => {
+    // Only GBP marked, USD has none → GBP anchors; USD cost back-solved from executed amounts.
     const { rows, skipped } = computeCurrencyPositions(
       stubStore([
         ...settledGbpUsd("X1", "buy", 100_000, 135_820, "2026-06-02"),
         datedMark("GBP", 21.5, "2026-06-02"),
-        datedMark("USD", 16.0, "2026-06-02"),
       ]),
     );
-    expect(skipped).toHaveLength(0); // no longer dropped
+    expect(skipped).toHaveLength(0);
     const gbp = rows.find((r) => r.currency === "GBP");
     const usd = rows.find((r) => r.currency === "USD");
-    expect(gbp?.fcyQuantityMinor).toBe(100_000); // received GBP
-    expect(gbp?.avgCostZarRate).toBeCloseTo(21.5, 6); // imputed from the mark
-    expect(usd?.fcyQuantityMinor).toBe(-135_820); // delivered USD (short)
-    expect(usd?.avgCostZarRate).toBeCloseTo(16.0, 6);
+    expect(gbp?.avgCostZarRate).toBeCloseTo(21.5, 6); // anchor leg
+    // ZAR consideration = 100000 × 21.5 = 2,150,000 → USD cost = 2,150,000 / 135,820.
+    expect(usd?.avgCostZarRate).toBeCloseTo((100_000 * 21.5) / 135_820, 6);
   });
 
-  it("still skips a cross-pair leg whose currency has NO mark at all (no silent fabrication)", () => {
+  it("skips the trade only when NEITHER leg currency has a mark (no silent fabrication)", () => {
     const { rows, skipped } = computeCurrencyPositions(
-      stubStore([
-        ...settledGbpUsd("X1", "buy", 100_000, 135_820, "2026-06-02"),
-        datedMark("GBP", 21.5, "2026-06-02"), // only GBP marked; USD has none
-      ]),
+      stubStore([...settledGbpUsd("X1", "buy", 100_000, 135_820, "2026-06-02")]), // no marks at all
     );
-    // GBP leg prices; USD leg is skipped — the trade is not fully dropped.
-    expect(rows.find((r) => r.currency === "GBP")).toBeDefined();
-    expect(rows.find((r) => r.currency === "USD")).toBeUndefined();
-    expect(skipped.some((s) => s.reason.includes("USD/ZAR"))).toBe(true);
+    expect(rows).toHaveLength(0);
+    expect(skipped.some((s) => s.tradeId === "X1")).toBe(true);
   });
 
-  it("crystallises realised P&L on a cross-pair close-out across two settlement days", () => {
-    // Buy GBP 2,000 @ 21.00 (06-02), sell GBP 1,000 @ 22.00 (06-03) → realised
-    // (22.00−21.00)×100000 = +100000 on the GBP leg. USD just accumulates (no close-out).
+  it("crystallises realised P&L on a cross-pair close-out from the executed entry/exit rates", () => {
+    // Buy GBP 2,000 (06-02) then sell GBP 1,000 (06-03), USD/ZAR @ 16.00 both days.
+    //   buy:  exec cross 1.360 → GBP cost = 16 × 1.360 = 21.76
+    //   sell: exec cross 1.340 → GBP disposal = 16 × 1.340 = 21.44
+    // realised on the 100k closed = (21.44 − 21.76) × 100000 = −32000 ZAR minor.
     const { rows } = computeCurrencyPositions(
       stubStore([
-        ...settledGbpUsd("X1", "buy", 200_000, 271_640, "2026-06-02"),
-        ...settledGbpUsd("X2", "sell", 100_000, 136_000, "2026-06-03"),
-        datedMark("GBP", 21.0, "2026-06-02"),
-        datedMark("GBP", 22.0, "2026-06-03"),
+        ...settledGbpUsd("X1", "buy", 200_000, 272_000, "2026-06-02"), // cross 1.360
+        ...settledGbpUsd("X2", "sell", 100_000, 134_000, "2026-06-03"), // cross 1.340
         datedMark("USD", 16.0, "2026-06-02"),
         datedMark("USD", 16.0, "2026-06-03"),
       ]),
     );
     const gbp = rows.find((r) => r.currency === "GBP");
-    expect(gbp?.fcyQuantityMinor).toBe(100_000); // 200k bought − 100k sold
-    expect(gbp?.realisedZarMinorCumulative).toBe(Math.round((22.0 - 21.0) * 100_000));
+    expect(gbp?.fcyQuantityMinor).toBe(100_000); // 200k − 100k
+    const buyCost = 16.0 * (272_000 / 200_000); // 21.76
+    const sellRate = 16.0 * (134_000 / 100_000); // 21.44
+    expect(gbp?.realisedZarMinorCumulative).toBe(Math.round((sellRate - buyCost) * 100_000));
   });
 });
