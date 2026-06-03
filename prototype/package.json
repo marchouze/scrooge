@@ -283,6 +283,7 @@
     "dry-run:fx-quoting-refinement": "bun run scripts/dry-run-fx-quoting-refinement.ts",
     "ras:seed-limits": "bun run scripts/seed-ras-limits.ts",
     "ras:seed-mr-1-fx": "bun run scripts/seed-mr-1-fx-ras-schedule.ts",
+    "mr:measure-run": "bun run scripts/market-risk-measure-run.ts",
     "fx-spot:seed-controlled-launch": "bun run scripts/seed-fx-spot-controlled-launch-limits.ts",
     "perf:raise-finding": "bun run scripts/raise-finding.ts",
     "audit:close-finding": "bun run scripts/close-finding.ts",

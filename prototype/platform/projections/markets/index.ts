@@ -37,6 +37,8 @@ export {
   rebuildLimitUtilisation,
 } from "./limit-utilisation";
 export { buildLimitUtilisationDeps } from "./limit-utilisation-deps";
+export type { MarketRiskMeasureView } from "./market-risk-measure";
+export { getMarketRiskMeasure } from "./market-risk-measure";
 
 export type { CorrespondentRoutingRow, HerstattRisk, SchemeType } from "./correspondent-routing";
 export { getCorrespondentRouting, rebuildCorrespondentRouting } from "./correspondent-routing";

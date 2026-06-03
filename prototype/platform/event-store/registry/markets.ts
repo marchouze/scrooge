@@ -57,6 +57,7 @@ import {
   counterpartyEligibilityScreenedPayloadSchema,
   gatewayCheckCompletedPayloadSchema,
   gatewayCheckRequestedPayloadSchema,
+  marketRiskMeasureComputedPayloadSchema,
   orderAcceptedPayloadSchema,
   orderApprovedAtGatewayPayloadSchema,
   orderProposedPayloadSchema,
@@ -632,6 +633,25 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "D-MARKETS-SCHEMA-FOUNDATION Slice 5; platform/projections/markets/limit-utilisation.ts; Helena RAS mandate",
+  },
+  {
+    // `MarketRiskMeasureComputed` — VaR / SVaR / ES surfaced from the market-risk
+    // engine as the risk-calibrated rung of the appetite stack (RAS B3 review R8 /
+    // D-B3-5). Separate line from the B3 NOP position limit; closes the semantic
+    // gap behind vera:mr-1-fx-var-projection-gap. Latest-wins per entity+day.
+    //
+    // Authority: D-B3-5 (R8); D-BRC-INTERIM-MR-1-FX; D-MARKETS-SCHEMA-FOUNDATION.
+    // Authors: Rohan (Risk engineer) + Helena (Chief Risk Officer, governance).
+    type: "MarketRiskMeasureComputed",
+    class: "markets",
+    payloadSchema: marketRiskMeasureComputedPayloadSchema,
+    issuer: "Rohan",
+    subscribers: ["Helena", "Saskia", "Camille", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["D-BRC-INTERIM-MR-1-FX", "WS-MARKET-RISK-PROCEDURES", "BCBS-D457-MAR33"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "D-B3-5 (R8); platform/market-risk/var-engine.ts; platform/projections/markets/market-risk-measure.ts",
   },
   // ---------------------------------------------------------------------------
   // M5 OTC IRS lifecycle events — CDM schemas at platform/markets/cdm/ird.ts.

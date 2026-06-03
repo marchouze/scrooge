@@ -58,6 +58,7 @@ export * from "./platform";
 export * from "./risk";
 export * from "./model-risk";
 export * from "./trading";
+export * from "./market-risk-measure";
 export * from "./legal-entity";
 export * from "./product";
 export * from "./rms";
