@@ -21,7 +21,12 @@ export {
   defaultProvenanceFilter,
   defaultProvenanceMode,
   effectiveStreamKey,
+  eventInOperatingBook,
   eventMatchesProvenanceFilter,
+  isSandboxProvenance,
+  operatingBookFilter,
   provenanceFilterDigest,
+  SANDBOX_SCENARIO_PREFIXES,
+  SANDBOX_TAG,
   setDefaultProvenanceModeOverride,
 } from "./filter";
