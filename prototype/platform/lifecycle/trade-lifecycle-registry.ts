@@ -81,6 +81,12 @@ export const TRADE_LIFECYCLE_REGISTRY: readonly LifecycleDefinition[] = [
         description: "Full settlement confirmed by correspondent",
       },
       {
+        eventType: "TradeMatured",
+        path: "normal",
+        description:
+          "FX spot matured/settled (generic TradeMatured{productKind:fx-spot} — derecognition + nostro). Authority: trade-matured.ts.",
+      },
+      {
         eventType: "FxTradeCancelled",
         path: "cancellation",
         description: "Trade voided before settlement",
@@ -153,9 +159,10 @@ export const TRADE_LIFECYCLE_REGISTRY: readonly LifecycleDefinition[] = [
     instanceIdField: "tradeId",
     terminalConditions: [
       {
-        eventType: "IrsSwapTerminated",
+        eventType: "IrdSwapTerminated",
         path: "normal",
-        description: "Swap terminated — full derecognition",
+        description:
+          "Swap terminated — full derecognition. (Canonical event is IrdSwapTerminated per ird-accounting.ts; the prior 'IrsSwapTerminated' was a registry typo never emitted.)",
       },
     ],
     inFlightEventTypes: [

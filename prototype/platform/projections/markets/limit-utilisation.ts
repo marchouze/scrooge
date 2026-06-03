@@ -34,6 +34,7 @@ import type {
   RiskCluster,
 } from "../../event-store/event-types/trading";
 import type { Event } from "../../event-store/types";
+import { isCancelledInstance, resolveTradeLifecycle } from "../../lifecycle/trade-lifecycle-state";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../../market-data/store";
 import { eventInOperatingBook } from "../filter";
 
@@ -213,13 +214,13 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
   //   cancelledTradeIds: FxTradeCancelled → skip from B3 AND B1 entirely.
   //   confirmedTradeIds: SettlementConfirmed → skip from B1 only (position
   //     remains in B3; the bank still holds the foreign currency).
-  const cancelledTradeIds = new Set<string>();
+  // Cancellation via the canonical registry-driven resolver (D-OPERATING-BOOK-
+  // PROVENANCE-ARCHITECTURE). confirmedTradeIds (SettlementConfirmed) is a
+  // separate B1-credit concept — position stays in B3 — so it is NOT a lifecycle
+  // closure and is collected directly.
+  const lifecycleIdx = resolveTradeLifecycle(events);
   const confirmedTradeIds = new Set<string>();
   for (const e of events) {
-    if (e.type === "FxTradeCancelled") {
-      const p = e.payload as Record<string, unknown>;
-      if (typeof p.tradeId === "string") cancelledTradeIds.add(p.tradeId);
-    }
     if (e.type === "SettlementConfirmed") {
       const p = e.payload as Record<string, unknown>;
       if (typeof p.tradeId === "string") confirmedTradeIds.add(p.tradeId);
@@ -248,7 +249,7 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
             : null;
 
       // Cancelled trades: no position, no credit exposure.
-      if (tradeIdValue && cancelledTradeIds.has(tradeIdValue)) continue;
+      if (tradeIdValue && isCancelledInstance(lifecycleIdx.get(tradeIdValue))) continue;
 
       // Operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE):
       // only production + operational-simulated (operator-booked) trades
