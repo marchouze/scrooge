@@ -22,6 +22,18 @@ import type { FxRateEngine } from "../fx-sim-rates";
 // ---------------------------------------------------------------------------
 
 /**
+ * Re-anchor the random walk from production market-data ticks every N ticks.
+ * At the default 60-second tick interval this is every 10 minutes, so the
+ * simulated rates cannot drift more than ~10 minutes of walk away from real
+ * observed rates before being pulled back to a production-anchored mid.
+ */
+const RESEED_EVERY_N_TICKS = 10;
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/**
  * The 5 standard pairs tracked by the MarketDataSimulator, in major-first
  * form per the ACI Model Code currency hierarchy
  * (EUR > GBP > AUD > NZD > USD > CAD > CHF > JPY > others).
@@ -39,6 +51,7 @@ export class MarketDataSimulator {
   private readonly intervalMs: number;
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
+  private tickCount = 0;
 
   constructor(
     mdStore: MarketDataStore,
@@ -76,6 +89,12 @@ export class MarketDataSimulator {
   }
 
   private emitTick(): void {
+    this.tickCount++;
+    // Periodically re-anchor from production ticks so the random walk cannot
+    // drift arbitrarily far from real observed rates.
+    if (this.tickCount % RESEED_EVERY_N_TICKS === 0) {
+      this.rateEngine.reseed(this.mdStore);
+    }
     const asOf = nowUtc();
     for (const pair of STANDARD_PAIRS) {
       try {
