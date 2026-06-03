@@ -35,6 +35,7 @@ import type {
 } from "../../event-store/event-types/trading";
 import type { Event } from "../../event-store/types";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../../market-data/store";
+import { eventInOperatingBook } from "../filter";
 
 // ---------------------------------------------------------------------------
 // Row type (public API)
@@ -249,11 +250,11 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
       // Cancelled trades: no position, no credit exposure.
       if (tradeIdValue && cancelledTradeIds.has(tradeIdValue)) continue;
 
-      // Build-phase fixtures (CONDUCT-TEST, SIM backfill, scenario seeds) are
-      // excluded from live limit utilisation — they exist for substrate testing
-      // only and are never real positions. Only 'production' and 'simulated'
-      // (operator-booked) trades contribute.
-      if (e.provenance?.kind === "build-phase-fixture") continue;
+      // Operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE):
+      // only production + operational-simulated (operator-booked) trades
+      // contribute to live limit utilisation; seed scaffolding
+      // (build-phase-fixture) + sandbox runs are held out.
+      if (!eventInOperatingBook(e)) continue;
 
       const asOf = e.as_of;
 
