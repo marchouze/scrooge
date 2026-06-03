@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-03T19:00:39.510Z
+asOf: 2026-06-03T20:01:40.218Z
 decision-required: false
 ---
 
@@ -9,31 +9,31 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 65482 events across 149 types; 31/31 personas have operating specs; 130 runtime handlers registered; 591 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 65663 events across 149 types; 31/31 personas have operating specs; 130 runtime handlers registered; 591 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65482
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65663
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 9329 | 2026-05-25 | 2026-06-03 |
-| `SubstrateAgentRunCompleted` | 9160 | 2026-05-25 | 2026-06-03 |
-| `BusDispatched` | 7816 | 2026-05-25 | 2026-06-03 |
-| `LegacyFanoutShadowed` | 4588 | 2026-05-25 | 2026-06-03 |
+| `SubstrateAgentRunStarted` | 9364 | 2026-05-25 | 2026-06-03 |
+| `SubstrateAgentRunCompleted` | 9195 | 2026-05-25 | 2026-06-03 |
+| `BusDispatched` | 7851 | 2026-05-25 | 2026-06-03 |
+| `LegacyFanoutShadowed` | 4621 | 2026-05-25 | 2026-06-03 |
 | `Decision` | 2725 | 2026-04-30 | 2026-06-03 |
 | `RiskRaised` | 2511 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1644 | 2026-05-07 | 2026-06-03 |
-| `DashboardProjectionRefreshed` | 1513 | 2026-05-25 | 2026-06-03 |
+| `WorkstreamRegistered` | 1652 | 2026-05-07 | 2026-06-03 |
+| `DashboardProjectionRefreshed` | 1522 | 2026-05-25 | 2026-06-03 |
 | `RecordFiled` | 1395 | 2026-05-05 | 2026-06-03 |
-| `SubstrateAlert` | 1172 | 2025-01-01 | 2026-06-03 |
-| `CalculationPerformed` | 918 | 2026-06-01 | 2026-06-03 |
-| `ScheduledTrigger` | 819 | 2026-05-25 | 2026-06-03 |
+| `SubstrateAlert` | 1176 | 2025-01-01 | 2026-06-03 |
+| `CalculationPerformed` | 930 | 2026-06-01 | 2026-06-03 |
+| `ScheduledTrigger` | 820 | 2026-05-25 | 2026-06-03 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
 | `ReconResult` | 693 | 2026-05-07 | 2026-06-03 |
-| `AgentGoalEvaluated` | 672 | 2026-05-25 | 2026-06-03 |
+| `AgentGoalEvaluated` | 673 | 2026-05-25 | 2026-06-03 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 550 | 2026-05-25 | 2026-06-02 |
 | `OfficialMarkAdopted` | 502 | 2026-05-28 | 2026-06-03 |
@@ -46,8 +46,8 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65482
 | `AgentFeedbackIssued` | 246 | 2026-05-25 | 2026-06-03 |
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
 | `AuditFindingClosed` | 227 | 2026-06-02 | 2026-06-02 |
-| `AgentGoalSelected` | 224 | 2026-05-25 | 2026-06-03 |
-| `SubstrateStateSnapshot` | 205 | 2026-05-07 | 2026-06-03 |
+| `AgentGoalSelected` | 225 | 2026-05-25 | 2026-06-03 |
+| `SubstrateStateSnapshot` | 206 | 2026-05-07 | 2026-06-03 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 164 | 2026-05-25 | 2026-06-03 |
@@ -57,7 +57,7 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65482
 | `LiquidityLimitBreached` | 90 | 2026-05-21 | 2026-05-23 |
 | `LiquidityLimitBreachDisposed` | 90 | 2026-05-22 | 2026-05-24 |
 | `Feedback` | 90 | 2026-05-10 | 2026-05-10 |
-| `DailyPnLReportGenerated` | 84 | 2026-06-01 | 2026-06-03 |
+| `DailyPnLReportGenerated` | 86 | 2026-06-01 | 2026-06-03 |
 | `AgentEscalation` | 81 | 2026-05-07 | 2026-06-02 |
 | `DocumentRegistered` | 71 | 2026-05-11 | 2026-05-25 |
 | `PartyRegistered` | 65 | 2026-05-23 | 2026-06-01 |
@@ -116,10 +116,10 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65482
 | `MarketsProjectionRegistered` | 5 | 2026-05-09 | 2026-05-09 |
 | `AgentDecision` | 5 | 2026-05-07 | 2026-05-30 |
 | `MtmRunCompleted` | 5 | 2026-06-01 | 2026-06-03 |
+| `PnLAttributionGenerated` | 5 | 2026-06-01 | 2026-06-03 |
 | `ThreatModelDimensionRegistered` | 4 | 2026-05-08 | 2026-05-08 |
 | `ValidationMethodologyPublished` | 4 | 2026-05-27 | 2026-05-27 |
 | `PrudentValuationAvaAggregated` | 4 | 2026-06-01 | 2026-06-03 |
-| `PnLAttributionGenerated` | 4 | 2026-06-01 | 2026-06-03 |
 | `LCRComputed` | 4 | 2026-06-02 | 2026-06-03 |
 | `NSFRComputed` | 4 | 2026-06-02 | 2026-06-03 |
 | `RiskRunCompleted` | 4 | 2026-06-02 | 2026-06-03 |
@@ -127,6 +127,7 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65482
 | `MLROAttestation` | 3 | 2026-05-26 | 2026-06-01 |
 | `AgentOpsReadinessSnapshot` | 3 | 2026-05-26 | 2026-05-29 |
 | `ModelRegistered` | 3 | 2026-05-27 | 2026-05-27 |
+| `PnLSignedOff` | 3 | 2026-06-01 | 2026-06-03 |
 | `OperationalResilienceSnapshot` | 2 | 2026-05-29 | 2026-06-01 |
 | `POPIAControlsSnapshot` | 2 | 2026-05-29 | 2026-06-03 |
 | `AuditCommitteePackPrepped` | 2 | 2026-05-29 | 2026-06-02 |
@@ -135,10 +136,11 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65482
 | `InterbankLoanPlaced` | 2 | 2026-06-01 | 2026-06-01 |
 | `BondTradeExecuted` | 2 | 2026-06-01 | 2026-06-02 |
 | `OutboundMessageDispatched` | 2 | 2026-06-01 | 2026-06-02 |
-| `PnLSignedOff` | 2 | 2026-06-01 | 2026-06-03 |
 | `ALMRunCompleted` | 2 | 2026-06-02 | 2026-06-03 |
 | `CollateralInventorySnapshotted` | 2 | 2026-06-02 | 2026-06-03 |
 | `IrsPositionRevalued` | 2 | 2026-06-02 | 2026-06-03 |
+| `PnLFlashRecorded` | 2 | 2026-06-03 | 2026-06-03 |
+| `PnLFlashActualReconciled` | 2 | 2026-06-03 | 2026-06-03 |
 | `MarketRiskMeasureComputed` | 2 | 2026-06-03 | 2026-06-03 |
 | `RealisedPnlRecognised` | 2 | 2026-06-03 | 2026-06-03 |
 | `RegulatoryInstrumentRegistered` | 1 | 2026-05-25 | 2026-05-25 |
@@ -163,8 +165,6 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65482
 | `IrsTradeBooked` | 1 | 2026-06-02 | 2026-06-02 |
 | `FundingDrawnDown` | 1 | 2026-06-02 | 2026-06-02 |
 | `SettlementInstructionIssued` | 1 | 2026-06-02 | 2026-06-02 |
-| `PnLFlashRecorded` | 1 | 2026-06-03 | 2026-06-03 |
-| `PnLFlashActualReconciled` | 1 | 2026-06-03 | 2026-06-03 |
 | `BankModePolicySet` | 1 | 2026-06-03 | 2026-06-03 |
 
 ## Personas — operating-spec coverage
@@ -322,13 +322,13 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-The substrate is wide and deep: 65,482 events across 149 types in the host store, 31/31 personas with operating specs, 130 runtime handlers registered against the dispatcher, and 591 deliverables in the Owner Inbox. Coverage is no longer the question — the headline state is *throughput and closure*, not gap-filling. Major capability surfaces (KYC onboarding, FX execution + revaluation, ALM/LCR/NSFR, daily P&L sign-off, model validation, prudent valuation AVA, accounting period mechanics) all have first-event traffic against them inside the last 72 hours, which means the new substrate is actually being exercised, not just defined.
+Substrate is broad and live: 65,663 events across 149 types in the host-local store, 31/31 personas specced, 130 runtime handlers registered across 31 agents. The event-driven backbone is doing real work — `BusDispatched` at 7,851 and `LegacyFanoutShadowed` at 4,621 show in-process fanout has displaced most legacy paths without retiring them yet, and `SubstrateAgentRunStarted`/`Completed` are running at ~98% completion (164 `SubstrateAgentRunFailed` against 9,364 starts). The substrate's structural blockers are no longer typing or projection persistence; they are now cross-process event-bus reach (M8) and scheduler reliability (A2.1).
 
-The most consequential movements since the prior snapshot: (1) the risk-closure loop is live — `RiskResolved` is now appearing (7 events, first on 2026-06-02) against a `RiskRaised` backlog of 2,511, which is the substrate Vera and the goal-loops have been waiting on; (2) the audit cycle closed for the first time end-to-end — `AuditFindingClosed` reached parity with `AuditFinding` at 227/227 on 2026-06-02; and (3) the Treasury/ALM stack went from spec to running flow — `ALMRunCompleted`, `LCRComputed`, `NSFRComputed`, `IntradayHQLAStressProjection`, `FtpCurvePublished`, and `CollateralInventorySnapshotted` are all emitting under Ravi's and Atlas's handlers. `BankModePolicySet` also appeared (1 event, 2026-06-03), which is a substrate-level mode switch worth flagging to Owen.
+Most consequential shifts visible in this snapshot: the risk-closure family has gone load-bearing — 2,511 `RiskRaised` against only 7 `RiskResolved` confirms the riskId-pairing path now exists in types but is barely exercised, and the substrate-gap-as-`WorkstreamRegistered` reclassification (WS-RISK-REGISTER-CLOSURE) is what made that backlog visible rather than hidden in the risk register. Second, `AuditFinding` (227) is now matched 1:1 by `AuditFindingClosed` (227) on 2026-06-02 — Vera's closure loop ran clean. Third, the M1 trading-stack came online in the window: `FxTradeExecuted` (32), `IrsTradeBooked` (1), `MtmRunCompleted` (5), `LCRComputed`/`NSFRComputed` (4 each), `BankModePolicySet` (1, 2026-06-03) — Ravi, Rohan, Eitan and Bea's handlers are producing the events their downstream consumers were waiting on.
 
-Load-bearing gaps remaining: the GitHub Actions cron substrate is still the single biggest reliability risk under everything else — every scheduled handler in the 130-handler fleet depends on it, and the permanent fix (A2.1, typed `ScheduledTrigger` events from a Bun scheduler) is still interim despite 819 `ScheduledTrigger` events flowing, because emission ≠ authoritative scheduling. Second, the Neon event store hardening conditions §5.1 (role downgrade) and §5.2 (IP allowlist) under exception `TM-NEON-EVENT-STORE-001` are deferred-until-sensitive — and KYC payloads (`KYCIdentityCollected`, `KYCSanctionsPEPScreened`, `KYCUBOResolved`, 26 events each on 2026-06-01) plus `LawfulProcessingRegistered` are *exactly* the sensitive-data class that trips that exception. Senna and Iris need to confirm whether those payloads are minimised enough to stay inside the exception or whether §5.1/§5.2 must land now. Third, cross-process event-bus is still M8 work — the in-process fanout (4,588 `LegacyFanoutShadowed`, 7,816 `BusDispatched`) is doing the job for now, but every event-driven handler outside a parent run's process is invisible to it.
+Load-bearing gaps, ranked: (1) **cross-process event bus** — `BusDispatched` only fans out in-process from a parent run, so the 591-item Owner Inbox and any cross-workflow reaction chain (Scrooge's follow-on-router, Anya's projection-refresh on remote-emitted events) still depend on the next scheduled tick rather than the event itself; this is the single biggest latency floor and it is gated on M8. (2) **A2.1 substrate scheduler** — 820 `ScheduledTrigger` events exist but cron is still the source of truth; the 2026-05-07/08 drops are not yet structurally prevented. (3) **`AgentEscalation` consumer side** — 81 raised, only 17 `AgentEscalationDecided`; Vera's audit pipelines #14/#15 now have the event type they were waiting on, but the decision-closure rate says the loop isn't yet closing at the rate escalations arrive. (4) **Neon hardening §5.1/§5.2** — deferred under exception TM-NEON-EVENT-STORE-001 and fine while events are non-sensitive, but blocks any sensitive-data event flow and must land before KYC/party payloads (already arriving: 26 `KYCDecisionMade`, 65 `PartyRegistered`) carry anything beyond identifiers.
 
-Next: close the substrate scheduler (A2.1) and re-evaluate the Neon hardening exception against the live KYC event flow before either becomes a real incident.
+Next: ship A2.1 so `ScheduledTrigger` becomes the canonical schedule source and cron files retire, in parallel with M8 scoping for the cross-process bus.
 
 ## Provenance
 
