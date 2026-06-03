@@ -144,18 +144,20 @@ const event = makeRasLimitSchedulePublished({
         breachThresholdRed: 0.9,
       },
       {
-        // B3 — Market risk — FX gross notional.
+        // B3 — Market risk — FX net open position (NOP).
         //
-        // PATH A (per dispatch guidance): the existing projection folds gross notional;
-        // Helena's MR-1-FX limit is a 1-day 99% VaR. Rather than emit a ZAR 350,000 VaR
-        // limit against a ZAR 86m gross-notional accumulator (which would show 24,660% red
-        // spuriously), this schedule entry uses the notional EOD open-position ceiling from
-        // Helena §1.4 (USD 1m ≈ ZAR 18.5m) as the B3 limit.
+        // PATH A (per dispatch guidance): the projection folds NOP (Σ|net per CCY|×rate;
+        // after the NOP redesign it is no longer gross notional). Helena's MR-1-FX appetite
+        // is a 1-day 99% VaR (ZAR 350,000). Rather than emit a VaR limit against the NOP
+        // accumulator (semantically mismatched until the VaR projection lands), this entry
+        // uses Helena §1.4's EOD open-position ceiling (USD 1m ≈ ZAR 18.5m) as the B3 limit.
         //
-        // The VaR engine gap is flagged as Vera finding vera:mr-1-fx-var-projection-gap below.
+        // The VaR engine gap is tracked as Vera finding vera:mr-1-fx-var-projection-gap
+        // below; closure wires platform/market-risk/var-engine.ts (already built) into a
+        // MarketRiskMeasureComputed projection and sets this line to the ZAR 350,000 VaR.
         cluster: "B3",
         limitName:
-          "Market risk — FX gross notional (proxy for MR-1-FX VaR pending VaR engine — Helena §1.4 EOD open-position ceiling)",
+          "Market risk — FX net open position (proxy for MR-1-FX VaR pending VaR engine — Helena §1.4 EOD open-position ceiling)",
         limitValue: B3_NOTIONAL_LIMIT_ZAR,
         currency: "ZAR",
         breachThresholdAmber: 0.8,
@@ -165,7 +167,8 @@ const event = makeRasLimitSchedulePublished({
         // B4 — Market risk — IR notional (not in MR-1-FX scope).
         // Retained from placeholder; awaits full MR schedule.
         cluster: "B4",
-        limitName: "Market risk — IR notional (placeholder — MR-1-FX scope covers B1+B3 only)",
+        limitName:
+          "Market risk — IR repricing-gap sensitivity (placeholder — MR-1-FX scope covers B1+B3 only)",
         limitValue: 150_000_000,
         currency: "ZAR",
         breachThresholdAmber: 0.7,
@@ -210,25 +213,27 @@ if (!veraFindingAlreadyFiled) {
       severity: "medium",
       category: "output",
       summary:
-        "vera:mr-1-fx-var-projection-gap — B3 projection folds gross notional; Helena MR-1-FX limit is 1-day 99% VaR (ZAR 350,000)",
+        "vera:mr-1-fx-var-projection-gap — B3 projection folds net open position (NOP); Helena MR-1-FX limit is 1-day 99% VaR (ZAR 350,000)",
       detail: [
         "The LimitUtilisationProjection (platform/projections/markets/limit-utilisation.ts)",
-        "accumulates FX gross notional into cluster B3 via the FxTradeExecuted fold.",
+        "accumulates FX net open position (NOP) into cluster B3 via the FxTradeExecuted",
+        "fold (Σ|net per CCY|×rate; this was gross notional before the NOP redesign).",
         "Helena (Chief Risk Officer, governance)'s MR-1-FX limit (D-BRC-INTERIM-MR-1-FX,",
         "2026-05-20_helena_controlled-launch-mr1-fx-limit-proposal.md §1.1) is denominated",
-        "in 1-day 99% VaR (ZAR 350,000), not gross notional.",
+        "in 1-day 99% VaR (ZAR 350,000), not NOP.",
         "",
-        "Comparing gross notional (e.g. ZAR 86m from 10+ trades) to a ZAR 350k VaR limit",
-        "would produce a 24,000%+ red breach that is semantically meaningless.",
+        "Comparing a position measure (NOP) to a ZAR 350k VaR limit is a semantic",
+        "mismatch — NOP is a day-to-day position limit; VaR is the risk-calibrated rung.",
         "",
-        "PATH A WORKAROUND (this PR): B3 schedule row uses Helena §1.4 gross-notional",
-        "EOD open-position ceiling (USD 1m ≈ ZAR 18.5m) as a notional proxy.",
-        "The limitName is explicitly labelled 'proxy for MR-1-FX VaR pending VaR engine'.",
+        "PATH A WORKAROUND (this PR): B3 schedule row uses Helena §1.4 EOD open-position",
+        "ceiling (USD 1m ≈ ZAR 18.5m) as a NOP proxy. The limitName is explicitly",
+        "labelled 'proxy for MR-1-FX VaR pending VaR engine'.",
         "",
-        "TO CLOSE THIS FINDING: Build a VarComputed event family + VaR projection that",
-        "folds VaR (not gross notional) into B3. Wire MarketRiskMeasureComputed events",
-        "from the FRTB SA engine. Set the B3 schedule limit to ZAR 350,000 once the",
-        "VaR projection is live and validated (Helena §1.6 + §1.8 criterion #2 G-2).",
+        "TO CLOSE THIS FINDING: the VaR/SVaR/ES engine already exists",
+        "(platform/market-risk/var-engine.ts, computeMarketRisk()). Add a",
+        "MarketRiskMeasureComputed event + projection that folds VaR as a SEPARATE",
+        "risk-calibrated line (keep NOP as the B3 position limit), and set the VaR line",
+        "to ZAR 350,000 once live and validated (Helena §1.6 + §1.8 criterion #2 G-2).",
         "",
         "Workstream: WS-MARKET-RISK-PROCEDURES. Substrate gap.",
       ].join("\n"),

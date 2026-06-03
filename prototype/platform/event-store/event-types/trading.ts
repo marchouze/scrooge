@@ -529,6 +529,19 @@ export function makeOrderRejected(args: {
 // Authority: D-MARKETS-SCHEMA-FOUNDATION, Slice 5.
 // ---------------------------------------------------------------------------
 
+// Per-currency sub-limit beneath an aggregate cluster limit (RAS B3 review F6 /
+// R6). Mirrors SARB BA 330's per-currency reporting: an aggregate NOP can mask
+// large offsetting single-currency positions, so each significant currency
+// carries its own ceiling. Optional — absent rows behave exactly as before.
+export const currencySubLimitSchema = z.object({
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/, { message: "currency must be ISO 4217 (3-char uppercase)" }),
+  subLimitValue: z.number().positive(),
+});
+export type CurrencySubLimit = z.infer<typeof currencySubLimitSchema>;
+
 export const rasLimitRowSchema = z.object({
   cluster: riskClusterSchema,
   limitName: z.string().min(1),
@@ -539,6 +552,17 @@ export const rasLimitRowSchema = z.object({
     .regex(/^[A-Z]{3}$/, { message: "currency must be ISO 4217 (3-char uppercase)" }),
   breachThresholdAmber: z.number().min(0).max(1),
   breachThresholdRed: z.number().min(0).max(1),
+  // Limit basis (RAS B3 review F4 / R4). "absolute" (default) reads limitValue
+  // as a flat amount in `currency`. "pct-capital" treats the live limit as
+  // `capitalPct`% of net qualifying capital — the SARB/Basel FX net-open-position
+  // ceiling is ~10% of qualifying capital, so the line scales with the balance
+  // sheet instead of drifting against a hard-coded amount. `limitValue` is then
+  // a fallback used only when the capital figure is unavailable.
+  limitBasis: z.enum(["absolute", "pct-capital"]).optional(),
+  capitalPct: z.number().min(0).max(100).optional(),
+  // Per-currency sub-limits beneath the aggregate (R6). Currently consumed for
+  // the FX net-open-position cluster.
+  currencySubLimits: z.array(currencySubLimitSchema).min(1).optional(),
 });
 
 export type RasLimitRow = z.infer<typeof rasLimitRowSchema>;

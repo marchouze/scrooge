@@ -133,6 +133,7 @@ import {
   computeCapitalMetrics,
 } from "../platform/projections/capital-metrics";
 import {
+  buildLimitUtilisationDeps,
   getCorrespondentRouting,
   getLimitUtilisations,
   rebuildCorrespondentRouting,
@@ -896,7 +897,10 @@ function bootDerive(): DashboardState {
     const s = deriveState({
       sources: SOURCES,
       events: EVENTS,
-      limitUtilisations: getLimitUtilisations(marketDataStore),
+      limitUtilisations: getLimitUtilisations(
+        marketDataStore,
+        buildLimitUtilisationDeps(eventStore, nowUtc()),
+      ),
       ftp: buildFtpSummary(),
       capitalPositions: buildCapitalPositions(),
       liquidityMetrics: buildLiquidityMetrics(),
@@ -952,7 +956,10 @@ function refresh(reason: string): void {
     const next = deriveState({
       sources: SOURCES,
       events: EVENTS,
-      limitUtilisations: getLimitUtilisations(marketDataStore),
+      limitUtilisations: getLimitUtilisations(
+        marketDataStore,
+        buildLimitUtilisationDeps(eventStore, nowUtc()),
+      ),
       ftp: buildFtpSummary(),
       capitalPositions: buildCapitalPositions(),
       liquidityMetrics: buildLiquidityMetrics(),
@@ -3204,7 +3211,13 @@ const server = Bun.serve({
       // green with zero exposure.
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
       //            D-MARKETS-SCHEMA-FOUNDATION Slice 5.
-      return jsonResponse(buildHeadroomView(eventStore, marketDataStore));
+      return jsonResponse(
+        buildHeadroomView(
+          eventStore,
+          marketDataStore,
+          buildLimitUtilisationDeps(eventStore, nowUtc()),
+        ),
+      );
     }
     if (url.pathname === "/api/markets/fx/products/attestation" && req.method === "GET") {
       // FX desk Slice 7 — NPA attestation badge source. Replays the event

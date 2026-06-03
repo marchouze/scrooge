@@ -42,6 +42,18 @@ import { eventInOperatingBook } from "../filter";
 // Row type (public API)
 // ---------------------------------------------------------------------------
 
+/** Per-currency net-open-position breakdown beneath the aggregate B3 line (R6). */
+export interface PerCurrencyExposure {
+  currency: string;
+  /** Absolute net open position in ZAR-equivalent (or raw CCY units if no rates). */
+  exposure: number;
+  /** Sub-limit for this currency, if the schedule published one. */
+  subLimit?: number;
+  /** Utilisation vs sub-limit (0.0–1.0); absent when no sub-limit published. */
+  utilisationPct?: number;
+  ragStatus?: "green" | "amber" | "red";
+}
+
 export interface LimitUtilisationRow {
   cluster: RiskCluster;
   limitName: string;
@@ -51,6 +63,23 @@ export interface LimitUtilisationRow {
   currency: string;
   ragStatus: "green" | "amber" | "red";
   asOf: string;
+  /** "absolute" | "pct-capital" — how limitValue was resolved (R4). Default absolute. */
+  limitBasis?: "absolute" | "pct-capital";
+  /** Per-currency NOP breakdown (B3 / FX cluster only) (R6). */
+  perCurrency?: PerCurrencyExposure[];
+}
+
+/**
+ * Externally-computed inputs the projection cannot derive from the trade stream
+ * alone. Kept as plain numbers so the projection stays decoupled from the event
+ * store and the capital / ALM projections (callers that hold the store inject
+ * these; sim and tests omit them and fall back gracefully).
+ */
+export interface LimitUtilisationDeps {
+  /** Net qualifying capital in ZAR major units — denominator for "pct-capital" rows (R4). */
+  qualifyingCapitalZar?: number;
+  /** B4 IR sensitivity in ZAR (e.g. Σ|repricing gap|) — replaces IR-notional exposure (R7). */
+  b4IrSensitivityZar?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -355,25 +384,70 @@ export function computeB3Exposure(
 }
 
 /**
+ * Per-currency net-open-position breakdown for the B3 (FX) cluster (R6 / F6).
+ * Each foreign currency's absolute net position, ZAR-converted when a market
+ * data store is supplied (raw CCY units otherwise, matching computeB3Exposure).
+ * ZAR (home currency) is excluded per BA 330. Sorted by descending exposure.
+ */
+export function computeB3PerCurrency(
+  netPositions: ReadonlyMap<string, number>,
+  marketDataStore?: MarketDataStore,
+): PerCurrencyExposure[] {
+  const out: PerCurrencyExposure[] = [];
+  for (const [ccy, position] of netPositions) {
+    const absPos = Math.abs(position);
+    if (absPos === 0) continue;
+    if (ccy === "ZAR") continue; // home currency — excluded from NOP (BA 330)
+    let exposure = absPos;
+    if (marketDataStore) {
+      const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);
+      if (!quote) continue; // no rate → omit rather than report a raw-unit figure
+      exposure = absPos * quote.rate;
+    }
+    out.push({ currency: ccy, exposure });
+  }
+  return out.sort((a, b) => b.exposure - a.exposure);
+}
+
+/**
  * Returns the current per-cluster utilisation rows.
  *
  * Pass `marketDataStore` to enable ZAR-equivalent B3 computation from the net
  * FX position map. Without it, B3 reports raw CCY-unit absolute positions
  * (correct topology, wrong scale for multi-currency books).
  *
+ * Pass `deps` to resolve externally-computed inputs (RAS B3 review):
+ *   - `qualifyingCapitalZar` resolves "pct-capital" limit rows (R4).
+ *   - `b4IrSensitivityZar` supplies the B4 exposure as an IR sensitivity (Σ|gap|)
+ *     instead of notional (R7).
+ *
  * If no RasLimitSchedulePublished has been emitted, returns five placeholder
  * rows with zero exposure and zero limit (status: green, no limit active).
  */
-export function getLimitUtilisations(marketDataStore?: MarketDataStore): LimitUtilisationRow[] {
+export function getLimitUtilisations(
+  marketDataStore?: MarketDataStore,
+  deps?: LimitUtilisationDeps,
+): LimitUtilisationRow[] {
   const b3Exposure = computeB3Exposure(
     _state.fxNetPosition,
     _state.exposure.get("B3") ?? 0,
     marketDataStore,
   );
+  const b3PerCurrency = computeB3PerCurrency(_state.fxNetPosition, marketDataStore);
+
+  // Resolve current exposure per cluster. B3 = FX NOP; B4 = injected IR
+  // sensitivity when supplied (R7), else the folded accumulator; others fold.
+  const exposureFor = (cluster: RiskCluster): number => {
+    if (cluster === "B3") return b3Exposure;
+    if (cluster === "B4" && typeof deps?.b4IrSensitivityZar === "number") {
+      return deps.b4IrSensitivityZar;
+    }
+    return _state.exposure.get(cluster) ?? 0;
+  };
 
   return CLUSTERS.map((cluster) => {
     const row = _state.schedule.get(cluster);
-    const currentExposure = cluster === "B3" ? b3Exposure : (_state.exposure.get(cluster) ?? 0);
+    const currentExposure = exposureFor(cluster);
 
     if (!row) {
       return {
@@ -388,17 +462,52 @@ export function getLimitUtilisations(marketDataStore?: MarketDataStore): LimitUt
       };
     }
 
-    const utilisationPct = row.limitValue > 0 ? currentExposure / row.limitValue : 0;
+    // Resolve the effective limit value (R4). "pct-capital" rows scale with net
+    // qualifying capital; fall back to the stored limitValue when capital is
+    // unavailable so the row never silently reports an infinite headroom.
+    const limitBasis = row.limitBasis ?? "absolute";
+    let limitValue = row.limitValue;
+    if (
+      limitBasis === "pct-capital" &&
+      typeof row.capitalPct === "number" &&
+      typeof deps?.qualifyingCapitalZar === "number" &&
+      deps.qualifyingCapitalZar > 0
+    ) {
+      limitValue = (deps.qualifyingCapitalZar * row.capitalPct) / 100;
+    }
+
+    const utilisationPct = limitValue > 0 ? currentExposure / limitValue : 0;
+
+    // Per-currency breakdown + sub-limit RAG for the FX cluster (R6).
+    let perCurrency: PerCurrencyExposure[] | undefined;
+    if (cluster === "B3" && b3PerCurrency.length > 0) {
+      const subLimits = new Map(
+        (row.currencySubLimits ?? []).map((s) => [s.currency, s.subLimitValue]),
+      );
+      perCurrency = b3PerCurrency.map((pc) => {
+        const subLimit = subLimits.get(pc.currency);
+        if (subLimit === undefined || subLimit <= 0) return pc;
+        const util = pc.exposure / subLimit;
+        return {
+          ...pc,
+          subLimit,
+          utilisationPct: Math.min(util, 9.99),
+          ragStatus: ragStatus(util, row.breachThresholdAmber, row.breachThresholdRed),
+        };
+      });
+    }
 
     return {
       cluster,
       limitName: row.limitName,
       utilisationPct: Math.min(utilisationPct, 9.99), // cap at 999% for display
-      limitValue: row.limitValue,
+      limitValue,
       currentExposure,
       currency: row.currency,
       ragStatus: ragStatus(utilisationPct, row.breachThresholdAmber, row.breachThresholdRed),
       asOf: _state.asOf,
+      limitBasis,
+      ...(perCurrency ? { perCurrency } : {}),
     };
   });
 }

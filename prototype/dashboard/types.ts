@@ -556,6 +556,14 @@ export interface AgentOpsState {
   lastUpdated: string;
 }
 
+export interface PerCurrencyExposureSummary {
+  currency: string;
+  exposure: number;
+  subLimit?: number;
+  utilisationPct?: number;
+  ragStatus?: "green" | "amber" | "red";
+}
+
 export interface LimitUtilisationStateSummary {
   cluster: "B1" | "B2" | "B3" | "B4" | "B5";
   limitName: string;
@@ -565,6 +573,8 @@ export interface LimitUtilisationStateSummary {
   currency: string;
   ragStatus: "green" | "amber" | "red";
   asOf: string;
+  limitBasis?: "absolute" | "pct-capital";
+  perCurrency?: PerCurrencyExposureSummary[];
 }
 
 // ---------------------------------------------------------------------------
