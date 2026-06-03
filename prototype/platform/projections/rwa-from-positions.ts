@@ -73,6 +73,7 @@ import type {
   RepoTradeOpenedPayload,
 } from "../event-store/event-types/repo-mmd-ibl";
 import type { EventStore } from "../event-store/store";
+import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
 import {
@@ -200,53 +201,29 @@ export function computeRwaFromPositions(
   // the opening event uses (tradeId for Repo/FX/IRS; placementId for IBL).
   // =========================================================================
 
-  // --- Repo closures: RepoEndLegSettled + RepoTradeTerminatedEarly ----------
-  const closedRepoIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "RepoEndLegSettled", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") closedRepoIds.add(p.tradeId);
-  }
-  for (const ev of eventStore.replay({ type: "RepoTradeTerminatedEarly", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") closedRepoIds.add(p.tradeId);
-  }
-
-  // --- IBL closures: InterbankLoanMatured + InterbankLoanRecalledEarly ------
-  const closedIblIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "InterbankLoanMatured", asOf })) {
-    const p = ev.payload as { placementId?: unknown };
-    if (typeof p.placementId === "string") closedIblIds.add(p.placementId);
-  }
-  for (const ev of eventStore.replay({ type: "InterbankLoanRecalledEarly", asOf })) {
-    const p = ev.payload as { placementId?: unknown };
-    if (typeof p.placementId === "string") closedIblIds.add(p.placementId);
-  }
-
-  // --- FX closures: SettlementConfirmed + TradeMatured{productKind:fx-spot}
-  //     + FxTradeCancelled. A cancelled trade is not a live market-risk
-  //     position; omitting it (the pre-fix behaviour) left cancelled — often
-  //     mis-scaled — notionals inflating market RWA. FxTradeCancelled carries a
-  //     plain-string tradeId (matches mtm-run + fx-subledger-reconciliation).
-  const closedFxIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "SettlementConfirmed", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
-  }
-  for (const ev of eventStore.replay({ type: "TradeMatured", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
-  }
-  for (const ev of eventStore.replay({ type: "FxTradeCancelled", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") closedFxIds.add(p.tradeId);
-  }
-
-  // --- IRS closures: IrdSwapTerminated (tradeId is a plain string) ----------
-  const closedIrsIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "IrdSwapTerminated", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") closedIrsIds.add(p.tradeId);
-  }
+  // --- Lifecycle closures across repo / IBL / FX / IRS (D-OPERATING-BOOK-
+  //     PROVENANCE-ARCHITECTURE PR4/Phase-B). One canonical registry-driven
+  //     resolver replaces the four hand-built closed-Sets: a position is live
+  //     iff its instance is not matured / settled / cancelled / failed. FX
+  //     closures = SettlementConfirmed + TradeMatured{fx-spot} + FxTradeCancelled;
+  //     IRS = IrdSwapTerminated; repo/IBL = their matured/terminated/recalled
+  //     events — all now registered in TRADE_LIFECYCLE_REGISTRY. The resolver is
+  //     fed asOf-bounded events so a terminal after `asOf` leaves the position
+  //     live at `asOf`, and the openings so live instances are recorded.
+  const lifecycleIdx = resolveTradeLifecycle([
+    ...eventStore.replay({ type: "RepoTradeOpened", asOf }),
+    ...eventStore.replay({ type: "RepoEndLegSettled", asOf }),
+    ...eventStore.replay({ type: "RepoTradeTerminatedEarly", asOf }),
+    ...eventStore.replay({ type: "InterbankLoanPlaced", asOf }),
+    ...eventStore.replay({ type: "InterbankLoanMatured", asOf }),
+    ...eventStore.replay({ type: "InterbankLoanRecalledEarly", asOf }),
+    ...eventStore.replay({ type: "FxTradeExecuted", asOf }),
+    ...eventStore.replay({ type: "SettlementConfirmed", asOf }),
+    ...eventStore.replay({ type: "TradeMatured", asOf }),
+    ...eventStore.replay({ type: "FxTradeCancelled", asOf }),
+    ...eventStore.replay({ type: "IrsTradeBooked", asOf }),
+    ...eventStore.replay({ type: "IrdSwapTerminated", asOf }),
+  ]);
 
   // =========================================================================
   // Pass 2 — build exposures, skipping any closed position.
@@ -297,7 +274,7 @@ export function computeRwaFromPositions(
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as unknown as RepoTradeOpenedPayload;
     if (!p.tradeId || !p.startLegCashZar) continue;
-    if (closedRepoIds.has(p.tradeId)) continue; // settled or terminated
+    if (!isLiveInstance(lifecycleIdx.get(p.tradeId))) continue; // settled or terminated
 
     creditExposures.push({
       counterpartyId: p.counterpartyLei ?? p.tradeId,
@@ -323,7 +300,7 @@ export function computeRwaFromPositions(
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as unknown as InterbankLoanPlacedPayload;
     if (!p.placementId || !p.principalZar) continue;
-    if (closedIblIds.has(p.placementId)) continue; // matured or recalled
+    if (!isLiveInstance(lifecycleIdx.get(p.placementId))) continue; // matured or recalled
 
     const maturityBucket: "short-term" | "long-term" =
       p.placementType === "call" ? "short-term" : "long-term";
@@ -356,7 +333,7 @@ export function computeRwaFromPositions(
     if (!p.tradeId || !p.legs || p.legs.length === 0) continue;
 
     const tradeIdValue = resolveTradeId(p.tradeId);
-    if (closedFxIds.has(tradeIdValue)) continue; // settled
+    if (!isLiveInstance(lifecycleIdx.get(tradeIdValue))) continue; // settled / matured / cancelled
 
     // Near-leg is always index 0 per the CDM schema.
     const nearLeg = p.legs[0];
@@ -393,7 +370,7 @@ export function computeRwaFromPositions(
     if (!p.tradeId || !p.notional?.amountMinor) continue;
 
     const tradeIdValue = resolveTradeId(p.tradeId);
-    if (closedIrsIds.has(tradeIdValue)) continue; // terminated
+    if (!isLiveInstance(lifecycleIdx.get(tradeIdValue))) continue; // terminated
 
     const notionalMinor = p.notional.amountMinor;
     if (notionalMinor <= 0) continue;

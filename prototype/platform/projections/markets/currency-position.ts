@@ -44,8 +44,8 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering),
 //   with Rohan (Market risk engineer, engineering) — mark sourcing.
 
-import type { FxTradeCancelledPayload } from "../../event-store/event-types/fx-accounting";
 import type { EventStore } from "../../event-store/store";
+import { isCancelledInstance, resolveTradeLifecycle } from "../../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload, PrincipalPaymentPayload } from "../../markets/cdm/fx";
 
 // ---------------------------------------------------------------------------
@@ -137,16 +137,15 @@ interface MutableRow {
  * weighted-average ZAR cost and close-out realised P&L. Pure read — no appends.
  */
 export function computeCurrencyPositions(store: EventStore): CurrencyPositionResult {
-  // 1. Cancelled trades — voided from the cash inventory.
-  const cancelledIds = new Set<string>();
-  try {
-    for (const e of store.replay({ type: "FxTradeCancelled" })) {
-      const p = e.payload as unknown as FxTradeCancelledPayload;
-      if (p.tradeId) cancelledIds.add(p.tradeId);
-    }
-  } catch {
-    // FxTradeCancelled not registered — continue.
-  }
+  // 1. Cancelled trades — voided from the cash inventory. Canonical
+  //    registry-driven resolver (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE) —
+  //    only cancellations are excluded; settled FX legs KEEP their currency
+  //    position (the bank still holds the cash), so this uses isCancelledInstance,
+  //    not isLiveInstance.
+  const lifecycleIdx = resolveTradeLifecycle([
+    ...store.replay({ type: "FxTradeExecuted" }),
+    ...store.replay({ type: "FxTradeCancelled" }),
+  ]);
 
   // 2. Trade metadata (bookId, entity, pair) keyed by tradeId.
   const tradeMeta = new Map<string, TradeMeta>();
@@ -179,7 +178,7 @@ export function computeCurrencyPositions(store: EventStore): CurrencyPositionRes
   }
 
   // 4. Order settled trades by settlement date, tie-break by first-seen order.
-  const settledTradeIds = tradeOrder.filter((id) => !cancelledIds.has(id));
+  const settledTradeIds = tradeOrder.filter((id) => !isCancelledInstance(lifecycleIdx.get(id)));
   settledTradeIds.sort((a, b) => {
     const da = legsByTrade.get(a)?.[0]?.settlementDate ?? "";
     const db = legsByTrade.get(b)?.[0]?.settlementDate ?? "";

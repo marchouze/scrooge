@@ -425,7 +425,10 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
 
   // PR-IRS-TERM — Termination / derecognition
   {
-    triggerEventType: "IrsSwapTerminated",
+    // Canonical event is IrdSwapTerminated (ird-accounting.ts); the prior
+    // 'IrsSwapTerminated' typo meant this rule never fired. No such events exist
+    // yet, so the fix is figure-neutral and activates the rule going forward.
+    triggerEventType: "IrdSwapTerminated",
     triggerDomain: "trade",
     lifecycleId: "ird-swap-trade",
     lifecycleStage: "terminal",

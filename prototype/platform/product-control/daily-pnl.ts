@@ -35,6 +35,7 @@ import type {
 } from "../event-store/event-types/product-control";
 import type { TradeMaturedFxSpotPayload } from "../event-store/event-types/trade-matured";
 import type { EventStore } from "../event-store/store";
+import { isCancelledInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import type { SettlementRealisedPnlCorrectedPayload } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { type FinancialInput, absent, present } from "../types/financial-input";
@@ -199,16 +200,16 @@ export function computeDailyPnL(
   // -------------------------------------------------------------------------
   // 1. Collect cancelled trade IDs (graceful — event may not exist yet).
   // -------------------------------------------------------------------------
+  // Canonical registry-driven resolver (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE):
+  // cancellation classification keyed off TRADE_LIFECYCLE_REGISTRY.
   const cancelledIds = new Set<string>();
   try {
-    for (const e of store.replay({ type: "FxTradeCancelled", ...bound })) {
-      const p = e.payload as { tradeId?: string | { value?: string } };
-      const tid = p.tradeId;
-      const idStr =
-        typeof tid === "object" && tid !== null && "value" in tid
-          ? (tid.value ?? "")
-          : String(tid ?? "");
-      if (idStr) cancelledIds.add(idStr);
+    const lifecycleIdx = resolveTradeLifecycle([
+      ...store.replay({ type: "FxTradeExecuted", ...bound }),
+      ...store.replay({ type: "FxTradeCancelled", ...bound }),
+    ]);
+    for (const [id, status] of lifecycleIdx) {
+      if (isCancelledInstance(status)) cancelledIds.add(id);
     }
   } catch {
     // FxTradeCancelled not registered — silently continue.

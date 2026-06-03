@@ -153,6 +153,16 @@ export function isLiveInstance(status: InstanceStatus | undefined): boolean {
   return status?.state === "live";
 }
 
+/**
+ * True iff the instance was cancelled (voided before completion). Distinct from
+ * `!isLiveInstance`: a settled / matured FX spot is NOT live but is also NOT
+ * cancelled — the bank still holds the resulting currency position, so net-FX /
+ * sub-ledger folds exclude only cancellations, not settlements.
+ */
+export function isCancelledInstance(status: InstanceStatus | undefined): boolean {
+  return status?.state === "cancelled";
+}
+
 /** The set of instance ids that are live in the resolved index. */
 export function liveInstanceIds(index: Map<string, InstanceStatus>): Set<string> {
   const live = new Set<string>();

@@ -30,6 +30,7 @@ import {
 import type { FxPositionRevaluedPayload } from "../../event-store/event-types/fx-accounting";
 import type { TradeMaturedFxSpotPayload } from "../../event-store/event-types/trade-matured";
 import type { Event } from "../../event-store/types";
+import { isCancelledInstance, resolveTradeLifecycle } from "../../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload } from "../../markets/cdm/fx";
 import type { Projection } from "../types";
 import type {
@@ -332,16 +333,10 @@ function applyTradeMatured(state: SubLedgerState, e: Event): SubLedgerState {
 // ---------------------------------------------------------------------------
 
 export function buildFxSubLedger(events: readonly Event[]): SubLedgerState {
-  // Pass 1 — collect cancelled trade IDs.
-  const cancelledTradeIds = new Set<string>();
-  for (const e of events) {
-    if (e.type === "FxTradeCancelled") {
-      const p = e.payload as Record<string, unknown>;
-      if (typeof p.tradeId === "string") {
-        cancelledTradeIds.add(p.tradeId);
-      }
-    }
-  }
+  // Pass 1 — resolve cancelled trade IDs via the canonical registry-driven
+  // resolver (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE). Only cancellations are
+  // skipped; settled/matured legs still post their settlement journals.
+  const lifecycleIdx = resolveTradeLifecycle(events);
 
   // Helper: extract tradeId string from a FxTradeExecuted / FxPositionRevalued payload.
   function extractTradeId(p: Record<string, unknown>): string | null {
@@ -363,19 +358,21 @@ export function buildFxSubLedger(events: readonly Event[]): SubLedgerState {
         break;
       case "FxTradeExecuted": {
         const tradeId = extractTradeId(e.payload as Record<string, unknown>);
-        if (tradeId && cancelledTradeIds.has(tradeId)) break;
+        if (tradeId && isCancelledInstance(lifecycleIdx.get(tradeId))) break;
         state = applyFxTradeExecuted(state, e);
         break;
       }
       case "FxPositionRevalued": {
         const p = e.payload as Record<string, unknown>;
-        if (typeof p.tradeId === "string" && cancelledTradeIds.has(p.tradeId)) break;
+        if (typeof p.tradeId === "string" && isCancelledInstance(lifecycleIdx.get(p.tradeId)))
+          break;
         state = applyFxPositionRevalued(state, e);
         break;
       }
       case "TradeMatured": {
         const p = e.payload as Record<string, unknown>;
-        if (typeof p.tradeId === "string" && cancelledTradeIds.has(p.tradeId)) break;
+        if (typeof p.tradeId === "string" && isCancelledInstance(lifecycleIdx.get(p.tradeId)))
+          break;
         state = applyTradeMatured(state, e);
         break;
       }
