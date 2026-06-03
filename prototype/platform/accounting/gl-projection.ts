@@ -23,6 +23,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Event } from "../event-store/types";
+import { eventInOperatingBook } from "../projections/filter";
 import { buildRateMap, convertMinor } from "./fx-rate-projection";
 
 // ---------------------------------------------------------------------------
@@ -244,17 +245,19 @@ export function buildGlView(
   const sourceEventMap = new Map<string, Record<string, unknown>>();
   // Separately track whether each source event is a build-phase fixture so
   // GL postings derived from fixture trades can be excluded (same rule as B3).
-  const sourceEventIsFixture = new Set<string>();
+  const sourceEventOutOfBook = new Set<string>();
   for (const e of events) {
-    // Fixture detection covers EVERY event type. A fixture SubLedgerPostingEmitted
+    // Operating-book inclusion covers EVERY event type. A SubLedgerPostingEmitted
     // can be sourced from a DepositTaken / InterbankLoanPlaced / RepoTradeOpened
     // (and any other) event — not only the FX-lifecycle types whose payloads we
-    // keep for description rendering below. Limiting fixture detection to the FX
-    // set leaked fixture deposit / IBL / repo postings into the live GL (e.g.
-    // ACC-1100-001 inflated by ~R44M of fixture postings). Detect fixtures by
-    // provenance across all events; keep the description map FX-scoped.
-    if (e.provenance?.kind === "build-phase-fixture") {
-      sourceEventIsFixture.add(e.event_id);
+    // keep for description rendering below. Limiting the check to the FX set
+    // leaked out-of-book deposit / IBL / repo postings into the live GL (e.g.
+    // ACC-1100-001 inflated by ~R44M of fixture postings). The canonical
+    // operating-book filter (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE) excludes
+    // seed scaffolding (build-phase-fixture) AND sandbox runs across all events;
+    // keep the description map FX-scoped.
+    if (!eventInOperatingBook(e)) {
+      sourceEventOutOfBook.add(e.event_id);
     }
     if (
       e.type === "FxTradeExecuted" ||
@@ -294,7 +297,7 @@ export function buildGlView(
       // share the same scenario tag regardless of trade type). Instead check
       // the provenance of the source FxTradeExecuted / lifecycle event.
       const srcId = typeof p.sourceEventId === "string" ? p.sourceEventId : undefined;
-      if (srcId && sourceEventIsFixture.has(srcId)) continue;
+      if (srcId && sourceEventOutOfBook.has(srcId)) continue;
       const postedAt = typeof p.postedAt === "string" ? p.postedAt : event.as_of;
       if (postedAt > asOf) continue;
       const rawLegs = Array.isArray(p.legs) ? p.legs : [];

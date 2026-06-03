@@ -121,7 +121,11 @@ import {
 } from "../platform/product-control/daily-pnl";
 import { computeDeskCashPositions } from "../platform/product-control/desk-cash-positions";
 import { buildPnLDataFailuresView } from "../platform/product-control/pnl-data-failures-view";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../platform/projections";
+import {
+  defaultProvenanceFilter,
+  eventInOperatingBook,
+  eventMatchesProvenanceFilter,
+} from "../platform/projections";
 import { getALMPositionSnapshot } from "../platform/projections/alm-positions";
 import {
   type CapitalMetrics,
@@ -508,10 +512,8 @@ function buildTreasuryMetrics() {
     },
     // Repo Book — fold RepoTradeOpened, subtract terminal events
     repoBook: (() => {
-      const isFixture = (e: { provenance?: unknown }) =>
-        (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
-      const repoOpened = [...eventStore.replay({ type: "RepoTradeOpened" })].filter(
-        (e) => !isFixture(e),
+      const repoOpened = [...eventStore.replay({ type: "RepoTradeOpened" })].filter((e) =>
+        eventInOperatingBook(e),
       );
       const repoTerminals = new Set([
         ...[...eventStore.replay({ type: "RepoEndLegSettled" })].map((e) => e.payload.tradeId),
@@ -536,10 +538,8 @@ function buildTreasuryMetrics() {
     })(),
     // Deposit Book — fold DepositTaken, subtract terminal events
     depositBook: (() => {
-      const isFixture = (e: { provenance?: unknown }) =>
-        (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
-      const depositsOpened = [...eventStore.replay({ type: "DepositTaken" })].filter(
-        (e) => !isFixture(e),
+      const depositsOpened = [...eventStore.replay({ type: "DepositTaken" })].filter((e) =>
+        eventInOperatingBook(e),
       );
       const depositTerminals = new Set([
         ...[...eventStore.replay({ type: "DepositMatured" })].map((e) => e.payload.depositId),
@@ -556,10 +556,8 @@ function buildTreasuryMetrics() {
     })(),
     // IB Placement Book — fold InterbankLoanPlaced, subtract terminal events, split by type
     ibPlacementBook: (() => {
-      const isFixture = (e: { provenance?: unknown }) =>
-        (e.provenance as { kind?: string } | null)?.kind === "build-phase-fixture";
-      const iblOpened = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter(
-        (e) => !isFixture(e),
+      const iblOpened = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter((e) =>
+        eventInOperatingBook(e),
       );
       const iblTerminals = new Set([
         ...[...eventStore.replay({ type: "InterbankLoanMatured" })].map(

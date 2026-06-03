@@ -23,6 +23,7 @@ import { BANK_ZA_001, newEventId } from "../platform/core/types";
 import {
   type ProvenanceTag,
   scenarioId,
+  setBankLifecyclePhaseOverride,
   setProvenanceSubstrateActive,
   simulatedTag,
   sourceLineage,
@@ -344,36 +345,39 @@ describe("Slice 2 — snapshot-key filter digest isolation", () => {
 // Env-derived default
 // ---------------------------------------------------------------------------
 
-// D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12): default is always
-// production-only. BANK_PHASE env var no longer changes the default.
-describe("Slice 2 — default mode (D-PROVENANCE-FILTER-ENFORCEMENT)", () => {
-  it("default is always production-only regardless of BANK_PHASE", () => {
+// D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE (CEO-approved 2026-06-03): the default
+// is `operating-book` — the bank's live operating book (production +
+// operational-simulated), holding out seed scaffolding + sandbox runs. This
+// supersedes the inclusion semantics of D-PROVENANCE-FILTER-ENFORCEMENT
+// (production-only default). BANK_PHASE env var does not change the default mode.
+describe("Slice 2 — default mode (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE)", () => {
+  it("default is operating-book regardless of BANK_PHASE", () => {
     // biome-ignore lint/performance/noDelete: process.env requires delete to unset
     delete process.env.BANK_PHASE;
-    expect(defaultProvenanceMode()).toBe("production-only");
-    expect(defaultProvenanceFilter()).toEqual({ mode: "production-only" });
+    expect(defaultProvenanceMode()).toBe("operating-book");
+    expect(defaultProvenanceFilter()).toEqual({ mode: "operating-book" });
   });
 
-  it("BANK_PHASE=build → still production-only (env var no longer changes default)", () => {
+  it("BANK_PHASE=build → still operating-book (env var no longer changes default)", () => {
     process.env.BANK_PHASE = "build";
-    expect(defaultProvenanceMode()).toBe("production-only");
+    expect(defaultProvenanceMode()).toBe("operating-book");
   });
 
-  it("BANK_PHASE=licence-day → production-only", () => {
+  it("BANK_PHASE=licence-day → operating-book mode (resolves to production-only at commencement)", () => {
     process.env.BANK_PHASE = "licence-day";
-    expect(defaultProvenanceMode()).toBe("production-only");
+    expect(defaultProvenanceMode()).toBe("operating-book");
   });
 
-  it("BANK_PHASE=live → production-only", () => {
+  it("BANK_PHASE=live → operating-book", () => {
     process.env.BANK_PHASE = "live";
-    expect(defaultProvenanceMode()).toBe("production-only");
+    expect(defaultProvenanceMode()).toBe("operating-book");
   });
 
   it("explicit override wins over default", () => {
     setDefaultProvenanceModeOverride("combined");
     expect(defaultProvenanceMode()).toBe("combined");
     setDefaultProvenanceModeOverride(undefined);
-    expect(defaultProvenanceMode()).toBe("production-only");
+    expect(defaultProvenanceMode()).toBe("operating-book");
   });
 
   it("simulated-only override lets tests see simulated events", () => {
@@ -382,7 +386,8 @@ describe("Slice 2 — default mode (D-PROVENANCE-FILTER-ENFORCEMENT)", () => {
     setDefaultProvenanceModeOverride(undefined);
   });
 
-  it("filter omitted from opts → runtime applies production-only default", () => {
+  it("filter omitted from opts → runtime applies operating-book default (prod + operational-sim)", () => {
+    setBankLifecyclePhaseOverride("build-phase");
     const store = new EventStore();
     for (let i = 0; i < 3; i++) store.append(mk(PROD));
     for (let i = 0; i < 4; i++) store.append(mk(SIM_BASE));
@@ -391,8 +396,10 @@ describe("Slice 2 — default mode (D-PROVENANCE-FILTER-ENFORCEMENT)", () => {
       streamKey: STREAM,
       asOf: "2026-12-31T23:59:59.000Z",
     });
-    expect(provenanceFilter.mode).toBe("production-only");
-    expect(state.count).toBe(3);
+    expect(provenanceFilter.mode).toBe("operating-book");
+    // operating-book includes production (3) + operational-simulated SIM_BASE (4).
+    expect(state.count).toBe(7);
+    setBankLifecyclePhaseOverride(undefined);
     store.close();
   });
 });

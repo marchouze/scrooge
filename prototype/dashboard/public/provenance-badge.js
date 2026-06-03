@@ -79,6 +79,13 @@
     "production-only": { label: "Production data", aria: "Production data" },
     "simulated-only": { label: "Simulated data", aria: "Simulated data" },
     combined: { label: "Combined (P+S)", aria: "Combined production and simulated data" },
+    // D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE — the canonical default. Build
+    // phase = production + operational-simulated (the live operating book),
+    // holding out seed scaffolding + sandbox runs.
+    "operating-book": {
+      label: "Operating book (P+sim)",
+      aria: "Operating book — production plus operational-simulated data",
+    },
   };
 
   // ------------------------------------------------------------------

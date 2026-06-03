@@ -263,7 +263,6 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "BondTradeExecuted", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as BondTradeExecutedPayload;
     if (!p.tradeId || !p.nominalMinor) continue;
     // Side "sell" means the bank is short the bond — skip (no credit asset).
@@ -296,7 +295,6 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "RepoTradeOpened", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as RepoTradeOpenedPayload;
     if (!p.tradeId || !p.startLegCashZar) continue;
     if (closedRepoIds.has(p.tradeId)) continue; // settled or terminated
@@ -323,7 +321,6 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "InterbankLoanPlaced", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as InterbankLoanPlacedPayload;
     if (!p.placementId || !p.principalZar) continue;
     if (closedIblIds.has(p.placementId)) continue; // matured or recalled
@@ -355,7 +352,6 @@ export function computeRwaFromPositions(
 
   for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    if ((ev.provenance as { kind?: string } | null)?.kind === "build-phase-fixture") continue;
     const p = ev.payload as unknown as FxTradeExecutedPayload;
     if (!p.tradeId || !p.legs || p.legs.length === 0) continue;
 
