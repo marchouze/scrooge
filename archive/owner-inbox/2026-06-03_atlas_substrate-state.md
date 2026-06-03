@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-03T15:00:12.017Z
+asOf: 2026-06-03T17:16:12.851Z
 decision-required: false
 ---
 
@@ -9,31 +9,31 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 64929 events across 148 types; 31/31 personas have operating specs; 130 runtime handlers registered; 590 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 65086 events across 148 types; 31/31 personas have operating specs; 130 runtime handlers registered; 590 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 64929
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65086
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 9219 | 2026-05-25 | 2026-06-03 |
-| `SubstrateAgentRunCompleted` | 9050 | 2026-05-25 | 2026-06-03 |
-| `BusDispatched` | 7706 | 2026-05-25 | 2026-06-03 |
-| `LegacyFanoutShadowed` | 4483 | 2026-05-25 | 2026-06-03 |
+| `SubstrateAgentRunStarted` | 9253 | 2026-05-25 | 2026-06-03 |
+| `SubstrateAgentRunCompleted` | 9084 | 2026-05-25 | 2026-06-03 |
+| `BusDispatched` | 7740 | 2026-05-25 | 2026-06-03 |
+| `LegacyFanoutShadowed` | 4516 | 2026-05-25 | 2026-06-03 |
 | `Decision` | 2725 | 2026-04-30 | 2026-06-03 |
 | `RiskRaised` | 2511 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1620 | 2026-05-07 | 2026-06-03 |
-| `DashboardProjectionRefreshed` | 1486 | 2026-05-25 | 2026-06-03 |
+| `WorkstreamRegistered` | 1628 | 2026-05-07 | 2026-06-03 |
+| `DashboardProjectionRefreshed` | 1495 | 2026-05-25 | 2026-06-03 |
 | `RecordFiled` | 1395 | 2026-05-05 | 2026-06-03 |
 | `SubstrateAlert` | 1172 | 2025-01-01 | 2026-06-03 |
 | `CalculationPerformed` | 906 | 2026-06-01 | 2026-06-03 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
-| `ScheduledTrigger` | 813 | 2026-05-25 | 2026-06-03 |
+| `ScheduledTrigger` | 815 | 2026-05-25 | 2026-06-03 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
 | `ReconResult` | 693 | 2026-05-07 | 2026-06-03 |
-| `AgentGoalEvaluated` | 668 | 2026-05-25 | 2026-06-03 |
+| `AgentGoalEvaluated` | 669 | 2026-05-25 | 2026-06-03 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 550 | 2026-05-25 | 2026-06-02 |
 | `OfficialMarkAdopted` | 488 | 2026-05-28 | 2026-06-02 |
@@ -46,8 +46,8 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 64929
 | `AgentFeedbackIssued` | 246 | 2026-05-25 | 2026-06-03 |
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
 | `AuditFindingClosed` | 227 | 2026-06-02 | 2026-06-02 |
-| `AgentGoalSelected` | 221 | 2026-05-25 | 2026-06-03 |
-| `SubstrateStateSnapshot` | 202 | 2026-05-07 | 2026-06-03 |
+| `AgentGoalSelected` | 222 | 2026-05-25 | 2026-06-03 |
+| `SubstrateStateSnapshot` | 203 | 2026-05-07 | 2026-06-03 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 164 | 2026-05-25 | 2026-06-03 |
@@ -321,13 +321,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-Substrate is broadly load-bearing: 64,929 events across 148 types, 31/31 personas with operating specs, 130 registered runtime handlers, and the typed payload schemas that previously blocked Vera and the dashboard are now in place. Closing items: the risk-closure family (`RiskRaised` → `RiskResolved`, with 7 resolutions observed against 2,511 raisings) is live, and the full KYC pipeline now flows end-to-end as discrete events (`KYCIdentityCollected` → `KYCIdentityVerified` → `KYCSanctionsPEPScreened` → `KYCUBOResolved` → `KYCRiskRated` → `KYCDecisionMade` → `ClientAccepted` → `LawfulProcessingRegistered`, 26 of each). Blocking item: the Owner Inbox sits at 590 deliverables — Scrooge's `inbox-hygiene` and `owner-inbox-archiver` are registered but throughput is not matching ingress, and that backlog is now the most visible substrate liability.
-
-Material changes since the prior snapshot are concentrated in the financial-substrate surface. Ravi's ALM stack has emitted its first `ALMRunCompleted` (2) alongside `IRRBBChecked` (20), `IntradayHQLAStressProjection` (16), and `LCRComputed`/`NSFRComputed` (4 each); Rohan's market-risk path has produced its first `MarketRiskMeasureComputed` and `RiskRunCompleted` events; Bea's product-control loop has begun emitting `PnLFlashRecorded` and `PnLFlashActualReconciled` against `DailyPnLReportGenerated` (83). A new `BankModePolicySet` event type appeared this run — single instance, worth flagging to Owen as a substrate-level mode switch that the goal-loops should be reading from rather than inferring. Failure rate on `SubstrateAgentRunStarted` → `SubstrateAgentRunFailed` is 164/9,219 (~1.8%), within tolerance but worth Sade's fleet-optimisation attention.
-
-On load-bearing gaps: Vera's audit pipelines #14/#15 now have substrate — `AgentEscalation` is flowing at 81 events with `AgentEscalationDecided` (17) closing the loop, so the gating is structural-readiness on Vera's side, not substrate-side. The dashboard's curated-seed retirement is fully unblocked: `WorkstreamRegistered` (1,620) and the projection-cache persistence path via `anya:projection-refresh` are both live, and PR #138 already removed the seed from the commit graph. The two gaps that remain genuinely load-bearing are (a) the GH Actions cron interim — schedules have been re-pinned but the A2.1 substrate scheduler emitting typed `ScheduledTrigger` events from a Bun process is not built, so every scheduled handler is still one silent drop away from a missed run, and (b) cross-process event-bus fanout, deferred to M8, which caps the realism of event-driven dispatch between workflows. The Neon hardening conditions §5.1/§5.2 are correctly deferred while events remain non-sensitive but become blocking the moment a sensitive-data event type is proposed.
-
-Next: drain the Owner Inbox (Scrooge throughput, or a triage policy that lets `inbox-hygiene` auto-close stale classes), then stand up A2.1 so scheduling stops being a single point of silent failure.
+_Narrative generation failed (api error undefined: Connection error.)._
 
 ## Provenance
 
