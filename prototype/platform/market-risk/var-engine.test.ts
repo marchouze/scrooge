@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { makeFxTradeCancelled } from "../event-store/event-types/fx-accounting";
 import { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
 import { makeFxTradeExecuted } from "../markets/cdm/fx";
@@ -14,6 +15,7 @@ import {
   MIN_RETURN_OBSERVATIONS,
   computeMarketRisk,
   confidenceFor,
+  deriveRiskFactorExposures,
   historicalES,
   historicalVaR,
   simulatePnLDistribution,
@@ -172,5 +174,93 @@ describe("computeMarketRisk — loud status paths (no silent zeros)", () => {
       expect(report.svar.value).toBeGreaterThanOrEqual(report.var.value);
       expect(report.es.value).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Regression: a cancelled trade must NOT contribute to the VaR book.
+//
+// Diagnosed 2026-06-03: deriveRiskFactorExposures replayed FxTradeExecuted
+// without honouring FxTradeCancelled, so 18 cancelled (mis-scaled) trades were
+// counted as live positions and inflated VaR by ~7,500× (R1.89bn vs R252k).
+// ---------------------------------------------------------------------------
+
+/** Append a live FX trade in `pair` with the given id and ZAR notional. */
+function seedNamedFxTrade(
+  store: EventStore,
+  id: string,
+  base: string,
+  notionalZarMinor: number,
+): void {
+  store.append(
+    makeFxTradeExecuted({
+      asOf: "2026-05-20T10:00:00.000Z",
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service", id: "trader:test" },
+      citations: ["TEST"],
+      payload: {
+        tradeId: { scheme: "INTERNAL", value: id },
+        productTaxonomy: "FX-spot",
+        currencyPair: { base, quote: "ZAR" },
+        side: "buy",
+        legs: [
+          {
+            legKind: "near",
+            payCurrency: "ZAR",
+            receiveCurrency: base,
+            notional: { currency: "ZAR", amountMinor: notionalZarMinor },
+            counterNotional: { currency: base, amountMinor: 1_000_000 },
+            rate: { currency: "ZAR", amount: 18 },
+            settlementDate: { iso: "2026-05-22", calendar: "JIHCAL" },
+          },
+        ],
+        tradeDate: { iso: "2026-05-20", calendar: "JIHCAL" },
+        counterparty: {
+          partyId: "urn:party:legal-entity:standard-bank-za",
+          name: "Standard Bank ZA",
+          role: "counterparty",
+          jurisdiction: "ZA",
+        },
+        venue: "OTC",
+        trader: "trader:test",
+        bookId: "BOOK-FX-MARKETS-LP",
+        bookType: "trading",
+        settlementForm: "physical",
+        settlementPath: "correspondent",
+        finsurvCategory: "ODP-001",
+        clientFlowRef: "test:flow",
+      },
+    }),
+  );
+}
+
+describe("deriveRiskFactorExposures — cancellation guard", () => {
+  it("excludes a cancelled FX trade from the risk-factor exposures", () => {
+    const store = emptyStore();
+    seedNamedFxTrade(store, "FX-LIVE-1", "USD", 18_000_000); // live USD/ZAR
+    seedNamedFxTrade(store, "FX-CANCELLED-1", "GBP", 900_000_000_000); // huge GBP/ZAR
+    store.append(
+      makeFxTradeCancelled({
+        asOf: "2026-05-20T11:00:00.000Z",
+        entity: "LE-ZA-HOZ-BANK",
+        actor: { type: "service", id: "agent:rohan:risk-engine" },
+        citations: ["TEST"],
+        payload: {
+          tradeId: "FX-CANCELLED-1",
+          reason: "mis-scaled notional",
+          cancelledBy: "agent:rohan",
+          originalEventId: "evt-orig",
+        },
+      }),
+    );
+
+    const { exposures } = deriveRiskFactorExposures({
+      eventStore: store,
+      marketData: marketData(),
+      asOf: "2026-05-21T00:00:00.000Z",
+    });
+    const factors = exposures.map((e) => e.factor);
+    expect(factors).toContain("USD/ZAR");
+    expect(factors).not.toContain("GBP/ZAR"); // cancelled — must not inflate VaR
   });
 });

@@ -63,6 +63,7 @@
 
 import { fxPositionCalculator } from "../accounting/fx-calculators";
 import type { EventStore } from "../event-store/store";
+import { isCancelledInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import type { MarketDataStore } from "../market-data/store";
 import { extractMidRate, lookupQuoteWithInverse } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
@@ -220,15 +221,29 @@ export function deriveRiskFactorExposures(args: {
   const { eventStore, marketData, asOf } = args;
 
   // ---- Live FX positions (the populated build-phase trading book) ----------
-  // Operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE): only
-  // production + operational-simulated trades enter the VaR book. Seed
-  // scaffolding (build-phase-fixture) + sandbox runs are held out — otherwise a
-  // polluted store inflates VaR by orders of magnitude (the same provenance
-  // class fixed in the B3 limit-utilisation projection).
+  // Two exclusions, both mirroring the B3 limit-utilisation projection so VaR
+  // and the NOP limit see the same book:
+  //   1. Operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE):
+  //      only production + operational-simulated trades; build-phase-fixture +
+  //      sandbox held out.
+  //   2. Cancellation: a cancelled trade is not a live position. The canonical
+  //      lifecycle resolver excludes FxTradeCancelled — without this a cancelled
+  //      (e.g. mis-scaled) trade is still counted, inflating VaR by orders of
+  //      magnitude.
+  const lifecycleIdx = resolveTradeLifecycle(eventStore.replay());
   const trades: FxTradeExecutedPayload[] = [];
   for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
     if (!eventInOperatingBook(ev)) continue;
-    trades.push(ev.payload as unknown as FxTradeExecutedPayload);
+    const payload = ev.payload as unknown as FxTradeExecutedPayload;
+    const idRaw = payload.tradeId as unknown;
+    const tradeIdValue =
+      typeof idRaw === "string"
+        ? idRaw
+        : typeof (idRaw as { value?: unknown })?.value === "string"
+          ? (idRaw as { value: string }).value
+          : null;
+    if (tradeIdValue && isCancelledInstance(lifecycleIdx.get(tradeIdValue))) continue;
+    trades.push(payload);
   }
 
   const settledTradeIds = new Set<string>();
