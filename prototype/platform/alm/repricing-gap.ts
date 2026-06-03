@@ -25,6 +25,7 @@
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import type { EventStore } from "../event-store/store";
+import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import { eventInOperatingBook } from "../projections/filter";
 
 // ---------------------------------------------------------------------------
@@ -203,25 +204,29 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
 
   // Canonical operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE):
   // exclude seed scaffolding (build-phase-fixture) + sandbox runs from the gap
-  // schedule; keep production + operational-simulated positions.
+  // schedule; keep production + operational-simulated positions. Liveness comes
+  // from the canonical registry-driven resolver (PR4) — one definition of "open"
+  // across repo / deposit / IBL, shared with every other projection (replaces the
+  // per-product hand-built terminal Sets).
+  const lifecycleIdx = resolveTradeLifecycle([
+    ...eventStore.replay({ type: "RepoTradeOpened" }),
+    ...eventStore.replay({ type: "RepoEndLegSettled" }),
+    ...eventStore.replay({ type: "RepoTradeTerminatedEarly" }),
+    ...eventStore.replay({ type: "DepositTaken" }),
+    ...eventStore.replay({ type: "DepositMatured" }),
+    ...eventStore.replay({ type: "DepositWithdrawnEarly" }),
+    ...eventStore.replay({ type: "InterbankLoanPlaced" }),
+    ...eventStore.replay({ type: "InterbankLoanMatured" }),
+    ...eventStore.replay({ type: "InterbankLoanRecalledEarly" }),
+  ]);
   const repoOpenEvents = [...eventStore.replay({ type: "RepoTradeOpened" })].filter((e) =>
     eventInOperatingBook(e),
-  );
-  const repoEndLegIds = new Set(
-    [...eventStore.replay({ type: "RepoEndLegSettled" })].map(
-      (e) => (e.payload as Record<string, unknown>).tradeId as string,
-    ),
-  );
-  const repoTerminatedIds = new Set(
-    [...eventStore.replay({ type: "RepoTradeTerminatedEarly" })].map(
-      (e) => (e.payload as Record<string, unknown>).tradeId as string,
-    ),
   );
 
   for (const evt of repoOpenEvents) {
     const p = evt.payload as Record<string, unknown>;
     const tradeId = typeof p.tradeId === "string" ? p.tradeId : "";
-    if (repoEndLegIds.has(tradeId) || repoTerminatedIds.has(tradeId)) continue;
+    if (!isLiveInstance(lifecycleIdx.get(tradeId))) continue;
 
     const endLegStr = typeof p.endLegSettlementDate === "string" ? p.endLegSettlementDate : "";
     const startLegCashZar = typeof p.startLegCashZar === "number" ? p.startLegCashZar : 0;
@@ -248,21 +253,11 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   const depositOpenEvents = [...eventStore.replay({ type: "DepositTaken" })].filter((e) =>
     eventInOperatingBook(e),
   );
-  const depositMaturedIds = new Set(
-    [...eventStore.replay({ type: "DepositMatured" })].map(
-      (e) => (e.payload as Record<string, unknown>).depositId as string,
-    ),
-  );
-  const depositWithdrawnIds = new Set(
-    [...eventStore.replay({ type: "DepositWithdrawnEarly" })].map(
-      (e) => (e.payload as Record<string, unknown>).depositId as string,
-    ),
-  );
 
   for (const evt of depositOpenEvents) {
     const p = evt.payload as Record<string, unknown>;
     const depositId = typeof p.depositId === "string" ? p.depositId : "";
-    if (depositMaturedIds.has(depositId) || depositWithdrawnIds.has(depositId)) continue;
+    if (!isLiveInstance(lifecycleIdx.get(depositId))) continue;
 
     const maturityStr = typeof p.maturityDate === "string" ? p.maturityDate : "";
     const principalZar = typeof p.principalZar === "number" ? p.principalZar : 0;
@@ -291,21 +286,11 @@ export function computeRepricingGap(eventStore: EventStore, asOf: string): Repri
   const iblOpenEvents = [...eventStore.replay({ type: "InterbankLoanPlaced" })].filter((e) =>
     eventInOperatingBook(e),
   );
-  const iblMaturedIds = new Set(
-    [...eventStore.replay({ type: "InterbankLoanMatured" })].map(
-      (e) => (e.payload as Record<string, unknown>).placementId as string,
-    ),
-  );
-  const iblRecalledIds = new Set(
-    [...eventStore.replay({ type: "InterbankLoanRecalledEarly" })].map(
-      (e) => (e.payload as Record<string, unknown>).placementId as string,
-    ),
-  );
 
   for (const evt of iblOpenEvents) {
     const p = evt.payload as Record<string, unknown>;
     const placementId = typeof p.placementId === "string" ? p.placementId : "";
-    if (iblMaturedIds.has(placementId) || iblRecalledIds.has(placementId)) continue;
+    if (!isLiveInstance(lifecycleIdx.get(placementId))) continue;
 
     const principalZar = typeof p.principalZar === "number" ? p.principalZar : 0;
     if (principalZar <= 0) continue;
