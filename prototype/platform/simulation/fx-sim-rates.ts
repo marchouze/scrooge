@@ -1,8 +1,12 @@
 // platform/simulation/fx-sim-rates.ts
 //
 // Stateful random-walk FX rate engine for the simulation.
-// Seeds approximate 2026 mid-market rates and applies a bounded random walk
-// on each tick. Half-spreads are pair-dependent.
+// Seeds each pair's mid from the most recent **production** market-data tick
+// (via resolveSeedMidRates over the MarketDataStore) and applies a bounded
+// random walk on each tick. The hardcoded SEED_MID_RATES below are a documented
+// FALLBACK, used only when no production tick exists for a pair (e.g. an empty
+// store at boot, or a cross like EUR/GBP that the production feeds don't carry).
+// Half-spreads are pair-dependent.
 //
 // Pair representation: all pairs are stored in **major-first** form per the
 // ACI Model Code currency hierarchy:
@@ -18,8 +22,12 @@
 //   ACI Model Code §2 (currency-pair quotation convention).
 // Author: Devon (Chief Operating Officer, engineering)
 
+import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
+import { MarketDataSources } from "../market-data/types";
+
 // ---------------------------------------------------------------------------
-// Seed mid-rates (approx 2026 values, major-first per ACI hierarchy)
+// Fallback seed mid-rates — used only when the MarketDataStore has no
+// production tick for a pair (approx 2026 values, major-first per ACI hierarchy)
 // ---------------------------------------------------------------------------
 
 const SEED_MID_RATES: Record<string, number> = {
@@ -36,6 +44,31 @@ const SEED_MID_RATES: Record<string, number> = {
 
 /** Read-only view of the seed mid-rate pair keys (consumed by recon:fx-pair-direction). */
 export const SEED_MID_RATES_KEYS: readonly string[] = Object.freeze(Object.keys(SEED_MID_RATES));
+
+/**
+ * Resolve the engine's starting mids from the most recent **production**
+ * market-data ticks, pair by pair, falling back to SEED_MID_RATES when the
+ * store carries no production tick for that pair.
+ *
+ * Production-only (and excluding the fx-sim source) so the walk never seeds
+ * itself off its own simulated output — it anchors on real observed rates
+ * (SARB fixings / vendor feeds, provenance "production").
+ */
+export function resolveSeedMidRates(
+  store?: MarketDataStore,
+  fallback: Record<string, number> = SEED_MID_RATES,
+): Record<string, number> {
+  const seeds: Record<string, number> = { ...fallback };
+  if (!store) return seeds;
+  for (const pair of Object.keys(fallback)) {
+    const quote = lookupQuoteWithInverse(store, pair, {
+      provenance: "production",
+      excludeSource: MarketDataSources.FX_SIM,
+    });
+    if (quote && quote.rate > 0) seeds[pair] = quote.rate;
+  }
+  return seeds;
+}
 
 // ---------------------------------------------------------------------------
 // Half-spread lookup (basis points)
@@ -61,8 +94,12 @@ export interface FxRate {
 export class FxRateEngine {
   private midRates: Map<string, number>;
 
-  constructor() {
-    this.midRates = new Map(Object.entries(SEED_MID_RATES));
+  /**
+   * @param initialMids starting mids per pair. Defaults to the hardcoded
+   * fallback; callers seed real rates via `resolveSeedMidRates(store)`.
+   */
+  constructor(initialMids: Record<string, number> = SEED_MID_RATES) {
+    this.midRates = new Map(Object.entries(initialMids));
   }
 
   /**

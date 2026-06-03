@@ -26,7 +26,7 @@ import {
 } from "../../projections/markets/limit-utilisation";
 import type { SimCounterparty } from "../fx-sim-counterparties";
 import { generateSimTrade } from "../fx-sim-generator";
-import { FxRateEngine } from "../fx-sim-rates";
+import { FxRateEngine, resolveSeedMidRates } from "../fx-sim-rates";
 import { runPostTradeLifecycle } from "../post-trade-lifecycle";
 import { CorrespondentAdviceSim } from "./correspondent-advice-sim";
 import type { CounterpartyBehaviorProfile } from "./counterparty-profiles";
@@ -245,10 +245,14 @@ export class EnvSimEngine {
 
     // Seeded PRNG or Math.random.
     this.rng = options?.seed !== undefined ? mulberry32(options.seed) : Math.random;
-    this.rateEngine = new FxRateEngine();
 
     // Market data store — use caller-supplied instance or default to in-memory.
     this.marketDataStore = options?.marketDataStore ?? new MarketDataStore(":memory:");
+
+    // FX rate engine — seed each pair's starting mid from the most recent
+    // production market-data tick in the store, falling back to the documented
+    // approximations when none exists.
+    this.rateEngine = new FxRateEngine(resolveSeedMidRates(this.marketDataStore));
 
     // Build profile lookup map.
     this.profileMap = new Map();
