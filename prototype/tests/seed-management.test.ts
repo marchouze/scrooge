@@ -62,18 +62,25 @@ describe("loadDescopedSeedIds", () => {
 });
 
 describe("buildSeedsView", () => {
-  it("returns empty view on a fresh store (manifest is now empty)", () => {
+  it("returns one view row per manifest entry on a fresh store", () => {
     const view = buildSeedsView(new EventStore());
-    expect(view).toHaveLength(0);
-    expect(SEED_MANIFEST.length).toBe(0);
+    expect(SEED_MANIFEST.length).toBeGreaterThan(0);
+    expect(view).toHaveLength(SEED_MANIFEST.length);
+    // Fresh store → zero counts, but the rows are still present (visibility).
+    for (const row of view) {
+      expect(row.totalEvents).toBe(0);
+      expect(row.totalTicks).toBe(0);
+      expect(typeof row.source).toBe("string");
+      expect(typeof row.sourcePath).toBe("string");
+    }
   });
 });
 
 describe("recon:seed-manifest-parity", () => {
-  it("passes against the live bootDerive() wiring (0 seeds asserted)", () => {
+  it("passes against the populated manifest (sources present + wired)", () => {
     const result = runSeedManifestParity();
     expect(result.violations.filter((v) => v.severity === "fail")).toHaveLength(0);
     expect(result.ok).toBe(true);
-    expect(result.asserted).toBe(0);
+    expect(result.asserted).toBe(SEED_MANIFEST.length);
   });
 });

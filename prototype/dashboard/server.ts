@@ -2771,12 +2771,14 @@ const server = Bun.serve({
       });
     }
     if (url.pathname === "/api/seeds" && req.method === "GET") {
-      // Trusted-Figures Program objective 1 — boot-seed inventory. Every
-      // build-phase boot seed (seeds/manifest.ts), its descope status, the
-      // descope/promotion lineage, and the live count of events it has emitted.
+      // Trusted-Figures Program objective 1 — foundational seed inventory. Every
+      // build-phase seed (seeds/manifest.ts) — boot-time market-data ingesters
+      // and standing idempotent scripts — its descope status, the
+      // descope/promotion lineage, and the live count of events it has emitted
+      // (plus market-data ticks for the reference feeds).
       // pageProvenance: event-derived → simulated-only in build phase.
       // Authority: D-TRUSTED-FIGURES-PROGRAM-V1.
-      const seeds = buildSeedsView(eventStore);
+      const seeds = buildSeedsView(eventStore, marketDataStore);
       return jsonResponse({
         seeds,
         counts: {
