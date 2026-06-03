@@ -66,6 +66,7 @@ import type { EventStore } from "../event-store/store";
 import type { MarketDataStore } from "../market-data/store";
 import { extractMidRate, lookupQuoteWithInverse } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
+import { eventInOperatingBook } from "../projections/filter";
 import { type FinancialInput, absent, present, requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
@@ -219,8 +220,14 @@ export function deriveRiskFactorExposures(args: {
   const { eventStore, marketData, asOf } = args;
 
   // ---- Live FX positions (the populated build-phase trading book) ----------
+  // Operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE): only
+  // production + operational-simulated trades enter the VaR book. Seed
+  // scaffolding (build-phase-fixture) + sandbox runs are held out — otherwise a
+  // polluted store inflates VaR by orders of magnitude (the same provenance
+  // class fixed in the B3 limit-utilisation projection).
   const trades: FxTradeExecutedPayload[] = [];
   for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
+    if (!eventInOperatingBook(ev)) continue;
     trades.push(ev.payload as unknown as FxTradeExecutedPayload);
   }
 
