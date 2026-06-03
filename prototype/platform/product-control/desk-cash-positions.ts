@@ -65,9 +65,10 @@ export interface DeskCashPositionSet {
  * map. Accepts the CCY/ZAR pair directly; also derives from a ZAR/CCY mark by
  * inversion so either stored direction works (mirrors lookupQuoteWithInverse).
  */
-function foldZarRates(store: EventStore): Map<string, number> {
+function foldZarRates(store: EventStore, asOfBound?: string): Map<string, number> {
+  const bound = asOfBound !== undefined ? { asOf: asOfBound } : {};
   const byCcy = new Map<string, number>();
-  for (const e of store.replay({ type: "OfficialMarkAdopted" })) {
+  for (const e of store.replay({ type: "OfficialMarkAdopted", ...bound })) {
     const p = e.payload as unknown as OfficialMarkAdoptedPayload;
     if (p.markType !== "fx-rate") continue;
     const value = Number(p.mark);
@@ -136,10 +137,20 @@ function priceRow(row: CurrencyPositionRow, zarRates: Map<string, number>): Desk
   };
 }
 
-/** Build the priced desk-cash position set. Pure read — no appends. */
-export function computeDeskCashPositions(store: EventStore): DeskCashPositionSet {
-  const { rows } = computeCurrencyPositions(store);
-  const zarRates = foldZarRates(store);
+/**
+ * Build the priced desk-cash position set. Pure read — no appends.
+ *
+ * `asOfBound` (optional, ISO 8601 inclusive on `event.as_of`): when supplied,
+ * both the position reconstruction and the mark fold are bounded to that
+ * instant, yielding a point-in-time priced set. The daily-pnl / P&L-attribution
+ * engines pass an end-of-day bound. Omitted ⟹ unbounded (current full history).
+ */
+export function computeDeskCashPositions(
+  store: EventStore,
+  asOfBound?: string,
+): DeskCashPositionSet {
+  const { rows } = computeCurrencyPositions(store, asOfBound);
+  const zarRates = foldZarRates(store, asOfBound);
   const positions = rows.map((r) => priceRow(r, zarRates));
 
   let markableUnrealisedZarMinor = 0;
