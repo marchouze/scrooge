@@ -322,7 +322,8 @@ export function getFxNetPositions(): ReadonlyMap<string, number> {
  *      + nonFxB3   (notional from TradeExecuted / EquityTradeBooked)
  *
  * ZAR is the bank's reporting/home currency and is excluded from NOP per
- * BA 600 — home-currency residuals are not an FX risk.
+ * BA 330 (SARB market-risk return — FX net open position) — home-currency
+ * residuals are not an FX risk.
  *
  * Pass `marketDataStore` for ZAR-equivalent conversion. Without it, foreign
  * CCY units are summed raw (correct topology, wrong scale for multi-currency
@@ -341,7 +342,7 @@ export function computeB3Exposure(
   for (const [ccy, position] of netPositions) {
     const absPos = Math.abs(position);
     if (absPos === 0) continue;
-    if (ccy === "ZAR") continue; // home currency — excluded from NOP (BA 600)
+    if (ccy === "ZAR") continue; // home currency — excluded from NOP (BA 330)
     if (marketDataStore) {
       const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);
       if (quote) fxB3 += absPos * quote.rate;
