@@ -10,6 +10,7 @@
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION. Scrooge session-delegation (Marc).
 
+import { bankLifecyclePhase } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 import type { SimConfigField, SimStatus, SimulatorDescriptor, SimulatorModule } from "./types";
 
@@ -129,6 +130,16 @@ export class ThirdPartySimHub {
   }
 
   start(id: string, config?: Record<string, unknown>): SimStatus {
+    // Sandbox gate (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE PR2): the 3rd-party
+    // simulator runs only under bank-wide `sim` mode (build-phase). At
+    // commencement (`prod` mode) the bank operates on production data and the
+    // simulator must stay off. `bankLifecyclePhase()` reflects the event-sourced
+    // bank-mode policy (synced at boot + on every set).
+    if (bankLifecyclePhase() === "commencement") {
+      throw new Error(
+        `ThirdPartySimHub: refusing to start simulator '${id}' — bank is in prod mode (commencement); the sandbox simulator is sim-mode only`,
+      );
+    }
     const mod = this.get(id);
     const validated = this.validateConfig(mod.configSchema, config ?? {});
     mod.start(validated);

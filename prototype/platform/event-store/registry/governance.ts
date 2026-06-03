@@ -87,6 +87,7 @@ import {
 } from "../event-types/agent-substrate-extended";
 import { semanticLayerQuantityRegisteredPayloadSchema } from "../event-types/analytics";
 import { auditFindingClosedPayloadSchema, auditFindingPayloadSchema } from "../event-types/audit";
+import { bankModePolicySetPayloadSchema } from "../event-types/bank-mode";
 import { entityReclassifiedPayloadSchema } from "../event-types/entity-reclassified";
 import {
   auditIssueClosedPayloadSchema,
@@ -120,6 +121,21 @@ import {
 // completeness so the registry covers what the event store actually
 // contains.
 export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
+  {
+    type: "BankModePolicySet",
+    // D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE PR2 — the settable, event-sourced
+    // bank-wide prod/sim mode + per-category provenance granularity. Replaces
+    // the BANK_LIFECYCLE_PHASE / BANK_PHASE env vars with a canonical, auditable
+    // policy. Latest-wins-per-key: the active policy is the most recent set.
+    class: "governance",
+    payloadSchema: bankModePolicySetPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["dashboard", "Vera", "Atlas"],
+    replay: "latest-wins-per-key",
+    citationsHint: ["D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE (CEO-approved 2026-06-03)",
+  },
   {
     type: "CeoDecision",
     class: "governance",

@@ -137,6 +137,10 @@ import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-p
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
 
+import {
+  currentBankModePolicy,
+  syncBankModeToLifecyclePhase,
+} from "../platform/projections/bank-mode";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
@@ -148,6 +152,7 @@ import {
 } from "../projections/decisions";
 import beaFxPostingEngine from "../runtime/agents/bea-fx-posting-engine";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
+import { recordBankModePolicy } from "../runtime/bank-mode/record";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
   type RecordDecisionCommentResult,
@@ -331,6 +336,13 @@ const fxSimEngine = new FxSimEngine(eventStore, {
     );
   },
 });
+
+// Boot-sync the event-sourced bank-wide provenance policy to the lifecycle-phase
+// indicator BEFORE any projection or simulator reads it
+// (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE PR2). The most recent
+// BankModePolicySet event (default: sim → build-phase) drives bankLifecyclePhase()
+// and therefore the canonical operating-book filter + the sandbox-simulator gate.
+syncBankModeToLifecyclePhase(eventStore);
 
 // Centralised 3rd-party simulator hub — registers the FX-counterparty stimulus
 // plus the external sub-simulators (market data, nostro, correspondent, SARB
@@ -2570,6 +2582,61 @@ const server = Bun.serve({
         filter,
         sliceAuthority: "D-DATA-PROVENANCE-SUBSTRATE-SLICE-3",
       });
+    }
+    if (url.pathname === "/api/bank-mode" && req.method === "GET") {
+      // D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE PR2 — the settable, event-sourced
+      // bank-wide prod/sim mode + per-category provenance policy. The policy
+      // itself is a production governance record (BankModePolicySet rides
+      // production provenance), so the page badge is production-only.
+      return jsonResponse({
+        asOf: nowUtc(),
+        policy: currentBankModePolicy(eventStore),
+        pageProvenance: { mode: "production-only" },
+      });
+    }
+    if (url.pathname === "/api/bank-mode" && req.method === "POST") {
+      // Set the bank-wide mode / per-category policy. Authority is CEO-level
+      // (crosses the build-phase/commencement boundary + sandbox-simulator gate);
+      // the authorising principal is carried in `setBy`.
+      let body: {
+        bankMode?: string;
+        categoryPolicy?: Array<{ category: string; provenance: string }>;
+        note?: string;
+        setBy?: string;
+      };
+      try {
+        body = await req.json();
+      } catch {
+        return jsonResponse({ ok: false, error: "invalid JSON body" }, 400);
+      }
+      if (body.bankMode !== "sim" && body.bankMode !== "prod") {
+        return jsonResponse({ ok: false, error: "bankMode must be 'sim' or 'prod'" }, 400);
+      }
+      // Default to the current category policy when the caller only flips the mode.
+      const current = currentBankModePolicy(eventStore);
+      const categoryPolicy = (body.categoryPolicy ?? current.categoryPolicy) as Array<{
+        category: import("../platform/event-store/event-types/bank-mode").ProvenanceCategory;
+        provenance: "production" | "simulated";
+      }>;
+      try {
+        const { eventId } = recordBankModePolicy({
+          payload: {
+            bankMode: body.bankMode,
+            categoryPolicy,
+            ...(body.note ? { note: body.note } : {}),
+            setBy: body.setBy ?? "dashboard-operator",
+          },
+        });
+        // Re-sync the lifecycle phase immediately so the running process reflects
+        // the new mode without a restart.
+        const policy = syncBankModeToLifecyclePhase(eventStore);
+        return jsonResponse({ ok: true, eventId, policy });
+      } catch (err) {
+        return jsonResponse(
+          { ok: false, error: err instanceof Error ? err.message : String(err) },
+          400,
+        );
+      }
     }
     if (url.pathname === "/api/substrate-gaps" && req.method === "GET") {
       // Substrate-gap inventory parsed from Atlas's most-recent
