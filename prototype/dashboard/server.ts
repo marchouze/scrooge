@@ -136,6 +136,7 @@ import {
   buildLimitUtilisationDeps,
   getCorrespondentRouting,
   getLimitUtilisations,
+  getMarketRiskMeasure,
   rebuildCorrespondentRouting,
   rebuildLimitUtilisation,
 } from "../platform/projections/markets";
@@ -3217,6 +3218,15 @@ const server = Bun.serve({
           marketDataStore,
           buildLimitUtilisationDeps(eventStore, nowUtc()),
         ),
+      );
+    }
+    if (url.pathname === "/api/risk/market-risk-measure" && req.method === "GET") {
+      // CRO-owned market-risk measure (RAS B3 review R8 / D-B3-5). Folds the
+      // latest MarketRiskMeasureComputed event → VaR / SVaR / ES vs Helena's
+      // MR-1-FX VaR appetite. The risk-calibrated rung of the appetite stack;
+      // surfaced on the CRO risk page alongside the RAS clusters.
+      return jsonResponse(
+        getMarketRiskMeasure([...eventStore.replay({ type: "MarketRiskMeasureComputed" })]),
       );
     }
     if (url.pathname === "/api/markets/fx/products/attestation" && req.method === "GET") {

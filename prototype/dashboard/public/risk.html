@@ -14,12 +14,16 @@
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
     <div class="page-header">
       <h1 class="page-title">Risk</h1>
+      <p class="page-subtitle" style="color:var(--color-text-secondary);margin-top:4px">
+        Risks owned by the Chief Risk Officer (Helena) — the Risk Appetite Statement and market-risk measures.
+        Treasury-owned liquidity ratios (LCR/NSFR) and CFO-owned capital are surfaced on their own pages.
+      </p>
     </div>
     <div class="page-body">
       <div id="ras-header"></div>
       <div id="ras-tiles" class="tile-row"></div>
-      <div id="liquidity-header"></div>
-      <div id="liquidity-tiles" class="tile-row"></div>
+      <div id="market-risk-header"></div>
+      <div id="market-risk-tiles" class="tile-row"></div>
     </div>
   </main>
   <script src="/_shell.js"></script>
@@ -34,6 +38,46 @@
 
     const ragToStatus = { green: "ok", amber: "warn", red: "danger" };
     const fmt = (n) => n != null ? Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 0 }) : "—";
+    const money = (n) => n != null ? `R ${fmt(n)}` : "—";
+    const pct = (n) => n != null ? `${(Number(n) * 100).toFixed(1)}%` : "—";
+
+    // ---- RAS appetite clusters (B1–B5) — the CRO's appetite lines -----------
+
+    function rasModalBody(c) {
+      const ccy = c.currency ?? "ZAR";
+      let html = SC.renderDefList({
+        "Cluster": c.cluster,
+        "Limit name": c.limitName,
+        "Current exposure": `${ccy} ${fmt(c.currentExposure)}`,
+        "Limit": `${ccy} ${fmt(c.limitValue)}`,
+        "Utilisation": pct(c.utilisationPct),
+        "Status": c.ragStatus,
+        "Limit basis": c.limitBasis === "pct-capital" ? "% of qualifying capital" : "absolute",
+      });
+      if (Array.isArray(c.perCurrency) && c.perCurrency.length) {
+        html += `<h4 style="margin:14px 0 6px">Per-currency net open position</h4>`;
+        html += `<table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="text-align:left;color:var(--color-text-secondary)">
+            <th style="padding:4px 8px">Currency</th>
+            <th style="padding:4px 8px;text-align:right">Exposure (ZAR)</th>
+            <th style="padding:4px 8px;text-align:right">Sub-limit</th>
+            <th style="padding:4px 8px;text-align:right">Util.</th>
+            <th style="padding:4px 8px">RAG</th>
+          </tr></thead><tbody>`;
+        for (const p of c.perCurrency) {
+          const dot = p.ragStatus ? `<span style="color:var(--color-status-${ragToStatus[p.ragStatus] ?? 'neutral'})">●</span> ${p.ragStatus}` : "—";
+          html += `<tr style="border-top:1px solid var(--color-border)">
+            <td style="padding:4px 8px">${p.currency}</td>
+            <td style="padding:4px 8px;text-align:right">${fmt(p.exposure)}</td>
+            <td style="padding:4px 8px;text-align:right">${p.subLimit != null ? fmt(p.subLimit) : "—"}</td>
+            <td style="padding:4px 8px;text-align:right">${pct(p.utilisationPct)}</td>
+            <td style="padding:4px 8px">${dot}</td>
+          </tr>`;
+        }
+        html += `</tbody></table>`;
+      }
+      return html;
+    }
 
     function renderRas(clusters) {
       const tilesEl = document.getElementById("ras-tiles");
@@ -45,65 +89,85 @@
       clusters.forEach(c => {
         const shortName = (c.limitName || "").replace(/\s*\(.*?\)\s*/g, "").trim();
         const label = `${c.cluster} — ${shortName}`;
-        const utilPct = c.utilisationPct != null ? `${(Number(c.utilisationPct) * 100).toFixed(1)}%` : "—";
         const ccy = c.currency ?? "ZAR";
-        const sub = `${ccy} ${fmt(c.currentExposure)} / ${ccy} ${fmt(c.limitValue)} limit`;
-        const t = SC.renderTile({
+        const basisTag = c.limitBasis === "pct-capital" ? " · % capital" : "";
+        const sub = `${ccy} ${fmt(c.currentExposure)} / ${ccy} ${fmt(c.limitValue)} limit${basisTag}`;
+        tilesEl.appendChild(SC.renderTile({
           label,
-          value: utilPct,
+          value: pct(c.utilisationPct),
           sub,
           status: ragToStatus[c.ragStatus] ?? null,
-          onClick: () => SC.openModal({ title: label, body: SC.renderDefList(c) }),
-        });
-        tilesEl.appendChild(t);
+          onClick: () => SC.openModal({ title: label, body: rasModalBody(c) }),
+        }));
       });
     }
 
-    function renderLiquidity(lm) {
-      const liqEl = document.getElementById("liquidity-tiles");
-      liqEl.innerHTML = "";
-      if (!lm) {
-        liqEl.innerHTML = `<p style="color:var(--color-text-secondary)">No liquidity data available.</p>`;
+    // ---- Market risk (VaR / SVaR / ES) — CRO-owned measures -----------------
+
+    function renderMarketRisk(m) {
+      const el = document.getElementById("market-risk-tiles");
+      el.innerHTML = "";
+      if (!m || m.status === "no-measure") {
+        el.innerHTML = `<p style="color:var(--color-text-secondary)">No market-risk measure emitted yet — run <code>bun run mr:measure-run</code>.</p>`;
         return;
       }
-      const lcrPct = lm.lcr != null ? `${Number(lm.lcr).toFixed(0)}%` : "—";
-      const nsfrPct = lm.nsfr != null ? `${Number(lm.nsfr).toFixed(0)}%` : "—";
-      const statusMap = { "above-minimum": "ok", "at-minimum": "warn", "below-minimum": "danger" };
-      liqEl.appendChild(SC.renderTile({
-        label: "LCR",
-        value: lcrPct,
-        sub: "min 100% (BCBS 188)",
-        status: statusMap[lm.lcrStatus] ?? null,
-        onClick: () => SC.openModal({ title: "Liquidity Coverage Ratio", body: SC.renderDefList({
-          "LCR": lcrPct,
-          "Status": lm.lcrStatus,
-          "Regulatory minimum": "100%",
-          "Authority": "BCBS 188 / Reg 26(12)",
-        })}),
+      const detail = () => SC.openModal({ title: "Market Risk — VaR / SVaR / ES", body: SC.renderDefList({
+        "VaR (99% · 1-day)": money(m.varZar),
+        "Stressed VaR": money(m.svarZar),
+        "Expected Shortfall (97.5%)": money(m.esZar),
+        "VaR appetite (MR-1-FX §1.1)": money(m.varAppetiteZar),
+        "Utilisation": pct(m.utilisationPct),
+        "Status": m.status,
+        "Risk factors": m.riskFactorCount,
+        "Min observations": m.minObservations,
+        "As of": m.asOf,
+        "Methodology / lineage": m.lineage,
+        "Owner": "Helena (Chief Risk Officer)",
+      })});
+
+      // Headline VaR tile — carries the appetite utilisation + RAG. The
+      // history window (vs the 250-day target) is shown so the figure's
+      // degraded-confidence — flagged by the calc-provenance axis — is visible
+      // alongside the utilisation RAG (two distinct axes: limit vs data quality).
+      const TARGET_WINDOW = 250;
+      const windowNote = m.minObservations != null && m.minObservations < TARGET_WINDOW
+        ? ` · ${m.minObservations}/${TARGET_WINDOW}-day history (degraded)`
+        : "";
+      el.appendChild(SC.renderTile({
+        label: "VaR (99% · 1-day)",
+        value: m.varZar != null ? money(m.varZar) : "—",
+        sub: m.utilisationPct != null ? `${pct(m.utilisationPct)} of ${money(m.varAppetiteZar)} appetite${windowNote}` : `status: ${m.status}`,
+        status: ragToStatus[m.ragStatus] ?? null,
+        onClick: detail,
       }));
-      liqEl.appendChild(SC.renderTile({
-        label: "NSFR",
-        value: nsfrPct,
-        sub: "min 100% (BCBS 295)",
-        status: statusMap[lm.nsfrStatus] ?? null,
-        onClick: () => SC.openModal({ title: "Net Stable Funding Ratio", body: SC.renderDefList({
-          "NSFR": nsfrPct,
-          "Status": lm.nsfrStatus,
-          "Regulatory minimum": "100%",
-          "Authority": "BCBS 295 / Reg 26(13)",
-        })}),
+      el.appendChild(SC.renderTile({
+        label: "Stressed VaR",
+        value: m.svarZar != null ? money(m.svarZar) : "—",
+        sub: "99% · 1-day · stress-calibrated",
+        status: null,
+        onClick: detail,
+      }));
+      el.appendChild(SC.renderTile({
+        label: "Expected Shortfall",
+        value: m.esZar != null ? money(m.esZar) : "—",
+        sub: "97.5% · 1-day (FRTB MAR33)",
+        status: null,
+        onClick: detail,
       }));
     }
 
     async function render() {
-      const state = await sf("/api/state");
+      const [state, mr] = await Promise.all([
+        sf("/api/state"),
+        sf("/api/risk/market-risk-measure"),
+      ]);
       renderRas(state?.limitUtilisations ?? []);
-      renderLiquidity(state?.liquidityMetrics ?? null);
+      renderMarketRisk(mr);
     }
 
     (async () => {
-      document.getElementById("ras-header").innerHTML = SC.renderSectionHeader("RAS Clusters (B1–B5)", null);
-      document.getElementById("liquidity-header").innerHTML = SC.renderSectionHeader("Liquidity Risk", null);
+      document.getElementById("ras-header").innerHTML = SC.renderSectionHeader("RAS Appetite Clusters (B1–B5)", null);
+      document.getElementById("market-risk-header").innerHTML = SC.renderSectionHeader("Market Risk (VaR / SVaR / ES)", null);
       await render();
       setInterval(render, 5000);
     })();
