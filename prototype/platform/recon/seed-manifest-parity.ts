@@ -1,19 +1,19 @@
 // platform/recon/seed-manifest-parity.ts
 //
-// Vera recon: seed-manifest-parity — asserts that the boot-seed inventory in
-// `seeds/manifest.ts` is in lock-step with the actual boot sequence in
-// `dashboard/server.ts`'s `bootDerive()`. Objective 1 of the Trusted-Figures
-// Program: a boot seed may not ship invisibly (every seed must be in the
-// manifest, hence on the Seeds page) and the manifest may not list phantom
-// seeds (every manifest entry must be wired into the boot sequence).
+// Vera recon: seed-manifest-parity — asserts that the foundational seed
+// inventory in `seeds/manifest.ts` is real and wired. Objective 1 of the
+// Trusted-Figures Program: a seed may not ship invisibly (every seed must be in
+// the manifest, hence on the Seeds page) and the manifest may not list phantom
+// seeds (every entry must point at a real source file, and boot ingesters must
+// actually be wired into the boot sequence).
 //
 // Assertions (all blocking):
 //   1. seedIds are unique.
-//   2. Each descopable manifest entry is wired as `runSeed("<seedId>", <bootFn>)`
-//      in server.ts — so it honours SeedDescoped.
-//   3. Each non-descopable manifest entry's `<bootFn>` is called directly.
-//   4. Every `runSeed("X", ...)` call in server.ts references a manifest seedId.
-//   5. Each entry's emittedEventTypes are all registered in EVENT_TYPE_REGISTRY.
+//   2. Every entry's `sourcePath` exists on disk.
+//   3. Every entry's `dataFile` (when set) exists on disk.
+//   4. `boot-ingester` entries: `bootFn` is referenced in dashboard/server.ts.
+//   5. `idempotent-script` entries: a `bootFn` is NOT required (run out-of-band).
+//   6. Each entry's emittedEventTypes are all registered in EVENT_TYPE_REGISTRY.
 //
 // Mode: blocking (non-zero exit on any violation). Wired into
 //       `bun run ci:recon:domain` via `bun run recon:seed-manifest-parity`.
@@ -46,7 +46,8 @@ export interface RunOpts {
 
 export function run(opts: RunOpts = {}): ReconResult {
   const repoRoot = findRepoRoot(import.meta.dir);
-  const serverPath = opts.serverPath ?? resolve(repoRoot, "prototype/dashboard/server.ts");
+  const prototypeRoot = resolve(repoRoot, "prototype");
+  const serverPath = opts.serverPath ?? resolve(prototypeRoot, "dashboard/server.ts");
 
   const result: ReconResult = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
@@ -80,30 +81,49 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
 
   for (const entry of SEED_MANIFEST) {
-    // 2 / 3. Boot wiring.
-    if (entry.descopable) {
-      const runSeedPattern = new RegExp(
-        `runSeed\\(\\s*["']${entry.seedId}["']\\s*,\\s*${entry.bootFn}\\b`,
-      );
-      if (!runSeedPattern.test(src)) {
+    // 2. sourcePath exists.
+    const sourceAbs = resolve(prototypeRoot, entry.sourcePath);
+    if (!existsSync(sourceAbs)) {
+      violations.push({
+        subject: entry.seedId,
+        message: `seed "${entry.seedId}" sourcePath "${entry.sourcePath}" does not exist on disk`,
+        severity: "fail",
+      });
+    }
+
+    // 3. dataFile exists (when declared).
+    if (entry.dataFile) {
+      const dataAbs = resolve(prototypeRoot, entry.dataFile);
+      if (!existsSync(dataAbs)) {
         violations.push({
           subject: entry.seedId,
-          message: `descopable seed "${entry.seedId}" must be wired as runSeed("${entry.seedId}", ${entry.bootFn}) in bootDerive() so it honours SeedDescoped — not found in server.ts`,
-          severity: "fail",
-        });
-      }
-    } else {
-      const directCall = new RegExp(`\\b${entry.bootFn}\\(`);
-      if (!directCall.test(src)) {
-        violations.push({
-          subject: entry.seedId,
-          message: `structural seed "${entry.seedId}" boot function ${entry.bootFn}() is not called in server.ts`,
+          message: `seed "${entry.seedId}" dataFile "${entry.dataFile}" does not exist on disk`,
           severity: "fail",
         });
       }
     }
 
-    // 5. Emitted event types registered.
+    // 4. boot-ingester wiring: bootFn must be referenced in server.ts.
+    if (entry.source === "boot-ingester") {
+      if (!entry.bootFn) {
+        violations.push({
+          subject: entry.seedId,
+          message: `boot-ingester seed "${entry.seedId}" must declare a bootFn (the ingest function wired in bootDerive())`,
+          severity: "fail",
+        });
+      } else {
+        const wired = new RegExp(`\\b${entry.bootFn}\\b`).test(src);
+        if (!wired) {
+          violations.push({
+            subject: entry.seedId,
+            message: `boot-ingester seed "${entry.seedId}" bootFn ${entry.bootFn}() is not referenced in dashboard/server.ts — it must be wired into bootDerive()`,
+            severity: "fail",
+          });
+        }
+      }
+    }
+
+    // 6. Emitted event types registered.
     for (const t of entry.emittedEventTypes) {
       if (!registeredTypes.has(t)) {
         violations.push({
@@ -112,20 +132,6 @@ export function run(opts: RunOpts = {}): ReconResult {
           severity: "fail",
         });
       }
-    }
-  }
-
-  // 4. Every runSeed("X", ...) in server.ts references a known seedId.
-  const manifestIds = new Set(SEED_MANIFEST.map((e) => e.seedId));
-  const runSeedCalls = [...src.matchAll(/runSeed\(\s*["']([^"']+)["']/g)];
-  for (const m of runSeedCalls) {
-    const id = m[1];
-    if (id && !manifestIds.has(id)) {
-      violations.push({
-        subject: id,
-        message: `server.ts calls runSeed("${id}", ...) but "${id}" has no SEED_MANIFEST entry — every boot seed must be in the manifest (Seeds page parity)`,
-        severity: "fail",
-      });
     }
   }
 
@@ -145,7 +151,7 @@ if (import.meta.main) {
 
   if (fails.length === 0) {
     console.log(
-      `recon:${PIPELINE} OK — ${result.asserted} manifest seed(s) checked, all in parity with bootDerive()`,
+      `recon:${PIPELINE} OK — ${result.asserted} manifest seed(s) checked, all sources present and wired`,
     );
   } else {
     console.error(

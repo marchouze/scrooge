@@ -13,12 +13,15 @@
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" data-provenance-source="/api/seeds" aria-label="Provenance badge"></span>
     <div class="page-header">
-      <h1 class="page-title">Boot Seeds</h1>
+      <h1 class="page-title">Seeds</h1>
       <p style="font:var(--text-body);color:var(--color-text-secondary);margin:var(--space-1) 0 0">
-        Every build-phase boot seed is listed here with the events it emits. A descopable seed can be
-        <strong>descoped</strong> (skipped at next boot) or <strong>replaced</strong> with author-driven
-        simulated events. Descope takes effect at the next server boot. Trusted-Figures Program
-        (D-TRUSTED-FIGURES-PROGRAM-V1).
+        The visibility index for every foundational build-phase seed. Seeds come in two forms:
+        <strong>boot ingesters</strong> (market-data reference fixtures loaded into the market-data store
+        on every server boot) and <strong>standing scripts</strong> (idempotent <code>scripts/*.ts</code>
+        that append foundational events — party register, security master, models, RAS limits, KYC, policy,
+        capital). Each card shows its source file, how it runs, and live counts of the events / market-data
+        ticks it has produced. A seed may not ship invisibly (Trusted-Figures Program,
+        D-TRUSTED-FIGURES-PROGRAM-V1).
       </p>
     </div>
     <div class="page-body">
