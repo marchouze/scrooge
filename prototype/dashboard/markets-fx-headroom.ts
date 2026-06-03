@@ -28,6 +28,7 @@
 import { clock } from "../platform/composition";
 import type { EventStore } from "../platform/event-store/store";
 import type { MarketDataStore } from "../platform/market-data/store";
+import type { LimitUtilisationDeps } from "../platform/projections/markets/limit-utilisation";
 import {
   getLimitUtilisations,
   rebuildLimitUtilisation,
@@ -68,10 +69,11 @@ export interface HeadroomView {
 export function buildHeadroomView(
   store: Pick<EventStore, "replay">,
   marketDataStore?: MarketDataStore,
+  deps?: LimitUtilisationDeps,
 ): HeadroomView {
   const events = [...store.replay()];
   rebuildLimitUtilisation(events);
-  const rows = getLimitUtilisations(marketDataStore);
+  const rows = getLimitUtilisations(marketDataStore, deps);
   return {
     rows,
     asOf: rows[0]?.asOf ?? clock.now(),

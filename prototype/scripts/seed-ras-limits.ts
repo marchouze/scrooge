@@ -58,16 +58,26 @@ const event = makeRasLimitSchedulePublished({
         breachThresholdRed: 0.9,
       },
       {
+        // B3 — FX market risk, measured as Net Open Position (the engine computes
+        // Σ|net per CCY|×rate, not gross notional). Expressed as a % of net
+        // qualifying capital (R4): the SARB/Basel FX-NOP regulatory ceiling is
+        // ~10% of qualifying capital. limitValue is the ZAR fallback used only
+        // when the live capital figure is unavailable.
         cluster: "B3",
-        limitName: "Market risk — FX notional",
+        limitName: "Market risk — FX net open position (≤10% qualifying capital)",
         limitValue: 200_000_000,
         currency: "ZAR",
         breachThresholdAmber: 0.7,
         breachThresholdRed: 0.9,
+        limitBasis: "pct-capital",
+        capitalPct: 10,
       },
       {
+        // B4 — IR market risk, measured as repricing-gap sensitivity Σ|gapZar|
+        // (R7) rather than notional. The dashboard injects the live figure from
+        // computeRepricingGap(); limitValue is the ZAR sensitivity ceiling.
         cluster: "B4",
-        limitName: "Market risk — IR notional",
+        limitName: "Market risk — IR repricing-gap sensitivity (Σ|gap|)",
         limitValue: 150_000_000,
         currency: "ZAR",
         breachThresholdAmber: 0.7,
