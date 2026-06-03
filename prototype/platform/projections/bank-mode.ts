@@ -18,7 +18,8 @@ import type {
   ProvenanceCategory,
 } from "../event-store/event-types/bank-mode";
 import { PROVENANCE_CATEGORIES } from "../event-store/event-types/bank-mode";
-import { setBankLifecyclePhaseOverride } from "../event-store/provenance";
+import { setActiveCategoryPolicy, setBankLifecyclePhaseOverride } from "../event-store/provenance";
+import type { CategoryProvenanceMap } from "../event-store/provenance-category";
 import type { EventStore } from "../event-store/store";
 
 export type { BankMode, ProvenanceCategory, CategoryProvenance };
@@ -90,15 +91,25 @@ export function lifecyclePhaseForBankMode(mode: BankMode): "build-phase" | "comm
   return mode === "prod" ? "commencement" : "build-phase";
 }
 
+/** Project the per-category policy array into the Record the provenance layer consumes. */
+export function categoryPolicyMap(policy: BankModePolicy): CategoryProvenanceMap {
+  const map = {} as Record<ProvenanceCategory, "production" | "simulated">;
+  for (const cat of PROVENANCE_CATEGORIES) map[cat] = "simulated";
+  for (const row of policy.categoryPolicy) map[row.category] = row.provenance;
+  return map;
+}
+
 /**
- * Boot-sync: pin the process-local lifecycle-phase override from the
- * event-sourced bank-mode policy, so the canonical operating-book filter and
- * all `bankLifecyclePhase()` consumers reflect the policy without coupling the
- * low-level provenance module to the event store. Call once at process boot
- * (dashboard server, runtime daemons). Cheap — replays only BankModePolicySet.
+ * Boot-sync: pin the process-local lifecycle-phase override AND the active
+ * per-category provenance policy from the event-sourced bank-mode policy, so the
+ * canonical operating-book filter, all `bankLifecyclePhase()` consumers, and
+ * `defaultProvenanceFor` reflect the policy without coupling the low-level
+ * provenance module to the event store. Call once at process boot (dashboard
+ * server, runtime daemons). Cheap — replays only BankModePolicySet.
  */
 export function syncBankModeToLifecyclePhase(store: EventStore): BankModePolicy {
   const policy = currentBankModePolicy(store);
   setBankLifecyclePhaseOverride(lifecyclePhaseForBankMode(policy.bankMode));
+  setActiveCategoryPolicy(categoryPolicyMap(policy));
   return policy;
 }
