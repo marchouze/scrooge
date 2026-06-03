@@ -52,7 +52,61 @@ import type { Event, ProvenanceTag } from "../event-store/types";
  *                          in the output (Slice 4 builds the typed
  *                          `ProvenanceAggregate<>` primitive on top).
  */
-export type ProvenanceMode = "production-only" | "simulated-only" | "combined";
+export type ProvenanceMode = "production-only" | "simulated-only" | "combined" | "operating-book";
+
+// ---------------------------------------------------------------------------
+// Operating-book inclusion — D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE.
+//
+// `operating-book` is the canonical inclusion axis, separate from the
+// lineage/audit axis (`provenance.kind`). It answers the one question every
+// measurement / alert actually needs: "is this event part of the bank's live
+// operating book?" — keyed off the lifecycle phase, NOT off `kind` directly.
+//
+//   - build-phase   → the book = everything the bank actually operates on
+//                     (production + operational-simulated flows), EXCLUDING
+//                     (a) seed-harness scaffolding (`build-phase-fixture`) and
+//                     (b) sandbox runs (scenario / rehearsal / stress /
+//                     counterfactual / test-pollution). This matches the
+//                     confirmed liveFlowView intent: "every flow someone
+//                     actually booked, real or rehearsed, but nothing the seed
+//                     harness fabricated, and nothing from a what-if sandbox."
+//   - commencement  → the book = production only; everything else archival.
+//
+// Sandbox classification: a reserved `tags: ["sandbox"]` marker on the
+// provenance envelope (the schema already carries `tags?: string[]`), plus a
+// fallback classifier on held-out `scenario`-id prefixes so legacy scenario
+// runs are held out WITHOUT a re-tagging migration. Adding a new held-out
+// class is a one-line edit here.
+// ---------------------------------------------------------------------------
+
+/** Reserved provenance tag marking an event as sandbox (held out of the book). */
+export const SANDBOX_TAG = "sandbox";
+
+/**
+ * `scenario`-id prefixes whose simulated events are sandbox (held out of the
+ * operating book): what-if / rehearsal / stress / counterfactual analyses, and
+ * test-pollution left in the shared store by test runs. Operational simulated
+ * data (the build-phase bank actually operating — manual bookings, the sim-hub
+ * book, pre-substrate operating backfill) does NOT match these and stays in the
+ * book. Belt-and-suspenders alongside the explicit `SANDBOX_TAG` so no legacy
+ * re-tagging is required (see D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE roadmap).
+ */
+export const SANDBOX_SCENARIO_PREFIXES: readonly string[] = [
+  "rehearsal-",
+  "stress-",
+  "counterfactual-",
+  "what-if-",
+  "test-pollution",
+];
+
+/** True iff `tag` denotes a sandbox event held out of the operating book. */
+export function isSandboxProvenance(tag: ProvenanceTag): boolean {
+  if (tag.tags?.includes(SANDBOX_TAG)) return true;
+  if (tag.kind === "simulated" && tag.scenario) {
+    return SANDBOX_SCENARIO_PREFIXES.some((p) => tag.scenario?.startsWith(p));
+  }
+  return false;
+}
 
 /**
  * Typed read-time provenance filter. Carried by every projection-runtime
@@ -125,6 +179,26 @@ export function defaultProvenanceFilter(): ProvenanceFilter {
   return { mode: defaultProvenanceMode() };
 }
 
+/**
+ * The canonical operating-book filter (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE).
+ * Every projection / GL / ALM / RWA / recon / dashboard fold that asks "what is
+ * in the bank's live operating book?" must use this rather than a bespoke
+ * `kind`-based check. See `ProvenanceMode = "operating-book"` for the semantics.
+ */
+export function operatingBookFilter(): ProvenanceFilter {
+  return { mode: "operating-book" };
+}
+
+/**
+ * Predicate form of `operatingBookFilter()` — true iff `event` is part of the
+ * bank's live operating book under the current lifecycle phase. Replaces inline
+ * `provenance?.kind === "build-phase-fixture"` checks and per-module
+ * `isFixture()` helpers.
+ */
+export function eventInOperatingBook(event: Pick<Event, "provenance">): boolean {
+  return eventMatchesProvenanceFilter(event, operatingBookFilter());
+}
+
 // ---------------------------------------------------------------------------
 // Predicates — applied at runtime to every event during fold.
 // ---------------------------------------------------------------------------
@@ -163,6 +237,19 @@ export function eventMatchesProvenanceFilter(
     }
   }
   if (filter.mode === "simulated-only" && tag.kind !== "simulated") return false;
+
+  // Operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE).
+  //   - commencement: only `production` is in the book.
+  //   - build-phase: everything the bank operates on EXCEPT seed-harness
+  //     scaffolding (`build-phase-fixture`) and sandbox runs.
+  if (filter.mode === "operating-book") {
+    if (bankLifecyclePhase() === "commencement") {
+      if (tag.kind !== "production") return false;
+    } else {
+      if (tag.kind === "build-phase-fixture") return false;
+      if (isSandboxProvenance(tag)) return false;
+    }
+  }
   // `combined` accepts all kinds.
 
   // Scenario narrowing — only meaningful when the event is simulated. A

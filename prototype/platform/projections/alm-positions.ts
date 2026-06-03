@@ -45,6 +45,7 @@ import type { EventStore } from "../event-store/store";
 import type { FundingPosition, HQLAPosition } from "../liquidity/lcr";
 import type { ASFItem, RSFItem } from "../liquidity/nsfr";
 import { computeCapitalMetrics } from "./capital-metrics";
+import { eventInOperatingBook } from "./filter";
 
 // ---------------------------------------------------------------------------
 // Output types
@@ -199,13 +200,17 @@ function extractRawPosition(type: string, payload: Record<string, unknown>): Raw
 // ---------------------------------------------------------------------------
 // The liquidity (LCR) tile reflects real *flows*: production flows plus
 // simulated flows that were booked as trades. It excludes artificially seeded
-// `build-phase-fixture` events (the opening fixtures the seed harness injects).
+// `build-phase-fixture` events (the opening fixtures the seed harness injects)
+// and any sandbox runs (what-if / stress / rehearsal / test-pollution).
 //
-// This is deliberately NOT the `production-only` provenance mode — that mode
-// KEEPS build-phase-fixture and DROPS simulated, the opposite of what a
-// liquidity tile wants ("every flow someone actually booked, real or rehearsed,
-// but nothing the seed harness fabricated"). Untagged events default to
-// included, preserving pre-provenance-substrate behaviour.
+// This is the canonical operating-book inclusion
+// (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE): `eventInOperatingBook` keeps
+// production + operational-simulated and drops seed scaffolding + sandbox —
+// exactly what a liquidity tile wants ("every flow someone actually booked,
+// real or rehearsed, but nothing the seed harness fabricated, and nothing from
+// a what-if sandbox"). It is deliberately NOT `production-only` (which KEEPS
+// build-phase-fixture and DROPS simulated, the opposite). Untagged events
+// default to included, preserving pre-provenance-substrate behaviour.
 //
 // Applied only at the entry of the three LCR-feeding folds below
 // (readHQLAFromEventStore, buildFundingPositions, buildSettlementOutflows), so
@@ -225,8 +230,8 @@ function extractRawPosition(type: string, payload: Record<string, unknown>): Raw
 // store-wide ≠ per-entity LCR.
 //
 // `liveFlowView(store, entity)` now narrows the replay to a single entity
-// when `entity` is supplied (in addition to dropping `build-phase-fixture`
-// events per D-LCR-TILE-PROVENANCE). When `entity` is omitted the behaviour
+// when `entity` is supplied (in addition to the operating-book inclusion
+// filter — dropping seed scaffolding + sandbox). When `entity` is omitted the behaviour
 // is unchanged (store-wide) — preserving every existing caller / test that
 // does not pass an entity. The scoping is applied ONLY inside the three
 // LCR/HQLA folds, never to the capital / ASF reads: the founding CapitalEvent
@@ -244,7 +249,7 @@ function liveFlowView(store: EventStore, entity?: string): EventStore {
           const scoped =
             entity !== undefined ? { ...(opts ?? {}), entity: opts?.entity ?? entity } : opts;
           for (const ev of target.replay(scoped)) {
-            if (ev.provenance?.kind === "build-phase-fixture") continue;
+            if (!eventInOperatingBook(ev)) continue;
             yield ev;
           }
         };
