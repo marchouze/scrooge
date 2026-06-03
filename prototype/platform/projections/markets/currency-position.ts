@@ -44,6 +44,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering),
 //   with Rohan (Market risk engineer, engineering) — mark sourcing.
 
+import type { OfficialMarkAdoptedPayload } from "../../event-store/event-types/valuation";
 import type { EventStore } from "../../event-store/store";
 import { isCancelledInstance, resolveTradeLifecycle } from "../../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload, PrincipalPaymentPayload } from "../../markets/cdm/fx";
@@ -128,6 +129,68 @@ interface MutableRow {
 }
 
 // ---------------------------------------------------------------------------
+// Cross-pair ZAR cost-basis imputation (D-FX-CROSS-PAIR-CASH-COST-BASIS)
+// ---------------------------------------------------------------------------
+
+/** One day-stamped CCY/ZAR rate (ZAR per 1 FCY) for cost-basis imputation. */
+interface DatedRate {
+  readonly day: string; // YYYY-MM-DD
+  readonly rate: number; // ZAR per 1 FCY
+}
+
+const dayOf = (iso: string): string => iso.slice(0, 10);
+
+/**
+ * Fold OfficialMarkAdopted fx-rate marks into a `${ccy}` → ascending [{day,rate}]
+ * map (ZAR per 1 FCY), deriving either direction (CCY/ZAR direct, ZAR/CCY
+ * inverted). Used ONLY to impute a ZAR cost basis for cross-pair FX legs that
+ * carry no ZAR settlement leg — a ZAR-pair leg still takes its cost from the
+ * trade's own ZAR consideration, never a mark.
+ */
+function foldFxMarksByDate(store: EventStore, bound: { asOf?: string }): Map<string, DatedRate[]> {
+  const byCcy = new Map<string, DatedRate[]>();
+  const push = (ccy: string, day: string, rate: number) => {
+    const arr = byCcy.get(ccy) ?? [];
+    arr.push({ day, rate });
+    byCcy.set(ccy, arr);
+  };
+  for (const e of store.replay({ type: "OfficialMarkAdopted", ...bound })) {
+    const p = e.payload as unknown as OfficialMarkAdoptedPayload;
+    if (p.markType !== "fx-rate") continue;
+    const value = Number(p.mark);
+    if (!Number.isFinite(value) || value <= 0) continue;
+    const day = dayOf(p.markAsOf ?? "");
+    if (!day) continue;
+    const [base, quote] = p.instrumentKey.split("/");
+    if (quote === REPORTING_CURRENCY && base) push(base, day, value);
+    else if (base === REPORTING_CURRENCY && quote) push(quote, day, 1 / value);
+  }
+  for (const arr of byCcy.values()) arr.sort((a, b) => (a.day < b.day ? -1 : 1));
+  return byCcy;
+}
+
+/**
+ * The CCY/ZAR rate to use as a cross-pair leg's cost basis: the latest mark on
+ * or before the leg's settlement day; failing that (settlement predates the
+ * first mark) the earliest available mark. Returns undefined only when the
+ * currency has NO mark at all — then the leg is skipped (no silent fabrication).
+ */
+function imputedCostRate(
+  marksByCcy: Map<string, DatedRate[]>,
+  ccy: string,
+  settlementDay: string,
+): number | undefined {
+  const arr = marksByCcy.get(ccy);
+  if (!arr || arr.length === 0) return undefined;
+  let chosen: number | undefined;
+  for (const { day, rate } of arr) {
+    if (day <= settlementDay) chosen = rate;
+    else break;
+  }
+  return chosen ?? arr[0]?.rate;
+}
+
+// ---------------------------------------------------------------------------
 // Engine
 // ---------------------------------------------------------------------------
 
@@ -147,6 +210,9 @@ export function computeCurrencyPositions(
   // end-of-day bound so two genuinely-distinct snapshots produce a real
   // day-over-day move (mirrors computeDailyPnL's asOfBound).
   const bound = asOfBound !== undefined ? { asOf: asOfBound } : {};
+  // Day-stamped CCY/ZAR marks for cross-pair cost-basis imputation only
+  // (D-FX-CROSS-PAIR-CASH-COST-BASIS). ZAR-pair legs ignore this.
+  const marksByCcy = foldFxMarksByDate(store, bound);
   // 1. Cancelled trades — voided from the cash inventory. Canonical
   //    registry-driven resolver (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE) —
   //    only cancellations are excluded; settled FX legs KEEP their currency
@@ -200,38 +266,25 @@ export function computeCurrencyPositions(
   const realisations: DeskCashRealisation[] = [];
   const skipped: { tradeId: string; reason: string }[] = [];
 
-  for (const tradeId of settledTradeIds) {
-    const meta = tradeMeta.get(tradeId);
-    const legs = legsByTrade.get(tradeId);
-    if (!meta || !legs || legs.length === 0) continue;
-
-    // A ZAR-quoted/based pair has exactly one ZAR leg + one FCY leg. Crosses
-    // with no ZAR leg cannot derive a ZAR cost basis at settlement without a
-    // historical CCY/ZAR rate — skip (no silent fabrication; documented gap).
-    const zarLeg = legs.find((l) => l.currency === REPORTING_CURRENCY);
-    const fcyLeg = legs.find((l) => l.currency !== REPORTING_CURRENCY);
-    if (!fcyLeg) continue; // ZAR/ZAR — nothing to revalue.
-    if (!zarLeg) {
-      skipped.push({
-        tradeId,
-        reason: `cross pair ${meta.base}/${meta.quote} has no ZAR leg — cash-inventory ZAR cost basis requires a historical CCY/ZAR rate (substrate gap)`,
-      });
-      continue;
-    }
-    if (fcyLeg.netCash === 0) continue;
-
-    const fcyDelta = fcyLeg.netCash; // signed FCY minor (+received / −delivered)
-    const zarAmountMinor = Math.abs(zarLeg.netCash); // ZAR minor exchanged
-    const tradeRate = zarAmountMinor / Math.abs(fcyDelta); // ZAR per FCY
-
-    const key = `${meta.entity}::${meta.bookId}::${fcyLeg.currency}`;
+  // Apply one currency cash movement (signed FCY minor at a ZAR cost rate) to
+  // its per-(entity,book,ccy) running position — weighted-average on acquisition,
+  // crystallised realised P&L on close-out. Shared by ZAR-pair and cross-pair legs.
+  const applyMovement = (
+    meta: TradeMeta,
+    tradeId: string,
+    currency: string,
+    fcyDelta: number,
+    costRate: number,
+    settlementDate: string,
+  ): void => {
+    const key = `${meta.entity}::${meta.bookId}::${currency}`;
     const row =
       rows.get(key) ??
       ({
         entity: meta.entity,
         bookId: meta.bookId,
-        currency: fcyLeg.currency,
-        instrumentId: cashInstrumentId(fcyLeg.currency, meta.bookId),
+        currency,
+        instrumentId: cashInstrumentId(currency, meta.bookId),
         quantity: 0,
         avgCost: 0,
         realisedCumulative: 0,
@@ -247,8 +300,8 @@ export function computeCurrencyPositions(
       const denom = Math.abs(prevQty) + Math.abs(fcyDelta);
       row.avgCost =
         denom === 0
-          ? tradeRate
-          : (prevAvg * Math.abs(prevQty) + tradeRate * Math.abs(fcyDelta)) / denom;
+          ? costRate
+          : (prevAvg * Math.abs(prevQty) + costRate * Math.abs(fcyDelta)) / denom;
       row.quantity = prevQty + fcyDelta;
     } else {
       // Opposite side — close out against the existing position.
@@ -256,7 +309,7 @@ export function computeCurrencyPositions(
       // realised = (disposalRate − avgCost) × closed × sign(prevQty):
       //   long  (prevQty>0) disposed: gain when sold above cost
       //   short (prevQty<0) bought back: gain when covered below cost
-      const realised = Math.round((tradeRate - prevAvg) * closedAmount * Math.sign(prevQty));
+      const realised = Math.round((costRate - prevAvg) * closedAmount * Math.sign(prevQty));
       row.realisedCumulative += realised;
       realisations.push({
         instrumentId: row.instrumentId,
@@ -265,10 +318,10 @@ export function computeCurrencyPositions(
         currency: row.currency,
         amountClosedMinor: closedAmount,
         avgCostZarRate: prevAvg,
-        disposalCostZarRate: tradeRate,
+        disposalCostZarRate: costRate,
         realisedPnlZarMinor: realised,
         sourceTradeId: tradeId,
-        recognisedAt: fcyLeg.settlementDate,
+        recognisedAt: settlementDate,
       });
 
       const newQty = prevQty + fcyDelta;
@@ -279,12 +332,59 @@ export function computeCurrencyPositions(
       } else {
         // Reversal past flat — residual opens a fresh position at the trade rate.
         row.quantity = newQty;
-        row.avgCost = tradeRate;
+        row.avgCost = costRate;
       }
     }
 
     row.eventCount += 1;
     rows.set(key, row);
+  };
+
+  for (const tradeId of settledTradeIds) {
+    const meta = tradeMeta.get(tradeId);
+    const legs = legsByTrade.get(tradeId);
+    if (!meta || !legs || legs.length === 0) continue;
+
+    const fcyLegs = legs.filter((l) => l.currency !== REPORTING_CURRENCY && l.netCash !== 0);
+    if (fcyLegs.length === 0) continue; // ZAR/ZAR or nil-cash — nothing to revalue.
+    const zarLeg = legs.find((l) => l.currency === REPORTING_CURRENCY);
+
+    if (zarLeg) {
+      // ZAR pair (one ZAR leg + one FCY leg): the FCY leg's cost basis is the
+      // ACTUAL ZAR consideration exchanged ÷ the FCY exchanged. Robust to any
+      // settlement-rate quirk — no mark involved.
+      const zarAmountMinor = Math.abs(zarLeg.netCash);
+      for (const fcy of fcyLegs) {
+        applyMovement(
+          meta,
+          tradeId,
+          fcy.currency,
+          fcy.netCash,
+          zarAmountMinor / Math.abs(fcy.netCash),
+          fcy.settlementDate,
+        );
+      }
+    } else {
+      // Cross pair (no ZAR leg): impute each FCY leg's ZAR cost from the CCY/ZAR
+      // official mark at the leg's settlement day (D-FX-CROSS-PAIR-CASH-COST-BASIS,
+      // CEO-approved 2026-06-03). Both monetary balances are retranslated daily
+      // thereafter (IAS 21 §28). A currency with NO mark at all is skipped (no
+      // silent fabrication); the trade is fully skipped only if NEITHER leg prices.
+      let pricedAny = false;
+      for (const fcy of fcyLegs) {
+        const costRate = imputedCostRate(marksByCcy, fcy.currency, dayOf(fcy.settlementDate));
+        if (costRate === undefined) {
+          skipped.push({
+            tradeId,
+            reason: `cross pair ${meta.base}/${meta.quote}: no ${fcy.currency}/ZAR official mark to impute a ZAR cost basis for the ${fcy.currency} leg`,
+          });
+          continue;
+        }
+        pricedAny = true;
+        applyMovement(meta, tradeId, fcy.currency, fcy.netCash, costRate, fcy.settlementDate);
+      }
+      if (!pricedAny) continue;
+    }
   }
 
   return {

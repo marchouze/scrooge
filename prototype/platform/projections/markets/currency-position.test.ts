@@ -76,6 +76,49 @@ function usdZarMark(rate: number): StubEvent {
   };
 }
 
+/** A settled GBP/USD CROSS trade (no ZAR leg): one GBP leg + one USD leg. */
+function settledGbpUsd(
+  tradeId: string,
+  side: "buy" | "sell", // buy = buy GBP / pay USD
+  gbpMinor: number,
+  usdMinor: number,
+  settlementDate: string,
+): StubEvent[] {
+  const gbpNet = side === "buy" ? gbpMinor : -gbpMinor;
+  const usdNet = side === "buy" ? -usdMinor : usdMinor;
+  return [
+    {
+      type: "FxTradeExecuted",
+      entity: ENTITY,
+      payload: {
+        tradeId: { value: tradeId },
+        bookId: BOOK,
+        side,
+        currencyPair: { base: "GBP", quote: "USD" },
+      },
+    },
+    {
+      type: "PrincipalPayment",
+      entity: ENTITY,
+      payload: { tradeId, legKind: "receive", currency: "GBP", netCash: gbpNet, settlementDate },
+    },
+    {
+      type: "PrincipalPayment",
+      entity: ENTITY,
+      payload: { tradeId, legKind: "deliver", currency: "USD", netCash: usdNet, settlementDate },
+    },
+  ];
+}
+
+/** A dated CCY/ZAR mark for cross-pair cost-basis imputation. */
+function datedMark(ccy: string, rate: number, markAsOf: string): StubEvent {
+  return {
+    type: "OfficialMarkAdopted",
+    entity: ENTITY,
+    payload: { markType: "fx-rate", instrumentKey: `${ccy}/ZAR`, mark: String(rate), markAsOf },
+  };
+}
+
 describe("currency-position — FX cash inventory", () => {
   it("an opening buy adds FCY at the trade's ZAR cost and realises nothing", () => {
     // Buy USD 1,000.00 (100000 minor) for ZAR 18,500.00 (1850000 minor) → rate 18.50.
@@ -164,5 +207,56 @@ describe("desk-cash-positions — marking to ZAR (no silent zero)", () => {
     expect(set.positions[0]?.unrealisedPnlZarMinor.present).toBe(false);
     expect(set.unmarkableKeys).toContain(cashInstrumentId("USD", BOOK));
     expect(set.totalUnrealised.present).toBe(false);
+  });
+});
+
+describe("currency-position — cross-pair cost-basis imputation (D-FX-CROSS-PAIR-CASH-COST-BASIS)", () => {
+  it("forms GBP + USD cash positions from a settled GBP/USD cross, costed at settlement-day CCY/ZAR marks", () => {
+    // Buy GBP 1,000.00 / pay USD 1,358.20 (cross), with GBP/ZAR @ 21.50, USD/ZAR @ 16.00 on the settlement day.
+    const { rows, skipped } = computeCurrencyPositions(
+      stubStore([
+        ...settledGbpUsd("X1", "buy", 100_000, 135_820, "2026-06-02"),
+        datedMark("GBP", 21.5, "2026-06-02"),
+        datedMark("USD", 16.0, "2026-06-02"),
+      ]),
+    );
+    expect(skipped).toHaveLength(0); // no longer dropped
+    const gbp = rows.find((r) => r.currency === "GBP");
+    const usd = rows.find((r) => r.currency === "USD");
+    expect(gbp?.fcyQuantityMinor).toBe(100_000); // received GBP
+    expect(gbp?.avgCostZarRate).toBeCloseTo(21.5, 6); // imputed from the mark
+    expect(usd?.fcyQuantityMinor).toBe(-135_820); // delivered USD (short)
+    expect(usd?.avgCostZarRate).toBeCloseTo(16.0, 6);
+  });
+
+  it("still skips a cross-pair leg whose currency has NO mark at all (no silent fabrication)", () => {
+    const { rows, skipped } = computeCurrencyPositions(
+      stubStore([
+        ...settledGbpUsd("X1", "buy", 100_000, 135_820, "2026-06-02"),
+        datedMark("GBP", 21.5, "2026-06-02"), // only GBP marked; USD has none
+      ]),
+    );
+    // GBP leg prices; USD leg is skipped — the trade is not fully dropped.
+    expect(rows.find((r) => r.currency === "GBP")).toBeDefined();
+    expect(rows.find((r) => r.currency === "USD")).toBeUndefined();
+    expect(skipped.some((s) => s.reason.includes("USD/ZAR"))).toBe(true);
+  });
+
+  it("crystallises realised P&L on a cross-pair close-out across two settlement days", () => {
+    // Buy GBP 2,000 @ 21.00 (06-02), sell GBP 1,000 @ 22.00 (06-03) → realised
+    // (22.00−21.00)×100000 = +100000 on the GBP leg. USD just accumulates (no close-out).
+    const { rows } = computeCurrencyPositions(
+      stubStore([
+        ...settledGbpUsd("X1", "buy", 200_000, 271_640, "2026-06-02"),
+        ...settledGbpUsd("X2", "sell", 100_000, 136_000, "2026-06-03"),
+        datedMark("GBP", 21.0, "2026-06-02"),
+        datedMark("GBP", 22.0, "2026-06-03"),
+        datedMark("USD", 16.0, "2026-06-02"),
+        datedMark("USD", 16.0, "2026-06-03"),
+      ]),
+    );
+    const gbp = rows.find((r) => r.currency === "GBP");
+    expect(gbp?.fcyQuantityMinor).toBe(100_000); // 200k bought − 100k sold
+    expect(gbp?.realisedZarMinorCumulative).toBe(Math.round((22.0 - 21.0) * 100_000));
   });
 });
