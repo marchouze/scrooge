@@ -62,3 +62,37 @@ describe("resolveSeedMidRates", () => {
     expect(engine.getMid("USD/ZAR")).toBeCloseTo(17.42, 6);
   });
 });
+
+describe("FxRateEngine.reseed", () => {
+  it("re-anchors to a fresh production tick, ignoring fx-sim output", () => {
+    const md = store();
+    // Engine starts at fallback 18.5.
+    const engine = new FxRateEngine();
+    expect(engine.getMid("USD/ZAR")).toBe(18.5);
+
+    // A production tick arrives with a real rate.
+    appendQuote(md, "USD/ZAR", 16.1, "production", MarketDataSources.ZARONIA_SARB);
+    engine.reseed(md);
+    expect(engine.getMid("USD/ZAR")).toBeCloseTo(16.1, 6);
+  });
+
+  it("does not re-anchor to a simulated fx-sim tick", () => {
+    const md = store();
+    const engine = new FxRateEngine();
+    appendQuote(md, "USD/ZAR", 99.0, "simulated", MarketDataSources.FX_SIM);
+    engine.reseed(md);
+    expect(engine.getMid("USD/ZAR")).toBe(18.5); // unchanged
+  });
+
+  it("leaves pairs with no production tick at their current walked value", () => {
+    const md = store();
+    const engine = new FxRateEngine();
+    // Advance EUR/GBP by one walk step.
+    engine.tick("EUR/GBP");
+    const walkedMid = engine.getMid("EUR/GBP");
+    // No production tick for EUR/GBP — reseed should not reset it to fallback.
+    appendQuote(md, "USD/ZAR", 16.0, "production", MarketDataSources.ZARONIA_SARB);
+    engine.reseed(md);
+    expect(engine.getMid("EUR/GBP")).toBeCloseTo(walkedMid, 6);
+  });
+});

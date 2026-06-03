@@ -16,6 +16,18 @@ import type { SimCounterparty } from "./fx-sim-counterparties";
 import type { FxRate, FxRateEngine } from "./fx-sim-rates";
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/**
+ * Maximum execution-rate slip applied to a live market-data tick.
+ * Execution rate = bid/ask ± uniform(0, EXECUTION_SLIP_FACTOR/2).
+ * 0.02 = ±1% max — approximates real-world intraday slippage for an
+ * institutional FX spot desk.
+ */
+const EXECUTION_SLIP_FACTOR = 0.02;
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -209,7 +221,7 @@ export function generateSimTrade(
       if (bid > 0 && ask > 0) {
         // Execution rate: ±1% uniform noise around bid (sell) or ask (buy).
         const baseRate = side === "buy" ? ask : bid;
-        const executionRate = baseRate * (1 + (rng() - 0.5) * 0.02);
+        const executionRate = baseRate * (1 + (rng() - 0.5) * EXECUTION_SLIP_FACTOR);
         rate = { mid: executionRate, bid, ask };
         // Keep the rate-engine state warm for inverse lookups.
         rateEngine.tick(pair, rng);

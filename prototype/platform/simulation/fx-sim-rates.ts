@@ -71,14 +71,33 @@ export function resolveSeedMidRates(
 }
 
 // ---------------------------------------------------------------------------
-// Half-spread lookup (basis points)
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Half-spread in basis points per pair class. */
+const HALF_SPREAD_BPS = {
+  ZAR_PAIRS: 35, // ZAR/xxx or xxx/ZAR — 30-40 bps midpoint, EM liquidity
+  EUR_USD: 10, // EUR/USD — G4 major
+  GBP_USD: 12, // GBP/USD — G4 major
+  DEFAULT: 25, // all other pairs
+} as const;
+
+/**
+ * Tick-step magnitude: bpsChange = ((r1+r2)/2 − 0.5) × WALK_STEP_FACTOR
+ * → approximately ±(WALK_STEP_FACTOR/2 × 10000) bps, triangular distribution.
+ * 0.0004 ≈ ±20 bps per tick at a 60-second cadence.
+ */
+const WALK_STEP_FACTOR = 0.0004;
+
+// ---------------------------------------------------------------------------
+// Half-spread lookup
 // ---------------------------------------------------------------------------
 
 function halfSpreadBps(pair: string): number {
-  if (pair.startsWith("ZAR/") || pair.endsWith("/ZAR")) return 35; // 30–40 bps midpoint
-  if (pair === "EUR/USD" || pair === "USD/EUR") return 10;
-  if (pair === "GBP/USD" || pair === "USD/GBP") return 12;
-  return 25; // default
+  if (pair.startsWith("ZAR/") || pair.endsWith("/ZAR")) return HALF_SPREAD_BPS.ZAR_PAIRS;
+  if (pair === "EUR/USD" || pair === "USD/EUR") return HALF_SPREAD_BPS.EUR_USD;
+  if (pair === "GBP/USD" || pair === "USD/GBP") return HALF_SPREAD_BPS.GBP_USD;
+  return HALF_SPREAD_BPS.DEFAULT;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,10 +132,25 @@ export class FxRateEngine {
    */
   tick(pair: string, rng: () => number = Math.random): FxRate {
     const last = this.midRates.get(pair) ?? this.inferMid(pair);
-    const bpsChange = ((rng() + rng()) / 2 - 0.5) * 0.0004;
+    const bpsChange = ((rng() + rng()) / 2 - 0.5) * WALK_STEP_FACTOR;
     const mid = last * (1 + bpsChange);
     this.midRates.set(pair, mid);
     return this.buildRate(pair, mid);
+  }
+
+  /**
+   * Re-anchor the engine's mids from the most recent production ticks in
+   * `store`. Pairs with no production tick are left at their current walked
+   * value — the walk continues from wherever it has drifted, but the anchor
+   * is refreshed whenever a real tick arrives. Called periodically by
+   * MarketDataSimulator so the random walk does not drift arbitrarily far
+   * from observable market rates.
+   */
+  reseed(store: MarketDataStore): void {
+    const fresh = resolveSeedMidRates(store, Object.fromEntries(this.midRates));
+    for (const [pair, mid] of Object.entries(fresh)) {
+      this.midRates.set(pair, mid);
+    }
   }
 
   /** Get current mid without advancing the random walk. */
