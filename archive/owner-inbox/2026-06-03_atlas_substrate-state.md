@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-03T20:01:40.218Z
+asOf: 2026-06-03T22:20:43.266Z
 decision-required: false
 ---
 
@@ -9,31 +9,31 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 65663 events across 149 types; 31/31 personas have operating specs; 130 runtime handlers registered; 591 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 65820 events across 149 types; 31/31 personas have operating specs; 130 runtime handlers registered; 591 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65663
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65820
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 9364 | 2026-05-25 | 2026-06-03 |
-| `SubstrateAgentRunCompleted` | 9195 | 2026-05-25 | 2026-06-03 |
-| `BusDispatched` | 7851 | 2026-05-25 | 2026-06-03 |
-| `LegacyFanoutShadowed` | 4621 | 2026-05-25 | 2026-06-03 |
+| `SubstrateAgentRunStarted` | 9398 | 2026-05-25 | 2026-06-03 |
+| `SubstrateAgentRunCompleted` | 9229 | 2026-05-25 | 2026-06-03 |
+| `BusDispatched` | 7885 | 2026-05-25 | 2026-06-03 |
+| `LegacyFanoutShadowed` | 4654 | 2026-05-25 | 2026-06-03 |
 | `Decision` | 2725 | 2026-04-30 | 2026-06-03 |
 | `RiskRaised` | 2511 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1652 | 2026-05-07 | 2026-06-03 |
-| `DashboardProjectionRefreshed` | 1522 | 2026-05-25 | 2026-06-03 |
+| `WorkstreamRegistered` | 1660 | 2026-05-07 | 2026-06-03 |
+| `DashboardProjectionRefreshed` | 1531 | 2026-05-25 | 2026-06-03 |
 | `RecordFiled` | 1395 | 2026-05-05 | 2026-06-03 |
 | `SubstrateAlert` | 1176 | 2025-01-01 | 2026-06-03 |
 | `CalculationPerformed` | 930 | 2026-06-01 | 2026-06-03 |
-| `ScheduledTrigger` | 820 | 2026-05-25 | 2026-06-03 |
+| `ScheduledTrigger` | 822 | 2026-05-25 | 2026-06-03 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
 | `ReconResult` | 693 | 2026-05-07 | 2026-06-03 |
-| `AgentGoalEvaluated` | 673 | 2026-05-25 | 2026-06-03 |
+| `AgentGoalEvaluated` | 674 | 2026-05-25 | 2026-06-03 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 550 | 2026-05-25 | 2026-06-02 |
 | `OfficialMarkAdopted` | 502 | 2026-05-28 | 2026-06-03 |
@@ -46,8 +46,8 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 65663
 | `AgentFeedbackIssued` | 246 | 2026-05-25 | 2026-06-03 |
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
 | `AuditFindingClosed` | 227 | 2026-06-02 | 2026-06-02 |
-| `AgentGoalSelected` | 225 | 2026-05-25 | 2026-06-03 |
-| `SubstrateStateSnapshot` | 206 | 2026-05-07 | 2026-06-03 |
+| `AgentGoalSelected` | 226 | 2026-05-25 | 2026-06-03 |
+| `SubstrateStateSnapshot` | 207 | 2026-05-07 | 2026-06-03 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 164 | 2026-05-25 | 2026-06-03 |
@@ -322,13 +322,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-Substrate is broad and live: 65,663 events across 149 types in the host-local store, 31/31 personas specced, 130 runtime handlers registered across 31 agents. The event-driven backbone is doing real work — `BusDispatched` at 7,851 and `LegacyFanoutShadowed` at 4,621 show in-process fanout has displaced most legacy paths without retiring them yet, and `SubstrateAgentRunStarted`/`Completed` are running at ~98% completion (164 `SubstrateAgentRunFailed` against 9,364 starts). The substrate's structural blockers are no longer typing or projection persistence; they are now cross-process event-bus reach (M8) and scheduler reliability (A2.1).
-
-Most consequential shifts visible in this snapshot: the risk-closure family has gone load-bearing — 2,511 `RiskRaised` against only 7 `RiskResolved` confirms the riskId-pairing path now exists in types but is barely exercised, and the substrate-gap-as-`WorkstreamRegistered` reclassification (WS-RISK-REGISTER-CLOSURE) is what made that backlog visible rather than hidden in the risk register. Second, `AuditFinding` (227) is now matched 1:1 by `AuditFindingClosed` (227) on 2026-06-02 — Vera's closure loop ran clean. Third, the M1 trading-stack came online in the window: `FxTradeExecuted` (32), `IrsTradeBooked` (1), `MtmRunCompleted` (5), `LCRComputed`/`NSFRComputed` (4 each), `BankModePolicySet` (1, 2026-06-03) — Ravi, Rohan, Eitan and Bea's handlers are producing the events their downstream consumers were waiting on.
-
-Load-bearing gaps, ranked: (1) **cross-process event bus** — `BusDispatched` only fans out in-process from a parent run, so the 591-item Owner Inbox and any cross-workflow reaction chain (Scrooge's follow-on-router, Anya's projection-refresh on remote-emitted events) still depend on the next scheduled tick rather than the event itself; this is the single biggest latency floor and it is gated on M8. (2) **A2.1 substrate scheduler** — 820 `ScheduledTrigger` events exist but cron is still the source of truth; the 2026-05-07/08 drops are not yet structurally prevented. (3) **`AgentEscalation` consumer side** — 81 raised, only 17 `AgentEscalationDecided`; Vera's audit pipelines #14/#15 now have the event type they were waiting on, but the decision-closure rate says the loop isn't yet closing at the rate escalations arrive. (4) **Neon hardening §5.1/§5.2** — deferred under exception TM-NEON-EVENT-STORE-001 and fine while events are non-sensitive, but blocks any sensitive-data event flow and must land before KYC/party payloads (already arriving: 26 `KYCDecisionMade`, 65 `PartyRegistered`) carry anything beyond identifiers.
-
-Next: ship A2.1 so `ScheduledTrigger` becomes the canonical schedule source and cron files retire, in parallel with M8 scoping for the cross-process bus.
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cbh74WeswwrLkAGymZqRN"})._
 
 ## Provenance
 
