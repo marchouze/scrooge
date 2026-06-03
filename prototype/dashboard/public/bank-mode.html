@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bank Mode — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" data-provenance-source="/api/bank-mode" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <h1 class="page-title">Bank Mode &amp; Provenance Policy</h1>
+      <p style="font:var(--text-body);color:var(--color-text-secondary);margin:var(--space-1) 0 0">
+        The settable, event-sourced bank-wide prod/sim mode and per-category provenance granularity
+        (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE). The bank-wide mode drives the lifecycle phase, the
+        canonical operating-book filter, and the sandbox-simulator gate. Each change is a
+        <code>BankModePolicySet</code> event (production provenance) — the canonical, auditable source.
+      </p>
+    </div>
+    <div class="page-body">
+      <div id="current" style="display:flex;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6)"></div>
+      <div id="policy-card" style="margin-bottom:var(--space-6)"></div>
+      <div id="setter" style="border:1px solid var(--color-border);border-radius:8px;padding:var(--space-4)">
+        <h2 style="font:var(--text-h3);margin:0 0 var(--space-3)">Set bank-wide mode</h2>
+        <div style="display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap">
+          <label><input type="radio" name="bankMode" value="sim"> <strong>sim</strong> — build phase, simulator on</label>
+          <label><input type="radio" name="bankMode" value="prod"> <strong>prod</strong> — commencement, production only</label>
+        </div>
+        <p style="margin:var(--space-3) 0 0">
+          <input id="note" type="text" placeholder="Note (audit context)" style="width:60%;padding:6px">
+          <input id="setBy" type="text" placeholder="Authorised by (e.g. marc@tgv.co.za)" style="width:30%;padding:6px">
+        </p>
+        <p style="margin:var(--space-3) 0 0">
+          <button id="save" style="padding:8px 16px">Record policy change</button>
+          <span id="status" style="margin-left:var(--space-3)"></span>
+        </p>
+      </div>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script>
+    async function load() {
+      const res = await fetch("/api/bank-mode");
+      const { policy } = await res.json();
+      render(policy);
+    }
+    function render(policy) {
+      const modeColor = policy.bankMode === "prod" ? "#2c9b54" : "#d49500";
+      document.getElementById("current").innerHTML =
+        `<div style="border:2px solid ${modeColor};border-radius:8px;padding:var(--space-4);min-width:220px">
+           <div style="font:var(--text-caption);color:var(--color-text-secondary)">BANK-WIDE MODE</div>
+           <div style="font:var(--text-h1);color:${modeColor}">${policy.bankMode.toUpperCase()}</div>
+           <div style="font:var(--text-caption);color:var(--color-text-secondary)">
+             ${policy.isDefault ? "built-in default (no policy event yet)" : "set " + (policy.setAt||"") + " by " + (policy.setBy||"")}
+           </div>
+         </div>`;
+      const rows = policy.categoryPolicy.map(c =>
+        `<tr><td style="padding:6px 16px 6px 0">${c.category}</td>
+             <td style="padding:6px 0;color:${c.provenance==='production'?'#2c9b54':'#d49500'}">${c.provenance}</td></tr>`).join("");
+      document.getElementById("policy-card").innerHTML =
+        `<h2 style="font:var(--text-h3);margin:0 0 var(--space-2)">Per-category provenance</h2>
+         <table style="border-collapse:collapse"><thead><tr>
+           <th style="text-align:left;padding-right:16px">Category</th><th style="text-align:left">Default provenance</th>
+         </tr></thead><tbody>${rows}</tbody></table>`;
+      const radio = document.querySelector(`input[name=bankMode][value=${policy.bankMode}]`);
+      if (radio) radio.checked = true;
+    }
+    document.getElementById("save").addEventListener("click", async () => {
+      const sel = document.querySelector("input[name=bankMode]:checked");
+      const status = document.getElementById("status");
+      if (!sel) { status.textContent = "Pick a mode."; return; }
+      status.textContent = "Saving…";
+      const res = await fetch("/api/bank-mode", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          bankMode: sel.value,
+          note: document.getElementById("note").value || undefined,
+          setBy: document.getElementById("setBy").value || undefined,
+        }),
+      });
+      const out = await res.json();
+      if (out.ok) { status.textContent = "Recorded (" + out.eventId.slice(0,8) + "…)"; render(out.policy); }
+      else { status.textContent = "Error: " + (out.error || "failed"); }
+    });
+    load();
+  </script>
+</body>
+</html>
