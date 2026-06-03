@@ -61,6 +61,7 @@ import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { type FinancialInput, absent, isPresent, present } from "../types/financial-input";
 import { computeDailyPnL } from "./daily-pnl";
+import { computeDeskCashPositions } from "./desk-cash-positions";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -290,6 +291,19 @@ export function computePnLAttribution(
       unattributablePositions.push(tradeId);
     }
   }
+
+  // Desk FX cash retranslation is a market move (IAS 21 §28): the closing-rate
+  // revaluation of the settled foreign-currency balance an FX trade leaves
+  // behind. The daily-pnl total now folds this cash unrealised, so its
+  // day-over-day level delta must attribute to market-move — otherwise the cash
+  // valuation move would land in the residual and breach tolerance. Two
+  // point-in-time snapshots (end of each day) give a real delta. An unmarkable
+  // cash instrument is EXCLUDED (no silent 0) and pushed to the unattributable
+  // ledger, exactly as for an existing FX position with no prior-day mark.
+  const cashToday = computeDeskCashPositions(store, endOfDay(reportDate));
+  const cashPrior = computeDeskCashPositions(store, endOfDay(priorReportDate));
+  marketMoveZarMinor += cashToday.markableUnrealisedZarMinor - cashPrior.markableUnrealisedZarMinor;
+  for (const key of cashToday.unmarkableKeys) unattributablePositions.push(key);
 
   const marketMoveComplete = unattributablePositions.length === 0;
   const marketMoveInput: FinancialInput<number> = marketMoveComplete

@@ -136,20 +136,30 @@ interface MutableRow {
  * legs (joined to FxTradeExecuted for book/entity) in settlement order, with
  * weighted-average ZAR cost and close-out realised P&L. Pure read — no appends.
  */
-export function computeCurrencyPositions(store: EventStore): CurrencyPositionResult {
+export function computeCurrencyPositions(
+  store: EventStore,
+  asOfBound?: string,
+): CurrencyPositionResult {
+  // Point-in-time replay bound: when supplied, every replay below is restricted
+  // to events at or before `asOfBound` (ISO 8601, inclusive on `event.as_of`),
+  // yielding the cash inventory as it stood at that instant. Omitted ⟹ unbounded
+  // (current full history). The daily-pnl / P&L-attribution engines pass an
+  // end-of-day bound so two genuinely-distinct snapshots produce a real
+  // day-over-day move (mirrors computeDailyPnL's asOfBound).
+  const bound = asOfBound !== undefined ? { asOf: asOfBound } : {};
   // 1. Cancelled trades — voided from the cash inventory. Canonical
   //    registry-driven resolver (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE) —
   //    only cancellations are excluded; settled FX legs KEEP their currency
   //    position (the bank still holds the cash), so this uses isCancelledInstance,
   //    not isLiveInstance.
   const lifecycleIdx = resolveTradeLifecycle([
-    ...store.replay({ type: "FxTradeExecuted" }),
-    ...store.replay({ type: "FxTradeCancelled" }),
+    ...store.replay({ type: "FxTradeExecuted", ...bound }),
+    ...store.replay({ type: "FxTradeCancelled", ...bound }),
   ]);
 
   // 2. Trade metadata (bookId, entity, pair) keyed by tradeId.
   const tradeMeta = new Map<string, TradeMeta>();
-  for (const e of store.replay({ type: "FxTradeExecuted" })) {
+  for (const e of store.replay({ type: "FxTradeExecuted", ...bound })) {
     const p = e.payload as unknown as FxTradeExecutedPayload;
     const id = p.tradeId.value;
     tradeMeta.set(id, {
@@ -163,7 +173,7 @@ export function computeCurrencyPositions(store: EventStore): CurrencyPositionRes
   // 3. PrincipalPayment legs grouped by tradeId, in replay (settlement) order.
   const legsByTrade = new Map<string, SettledLeg[]>();
   const tradeOrder: string[] = []; // first-seen order = settlement order
-  for (const e of store.replay({ type: "PrincipalPayment" })) {
+  for (const e of store.replay({ type: "PrincipalPayment", ...bound })) {
     const p = e.payload as unknown as PrincipalPaymentPayload;
     if (!p.tradeId) continue;
     if (!legsByTrade.has(p.tradeId)) {
