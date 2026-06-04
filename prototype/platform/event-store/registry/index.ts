@@ -137,6 +137,7 @@ export { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thres
 // Authority: D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT;
 //   P2-SINGLE-GRAPH-DISCIPLINE.
 export { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
+export { OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./obligation-lifecycle";
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -249,6 +250,7 @@ import {
 import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
+import { OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./obligation-lifecycle";
 import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 import { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
 import { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
@@ -394,6 +396,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT;
   //   P2-SINGLE-GRAPH-DISCIPLINE.
   ...OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY,
+  ...OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY,
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
