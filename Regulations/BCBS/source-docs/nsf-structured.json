@@ -1,0 +1,44 @@
+{
+  "slug": "bcbs-nsf",
+  "title": "Basel Framework — NSF (Net Stable Funding Ratio)",
+  "shortTitle": "Basel NSF",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group NSF (Net Stable Funding Ratio, d335 lineage). Verbatim source: https://www.bis.org/basel_framework/standard/NSF.htm. Binds the bank via SARB Reg 26A and BA 326.",
+  "citationPatterns": ["NSFR", "NSF", "Net Stable Funding Ratio", "ASF", "RSF", "stable funding", "BA 326"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "NSF — Net Stable Funding Ratio",
+      "sections": [
+        {
+          "number": "20",
+          "heading": "The NSFR requirement",
+          "text": "The Net Stable Funding Ratio promotes resilience over a longer time horizon by requiring a bank to fund its activities with sufficiently stable sources of funding on an ongoing basis.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "20.1", "text": "A bank must maintain available stable funding (ASF) of at least 100% of its required stable funding (RSF) on an ongoing one-year basis. The ratio is the amount of available stable funding relative to the amount of required stable funding." }
+          ]
+        },
+        {
+          "number": "30",
+          "heading": "Available stable funding factors",
+          "text": "ASF is the portion of capital and liabilities expected to be reliable over the one-year horizon, determined by applying ASF factors to funding sources.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "30.1", "text": "ASF factors are assigned by funding type: regulatory capital and other liabilities with residual maturity of one year or more receive a 100% factor; stable retail and small-business deposits with residual maturity under one year 95%; less-stable such deposits 90%; operational deposits and wholesale funding from non-financial corporates under one year 50%; and other liabilities under one year, including funding from financial institutions, 0%." }
+          ]
+        },
+        {
+          "number": "40",
+          "heading": "Required stable funding factors",
+          "text": "RSF measures the amount of stable funding a bank's assets and off-balance-sheet exposures require, determined by applying RSF factors by asset class and residual maturity.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "40.1", "text": "RSF factors are assigned by asset class: Level 1 HQLA 5%; Level 2A HQLA 15%; Level 2B HQLA 50%; performing loans by residual maturity from 10% (under six months) up to 85% (over one year, including residential mortgages); and net derivative liabilities 100%." }
+          ]
+        }
+      ]
+    }
+  ]
+}

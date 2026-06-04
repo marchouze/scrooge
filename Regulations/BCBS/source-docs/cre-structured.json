@@ -1,0 +1,36 @@
+{
+  "slug": "bcbs-cre",
+  "title": "Basel Framework — CRE (Calculation of RWA for credit risk)",
+  "shortTitle": "Basel CRE",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group CRE (credit risk). Verbatim source: https://www.bis.org/basel_framework/standard/CRE.htm. Binds the bank via SARB Regulations Relating to Banks Reg 38.",
+  "citationPatterns": ["CRE", "CRE20", "SA-CCR", "standardised approach", "risk weight", "counterparty credit risk"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "CRE — Credit risk",
+      "sections": [
+        {
+          "number": "20",
+          "heading": "Standardised approach — risk weights",
+          "text": "Under the standardised approach, on-balance-sheet credit exposures are assigned risk weights by counterparty class and, where available, external credit rating.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "20.6", "text": "Exposures to sovereigns and their central banks are risk-weighted according to external rating. A national supervisor may, at its discretion, apply a lower risk weight (including 0%) to a bank's exposures to its own sovereign denominated and funded in domestic currency." },
+            { "number": "20.40", "text": "Exposures to corporates are risk-weighted between 20% and 150% according to external rating. Where no external rating is used, an investment-grade corporate exposure receives a 65% risk weight and other corporate exposures 100%." }
+          ]
+        },
+        {
+          "number": "51",
+          "heading": "Counterparty credit risk — Standardised Approach (SA-CCR)",
+          "text": "Counterparty credit risk for derivative transactions is measured under the Standardised Approach for measuring counterparty credit risk exposures (SA-CCR).",
+          "verbatim": false,
+          "subsections": [
+            { "number": "51.1", "text": "The exposure at default (EAD) for a netting set of derivative contracts is the sum of the replacement cost (RC) and the potential future exposure (PFE), scaled by a factor of 1.4: EAD = 1.4 × (RC + PFE)." }
+          ]
+        }
+      ]
+    }
+  ]
+}

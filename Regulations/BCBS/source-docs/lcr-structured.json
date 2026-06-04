@@ -1,0 +1,37 @@
+{
+  "slug": "bcbs-lcr",
+  "title": "Basel Framework — LCR (Liquidity Coverage Ratio)",
+  "shortTitle": "Basel LCR",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group LCR (Liquidity Coverage Ratio, d295 lineage). Verbatim source: https://www.bis.org/basel_framework/standard/LCR.htm. Binds the bank via SARB Reg 26 and BA 325.",
+  "citationPatterns": ["LCR", "Liquidity Coverage Ratio", "HQLA", "run-off", "net cash outflows", "BA 325"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "LCR — Liquidity Coverage Ratio",
+      "sections": [
+        {
+          "number": "20",
+          "heading": "The LCR requirement",
+          "text": "The Liquidity Coverage Ratio promotes short-term resilience to liquidity risk by requiring a stock of unencumbered high-quality liquid assets sufficient to survive a 30 calendar-day stress scenario.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "20.1", "text": "A bank must maintain a stock of high-quality liquid assets (HQLA) that is at least 100% of its total net cash outflows over a 30 calendar-day liquidity stress scenario. Total net cash outflows equal stressed expected cash outflows less the lesser of stressed expected cash inflows and 75% of stressed outflows." }
+          ]
+        },
+        {
+          "number": "40",
+          "heading": "HQLA composition, haircuts and cash-flow rates",
+          "text": "HQLA are classified into Level 1 and Level 2 (2A and 2B) assets, each subject to a haircut and composition cap; cash flows over the stress horizon are determined by prescribed run-off and inflow rates.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "40.3", "text": "Level 1 assets are included without haircut. Level 2A assets are subject to a 15% haircut. Level 2B assets are subject to haircuts of 25% to 50%. Level 2 assets in aggregate must not exceed 40% of total HQLA, and Level 2B assets must not exceed 15% of total HQLA, both measured after haircuts." },
+            { "number": "40.10", "text": "Stressed outflow run-off rates are applied by funding category: stable retail deposits 3% to 5%; less-stable retail deposits 10%; operational wholesale deposits 25%; non-operational unsecured wholesale funding up to 100%; secured funding by collateral quality from 0% (Level 1) upward." },
+            { "number": "40.40", "text": "Total cash inflows that may be recognised are capped at 75% of total expected cash outflows, ensuring a bank holds a minimum buffer of HQLA and cannot rely entirely on inflows to meet outflows." }
+          ]
+        }
+      ]
+    }
+  ]
+}

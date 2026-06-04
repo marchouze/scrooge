@@ -1,0 +1,26 @@
+{
+  "slug": "bcbs-lex",
+  "title": "Basel Framework — LEX (Large exposures)",
+  "shortTitle": "Basel LEX",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group LEX (large exposures). Verbatim source: https://www.bis.org/basel_framework/standard/LEX.htm. Binds the bank via SARB Reg 38 and BA 330.",
+  "citationPatterns": ["LEX", "large exposures", "single counterparty", "connected counterparties", "BA 330"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "LEX — Large exposures",
+      "sections": [
+        {
+          "number": "30",
+          "heading": "The large-exposure limit",
+          "text": "The large-exposures framework limits the maximum loss a bank could face in the event of a sudden counterparty failure, constraining concentration risk.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "30.1", "text": "The sum of all of a bank's exposure values to a single counterparty or to a group of connected counterparties must not at any time exceed 25% of the bank's available eligible capital base (Tier 1 capital). A more stringent 15% limit applies between global systemically important banks." }
+          ]
+        }
+      ]
+    }
+  ]
+}
