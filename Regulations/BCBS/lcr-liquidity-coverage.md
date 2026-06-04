@@ -17,19 +17,19 @@ LCR requires a stock of high-quality liquid assets (HQLA) sufficient to survive 
 
 | URN | Para | Requirement | Quantitative |
 |---|---|---|---|
-| `urn:reg:bcbs:lcr:20.1` | 20.1 | HQLA ≥ total net cash outflows over a 30-day stress. | **LCR ≥ 100%** |
-| `urn:reg:bcbs:lcr:40.3` | 40.3 | HQLA haircuts: L1 0%, L2A 15%, L2B 25–50%; L2 ≤ 40% of HQLA, L2B ≤ 15%. | **0% / 15% / 25–50%** |
-| `urn:reg:bcbs:lcr:40.10` | 40.10 | Stressed run-off rates: stable retail 3–5%, less-stable 10%, operational wholesale 25%, non-operational up to 100%. | **3%–100%** |
-| `urn:reg:bcbs:lcr:40.40` | 40.40 | Total recognised inflows capped at 75% of total outflows. | **inflows ≤ 75% outflows** |
+| `urn:reg:bcbs:lcr:20.5` | 20.5 | HQLA ≥ total net cash outflows over a 30-day stress. | **LCR ≥ 100%** |
+| `urn:reg:bcbs:lcr:30.43` | 30.43 | HQLA haircuts: L1 0%, L2A 15%, L2B 25–50%; L2 ≤ 40% of HQLA, L2B ≤ 15%. | **0% / 15% / 25–50%** |
+| `urn:reg:bcbs:lcr:40.1` | 40.1 | Stressed run-off rates: stable retail 3–5%, less-stable 10%, operational wholesale 25%, non-operational up to 100%. | **3%–100%** |
+| `urn:reg:bcbs:lcr:40.77` | 40.77 | Total recognised inflows capped at 75% of total outflows. | **inflows ≤ 75% outflows** |
 
 ## Basel → South Africa adoption
 
 | Basel provision | SA instrument | Adoption | Delta |
 |---|---|---|---|
-| `lcr:20.1` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | 100% minimum adopted; reported via BA 325. |
-| `lcr:40.3` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | Operationalised in BA 325 Annex 1 haircut schedule. |
-| `lcr:40.10` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | BA 325 run-off schedule. |
-| `lcr:40.40` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | Inflow cap adopted. |
+| `lcr:20.5` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | 100% minimum adopted; reported via BA 325. |
+| `lcr:30.43` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | Operationalised in BA 325 Annex 1 haircut schedule. |
+| `lcr:40.1` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | BA 325 run-off schedule. |
+| `lcr:40.77` | `urn:reg:za:regs-relating-to-banks:reg26` | **ADOPTS** | Inflow cap adopted. |
 
 > The bank's RAS operates a stricter operating buffer (target 120% of the PA minimum) above the Basel floor — a gold-plate at the appetite layer (D-RAS), not in this catalogue.
 

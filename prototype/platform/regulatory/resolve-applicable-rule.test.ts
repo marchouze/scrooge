@@ -10,7 +10,7 @@ import { isResolved, resolveApplicableRule } from "./resolve-applicable-rule";
 
 describe("resolveApplicableRule", () => {
   test("ZA + LCR minimum resolves to the local SARB adoption (Reg 26)", () => {
-    const r = resolveApplicableRule("za", "urn:reg:bcbs:lcr:20.1", "2026-06-04");
+    const r = resolveApplicableRule("za", "urn:reg:bcbs:lcr:20.5", "2026-06-04");
     expect(isResolved(r)).toBe(true);
     if (!isResolved(r)) return;
     expect(r.source).toBe("local");
@@ -20,29 +20,29 @@ describe("resolveApplicableRule", () => {
   });
 
   test("unmapped jurisdiction falls back to the Basel baseline (the operating base)", () => {
-    const r = resolveApplicableRule("kw", "urn:reg:bcbs:lcr:20.1", "2026-06-04");
+    const r = resolveApplicableRule("kw", "urn:reg:bcbs:lcr:20.5", "2026-06-04");
     expect(isResolved(r)).toBe(true);
     if (!isResolved(r)) return;
     expect(r.source).toBe("basel-baseline");
-    expect(r.citation).toBe("urn:reg:bcbs:lcr:20.1");
+    expect(r.citation).toBe("urn:reg:bcbs:lcr:20.5");
     expect(r.baseline.value).toBe(1.0);
   });
 
   test("date-scoped: before the SA adoption effectiveFrom, Basel governs", () => {
     // SA adopts the LCR minimum from 2015-01-01.
-    const before = resolveApplicableRule("za", "urn:reg:bcbs:lcr:20.1", "2014-06-30");
+    const before = resolveApplicableRule("za", "urn:reg:bcbs:lcr:20.5", "2014-06-30");
     expect(isResolved(before)).toBe(true);
     if (!isResolved(before)) return;
     expect(before.source).toBe("basel-baseline");
 
-    const after = resolveApplicableRule("za", "urn:reg:bcbs:lcr:20.1", "2015-06-30");
+    const after = resolveApplicableRule("za", "urn:reg:bcbs:lcr:20.5", "2015-06-30");
     expect(isResolved(after)).toBe(true);
     if (!isResolved(after)) return;
     expect(after.source).toBe("local");
   });
 
   test("GOLD_PLATES surfaces the stricter-than-Basel delta (ZA leverage RAS)", () => {
-    const r = resolveApplicableRule("za", "urn:reg:bcbs:lev:20.1", "2026-06-04");
+    const r = resolveApplicableRule("za", "urn:reg:bcbs:lev:20.7", "2026-06-04");
     expect(isResolved(r)).toBe(true);
     if (!isResolved(r)) return;
     expect(r.source).toBe("local");

@@ -676,63 +676,63 @@ export interface BaselLinkage {
 export const BASEL_PROVISION_LINKAGE: Readonly<Record<string, BaselLinkage>> = {
   // LCR — Reg 26 / BA 325 adopt the Basel LCR (urn:reg:bcbs:lcr:*).
   "lcr.runoff.retail-stable": {
-    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    baselProvision: "urn:reg:bcbs:lcr:40.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.runoff.retail-less-stable": {
-    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    baselProvision: "urn:reg:bcbs:lcr:40.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.runoff.wholesale-operational": {
-    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    baselProvision: "urn:reg:bcbs:lcr:40.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.runoff.wholesale-non-operational": {
-    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    baselProvision: "urn:reg:bcbs:lcr:40.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.runoff.secured-level1": {
-    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    baselProvision: "urn:reg:bcbs:lcr:40.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.runoff.secured-level2": {
-    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    baselProvision: "urn:reg:bcbs:lcr:40.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.inflow.contractual": {
-    baselProvision: "urn:reg:bcbs:lcr:40.40",
+    baselProvision: "urn:reg:bcbs:lcr:40.77",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.inflow.other": {
-    baselProvision: "urn:reg:bcbs:lcr:40.40",
+    baselProvision: "urn:reg:bcbs:lcr:40.77",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.haircut.L1": {
-    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    baselProvision: "urn:reg:bcbs:lcr:30.43",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.haircut.L2a": {
-    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    baselProvision: "urn:reg:bcbs:lcr:30.43",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.haircut.L2b": {
-    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    baselProvision: "urn:reg:bcbs:lcr:30.43",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.cap.l2-of-hqla": {
-    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    baselProvision: "urn:reg:bcbs:lcr:30.43",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.cap.l2b-of-hqla": {
-    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    baselProvision: "urn:reg:bcbs:lcr:30.43",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.inflow-recognition-cap": {
-    baselProvision: "urn:reg:bcbs:lcr:40.40",
+    baselProvision: "urn:reg:bcbs:lcr:40.77",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   "lcr.minimum-ratio": {
-    baselProvision: "urn:reg:bcbs:lcr:20.1",
+    baselProvision: "urn:reg:bcbs:lcr:20.5",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
   // NSFR — Reg 26A / BA 326 adopt the Basel NSFR (urn:reg:bcbs:nsf:*).
@@ -765,68 +765,68 @@ export const BASEL_PROVISION_LINKAGE: Readonly<Record<string, BaselLinkage>> = {
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.hqla-l1": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.hqla-l2a": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.hqla-l2b": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.loan-lt6m": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.loan-6m-1y": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.loan-gt1y-standard": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.loan-gt1y-residential": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.security-lt1y": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.security-gt1y-non-hqla": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.operational-deposit-at-fi": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.rsf.derivative-net": {
-    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   "nsfr.minimum-ratio": {
-    baselProvision: "urn:reg:bcbs:nsf:20.1",
+    baselProvision: "urn:reg:bcbs:nsf:20.2",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
   },
   // Leverage — RAS appetite bands gold-plate the Basel 3% floor (urn:reg:bcbs:lev:20.1).
   "leverage.threshold.green": {
-    baselProvision: "urn:reg:bcbs:lev:20.1",
+    baselProvision: "urn:reg:bcbs:lev:20.7",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
   },
   "leverage.threshold.amber": {
-    baselProvision: "urn:reg:bcbs:lev:20.1",
+    baselProvision: "urn:reg:bcbs:lev:20.7",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
   },
   "leverage.threshold.red": {
-    baselProvision: "urn:reg:bcbs:lev:20.1",
+    baselProvision: "urn:reg:bcbs:lev:20.7",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
   },
   // Market-RWA proxy weights — simplified standardised market-risk proxy (urn:reg:bcbs:mar:20.1);
-  // ZA government bond inherits the 0% sovereign weight (urn:reg:bcbs:cre:20.6).
+  // ZA government bond inherits the 0% sovereign weight (urn:reg:bcbs:cre:20.8).
   "rwa.instrument-weight.OTC-IRD": {
     baselProvision: "urn:reg:bcbs:mar:20.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
@@ -844,7 +844,7 @@ export const BASEL_PROVISION_LINKAGE: Readonly<Record<string, BaselLinkage>> = {
     localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
   },
   "rwa.instrument-weight.ZA-GOV-BOND": {
-    baselProvision: "urn:reg:bcbs:cre:20.6",
+    baselProvision: "urn:reg:bcbs:cre:20.8",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
   },
 };

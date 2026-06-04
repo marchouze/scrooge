@@ -19,14 +19,14 @@ MAR sets market-risk capital: the standardised approach (sensitivities-based met
 |---|---|---|---|
 | `urn:reg:bcbs:mar:20.1` | 20.1 | Standardised market-risk capital = Σ risk-class charges (SBM + DRC + residual add-on). | — |
 | `urn:reg:bcbs:mar:33.1` | 33.1 | Internal-models capital uses expected shortfall at a 97.5% one-tailed confidence level. | **ES @ 97.5%** |
-| `urn:reg:bcbs:mar:99.1` | 99.1 | Legacy (Basel 2.5) VaR: 99% one-tailed over ≈250-business-day window. | **VaR @ 99%, 250d** |
+| `urn:reg:bcbs:mar:32.18` | 32.18 | Legacy (Basel 2.5) VaR: 99% one-tailed over ≈250-business-day window. | **VaR @ 99%, 250d** |
 
 ## Basel → South Africa adoption
 
 | Basel provision | SA instrument | Adoption | Delta |
 |---|---|---|---|
 | `mar:20.1` | `urn:reg:za:regs-relating-to-banks:reg38` | **MODIFIES** | Bank applies a simplified instrument-class market-RWA proxy in the build phase, pending FRTB-SA. |
-| `mar:99.1` | `urn:reg:za:regs-relating-to-banks:reg38` | **ADOPTS** | Legacy VaR confidence/window adopted for the internal VaR suite. |
+| `mar:32.18` | `urn:reg:za:regs-relating-to-banks:reg38` | **ADOPTS** | Legacy VaR confidence/window adopted for the internal VaR suite. |
 
 ## Live engine linkage
 

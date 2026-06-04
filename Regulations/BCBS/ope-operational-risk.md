@@ -11,21 +11,21 @@
 
 ## Scope
 
-OPE sets operational-risk capital. The bank's `ba-600-op-risk.ts` engine implements the Basic Indicator Approach (BIA) and the Standardised Approach (TSA) business-line betas; the SMA loss-component activates once a typed `OperationalLossEvent` stream accrues 5+ years of history post-licence.
+OPE sets operational-risk capital. The **consolidated framework uses the Standardised Approach (SMA)**: the Business Indicator Component (BI × marginal coefficients) scaled by the Internal Loss Multiplier — it replaced the retired Basic Indicator Approach (BIA) and TSA from 2023. The bank's `ba-600-op-risk.ts` engine currently computes a build-phase BIA/TSA figure; the SMA loss-component activates once a typed `OperationalLossEvent` stream accrues 5+ years of history post-licence. (The bank engine is therefore a build-phase simplification of the Basel SMA baseline catalogued here.)
 
 ## Key provisions (paragraph-level)
 
 | URN | Para | Requirement | Quantitative |
 |---|---|---|---|
-| `urn:reg:bcbs:ope:25.1` | 25.1 | BIA: op-risk capital = alpha × average positive annual gross income (prior 3 years). | **alpha = 15%** |
+| `urn:reg:bcbs:ope:25.7` | OPE25.7 | SMA: the Business Indicator is multiplied by marginal coefficients across BI buckets to form the Business Indicator Component, scaled by the Internal Loss Multiplier. | **marginal coefficients 12% / 15% / 18%** |
 
-> TSA business-line betas (12% / 15% / 18%) are implemented inline in `ba-600-op-risk.ts`, exhaustively cited against OPE; they remain in-engine per the financial-constants "fail-loud, clause-cited switch stays in-engine" rule.
+> The 15% middle-bucket coefficient is the SMA analogue of the old BIA alpha. The bank engine's BIA/TSA betas remain inline per the financial-constants "fail-loud, clause-cited switch stays in-engine" rule.
 
 ## Basel → South Africa adoption
 
 | Basel provision | SA instrument | Adoption | Delta |
 |---|---|---|---|
-| `ope:25.1` | `urn:reg:za:regs-relating-to-banks:reg33` | **ADOPTS** | BIA alpha adopted; live numbers populate post-licence + 3 audited fiscal years. |
+| `ope:25.7` | `urn:reg:za:regs-relating-to-banks:reg33` | **ADOPTS** | SMA adopted; live numbers populate post-licence + sufficient loss history. |
 
 ## Live engine linkage
 

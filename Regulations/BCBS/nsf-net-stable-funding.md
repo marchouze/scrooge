@@ -17,17 +17,17 @@ NSFR requires available stable funding (ASF) to cover required stable funding (R
 
 | URN | Para | Requirement | Quantitative |
 |---|---|---|---|
-| `urn:reg:bcbs:nsf:20.1` | 20.1 | ASF ≥ RSF on an ongoing one-year basis. | **NSFR ≥ 100%** |
+| `urn:reg:bcbs:nsf:20.2` | 20.2 | ASF ≥ RSF on an ongoing one-year basis. | **NSFR ≥ 100%** |
 | `urn:reg:bcbs:nsf:30.1` | 30.1 | ASF factors: capital & >1y 100%; stable retail <1y 95%; less-stable 90%; operational wholesale 50%; non-operational <1y 0%. | **0%–100%** |
-| `urn:reg:bcbs:nsf:40.1` | 40.1 | RSF factors: HQLA L1 5%, L2A 15%, L2B 50%; loans by residual maturity 10–85%; net derivative liabilities 100%. | **5%–100%** |
+| `urn:reg:bcbs:nsf:30.1` | 30.1 | RSF factors: HQLA L1 5%, L2A 15%, L2B 50%; loans by residual maturity 10–85%; net derivative liabilities 100%. | **5%–100%** |
 
 ## Basel → South Africa adoption
 
 | Basel provision | SA instrument | Adoption | Delta |
 |---|---|---|---|
-| `nsf:20.1` | `urn:reg:za:regs-relating-to-banks:reg26a` | **ADOPTS** | 100% minimum adopted; reported via BA 326. |
+| `nsf:20.2` | `urn:reg:za:regs-relating-to-banks:reg26a` | **ADOPTS** | 100% minimum adopted; reported via BA 326. |
 | `nsf:30.1` | `urn:reg:za:regs-relating-to-banks:reg26a` | **ADOPTS** | ASF factor table adopted. |
-| `nsf:40.1` | `urn:reg:za:regs-relating-to-banks:reg26a` | **ADOPTS** | RSF factor table adopted. |
+| `nsf:30.1` | `urn:reg:za:regs-relating-to-banks:reg26a` | **ADOPTS** | RSF factor table adopted. |
 
 ## Live engine linkage
 
