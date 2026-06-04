@@ -12,25 +12,25 @@
 
 ## Scope
 
-CAP defines the numerator of every capital ratio: what qualifies as Common Equity Tier 1 (CET1), Additional Tier 1 (AT1), and Tier 2 (T2), the regulatory adjustments, and the minimum ratios and buffers that sit above them. It is the spine the bank's capital-adequacy return (BA 700) and the `capital-metrics` projection compute against.
+CAP defines the *numerator* of every capital ratio — what qualifies as Common Equity Tier 1 (CET1), Additional Tier 1 (AT1) and Tier 2 (T2), and the regulatory adjustments. The minimum *ratios* themselves, and the capital conservation buffer, are set in the **RBC** standard (Risk-based capital requirements): RBC20.2 and RBC30.2. The adoption registry therefore cites the RBC paragraphs for the quantitative floors. Together they are the spine the bank's capital-adequacy return (BA 700) and the `capital-metrics` projection compute against.
 
 ## Key provisions (paragraph-level)
 
 | URN | Para | Requirement | Quantitative |
 |---|---|---|---|
-| `urn:reg:bcbs:cap:10.1` | 10.1 | CET1 capital ≥ a floor of risk-weighted assets at all times. | **≥ 4.5% RWA** |
-| `urn:reg:bcbs:cap:10.2` | 10.2 | Tier 1 capital (CET1 + AT1) ≥ floor of RWA. | **≥ 6.0% RWA** |
-| `urn:reg:bcbs:cap:10.3` | 10.3 | Total capital (Tier 1 + Tier 2) ≥ floor of RWA. | **≥ 8.0% RWA** |
-| `urn:reg:bcbs:cap:30.1` | 30.1 | Capital conservation buffer, met with CET1, above the minima; breach constrains distributions. | **2.5% RWA** |
+| `urn:reg:bcbs:rbc:20.2` | RBC20.2 | CET1 ≥ 4.5%, Tier 1 ≥ 6.0%, and total capital ≥ 8.0% of RWA at all times (one paragraph states all three minima). | **CET1 4.5% / T1 6% / Total 8%** |
+| `urn:reg:bcbs:rbc:30.2` | RBC30.2 | Capital conservation buffer, met with CET1, above the minima; breach constrains distributions. | **2.5% RWA** |
+
+> CAP defines *what counts* as CET1/AT1/T2; RBC sets the *ratios*. Both are in the verbatim BIS extracts (`Regulations/BCBS/source-docs/raw/cap-paragraphs.jsonl`, `rbc-paragraphs.jsonl`).
 
 ## Basel → South Africa adoption
 
 | Basel provision | SA instrument | Adoption | Delta |
 |---|---|---|---|
-| `cap:10.1` / `10.2` / `10.3` | `urn:reg:za:regs-relating-to-banks:reg38` | **ADOPTS** | Verbatim — SA minima equal the Basel floors. |
-| `cap:30.1` | `urn:reg:za:regs-relating-to-banks:reg38` | **MODIFIES** | PA holds the 2.5% conservation buffer but adds bank-specific Pillar 2A add-ons and an SARB-set countercyclical buffer. |
+| `rbc:20.2` | `urn:reg:za:regs-relating-to-banks:reg38` | **ADOPTS** | Verbatim — SA minima equal the Basel floors. |
+| `rbc:30.2` | `urn:reg:za:regs-relating-to-banks:reg38` | **MODIFIES** | PA holds the 2.5% conservation buffer but adds bank-specific Pillar 2A add-ons and an SARB-set countercyclical buffer. |
 
-> Resolution: `resolveApplicableRule("za", "urn:reg:bcbs:cap:10.1", asOf)` → SARB Reg 38 (local). For a jurisdiction with no adoption edge, the resolver returns the Basel baseline (4.5%) — the operating default until that regulator speaks.
+> Resolution: `resolveApplicableRule("za", "urn:reg:bcbs:rbc:20.2", asOf)` → SARB Reg 38 (local). For a jurisdiction with no adoption edge, the resolver returns the Basel baseline (4.5%) — the operating default until that regulator speaks.
 
 ## Live engine linkage
 

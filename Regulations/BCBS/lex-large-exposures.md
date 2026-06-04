@@ -17,13 +17,13 @@ The large-exposures framework caps concentration to a single counterparty or gro
 
 | URN | Para | Requirement | Quantitative |
 |---|---|---|---|
-| `urn:reg:bcbs:lex:30.1` | 30.1 | Exposure to a single / connected counterparty ≤ a fraction of Tier 1 capital. | **≤ 25% Tier 1** |
+| `urn:reg:bcbs:lex:10.8` | 10.8 | Exposure to a single / connected counterparty ≤ a fraction of Tier 1 capital. | **≤ 25% Tier 1** |
 
 ## Basel → South Africa adoption
 
 | Basel provision | SA instrument | Adoption | Delta |
 |---|---|---|---|
-| `lex:30.1` | `urn:reg:za:regs-relating-to-banks:reg38` | **ADOPTS** | 25% single-counterparty ceiling adopted; reported via BA 330. |
+| `lex:10.8` | `urn:reg:za:regs-relating-to-banks:reg38` | **ADOPTS** | 25% single-counterparty ceiling adopted; reported via BA 330. |
 
 ## Live engine linkage
 

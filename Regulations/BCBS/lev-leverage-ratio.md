@@ -17,16 +17,16 @@ The leverage ratio is a non-risk-based backstop: Tier 1 capital divided by a tot
 
 | URN | Para | Requirement | Quantitative |
 |---|---|---|---|
-| `urn:reg:bcbs:lev:20.1` | 20.1 | Tier 1 capital ÷ total exposure measure ≥ minimum. | **≥ 3%** |
+| `urn:reg:bcbs:lev:20.7` | 20.7 | Tier 1 capital ÷ total exposure measure ≥ minimum. | **≥ 3%** |
 
 ## Basel → South Africa adoption
 
 | Basel provision | SA instrument | Adoption | Delta |
 |---|---|---|---|
-| `lev:20.1` | `urn:reg:za:regs-relating-to-banks:reg38` | **GOLD_PLATES** | PA adopts the 3% Basel minimum; the bank's RAS operates a stricter band — green ≥ 4.5%, amber 4.0–4.5%, red < 3.5% (D-RAS). |
+| `lev:20.7` | `urn:reg:za:regs-relating-to-banks:reg38` | **GOLD_PLATES** | PA adopts the 3% Basel minimum; the bank's RAS operates a stricter band — green ≥ 4.5%, amber 4.0–4.5%, red < 3.5% (D-RAS). |
 
-> This is the canonical GOLD_PLATES case: the operating threshold is stricter than the Basel floor. `resolveApplicableRule("za", "urn:reg:bcbs:lev:20.1", asOf)` returns `adoptionType: "GOLD_PLATES", stricter: true` — the baseline (3%) is preserved, the local tightening is the delta.
+> This is the canonical GOLD_PLATES case: the operating threshold is stricter than the Basel floor. `resolveApplicableRule("za", "urn:reg:bcbs:lev:20.7", asOf)` returns `adoptionType: "GOLD_PLATES", stricter: true` — the baseline (3%) is preserved, the local tightening is the delta.
 
 ## Live engine linkage
 
-`prototype/platform/reporting/ba-700-leverage-ratio.ts`. The `leverage.threshold.{green,amber,red}` RAS bands cite `lev:20.1` via `BASEL_PROVISION_LINKAGE`.
+`prototype/platform/reporting/ba-700-leverage-ratio.ts`. The `leverage.threshold.{green,amber,red}` RAS bands cite `lev:20.7` via `BASEL_PROVISION_LINKAGE`.
