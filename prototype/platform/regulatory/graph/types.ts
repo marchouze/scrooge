@@ -60,7 +60,10 @@ export type GraphEdgeType =
   | "IMPLEMENTS"
   | "CLOSES"
   | "GOVERNS"
-  | "ADDRESSES_THEME";
+  | "ADDRESSES_THEME"
+  // Two-plane bridge (D-REGULATORY-ARCHITECTURE-TWO-PLANE): a bank obligation
+  // the bank adopted derives from the source provision/obligation it implements.
+  | "DERIVES_FROM";
 
 /**
  * Applicability status for Document and Framework nodes.
