@@ -649,6 +649,231 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Basel provenance linkage (D-BASEL-CATALOGUE-PILLAR-1)
+//
+// Every calibration constant that derives from the Basel Framework cites its
+// baseline provision here, plus the SA instrument that adopts/modifies it. This
+// makes "Basel baseline, superseded by local" structurally queryable: the
+// `baselProvision` is the international floor, the `localOverride` the SARB
+// instrument that gives it domestic force. Resolution at a point in time is
+// platform/regulatory/resolve-applicable-rule.ts; coverage is gated by
+// recon:basel-constants-coverage (every Basel-derived constant must appear here
+// and point at a provision catalogued in platform/regulatory/basel-adoption.ts).
+//
+// Constants NOT listed here are intentionally local-only (bank ICAAP build-phase
+// figures, RAS appetite tolerances, product-control tolerances) — they have no
+// Basel parent and the coverage gate does not require one.
+// ---------------------------------------------------------------------------
+
+export interface BaselLinkage {
+  /** Basel baseline provision URN (`urn:reg:bcbs:...`). */
+  readonly baselProvision: string;
+  /** SA instrument URN that adopts/modifies it (`urn:reg:za:...`). */
+  readonly localOverride: string;
+}
+
+export const BASEL_PROVISION_LINKAGE: Readonly<Record<string, BaselLinkage>> = {
+  // LCR — Reg 26 / BA 325 adopt the Basel LCR (urn:reg:bcbs:lcr:*).
+  "lcr.runoff.retail-stable": {
+    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.runoff.retail-less-stable": {
+    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.runoff.wholesale-operational": {
+    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.runoff.wholesale-non-operational": {
+    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.runoff.secured-level1": {
+    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.runoff.secured-level2": {
+    baselProvision: "urn:reg:bcbs:lcr:40.10",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.inflow.contractual": {
+    baselProvision: "urn:reg:bcbs:lcr:40.40",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.inflow.other": {
+    baselProvision: "urn:reg:bcbs:lcr:40.40",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.haircut.L1": {
+    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.haircut.L2a": {
+    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.haircut.L2b": {
+    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.cap.l2-of-hqla": {
+    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.cap.l2b-of-hqla": {
+    baselProvision: "urn:reg:bcbs:lcr:40.3",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.inflow-recognition-cap": {
+    baselProvision: "urn:reg:bcbs:lcr:40.40",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  "lcr.minimum-ratio": {
+    baselProvision: "urn:reg:bcbs:lcr:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
+  },
+  // NSFR — Reg 26A / BA 326 adopt the Basel NSFR (urn:reg:bcbs:nsf:*).
+  "nsfr.asf.tier1-capital": {
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.asf.tier2-capital-gt1y": {
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.asf.retail-stable-lt1y": {
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.asf.retail-less-stable-lt1y": {
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.asf.wholesale-gt1y": {
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.asf.wholesale-lt1y-operational": {
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.asf.wholesale-lt1y-non-operational": {
+    baselProvision: "urn:reg:bcbs:nsf:30.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.hqla-l1": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.hqla-l2a": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.hqla-l2b": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.loan-lt6m": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.loan-6m-1y": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.loan-gt1y-standard": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.loan-gt1y-residential": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.security-lt1y": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.security-gt1y-non-hqla": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.operational-deposit-at-fi": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.rsf.derivative-net": {
+    baselProvision: "urn:reg:bcbs:nsf:40.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  "nsfr.minimum-ratio": {
+    baselProvision: "urn:reg:bcbs:nsf:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",
+  },
+  // Leverage — RAS appetite bands gold-plate the Basel 3% floor (urn:reg:bcbs:lev:20.1).
+  "leverage.threshold.green": {
+    baselProvision: "urn:reg:bcbs:lev:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+  "leverage.threshold.amber": {
+    baselProvision: "urn:reg:bcbs:lev:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+  "leverage.threshold.red": {
+    baselProvision: "urn:reg:bcbs:lev:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+  // Market-RWA proxy weights — simplified standardised market-risk proxy (urn:reg:bcbs:mar:20.1);
+  // ZA government bond inherits the 0% sovereign weight (urn:reg:bcbs:cre:20.6).
+  "rwa.instrument-weight.OTC-IRD": {
+    baselProvision: "urn:reg:bcbs:mar:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+  "rwa.instrument-weight.FX-spot": {
+    baselProvision: "urn:reg:bcbs:mar:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+  "rwa.instrument-weight.FX-forward": {
+    baselProvision: "urn:reg:bcbs:mar:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+  "rwa.instrument-weight.JSE-EQUITY": {
+    baselProvision: "urn:reg:bcbs:mar:20.1",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+  "rwa.instrument-weight.ZA-GOV-BOND": {
+    baselProvision: "urn:reg:bcbs:cre:20.6",
+    localOverride: "urn:reg:za:regs-relating-to-banks:reg38",
+  },
+};
+
+/**
+ * Categories whose constants derive from the Basel Framework and therefore MUST
+ * carry a BASEL_PROVISION_LINKAGE entry (asserted by recon:basel-constants-
+ * coverage). Local-only categories (capital-baseline, capital-threshold,
+ * product-control-tolerance) and bank-tolerance keys are excluded by design.
+ */
+export const BASEL_DERIVED_CATEGORIES: readonly ConstantCategory[] = [
+  "lcr-runoff",
+  "lcr-inflow",
+  "lcr-haircut",
+  "lcr-cap",
+  "nsfr-asf",
+  "nsfr-rsf",
+  "leverage-threshold",
+  "rwa-instrument-weight",
+];
+
+/** Individual Basel-derived keys outside the derived categories (the ratio minima). */
+export const BASEL_DERIVED_KEYS: readonly string[] = ["lcr.minimum-ratio", "nsfr.minimum-ratio"];
+
+/** Basel provenance for a constant key, or undefined if it is local-only. */
+export function baselLinkageForKey(key: string): BaselLinkage | undefined {
+  return BASEL_PROVISION_LINKAGE[key];
+}
+
 const BY_KEY: ReadonlyMap<string, FinancialConstant> = new Map(
   FINANCIAL_CONSTANTS.map((c) => [c.key, c]),
 );
