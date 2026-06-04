@@ -59,7 +59,7 @@
 
 ## Basel Committee on Banking Supervision (BCBS)
 
-> The BCBS Pillar-1 spine is catalogued at provision granularity as the **baseline framework layer** (D-BASEL-CATALOGUE-PILLAR-1). Each Basel provision carries a `urn:reg:bcbs:<standard>:<para>` URN and a typed adoption edge to its SARB transposition (machine-readable in `prototype/platform/regulatory/basel-adoption.ts`; resolver in `resolve-applicable-rule.ts`). Basel governs by default where a jurisdiction is silent; SARB adoption supersedes it for South Africa.
+> The BCBS Pillar-1 spine is catalogued at provision granularity as the **baseline framework layer** (D-BASEL-CATALOGUE-PILLAR-1). Each Basel provision carries a `urn:reg:bcbs:<standard>:<para>` URN and a typed adoption edge to its SARB transposition (machine-readable in `prototype/platform/regulatory/basel-adoption.ts`; resolver in `resolve-applicable-rule.ts`). Basel governs by default where a jurisdiction is silent; SARB adoption supersedes it for South Africa. **SOURCE-WIRED** rows are standards whose verbatim BIS paragraph extracts are in `BCBS/source-docs/` and wired into the horizon-scan runner (`bun run extract:regulation BCBS-<STD>`) but whose hand-authored analysis / adoption edges are not yet written — the LLM-extraction pass populates obligations from them.
 
 | Instrument | File | Status | Source |
 |---|---|---|---|
@@ -71,6 +71,12 @@
 | **NSF — Net Stable Funding Ratio** (Pillar-1 spine) | [BCBS/nsf-net-stable-funding.md](BCBS/nsf-net-stable-funding.md) | **POPULATED** | bis.org |
 | **LEV — Leverage ratio** (Pillar-1 spine) | [BCBS/lev-leverage-ratio.md](BCBS/lev-leverage-ratio.md) | **POPULATED** | bis.org |
 | **LEX — Large exposures** (Pillar-1 spine) | [BCBS/lex-large-exposures.md](BCBS/lex-large-exposures.md) | **POPULATED** | bis.org |
+| SCO — Scope and definitions | BCBS/source-docs/sco-structured.json | SOURCE-WIRED | bis.org |
+| RBC — Risk-based capital requirements | BCBS/source-docs/rbc-structured.json | SOURCE-WIRED | bis.org |
+| SRP — Supervisory review process (Pillar 2) | BCBS/source-docs/srp-structured.json | SOURCE-WIRED | bis.org |
+| DIS — Disclosure requirements (Pillar 3) | BCBS/source-docs/dis-structured.json | SOURCE-WIRED | bis.org |
+| BCP — Core Principles for effective banking supervision | BCBS/source-docs/bcp-structured.json | SOURCE-WIRED | bis.org |
+| MGN — Margin requirements | BCBS/source-docs/mgn-structured.json | SOURCE-WIRED | bis.org |
 | Basel III / IV consolidated framework | BCBS/basel-iii-iv.md | STUB | bis.org |
 | BCBS Corporate Governance Principles for Banks (2015) | BCBS/cgp-2015.md | STUB | bis.org |
 | BCBS Principles for Operational Resilience (2021) | BCBS/op-resilience-2021.md | STUB | bis.org |
