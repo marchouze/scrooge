@@ -16,9 +16,9 @@
 
 import { parseUrn } from "../citation/urn";
 import {
+  ADOPTION_EDGES,
   type AdoptionEdge,
   type AdoptionType,
-  ADOPTION_EDGES,
   type BaselProvision,
   findBaselProvision,
 } from "./basel-adoption";
@@ -109,8 +109,8 @@ export function resolveApplicableRule(
     baseline,
     citation: governing.localInstrument,
     adoptionType: governing.adoptionType,
-    delta: governing.delta,
-    stricter: governing.stricter,
     localInstrument: governing.localInstrument,
+    ...(governing.delta !== undefined ? { delta: governing.delta } : {}),
+    ...(governing.stricter !== undefined ? { stricter: governing.stricter } : {}),
   };
 }

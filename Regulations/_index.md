@@ -59,8 +59,18 @@
 
 ## Basel Committee on Banking Supervision (BCBS)
 
+> The BCBS Pillar-1 spine is catalogued at provision granularity as the **baseline framework layer** (D-BASEL-CATALOGUE-PILLAR-1). Each Basel provision carries a `urn:reg:bcbs:<standard>:<para>` URN and a typed adoption edge to its SARB transposition (machine-readable in `prototype/platform/regulatory/basel-adoption.ts`; resolver in `resolve-applicable-rule.ts`). Basel governs by default where a jurisdiction is silent; SARB adoption supersedes it for South Africa.
+
 | Instrument | File | Status | Source |
 |---|---|---|---|
+| **CAP — Definition of capital** (Pillar-1 spine) | [BCBS/cap-definition-of-capital.md](BCBS/cap-definition-of-capital.md) | **POPULATED** | bis.org |
+| **CRE — Credit risk** (Pillar-1 spine) | [BCBS/cre-credit-risk.md](BCBS/cre-credit-risk.md) | **POPULATED** | bis.org |
+| **MAR — Market risk / FRTB** (Pillar-1 spine) | [BCBS/mar-market-risk.md](BCBS/mar-market-risk.md) | **POPULATED** | bis.org |
+| **OPE — Operational risk** (Pillar-1 spine) | [BCBS/ope-operational-risk.md](BCBS/ope-operational-risk.md) | **POPULATED** | bis.org |
+| **LCR — Liquidity Coverage Ratio** (Pillar-1 spine) | [BCBS/lcr-liquidity-coverage.md](BCBS/lcr-liquidity-coverage.md) | **POPULATED** | bis.org |
+| **NSF — Net Stable Funding Ratio** (Pillar-1 spine) | [BCBS/nsf-net-stable-funding.md](BCBS/nsf-net-stable-funding.md) | **POPULATED** | bis.org |
+| **LEV — Leverage ratio** (Pillar-1 spine) | [BCBS/lev-leverage-ratio.md](BCBS/lev-leverage-ratio.md) | **POPULATED** | bis.org |
+| **LEX — Large exposures** (Pillar-1 spine) | [BCBS/lex-large-exposures.md](BCBS/lex-large-exposures.md) | **POPULATED** | bis.org |
 | Basel III / IV consolidated framework | BCBS/basel-iii-iv.md | STUB | bis.org |
 | BCBS Corporate Governance Principles for Banks (2015) | BCBS/cgp-2015.md | STUB | bis.org |
 | BCBS Principles for Operational Resilience (2021) | BCBS/op-resilience-2021.md | STUB | bis.org |

@@ -305,6 +305,20 @@ This split enables:
 | `TRANSPOSES` | Document | Framework | An SA instrument transposes an international standard | PA D5/2021 TRANSPOSES FRMWK-BASEL-III |
 | `EQUIVALENT_TO` | Obligation | Obligation | Cross-jurisdictional equivalence (same obligation, different regime) | For EU/UK equivalence mapping (reference only) |
 
+#### Adoption semantics (Basel baseline → jurisdiction)
+
+The bank catalogues the Basel Framework as the **baseline layer** and layers each jurisdiction's adoption over it (D-BASEL-CATALOGUE-PILLAR-1). The five adoption relationships map onto the existing edge set — there is no separate `ADOPTS`/`MODIFIES`/`GOLD_PLATES`/`SILENT` edge type:
+
+| Adoption | Maps to | Carries |
+|---|---|---|
+| **ADOPTS** — local takes the Basel provision unchanged | `TRANSPOSES` | no delta |
+| **MODIFIES** — local adopts with a variation (national discount, different transition date, add-on) | `TRANSPOSES` | typed `delta` |
+| **GOLD_PLATES** — local is *stricter* than Basel | `TRANSPOSES` | `delta` + `stricter: true` |
+| **SUPERSEDES** — local replaces the Basel position entirely | `SUPERSEDES` | — |
+| **SILENT** — Basel speaks, local has not | *(no edge)* | resolver falls back to the Basel baseline |
+
+The typed "register" form lives at `platform/regulatory/basel-adoption.ts` (`ADOPTION_EDGES`); the point-in-time resolution function (`jurisdiction + provision + date → governing rule, Basel fallback`) is `platform/regulatory/resolve-applicable-rule.ts`. These are projectable into the seeded graph as `TRANSPOSES`/`SUPERSEDES` edges once the LLM-extraction breadth pass runs.
+
 ### Cross-Reference Edges
 
 | Edge | From | To | Meaning | When to assert |
