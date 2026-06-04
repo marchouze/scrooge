@@ -1,0 +1,26 @@
+{
+  "slug": "bcbs-ope",
+  "title": "Basel Framework — OPE (Calculation of RWA for operational risk)",
+  "shortTitle": "Basel OPE",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group OPE (operational risk). Verbatim source: https://www.bis.org/basel_framework/standard/OPE.htm. Binds the bank via SARB Reg 33.",
+  "citationPatterns": ["OPE", "OPE25", "operational risk", "Basic Indicator Approach", "gross income"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "OPE — Operational risk",
+      "sections": [
+        {
+          "number": "25",
+          "heading": "Operational-risk capital — measurement approaches",
+          "text": "Operational-risk capital may be measured using the Basic Indicator Approach, the Standardised Approach, or (from the 2023 framework) the new Standardised Approach combining a business indicator with an internal loss multiplier.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "25.1", "text": "Under the Basic Indicator Approach, a bank must hold operational-risk capital equal to 15% (the alpha factor) of the average positive annual gross income over the previous three years. Years in which annual gross income is negative or zero are excluded from both the numerator and the denominator of the average." }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -30,7 +30,7 @@ export const regulatoryInstrumentRegisteredPayloadSchema = z.object({
   title: z.string().min(1),
 
   /** Body that issued the instrument. */
-  issuingBody: z.enum(["Parliament", "FSCA", "SARB", "PA", "National Treasury"]),
+  issuingBody: z.enum(["Parliament", "FSCA", "SARB", "PA", "National Treasury", "BCBS"]),
 
   /** Type of the legal instrument. */
   instrumentType: z.enum([

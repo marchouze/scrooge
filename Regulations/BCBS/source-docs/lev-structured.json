@@ -1,0 +1,26 @@
+{
+  "slug": "bcbs-lev",
+  "title": "Basel Framework — LEV (Leverage ratio)",
+  "shortTitle": "Basel LEV",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group LEV (leverage ratio). Verbatim source: https://www.bis.org/basel_framework/standard/LEV.htm. Binds the bank via SARB Reg 38; the bank's RAS gold-plates the minimum.",
+  "citationPatterns": ["LEV", "leverage ratio", "exposure measure", "Tier 1"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "LEV — Leverage ratio",
+      "sections": [
+        {
+          "number": "20",
+          "heading": "The leverage ratio requirement",
+          "text": "The leverage ratio is a non-risk-based backstop to the risk-based capital requirements, constraining the build-up of leverage in the banking sector.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "20.1", "text": "A bank must maintain a leverage ratio of at least 3%, calculated as Tier 1 capital divided by the total exposure measure. The total exposure measure is the sum of on-balance-sheet exposures, derivative exposures, securities-financing-transaction exposures, and off-balance-sheet items, and may not be reduced by collateral, netting (beyond prescribed rules), or other risk-mitigation techniques." }
+          ]
+        }
+      ]
+    }
+  ]
+}

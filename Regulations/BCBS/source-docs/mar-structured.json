@@ -1,0 +1,44 @@
+{
+  "slug": "bcbs-mar",
+  "title": "Basel Framework — MAR (Minimum capital requirements for market risk)",
+  "shortTitle": "Basel MAR",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group MAR (market risk, incl. FRTB). Verbatim source: https://www.bis.org/basel_framework/standard/MAR.htm. Binds the bank via SARB Reg 38; FRTB-SA commencement per PA PC 18/2024.",
+  "citationPatterns": ["MAR", "FRTB", "market risk", "expected shortfall", "VaR", "SVaR", "sensitivities"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "MAR — Market risk",
+      "sections": [
+        {
+          "number": "20",
+          "heading": "Standardised approach to market risk",
+          "text": "The standardised approach computes market-risk capital as the sum of three components across the trading book.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "20.1", "text": "Market-risk capital under the standardised approach is the simple sum of three components: the sensitivities-based method capital charge (delta, vega and curvature across risk classes), the default risk charge, and the residual risk add-on." }
+          ]
+        },
+        {
+          "number": "33",
+          "heading": "Internal models approach — expected shortfall",
+          "text": "A bank with supervisory approval may use an internal models approach for market-risk capital based on expected shortfall.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "33.1", "text": "The internal models approach measures risk using an expected shortfall (ES) model calibrated to a 97.5% one-tailed confidence level, capturing the tail risk of the trading portfolio over a liquidity-horizon-adjusted holding period." }
+          ]
+        },
+        {
+          "number": "99",
+          "heading": "Transitional and legacy market-risk treatment",
+          "text": "Pending full FRTB adoption, the legacy (Basel 2.5) internal-models market-risk treatment may continue to apply.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "99.1", "text": "Legacy internal-models market-risk capital is based on value-at-risk (VaR) computed at a 99% one-tailed confidence level over a minimum one-year (approximately 250 business day) historical observation window, supplemented by a stressed VaR over a period of significant financial stress." }
+          ]
+        }
+      ]
+    }
+  ]
+}

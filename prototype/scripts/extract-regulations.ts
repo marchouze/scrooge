@@ -66,7 +66,7 @@ type InstrumentType =
   | "directive"
   | "conduct-standard";
 
-type IssuingBody = "Parliament" | "FSCA" | "SARB" | "PA" | "National Treasury";
+type IssuingBody = "Parliament" | "FSCA" | "SARB" | "PA" | "National Treasury" | "BCBS";
 
 interface ManifestEntry {
   /** Canonical instrumentId (e.g. "FAIS-ACT-37-2002"). */
@@ -719,6 +719,107 @@ const MANIFEST: ManifestEntry[] = [
     effectiveDate: "2026-01-01",
     version: "2026-orig",
     citations: ["BANKS-GN1-2026", "BANKS-ACT-94-1990"],
+  },
+  // ── BCBS — Basel Framework Pillar-1 spine (D-BASEL-CATALOGUE-PILLAR-1) ──────
+  // International baseline; binds the bank via SARB transposition (see
+  // platform/regulatory/basel-adoption.ts). jurisdiction "INTL" marks the
+  // Basel-root layer. publicationDate/effectiveDate track the consolidated
+  // framework in force from 2019-12-15.
+  {
+    instrumentId: "BCBS-CAP",
+    sourcePath: "BCBS/source-docs/cap-structured.json",
+    title: "Basel Framework — CAP (Definition of capital)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-12-15",
+    effectiveDate: "2019-12-15",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
+  },
+  {
+    instrumentId: "BCBS-CRE",
+    sourcePath: "BCBS/source-docs/cre-structured.json",
+    title: "Basel Framework — CRE (Calculation of RWA for credit risk)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-12-15",
+    effectiveDate: "2023-01-01",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
+  },
+  {
+    instrumentId: "BCBS-MAR",
+    sourcePath: "BCBS/source-docs/mar-structured.json",
+    title: "Basel Framework — MAR (Minimum capital requirements for market risk)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-12-15",
+    effectiveDate: "2023-01-01",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
+  },
+  {
+    instrumentId: "BCBS-OPE",
+    sourcePath: "BCBS/source-docs/ope-structured.json",
+    title: "Basel Framework — OPE (Calculation of RWA for operational risk)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-12-15",
+    effectiveDate: "2019-12-15",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
+  },
+  {
+    instrumentId: "BCBS-LCR",
+    sourcePath: "BCBS/source-docs/lcr-structured.json",
+    title: "Basel Framework — LCR (Liquidity Coverage Ratio)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-12-15",
+    effectiveDate: "2019-12-15",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
+  },
+  {
+    instrumentId: "BCBS-NSF",
+    sourcePath: "BCBS/source-docs/nsf-structured.json",
+    title: "Basel Framework — NSF (Net Stable Funding Ratio)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-12-15",
+    effectiveDate: "2019-12-15",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
+  },
+  {
+    instrumentId: "BCBS-LEV",
+    sourcePath: "BCBS/source-docs/lev-structured.json",
+    title: "Basel Framework — LEV (Leverage ratio)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-12-15",
+    effectiveDate: "2019-12-15",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
+  },
+  {
+    instrumentId: "BCBS-LEX",
+    sourcePath: "BCBS/source-docs/lex-structured.json",
+    title: "Basel Framework — LEX (Large exposures)",
+    issuingBody: "BCBS",
+    instrumentType: "guidance",
+    jurisdiction: "INTL",
+    publicationDate: "2019-01-01",
+    effectiveDate: "2019-01-01",
+    version: "consolidated-2019",
+    citations: ["D-BASEL-CATALOGUE-PILLAR-1", "P2-SINGLE-GRAPH-DISCIPLINE"],
   },
 ];
 

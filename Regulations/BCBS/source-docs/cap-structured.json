@@ -1,0 +1,37 @@
+{
+  "slug": "bcbs-cap",
+  "title": "Basel Framework — CAP (Definition of capital)",
+  "shortTitle": "Basel CAP",
+  "regulator": "Basel Committee on Banking Supervision",
+  "year": 2019,
+  "sourceNote": "Structured rendering of the BCBS consolidated Basel Framework, standard group CAP (Definition of capital), in force from 2019-12-15. This is the bank's working representation for horizon-scan extraction; the verbatim source is the BIS consolidated framework at https://www.bis.org/basel_framework/standard/CAP.htm. Binds the bank via SARB transposition (Regulations Relating to Banks Reg 38).",
+  "citationPatterns": ["Basel III", "CAP", "CET1", "Tier 1", "Tier 2", "capital adequacy"],
+  "priority": 1,
+  "chapters": [
+    {
+      "heading": "CAP — Definition of capital",
+      "sections": [
+        {
+          "number": "10",
+          "heading": "Minimum risk-based capital requirements",
+          "text": "A bank must maintain regulatory capital, measured against its total risk-weighted assets (RWA), at no less than the minimum ratios set out below at all times. Regulatory capital comprises three components in descending order of loss-absorbing quality: Common Equity Tier 1 (CET1), Additional Tier 1 (AT1), and Tier 2 (T2).",
+          "verbatim": false,
+          "subsections": [
+            { "number": "10.1", "text": "Common Equity Tier 1 capital must be at least 4.5% of risk-weighted assets at all times. CET1 is the highest-quality, fully loss-absorbing capital: common shares issued by the bank that meet the criteria for classification as common shares, the associated stock surplus, retained earnings, and accumulated other comprehensive income, net of regulatory adjustments." },
+            { "number": "10.2", "text": "Tier 1 capital, being the sum of Common Equity Tier 1 and Additional Tier 1 capital, must be at least 6.0% of risk-weighted assets at all times." },
+            { "number": "10.3", "text": "Total capital, being the sum of Tier 1 and Tier 2 capital, must be at least 8.0% of risk-weighted assets at all times." }
+          ]
+        },
+        {
+          "number": "30",
+          "heading": "Capital buffers above the regulatory minimum",
+          "text": "Buffers sit above the Pillar 1 minima and constrain capital distributions when they are not met, rather than triggering breach of the minimum requirement.",
+          "verbatim": false,
+          "subsections": [
+            { "number": "30.1", "text": "A bank must hold a capital conservation buffer of 2.5% of risk-weighted assets, composed of Common Equity Tier 1 capital, above the 4.5% CET1 minimum. A bank whose CET1 falls within the buffer range becomes subject to constraints on the distribution of earnings (dividends, share buy-backs and discretionary staff bonuses) calibrated to how far into the buffer it has fallen." }
+          ]
+        }
+      ]
+    }
+  ]
+}
