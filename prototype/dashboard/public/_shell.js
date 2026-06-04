@@ -55,6 +55,7 @@
         { label: "Compliance", href: "/compliance.html" },
         { label: "Obligations", href: "/obligations.html" },
         { label: "Bank Obligations (events)", href: "/bank-obligations.html" },
+        { label: "Unadopted Obligations", href: "/unadopted-obligations.html" },
         { label: "Obligation Readers", href: "/obligation-readers.html" },
         { label: "Forward Obligations", href: "/forward-obligations.html" },
         { label: "Policies", href: "/policies.html" },

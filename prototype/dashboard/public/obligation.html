@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Obligation — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .breadcrumb { display:flex; gap:var(--space-2); font:var(--text-caption); color:var(--color-text-secondary); margin-bottom:var(--space-4); }
+    .breadcrumb a { color:var(--color-accent); text-decoration:none; }
+    .od-head { padding-bottom:var(--space-4); border-bottom:1px solid var(--color-border); margin-bottom:var(--space-5); }
+    .od-id { font-family:var(--font-mono); font-size:0.85em; color:var(--color-text-secondary); margin-bottom:4px; }
+    .od-title { font:var(--text-display); color:var(--color-text-primary); margin:0 0 var(--space-3); }
+    .od-pills { display:flex; gap:var(--space-2); flex-wrap:wrap; align-items:center; }
+    .od-state { display:inline-block; padding:3px 10px; border-radius:12px; font:var(--text-caption); font-weight:600; }
+    .od-state.adopted { background:#dcfce7; color:#15803d; }
+    .od-state.unadopted { background:#fef3c7; color:#b45309; }
+    .od-meta { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:var(--space-4);
+      background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg);
+      padding:var(--space-5); margin-bottom:var(--space-6); }
+    .od-mi { display:flex; flex-direction:column; gap:2px; }
+    .od-ml { font:var(--text-caption); color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:0.04em; }
+    .od-mv { font:var(--text-body); color:var(--color-text-primary); font-weight:500; }
+    .od-section { margin-bottom:var(--space-6); }
+    .od-section h3 { font:var(--text-h2); margin:0 0 var(--space-3); padding-bottom:var(--space-2); border-bottom:1px solid var(--color-border); }
+    .od-req { font:var(--text-body); line-height:1.7; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-5); }
+    .od-hist { list-style:none; padding:0; margin:0; }
+    .od-hist li { display:flex; gap:var(--space-3); align-items:center; padding:var(--space-2) 0; border-bottom:1px solid var(--color-border); font-size:0.9em; }
+    .od-hist code { font-family:var(--font-mono); color:var(--color-accent); }
+    .od-actions { display:flex; gap:var(--space-3); margin:var(--space-5) 0; }
+    .od-btn { padding:var(--space-3) var(--space-5); border-radius:var(--radius-md); border:1px solid var(--color-border);
+      font:var(--text-body); font-weight:600; cursor:pointer; }
+    .od-btn-adopt { background:#16a34a; color:#fff; border-color:#16a34a; }
+    .od-btn-reject { background:#fff; color:#dc2626; border-color:#dc2626; }
+    .od-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .od-derives { font-family:var(--font-mono); font-size:0.82em; color:var(--color-accent); }
+    #od-msg { margin:var(--space-3) 0; font:var(--text-body); }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <nav class="breadcrumb">
+      <a href="/bank-obligations.html">Bank Obligations</a><span>›</span>
+      <a href="/unadopted-obligations.html">Unadopted</a><span>›</span>
+      <span id="od-bc">…</span>
+    </nav>
+    <div id="od-body"></div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Obligation" });
+    (async () => {
+      const id = new URLSearchParams(location.search).get("id") || "";
+      const body = document.getElementById("od-body");
+      document.getElementById("od-bc").textContent = id;
+      if (!id) { body.innerHTML = "<p>No obligation id.</p>"; return; }
+
+      async function load() {
+        const d = await fetch(`/api/obligation?id=${encodeURIComponent(id)}`, { headers:{Accept:"application/json"} })
+          .then(r => r.ok ? r.json() : null).catch(() => null);
+        if (!d) { body.innerHTML = `<p>Obligation <code>${SC.esc(id)}</code> not found.</p>`; return; }
+        render(d);
+      }
+
+      function mi(label, val) { return val ? `<div class="od-mi"><span class="od-ml">${SC.esc(label)}</span><span class="od-mv">${val}</span></div>` : ""; }
+
+      function render(d) {
+        const ref = d.seed || {};
+        const proj = d.projection || {};
+        const adopted = d.adopted;
+        const owner = proj.owner || ref.owner || "";
+        const domain = (proj.domain || ref.section || "").replace(/^Domain\s+/, "");
+        const status = proj.status || ref.reviewStatus || "";
+        const fulfil = proj.fulfilmentPolicy || ref.fulfilmentPolicy || "";
+        const citation = proj.citation || ref.citation || "";
+        const requirement = proj.requirement || ref.requirement || "—";
+        const derives = (proj.derivesFrom || []);
+
+        const histHtml = (d.history || []).length
+          ? `<ul class="od-hist">${d.history.map(h =>
+              `<li><code>${SC.esc(h.kind)}</code><span style="color:var(--color-text-secondary)">${SC.esc((h.at||"").slice(0,19).replace("T"," "))}</span>${h.status?` → ${SC.esc(h.status)}`:""}${h.detail?` · ${SC.esc(h.detail)}`:""}</li>`
+            ).join("")}</ul>`
+          : `<p style="color:var(--color-text-disabled)">No lifecycle events.</p>`;
+
+        body.innerHTML = `
+          <div class="od-head">
+            <div class="od-id">${SC.esc(id)}</div>
+            <h1 class="od-title">${SC.esc((requirement).slice(0,120))}${requirement.length>120?"…":""}</h1>
+            <div class="od-pills">
+              <span class="od-state ${adopted?"adopted":"unadopted"}">${adopted?"ADOPTED":"NOT ADOPTED"}</span>
+              ${status?SC.renderBadge(status):""}
+            </div>
+          </div>
+          <div class="od-actions">
+            ${adopted
+              ? `<button class="od-btn od-btn-reject" id="od-act" data-action="unadopt">Reject (un-adopt)</button>`
+              : `<button class="od-btn od-btn-adopt" id="od-act" data-action="adopt">Adopt</button>`}
+          </div>
+          <div id="od-msg"></div>
+          <div class="od-meta">
+            ${mi("ID", `<code style="font-family:var(--font-mono);font-size:0.85em">${SC.esc(id)}</code>`)}
+            ${mi("Domain", SC.esc(domain))}
+            ${mi("Owner", SC.esc(owner))}
+            ${mi("Status", SC.esc(status))}
+            ${mi("Fulfilment policy", SC.esc(fulfil))}
+            ${mi("Citation", SC.esc(citation))}
+            ${derives.length?mi("Derives from", derives.map(x=>`<span class="od-derives">${SC.esc(x)}</span>`).join(" ")):""}
+          </div>
+          <div class="od-section"><h3>Requirement</h3><div class="od-req">${SC.esc(requirement)}</div></div>
+          <div class="od-section"><h3>Lifecycle</h3>${histHtml}</div>
+        `;
+
+        const btn = document.getElementById("od-act");
+        btn.addEventListener("click", async () => {
+          const action = btn.dataset.action;
+          const verb = action === "adopt" ? "adopt" : "reject (un-adopt)";
+          if (!confirm(`Confirm: ${verb} obligation ${id}?`)) return;
+          btn.disabled = true;
+          const msg = document.getElementById("od-msg");
+          msg.textContent = "Submitting…";
+          const res = await fetch(`/api/obligations/${action}`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          }).then(r => r.json()).catch(e => ({ error: String(e) }));
+          if (res && res.ok) {
+            msg.innerHTML = `<span style="color:#16a34a">✓ ${action === "adopt" ? "Adopted" : "Un-adopted"} (event ${SC.esc((res.eventId||"").slice(0,8))}). Reloading…</span>`;
+            setTimeout(load, 700);
+          } else {
+            msg.innerHTML = `<span style="color:#dc2626">Failed: ${SC.esc(res?.error || "unknown error")}</span>`;
+            btn.disabled = false;
+          }
+        });
+      }
+
+      await load();
+    })();
+  </script>
+</body>
+</html>

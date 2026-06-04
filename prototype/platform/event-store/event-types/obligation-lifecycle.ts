@@ -78,6 +78,7 @@ export const obligationLifecycleTransitionSchema = z.enum([
   "procedure-linked",
   "control-implemented",
   "attested",
+  "un-adopted",
   "retired",
   "superseded",
 ]);
