@@ -71,6 +71,8 @@ const GRAPH_EDGE_TYPES = [
   "IMPLEMENTS",
   "CLOSES",
   "GOVERNS",
+  // Two-plane bridge (D-REGULATORY-ARCHITECTURE-TWO-PLANE)
+  "DERIVES_FROM",
 ] as const;
 
 // ---------------------------------------------------------------------------

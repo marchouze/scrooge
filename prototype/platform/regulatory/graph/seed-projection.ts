@@ -1402,6 +1402,35 @@ export async function runSeed(): Promise<SeedStats> {
   // ontology. Imported as part of the projection so it survives re-seeds.
   const obligationGraphs = importBcbsObligationGraphs(now);
 
+  // ── DERIVES_FROM bridge (Plane B → Plane A) ──────────────────────────────
+  // Fold the bank's ObligationAdopted decisions (Plane B, the source of truth)
+  // into a re-derivable graph edge: the adopted obligation DERIVES_FROM the
+  // source provision/obligation it implements. The event stays canonical
+  // (Principle 1); the edge is reference data rebuilt on each seed. Runs AFTER
+  // every obligation source (register + BCBS import) so the from/to nodes exist.
+  // Guarded — a target that does not resolve to a node (sparse SA-instrument
+  // citations on the legacy register) is skipped. D-REGULATORY-ARCHITECTURE-TWO-PLANE.
+  const nodeExists = getDb().prepare("SELECT 1 FROM graph_nodes WHERE id = ? LIMIT 1");
+  for (const event of eventStore.replay({ type: "ObligationAdopted" })) {
+    const p = event.payload as { obligationId?: string; derivesFrom?: string[] };
+    if (!p.obligationId || !Array.isArray(p.derivesFrom) || p.derivesFrom.length === 0) continue;
+    const fromId = `OBL-${p.obligationId}`;
+    if (!nodeExists.get(fromId)) continue;
+    for (const target of p.derivesFrom) {
+      if (!target || target === fromId || !nodeExists.get(target)) continue;
+      upsertEdge({
+        id: edgeId("DERIVES_FROM"),
+        fromId,
+        toId: target,
+        edgeType: "DERIVES_FROM",
+        extractionMethod: "register",
+        confidenceScore: 1,
+        extractedAt: now,
+        sourceProvision: target,
+      });
+    }
+  }
+
   // ── Final stats ──────────────────────────────────────────────────────────
 
   const totalNodes = getNodeCount();
