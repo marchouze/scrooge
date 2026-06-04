@@ -15,6 +15,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import type { EventStore } from "../platform/event-store/store";
+import {
+  findKnowledgeBaseObligation,
+  listKnowledgeBaseObligations,
+} from "../platform/obligations/knowledge-base";
 import { type BankObligation, loadBankObligations } from "../platform/obligations/projection";
 
 /** A reference row from the committed obligations seed (the authored origin). */
@@ -70,51 +74,104 @@ export function getBankObligationsView(store: EventStore): BankObligationsView {
 
 export interface UnadoptedObligation {
   id: string;
+  source: "bcbs" | "register";
+  standard: string;
   domain: string;
   citation: string;
   requirement: string;
   fulfilmentPolicy: string;
   owner: string;
+  obligationType: string;
   /** True if it was adopted then un-adopted (vs never adopted). */
   previouslyAdopted: boolean;
+}
+
+/** Server-side filter + paging for the (large) knowledge base. */
+export interface UnadoptedQuery {
+  source?: string;
+  standard?: string;
+  q?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export interface UnadoptedObligationsView {
   obligations: UnadoptedObligation[];
   summary: { total: number; neverAdopted: number; unAdopted: number };
+  facets: { bySource: Record<string, number>; byStandard: Record<string, number> };
+  page: { limit: number; offset: number; total: number };
 }
 
-/** Seed obligations not currently adopted — candidates for adoption. */
+/**
+ * Knowledge-base obligations not currently adopted — candidates for adoption.
+ *
+ * Unadopted = knowledge base (the graph's Obligation nodes) − the currently
+ * adopted set (keyed by obligationId) + the un-adopted (which fall out of the
+ * adopted set and so reappear naturally). The seed is no longer the source;
+ * BCBS source obligations now surface here. D-REGULATORY-ARCHITECTURE-TWO-PLANE.
+ */
 export function getUnadoptedObligationsView(
   store: EventStore,
-  repoRoot: string,
+  query: UnadoptedQuery = {},
 ): UnadoptedObligationsView {
   const projected = loadBankObligations(store);
   const adoptedIds = new Set(projected.filter((o) => o.adopted).map((o) => o.id));
   const everSeen = new Set(projected.map((o) => o.id));
-  const seed = loadObligationSeed(repoRoot);
 
-  const obligations: UnadoptedObligation[] = seed
-    .filter((r) => !adoptedIds.has(r.id))
-    .map((r) => ({
-      id: r.id,
-      domain: r.section ?? "",
-      citation: r.citation ?? "",
-      requirement: r.requirement ?? "",
-      fulfilmentPolicy: r.fulfilmentPolicy ?? "",
-      owner: r.owner ?? "",
-      previouslyAdopted: everSeen.has(r.id),
-    }))
+  const all: UnadoptedObligation[] = listKnowledgeBaseObligations()
+    .filter((o) => !adoptedIds.has(o.key))
+    .map((o) => ({
+      id: o.key,
+      source: o.source,
+      standard: o.standard,
+      domain: o.domain,
+      citation: o.citation,
+      requirement: o.requirement,
+      fulfilmentPolicy: o.fulfilmentPolicy,
+      owner: "",
+      obligationType: o.obligationType,
+      previouslyAdopted: everSeen.has(o.key),
+    }));
+
+  const src = query.source?.trim();
+  const std = query.standard?.trim();
+  const q = query.q?.trim().toLowerCase();
+  const matchesQ = (o: UnadoptedObligation) =>
+    !q ||
+    [o.id, o.requirement, o.citation, o.standard, o.domain].some((v) =>
+      (v || "").toLowerCase().includes(q),
+    );
+
+  // Faceted: each facet's counts ignore its own dimension's filter so the chips
+  // stay stable, but honour the other active filters + the search query.
+  const qFiltered = all.filter(matchesQ);
+  const bySource: Record<string, number> = {};
+  for (const o of qFiltered.filter((o) => !std || o.standard === std)) {
+    bySource[o.source] = (bySource[o.source] ?? 0) + 1;
+  }
+  const byStandard: Record<string, number> = {};
+  for (const o of qFiltered.filter((o) => !src || o.source === src)) {
+    if (o.standard) byStandard[o.standard] = (byStandard[o.standard] ?? 0) + 1;
+  }
+
+  const filtered = qFiltered
+    .filter((o) => (!src || o.source === src) && (!std || o.standard === std))
     .sort((a, b) => (a.id < b.id ? -1 : 1));
 
-  const unAdopted = obligations.filter((o) => o.previouslyAdopted).length;
+  const limit = Math.max(1, Math.min(query.limit ?? 100, 500));
+  const offset = Math.max(0, query.offset ?? 0);
+  const pageRows = filtered.slice(offset, offset + limit);
+  const unAdopted = filtered.filter((o) => o.previouslyAdopted).length;
+
   return {
-    obligations,
+    obligations: pageRows,
     summary: {
-      total: obligations.length,
-      neverAdopted: obligations.length - unAdopted,
+      total: filtered.length,
+      neverAdopted: filtered.length - unAdopted,
       unAdopted,
     },
+    facets: { bySource, byStandard },
+    page: { limit, offset, total: filtered.length },
   };
 }
 
@@ -132,7 +189,23 @@ export function getObligationDetail(
   repoRoot: string,
   id: string,
 ): ObligationDetail | null {
-  const seed = loadObligationSeed(repoRoot).find((r) => r.id === id) ?? null;
+  // Reference data: prefer the authored seed row; otherwise synthesise one from
+  // the knowledge-base node so BCBS (and other extracted) obligations resolve.
+  let seed = loadObligationSeed(repoRoot).find((r) => r.id === id) ?? null;
+  if (!seed) {
+    const kb = findKnowledgeBaseObligation(id);
+    if (kb) {
+      seed = {
+        id: kb.key,
+        urn: kb.nodeId,
+        citation: kb.citation,
+        requirement: kb.requirement,
+        fulfilmentPolicy: kb.fulfilmentPolicy,
+        section: kb.standard,
+        reviewStatus: kb.obligationType,
+      };
+    }
+  }
   const projection = loadBankObligations(store).find((o) => o.id === id) ?? null;
   if (!seed && !projection) return null;
 

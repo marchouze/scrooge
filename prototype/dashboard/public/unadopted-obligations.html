@@ -17,8 +17,20 @@
     .uo-tile-value { font:var(--text-display); color:var(--color-text-primary); margin-top:4px; }
     #uo-search { width:100%; max-width:360px; padding:var(--space-2) var(--space-3); border:1px solid var(--color-border);
       border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-text-primary); font:var(--text-body); margin-bottom:var(--space-4); }
+    .uo-facets { display:flex; flex-wrap:wrap; gap:var(--space-2); margin-bottom:var(--space-4); align-items:center; }
+    .uo-facet-label { font:var(--text-caption); color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-right:4px; }
+    .uo-chip { padding:3px 10px; border-radius:12px; border:1px solid var(--color-border); background:var(--color-surface);
+      color:var(--color-text-secondary); font:var(--text-caption); cursor:pointer; }
+    .uo-chip.active { background:var(--color-accent); color:#fff; border-color:var(--color-accent); }
+    .uo-pager { display:flex; gap:var(--space-3); align-items:center; margin-top:var(--space-4); font:var(--text-caption); color:var(--color-text-secondary); }
+    .uo-pager button { padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); border:1px solid var(--color-border);
+      background:var(--color-surface); color:var(--color-text-primary); font:var(--text-caption); cursor:pointer; }
+    .uo-pager button:disabled { opacity:0.4; cursor:not-allowed; }
     .uo-done { font:var(--text-h1); color:#15803d; text-align:center; padding:var(--space-8); }
     .uo-prev { display:inline-block; padding:2px 8px; border-radius:10px; background:#fef3c7; color:#b45309; font:var(--text-caption); font-weight:600; }
+    .uo-src { display:inline-block; padding:1px 7px; border-radius:9px; font:var(--text-caption); font-weight:600; }
+    .uo-src.bcbs { background:#dbeafe; color:#1d4ed8; }
+    .uo-src.register { background:#ede9fe; color:#6d28d9; }
   </style>
 </head>
 <body>
@@ -28,13 +40,18 @@
     <div class="page-header"><h1 class="page-title">Unadopted Obligations</h1></div>
     <div class="page-body">
       <div class="uo-banner">
-        Seed obligations the bank has <strong>not currently adopted</strong> — candidates for adoption
-        (<code>D-REGULATORY-ARCHITECTURE-TWO-PLANE</code>). Click an obligation to review and <strong>Adopt</strong> it.
-        Adopted obligations live on <a href="/bank-obligations.html" style="color:var(--color-accent)">Bank Obligations</a>.
+        Knowledge-base obligations the bank has <strong>not adopted</strong> — candidates for adoption
+        (<code>D-REGULATORY-ARCHITECTURE-TWO-PLANE</code>). Sourced from the reference graph
+        (Plane&nbsp;A): <em>Unadopted = knowledge base − adopted + un-adopted</em>. Click an obligation to review and
+        <strong>Adopt</strong> it. Adopted obligations live on
+        <a href="/bank-obligations.html" style="color:var(--color-accent)">Bank Obligations</a>.
       </div>
       <div class="uo-tiles" id="uo-tiles"></div>
-      <input id="uo-search" type="search" placeholder="Search id, owner, requirement…" autocomplete="off">
+      <input id="uo-search" type="search" placeholder="Search id, requirement, citation…" autocomplete="off">
+      <div class="uo-facets" id="uo-facet-source"></div>
+      <div class="uo-facets" id="uo-facet-standard"></div>
       <div id="uo-table"></div>
+      <div class="uo-pager" id="uo-pager"></div>
     </div>
   </main>
 
@@ -45,40 +62,89 @@
     initShell({ title: "Unadopted Obligations" });
     (async () => {
       async function sf(u){ try{const r=await fetch(u,{headers:{Accept:"application/json"}});return r.ok?r.json():null;}catch{return null;} }
-      document.getElementById("uo-table").innerHTML = SC.renderSkeleton(6);
-      const data = await sf("/api/unadopted-obligations");
-      const all = data?.obligations ?? [];
-      const sum = data?.summary ?? { total:0, neverAdopted:0, unAdopted:0 };
 
-      document.getElementById("uo-tiles").innerHTML = [
-        ["Unadopted", sum.total], ["Never adopted", sum.neverAdopted], ["Un-adopted", sum.unAdopted],
-      ].map(([l,v]) => `<div class="uo-tile"><div class="uo-tile-label">${SC.esc(String(l))}</div><div class="uo-tile-value">${SC.esc(String(v))}</div></div>`).join("");
-
+      const state = { source:"", standard:"", q:"", offset:0, limit:100 };
       const tableEl = document.getElementById("uo-table");
-      if (all.length === 0) {
-        tableEl.innerHTML = `<div class="uo-done">✓ Every seed obligation is adopted.</div>`;
-        return;
+      const pagerEl = document.getElementById("uo-pager");
+
+      function qs() {
+        const p = new URLSearchParams();
+        if (state.source) p.set("source", state.source);
+        if (state.standard) p.set("standard", state.standard);
+        if (state.q) p.set("q", state.q);
+        p.set("limit", String(state.limit));
+        p.set("offset", String(state.offset));
+        return p.toString();
       }
-      let query = "";
-      function render() {
-        const q = query.trim().toLowerCase();
-        const rows = all.filter(o => !q || [o.id,o.owner,o.requirement,o.domain].some(v => (v||"").toLowerCase().includes(q)));
+
+      function renderChips(elId, label, entries, selKey, current) {
+        const el = document.getElementById(elId);
+        const items = Object.entries(entries).sort((a,b)=>b[1]-a[1]);
+        if (!items.length) { el.innerHTML = ""; return; }
+        el.innerHTML = `<span class="uo-facet-label">${SC.esc(label)}</span>` +
+          `<span class="uo-chip${current===""?" active":""}" data-${selKey}="">All</span>` +
+          items.map(([k,c]) => `<span class="uo-chip${current===k?" active":""}" data-${selKey}="${SC.esc(k)}">${SC.esc(k)} (${c})</span>`).join("");
+        el.querySelectorAll(".uo-chip").forEach(chip => chip.addEventListener("click", () => {
+          state[selKey] = chip.dataset[selKey] || "";
+          state.offset = 0;
+          load();
+        }));
+      }
+
+      async function load() {
+        tableEl.innerHTML = SC.renderSkeleton(6);
+        const data = await sf("/api/unadopted-obligations?" + qs());
+        const rows = data?.obligations ?? [];
+        const sum = data?.summary ?? { total:0, neverAdopted:0, unAdopted:0 };
+        const facets = data?.facets ?? { bySource:{}, byStandard:{} };
+        const page = data?.page ?? { limit:state.limit, offset:0, total:0 };
+
+        document.getElementById("uo-tiles").innerHTML = [
+          ["Unadopted", sum.total], ["Never adopted", sum.neverAdopted], ["Un-adopted", sum.unAdopted],
+        ].map(([l,v]) => `<div class="uo-tile"><div class="uo-tile-label">${SC.esc(String(l))}</div><div class="uo-tile-value">${SC.esc(String(v))}</div></div>`).join("");
+
+        renderChips("uo-facet-source", "Source", facets.bySource, "source", state.source);
+        renderChips("uo-facet-standard", "Standard", facets.byStandard, "standard", state.standard);
+
+        if (sum.total === 0) {
+          tableEl.innerHTML = `<div class="uo-done">✓ Every knowledge-base obligation is adopted.</div>`;
+          pagerEl.innerHTML = "";
+          return;
+        }
+
         SC.renderTable({
           container: tableEl,
-          headers: ["ID", "Domain", "Owner", "Requirement", ""],
+          headers: ["ID", "Source", "Standard", "Requirement", ""],
           rows: rows.map(o => ({ data:o, cells: [
-            `<a href="/obligation.html?id=${encodeURIComponent(o.id)}" style="font-family:var(--font-mono);font-size:0.82em;color:var(--color-accent);text-decoration:none" onclick="event.stopPropagation()">${SC.esc(o.id)}</a>`,
-            `<span style="font-size:12px">${SC.esc((o.domain||"").replace(/^Domain\s+/, ""))}</span>`,
-            SC.esc(o.owner || "—"),
-            `<span style="color:var(--color-text-secondary);font-size:12.5px">${SC.esc((o.requirement||"").slice(0,90))}${(o.requirement||"").length>90?"…":""}</span>`,
+            `<a href="/obligation.html?id=${encodeURIComponent(o.id)}" style="font-family:var(--font-mono);font-size:0.8em;color:var(--color-accent);text-decoration:none" onclick="event.stopPropagation()">${SC.esc(o.id)}</a>`,
+            `<span class="uo-src ${o.source==="bcbs"?"bcbs":"register"}">${SC.esc(o.source)}</span>`,
+            `<span style="font-size:12px">${SC.esc(o.standard||"—")}</span>`,
+            `<span style="color:var(--color-text-secondary);font-size:12.5px">${SC.esc((o.requirement||"").slice(0,100))}${(o.requirement||"").length>100?"…":""}</span>`,
             o.previouslyAdopted ? `<span class="uo-prev">un-adopted</span>` : "",
           ]})),
           onRowClick: o => { location.href = "/obligation.html?id=" + encodeURIComponent(o.id); },
           emptyMessage: "No obligations match",
         });
+
+        const from = page.total === 0 ? 0 : page.offset + 1;
+        const to = Math.min(page.offset + page.limit, page.total);
+        const hasPrev = page.offset > 0;
+        const hasNext = page.offset + page.limit < page.total;
+        pagerEl.innerHTML =
+          `<button id="uo-prev" ${hasPrev?"":"disabled"}>‹ Prev</button>` +
+          `<span>${from}–${to} of ${page.total}</span>` +
+          `<button id="uo-next" ${hasNext?"":"disabled"}>Next ›</button>`;
+        const prev = document.getElementById("uo-prev"), next = document.getElementById("uo-next");
+        if (prev) prev.addEventListener("click", () => { state.offset = Math.max(0, state.offset - state.limit); load(); });
+        if (next) next.addEventListener("click", () => { state.offset = state.offset + state.limit; load(); });
       }
-      document.getElementById("uo-search").addEventListener("input", e => { query = e.target.value; render(); });
-      render();
+
+      let t;
+      document.getElementById("uo-search").addEventListener("input", e => {
+        state.q = e.target.value; state.offset = 0;
+        clearTimeout(t); t = setTimeout(load, 200);
+      });
+      load();
     })();
   </script>
 </body>
