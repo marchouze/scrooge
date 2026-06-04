@@ -1,14 +1,15 @@
 // prototype/scripts/backfill-obligations.ts
 //
 // Backfill the bank-obligation register into events (Plane B,
-// D-REGULATORY-ARCHITECTURE-TWO-PLANE). Reads the canonical
-// Regulations/_obligations-register.md and emits one ObligationAdopted event
-// per ORG-* row that does not already have one. Idempotent: re-running emits
-// nothing once every row is adopted.
+// D-REGULATORY-ARCHITECTURE-TWO-PLANE). Reads the canonical authored origin
+// Regulations/_obligations.seed.json and emits one ObligationAdopted event per
+// row that does not already have one. Idempotent: re-running emits nothing once
+// every row is adopted.
 //
 // Wired into `ci:migrate` so the event-sourced obligation register is
-// deterministically reconstructable in CI (the markdown is the committed origin
-// during the transition; PR B replaces it with a committed JSON seed).
+// deterministically reconstructable in CI. The seed JSON is the authored origin;
+// the legacy markdown register is a parity-checked render (recon:obligations-
+// seed-parity).
 //
 // Run from prototype/: bun run scripts/backfill-obligations.ts
 //
@@ -21,9 +22,20 @@ import { eventStore } from "../platform/composition";
 import { makeObligationAdopted } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { ObligationAdoptedPayload } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { Actor } from "../platform/event-store/types";
-import { parseObligationsRegister } from "../platform/regulatory/obligation-linker";
 
-const REGISTER_PATH = resolve(import.meta.dir, "../../Regulations/_obligations-register.md");
+/** A row of the committed obligations seed (the canonical authored origin). */
+interface SeedRow {
+  id: string;
+  urn?: string;
+  citation?: string;
+  requirement?: string;
+  fulfilmentPolicy?: string;
+  owner?: string;
+  reviewStatus?: string;
+  section?: string;
+}
+
+const SEED_PATH = resolve(import.meta.dir, "../../Regulations/_obligations.seed.json");
 const ADOPTED_AT = "2026-06-04T00:00:00Z"; // deterministic backfill stamp
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR: Actor = { type: "service", id: "agent:mira:obligations-backfill" };
@@ -43,8 +55,7 @@ function existingAdoptedIds(): Set<string> {
 }
 
 function main(): void {
-  const md = readFileSync(REGISTER_PATH, "utf8");
-  const rows = parseObligationsRegister(md);
+  const rows = JSON.parse(readFileSync(SEED_PATH, "utf8")) as SeedRow[];
   const already = existingAdoptedIds();
 
   let emitted = 0;
@@ -53,7 +64,7 @@ function main(): void {
     const payload: ObligationAdoptedPayload = {
       obligationId: row.id,
       urn: row.urn ?? "",
-      domain: row.domain ?? "",
+      domain: row.section ?? "",
       citation: row.citation ?? "",
       requirement: row.requirement ?? "",
       fulfilmentPolicy: row.fulfilmentPolicy ?? "",
