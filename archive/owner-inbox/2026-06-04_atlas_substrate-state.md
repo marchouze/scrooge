@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-04T09:00:01.221Z
+asOf: 2026-06-04T10:00:15.225Z
 decision-required: false
 ---
 
@@ -9,31 +9,31 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 67686 events across 149 types; 31/31 personas have operating specs; 130 runtime handlers registered; 608 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 67842 events across 149 types; 31/31 personas have operating specs; 130 runtime handlers registered; 608 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 67686
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 67842
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `SubstrateAgentRunStarted` | 9747 | 2026-05-25 | 2026-06-04 |
-| `SubstrateAgentRunCompleted` | 9577 | 2026-05-25 | 2026-06-04 |
-| `BusDispatched` | 8234 | 2026-05-25 | 2026-06-04 |
-| `LegacyFanoutShadowed` | 4963 | 2026-05-25 | 2026-06-04 |
+| `SubstrateAgentRunStarted` | 9781 | 2026-05-25 | 2026-06-04 |
+| `SubstrateAgentRunCompleted` | 9611 | 2026-05-25 | 2026-06-04 |
+| `BusDispatched` | 8268 | 2026-05-25 | 2026-06-04 |
+| `LegacyFanoutShadowed` | 4996 | 2026-05-25 | 2026-06-04 |
 | `Decision` | 2726 | 2026-04-30 | 2026-06-04 |
 | `RiskRaised` | 2511 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 1732 | 2026-05-07 | 2026-06-04 |
-| `DashboardProjectionRefreshed` | 1612 | 2026-05-25 | 2026-06-04 |
+| `WorkstreamRegistered` | 1740 | 2026-05-07 | 2026-06-04 |
+| `DashboardProjectionRefreshed` | 1621 | 2026-05-25 | 2026-06-04 |
 | `RecordFiled` | 1427 | 2026-05-05 | 2026-06-04 |
 | `SubstrateAlert` | 1182 | 2025-01-01 | 2026-06-04 |
 | `CalculationPerformed` | 954 | 2026-06-01 | 2026-06-04 |
-| `ScheduledTrigger` | 861 | 2026-05-25 | 2026-06-04 |
+| `ScheduledTrigger` | 862 | 2026-05-25 | 2026-06-04 |
 | `BacktestRequested` | 816 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 769 | 2026-05-09 | 2026-05-09 |
 | `ReconResult` | 756 | 2026-05-07 | 2026-06-04 |
-| `AgentGoalEvaluated` | 701 | 2026-05-25 | 2026-06-04 |
+| `AgentGoalEvaluated` | 702 | 2026-05-25 | 2026-06-04 |
 | `MarketsProjectionRefreshed` | 585 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 550 | 2026-05-25 | 2026-06-02 |
 | `OfficialMarkAdopted` | 502 | 2026-05-28 | 2026-06-03 |
@@ -44,10 +44,10 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 67686
 | `AgentRunStarted` | 282 | 2026-05-10 | 2026-06-04 |
 | `AgentPerformanceEvaluated` | 277 | 2026-05-25 | 2026-06-04 |
 | `AgentFeedbackIssued` | 277 | 2026-05-25 | 2026-06-04 |
-| `AgentGoalSelected` | 247 | 2026-05-25 | 2026-06-04 |
+| `AgentGoalSelected` | 248 | 2026-05-25 | 2026-06-04 |
 | `AuditFinding` | 227 | 2026-05-07 | 2026-05-30 |
 | `AuditFindingClosed` | 227 | 2026-06-02 | 2026-06-02 |
-| `SubstrateStateSnapshot` | 216 | 2026-05-07 | 2026-06-04 |
+| `SubstrateStateSnapshot` | 217 | 2026-05-07 | 2026-06-04 |
 | `M1CitationTrancheRegistered` | 180 | 2026-05-09 | 2026-05-09 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `SubstrateAgentRunFailed` | 165 | 2026-05-25 | 2026-06-04 |
@@ -322,7 +322,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbhwpWWmE5Z9S9sNLNrCx"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cbi2QnuAR5KHniQYoWk5T"})._
 
 ## Provenance
 
