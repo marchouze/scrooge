@@ -354,9 +354,18 @@ function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligat
           continue;
         }
         const provenance = n.provenance ?? fileProvenance;
+        // Preserve the obligation's descriptive top-level fields (actionSummary
+        // is the actual requirement text, obligationType the normative force) —
+        // upsertNode only persists id/label/metadata, so fold them into metadata
+        // or they are lost. The adoption surface reads them from the node.
+        const raw = n as unknown as Record<string, unknown>;
+        const descriptive: GraphNodeMetadata = {};
+        for (const k of ["actionSummary", "obligationType", "actor"]) {
+          if (typeof raw[k] === "string") descriptive[k] = raw[k] as string;
+        }
         upsertNode({
           ...n,
-          metadata: { ...(n.metadata ?? {}), ...provenanceMeta(provenance) },
+          metadata: { ...(n.metadata ?? {}), ...descriptive, ...provenanceMeta(provenance) },
         });
         result.nodes++;
       }

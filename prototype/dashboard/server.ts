@@ -115,6 +115,7 @@ import {
   emitExpectedEventGapAlerts,
 } from "../platform/model-registry/expected-event-watchdog";
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
+import { findKnowledgeBaseObligation } from "../platform/obligations/knowledge-base";
 import {
   classifyUnmarkable,
   computeDailyPnL,
@@ -1795,15 +1796,15 @@ async function handleObligationAdopt(req: Request): Promise<Response> {
   const parsed = await obligationActionBody(req);
   if (!parsed) return jsonResponse({ error: "body must be { id }" }, 400);
   const { id, actorId } = parsed;
+  // Prefer the authored seed row; otherwise adopt straight from the knowledge
+  // base (BCBS / extracted source obligations). The bank obligation derives from
+  // the source provision (the DERIVES_FROM bridge); owner / fulfilment policy are
+  // assigned later via lifecycle transitions ("adopt now, refine later").
   const row = loadObligationSeed(REPO_ROOT).find((r) => r.id === id);
-  if (!row) return jsonResponse({ error: `unknown obligation "${id}"` }, 404);
   const now = nowUtc();
-  const evt = makeObligationAdopted({
-    asOf: now,
-    entity: "LE-ZA-HOZ-BANK",
-    actor: { type: "human", id: actorId },
-    citations: ["D-REGULATORY-ARCHITECTURE-TWO-PLANE", "P1-EVENTS-AS-TRUTH"],
-    payload: {
+  let payload: Parameters<typeof makeObligationAdopted>[0]["payload"];
+  if (row) {
+    payload = {
       obligationId: row.id,
       urn: row.urn ?? "",
       domain: row.section ?? "",
@@ -1813,7 +1814,29 @@ async function handleObligationAdopt(req: Request): Promise<Response> {
       owner: row.owner ?? "",
       status: row.reviewStatus || "active",
       adoptedAt: now,
-    },
+    };
+  } else {
+    const kb = findKnowledgeBaseObligation(id);
+    if (!kb) return jsonResponse({ error: `unknown obligation "${id}"` }, 404);
+    payload = {
+      obligationId: kb.key,
+      urn: kb.nodeId,
+      domain: kb.domain || kb.standard,
+      citation: kb.citation,
+      requirement: kb.requirement,
+      fulfilmentPolicy: "",
+      owner: "",
+      status: "adopted",
+      derivesFrom: kb.sourceProvision ? [kb.sourceProvision] : [],
+      adoptedAt: now,
+    };
+  }
+  const evt = makeObligationAdopted({
+    asOf: now,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "human", id: actorId },
+    citations: ["D-REGULATORY-ARCHITECTURE-TWO-PLANE", "P1-EVENTS-AS-TRUTH"],
+    payload,
   });
   eventStore.append(evt);
   logger.info({ id, actorId }, "ObligationAdopted emitted via dashboard");
@@ -2783,9 +2806,20 @@ const server = Bun.serve({
       return jsonResponse(getObligationReadersView(resolve(REPO_ROOT, "prototype")));
     }
     if (url.pathname === "/api/unadopted-obligations" && req.method === "GET") {
-      // Seed obligations not currently adopted — candidates for adoption.
+      // Knowledge-base obligations not currently adopted — candidates for
+      // adoption (Unadopted = knowledge base − adopted + un-adopted). Sourced
+      // from the reference graph, with server-side facets + paging.
+      const sp = url.searchParams;
+      const limit = Number.parseInt(sp.get("limit") ?? "", 10);
+      const offset = Number.parseInt(sp.get("offset") ?? "", 10);
       return jsonResponse({
-        ...getUnadoptedObligationsView(eventStore, REPO_ROOT),
+        ...getUnadoptedObligationsView(eventStore, {
+          source: sp.get("source") ?? undefined,
+          standard: sp.get("standard") ?? undefined,
+          q: sp.get("q") ?? undefined,
+          limit: Number.isNaN(limit) ? undefined : limit,
+          offset: Number.isNaN(offset) ? undefined : offset,
+        }),
         pageProvenance: productionReferencePageProvenance(),
       });
     }
