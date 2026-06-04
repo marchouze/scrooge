@@ -145,6 +145,10 @@ import { runObligationReviewStatusRecon } from "../platform/recon/obligation-rev
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
 
 import {
+  makeObligationAdopted,
+  makeObligationLifecycleTransitioned,
+} from "../platform/event-store/event-types/obligation-lifecycle";
+import {
   currentBankModePolicy,
   syncBankModeToLifecyclePhase,
 } from "../platform/projections/bank-mode";
@@ -171,7 +175,12 @@ import { runAgent } from "../runtime/run";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
-import { getBankObligationsView } from "./bank-obligations-view";
+import {
+  getBankObligationsView,
+  getObligationDetail,
+  getUnadoptedObligationsView,
+  loadObligationSeed,
+} from "./bank-obligations-view";
 import { registerBondGatewayRoutes } from "./bond-gateway";
 import { buildConfigView } from "./config-view";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
@@ -1763,6 +1772,72 @@ async function handleProductApprove(req: Request): Promise<Response> {
  * skip takes effect on the next server boot (boot seeds run once at startup);
  * the response says so explicitly rather than implying an immediate effect.
  */
+async function obligationActionBody(req: Request): Promise<{ id: string; actorId: string } | null> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return null;
+  }
+  if (typeof raw !== "object" || raw === null) return null;
+  const body = raw as Record<string, unknown>;
+  const id = typeof body.id === "string" ? body.id.trim() : "";
+  if (!id) return null;
+  const actorId =
+    typeof body.actor === "string" && body.actor.trim().length > 0
+      ? body.actor.trim()
+      : "marc@tgv.co.za";
+  return { id, actorId };
+}
+
+/** POST /api/obligations/adopt — the bank adopts a (seed) obligation: emits ObligationAdopted. */
+async function handleObligationAdopt(req: Request): Promise<Response> {
+  const parsed = await obligationActionBody(req);
+  if (!parsed) return jsonResponse({ error: "body must be { id }" }, 400);
+  const { id, actorId } = parsed;
+  const row = loadObligationSeed(REPO_ROOT).find((r) => r.id === id);
+  if (!row) return jsonResponse({ error: `unknown obligation "${id}"` }, 404);
+  const now = nowUtc();
+  const evt = makeObligationAdopted({
+    asOf: now,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "human", id: actorId },
+    citations: ["D-REGULATORY-ARCHITECTURE-TWO-PLANE", "P1-EVENTS-AS-TRUTH"],
+    payload: {
+      obligationId: row.id,
+      urn: row.urn ?? "",
+      domain: row.section ?? "",
+      citation: row.citation ?? "",
+      requirement: row.requirement ?? "",
+      fulfilmentPolicy: row.fulfilmentPolicy ?? "",
+      owner: row.owner ?? "",
+      status: row.reviewStatus || "active",
+      adoptedAt: now,
+    },
+  });
+  eventStore.append(evt);
+  logger.info({ id, actorId }, "ObligationAdopted emitted via dashboard");
+  return jsonResponse({ ok: true, eventId: evt.event_id, id }, 201);
+}
+
+/** POST /api/obligations/unadopt — the bank rejects/un-adopts an obligation. */
+async function handleObligationUnadopt(req: Request): Promise<Response> {
+  const parsed = await obligationActionBody(req);
+  if (!parsed) return jsonResponse({ error: "body must be { id }" }, 400);
+  const { id, actorId } = parsed;
+  const now = nowUtc();
+  const evt = makeObligationLifecycleTransitioned({
+    asOf: now,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "human", id: actorId },
+    citations: ["D-REGULATORY-ARCHITECTURE-TWO-PLANE", "P1-EVENTS-AS-TRUTH"],
+    payload: { obligationId: id, transition: "un-adopted", toStatus: "un-adopted", at: now },
+  });
+  eventStore.append(evt);
+  logger.info({ id, actorId }, "Obligation un-adopted via dashboard");
+  return jsonResponse({ ok: true, eventId: evt.event_id, id }, 201);
+}
+
 async function handleSeedDescope(req: Request): Promise<Response> {
   let raw: unknown;
   try {
@@ -2706,6 +2781,28 @@ const server = Bun.serve({
       // Migration tracker — codebase files still reading the legacy obligations
       // markdown, grouped by area. Self-updating as readers migrate.
       return jsonResponse(getObligationReadersView(resolve(REPO_ROOT, "prototype")));
+    }
+    if (url.pathname === "/api/unadopted-obligations" && req.method === "GET") {
+      // Seed obligations not currently adopted — candidates for adoption.
+      return jsonResponse({
+        ...getUnadoptedObligationsView(eventStore, REPO_ROOT),
+        pageProvenance: productionReferencePageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/obligation" && req.method === "GET") {
+      // Single-obligation detail (reference seed + projection state + lifecycle
+      // history) for the drill-down + adopt/un-adopt actions.
+      const id = url.searchParams.get("id") ?? "";
+      if (!id) return jsonResponse({ error: "id is required" }, 400);
+      const detail = getObligationDetail(eventStore, REPO_ROOT, id);
+      if (!detail) return jsonResponse({ error: `unknown obligation "${id}"` }, 404);
+      return jsonResponse(detail);
+    }
+    if (url.pathname === "/api/obligations/adopt" && req.method === "POST") {
+      return handleObligationAdopt(req);
+    }
+    if (url.pathname === "/api/obligations/unadopt" && req.method === "POST") {
+      return handleObligationUnadopt(req);
     }
     if (url.pathname === "/api/procedures" && req.method === "GET") {
       // Procedures index — every row of `Procedures/_index.md` grouped by

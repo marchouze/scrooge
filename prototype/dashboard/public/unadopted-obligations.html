@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unadopted Obligations — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .uo-banner { font:var(--text-caption); color:var(--color-text-secondary);
+      background:var(--color-surface); border:1px solid var(--color-border); border-left:3px solid #b45309;
+      border-radius:var(--radius-md); padding:var(--space-3) var(--space-4); margin-bottom:var(--space-5); }
+    .uo-tiles { display:flex; flex-wrap:wrap; gap:var(--space-3); margin-bottom:var(--space-5); }
+    .uo-tile { flex:1 1 150px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-4); }
+    .uo-tile-label { font:var(--text-caption); color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:0.04em; }
+    .uo-tile-value { font:var(--text-display); color:var(--color-text-primary); margin-top:4px; }
+    #uo-search { width:100%; max-width:360px; padding:var(--space-2) var(--space-3); border:1px solid var(--color-border);
+      border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-text-primary); font:var(--text-body); margin-bottom:var(--space-4); }
+    .uo-done { font:var(--text-h1); color:#15803d; text-align:center; padding:var(--space-8); }
+    .uo-prev { display:inline-block; padding:2px 8px; border-radius:10px; background:#fef3c7; color:#b45309; font:var(--text-caption); font-weight:600; }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Unadopted Obligations</h1></div>
+    <div class="page-body">
+      <div class="uo-banner">
+        Seed obligations the bank has <strong>not currently adopted</strong> — candidates for adoption
+        (<code>D-REGULATORY-ARCHITECTURE-TWO-PLANE</code>). Click an obligation to review and <strong>Adopt</strong> it.
+        Adopted obligations live on <a href="/bank-obligations.html" style="color:var(--color-accent)">Bank Obligations</a>.
+      </div>
+      <div class="uo-tiles" id="uo-tiles"></div>
+      <input id="uo-search" type="search" placeholder="Search id, owner, requirement…" autocomplete="off">
+      <div id="uo-table"></div>
+    </div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Unadopted Obligations" });
+    (async () => {
+      async function sf(u){ try{const r=await fetch(u,{headers:{Accept:"application/json"}});return r.ok?r.json():null;}catch{return null;} }
+      document.getElementById("uo-table").innerHTML = SC.renderSkeleton(6);
+      const data = await sf("/api/unadopted-obligations");
+      const all = data?.obligations ?? [];
+      const sum = data?.summary ?? { total:0, neverAdopted:0, unAdopted:0 };
+
+      document.getElementById("uo-tiles").innerHTML = [
+        ["Unadopted", sum.total], ["Never adopted", sum.neverAdopted], ["Un-adopted", sum.unAdopted],
+      ].map(([l,v]) => `<div class="uo-tile"><div class="uo-tile-label">${SC.esc(String(l))}</div><div class="uo-tile-value">${SC.esc(String(v))}</div></div>`).join("");
+
+      const tableEl = document.getElementById("uo-table");
+      if (all.length === 0) {
+        tableEl.innerHTML = `<div class="uo-done">✓ Every seed obligation is adopted.</div>`;
+        return;
+      }
+      let query = "";
+      function render() {
+        const q = query.trim().toLowerCase();
+        const rows = all.filter(o => !q || [o.id,o.owner,o.requirement,o.domain].some(v => (v||"").toLowerCase().includes(q)));
+        SC.renderTable({
+          container: tableEl,
+          headers: ["ID", "Domain", "Owner", "Requirement", ""],
+          rows: rows.map(o => ({ data:o, cells: [
+            `<a href="/obligation.html?id=${encodeURIComponent(o.id)}" style="font-family:var(--font-mono);font-size:0.82em;color:var(--color-accent);text-decoration:none" onclick="event.stopPropagation()">${SC.esc(o.id)}</a>`,
+            `<span style="font-size:12px">${SC.esc((o.domain||"").replace(/^Domain\s+/, ""))}</span>`,
+            SC.esc(o.owner || "—"),
+            `<span style="color:var(--color-text-secondary);font-size:12.5px">${SC.esc((o.requirement||"").slice(0,90))}${(o.requirement||"").length>90?"…":""}</span>`,
+            o.previouslyAdopted ? `<span class="uo-prev">un-adopted</span>` : "",
+          ]})),
+          onRowClick: o => { location.href = "/obligation.html?id=" + encodeURIComponent(o.id); },
+          emptyMessage: "No obligations match",
+        });
+      }
+      document.getElementById("uo-search").addEventListener("input", e => { query = e.target.value; render(); });
+      render();
+    })();
+  </script>
+</body>
+</html>

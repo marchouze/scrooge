@@ -31,9 +31,14 @@ export interface BankObligation {
   /** Source-obligation URN(s) this bank obligation derives from (DERIVES_FROM). */
   readonly derivesFrom: readonly string[];
   readonly adoptedAt: string;
+  /** True while the bank is currently bound by the obligation; false once un-adopted/retired/superseded. */
+  readonly adopted: boolean;
   /** Most recent lifecycle transition, if any. */
   readonly lastTransition?: { readonly transition: string; readonly at: string };
 }
+
+/** Lifecycle transitions that end the bank's adoption of an obligation. */
+const UN_ADOPTING = new Set(["un-adopted", "retired", "superseded"]);
 
 /**
  * Fold obligation-lifecycle events into the current bank-obligation register.
@@ -59,6 +64,7 @@ export function buildBankObligations(events: Iterable<Event>): BankObligation[] 
         status: p.status,
         derivesFrom: p.derivesFrom ?? [],
         adoptedAt: p.adoptedAt,
+        adopted: true,
       });
     } else if (ev.type === "ObligationLifecycleTransitioned") {
       const p = ev.payload as ObligationLifecycleTransitionedPayload;
@@ -67,6 +73,7 @@ export function buildBankObligations(events: Iterable<Event>): BankObligation[] 
       byId.set(p.obligationId, {
         ...existing,
         status: p.toStatus ?? existing.status,
+        adopted: UN_ADOPTING.has(p.transition) ? false : existing.adopted,
         lastTransition: { transition: p.transition, at: p.at },
       });
     }

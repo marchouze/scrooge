@@ -98,8 +98,8 @@
         SC.renderTable({
           container: document.getElementById("bo-table"),
           headers: ["ID", "Domain", "Owner", "Status", "Fulfilment policy", "Source"],
-          rows: rows.map(o => ({ cells: [
-            `<code style="font-family:var(--font-mono);font-size:0.82em">${SC.esc(o.id)}</code>`,
+          rows: rows.map(o => ({ data: o, cells: [
+            `<a href="/obligation.html?id=${encodeURIComponent(o.id)}" style="font-family:var(--font-mono);font-size:0.82em;color:var(--color-accent);text-decoration:none" onclick="event.stopPropagation()">${SC.esc(o.id)}</a>`,
             `<span style="font-size:12px">${SC.esc((o.domain||"").replace(/^Domain\s+/, ""))}</span>`,
             SC.esc(o.owner || "—"),
             SC.renderBadge(o.status || ""),
@@ -108,6 +108,7 @@
               ? `<span class="bo-derives">${SC.esc(o.derivesFrom[0])}${o.derivesFrom.length>1?` +${o.derivesFrom.length-1}`:""}</span>`
               : `<span class="bo-muted">—</span>`,
           ]})),
+          onRowClick: o => { location.href = "/obligation.html?id=" + encodeURIComponent(o.id); },
           emptyMessage: "No obligations match",
         });
       }
