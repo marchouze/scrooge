@@ -10,6 +10,8 @@ citations: [Principles/2-single-graph-discipline.md, Principles/6-autonomous-by-
 
 This document is the canonical human-readable specification of the regulatory knowledge graph ontology used by the HOZ Bank regulatory analysis engine. The machine-readable contract lives in `prototype/platform/regulatory/graph/ontology-schema.ts`; this file is the explanatory companion and future-LLM-prompt source.
 
+> **Two-plane context** (`D-REGULATORY-ARCHITECTURE-TWO-PLANE`, see `../architecture.md`). This ontology is the schema of **Plane A — Regulatory Knowledge**: reference data describing what regulations say (regulators, documents, provisions, source obligations). It is fed by *pluggable* extractors (LLM, scripts, agents, humans) that all emit the one `RegulatoryExtractionArtefact` contract (`../extraction-contract.ts`) with provenance, and loaded by the single loader `seed-projection.ts`. The bank's **adoption** of an obligation is an *event* (Plane B), not part of this reference graph. Two edges bridge/close the chain and are added to the typed schema in the phase that first seeds them: **`DERIVES_FROM`** (bank obligation → source obligation) and **`REALISES`** (capability → obligation).
+
 ---
 
 ## Design rationale: the Provision/Obligation split

@@ -10,6 +10,27 @@ The event log is the single durable artefact of the bank. Nothing else is author
 
 ---
 
+## What is *not* an event — reference data
+
+Not every real-world datum is an event. An event is a **fact that occurred** or a
+**recognition decision the bank made** — something that drives action and has a
+lifecycle. Standing reference data the bank *consults* is not an event:
+
+- A market-data **tick** is not an event; the bank's **adoption of a closing rate**
+  (`OfficialMarkAdopted`) is.
+- A **regulation**, its LLM/script/agent/human **interpretation**, and the
+  **derived regulatory graph** are reference data; the bank's **decision to accept
+  an obligation** (`ObligationAdopted`) is the event.
+
+Reference data is re-derivable and versioned, held in its own canonical store (a
+content-addressed blob, a projection-derived graph), and outranked by events only
+where it has been *adopted* into a recognition decision. Modelling reference data
+as events would flood the log with non-decisions and couple bank state to external
+feeds. See `prototype/platform/regulatory/architecture.md` (two-plane model,
+`D-REGULATORY-ARCHITECTURE-TWO-PLANE`) for the regulatory application.
+
+---
+
 ## Event taxonomy
 
 ### Primary events
