@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Obligation Readers — Migration — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .or-banner {
+      font: var(--text-caption); color: var(--color-text-secondary);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-left: 3px solid #f59e0b;
+      border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .or-progress-wrap { margin-bottom: var(--space-6); }
+    .or-progress-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
+    .or-progress-count { font: var(--text-display); color: var(--color-text-primary); }
+    .or-progress-label { font: var(--text-caption); color: var(--color-text-secondary); }
+    .or-bar { height: 10px; background: var(--color-surface-raised); border-radius: 6px; overflow: hidden; border: 1px solid var(--color-border); }
+    .or-bar-fill { height: 100%; background: #f59e0b; }
+    .or-group { margin-bottom: var(--space-6); }
+    .or-group h3 {
+      font: var(--text-h2); color: var(--color-text-primary); margin: 0 0 var(--space-3);
+      padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-border);
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .or-group h3 .or-cat-count { font: var(--text-caption); color: var(--color-text-secondary); }
+    .or-file {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-border);
+      font-family: var(--font-mono); font-size: 0.82em; color: var(--color-text-primary);
+    }
+    .or-file:last-child { border-bottom: none; }
+    .or-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; flex: 0 0 auto; }
+    .or-done { font: var(--text-h1); color: #16a34a; text-align: center; padding: var(--space-8); }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Obligation Readers — Migration</h1></div>
+    <div class="page-body">
+      <div class="or-banner" id="or-note"></div>
+      <div class="or-progress-wrap">
+        <div class="or-progress-head">
+          <span class="or-progress-count" id="or-count">…</span>
+          <span class="or-progress-label">legacy readers still on the markdown</span>
+        </div>
+        <div class="or-bar"><div class="or-bar-fill" id="or-bar" style="width:100%"></div></div>
+      </div>
+      <div id="or-groups"></div>
+    </div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Obligation Readers" });
+    (async () => {
+      async function sf(u) {
+        try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; }
+        catch { return null; }
+      }
+      const data = await sf("/api/obligation-readers");
+      const total = data?.total ?? 0;
+      document.getElementById("or-note").textContent = data?.note ?? "";
+      document.getElementById("or-count").textContent = String(total);
+      // Bar shrinks toward 0 as readers migrate (assume ~50 at the start of the cut).
+      const START = 50;
+      document.getElementById("or-bar").style.width = `${Math.min(100, Math.round((total / START) * 100))}%`;
+
+      const groupsEl = document.getElementById("or-groups");
+      if (total === 0) {
+        groupsEl.innerHTML = `<div class="or-done">✓ All readers migrated — the markdown can be retired.</div>`;
+        return;
+      }
+      groupsEl.innerHTML = (data?.byCategory ?? []).map(g => `
+        <div class="or-group">
+          <h3>${SC.esc(g.category)} <span class="or-cat-count">${g.count} to migrate</span></h3>
+          ${g.readers.map(r => `<div class="or-file"><span class="or-dot"></span>${SC.esc(r.path)}</div>`).join("")}
+        </div>
+      `).join("");
+    })();
+  </script>
+</body>
+</html>

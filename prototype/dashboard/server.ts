@@ -171,6 +171,7 @@ import { runAgent } from "../runtime/run";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
+import { getBankObligationsView } from "./bank-obligations-view";
 import { registerBondGatewayRoutes } from "./bond-gateway";
 import { buildConfigView } from "./config-view";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
@@ -198,6 +199,7 @@ import {
   quoteOnly,
   quoteRfq,
 } from "./markets-fx-trade";
+import { getObligationReadersView } from "./obligation-readers-view";
 import { getObligationsView } from "./obligations-view";
 import { buildOnboardingView } from "./onboarding-view";
 import {
@@ -2689,6 +2691,21 @@ const server = Bun.serve({
         ...getObligationsView(REPO_ROOT),
         pageProvenance: productionReferencePageProvenance(),
       });
+    }
+    if (url.pathname === "/api/bank-obligations" && req.method === "GET") {
+      // Event-sourced bank-obligation register — folded from the ObligationAdopted
+      // lifecycle events (Plane B, D-REGULATORY-ARCHITECTURE-TWO-PLANE). The
+      // canonical obligations viewer; the legacy /api/obligations (markdown) is
+      // tracked for migration on /obligation-readers.html.
+      return jsonResponse({
+        ...getBankObligationsView(eventStore),
+        pageProvenance: productionReferencePageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/obligation-readers" && req.method === "GET") {
+      // Migration tracker — codebase files still reading the legacy obligations
+      // markdown, grouped by area. Self-updating as readers migrate.
+      return jsonResponse(getObligationReadersView(resolve(REPO_ROOT, "prototype")));
     }
     if (url.pathname === "/api/procedures" && req.method === "GET") {
       // Procedures index — every row of `Procedures/_index.md` grouped by
