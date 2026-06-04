@@ -224,6 +224,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: PROC-PAY-RBH-01, P4-SECURITY-DESIGNED-IN.
   "runtime/agents/bea-gl-posting-engine.test.ts",
+  // Bank-obligation projection unit test — co-located per-module test
+  // convention. Raw EventStore is a build-phase test fixture for the
+  // obligation-lifecycle fold, not a production access path. T-01 carve-out.
+  // Citation: D-REGULATORY-ARCHITECTURE-TWO-PLANE, P4-SECURITY-DESIGNED-IN.
+  "platform/obligations/projection.test.ts",
   // Goal-loop helper unit tests — co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for event-reactive
   // candidate assertion, not a production access path. T-01 carve-out.

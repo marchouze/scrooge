@@ -253,6 +253,7 @@ export * from "./ifrs-policy-thresholds";
 //   session delegation); D-KG-GRAPHITI-ADOPT; P2-SINGLE-GRAPH-DISCIPLINE.
 // Author: Atlas (Core banking platform architect, engineering).
 export * from "./obligation-review";
+export * from "./obligation-lifecycle";
 // WS1-PR1a — Repo / MMD / IBL treasury instrument event types.
 // RepoTradeOpened, RepoStartLegSettled, RepoInterestAccrued,
 //   RepoMarginCallIssued, RepoEndLegSettled, RepoTradeTerminatedEarly,
@@ -440,6 +441,7 @@ import { LIQUIDITY_LIMIT_TYPED_EVENT_TYPES } from "./liquidity-limit";
 import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
 import { MODEL_RISK_TYPED_EVENT_TYPES } from "./model-risk";
 import { MTM_TYPED_EVENT_TYPES } from "./mtm";
+import { OBLIGATION_LIFECYCLE_TYPED_EVENT_TYPES } from "./obligation-lifecycle";
 import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
 import { ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES } from "./odp-portfolio-recon";
 import { ODP_UMOJA_UTI_TYPED_EVENT_TYPES } from "./odp-umoja-uti";
@@ -594,6 +596,7 @@ export const TYPED_EVENT_TYPES = [
   // Authority: D-OBLIGATION-REVIEW-SUBSTRATE (CEO-approved 2026-05-21 via
   //   session delegation); D-KG-GRAPHITI-ADOPT; P2-SINGLE-GRAPH-DISCIPLINE.
   ...OBLIGATION_REVIEW_TYPED_EVENT_TYPES,
+  ...OBLIGATION_LIFECYCLE_TYPED_EVENT_TYPES,
   // D-G2-ENTITY-ID-BACKFILL — envelope-axis entity re-tagging audit event.
   // EntityReclassified: records BANK-ZA-001 → LE-ZA-HOZ-BANK migration per entity row.
   // Authority: D-G2-ENTITY-ID-BACKFILL (CEO-approved 2026-05-22,
