@@ -20,6 +20,14 @@ ID conventions (mirroring the project):
 import json, re, sys, os, datetime
 
 EXTRACTED_AT = "2026-06-04T00:00:00Z"
+EXTRACTOR_ID = "build_obligation_graph.py"
+
+# Provenance per the Plane-A ingestion contract
+# (prototype/platform/regulatory/extraction-contract.ts). Every node carries it
+# so the reference graph records who/what/how/when produced each assertion.
+def prov(conf=1.0):
+    return {"extractionMethod": "rule-based", "extractorId": EXTRACTOR_ID,
+            "confidenceScore": round(float(conf), 2), "extractedAt": EXTRACTED_AT}
 
 # ---- normative-language detection -----------------------------------------
 RE_MUSTNOT = re.compile(r'\b(must not|shall not|may not|must never|is prohibited|are prohibited|is not permitted|may in no case)\b', re.I)
@@ -169,6 +177,7 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
     edges = []
     def add_node(n):
         if n['id'] not in nodes:
+            n.setdefault('provenance', prov(n.get('classificationConfidence', 1.0)))
             nodes[n['id']] = n
         return n['id']
     def add_edge(frm, to, etype, conf, method='rule-based', src=None, meta=None):
@@ -311,6 +320,7 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
         'instrumentId': instrument,
         'ontology': 'platform/regulatory/graph/types.ts (GraphNode/GraphEdge)',
         'extractionMethod': 'rule-based',
+        'provenance': prov(1.0),
         'generatedAt': EXTRACTED_AT,
         'source': data.get('source',''),
         'stats': {},

@@ -12,6 +12,12 @@ import { join, resolve } from "node:path";
 import { eventStore } from "../../composition";
 import { nowUtc } from "../../core/types";
 import type { RegulatoryInstrumentRegisteredPayload } from "../../event-store/event-types/regulatory";
+import type {
+  ExtractionProvenance,
+  ProvenancedEdge,
+  ProvenancedNode,
+  RegulatoryExtractionArtefact,
+} from "../extraction-contract";
 import {
   extractSectionIdsFromCitation,
   normaliseInstrumentId,
@@ -27,7 +33,7 @@ import {
 } from "./db";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
-import type { DocumentApplicabilityStatus, GraphEdge, GraphNode } from "./types";
+import type { DocumentApplicabilityStatus, GraphNode, GraphNodeMetadata } from "./types";
 
 // ---------------------------------------------------------------------------
 // Seed stats shape
@@ -285,6 +291,16 @@ function walkMd(dir: string): string[] {
  * inside runSeed() — re-seeding re-imports the obligation graphs. Skips
  * gracefully if the directory is absent (e.g. in a checkout without them).
  */
+/** Flatten provenance into primitive metadata keys (GraphNodeMetadata holds primitives only). */
+function provenanceMeta(p: ExtractionProvenance): GraphNodeMetadata {
+  return {
+    provenanceMethod: p.extractionMethod,
+    provenanceExtractorId: p.extractorId,
+    provenanceConfidence: p.confidenceScore,
+    provenanceExtractedAt: p.extractedAt,
+  };
+}
+
 function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligationGraphs"]> {
   const dir = repoPath("Regulations", "BCBS", "obligation-graphs");
   const result = { standards: 0, nodes: 0, edges: 0, skipped: 0 };
@@ -296,7 +312,7 @@ function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligat
 
   const db = getDb();
   for (const file of files) {
-    let doc: { nodes?: unknown[]; edges?: unknown[] };
+    let doc: RegulatoryExtractionArtefact & { nodes?: unknown[]; edges?: unknown[] };
     try {
       doc = JSON.parse(
         readFileSync(repoPath("Regulations", "BCBS", "obligation-graphs", file), "utf-8"),
@@ -305,8 +321,29 @@ function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligat
       result.skipped++;
       continue;
     }
-    const nodes = Array.isArray(doc.nodes) ? (doc.nodes as GraphNode[]) : [];
-    const edges = Array.isArray(doc.edges) ? (doc.edges as GraphEdge[]) : [];
+
+    // Plane-A ingestion contract: a malformed artefact (missing instrumentId /
+    // extractionMethod, or non-ontology nodes/edges) is rejected wholesale so it
+    // cannot silently pollute the reference graph. The blocking conformance gate
+    // is recon:extraction-provenance; this is the runtime guard.
+    if (!doc.instrumentId || !doc.extractionMethod || !Array.isArray(doc.nodes)) {
+      result.skipped++;
+      continue;
+    }
+
+    // File-level provenance — propagated onto every node so the reference graph
+    // records who/what/how/when produced each assertion (per-node provenance on
+    // the artefact, when present, wins). Edges already carry method/confidence/
+    // extractedAt natively (GraphEdge columns).
+    const fileProvenance: ExtractionProvenance = {
+      extractionMethod: doc.extractionMethod,
+      extractorId: doc.provenance?.extractorId ?? `obligation-graph:${doc.instrumentId}`,
+      confidenceScore: 1,
+      extractedAt: doc.generatedAt ?? now,
+    };
+
+    const nodes = doc.nodes as ProvenancedNode[];
+    const edges = (Array.isArray(doc.edges) ? doc.edges : []) as ProvenancedEdge[];
 
     // Nodes first — graph_edges has an FK to graph_nodes.
     db.exec("BEGIN");
@@ -316,7 +353,11 @@ function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligat
           result.skipped++;
           continue;
         }
-        upsertNode({ ...n, metadata: n.metadata ?? {} });
+        const provenance = n.provenance ?? fileProvenance;
+        upsertNode({
+          ...n,
+          metadata: { ...(n.metadata ?? {}), ...provenanceMeta(provenance) },
+        });
         result.nodes++;
       }
       db.exec("COMMIT");
@@ -332,11 +373,13 @@ function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligat
           result.skipped++;
           continue;
         }
+        const provenance = e.provenance ?? fileProvenance;
         upsertEdge({
           ...e,
-          extractionMethod: e.extractionMethod ?? "rule-based",
+          extractionMethod: e.extractionMethod ?? fileProvenance.extractionMethod,
           confidenceScore: typeof e.confidenceScore === "number" ? e.confidenceScore : 1,
           extractedAt: e.extractedAt ?? now,
+          metadata: { ...(e.metadata ?? {}), ...provenanceMeta(provenance) },
         });
         result.edges++;
       }
