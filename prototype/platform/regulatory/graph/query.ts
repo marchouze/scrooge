@@ -583,6 +583,32 @@ export function getGraphStats(): {
   const documentsByApplicability = {} as Record<DocumentApplicabilityStatus, number>;
   const unimplementedByApplicability = {} as Record<DocumentApplicabilityStatus, number>;
 
+  // Unimplemented obligations grouped by their document's applicability — one
+  // SQL pass (Obligation without CLOSES ← EXPRESSES ← Provision ← CONTAINS ←
+  // Document) instead of a per-obligation walk per status. Counts each
+  // obligation once per applicability status it is reachable from, matching
+  // findUnimplementedObligations(_, [status]).length for each status.
+  const unimplRows = db
+    .prepare(
+      `SELECT json_extract(d.metadata, '$.applicabilityStatus') AS status,
+              COUNT(DISTINCT o.id) AS n
+         FROM graph_nodes o
+         JOIN graph_edges e_exp ON e_exp.to_id = o.id AND e_exp.edge_type = 'EXPRESSES'
+         JOIN graph_nodes p     ON p.id = e_exp.from_id
+         JOIN graph_edges e_con ON e_con.to_id = p.id AND e_con.edge_type = 'CONTAINS'
+         JOIN graph_nodes d     ON d.id = e_con.from_id AND d.node_type = 'Document'
+        WHERE o.node_type = 'Obligation'
+          AND NOT EXISTS (
+            SELECT 1 FROM graph_edges c WHERE c.to_id = o.id AND c.edge_type = 'CLOSES'
+          )
+        GROUP BY status`,
+    )
+    .all() as Array<{ status: string | null; n: number }>;
+  const unimplByStatus = new Map<string, number>();
+  for (const r of unimplRows) {
+    if (r.status) unimplByStatus.set(r.status, r.n);
+  }
+
   for (const status of ALL_APPLICABILITY_STATUSES) {
     const docCount = (
       db
@@ -594,9 +620,7 @@ export function getGraphStats(): {
         .get(status) as { n: number }
     ).n;
     documentsByApplicability[status] = docCount;
-
-    const unimplCount = findUnimplementedObligations(undefined, [status]).length;
-    unimplementedByApplicability[status] = unimplCount;
+    unimplementedByApplicability[status] = unimplByStatus.get(status) ?? 0;
   }
 
   return {
