@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bank Obligations (event-sourced) — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .bo-banner {
+      font: var(--text-caption); color: var(--color-text-secondary);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-accent);
+      border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .bo-tiles { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-5); }
+    .bo-tile {
+      flex: 1 1 150px; background: var(--color-surface);
+      border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+    .bo-tile-label { font: var(--text-caption); color: var(--color-text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em; }
+    .bo-tile-value { font: var(--text-display); color: var(--color-text-primary); margin-top: 4px; }
+    .bo-controls { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; }
+    #bo-search {
+      flex: 1 1 240px; padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-surface); color: var(--color-text-primary); font: var(--text-body);
+    }
+    .bo-derives { font-family: var(--font-mono); font-size: 0.78em; color: var(--color-accent); }
+    .bo-muted { color: var(--color-text-disabled); }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Bank Obligations</h1></div>
+    <div class="page-body">
+      <div class="bo-banner">
+        <strong>Event-sourced.</strong> Folded from the <code>ObligationAdopted</code> lifecycle event stream
+        (Plane B, <code>D-REGULATORY-ARCHITECTURE-TWO-PLANE</code>) via <code>loadBankObligations</code> — the bank's
+        accepted obligations and their current status. The legacy markdown-backed view and the readers still on it
+        are tracked on <a href="/obligation-readers.html" style="color:var(--color-accent)">Obligation Readers</a>.
+      </div>
+      <div class="bo-tiles" id="bo-tiles"></div>
+      <div class="bo-controls">
+        <input id="bo-search" type="search" placeholder="Search id, owner, requirement, policy…" autocomplete="off">
+      </div>
+      <div id="bo-tabs" class="tab-bar" style="margin-bottom:var(--space-4)"></div>
+      <div id="bo-table"></div>
+    </div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Bank Obligations" });
+    (async () => {
+      async function sf(u) {
+        try { const r = await fetch(u, { headers: { Accept: "application/json" } }); return r.ok ? r.json() : null; }
+        catch { return null; }
+      }
+      document.getElementById("bo-table").innerHTML = SC.renderSkeleton(8);
+      const data = await sf("/api/bank-obligations");
+      const all = data?.obligations ?? [];
+      const sum = data?.summary ?? { total: 0, byStatus: {}, withDerivesFrom: 0 };
+
+      // Summary tiles
+      document.getElementById("bo-tiles").innerHTML = [
+        ["Total", sum.total],
+        ["With source link", sum.withDerivesFrom],
+        ...Object.entries(sum.byStatus || {}).sort((a,b)=>b[1]-a[1]).slice(0,4),
+      ].map(([label, value]) =>
+        `<div class="bo-tile"><div class="bo-tile-label">${SC.esc(String(label))}</div><div class="bo-tile-value">${SC.esc(String(value))}</div></div>`
+      ).join("");
+
+      // Status tabs
+      let activeStatus = null, query = "";
+      const statuses = Object.entries(sum.byStatus || {}).sort((a,b)=>b[1]-a[1]);
+      const TABS = [{ label: `All (${all.length})`, filter: null },
+        ...statuses.map(([s,c]) => ({ label: `${s} (${c})`, filter: s }))];
+      const tabsEl = document.getElementById("bo-tabs");
+      tabsEl.innerHTML = TABS.map(t =>
+        `<button class="tab-btn${t.filter===activeStatus?" active":""}" data-filter="${t.filter ?? ""}">${SC.esc(t.label)}</button>`
+      ).join("");
+
+      function render() {
+        const q = query.trim().toLowerCase();
+        const rows = all.filter(o =>
+          (!activeStatus || o.status === activeStatus) &&
+          (!q || [o.id,o.owner,o.requirement,o.fulfilmentPolicy,o.domain].some(v => (v||"").toLowerCase().includes(q)))
+        );
+        SC.renderTable({
+          container: document.getElementById("bo-table"),
+          headers: ["ID", "Domain", "Owner", "Status", "Fulfilment policy", "Source"],
+          rows: rows.map(o => ({ cells: [
+            `<code style="font-family:var(--font-mono);font-size:0.82em">${SC.esc(o.id)}</code>`,
+            `<span style="font-size:12px">${SC.esc((o.domain||"").replace(/^Domain\s+/, ""))}</span>`,
+            SC.esc(o.owner || "—"),
+            SC.renderBadge(o.status || ""),
+            `<span style="font-size:12px;color:var(--color-text-secondary)">${SC.esc((o.fulfilmentPolicy||"").slice(0,60) || "—")}</span>`,
+            (o.derivesFrom && o.derivesFrom.length)
+              ? `<span class="bo-derives">${SC.esc(o.derivesFrom[0])}${o.derivesFrom.length>1?` +${o.derivesFrom.length-1}`:""}</span>`
+              : `<span class="bo-muted">—</span>`,
+          ]})),
+          emptyMessage: "No obligations match",
+        });
+      }
+      tabsEl.addEventListener("click", e => {
+        const b = e.target.closest(".tab-btn"); if (!b) return;
+        activeStatus = b.dataset.filter || null;
+        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active",(x.dataset.filter||null)===activeStatus));
+        render();
+      });
+      document.getElementById("bo-search").addEventListener("input", e => { query = e.target.value; render(); });
+      render();
+    })();
+  </script>
+</body>
+</html>
