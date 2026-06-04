@@ -1,0 +1,218 @@
+{
+  "generatedAt": "2026-06-04",
+  "ontology": "platform/regulatory/graph/types.ts",
+  "extractionMethod": "rule-based",
+  "decomposition": "atomic",
+  "standards": [
+    {
+      "standard": "SCO",
+      "file": "sco-obligation-graph.json",
+      "nodes": 567,
+      "edges": 700,
+      "obligations": 284,
+      "normativeParagraphs": 108,
+      "obligationsByType": {
+        "must-not": 21,
+        "recommended": 74,
+        "must": 171,
+        "may": 18
+      },
+      "errors": []
+    },
+    {
+      "standard": "CAP",
+      "file": "cap-obligation-graph.json",
+      "nodes": 425,
+      "edges": 554,
+      "obligations": 288,
+      "normativeParagraphs": 74,
+      "obligationsByType": {
+        "must": 148,
+        "recommended": 103,
+        "must-not": 21,
+        "may": 16
+      },
+      "errors": []
+    },
+    {
+      "standard": "RBC",
+      "file": "rbc-obligation-graph.json",
+      "nodes": 298,
+      "edges": 395,
+      "obligations": 149,
+      "normativeParagraphs": 62,
+      "obligationsByType": {
+        "must": 56,
+        "may": 13,
+        "must-not": 5,
+        "recommended": 75
+      },
+      "errors": []
+    },
+    {
+      "standard": "CRE",
+      "file": "cre-obligation-graph.json",
+      "nodes": 2941,
+      "edges": 3970,
+      "obligations": 1656,
+      "normativeParagraphs": 717,
+      "obligationsByType": {
+        "recommended": 487,
+        "may": 150,
+        "must": 937,
+        "must-not": 82
+      },
+      "errors": []
+    },
+    {
+      "standard": "MAR",
+      "file": "mar-obligation-graph.json",
+      "nodes": 1377,
+      "edges": 1894,
+      "obligations": 783,
+      "normativeParagraphs": 301,
+      "obligationsByType": {
+        "must": 485,
+        "recommended": 209,
+        "may": 71,
+        "must-not": 18
+      },
+      "errors": []
+    },
+    {
+      "standard": "OPE",
+      "file": "ope-obligation-graph.json",
+      "nodes": 127,
+      "edges": 139,
+      "obligations": 81,
+      "normativeParagraphs": 28,
+      "obligationsByType": {
+        "recommended": 37,
+        "must": 36,
+        "may": 7,
+        "must-not": 1
+      },
+      "errors": []
+    },
+    {
+      "standard": "LEV",
+      "file": "lev-obligation-graph.json",
+      "nodes": 179,
+      "edges": 242,
+      "obligations": 68,
+      "normativeParagraphs": 42,
+      "obligationsByType": {
+        "must": 42,
+        "recommended": 7,
+        "may": 11,
+        "must-not": 8
+      },
+      "errors": []
+    },
+    {
+      "standard": "LCR",
+      "file": "lcr-obligation-graph.json",
+      "nodes": 745,
+      "edges": 943,
+      "obligations": 494,
+      "normativeParagraphs": 181,
+      "obligationsByType": {
+        "recommended": 265,
+        "must-not": 29,
+        "may": 30,
+        "must": 170
+      },
+      "errors": []
+    },
+    {
+      "standard": "NSF",
+      "file": "nsf-obligation-graph.json",
+      "nodes": 184,
+      "edges": 237,
+      "obligations": 100,
+      "normativeParagraphs": 36,
+      "obligationsByType": {
+        "recommended": 47,
+        "must": 40,
+        "may": 8,
+        "must-not": 5
+      },
+      "errors": []
+    },
+    {
+      "standard": "LEX",
+      "file": "lex-obligation-graph.json",
+      "nodes": 188,
+      "edges": 236,
+      "obligations": 80,
+      "normativeParagraphs": 52,
+      "obligationsByType": {
+        "recommended": 6,
+        "must": 61,
+        "may": 7,
+        "must-not": 6
+      },
+      "errors": []
+    },
+    {
+      "standard": "MGN",
+      "file": "mgn-obligation-graph.json",
+      "nodes": 175,
+      "edges": 183,
+      "obligations": 101,
+      "normativeParagraphs": 49,
+      "obligationsByType": {
+        "recommended": 51,
+        "must": 40,
+        "must-not": 8,
+        "may": 2
+      },
+      "errors": []
+    },
+    {
+      "standard": "SRP",
+      "file": "srp-obligation-graph.json",
+      "nodes": 1400,
+      "edges": 1458,
+      "obligations": 830,
+      "normativeParagraphs": 390,
+      "obligationsByType": {
+        "recommended": 635,
+        "may": 46,
+        "must": 134,
+        "must-not": 15
+      },
+      "errors": []
+    },
+    {
+      "standard": "DIS",
+      "file": "dis-obligation-graph.json",
+      "nodes": 220,
+      "edges": 243,
+      "obligations": 88,
+      "normativeParagraphs": 34,
+      "obligationsByType": {
+        "must": 35,
+        "must-not": 4,
+        "recommended": 45,
+        "may": 4
+      },
+      "errors": []
+    },
+    {
+      "standard": "BCP",
+      "file": "bcp-obligation-graph.json",
+      "nodes": 401,
+      "edges": 409,
+      "obligations": 165,
+      "normativeParagraphs": 83,
+      "obligationsByType": {
+        "recommended": 118,
+        "must": 27,
+        "may": 14,
+        "must-not": 6
+      },
+      "errors": []
+    }
+  ]
+}

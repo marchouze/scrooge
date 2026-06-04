@@ -6,7 +6,7 @@
 //
 // Author: Mira (Compliance / RegTech engineer, engineering)
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { eventStore } from "../../composition";
@@ -27,7 +27,7 @@ import {
 } from "./db";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
-import type { DocumentApplicabilityStatus, GraphNode } from "./types";
+import type { DocumentApplicabilityStatus, GraphEdge, GraphNode } from "./types";
 
 // ---------------------------------------------------------------------------
 // Seed stats shape
@@ -39,6 +39,13 @@ export interface SeedStats {
   totalNodes: number;
   totalEdges: number;
   durationMs: number;
+  /** Pre-built BCBS obligation graphs imported (Regulations/BCBS/obligation-graphs/). */
+  obligationGraphs?: {
+    standards: number;
+    nodes: number;
+    edges: number;
+    skipped: number;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -265,6 +272,83 @@ function walkMd(dir: string): string[] {
 // ---------------------------------------------------------------------------
 // Main seeder
 // ---------------------------------------------------------------------------
+
+/**
+ * Import the pre-built BCBS obligation graphs (the rule-based analysis under
+ * Regulations/BCBS/obligation-graphs/<std>-obligation-graph.json) into the
+ * graph DB. Each file is a self-contained subgraph in the bank's ontology
+ * (nodes + edges). All nodes in a file are upserted before its edges so the
+ * graph_edges → graph_nodes FK resolves. Idempotent (INSERT OR REPLACE /
+ * ON CONFLICT) and wrapped per phase in a transaction for throughput.
+ *
+ * The graph is a truncate-and-rebuild projection (Principle 1), so this runs
+ * inside runSeed() — re-seeding re-imports the obligation graphs. Skips
+ * gracefully if the directory is absent (e.g. in a checkout without them).
+ */
+function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligationGraphs"]> {
+  const dir = repoPath("Regulations", "BCBS", "obligation-graphs");
+  const result = { standards: 0, nodes: 0, edges: 0, skipped: 0 };
+  if (!existsSync(dir)) return result;
+
+  const files = readdirSync(dir, { encoding: "utf-8" })
+    .filter((f) => f.endsWith("-obligation-graph.json"))
+    .sort();
+
+  const db = getDb();
+  for (const file of files) {
+    let doc: { nodes?: unknown[]; edges?: unknown[] };
+    try {
+      doc = JSON.parse(
+        readFileSync(repoPath("Regulations", "BCBS", "obligation-graphs", file), "utf-8"),
+      ) as typeof doc;
+    } catch {
+      result.skipped++;
+      continue;
+    }
+    const nodes = Array.isArray(doc.nodes) ? (doc.nodes as GraphNode[]) : [];
+    const edges = Array.isArray(doc.edges) ? (doc.edges as GraphEdge[]) : [];
+
+    // Nodes first — graph_edges has an FK to graph_nodes.
+    db.exec("BEGIN");
+    try {
+      for (const n of nodes) {
+        if (!n?.id || !n.nodeType || !n.label) {
+          result.skipped++;
+          continue;
+        }
+        upsertNode({ ...n, metadata: n.metadata ?? {} });
+        result.nodes++;
+      }
+      db.exec("COMMIT");
+    } catch (e) {
+      db.exec("ROLLBACK");
+      throw e;
+    }
+
+    db.exec("BEGIN");
+    try {
+      for (const e of edges) {
+        if (!e?.id || !e.fromId || !e.toId || !e.edgeType) {
+          result.skipped++;
+          continue;
+        }
+        upsertEdge({
+          ...e,
+          extractionMethod: e.extractionMethod ?? "rule-based",
+          confidenceScore: typeof e.confidenceScore === "number" ? e.confidenceScore : 1,
+          extractedAt: e.extractedAt ?? now,
+        });
+        result.edges++;
+      }
+      db.exec("COMMIT");
+    } catch (err) {
+      db.exec("ROLLBACK");
+      throw err;
+    }
+    result.standards++;
+  }
+  return result;
+}
 
 export async function runSeed(): Promise<SeedStats> {
   const startMs = performance.now();
@@ -1261,6 +1345,11 @@ export async function runSeed(): Promise<SeedStats> {
     }
   }
 
+  // ── Step N: Import pre-built BCBS obligation graphs ───────────────────────
+  // Marc's rule-based BCBS obligation analysis, decomposed to the bank's
+  // ontology. Imported as part of the projection so it survives re-seeds.
+  const obligationGraphs = importBcbsObligationGraphs(now);
+
   // ── Final stats ──────────────────────────────────────────────────────────
 
   const totalNodes = getNodeCount();
@@ -1272,7 +1361,7 @@ export async function runSeed(): Promise<SeedStats> {
 
   const durationMs = Math.round(performance.now() - startMs);
 
-  return { nodesByType, edgesByType, totalNodes, totalEdges, durationMs };
+  return { nodesByType, edgesByType, totalNodes, totalEdges, durationMs, obligationGraphs };
 }
 
 // ---------------------------------------------------------------------------
