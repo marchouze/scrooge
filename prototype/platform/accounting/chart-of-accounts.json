@@ -106,6 +106,7 @@
     {
       "id": "ACC-2100-002",
       "name": "FX Trading Receivable",
+      "currency": "USD",
       "category": "asset",
       "side": "debit"
     },
@@ -119,6 +120,7 @@
     {
       "id": "ACC-2100-004",
       "name": "FX Trading Payable",
+      "currency": "USD",
       "category": "liability",
       "side": "credit"
     },
@@ -135,6 +137,12 @@
       "currency": "ZAR",
       "category": "income",
       "side": "credit"
+    },
+    {
+      "id": "ACC-2100-007",
+      "name": "FX Unresolved-Currency Suspense",
+      "category": "asset",
+      "side": "debit"
     },
     {
       "id": "ACC-2100-009",

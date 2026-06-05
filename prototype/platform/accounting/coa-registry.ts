@@ -405,9 +405,14 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-2100-002",
     name: "FX Trading Receivable",
     category: "asset-receivable",
-    // Genuinely multi-currency FCY pool account: per-entry currency
-    // (SubLedgerLeg.currency) is authoritative. `currency` is intentionally
-    // OMITTED — this is correct, not a gap (D-COA-CURRENCY-DECOUPLING).
+    // USD-ONLY trading receivable. This account is NOT a multi-currency FCY
+    // pool — the "FCY pool" framing was rejected by the CEO
+    // (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE, 2026-06-05). USD = USD; foreign
+    // currency must never be parked here. A non-ZAR/USD FX leg whose currency
+    // has no dedicated trading receivable resolves to the FX unresolved-currency
+    // suspense account (ACC-2100-007) + a high-severity urgent-correction alert,
+    // never silently to this USD slot.
+    currency: "USD",
     side: "debit",
   },
   {
@@ -421,8 +426,12 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-2100-004",
     name: "FX Trading Payable",
     category: "liability-payable",
-    // Genuinely multi-currency FCY pool account: per-entry currency is
-    // authoritative; `currency` intentionally OMITTED (D-COA-CURRENCY-DECOUPLING).
+    // USD-ONLY trading payable. Mirror of ACC-2100-002: NOT an FCY pool
+    // (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE, 2026-06-05). USD = USD; a
+    // non-ZAR/USD FX payable leg with no dedicated account resolves to the FX
+    // unresolved-currency suspense account (ACC-2100-007) + urgent-correction
+    // alert, never silently to this USD slot.
+    currency: "USD",
     side: "credit",
   },
   {
@@ -438,6 +447,33 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     category: "income-trading",
     currency: "ZAR",
     side: "credit",
+  },
+  {
+    id: "ACC-2100-007",
+    name: "FX Unresolved-Currency Suspense",
+    category: "asset-suspense",
+    // Dedicated BALANCING suspense for FX legs whose currency has no dedicated
+    // trading account in the COA (e.g. EUR, GBP, JPY today). Authority:
+    // D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE (CEO-approved 2026-06-05). When the
+    // SLA resolver finds no per-currency receivable/payable account for a leg,
+    // the interpreter routes that leg HERE so the entry still balances (double-
+    // entry integrity preserved) and raises a high-severity urgent-correction
+    // SubstrateAlert{alertClass:"integrity"} so the unresolved item is glaringly
+    // visible and tracked for prompt correction — NEVER a silent USD fallback,
+    // NEVER a dropped posting.
+    //
+    // `currency` is intentionally OMITTED: this account holds whatever
+    // unresolved currencies arrive, and the AUTHORITATIVE currency is carried on
+    // each SubLedgerLeg.currency (per the unresolved leg). This is NOT a defect
+    // (D-COA-CURRENCY-DECOUPLING) and NOT a re-introduction of the rejected FCY
+    // pool — a pool is a permanent home; this is a loud, transient holding pen
+    // every entry to which raises an urgent-correction alert. Both the
+    // receivable-side (debit) and payable-side (credit) unresolved legs route
+    // here, so DR == CR nets within this account per unresolved currency.
+    //
+    // Suspense: transient; not HQLA-eligible. Designated side `debit` (asset
+    // suspense), but legitimately carries both debit and credit legs.
+    side: "debit",
   },
 
   // ------------------------------------------------------------------
