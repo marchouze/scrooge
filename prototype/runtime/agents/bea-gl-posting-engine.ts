@@ -91,13 +91,16 @@ import {
   detectUnresolvedCurrencyLegs,
   fxAmendmentJournals,
   fxCancellationJournals,
-  fxLifecycleCloseJournals,
-  fxPrincipalPaymentJournals,
-  fxRevaluationJournals,
   fxSettlementJournals,
   fxSettlementReversalJournals,
-  fxTradeBookingJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
+import {
+  FX_INTERPRETER_EVENT_TYPES,
+  buildCancelEnrichment,
+  interpretFxEvent,
+  resolveFailedReceiveLeg,
+} from "./bea-gl-fx-interpreter-cutover";
+import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import {
   irdSwapCouponJournals,
   irdSwapRevaluationJournals,
@@ -128,7 +131,6 @@ import type {
   EquitySoldPayload,
 } from "../../platform/event-store/event-types/equity-accounting";
 import {
-  type FxPositionRevaluedPayload,
   type FxTradeCancelledPayload,
   type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
@@ -159,11 +161,6 @@ import type {
   EquityPositionRevaluedPayload,
   EquityTradeExecutedPayload,
 } from "../../platform/markets/cdm/equity";
-import type {
-  FxTradeExecutedPayload,
-  PrincipalPaymentPayload,
-  SettlementConfirmedPayload,
-} from "../../platform/markets/cdm/fx";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -199,6 +196,12 @@ const SUBSCRIBED_TYPES = new Set<string>([
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; PR #616.
   "FxTradeCancelled",
   "TradeAmended",
+  // FX-lifecycle events newly cut over to the SLA interpreter (D-SLA-ENGINE-
+  // RULES-AS-DATA Phase 3). FxSettlementFailed posts the Stage-3-ECL/Herstatt
+  // journals (PR-FX-005); the two memo events are intentional-no-impact.
+  "FxSettlementFailed",
+  "FxSettlementInstructed",
+  "TradeReportSubmitted",
   // Bond lifecycle events (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A)
   "BondTradeExecuted",
   "BondInterestAccrued",
@@ -287,6 +290,157 @@ function buildCancellationIndex(): CancellationIndex {
 }
 
 // ---------------------------------------------------------------------------
+// FX-lifecycle cutover (D-SLA-ENGINE-RULES-AS-DATA Phase 3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Reconstruct the cancellation enrichment (prior booking legs + cumulative
+ * unrealised P&L) for an FxTradeCancelled trade, from the per-run cancellation
+ * index. Mirrors the legacy `TradeCancelled` reconstruction below.
+ *
+ * Production parity note: for the FX-specific `FxTradeCancelled` kind, the
+ * per-revaluation MTM undo is owned by `bea-fx-posting-engine` (it emits
+ * `reversal` postings). The legacy GL engine therefore passed
+ * `cumulativeUnrealisedPnlZarMinor = 0` for FxTradeCancelled so PR-FX-CANCEL
+ * emits ONLY the booking-leg reversal. We preserve that exactly: this builder
+ * returns cumulative P&L = 0, and only the prior booking legs drive the
+ * reversal.
+ */
+function buildFxCancelEnrichmentForTrade(
+  tradeId: string,
+  cidx: CancellationIndex,
+): {
+  bookingLegs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
+  cumulativeUnrealisedPnlZarMinor: number;
+} {
+  const bookingLegs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[] = [];
+  for (const p of cidx.postings) {
+    const pp = p.payload as {
+      postingType?: string;
+      legs?: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
+    };
+    if (typeof pp.postingType !== "string" || !Array.isArray(pp.legs)) continue;
+    const sourceEventId = (p.payload as { sourceEventId?: string }).sourceEventId;
+    if (!sourceEventId) continue;
+    const srcTradeIdValue = cidx.tradeIdBySourceEvent.get(sourceEventId);
+    if (!srcTradeIdValue || srcTradeIdValue !== tradeId) continue;
+    if (pp.postingType === "trade-booking") bookingLegs.push(...pp.legs);
+  }
+  // FX-specific kind: MTM undo owned by bea-fx-posting-engine → cumulative = 0.
+  return { bookingLegs, cumulativeUnrealisedPnlZarMinor: 0 };
+}
+
+/**
+ * Outcome of processing a single FX-lifecycle event through the SLA interpreter.
+ */
+interface FxProcessResult {
+  readonly emitted: number;
+  readonly skipped: number;
+}
+
+/**
+ * Process one FX-lifecycle source event via the rules-as-data SLA interpreter
+ * and emit the resulting `SubLedgerPostingEmitted` (+ urgent-correction
+ * `SubstrateAlert`s for any suspense leg). This is the production cutover seam
+ * (deliverable 1). Idempotency keys are unchanged (no double-post on replay).
+ */
+async function processFxViaInterpreter(
+  e: import("../../platform/event-store/types").Event,
+  ctx: AgentRunContext,
+  postedKeys: Set<IdempotencyKey>,
+  getCancellationIndex: () => CancellationIndex,
+): Promise<FxProcessResult> {
+  // Build enrichment for the two rules that price off prior events.
+  let enrichment: unknown;
+  if (e.type === "FxTradeCancelled") {
+    const payload = e.payload as FxTradeCancelledPayload;
+    const cidx = getCancellationIndex();
+    const recon = buildFxCancelEnrichmentForTrade(payload.tradeId, cidx);
+    enrichment = buildCancelEnrichment(recon);
+  } else if (e.type === "FxSettlementFailed") {
+    // PR-FX-005 (one-leg-delivered) needs the originating trade's receive leg.
+    const allEvents = [...eventStore.replay({ type: "FxTradeExecuted" })];
+    const failedReceiveLeg = resolveFailedReceiveLeg(
+      allEvents,
+      e.payload as import("../../platform/event-store/event-types/fx-accounting").FxSettlementFailedPayload,
+    );
+    enrichment = failedReceiveLeg ? { failedReceiveLeg } : {};
+  }
+
+  const outcome = interpretFxEvent(e, ctx.asOf, enrichment);
+
+  if (outcome.kind === "reject") {
+    // Loud reject — never silent. Surface via logger; the caller's per-event
+    // try/catch records nothing here (we do not throw), but the rejection is
+    // logged at error level so recon catches a wedged FX posting.
+    logger.error(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — SLA interpreter rejected FX posting",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  if (outcome.kind === "no-gl") {
+    logger.info(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — FX event has no GL impact (interpreter intentional-no-impact)",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // outcome.kind === "post"
+  const key: IdempotencyKey = `${e.event_id}:${outcome.postingType}`;
+  if (postedKeys.has(key)) {
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // Urgent-correction alerts for any suspense leg (loud, never silent). One
+  // high-severity integrity SubstrateAlert per correction — sourced directly
+  // from the interpreter's returned `urgentCorrections` (the single-sourced
+  // data → event mapping; impossible to forget).
+  if (!ctx.dryRun && outcome.urgentCorrections.length > 0) {
+    for (const correction of outcome.urgentCorrections) {
+      eventStore.append(
+        urgentCorrectionToSubstrateAlert(correction, {
+          asOf: ctx.asOf,
+          entity: e.entity ?? "LE-ZA-HOZ-BANK",
+          actor: HANDLER_ACTOR,
+        }),
+      );
+    }
+    logger.warn(
+      {
+        eventId: e.event_id,
+        eventType: e.type,
+        postingType: outcome.postingType,
+        unresolvedCurrencies: outcome.urgentCorrections.map((c) => c.currency),
+      },
+      "bea:gl-posting-engine — FX leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
+    );
+  }
+
+  if (!ctx.dryRun) {
+    const postingEvent = makeSubLedgerPostingEmitted({
+      asOf: ctx.asOf,
+      entity: e.entity ?? "LE-ZA-HOZ-BANK",
+      actor: HANDLER_ACTOR,
+      citations: [...GL_POSTING_CITATIONS],
+      payload: {
+        sourceEventId: e.event_id,
+        postingType: outcome.postingType,
+        legs: outcome.legs,
+        postedAt: ctx.asOf,
+      },
+      eventId: newEventId(),
+    });
+    eventStore.append(postingEvent);
+    postedKeys.add(key);
+  }
+
+  return { emitted: 1, skipped: 0 };
+}
+
+// ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
 
@@ -343,6 +497,10 @@ export async function beaGlPostingEngine(
     // FxTradeCancelled is the FX-specific cancellation kind (PR #616).
     ...eventStore.replay({ type: "FxTradeCancelled" }),
     ...eventStore.replay({ type: "TradeAmended" }),
+    // FX-lifecycle events newly cut over to the SLA interpreter (Phase 3).
+    ...eventStore.replay({ type: "FxSettlementFailed" }),
+    ...eventStore.replay({ type: "FxSettlementInstructed" }),
+    ...eventStore.replay({ type: "TradeReportSubmitted" }),
     // Bond lifecycle events
     ...eventStore.replay({ type: "BondTradeExecuted" }),
     ...eventStore.replay({ type: "BondInterestAccrued" }),
@@ -406,6 +564,23 @@ export async function beaGlPostingEngine(
     }
 
     try {
+      // -----------------------------------------------------------------------
+      // FX-LIFECYCLE CUTOVER (D-SLA-ENGINE-RULES-AS-DATA Phase 3) ─────────────
+      // The eight FX-lifecycle event types post via the rules-as-data SLA
+      // interpreter (IFRS), NOT the legacy fx-spot.ts posting-rule functions.
+      // The cutover is byte-for-byte safe — proven by the permanent parallel-run
+      // regression. Enrichment (cancel reversal legs / failed-receive-leg) is
+      // reconstructed HERE by the engine (which has the event stream) and handed
+      // to the pure interpreter. Non-FX product families fall through to the
+      // legacy dispatch below, UNTOUCHED.
+      // -----------------------------------------------------------------------
+      if (FX_INTERPRETER_EVENT_TYPES.has(e.type)) {
+        const handled = await processFxViaInterpreter(e, ctx, postedKeys, getCancellationIndex);
+        eventsEmitted += handled.emitted;
+        skipped += handled.skipped;
+        continue;
+      }
+
       // -----------------------------------------------------------------------
       // Audit/control-only events — log and record idempotency key but emit
       // no SubLedgerPostingEmitted.
@@ -472,37 +647,6 @@ export async function beaGlPostingEngine(
         }
         const payload = e.payload as SettlementInstructionReceivedPayload;
         legs = settlementInstructionJournals(payload);
-      } else if (e.type === "FxTradeExecuted") {
-        // PR-FX-001: Initial recognition — IFRS 9 §3.1.1
-        // postingType must match SubLedgerPostingEmitted schema enum
-        postingType = "trade-booking";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as FxTradeExecutedPayload;
-        // fxTradeBookingJournals expects tradeId as string; FxTradeExecutedPayload
-        // uses identifierSchema (object). Normalise to string value.
-        legs = fxTradeBookingJournals({
-          tradeId:
-            typeof payload.tradeId === "string"
-              ? payload.tradeId
-              : (payload.tradeId as { value: string }).value,
-          side: payload.side,
-          legs: payload.legs,
-          currencyPair: payload.currencyPair,
-        });
-      } else if (e.type === "FxPositionRevalued") {
-        // PR-FX-002: Daily MTM — IAS 21 §23; IFRS 9 §5.7.1
-        postingType = "revaluation";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as FxPositionRevaluedPayload;
-        legs = fxRevaluationJournals(payload);
       } else if (e.type === "TradeMatured") {
         // PR-FX-003 (DEPRECATED 2026-05-20): Derecognition — IFRS 9 §3.2.3.
         // Retained for back-compat with legacy test-only emitters. Production
@@ -515,28 +659,6 @@ export async function beaGlPostingEngine(
         }
         const payload = e.payload as TradeMaturedFxSpotPayload;
         legs = fxSettlementJournals(payload);
-      } else if (e.type === "PrincipalPayment") {
-        // PR-FX-PRIN (GL-significant since 2026-05-20): per-leg cash at
-        // correspondent confirmation. IFRS 9 §3.2.3 (derecognition); IAS 21 §28.
-        postingType = "fx-principal-payment";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as PrincipalPaymentPayload;
-        legs = fxPrincipalPaymentJournals(payload);
-      } else if (e.type === "SettlementConfirmed") {
-        // PR-FX-LIFECYCLE-CLOSE (GL-significant since 2026-05-20): realised-P&L
-        // residual on the CDM lifecycle-close event. IAS 21 §28.
-        postingType = "fx-lifecycle-close";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as SettlementConfirmedPayload;
-        legs = fxLifecycleCloseJournals(payload);
       } else if (e.type === "SettlementReversed") {
         postingType = "settlement-reversal";
         const key: IdempotencyKey = `${e.event_id}:${postingType}`;
@@ -559,16 +681,13 @@ export async function beaGlPostingEngine(
           tradeId: payload.tradeId,
           originalSettlement: origPayload,
         });
-      } else if (e.type === "TradeCancelled" || e.type === "FxTradeCancelled") {
-        // PR-FX-CANCEL handles both event kinds. TradeCancelled (markets-trading-extended)
-        // and FxTradeCancelled (fx-accounting) both expose `tradeId: string` at the
-        // payload root — the only field this handler actually reads. The IAS-21 §28 /
-        // IFRS-9 §3.2.3 derecognition logic is the same in both cases.
-        //
-        // Bug history: this arm originally listened on TradeCancelled only. The 15
-        // FX cancellations emitted on 2026-05-19 used FxTradeCancelled and were
-        // skipped, leaving 15 booking journals on the GL against trades that no
-        // longer exist. Fixed 2026-05-21.
+      } else if (e.type === "TradeCancelled") {
+        // PR-FX-CANCEL — TradeCancelled (markets-trading-extended) only. The
+        // FX-specific FxTradeCancelled kind now posts via the SLA interpreter
+        // (D-SLA-ENGINE-RULES-AS-DATA Phase 3) — see processFxViaInterpreter;
+        // this legacy arm is retained for the non-FX TradeCancelled kind, which
+        // is NOT in the FX cutover scope. Both kinds expose `tradeId: string`
+        // and use the IAS-21 §28 / IFRS-9 §3.2.3 derecognition logic.
         postingType = "cancellation";
         const key: IdempotencyKey = `${e.event_id}:${postingType}`;
         if (postedKeys.has(key)) {
@@ -611,16 +730,11 @@ export async function beaGlPostingEngine(
           if (pp.postingType === "trade-booking") {
             bookingLegs.push(...pp.legs);
           } else if (pp.postingType === "revaluation") {
-            // Accumulate gross unrealised P&L from ZAR legs.
-            // The UNREALISED_PNL account credit = gain, debit = loss.
-            //
-            // NOTE: For FxTradeCancelled, the per-revaluation MTM undo is
-            // handled by bea-fx-posting-engine (it emits "reversal" postings —
-            // see bea-fx-posting-engine.ts:302). The GL engine therefore
-            // overrides this accumulator to zero for FxTradeCancelled below,
-            // to avoid double-undoing the MTM. For TradeCancelled (non-FX),
-            // the fx engine does not fire and this accumulator is the only
-            // mechanism that undoes the cumulative P&L.
+            // Accumulate gross unrealised P&L from ZAR legs (TradeCancelled,
+            // non-FX). The UNREALISED_PNL account credit = gain, debit = loss.
+            // For the non-FX TradeCancelled kind the fx-posting-engine does not
+            // fire, so this accumulator is the only mechanism that undoes the
+            // cumulative P&L.
             for (const leg of pp.legs) {
               if (leg.currency === "ZAR") {
                 if (leg.accountId === "ACC-2100-005") {
@@ -631,15 +745,9 @@ export async function beaGlPostingEngine(
             }
           }
         }
-        // For FxTradeCancelled the MTM undo is owned by bea-fx-posting-engine
-        // (per-revaluation reversal postings). Zero out the cumulative-P&L
-        // contribution so PR-FX-CANCEL emits ONLY the booking-leg reversal
-        // and does not double-undo what the fx-engine already handles.
-        const effectiveCumulativePnl =
-          e.type === "FxTradeCancelled" ? 0 : cumulativeUnrealisedPnlZarMinor;
         legs = fxCancellationJournals({
           tradeId: payload.tradeId,
-          cumulativeUnrealisedPnlZarMinor: effectiveCumulativePnl,
+          cumulativeUnrealisedPnlZarMinor,
           bookingLegs,
         });
       } else if (e.type === "TradeAmended") {

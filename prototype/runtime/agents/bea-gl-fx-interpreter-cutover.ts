@@ -59,10 +59,7 @@ import {
 } from "../../platform/accounting/sla/interpreter";
 import { FX_IFRS_RULES } from "../../platform/accounting/sla/rules";
 import type { Event } from "../../platform/event-store/types";
-import type {
-  FxSettlementFailedPayload,
-  FxTradeCancelledPayload,
-} from "../../platform/event-store/event-types/fx-accounting";
+import type { FxSettlementFailedPayload } from "../../platform/event-store/event-types/fx-accounting";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 
 // ---------------------------------------------------------------------------
