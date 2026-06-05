@@ -88,7 +88,11 @@ export const PR_MMD_001: SlaRule = {
       when: "event.depositCategory == 'retail-less-stable'",
     },
     {
-      account: { logical: "deposit.liability_wholesale_operational", product: MMD, currency: "ZAR" },
+      account: {
+        logical: "deposit.liability_wholesale_operational",
+        product: MMD,
+        currency: "ZAR",
+      },
       side: "credit",
       amount: "abs(event.principalZar)",
       currency: "ZAR",
@@ -194,7 +198,11 @@ export const PR_MMD_MAT: SlaRule = {
       when: "event.enrichment.depositCategory == 'retail-less-stable'",
     },
     {
-      account: { logical: "deposit.liability_wholesale_operational", product: MMD, currency: "ZAR" },
+      account: {
+        logical: "deposit.liability_wholesale_operational",
+        product: MMD,
+        currency: "ZAR",
+      },
       side: "debit",
       amount: "abs(event.principalZar)",
       currency: "ZAR",
@@ -283,7 +291,11 @@ export const PR_MMD_CANCEL: SlaRule = {
       when: "event.enrichment.depositCategory == 'retail-less-stable'",
     },
     {
-      account: { logical: "deposit.liability_wholesale_operational", product: MMD, currency: "ZAR" },
+      account: {
+        logical: "deposit.liability_wholesale_operational",
+        product: MMD,
+        currency: "ZAR",
+      },
       side: "debit",
       amount: "abs(event.enrichment.openingPrincipalZar)",
       currency: "ZAR",

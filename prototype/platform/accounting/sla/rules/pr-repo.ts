@@ -213,7 +213,8 @@ export const PR_REPO_CANCEL: SlaRule = {
     detail:
       "IFRS 9 §3.2.3 — derecognition on early termination; no unwind cash (enrichment) → no posting (legacy stub returns [])",
     // `exists(...)` guards the absent-enrichment case → delta 0 → no-GL.
-    delta_path: "if(exists(event.enrichment.unwindCashZar), abs(event.enrichment.unwindCashZar), 0)",
+    delta_path:
+      "if(exists(event.enrichment.unwindCashZar), abs(event.enrichment.unwindCashZar), 0)",
   },
   lines: [
     {

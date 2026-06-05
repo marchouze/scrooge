@@ -167,19 +167,29 @@ describe("MMD maturity (PR-MMD-MAT) — parity (category via enrichment)", () =>
   }
   it("DepositMatured zero-interest — byte-for-byte (no accrued-interest leg)", () => {
     const payload = { depositId: "D1", principalZar: 7_500_000, interestPaidZar: 0 };
-    expectParity("DepositMatured", payload, prMmdMat(payload as never, "wholesale-non-operational"), {
-      depositCategory: "wholesale-non-operational",
-    });
+    expectParity(
+      "DepositMatured",
+      payload,
+      prMmdMat(payload as never, "wholesale-non-operational"),
+      {
+        depositCategory: "wholesale-non-operational",
+      },
+    );
   });
 });
 
 describe("MMD early withdrawal (PR-MMD-CANCEL) — parity", () => {
   it("with penalty — byte-for-byte", () => {
     const payload = { depositId: "D1", penaltyZar: 22_500 };
-    expectParity("DepositWithdrawnEarly", payload, prMmdCancel(payload as never, "retail-stable", 7_500_000), {
-      depositCategory: "retail-stable",
-      openingPrincipalZar: 7_500_000,
-    });
+    expectParity(
+      "DepositWithdrawnEarly",
+      payload,
+      prMmdCancel(payload as never, "retail-stable", 7_500_000),
+      {
+        depositCategory: "retail-stable",
+        openingPrincipalZar: 7_500_000,
+      },
+    );
   });
   it("no penalty — byte-for-byte", () => {
     const payload = { depositId: "D1", penaltyZar: 0 };
@@ -349,7 +359,12 @@ describe("Repo (PR-REPO-*) — parity", () => {
     );
     expect(interp).toEqual([
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 12_000_000, currency: "ZAR" },
-      { accountId: "ACC-5100-001", debitCredit: "credit", amountMinor: 12_000_000, currency: "ZAR" },
+      {
+        accountId: "ACC-5100-001",
+        debitCredit: "credit",
+        amountMinor: 12_000_000,
+        currency: "ZAR",
+      },
     ]);
     assertBalances(interp);
   });
