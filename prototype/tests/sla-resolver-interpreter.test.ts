@@ -10,7 +10,11 @@ import { describe, expect, it } from "bun:test";
 
 import { isAccountId } from "../platform/accounting/sla/generated/sla-types";
 import type { SlaRule } from "../platform/accounting/sla/generated/sla-types";
-import { type InterpreterEvent, interpret } from "../platform/accounting/sla/interpreter";
+import {
+  type InterpreterEvent,
+  interpret,
+  urgentCorrectionToSubstrateAlert,
+} from "../platform/accounting/sla/interpreter";
 import {
   AccountResolver,
   IFRS_FX_SPOT_RESOLVER_ROWS,
@@ -25,8 +29,11 @@ const KEY_BASE = {
   representation: "IFRS",
 };
 
-describe("account resolver — precedence", () => {
-  it("exact currency wins (ZAR → ACC-2100-001)", () => {
+describe("account resolver — per-currency (USD=USD; no FCY pool)", () => {
+  // D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE: each currency resolves to its OWN
+  // account; the USD account is reachable ONLY for USD; the currency-wildcard
+  // pool precedence was removed.
+  it("exact ZAR receivable → ACC-2100-001", () => {
     const r = defaultResolver.resolve({ ...KEY_BASE, currency: "ZAR", logical: "fx.receivable" });
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -35,27 +42,44 @@ describe("account resolver — precedence", () => {
     }
   });
 
-  it("currency-pool ('*') resolves any non-exact currency to the FCY pool", () => {
-    for (const ccy of ["USD", "EUR", "GBP", "JPY"]) {
+  it("exact USD receivable → ACC-2100-002 (USD-only, NOT a pool)", () => {
+    const r = defaultResolver.resolve({ ...KEY_BASE, currency: "USD", logical: "fx.receivable" });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.physical).toBe("ACC-2100-002");
+      expect(r.via).toBe("exact");
+    }
+  });
+
+  it("the USD account is UNREACHABLE for a non-USD currency (no pool fallback)", () => {
+    for (const ccy of ["EUR", "GBP", "JPY", "CHF", "AUD"]) {
       const r = defaultResolver.resolve({ ...KEY_BASE, currency: ccy, logical: "fx.receivable" });
-      expect(r.ok).toBe(true);
-      if (r.ok) {
-        expect(r.physical).toBe("ACC-2100-002");
-        expect(r.via).toBe("currency-pool");
+      // valid axes, unmapped currency → account-resolution miss → suspense,
+      // NEVER silently the USD slot (ACC-2100-002).
+      expect(r.ok).toBe(false);
+      if (!r.ok) {
+        expect(r.reason).toBe("unresolved-currency");
+        expect(r.candidates).toBeGreaterThan(0); // axes valid; only currency missing
       }
     }
   });
 
-  it("payable resolves to its own accounts (ZAR → 003, pool → 004)", () => {
+  it("payable resolves per-currency (ZAR → 003, USD → 004; EUR → unresolved)", () => {
     const zar = defaultResolver.resolve({ ...KEY_BASE, currency: "ZAR", logical: "fx.payable" });
     const usd = defaultResolver.resolve({ ...KEY_BASE, currency: "USD", logical: "fx.payable" });
+    const eur = defaultResolver.resolve({ ...KEY_BASE, currency: "EUR", logical: "fx.payable" });
     expect(zar.ok && zar.physical).toBe("ACC-2100-003");
     expect(usd.ok && usd.physical).toBe("ACC-2100-004");
+    expect(eur.ok).toBe(false);
+    if (!eur.ok) expect(eur.reason).toBe("unresolved-currency");
   });
 });
 
 describe("account resolver — reject loudly (NO silent default)", () => {
-  it("rejects an unknown logical account", () => {
+  // A genuine rule/config bug (unknown logical/product/entity → ZERO candidate
+  // rows) is `no-matching-row` → loud reject, distinct from an unmapped-currency
+  // `unresolved-currency` → suspense (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
+  it("rejects an unknown logical account (no-matching-row, 0 candidates)", () => {
     const r = defaultResolver.resolve({ ...KEY_BASE, currency: "ZAR", logical: "fx.nonexistent" });
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -64,7 +88,7 @@ describe("account resolver — reject loudly (NO silent default)", () => {
     }
   });
 
-  it("rejects an unknown product (no covering pool row)", () => {
+  it("rejects an unknown product (no-matching-row, NOT suspense)", () => {
     const r = defaultResolver.resolve({
       ...KEY_BASE,
       product: "bond",
@@ -72,9 +96,10 @@ describe("account resolver — reject loudly (NO silent default)", () => {
       logical: "fx.receivable",
     });
     expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("no-matching-row");
   });
 
-  it("rejects an unknown entity", () => {
+  it("rejects an unknown entity (no-matching-row, NOT suspense)", () => {
     const r = defaultResolver.resolve({
       ...KEY_BASE,
       entity: "LE-GB-LONDON-BRANCH",
@@ -82,6 +107,7 @@ describe("account resolver — reject loudly (NO silent default)", () => {
       logical: "fx.receivable",
     });
     expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("no-matching-row");
   });
 
   it("constructor rejects a row targeting a non-existent COA account", () => {
@@ -225,6 +251,116 @@ describe("interpreter — reject loudly", () => {
     };
     const results = interpret(fxEvent(), [memo], ["IFRS"], "2026-06-05T10:00:00.000Z");
     expect(results[0]?.outcome).toBe("intentional-no-impact");
+  });
+});
+
+describe("interpreter — unresolved currency → suspense + urgent-correction alert", () => {
+  // D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE: a non-ZAR/USD FX leg with no
+  // dedicated account does NOT silently fall back to USD and is NOT dropped —
+  // it posts to the FX unresolved-currency suspense account, the entry still
+  // balances, and a high-severity urgent-correction alert is raised.
+  function eurEvent(): InterpreterEvent {
+    return fxEvent({
+      payload: {
+        productTaxonomy: "FX-spot",
+        currencyPair: { base: "EUR", quote: "ZAR" },
+        legs: [
+          {
+            legKind: "near",
+            payCurrency: "ZAR",
+            receiveCurrency: "EUR",
+            notional: { currency: "ZAR", amountMinor: 2_050_000_000 },
+            counterNotional: { currency: "EUR", amountMinor: 100_000_000 },
+          },
+        ],
+      },
+    });
+  }
+
+  it("routes the EUR leg to ACC-2100-007 suspense and STILL balances", () => {
+    const results = interpret(eurEvent(), [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
+    expect(results).toHaveLength(1);
+    const r = results[0];
+    expect(r?.outcome).toBe("post");
+    if (r?.outcome !== "post") return;
+
+    // ZAR legs resolve normally; EUR legs go to the suspense account.
+    const eurLegs = r.legs.filter((l) => l.currency === "EUR");
+    expect(eurLegs.length).toBeGreaterThan(0);
+    for (const leg of eurLegs) expect(leg.accountId).toBe("ACC-2100-007");
+    // the USD account must NOT appear for a EUR trade (no silent USD fallback)
+    expect(r.legs.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
+    expect(r.legs.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
+
+    // per-currency DR == CR still holds (EUR nets to zero within suspense)
+    const byCcy = new Map<string, number>();
+    for (const leg of r.legs) {
+      const signed = leg.debitCredit === "debit" ? Number(leg.amountMinor) : -Number(leg.amountMinor);
+      byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0) + signed);
+    }
+    for (const [, net] of byCcy) expect(net).toBe(0);
+  });
+
+  it("raises a high-severity urgent-correction signal for the EUR legs", () => {
+    const results = interpret(eurEvent(), [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
+    const r = results[0];
+    if (r?.outcome !== "post") throw new Error("expected post");
+    expect(r.urgentCorrections.length).toBeGreaterThan(0);
+    for (const c of r.urgentCorrections) {
+      expect(c.currency).toBe("EUR");
+      expect(c.suspenseAccount).toBe("ACC-2100-007");
+      expect(c.alertId).toBe("alert:integrity:sla-unresolved-currency-eur");
+    }
+    // and the bridge produces a real high-severity integrity SubstrateAlert
+    const correction = r.urgentCorrections[0];
+    if (!correction) throw new Error("expected a correction");
+    const alert = urgentCorrectionToSubstrateAlert(correction, {
+      asOf: "2026-06-05T10:00:00.000Z",
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service", id: "agent:bea:sla-interpreter" },
+    });
+    expect(alert.type).toBe("SubstrateAlert");
+    const payload = alert.payload as { alertClass: string; severity: string };
+    expect(payload.alertClass).toBe("integrity");
+    expect(payload.severity).toBe("high");
+  });
+
+  it("a wholly-unknown currency (JPY) also routes to suspense + raises the alert", () => {
+    const jpyEvent = fxEvent({
+      payload: {
+        productTaxonomy: "FX-spot",
+        currencyPair: { base: "USD", quote: "JPY" },
+        legs: [
+          {
+            legKind: "near",
+            payCurrency: "USD",
+            receiveCurrency: "JPY",
+            notional: { currency: "USD", amountMinor: 1_000_000 },
+            counterNotional: { currency: "JPY", amountMinor: 155_000_000 },
+          },
+        ],
+      },
+    });
+    const results = interpret(jpyEvent, [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
+    const r = results[0];
+    expect(r?.outcome).toBe("post");
+    if (r?.outcome !== "post") return;
+    // USD legs resolve to the USD account; JPY legs go to suspense.
+    expect(r.legs.some((l) => l.currency === "USD" && l.accountId === "ACC-2100-002")).toBe(true);
+    const jpyLegs = r.legs.filter((l) => l.currency === "JPY");
+    for (const leg of jpyLegs) expect(leg.accountId).toBe("ACC-2100-007");
+    expect(
+      r.urgentCorrections.some(
+        (c) => c.currency === "JPY" && c.alertId === "alert:integrity:sla-unresolved-currency-jpy",
+      ),
+    ).toBe(true);
+  });
+
+  it("a fully-resolvable trade (USD/ZAR) raises NO urgent corrections", () => {
+    const results = interpret(fxEvent(), [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
+    const r = results[0];
+    if (r?.outcome !== "post") throw new Error("expected post");
+    expect(r.urgentCorrections).toHaveLength(0);
   });
 });
 

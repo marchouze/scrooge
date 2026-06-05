@@ -29,9 +29,16 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05).
 // Citations: Principles/1-events-are-truth.md, Principles/5-multi-currency-entity-country.md.
 
+import { makeSubstrateAlert } from "../../event-store/event-types/platform";
+import type { Actor, Event } from "../../event-store/types";
 import { evaluateAmount, evaluatePredicate, evaluateString } from "./expression";
 import type { AccountId, AppliesTo, ContextMatch, SlaRule } from "./generated/sla-types";
-import { type AccountResolver, type ResolverKey, defaultResolver } from "./resolver";
+import {
+  type AccountResolver,
+  FX_UNRESOLVED_CURRENCY_SUSPENSE,
+  type ResolverKey,
+  defaultResolver,
+} from "./resolver";
 
 // ---------------------------------------------------------------------------
 // Context vector (spec §1.2 / §2.1)
@@ -75,7 +82,36 @@ export interface ResolverDecision {
   readonly logical: string;
   readonly key: ResolverKey;
   readonly physical: AccountId;
-  readonly via: "exact" | "currency-pool";
+  /**
+   * How the account was resolved:
+   *   - "exact"    → a per-currency resolver row matched.
+   *   - "suspense" → an account-resolution miss (valid axes, unmapped currency)
+   *     was routed to the FX unresolved-currency suspense account
+   *     (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). Always paired with an
+   *     `UrgentCorrection` on the ProposedPosting + a SubstrateAlert from the
+   *     caller. (The "currency-pool" via was removed — the FCY-pool framing was
+   *     rejected; the USD account is USD-only.)
+   */
+  readonly via: "exact" | "suspense";
+}
+
+/**
+ * A single account-resolution miss that was routed to the FX unresolved-currency
+ * suspense account. The interpreter is PURE — it does not emit; it RETURNS these
+ * so the caller emits one high-severity urgent-correction `SubstrateAlert`
+ * { alertClass: "integrity", severity: "high" } per correction. This is the
+ * "never a silent fallback" guarantee in data: a suspense routing is impossible
+ * without a paired urgent-correction signal.
+ */
+export interface UrgentCorrection {
+  readonly logical: string;
+  readonly currency: string;
+  readonly suspenseAccount: AccountId;
+  readonly ruleId: string;
+  readonly representation: string;
+  /** Stable alertId for the SubstrateAlert the caller emits (alert:integrity:…). */
+  readonly alertId: string;
+  readonly detail: string;
 }
 
 export interface ProposedPosting {
@@ -86,6 +122,14 @@ export interface ProposedPosting {
   readonly legs: readonly ProposedLeg[];
   readonly resolverDecisions: readonly ResolverDecision[];
   readonly cites: readonly string[];
+  /**
+   * Non-empty iff one or more legs were routed to the FX unresolved-currency
+   * suspense account. Each entry MUST be turned into a high-severity
+   * urgent-correction SubstrateAlert by the caller. A `post` with a non-empty
+   * `urgentCorrections` is a BALANCED-BUT-LOUD posting (the entry still
+   * balances; the unresolved item is glaringly flagged), never a silent skip.
+   */
+  readonly urgentCorrections: readonly UrgentCorrection[];
 }
 
 export type InterpretResult =
@@ -445,6 +489,7 @@ function applyRule(
 
   const legs: ProposedLeg[] = [];
   const resolverDecisions: ResolverDecision[] = [];
+  const urgentCorrections: UrgentCorrection[] = [];
 
   for (const line of rule.lines) {
     // per-line predicate
@@ -473,22 +518,57 @@ function applyRule(
       logical: line.account.logical,
     };
     const resolved = resolver.resolve(key);
-    if (!resolved.ok) {
+
+    // Distinguish the two miss kinds (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE):
+    //   - no-matching-row  → genuine rule/config bug (unknown logical/product/
+    //     entity). LOUD REJECT — the rule author must fix it; never park in
+    //     suspense.
+    //   - unresolved-currency → valid axes, unmapped currency. Route the leg to
+    //     the FX unresolved-currency suspense account so the entry still
+    //     BALANCES, and record an UrgentCorrection so the caller raises a
+    //     high-severity alert. NEVER a silent USD fallback, NEVER a dropped leg.
+    if (!resolved.ok && resolved.reason === "no-matching-row") {
       return {
         outcome: "rejected",
         representation,
         reason: "resolver-miss",
         detail:
-          `no account for (${key.entity}, ${key.product}, ${key.currency}, ` +
-          `${key.jurisdiction}, ${key.representation}, ${key.logical}) — ${resolved.candidates} candidate row(s)`,
+          `no account row for (${key.entity}, ${key.product}, ${key.jurisdiction}, ` +
+          `${key.representation}, ${key.logical}) — 0 candidate row(s); rule/config bug`,
         context: ctx,
       };
     }
+
+    let physical: AccountId;
+    let via: ResolverDecision["via"];
+    if (resolved.ok) {
+      physical = resolved.physical;
+      via = resolved.via;
+    } else {
+      // unresolved-currency → balancing suspense + urgent-correction alert
+      physical = FX_UNRESOLVED_CURRENCY_SUSPENSE;
+      via = "suspense";
+      urgentCorrections.push({
+        logical: line.account.logical,
+        currency,
+        suspenseAccount: FX_UNRESOLVED_CURRENCY_SUSPENSE,
+        ruleId: rule.rule_id,
+        representation,
+        alertId: `alert:integrity:sla-unresolved-currency-${currency.toLowerCase()}`,
+        detail:
+          `SLA account-resolution miss: no ${rule.representation} ${line.account.logical} ` +
+          `account for currency ${currency} (entity ${key.entity}, product ${key.product}) — ` +
+          `routed to FX unresolved-currency suspense ${FX_UNRESOLVED_CURRENCY_SUSPENSE}. ` +
+          "URGENT CORRECTION: add a dedicated per-currency account and re-book; " +
+          "the USD account is USD-only (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).",
+      });
+    }
+
     resolverDecisions.push({
       logical: line.account.logical,
       key,
-      physical: resolved.physical,
-      via: resolved.via,
+      physical,
+      via,
     });
 
     // evaluate amount — always emitted as a positive minor-unit magnitude
@@ -496,7 +576,7 @@ function applyRule(
     const magnitude = raw < 0n ? -raw : raw;
 
     legs.push({
-      accountId: resolved.physical,
+      accountId: physical,
       debitCredit: line.side,
       amountMinor: magnitude.toString(),
       currency,
@@ -523,6 +603,7 @@ function applyRule(
     legs,
     resolverDecisions,
     cites: rule.cites,
+    urgentCorrections,
   };
 }
 
@@ -530,4 +611,38 @@ function applyRule(
 function resolveCurrency(source: string, scope: { event: unknown; context: unknown }): string {
   if (/^[A-Z]{3}$/.test(source)) return source; // fixed code
   return evaluateString(source, scope); // path
+}
+
+// ---------------------------------------------------------------------------
+// Urgent-correction alert bridge (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the high-severity urgent-correction `SubstrateAlert`
+ * { alertClass: "integrity", severity: "high" } that MUST accompany every
+ * suspense routing. The interpreter stays pure (it returns `UrgentCorrection`
+ * data); the production caller calls this to turn each correction into the
+ * actual event to emit. Keeping the builder here makes the data → event mapping
+ * single-sourced and impossible to forget: a suspense leg without this alert is
+ * a recon violation, not a silent fallback.
+ */
+export function urgentCorrectionToSubstrateAlert(
+  correction: UrgentCorrection,
+  args: { asOf: string; entity: string; actor: Actor; citations?: string[] },
+): Event {
+  return makeSubstrateAlert({
+    asOf: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations ?? [
+      "D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE",
+      "Principles/5-multi-currency-entity-country.md",
+    ],
+    payload: {
+      alertId: correction.alertId,
+      alertClass: "integrity",
+      severity: "high",
+      details: correction.detail,
+    },
+  });
 }

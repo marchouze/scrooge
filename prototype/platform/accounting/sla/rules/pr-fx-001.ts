@@ -16,12 +16,17 @@
 // The line ORDER matches the legacy output exactly: receivable(pay),
 // payable(pay), receivable(recv), payable(recv).
 //
-// Account resolution (resolver.ts):
-//   fx.receivable ZAR → ACC-2100-001 ; FCY pool → ACC-2100-002
-//   fx.payable    ZAR → ACC-2100-003 ; FCY pool → ACC-2100-004
+// Account resolution (resolver.ts) — PER-CURRENCY (USD=USD; no FCY pool):
+//   fx.receivable ZAR → ACC-2100-001 ; USD → ACC-2100-002
+//   fx.payable    ZAR → ACC-2100-003 ; USD → ACC-2100-004
+// A non-ZAR/USD leg (EUR/GBP/JPY/…) has no dedicated account → the interpreter
+// routes it to the FX unresolved-currency suspense ACC-2100-007 + raises a
+// high-severity urgent-correction alert (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE),
+// NEVER a silent USD fallback.
 //
 // Authored by: Bea (Accounting & financial reporting engineer, engineering).
-// Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05).
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05);
+//            D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE (CEO-approved 2026-06-05).
 // Cites: IFRS 9 §3.1.1 (trade-date recognition), IAS 21 §21.
 
 import type { SlaRule } from "../generated/sla-types";

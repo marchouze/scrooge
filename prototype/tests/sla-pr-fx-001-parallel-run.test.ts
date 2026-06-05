@@ -1,10 +1,21 @@
 // tests/sla-pr-fx-001-parallel-run.test.ts
 //
-// Parallel-run proof (Phase-0 spec §11.3): real FxTradeExecuted fixtures are
-// fed through BOTH the new rules-as-data interpreter (PR_FX_001) and the
-// legacy `fxTradeBookingJournals` / `runGlPostingEngine`. The IFRS-representation
-// legs MUST match BYTE-FOR-BYTE — same accounts, same minor amounts, same
-// currencies, balanced.
+// Parallel-run proof (Phase-0 spec §11.3, as corrected by
+// D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE): real FxTradeExecuted fixtures are fed
+// through BOTH the new rules-as-data interpreter (PR_FX_001) and the legacy
+// `fxTradeBookingJournals` / `runGlPostingEngine`.
+//
+// CORRECTED success criterion (CEO design call, Marc, 2026-06-05):
+//   - ZAR and USD legs MUST match the legacy engine BYTE-FOR-BYTE — same
+//     accounts, same minor amounts, same currencies, balanced. These are the
+//     currencies the legacy engine books CORRECTLY.
+//   - EUR / GBP / any non-ZAR/USD currency MUST DELIBERATELY DIVERGE from the
+//     legacy engine: the legacy `default → USD` fallback mis-booked them into
+//     the USD account (ACC-2100-002/004); the corrected interpreter routes them
+//     to the FX unresolved-currency suspense account (ACC-2100-007) and raises a
+//     high-severity urgent-correction alert. The test asserts the CORRECTED
+//     behaviour, NOT legacy parity — that divergence is the latent default-to-USD
+//     defect being fixed.
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
@@ -31,9 +42,9 @@ interface FixtureSpec {
   readonly rate: number;
 }
 
-// Real-shaped FX-spot fixtures spanning ZAR/USD both directions, EUR/ZAR, and
-// a non-ZAR/USD pair (GBP/EUR) that exercises the FCY currency-pool resolver.
-const FIXTURES: readonly FixtureSpec[] = [
+// Fixtures the LEGACY engine books CORRECTLY (ZAR/USD only) — byte-for-byte
+// parity is the regression target for these.
+const PARITY_FIXTURES: readonly FixtureSpec[] = [
   {
     name: "buy USD/ZAR (pay ZAR, receive USD)",
     side: "buy",
@@ -56,6 +67,12 @@ const FIXTURES: readonly FixtureSpec[] = [
     receiveMinor: 945_000_000,
     rate: 18.9,
   },
+];
+
+// Fixtures the legacy engine MIS-BOOKS (non-ZAR/USD → legacy USD-slot fallback).
+// The corrected interpreter routes these to suspense + raises an urgent
+// correction; the test asserts DIVERGENCE from legacy, NOT parity.
+const DIVERGENCE_FIXTURES: readonly FixtureSpec[] = [
   {
     name: "buy EUR/ZAR (pay ZAR, receive EUR)",
     side: "buy",
@@ -68,7 +85,7 @@ const FIXTURES: readonly FixtureSpec[] = [
     rate: 20.5,
   },
   {
-    name: "buy GBP/EUR (pay EUR, receive GBP) — non-ZAR/USD, FCY pool both legs",
+    name: "buy GBP/EUR (pay EUR, receive GBP) — both legs non-ZAR/USD",
     side: "buy",
     base: "GBP",
     quote: "EUR",
@@ -121,7 +138,7 @@ interface NormalLeg {
   currency: string;
 }
 
-function normaliseInterpreterLegs(payload: FxTradeExecutedPayload): NormalLeg[] {
+function interpretPosting(payload: FxTradeExecutedPayload) {
   const event = {
     type: "FxTradeExecuted",
     entity: "LE-ZA-HOZ-BANK",
@@ -134,7 +151,11 @@ function normaliseInterpreterLegs(payload: FxTradeExecutedPayload): NormalLeg[] 
   if (!r || r.outcome !== "post") {
     throw new Error(`interpreter did not post: ${JSON.stringify(r)}`);
   }
-  return r.legs.map((l) => ({
+  return r;
+}
+
+function normaliseInterpreterLegs(payload: FxTradeExecutedPayload): NormalLeg[] {
+  return interpretPosting(payload).legs.map((l) => ({
     accountId: l.accountId,
     debitCredit: l.debitCredit,
     amountMinor: Number(l.amountMinor),
@@ -142,8 +163,8 @@ function normaliseInterpreterLegs(payload: FxTradeExecutedPayload): NormalLeg[] 
   }));
 }
 
-describe("PR-FX-001 parallel run — interpreter vs legacy fxTradeBookingJournals", () => {
-  for (const f of FIXTURES) {
+describe("PR-FX-001 parallel run (ZAR/USD) — byte-for-byte vs legacy fxTradeBookingJournals", () => {
+  for (const f of PARITY_FIXTURES) {
     it(`matches byte-for-byte: ${f.name}`, () => {
       const payload = buildPayload(f);
 
@@ -161,8 +182,8 @@ describe("PR-FX-001 parallel run — interpreter vs legacy fxTradeBookingJournal
   }
 });
 
-describe("PR-FX-001 parallel run — interpreter vs runGlPostingEngine", () => {
-  for (const f of FIXTURES) {
+describe("PR-FX-001 parallel run (ZAR/USD) — byte-for-byte vs runGlPostingEngine", () => {
+  for (const f of PARITY_FIXTURES) {
     it(`matches the production dispatcher's emitted legs: ${f.name}`, () => {
       const payload = buildPayload(f);
       const event = makeFxTradeExecuted({
@@ -199,8 +220,58 @@ describe("PR-FX-001 parallel run — interpreter vs runGlPostingEngine", () => {
   }
 });
 
-describe("PR-FX-001 balance invariant (per currency)", () => {
-  for (const f of FIXTURES) {
+describe("PR-FX-001 parallel run (non-ZAR/USD) — DELIBERATE divergence from legacy", () => {
+  for (const f of DIVERGENCE_FIXTURES) {
+    it(`diverges from the legacy default→USD mis-booking: ${f.name}`, () => {
+      const payload = buildPayload(f);
+
+      // Legacy mis-books the foreign leg(s) to the USD slot (ACC-2100-002/004).
+      const legacy = fxTradeBookingJournals({
+        tradeId: payload.tradeId.value,
+        side: payload.side,
+        legs: payload.legs,
+        currencyPair: payload.currencyPair,
+      }).map((l) => ({ ...l }));
+
+      const posting = interpretPosting(payload);
+      const interp = posting.legs.map((l) => ({
+        accountId: l.accountId,
+        debitCredit: l.debitCredit,
+        amountMinor: Number(l.amountMinor),
+        currency: l.currency,
+      }));
+
+      // 1. The corrected interpreter must NOT equal the legacy output.
+      expect(interp).not.toEqual(legacy);
+
+      // 2. Every non-ZAR/USD leg routes to the suspense account, NOT the USD
+      //    slot (no silent USD fallback).
+      const foreignLegs = interp.filter((l) => l.currency !== "ZAR" && l.currency !== "USD");
+      expect(foreignLegs.length).toBeGreaterThan(0);
+      for (const leg of foreignLegs) expect(leg.accountId).toBe("ACC-2100-007");
+      expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
+      expect(interp.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
+
+      // 3. An urgent-correction alert is raised per unresolved currency.
+      expect(posting.urgentCorrections.length).toBeGreaterThan(0);
+      for (const c of posting.urgentCorrections) {
+        expect(c.suspenseAccount).toBe("ACC-2100-007");
+        expect(c.alertId.startsWith("alert:integrity:sla-unresolved-currency-")).toBe(true);
+      }
+
+      // 4. The entry still balances per currency despite the divergence.
+      const byCcy = new Map<string, number>();
+      for (const leg of interp) {
+        const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+        byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0) + signed);
+      }
+      for (const [, net] of byCcy) expect(net).toBe(0);
+    });
+  }
+});
+
+describe("PR-FX-001 balance invariant (per currency) — all fixtures", () => {
+  for (const f of [...PARITY_FIXTURES, ...DIVERGENCE_FIXTURES]) {
     it(`balances DR == CR per currency: ${f.name}`, () => {
       const interp = normaliseInterpreterLegs(buildPayload(f));
       const byCcy = new Map<string, number>();
