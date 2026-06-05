@@ -128,9 +128,7 @@ export function resolveTargetAccount(logical: string, currency: string): string 
   return outcome.ok ? outcome.physical : undefined;
 }
 
-export function discoverMisbookedLegsFrom(
-  events: Iterable<Event>,
-): MisbookedLeg[] {
+export function discoverMisbookedLegsFrom(events: Iterable<Event>): MisbookedLeg[] {
   const found: MisbookedLeg[] = [];
   for (const e of events) {
     if (e.type !== "SubLedgerPostingEmitted") continue;
@@ -224,12 +222,7 @@ export function buildCorrectionEvent(m: MisbookedLeg, target: string): Event {
       legIndex: m.legIndex,
       legs,
       postedAt: new Date().toISOString(),
-      memo:
-        `Re-books a SIMULATED FX mis-booking (D-SLA-REBOOK-SIMULATED-MISBOOKINGS): ` +
-        `${m.leg.currency} leg ${m.legIndex} of posting ${m.correctsEventId} was silently ` +
-        `booked to the USD slot ${m.leg.accountId} by the legacy default→USD fallback. ` +
-        `Reversed out of ${m.leg.accountId} and re-booked into the per-currency home ` +
-        `account ${target} (${m.logical}, ${m.leg.currency}). USD account is USD-only.`,
+      memo: `Re-books a SIMULATED FX mis-booking (D-SLA-REBOOK-SIMULATED-MISBOOKINGS): ${m.leg.currency} leg ${m.legIndex} of posting ${m.correctsEventId} was silently booked to the USD slot ${m.leg.accountId} by the legacy default→USD fallback. Reversed out of ${m.leg.accountId} and re-booked into the per-currency home account ${target} (${m.logical}, ${m.leg.currency}). USD account is USD-only.`,
     } as Parameters<typeof makeSubLedgerPostingEmitted>[0]["payload"],
   });
   // Inherit the original posting's simulated provenance tag (same plane).

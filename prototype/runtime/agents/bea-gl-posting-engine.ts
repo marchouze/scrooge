@@ -14,16 +14,27 @@
 //   - SettlementFailed              → log only, no SubLedgerPostingEmitted
 //   - SettlementReversed            → PR-FX-REV: fxSettlementReversalJournals()
 //   - TradeCancelled                → PR-FX-CANCEL: fxCancellationJournals()
-//   - FxTradeCancelled              → PR-FX-CANCEL: fxCancellationJournals()
-//                                     (FX-specific cancellation kind — same posting rule,
-//                                      same `postingType: "cancellation"`; both shapes
-//                                      carry `tradeId: string` at the top of the payload.)
+//                                     (the non-FX markets-trading-extended kind;
+//                                      stays on the legacy posting-rule path.)
 //   - TradeAmended                  → PR-FX-AMD: fxAmendmentJournals()
+//   - TradeMatured                  → PR-FX-003 (deprecated): fxSettlementJournals()
 //
-//   FX trade lifecycle:
-//   - FxTradeExecuted               → PR-FX-001: fxTradeBookingJournals()
-//   - FxPositionRevalued            → PR-FX-002: fxRevaluationJournals()
-//   - TradeMatured         → PR-FX-003: fxSettlementJournals()
+//   FX LIFECYCLE — CUT OVER TO THE SLA INTERPRETER (D-SLA-ENGINE-RULES-AS-DATA
+//   Phase 3). The eight FX-lifecycle event types below no longer call the
+//   hand-coded fx-spot.ts posting-rule functions in production; they post via
+//   the rules-as-data SLA interpreter (IFRS), byte-for-byte equal to legacy
+//   (proven by the permanent parallel-run regression). See
+//   `bea-gl-fx-interpreter-cutover.ts` + `processFxViaInterpreter` below.
+//   - FxTradeExecuted        → PR-FX-001            (trade-booking)
+//   - FxPositionRevalued     → PR-FX-002            (revaluation)
+//   - PrincipalPayment       → PR-FX-PRIN           (fx-principal-payment)
+//   - SettlementConfirmed    → PR-FX-LIFECYCLE-CLOSE (fx-lifecycle-close)
+//   - FxSettlementFailed     → PR-FX-005            (settlement)        [enrichment]
+//   - FxTradeCancelled       → PR-FX-CANCEL         (cancellation)      [enrichment]
+//   - FxSettlementInstructed → PR-FX-INSTRUCT       (memo; no GL)
+//   - TradeReportSubmitted   → PR-FX-REGREPORT      (memo; no GL)
+//   All NON-FX product families (bond/equity/IRS/repo/deposit/funding/interbank/
+//   payments) remain on the legacy dispatch below, UNTOUCHED.
 //
 //   Bond lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A):
 //   - BondTradeExecuted             → PR-BOND-001: bondBankingBookJournals() / bondTradingBookJournals()
@@ -95,13 +106,6 @@ import {
   fxSettlementReversalJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
 import {
-  FX_INTERPRETER_EVENT_TYPES,
-  buildCancelEnrichment,
-  interpretFxEvent,
-  resolveFailedReceiveLeg,
-} from "./bea-gl-fx-interpreter-cutover";
-import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
-import {
   irdSwapCouponJournals,
   irdSwapRevaluationJournals,
   irdSwapTerminationJournals,
@@ -117,6 +121,7 @@ import {
   prMmd001,
   prRepo001,
 } from "../../platform/accounting/posting-rules/repo-mmd-ibl";
+import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import type {
@@ -131,6 +136,7 @@ import type {
   EquitySoldPayload,
 } from "../../platform/event-store/event-types/equity-accounting";
 import {
+  type FxSettlementFailedPayload,
   type FxTradeCancelledPayload,
   type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
@@ -162,6 +168,12 @@ import type {
   EquityTradeExecutedPayload,
 } from "../../platform/markets/cdm/equity";
 import type { AgentRunContext, AgentRunOutput } from "../types";
+import {
+  FX_INTERPRETER_EVENT_TYPES,
+  buildCancelEnrichment,
+  interpretFxEvent,
+  resolveFailedReceiveLeg,
+} from "./bea-gl-fx-interpreter-cutover";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -362,7 +374,7 @@ async function processFxViaInterpreter(
     const allEvents = [...eventStore.replay({ type: "FxTradeExecuted" })];
     const failedReceiveLeg = resolveFailedReceiveLeg(
       allEvents,
-      e.payload as import("../../platform/event-store/event-types/fx-accounting").FxSettlementFailedPayload,
+      e.payload as FxSettlementFailedPayload,
     );
     enrichment = failedReceiveLeg ? { failedReceiveLeg } : {};
   }

@@ -58,8 +58,8 @@ import {
   interpret,
 } from "../../platform/accounting/sla/interpreter";
 import { FX_IFRS_RULES } from "../../platform/accounting/sla/rules";
-import type { Event } from "../../platform/event-store/types";
 import type { FxSettlementFailedPayload } from "../../platform/event-store/event-types/fx-accounting";
+import type { Event } from "../../platform/event-store/types";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 
 // ---------------------------------------------------------------------------
@@ -113,10 +113,7 @@ export interface FailedReceiveLeg {
   readonly zarEquivalentMinor: number;
 }
 
-function findFxTradeExecuted(
-  events: ReadonlyArray<Event>,
-  tradeRef: string,
-): Event | undefined {
+function findFxTradeExecuted(events: ReadonlyArray<Event>, tradeRef: string): Event | undefined {
   for (const e of events) {
     if (e.type !== "FxTradeExecuted") continue;
     const p = e.payload as Partial<FxTradeExecutedPayload>;
