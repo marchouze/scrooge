@@ -119,17 +119,29 @@
           "type": "string",
           "enum": ["debit", "credit"]
         },
+        "side_path": {
+          "description": "Optional path (e.g. 'item.debitCredit') resolving to the literal 'debit' or 'credit'. Mutually exclusive with a meaningful 'side' (which is still required by the schema as a fallback/placeholder). Used by for_each reversal lines where each iteration carries its own (already-flipped) side. When present it overrides 'side' at evaluation time.",
+          "type": "string"
+        },
         "amount": {
           "type": "string",
-          "description": "Sandboxed amount expression over event.*/context.* (spec §4). Integer minor units, BigInt-backed, banker's half-even division."
+          "description": "Sandboxed amount expression over event.*/context.*/item.* (spec §4). Integer minor units, BigInt-backed, banker's half-even division."
         },
         "currency": {
-          "description": "Explicit currency source for this line. One of: a fixed ISO-4217 code (e.g. 'ZAR'), or a context/event path resolving to a currency code (e.g. 'event.near.payCurrency'). When omitted, the line currency is derived from the resolver decision (the account's designated currency).",
+          "description": "Explicit currency source for this line. One of: a fixed ISO-4217 code (e.g. 'ZAR'), or a context/event/item path resolving to a currency code (e.g. 'event.near.payCurrency', 'item.currency'). When omitted, the line currency is derived from the resolver decision (the account's designated currency).",
           "type": "string"
         },
         "when": {
           "type": "string",
           "description": "Optional per-line predicate (spec §3.1). The line fires only when the predicate evaluates true."
+        },
+        "for_each": {
+          "description": "Optional declarative iteration (spec §3.1 extension, D-SLA-ENGINE-RULES-AS-DATA Phase 2). A path to an array on the (enrichment-supplied) scope, e.g. 'event.enrichment.reversalLegs'. When present, the line EXPANDS to one leg per array element; each element is bound as the `item` scope root, so `account.logical`, `amount`, `currency`, and `side_path` may read `item.*`. This is the auditable, pure-data form of the legacy variable-length reversal (PR-FX-CANCEL reversing N prior booking legs). The enrichment array is a pre-resolved input (interpreter stays pure); each expanded leg is balance-asserted with the rest.",
+          "type": "string"
+        },
+        "use_physical_account": {
+          "description": "When true on a for_each line, the per-iteration `account.logical` is treated as a path (e.g. 'item.accountId') resolving DIRECTLY to a physical ACC-NNNN-NNN id, bypassing the logical→physical resolver. Used when the enrichment already carries the exact prior-posting account to reverse (PR-FX-CANCEL), so the reversal lands on precisely the accounts the original booking used — including any suspense account. The physical id is still validated against the COA at runtime.",
+          "type": "boolean"
         }
       }
     },

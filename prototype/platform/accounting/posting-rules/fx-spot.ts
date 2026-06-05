@@ -210,7 +210,35 @@ export const FX_ACCOUNTS = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Map a currency code to the FX Trading Receivable account ID. */
+// ───────────────────────────────────────────────────────────────────────────
+// STOP-THE-BLEEDING (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE — live-path fix,
+// brief deliverable 4). The `default → USD slot` fallbacks below SILENTLY
+// mis-booked any non-ZAR/USD foreign currency (EUR/GBP/CHF/AUD/JPY) into the
+// USD trading accounts (ACC-2100-002/004), the documented Principle-5 blocker
+// that produced the 66 mis-booked simulated trades. They are REPLACED here by
+// per-currency resolution + suspense-on-miss (ACC-2100-007) so new non-ZAR/USD
+// FX postings STOP landing in the USD account immediately — without waiting for
+// the interpreter to go live (Phase 3). The USD account is USD-ONLY.
+//
+// This is a SURGICAL change to the existing live posting path (the one place
+// deliverable 4 may change live GL behaviour). It is consistent with the
+// corrected SLA resolver: foreign legs route to the balancing FX
+// unresolved-currency suspense account, and the engines that call these helpers
+// surface a high-severity urgent-correction `SubstrateAlert` per unresolved
+// currency (see `detectUnresolvedCurrencyLegs` + the engine wiring). The proper
+// fix — dedicated per-currency FX accounts (GBP/EUR/CHF/AUD/JPY) — is a CFO
+// COA-expansion / accounting-policy call (see the CFO provisioning note); until
+// then suspense + alert correctly signal "provision an account".
+//
+// NOTE: ZAR/USD continue to resolve EXACTLY as before, so the byte-for-byte
+// parallel-run parity for the currencies the legacy engine books correctly is
+// untouched. Only the latent default-to-USD defect is removed.
+// ───────────────────────────────────────────────────────────────────────────
+
+/** FX unresolved-currency suspense (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). */
+export const FX_UNRESOLVED_CURRENCY_SUSPENSE = "ACC-2100-007";
+
+/** Map a currency code to the FX Trading Receivable account ID (per-currency). */
 function receivableAccountFor(currency: string): string {
   switch (currency) {
     case "ZAR":
@@ -218,13 +246,14 @@ function receivableAccountFor(currency: string): string {
     case "USD":
       return FX_ACCOUNTS.RECEIVABLE_USD;
     default:
-      // For currencies without a dedicated account, use USD slot as a stub.
-      // Production: add dedicated account ID per Principle 5.
-      return FX_ACCOUNTS.RECEIVABLE_USD;
+      // No dedicated account → balancing FX unresolved-currency suspense.
+      // NEVER the USD slot (the USD account is USD-only). The caller raises a
+      // high-severity urgent-correction alert (detectUnresolvedCurrencyLegs).
+      return FX_UNRESOLVED_CURRENCY_SUSPENSE;
   }
 }
 
-/** Map a currency code to the FX Trading Payable account ID. */
+/** Map a currency code to the FX Trading Payable account ID (per-currency). */
 function payableAccountFor(currency: string): string {
   switch (currency) {
     case "ZAR":
@@ -232,7 +261,8 @@ function payableAccountFor(currency: string): string {
     case "USD":
       return FX_ACCOUNTS.PAYABLE_USD;
     default:
-      return FX_ACCOUNTS.PAYABLE_USD;
+      // No dedicated account → balancing suspense (NOT the USD slot).
+      return FX_UNRESOLVED_CURRENCY_SUSPENSE;
   }
 }
 
@@ -240,6 +270,7 @@ function payableAccountFor(currency: string): string {
  * Map a currency code to the Settlement-Failed Receivable account ID
  * (PR-FX-005). Used when a defaulted receive-leg is reclassified from the
  * FVTPL trading receivable to the amortised-cost defaulted-claim sub-ledger.
+ * Per-currency; non-ZAR/USD → suspense (never the USD slot).
  */
 function settlementFailedReceivableAccountFor(currency: string): string {
   switch (currency) {
@@ -248,14 +279,30 @@ function settlementFailedReceivableAccountFor(currency: string): string {
     case "USD":
       return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD;
     default:
-      // Currencies without a dedicated account fall back to USD slot.
-      // Production: add dedicated account per Principle 5 as currencies
-      // are onboarded.
-      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD;
+      return FX_UNRESOLVED_CURRENCY_SUSPENSE;
   }
 }
 
-/** Map a currency code to the Nostro account ID. */
+/**
+ * Detect legs that were routed to the FX unresolved-currency suspense account
+ * (i.e. a non-ZAR/USD currency with no dedicated account). The live engines
+ * call this on the legs returned by the posting-rule functions and raise ONE
+ * high-severity urgent-correction `SubstrateAlert` per distinct unresolved
+ * currency — so suspense routing is NEVER silent. Returns the distinct
+ * unresolved currencies found (empty when every leg resolved exactly).
+ */
+export function detectUnresolvedCurrencyLegs(legs: ReadonlyArray<SubLedgerLeg>): string[] {
+  const unresolved = new Set<string>();
+  for (const leg of legs) {
+    if (leg.accountId === FX_UNRESOLVED_CURRENCY_SUSPENSE) unresolved.add(leg.currency);
+  }
+  return [...unresolved];
+}
+
+/** Map a currency code to the Nostro account ID (per-currency).
+ *  ZAR/USD/EUR have dedicated correspondent nostros; any other currency →
+ *  balancing suspense (NOT the USD nostro). Same stop-the-bleeding correction
+ *  as the trading-account helpers (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). */
 export function nostroAccountFor(currency: string): string {
   switch (currency) {
     case "ZAR":
@@ -265,7 +312,7 @@ export function nostroAccountFor(currency: string): string {
     case "EUR":
       return FX_ACCOUNTS.NOSTRO_EUR;
     default:
-      return FX_ACCOUNTS.NOSTRO_USD;
+      return FX_UNRESOLVED_CURRENCY_SUSPENSE;
   }
 }
 

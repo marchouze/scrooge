@@ -220,12 +220,16 @@ describe("PR-FX-001 parallel run (ZAR/USD) — byte-for-byte vs runGlPostingEngi
   }
 });
 
-describe("PR-FX-001 parallel run (non-ZAR/USD) — DELIBERATE divergence from legacy", () => {
+describe("PR-FX-001 parallel run (non-ZAR/USD) — suspense routing + urgent correction", () => {
   for (const f of DIVERGENCE_FIXTURES) {
-    it(`diverges from the legacy default→USD mis-booking: ${f.name}`, () => {
+    it(`routes foreign leg(s) to suspense, never the USD slot: ${f.name}`, () => {
       const payload = buildPayload(f);
 
-      // Legacy mis-books the foreign leg(s) to the USD slot (ACC-2100-002/004).
+      // After the Phase-2 deliverable-4 live-path fix, the LEGACY helper ALSO
+      // routes non-ZAR/USD legs to the FX unresolved-currency suspense
+      // (ACC-2100-007) — the silent default→USD mis-booking was removed. So the
+      // corrected interpreter and the corrected legacy helper now AGREE
+      // (parity-to-suspense), both landing the foreign leg on suspense.
       const legacy = fxTradeBookingJournals({
         tradeId: payload.tradeId.value,
         side: payload.side,
@@ -235,22 +239,24 @@ describe("PR-FX-001 parallel run (non-ZAR/USD) — DELIBERATE divergence from le
 
       const posting = interpretPosting(payload);
       const interp = posting.legs.map((l) => ({
-        accountId: l.accountId,
+        accountId: String(l.accountId),
         debitCredit: l.debitCredit,
         amountMinor: Number(l.amountMinor),
         currency: l.currency,
       }));
 
-      // 1. The corrected interpreter must NOT equal the legacy output.
-      expect(interp).not.toEqual(legacy);
+      // 1. Interpreter and (corrected) legacy now agree — both route to suspense.
+      expect(interp).toEqual(legacy.map((l) => ({ ...l })));
 
       // 2. Every non-ZAR/USD leg routes to the suspense account, NOT the USD
-      //    slot (no silent USD fallback).
+      //    slot (no silent USD fallback) — in BOTH paths.
       const foreignLegs = interp.filter((l) => l.currency !== "ZAR" && l.currency !== "USD");
       expect(foreignLegs.length).toBeGreaterThan(0);
       for (const leg of foreignLegs) expect(leg.accountId).toBe("ACC-2100-007");
       expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
       expect(interp.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
+      expect(legacy.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
+      expect(legacy.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
 
       // 3. An urgent-correction alert is raised per unresolved currency.
       expect(posting.urgentCorrections.length).toBeGreaterThan(0);
@@ -259,7 +265,7 @@ describe("PR-FX-001 parallel run (non-ZAR/USD) — DELIBERATE divergence from le
         expect(c.alertId.startsWith("alert:integrity:sla-unresolved-currency-")).toBe(true);
       }
 
-      // 4. The entry still balances per currency despite the divergence.
+      // 4. The entry still balances per currency.
       const byCcy = new Map<string, number>();
       for (const leg of interp) {
         const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
