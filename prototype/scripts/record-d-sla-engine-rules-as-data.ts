@@ -13,9 +13,35 @@
 //
 // Author: Scrooge (Chief of Staff / Orchestrator) — recording instrument.
 
-import { recordDecision } from "../runtime/decisions/record";
+import { recordDecision, requestDecision } from "../runtime/decisions/record";
 
 const ASOF = "2026-06-05T09:00:00.000Z";
+
+// Open the decision lifecycle with a `requested` phase so the
+// recon:decision-symmetry gate sees a symmetric chain (requested → approved).
+// Marc raised and approved in the same in-session turn; the requested phase is
+// stamped one minute earlier than the approval so the ordering is well-defined.
+// Idempotent on (decisionId, phase, as_of).
+const REQUESTED_ASOF = "2026-06-05T08:59:00.000Z";
+
+requestDecision(
+  {
+    decisionId: "D-SLA-ENGINE-RULES-AS-DATA",
+    authority: "CEO",
+    authorityRef: "marc@tgv.co.za",
+    title: "Adopt rules-as-data sub-ledger accounting (SLA) engine; commission Phase-0 spec",
+    category: "engineering",
+    recommendation: "Commission the rules-as-data SLA engine Phase-0 design spec (Bea).",
+    rationale: "Plan approved in-session 2026-06-05; opens the decision lifecycle.",
+    citations: [
+      "Principles/2-single-graph-discipline.md",
+      "Principles/5-multi-currency-entity-country.md",
+      "GOV-FRAMEWORK-CEO-RESERVED",
+    ],
+    recordedVia: "scrooge:session-delegation",
+  },
+  REQUESTED_ASOF,
+);
 
 const result = recordDecision(
   {
@@ -55,4 +81,10 @@ const result = recordDecision(
   ASOF,
 );
 
-console.log(JSON.stringify({ ok: true, eventId: result.eventId, decisionId: "D-SLA-ENGINE-RULES-AS-DATA" }, null, 2));
+console.log(
+  JSON.stringify(
+    { ok: true, eventId: result.eventId, decisionId: "D-SLA-ENGINE-RULES-AS-DATA" },
+    null,
+    2,
+  ),
+);
