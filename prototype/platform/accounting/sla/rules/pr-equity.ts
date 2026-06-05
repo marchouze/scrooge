@@ -330,7 +330,29 @@ export const PR_EQ_004: SlaRule = {
       currency: "event.currency",
       when: "event.classification == 'fvoci'",
     },
-    // 3a. Gain: Dr OCI Reserve / Cr Retained Earnings (reclassify within equity).
+    // 3. Realised fair-value movement on derecognition recognised in OCI (§5.7.5
+    // — NOT P&L); this is the leg that BALANCES cash vs carrying. Gated on the
+    // sign of (proceeds − carrying), independently of the reclassification pnl;
+    // zero when proceeds == carrying (legacy omits the leg). Mirrors legacy order:
+    // inserted between the asset leg and the OCI → RE reclassification.
+    {
+      account: { logical: "equity.oci_reserve_fvoci", product: EQUITY, currency: "ZAR" },
+      side: "credit",
+      amount: "abs(event.saleProceedsMinor - event.carryingAmountAtSaleMinor)",
+      currency: "event.currency",
+      when:
+        "event.classification == 'fvoci' && event.saleProceedsMinor - event.carryingAmountAtSaleMinor > 0",
+    },
+    {
+      account: { logical: "equity.oci_reserve_fvoci", product: EQUITY, currency: "ZAR" },
+      side: "debit",
+      amount: "abs(event.saleProceedsMinor - event.carryingAmountAtSaleMinor)",
+      currency: "event.currency",
+      when:
+        "event.classification == 'fvoci' && event.saleProceedsMinor - event.carryingAmountAtSaleMinor < 0",
+    },
+    // 4a. Reclassify cumulative OCI → Retained Earnings within equity (gain):
+    // Dr OCI Reserve / Cr Retained Earnings. Self-balancing; omitted when zero.
     {
       account: { logical: "equity.oci_reserve_fvoci", product: EQUITY, currency: "ZAR" },
       side: "debit",
@@ -345,7 +367,8 @@ export const PR_EQ_004: SlaRule = {
       currency: "event.currency",
       when: "event.classification == 'fvoci' && event.realisedPnlMinor > 0",
     },
-    // 3b. Loss: Dr Retained Earnings / Cr OCI Reserve.
+    // 4b. Reclassify cumulative OCI → Retained Earnings within equity (loss):
+    // Dr Retained Earnings / Cr OCI Reserve.
     {
       account: { logical: "equity.retained_earnings", product: EQUITY, currency: "ZAR" },
       side: "debit",

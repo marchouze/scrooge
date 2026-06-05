@@ -1241,3 +1241,159 @@ describe("Regression — booking-path scoping bounds GL work per booking", () =>
     expect(postingsForSource(t2.event_id)).toHaveLength(1);
   });
 });
+
+// ===========================================================================
+// Regression — securities (bond + equity) cutover to the SLA interpreter.
+//
+// D-SLA-ENGINE-RULES-AS-DATA full-retirement Batch 2: the nine bond + equity
+// lifecycle event types post via the rules-as-data SLA interpreter, NOT the
+// legacy bonds.ts / equities.ts functions. These tests assert end-to-end that
+// the engine routes them through the interpreter and emits the expected
+// SubLedgerPostingEmitted (with the UNCHANGED postingType strings, so replay
+// idempotency holds), and that the legs match the legacy reference (the parity
+// guard tests/sla-securities-lifecycle-parallel-run.test.ts proves byte-for-byte
+// equality at the rule layer).
+// ===========================================================================
+
+import { makeBondTradeExecuted } from "../../platform/event-store/event-types/bond-accounting";
+import {
+  makeEquityDividendAccrued,
+  makeEquitySold,
+} from "../../platform/event-store/event-types/equity-accounting";
+import { bondDirtyPriceAmountMinor } from "./bea-gl-securities-interpreter-cutover";
+
+describe("Regression — securities cutover: bond + equity post via the SLA interpreter", () => {
+  it("BondTradeExecuted (banking-book) → engine emits 'bond-trade-booking' with the dirty-price legs", async () => {
+    const tradeId = `REG-BOND-${newEventId()}`;
+    const payload = {
+      tradeId,
+      bondIsin: "ZAG000149037",
+      side: "buy" as const,
+      nominalMinor: 10_000_000,
+      cleanPricePercent: 97.5,
+      accruedInterestMinor: 50_000,
+      dirtyPricePercent: 98.0,
+      settlementDate: "2026-06-08",
+      portfolio: "banking-book" as const,
+      couponRate: 0.085,
+      maturityDate: "2030-01-01",
+      currency: "ZAR",
+      counterpartyLei: "LEI-CP",
+      executedAt: "2026-06-05T10:00:00.000Z",
+    };
+    const bondEvent = makeBondTradeExecuted({
+      asOf: "2026-06-05T10:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload,
+    });
+    compositionEventStore.append(bondEvent);
+
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-06-05T12:00:00.000Z"));
+    expect(result.ok).toBe(true);
+
+    const postings = postingsForSource(bondEvent.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "bond-trade-booking";
+    });
+    expect(postings).toHaveLength(1);
+
+    const legs = (postings[0].payload as { legs: SubLedgerLeg[] }).legs;
+    const dirty = bondDirtyPriceAmountMinor(payload as never);
+    // Dr Bond Asset banking (ACC-3100-001) / Cr Nostro (ACC-1200-001) at dirty price.
+    expect(legs).toHaveLength(2);
+    const assetLeg = legs.find((l) => l.accountId === "ACC-3100-001");
+    const cashLeg = legs.find((l) => l.accountId === "ACC-1200-001");
+    expect(assetLeg?.debitCredit).toBe("debit");
+    expect(assetLeg?.amountMinor).toBe(dirty);
+    expect(cashLeg?.debitCredit).toBe("credit");
+    expect(cashLeg?.amountMinor).toBe(dirty);
+    // Balanced.
+    // Balanced: total debits == total credits (per currency).
+    let bal = 0;
+    for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+    expect(bal).toBe(0);
+  });
+
+  it("EquityDividendAccrued (with WHT) → engine emits 'equity-dividend-accrual' (3 legs)", async () => {
+    const dividendEvent = makeEquityDividendAccrued({
+      asOf: "2026-06-05T10:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId: `REG-EQ-DIV-${newEventId()}`,
+        instrumentId: "SBK",
+        quantity: 1000,
+        grossDividendPerShareMinor: 500,
+        grossDividendTotalMinor: 500_000,
+        withholdingTaxRate: 0.2,
+        withholdingTaxMinor: 100_000,
+        netDividendMinor: 400_000,
+        exDividendDate: "2026-06-04",
+        paymentDate: "2026-06-20",
+        currency: "ZAR",
+      },
+    });
+    compositionEventStore.append(dividendEvent);
+
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-06-05T12:30:00.000Z"));
+    expect(result.ok).toBe(true);
+
+    const postings = postingsForSource(dividendEvent.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "equity-dividend-accrual";
+    });
+    expect(postings).toHaveLength(1);
+    const legs = (postings[0].payload as { legs: SubLedgerLeg[] }).legs;
+    expect(legs).toHaveLength(3); // Dr receivable, Dr WHT, Cr income
+    // Balanced: total debits == total credits (per currency).
+    let bal = 0;
+    for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+    expect(bal).toBe(0);
+  });
+
+  it("EquitySold (FVOCI gain) → engine emits a BALANCED 'equity-sale' (the OCI split fix)", async () => {
+    const saleEvent = makeEquitySold({
+      asOf: "2026-06-05T10:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId: `REG-EQ-SALE-${newEventId()}`,
+        instrumentId: "SBK",
+        classification: "fvoci",
+        quantity: 1000,
+        salePricePerShareMinor: 19_000,
+        saleProceedsMinor: 19_000_000,
+        carryingAmountAtSaleMinor: 18_500_000,
+        realisedPnlMinor: 500_000,
+        settlementDate: "2026-06-08",
+        currency: "ZAR",
+      },
+    });
+    compositionEventStore.append(saleEvent);
+
+    const result = await beaGlPostingEngine(buildRegressionCtx("2026-06-05T13:00:00.000Z"));
+    expect(result.ok).toBe(true);
+
+    const postings = postingsForSource(saleEvent.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "equity-sale";
+    });
+    expect(postings).toHaveLength(1);
+    const legs = (postings[0].payload as { legs: SubLedgerLeg[] }).legs;
+    // The interpreter's assert_zero guarantees balance; pin it here so the
+    // legacy FVOCI imbalance cannot regress through the engine.
+    // Balanced: total debits == total credits (per currency).
+    let bal = 0;
+    for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+    expect(bal).toBe(0);
+    // No P&L recycling (§5.7.5): the FVTPL P&L account is NOT touched.
+    expect(legs.find((l) => l.accountId === "ACC-3200-003")).toBeUndefined();
+    // OCI reserve + retained earnings ARE touched.
+    expect(legs.some((l) => l.accountId === "ACC-3200-004")).toBe(true);
+    expect(legs.some((l) => l.accountId === "ACC-5000-002")).toBe(true);
+  });
+});

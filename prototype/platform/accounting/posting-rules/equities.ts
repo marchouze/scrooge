@@ -214,13 +214,24 @@ export function equityDividendJournals(event: EquityDividendAccruedPayload): Sub
 // FVOCI sale (§5.7.5 — no recycling to P&L):
 //   Dr Nostro ZAR (proceeds)        saleProceedsMinor
 //   Cr Equity Asset (FVOCI)          carryingAmountAtSaleMinor
-//   + Reclassify OCI to retained earnings (within equity — NOT P&L):
-//     Gain (cumulative OCI credit balance):
-//       Dr OCI Reserve (FVOCI)     |realisedPnlMinor|
-//       Cr Retained Earnings        |realisedPnlMinor|
-//     Loss (cumulative OCI debit balance):
-//       Dr Retained Earnings        |realisedPnlMinor|
-//       Cr OCI Reserve (FVOCI)     |realisedPnlMinor|
+//   + Recognise the realised fair-value gain/loss (proceeds − carrying) in OCI
+//     — NOT P&L (§5.7.5). This is the leg that BALANCES the cash-vs-carrying
+//     difference. (`realisedPnlMinor` carries proceeds − carrying.)
+//     Gain: Cr OCI Reserve (FVOCI)  |realisedPnlMinor|
+//     Loss: Dr OCI Reserve (FVOCI)  |realisedPnlMinor|
+//   + Reclassify the cumulative OCI to retained earnings (within equity — NOT
+//     P&L), leaving net OCI movement zero on the reserve for this disposal:
+//     Gain: Dr OCI Reserve (FVOCI) |realisedPnlMinor| / Cr Retained Earnings
+//     Loss: Cr OCI Reserve (FVOCI) |realisedPnlMinor| / Dr Retained Earnings
+//
+// CORRECTNESS FIX (D-SLA-ENGINE-RULES-AS-DATA Batch 2, Bea 2026-06-05): the
+// prior FVOCI implementation OMITTED the realised fair-value OCI leg, leaving the
+// entry unbalanced by (proceeds − carrying) whenever proceeds ≠ carrying. The
+// SLA interpreter's `assert_zero` invariant surfaced it (the parity guard
+// rejected the unbalanced legacy output). The fix adds the missing OCI leg so the
+// double-entry balances; FVOCI equity sale is not yet wired to any production
+// emitter, so no booked journal is affected. The rules-as-data PR-EQ-004 and this
+// reference function are now byte-for-byte identical AND balanced.
 // ---------------------------------------------------------------------------
 
 export function equitySaleJournals(event: EquitySoldPayload): SubLedgerLeg[] {
@@ -279,8 +290,31 @@ export function equitySaleJournals(event: EquitySoldPayload): SubLedgerLeg[] {
     },
   ];
 
+  // Leg that BALANCES the cash-vs-carrying difference: the realised fair-value
+  // movement on derecognition is recognised in OCI (§5.7.5 — NOT P&L). A gain
+  // (proceeds > carrying) credits the OCI reserve; a loss debits it. When
+  // proceeds == carrying this leg is zero and omitted.
+  const fairValueDelta = proceeds - carrying;
+  if (fairValueDelta > 0) {
+    legs.push({
+      accountId: EQUITY_ACCOUNTS.OCI_RESERVE_FVOCI,
+      debitCredit: "credit" as const,
+      amountMinor: fairValueDelta,
+      currency: event.currency,
+    });
+  } else if (fairValueDelta < 0) {
+    legs.push({
+      accountId: EQUITY_ACCOUNTS.OCI_RESERVE_FVOCI,
+      debitCredit: "debit" as const,
+      amountMinor: Math.abs(fairValueDelta),
+      currency: event.currency,
+    });
+  }
+
+  // Reclassify the cumulative OCI reserve to retained earnings WITHIN equity
+  // (NOT P&L). This pair is self-balancing; `realisedPnlMinor` carries the
+  // cumulative OCI balance being reclassified. Omitted when zero.
   if (pnl > 0) {
-    // Cumulative net OCI gain: Dr OCI Reserve (clear credit balance) / Cr Retained Earnings
     legs.push(
       {
         accountId: EQUITY_ACCOUNTS.OCI_RESERVE_FVOCI,
@@ -296,7 +330,6 @@ export function equitySaleJournals(event: EquitySoldPayload): SubLedgerLeg[] {
       },
     );
   } else if (pnl < 0) {
-    // Cumulative net OCI loss: Cr OCI Reserve (clear debit balance) / Dr Retained Earnings
     const absLoss = Math.abs(pnl);
     legs.push(
       {
