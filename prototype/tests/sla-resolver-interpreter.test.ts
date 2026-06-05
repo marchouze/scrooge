@@ -9,7 +9,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { isAccountId } from "../platform/accounting/sla/generated/sla-types";
-import type { SlaRule } from "../platform/accounting/sla/generated/sla-types";
+import type { AccountId, SlaRule } from "../platform/accounting/sla/generated/sla-types";
 import {
   type InterpreterEvent,
   interpret,
@@ -71,7 +71,7 @@ describe("account resolver — per-currency (USD=USD; no FCY pool)", () => {
 
   it("GBP/EUR/CHF/AUD/JPY resolve to their OWN dedicated per-currency accounts", () => {
     // D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING (CFO, 2026-06-05).
-    const expected: Record<string, { rec: string; pay: string; pnl: string }> = {
+    const expected: Record<string, { rec: AccountId; pay: AccountId; pnl: AccountId }> = {
       GBP: { rec: "ACC-2100-010", pay: "ACC-2100-011", pnl: "ACC-2100-012" },
       EUR: { rec: "ACC-2100-013", pay: "ACC-2100-014", pnl: "ACC-2100-015" },
       CHF: { rec: "ACC-2100-016", pay: "ACC-2100-017", pnl: "ACC-2100-018" },
@@ -86,9 +86,12 @@ describe("account resolver — per-currency (USD=USD; no FCY pool)", () => {
         currency: ccy,
         logical: "fx.unrealised_pnl",
       });
-      expect(rec.ok && rec.physical).toBe(want.rec);
-      expect(pay.ok && pay.physical).toBe(want.pay);
-      expect(pnl.ok && pnl.physical).toBe(want.pnl);
+      expect(rec.ok).toBe(true);
+      expect(pay.ok).toBe(true);
+      expect(pnl.ok).toBe(true);
+      if (rec.ok) expect(rec.physical).toBe(want.rec);
+      if (pay.ok) expect(pay.physical).toBe(want.pay);
+      if (pnl.ok) expect(pnl.physical).toBe(want.pnl);
     }
   });
 

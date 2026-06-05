@@ -268,6 +268,7 @@ describe("PR-FX-001 — newly-provisioned currencies land on their DEDICATED acc
         expect(provisionedLegs.length).toBeGreaterThan(0);
         for (const leg of provisionedLegs) {
           const want = EXPECTED[leg.currency as keyof typeof EXPECTED];
+          if (!want) throw new Error(`unexpected currency ${leg.currency}`);
           expect([want.rec, want.pay]).toContain(leg.accountId);
         }
         expect(engine.some((l) => l.accountId === "ACC-2100-007")).toBe(false);
