@@ -39,13 +39,13 @@ import {
   parseExpression,
 } from "./expression";
 import type { AccountId, AppliesTo, ContextMatch, RuleLine, SlaRule } from "./generated/sla-types";
+import { isAccountId } from "./generated/sla-types";
 import {
   type AccountResolver,
   FX_UNRESOLVED_CURRENCY_SUSPENSE,
   type ResolverKey,
   defaultResolver,
 } from "./resolver";
-import { isAccountId } from "./generated/sla-types";
 
 // ---------------------------------------------------------------------------
 // Context vector (spec §1.2 / §2.1)
@@ -263,7 +263,10 @@ function makeFlatFxContextBuilder(): ContextBuilder {
 }
 
 /** Common context-vector assembly for every FX-spot lifecycle event. */
-function fxContextVector(event: InterpreterEvent, instrumentType: string | undefined): ContextVector {
+function fxContextVector(
+  event: InterpreterEvent,
+  instrumentType: string | undefined,
+): ContextVector {
   const jurisdiction = deriveJurisdiction(event.entity);
   return {
     event_type: event.type,
@@ -766,7 +769,9 @@ function absMinor(raw: bigint): bigint {
 function resolveSide(path: string, scope: EvalScope, ruleId: string): "debit" | "credit" {
   const v = evaluateString(path, scope);
   if (v === "debit" || v === "credit") return v;
-  throw new Error(`${ruleId}: side_path '${path}' resolved to '${v}' (expected 'debit' | 'credit')`);
+  throw new Error(
+    `${ruleId}: side_path '${path}' resolved to '${v}' (expected 'debit' | 'credit')`,
+  );
 }
 
 /** Read an enrichment array path for a `for_each` line. Empty/absent → []. */

@@ -68,7 +68,8 @@ export const PR_FX_005: SlaRule = {
   },
   condition: {
     kind: "always",
-    detail: "IFRS 9 §5.5.1 — default-recognition; non-Herstatt branches fire no lines (FVTPL out of ECL scope)",
+    detail:
+      "IFRS 9 §5.5.1 — default-recognition; non-Herstatt branches fire no lines (FVTPL out of ECL scope)",
   },
   lines: [
     // (a) Reclassify receivable → settlement-failed receivable (recv-ccy).

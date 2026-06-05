@@ -148,12 +148,12 @@ import type {
   PaymentSettledPayload,
   SettlementInstructionReceivedPayload,
 } from "../../platform/event-store/event-types/payments";
+import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import type {
   DepositTakenPayload,
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
 } from "../../platform/event-store/event-types/repo-mmd-ibl";
-import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
 import type {
   EquityPositionRevaluedPayload,
@@ -872,13 +872,7 @@ export async function beaGlPostingEngine(
                 alertId: `alert:integrity:sla-unresolved-currency-${ccy.toLowerCase()}`,
                 alertClass: "integrity",
                 severity: "high",
-                details:
-                  `FX posting (${postingType}, source ${e.event_id}) routed a ${ccy} leg to the ` +
-                  `FX unresolved-currency suspense ${ccy === "USD" ? "" : "ACC-2100-007 "}because the COA has no ` +
-                  `dedicated per-currency FX account for ${ccy}. The entry balances but the ` +
-                  `leg sits in suspense. URGENT CORRECTION: provision a dedicated ${ccy} FX ` +
-                  `account (CFO COA-expansion / accounting-policy call) and re-book. The USD ` +
-                  `account is USD-only — never a fallback (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).`,
+                details: `FX posting (${postingType}, source ${e.event_id}) routed a ${ccy} leg to the FX unresolved-currency suspense ACC-2100-007 because the COA has no dedicated per-currency FX account for ${ccy}. The entry balances but the leg sits in suspense. URGENT CORRECTION: provision a dedicated ${ccy} FX account (CFO COA-expansion / accounting-policy call) and re-book. The USD account is USD-only — never a fallback (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).`,
               },
             }),
           );

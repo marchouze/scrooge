@@ -27,22 +27,32 @@ function ev(type: string, payload: unknown, provenanceKind = "simulated"): Event
   } as unknown as Event;
 }
 
-/** A GBP/ZAR booking: Dr 001 ZAR / Cr 003 ZAR (zarAmt); Dr 002 GBP / Cr 004 GBP (gbpAmt). */
-function booking(tradeId: string, zarMinor: number, gbpMinor: number, prov = "simulated") {
+/**
+ * A USD/ZAR booking: Dr 001 ZAR / Cr 003 ZAR (zarAmt); Dr 002 USD / Cr 004 USD (usdAmt).
+ *
+ * NOTE: this fixture uses USD (a currency with dedicated FX-spot accounts), not
+ * a non-ZAR/USD currency. Post the D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE
+ * live-path fix, `fxTradeBookingJournals` routes ANY non-ZAR/USD currency
+ * (EUR/GBP/JPY/…) to the FX unresolved-currency suspense (ACC-2100-007), so a
+ * GBP fixture would no longer resolve to ACC-2100-002/004. USD keeps this test
+ * focused on the rebuild MECHANISM (canonical-vs-corrupt netting), independent
+ * of the now-corrected currency routing. The `*Minor` arg names are kept generic.
+ */
+function booking(tradeId: string, zarMinor: number, usdMinor: number, prov = "simulated") {
   return ev(
     "FxTradeExecuted",
     {
       tradeId: { scheme: "internal-manual", value: tradeId },
       side: "sell",
-      currencyPair: { base: "GBP", quote: "ZAR" },
+      currencyPair: { base: "USD", quote: "ZAR" },
       legs: [
         {
           legKind: "near",
           payCurrency: "ZAR",
-          receiveCurrency: "GBP",
+          receiveCurrency: "USD",
           notional: { currency: "ZAR", amountMinor: zarMinor },
-          counterNotional: { currency: "GBP", amountMinor: gbpMinor },
-          rate: { currency: "ZAR", amount: zarMinor / gbpMinor },
+          counterNotional: { currency: "USD", amountMinor: usdMinor },
+          rate: { currency: "ZAR", amount: zarMinor / usdMinor },
           settlementDate: { iso: "2026-06-02", calendar: "JIHCAL" },
         },
       ],
@@ -55,7 +65,7 @@ function booking(tradeId: string, zarMinor: number, gbpMinor: number, prov = "si
 function bookingPosting(
   sourceEventId: string,
   zarMinor: number,
-  gbpMinor: number,
+  usdMinor: number,
   prov = "simulated",
 ) {
   return ev(
@@ -72,12 +82,12 @@ function bookingPosting(
           amountMinor: zarMinor,
           currency: "ZAR",
         },
-        { accountId: "ACC-2100-002", debitCredit: "debit", amountMinor: gbpMinor, currency: "GBP" },
+        { accountId: "ACC-2100-002", debitCredit: "debit", amountMinor: usdMinor, currency: "USD" },
         {
           accountId: "ACC-2100-004",
           debitCredit: "credit",
-          amountMinor: gbpMinor,
-          currency: "GBP",
+          amountMinor: usdMinor,
+          currency: "USD",
         },
       ],
     },
@@ -110,7 +120,7 @@ describe("computeFxSubledgerReconciliation", () => {
     expect(zar001?.debitCredit).toBe("credit");
     expect(zar001?.amountMinor).toBe(1000);
     // balanced per currency
-    for (const ccy of ["ZAR", "GBP"]) {
+    for (const ccy of ["ZAR", "USD"]) {
       const d = legs
         .filter((l) => l.currency === ccy && l.debitCredit === "debit")
         .reduce((s, l) => s + l.amountMinor, 0);
@@ -147,8 +157,8 @@ describe("computeFxSubledgerRebuild", () => {
     const current = new Map<string, number>([
       ["ACC-2100-001|ZAR", 6000],
       ["ACC-2100-003|ZAR", -6000],
-      ["ACC-2100-002|GBP", 600],
-      ["ACC-2100-004|GBP", -600],
+      ["ACC-2100-002|USD", 600],
+      ["ACC-2100-004|USD", -600],
       ["ACC-2100-005|ZAR", 12345], // corrupt reval residue
     ]);
     const r = computeFxSubledgerRebuild(events, current);
@@ -158,11 +168,11 @@ describe("computeFxSubledgerRebuild", () => {
     const target = new Map(r.target.map((t) => [`${t.accountId}|${t.currency}`, t.netDebitMinor]));
     expect(target.get("ACC-2100-001|ZAR")).toBe(1000);
     expect(target.get("ACC-2100-003|ZAR")).toBe(-1000);
-    expect(target.get("ACC-2100-002|GBP")).toBe(100);
-    expect(target.get("ACC-2100-004|GBP")).toBe(-100);
+    expect(target.get("ACC-2100-002|USD")).toBe(100);
+    expect(target.get("ACC-2100-004|USD")).toBe(-100);
 
     // Restate journal balances per currency.
-    for (const ccy of ["ZAR", "GBP"]) {
+    for (const ccy of ["ZAR", "USD"]) {
       const d = r.restateLegs
         .filter((l) => l.currency === ccy && l.debitCredit === "debit")
         .reduce((s, l) => s + l.amountMinor, 0);
@@ -176,8 +186,8 @@ describe("computeFxSubledgerRebuild", () => {
     const suspense = new Map(r.suspenseResidue.map((s) => [s.currency, s.netDebitMinor]));
     // ZAR residue on 001..006 = current(6000 + (-6000) + 12345) − target(1000 + (-1000)) = 12345
     expect(suspense.get("ZAR")).toBe(12345);
-    // GBP residue = current(600 + (-600)) − target(100 + (-100)) = 0 → no GBP suspense leg
-    expect(suspense.get("GBP")).toBeUndefined();
+    // USD residue = current(600 + (-600)) − target(100 + (-100)) = 0 → no USD suspense leg
+    expect(suspense.get("USD")).toBeUndefined();
 
     // Suspense leg account id.
     const susLeg = r.restateLegs.find(

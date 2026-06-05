@@ -24,9 +24,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  type SubLedgerLeg,
-} from "../platform/accounting/fx-accounting-types";
+import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
 import {
   fxCancellationJournals,
   fxLifecycleCloseJournals,
@@ -64,14 +62,20 @@ function normalise(legs: ReadonlyArray<SubLedgerLeg>): NormalLeg[] {
 }
 
 function runOne(type: string, payload: unknown, enrichment?: unknown): InterpretResult {
-  const results = interpret({ type, entity: ENTITY, as_of: ASOF, payload, enrichment }, FX_IFRS_RULES, ["IFRS"], ASOF);
+  const results = interpret(
+    { type, entity: ENTITY, as_of: ASOF, payload, enrichment },
+    FX_IFRS_RULES,
+    ["IFRS"],
+    ASOF,
+  );
   const r = results.find((x) => x.representation === "IFRS");
   if (!r) throw new Error(`no IFRS result for ${type}`);
   return r;
 }
 
 function postOf(r: InterpretResult): ProposedPosting {
-  if (r.outcome !== "post") throw new Error(`expected post, got ${r.outcome}: ${JSON.stringify(r)}`);
+  if (r.outcome !== "post")
+    throw new Error(`expected post, got ${r.outcome}: ${JSON.stringify(r)}`);
   return r;
 }
 
@@ -312,8 +316,14 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branc
       failureKind: "one-leg-delivered" as const,
       legStatus: { payLegDelivered: true, receiveLegDelivered: false },
     };
-    const failedReceiveLeg = { currency: "USD", amountMinor: 100_000_000, zarEquivalentMinor: 1_900_000_000 };
-    const legacy = normalise(fxSettlementFailedJournals({ event: event as never, failedReceiveLeg }));
+    const failedReceiveLeg = {
+      currency: "USD",
+      amountMinor: 100_000_000,
+      zarEquivalentMinor: 1_900_000_000,
+    };
+    const legacy = normalise(
+      fxSettlementFailedJournals({ event: event as never, failedReceiveLeg }),
+    );
     const interp = interpLegs(runOne("FxSettlementFailed", event, { failedReceiveLeg }));
     expect(interp).toEqual(legacy);
     assertBalances(interp);
@@ -325,8 +335,14 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branc
       failureKind: "one-leg-delivered" as const,
       legStatus: { payLegDelivered: true, receiveLegDelivered: false },
     };
-    const failedReceiveLeg = { currency: "EUR", amountMinor: 90_000_000, zarEquivalentMinor: 1_840_000_000 };
-    const legacy = normalise(fxSettlementFailedJournals({ event: event as never, failedReceiveLeg }));
+    const failedReceiveLeg = {
+      currency: "EUR",
+      amountMinor: 90_000_000,
+      zarEquivalentMinor: 1_840_000_000,
+    };
+    const legacy = normalise(
+      fxSettlementFailedJournals({ event: event as never, failedReceiveLeg }),
+    );
     const r = runOne("FxSettlementFailed", event, { failedReceiveLeg });
     const interp = interpLegs(r);
     expect(interp).toEqual(legacy);
@@ -379,9 +395,15 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal parity", () => {
   for (const cumPnl of [3_000_000, -2_100_000, 0]) {
     it(`cumPnl ${cumPnl} — byte-for-byte`, () => {
       const legacy = normalise(
-        fxCancellationJournals({ tradeId: "T1", cumulativeUnrealisedPnlZarMinor: cumPnl, bookingLegs: BOOKING_LEGS }),
+        fxCancellationJournals({
+          tradeId: "T1",
+          cumulativeUnrealisedPnlZarMinor: cumPnl,
+          bookingLegs: BOOKING_LEGS,
+        }),
       );
-      const interp = interpLegs(runOne("FxTradeCancelled", { tradeId: "T1" }, cancelEnrichment(cumPnl)));
+      const interp = interpLegs(
+        runOne("FxTradeCancelled", { tradeId: "T1" }, cancelEnrichment(cumPnl)),
+      );
       expect(interp).toEqual(legacy);
       assertBalances(interp);
     });
@@ -391,8 +413,18 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal parity", () => {
     // A EUR trade booked post-deliverable-4 sits on suspense; cancellation must
     // reverse the EXACT suspense legs (use_physical_account), netting to zero.
     const eurBooking: SubLedgerLeg[] = [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_050_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 2_050_000_000, currency: "ZAR" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 2_050_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 2_050_000_000,
+        currency: "ZAR",
+      },
       { accountId: SUSPENSE, debitCredit: "debit", amountMinor: 100_000_000, currency: "EUR" },
       { accountId: SUSPENSE, debitCredit: "credit", amountMinor: 100_000_000, currency: "EUR" },
     ];

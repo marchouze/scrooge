@@ -239,14 +239,14 @@ describe("PR-FX-001 parallel run (non-ZAR/USD) — suspense routing + urgent cor
 
       const posting = interpretPosting(payload);
       const interp = posting.legs.map((l) => ({
-        accountId: l.accountId,
+        accountId: String(l.accountId),
         debitCredit: l.debitCredit,
         amountMinor: Number(l.amountMinor),
         currency: l.currency,
       }));
 
       // 1. Interpreter and (corrected) legacy now agree — both route to suspense.
-      expect(interp).toEqual(legacy);
+      expect(interp).toEqual(legacy.map((l) => ({ ...l })));
 
       // 2. Every non-ZAR/USD leg routes to the suspense account, NOT the USD
       //    slot (no silent USD fallback) — in BOTH paths.
