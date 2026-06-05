@@ -199,6 +199,22 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "repo-trade-booking",
       "deposit-taken",
       "ibl-placement",
+      // Treasury full-lifecycle posting types (D-SLA-ENGINE-RULES-AS-DATA
+      // full-retirement Batch 1, 2026-06-05) — the accrual / maturity / early-
+      // termination / funding-line legs the SLA interpreter now owns in
+      // production. The three opening types above keep their original strings so
+      // the `${sourceEventId}:${postingType}` idempotency key is unchanged.
+      "deposit-interest-accrual",
+      "deposit-maturity",
+      "deposit-cancellation",
+      "funding-drawdown",
+      "funding-repayment",
+      "ibl-interest-accrual",
+      "ibl-maturity",
+      "ibl-recall",
+      "repo-interest-accrual",
+      "repo-maturity",
+      "repo-cancellation",
       // Correction posting types — append-only correcting entries per Principle 1.
       // D-CORRECT-DUPLICATE-MTM-REVERSALS (2026-05-21): reverses duplicate MTM
       // reversal / stale revaluation entries without deleting events.

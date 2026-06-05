@@ -398,12 +398,81 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Treasury money-market resolver rows (IFRS, full-retirement Batch 1)
+//
+// The deposit (MMD), funding-line, interbank-loan (IBL) and repo families. All
+// ZAR (predominantly ZAR per the brief; any non-ZAR leg follows the FX suspense
+// discipline via the shared no-silent-fallback resolver). Physical accounts are
+// the same COA leaves the legacy `repo-mmd-ibl.ts` functions used, so the
+// interpreter output is byte-for-byte equal to legacy.
+//
+//   MMD / FUNDING — Nostro ACC-1200-001; liability ACC-6100-001..004 (by LCR
+//     category); accrued interest ACC-6100-005; interest expense ACC-6100-006.
+//     (Funding reuses the wholesale-non-operational liability ACC-6100-004 and
+//      the same Nostro, exactly as the legacy `prFunding001/End`.)
+//   IBL — Nostro ACC-1200-001; due-from-banks call ACC-7100-001 / fixed
+//     ACC-7100-002; accrued interest ACC-7100-003; interest income ACC-7100-004.
+//   REPO — Nostro ACC-1200-001; repo asset ACC-5100-001; accrued interest
+//     ACC-5100-004; interest P&L ACC-5100-005.
+//
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 1, CEO-approved
+// 2026-06-05). Cites: IAS 39 §27; IFRS 9 §3.1.1/§3.2.3/§4.1.2/§4.2.1/B5.4.1;
+// BA 325 Table 1/2 (LCR categories).
+// ---------------------------------------------------------------------------
+
+function zarRow(product: string, logical: string, physical: AccountId, note?: string): ResolverRow {
+  return {
+    entity: "LE-ZA-HOZ-BANK",
+    product,
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical,
+    physical,
+    ...(note ? { note } : {}),
+  };
+}
+
+export const IFRS_TREASURY_RESOLVER_ROWS: readonly ResolverRow[] = [
+  // ── MMD / deposit ──
+  zarRow("MMD", "deposit.nostro", "ACC-1200-001"),
+  zarRow("MMD", "deposit.liability_retail_stable", "ACC-6100-001"),
+  zarRow("MMD", "deposit.liability_retail_less_stable", "ACC-6100-002"),
+  zarRow("MMD", "deposit.liability_wholesale_operational", "ACC-6100-003"),
+  zarRow("MMD", "deposit.liability_wholesale_non_operational", "ACC-6100-004"),
+  zarRow("MMD", "deposit.accrued_interest", "ACC-6100-005"),
+  zarRow("MMD", "deposit.interest_expense", "ACC-6100-006"),
+  // ── Funding line (reuses the wholesale-non-op deposit liability + Nostro) ──
+  zarRow("FUNDING", "funding.nostro", "ACC-1200-001"),
+  zarRow(
+    "FUNDING",
+    "funding.liability_wholesale_non_operational",
+    "ACC-6100-004",
+    "Wholesale non-operational funding liability (BA 325 Table 2, 100% outflow) — shared with the deposit family.",
+  ),
+  // ── Interbank loan (bank as lender) ──
+  zarRow("IBL", "ibl.nostro", "ACC-1200-001"),
+  zarRow("IBL", "ibl.due_from_banks_call", "ACC-7100-001"),
+  zarRow("IBL", "ibl.due_from_banks_fixed", "ACC-7100-002"),
+  zarRow("IBL", "ibl.accrued_interest", "ACC-7100-003"),
+  zarRow("IBL", "ibl.interest_income", "ACC-7100-004"),
+  // ── Repo (bank as cash borrower / secured borrowing) ──
+  zarRow("REPO", "repo.nostro", "ACC-1200-001"),
+  zarRow("REPO", "repo.asset", "ACC-5100-001"),
+  zarRow("REPO", "repo.accrued_interest", "ACC-5100-004"),
+  zarRow("REPO", "repo.interest_pnl", "ACC-5100-005"),
+];
+
 /**
  * The dedicated FX unresolved-currency suspense account
  * (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). The interpreter posts an
  * account-resolution-miss leg here so the entry still balances, then raises a
  * high-severity urgent-correction alert. NOT a silent fallback: every posting
  * to this account is accompanied by a loud alert + recon finding.
+ *
+ * The treasury family is predominantly ZAR; a (rare) non-ZAR treasury leg with
+ * no per-currency row account-resolution-misses here exactly as an FX leg does.
  */
 export const FX_UNRESOLVED_CURRENCY_SUSPENSE: AccountId = "ACC-2100-007";
 
@@ -461,5 +530,13 @@ export class AccountResolver {
   }
 }
 
-/** The Phase-1 default resolver (IFRS FX-spot rows). */
-export const defaultResolver = new AccountResolver(IFRS_FX_SPOT_RESOLVER_ROWS);
+/**
+ * The default resolver. IFRS FX-spot rows (Phase 1) PLUS the treasury
+ * money-market rows (full-retirement Batch 1 — deposit / funding / IBL / repo).
+ * Both families key per-currency on distinct product axes, so there is no
+ * collision; the combined table is the single production resolver.
+ */
+export const defaultResolver = new AccountResolver([
+  ...IFRS_FX_SPOT_RESOLVER_ROWS,
+  ...IFRS_TREASURY_RESOLVER_ROWS,
+]);
