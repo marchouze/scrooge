@@ -1,0 +1,533 @@
+// platform/accounting/sla/interpreter.ts
+//
+// Entry-generation engine (interpreter core) — Phase-0 spec §7.
+//
+//   interpret(event, activeRepresentations, asOf) -> InterpretResult[]
+//
+// PURE. Events in → proposed balanced entries out, per representation. No
+// side effects, no event emission, no I/O — proposal only (dry-run is the
+// only mode in Phase 1, spec §9.1). One source event yields zero or more
+// ProposedPostings (one per representation that matched a posting-producing
+// rule), or a typed reject-loudly outcome.
+//
+// Algorithm (spec §7.2), per event, per active representation:
+//   1. Build the context vector (§1.2).
+//   2. Filter the representation's rules to those eligible by applies_to
+//      match + effective-date window (§2.1).
+//   3. Resolve by specificity precedence with the fixed tie-break order.
+//      Zero → reject; ambiguous → flag; intentional-no-impact → explicit skip.
+//   4. Evaluate condition.kind + each line's `when`; resolve accounts +
+//      evaluate amounts.
+//   5. Assert DR == CR per currency over the lines that fired.
+//   6. Emit a ProposedPosting { representation, ruleId, ruleVersion, legs,
+//      resolverDecisions, cites }.
+//
+// Reject-loudly outcomes (SubLedgerPostingRejected / SubLedgerPostingAmbiguous)
+// are returned as FIRST-CLASS typed results (spec §7.3) — never silent.
+//
+// Author: Bea (Accounting & financial reporting engineer, engineering).
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05).
+// Citations: Principles/1-events-are-truth.md, Principles/5-multi-currency-entity-country.md.
+
+import { evaluateAmount, evaluatePredicate, evaluateString } from "./expression";
+import type { AccountId, AppliesTo, ContextMatch, SlaRule } from "./generated/sla-types";
+import { type AccountResolver, type ResolverKey, defaultResolver } from "./resolver";
+
+// ---------------------------------------------------------------------------
+// Context vector (spec §1.2 / §2.1)
+// ---------------------------------------------------------------------------
+
+export interface ContextVector {
+  readonly instrument_type?: string;
+  readonly event_type: string;
+  readonly entity: string;
+  readonly jurisdiction?: string;
+  readonly regulatory_regime?: string;
+  readonly product_variant?: string;
+  readonly counterparty_classification?: string;
+  /** ISO date — event.as_of. */
+  readonly effective_date: string;
+}
+
+/** The minimal event envelope the interpreter reads. */
+export interface InterpreterEvent {
+  readonly type: string;
+  readonly entity?: string;
+  readonly as_of: string;
+  readonly payload: unknown;
+}
+
+// ---------------------------------------------------------------------------
+// Proposed posting + outcomes (spec §7.3 / §8)
+// ---------------------------------------------------------------------------
+
+export interface ProposedLeg {
+  readonly accountId: AccountId;
+  readonly debitCredit: "debit" | "credit";
+  /** Minor units, always positive (matches SubLedgerLeg). Stored as string
+   *  to survive >2^53 BigInt magnitudes losslessly; the legacy engine uses
+   *  `number` and the parallel-run test compares numerically. */
+  readonly amountMinor: string;
+  readonly currency: string;
+}
+
+export interface ResolverDecision {
+  readonly logical: string;
+  readonly key: ResolverKey;
+  readonly physical: AccountId;
+  readonly via: "exact" | "currency-pool";
+}
+
+export interface ProposedPosting {
+  readonly outcome: "post";
+  readonly representation: string;
+  readonly ruleId: string;
+  readonly ruleVersion: number;
+  readonly legs: readonly ProposedLeg[];
+  readonly resolverDecisions: readonly ResolverDecision[];
+  readonly cites: readonly string[];
+}
+
+export type InterpretResult =
+  | ProposedPosting
+  | {
+      readonly outcome: "rejected";
+      readonly representation: string;
+      readonly reason: "no-eligible-rule" | "resolver-miss" | "unbalanced" | "evaluation-error";
+      readonly detail: string;
+      readonly context: ContextVector;
+    }
+  | {
+      readonly outcome: "ambiguous";
+      readonly representation: string;
+      readonly candidateRuleIds: readonly string[];
+      readonly detail: string;
+      readonly context: ContextVector;
+    }
+  | {
+      readonly outcome: "intentional-no-impact";
+      readonly representation: string;
+      readonly ruleId: string;
+      readonly detail: string;
+    };
+
+// ---------------------------------------------------------------------------
+// Context-builder registry — maps an event type to a context vector + the
+// expression scope. FX-spot is the only Phase-1 builder; the registry is the
+// extension point for Phase 2 product families.
+// ---------------------------------------------------------------------------
+
+export interface BuiltContext {
+  readonly context: ContextVector;
+  /** The `event` root exposed to the expression sandbox. */
+  readonly eventScope: unknown;
+  /** The `context` root exposed to the expression sandbox. */
+  readonly contextScope: unknown;
+}
+
+export type ContextBuilder = (event: InterpreterEvent) => BuiltContext;
+
+interface FxLegLike {
+  legKind: string;
+  payCurrency: string;
+  receiveCurrency: string;
+  notional: { amountMinor: number; currency: string };
+  counterNotional: { amountMinor: number; currency: string };
+}
+
+interface FxTradeExecutedLike {
+  productTaxonomy?: string;
+  currencyPair?: { base: string; quote: string };
+  legs: FxLegLike[];
+}
+
+/**
+ * FX-spot context builder. Exposes the near leg as `event.near` so rules can
+ * write `event.near.notional.amountMinor` etc. (spec §3.2 worked example).
+ */
+export const fxTradeExecutedContextBuilder: ContextBuilder = (event) => {
+  const payload = event.payload as FxTradeExecutedLike;
+  const nearLeg = payload.legs.find((l) => l.legKind === "near");
+
+  const instrumentType = payload.productTaxonomy;
+  const jurisdiction = deriveJurisdiction(event.entity);
+
+  const context: ContextVector = {
+    event_type: event.type,
+    entity: event.entity ?? "UNKNOWN",
+    effective_date: isoDate(event.as_of),
+    ...(instrumentType !== undefined ? { instrument_type: instrumentType } : {}),
+    ...(jurisdiction !== undefined ? { jurisdiction } : {}),
+  };
+
+  // The `event` scope is the raw payload augmented with a `near` pointer.
+  const eventScope = { ...(payload as object), near: nearLeg ?? null };
+
+  return { context, eventScope, contextScope: {} };
+};
+
+const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
+  FxTradeExecuted: fxTradeExecutedContextBuilder,
+};
+
+function deriveJurisdiction(entity: string | undefined): string | undefined {
+  if (!entity) return undefined;
+  // LE-<JURIS>-... convention (e.g. LE-ZA-HOZ-BANK → ZA).
+  const parts = entity.split("-");
+  return parts.length >= 2 ? parts[1] : undefined;
+}
+
+function isoDate(asOf: string): string {
+  // event.as_of is an ISO-8601 timestamp; the effective date is its date part.
+  return asOf.slice(0, 10);
+}
+
+// ---------------------------------------------------------------------------
+// Rule matching + specificity (spec §2.1)
+// ---------------------------------------------------------------------------
+
+const TIE_BREAK_ORDER: readonly (keyof AppliesTo)[] = [
+  "entity",
+  "jurisdiction",
+  "product_variant",
+  "counterparty_classification",
+  "regulatory_regime",
+  "instrument_type",
+  "event_type",
+];
+
+/** Does a single context-match constraint match the context value? */
+function constraintMatches(constraint: ContextMatch, value: string | undefined): boolean {
+  if (value === undefined) return false;
+  if (typeof constraint === "string") return constraint === value;
+  return constraint.includes(value);
+}
+
+const CONTEXT_DIMENSIONS: readonly (keyof AppliesTo)[] = [
+  "event_type",
+  "instrument_type",
+  "entity",
+  "jurisdiction",
+  "regulatory_regime",
+  "product_variant",
+  "counterparty_classification",
+];
+
+function contextValueFor(ctx: ContextVector, dim: keyof AppliesTo): string | undefined {
+  switch (dim) {
+    case "event_type":
+      return ctx.event_type;
+    case "instrument_type":
+      return ctx.instrument_type;
+    case "entity":
+      return ctx.entity;
+    case "jurisdiction":
+      return ctx.jurisdiction;
+    case "regulatory_regime":
+      return ctx.regulatory_regime;
+    case "product_variant":
+      return ctx.product_variant;
+    case "counterparty_classification":
+      return ctx.counterparty_classification;
+  }
+}
+
+/** Whether the rule's applies_to matches the context (all constrained dims). */
+function ruleMatches(rule: SlaRule, ctx: ContextVector): boolean {
+  const a = rule.applies_to;
+  for (const dim of CONTEXT_DIMENSIONS) {
+    const constraint = a[dim];
+    if (constraint === undefined) continue; // wildcard
+    if (!constraintMatches(constraint, contextValueFor(ctx, dim))) return false;
+  }
+  return true;
+}
+
+/** Specificity score: exact (string) = 2, set-membership (array) = 1, wildcard = 0. */
+function specificityScore(rule: SlaRule): number {
+  const a = rule.applies_to;
+  let score = 0;
+  for (const dim of CONTEXT_DIMENSIONS) {
+    const c = a[dim];
+    if (c === undefined) continue;
+    score += typeof c === "string" ? 2 : 1;
+  }
+  return score;
+}
+
+/** Effective-date window contains the effective date (left-closed, right-open). */
+function withinEffectiveWindow(rule: SlaRule, effectiveDate: string): boolean {
+  if (effectiveDate < rule.effective_from) return false;
+  if (rule.effective_to != null && effectiveDate >= rule.effective_to) return false;
+  return true;
+}
+
+type RuleSelection =
+  | { kind: "none" }
+  | { kind: "winner"; winner: SlaRule }
+  | { kind: "ambiguous"; ambiguous: readonly SlaRule[] };
+
+/** Select the winning rule by specificity + tie-break order. */
+function selectRule(rules: readonly SlaRule[], ctx: ContextVector): RuleSelection {
+  const eligible = rules
+    .filter((r) => ruleMatches(r, ctx))
+    .filter((r) => withinEffectiveWindow(r, ctx.effective_date));
+
+  if (eligible.length === 0) return { kind: "none" };
+  if (eligible.length === 1) return { kind: "winner", winner: eligible[0] as SlaRule };
+
+  // highest specificity score
+  const maxScore = Math.max(...eligible.map(specificityScore));
+  let top = eligible.filter((r) => specificityScore(r) === maxScore);
+  if (top.length === 1) return { kind: "winner", winner: top[0] as SlaRule };
+
+  // tie-break: a rule constraining a higher-priority dimension wins
+  for (const dim of TIE_BREAK_ORDER) {
+    const constrains = top.filter((r) => r.applies_to[dim] !== undefined);
+    if (constrains.length > 0 && constrains.length < top.length) {
+      top = constrains;
+      if (top.length === 1) return { kind: "winner", winner: top[0] as SlaRule };
+    }
+  }
+
+  // genuine ambiguity — flag, never pick
+  return { kind: "ambiguous", ambiguous: top };
+}
+
+// ---------------------------------------------------------------------------
+// Amount + balance helpers
+// ---------------------------------------------------------------------------
+
+/** Sum of debits minus credits per currency must be zero (assert_zero). */
+function assertBalanced(
+  legs: readonly ProposedLeg[],
+): { balanced: true } | { balanced: false; detail: string } {
+  const byCcy = new Map<string, bigint>();
+  for (const leg of legs) {
+    const amt = BigInt(leg.amountMinor);
+    const signed = leg.debitCredit === "debit" ? amt : -amt;
+    byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0n) + signed);
+  }
+  const offenders = [...byCcy.entries()].filter(([, v]) => v !== 0n);
+  if (offenders.length === 0) return { balanced: true };
+  return {
+    balanced: false,
+    detail: offenders.map(([c, v]) => `${c}: net ${v.toString()}`).join("; "),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// interpret()
+// ---------------------------------------------------------------------------
+
+export interface InterpretOptions {
+  readonly resolver?: AccountResolver;
+  readonly contextBuilders?: Readonly<Record<string, ContextBuilder>>;
+}
+
+/**
+ * Pure interpreter. Returns one InterpretResult per active representation
+ * that produced an outcome (post / rejected / ambiguous / intentional-no-impact).
+ * Representations with no eligible rule produce a `rejected: no-eligible-rule`
+ * result so the absence is loud, never silent.
+ */
+export function interpret(
+  event: InterpreterEvent,
+  rules: readonly SlaRule[],
+  activeRepresentations: readonly string[],
+  _asOf: string,
+  options: InterpretOptions = {},
+): InterpretResult[] {
+  const resolver = options.resolver ?? defaultResolver;
+  const builders = options.contextBuilders ?? CONTEXT_BUILDERS;
+
+  const builder = builders[event.type];
+  if (!builder) {
+    // No context builder for this event type — not in scope for the engine.
+    // Phase 1 only wires FxTradeExecuted; other event types simply produce
+    // no results (the legacy engine still owns them). This is NOT a silent
+    // accounting skip — it is "this engine does not handle this type yet".
+    return [];
+  }
+
+  const { context, eventScope, contextScope } = builder(event);
+  const scope = { event: eventScope, context: contextScope };
+  const results: InterpretResult[] = [];
+
+  for (const representation of activeRepresentations) {
+    const repRules = rules.filter((r) => r.representation === representation);
+    const ctxForRep: ContextVector = { ...context };
+
+    const selection = selectRule(repRules, ctxForRep);
+
+    if (selection.kind === "ambiguous") {
+      results.push({
+        outcome: "ambiguous",
+        representation,
+        candidateRuleIds: selection.ambiguous.map((r) => `${r.rule_id}@v${r.version}`),
+        detail: "equal-specificity tie; rule author must add a discriminating constraint",
+        context: ctxForRep,
+      });
+      continue;
+    }
+
+    if (selection.kind === "none") {
+      results.push({
+        outcome: "rejected",
+        representation,
+        reason: "no-eligible-rule",
+        detail: `no ${representation} rule matches context for ${event.type}`,
+        context: ctxForRep,
+      });
+      continue;
+    }
+
+    const rule = selection.winner;
+
+    // intentional-no-impact — the only legitimate non-posting outcome.
+    if (rule.condition.kind === "intentional-no-impact") {
+      results.push({
+        outcome: "intentional-no-impact",
+        representation,
+        ruleId: `${rule.rule_id}@v${rule.version}`,
+        detail: rule.condition.detail ?? "intentional no GL impact",
+      });
+      continue;
+    }
+
+    try {
+      const outcome = applyRule(rule, ctxForRep, scope, resolver, representation);
+      results.push(outcome);
+    } catch (err) {
+      results.push({
+        outcome: "rejected",
+        representation,
+        reason: "evaluation-error",
+        detail: err instanceof Error ? err.message : String(err),
+        context: ctxForRep,
+      });
+    }
+  }
+
+  return results;
+}
+
+function applyRule(
+  rule: SlaRule,
+  ctx: ContextVector,
+  scope: { event: unknown; context: unknown },
+  resolver: AccountResolver,
+  representation: string,
+): InterpretResult {
+  // condition gate (non-zero-delta / non-zero-pnl)
+  if (rule.condition.kind === "non-zero-delta" || rule.condition.kind === "non-zero-pnl") {
+    const path = rule.condition.delta_path;
+    if (!path) {
+      return {
+        outcome: "rejected",
+        representation,
+        reason: "evaluation-error",
+        detail: `${rule.rule_id}: condition '${rule.condition.kind}' requires a delta_path`,
+        context: ctx,
+      };
+    }
+    const value = evaluateAmount(path, scope);
+    if (value === 0n) {
+      // condition not met — explicit zero, modelled as intentional skip.
+      return {
+        outcome: "intentional-no-impact",
+        representation,
+        ruleId: `${rule.rule_id}@v${rule.version}`,
+        detail: `${rule.condition.kind}: ${path} is zero`,
+      };
+    }
+  }
+
+  const legs: ProposedLeg[] = [];
+  const resolverDecisions: ResolverDecision[] = [];
+
+  for (const line of rule.lines) {
+    // per-line predicate
+    if (line.when && !evaluatePredicate(line.when, scope)) continue;
+
+    // currency source: line.currency || account.currency || (none → error)
+    const currencySource = line.currency ?? line.account.currency;
+    if (!currencySource) {
+      throw new Error(
+        `${rule.rule_id}: line for '${line.account.logical}' has no currency source (set line.currency or account.currency)`,
+      );
+    }
+    const currency = resolveCurrency(currencySource, scope);
+
+    // resolve account
+    const product = line.account.product ?? ctx.instrument_type;
+    if (!product) {
+      throw new Error(`${rule.rule_id}: cannot resolve product for '${line.account.logical}'`);
+    }
+    const key: ResolverKey = {
+      entity: ctx.entity,
+      product,
+      currency,
+      jurisdiction: ctx.jurisdiction ?? "",
+      representation: rule.representation,
+      logical: line.account.logical,
+    };
+    const resolved = resolver.resolve(key);
+    if (!resolved.ok) {
+      return {
+        outcome: "rejected",
+        representation,
+        reason: "resolver-miss",
+        detail:
+          `no account for (${key.entity}, ${key.product}, ${key.currency}, ` +
+          `${key.jurisdiction}, ${key.representation}, ${key.logical}) — ${resolved.candidates} candidate row(s)`,
+        context: ctx,
+      };
+    }
+    resolverDecisions.push({
+      logical: line.account.logical,
+      key,
+      physical: resolved.physical,
+      via: resolved.via,
+    });
+
+    // evaluate amount — always emitted as a positive minor-unit magnitude
+    const raw = evaluateAmount(line.amount, scope);
+    const magnitude = raw < 0n ? -raw : raw;
+
+    legs.push({
+      accountId: resolved.physical,
+      debitCredit: line.side,
+      amountMinor: magnitude.toString(),
+      currency,
+    });
+  }
+
+  // balance assertion (assert_zero per currency)
+  const balance = assertBalanced(legs);
+  if (!balance.balanced) {
+    return {
+      outcome: "rejected",
+      representation,
+      reason: "unbalanced",
+      detail: `${rule.rule_id}: DR != CR — ${balance.detail}`,
+      context: ctx,
+    };
+  }
+
+  return {
+    outcome: "post",
+    representation,
+    ruleId: rule.rule_id,
+    ruleVersion: rule.version,
+    legs,
+    resolverDecisions,
+    cites: rule.cites,
+  };
+}
+
+/** A currency source is either a fixed ISO-4217 code or an event/context path. */
+function resolveCurrency(source: string, scope: { event: unknown; context: unknown }): string {
+  if (/^[A-Z]{3}$/.test(source)) return source; // fixed code
+  return evaluateString(source, scope); // path
+}

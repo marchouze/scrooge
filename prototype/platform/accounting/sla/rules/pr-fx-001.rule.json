@@ -1,0 +1,43 @@
+{
+  "rule_id": "PR-FX-001",
+  "representation": "IFRS",
+  "version": 1,
+  "effective_from": "2026-01-01",
+  "effective_to": null,
+  "applies_to": {
+    "event_type": "FxTradeExecuted",
+    "instrument_type": "FX-spot",
+    "entity": "LE-ZA-HOZ-BANK",
+    "jurisdiction": "ZA"
+  },
+  "condition": { "kind": "always", "detail": "IFRS 9 §3.1.1 — recognition on trade date" },
+  "lines": [
+    {
+      "account": { "logical": "fx.receivable", "currency": "event.near.payCurrency" },
+      "side": "debit",
+      "amount": "abs(event.near.notional.amountMinor)",
+      "currency": "event.near.payCurrency"
+    },
+    {
+      "account": { "logical": "fx.payable", "currency": "event.near.payCurrency" },
+      "side": "credit",
+      "amount": "abs(event.near.notional.amountMinor)",
+      "currency": "event.near.payCurrency"
+    },
+    {
+      "account": { "logical": "fx.receivable", "currency": "event.near.receiveCurrency" },
+      "side": "debit",
+      "amount": "abs(event.near.counterNotional.amountMinor)",
+      "currency": "event.near.receiveCurrency"
+    },
+    {
+      "account": { "logical": "fx.payable", "currency": "event.near.receiveCurrency" },
+      "side": "credit",
+      "amount": "abs(event.near.counterNotional.amountMinor)",
+      "currency": "event.near.receiveCurrency"
+    }
+  ],
+  "balancing": "assert_zero",
+  "cites": ["urn:obligation:ifrs:ifrs9:3.1.1", "urn:obligation:ifrs:ias21:21"],
+  "notes": "Data form of legacy fxTradeBookingJournals. Parallel-run asserted byte-for-byte. TS mirror: pr-fx-001.ts."
+}

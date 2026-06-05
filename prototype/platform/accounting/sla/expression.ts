@@ -106,10 +106,10 @@ function tokenize(src: string): Token[] {
     // e.g. rate multipliers — money arithmetic stays integer)
     if (c >= "0" && c <= "9") {
       let j = i;
-      while (j < n && ((src[j] as string) >= "0" && (src[j] as string) <= "9")) j++;
+      while (j < n && (src[j] as string) >= "0" && (src[j] as string) <= "9") j++;
       if (j < n && src[j] === ".") {
         j++;
-        while (j < n && ((src[j] as string) >= "0" && (src[j] as string) <= "9")) j++;
+        while (j < n && (src[j] as string) >= "0" && (src[j] as string) <= "9") j++;
       }
       tokens.push({ type: "number", value: src.slice(i, j), pos: i });
       i = j;
@@ -206,6 +206,7 @@ const FUNCTIONS = new Set(["abs", "min", "max", "neg", "if", "exists"]);
 
 export type Ast =
   | { kind: "num"; value: string }
+  | { kind: "str"; value: string }
   | { kind: "path"; segments: string[]; raw: string }
   | { kind: "unary"; op: "-" | "!"; operand: Ast }
   | { kind: "binary"; op: string; left: Ast; right: Ast }
@@ -275,10 +276,7 @@ class Parser {
 
   private parseAddSub(): Ast {
     let left = this.parseMulDiv();
-    while (
-      this.peek().type === "op" &&
-      (this.peek().value === "+" || this.peek().value === "-")
-    ) {
+    while (this.peek().type === "op" && (this.peek().value === "+" || this.peek().value === "-")) {
       const op = this.next().value;
       const right = this.parseMulDiv();
       left = { kind: "binary", op, left, right };
@@ -288,10 +286,7 @@ class Parser {
 
   private parseMulDiv(): Ast {
     let left = this.parseUnary();
-    while (
-      this.peek().type === "op" &&
-      (this.peek().value === "*" || this.peek().value === "/")
-    ) {
+    while (this.peek().type === "op" && (this.peek().value === "*" || this.peek().value === "/")) {
       const op = this.next().value;
       const right = this.parseUnary();
       left = { kind: "binary", op, left, right };
@@ -321,6 +316,11 @@ class Parser {
     if (t.type === "number") {
       this.next();
       return { kind: "num", value: t.value };
+    }
+
+    if (t.type === "string") {
+      this.next();
+      return { kind: "str", value: t.value };
     }
 
     if (t.type === "ident") {
@@ -475,8 +475,7 @@ function coerceScalar(value: unknown, raw: string): EvalValue {
     // integer-exact (cross-currency translation is a context-supplied
     // pre-multiplied input per spec §4.2, not done in-expression).
     throw new ExpressionEvalError(
-      `path '${raw}' resolved to a non-integer number (${value}); ` +
-        `money arithmetic is integer-only — supply pre-translated minor-unit amounts`,
+      `path '${raw}' resolved to a non-integer number (${value}); money arithmetic is integer-only — supply pre-translated minor-unit amounts`,
     );
   }
   throw new ExpressionEvalError(`path '${raw}' resolved to an unsupported type (${typeof value})`);
@@ -492,6 +491,8 @@ function evalAst(ast: Ast, scope: EvalScope): EvalValue {
       }
       return BigInt(ast.value);
     }
+    case "str":
+      return ast.value;
     case "path":
       return coerceScalar(readPath(scope, ast), ast.raw);
     case "unary": {
