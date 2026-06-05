@@ -282,6 +282,36 @@ function withEnrichment(scope: object, enrichment: unknown): object {
   return { ...scope, enrichment: enrichment ?? {} };
 }
 
+/**
+ * Generic flat-payload context builder for a fixed `instrument_type` (product).
+ * The treasury money-market families (deposit / funding / IBL / repo) all carry
+ * flat payloads — the raw payload is exposed directly as the `event` scope (so a
+ * rule reads e.g. `event.principalZar`, `event.accruedInterestZar`), augmented
+ * with `event.enrichment.*` for the rules that price off prior-event context
+ * (deposit/IBL maturity category & opening principal, repo early-unwind cash).
+ * `instrument_type` is fixed to the supplied product so rule `applies_to`
+ * matching and the resolver's product axis both bind correctly.
+ */
+function makeFlatProductContextBuilder(product: string): ContextBuilder {
+  return (event) => ({
+    context: makeProductContextVector(event, product),
+    eventScope: withEnrichment({ ...(event.payload as object) }, event.enrichment),
+    contextScope: {},
+  });
+}
+
+/** Common context-vector assembly for a flat-payload product lifecycle event. */
+function makeProductContextVector(event: InterpreterEvent, product: string): ContextVector {
+  const jurisdiction = deriveJurisdiction(event.entity);
+  return {
+    event_type: event.type,
+    entity: event.entity ?? "UNKNOWN",
+    effective_date: isoDate(event.as_of),
+    instrument_type: product,
+    ...(jurisdiction !== undefined ? { jurisdiction } : {}),
+  };
+}
+
 const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   FxTradeExecuted: fxTradeExecutedContextBuilder,
   FxPositionRevalued: makeFlatFxContextBuilder(),
@@ -292,6 +322,24 @@ const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   TradeCancelled: makeFlatFxContextBuilder(),
   FxSettlementInstructed: makeFlatFxContextBuilder(),
   TradeReportSubmitted: makeFlatFxContextBuilder(),
+  // Treasury money-market family (full-retirement Batch 1) — flat payloads, one
+  // product (instrument_type) per lifecycle. Enrichment is supplied by the
+  // caller for the prior-event-dependent rules (maturity/recall/early-unwind).
+  DepositTaken: makeFlatProductContextBuilder("MMD"),
+  DepositInterestAccrued: makeFlatProductContextBuilder("MMD"),
+  DepositMatured: makeFlatProductContextBuilder("MMD"),
+  DepositWithdrawnEarly: makeFlatProductContextBuilder("MMD"),
+  FundingLineDrawn: makeFlatProductContextBuilder("FUNDING"),
+  FundingLineRepaid: makeFlatProductContextBuilder("FUNDING"),
+  InterbankLoanPlaced: makeFlatProductContextBuilder("IBL"),
+  InterbankLoanInterestAccrued: makeFlatProductContextBuilder("IBL"),
+  InterbankLoanMatured: makeFlatProductContextBuilder("IBL"),
+  InterbankLoanRecalledEarly: makeFlatProductContextBuilder("IBL"),
+  RepoTradeOpened: makeFlatProductContextBuilder("REPO"),
+  RepoStartLegSettled: makeFlatProductContextBuilder("REPO"),
+  RepoInterestAccrued: makeFlatProductContextBuilder("REPO"),
+  RepoEndLegSettled: makeFlatProductContextBuilder("REPO"),
+  RepoTradeTerminatedEarly: makeFlatProductContextBuilder("REPO"),
 };
 
 function deriveJurisdiction(entity: string | undefined): string | undefined {
