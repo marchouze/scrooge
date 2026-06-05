@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:bank:sla:rule-schema:v1",
+  "title": "SLA posting rule",
+  "description": "Canonical contract for a rules-as-data sub-ledger accounting (SLA) posting rule. Authored by Bea (Accounting & financial reporting engineer, engineering) per the Phase-0 design spec (record:documents:bea:sla-engine-rules-as-data-design-spec-phase-0:2026-06-05), §3. This JSON-Schema is the single source from which the TS types (SlaRule, AccountResolverRef, AccountId) are generated (spec §11.4). A rule that references a non-existent COA leaf, an unknown event path, or a malformed leg must fail at codegen / tsc / CI time — never in production. Phase 1 ships IFRS representation only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rule_id",
+    "representation",
+    "version",
+    "effective_from",
+    "applies_to",
+    "condition",
+    "lines",
+    "balancing",
+    "cites"
+  ],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "description": "Stable rule identifier, e.g. 'PR-FX-001'. Stable across versions.",
+      "pattern": "^PR-[A-Z0-9-]+$"
+    },
+    "representation": {
+      "description": "Accounting basis this rule serves. Partitions the rule set (spec §2.2). Phase 1 is IFRS-only; the other literals are reserved for Phase 4.",
+      "type": "string",
+      "enum": ["IFRS", "SARB-BA-RETURN", "ZA-TAX"]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonic version. Supersede-never-edit (spec §6)."
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO date inclusive — left edge of the rule's effective window.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "effective_to": {
+      "description": "ISO date exclusive — right edge of the window; null = open-ended.",
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "applies_to": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Context-vector match expression (Mechanism A, spec §2.1). Any dimension not constrained is a wildcard. event_type is the only required exact-match constraint.",
+      "required": ["event_type"],
+      "properties": {
+        "event_type": { "type": "string" },
+        "instrument_type": { "$ref": "#/definitions/stringOrStringArray" },
+        "entity": { "$ref": "#/definitions/stringOrStringArray" },
+        "jurisdiction": { "$ref": "#/definitions/stringOrStringArray" },
+        "regulatory_regime": { "$ref": "#/definitions/stringOrStringArray" },
+        "product_variant": { "$ref": "#/definitions/stringOrStringArray" },
+        "counterparty_classification": { "$ref": "#/definitions/stringOrStringArray" }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "When a posting is expected (ported verbatim from the legacy registry conditions, spec §3.1).",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["always", "non-zero-delta", "non-zero-pnl", "intentional-no-impact"]
+        },
+        "detail": {
+          "type": "string",
+          "description": "IFRS citation or plain-text reason."
+        },
+        "delta_path": {
+          "description": "For non-zero-delta / non-zero-pnl: the event/context path whose value gates the posting. Required for those kinds.",
+          "type": "string"
+        }
+      }
+    },
+    "lines": {
+      "type": "array",
+      "description": "Journal template. Each line resolves to one account + one side + one amount expression, optionally gated by a per-line predicate (spec §3.1).",
+      "items": { "$ref": "#/definitions/ruleLine" }
+    },
+    "balancing": {
+      "type": "string",
+      "enum": ["assert_zero"],
+      "description": "DR == CR per currency, asserted by the engine over the lines that actually fired (spec §7.2 step 5)."
+    },
+    "cites": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Obligation URNs this rule implements (Mechanism C, spec §2.3). Single-graph discipline (Principle 2)."
+    },
+    "supersedes": {
+      "type": "string",
+      "description": "rule_id@version this version replaces (spec §6.1).",
+      "pattern": "^PR-[A-Z0-9-]+@\\d+$"
+    },
+    "notes": { "type": "string" }
+  },
+  "definitions": {
+    "stringOrStringArray": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      ]
+    },
+    "ruleLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account", "side", "amount"],
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/accountResolverRef"
+        },
+        "side": {
+          "type": "string",
+          "enum": ["debit", "credit"]
+        },
+        "amount": {
+          "type": "string",
+          "description": "Sandboxed amount expression over event.*/context.* (spec §4). Integer minor units, BigInt-backed, banker's half-even division."
+        },
+        "currency": {
+          "description": "Explicit currency source for this line. One of: a fixed ISO-4217 code (e.g. 'ZAR'), or a context/event path resolving to a currency code (e.g. 'event.near.payCurrency'). When omitted, the line currency is derived from the resolver decision (the account's designated currency).",
+          "type": "string"
+        },
+        "when": {
+          "type": "string",
+          "description": "Optional per-line predicate (spec §3.1). The line fires only when the predicate evaluates true."
+        }
+      }
+    },
+    "accountResolverRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A logical account reference resolved to a physical ACC-NNNN-NNN by the resolver (spec §5), keyed on the context vector + representation + currency.",
+      "required": ["logical"],
+      "properties": {
+        "logical": {
+          "type": "string",
+          "description": "Logical account name, e.g. 'fx.receivable', 'fx.payable'."
+        },
+        "product": {
+          "type": "string",
+          "description": "Product key override for resolution; defaults to the rule's matched instrument_type."
+        },
+        "currency": {
+          "description": "Currency source for resolution: a fixed ISO-4217 code or an event/context path. Defaults to the line currency.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
