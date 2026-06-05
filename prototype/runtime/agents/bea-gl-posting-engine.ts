@@ -113,7 +113,11 @@ import {
 import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
-import type { BondMaturedPayload, BondSoldPayload, BondTradeExecutedPayload } from "../../platform/event-store/event-types/bond-accounting";
+import type {
+  BondMaturedPayload,
+  BondSoldPayload,
+  BondTradeExecutedPayload,
+} from "../../platform/event-store/event-types/bond-accounting";
 import {
   type FxSettlementFailedPayload,
   type FxTradeCancelledPayload,
@@ -145,12 +149,6 @@ import {
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
 import {
-  TREASURY_INTERPRETER_EVENT_TYPES,
-  interpretTreasuryEvent,
-  resolveDepositEnrichment,
-  resolveIblEnrichment,
-} from "./bea-gl-treasury-interpreter-cutover";
-import {
   DEFAULT_BOND_MATURITY_PORTFOLIO,
   DEFAULT_BOND_SALE_PORTFOLIO,
   SECURITIES_INTERPRETER_EVENT_TYPES,
@@ -158,6 +156,12 @@ import {
   interpretSecuritiesEvent,
   resolveBondPortfolio,
 } from "./bea-gl-securities-interpreter-cutover";
+import {
+  TREASURY_INTERPRETER_EVENT_TYPES,
+  interpretTreasuryEvent,
+  resolveDepositEnrichment,
+  resolveIblEnrichment,
+} from "./bea-gl-treasury-interpreter-cutover";
 
 // ---------------------------------------------------------------------------
 // Constants

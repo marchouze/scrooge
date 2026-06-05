@@ -340,16 +340,14 @@ export const PR_EQ_004: SlaRule = {
       side: "credit",
       amount: "abs(event.saleProceedsMinor - event.carryingAmountAtSaleMinor)",
       currency: "event.currency",
-      when:
-        "event.classification == 'fvoci' && event.saleProceedsMinor - event.carryingAmountAtSaleMinor > 0",
+      when: "event.classification == 'fvoci' && event.saleProceedsMinor - event.carryingAmountAtSaleMinor > 0",
     },
     {
       account: { logical: "equity.oci_reserve_fvoci", product: EQUITY, currency: "ZAR" },
       side: "debit",
       amount: "abs(event.saleProceedsMinor - event.carryingAmountAtSaleMinor)",
       currency: "event.currency",
-      when:
-        "event.classification == 'fvoci' && event.saleProceedsMinor - event.carryingAmountAtSaleMinor < 0",
+      when: "event.classification == 'fvoci' && event.saleProceedsMinor - event.carryingAmountAtSaleMinor < 0",
     },
     // 4a. Reclassify cumulative OCI → Retained Earnings within equity (gain):
     // Dr OCI Reserve / Cr Retained Earnings. Self-balancing; omitted when zero.

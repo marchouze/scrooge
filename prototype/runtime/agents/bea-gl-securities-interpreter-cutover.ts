@@ -145,7 +145,10 @@ export function resolveBondPortfolio(
   for (const e of events) {
     if (e.type !== "BondTradeExecuted") continue;
     const p = e.payload as Partial<BondTradeExecutedPayload>;
-    if (p.tradeId === tradeId && (p.portfolio === "banking-book" || p.portfolio === "trading-book")) {
+    if (
+      p.tradeId === tradeId &&
+      (p.portfolio === "banking-book" || p.portfolio === "trading-book")
+    ) {
       return p.portfolio;
     }
   }

@@ -14,13 +14,7 @@
 //            2026-06-05).
 
 import type { SlaRule } from "../generated/sla-types";
-import {
-  PR_BOND_001,
-  PR_BOND_002,
-  PR_BOND_EIR,
-  PR_BOND_MAT,
-  PR_BOND_SALE,
-} from "./pr-bond";
+import { PR_BOND_001, PR_BOND_002, PR_BOND_EIR, PR_BOND_MAT, PR_BOND_SALE } from "./pr-bond";
 import { PR_EQ_001, PR_EQ_002, PR_EQ_004, PR_EQ_CA, PR_EQ_INSTRUCT } from "./pr-equity";
 
 /** Every securities (bond + equity) IFRS posting rule, in lifecycle order. */

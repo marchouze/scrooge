@@ -376,7 +376,12 @@ describe("EQUITY dividend (PR-EQ-CA) — parity", () => {
 });
 
 describe("EQUITY sale (PR-EQ-004) — parity (FVTPL P&L vs FVOCI OCI split)", () => {
-  function sold(classification: "fvtpl" | "fvoci", proceeds: number, carrying: number, pnl: number) {
+  function sold(
+    classification: "fvtpl" | "fvoci",
+    proceeds: number,
+    carrying: number,
+    pnl: number,
+  ) {
     return {
       tradeId: "EQ-T1",
       instrumentId: "SBK",

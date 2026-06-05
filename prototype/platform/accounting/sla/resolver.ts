@@ -490,7 +490,12 @@ export const IFRS_TREASURY_RESOLVER_ROWS: readonly ResolverRow[] = [
 export const IFRS_SECURITIES_RESOLVER_ROWS: readonly ResolverRow[] = [
   // ── Bond ──
   zarRow("BOND", "bond.nostro", "ACC-1200-001"),
-  zarRow("BOND", "bond.asset_banking", "ACC-3100-001", "Bond asset — banking book (amortised cost)."),
+  zarRow(
+    "BOND",
+    "bond.asset_banking",
+    "ACC-3100-001",
+    "Bond asset — banking book (amortised cost).",
+  ),
   zarRow("BOND", "bond.asset_trading", "ACC-3100-002", "Bond asset — trading book (FVTPL)."),
   zarRow("BOND", "bond.accrued_interest_receivable", "ACC-3100-003"),
   zarRow("BOND", "bond.unrealised_pnl", "ACC-3100-005", "Unrealised P&L — bonds (FVTPL)."),
