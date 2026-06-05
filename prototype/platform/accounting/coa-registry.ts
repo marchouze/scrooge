@@ -959,6 +959,136 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     capitalTier: "t2" as const,
     capitalSubCategory: "t2.qualifying-general-provisions",
   },
+
+  // ------------------------------------------------------------------
+  // 5100 — Repo (secured borrowing) sub-ledger
+  //
+  // These leaves already existed in chart-of-accounts.json and were used by
+  // the legacy posting-rule functions (repo-mmd-ibl.ts) as string literals.
+  // They are now registered in COA_ACCOUNTS so the generated `AccountId` union
+  // (sla:codegen) covers them and the SLA resolver can resolve to them with the
+  // no-silent-fallback discipline. Authority: D-SLA-ENGINE-RULES-AS-DATA
+  // (full-retirement Batch 1, CEO-approved 2026-06-05); WS1-PR1a; IAS 39 §27.
+  // ------------------------------------------------------------------
+  {
+    id: "ACC-5100-001",
+    name: "Repo Asset (Secured Lending Receivable)",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+    // Secured-borrowing carrying amount (bank as cash borrower). Not HQLA.
+  },
+  {
+    id: "ACC-5100-002",
+    name: "Repo Liability (Secured Borrowing Payable)",
+    category: "liability-payable",
+    currency: "ZAR",
+    side: "credit",
+  },
+  {
+    id: "ACC-5100-003",
+    name: "Repo Collateral Memo (Off-Balance-Sheet)",
+    category: "asset-other",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-5100-004",
+    name: "Repo Accrued Interest",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-5100-005",
+    name: "Repo Interest Income / Expense",
+    category: "income-interest",
+    currency: "ZAR",
+    side: "credit",
+  },
+
+  // ------------------------------------------------------------------
+  // 6100 — Money-Market-Deposit (MMD) liabilities + interest
+  // (BA 325 Table 1 LCR categories). WS1-PR1a; IFRS 9 §4.2.1.
+  // ------------------------------------------------------------------
+  {
+    id: "ACC-6100-001",
+    name: "Deposit Liability — Retail Stable",
+    category: "liability-other",
+    currency: "ZAR",
+    side: "credit",
+  },
+  {
+    id: "ACC-6100-002",
+    name: "Deposit Liability — Retail Less-Stable",
+    category: "liability-other",
+    currency: "ZAR",
+    side: "credit",
+  },
+  {
+    id: "ACC-6100-003",
+    name: "Deposit Liability — Wholesale Operational",
+    category: "liability-other",
+    currency: "ZAR",
+    side: "credit",
+  },
+  {
+    id: "ACC-6100-004",
+    name: "Deposit Liability — Wholesale Non-Operational",
+    category: "liability-other",
+    currency: "ZAR",
+    side: "credit",
+  },
+  {
+    id: "ACC-6100-005",
+    name: "Deposit Accrued Interest Payable",
+    category: "liability-other",
+    currency: "ZAR",
+    side: "credit",
+  },
+  {
+    id: "ACC-6100-006",
+    name: "Deposit Interest Expense",
+    category: "expense-impairment",
+    currency: "ZAR",
+    side: "debit",
+    // Interest-expense P&L for deposit liabilities (the only "expense-*" category
+    // available in the COA vocabulary). Not an impairment despite the category
+    // label — the label is the generic expense bucket.
+  },
+
+  // ------------------------------------------------------------------
+  // 7100 — Interbank-Loan (IBL, bank as lender) assets + interest
+  // WS1-PR1a; IFRS 9 §4.1.2 (amortised cost); BA 326 (NSFR).
+  // ------------------------------------------------------------------
+  {
+    id: "ACC-7100-001",
+    name: "Due from Banks — Call Placements",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7100-002",
+    name: "Due from Banks — Fixed-Term Placements",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7100-003",
+    name: "IBL Accrued Interest Receivable",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7100-004",
+    name: "IBL Interest Income",
+    category: "income-interest",
+    currency: "ZAR",
+    side: "credit",
+  },
 ];
 
 // ---------------------------------------------------------------------------

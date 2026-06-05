@@ -116,11 +116,6 @@ import {
   paymentSettledJournals,
   settlementInstructionJournals,
 } from "../../platform/accounting/posting-rules/payments";
-import {
-  prIbl001,
-  prMmd001,
-  prRepo001,
-} from "../../platform/accounting/posting-rules/repo-mmd-ibl";
 import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
@@ -157,11 +152,6 @@ import type {
   SettlementInstructionReceivedPayload,
 } from "../../platform/event-store/event-types/payments";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
-import type {
-  DepositTakenPayload,
-  InterbankLoanPlacedPayload,
-  RepoTradeOpenedPayload,
-} from "../../platform/event-store/event-types/repo-mmd-ibl";
 import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
 import type {
   EquityPositionRevaluedPayload,
@@ -174,6 +164,12 @@ import {
   interpretFxEvent,
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
+import {
+  TREASURY_INTERPRETER_EVENT_TYPES,
+  interpretTreasuryEvent,
+  resolveDepositEnrichment,
+  resolveIblEnrichment,
+} from "./bea-gl-treasury-interpreter-cutover";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -230,10 +226,27 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "IrdSwapPositionRevalued",
   "IrdSwapCouponSettled",
   "IrdSwapTerminated",
-  // Treasury lifecycle events (WS1-PR1a; IFRS 9 §3.1.1; IAS 39 §27)
+  // Treasury money-market lifecycle events — CUT OVER TO THE SLA INTERPRETER
+  // (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 1). All 15 event types
+  // post via the rules-as-data interpreter (IFRS), byte-for-byte equal to the
+  // legacy repo-mmd-ibl.ts functions. The three opening types keep their
+  // original postingType strings so idempotency keys are unchanged. See
+  // `bea-gl-treasury-interpreter-cutover.ts` + `processTreasuryViaInterpreter`.
   "RepoTradeOpened",
+  "RepoStartLegSettled",
+  "RepoInterestAccrued",
+  "RepoEndLegSettled",
+  "RepoTradeTerminatedEarly",
   "DepositTaken",
+  "DepositInterestAccrued",
+  "DepositMatured",
+  "DepositWithdrawnEarly",
+  "FundingLineDrawn",
+  "FundingLineRepaid",
   "InterbankLoanPlaced",
+  "InterbankLoanInterestAccrued",
+  "InterbankLoanMatured",
+  "InterbankLoanRecalledEarly",
 ]);
 
 // Idempotency key format: "${sourceEventId}:${postingType}"
@@ -452,6 +465,106 @@ async function processFxViaInterpreter(
   return { emitted: 1, skipped: 0 };
 }
 
+/**
+ * Process one treasury money-market source event via the rules-as-data SLA
+ * interpreter and emit the resulting `SubLedgerPostingEmitted` (+ urgent-
+ * correction `SubstrateAlert`s for any suspense leg). The second production
+ * cutover seam (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 1). Idempotency
+ * keys for the three opening event types are unchanged (no double-post on replay).
+ *
+ * Enrichment: the maturity / early-withdrawal / recall rules price off the
+ * originating event's facts (deposit category + principal; placement type +
+ * principal). These are reconstructed HERE (the engine has the event stream)
+ * and handed to the pure interpreter — mirroring the legacy posting-rule default
+ * arguments so parity holds byte-for-byte. PR-REPO-CANCEL receives NO unwind-cash
+ * enrichment (the legacy stub returned []), so it produces no GL — preserved.
+ */
+async function processTreasuryViaInterpreter(
+  e: import("../../platform/event-store/types").Event,
+  ctx: AgentRunContext,
+  postedKeys: Set<IdempotencyKey>,
+): Promise<FxProcessResult> {
+  // Build enrichment for the rules that price off the originating event.
+  let enrichment: unknown;
+  if (e.type === "DepositMatured" || e.type === "DepositWithdrawnEarly") {
+    const depositId = (e.payload as { depositId?: string }).depositId ?? "";
+    const allDeposits = [...eventStore.replay({ type: "DepositTaken" })];
+    enrichment = resolveDepositEnrichment(allDeposits, depositId);
+  } else if (e.type === "InterbankLoanMatured" || e.type === "InterbankLoanRecalledEarly") {
+    const placementId = (e.payload as { placementId?: string }).placementId ?? "";
+    const allPlacements = [...eventStore.replay({ type: "InterbankLoanPlaced" })];
+    enrichment = resolveIblEnrichment(allPlacements, placementId);
+  }
+
+  const outcome = interpretTreasuryEvent(e, ctx.asOf, enrichment);
+
+  if (outcome.kind === "reject") {
+    logger.error(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — SLA interpreter rejected treasury posting",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  if (outcome.kind === "no-gl") {
+    logger.info(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — treasury event has no GL impact (interpreter intentional-no-impact)",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // outcome.kind === "post"
+  const key: IdempotencyKey = `${e.event_id}:${outcome.postingType}`;
+  if (postedKeys.has(key)) {
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // Urgent-correction alerts for any suspense leg (loud, never silent). The
+  // treasury family is predominantly ZAR, so this is normally empty; a non-ZAR
+  // leg with no per-currency account routes to suspense exactly as FX does.
+  if (!ctx.dryRun && outcome.urgentCorrections.length > 0) {
+    for (const correction of outcome.urgentCorrections) {
+      eventStore.append(
+        urgentCorrectionToSubstrateAlert(correction, {
+          asOf: ctx.asOf,
+          entity: e.entity ?? "LE-ZA-HOZ-BANK",
+          actor: HANDLER_ACTOR,
+        }),
+      );
+    }
+    logger.warn(
+      {
+        eventId: e.event_id,
+        eventType: e.type,
+        postingType: outcome.postingType,
+        unresolvedCurrencies: outcome.urgentCorrections.map((c) => c.currency),
+      },
+      "bea:gl-posting-engine — treasury leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
+    );
+  }
+
+  if (!ctx.dryRun) {
+    const postingEvent = makeSubLedgerPostingEmitted({
+      asOf: ctx.asOf,
+      entity: e.entity ?? "LE-ZA-HOZ-BANK",
+      actor: HANDLER_ACTOR,
+      citations: [...GL_POSTING_CITATIONS],
+      payload: {
+        sourceEventId: e.event_id,
+        postingType: outcome.postingType,
+        legs: outcome.legs,
+        postedAt: ctx.asOf,
+      },
+      eventId: newEventId(),
+    });
+    eventStore.append(postingEvent);
+    postedKeys.add(key);
+  }
+
+  return { emitted: 1, skipped: 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -529,10 +642,22 @@ export async function beaGlPostingEngine(
     ...eventStore.replay({ type: "IrdSwapPositionRevalued" }),
     ...eventStore.replay({ type: "IrdSwapCouponSettled" }),
     ...eventStore.replay({ type: "IrdSwapTerminated" }),
-    // Treasury lifecycle events (WS1-PR1a)
+    // Treasury money-market lifecycle events (SLA interpreter cutover, Batch 1)
     ...eventStore.replay({ type: "RepoTradeOpened" }),
+    ...eventStore.replay({ type: "RepoStartLegSettled" }),
+    ...eventStore.replay({ type: "RepoInterestAccrued" }),
+    ...eventStore.replay({ type: "RepoEndLegSettled" }),
+    ...eventStore.replay({ type: "RepoTradeTerminatedEarly" }),
     ...eventStore.replay({ type: "DepositTaken" }),
+    ...eventStore.replay({ type: "DepositInterestAccrued" }),
+    ...eventStore.replay({ type: "DepositMatured" }),
+    ...eventStore.replay({ type: "DepositWithdrawnEarly" }),
+    ...eventStore.replay({ type: "FundingLineDrawn" }),
+    ...eventStore.replay({ type: "FundingLineRepaid" }),
     ...eventStore.replay({ type: "InterbankLoanPlaced" }),
+    ...eventStore.replay({ type: "InterbankLoanInterestAccrued" }),
+    ...eventStore.replay({ type: "InterbankLoanMatured" }),
+    ...eventStore.replay({ type: "InterbankLoanRecalledEarly" }),
   ];
 
   if (sourceEvents.length === 0) {
@@ -588,6 +713,24 @@ export async function beaGlPostingEngine(
       // -----------------------------------------------------------------------
       if (FX_INTERPRETER_EVENT_TYPES.has(e.type)) {
         const handled = await processFxViaInterpreter(e, ctx, postedKeys, getCancellationIndex);
+        eventsEmitted += handled.emitted;
+        skipped += handled.skipped;
+        continue;
+      }
+
+      // -----------------------------------------------------------------------
+      // TREASURY MONEY-MARKET CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 1) ────
+      // The 15 deposit / funding-line / interbank-loan / repo lifecycle event
+      // types post via the rules-as-data SLA interpreter (IFRS), NOT the legacy
+      // repo-mmd-ibl.ts posting-rule functions. Byte-for-byte safe — proven by
+      // tests/sla-treasury-lifecycle-parallel-run.test.ts. Enrichment for the
+      // maturity / early-termination rules is reconstructed inside
+      // processTreasuryViaInterpreter and handed to the pure interpreter. All
+      // other product families (bond/equity/IRS/payments + FX already done) fall
+      // through to their existing dispatch, UNTOUCHED.
+      // -----------------------------------------------------------------------
+      if (TREASURY_INTERPRETER_EVENT_TYPES.has(e.type)) {
+        const handled = await processTreasuryViaInterpreter(e, ctx, postedKeys);
         eventsEmitted += handled.emitted;
         skipped += handled.skipped;
         continue;
@@ -923,38 +1066,11 @@ export async function beaGlPostingEngine(
         }
         const payload = e.payload as IrdSwapTerminatedPayload;
         legs = irdSwapTerminationJournals(payload);
-      } else if (e.type === "RepoTradeOpened") {
-        // PR-REPO-001: Secured borrowing recognition — IAS 39 §27; IFRS 9 §3.1.1
-        postingType = "repo-trade-booking";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as RepoTradeOpenedPayload;
-        legs = prRepo001(payload);
-      } else if (e.type === "DepositTaken") {
-        // PR-MMD-001: Deposit liability recognition — IFRS 9 §3.1.1; BA 325 Table 1
-        postingType = "deposit-taken";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as DepositTakenPayload;
-        legs = prMmd001(payload);
-      } else if (e.type === "InterbankLoanPlaced") {
-        // PR-IBL-001: Due-from-banks asset recognition — IFRS 9 §3.1.1; §4.1.2
-        postingType = "ibl-placement";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as InterbankLoanPlacedPayload;
-        legs = prIbl001(payload);
       } else {
-        // Unreachable — SUBSCRIBED_TYPES guard above.
+        // Unreachable — SUBSCRIBED_TYPES guard above. The treasury money-market
+        // event types (deposit / funding / IBL / repo) are routed to the SLA
+        // interpreter by the TREASURY_INTERPRETER_EVENT_TYPES branch earlier in
+        // this loop (D-SLA-ENGINE-RULES-AS-DATA Batch 1) and never reach here.
         continue;
       }
 
