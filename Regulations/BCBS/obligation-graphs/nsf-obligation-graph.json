@@ -7,30 +7,30 @@
   "generatedAt": "2026-06-04T00:00:00Z",
   "source": "The Basel Framework (BIS) consolidated PDF, pages 1215-1252",
   "stats": {
-    "nodes": 120,
-    "edges": 169,
-    "obligations": 36,
-    "normativeParagraphs": 36,
+    "nodes": 107,
+    "edges": 143,
+    "obligations": 31,
+    "normativeParagraphs": 31,
     "decomposition": "paragraph",
     "nodesByType": {
       "Framework": 1,
       "Document": 1,
-      "Provision": 81,
+      "Provision": 73,
       "Term": 1,
-      "Obligation": 36
+      "Obligation": 31
     },
     "edgesByType": {
       "COMPRISES": 1,
       "CONTAINS": 56,
-      "REFERENCES": 73,
+      "REFERENCES": 52,
       "DEFINES": 1,
-      "EXPRESSES": 36,
+      "EXPRESSES": 31,
       "USES": 2
     },
     "obligationsByType": {
-      "recommended": 14,
-      "must": 17,
-      "may": 4,
+      "recommended": 11,
+      "must": 16,
+      "may": 3,
       "must-not": 1
     }
   },
@@ -346,7 +346,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.5",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.5"
@@ -361,7 +361,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.6",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.6"
@@ -376,7 +376,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.7",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.7"
@@ -387,11 +387,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.8",
       "level": "section",
-      "text": "This could reflect a case where a bank may imply that it would be subject to funding risk if it did not exercise an option on its own funding. 1 Derivative liabilities are calculated first based on the replacement cost for derivative contracts (obtained by marking to market) where the contract has a negative value. When an eligible bilateral netting contract is in place that meets the conditions as specified in , the replacement cost for the set of CRE52.7 derivative exposures covered by the contract must be the net replacement cost.",
+      "text": "funding. 1 Derivative liabilities are calculated first based on the replacement cost for derivative contracts (obtained by marking to market) where the contract has a negative value. When an eligible bilateral netting contract is in place that meets the conditions as specified in , the replacement cost for the set of CRE52.7 derivative exposures covered by the contract must be the net replacement cost.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.8",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.8"
@@ -418,7 +418,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.9",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.9"
@@ -429,11 +429,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.10",
       "level": "section",
-      "text": "NSFR derivative liabilities = (derivative liabilities) – (total collateral posted as variation margin on derivative liabilities). To the extent that the bank’s accounting framework reflects on balance sheet, in connection with a derivative contract, an asset associated with collateral posted as variation margin that is deducted from the replacement cost amount for purposes of the NSFR, that asset should not be included in the calculation of a bank’s RSF to avoid any double- counting. 2 FAQ Does the deduction of variation margin from replacement cost in connection with a derivative or bilateral netting contract include the portion of variation margin that is in excess of the replacement cost amount of that derivative or bilateral netting contract? Or do national supervisors only allow a variation margin deduction up to the amount of the derivative asset or liability? While national discretion exists on this matter, the amount of variation margin in connection with a derivative or bilateral netting contract that is in excess of the replacement cost of that derivative or bilateral netting contract must be adequately captured. This can be done by considering the full amount of variation margin in the calculation of the bank’s net derivative asset or liability, or by excluding any amount of variation margin that is posted or received in excess of the replacement cost of the corresponding derivative or bilateral netting contract and treating them according to the corresponding balance- sheet treatment (ie, typically a loan), the period of encumbrance and, where applicable, the type of counterparty. FAQ1 Liabilities and capital instruments receiving a 100% ASF factor comprise: (1) the total amount of regulatory capital, before the application of capital deductions, as defined in ,CAP10 3 excluding the proportion of Tier 2 instruments with residual maturity of less than one year;",
+      "text": "Liabilities and capital instruments receiving a 100% ASF factor comprise: (1) the total amount of regulatory capital, before the application of capital deductions, as defined in ,CAP10 3 excluding the proportion of Tier 2 instruments with residual maturity of less than one year; (2) the total amount of any capital instrument not included in (1) that NSF30.10 has an effective residual maturity of one year or more, but excluding any instruments with explicit or embedded options that, if exercised, would reduce the expected maturity to less than one year; (3) the total amount of secured and unsecured borrowings and liabilities (including term deposits) with effective residual maturities of one year or more. Cash flows falling below the one-year horizon but arising from liabilities with a final maturity greater than one year do not qualify for the",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.10",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.10"
@@ -456,26 +456,14 @@
       "nodeType": "Provision",
       "label": "NSF30 30.11",
       "level": "section",
-      "text": "(2) the total amount of any capital instrument not included in (1) that NSF30.10 has an effective residual maturity of one year or more, but excluding any instruments with explicit or embedded options that, if exercised, would reduce the expected maturity to less than one year; (3) the total amount of secured and unsecured borrowings and liabilities (including term deposits) with effective residual maturities of one year or more. Cash flows falling below the one-year horizon but arising from liabilities with a final maturity greater than one year do not qualify for the 100% ASF factor; and (4) retail term deposits maturing over one year that cannot be withdrawn early without significant penalty. Capital instruments reported here should meet all requirements outlined in , and should only include amounts after transitional CAP10 arrangements in have expired under fully implemented Basel III CAP90 standards (ie as in 2022). 3 FAQ What is the treatment in the NSFR of unsecured precious metals liabilities (such as deposits in precious metals received by a bank)? Are the ASF factors for retail deposits and unsecured wholesale funding according to to applicable?NSF30.10 NSF30.14 Yes, on-balance sheet precious metals liabilities should receive the same ASF factors as other on-balance sheet (cash) funding. There is no difference between cash settlement and physical delivery in terms of application of ASF factors. FAQ1 Liabilities receiving a 95% ASF factor comprise “stable” (as defined in to LCR40.7 ) non-maturity (demand) deposits and/or term deposits with residual LCR40.12 maturities of less than one year,and/or term deposits with residual maturities greater than one year that can be withdrawn early without a significant penalty, provided by retail and small business customers.4",
+      "text": "100% ASF factor; and (4) retail term deposits maturing over one year that cannot be withdrawn early without significant penalty. Liabilities receiving a 95% ASF factor comprise “stable” (as defined in to LCR40.7 ) non-maturity (demand) deposits and/or term deposits with residual LCR40.12 maturities of less than one year,and/or term deposits with residual maturities greater than one year that can be withdrawn early without a significant penalty, provided by retail and small business customers.4",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.11",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.11"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:cap:90",
-      "nodeType": "Provision",
-      "label": "CAP90",
-      "level": "section",
-      "metadata": {
-        "standard": "CAP",
-        "paragraph": "90",
-        "external": true,
-        "stub": true
       }
     },
     {
@@ -503,30 +491,15 @@
       }
     },
     {
-      "id": "urn:reg:bcbs:nsf:30.14",
-      "nodeType": "Provision",
-      "label": "NSF30 30.14",
-      "level": "section",
-      "text": "Banks should refer to guidance from their supervisors to determine if any national development banks in their jurisdictions or abroad can qualify for this treatment. These entities would likely include banks that provide financing for development projects. Contrary to multilateral development banks, whose membership and operation involve several countries, national development banks typically belong to or are controlled by the state in which they are incorporated. 6 Liabilities receiving a 0% ASF factor comprise: (1) all other liabilities and equity categories not included in the above categories, including other funding with residual maturity of less than six months from central banks and financial institutions;7 (2) other liabilities without a stated maturity. This category must include short positions and open maturity positions that are not otherwise captured under to . Two exceptions may be recognised for liabilities NSF30.10 NSF30.13 without a stated maturity, which would then be assigned either a 100% ASF factor if the effective maturity is one year or greater, or 50%, if the effective maturity is between six months and less than one year: (a) first, deferred tax liabilities, which should be treated according to the nearest possible date on which such liabilities could be realised; and (b) second, minority interest, which should be treated according to the term of the instrument, usually in perpetuity. (3) NSFR derivative liabilities as calculated according to and NSF30.8 NSF30.9 net of NSFR derivative assets as calculated according to and NSF30.23 NSF30.",
-      "metadata": {
-        "chapter": "NSF30",
-        "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
-        "paragraph": "30.14",
-        "standard": "NSF",
-        "citationUrn": "urn:reg:bcbs:nsf:30.14"
-      }
-    },
-    {
       "id": "urn:reg:bcbs:nsf:30.12",
       "nodeType": "Provision",
       "label": "NSF30 30.12",
       "level": "section",
-      "text": "Retail deposits are defined in . Small business customers are LCR40.5 defined in and .LCR40.23 LCR40.24 4 Liabilities receiving a 90% ASF factor comprise “less stable” (as defined in LCR40. to ) non-maturity (demand) deposits and/or term deposits with 13 LCR40.15 residual maturities of less than one year, and/or term deposits with residual maturities greater than one year that can be withdrawn early without a significant penalty, provided by retail and small business customers.5",
+      "text": "Liabilities receiving a 90% ASF factor comprise “less stable” (as defined in LCR40. to ) non-maturity (demand) deposits and/or term deposits with 13 LCR40.15 residual maturities of less than one year, and/or term deposits with residual maturities greater than one year that can be withdrawn early without a significant penalty, provided by retail and small business customers.5",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.12",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.12"
@@ -557,51 +530,15 @@
       }
     },
     {
-      "id": "urn:reg:bcbs:lcr:40.23",
-      "nodeType": "Provision",
-      "label": "LCR40.23",
-      "level": "section",
-      "metadata": {
-        "standard": "LCR",
-        "paragraph": "40.23",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:lcr:40.24",
-      "nodeType": "Provision",
-      "label": "LCR40.24",
-      "level": "section",
-      "metadata": {
-        "standard": "LCR",
-        "paragraph": "40.24",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:lcr:40.5",
-      "nodeType": "Provision",
-      "label": "LCR40.5",
-      "level": "section",
-      "metadata": {
-        "standard": "LCR",
-        "paragraph": "40.5",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
       "id": "urn:reg:bcbs:nsf:30.13",
       "nodeType": "Provision",
       "label": "NSF30 30.13",
       "level": "section",
-      "text": "The treatment of retail and small business deposits follows the definitions provided in the LCR standard and not the run-off rates applied to them in a particular jurisdiction. Thus, retail and small business deposits that are subject to higher (than 5% and 10%) outflow assumptions than those for stable and less stable deposits in the LCR could be treated as stable and less stable, unless a given jurisdiction chooses to apply a more conservative treatment (lower ASF). 5 Liabilities receiving a 50% ASF factor comprise: (1) funding (secured and unsecured) with a residual maturity of less than one year provided by non-financial corporate customers; (2) operational deposits (as defined in to );LCR40.26 LCR40.36 (3) funding with residual maturity of less than one year from sovereigns, public sector entities (PSEs), and multilateral and national development banks;6and (4) other funding (secured and unsecured) not included in the categories above with residual maturity between six months to less than one year, including funding from central banks and financial institutions.",
+      "text": "Liabilities receiving a 50% ASF factor comprise: (1) funding (secured and unsecured) with a residual maturity of less than one year provided by non-financial corporate customers; (2) operational deposits (as defined in to );LCR40.26 LCR40.36 (3) funding with residual maturity of less than one year from sovereigns, public sector entities (PSEs), and multilateral and national development banks;6and (4) other funding (secured and unsecured) not included in the categories above with residual maturity between six months to less than one year, including funding from central banks and financial institutions.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.13",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.13"
@@ -632,6 +569,21 @@
       }
     },
     {
+      "id": "urn:reg:bcbs:nsf:30.14",
+      "nodeType": "Provision",
+      "label": "NSF30 30.14",
+      "level": "section",
+      "text": "Liabilities receiving a 0% ASF factor comprise: (1) all other liabilities and equity categories not included in the above categories, including other funding with residual maturity of less than six months from central banks and financial institutions;7 (2) other liabilities without a stated maturity. This category must include short positions and open maturity positions that are not otherwise captured under to . Two exceptions may be recognised for liabilities NSF30.10 NSF30.13 without a stated maturity, which would then be assigned either a 100% ASF factor if the effective maturity is one year or greater, or 50%, if the effective maturity is between six months and less than one year: (a) first, deferred tax liabilities, which should be treated according to the nearest possible date on which such liabilities could be realised; and (b) second, minority interest, which should be treated according to the term of the instrument, usually in perpetuity. (3) NSFR derivative liabilities as calculated according to and NSF30.8 NSF30.9 net of NSFR derivative assets as calculated according to and NSF30.23 NSF30. , if NSFR derivative liabilities are greater than NSFR derivative assets;24 8 and (4) “trade date” payables arising from purchases of financial instruments, foreign currencies and commodities that (a) are expected to settle within the standard settlement cycle or period that is customary for the relevant exchange or type of transaction, or (b) have failed to, but are still expected to, settle.",
+      "metadata": {
+        "chapter": "NSF30",
+        "chapterTitle": "Available and required stable funding",
+        "section": "Definition of available stable funding",
+        "paragraph": "30.14",
+        "standard": "NSF",
+        "citationUrn": "urn:reg:bcbs:nsf:30.14"
+      }
+    },
+    {
       "id": "urn:reg:bcbs:nsf:30.23",
       "nodeType": "Provision",
       "label": "NSF30 30.23",
@@ -640,7 +592,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "FAQ",
+        "section": "Definition of available stable funding",
         "paragraph": "30.23",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.23"
@@ -651,11 +603,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.15",
       "level": "section",
-      "text": ", if NSFR derivative liabilities are greater than NSFR derivative assets;24 8 and (4) “trade date” payables arising from purchases of financial instruments, foreign currencies and commodities that (a) are expected to settle within the standard settlement cycle or period that is customary for the relevant exchange or type of transaction, or (b) have failed to, but are still expected to, settle. Footnotes Definition of required stable funding for assets and off-balance sheet exposures At the discretion of national supervisors, deposits between banks within the same cooperative network maybe excluded from liabilities receiving a 0% ASF provided they are either (a) required by law in some jurisdictions to be placed at the central organisation and are legally constrained within the cooperative bank network as minimum deposit requirements, or (b) in the context of common task sharing and legal, statutory or contractual arrangements, so long as the bank that has received the monies and the bank that has deposited participate in the same institutional network’s mutual protection scheme against illiquidity and insolvency of its members. Such deposits maybe assigned an ASF up to the RSF factor assigned by regulation for the same deposits to the depositing bank, not to exceed 85%. 7 ASF = 0% x MAX ((NSFR derivative liabilities – NSFR derivative assets), 0). 8 The amount of RSF is measured based on the broad characteristics of the liquidity risk profile of an institution’s assets and off-balance-sheet exposures. The amount of RSF is calculated by first assigning the carrying value of an institution’s assets to the categories listed below. The carrying value of an asset item should generally be recorded by following its accounting value, ie net of specific provisions, in line with and the requirements for on-balance CRE20.1 sheet, non-derivative assets in . The amount assigned to each category is LEV30 then multiplied by its associated RSF factor, and the total RSF is the sum of the weighted amounts added to the amount of off-balance-sheet activity (or potential liquidity exposure) multiplied by its associated RSF factor. As noted in , definitions mirror those outlined in the standard, unless otherwise NSF10.2 LCR specified.9 Regardless of whether a bank uses the internal ratings-based (IRB) approach, the standardised approach risk weights in must be used to CRE20 determine the NSFR treatment.",
+      "text": "Definition of required stable funding for assets and off-balance sheet exposures The amount of RSF is measured based on the broad characteristics of the liquidity risk profile of an institution’s assets and off-balance-sheet exposures. The amount of RSF is calculated by first assigning the carrying value of an institution’s assets to the categories listed below. The carrying value of an asset item should generally be recorded by following its accounting value, ie net of specific provisions, in line with and the requirements for on-balance CRE20.1 sheet, non-derivative assets in . The amount assigned to each category is LEV30 then multiplied by its associated RSF factor, and the total RSF is the sum of the weighted amounts added to the amount of off-balance-sheet activity (or potential liquidity exposure) multiplied by its associated RSF factor. As noted in , definitions mirror those outlined in the standard, unless otherwise NSF10.2 LCR specified.9 Regardless of whether a bank uses the internal ratings-based (IRB) approach, the standardised approach risk weights in must be used to CRE20 determine the NSFR treatment.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.15",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.15"
@@ -702,38 +654,14 @@
       "nodeType": "Provision",
       "label": "NSF30 30.16",
       "level": "section",
-      "text": "For the purposes of calculating the NSFR, high-quality liquid assets (HQLA) are defined as all HQLA without regard to Liquidity Coverage Ratio (LCR) operational requirements and LCR caps on Level 2 and Level 2B assets that may otherwise limit the ability of some HQLA to be included as eligible HQLA in calculation of the LCR. HQLA are defined in . Operational requirements are specified in to LCR30 LCR30.13 LCR30. .28 9 Unless explicitly stated otherwise in the NSFR standard, assets must be allocated to maturity buckets according to their contractual residual maturity. However, this should take into account embedded optionality, such as put or call options, which may affect the actual maturity date as described in and . The NSF30.7 NSF30.17 RSF factors assigned to various types of assets are intended to approximate the amount of a particular asset that would have to be funded, either because it will be rolled over, or because it could not be monetised through sale or used as collateral in a secured borrowing transaction over the course of one year without significant expense. Under the standard, such amounts must be supported by stable funding.",
+      "text": "Unless explicitly stated otherwise in the NSFR standard, assets must be allocated to maturity buckets according to their contractual residual maturity. However, this should take into account embedded optionality, such as put or call options, which may affect the actual maturity date as described in and . The NSF30.7 NSF30.17 RSF factors assigned to various types of assets are intended to approximate the amount of a particular asset that would have to be funded, either because it will be rolled over, or because it could not be monetised through sale or used as collateral in a secured borrowing transaction over the course of one year without significant expense. Under the standard, such amounts must be supported by stable funding.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.16",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.16"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:lcr:30",
-      "nodeType": "Provision",
-      "label": "LCR30",
-      "level": "section",
-      "metadata": {
-        "standard": "LCR",
-        "paragraph": "30",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:lcr:30.13",
-      "nodeType": "Provision",
-      "label": "LCR30.13",
-      "level": "section",
-      "metadata": {
-        "standard": "LCR",
-        "paragraph": "30.13",
-        "external": true,
-        "stub": true
       }
     },
     {
@@ -745,7 +673,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.17",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.17"
@@ -756,11 +684,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.18",
       "level": "section",
-      "text": "This could reflect a case where a bank may imply that it would be subject to funding risk if it did not exercise an option on its own assets. 10 In the case of exceptional central bank liquidity absorbing operations, claims on central banks may receive a reduced RSF factor. For those operations with a residual maturity equal to or greater than six months, the RSF factor must not be lower than 5%. When applying a reduced RSF factor, supervisors need to closely monitor the ongoing impact on banks’ stable funding positions arising from the reduced requirement and take appropriate measures as needed. Also, as further specified in , assets that are provided as collateral for exceptional central NSF30.20 bank liquidity providing operations may receive a reduced RSF factor which must not be lower than the RSF factor applied to the equivalent asset that is unencumbered. In both cases, supervisors should discuss and agree on the appropriate RSF factor with the relevant central bank.",
+      "text": "In the case of exceptional central bank liquidity absorbing operations, claims on central banks may receive a reduced RSF factor. For those operations with a residual maturity equal to or greater than six months, the RSF factor must not be lower than 5%. When applying a reduced RSF factor, supervisors need to closely monitor the ongoing impact on banks’ stable funding positions arising from the reduced requirement and take appropriate measures as needed. Also, as further specified in , assets that are provided as collateral for exceptional central NSF30.20 bank liquidity providing operations may receive a reduced RSF factor which must not be lower than the RSF factor applied to the equivalent asset that is unencumbered. In both cases, supervisors should discuss and agree on the appropriate RSF factor with the relevant central bank.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.18",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.18"
@@ -775,7 +703,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.20",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.20"
@@ -790,7 +718,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.19",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.19"
@@ -801,26 +729,14 @@
       "nodeType": "Provision",
       "label": "NSF30 30.21",
       "level": "section",
-      "text": "Encumbered assets include but are not limited to assets backing securities or covered bonds and assets pledged in securities financing transactions or collateral swaps. “Unencumbered” is defined in LCR30. .16 11 In general, exceptional central bank liquidity operations are considered to be non-standard, temporary operations conducted by the central bank in order to achieve its mandate in a period of market-wide financial stress and/or exceptional macroeconomic challenges. 12 FAQ How should the encumbrance treatment be applied to secured lending (eg reverse repo) transactions where the collateral received does not appear on the bank’s balance sheet, and it has been rehypothecated or sold thereby creating a short position? The encumbrance treatment should be applied to the on-balance sheet receivable to the extent that the transaction cannot mature without the bank returning the collateral received to the counterparty. As per , for a transaction to be “unencumbered”, it must be “free of LCR30.16 legal, regulatory, contractual or other restrictions on the ability of the bank to liquidate, sell, transfer or assign the asset”. Since the liquidation of the cash receivable is contingent on the return of collateral that is no longer held by the bank, the receivable should be considered as encumbered. When the collateral received from a secured funding transaction has been rehypothecated, the receivable should be considered encumbered for the term of the rehypothecation of the collateral. When the collateral received from a secured funding transaction has been sold outright, thereby creating a short position, the receivable related to the original secured funding transaction should be considered encumbered for the term of the residual maturity of this receivable. Thus, the on-balance-sheet receivable should: - be treated according to the answer to FAQ2 under if the NSF30.21 remaining period of encumbrance is less than six months (ie it is considered as being unencumbered in the NSFR); - be assigned a 50% or higher RSF factor if the remaining period of encumbrance is between six months and less than one year according to ; andNSF30.20 - be assigned a 100% RSF factor if the remaining period of encumbrance is greater than one year according to .NSF30.20 FAQ1 How should the encumbrance treatment be applied to secured lending (eg reverse repo) transactions where the collateral appears on the bank’ s balance sheet, and it has been rehypothecated or sold, thereby creating a short position? Collateral received that appears on a bank’s balance sheet and has been rehypothecated (eg encumbered to a repo) should be treated as encumbered according to . Consequently, the collateral NSF30.20 received should: FAQ2 - be treated as being unencumbered if the remaining period of encumbrance is less than six months according to , and NSF30.20 receive the same RSF factor as an equivalent asset that is unencumbered; - be assigned a 50% or higher RSF factor if the remaining period of encumbrance is between six months and less than one year according to ; andNSF30.20 - be assigned a 100% RSF factor if the remaining period of encumbrance is greater than one year according to .NSF30.20 If the collateral has been sold outright, thereby creating a short position, the corresponding on-balance-sheet receivable should be considered encumbered for the term of the residual maturity of this receivable, and receive an RSF factor according to the answer to NSF30. FAQ1 above.20 Would excess over-collateralisation (OC) (OC in an amount higher than the legal OC requirement) in a covered bond collateral pool constitute encumbered assets for the purpose of the NSFR? For example, should the OC requirements to maintain a particular rating imposed by rating agencies be taken into account for determining excess OC? The treatment of excess OC will depend on the ability of the bank to issue additional covered bonds against the collateral or pool of collateral, which may depend on the specific characteristics of the covered bond issuance programme. Where collateral is posted for the specific issuance of covered bonds and it is thus an intrinsic characteristic of a particular issuance, then the excess collateral committed for the issuance cannot be used to raise additional funding or be taken out of the collateral pool without affecting the characteristics of the issuance, and must be considered encumbered for as long as it remains in the collateral pool. If, however, the covered bonds are issued against a collateral pool that allows for multiple issuance, subject to supervisory discretion, the excess collateral (which would actually represent excess issuance capacity) may be treated as unencumbered for the purpose of the NSFR, provided it can be withdrawn at the issuer’s discretion without any contractual, regulatory, reputational or relevant operational impediment (such as a negative impact on the bank’s targeted rating) and it can be used to issue more covered bonds or mobilise such collateral in any other way (eg by selling outright or securitising). A FAQ3 type of operational impediment that should be taken into account includes those cases where rating agencies set an objective and measureable threshold for OC (ie explicit OC requirements to maintain a minimum rating imposed by rating agencies), and to the extent that not meeting such requirements could materially impact the bank’s targeted rating of the covered bonds, thus impairing the future ability of the institution to issue new covered bonds. In such cases, supervisors may, taking national specificities and other factors into account, specify an OC level below which excess collateral is considered encumbered. For secured funding arrangements, use of balance sheet and accounting treatments should generally result in banks excluding, from their assets, securities which they have borrowed in securities financing transactions (such as reverse repos and collateral swaps) where they do not have beneficial ownership. In contrast, banks must include securities they have lent in securities financing transactions where they retain beneficial ownership. Banks should also not include any securities they have received through collateral swaps if those securities do not appear on their balance sheets. Where banks have encumbered securities in repos or other securities financing transactions, but have retained beneficial ownership and those assets remain on the bank’s balance sheet, the bank must allocate such securities to the appropriate RSF category.",
+      "text": "For secured funding arrangements, use of balance sheet and accounting treatments should generally result in banks excluding, from their assets, securities which they have borrowed in securities financing transactions (such as reverse repos and collateral swaps) where they do not have beneficial ownership. In contrast, banks must include securities they have lent in securities financing transactions where they retain beneficial ownership. Banks should also not include any securities they have received through collateral swaps if those securities do not appear on their balance sheets. Where banks have encumbered securities in repos or other securities financing transactions, but have retained beneficial ownership and those assets remain on the bank’s balance sheet, the bank must allocate such securities to the appropriate RSF category.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.21",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.21"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:lcr:30.16",
-      "nodeType": "Provision",
-      "label": "LCR30.16",
-      "level": "section",
-      "metadata": {
-        "standard": "LCR",
-        "paragraph": "30.16",
-        "external": true,
-        "stub": true
       }
     },
     {
@@ -828,44 +744,14 @@
       "nodeType": "Provision",
       "label": "NSF30 30.22",
       "level": "section",
-      "text": "What is the treatment in terms of encumbrance for collateral pledged in a repo operation with remaining maturity of one year or greater but where the collateral pledged matures in less than one year? In this case, for the purpose of computing the NSFR, the collateral should be considered encumbered for the term of the repo or secured transaction, even if the actual maturity of the collateral is shorter than one year. This follows because the collateral would have to be replaced once it matures. Thus, the collateral pledged under a transaction maturing beyond one year must be subject to a RSF factor of 100%, regardless of its maturity. FAQ1 What is the applicable RSF factor for the amount receivable by a bank under a reverse repo transaction? With the exception of loans (reverse repos) to financial institutions with residual maturity of less than six months secured by Level 1 assets (which receive a 10% RSF factor as per ) or by other assets NSF30.27 FAQ2 (which receive a 15% RSF factor as per ), the treatment for NSF30.28 the amount receivable is the same as with any other loan, which will depend on the counterparty and term of the operation. What is the treatment for the collateral received? According to , the NSFR treatment of collateral received in a NSF30.21 reverse repo is determined by the collateral’s balance sheet and accounting treatments, which should generally result in banks excluding from their assets, securities that they have borrowed in securities financing transactions (such as reverse repos and collateral swaps) which are kept off-balance sheet. In this case, there is no NSFR treatment for the collateral. If, however, the collateral received is kept on-balance sheet, such collateral must receive an RSF factor according to its characteristics (whether it is HQLA, its term, issuer, etc). FAQ3 Amounts receivable and payable under these securities financing transactions should generally be reported on a gross basis, meaning that the gross amount of such receivables and payables should be reported on the RSF side and ASF side, respectively. The only exception is that securities financing transactions with a single counterparty may be measured on a net basis when calculating the NSFR, provided that the netting conditions for securities financing transactions set out in are met.LEV30",
+      "text": "Amounts receivable and payable under these securities financing transactions should generally be reported on a gross basis, meaning that the gross amount of such receivables and payables should be reported on the RSF side and ASF side, respectively. The only exception is that securities financing transactions with a single counterparty may be measured on a net basis when calculating the NSFR, provided that the netting conditions for securities financing transactions set out in are met.LEV30",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "FAQ",
+        "section": "Definition of available stable funding",
         "paragraph": "30.22",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.22"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:nsf:30.27",
-      "nodeType": "Provision",
-      "label": "NSF30 30.27",
-      "level": "section",
-      "text": "Monetary Fund, the European Central Bank and the European Community, or multilateral development banks that are assigned a 0% risk weight under ; andCRE20 (2) certain non-0% risk-weighted sovereign or central bank debt securities (excluding claims on central banks with maturities of less than six months, which must receive a 0% RSF) as specified in the standard.LCR FAQ Should sovereign bonds issued in foreign currencies that are excluded from HQLA according to get the treatment of HQLA in the LCR30.41 NSFR? (This question applies to those sovereign or central bank debt securities issued in foreign currencies which are not computable given that their amount exceeds the bank’s stressed net cash outflows in that currency and country.) Yes, the total amount of these securities can be treated as Level 1 and assigned to the corresponding bucket. FAQ1 Assets assigned a 10% RSF factor comprise unencumbered loans to financial institutions with residual maturities of less than six months, where the loan is secured against Level 1 assets as defined in , and where the bank has LCR30.41 the ability to freely rehypothecate the received collateral for the life of the loan.",
-      "metadata": {
-        "chapter": "NSF30",
-        "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
-        "paragraph": "30.27",
-        "standard": "NSF",
-        "citationUrn": "urn:reg:bcbs:nsf:30.27"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:nsf:30.28",
-      "nodeType": "Provision",
-      "label": "NSF30 30.28",
-      "level": "section",
-      "text": "Assets assigned a 15% RSF factor comprise: (1) unencumbered Level 2A assets as defined in , including:LCR30.43 (a) marketable securities representing claims on or guaranteed by sovereigns, central banks, PSEs or multilateral development banks that are assigned a 20% risk weight under ; andCRE20 (b) corporate debt securities (including commercial paper) and covered bonds with a credit rating equal or equivalent to at least AA–; (2) all other unencumbered loans to financial institutions with residual maturities of less than six months not included in . NSF30.27",
-      "metadata": {
-        "chapter": "NSF30",
-        "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
-        "paragraph": "30.28",
-        "standard": "NSF",
-        "citationUrn": "urn:reg:bcbs:nsf:30.28"
       }
     },
     {
@@ -877,7 +763,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "FAQ",
+        "section": "Definition of available stable funding",
         "paragraph": "30.24",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.24"
@@ -888,11 +774,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.25",
       "level": "section",
-      "text": "NSFR derivative assets = (derivative assets) – (cash collateral received as variation margin on derivative assets) 13 FAQ Does the existence of minimum thresholds of transfer amounts for exchange of collateral in derivative contracts automatically preclude such contracts from being considered for the condition of to NSF30.24 allow an offsetting of collateral received (in particular regarding the daily calculation and exchange of variation margins)? No. refers to which states that “variation margin NSF30.24 LEV30 exchanged is the full amount that would be necessary to fully extinguish the mark-to-market exposure of the derivative subject to the threshold and minimum transfer amounts applicable to the counterparty”. The requirement on frequency of calculation and exchange of margins states that “Variation margin is calculated and exchanged on a daily basis based on mark-to-market valuation of derivatives positions”. FAQ1 What is the appropriate treatment of initial margin and variation margin if they are not separate? For over-the-counter transactions, any fixed independent amount a bank was contractually required to post at the inception of the derivatives transaction should be considered as initial margin, regardless of whether any of this margin was returned to the bank in the form of variation margin payments. If the initial margin is formulaically defined at a portfolio level, the amount considered as initial margin should reflect this calculated amount as of the NSFR measurement date, even if, for example, the total amount of margin physically posted to the bank’s counterparty is lower because of variation margin payments received. For centrally cleared transactions, the amount of initial margin should reflect the total amount of margin posted (initial margin and variation margin) less any mark-to-market losses on the applicable portfolio of cleared transactions. FAQ2 If an on-balance sheet asset is associated with collateral posted as initial margin for purposes of the NSFR, should it be treated as encumbered? To the extent that the bank’s accounting framework reflects on balance sheet, in connection with a derivative contract, an asset associated with collateral posted as initial margin for purposes of the NSFR, that asset FAQ3 should not be counted as an encumbered asset in the calculation of a bank’s RSF to avoid any double-counting. Does the deduction of variation margin from replacement cost in connection with a derivative or bilateral netting contract include the portion of variation margin that is in excess of the replacement cost amount of that derivative or bilateral netting contract? Or do national supervisors only allow a variation margin deduction up to the amount of the derivative asset or liability? While national discretion exists on this matter, the amount of variation margin in connection with a derivative or bilateral netting contract that is in excess of the replacement cost of that derivative or bilateral netting contract must be adequately captured. This can be done by considering the full amount of variation margin in the calculation of the bank’s net derivative asset or liability, or by excluding any amount of variation margin that is posted or received in excess of the replacement cost of the corresponding derivative or bilateral netting contract and treating them according to the corresponding balance- sheet treatment (ie, typically a loan), the period of encumbrance and, where applicable, the type of counterparty. FAQ4 Assets assigned a 0% RSF factor comprise: (1) coins and banknotes immediately available to meet obligations; (2) all central bank reserves (including required reserves and excess reserves);14 (3) all claims15on central banks with residual maturities of less than six months; and (4) \"trade date\" receivables arising from sales of financial instruments, foreign currencies and commodities that (a) are expected to settle within the standard settlement cycle or period that is customary for the relevant exchange or type of transaction, or (b) have failed to, but are still expected to, settle.",
+      "text": "Assets assigned a 0% RSF factor comprise: (1) coins and banknotes immediately available to meet obligations; (2) all central bank reserves (including required reserves and excess reserves);14 (3) all claims15on central banks with residual maturities of less than six months; and (4) \"trade date\" receivables arising from sales of financial instruments, foreign currencies and commodities that (a) are expected to settle within the standard settlement cycle or period that is customary for the relevant exchange or type of transaction, or (b) have failed to, but are still expected to, settle.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.25",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.25"
@@ -903,11 +789,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.26",
       "level": "section",
-      "text": "Supervisors may discuss and agree with the relevant central bank on the RSF factor to be assigned to required reserves, based in particular on consideration of whether or not the reserve requirement must be satisfied at all times and thus the extent to which reserve requirements in that jurisdiction exist on a longer-term horizon and therefore require associated stable funding. 14 The term “claims” is broader than loans. The term “claims”, for example, also includes central bank bills and the asset account created on banks’ balance sheets by entering into repo transactions with central banks. 15 FAQ What is the treatment in the NSFR of unsecured loans in precious metals extended by a bank or deposits in precious metals placed by a bank? Is the treatment according to to applicable?NSF30.25 NSF30.32 Yes, on-balance sheet unsecured loans in precious metals extended by a bank or deposits in precious metals placed by a bank that are settled by cash payment should receive the same RSF factors as other (cash) deposits and loans depending on the relevant characteristics such as counterparty type, maturity and encumbrance. Where physical delivery is assumed, loans extended in precious metals and deposits placed in precious metals should be treated like physically traded commodities and are subject to 85% RSF unless the loan (or deposit) is (i) extended to (or placed with) a financial counterparty and has a residual maturity of one year or greater or (ii) encumbered for a period of one year or more or (iii) non-performing, in which cases 100% RSF should be applied. The assumed type of settlement should be determined in accordance with the approach to determine inflows applied in the LCR, and, should jurisdictions opt for the alternative treatment of classification between cash settlement and physical delivery in line with FAQ1, supervisors in such jurisdictions must publicly LCR40.86 disclose these treatments. FAQ1 Assets assigned a 5% RSF factor comprise unencumbered Level 1 assets as defined in , excluding assets receiving a 0% RSF as specified above, and LCR30.41 including: (1) marketable securities representing claims on or guaranteed by sovereigns, central banks, PSEs, the Bank for International Settlements, the International",
+      "text": "Assets assigned a 5% RSF factor comprise unencumbered Level 1 assets as defined in , excluding assets receiving a 0% RSF as specified above, and LCR30.41 including: (1) marketable securities representing claims on or guaranteed by sovereigns, central banks, PSEs, the Bank for International Settlements, the International",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.26",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.26"
@@ -926,30 +812,33 @@
       }
     },
     {
-      "id": "urn:reg:bcbs:lcr:40.86",
+      "id": "urn:reg:bcbs:nsf:30.27",
       "nodeType": "Provision",
-      "label": "LCR40.86",
+      "label": "NSF30 30.27",
       "level": "section",
-      "metadata": {
-        "standard": "LCR",
-        "paragraph": "40.86",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:nsf:30.32",
-      "nodeType": "Provision",
-      "label": "NSF30 30.32",
-      "level": "section",
-      "text": "RSF factor, they should retain that higher factor. (2) other unencumbered performing loans17 that do not qualify for the 35% or lower risk weight under and have residual maturities of one year or CRE20 more, excluding loans to financial institutions; (3) unencumbered securities with a remaining maturity of one year or more and exchange-traded equities, that are not in default and do not qualify as HQLA according to the standard; andLCR (4) physical traded commodities, including gold. Initial margin posted on behalf of a customer, where the bank provided a customer access to a third party (eg a CCP) for the purpose of clearing derivatives, where the transactions are executed in the name of the customer and the bank does not guarantee performance of the third party (eg the CCP), maybe exempt from this requirement. 16 Performing loans are considered to be those that are not past due for more than 90 days or otherwise classified as a defaulted exposure under . CRE20 17 Assets assigned a 100% RSF factor comprise: (1) all assets that are encumbered for a period of one year or more;",
+      "text": "Monetary Fund, the European Central Bank and the European Community, or multilateral development banks that are assigned a 0% risk weight under ; andCRE20 (2) certain non-0% risk-weighted sovereign or central bank debt securities (excluding claims on central banks with maturities of less than six months, which must receive a 0% RSF) as specified in the standard.LCR Assets assigned a 10% RSF factor comprise unencumbered loans to financial institutions with residual maturities of less than six months, where the loan is secured against Level 1 assets as defined in , and where the bank has LCR30.41 the ability to freely rehypothecate the received collateral for the life of the loan.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "FAQ",
-        "paragraph": "30.32",
+        "section": "Definition of available stable funding",
+        "paragraph": "30.27",
         "standard": "NSF",
-        "citationUrn": "urn:reg:bcbs:nsf:30.32"
+        "citationUrn": "urn:reg:bcbs:nsf:30.27"
+      }
+    },
+    {
+      "id": "urn:reg:bcbs:nsf:30.28",
+      "nodeType": "Provision",
+      "label": "NSF30 30.28",
+      "level": "section",
+      "text": "Assets assigned a 15% RSF factor comprise: (1) unencumbered Level 2A assets as defined in , including:LCR30.43 (a) marketable securities representing claims on or guaranteed by sovereigns, central banks, PSEs or multilateral development banks that are assigned a 20% risk weight under ; andCRE20 (b) corporate debt securities (including commercial paper) and covered bonds with a credit rating equal or equivalent to at least AA–; (2) all other unencumbered loans to financial institutions with residual maturities of less than six months not included in . NSF30.27",
+      "metadata": {
+        "chapter": "NSF30",
+        "chapterTitle": "Available and required stable funding",
+        "section": "Definition of available stable funding",
+        "paragraph": "30.28",
+        "standard": "NSF",
+        "citationUrn": "urn:reg:bcbs:nsf:30.28"
       }
     },
     {
@@ -973,7 +862,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.29",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.29"
@@ -996,11 +885,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.30",
       "level": "section",
-      "text": "Corporates, PSEs and covered bonds with a credit rating equal or equivalent to at least AA– have an RSF of 15%. However, only corporates with a credit rating of between A+ and BBB– have an RSF of 50%, while this is not applicable for PSEs and covered bonds. Is this correct? Sovereign and PSEs bonds rated between A+ and BBB– are also eligible as Level 2B assets and, as such, would be subject to an RSF of 50%. This is also the case for corporate securities that would qualify as Level 2A assets but whose price has declined more than 10% within a 30-day period, but not over 20%. With respect to covered bonds, only those whose rating is above AA– are eligible as Level 2A assets, and the LCR does not contemplate including covered bonds as Level 2B assets. Those assets that do not qualify as HQLA should be classified according to their maturity. FAQ1 Footnotes Assets assigned a 65% RSF factor comprise: (1) unencumbered residential mortgages with a residual maturity of one year or more that would qualify for a 35% or lower risk weight under ; andCRE20 (2) other unencumbered loans, including loans to sovereigns, multilateral development banks, PSEs and national development banks, not included in the above categories, excluding loans to financial institutions, with a residual maturity of one year or more that would qualify for a 35% or lower risk weight under .CRE20",
+      "text": "Assets assigned a 65% RSF factor comprise: (1) unencumbered residential mortgages with a residual maturity of one year or more that would qualify for a 35% or lower risk weight under ; andCRE20 (2) other unencumbered loans, including loans to sovereigns, multilateral development banks, PSEs and national development banks, not included in the above categories, excluding loans to financial institutions, with a residual maturity of one year or more that would qualify for a 35% or lower risk weight under .CRE20",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "FAQ",
+        "section": "Definition of available stable funding",
         "paragraph": "30.30",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.30"
@@ -1015,10 +904,25 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "FAQ",
+        "section": "Definition of available stable funding",
         "paragraph": "30.31",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.31"
+      }
+    },
+    {
+      "id": "urn:reg:bcbs:nsf:30.32",
+      "nodeType": "Provision",
+      "label": "NSF30 30.32",
+      "level": "section",
+      "text": "RSF factor, they should retain that higher factor. (2) other unencumbered performing loans17 that do not qualify for the 35% or lower risk weight under and have residual maturities of one year or CRE20 more, excluding loans to financial institutions; (3) unencumbered securities with a remaining maturity of one year or more and exchange-traded equities, that are not in default and do not qualify as HQLA according to the standard; andLCR (4) physical traded commodities, including gold. Assets assigned a 100% RSF factor comprise: (1) all assets that are encumbered for a period of one year or more; (2) NSFR derivative assets as calculated according to and NSF30.23 NSF30.24 net of NSFR derivative liabilities as calculated according to and NSF30.8 , if NSFR derivative assets are greater than NSFR derivative liabilities;NSF30.9",
+      "metadata": {
+        "chapter": "NSF30",
+        "chapterTitle": "Available and required stable funding",
+        "section": "Definition of available stable funding",
+        "paragraph": "30.32",
+        "standard": "NSF",
+        "citationUrn": "urn:reg:bcbs:nsf:30.32"
       }
     },
     {
@@ -1026,11 +930,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.33",
       "level": "section",
-      "text": "(2) NSFR derivative assets as calculated according to and NSF30.23 NSF30.24 net of NSFR derivative liabilities as calculated according to and NSF30.8 , if NSFR derivative assets are greater than NSFR derivative liabilities;NSF30.9 18 (3) assets without a stated maturity not included in (1) and (2) NSF30.32 NSF30.32 (including non-maturity reverse repos unless banks can demonstrate to supervisors that the non-maturity reverse repo would effectively mature in less than one year); (4) all other assets not included in the above categories, including non- performing loans, loans to financial institutions with a residual maturity of one year or more, non-exchange-traded equities, fixed assets, items deducted from regulatory capital, retained interest, insurance assets, subsidiary interests and defaulted securities; and (5) 5% to 20% (depending on national discretion) of all derivative liabilities (ie negative replacement cost amounts) as calculated according to to NSF30.8 (before deducting variation margin posted).NSF30.9 RSF = 100% x MAX ((NSFR derivative assets – NSFR derivative liabilities), 0). 18 FAQ Footnote 18 states that NSFR derivative liabilities = (derivative NSF30 liabilities) – (total collateral posted as variation margin on derivative liabilities). In contrast, (5) requires a 100% RSF factor to be NSF30.32 applied to 5% to 20% (depending on national discretion) of derivative liabilities calculated before deducting variation margin posted. Should derivative liabilities be calculated before or after deducting collateral posted as variation margin on the derivative contracts? Additionally, would the 100% RSF factor be applied to the 5% to 20% (depending on national discretion) of derivatives liabilities even in cases when a bank is in a net derivative asset position (ie the net derivative asset is already subject to a 100% RSF factor)? NSFR derivative liabilities, as defined in , should be calculated NSF30.9 after deducting collateral posted as variation margin on the derivative contracts. However, for the purpose of (5), the 5% to 20% RSF NSF30.32 factor applies to the gross amount of derivative liabilities as defined in , ie before deducting the collateral posted. There are no NSF30.8 exceptions to this treatment: thus, the 100% RSF factor is applied to 5% of the gross amount of derivatives liabilities in all cases, and is not dependent on a bank’s net derivative position as described in NSF30.32 (2). FAQ1 How should derivatives structured as \"settled-to-market\" be captured? Derivatives structured as \"settled-to-market\" should be included in the calculation of the 5% to 20% of derivative liabilities specified in NSF30. (5). The replacement cost amount of these derivatives should be 32 calculated as if no settlement payments and receipts had been made to account for the changes in the value of a derivative transaction or a portfolio of derivative transactions. FAQ2 Many potential off-balance sheet liquidity exposures require little direct or immediate funding but can lead to significant liquidity drains over a longer time horizon. The NSFR assigns an RSF factor to various off-balance sheet activities in order to ensure that institutions hold stable funding for the portion of off- balance sheet exposures that may be expected to require funding within a one- year horizon.",
+      "text": "18 (3) assets without a stated maturity not included in (1) and (2) NSF30.32 NSF30.32 (including non-maturity reverse repos unless banks can demonstrate to supervisors that the non-maturity reverse repo would effectively mature in less than one year); (4) all other assets not included in the above categories, including non- performing loans, loans to financial institutions with a residual maturity of one year or more, non-exchange-traded equities, fixed assets, items deducted from regulatory capital, retained interest, insurance assets, subsidiary interests and defaulted securities; and (5) 5% to 20% (depending on national discretion) of all derivative liabilities (ie negative replacement cost amounts) as calculated according to to NSF30.8 (before deducting variation margin posted).NSF30.9 Many potential off-balance sheet liquidity exposures require little direct or immediate funding but can lead to significant liquidity drains over a longer time horizon. The NSFR assigns an RSF factor to various off-balance sheet activities in order to ensure that institutions hold stable funding for the portion of off- balance sheet exposures that may be expected to require funding within a one- year horizon.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Footnotes",
+        "section": "Definition of available stable funding",
         "paragraph": "30.33",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.33"
@@ -1071,11 +975,11 @@
       "nodeType": "Provision",
       "label": "NSF30 30.36",
       "level": "section",
-      "text": "assets and liabilities? No. National supervisors have discretion in limited circumstances to determine whether certain asset and liability items, on the basis of contractual arrangements, are interdependent. The strict conditions of must all be fulfilled to allow this treatment to apply. This NSF30.35 treatment, therefore, is not intended to be applied to derivative transactions, since it is rarely the case that derivatives would meet all conditions. Furthermore, the fulfilment of the conditions provided for by would not automatically lead to the application of the NSF30.35 treatment of interdependent assets, as supervisors are still required to consider whether perverse incentives or unintended consequences are being created by approving this treatment for certain operations, before exercising such discretion. FAQ1 Before exercising this discretion, supervisors should consider whether perverse incentives or unintended consequences are being created.",
+      "text": "Before exercising this discretion, supervisors should consider whether perverse incentives or unintended consequences are being created.",
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Do derivative transactions qualify for the treatment of interdependent",
+        "section": "RSF factor RSF category",
         "paragraph": "30.36",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.36"
@@ -1090,7 +994,7 @@
       "metadata": {
         "chapter": "NSF30",
         "chapterTitle": "Available and required stable funding",
-        "section": "Do derivative transactions qualify for the treatment of interdependent",
+        "section": "RSF factor RSF category",
         "paragraph": "30.37",
         "standard": "NSF",
         "citationUrn": "urn:reg:bcbs:nsf:30.37"
@@ -1338,7 +1242,7 @@
         "modalities": [
           "must"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
       "exception": "unless otherwise NSF10"
     },
@@ -1359,30 +1263,29 @@
           "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
       "trigger": "When determining the maturity of an equity or liability instrument, the bank must assume investors redeem call options at the earliest possible date"
     },
     {
       "id": "OBL-BCBS-NSF-s30.8-1",
       "nodeType": "Obligation",
-      "label": "NSF30 30.8 — may",
-      "obligationType": "may",
+      "label": "NSF30 30.8 — must",
+      "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "This could reflect a case where a bank may imply that it would be subject to funding risk if it did not exercise an option on its own funding. 1 Derivative liabilities are calculated first based on the replacement cost for derivative contracts (obtained by marking to market) where the contract has a",
+      "actionSummary": "When an eligible bilateral netting contract is in place that meets the conditions as specified in , the replacement cost for the set of CRE52.7 derivative exposures covered by the contract must be the net replacement cost.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.8",
         "chapter": "NSF30",
         "paragraph": "30.8",
         "standard": "NSF",
-        "classificationConfidence": 0.55,
+        "classificationConfidence": 0.9,
         "modalities": [
-          "must",
-          "may"
+          "must"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
-      "trigger": "where a bank may imply that it would be subject to funding risk if it did not exercise an option on its own funding"
+      "trigger": "where the contract has a negative value"
     },
     {
       "id": "OBL-BCBS-NSF-s30.9-1",
@@ -1400,78 +1303,37 @@
         "modalities": [
           "must"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       }
     },
     {
-      "id": "OBL-BCBS-NSF-s30.10-1",
+      "id": "OBL-BCBS-NSF-s30.14-1",
       "nodeType": "Obligation",
-      "label": "NSF30 30.10 — must",
+      "label": "NSF30 30.14 — must",
       "obligationType": "must",
-      "actor": "national supervisor",
-      "actionSummary": "To the extent that the bank’s accounting framework reflects on balance sheet, in connection with a derivative contract, an asset associated with collateral posted as variation margin that is deducted from the replacement cost amount for purposes of the NSFR, that asset should not be included in the ",
+      "actor": "bank",
+      "actionSummary": "This category must include short positions and open maturity positions that are not otherwise captured under to .",
       "metadata": {
-        "sourceProvision": "urn:reg:bcbs:nsf:30.10",
+        "sourceProvision": "urn:reg:bcbs:nsf:30.14",
         "chapter": "NSF30",
-        "paragraph": "30.10",
+        "paragraph": "30.14",
         "standard": "NSF",
         "classificationConfidence": 0.9,
         "modalities": [
           "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
-      "trigger": "To the extent that the bank’s accounting framework reflects on balance sheet, in connection with a derivative contract, an asset associated with collateral posted as variation margin that is deducted "
-    },
-    {
-      "id": "OBL-BCBS-NSF-s30.11-1",
-      "nodeType": "Obligation",
-      "label": "NSF30 30.11 — recommended",
-      "obligationType": "recommended",
-      "actor": "bank",
-      "actionSummary": "Capital instruments reported here should meet all requirements outlined in , and should only include amounts after transitional CAP10 arrangements in have expired under fully implemented Basel III CAP90 standards (ie as in 2022). 3 FAQ What is the treatment in the NSFR of unsecured precious metals l",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:nsf:30.11",
-        "chapter": "NSF30",
-        "paragraph": "30.11",
-        "standard": "NSF",
-        "classificationConfidence": 0.6,
-        "modalities": [
-          "recommended"
-        ],
-        "section": "Footnotes"
-      },
-      "trigger": "if exercised, would reduce the expected maturity to less than one year"
-    },
-    {
-      "id": "OBL-BCBS-NSF-s30.14-1",
-      "nodeType": "Obligation",
-      "label": "NSF30 30.14 — recommended",
-      "obligationType": "recommended",
-      "actor": "bank",
-      "actionSummary": "Banks should refer to guidance from their supervisors to determine if any national development banks in their jurisdictions or abroad can qualify for this treatment.",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:nsf:30.14",
-        "chapter": "NSF30",
-        "paragraph": "30.14",
-        "standard": "NSF",
-        "classificationConfidence": 0.6,
-        "modalities": [
-          "must",
-          "recommended"
-        ],
-        "section": "Footnotes"
-      },
-      "trigger": "if any national development banks in their jurisdictions or abroad can qualify for this treatment"
+      "trigger": "if the effective maturity is one year or greater, or 50%, if the effective maturity is between six months and less than one year: (a) first, deferred tax liabilities, which should be treated according"
     },
     {
       "id": "OBL-BCBS-NSF-s30.15-1",
       "nodeType": "Obligation",
       "label": "NSF30 30.15 — recommended",
       "obligationType": "recommended",
-      "actor": "national supervisor",
-      "actionSummary": ", if NSFR derivative liabilities are greater than NSFR derivative assets;24 8 and (4) “trade date” payables arising from purchases of financial instruments, foreign currencies and commodities that (a) are expected to settle within the standard settlement cycle or period that is customary for the rel",
+      "actor": "bank",
+      "actionSummary": "The carrying value of an asset item should generally be recorded by following its accounting value, ie net of specific provisions, in line with and the requirements for on-balance CRE20.1 sheet, non-derivative assets in .",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.15",
         "chapter": "NSF30",
@@ -1482,9 +1344,8 @@
           "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
-      "trigger": "if NSFR derivative liabilities are greater than NSFR derivative assets",
       "exception": "unless otherwise NSF10"
     },
     {
@@ -1493,7 +1354,7 @@
       "label": "NSF30 30.16 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "Operational requirements are specified in to LCR30 LCR30.13 LCR30. .28 9 Unless explicitly stated otherwise in the NSFR standard, assets must be allocated to maturity buckets according to their contractual residual maturity.",
+      "actionSummary": "Unless explicitly stated otherwise in the NSFR standard, assets must be allocated to maturity buckets according to their contractual residual maturity.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.16",
         "chapter": "NSF30",
@@ -1504,7 +1365,7 @@
           "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
       "exception": "Unless explicitly stated otherwise in the NSFR standard, assets must be allocated to maturity buckets according to their contractual residual maturity"
     },
@@ -1526,7 +1387,7 @@
           "recommended",
           "may"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
       "trigger": "When determining the maturity of an instrument, the bank must assume investors exercise any option to extend maturity"
     },
@@ -1536,7 +1397,7 @@
       "label": "NSF30 30.18 — may",
       "obligationType": "may",
       "actor": "bank",
-      "actionSummary": "This could reflect a case where a bank may imply that it would be subject to funding risk if it did not exercise an option on its own assets. 10 In the case of exceptional central bank liquidity absorbing operations, claims on central banks may receive a reduced RSF factor.",
+      "actionSummary": "In the case of exceptional central bank liquidity absorbing operations, claims on central banks may receive a reduced RSF factor.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.18",
         "chapter": "NSF30",
@@ -1548,9 +1409,9 @@
           "recommended",
           "may"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
-      "trigger": "where a bank may imply that it would be subject to funding risk if it did not exercise an option on its own assets"
+      "trigger": "When applying a reduced RSF factor, supervisors need to closely monitor the ongoing impact on banks’ stable funding positions arising from the reduced requirement and take appropriate measures as need"
     },
     {
       "id": "OBL-BCBS-NSF-s30.19-1",
@@ -1568,7 +1429,7 @@
         "modalities": [
           "must"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
       "trigger": "if such transactions have not been reflected in the balance sheet under a settlement-date accounting model, provided that: (1) such transactions are not reflected as derivatives or secured financing t"
     },
@@ -1591,7 +1452,7 @@
           "recommended",
           "may"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
       "trigger": "if unencumbered, receive an RSF factor lower than or equal to 50% must receive a 50% RSF factor"
     },
@@ -1601,7 +1462,7 @@
       "label": "NSF30 30.21 — recommended",
       "obligationType": "recommended",
       "actor": "bank",
-      "actionSummary": "Encumbered assets include but are not limited to assets backing securities or covered bonds and assets pledged in securities financing transactions or collateral swaps. “Unencumbered” is defined in LCR30. .16 11 In general, exceptional central bank liquidity operations are considered to be non-stand",
+      "actionSummary": "For secured funding arrangements, use of balance sheet and accounting treatments should generally result in banks excluding, from their assets, securities which they have borrowed in securities financing transactions (such as reverse repos and collateral swaps) where they do not have beneficial owne",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.21",
         "chapter": "NSF30",
@@ -1610,12 +1471,11 @@
         "classificationConfidence": 0.6,
         "modalities": [
           "must",
-          "recommended",
-          "may"
+          "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
-      "trigger": "where the collateral received does not appear on the bank’s balance sheet, and it has been rehypothecated or sold thereby creating a short position? The encumbrance treatment should be applied to the "
+      "trigger": "where they do not have beneficial ownership"
     },
     {
       "id": "OBL-BCBS-NSF-s30.22-1",
@@ -1623,7 +1483,7 @@
       "label": "NSF30 30.22 — recommended",
       "obligationType": "recommended",
       "actor": "bank",
-      "actionSummary": "What is the treatment in terms of encumbrance for collateral pledged in a repo operation with remaining maturity of one year or greater but where the collateral pledged matures in less than one year? In this case, for the purpose of computing the NSFR, the collateral should be considered encumbered ",
+      "actionSummary": "Amounts receivable and payable under these securities financing transactions should generally be reported on a gross basis, meaning that the gross amount of such receivables and payables should be reported on the RSF side and ASF side, respectively.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.22",
         "chapter": "NSF30",
@@ -1631,13 +1491,11 @@
         "standard": "NSF",
         "classificationConfidence": 0.6,
         "modalities": [
-          "must",
           "recommended"
         ],
-        "section": "FAQ"
+        "section": "Definition of available stable funding"
       },
-      "trigger": "where the collateral pledged matures in less than one year? In this case, for the purpose of computing the NSFR, the collateral should be considered encumbered for the term of the repo or secured tran",
-      "exception": "With the exception of loans (reverse repos) to financial institutions with residual maturity of less than six months secured by Level 1 assets (which receive a 10% RSF factor as per ) or by other asse"
+      "trigger": "when calculating the NSFR, provided that the netting conditions for securities financing transactions set out in are met"
     },
     {
       "id": "OBL-BCBS-NSF-s30.23-1",
@@ -1655,7 +1513,7 @@
         "modalities": [
           "must"
         ],
-        "section": "FAQ"
+        "section": "Definition of available stable funding"
       },
       "trigger": "where the contract has a positive value"
     },
@@ -1676,7 +1534,7 @@
           "must-not",
           "recommended"
         ],
-        "section": "FAQ"
+        "section": "Definition of available stable funding"
       },
       "exception": "unless it is received in the form of cash variation margin and meets the conditions as specified in for the cash LEV30 portion of variation margin exchanged between counterparties to be viewed as a fo"
     },
@@ -1685,8 +1543,8 @@
       "nodeType": "Obligation",
       "label": "NSF30 30.25 — recommended",
       "obligationType": "recommended",
-      "actor": "national supervisor",
-      "actionSummary": "FAQ1 What is the appropriate treatment of initial margin and variation margin if they are not separate? For over-the-counter transactions, any fixed independent amount a bank was contractually required to post at the inception of the derivatives transaction should be considered as initial margin, re",
+      "actor": "bank",
+      "actionSummary": "(2) all central bank reserves (including required reserves and excess reserves);14 (3) all claims15on central banks with residual maturities of less than six months; and (4) \"trade date\" receivables arising from sales of financial instruments, foreign currencies and commodities that (a) are expected",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.25",
         "chapter": "NSF30",
@@ -1694,35 +1552,10 @@
         "standard": "NSF",
         "classificationConfidence": 0.6,
         "modalities": [
-          "must",
           "recommended"
         ],
-        "section": "Footnotes"
-      },
-      "trigger": "subject to the threshold and minimum transfer amounts applicable to the counterparty”"
-    },
-    {
-      "id": "OBL-BCBS-NSF-s30.26-1",
-      "nodeType": "Obligation",
-      "label": "NSF30 30.26 — must",
-      "obligationType": "must",
-      "actor": "bank",
-      "actionSummary": "Supervisors may discuss and agree with the relevant central bank on the RSF factor to be assigned to required reserves, based in particular on consideration of whether or not the reserve requirement must be satisfied at all times and thus the extent to which reserve requirements in that jurisdiction",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:nsf:30.26",
-        "chapter": "NSF30",
-        "paragraph": "30.26",
-        "standard": "NSF",
-        "classificationConfidence": 0.9,
-        "modalities": [
-          "must",
-          "recommended",
-          "may"
-        ],
-        "section": "Footnotes"
-      },
-      "trigger": "Where physical delivery is assumed, loans extended in precious metals and deposits placed in precious metals should be treated like physically traded commodities and are subject to 85% RSF unless the ",
-      "exception": "unless the loan (or deposit) is (i) extended to (or placed with) a financial counterparty and has a residual maturity of one year or greater or (ii) encumbered for a period of one year or more or (iii"
+        "section": "Definition of available stable funding"
+      }
     },
     {
       "id": "OBL-BCBS-NSF-s30.27-1",
@@ -1738,32 +1571,11 @@
         "standard": "NSF",
         "classificationConfidence": 0.9,
         "modalities": [
-          "must",
-          "recommended"
+          "must"
         ],
-        "section": "Footnotes"
+        "section": "Definition of available stable funding"
       },
       "trigger": "where the loan is secured against Level 1 assets as defined in , and where the bank has LCR30"
-    },
-    {
-      "id": "OBL-BCBS-NSF-s30.30-1",
-      "nodeType": "Obligation",
-      "label": "NSF30 30.30 — recommended",
-      "obligationType": "recommended",
-      "actor": "bank",
-      "actionSummary": "Those assets that do not qualify as HQLA should be classified according to their maturity.",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:nsf:30.30",
-        "chapter": "NSF30",
-        "paragraph": "30.30",
-        "standard": "NSF",
-        "classificationConfidence": 0.6,
-        "modalities": [
-          "recommended"
-        ],
-        "section": "FAQ"
-      },
-      "trigger": "subject to an RSF of 50%"
     },
     {
       "id": "OBL-BCBS-NSF-s30.32-1",
@@ -1781,30 +1593,9 @@
         "modalities": [
           "recommended"
         ],
-        "section": "FAQ"
+        "section": "Definition of available stable funding"
       },
-      "trigger": "where the bank provided a customer access to a third party (eg a CCP) for the purpose of clearing derivatives, where the transactions are executed in the name of the customer and the bank does not gua"
-    },
-    {
-      "id": "OBL-BCBS-NSF-s30.33-1",
-      "nodeType": "Obligation",
-      "label": "NSF30 30.33 — recommended",
-      "obligationType": "recommended",
-      "actor": "bank",
-      "actionSummary": "Should derivative liabilities be calculated before or after deducting collateral posted as variation margin on the derivative contracts? Additionally, would the 100% RSF factor be applied to the 5% to 20% (depending on national discretion) of derivatives liabilities even in cases when a bank is in a",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:nsf:30.33",
-        "chapter": "NSF30",
-        "paragraph": "30.33",
-        "standard": "NSF",
-        "classificationConfidence": 0.6,
-        "modalities": [
-          "recommended"
-        ],
-        "section": "Footnotes"
-      },
-      "trigger": "if NSFR derivative assets are greater than NSFR derivative liabilities",
-      "exception": "unless banks can demonstrate to supervisors that the non-maturity reverse repo would effectively mature in less than one year)"
+      "trigger": "if NSFR derivative assets are greater than NSFR derivative liabilities"
     },
     {
       "id": "OBL-BCBS-NSF-s30.35-1",
@@ -1832,21 +1623,20 @@
     {
       "id": "OBL-BCBS-NSF-s30.36-1",
       "nodeType": "Obligation",
-      "label": "NSF30 30.36 — must",
-      "obligationType": "must",
-      "actor": "national supervisor",
-      "actionSummary": "The strict conditions of must all be fulfilled to allow this treatment to apply.",
+      "label": "NSF30 30.36 — recommended",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Before exercising this discretion, supervisors should consider whether perverse incentives or unintended consequences are being created.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:nsf:30.36",
         "chapter": "NSF30",
         "paragraph": "30.36",
         "standard": "NSF",
-        "classificationConfidence": 0.9,
+        "classificationConfidence": 0.6,
         "modalities": [
-          "must",
           "recommended"
         ],
-        "section": "Do derivative transactions qualify for the treatment of interdependent"
+        "section": "RSF factor RSF category"
       }
     },
     {
@@ -1865,7 +1655,7 @@
         "modalities": [
           "recommended"
         ],
-        "section": "Do derivative transactions qualify for the treatment of interdependent"
+        "section": "RSF factor RSF category"
       },
       "trigger": "where supervisors will exercise the discretion to apply this exceptional treatment should be transparent, explicit and clearly outlined in the regulations of each jurisdiction, to provide clarity both"
     },
@@ -1933,7 +1723,7 @@
   ],
   "edges": [
     {
-      "id": "E-COMPRISES-643263611981",
+      "id": "E-COMPRISES-798203476441",
       "fromId": "FW-basel",
       "toId": "DOC-BCBS-NSF",
       "edgeType": "COMPRISES",
@@ -1942,7 +1732,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-337674435887",
+      "id": "E-CONTAINS-724455199847",
       "fromId": "DOC-BCBS-NSF",
       "toId": "urn:reg:bcbs:nsf:10",
       "edgeType": "CONTAINS",
@@ -1951,7 +1741,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-757566218614",
+      "id": "E-CONTAINS-199687075562",
       "fromId": "DOC-BCBS-NSF",
       "toId": "urn:reg:bcbs:nsf:20",
       "edgeType": "CONTAINS",
@@ -1960,7 +1750,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-141522368375",
+      "id": "E-CONTAINS-896646737977",
       "fromId": "DOC-BCBS-NSF",
       "toId": "urn:reg:bcbs:nsf:30",
       "edgeType": "CONTAINS",
@@ -1969,7 +1759,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-303375716073",
+      "id": "E-CONTAINS-228827774852",
       "fromId": "DOC-BCBS-NSF",
       "toId": "urn:reg:bcbs:nsf:99",
       "edgeType": "CONTAINS",
@@ -1978,7 +1768,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-391451143978",
+      "id": "E-CONTAINS-182420103374",
       "fromId": "urn:reg:bcbs:nsf:10",
       "toId": "urn:reg:bcbs:nsf:10.1",
       "edgeType": "CONTAINS",
@@ -1987,7 +1777,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-939486680587",
+      "id": "E-CONTAINS-806189979476",
       "fromId": "urn:reg:bcbs:nsf:10",
       "toId": "urn:reg:bcbs:nsf:10.2",
       "edgeType": "CONTAINS",
@@ -1996,7 +1786,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-866538149461",
+      "id": "E-REFERENCES-966923875960",
       "fromId": "urn:reg:bcbs:nsf:10.2",
       "toId": "urn:reg:bcbs:srp:50",
       "edgeType": "REFERENCES",
@@ -2006,7 +1796,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.2"
     },
     {
-      "id": "E-CONTAINS-727604034442",
+      "id": "E-CONTAINS-965721579467",
       "fromId": "urn:reg:bcbs:nsf:10",
       "toId": "urn:reg:bcbs:nsf:10.3",
       "edgeType": "CONTAINS",
@@ -2015,7 +1805,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-719919961934",
+      "id": "E-REFERENCES-364865219014",
       "fromId": "urn:reg:bcbs:nsf:10.3",
       "toId": "urn:reg:bcbs:lcr:40.42",
       "edgeType": "REFERENCES",
@@ -2025,7 +1815,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.3"
     },
     {
-      "id": "E-REFERENCES-256258150859",
+      "id": "E-REFERENCES-990317322105",
       "fromId": "urn:reg:bcbs:nsf:10.3",
       "toId": "urn:reg:bcbs:nsf:10.1",
       "edgeType": "REFERENCES",
@@ -2035,7 +1825,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.3"
     },
     {
-      "id": "E-CONTAINS-091253853671",
+      "id": "E-CONTAINS-029516985978",
       "fromId": "urn:reg:bcbs:nsf:10",
       "toId": "urn:reg:bcbs:nsf:10.4",
       "edgeType": "CONTAINS",
@@ -2044,7 +1834,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-896533773765",
+      "id": "E-REFERENCES-453615195029",
       "fromId": "urn:reg:bcbs:nsf:10.4",
       "toId": "urn:reg:bcbs:sco:10",
       "edgeType": "REFERENCES",
@@ -2054,7 +1844,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.4"
     },
     {
-      "id": "E-CONTAINS-946701817995",
+      "id": "E-CONTAINS-228208264998",
       "fromId": "urn:reg:bcbs:nsf:10",
       "toId": "urn:reg:bcbs:nsf:10.5",
       "edgeType": "CONTAINS",
@@ -2063,7 +1853,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-963089312789",
+      "id": "E-CONTAINS-181613347492",
       "fromId": "urn:reg:bcbs:nsf:10",
       "toId": "urn:reg:bcbs:nsf:10.6",
       "edgeType": "CONTAINS",
@@ -2072,7 +1862,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-676890874749",
+      "id": "E-CONTAINS-529581245393",
       "fromId": "urn:reg:bcbs:nsf:20",
       "toId": "urn:reg:bcbs:nsf:20.1",
       "edgeType": "CONTAINS",
@@ -2081,7 +1871,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-870384235845",
+      "id": "E-CONTAINS-153567363485",
       "fromId": "urn:reg:bcbs:nsf:20",
       "toId": "urn:reg:bcbs:nsf:20.2",
       "edgeType": "CONTAINS",
@@ -2090,7 +1880,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-DEFINES-565953854952",
+      "id": "E-DEFINES-770602597621",
       "fromId": "urn:reg:bcbs:nsf:20.2",
       "toId": "TERM-available-stable-funding",
       "edgeType": "DEFINES",
@@ -2100,7 +1890,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:20.2"
     },
     {
-      "id": "E-CONTAINS-088483380810",
+      "id": "E-CONTAINS-717948799508",
       "fromId": "urn:reg:bcbs:nsf:20",
       "toId": "urn:reg:bcbs:nsf:20.3",
       "edgeType": "CONTAINS",
@@ -2109,7 +1899,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-924078409150",
+      "id": "E-CONTAINS-322192504204",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.1",
       "edgeType": "CONTAINS",
@@ -2118,7 +1908,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-874731848154",
+      "id": "E-CONTAINS-817853263733",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.2",
       "edgeType": "CONTAINS",
@@ -2127,7 +1917,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-233598626275",
+      "id": "E-CONTAINS-076446459716",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.3",
       "edgeType": "CONTAINS",
@@ -2136,7 +1926,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-114839030253",
+      "id": "E-CONTAINS-134343418395",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.4",
       "edgeType": "CONTAINS",
@@ -2145,7 +1935,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-444608268419",
+      "id": "E-CONTAINS-037549561493",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.5",
       "edgeType": "CONTAINS",
@@ -2154,7 +1944,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-051739537140",
+      "id": "E-CONTAINS-395176909368",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.6",
       "edgeType": "CONTAINS",
@@ -2163,7 +1953,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-564334614825",
+      "id": "E-REFERENCES-953995920060",
       "fromId": "urn:reg:bcbs:nsf:30.6",
       "toId": "urn:reg:bcbs:nsf:10.2",
       "edgeType": "REFERENCES",
@@ -2173,7 +1963,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.6"
     },
     {
-      "id": "E-CONTAINS-945776268056",
+      "id": "E-CONTAINS-581513050094",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.7",
       "edgeType": "CONTAINS",
@@ -2182,7 +1972,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-136920475496",
+      "id": "E-CONTAINS-261039002959",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.8",
       "edgeType": "CONTAINS",
@@ -2191,7 +1981,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-342005210527",
+      "id": "E-REFERENCES-415933700973",
       "fromId": "urn:reg:bcbs:nsf:30.8",
       "toId": "urn:reg:bcbs:cre:52.7",
       "edgeType": "REFERENCES",
@@ -2201,7 +1991,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.8"
     },
     {
-      "id": "E-CONTAINS-989516246513",
+      "id": "E-CONTAINS-321633660699",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.9",
       "edgeType": "CONTAINS",
@@ -2210,7 +2000,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-779363228559",
+      "id": "E-CONTAINS-557412302119",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.10",
       "edgeType": "CONTAINS",
@@ -2219,7 +2009,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-687963918450",
+      "id": "E-REFERENCES-067636947298",
       "fromId": "urn:reg:bcbs:nsf:30.10",
       "toId": "urn:reg:bcbs:cap:10",
       "edgeType": "REFERENCES",
@@ -2229,7 +2019,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.10"
     },
     {
-      "id": "E-CONTAINS-602001996704",
+      "id": "E-CONTAINS-729274806026",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.11",
       "edgeType": "CONTAINS",
@@ -2238,27 +2028,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-274840709039",
-      "fromId": "urn:reg:bcbs:nsf:30.11",
-      "toId": "urn:reg:bcbs:cap:10",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.11"
-    },
-    {
-      "id": "E-REFERENCES-795598090118",
-      "fromId": "urn:reg:bcbs:nsf:30.11",
-      "toId": "urn:reg:bcbs:cap:90",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.11"
-    },
-    {
-      "id": "E-REFERENCES-348186187706",
+      "id": "E-REFERENCES-371987721980",
       "fromId": "urn:reg:bcbs:nsf:30.11",
       "toId": "urn:reg:bcbs:lcr:40.12",
       "edgeType": "REFERENCES",
@@ -2268,7 +2038,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.11"
     },
     {
-      "id": "E-REFERENCES-118466154561",
+      "id": "E-REFERENCES-019590294094",
       "fromId": "urn:reg:bcbs:nsf:30.11",
       "toId": "urn:reg:bcbs:lcr:40.7",
       "edgeType": "REFERENCES",
@@ -2278,27 +2048,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.11"
     },
     {
-      "id": "E-REFERENCES-915764666661",
-      "fromId": "urn:reg:bcbs:nsf:30.11",
-      "toId": "urn:reg:bcbs:nsf:30.10",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.11"
-    },
-    {
-      "id": "E-REFERENCES-745091528027",
-      "fromId": "urn:reg:bcbs:nsf:30.11",
-      "toId": "urn:reg:bcbs:nsf:30.14",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.11"
-    },
-    {
-      "id": "E-CONTAINS-089533355753",
+      "id": "E-CONTAINS-141841405160",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.12",
       "edgeType": "CONTAINS",
@@ -2307,7 +2057,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-923025231656",
+      "id": "E-REFERENCES-713692587807",
       "fromId": "urn:reg:bcbs:nsf:30.12",
       "toId": "urn:reg:bcbs:lcr:40",
       "edgeType": "REFERENCES",
@@ -2317,7 +2067,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.12"
     },
     {
-      "id": "E-REFERENCES-019376812188",
+      "id": "E-REFERENCES-261596193993",
       "fromId": "urn:reg:bcbs:nsf:30.12",
       "toId": "urn:reg:bcbs:lcr:40.15",
       "edgeType": "REFERENCES",
@@ -2327,37 +2077,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.12"
     },
     {
-      "id": "E-REFERENCES-434428413630",
-      "fromId": "urn:reg:bcbs:nsf:30.12",
-      "toId": "urn:reg:bcbs:lcr:40.23",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.12"
-    },
-    {
-      "id": "E-REFERENCES-689831670086",
-      "fromId": "urn:reg:bcbs:nsf:30.12",
-      "toId": "urn:reg:bcbs:lcr:40.24",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.12"
-    },
-    {
-      "id": "E-REFERENCES-888033566471",
-      "fromId": "urn:reg:bcbs:nsf:30.12",
-      "toId": "urn:reg:bcbs:lcr:40.5",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.12"
-    },
-    {
-      "id": "E-CONTAINS-225340717205",
+      "id": "E-CONTAINS-347755276566",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.13",
       "edgeType": "CONTAINS",
@@ -2366,7 +2086,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-741197051185",
+      "id": "E-REFERENCES-294512902561",
       "fromId": "urn:reg:bcbs:nsf:30.13",
       "toId": "urn:reg:bcbs:lcr:40.26",
       "edgeType": "REFERENCES",
@@ -2376,7 +2096,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.13"
     },
     {
-      "id": "E-REFERENCES-077304419404",
+      "id": "E-REFERENCES-593010375231",
       "fromId": "urn:reg:bcbs:nsf:30.13",
       "toId": "urn:reg:bcbs:lcr:40.36",
       "edgeType": "REFERENCES",
@@ -2386,7 +2106,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.13"
     },
     {
-      "id": "E-CONTAINS-699299224701",
+      "id": "E-CONTAINS-243749129398",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.14",
       "edgeType": "CONTAINS",
@@ -2395,7 +2115,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-468616575040",
+      "id": "E-REFERENCES-551532513929",
       "fromId": "urn:reg:bcbs:nsf:30.14",
       "toId": "urn:reg:bcbs:nsf:30",
       "edgeType": "REFERENCES",
@@ -2405,7 +2125,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.14"
     },
     {
-      "id": "E-REFERENCES-967568893894",
+      "id": "E-REFERENCES-923527116439",
       "fromId": "urn:reg:bcbs:nsf:30.14",
       "toId": "urn:reg:bcbs:nsf:30.10",
       "edgeType": "REFERENCES",
@@ -2415,7 +2135,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.14"
     },
     {
-      "id": "E-REFERENCES-668541174545",
+      "id": "E-REFERENCES-952792966210",
       "fromId": "urn:reg:bcbs:nsf:30.14",
       "toId": "urn:reg:bcbs:nsf:30.13",
       "edgeType": "REFERENCES",
@@ -2425,7 +2145,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.14"
     },
     {
-      "id": "E-REFERENCES-424162225409",
+      "id": "E-REFERENCES-604994350212",
       "fromId": "urn:reg:bcbs:nsf:30.14",
       "toId": "urn:reg:bcbs:nsf:30.23",
       "edgeType": "REFERENCES",
@@ -2435,7 +2155,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.14"
     },
     {
-      "id": "E-REFERENCES-440846406448",
+      "id": "E-REFERENCES-331731130099",
       "fromId": "urn:reg:bcbs:nsf:30.14",
       "toId": "urn:reg:bcbs:nsf:30.8",
       "edgeType": "REFERENCES",
@@ -2445,7 +2165,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.14"
     },
     {
-      "id": "E-REFERENCES-293442177465",
+      "id": "E-REFERENCES-513938222432",
       "fromId": "urn:reg:bcbs:nsf:30.14",
       "toId": "urn:reg:bcbs:nsf:30.9",
       "edgeType": "REFERENCES",
@@ -2455,7 +2175,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.14"
     },
     {
-      "id": "E-CONTAINS-373337358434",
+      "id": "E-CONTAINS-621998852975",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.15",
       "edgeType": "CONTAINS",
@@ -2464,7 +2184,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-324225052103",
+      "id": "E-REFERENCES-321098065086",
       "fromId": "urn:reg:bcbs:nsf:30.15",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -2474,7 +2194,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.15"
     },
     {
-      "id": "E-REFERENCES-025214421303",
+      "id": "E-REFERENCES-241942704828",
       "fromId": "urn:reg:bcbs:nsf:30.15",
       "toId": "urn:reg:bcbs:cre:20.1",
       "edgeType": "REFERENCES",
@@ -2484,7 +2204,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.15"
     },
     {
-      "id": "E-REFERENCES-678204418249",
+      "id": "E-REFERENCES-310167842158",
       "fromId": "urn:reg:bcbs:nsf:30.15",
       "toId": "urn:reg:bcbs:lev:30",
       "edgeType": "REFERENCES",
@@ -2494,7 +2214,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.15"
     },
     {
-      "id": "E-REFERENCES-748223537316",
+      "id": "E-REFERENCES-376616569903",
       "fromId": "urn:reg:bcbs:nsf:30.15",
       "toId": "urn:reg:bcbs:nsf:10.2",
       "edgeType": "REFERENCES",
@@ -2504,7 +2224,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.15"
     },
     {
-      "id": "E-CONTAINS-492021177024",
+      "id": "E-CONTAINS-298637071147",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.16",
       "edgeType": "CONTAINS",
@@ -2513,27 +2233,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-402597018403",
-      "fromId": "urn:reg:bcbs:nsf:30.16",
-      "toId": "urn:reg:bcbs:lcr:30",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.16"
-    },
-    {
-      "id": "E-REFERENCES-453654879526",
-      "fromId": "urn:reg:bcbs:nsf:30.16",
-      "toId": "urn:reg:bcbs:lcr:30.13",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.16"
-    },
-    {
-      "id": "E-REFERENCES-919477485261",
+      "id": "E-REFERENCES-166644160205",
       "fromId": "urn:reg:bcbs:nsf:30.16",
       "toId": "urn:reg:bcbs:nsf:30.17",
       "edgeType": "REFERENCES",
@@ -2543,7 +2243,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.16"
     },
     {
-      "id": "E-REFERENCES-026117117420",
+      "id": "E-REFERENCES-693047949307",
       "fromId": "urn:reg:bcbs:nsf:30.16",
       "toId": "urn:reg:bcbs:nsf:30.7",
       "edgeType": "REFERENCES",
@@ -2553,7 +2253,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.16"
     },
     {
-      "id": "E-CONTAINS-422157217582",
+      "id": "E-CONTAINS-123911267245",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.17",
       "edgeType": "CONTAINS",
@@ -2562,7 +2262,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-022587169984",
+      "id": "E-CONTAINS-525639148687",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.18",
       "edgeType": "CONTAINS",
@@ -2571,7 +2271,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-951668475459",
+      "id": "E-REFERENCES-364357147448",
       "fromId": "urn:reg:bcbs:nsf:30.18",
       "toId": "urn:reg:bcbs:nsf:30.20",
       "edgeType": "REFERENCES",
@@ -2581,7 +2281,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.18"
     },
     {
-      "id": "E-CONTAINS-219845199323",
+      "id": "E-CONTAINS-363906198031",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.19",
       "edgeType": "CONTAINS",
@@ -2590,7 +2290,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-946215006264",
+      "id": "E-CONTAINS-575837741030",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.20",
       "edgeType": "CONTAINS",
@@ -2599,7 +2299,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-794339585225",
+      "id": "E-CONTAINS-250698897078",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.21",
       "edgeType": "CONTAINS",
@@ -2608,47 +2308,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-281113373482",
-      "fromId": "urn:reg:bcbs:nsf:30.21",
-      "toId": "urn:reg:bcbs:lcr:30",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.21"
-    },
-    {
-      "id": "E-REFERENCES-112244391959",
-      "fromId": "urn:reg:bcbs:nsf:30.21",
-      "toId": "urn:reg:bcbs:lcr:30.16",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.21"
-    },
-    {
-      "id": "E-REFERENCES-043810233101",
-      "fromId": "urn:reg:bcbs:nsf:30.21",
-      "toId": "urn:reg:bcbs:nsf:30",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.21"
-    },
-    {
-      "id": "E-REFERENCES-894100436669",
-      "fromId": "urn:reg:bcbs:nsf:30.21",
-      "toId": "urn:reg:bcbs:nsf:30.20",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.21"
-    },
-    {
-      "id": "E-CONTAINS-629064869043",
+      "id": "E-CONTAINS-110922410865",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.22",
       "edgeType": "CONTAINS",
@@ -2657,7 +2317,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-560621422247",
+      "id": "E-REFERENCES-374812317084",
       "fromId": "urn:reg:bcbs:nsf:30.22",
       "toId": "urn:reg:bcbs:lev:30",
       "edgeType": "REFERENCES",
@@ -2667,37 +2327,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.22"
     },
     {
-      "id": "E-REFERENCES-705952188608",
-      "fromId": "urn:reg:bcbs:nsf:30.22",
-      "toId": "urn:reg:bcbs:nsf:30.21",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.22"
-    },
-    {
-      "id": "E-REFERENCES-385036238269",
-      "fromId": "urn:reg:bcbs:nsf:30.22",
-      "toId": "urn:reg:bcbs:nsf:30.27",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.22"
-    },
-    {
-      "id": "E-REFERENCES-125919080583",
-      "fromId": "urn:reg:bcbs:nsf:30.22",
-      "toId": "urn:reg:bcbs:nsf:30.28",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.22"
-    },
-    {
-      "id": "E-CONTAINS-962637027127",
+      "id": "E-CONTAINS-073752891048",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.23",
       "edgeType": "CONTAINS",
@@ -2706,7 +2336,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-388281759567",
+      "id": "E-REFERENCES-751845576056",
       "fromId": "urn:reg:bcbs:nsf:30.23",
       "toId": "urn:reg:bcbs:cre:52.7",
       "edgeType": "REFERENCES",
@@ -2716,7 +2346,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.23"
     },
     {
-      "id": "E-CONTAINS-274303047347",
+      "id": "E-CONTAINS-702585508336",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.24",
       "edgeType": "CONTAINS",
@@ -2725,7 +2355,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-878051590726",
+      "id": "E-REFERENCES-803376773341",
       "fromId": "urn:reg:bcbs:nsf:30.24",
       "toId": "urn:reg:bcbs:lev:30",
       "edgeType": "REFERENCES",
@@ -2735,7 +2365,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.24"
     },
     {
-      "id": "E-CONTAINS-975479754253",
+      "id": "E-CONTAINS-993147563418",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.25",
       "edgeType": "CONTAINS",
@@ -2744,27 +2374,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-654655341827",
-      "fromId": "urn:reg:bcbs:nsf:30.25",
-      "toId": "urn:reg:bcbs:lev:30",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.25"
-    },
-    {
-      "id": "E-REFERENCES-621145788876",
-      "fromId": "urn:reg:bcbs:nsf:30.25",
-      "toId": "urn:reg:bcbs:nsf:30.24",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.25"
-    },
-    {
-      "id": "E-CONTAINS-638542144197",
+      "id": "E-CONTAINS-678902749402",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.26",
       "edgeType": "CONTAINS",
@@ -2773,7 +2383,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-470337074678",
+      "id": "E-REFERENCES-080671046098",
       "fromId": "urn:reg:bcbs:nsf:30.26",
       "toId": "urn:reg:bcbs:lcr:30.41",
       "edgeType": "REFERENCES",
@@ -2783,37 +2393,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.26"
     },
     {
-      "id": "E-REFERENCES-829819998195",
-      "fromId": "urn:reg:bcbs:nsf:30.26",
-      "toId": "urn:reg:bcbs:lcr:40.86",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.26"
-    },
-    {
-      "id": "E-REFERENCES-308370283697",
-      "fromId": "urn:reg:bcbs:nsf:30.26",
-      "toId": "urn:reg:bcbs:nsf:30.25",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.26"
-    },
-    {
-      "id": "E-REFERENCES-379602362471",
-      "fromId": "urn:reg:bcbs:nsf:30.26",
-      "toId": "urn:reg:bcbs:nsf:30.32",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.26"
-    },
-    {
-      "id": "E-CONTAINS-180928576035",
+      "id": "E-CONTAINS-357357951137",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.27",
       "edgeType": "CONTAINS",
@@ -2822,7 +2402,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-461945691615",
+      "id": "E-REFERENCES-553734549768",
       "fromId": "urn:reg:bcbs:nsf:30.27",
       "toId": "urn:reg:bcbs:lcr:30.41",
       "edgeType": "REFERENCES",
@@ -2832,7 +2412,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.27"
     },
     {
-      "id": "E-CONTAINS-736634872923",
+      "id": "E-CONTAINS-756171009984",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.28",
       "edgeType": "CONTAINS",
@@ -2841,7 +2421,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-875203381944",
+      "id": "E-REFERENCES-627836344528",
       "fromId": "urn:reg:bcbs:nsf:30.28",
       "toId": "urn:reg:bcbs:lcr:30.43",
       "edgeType": "REFERENCES",
@@ -2851,7 +2431,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.28"
     },
     {
-      "id": "E-REFERENCES-534882896705",
+      "id": "E-REFERENCES-054318503400",
       "fromId": "urn:reg:bcbs:nsf:30.28",
       "toId": "urn:reg:bcbs:nsf:30.27",
       "edgeType": "REFERENCES",
@@ -2861,7 +2441,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.28"
     },
     {
-      "id": "E-CONTAINS-207335084743",
+      "id": "E-CONTAINS-324353586083",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.29",
       "edgeType": "CONTAINS",
@@ -2870,7 +2450,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-323048416064",
+      "id": "E-REFERENCES-025257488596",
       "fromId": "urn:reg:bcbs:nsf:30.29",
       "toId": "urn:reg:bcbs:lcr:30.45",
       "edgeType": "REFERENCES",
@@ -2880,7 +2460,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.29"
     },
     {
-      "id": "E-REFERENCES-520142392057",
+      "id": "E-REFERENCES-492535986837",
       "fromId": "urn:reg:bcbs:nsf:30.29",
       "toId": "urn:reg:bcbs:lcr:40.26",
       "edgeType": "REFERENCES",
@@ -2890,7 +2470,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.29"
     },
     {
-      "id": "E-REFERENCES-451299126349",
+      "id": "E-REFERENCES-608390795048",
       "fromId": "urn:reg:bcbs:nsf:30.29",
       "toId": "urn:reg:bcbs:lcr:40.36",
       "edgeType": "REFERENCES",
@@ -2900,7 +2480,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.29"
     },
     {
-      "id": "E-CONTAINS-609427287096",
+      "id": "E-CONTAINS-584870234542",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.30",
       "edgeType": "CONTAINS",
@@ -2909,7 +2489,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-883946595935",
+      "id": "E-REFERENCES-431298205792",
       "fromId": "urn:reg:bcbs:nsf:30.30",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -2919,7 +2499,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.30"
     },
     {
-      "id": "E-CONTAINS-497602089062",
+      "id": "E-CONTAINS-826954348318",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.31",
       "edgeType": "CONTAINS",
@@ -2928,7 +2508,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-453382623501",
+      "id": "E-CONTAINS-122997116729",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.32",
       "edgeType": "CONTAINS",
@@ -2937,7 +2517,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-937540360995",
+      "id": "E-REFERENCES-815875658451",
       "fromId": "urn:reg:bcbs:nsf:30.32",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -2947,7 +2527,47 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.32"
     },
     {
-      "id": "E-CONTAINS-375860847589",
+      "id": "E-REFERENCES-334173176896",
+      "fromId": "urn:reg:bcbs:nsf:30.32",
+      "toId": "urn:reg:bcbs:nsf:30.23",
+      "edgeType": "REFERENCES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:nsf:30.32"
+    },
+    {
+      "id": "E-REFERENCES-203016512039",
+      "fromId": "urn:reg:bcbs:nsf:30.32",
+      "toId": "urn:reg:bcbs:nsf:30.24",
+      "edgeType": "REFERENCES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:nsf:30.32"
+    },
+    {
+      "id": "E-REFERENCES-355436982584",
+      "fromId": "urn:reg:bcbs:nsf:30.32",
+      "toId": "urn:reg:bcbs:nsf:30.8",
+      "edgeType": "REFERENCES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:nsf:30.32"
+    },
+    {
+      "id": "E-REFERENCES-756882950884",
+      "fromId": "urn:reg:bcbs:nsf:30.32",
+      "toId": "urn:reg:bcbs:nsf:30.9",
+      "edgeType": "REFERENCES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:nsf:30.32"
+    },
+    {
+      "id": "E-CONTAINS-114830148180",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.33",
       "edgeType": "CONTAINS",
@@ -2956,37 +2576,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-011793762907",
-      "fromId": "urn:reg:bcbs:nsf:30.33",
-      "toId": "urn:reg:bcbs:nsf:30",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.33"
-    },
-    {
-      "id": "E-REFERENCES-040932788660",
-      "fromId": "urn:reg:bcbs:nsf:30.33",
-      "toId": "urn:reg:bcbs:nsf:30.23",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.33"
-    },
-    {
-      "id": "E-REFERENCES-492798168343",
-      "fromId": "urn:reg:bcbs:nsf:30.33",
-      "toId": "urn:reg:bcbs:nsf:30.24",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.33"
-    },
-    {
-      "id": "E-REFERENCES-723101783494",
+      "id": "E-REFERENCES-087768542411",
       "fromId": "urn:reg:bcbs:nsf:30.33",
       "toId": "urn:reg:bcbs:nsf:30.32",
       "edgeType": "REFERENCES",
@@ -2996,7 +2586,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.33"
     },
     {
-      "id": "E-REFERENCES-039563931499",
+      "id": "E-REFERENCES-315534828471",
       "fromId": "urn:reg:bcbs:nsf:30.33",
       "toId": "urn:reg:bcbs:nsf:30.8",
       "edgeType": "REFERENCES",
@@ -3006,7 +2596,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.33"
     },
     {
-      "id": "E-REFERENCES-611963242611",
+      "id": "E-REFERENCES-871955802603",
       "fromId": "urn:reg:bcbs:nsf:30.33",
       "toId": "urn:reg:bcbs:nsf:30.9",
       "edgeType": "REFERENCES",
@@ -3016,7 +2606,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.33"
     },
     {
-      "id": "E-CONTAINS-774814177577",
+      "id": "E-CONTAINS-227794687055",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.34",
       "edgeType": "CONTAINS",
@@ -3025,7 +2615,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-943895702077",
+      "id": "E-CONTAINS-189306773195",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.35",
       "edgeType": "CONTAINS",
@@ -3034,7 +2624,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-647963860845",
+      "id": "E-CONTAINS-183704519166",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.36",
       "edgeType": "CONTAINS",
@@ -3043,17 +2633,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-867416423507",
-      "fromId": "urn:reg:bcbs:nsf:30.36",
-      "toId": "urn:reg:bcbs:nsf:30.35",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.36"
-    },
-    {
-      "id": "E-CONTAINS-842372668715",
+      "id": "E-CONTAINS-964176053920",
       "fromId": "urn:reg:bcbs:nsf:30",
       "toId": "urn:reg:bcbs:nsf:30.37",
       "edgeType": "CONTAINS",
@@ -3062,7 +2642,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-250745208474",
+      "id": "E-CONTAINS-683768926925",
       "fromId": "urn:reg:bcbs:nsf:99",
       "toId": "urn:reg:bcbs:nsf:99.1",
       "edgeType": "CONTAINS",
@@ -3071,7 +2651,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-906760787617",
+      "id": "E-CONTAINS-142293755560",
       "fromId": "urn:reg:bcbs:nsf:99",
       "toId": "urn:reg:bcbs:nsf:99.2",
       "edgeType": "CONTAINS",
@@ -3080,7 +2660,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-114321245407",
+      "id": "E-REFERENCES-034323111216",
       "fromId": "urn:reg:bcbs:nsf:99.2",
       "toId": "urn:reg:bcbs:nsf:30.10",
       "edgeType": "REFERENCES",
@@ -3090,7 +2670,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.2"
     },
     {
-      "id": "E-REFERENCES-991922053357",
+      "id": "E-REFERENCES-378951859867",
       "fromId": "urn:reg:bcbs:nsf:99.2",
       "toId": "urn:reg:bcbs:nsf:30.35",
       "edgeType": "REFERENCES",
@@ -3100,7 +2680,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.2"
     },
     {
-      "id": "E-CONTAINS-893336400308",
+      "id": "E-CONTAINS-257900573901",
       "fromId": "urn:reg:bcbs:nsf:99",
       "toId": "urn:reg:bcbs:nsf:99.3",
       "edgeType": "CONTAINS",
@@ -3109,7 +2689,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-451045114196",
+      "id": "E-REFERENCES-517625146672",
       "fromId": "urn:reg:bcbs:nsf:99.3",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -3119,7 +2699,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.3"
     },
     {
-      "id": "E-REFERENCES-484644275348",
+      "id": "E-REFERENCES-463131661287",
       "fromId": "urn:reg:bcbs:nsf:99.3",
       "toId": "urn:reg:bcbs:lcr:30.41",
       "edgeType": "REFERENCES",
@@ -3129,7 +2709,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.3"
     },
     {
-      "id": "E-REFERENCES-582828940688",
+      "id": "E-REFERENCES-774727222256",
       "fromId": "urn:reg:bcbs:nsf:99.3",
       "toId": "urn:reg:bcbs:nsf:30.35",
       "edgeType": "REFERENCES",
@@ -3139,7 +2719,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.3"
     },
     {
-      "id": "E-REFERENCES-316836217689",
+      "id": "E-REFERENCES-057186470805",
       "fromId": "urn:reg:bcbs:nsf:99.3",
       "toId": "urn:reg:bcbs:nsf:30.8",
       "edgeType": "REFERENCES",
@@ -3149,7 +2729,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.3"
     },
     {
-      "id": "E-CONTAINS-474265206901",
+      "id": "E-CONTAINS-185844783942",
       "fromId": "urn:reg:bcbs:nsf:99",
       "toId": "urn:reg:bcbs:nsf:99.4",
       "edgeType": "CONTAINS",
@@ -3158,7 +2738,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-893912014521",
+      "id": "E-CONTAINS-621975452275",
       "fromId": "urn:reg:bcbs:nsf:99",
       "toId": "urn:reg:bcbs:nsf:99.5",
       "edgeType": "CONTAINS",
@@ -3167,7 +2747,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-872482139415",
+      "id": "E-REFERENCES-175222255644",
       "fromId": "urn:reg:bcbs:nsf:99.5",
       "toId": "urn:reg:bcbs:nsf:30.20",
       "edgeType": "REFERENCES",
@@ -3177,7 +2757,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.5"
     },
     {
-      "id": "E-CONTAINS-281982657248",
+      "id": "E-CONTAINS-216708884362",
       "fromId": "urn:reg:bcbs:nsf:99",
       "toId": "urn:reg:bcbs:nsf:99.6",
       "edgeType": "CONTAINS",
@@ -3186,7 +2766,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-EXPRESSES-560533141187",
+      "id": "E-EXPRESSES-959554849356",
       "fromId": "urn:reg:bcbs:nsf:10.1",
       "toId": "OBL-BCBS-NSF-s10.1-1",
       "edgeType": "EXPRESSES",
@@ -3196,7 +2776,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.1"
     },
     {
-      "id": "E-EXPRESSES-283952979367",
+      "id": "E-EXPRESSES-468696832633",
       "fromId": "urn:reg:bcbs:nsf:10.4",
       "toId": "OBL-BCBS-NSF-s10.4-1",
       "edgeType": "EXPRESSES",
@@ -3206,7 +2786,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.4"
     },
     {
-      "id": "E-EXPRESSES-074785177756",
+      "id": "E-EXPRESSES-044636990539",
       "fromId": "urn:reg:bcbs:nsf:10.5",
       "toId": "OBL-BCBS-NSF-s10.5-1",
       "edgeType": "EXPRESSES",
@@ -3216,7 +2796,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.5"
     },
     {
-      "id": "E-EXPRESSES-390385165553",
+      "id": "E-EXPRESSES-942928074503",
       "fromId": "urn:reg:bcbs:nsf:10.6",
       "toId": "OBL-BCBS-NSF-s10.6-1",
       "edgeType": "EXPRESSES",
@@ -3226,7 +2806,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.6"
     },
     {
-      "id": "E-USES-016245913426",
+      "id": "E-USES-495080915030",
       "fromId": "OBL-BCBS-NSF-s10.6-1",
       "toId": "TERM-available-stable-funding",
       "edgeType": "USES",
@@ -3236,7 +2816,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:10.6"
     },
     {
-      "id": "E-EXPRESSES-203676291261",
+      "id": "E-EXPRESSES-172520053598",
       "fromId": "urn:reg:bcbs:nsf:20.2",
       "toId": "OBL-BCBS-NSF-s20.2-1",
       "edgeType": "EXPRESSES",
@@ -3246,7 +2826,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:20.2"
     },
     {
-      "id": "E-USES-910205099144",
+      "id": "E-USES-395531479939",
       "fromId": "OBL-BCBS-NSF-s20.2-1",
       "toId": "TERM-available-stable-funding",
       "edgeType": "USES",
@@ -3256,7 +2836,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:20.2"
     },
     {
-      "id": "E-EXPRESSES-043462850726",
+      "id": "E-EXPRESSES-769368755668",
       "fromId": "urn:reg:bcbs:nsf:20.3",
       "toId": "OBL-BCBS-NSF-s20.3-1",
       "edgeType": "EXPRESSES",
@@ -3266,7 +2846,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:20.3"
     },
     {
-      "id": "E-EXPRESSES-906067505767",
+      "id": "E-EXPRESSES-869608033319",
       "fromId": "urn:reg:bcbs:nsf:30.3",
       "toId": "OBL-BCBS-NSF-s30.3-1",
       "edgeType": "EXPRESSES",
@@ -3276,7 +2856,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.3"
     },
     {
-      "id": "E-EXPRESSES-962714981505",
+      "id": "E-EXPRESSES-423122629963",
       "fromId": "urn:reg:bcbs:nsf:30.6",
       "toId": "OBL-BCBS-NSF-s30.6-1",
       "edgeType": "EXPRESSES",
@@ -3286,7 +2866,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.6"
     },
     {
-      "id": "E-EXPRESSES-322882686830",
+      "id": "E-EXPRESSES-106930023970",
       "fromId": "urn:reg:bcbs:nsf:30.7",
       "toId": "OBL-BCBS-NSF-s30.7-1",
       "edgeType": "EXPRESSES",
@@ -3296,7 +2876,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.7"
     },
     {
-      "id": "E-EXPRESSES-589638349504",
+      "id": "E-EXPRESSES-850216874130",
       "fromId": "urn:reg:bcbs:nsf:30.8",
       "toId": "OBL-BCBS-NSF-s30.8-1",
       "edgeType": "EXPRESSES",
@@ -3306,7 +2886,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.8"
     },
     {
-      "id": "E-EXPRESSES-695923081949",
+      "id": "E-EXPRESSES-227729671324",
       "fromId": "urn:reg:bcbs:nsf:30.9",
       "toId": "OBL-BCBS-NSF-s30.9-1",
       "edgeType": "EXPRESSES",
@@ -3316,27 +2896,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.9"
     },
     {
-      "id": "E-EXPRESSES-511474146155",
-      "fromId": "urn:reg:bcbs:nsf:30.10",
-      "toId": "OBL-BCBS-NSF-s30.10-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.10"
-    },
-    {
-      "id": "E-EXPRESSES-793086958074",
-      "fromId": "urn:reg:bcbs:nsf:30.11",
-      "toId": "OBL-BCBS-NSF-s30.11-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.11"
-    },
-    {
-      "id": "E-EXPRESSES-037959540574",
+      "id": "E-EXPRESSES-458791614155",
       "fromId": "urn:reg:bcbs:nsf:30.14",
       "toId": "OBL-BCBS-NSF-s30.14-1",
       "edgeType": "EXPRESSES",
@@ -3346,7 +2906,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.14"
     },
     {
-      "id": "E-EXPRESSES-366849773241",
+      "id": "E-EXPRESSES-926152169862",
       "fromId": "urn:reg:bcbs:nsf:30.15",
       "toId": "OBL-BCBS-NSF-s30.15-1",
       "edgeType": "EXPRESSES",
@@ -3356,7 +2916,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.15"
     },
     {
-      "id": "E-EXPRESSES-674616687181",
+      "id": "E-EXPRESSES-996894734268",
       "fromId": "urn:reg:bcbs:nsf:30.16",
       "toId": "OBL-BCBS-NSF-s30.16-1",
       "edgeType": "EXPRESSES",
@@ -3366,7 +2926,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.16"
     },
     {
-      "id": "E-EXPRESSES-874207401765",
+      "id": "E-EXPRESSES-313296112682",
       "fromId": "urn:reg:bcbs:nsf:30.17",
       "toId": "OBL-BCBS-NSF-s30.17-1",
       "edgeType": "EXPRESSES",
@@ -3376,7 +2936,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.17"
     },
     {
-      "id": "E-EXPRESSES-137467900096",
+      "id": "E-EXPRESSES-562648189080",
       "fromId": "urn:reg:bcbs:nsf:30.18",
       "toId": "OBL-BCBS-NSF-s30.18-1",
       "edgeType": "EXPRESSES",
@@ -3386,7 +2946,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.18"
     },
     {
-      "id": "E-EXPRESSES-103541875718",
+      "id": "E-EXPRESSES-617009652599",
       "fromId": "urn:reg:bcbs:nsf:30.19",
       "toId": "OBL-BCBS-NSF-s30.19-1",
       "edgeType": "EXPRESSES",
@@ -3396,7 +2956,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.19"
     },
     {
-      "id": "E-EXPRESSES-310910480652",
+      "id": "E-EXPRESSES-039736070580",
       "fromId": "urn:reg:bcbs:nsf:30.20",
       "toId": "OBL-BCBS-NSF-s30.20-1",
       "edgeType": "EXPRESSES",
@@ -3406,7 +2966,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.20"
     },
     {
-      "id": "E-EXPRESSES-564226701601",
+      "id": "E-EXPRESSES-348729626252",
       "fromId": "urn:reg:bcbs:nsf:30.21",
       "toId": "OBL-BCBS-NSF-s30.21-1",
       "edgeType": "EXPRESSES",
@@ -3416,7 +2976,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.21"
     },
     {
-      "id": "E-EXPRESSES-160329546979",
+      "id": "E-EXPRESSES-619793533450",
       "fromId": "urn:reg:bcbs:nsf:30.22",
       "toId": "OBL-BCBS-NSF-s30.22-1",
       "edgeType": "EXPRESSES",
@@ -3426,7 +2986,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.22"
     },
     {
-      "id": "E-EXPRESSES-585130280711",
+      "id": "E-EXPRESSES-310071138583",
       "fromId": "urn:reg:bcbs:nsf:30.23",
       "toId": "OBL-BCBS-NSF-s30.23-1",
       "edgeType": "EXPRESSES",
@@ -3436,7 +2996,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.23"
     },
     {
-      "id": "E-EXPRESSES-933372968865",
+      "id": "E-EXPRESSES-932447429809",
       "fromId": "urn:reg:bcbs:nsf:30.24",
       "toId": "OBL-BCBS-NSF-s30.24-1",
       "edgeType": "EXPRESSES",
@@ -3446,7 +3006,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.24"
     },
     {
-      "id": "E-EXPRESSES-698525547663",
+      "id": "E-EXPRESSES-103698124662",
       "fromId": "urn:reg:bcbs:nsf:30.25",
       "toId": "OBL-BCBS-NSF-s30.25-1",
       "edgeType": "EXPRESSES",
@@ -3456,17 +3016,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.25"
     },
     {
-      "id": "E-EXPRESSES-060056615350",
-      "fromId": "urn:reg:bcbs:nsf:30.26",
-      "toId": "OBL-BCBS-NSF-s30.26-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.26"
-    },
-    {
-      "id": "E-EXPRESSES-972859330221",
+      "id": "E-EXPRESSES-537312303296",
       "fromId": "urn:reg:bcbs:nsf:30.27",
       "toId": "OBL-BCBS-NSF-s30.27-1",
       "edgeType": "EXPRESSES",
@@ -3476,17 +3026,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.27"
     },
     {
-      "id": "E-EXPRESSES-697641745911",
-      "fromId": "urn:reg:bcbs:nsf:30.30",
-      "toId": "OBL-BCBS-NSF-s30.30-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.30"
-    },
-    {
-      "id": "E-EXPRESSES-307183757733",
+      "id": "E-EXPRESSES-599237078317",
       "fromId": "urn:reg:bcbs:nsf:30.32",
       "toId": "OBL-BCBS-NSF-s30.32-1",
       "edgeType": "EXPRESSES",
@@ -3496,17 +3036,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.32"
     },
     {
-      "id": "E-EXPRESSES-330858984731",
-      "fromId": "urn:reg:bcbs:nsf:30.33",
-      "toId": "OBL-BCBS-NSF-s30.33-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:nsf:30.33"
-    },
-    {
-      "id": "E-EXPRESSES-694267341514",
+      "id": "E-EXPRESSES-510527062082",
       "fromId": "urn:reg:bcbs:nsf:30.35",
       "toId": "OBL-BCBS-NSF-s30.35-1",
       "edgeType": "EXPRESSES",
@@ -3516,7 +3046,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.35"
     },
     {
-      "id": "E-EXPRESSES-845215230242",
+      "id": "E-EXPRESSES-422268735468",
       "fromId": "urn:reg:bcbs:nsf:30.36",
       "toId": "OBL-BCBS-NSF-s30.36-1",
       "edgeType": "EXPRESSES",
@@ -3526,7 +3056,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.36"
     },
     {
-      "id": "E-EXPRESSES-004482240662",
+      "id": "E-EXPRESSES-674036666706",
       "fromId": "urn:reg:bcbs:nsf:30.37",
       "toId": "OBL-BCBS-NSF-s30.37-1",
       "edgeType": "EXPRESSES",
@@ -3536,7 +3066,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:30.37"
     },
     {
-      "id": "E-EXPRESSES-971981314523",
+      "id": "E-EXPRESSES-053988298141",
       "fromId": "urn:reg:bcbs:nsf:99.4",
       "toId": "OBL-BCBS-NSF-s99.4-1",
       "edgeType": "EXPRESSES",
@@ -3546,7 +3076,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.4"
     },
     {
-      "id": "E-EXPRESSES-881091233736",
+      "id": "E-EXPRESSES-216584782640",
       "fromId": "urn:reg:bcbs:nsf:99.5",
       "toId": "OBL-BCBS-NSF-s99.5-1",
       "edgeType": "EXPRESSES",
@@ -3556,7 +3086,7 @@
       "sourceProvision": "urn:reg:bcbs:nsf:99.5"
     },
     {
-      "id": "E-EXPRESSES-117616847828",
+      "id": "E-EXPRESSES-969955614951",
       "fromId": "urn:reg:bcbs:nsf:99.6",
       "toId": "OBL-BCBS-NSF-s99.6-1",
       "edgeType": "EXPRESSES",

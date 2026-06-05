@@ -7,25 +7,25 @@
   "generatedAt": "2026-06-04T00:00:00Z",
   "source": "The Basel Framework (BIS) consolidated PDF, pages 1493-1850",
   "stats": {
-    "nodes": 168,
-    "edges": 192,
-    "obligations": 35,
-    "normativeParagraphs": 35,
+    "nodes": 162,
+    "edges": 184,
+    "obligations": 34,
+    "normativeParagraphs": 34,
     "decomposition": "paragraph",
     "nodesByType": {
       "Framework": 1,
       "Document": 1,
-      "Provision": 131,
-      "Obligation": 35
+      "Provision": 126,
+      "Obligation": 34
     },
     "edgesByType": {
       "COMPRISES": 1,
       "CONTAINS": 109,
-      "REFERENCES": 47,
-      "EXPRESSES": 35
+      "REFERENCES": 40,
+      "EXPRESSES": 34
     },
     "obligationsByType": {
-      "must": 14,
+      "must": 13,
       "recommended": 18,
       "may": 2,
       "must-not": 1
@@ -846,7 +846,7 @@
       "nodeType": "Provision",
       "label": "DIS25 25.1",
       "level": "section",
-      "text": "framework. Introduction Footnotes The disclosure requirements set out in this chapter are: (1) Table CCA – Main features of regulatory capital instruments and of other total loss-absorbing capacity (TLAC) - eligible instruments (2) Template CC1 – Composition of regulatory capital (3) Template CC2 – Reconciliation of regulatory capital to balance sheet (4) Template TLAC1 – TLAC composition for global systemically important banks (G-SIBs) (at resolution group level) (5) Template TLAC2 – Material subgroup entity – creditor ranking at legal entity level (6) Template TLAC3 – Resolution entity – creditor ranking at legal entity level",
+      "text": "framework. Introduction The disclosure requirements set out in this chapter are: (1) Table CCA – Main features of regulatory capital instruments and of other total loss-absorbing capacity (TLAC) - eligible instruments (2) Template CC1 – Composition of regulatory capital (3) Template CC2 – Reconciliation of regulatory capital to balance sheet (4) Template TLAC1 – TLAC composition for global systemically important banks (G-SIBs) (at resolution group level) (5) Template TLAC2 – Material subgroup entity – creditor ranking at legal entity level (6) Template TLAC3 – Resolution entity – creditor ranking at legal entity level",
       "metadata": {
         "chapter": "DIS25",
         "chapterTitle": "Composition of capital and TLAC The disclosures described in this chapter cover the composition of regulatory capital, the main features of regulatory capital instruments and, for global systemically important banks, the composition of total loss-absorbing capacity and the creditor hierarchies of material subgroups",
@@ -876,7 +876,7 @@
       "nodeType": "Provision",
       "label": "DIS25 25.3",
       "level": "section",
-      "text": "Table CCA represents the minimum level of disclosure that banks are required to report in respect of each regulatory capital instrument and, where applicable, other TLAC-eligible instruments issued.1 (2) Template CC1 details the composition of a bank’s regulatory capital. (3) Template CC2 provides users of Pillar 3 data with a reconciliation between the scope of a bank’s accounting consolidation, as per published financial statements, and the scope of its regulatory consolidation. In this context, “other TLAC-eligible instruments” are instruments other than regulatory capital instruments issued by G-SIBs that meet the TLAC eligibility criteria. 1 FAQ For the disclosure requirements under , in the event a bank DIS25 restates its prior year accounting balance sheet, does the bank restate the archived prior year reconciliation templates? The requirement to keep an archive of a minimum period also applies to the reconciliation template. As such, any prospective/retrospective restatement of the balance sheet would require similar amendments to be reflected in the reconciliation templates within the archive with a clear indication that such a revision has been made. FAQ1 The following additional templates must be completed by banks which have been designated as G-SIBs: (1) Template TLAC1 provides details of the TLAC positions of G-SIB resolution groups. This disclosure requirement applies to all G-SIBs at the resolution group level. For single point of entry G-SIBs, there is only one resolution group. This means that they only need to complete Template TLAC1 once to report their TLAC positions. (2) Templates TLAC2 and TLAC3 present information on creditor rankings at the legal entity level for material subgroup entities (ie entities that are part of a material subgroup) which have issued internal TLAC to one or more resolution entities, and also for resolution entities. These templates provide information on the amount and residual maturity of TLAC and on the instruments issued by resolution entities and material subgroup entities that rank pari passu with, or junior to, TLAC instruments.",
+      "text": "Table CCA represents the minimum level of disclosure that banks are required to report in respect of each regulatory capital instrument and, where applicable, other TLAC-eligible instruments issued.1 (2) Template CC1 details the composition of a bank’s regulatory capital. (3) Template CC2 provides users of Pillar 3 data with a reconciliation between the scope of a bank’s accounting consolidation, as per published financial statements, and the scope of its regulatory consolidation. The following additional templates must be completed by banks which have been designated as G-SIBs: (1) Template TLAC1 provides details of the TLAC positions of G-SIB resolution groups. This disclosure requirement applies to all G-SIBs at the resolution group level. For single point of entry G-SIBs, there is only one resolution group. This means that they only need to complete Template TLAC1 once to report their TLAC positions. (2) Templates TLAC2 and TLAC3 present information on creditor rankings at the legal entity level for material subgroup entities (ie entities that are part of a material subgroup) which have issued internal TLAC to one or more resolution entities, and also for resolution entities. These templates provide information on the amount and residual maturity of TLAC and on the instruments issued by resolution entities and material subgroup entities that rank pari passu with, or junior to, TLAC instruments.",
       "metadata": {
         "chapter": "DIS25",
         "chapterTitle": "Composition of capital and TLAC The disclosures described in this chapter cover the composition of regulatory capital, the main features of regulatory capital instruments and, for global systemically important banks, the composition of total loss-absorbing capacity and the creditor hierarchies of material subgroups",
@@ -996,26 +996,14 @@
       "nodeType": "Provision",
       "label": "DIS30 30.4",
       "level": "section",
-      "text": "In Template LI1, are assets deducted from regulatory capital in accordance with Basel III (eg goodwill and intangible assets) disclosed in column (g)? Elements which are deducted from a bank’s regulatory capital (eg goodwill and intangible assets and deferred tax assets) should be included in column (g), taking into consideration the different thresholds that apply where relevant. Assets should be disclosed for the amount that is actually deducted from capital. Some examples are shown below: - Goodwill and intangible assets: the amount to be disclosed in column (g) is the amount of any goodwill or intangibles,* including any goodwill included in the valuation of significant investments in the capital of banking, financial and insurance entities that are outside the scope of regulatory consolidation. The amount disclosed in the assets rows is net of any associated deferred tax liability which would be extinguished if the intangible assets become impaired or derecognised under the relevant accounting standards. The associated deferred tax liability is also to be disclosed in the liabilities rows of column (g). - Deferred tax assets: for all types of deferred tax assets to be deducted from own funds, the amount to be disclosed in column (g) is net of associated deferred tax liabilities that are eligible for netting. The associated deferred tax liabilities are to be disclosed in the liabilities rows of column (g). For deferred tax assets, for which the deduction is subject to a threshold, the amount disclosed in column (g) in the assets rows is the amount, net of any eligible deferred tax liability, above the threshold. The associated deferred tax liabilities are also to be disclosed in the liabilities rows of column (g). - Defined benefit pension fund assets: the amount disclosed is net of any deferred tax liabilities which would be extinguished if the asset should become impaired or derecognised under the relevant accounting standards. These deferred tax liabilities are also to be disclosed in the liabilities rows of column (g). - Investments in own shares (treasury stock) or own instruments of regulatory capital: when investments in own shares or own instruments of regulatory capital are not already derecognised under the relevant accounting standards, the deducted amount disclosed is net of short positions in the same underlying exposure FAQ1 or in the same underlying index allowed to be netted under the Basel framework. These short positions are also to be disclosed in the liabilities rows of column (g). * Under , subject to supervisory approval, banks that report CAP30.8 under local GAAP may use the IFRS definition of intangible assets to determine which assets are classified as intangible and are thus required to be deducted. In Template LI1, are exposures required to be 1,250% risk-weighted to be disclosed in column (g)? 1,250% risk-weighted exposures should be disclosed in the relevant credit risk or securitisation risk templates. FAQ2 Template LI1: Considering that the risk weighting framework bears on assets rather than liabilities, should all the liabilities be disclosed in column (g)? Should in any case deferred tax liabilities and defined benefit pension fund liabilities be included in column (g)? The liabilities disclosed in column (g) are all liabilities under the regulatory scope of consolidation, except for the following, which are disclosed in columns (c), (d), (e) and (f) as applicable: liabilities that are included in the determination of the exposure values in the market risk or the counterparty credit risk framework; and liabilities that are eligible under the Basel netting rules. FAQ3 What is the difference in Template LI2 between the required disclosure in row 2 (Liabilities carrying value amount under regulatory scope of consolidation) and row 6 (Differences due to different netting rules, other than those already included in row 2). Row 2 refers to balance sheet netting, while row 6 refers to incremental netting in application of the Basel rules (when not already covered by balance sheet netting). The netting rules under the Basel framework are different from the rules under the applicable accounting frameworks. The incremental netting in row 6 could represent an additional deduction from the net exposure value before application of the Basel netting rules (when those rules lead to more netting than the balance sheet netting in row 2) or a gross-up of the net exposure value when the off-balance sheet netting operated in row 2 is broader than what the Basel netting rules allow. FAQ4 FAQ5 How does the disclosure in Template LI2, in particular row 3 (total net amount under regulatory scope of consolidated) relate to accounting equity? The netting between assets and liabilities in Template LI2 does not lead to accounting equity under a regulatory scope of consolidation being disclosed in row 3. Assets and liabilities included in rows 1 and 2 are limited to those assets and liabilities that are taken into consideration in the regulatory framework. Other assets and liabilities not considered in the regulatory framework are to be disclosed in column (g) in Template LI1 and are consequently excluded from rows 1 and 2 of Template LI2. For Template LI2, how would the entry in row 10 (exposure amounts considered for regulatory purpose) differ from the balance sheet values under a regulatory scope of consolidation? Is it correct that there would be no differences to be explained, given that market risk does not have exposure values and the linkage for the other risk categories does not apply? In general, under a regulatory scope of consolidation, the accounting carrying amount and the regulatory exposure value would vary due to the incidence of off-balance sheet elements, provisions, and different netting and measurement rules. Under market risk, the regulatory exposure value will also differ from the accounting carrying amount. Differences could be due to off-balance sheet items, netting rules and different measurement rules of market risk positions via prudent valuation (as opposed to fair valuation in the applicable accounting framework). FAQ6 Template PV1 will provide users with a detailed breakdown of how the aggregate PVAs have been derived. In light of instances where the underlying exposures cannot be easily classified as a banking book or trading book exposure due to the varied implementation of PVAs across jurisdictions, national supervisors are allowed discretion to tailor the format of the template to reflect the implementation of PVAs in their jurisdiction. Where such discretion has been exercised, the allocation methodology should be explained in the narrative commentary to the disclosure requirement.",
+      "text": "Template PV1 will provide users with a detailed breakdown of how the aggregate PVAs have been derived. In light of instances where the underlying exposures cannot be easily classified as a banking book or trading book exposure due to the varied implementation of PVAs across jurisdictions, national supervisors are allowed discretion to tailor the format of the template to reflect the implementation of PVAs in their jurisdiction. Where such discretion has been exercised, the allocation methodology should be explained in the narrative commentary to the disclosure requirement.",
       "metadata": {
         "chapter": "DIS30",
         "chapterTitle": "Links between financial statements and regulatory exposures",
-        "section": "FAQ",
+        "section": "First version in the format of the consolidated",
         "paragraph": "30.4",
         "standard": "DIS",
         "citationUrn": "urn:reg:bcbs:dis:30.4"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:cap:30.8",
-      "nodeType": "Provision",
-      "label": "CAP30.8",
-      "level": "section",
-      "metadata": {
-        "standard": "CAP",
-        "paragraph": "30.8",
-        "external": true,
-        "stub": true
       }
     },
     {
@@ -1182,7 +1170,7 @@
       "nodeType": "Provision",
       "label": "DIS42 42.1",
       "level": "section",
-      "text": "and credit valuation adjustment disclosure requirements. Removes the CVA template (CCR2), which is now specified in a separate chapter (DIS51). Updated to take account of new implementation date as announced on . Introduction Footnotes includes all exposures in the banking book and trading book that are DIS42 subject to a counterparty credit risk charge, including the charges applied to exposures to central counterparties (CCPs).1",
+      "text": "and credit valuation adjustment disclosure requirements. Removes the CVA template (CCR2), which is now specified in a separate chapter (DIS51). Updated to take account of new implementation date as announced on . Introduction includes all exposures in the banking book and trading book that are DIS42 subject to a counterparty credit risk charge, including the charges applied to exposures to central counterparties (CCPs).1",
       "metadata": {
         "chapter": "DIS42",
         "chapterTitle": "Counterparty credit risk",
@@ -1197,7 +1185,7 @@
       "nodeType": "Provision",
       "label": "DIS42 42.2",
       "level": "section",
-      "text": "The relevant sections of the Basel framework are in to CRE50 CRE55 and . MAR50 1 The disclosure requirements under are:DIS4242.2",
+      "text": "The disclosure requirements under are:DIS4242.2",
       "metadata": {
         "chapter": "DIS42",
         "chapterTitle": "Counterparty credit risk",
@@ -1208,47 +1196,11 @@
       }
     },
     {
-      "id": "urn:reg:bcbs:cre:50",
-      "nodeType": "Provision",
-      "label": "CRE50",
-      "level": "section",
-      "metadata": {
-        "standard": "CRE",
-        "paragraph": "50",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:cre:55",
-      "nodeType": "Provision",
-      "label": "CRE55",
-      "level": "section",
-      "metadata": {
-        "standard": "CRE",
-        "paragraph": "55",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:mar:50",
-      "nodeType": "Provision",
-      "label": "MAR50",
-      "level": "section",
-      "metadata": {
-        "standard": "MAR",
-        "paragraph": "50",
-        "external": true,
-        "stub": true
-      }
-    },
-    {
       "id": "urn:reg:bcbs:dis:43.1",
       "nodeType": "Provision",
       "label": "DIS43 43.1",
       "level": "section",
-      "text": "requirements applying to securitisation exposures. First version in the format of the consolidated framework. Introduction Footnotes The scope of :DIS43 143.1 (1) covers all securitisation exposures2 in Table SECA and in templates SEC1 and",
+      "text": "requirements applying to securitisation exposures. First version in the format of the consolidated framework. Introduction The scope of :DIS43 143.1 (1) covers all securitisation exposures2 in Table SECA and in templates SEC1 and",
       "metadata": {
         "chapter": "DIS43",
         "chapterTitle": "Securitisation",
@@ -1263,7 +1215,7 @@
       "nodeType": "Provision",
       "label": "DIS43 43.2",
       "level": "section",
-      "text": "SEC2; (2) focuses on banking book securitisation exposures subject to capital charges according to the securitisation framework in templates SEC3 and SEC4; and (3) excludes capital charges related to securitisation positions in the trading book that are reported in .DIS50 Unless stated otherwise, all terms used in are used consistently DIS43 with the definitions in .CRE40 1 Securitisation refers to the definition of what constitutes a securitisation under the Basel framework. Securitisation exposures correspond to securitisation exposures as defined in the Basel framework. According to this framework, securitisation exposures can include, but are not restricted to, the following: asset-backed securities, mortgage-backed securities, credit enhancements, liquidity facilities, interest rate or currency swaps, credit derivatives and tranched cover as described in . Reserve accounts, such as cash collateral accounts, CRE22 recorded as an asset by the originating bank must also be treated as securitisation exposures. Securitisation exposures refer to retained or purchased exposures and not to underlying pools. 2 Only securitisation exposures that the bank treats under the securitisation framework ( to ) are disclosed in templates SEC3 and SEC4. For CRE40 CRE44 banks acting as originators, this implies that the criteria for risk transfer recognition as described in to are met. Conversely, all CRE40.24 CRE40.29 securitisation exposures, including those that do not meet the risk transfer recognition criteria, are reported in templates SEC1 and SEC2. As a result, templates SEC1 and SEC2 may include exposures that are subject to capital requirements according to both the credit risk and market risk frameworks and that are also included in other parts of the Pillar 3 report. The purpose is to provide a comprehensive view of banks' securitisation activities. There is no double-counting of capital requirements as templates SEC3 and SEC4 are limited to exposures subject to the securitisation framework.",
+      "text": "SEC2; (2) focuses on banking book securitisation exposures subject to capital charges according to the securitisation framework in templates SEC3 and SEC4; and (3) excludes capital charges related to securitisation positions in the trading book that are reported in .DIS50 Only securitisation exposures that the bank treats under the securitisation framework ( to ) are disclosed in templates SEC3 and SEC4. For CRE40 CRE44 banks acting as originators, this implies that the criteria for risk transfer recognition as described in to are met. Conversely, all CRE40.24 CRE40.29 securitisation exposures, including those that do not meet the risk transfer recognition criteria, are reported in templates SEC1 and SEC2. As a result, templates SEC1 and SEC2 may include exposures that are subject to capital requirements according to both the credit risk and market risk frameworks and that are also included in other parts of the Pillar 3 report. The purpose is to provide a comprehensive view of banks' securitisation activities. There is no double-counting of capital requirements as templates SEC3 and SEC4 are limited to exposures subject to the securitisation framework.",
       "metadata": {
         "chapter": "DIS43",
         "chapterTitle": "Securitisation",
@@ -1271,18 +1223,6 @@
         "paragraph": "43.2",
         "standard": "DIS",
         "citationUrn": "urn:reg:bcbs:dis:43.2"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:cre:22",
-      "nodeType": "Provision",
-      "label": "CRE22",
-      "level": "section",
-      "metadata": {
-        "standard": "CRE",
-        "paragraph": "22",
-        "external": true,
-        "stub": true
       }
     },
     {
@@ -1578,7 +1518,7 @@
       "nodeType": "Provision",
       "label": "DIS70 70.4",
       "level": "section",
-      "text": "For the disclosure of ∆EVE: (1) Banks should exclude their own equity from the computation of the exposure level; (2) Banks should include all cash flows from all interest rate-sensitive assets, liabilities and off-balance sheet items in the banking book in the computation of their exposure.1 Banks should disclose whether they have excluded or included commercial margins and other spread components in their cash flows;",
+      "text": "For the disclosure of ∆EVE: (1) Banks should exclude their own equity from the computation of the exposure level; (2) Banks should include all cash flows from all interest rate-sensitive assets, liabilities and off-balance sheet items in the banking book in the computation of their exposure.1 Banks should disclose whether they have excluded or included commercial margins and other spread components in their cash flows; (3) Cash flows should be discounted using either a risk-free rate or a risk-free rate including commercial margins and other spread components (only if the bank has included commercial margins and other spread components in its cash flows).2 Banks should disclose whether they have discounted their cash flows using a risk-free rate or a risk-free rate including commercial margins and other spread components; and (4) ΔEVE should be computed with the assumption of a run-off balance sheet, where existing banking book positions amortise and are not replaced by any new business.",
       "metadata": {
         "chapter": "DIS70",
         "chapterTitle": "Interest rate risk in the banking book",
@@ -1593,11 +1533,11 @@
       "nodeType": "Provision",
       "label": "DIS70 70.5",
       "level": "section",
-      "text": "(3) Cash flows should be discounted using either a risk-free rate or a risk-free rate including commercial margins and other spread components (only if the bank has included commercial margins and other spread components in its cash flows).2 Banks should disclose whether they have discounted their cash flows using a risk-free rate or a risk-free rate including commercial margins and other spread components; and (4) ΔEVE should be computed with the assumption of a run-off balance sheet, where existing banking book positions amortise and are not replaced by any new business. Interest rate-sensitive assets are assets which are not deducted from Common Equity Tier 1 capital and which exclude (i) fixed assets such as real estate or intangible assets as well as (ii) equity exposures in the banking book. 1 The discounting factors must be representative of a risk-free zero coupon rate. An example of an acceptable yield curve is a secured interest rate swap curve. 2 For the disclosure of ∆NII: (1) Banks should include expected cash flows (including commercial margins and other spread components) arising from all interest rate-sensitive assets, liabilities and off-balance sheet items in the banking book; (2) ΔNII should be computed assuming a constant balance sheet, where maturing or repricing cash flows are replaced by new cash flows with identical features with regard to the amount, repricing period and spread components. (3) ΔNII should be disclosed as the difference in future interest income over a rolling 12-month period.",
+      "text": "For the disclosure of ∆NII: (1) Banks should include expected cash flows (including commercial margins and other spread components) arising from all interest rate-sensitive assets, liabilities and off-balance sheet items in the banking book; (2) ΔNII should be computed assuming a constant balance sheet, where maturing or repricing cash flows are replaced by new cash flows with identical features with regard to the amount, repricing period and spread components. (3) ΔNII should be disclosed as the difference in future interest income over a rolling 12-month period.",
       "metadata": {
         "chapter": "DIS70",
         "chapterTitle": "Interest rate risk in the banking book",
-        "section": "Footnotes",
+        "section": "This chapter describes disclosure requirements",
         "paragraph": "70.5",
         "standard": "DIS",
         "citationUrn": "urn:reg:bcbs:dis:70.5"
@@ -1612,7 +1552,7 @@
       "metadata": {
         "chapter": "DIS70",
         "chapterTitle": "Interest rate risk in the banking book",
-        "section": "Footnotes",
+        "section": "This chapter describes disclosure requirements",
         "paragraph": "70.6",
         "standard": "DIS",
         "citationUrn": "urn:reg:bcbs:dis:70.6"
@@ -2308,8 +2248,7 @@
         ],
         "section": "First version in the format of the consolidated"
       },
-      "trigger": "where applicable, other TLAC-eligible instruments issued",
-      "exception": "other than regulatory capital instruments issued by G-SIBs that meet the TLAC eligibility criteria"
+      "trigger": "where applicable, other TLAC-eligible instruments issued"
     },
     {
       "id": "OBL-BCBS-DIS-s25.5-1",
@@ -2336,7 +2275,7 @@
       "label": "DIS30 30.4 — recommended",
       "obligationType": "recommended",
       "actor": "national supervisor",
-      "actionSummary": "In Template LI1, are assets deducted from regulatory capital in accordance with Basel III (eg goodwill and intangible assets) disclosed in column (g)? Elements which are deducted from a bank’s regulatory capital (eg goodwill and intangible assets and deferred tax assets) should be included in column",
+      "actionSummary": "Where such discretion has been exercised, the allocation methodology should be explained in the narrative commentary to the disclosure requirement.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:dis:30.4",
         "chapter": "DIS30",
@@ -2346,10 +2285,9 @@
         "modalities": [
           "recommended"
         ],
-        "section": "FAQ"
+        "section": "First version in the format of the consolidated"
       },
-      "trigger": "where relevant",
-      "exception": "except for the following, which are disclosed in columns (c), (d), (e) and (f) as applicable: liabilities that are included in the determination of the exposure values in the market risk or the counte"
+      "trigger": "where the underlying exposures cannot be easily classified as a banking book or trading book exposure due to the varied implementation of PVAs across jurisdictions, national supervisors are allowed di"
     },
     {
       "id": "OBL-BCBS-DIS-s35.4-1",
@@ -2370,27 +2308,6 @@
         "section": "First version in the format of the consolidated"
       },
       "trigger": "When it is not possible for the remuneration disclosures to be made at the same time as the publication of a bank’s annual report, the disclosures should be made as soon as possible thereafter"
-    },
-    {
-      "id": "OBL-BCBS-DIS-s43.2-1",
-      "nodeType": "Obligation",
-      "label": "DIS43 43.2 — must",
-      "obligationType": "must",
-      "actor": "bank",
-      "actionSummary": "Reserve accounts, such as cash collateral accounts, CRE22 recorded as an asset by the originating bank must also be treated as securitisation exposures.",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:dis:43.2",
-        "chapter": "DIS43",
-        "paragraph": "43.2",
-        "standard": "DIS",
-        "classificationConfidence": 0.9,
-        "modalities": [
-          "must"
-        ],
-        "section": "This chapter describes the disclosure"
-      },
-      "trigger": "subject to capital charges according to the securitisation framework in templates SEC3 and SEC4",
-      "exception": "Unless stated otherwise, all terms used in are used consistently DIS43 with the definitions in"
     },
     {
       "id": "OBL-BCBS-DIS-s51.1-1",
@@ -2470,7 +2387,8 @@
           "recommended"
         ],
         "section": "This chapter describes disclosure requirements"
-      }
+      },
+      "trigger": "if the bank has included commercial margins and other spread components in its cash flows)"
     },
     {
       "id": "OBL-BCBS-DIS-s70.5-1",
@@ -2478,7 +2396,7 @@
       "label": "DIS70 70.5 — recommended",
       "obligationType": "recommended",
       "actor": "bank",
-      "actionSummary": "(3) Cash flows should be discounted using either a risk-free rate or a risk-free rate including commercial margins and other spread components (only if the bank has included commercial margins and other spread components in its cash flows).2 Banks should disclose whether they have discounted their c",
+      "actionSummary": "For the disclosure of ∆NII: (1) Banks should include expected cash flows (including commercial margins and other spread components) arising from all interest rate-sensitive assets, liabilities and off-balance sheet items in the banking book;",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:dis:70.5",
         "chapter": "DIS70",
@@ -2486,12 +2404,11 @@
         "standard": "DIS",
         "classificationConfidence": 0.6,
         "modalities": [
-          "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "This chapter describes disclosure requirements"
       },
-      "trigger": "if the bank has included commercial margins and other spread components in its cash flows)"
+      "trigger": "where maturing or repricing cash flows are replaced by new cash flows with identical features with regard to the amount, repricing period and spread components"
     },
     {
       "id": "OBL-BCBS-DIS-s75.2-1",
@@ -2555,7 +2472,7 @@
   ],
   "edges": [
     {
-      "id": "E-COMPRISES-489538964206",
+      "id": "E-COMPRISES-012580521536",
       "fromId": "FW-basel",
       "toId": "DOC-BCBS-DIS",
       "edgeType": "COMPRISES",
@@ -2564,7 +2481,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-016990252465",
+      "id": "E-CONTAINS-952208957865",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:10",
       "edgeType": "CONTAINS",
@@ -2573,7 +2490,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-550502608226",
+      "id": "E-CONTAINS-805587408283",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:20",
       "edgeType": "CONTAINS",
@@ -2582,7 +2499,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-453877729030",
+      "id": "E-CONTAINS-715419091352",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:21",
       "edgeType": "CONTAINS",
@@ -2591,7 +2508,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-906226729698",
+      "id": "E-CONTAINS-806716980922",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:25",
       "edgeType": "CONTAINS",
@@ -2600,7 +2517,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-241575479384",
+      "id": "E-CONTAINS-400014021355",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:26",
       "edgeType": "CONTAINS",
@@ -2609,7 +2526,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-754711817399",
+      "id": "E-CONTAINS-686112551716",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:30",
       "edgeType": "CONTAINS",
@@ -2618,7 +2535,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-374841123116",
+      "id": "E-CONTAINS-938738818788",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:31",
       "edgeType": "CONTAINS",
@@ -2627,7 +2544,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-544999684183",
+      "id": "E-CONTAINS-094905605140",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:35",
       "edgeType": "CONTAINS",
@@ -2636,7 +2553,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-566062995170",
+      "id": "E-CONTAINS-281272977732",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:40",
       "edgeType": "CONTAINS",
@@ -2645,7 +2562,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-723832411178",
+      "id": "E-CONTAINS-178984609207",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:42",
       "edgeType": "CONTAINS",
@@ -2654,7 +2571,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-527682740147",
+      "id": "E-CONTAINS-337712871025",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:43",
       "edgeType": "CONTAINS",
@@ -2663,7 +2580,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-264246434647",
+      "id": "E-CONTAINS-534341904947",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:45",
       "edgeType": "CONTAINS",
@@ -2672,7 +2589,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-808008702871",
+      "id": "E-CONTAINS-427034646098",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:50",
       "edgeType": "CONTAINS",
@@ -2681,7 +2598,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-746170523083",
+      "id": "E-CONTAINS-092597261166",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:51",
       "edgeType": "CONTAINS",
@@ -2690,7 +2607,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-883605991299",
+      "id": "E-CONTAINS-930282346881",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:55",
       "edgeType": "CONTAINS",
@@ -2699,7 +2616,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-257147096608",
+      "id": "E-CONTAINS-398864511056",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:60",
       "edgeType": "CONTAINS",
@@ -2708,7 +2625,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-956671006460",
+      "id": "E-CONTAINS-594108476046",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:70",
       "edgeType": "CONTAINS",
@@ -2717,7 +2634,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-758772221146",
+      "id": "E-CONTAINS-950386740682",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:75",
       "edgeType": "CONTAINS",
@@ -2726,7 +2643,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-287072342739",
+      "id": "E-CONTAINS-414021511142",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:80",
       "edgeType": "CONTAINS",
@@ -2735,7 +2652,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-677441069516",
+      "id": "E-CONTAINS-814322601036",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:85",
       "edgeType": "CONTAINS",
@@ -2744,7 +2661,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-307825571157",
+      "id": "E-CONTAINS-280143761406",
       "fromId": "DOC-BCBS-DIS",
       "toId": "urn:reg:bcbs:dis:99",
       "edgeType": "CONTAINS",
@@ -2753,7 +2670,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-066944189326",
+      "id": "E-CONTAINS-355434915904",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.1",
       "edgeType": "CONTAINS",
@@ -2762,7 +2679,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-593240406202",
+      "id": "E-REFERENCES-460652060058",
       "fromId": "urn:reg:bcbs:dis:10.1",
       "toId": "urn:reg:bcbs:dis:45",
       "edgeType": "REFERENCES",
@@ -2772,7 +2689,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.1"
     },
     {
-      "id": "E-REFERENCES-665495543720",
+      "id": "E-REFERENCES-362915283709",
       "fromId": "urn:reg:bcbs:dis:10.1",
       "toId": "urn:reg:bcbs:dis:50",
       "edgeType": "REFERENCES",
@@ -2782,7 +2699,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.1"
     },
     {
-      "id": "E-REFERENCES-879531338247",
+      "id": "E-REFERENCES-242651951054",
       "fromId": "urn:reg:bcbs:dis:10.1",
       "toId": "urn:reg:bcbs:dis:55",
       "edgeType": "REFERENCES",
@@ -2792,7 +2709,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.1"
     },
     {
-      "id": "E-REFERENCES-544688241611",
+      "id": "E-REFERENCES-934801250530",
       "fromId": "urn:reg:bcbs:dis:10.1",
       "toId": "urn:reg:bcbs:dis:99",
       "edgeType": "REFERENCES",
@@ -2802,7 +2719,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.1"
     },
     {
-      "id": "E-CONTAINS-338792221882",
+      "id": "E-CONTAINS-953949735771",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.2",
       "edgeType": "CONTAINS",
@@ -2811,7 +2728,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-825333906684",
+      "id": "E-CONTAINS-767917527090",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.3",
       "edgeType": "CONTAINS",
@@ -2820,7 +2737,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-486349317419",
+      "id": "E-REFERENCES-392351637385",
       "fromId": "urn:reg:bcbs:dis:10.3",
       "toId": "urn:reg:bcbs:dis:10.25",
       "edgeType": "REFERENCES",
@@ -2830,7 +2747,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.3"
     },
     {
-      "id": "E-REFERENCES-334336250779",
+      "id": "E-REFERENCES-158495128222",
       "fromId": "urn:reg:bcbs:dis:10.3",
       "toId": "urn:reg:bcbs:dis:10.27",
       "edgeType": "REFERENCES",
@@ -2840,7 +2757,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.3"
     },
     {
-      "id": "E-CONTAINS-654784102238",
+      "id": "E-CONTAINS-184117537326",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.4",
       "edgeType": "CONTAINS",
@@ -2849,7 +2766,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-115270456328",
+      "id": "E-CONTAINS-073319853187",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.5",
       "edgeType": "CONTAINS",
@@ -2858,7 +2775,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-427429828763",
+      "id": "E-CONTAINS-145301889450",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.6",
       "edgeType": "CONTAINS",
@@ -2867,7 +2784,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-867782856219",
+      "id": "E-CONTAINS-813828047179",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.7",
       "edgeType": "CONTAINS",
@@ -2876,7 +2793,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-114587127265",
+      "id": "E-CONTAINS-079059638192",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.8",
       "edgeType": "CONTAINS",
@@ -2885,7 +2802,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-823854516812",
+      "id": "E-CONTAINS-644370089679",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.9",
       "edgeType": "CONTAINS",
@@ -2894,7 +2811,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-844884939080",
+      "id": "E-CONTAINS-452165036371",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.10",
       "edgeType": "CONTAINS",
@@ -2903,7 +2820,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-294760142579",
+      "id": "E-CONTAINS-923889824113",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.11",
       "edgeType": "CONTAINS",
@@ -2912,7 +2829,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-450492610996",
+      "id": "E-CONTAINS-845548489154",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.12",
       "edgeType": "CONTAINS",
@@ -2921,7 +2838,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-744941564901",
+      "id": "E-CONTAINS-029508368676",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.13",
       "edgeType": "CONTAINS",
@@ -2930,7 +2847,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-834626035369",
+      "id": "E-CONTAINS-517133876307",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.14",
       "edgeType": "CONTAINS",
@@ -2939,7 +2856,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-920435501254",
+      "id": "E-CONTAINS-387391932281",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.15",
       "edgeType": "CONTAINS",
@@ -2948,7 +2865,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-231210045477",
+      "id": "E-CONTAINS-539687707157",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.16",
       "edgeType": "CONTAINS",
@@ -2957,7 +2874,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-863861023214",
+      "id": "E-CONTAINS-511887694336",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.17",
       "edgeType": "CONTAINS",
@@ -2966,7 +2883,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-281552564067",
+      "id": "E-CONTAINS-719841909095",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.18",
       "edgeType": "CONTAINS",
@@ -2975,7 +2892,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-619018306424",
+      "id": "E-CONTAINS-429126971123",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.19",
       "edgeType": "CONTAINS",
@@ -2984,7 +2901,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-872666837697",
+      "id": "E-CONTAINS-593793795123",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.20",
       "edgeType": "CONTAINS",
@@ -2993,7 +2910,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-465427002180",
+      "id": "E-CONTAINS-427387737321",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.21",
       "edgeType": "CONTAINS",
@@ -3002,7 +2919,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-755326775878",
+      "id": "E-CONTAINS-303644231683",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.22",
       "edgeType": "CONTAINS",
@@ -3011,7 +2928,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-114652880060",
+      "id": "E-REFERENCES-425640013304",
       "fromId": "urn:reg:bcbs:dis:10.22",
       "toId": "urn:reg:bcbs:dis:10.18",
       "edgeType": "REFERENCES",
@@ -3021,7 +2938,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.22"
     },
     {
-      "id": "E-CONTAINS-349789321018",
+      "id": "E-CONTAINS-425716200549",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.23",
       "edgeType": "CONTAINS",
@@ -3030,7 +2947,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-267334998254",
+      "id": "E-CONTAINS-572759376685",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.24",
       "edgeType": "CONTAINS",
@@ -3039,7 +2956,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-579756984636",
+      "id": "E-REFERENCES-734633231629",
       "fromId": "urn:reg:bcbs:dis:10.24",
       "toId": "urn:reg:bcbs:dis:42",
       "edgeType": "REFERENCES",
@@ -3049,7 +2966,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.24"
     },
     {
-      "id": "E-CONTAINS-476323101482",
+      "id": "E-CONTAINS-076534195943",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.25",
       "edgeType": "CONTAINS",
@@ -3058,7 +2975,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-138415242201",
+      "id": "E-REFERENCES-279550919102",
       "fromId": "urn:reg:bcbs:dis:10.25",
       "toId": "urn:reg:bcbs:dis:10.26",
       "edgeType": "REFERENCES",
@@ -3068,7 +2985,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.25"
     },
     {
-      "id": "E-CONTAINS-130257067210",
+      "id": "E-CONTAINS-382305035474",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.26",
       "edgeType": "CONTAINS",
@@ -3077,7 +2994,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-655637533284",
+      "id": "E-CONTAINS-325381376139",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.27",
       "edgeType": "CONTAINS",
@@ -3086,7 +3003,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-961085942891",
+      "id": "E-CONTAINS-544442131849",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.28",
       "edgeType": "CONTAINS",
@@ -3095,7 +3012,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-467451462523",
+      "id": "E-CONTAINS-110137076892",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.29",
       "edgeType": "CONTAINS",
@@ -3104,7 +3021,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-093976696987",
+      "id": "E-CONTAINS-717782455561",
       "fromId": "urn:reg:bcbs:dis:10",
       "toId": "urn:reg:bcbs:dis:10.30",
       "edgeType": "CONTAINS",
@@ -3113,7 +3030,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-690561262156",
+      "id": "E-CONTAINS-054214154384",
       "fromId": "urn:reg:bcbs:dis:20",
       "toId": "urn:reg:bcbs:dis:20.1",
       "edgeType": "CONTAINS",
@@ -3122,7 +3039,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-339827367184",
+      "id": "E-CONTAINS-667572096504",
       "fromId": "urn:reg:bcbs:dis:20",
       "toId": "urn:reg:bcbs:dis:20.2",
       "edgeType": "CONTAINS",
@@ -3131,7 +3048,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-690568306052",
+      "id": "E-REFERENCES-197581347962",
       "fromId": "urn:reg:bcbs:dis:20.2",
       "toId": "urn:reg:bcbs:cap:90.17",
       "edgeType": "REFERENCES",
@@ -3141,7 +3058,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:20.2"
     },
     {
-      "id": "E-CONTAINS-603464542947",
+      "id": "E-CONTAINS-171897703142",
       "fromId": "urn:reg:bcbs:dis:20",
       "toId": "urn:reg:bcbs:dis:20.3",
       "edgeType": "CONTAINS",
@@ -3150,7 +3067,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-356899219039",
+      "id": "E-CONTAINS-312417669179",
       "fromId": "urn:reg:bcbs:dis:20",
       "toId": "urn:reg:bcbs:dis:20.4",
       "edgeType": "CONTAINS",
@@ -3159,7 +3076,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-598031623721",
+      "id": "E-CONTAINS-991987308805",
       "fromId": "urn:reg:bcbs:dis:20",
       "toId": "urn:reg:bcbs:dis:20.5",
       "edgeType": "CONTAINS",
@@ -3168,7 +3085,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-944336244905",
+      "id": "E-CONTAINS-592063390855",
       "fromId": "urn:reg:bcbs:dis:21",
       "toId": "urn:reg:bcbs:dis:21.1",
       "edgeType": "CONTAINS",
@@ -3177,7 +3094,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-808241250911",
+      "id": "E-REFERENCES-776763911221",
       "fromId": "urn:reg:bcbs:dis:21.1",
       "toId": "urn:reg:bcbs:cre:45",
       "edgeType": "REFERENCES",
@@ -3187,7 +3104,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:21.1"
     },
     {
-      "id": "E-CONTAINS-736623189958",
+      "id": "E-CONTAINS-074370232740",
       "fromId": "urn:reg:bcbs:dis:21",
       "toId": "urn:reg:bcbs:dis:21.2",
       "edgeType": "CONTAINS",
@@ -3196,7 +3113,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-333372855868",
+      "id": "E-CONTAINS-729753533985",
       "fromId": "urn:reg:bcbs:dis:25",
       "toId": "urn:reg:bcbs:dis:25.1",
       "edgeType": "CONTAINS",
@@ -3205,7 +3122,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-534936653449",
+      "id": "E-CONTAINS-438267937717",
       "fromId": "urn:reg:bcbs:dis:25",
       "toId": "urn:reg:bcbs:dis:25.2",
       "edgeType": "CONTAINS",
@@ -3214,7 +3131,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-228403920125",
+      "id": "E-CONTAINS-219830817524",
       "fromId": "urn:reg:bcbs:dis:25",
       "toId": "urn:reg:bcbs:dis:25.3",
       "edgeType": "CONTAINS",
@@ -3223,17 +3140,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-343122951626",
-      "fromId": "urn:reg:bcbs:dis:25.3",
-      "toId": "urn:reg:bcbs:dis:25",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:25.3"
-    },
-    {
-      "id": "E-CONTAINS-965884070780",
+      "id": "E-CONTAINS-238648941019",
       "fromId": "urn:reg:bcbs:dis:25",
       "toId": "urn:reg:bcbs:dis:25.4",
       "edgeType": "CONTAINS",
@@ -3242,7 +3149,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-921983236913",
+      "id": "E-CONTAINS-274029090413",
       "fromId": "urn:reg:bcbs:dis:25",
       "toId": "urn:reg:bcbs:dis:25.5",
       "edgeType": "CONTAINS",
@@ -3251,7 +3158,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-287788994921",
+      "id": "E-CONTAINS-405667274674",
       "fromId": "urn:reg:bcbs:dis:26",
       "toId": "urn:reg:bcbs:dis:26.1",
       "edgeType": "CONTAINS",
@@ -3260,7 +3167,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-880469146078",
+      "id": "E-CONTAINS-924067414788",
       "fromId": "urn:reg:bcbs:dis:26",
       "toId": "urn:reg:bcbs:dis:26.2",
       "edgeType": "CONTAINS",
@@ -3269,7 +3176,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-805763709797",
+      "id": "E-CONTAINS-466181716185",
       "fromId": "urn:reg:bcbs:dis:30",
       "toId": "urn:reg:bcbs:dis:30.1",
       "edgeType": "CONTAINS",
@@ -3278,7 +3185,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-278920069789",
+      "id": "E-CONTAINS-692883757725",
       "fromId": "urn:reg:bcbs:dis:30",
       "toId": "urn:reg:bcbs:dis:30.2",
       "edgeType": "CONTAINS",
@@ -3287,7 +3194,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-397035908178",
+      "id": "E-CONTAINS-056058917228",
       "fromId": "urn:reg:bcbs:dis:30",
       "toId": "urn:reg:bcbs:dis:30.3",
       "edgeType": "CONTAINS",
@@ -3296,7 +3203,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-006514939349",
+      "id": "E-CONTAINS-459150464244",
       "fromId": "urn:reg:bcbs:dis:30",
       "toId": "urn:reg:bcbs:dis:30.4",
       "edgeType": "CONTAINS",
@@ -3305,17 +3212,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-118595715584",
-      "fromId": "urn:reg:bcbs:dis:30.4",
-      "toId": "urn:reg:bcbs:cap:30.8",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:30.4"
-    },
-    {
-      "id": "E-CONTAINS-052030702037",
+      "id": "E-CONTAINS-875195996785",
       "fromId": "urn:reg:bcbs:dis:31",
       "toId": "urn:reg:bcbs:dis:31.1",
       "edgeType": "CONTAINS",
@@ -3324,7 +3221,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-721989492137",
+      "id": "E-CONTAINS-791362392478",
       "fromId": "urn:reg:bcbs:dis:31",
       "toId": "urn:reg:bcbs:dis:31.2",
       "edgeType": "CONTAINS",
@@ -3333,7 +3230,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-162185608303",
+      "id": "E-CONTAINS-967129973311",
       "fromId": "urn:reg:bcbs:dis:31",
       "toId": "urn:reg:bcbs:dis:31.3",
       "edgeType": "CONTAINS",
@@ -3342,7 +3239,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-716925726760",
+      "id": "E-REFERENCES-567977774018",
       "fromId": "urn:reg:bcbs:dis:31.3",
       "toId": "urn:reg:bcbs:lcr:30",
       "edgeType": "REFERENCES",
@@ -3352,7 +3249,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:31.3"
     },
     {
-      "id": "E-CONTAINS-586380139342",
+      "id": "E-CONTAINS-755084597961",
       "fromId": "urn:reg:bcbs:dis:35",
       "toId": "urn:reg:bcbs:dis:35.1",
       "edgeType": "CONTAINS",
@@ -3361,7 +3258,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-817091518204",
+      "id": "E-CONTAINS-900572340293",
       "fromId": "urn:reg:bcbs:dis:35",
       "toId": "urn:reg:bcbs:dis:35.2",
       "edgeType": "CONTAINS",
@@ -3370,7 +3267,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-179607059481",
+      "id": "E-CONTAINS-681885998472",
       "fromId": "urn:reg:bcbs:dis:35",
       "toId": "urn:reg:bcbs:dis:35.3",
       "edgeType": "CONTAINS",
@@ -3379,7 +3276,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-057464818354",
+      "id": "E-CONTAINS-877167198664",
       "fromId": "urn:reg:bcbs:dis:35",
       "toId": "urn:reg:bcbs:dis:35.4",
       "edgeType": "CONTAINS",
@@ -3388,7 +3285,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-493433555862",
+      "id": "E-CONTAINS-739261116885",
       "fromId": "urn:reg:bcbs:dis:40",
       "toId": "urn:reg:bcbs:dis:40.1",
       "edgeType": "CONTAINS",
@@ -3397,7 +3294,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-156608117781",
+      "id": "E-REFERENCES-798818734133",
       "fromId": "urn:reg:bcbs:dis:40.1",
       "toId": "urn:reg:bcbs:dis:40",
       "edgeType": "REFERENCES",
@@ -3407,7 +3304,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:40.1"
     },
     {
-      "id": "E-REFERENCES-527292095301",
+      "id": "E-REFERENCES-715930557232",
       "fromId": "urn:reg:bcbs:dis:40.1",
       "toId": "urn:reg:bcbs:dis:42",
       "edgeType": "REFERENCES",
@@ -3417,7 +3314,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:40.1"
     },
     {
-      "id": "E-REFERENCES-823355698518",
+      "id": "E-REFERENCES-742378840840",
       "fromId": "urn:reg:bcbs:dis:40.1",
       "toId": "urn:reg:bcbs:dis:43",
       "edgeType": "REFERENCES",
@@ -3427,7 +3324,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:40.1"
     },
     {
-      "id": "E-REFERENCES-997584630236",
+      "id": "E-REFERENCES-112516559022",
       "fromId": "urn:reg:bcbs:dis:40.1",
       "toId": "urn:reg:bcbs:rbc:20.6",
       "edgeType": "REFERENCES",
@@ -3437,7 +3334,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:40.1"
     },
     {
-      "id": "E-CONTAINS-294561580143",
+      "id": "E-CONTAINS-926141380042",
       "fromId": "urn:reg:bcbs:dis:40",
       "toId": "urn:reg:bcbs:dis:40.2",
       "edgeType": "CONTAINS",
@@ -3446,7 +3343,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-731380251853",
+      "id": "E-CONTAINS-262753297002",
       "fromId": "urn:reg:bcbs:dis:42",
       "toId": "urn:reg:bcbs:dis:42.1",
       "edgeType": "CONTAINS",
@@ -3455,7 +3352,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-059193117059",
+      "id": "E-REFERENCES-057641782212",
       "fromId": "urn:reg:bcbs:dis:42.1",
       "toId": "urn:reg:bcbs:dis:42",
       "edgeType": "REFERENCES",
@@ -3465,7 +3362,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:42.1"
     },
     {
-      "id": "E-REFERENCES-078865260463",
+      "id": "E-REFERENCES-405942660998",
       "fromId": "urn:reg:bcbs:dis:42.1",
       "toId": "urn:reg:bcbs:dis:51",
       "edgeType": "REFERENCES",
@@ -3475,7 +3372,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:42.1"
     },
     {
-      "id": "E-CONTAINS-781106896939",
+      "id": "E-CONTAINS-676896011412",
       "fromId": "urn:reg:bcbs:dis:42",
       "toId": "urn:reg:bcbs:dis:42.2",
       "edgeType": "CONTAINS",
@@ -3484,37 +3381,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-796760428550",
-      "fromId": "urn:reg:bcbs:dis:42.2",
-      "toId": "urn:reg:bcbs:cre:50",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:42.2"
-    },
-    {
-      "id": "E-REFERENCES-903105211843",
-      "fromId": "urn:reg:bcbs:dis:42.2",
-      "toId": "urn:reg:bcbs:cre:55",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:42.2"
-    },
-    {
-      "id": "E-REFERENCES-739736279403",
-      "fromId": "urn:reg:bcbs:dis:42.2",
-      "toId": "urn:reg:bcbs:mar:50",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:42.2"
-    },
-    {
-      "id": "E-CONTAINS-200495794049",
+      "id": "E-CONTAINS-494794811884",
       "fromId": "urn:reg:bcbs:dis:43",
       "toId": "urn:reg:bcbs:dis:43.1",
       "edgeType": "CONTAINS",
@@ -3523,7 +3390,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-071153099035",
+      "id": "E-REFERENCES-092455344404",
       "fromId": "urn:reg:bcbs:dis:43.1",
       "toId": "urn:reg:bcbs:dis:43",
       "edgeType": "REFERENCES",
@@ -3533,7 +3400,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:43.1"
     },
     {
-      "id": "E-CONTAINS-313708766028",
+      "id": "E-CONTAINS-764630434757",
       "fromId": "urn:reg:bcbs:dis:43",
       "toId": "urn:reg:bcbs:dis:43.2",
       "edgeType": "CONTAINS",
@@ -3542,17 +3409,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-477820045575",
-      "fromId": "urn:reg:bcbs:dis:43.2",
-      "toId": "urn:reg:bcbs:cre:22",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:43.2"
-    },
-    {
-      "id": "E-REFERENCES-621801943210",
+      "id": "E-REFERENCES-519161527300",
       "fromId": "urn:reg:bcbs:dis:43.2",
       "toId": "urn:reg:bcbs:cre:40",
       "edgeType": "REFERENCES",
@@ -3562,7 +3419,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:43.2"
     },
     {
-      "id": "E-REFERENCES-374266492261",
+      "id": "E-REFERENCES-869226209771",
       "fromId": "urn:reg:bcbs:dis:43.2",
       "toId": "urn:reg:bcbs:cre:40.24",
       "edgeType": "REFERENCES",
@@ -3572,7 +3429,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:43.2"
     },
     {
-      "id": "E-REFERENCES-507432359616",
+      "id": "E-REFERENCES-618372405825",
       "fromId": "urn:reg:bcbs:dis:43.2",
       "toId": "urn:reg:bcbs:cre:40.29",
       "edgeType": "REFERENCES",
@@ -3582,7 +3439,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:43.2"
     },
     {
-      "id": "E-REFERENCES-275933519241",
+      "id": "E-REFERENCES-615717722581",
       "fromId": "urn:reg:bcbs:dis:43.2",
       "toId": "urn:reg:bcbs:cre:44",
       "edgeType": "REFERENCES",
@@ -3592,17 +3449,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:43.2"
     },
     {
-      "id": "E-REFERENCES-224607433407",
-      "fromId": "urn:reg:bcbs:dis:43.2",
-      "toId": "urn:reg:bcbs:dis:43",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:43.2"
-    },
-    {
-      "id": "E-REFERENCES-444578610808",
+      "id": "E-REFERENCES-075815030445",
       "fromId": "urn:reg:bcbs:dis:43.2",
       "toId": "urn:reg:bcbs:dis:50",
       "edgeType": "REFERENCES",
@@ -3612,7 +3459,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:43.2"
     },
     {
-      "id": "E-CONTAINS-942141906013",
+      "id": "E-CONTAINS-374268885996",
       "fromId": "urn:reg:bcbs:dis:43",
       "toId": "urn:reg:bcbs:dis:43.3",
       "edgeType": "CONTAINS",
@@ -3621,7 +3468,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-734648361450",
+      "id": "E-CONTAINS-091105661395",
       "fromId": "urn:reg:bcbs:dis:45",
       "toId": "urn:reg:bcbs:dis:45.1",
       "edgeType": "CONTAINS",
@@ -3630,7 +3477,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-802649152971",
+      "id": "E-CONTAINS-335924374704",
       "fromId": "urn:reg:bcbs:dis:45",
       "toId": "urn:reg:bcbs:dis:45.2",
       "edgeType": "CONTAINS",
@@ -3639,7 +3486,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-085002338090",
+      "id": "E-REFERENCES-339883312030",
       "fromId": "urn:reg:bcbs:dis:45.2",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -3649,7 +3496,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:45.2"
     },
     {
-      "id": "E-REFERENCES-085991637270",
+      "id": "E-REFERENCES-517085326295",
       "fromId": "urn:reg:bcbs:dis:45.2",
       "toId": "urn:reg:bcbs:mar:22",
       "edgeType": "REFERENCES",
@@ -3659,7 +3506,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:45.2"
     },
     {
-      "id": "E-REFERENCES-031983624720",
+      "id": "E-REFERENCES-003614110691",
       "fromId": "urn:reg:bcbs:dis:45.2",
       "toId": "urn:reg:bcbs:mar:40",
       "edgeType": "REFERENCES",
@@ -3669,7 +3516,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:45.2"
     },
     {
-      "id": "E-CONTAINS-818768611961",
+      "id": "E-CONTAINS-158760196590",
       "fromId": "urn:reg:bcbs:dis:45",
       "toId": "urn:reg:bcbs:dis:45.3",
       "edgeType": "CONTAINS",
@@ -3678,7 +3525,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-967173281248",
+      "id": "E-CONTAINS-425356882886",
       "fromId": "urn:reg:bcbs:dis:50",
       "toId": "urn:reg:bcbs:dis:50.1",
       "edgeType": "CONTAINS",
@@ -3687,7 +3534,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-003849267765",
+      "id": "E-REFERENCES-561416730145",
       "fromId": "urn:reg:bcbs:dis:50.1",
       "toId": "urn:reg:bcbs:dis:42",
       "edgeType": "REFERENCES",
@@ -3697,7 +3544,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:50.1"
     },
     {
-      "id": "E-REFERENCES-049631625781",
+      "id": "E-REFERENCES-312045748190",
       "fromId": "urn:reg:bcbs:dis:50.1",
       "toId": "urn:reg:bcbs:mar:10",
       "edgeType": "REFERENCES",
@@ -3707,7 +3554,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:50.1"
     },
     {
-      "id": "E-REFERENCES-370389722480",
+      "id": "E-REFERENCES-311574740899",
       "fromId": "urn:reg:bcbs:dis:50.1",
       "toId": "urn:reg:bcbs:mar:40",
       "edgeType": "REFERENCES",
@@ -3717,7 +3564,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:50.1"
     },
     {
-      "id": "E-CONTAINS-946743524210",
+      "id": "E-CONTAINS-334357711596",
       "fromId": "urn:reg:bcbs:dis:50",
       "toId": "urn:reg:bcbs:dis:50.2",
       "edgeType": "CONTAINS",
@@ -3726,7 +3573,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-395272682893",
+      "id": "E-CONTAINS-929155931874",
       "fromId": "urn:reg:bcbs:dis:51",
       "toId": "urn:reg:bcbs:dis:51.1",
       "edgeType": "CONTAINS",
@@ -3735,7 +3582,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-915154939288",
+      "id": "E-REFERENCES-287139759628",
       "fromId": "urn:reg:bcbs:dis:51.1",
       "toId": "urn:reg:bcbs:mar:40",
       "edgeType": "REFERENCES",
@@ -3745,7 +3592,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:51.1"
     },
     {
-      "id": "E-CONTAINS-500129767601",
+      "id": "E-CONTAINS-984723109616",
       "fromId": "urn:reg:bcbs:dis:55",
       "toId": "urn:reg:bcbs:dis:55.1",
       "edgeType": "CONTAINS",
@@ -3754,7 +3601,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-379579457139",
+      "id": "E-CONTAINS-311772012568",
       "fromId": "urn:reg:bcbs:dis:60",
       "toId": "urn:reg:bcbs:dis:60.1",
       "edgeType": "CONTAINS",
@@ -3763,7 +3610,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-795690222651",
+      "id": "E-CONTAINS-933958911752",
       "fromId": "urn:reg:bcbs:dis:70",
       "toId": "urn:reg:bcbs:dis:70.1",
       "edgeType": "CONTAINS",
@@ -3772,7 +3619,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-292708055384",
+      "id": "E-CONTAINS-201501118505",
       "fromId": "urn:reg:bcbs:dis:70",
       "toId": "urn:reg:bcbs:dis:70.2",
       "edgeType": "CONTAINS",
@@ -3781,7 +3628,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-820028288649",
+      "id": "E-CONTAINS-592170878679",
       "fromId": "urn:reg:bcbs:dis:70",
       "toId": "urn:reg:bcbs:dis:70.3",
       "edgeType": "CONTAINS",
@@ -3790,7 +3637,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-451070585603",
+      "id": "E-REFERENCES-651505138162",
       "fromId": "urn:reg:bcbs:dis:70.3",
       "toId": "urn:reg:bcbs:srp:31",
       "edgeType": "REFERENCES",
@@ -3800,7 +3647,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:70.3"
     },
     {
-      "id": "E-CONTAINS-836625316332",
+      "id": "E-CONTAINS-629091937219",
       "fromId": "urn:reg:bcbs:dis:70",
       "toId": "urn:reg:bcbs:dis:70.4",
       "edgeType": "CONTAINS",
@@ -3809,7 +3656,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-492544940302",
+      "id": "E-CONTAINS-625778325615",
       "fromId": "urn:reg:bcbs:dis:70",
       "toId": "urn:reg:bcbs:dis:70.5",
       "edgeType": "CONTAINS",
@@ -3818,7 +3665,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-557425476658",
+      "id": "E-CONTAINS-266928141703",
       "fromId": "urn:reg:bcbs:dis:70",
       "toId": "urn:reg:bcbs:dis:70.6",
       "edgeType": "CONTAINS",
@@ -3827,7 +3674,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-211219060220",
+      "id": "E-CONTAINS-195704066756",
       "fromId": "urn:reg:bcbs:dis:75",
       "toId": "urn:reg:bcbs:dis:75.1",
       "edgeType": "CONTAINS",
@@ -3836,7 +3683,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-543799917867",
+      "id": "E-CONTAINS-526540946881",
       "fromId": "urn:reg:bcbs:dis:75",
       "toId": "urn:reg:bcbs:dis:75.2",
       "edgeType": "CONTAINS",
@@ -3845,7 +3692,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-275625199372",
+      "id": "E-CONTAINS-886722088319",
       "fromId": "urn:reg:bcbs:dis:75",
       "toId": "urn:reg:bcbs:dis:75.3",
       "edgeType": "CONTAINS",
@@ -3854,7 +3701,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-376599220015",
+      "id": "E-CONTAINS-739845539609",
       "fromId": "urn:reg:bcbs:dis:80",
       "toId": "urn:reg:bcbs:dis:80.1",
       "edgeType": "CONTAINS",
@@ -3863,7 +3710,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-519288640301",
+      "id": "E-CONTAINS-047798645825",
       "fromId": "urn:reg:bcbs:dis:80",
       "toId": "urn:reg:bcbs:dis:80.2",
       "edgeType": "CONTAINS",
@@ -3872,7 +3719,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-395929326573",
+      "id": "E-CONTAINS-637209158109",
       "fromId": "urn:reg:bcbs:dis:85",
       "toId": "urn:reg:bcbs:dis:85.1",
       "edgeType": "CONTAINS",
@@ -3881,7 +3728,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-694496011821",
+      "id": "E-CONTAINS-547825041955",
       "fromId": "urn:reg:bcbs:dis:85",
       "toId": "urn:reg:bcbs:dis:85.2",
       "edgeType": "CONTAINS",
@@ -3890,7 +3737,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-236995758423",
+      "id": "E-CONTAINS-890732831065",
       "fromId": "urn:reg:bcbs:dis:99",
       "toId": "urn:reg:bcbs:dis:99.1",
       "edgeType": "CONTAINS",
@@ -3899,7 +3746,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-606347376727",
+      "id": "E-REFERENCES-451551519012",
       "fromId": "urn:reg:bcbs:dis:99.1",
       "toId": "urn:reg:bcbs:dis:10.4",
       "edgeType": "REFERENCES",
@@ -3909,7 +3756,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.1"
     },
     {
-      "id": "E-CONTAINS-817836648506",
+      "id": "E-CONTAINS-833975736809",
       "fromId": "urn:reg:bcbs:dis:99",
       "toId": "urn:reg:bcbs:dis:99.2",
       "edgeType": "CONTAINS",
@@ -3918,7 +3765,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-941562415746",
+      "id": "E-CONTAINS-438424213928",
       "fromId": "urn:reg:bcbs:dis:99",
       "toId": "urn:reg:bcbs:dis:99.3",
       "edgeType": "CONTAINS",
@@ -3927,7 +3774,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-894663428918",
+      "id": "E-CONTAINS-530083050399",
       "fromId": "urn:reg:bcbs:dis:99",
       "toId": "urn:reg:bcbs:dis:99.4",
       "edgeType": "CONTAINS",
@@ -3936,7 +3783,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-039881257383",
+      "id": "E-REFERENCES-250429795942",
       "fromId": "urn:reg:bcbs:dis:99.4",
       "toId": "urn:reg:bcbs:mar:33.22",
       "edgeType": "REFERENCES",
@@ -3946,7 +3793,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.4"
     },
     {
-      "id": "E-REFERENCES-480729267370",
+      "id": "E-REFERENCES-058983070781",
       "fromId": "urn:reg:bcbs:dis:99.4",
       "toId": "urn:reg:bcbs:mar:33.41",
       "edgeType": "REFERENCES",
@@ -3956,7 +3803,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.4"
     },
     {
-      "id": "E-REFERENCES-074107029921",
+      "id": "E-REFERENCES-693806026635",
       "fromId": "urn:reg:bcbs:dis:99.4",
       "toId": "urn:reg:bcbs:mar:33.43",
       "edgeType": "REFERENCES",
@@ -3966,7 +3813,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.4"
     },
     {
-      "id": "E-CONTAINS-958801573502",
+      "id": "E-CONTAINS-399315709394",
       "fromId": "urn:reg:bcbs:dis:99",
       "toId": "urn:reg:bcbs:dis:99.5",
       "edgeType": "CONTAINS",
@@ -3975,7 +3822,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-819119571669",
+      "id": "E-REFERENCES-945618802355",
       "fromId": "urn:reg:bcbs:dis:99.5",
       "toId": "urn:reg:bcbs:mar:33.22",
       "edgeType": "REFERENCES",
@@ -3985,7 +3832,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.5"
     },
     {
-      "id": "E-REFERENCES-651891898109",
+      "id": "E-REFERENCES-326931119120",
       "fromId": "urn:reg:bcbs:dis:99.5",
       "toId": "urn:reg:bcbs:mar:33.41",
       "edgeType": "REFERENCES",
@@ -3995,7 +3842,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.5"
     },
     {
-      "id": "E-REFERENCES-784893799131",
+      "id": "E-REFERENCES-677629889873",
       "fromId": "urn:reg:bcbs:dis:99.5",
       "toId": "urn:reg:bcbs:mar:33.43",
       "edgeType": "REFERENCES",
@@ -4005,7 +3852,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.5"
     },
     {
-      "id": "E-REFERENCES-909903433590",
+      "id": "E-REFERENCES-810165662185",
       "fromId": "urn:reg:bcbs:dis:99.5",
       "toId": "urn:reg:bcbs:mar:33.45",
       "edgeType": "REFERENCES",
@@ -4015,7 +3862,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.5"
     },
     {
-      "id": "E-EXPRESSES-012373944289",
+      "id": "E-EXPRESSES-067462851786",
       "fromId": "urn:reg:bcbs:dis:10.3",
       "toId": "OBL-BCBS-DIS-s10.3-1",
       "edgeType": "EXPRESSES",
@@ -4025,7 +3872,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.3"
     },
     {
-      "id": "E-EXPRESSES-948070636184",
+      "id": "E-EXPRESSES-325962942752",
       "fromId": "urn:reg:bcbs:dis:10.6",
       "toId": "OBL-BCBS-DIS-s10.6-1",
       "edgeType": "EXPRESSES",
@@ -4035,7 +3882,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.6"
     },
     {
-      "id": "E-EXPRESSES-850128499382",
+      "id": "E-EXPRESSES-375052280946",
       "fromId": "urn:reg:bcbs:dis:10.8",
       "toId": "OBL-BCBS-DIS-s10.8-1",
       "edgeType": "EXPRESSES",
@@ -4045,7 +3892,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.8"
     },
     {
-      "id": "E-EXPRESSES-642773148847",
+      "id": "E-EXPRESSES-891592896575",
       "fromId": "urn:reg:bcbs:dis:10.9",
       "toId": "OBL-BCBS-DIS-s10.9-1",
       "edgeType": "EXPRESSES",
@@ -4055,7 +3902,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.9"
     },
     {
-      "id": "E-EXPRESSES-482759425496",
+      "id": "E-EXPRESSES-392946112901",
       "fromId": "urn:reg:bcbs:dis:10.10",
       "toId": "OBL-BCBS-DIS-s10.10-1",
       "edgeType": "EXPRESSES",
@@ -4065,7 +3912,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.10"
     },
     {
-      "id": "E-EXPRESSES-034644599789",
+      "id": "E-EXPRESSES-431129463927",
       "fromId": "urn:reg:bcbs:dis:10.11",
       "toId": "OBL-BCBS-DIS-s10.11-1",
       "edgeType": "EXPRESSES",
@@ -4075,7 +3922,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.11"
     },
     {
-      "id": "E-EXPRESSES-640607049174",
+      "id": "E-EXPRESSES-291719297686",
       "fromId": "urn:reg:bcbs:dis:10.12",
       "toId": "OBL-BCBS-DIS-s10.12-1",
       "edgeType": "EXPRESSES",
@@ -4085,7 +3932,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.12"
     },
     {
-      "id": "E-EXPRESSES-281471818303",
+      "id": "E-EXPRESSES-083050897715",
       "fromId": "urn:reg:bcbs:dis:10.14",
       "toId": "OBL-BCBS-DIS-s10.14-1",
       "edgeType": "EXPRESSES",
@@ -4095,7 +3942,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.14"
     },
     {
-      "id": "E-EXPRESSES-737731569297",
+      "id": "E-EXPRESSES-408794635600",
       "fromId": "urn:reg:bcbs:dis:10.15",
       "toId": "OBL-BCBS-DIS-s10.15-1",
       "edgeType": "EXPRESSES",
@@ -4105,7 +3952,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.15"
     },
     {
-      "id": "E-EXPRESSES-229472090813",
+      "id": "E-EXPRESSES-692989742628",
       "fromId": "urn:reg:bcbs:dis:10.16",
       "toId": "OBL-BCBS-DIS-s10.16-1",
       "edgeType": "EXPRESSES",
@@ -4115,7 +3962,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.16"
     },
     {
-      "id": "E-EXPRESSES-065713166953",
+      "id": "E-EXPRESSES-650336190803",
       "fromId": "urn:reg:bcbs:dis:10.17",
       "toId": "OBL-BCBS-DIS-s10.17-1",
       "edgeType": "EXPRESSES",
@@ -4125,7 +3972,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.17"
     },
     {
-      "id": "E-EXPRESSES-771538885257",
+      "id": "E-EXPRESSES-443749727525",
       "fromId": "urn:reg:bcbs:dis:10.18",
       "toId": "OBL-BCBS-DIS-s10.18-1",
       "edgeType": "EXPRESSES",
@@ -4135,7 +3982,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.18"
     },
     {
-      "id": "E-EXPRESSES-944956634573",
+      "id": "E-EXPRESSES-463832284480",
       "fromId": "urn:reg:bcbs:dis:10.19",
       "toId": "OBL-BCBS-DIS-s10.19-1",
       "edgeType": "EXPRESSES",
@@ -4145,7 +3992,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.19"
     },
     {
-      "id": "E-EXPRESSES-189863057183",
+      "id": "E-EXPRESSES-645879395838",
       "fromId": "urn:reg:bcbs:dis:10.20",
       "toId": "OBL-BCBS-DIS-s10.20-1",
       "edgeType": "EXPRESSES",
@@ -4155,7 +4002,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.20"
     },
     {
-      "id": "E-EXPRESSES-438309349901",
+      "id": "E-EXPRESSES-085875625652",
       "fromId": "urn:reg:bcbs:dis:10.21",
       "toId": "OBL-BCBS-DIS-s10.21-1",
       "edgeType": "EXPRESSES",
@@ -4165,7 +4012,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.21"
     },
     {
-      "id": "E-EXPRESSES-929831972080",
+      "id": "E-EXPRESSES-115590873960",
       "fromId": "urn:reg:bcbs:dis:10.22",
       "toId": "OBL-BCBS-DIS-s10.22-1",
       "edgeType": "EXPRESSES",
@@ -4175,7 +4022,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.22"
     },
     {
-      "id": "E-EXPRESSES-595080694336",
+      "id": "E-EXPRESSES-930794091624",
       "fromId": "urn:reg:bcbs:dis:10.23",
       "toId": "OBL-BCBS-DIS-s10.23-1",
       "edgeType": "EXPRESSES",
@@ -4185,7 +4032,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.23"
     },
     {
-      "id": "E-EXPRESSES-282458559064",
+      "id": "E-EXPRESSES-221864094672",
       "fromId": "urn:reg:bcbs:dis:10.24",
       "toId": "OBL-BCBS-DIS-s10.24-1",
       "edgeType": "EXPRESSES",
@@ -4195,7 +4042,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.24"
     },
     {
-      "id": "E-EXPRESSES-015873952169",
+      "id": "E-EXPRESSES-937773775431",
       "fromId": "urn:reg:bcbs:dis:10.25",
       "toId": "OBL-BCBS-DIS-s10.25-1",
       "edgeType": "EXPRESSES",
@@ -4205,7 +4052,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.25"
     },
     {
-      "id": "E-EXPRESSES-650319243723",
+      "id": "E-EXPRESSES-912620146352",
       "fromId": "urn:reg:bcbs:dis:10.28",
       "toId": "OBL-BCBS-DIS-s10.28-1",
       "edgeType": "EXPRESSES",
@@ -4215,7 +4062,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.28"
     },
     {
-      "id": "E-EXPRESSES-031970255920",
+      "id": "E-EXPRESSES-730526199875",
       "fromId": "urn:reg:bcbs:dis:10.30",
       "toId": "OBL-BCBS-DIS-s10.30-1",
       "edgeType": "EXPRESSES",
@@ -4225,7 +4072,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:10.30"
     },
     {
-      "id": "E-EXPRESSES-490924723530",
+      "id": "E-EXPRESSES-173111804660",
       "fromId": "urn:reg:bcbs:dis:25.2",
       "toId": "OBL-BCBS-DIS-s25.2-1",
       "edgeType": "EXPRESSES",
@@ -4235,7 +4082,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:25.2"
     },
     {
-      "id": "E-EXPRESSES-323136881316",
+      "id": "E-EXPRESSES-760345791450",
       "fromId": "urn:reg:bcbs:dis:25.3",
       "toId": "OBL-BCBS-DIS-s25.3-1",
       "edgeType": "EXPRESSES",
@@ -4245,7 +4092,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:25.3"
     },
     {
-      "id": "E-EXPRESSES-687104818954",
+      "id": "E-EXPRESSES-459358546935",
       "fromId": "urn:reg:bcbs:dis:25.5",
       "toId": "OBL-BCBS-DIS-s25.5-1",
       "edgeType": "EXPRESSES",
@@ -4255,7 +4102,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:25.5"
     },
     {
-      "id": "E-EXPRESSES-268182822675",
+      "id": "E-EXPRESSES-623566496441",
       "fromId": "urn:reg:bcbs:dis:30.4",
       "toId": "OBL-BCBS-DIS-s30.4-1",
       "edgeType": "EXPRESSES",
@@ -4265,7 +4112,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:30.4"
     },
     {
-      "id": "E-EXPRESSES-249408441846",
+      "id": "E-EXPRESSES-943698538622",
       "fromId": "urn:reg:bcbs:dis:35.4",
       "toId": "OBL-BCBS-DIS-s35.4-1",
       "edgeType": "EXPRESSES",
@@ -4275,17 +4122,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:35.4"
     },
     {
-      "id": "E-EXPRESSES-184661293347",
-      "fromId": "urn:reg:bcbs:dis:43.2",
-      "toId": "OBL-BCBS-DIS-s43.2-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:dis:43.2"
-    },
-    {
-      "id": "E-EXPRESSES-077305847187",
+      "id": "E-EXPRESSES-973555285876",
       "fromId": "urn:reg:bcbs:dis:51.1",
       "toId": "OBL-BCBS-DIS-s51.1-1",
       "edgeType": "EXPRESSES",
@@ -4295,7 +4132,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:51.1"
     },
     {
-      "id": "E-EXPRESSES-320051275333",
+      "id": "E-EXPRESSES-123547869350",
       "fromId": "urn:reg:bcbs:dis:60.1",
       "toId": "OBL-BCBS-DIS-s60.1-1",
       "edgeType": "EXPRESSES",
@@ -4305,7 +4142,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:60.1"
     },
     {
-      "id": "E-EXPRESSES-906290816937",
+      "id": "E-EXPRESSES-678157591928",
       "fromId": "urn:reg:bcbs:dis:70.3",
       "toId": "OBL-BCBS-DIS-s70.3-1",
       "edgeType": "EXPRESSES",
@@ -4315,7 +4152,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:70.3"
     },
     {
-      "id": "E-EXPRESSES-531617162557",
+      "id": "E-EXPRESSES-056117630788",
       "fromId": "urn:reg:bcbs:dis:70.4",
       "toId": "OBL-BCBS-DIS-s70.4-1",
       "edgeType": "EXPRESSES",
@@ -4325,7 +4162,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:70.4"
     },
     {
-      "id": "E-EXPRESSES-440016296426",
+      "id": "E-EXPRESSES-097579337649",
       "fromId": "urn:reg:bcbs:dis:70.5",
       "toId": "OBL-BCBS-DIS-s70.5-1",
       "edgeType": "EXPRESSES",
@@ -4335,7 +4172,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:70.5"
     },
     {
-      "id": "E-EXPRESSES-710572881532",
+      "id": "E-EXPRESSES-338014335568",
       "fromId": "urn:reg:bcbs:dis:75.2",
       "toId": "OBL-BCBS-DIS-s75.2-1",
       "edgeType": "EXPRESSES",
@@ -4345,7 +4182,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:75.2"
     },
     {
-      "id": "E-EXPRESSES-163185173441",
+      "id": "E-EXPRESSES-647404157180",
       "fromId": "urn:reg:bcbs:dis:99.2",
       "toId": "OBL-BCBS-DIS-s99.2-1",
       "edgeType": "EXPRESSES",
@@ -4355,7 +4192,7 @@
       "sourceProvision": "urn:reg:bcbs:dis:99.2"
     },
     {
-      "id": "E-EXPRESSES-683899362556",
+      "id": "E-EXPRESSES-365878458237",
       "fromId": "urn:reg:bcbs:dis:99.5",
       "toId": "OBL-BCBS-DIS-s99.5-1",
       "edgeType": "EXPRESSES",

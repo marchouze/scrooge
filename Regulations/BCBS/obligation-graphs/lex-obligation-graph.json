@@ -8,7 +8,7 @@
   "source": "The Basel Framework (BIS) consolidated PDF, pages 1253-1279",
   "stats": {
     "nodes": 160,
-    "edges": 212,
+    "edges": 205,
     "obligations": 55,
     "normativeParagraphs": 55,
     "decomposition": "paragraph",
@@ -21,7 +21,7 @@
     "edgesByType": {
       "COMPRISES": 1,
       "CONTAINS": 88,
-      "REFERENCES": 68,
+      "REFERENCES": 61,
       "EXPRESSES": 55
     },
     "obligationsByType": {
@@ -97,7 +97,7 @@
       "nodeType": "Provision",
       "label": "LEX10 10.1",
       "level": "section",
-      "text": "exposures framework and the definitions of a large exposure and connected counterparties. Cross references to LEX30 updated. Rationale and objectives of a large exposures framework Footnotes Throughout history there have been instances of banks failing due to concentrated exposures to individual counterparties or groups of connected counterparties. Large exposures regulation has been developed as a tool for limiting the maximum loss a bank could face in the event of a sudden counterparty failure to a level that does not endanger the bank's solvency.",
+      "text": "exposures framework and the definitions of a large exposure and connected counterparties. Cross references to LEX30 updated. Rationale and objectives of a large exposures framework Throughout history there have been instances of banks failing due to concentrated exposures to individual counterparties or groups of connected counterparties. Large exposures regulation has been developed as a tool for limiting the maximum loss a bank could face in the event of a sudden counterparty failure to a level that does not endanger the bank's solvency.",
       "metadata": {
         "chapter": "LEX10",
         "chapterTitle": "Definitions and application",
@@ -127,11 +127,11 @@
       "nodeType": "Provision",
       "label": "LEX10 10.3",
       "level": "section",
-      "text": "The market risk standard also explicitly requires that trading book MAR models for specific risk capture concentration risk. 1 Scope and level of application Footnotes The treatment of large exposures could also contribute to the stability of the financial system in a number of other ways. For example, material losses in one systemically important financial institution (SIFI) can trigger concerns about the solvency of other SIFIs, with potentially catastrophic consequences for global financial stability. There are at least two important channels for this contagion. First, investors may be concerned that other SIFIs might have exposures similar to those of the failing institution. Second, and more directly, investors may be concerned that other SIFIs have direct large exposures to the failing SIFI, in the form of either loans or credit guarantees. The Committee is of the view that the large exposures framework is a useful tool to mitigate the risk of contagion between global systemically important banks, thus supporting global financial stability. As a second example, this framework is also seen as a useful tool to contribute to strengthening the oversight and regulation of the shadow banking system in relation to large exposures, particularly the treatment of exposures to funds, securitisation structures and collective investment undertakings.",
+      "text": "The treatment of large exposures could also contribute to the stability of the financial system in a number of other ways. For example, material losses in one systemically important financial institution (SIFI) can trigger concerns about the solvency of other SIFIs, with potentially catastrophic consequences for global financial stability. There are at least two important channels for this contagion. First, investors may be concerned that other SIFIs might have exposures similar to those of the failing institution. Second, and more directly, investors may be concerned that other SIFIs have direct large exposures to the failing SIFI, in the form of either loans or credit guarantees. The Committee is of the view that the large exposures framework is a useful tool to mitigate the risk of contagion between global systemically important banks, thus supporting global financial stability. As a second example, this framework is also seen as a useful tool to contribute to strengthening the oversight and regulation of the shadow banking system in relation to large exposures, particularly the treatment of exposures to funds, securitisation structures and collective investment undertakings.",
       "metadata": {
         "chapter": "LEX10",
         "chapterTitle": "Definitions and application",
-        "section": "This chapter describes the scope of the large",
+        "section": "Scope and level of application",
         "paragraph": "10.3",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:10.3"
@@ -146,7 +146,7 @@
       "metadata": {
         "chapter": "LEX10",
         "chapterTitle": "Definitions and application",
-        "section": "This chapter describes the scope of the large",
+        "section": "Scope and level of application",
         "paragraph": "10.4",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:10.4"
@@ -173,7 +173,7 @@
       "metadata": {
         "chapter": "LEX10",
         "chapterTitle": "Definitions and application",
-        "section": "This chapter describes the scope of the large",
+        "section": "Scope and level of application",
         "paragraph": "10.5",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:10.5"
@@ -184,11 +184,11 @@
       "nodeType": "Provision",
       "label": "LEX10 10.6",
       "level": "section",
-      "text": "For instance, the Committee notes that for these banks that fall outside the scope of application of the Basel framework, there may be a case for recognising physical collateral, which is not recognised in the large exposures framework set out in this document. 2 The application of the large exposures framework at the consolidated level implies that a bank must consider all exposures to third parties across the relevant regulatory consolidation group and compare the aggregate of those exposures with the group’s Tier 1 capital.",
+      "text": "The application of the large exposures framework at the consolidated level implies that a bank must consider all exposures to third parties across the relevant regulatory consolidation group and compare the aggregate of those exposures with the group’s Tier 1 capital.",
       "metadata": {
         "chapter": "LEX10",
         "chapterTitle": "Definitions and application",
-        "section": "This chapter describes the scope of the large",
+        "section": "Scope and level of application",
         "paragraph": "10.6",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:10.6"
@@ -218,7 +218,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE5210",
+        "section": "Sovereign exposures and entities connected with sovereigns",
         "paragraph": "30.31",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.31"
@@ -233,7 +233,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE5416",
+        "section": "Type of exposure Exposure value",
         "paragraph": "30.59",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.59"
@@ -481,7 +481,7 @@
       "nodeType": "Provision",
       "label": "LEX30 30.1",
       "level": "section",
-      "text": "published January 2017 and the revised implementation date announced on . General measurement principles Footnotes Definition of exposure value Footnotes Footnotes The exposure values a bank must consider in order to identify large exposures to a counterparty are all those exposures defined under the risk-based capital framework. It must consider both on- and off-balance sheet exposures included in either the banking or trading book and instruments with counterparty credit risk under the risk-based capital framework.",
+      "text": "published January 2017 and the revised implementation date announced on . General measurement principles Definition of exposure value The exposure values a bank must consider in order to identify large exposures to a counterparty are all those exposures defined under the risk-based capital framework. It must consider both on- and off-balance sheet exposures included in either the banking or trading book and instruments with counterparty credit risk under the risk-based capital framework.",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
@@ -511,7 +511,7 @@
       "nodeType": "Provision",
       "label": "LEX30 30.3",
       "level": "section",
-      "text": "This general approach does not apply where an exposure is 1,250% risk-weighted. When this is the case, this exposure must be added to any other exposures to the same counterparty and the sum is subject to the large exposure limit, except if this exposure is specifically exempted for other reasons. 1 The exposure value must be defined as the accounting value of the exposure.2 As an alternative, a bank may consider the exposure value gross of specific provisions and value adjustments",
+      "text": "The exposure value must be defined as the accounting value of the exposure.2 As an alternative, a bank may consider the exposure value gross of specific",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
@@ -530,7 +530,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "Net of specific provisions and value adjustments.2",
+        "section": "Reflects changes in market risk requirements",
         "paragraph": "30.4",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.4"
@@ -541,11 +541,11 @@
       "nodeType": "Provision",
       "label": "LEX30 30.5",
       "level": "section",
-      "text": "Eligible credit risk mitigation techniques Footnotes Footnotes Banks should calculate the exposure value for their securities financing transaction (SFT) exposures applying the comprehensive approach with supervisory haircuts described in . CRE22",
+      "text": "Banks should calculate the exposure value for their securities financing transaction (SFT) exposures applying the comprehensive approach with supervisory haircuts described in . CRE22",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE523",
+        "section": "Eligible credit risk mitigation techniques",
         "paragraph": "30.5",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.5"
@@ -572,7 +572,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE523",
+        "section": "Eligible credit risk mitigation techniques",
         "paragraph": "30.6",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.6"
@@ -587,7 +587,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE523",
+        "section": "Eligible credit risk mitigation techniques",
         "paragraph": "30.7",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.7"
@@ -598,11 +598,11 @@
       "nodeType": "Provision",
       "label": "LEX30 30.8",
       "level": "section",
-      "text": "Unfunded credit protection refers collectively to guarantees and credit derivatives the treatment of which is described in .CRE22 4 Other forms of collateral that are only eligible under the internal-ratings based approach in accordance with (receivables, commercial and residential CRE32.8 real estate and other collateral) are not eligible to reduce exposure values for large exposures purposes.",
+      "text": "Other forms of collateral that are only eligible under the internal-ratings based approach in accordance with (receivables, commercial and residential CRE32.8 real estate and other collateral) are not eligible to reduce exposure values for large exposures purposes.",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE523",
+        "section": "Eligible credit risk mitigation techniques",
         "paragraph": "30.8",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.8"
@@ -629,7 +629,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE523",
+        "section": "Eligible credit risk mitigation techniques",
         "paragraph": "30.9",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.9"
@@ -644,7 +644,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE523",
+        "section": "Eligible credit risk mitigation techniques",
         "paragraph": "30.10",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.10"
@@ -655,11 +655,11 @@
       "nodeType": "Provision",
       "label": "LEX30 30.11",
       "level": "section",
-      "text": "Footnotes Recognition of CRM techniques in reduction of original exposure If there is a maturity mismatch in respect of credit risk mitigants (collateral, on- balance sheet netting, guarantees and credit derivatives) recognised in the risk- based capital requirement, the adjustment of the credit protection for the purpose of calculating large exposures is determined using the same approach as in the risk-based capital requirement.6",
+      "text": "If there is a maturity mismatch in respect of credit risk mitigants (collateral, on- balance sheet netting, guarantees and credit derivatives) recognised in the risk- based capital requirement, the adjustment of the credit protection for the purpose of calculating large exposures is determined using the same approach as in the risk-based capital requirement.6",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See  to .CRE22.10 CRE22.145",
+        "section": "Recognition of CRM techniques in reduction of original exposure",
         "paragraph": "30.11",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.11"
@@ -674,7 +674,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See  to .CRE22.10 CRE22.146",
+        "section": "Recognition of CRM techniques in reduction of original exposure",
         "paragraph": "30.12",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.12"
@@ -689,7 +689,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See  and .CRE22.68 CRE22.697",
+        "section": "Recognition of CRM techniques in reduction of original exposure",
         "paragraph": "30.13",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.13"
@@ -704,7 +704,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508",
+        "section": "Calculation of exposure value for trading book positions",
         "paragraph": "30.14",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.14"
@@ -734,7 +734,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508",
+        "section": "Calculation of exposure value for trading book positions",
         "paragraph": "30.15",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.15"
@@ -749,7 +749,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508",
+        "section": "Calculation of exposure value for trading book positions",
         "paragraph": "30.16",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.16"
@@ -764,7 +764,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508",
+        "section": "Calculation of exposure value for trading book positions",
         "paragraph": "30.17",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.17"
@@ -799,29 +799,14 @@
       "nodeType": "Provision",
       "label": "LEX30 30.18",
       "level": "section",
-      "text": "Sovereign exposures held in the trading book are excluded from the large exposures framework as set out in and to LEX10.7 LEX30.31 .LEX30.34 9 The maturity adjustments set out in to are not applicable in MAR22.15 MAR22.18 the context of the large exposure standards.",
+      "text": "The maturity adjustments set out in to are not applicable in MAR22.15 MAR22.18 the context of the large exposure standards.",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508",
+        "section": "Calculation of exposure value for trading book positions",
         "paragraph": "30.18",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.18"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:lex:30.34",
-      "nodeType": "Provision",
-      "label": "LEX30 30.34",
-      "level": "section",
-      "text": "In addition, if a bank has an exposure to an exempted entity which is hedged by a credit derivative, the bank will have to recognise an exposure to the counterparty providing the credit protection as prescribed in and , LEX30.14 LEX30.28 notwithstanding the fact that the original exposure is exempted.",
-      "metadata": {
-        "chapter": "LEX30",
-        "chapterTitle": "Exposure measurement",
-        "section": "Covered bonds",
-        "paragraph": "30.34",
-        "standard": "LEX",
-        "citationUrn": "urn:reg:bcbs:lex:30.34"
       }
     },
     {
@@ -857,7 +842,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508",
+        "section": "Calculation of exposure value for trading book positions",
         "paragraph": "30.19",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.19"
@@ -883,7 +868,7 @@
       "nodeType": "Provision",
       "label": "LEX30 30.41",
       "level": "section",
-      "text": "structures Footnotes Banks must consider exposures even when a structure lies between the bank and the exposures, that is, even when the bank invests in structures through an entity which itself has exposures to assets (hereafter referred to as the \"underlying assets\"). Banks must assign the exposure amount, ie the amount invested in a particular structure, to specific counterparties following the approach described below. Such structures include funds, securitisations and other structures with underlying assets.",
+      "text": "structures Banks must consider exposures even when a structure lies between the bank and the exposures, that is, even when the bank invests in structures through an entity which itself has exposures to assets (hereafter referred to as the \"underlying assets\"). Banks must assign the exposure amount, ie the amount invested in a particular structure, to specific counterparties following the approach described below. Such structures include funds, securitisations and other structures with underlying assets.",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
@@ -1052,7 +1037,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE5210",
+        "section": "Sovereign exposures and entities connected with sovereigns",
         "paragraph": "30.29",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.29"
@@ -1067,7 +1052,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "See .CRE5210",
+        "section": "Sovereign exposures and entities connected with sovereigns",
         "paragraph": "30.30",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.30"
@@ -1137,6 +1122,21 @@
         "paragraph": "30.33",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.33"
+      }
+    },
+    {
+      "id": "urn:reg:bcbs:lex:30.34",
+      "nodeType": "Provision",
+      "label": "LEX30 30.34",
+      "level": "section",
+      "text": "In addition, if a bank has an exposure to an exempted entity which is hedged by a credit derivative, the bank will have to recognise an exposure to the counterparty providing the credit protection as prescribed in and , LEX30.14 LEX30.28 notwithstanding the fact that the original exposure is exempted.",
+      "metadata": {
+        "chapter": "LEX30",
+        "chapterTitle": "Exposure measurement",
+        "section": "Covered bonds",
+        "paragraph": "30.34",
+        "standard": "LEX",
+        "citationUrn": "urn:reg:bcbs:lex:30.34"
       }
     },
     {
@@ -1261,7 +1261,7 @@
       "nodeType": "Provision",
       "label": "LEX30 30.43",
       "level": "section",
-      "text": "By definition, this required test will be passed if the bank’s whole investment in a structure is below 0.25% of its Tier 1 capital. 11 A bank must look through the structure to identify those underlying assets for which the underlying exposure value is equal to or above 0.25% of its Tier 1 capital. In this case, the counterparty corresponding to each of the underlying assets must be identified so that these underlying exposures can be added to any other direct or indirect exposure to the same counterparty. The bank's exposure amount to the underlying assets that are below 0.25% of the bank's Tier 1 capital may be assigned to the structure itself (ie partial look-through is permitted).",
+      "text": "A bank must look through the structure to identify those underlying assets for which the underlying exposure value is equal to or above 0.25% of its Tier 1 capital. In this case, the counterparty corresponding to each of the underlying assets must be identified so that these underlying exposures can be added to any other direct or indirect exposure to the same counterparty. The bank's exposure amount to the underlying assets that are below 0.25% of the bank's Tier 1 capital may be assigned to the structure itself (ie partial look-through is permitted).",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
@@ -1370,7 +1370,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "Footnotes",
+        "section": "Exposures to central counterparties",
         "paragraph": "30.53",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.53"
@@ -1385,7 +1385,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "Footnotes",
+        "section": "Exposures to central counterparties",
         "paragraph": "30.54",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.54"
@@ -1396,11 +1396,11 @@
       "nodeType": "Provision",
       "label": "LEX30 30.55",
       "level": "section",
-      "text": "The definition of QCCP for large exposures purposes is the same as that used for risk-based capital requirement purposes. A QCCP is an entity that is licensed to operate as a central counterparty (CCP) (including a license granted by way of confirming an exemption), and is permitted by the appropriate regulator/overseer to operate as such with respect to the products offered. This is subject to the provision that the CCP is based and prudentially supervised in a jurisdiction where the relevant regulator/overseer has established, and publicly indicated that it applies to the CCP on an ongoing basis, domestic rules and regulations that are consistent with the Committee on Payment and Financial Infrastructure and International Organization of Securities Commissions’ Principles for Financial Market Infrastructures. 12 In the case of non-QCCPs, banks must measure their exposure as a sum of both the clearing exposures described in and the non-clearing exposures LEX30.57 described in , and must respect the general large exposure limit of 25% LEX30.59 of the Tier 1 capital.",
+      "text": "In the case of non-QCCPs, banks must measure their exposure as a sum of both the clearing exposures described in and the non-clearing exposures LEX30.57 described in , and must respect the general large exposure limit of 25% LEX30.59 of the Tier 1 capital.",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "Footnotes",
+        "section": "Exposures to central counterparties",
         "paragraph": "30.55",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.55"
@@ -1411,11 +1411,11 @@
       "nodeType": "Provision",
       "label": "LEX30 30.57",
       "level": "section",
-      "text": "Could you explain how to aggregate exposures to a CCP when the bank has both exposures related to clearing and exposures unrelated to clearing towards the CCP with an example? According to clearing exposures to CCPs are not subject to LEX30.56 the concept of connected counterparties described in to LEX10.9 LEX10. , whereas non-clearing exposures are subject to the concept. 18 Therefore, banks must separately measure and report to their supervisors clearing and non-clearing exposures to CCPs and, for the latter, to check whether the CCP is connected to other counterparties by meeting either the control relationship or the economic interdependence criteria. As an example, if a bank has exposures to a QCCP for a total of 100 made up of 50 trade exposures, 10 default fund contribution and 40 liquidity line, it should report 60 under exposures related to clearing. For the other 40, it should check whether the QCCP is connected to other of its counterparties, including other CCPs. Assuming that the QCCP is also part of a group of connected counterparties, the bank would have to add this 40 from liquidity line to other exposures to counterparties in the same group. The sum of these exposures will be subject to the 25% large exposure limit. FAQ1 Banks must identify exposures to a CCP related to clearing activities and sum together these exposures. Exposures related to clearing activities are listed in the table below together with the exposure value to be used:",
+      "text": "Banks must identify exposures to a CCP related to clearing activities and sum together these exposures. Exposures related to clearing activities are listed in the table below together with the exposure value to be used:",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "FAQ",
+        "section": "Exposures to central counterparties",
         "paragraph": "30.57",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.57"
@@ -1430,7 +1430,7 @@
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
-        "section": "Footnotes",
+        "section": "Exposures to central counterparties",
         "paragraph": "30.56",
         "standard": "LEX",
         "citationUrn": "urn:reg:bcbs:lex:30.56"
@@ -1441,7 +1441,7 @@
       "nodeType": "Provision",
       "label": "LEX30 30.58",
       "level": "section",
-      "text": "Trade exposures The exposure value of trade exposures must be calculated using the exposure measures prescribed in other parts of this framework for the respective type of exposures (eg using the SA-CCR for derivative exposures). Segregated initial margin The exposure value is zero.13 Non-segregated initial margin The exposure value is the nominal amount of initial margin posted. Pre-funded default fund contributions Nominal amount of the funded contribution.14 Unfunded default fund contributions The exposure value is zero. Equity stakes The exposure value is the nominal amount.15 When the initial margin (IM) posted is bankruptcy-remote from the CCP – in the sense that it is segregated from the CCP’s own accounts, eg when the IM is held by a third-party custodian – this amount cannot be lost by the bank if the CCP defaults; therefore, the IM posted by the bank can be exempted from the large exposure limit. 13 The exposure value for pre-funded default fund contributions may need to be revised if applied to QCCPs and not only to non-QCCPs. 14 If equity stakes are deducted from the level of capital on which the large exposure limit is based, such exposures must be excluded from the definition of an exposure to a CCP. 15 Regarding exposures subject to clearing services (the bank acting as a clearing member or being a client of a clearing member), the bank must determine the counterparty to which exposures must be assigned by applying the provisions of the risk-based capital requirements.16",
+      "text": "Trade exposures The exposure value of trade exposures must be calculated using the exposure measures prescribed in other parts of this framework for the respective type of exposures (eg using the SA-CCR for derivative exposures). Segregated initial margin The exposure value is zero.13 Non-segregated initial margin The exposure value is the nominal amount of initial margin posted. Nominal amount of the funded contribution.14 Unfunded default fund The exposure value is zero. Equity stakes The exposure value is the nominal amount.15 Regarding exposures subject to clearing services (the bank acting as a clearing member or being a client of a clearing member), the bank must determine the counterparty to which exposures must be assigned by applying the provisions of the risk-based capital requirements.16",
       "metadata": {
         "chapter": "LEX30",
         "chapterTitle": "Exposure measurement",
@@ -1568,7 +1568,7 @@
         "modalities": [
           "must"
         ],
-        "section": "This chapter describes the scope of the large"
+        "section": "Scope and level of application"
       }
     },
     {
@@ -1576,8 +1576,8 @@
       "nodeType": "Obligation",
       "label": "LEX10 10.6 — must",
       "obligationType": "must",
-      "actor": "Basel Committee",
-      "actionSummary": "For instance, the Committee notes that for these banks that fall outside the scope of application of the Basel framework, there may be a case for recognising physical collateral, which is not recognised in the large exposures framework set out in this document. 2 The application of the large exposur",
+      "actor": "bank",
+      "actionSummary": "The application of the large exposures framework at the consolidated level implies that a bank must consider all exposures to third parties across the relevant regulatory consolidation group and compare the aggregate of those exposures with the group’s Tier 1 capital.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:10.6",
         "chapter": "LEX10",
@@ -1587,7 +1587,7 @@
         "modalities": [
           "must"
         ],
-        "section": "This chapter describes the scope of the large"
+        "section": "Scope and level of application"
       }
     },
     {
@@ -1870,7 +1870,7 @@
       "label": "LEX30 30.1 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "General measurement principles Footnotes Definition of exposure value Footnotes Footnotes The exposure values a bank must consider in order to identify large exposures to a counterparty are all those exposures defined under the risk-based capital framework.",
+      "actionSummary": "General measurement principles Definition of exposure value The exposure values a bank must consider in order to identify large exposures to a counterparty are all those exposures defined under the risk-based capital framework.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:30.1",
         "chapter": "LEX30",
@@ -1908,7 +1908,7 @@
       "label": "LEX30 30.3 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "When this is the case, this exposure must be added to any other exposures to the same counterparty and the sum is subject to the large exposure limit, except if this exposure is specifically exempted for other reasons. 1 The exposure value must be defined as the accounting value of the exposure.2 As",
+      "actionSummary": "The exposure value must be defined as the accounting value of the exposure.2 As an alternative, a bank may consider the exposure value gross of specific",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:30.3",
         "chapter": "LEX30",
@@ -1920,8 +1920,7 @@
           "may"
         ],
         "section": "Reflects changes in market risk requirements"
-      },
-      "trigger": "where an exposure is 1,250% risk-weighted"
+      }
     },
     {
       "id": "OBL-BCBS-LEX-s30.4-1",
@@ -1939,7 +1938,7 @@
         "modalities": [
           "must"
         ],
-        "section": "Net of specific provisions and value adjustments.2"
+        "section": "Reflects changes in market risk requirements"
       }
     },
     {
@@ -1948,7 +1947,7 @@
       "label": "LEX30 30.5 — recommended",
       "obligationType": "recommended",
       "actor": "bank",
-      "actionSummary": "Eligible credit risk mitigation techniques Footnotes Footnotes Banks should calculate the exposure value for their securities financing transaction (SFT) exposures applying the comprehensive approach with supervisory haircuts described in .",
+      "actionSummary": "Banks should calculate the exposure value for their securities financing transaction (SFT) exposures applying the comprehensive approach with supervisory haircuts described in .",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:30.5",
         "chapter": "LEX30",
@@ -1958,7 +1957,7 @@
         "modalities": [
           "recommended"
         ],
-        "section": "See .CRE523"
+        "section": "Eligible credit risk mitigation techniques"
       }
     },
     {
@@ -1977,7 +1976,7 @@
         "modalities": [
           "must"
         ],
-        "section": "See .CRE523"
+        "section": "Eligible credit risk mitigation techniques"
       }
     },
     {
@@ -1997,7 +1996,7 @@
           "must-not",
           "must"
         ],
-        "section": "See  and .CRE22.68 CRE22.697"
+        "section": "Recognition of CRM techniques in reduction of original exposure"
       },
       "trigger": "when the bank uses the simple approach for risk-based capital requirements purposes"
     },
@@ -2017,7 +2016,7 @@
         "modalities": [
           "must"
         ],
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508"
+        "section": "Calculation of exposure value for trading book positions"
       }
     },
     {
@@ -2036,7 +2035,7 @@
         "modalities": [
           "must"
         ],
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508"
+        "section": "Calculation of exposure value for trading book positions"
       }
     },
     {
@@ -2055,7 +2054,7 @@
         "modalities": [
           "must"
         ],
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508"
+        "section": "Calculation of exposure value for trading book positions"
       }
     },
     {
@@ -2074,7 +2073,7 @@
         "modalities": [
           "must"
         ],
-        "section": "The supervisory haircuts are described in  and .CRE22.49 CRE22.508"
+        "section": "Calculation of exposure value for trading book positions"
       }
     },
     {
@@ -2132,7 +2131,7 @@
         "modalities": [
           "must-not"
         ],
-        "section": "See .CRE5210"
+        "section": "Sovereign exposures and entities connected with sovereigns"
       }
     },
     {
@@ -2280,7 +2279,7 @@
       "label": "LEX30 30.41 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "structures Footnotes Banks must consider exposures even when a structure lies between the bank and the exposures, that is, even when the bank invests in structures through an entity which itself has exposures to assets (hereafter referred to as the \"underlying assets\").",
+      "actionSummary": "structures Banks must consider exposures even when a structure lies between the bank and the exposures, that is, even when the bank invests in structures through an entity which itself has exposures to assets (hereafter referred to as the \"underlying assets\").",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:30.41",
         "chapter": "LEX30",
@@ -2320,7 +2319,7 @@
       "label": "LEX30 30.43 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "By definition, this required test will be passed if the bank’s whole investment in a structure is below 0.25% of its Tier 1 capital. 11 A bank must look through the structure to identify those underlying assets for which the underlying exposure value is equal to or above 0.25% of its Tier 1 capital.",
+      "actionSummary": "A bank must look through the structure to identify those underlying assets for which the underlying exposure value is equal to or above 0.25% of its Tier 1 capital.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:30.43",
         "chapter": "LEX30",
@@ -2332,8 +2331,7 @@
           "may"
         ],
         "section": "Collective investment undertakings, securitisation vehicles and other"
-      },
-      "trigger": "if the bank’s whole investment in a structure is below 0"
+      }
     },
     {
       "id": "OBL-BCBS-LEX-s30.44-1",
@@ -2523,8 +2521,8 @@
       "nodeType": "Obligation",
       "label": "LEX30 30.55 — must",
       "obligationType": "must",
-      "actor": "Basel Committee",
-      "actionSummary": "This is subject to the provision that the CCP is based and prudentially supervised in a jurisdiction where the relevant regulator/overseer has established, and publicly indicated that it applies to the CCP on an ongoing basis, domestic rules and regulations that are consistent with the Committee on ",
+      "actor": "bank",
+      "actionSummary": "In the case of non-QCCPs, banks must measure their exposure as a sum of both the clearing exposures described in and the non-clearing exposures LEX30.57 described in , and must respect the general large exposure limit of 25% LEX30.59 of the Tier 1 capital.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:30.55",
         "chapter": "LEX30",
@@ -2534,9 +2532,8 @@
         "modalities": [
           "must"
         ],
-        "section": "Footnotes"
-      },
-      "trigger": "subject to the provision that the CCP is based and prudentially supervised in a jurisdiction where the relevant regulator/overseer has established, and publicly indicated that it applies to the CCP on"
+        "section": "Exposures to central counterparties"
+      }
     },
     {
       "id": "OBL-BCBS-LEX-s30.57-1",
@@ -2544,7 +2541,7 @@
       "label": "LEX30 30.57 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "Could you explain how to aggregate exposures to a CCP when the bank has both exposures related to clearing and exposures unrelated to clearing towards the CCP with an example? According to clearing exposures to CCPs are not subject to LEX30.56 the concept of connected counterparties described in to ",
+      "actionSummary": "Banks must identify exposures to a CCP related to clearing activities and sum together these exposures.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:lex:30.57",
         "chapter": "LEX30",
@@ -2552,12 +2549,10 @@
         "standard": "LEX",
         "classificationConfidence": 0.9,
         "modalities": [
-          "must",
-          "recommended"
+          "must"
         ],
-        "section": "FAQ"
-      },
-      "trigger": "when the bank has both exposures related to clearing and exposures unrelated to clearing towards the CCP with an example? According to clearing exposures to CCPs are not subject to LEX30"
+        "section": "Exposures to central counterparties"
+      }
     },
     {
       "id": "OBL-BCBS-LEX-s30.58-1",
@@ -2577,7 +2572,7 @@
         ],
         "section": "Type of exposure Exposure value"
       },
-      "trigger": "When the initial margin (IM) posted is bankruptcy-remote from the CCP – in the sense that it is segregated from the CCP’s own accounts, eg when the IM is held by a third-party custodian – this amount "
+      "trigger": "subject to clearing services (the bank acting as a clearing member or being a client of a clearing member), the bank must determine the counterparty to which exposures must be assigned by applying the"
     },
     {
       "id": "OBL-BCBS-LEX-s30.59-1",
@@ -2595,7 +2590,7 @@
         "modalities": [
           "must"
         ],
-        "section": "See .CRE5416"
+        "section": "Type of exposure Exposure value"
       }
     },
     {
@@ -2621,7 +2616,7 @@
   ],
   "edges": [
     {
-      "id": "E-COMPRISES-998930533603",
+      "id": "E-COMPRISES-799257245387",
       "fromId": "FW-basel",
       "toId": "DOC-BCBS-LEX",
       "edgeType": "COMPRISES",
@@ -2630,7 +2625,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-951441173929",
+      "id": "E-CONTAINS-256309749286",
       "fromId": "DOC-BCBS-LEX",
       "toId": "urn:reg:bcbs:lex:10",
       "edgeType": "CONTAINS",
@@ -2639,7 +2634,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-425497314696",
+      "id": "E-CONTAINS-770023753637",
       "fromId": "DOC-BCBS-LEX",
       "toId": "urn:reg:bcbs:lex:20",
       "edgeType": "CONTAINS",
@@ -2648,7 +2643,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-545198645459",
+      "id": "E-CONTAINS-081389308165",
       "fromId": "DOC-BCBS-LEX",
       "toId": "urn:reg:bcbs:lex:30",
       "edgeType": "CONTAINS",
@@ -2657,7 +2652,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-486653329585",
+      "id": "E-CONTAINS-339240261983",
       "fromId": "DOC-BCBS-LEX",
       "toId": "urn:reg:bcbs:lex:40",
       "edgeType": "CONTAINS",
@@ -2666,7 +2661,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-232796654379",
+      "id": "E-CONTAINS-288207747730",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.1",
       "edgeType": "CONTAINS",
@@ -2675,7 +2670,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-670138199848",
+      "id": "E-REFERENCES-916382475760",
       "fromId": "urn:reg:bcbs:lex:10.1",
       "toId": "urn:reg:bcbs:lex:30",
       "edgeType": "REFERENCES",
@@ -2685,7 +2680,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.1"
     },
     {
-      "id": "E-CONTAINS-943351838947",
+      "id": "E-CONTAINS-259801885718",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.2",
       "edgeType": "CONTAINS",
@@ -2694,7 +2689,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-156624158262",
+      "id": "E-CONTAINS-709848681990",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.3",
       "edgeType": "CONTAINS",
@@ -2703,7 +2698,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-146080222870",
+      "id": "E-CONTAINS-184704734932",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.4",
       "edgeType": "CONTAINS",
@@ -2712,7 +2707,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-509524289910",
+      "id": "E-REFERENCES-933630275864",
       "fromId": "urn:reg:bcbs:lex:10.4",
       "toId": "urn:reg:bcbs:sco:10",
       "edgeType": "REFERENCES",
@@ -2722,7 +2717,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.4"
     },
     {
-      "id": "E-CONTAINS-322382483965",
+      "id": "E-CONTAINS-002073252155",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.5",
       "edgeType": "CONTAINS",
@@ -2731,7 +2726,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-746604309589",
+      "id": "E-CONTAINS-086223794812",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.6",
       "edgeType": "CONTAINS",
@@ -2740,7 +2735,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-283978132983",
+      "id": "E-CONTAINS-118729108027",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.7",
       "edgeType": "CONTAINS",
@@ -2749,7 +2744,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-751700035878",
+      "id": "E-REFERENCES-178997532622",
       "fromId": "urn:reg:bcbs:lex:10.7",
       "toId": "urn:reg:bcbs:lex:30.31",
       "edgeType": "REFERENCES",
@@ -2759,7 +2754,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.7"
     },
     {
-      "id": "E-REFERENCES-013776591434",
+      "id": "E-REFERENCES-405683633503",
       "fromId": "urn:reg:bcbs:lex:10.7",
       "toId": "urn:reg:bcbs:lex:30.59",
       "edgeType": "REFERENCES",
@@ -2769,7 +2764,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.7"
     },
     {
-      "id": "E-CONTAINS-257064936407",
+      "id": "E-CONTAINS-582614371125",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.8",
       "edgeType": "CONTAINS",
@@ -2778,7 +2773,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-594276473827",
+      "id": "E-REFERENCES-728261027312",
       "fromId": "urn:reg:bcbs:lex:10.8",
       "toId": "urn:reg:bcbs:cap:10.2",
       "edgeType": "REFERENCES",
@@ -2788,7 +2783,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.8"
     },
     {
-      "id": "E-REFERENCES-602537351796",
+      "id": "E-REFERENCES-491636430000",
       "fromId": "urn:reg:bcbs:lex:10.8",
       "toId": "urn:reg:bcbs:lex:10.18",
       "edgeType": "REFERENCES",
@@ -2798,7 +2793,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.8"
     },
     {
-      "id": "E-REFERENCES-474695183951",
+      "id": "E-REFERENCES-040864544276",
       "fromId": "urn:reg:bcbs:lex:10.8",
       "toId": "urn:reg:bcbs:lex:10.9",
       "edgeType": "REFERENCES",
@@ -2808,7 +2803,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.8"
     },
     {
-      "id": "E-REFERENCES-285397106522",
+      "id": "E-REFERENCES-454145080199",
       "fromId": "urn:reg:bcbs:lex:10.8",
       "toId": "urn:reg:bcbs:lex:30",
       "edgeType": "REFERENCES",
@@ -2818,7 +2813,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.8"
     },
     {
-      "id": "E-CONTAINS-649005944982",
+      "id": "E-CONTAINS-924170699424",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.9",
       "edgeType": "CONTAINS",
@@ -2827,7 +2822,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-170955331708",
+      "id": "E-REFERENCES-654774946695",
       "fromId": "urn:reg:bcbs:lex:10.9",
       "toId": "urn:reg:bcbs:lex:20.1",
       "edgeType": "REFERENCES",
@@ -2837,7 +2832,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.9"
     },
     {
-      "id": "E-REFERENCES-988902031401",
+      "id": "E-REFERENCES-552518971606",
       "fromId": "urn:reg:bcbs:lex:10.9",
       "toId": "urn:reg:bcbs:lex:20.4",
       "edgeType": "REFERENCES",
@@ -2847,7 +2842,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.9"
     },
     {
-      "id": "E-CONTAINS-293758230629",
+      "id": "E-CONTAINS-359680722519",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.10",
       "edgeType": "CONTAINS",
@@ -2856,7 +2851,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-854622560641",
+      "id": "E-CONTAINS-784321242360",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.11",
       "edgeType": "CONTAINS",
@@ -2865,7 +2860,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-032751012324",
+      "id": "E-REFERENCES-449551542236",
       "fromId": "urn:reg:bcbs:lex:10.11",
       "toId": "urn:reg:bcbs:lex:10.10",
       "edgeType": "REFERENCES",
@@ -2875,7 +2870,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.11"
     },
     {
-      "id": "E-CONTAINS-020904595582",
+      "id": "E-CONTAINS-408911443372",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.12",
       "edgeType": "CONTAINS",
@@ -2884,7 +2879,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-035236461968",
+      "id": "E-REFERENCES-457299043765",
       "fromId": "urn:reg:bcbs:lex:10.12",
       "toId": "urn:reg:bcbs:lex:10.10",
       "edgeType": "REFERENCES",
@@ -2894,7 +2889,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.12"
     },
     {
-      "id": "E-CONTAINS-032549883670",
+      "id": "E-CONTAINS-563350207113",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.13",
       "edgeType": "CONTAINS",
@@ -2903,7 +2898,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-111140193679",
+      "id": "E-CONTAINS-539154124420",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.14",
       "edgeType": "CONTAINS",
@@ -2912,7 +2907,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-239274642015",
+      "id": "E-CONTAINS-559746574639",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.15",
       "edgeType": "CONTAINS",
@@ -2921,7 +2916,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-833910486721",
+      "id": "E-CONTAINS-010324259287",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.16",
       "edgeType": "CONTAINS",
@@ -2930,7 +2925,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-162022252683",
+      "id": "E-CONTAINS-126890753835",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.17",
       "edgeType": "CONTAINS",
@@ -2939,7 +2934,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-338872152790",
+      "id": "E-CONTAINS-962209457237",
       "fromId": "urn:reg:bcbs:lex:10",
       "toId": "urn:reg:bcbs:lex:10.18",
       "edgeType": "CONTAINS",
@@ -2948,7 +2943,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-640620976573",
+      "id": "E-CONTAINS-334778576885",
       "fromId": "urn:reg:bcbs:lex:20",
       "toId": "urn:reg:bcbs:lex:20.1",
       "edgeType": "CONTAINS",
@@ -2957,7 +2952,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-583548574954",
+      "id": "E-REFERENCES-433991356734",
       "fromId": "urn:reg:bcbs:lex:20.1",
       "toId": "urn:reg:bcbs:lex:40",
       "edgeType": "REFERENCES",
@@ -2967,7 +2962,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:20.1"
     },
     {
-      "id": "E-CONTAINS-291378646646",
+      "id": "E-CONTAINS-092534374953",
       "fromId": "urn:reg:bcbs:lex:20",
       "toId": "urn:reg:bcbs:lex:20.2",
       "edgeType": "CONTAINS",
@@ -2976,7 +2971,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-251132613409",
+      "id": "E-REFERENCES-318277709190",
       "fromId": "urn:reg:bcbs:lex:20.2",
       "toId": "urn:reg:bcbs:cap:10.2",
       "edgeType": "REFERENCES",
@@ -2986,7 +2981,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:20.2"
     },
     {
-      "id": "E-REFERENCES-822972387414",
+      "id": "E-REFERENCES-212048959876",
       "fromId": "urn:reg:bcbs:lex:20.2",
       "toId": "urn:reg:bcbs:lex:30",
       "edgeType": "REFERENCES",
@@ -2996,7 +2991,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:20.2"
     },
     {
-      "id": "E-CONTAINS-904373986871",
+      "id": "E-CONTAINS-263493284679",
       "fromId": "urn:reg:bcbs:lex:20",
       "toId": "urn:reg:bcbs:lex:20.3",
       "edgeType": "CONTAINS",
@@ -3005,7 +3000,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-909064758981",
+      "id": "E-CONTAINS-666423759425",
       "fromId": "urn:reg:bcbs:lex:20",
       "toId": "urn:reg:bcbs:lex:20.4",
       "edgeType": "CONTAINS",
@@ -3014,7 +3009,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-236569170127",
+      "id": "E-CONTAINS-545849536476",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.1",
       "edgeType": "CONTAINS",
@@ -3023,7 +3018,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-677756628078",
+      "id": "E-CONTAINS-822342027236",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.2",
       "edgeType": "CONTAINS",
@@ -3032,7 +3027,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-169915845209",
+      "id": "E-CONTAINS-924292934468",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.3",
       "edgeType": "CONTAINS",
@@ -3041,7 +3036,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-219061526603",
+      "id": "E-CONTAINS-975787873725",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.4",
       "edgeType": "CONTAINS",
@@ -3050,7 +3045,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-474804884902",
+      "id": "E-CONTAINS-204921564357",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.5",
       "edgeType": "CONTAINS",
@@ -3059,7 +3054,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-458889228769",
+      "id": "E-REFERENCES-667308816360",
       "fromId": "urn:reg:bcbs:lex:30.5",
       "toId": "urn:reg:bcbs:cre:22",
       "edgeType": "REFERENCES",
@@ -3069,7 +3064,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.5"
     },
     {
-      "id": "E-CONTAINS-360291440075",
+      "id": "E-CONTAINS-402869804789",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.6",
       "edgeType": "CONTAINS",
@@ -3078,7 +3073,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-251706775088",
+      "id": "E-CONTAINS-486098618499",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.7",
       "edgeType": "CONTAINS",
@@ -3087,7 +3082,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-945456764487",
+      "id": "E-CONTAINS-941901452048",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.8",
       "edgeType": "CONTAINS",
@@ -3096,17 +3091,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-995318856823",
-      "fromId": "urn:reg:bcbs:lex:30.8",
-      "toId": "urn:reg:bcbs:cre:22",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:lex:30.8"
-    },
-    {
-      "id": "E-REFERENCES-405883402606",
+      "id": "E-REFERENCES-651042825677",
       "fromId": "urn:reg:bcbs:lex:30.8",
       "toId": "urn:reg:bcbs:cre:32.8",
       "edgeType": "REFERENCES",
@@ -3116,7 +3101,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.8"
     },
     {
-      "id": "E-CONTAINS-260931117163",
+      "id": "E-CONTAINS-716098422075",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.9",
       "edgeType": "CONTAINS",
@@ -3125,7 +3110,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-598068247525",
+      "id": "E-CONTAINS-184821901690",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.10",
       "edgeType": "CONTAINS",
@@ -3134,7 +3119,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-426358733120",
+      "id": "E-CONTAINS-492781832606",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.11",
       "edgeType": "CONTAINS",
@@ -3143,7 +3128,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-964791606453",
+      "id": "E-CONTAINS-837039457091",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.12",
       "edgeType": "CONTAINS",
@@ -3152,7 +3137,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-814113607269",
+      "id": "E-CONTAINS-360799046193",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.13",
       "edgeType": "CONTAINS",
@@ -3161,7 +3146,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-967340036053",
+      "id": "E-CONTAINS-634048768441",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.14",
       "edgeType": "CONTAINS",
@@ -3170,7 +3155,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-678047405742",
+      "id": "E-REFERENCES-016184565117",
       "fromId": "urn:reg:bcbs:lex:30.14",
       "toId": "urn:reg:bcbs:lex:30.28",
       "edgeType": "REFERENCES",
@@ -3180,7 +3165,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.14"
     },
     {
-      "id": "E-CONTAINS-280177906986",
+      "id": "E-CONTAINS-181865735827",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.15",
       "edgeType": "CONTAINS",
@@ -3189,7 +3174,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-527127870520",
+      "id": "E-CONTAINS-997341887776",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.16",
       "edgeType": "CONTAINS",
@@ -3198,7 +3183,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-048425867718",
+      "id": "E-CONTAINS-122535803120",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.17",
       "edgeType": "CONTAINS",
@@ -3207,7 +3192,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-721600951451",
+      "id": "E-REFERENCES-354484632559",
       "fromId": "urn:reg:bcbs:lex:30.17",
       "toId": "urn:reg:bcbs:mar:22.14",
       "edgeType": "REFERENCES",
@@ -3217,7 +3202,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.17"
     },
     {
-      "id": "E-REFERENCES-476054552598",
+      "id": "E-REFERENCES-153130086831",
       "fromId": "urn:reg:bcbs:lex:30.17",
       "toId": "urn:reg:bcbs:mar:22.9",
       "edgeType": "REFERENCES",
@@ -3227,7 +3212,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.17"
     },
     {
-      "id": "E-CONTAINS-483205481502",
+      "id": "E-CONTAINS-657576810855",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.18",
       "edgeType": "CONTAINS",
@@ -3236,37 +3221,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-585955619948",
-      "fromId": "urn:reg:bcbs:lex:30.18",
-      "toId": "urn:reg:bcbs:lex:10.7",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:lex:30.18"
-    },
-    {
-      "id": "E-REFERENCES-850474856746",
-      "fromId": "urn:reg:bcbs:lex:30.18",
-      "toId": "urn:reg:bcbs:lex:30.31",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:lex:30.18"
-    },
-    {
-      "id": "E-REFERENCES-475293640286",
-      "fromId": "urn:reg:bcbs:lex:30.18",
-      "toId": "urn:reg:bcbs:lex:30.34",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:lex:30.18"
-    },
-    {
-      "id": "E-REFERENCES-242714465650",
+      "id": "E-REFERENCES-326060626314",
       "fromId": "urn:reg:bcbs:lex:30.18",
       "toId": "urn:reg:bcbs:mar:22.15",
       "edgeType": "REFERENCES",
@@ -3276,7 +3231,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.18"
     },
     {
-      "id": "E-REFERENCES-382350088477",
+      "id": "E-REFERENCES-672367252896",
       "fromId": "urn:reg:bcbs:lex:30.18",
       "toId": "urn:reg:bcbs:mar:22.18",
       "edgeType": "REFERENCES",
@@ -3286,7 +3241,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.18"
     },
     {
-      "id": "E-CONTAINS-304485010580",
+      "id": "E-CONTAINS-088168085906",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.19",
       "edgeType": "CONTAINS",
@@ -3295,7 +3250,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-148652297354",
+      "id": "E-CONTAINS-821887949745",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.20",
       "edgeType": "CONTAINS",
@@ -3304,7 +3259,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-132314717240",
+      "id": "E-REFERENCES-780904619415",
       "fromId": "urn:reg:bcbs:lex:30.20",
       "toId": "urn:reg:bcbs:lex:30",
       "edgeType": "REFERENCES",
@@ -3314,7 +3269,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.20"
     },
     {
-      "id": "E-REFERENCES-847089575492",
+      "id": "E-REFERENCES-843506803811",
       "fromId": "urn:reg:bcbs:lex:30.20",
       "toId": "urn:reg:bcbs:lex:30.41",
       "edgeType": "REFERENCES",
@@ -3324,7 +3279,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.20"
     },
     {
-      "id": "E-REFERENCES-317682052121",
+      "id": "E-REFERENCES-790972182213",
       "fromId": "urn:reg:bcbs:lex:30.20",
       "toId": "urn:reg:bcbs:lex:30.46",
       "edgeType": "REFERENCES",
@@ -3334,7 +3289,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.20"
     },
     {
-      "id": "E-CONTAINS-048872189929",
+      "id": "E-CONTAINS-837043279296",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.21",
       "edgeType": "CONTAINS",
@@ -3343,7 +3298,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-272786980429",
+      "id": "E-REFERENCES-147021949916",
       "fromId": "urn:reg:bcbs:lex:30.21",
       "toId": "urn:reg:bcbs:lex:30.37",
       "edgeType": "REFERENCES",
@@ -3353,7 +3308,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.21"
     },
     {
-      "id": "E-REFERENCES-155254673768",
+      "id": "E-REFERENCES-681036457060",
       "fromId": "urn:reg:bcbs:lex:30.21",
       "toId": "urn:reg:bcbs:lex:30.40",
       "edgeType": "REFERENCES",
@@ -3363,7 +3318,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.21"
     },
     {
-      "id": "E-CONTAINS-697062754476",
+      "id": "E-CONTAINS-138128211225",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.22",
       "edgeType": "CONTAINS",
@@ -3372,7 +3327,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-756405720749",
+      "id": "E-CONTAINS-260103305746",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.23",
       "edgeType": "CONTAINS",
@@ -3381,7 +3336,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-615860957892",
+      "id": "E-CONTAINS-288898333841",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.24",
       "edgeType": "CONTAINS",
@@ -3390,7 +3345,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-920662407993",
+      "id": "E-REFERENCES-495252605739",
       "fromId": "urn:reg:bcbs:lex:30.24",
       "toId": "urn:reg:bcbs:lex:30.23",
       "edgeType": "REFERENCES",
@@ -3400,7 +3355,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.24"
     },
     {
-      "id": "E-CONTAINS-478314904972",
+      "id": "E-CONTAINS-889308361317",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.25",
       "edgeType": "CONTAINS",
@@ -3409,7 +3364,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-430111758046",
+      "id": "E-CONTAINS-275185364155",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.26",
       "edgeType": "CONTAINS",
@@ -3418,7 +3373,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-859537612937",
+      "id": "E-CONTAINS-984775372336",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.27",
       "edgeType": "CONTAINS",
@@ -3427,7 +3382,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-160760150774",
+      "id": "E-REFERENCES-266845079338",
       "fromId": "urn:reg:bcbs:lex:30.27",
       "toId": "urn:reg:bcbs:lex:30.14",
       "edgeType": "REFERENCES",
@@ -3437,7 +3392,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.27"
     },
     {
-      "id": "E-REFERENCES-021859738987",
+      "id": "E-REFERENCES-221475583829",
       "fromId": "urn:reg:bcbs:lex:30.27",
       "toId": "urn:reg:bcbs:lex:30.28",
       "edgeType": "REFERENCES",
@@ -3447,7 +3402,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.27"
     },
     {
-      "id": "E-CONTAINS-106240447840",
+      "id": "E-CONTAINS-978370165812",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.28",
       "edgeType": "CONTAINS",
@@ -3456,7 +3411,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-508754203224",
+      "id": "E-CONTAINS-894219543921",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.29",
       "edgeType": "CONTAINS",
@@ -3465,7 +3420,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-325159885942",
+      "id": "E-CONTAINS-259332368117",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.30",
       "edgeType": "CONTAINS",
@@ -3474,7 +3429,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-806564621073",
+      "id": "E-REFERENCES-367375071199",
       "fromId": "urn:reg:bcbs:lex:30.30",
       "toId": "urn:reg:bcbs:lex:30.16",
       "edgeType": "REFERENCES",
@@ -3484,7 +3439,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.30"
     },
     {
-      "id": "E-CONTAINS-815894783728",
+      "id": "E-CONTAINS-247107279924",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.31",
       "edgeType": "CONTAINS",
@@ -3493,7 +3448,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-456824773337",
+      "id": "E-REFERENCES-361530945930",
       "fromId": "urn:reg:bcbs:lex:30.31",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -3503,7 +3458,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.31"
     },
     {
-      "id": "E-REFERENCES-772734250079",
+      "id": "E-REFERENCES-062819253467",
       "fromId": "urn:reg:bcbs:lex:30.31",
       "toId": "urn:reg:bcbs:cre:20.10",
       "edgeType": "REFERENCES",
@@ -3513,7 +3468,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.31"
     },
     {
-      "id": "E-REFERENCES-938678458687",
+      "id": "E-REFERENCES-063096194240",
       "fromId": "urn:reg:bcbs:lex:30.31",
       "toId": "urn:reg:bcbs:cre:20.7",
       "edgeType": "REFERENCES",
@@ -3523,7 +3478,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.31"
     },
     {
-      "id": "E-REFERENCES-088643824908",
+      "id": "E-REFERENCES-252745324318",
       "fromId": "urn:reg:bcbs:lex:30.31",
       "toId": "urn:reg:bcbs:lex:10.7",
       "edgeType": "REFERENCES",
@@ -3533,7 +3488,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.31"
     },
     {
-      "id": "E-CONTAINS-316948454431",
+      "id": "E-CONTAINS-408430136007",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.32",
       "edgeType": "CONTAINS",
@@ -3542,7 +3497,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-462312092334",
+      "id": "E-REFERENCES-760595234428",
       "fromId": "urn:reg:bcbs:lex:30.32",
       "toId": "urn:reg:bcbs:lex:10.15",
       "edgeType": "REFERENCES",
@@ -3552,7 +3507,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.32"
     },
     {
-      "id": "E-REFERENCES-243676870316",
+      "id": "E-REFERENCES-396171109643",
       "fromId": "urn:reg:bcbs:lex:30.32",
       "toId": "urn:reg:bcbs:lex:10.9",
       "edgeType": "REFERENCES",
@@ -3562,7 +3517,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.32"
     },
     {
-      "id": "E-REFERENCES-240522486530",
+      "id": "E-REFERENCES-000212941928",
       "fromId": "urn:reg:bcbs:lex:30.32",
       "toId": "urn:reg:bcbs:lex:30.31",
       "edgeType": "REFERENCES",
@@ -3572,7 +3527,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.32"
     },
     {
-      "id": "E-CONTAINS-813328133093",
+      "id": "E-CONTAINS-582787878172",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.33",
       "edgeType": "CONTAINS",
@@ -3581,7 +3536,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-769976511087",
+      "id": "E-REFERENCES-617045419615",
       "fromId": "urn:reg:bcbs:lex:30.33",
       "toId": "urn:reg:bcbs:lex:10.8",
       "edgeType": "REFERENCES",
@@ -3591,7 +3546,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.33"
     },
     {
-      "id": "E-REFERENCES-341500093854",
+      "id": "E-REFERENCES-100090038224",
       "fromId": "urn:reg:bcbs:lex:30.33",
       "toId": "urn:reg:bcbs:lex:20.4",
       "edgeType": "REFERENCES",
@@ -3601,7 +3556,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.33"
     },
     {
-      "id": "E-CONTAINS-823697935396",
+      "id": "E-CONTAINS-569105198688",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.34",
       "edgeType": "CONTAINS",
@@ -3610,7 +3565,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-370069184248",
+      "id": "E-REFERENCES-134843773019",
       "fromId": "urn:reg:bcbs:lex:30.34",
       "toId": "urn:reg:bcbs:lex:30.14",
       "edgeType": "REFERENCES",
@@ -3620,7 +3575,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.34"
     },
     {
-      "id": "E-REFERENCES-449019689964",
+      "id": "E-REFERENCES-037811987519",
       "fromId": "urn:reg:bcbs:lex:30.34",
       "toId": "urn:reg:bcbs:lex:30.28",
       "edgeType": "REFERENCES",
@@ -3630,7 +3585,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.34"
     },
     {
-      "id": "E-CONTAINS-548819592541",
+      "id": "E-CONTAINS-545418696067",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.35",
       "edgeType": "CONTAINS",
@@ -3639,7 +3594,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-529947462980",
+      "id": "E-CONTAINS-726469836688",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.36",
       "edgeType": "CONTAINS",
@@ -3648,7 +3603,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-351340442142",
+      "id": "E-CONTAINS-920955982934",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.37",
       "edgeType": "CONTAINS",
@@ -3657,7 +3612,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-230901468847",
+      "id": "E-CONTAINS-195324571920",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.38",
       "edgeType": "CONTAINS",
@@ -3666,7 +3621,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-070098821573",
+      "id": "E-REFERENCES-992370088429",
       "fromId": "urn:reg:bcbs:lex:30.38",
       "toId": "urn:reg:bcbs:lex:30.37",
       "edgeType": "REFERENCES",
@@ -3676,7 +3631,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.38"
     },
     {
-      "id": "E-CONTAINS-361117054543",
+      "id": "E-CONTAINS-388841324352",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.39",
       "edgeType": "CONTAINS",
@@ -3685,7 +3640,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-731417242940",
+      "id": "E-REFERENCES-649158656753",
       "fromId": "urn:reg:bcbs:lex:30.39",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -3695,7 +3650,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.39"
     },
     {
-      "id": "E-REFERENCES-379536929925",
+      "id": "E-REFERENCES-871776341126",
       "fromId": "urn:reg:bcbs:lex:30.39",
       "toId": "urn:reg:bcbs:lex:30.37",
       "edgeType": "REFERENCES",
@@ -3705,7 +3660,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.39"
     },
     {
-      "id": "E-CONTAINS-646847516814",
+      "id": "E-CONTAINS-928013878050",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.40",
       "edgeType": "CONTAINS",
@@ -3714,7 +3669,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-668661401887",
+      "id": "E-REFERENCES-518882312434",
       "fromId": "urn:reg:bcbs:lex:30.40",
       "toId": "urn:reg:bcbs:cre:20",
       "edgeType": "REFERENCES",
@@ -3724,7 +3679,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.40"
     },
     {
-      "id": "E-REFERENCES-827794080074",
+      "id": "E-REFERENCES-631803061073",
       "fromId": "urn:reg:bcbs:lex:30.40",
       "toId": "urn:reg:bcbs:cre:36.131",
       "edgeType": "REFERENCES",
@@ -3734,7 +3689,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.40"
     },
     {
-      "id": "E-REFERENCES-702771285395",
+      "id": "E-REFERENCES-638250771048",
       "fromId": "urn:reg:bcbs:lex:30.40",
       "toId": "urn:reg:bcbs:lex:30",
       "edgeType": "REFERENCES",
@@ -3744,7 +3699,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.40"
     },
     {
-      "id": "E-REFERENCES-329733423658",
+      "id": "E-REFERENCES-379678079140",
       "fromId": "urn:reg:bcbs:lex:30.40",
       "toId": "urn:reg:bcbs:lex:30.39",
       "edgeType": "REFERENCES",
@@ -3754,7 +3709,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.40"
     },
     {
-      "id": "E-CONTAINS-300581644653",
+      "id": "E-CONTAINS-023002593034",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.41",
       "edgeType": "CONTAINS",
@@ -3763,7 +3718,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-719593537971",
+      "id": "E-CONTAINS-905550894663",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.42",
       "edgeType": "CONTAINS",
@@ -3772,7 +3727,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-628697724294",
+      "id": "E-REFERENCES-821509016944",
       "fromId": "urn:reg:bcbs:lex:30.42",
       "toId": "urn:reg:bcbs:lex:30.48",
       "edgeType": "REFERENCES",
@@ -3782,7 +3737,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.42"
     },
     {
-      "id": "E-REFERENCES-111565622365",
+      "id": "E-REFERENCES-709553073848",
       "fromId": "urn:reg:bcbs:lex:30.42",
       "toId": "urn:reg:bcbs:lex:30.49",
       "edgeType": "REFERENCES",
@@ -3792,7 +3747,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.42"
     },
     {
-      "id": "E-CONTAINS-244358012530",
+      "id": "E-CONTAINS-100761483277",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.43",
       "edgeType": "CONTAINS",
@@ -3801,7 +3756,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-053997513731",
+      "id": "E-CONTAINS-883879297037",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.44",
       "edgeType": "CONTAINS",
@@ -3810,7 +3765,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-463782765555",
+      "id": "E-CONTAINS-927867391701",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.45",
       "edgeType": "CONTAINS",
@@ -3819,7 +3774,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-572101158639",
+      "id": "E-CONTAINS-568454575418",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.46",
       "edgeType": "CONTAINS",
@@ -3828,7 +3783,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-089800602430",
+      "id": "E-REFERENCES-886611524100",
       "fromId": "urn:reg:bcbs:lex:30.46",
       "toId": "urn:reg:bcbs:lex:30.42",
       "edgeType": "REFERENCES",
@@ -3838,7 +3793,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.46"
     },
     {
-      "id": "E-CONTAINS-270337151935",
+      "id": "E-CONTAINS-831298111064",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.47",
       "edgeType": "CONTAINS",
@@ -3847,7 +3802,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-816690896971",
+      "id": "E-CONTAINS-472405989491",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.48",
       "edgeType": "CONTAINS",
@@ -3856,7 +3811,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-666177001100",
+      "id": "E-CONTAINS-318439332394",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.49",
       "edgeType": "CONTAINS",
@@ -3865,7 +3820,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-251820734537",
+      "id": "E-CONTAINS-357617786854",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.50",
       "edgeType": "CONTAINS",
@@ -3874,7 +3829,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-069700399220",
+      "id": "E-CONTAINS-167247477001",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.51",
       "edgeType": "CONTAINS",
@@ -3883,7 +3838,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-435765013549",
+      "id": "E-CONTAINS-037451914415",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.52",
       "edgeType": "CONTAINS",
@@ -3892,7 +3847,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-664424116693",
+      "id": "E-CONTAINS-433807117428",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.53",
       "edgeType": "CONTAINS",
@@ -3901,7 +3856,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-053681779735",
+      "id": "E-REFERENCES-246357442595",
       "fromId": "urn:reg:bcbs:lex:30.53",
       "toId": "urn:reg:bcbs:lex:30.47",
       "edgeType": "REFERENCES",
@@ -3911,7 +3866,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.53"
     },
     {
-      "id": "E-CONTAINS-026814914503",
+      "id": "E-CONTAINS-886855262620",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.54",
       "edgeType": "CONTAINS",
@@ -3920,7 +3875,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-160490139790",
+      "id": "E-REFERENCES-329230396182",
       "fromId": "urn:reg:bcbs:lex:30.54",
       "toId": "urn:reg:bcbs:lex:20.4",
       "edgeType": "REFERENCES",
@@ -3930,7 +3885,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.54"
     },
     {
-      "id": "E-CONTAINS-473218330121",
+      "id": "E-CONTAINS-114830970451",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.55",
       "edgeType": "CONTAINS",
@@ -3939,7 +3894,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-128605115241",
+      "id": "E-REFERENCES-416861034057",
       "fromId": "urn:reg:bcbs:lex:30.55",
       "toId": "urn:reg:bcbs:lex:30.57",
       "edgeType": "REFERENCES",
@@ -3949,7 +3904,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.55"
     },
     {
-      "id": "E-REFERENCES-484408274345",
+      "id": "E-REFERENCES-160967361877",
       "fromId": "urn:reg:bcbs:lex:30.55",
       "toId": "urn:reg:bcbs:lex:30.59",
       "edgeType": "REFERENCES",
@@ -3959,7 +3914,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.55"
     },
     {
-      "id": "E-CONTAINS-691048294313",
+      "id": "E-CONTAINS-244629760181",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.56",
       "edgeType": "CONTAINS",
@@ -3968,7 +3923,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-215032108087",
+      "id": "E-REFERENCES-329730754632",
       "fromId": "urn:reg:bcbs:lex:30.56",
       "toId": "urn:reg:bcbs:lex:10.18",
       "edgeType": "REFERENCES",
@@ -3978,7 +3933,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.56"
     },
     {
-      "id": "E-REFERENCES-375824797067",
+      "id": "E-REFERENCES-205497722485",
       "fromId": "urn:reg:bcbs:lex:30.56",
       "toId": "urn:reg:bcbs:lex:10.9",
       "edgeType": "REFERENCES",
@@ -3988,7 +3943,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.56"
     },
     {
-      "id": "E-CONTAINS-700586731714",
+      "id": "E-CONTAINS-256510405848",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.57",
       "edgeType": "CONTAINS",
@@ -3997,37 +3952,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-818876032292",
-      "fromId": "urn:reg:bcbs:lex:30.57",
-      "toId": "urn:reg:bcbs:lex:10",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:lex:30.57"
-    },
-    {
-      "id": "E-REFERENCES-387651099504",
-      "fromId": "urn:reg:bcbs:lex:30.57",
-      "toId": "urn:reg:bcbs:lex:10.9",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:lex:30.57"
-    },
-    {
-      "id": "E-REFERENCES-710060034539",
-      "fromId": "urn:reg:bcbs:lex:30.57",
-      "toId": "urn:reg:bcbs:lex:30.56",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:lex:30.57"
-    },
-    {
-      "id": "E-CONTAINS-418981728506",
+      "id": "E-CONTAINS-628574011787",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.58",
       "edgeType": "CONTAINS",
@@ -4036,7 +3961,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-122496434792",
+      "id": "E-CONTAINS-205597724469",
       "fromId": "urn:reg:bcbs:lex:30",
       "toId": "urn:reg:bcbs:lex:30.59",
       "edgeType": "CONTAINS",
@@ -4045,7 +3970,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-709314706591",
+      "id": "E-CONTAINS-521176209925",
       "fromId": "urn:reg:bcbs:lex:40",
       "toId": "urn:reg:bcbs:lex:40.1",
       "edgeType": "CONTAINS",
@@ -4054,7 +3979,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-798256497184",
+      "id": "E-REFERENCES-468271503263",
       "fromId": "urn:reg:bcbs:lex:40.1",
       "toId": "urn:reg:bcbs:rbc:40.6",
       "edgeType": "REFERENCES",
@@ -4064,7 +3989,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:40.1"
     },
     {
-      "id": "E-REFERENCES-449788309705",
+      "id": "E-REFERENCES-389045669903",
       "fromId": "urn:reg:bcbs:lex:40.1",
       "toId": "urn:reg:bcbs:sco:40",
       "edgeType": "REFERENCES",
@@ -4074,7 +3999,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:40.1"
     },
     {
-      "id": "E-CONTAINS-591056998761",
+      "id": "E-CONTAINS-096939375515",
       "fromId": "urn:reg:bcbs:lex:40",
       "toId": "urn:reg:bcbs:lex:40.2",
       "edgeType": "CONTAINS",
@@ -4083,7 +4008,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-795916282652",
+      "id": "E-CONTAINS-065816050192",
       "fromId": "urn:reg:bcbs:lex:40",
       "toId": "urn:reg:bcbs:lex:40.3",
       "edgeType": "CONTAINS",
@@ -4092,7 +4017,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-115635813973",
+      "id": "E-REFERENCES-060451818019",
       "fromId": "urn:reg:bcbs:lex:40.3",
       "toId": "urn:reg:bcbs:sco:40.5",
       "edgeType": "REFERENCES",
@@ -4102,7 +4027,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:40.3"
     },
     {
-      "id": "E-EXPRESSES-519845878005",
+      "id": "E-EXPRESSES-549456724543",
       "fromId": "urn:reg:bcbs:lex:10.2",
       "toId": "OBL-BCBS-LEX-s10.2-1",
       "edgeType": "EXPRESSES",
@@ -4112,7 +4037,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.2"
     },
     {
-      "id": "E-EXPRESSES-706883587400",
+      "id": "E-EXPRESSES-384526076532",
       "fromId": "urn:reg:bcbs:lex:10.4",
       "toId": "OBL-BCBS-LEX-s10.4-1",
       "edgeType": "EXPRESSES",
@@ -4122,7 +4047,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.4"
     },
     {
-      "id": "E-EXPRESSES-660615775270",
+      "id": "E-EXPRESSES-296678323959",
       "fromId": "urn:reg:bcbs:lex:10.6",
       "toId": "OBL-BCBS-LEX-s10.6-1",
       "edgeType": "EXPRESSES",
@@ -4132,7 +4057,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.6"
     },
     {
-      "id": "E-EXPRESSES-513778049237",
+      "id": "E-EXPRESSES-393522149421",
       "fromId": "urn:reg:bcbs:lex:10.7",
       "toId": "OBL-BCBS-LEX-s10.7-1",
       "edgeType": "EXPRESSES",
@@ -4142,7 +4067,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.7"
     },
     {
-      "id": "E-EXPRESSES-388933619051",
+      "id": "E-EXPRESSES-761497435273",
       "fromId": "urn:reg:bcbs:lex:10.8",
       "toId": "OBL-BCBS-LEX-s10.8-1",
       "edgeType": "EXPRESSES",
@@ -4152,7 +4077,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.8"
     },
     {
-      "id": "E-EXPRESSES-589742090006",
+      "id": "E-EXPRESSES-881851696658",
       "fromId": "urn:reg:bcbs:lex:10.9",
       "toId": "OBL-BCBS-LEX-s10.9-1",
       "edgeType": "EXPRESSES",
@@ -4162,7 +4087,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.9"
     },
     {
-      "id": "E-EXPRESSES-902145964040",
+      "id": "E-EXPRESSES-525793508425",
       "fromId": "urn:reg:bcbs:lex:10.10",
       "toId": "OBL-BCBS-LEX-s10.10-1",
       "edgeType": "EXPRESSES",
@@ -4172,7 +4097,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.10"
     },
     {
-      "id": "E-EXPRESSES-015379092787",
+      "id": "E-EXPRESSES-760647359956",
       "fromId": "urn:reg:bcbs:lex:10.11",
       "toId": "OBL-BCBS-LEX-s10.11-1",
       "edgeType": "EXPRESSES",
@@ -4182,7 +4107,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.11"
     },
     {
-      "id": "E-EXPRESSES-638659374232",
+      "id": "E-EXPRESSES-075884973144",
       "fromId": "urn:reg:bcbs:lex:10.12",
       "toId": "OBL-BCBS-LEX-s10.12-1",
       "edgeType": "EXPRESSES",
@@ -4192,7 +4117,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.12"
     },
     {
-      "id": "E-EXPRESSES-426957745001",
+      "id": "E-EXPRESSES-913505845748",
       "fromId": "urn:reg:bcbs:lex:10.13",
       "toId": "OBL-BCBS-LEX-s10.13-1",
       "edgeType": "EXPRESSES",
@@ -4202,7 +4127,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.13"
     },
     {
-      "id": "E-EXPRESSES-119113850482",
+      "id": "E-EXPRESSES-046299446501",
       "fromId": "urn:reg:bcbs:lex:10.15",
       "toId": "OBL-BCBS-LEX-s10.15-1",
       "edgeType": "EXPRESSES",
@@ -4212,7 +4137,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.15"
     },
     {
-      "id": "E-EXPRESSES-674299221273",
+      "id": "E-EXPRESSES-600677654054",
       "fromId": "urn:reg:bcbs:lex:10.16",
       "toId": "OBL-BCBS-LEX-s10.16-1",
       "edgeType": "EXPRESSES",
@@ -4222,7 +4147,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.16"
     },
     {
-      "id": "E-EXPRESSES-942121459347",
+      "id": "E-EXPRESSES-636629325899",
       "fromId": "urn:reg:bcbs:lex:10.18",
       "toId": "OBL-BCBS-LEX-s10.18-1",
       "edgeType": "EXPRESSES",
@@ -4232,7 +4157,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:10.18"
     },
     {
-      "id": "E-EXPRESSES-255849694587",
+      "id": "E-EXPRESSES-105330297858",
       "fromId": "urn:reg:bcbs:lex:20.1",
       "toId": "OBL-BCBS-LEX-s20.1-1",
       "edgeType": "EXPRESSES",
@@ -4242,7 +4167,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:20.1"
     },
     {
-      "id": "E-EXPRESSES-182767926080",
+      "id": "E-EXPRESSES-544806948041",
       "fromId": "urn:reg:bcbs:lex:20.2",
       "toId": "OBL-BCBS-LEX-s20.2-1",
       "edgeType": "EXPRESSES",
@@ -4252,7 +4177,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:20.2"
     },
     {
-      "id": "E-EXPRESSES-193219008633",
+      "id": "E-EXPRESSES-496404448737",
       "fromId": "urn:reg:bcbs:lex:20.3",
       "toId": "OBL-BCBS-LEX-s20.3-1",
       "edgeType": "EXPRESSES",
@@ -4262,7 +4187,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:20.3"
     },
     {
-      "id": "E-EXPRESSES-055639439509",
+      "id": "E-EXPRESSES-726789292158",
       "fromId": "urn:reg:bcbs:lex:20.4",
       "toId": "OBL-BCBS-LEX-s20.4-1",
       "edgeType": "EXPRESSES",
@@ -4272,7 +4197,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:20.4"
     },
     {
-      "id": "E-EXPRESSES-308112670862",
+      "id": "E-EXPRESSES-163664725500",
       "fromId": "urn:reg:bcbs:lex:30.1",
       "toId": "OBL-BCBS-LEX-s30.1-1",
       "edgeType": "EXPRESSES",
@@ -4282,7 +4207,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.1"
     },
     {
-      "id": "E-EXPRESSES-703267607735",
+      "id": "E-EXPRESSES-586838009475",
       "fromId": "urn:reg:bcbs:lex:30.2",
       "toId": "OBL-BCBS-LEX-s30.2-1",
       "edgeType": "EXPRESSES",
@@ -4292,7 +4217,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.2"
     },
     {
-      "id": "E-EXPRESSES-445116536227",
+      "id": "E-EXPRESSES-754927231588",
       "fromId": "urn:reg:bcbs:lex:30.3",
       "toId": "OBL-BCBS-LEX-s30.3-1",
       "edgeType": "EXPRESSES",
@@ -4302,7 +4227,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.3"
     },
     {
-      "id": "E-EXPRESSES-871966455080",
+      "id": "E-EXPRESSES-097709772555",
       "fromId": "urn:reg:bcbs:lex:30.4",
       "toId": "OBL-BCBS-LEX-s30.4-1",
       "edgeType": "EXPRESSES",
@@ -4312,7 +4237,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.4"
     },
     {
-      "id": "E-EXPRESSES-233379754364",
+      "id": "E-EXPRESSES-849862454777",
       "fromId": "urn:reg:bcbs:lex:30.5",
       "toId": "OBL-BCBS-LEX-s30.5-1",
       "edgeType": "EXPRESSES",
@@ -4322,7 +4247,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.5"
     },
     {
-      "id": "E-EXPRESSES-147843192859",
+      "id": "E-EXPRESSES-184871541594",
       "fromId": "urn:reg:bcbs:lex:30.9",
       "toId": "OBL-BCBS-LEX-s30.9-1",
       "edgeType": "EXPRESSES",
@@ -4332,7 +4257,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.9"
     },
     {
-      "id": "E-EXPRESSES-043029266119",
+      "id": "E-EXPRESSES-633045517036",
       "fromId": "urn:reg:bcbs:lex:30.13",
       "toId": "OBL-BCBS-LEX-s30.13-1",
       "edgeType": "EXPRESSES",
@@ -4342,7 +4267,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.13"
     },
     {
-      "id": "E-EXPRESSES-837506170782",
+      "id": "E-EXPRESSES-486787790268",
       "fromId": "urn:reg:bcbs:lex:30.14",
       "toId": "OBL-BCBS-LEX-s30.14-1",
       "edgeType": "EXPRESSES",
@@ -4352,7 +4277,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.14"
     },
     {
-      "id": "E-EXPRESSES-528625177921",
+      "id": "E-EXPRESSES-408967199400",
       "fromId": "urn:reg:bcbs:lex:30.15",
       "toId": "OBL-BCBS-LEX-s30.15-1",
       "edgeType": "EXPRESSES",
@@ -4362,7 +4287,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.15"
     },
     {
-      "id": "E-EXPRESSES-946120245871",
+      "id": "E-EXPRESSES-176149574650",
       "fromId": "urn:reg:bcbs:lex:30.16",
       "toId": "OBL-BCBS-LEX-s30.16-1",
       "edgeType": "EXPRESSES",
@@ -4372,7 +4297,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.16"
     },
     {
-      "id": "E-EXPRESSES-516894938785",
+      "id": "E-EXPRESSES-904628059700",
       "fromId": "urn:reg:bcbs:lex:30.17",
       "toId": "OBL-BCBS-LEX-s30.17-1",
       "edgeType": "EXPRESSES",
@@ -4382,7 +4307,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.17"
     },
     {
-      "id": "E-EXPRESSES-976933821078",
+      "id": "E-EXPRESSES-014493530851",
       "fromId": "urn:reg:bcbs:lex:30.20",
       "toId": "OBL-BCBS-LEX-s30.20-1",
       "edgeType": "EXPRESSES",
@@ -4392,7 +4317,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.20"
     },
     {
-      "id": "E-EXPRESSES-487091203162",
+      "id": "E-EXPRESSES-234972599844",
       "fromId": "urn:reg:bcbs:lex:30.22",
       "toId": "OBL-BCBS-LEX-s30.22-1",
       "edgeType": "EXPRESSES",
@@ -4402,7 +4327,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.22"
     },
     {
-      "id": "E-EXPRESSES-329259654389",
+      "id": "E-EXPRESSES-342002699843",
       "fromId": "urn:reg:bcbs:lex:30.29",
       "toId": "OBL-BCBS-LEX-s30.29-1",
       "edgeType": "EXPRESSES",
@@ -4412,7 +4337,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.29"
     },
     {
-      "id": "E-EXPRESSES-978261298589",
+      "id": "E-EXPRESSES-080184443627",
       "fromId": "urn:reg:bcbs:lex:30.33",
       "toId": "OBL-BCBS-LEX-s30.33-1",
       "edgeType": "EXPRESSES",
@@ -4422,7 +4347,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.33"
     },
     {
-      "id": "E-EXPRESSES-999845950422",
+      "id": "E-EXPRESSES-942621888217",
       "fromId": "urn:reg:bcbs:lex:30.34",
       "toId": "OBL-BCBS-LEX-s30.34-1",
       "edgeType": "EXPRESSES",
@@ -4432,7 +4357,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.34"
     },
     {
-      "id": "E-EXPRESSES-304459496858",
+      "id": "E-EXPRESSES-424515001830",
       "fromId": "urn:reg:bcbs:lex:30.36",
       "toId": "OBL-BCBS-LEX-s30.36-1",
       "edgeType": "EXPRESSES",
@@ -4442,7 +4367,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.36"
     },
     {
-      "id": "E-EXPRESSES-296076317718",
+      "id": "E-EXPRESSES-747590809137",
       "fromId": "urn:reg:bcbs:lex:30.37",
       "toId": "OBL-BCBS-LEX-s30.37-1",
       "edgeType": "EXPRESSES",
@@ -4452,7 +4377,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.37"
     },
     {
-      "id": "E-EXPRESSES-322104981118",
+      "id": "E-EXPRESSES-446626021590",
       "fromId": "urn:reg:bcbs:lex:30.38",
       "toId": "OBL-BCBS-LEX-s30.38-1",
       "edgeType": "EXPRESSES",
@@ -4462,7 +4387,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.38"
     },
     {
-      "id": "E-EXPRESSES-962646762790",
+      "id": "E-EXPRESSES-026107986952",
       "fromId": "urn:reg:bcbs:lex:30.39",
       "toId": "OBL-BCBS-LEX-s30.39-1",
       "edgeType": "EXPRESSES",
@@ -4472,7 +4397,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.39"
     },
     {
-      "id": "E-EXPRESSES-596612359362",
+      "id": "E-EXPRESSES-390545247897",
       "fromId": "urn:reg:bcbs:lex:30.40",
       "toId": "OBL-BCBS-LEX-s30.40-1",
       "edgeType": "EXPRESSES",
@@ -4482,7 +4407,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.40"
     },
     {
-      "id": "E-EXPRESSES-705525679011",
+      "id": "E-EXPRESSES-957557559481",
       "fromId": "urn:reg:bcbs:lex:30.41",
       "toId": "OBL-BCBS-LEX-s30.41-1",
       "edgeType": "EXPRESSES",
@@ -4492,7 +4417,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.41"
     },
     {
-      "id": "E-EXPRESSES-073643327096",
+      "id": "E-EXPRESSES-471394695227",
       "fromId": "urn:reg:bcbs:lex:30.42",
       "toId": "OBL-BCBS-LEX-s30.42-1",
       "edgeType": "EXPRESSES",
@@ -4502,7 +4427,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.42"
     },
     {
-      "id": "E-EXPRESSES-181457510684",
+      "id": "E-EXPRESSES-647984861416",
       "fromId": "urn:reg:bcbs:lex:30.43",
       "toId": "OBL-BCBS-LEX-s30.43-1",
       "edgeType": "EXPRESSES",
@@ -4512,7 +4437,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.43"
     },
     {
-      "id": "E-EXPRESSES-021331087193",
+      "id": "E-EXPRESSES-406868053554",
       "fromId": "urn:reg:bcbs:lex:30.44",
       "toId": "OBL-BCBS-LEX-s30.44-1",
       "edgeType": "EXPRESSES",
@@ -4522,7 +4447,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.44"
     },
     {
-      "id": "E-EXPRESSES-188496760258",
+      "id": "E-EXPRESSES-640121904172",
       "fromId": "urn:reg:bcbs:lex:30.45",
       "toId": "OBL-BCBS-LEX-s30.45-1",
       "edgeType": "EXPRESSES",
@@ -4532,7 +4457,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.45"
     },
     {
-      "id": "E-EXPRESSES-670893532342",
+      "id": "E-EXPRESSES-957028762291",
       "fromId": "urn:reg:bcbs:lex:30.46",
       "toId": "OBL-BCBS-LEX-s30.46-1",
       "edgeType": "EXPRESSES",
@@ -4542,7 +4467,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.46"
     },
     {
-      "id": "E-EXPRESSES-955465856486",
+      "id": "E-EXPRESSES-323626080386",
       "fromId": "urn:reg:bcbs:lex:30.47",
       "toId": "OBL-BCBS-LEX-s30.47-1",
       "edgeType": "EXPRESSES",
@@ -4552,7 +4477,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.47"
     },
     {
-      "id": "E-EXPRESSES-585982302124",
+      "id": "E-EXPRESSES-229833954458",
       "fromId": "urn:reg:bcbs:lex:30.48",
       "toId": "OBL-BCBS-LEX-s30.48-1",
       "edgeType": "EXPRESSES",
@@ -4562,7 +4487,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.48"
     },
     {
-      "id": "E-EXPRESSES-555856483193",
+      "id": "E-EXPRESSES-933038665541",
       "fromId": "urn:reg:bcbs:lex:30.49",
       "toId": "OBL-BCBS-LEX-s30.49-1",
       "edgeType": "EXPRESSES",
@@ -4572,7 +4497,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.49"
     },
     {
-      "id": "E-EXPRESSES-957068412960",
+      "id": "E-EXPRESSES-172619023800",
       "fromId": "urn:reg:bcbs:lex:30.50",
       "toId": "OBL-BCBS-LEX-s30.50-1",
       "edgeType": "EXPRESSES",
@@ -4582,7 +4507,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.50"
     },
     {
-      "id": "E-EXPRESSES-785018784896",
+      "id": "E-EXPRESSES-218850464080",
       "fromId": "urn:reg:bcbs:lex:30.51",
       "toId": "OBL-BCBS-LEX-s30.51-1",
       "edgeType": "EXPRESSES",
@@ -4592,7 +4517,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.51"
     },
     {
-      "id": "E-EXPRESSES-201353412579",
+      "id": "E-EXPRESSES-033532499590",
       "fromId": "urn:reg:bcbs:lex:30.52",
       "toId": "OBL-BCBS-LEX-s30.52-1",
       "edgeType": "EXPRESSES",
@@ -4602,7 +4527,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.52"
     },
     {
-      "id": "E-EXPRESSES-544255534642",
+      "id": "E-EXPRESSES-100417508366",
       "fromId": "urn:reg:bcbs:lex:30.55",
       "toId": "OBL-BCBS-LEX-s30.55-1",
       "edgeType": "EXPRESSES",
@@ -4612,7 +4537,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.55"
     },
     {
-      "id": "E-EXPRESSES-501496018173",
+      "id": "E-EXPRESSES-056201994079",
       "fromId": "urn:reg:bcbs:lex:30.57",
       "toId": "OBL-BCBS-LEX-s30.57-1",
       "edgeType": "EXPRESSES",
@@ -4622,7 +4547,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.57"
     },
     {
-      "id": "E-EXPRESSES-039566736055",
+      "id": "E-EXPRESSES-158628700405",
       "fromId": "urn:reg:bcbs:lex:30.58",
       "toId": "OBL-BCBS-LEX-s30.58-1",
       "edgeType": "EXPRESSES",
@@ -4632,7 +4557,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.58"
     },
     {
-      "id": "E-EXPRESSES-744307888635",
+      "id": "E-EXPRESSES-832938617529",
       "fromId": "urn:reg:bcbs:lex:30.59",
       "toId": "OBL-BCBS-LEX-s30.59-1",
       "edgeType": "EXPRESSES",
@@ -4642,7 +4567,7 @@
       "sourceProvision": "urn:reg:bcbs:lex:30.59"
     },
     {
-      "id": "E-EXPRESSES-792053234487",
+      "id": "E-EXPRESSES-374357573133",
       "fromId": "urn:reg:bcbs:lex:40.1",
       "toId": "OBL-BCBS-LEX-s40.1-1",
       "edgeType": "EXPRESSES",

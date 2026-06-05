@@ -7,29 +7,29 @@
   "generatedAt": "2026-06-04T00:00:00Z",
   "source": "The Basel Framework (BIS) consolidated PDF, pages 1280-1308",
   "stats": {
-    "nodes": 121,
-    "edges": 131,
-    "obligations": 48,
-    "normativeParagraphs": 48,
+    "nodes": 117,
+    "edges": 124,
+    "obligations": 45,
+    "normativeParagraphs": 45,
     "decomposition": "paragraph",
     "nodesByType": {
       "Framework": 1,
       "Document": 1,
-      "Provision": 71,
-      "Obligation": 48
+      "Provision": 70,
+      "Obligation": 45
     },
     "edgesByType": {
       "COMPRISES": 1,
       "CONTAINS": 70,
-      "REFERENCES": 11,
-      "EXPRESSES": 48,
+      "REFERENCES": 7,
+      "EXPRESSES": 45,
       "CONDITIONAL_ON": 1
     },
     "obligationsByType": {
-      "recommended": 29,
+      "recommended": 27,
       "must": 16,
       "may": 1,
-      "must-not": 2
+      "must-not": 1
     }
   },
   "nodes": [
@@ -88,7 +88,7 @@
       "nodeType": "Provision",
       "label": "MGN10 10.1",
       "level": "section",
-      "text": "framework. Scope of coverage – instruments subject to the requirements Footnotes Appropriate margining practices should be in place with respect to all derivatives transactions that are not cleared by central counterparties (CCPs).1",
+      "text": "framework. Scope of coverage – instruments subject to the requirements Appropriate margining practices should be in place with respect to all derivatives transactions that are not cleared by central counterparties (CCPs).1",
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
@@ -103,11 +103,11 @@
       "nodeType": "Provision",
       "label": "MGN10 10.2",
       "level": "section",
-      "text": "are not cleared by CCPs and do not apply to other transactions, such as repurchase agreements and security lending transactions that are not themselves derivatives but share some attributes with derivatives. In addition, indirectly cleared derivatives transactions that are intermediated through a clearing member on behalf of a non-member customer are not subject to these requirements as long as (a) the non- member customer is subject to the margin requirements of the clearing house or (b) the non-member customer provides margin consistent with the relevant corresponding clearing house’s margin requirements. 1 Except for physically settled foreign exchange (FX) forwards and swaps, the margin requirements apply to all non-centrally cleared derivatives. The margin requirements described in this standard do not apply to physically settled FX forwards and swaps. However, the Basel Committee and the International Organization of Securities Commissions (IOSCO) recognise that variation margining of such derivatives is a common and established practice among significant market participants. The Basel Committee and IOSCO recognise that the exchange of variation margin is a prudent risk management tool that limits the build-up of systemic risk. Accordingly, the Basel Committee and IOSCO agree that standards apply for variation margin to be exchanged on physically settled FX forwards and swaps in a manner consistent with the final policy framework set out in this document and that those variation margin standards are implemented either by way of supervisory guidance or national regulation. The Basel Committee and IOSCO note that the Basel Committee has updated the supervisory guidance for managing settlement risk in FX transactions.2 The update to the supervisory guidance covers margin requirements for physically settled FX forwards and swaps. In developing variation margin standards for physically settled FX forwards and swaps, national supervisors should consider the recommendations in the Basel Committee supervisory guidance.",
+      "text": "Except for physically settled foreign exchange (FX) forwards and swaps, the margin requirements apply to all non-centrally cleared derivatives. The margin requirements described in this standard do not apply to physically settled FX forwards and swaps. However, the Basel Committee and the International Organization of Securities Commissions (IOSCO) recognise that variation margining of such derivatives is a common and established practice among significant market participants. The Basel Committee and IOSCO recognise that the exchange of variation margin is a prudent risk management tool that limits the build-up of systemic risk. Accordingly, the Basel Committee and IOSCO agree that standards apply for variation margin to be exchanged on physically settled FX forwards and swaps in a manner consistent with the final policy framework set out in this document and that those variation margin standards are implemented either by way of supervisory guidance or national regulation. The Basel Committee and IOSCO note that the Basel Committee has updated the supervisory guidance for managing settlement risk in FX transactions.2 The update to the supervisory guidance covers margin requirements for physically settled FX forwards and swaps. In developing variation margin standards for physically settled FX forwards and swaps, national supervisors should consider the recommendations in the Basel Committee supervisory guidance.",
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "These margining practices only apply to derivatives transactions that",
+        "section": "First version in the format of the consolidated",
         "paragraph": "10.2",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.2"
@@ -118,11 +118,11 @@
       "nodeType": "Provision",
       "label": "MGN10 10.3",
       "level": "section",
-      "text": "risks associated with the settlement of FX transactions: www.bis.org /publ/bcbs241.htm . 2 Initial margin requirements for cross-currency swaps do not apply to the fixed physically settled FX transactions associated with the exchange of principal of cross-currency swaps. In practice, the margin requirements for cross-currency swaps may be computed in one of two ways. Initial margin may be computed by reference to the “interest rate” portion of the standardised initial margin schedule that is discussed below and presented in the appendix. Alternatively, if initial margin is being calculated pursuant to an approved initial margin model, the initial margin model need not incorporate the risk associated with the fixed physically settled FX transactions associated with the exchange of principal. All other risks that affect cross-currency swaps, however, must be considered in the calculation of the initial margin amount.3 Finally, the variation margin requirements that are described below apply to all components of cross-currency swaps.",
+      "text": "Initial margin requirements for cross-currency swaps do not apply to the fixed physically settled FX transactions associated with the exchange of principal of cross-currency swaps. In practice, the margin requirements for cross-currency swaps may be computed in one of two ways. Initial margin may be computed by reference to the “interest rate” portion of the standardised initial margin schedule that is discussed below and presented in the appendix. Alternatively, if initial margin is being calculated pursuant to an approved initial margin model, the initial margin model need not incorporate the risk associated with the fixed physically settled FX transactions associated with the exchange of principal. All other risks that affect cross-currency swaps, however, must be considered in the calculation of the initial margin amount.3 Finally, the variation margin requirements that are described below apply to all components of cross-currency swaps.",
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "The Basel Committee has issued supervisory guidance for managing",
+        "section": "First version in the format of the consolidated",
         "paragraph": "10.3",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.3"
@@ -133,11 +133,11 @@
       "nodeType": "Provision",
       "label": "MGN10 10.4",
       "level": "section",
-      "text": "In the interest of clarity, the only payments to be excluded from initial margin requirements for a cross-currency swap are the fixed physically settled FX transactions associated with the exchange of principal (which have the same characteristics as FX forward contracts). All other payments or cash flows that occur during the life of the swap must be subject to initial margin requirements. 3 Scope of coverage – covered entities Footnotes Derivatives transactions between covered entities with zero counterparty risk require zero initial margin and may be excluded from the initial margin calculation. As an example, consider a European call option on a single stock. Suppose that one party, the option writer, agrees to sell a fixed number of shares to another party, the option purchaser, at a predetermined price at some specific future date, the contract’s expiry, if the option purchaser wishes to do so. Suppose further that the option purchaser makes a payment to the option writer at the outset of the transaction that fully compensates the option writer for the possibility that it will have to sell shares at contract expiry at the predetermined price. In this case, the option writer faces zero counterparty risk while the option purchaser faces counterparty risk. The option writer has received the full value of the option at the outset of the transaction. The option purchaser, on the other hand, faces counterparty risk since the option writer may not be willing or able to sell shares to the option purchaser at the predetermined price at the expiry of the contract. In this case, the option writer would not be obliged to collect any initial margin from the option purchaser and the call option could be excluded from the initial margin calculation. Since the option purchaser faces counterparty risk, the option purchaser must collect initial margin from the option writer in a manner consistent with the requirements of this standard.",
+      "text": "Derivatives transactions between covered entities with zero counterparty risk require zero initial margin and may be excluded from the initial margin calculation. As an example, consider a European call option on a single stock. Suppose that one party, the option writer, agrees to sell a fixed number of shares to another party, the option purchaser, at a predetermined price at some specific future date, the contract’s expiry, if the option purchaser wishes to do so. Suppose further that the option purchaser makes a payment to the option writer at the outset of the transaction that fully compensates the option writer for the possibility that it will have to sell shares at contract expiry at the predetermined price. In this case, the option writer faces zero counterparty risk while the option purchaser faces counterparty risk. The option writer has received the full value of the option at the outset of the transaction. The option purchaser, on the other hand, faces counterparty risk since the option writer may not be willing or able to sell shares to the option purchaser at the predetermined price at the expiry of the contract. In this case, the option writer would not be obliged to collect any initial margin from the option purchaser and the call option could be excluded from the initial margin calculation. Since the option purchaser faces counterparty risk, the option purchaser must collect initial margin from the option writer in a manner consistent with the requirements of this standard.",
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "The Basel Committee has issued supervisory guidance for managing",
+        "section": "Scope of coverage – covered entities",
         "paragraph": "10.4",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.4"
@@ -152,7 +152,7 @@
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "The Basel Committee has issued supervisory guidance for managing",
+        "section": "Scope of coverage – covered entities",
         "paragraph": "10.5",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.5"
@@ -163,29 +163,14 @@
       "nodeType": "Provision",
       "label": "MGN10 10.6",
       "level": "section",
-      "text": "The Basel Committee and IOSCO note that different treatment is applied with respect to transactions between affiliated entities, as described under below.MGN10.13 4 Covered entities include all financial firms and systemically important non- financial firms. Central banks, sovereigns,5 multilateral development banks, the Bank for International Settlements, and non-systemic, non-financial firms are not covered entities.6",
+      "text": "Covered entities include all financial firms and systemically important non- financial firms. Central banks, sovereigns,5 multilateral development banks, the Bank for International Settlements, and non-systemic, non-financial firms are not covered entities.6",
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "The Basel Committee has issued supervisory guidance for managing",
+        "section": "Scope of coverage – covered entities",
         "paragraph": "10.6",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.6"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:mgn:10.13",
-      "nodeType": "Provision",
-      "label": "MGN10 10.13",
-      "level": "section",
-      "text": "Transactions between a firm and its affiliates should be subject to appropriate regulation in a manner consistent with each jurisdiction’s legal and regulatory framework. Local supervisors should review their own legal frameworks and market conditions and put in place initial and variation margin requirements as appropriate.",
-      "metadata": {
-        "chapter": "MGN10",
-        "chapterTitle": "Definitions and application",
-        "section": "Treatment of transactions with affiliates",
-        "paragraph": "10.13",
-        "standard": "MGN",
-        "citationUrn": "urn:reg:bcbs:mgn:10.13"
       }
     },
     {
@@ -193,26 +178,14 @@
       "nodeType": "Provision",
       "label": "MGN10 10.7",
       "level": "section",
-      "text": "Subject to national discretion, public sector entities (PSEs) may be treated as sovereigns for the purpose of determining the applicability of margin requirements. In considering whether a PSE should be treated as a sovereign for the purpose of determining the applicability of margin requirements, national supervisors should consider the counterparty credit risk of the PSE, as reflected by, for example, whether the PSE has revenue-raising powers and the extent of guarantees provided by the central government. 5 Multilateral development banks (MDBs) exempted from this requirement are those that are eligible for a zero risk-weight under the Basel capital framework (see ).CRE20 6 The precise definition of financial firms, non-financial firms and systemically important non-financial firms will be determined by appropriate national regulation. Only non-centrally cleared derivatives transactions between two covered entities are governed by this standard.",
+      "text": "The precise definition of financial firms, non-financial firms and systemically important non-financial firms will be determined by appropriate national regulation. Only non-centrally cleared derivatives transactions between two covered entities are governed by this standard.",
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "Footnotes",
+        "section": "Scope of coverage – covered entities",
         "paragraph": "10.7",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.7"
-      }
-    },
-    {
-      "id": "urn:reg:bcbs:cre:20",
-      "nodeType": "Provision",
-      "label": "CRE20",
-      "level": "section",
-      "metadata": {
-        "standard": "CRE",
-        "paragraph": "20",
-        "external": true,
-        "stub": true
       }
     },
     {
@@ -224,7 +197,7 @@
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "Footnotes",
+        "section": "Scope of coverage – covered entities",
         "paragraph": "10.8",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.8"
@@ -235,11 +208,11 @@
       "nodeType": "Provision",
       "label": "MGN10 10.9",
       "level": "section",
-      "text": "Investment funds that are managed by an investment advisor are considered distinct entities that are treated separately when applying the threshold as long as the funds are distinct legal entities that are not collateralised by or are otherwise guaranteed or supported by other investment funds or the investment advisor in the event of fund insolvency or bankruptcy. 7 The requirement that the threshold be applied on a consolidated group basis is intended to prevent the proliferation of affiliates and other legal entities within larger entities for the sole purpose of circumventing the margin requirements. The following example describes how the threshold would be applied by an entity that is facing three distinct legal entities within a larger consolidated group.",
+      "text": "The requirement that the threshold be applied on a consolidated group basis is intended to prevent the proliferation of affiliates and other legal entities within larger entities for the sole purpose of circumventing the margin requirements. The following example describes how the threshold would be applied by an entity that is facing three distinct legal entities within a larger consolidated group.",
       "metadata": {
         "chapter": "MGN10",
         "chapterTitle": "Definitions and application",
-        "section": "Footnotes",
+        "section": "Scope of coverage – covered entities",
         "paragraph": "10.9",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.9"
@@ -288,6 +261,21 @@
         "paragraph": "10.12",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:10.12"
+      }
+    },
+    {
+      "id": "urn:reg:bcbs:mgn:10.13",
+      "nodeType": "Provision",
+      "label": "MGN10 10.13",
+      "level": "section",
+      "text": "Transactions between a firm and its affiliates should be subject to appropriate regulation in a manner consistent with each jurisdiction’s legal and regulatory framework. Local supervisors should review their own legal frameworks and market conditions and put in place initial and variation margin requirements as appropriate.",
+      "metadata": {
+        "chapter": "MGN10",
+        "chapterTitle": "Definitions and application",
+        "section": "Treatment of transactions with affiliates",
+        "paragraph": "10.13",
+        "standard": "MGN",
+        "citationUrn": "urn:reg:bcbs:mgn:10.13"
       }
     },
     {
@@ -385,11 +373,11 @@
       "nodeType": "Provision",
       "label": "MGN20 20.4",
       "level": "section",
-      "text": "respect to transactions between affiliated entities, as described under .MGN10.15 1 All covered entities that engage in non-centrally cleared derivatives must exchange, on a bilateral basis, the full amount of variation margin (ie a zero threshold) on a regular basis (eg daily).",
+      "text": "All covered entities that engage in non-centrally cleared derivatives must exchange, on a bilateral basis, the full amount of variation margin (ie a zero threshold) on a regular basis (eg daily).",
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Commissions (IOSCO) note that different treatment is applied with",
+        "section": "First version in the format of the consolidated",
         "paragraph": "20.4",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.4"
@@ -404,7 +392,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Commissions (IOSCO) note that different treatment is applied with",
+        "section": "First version in the format of the consolidated",
         "paragraph": "20.5",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.5"
@@ -415,11 +403,11 @@
       "nodeType": "Provision",
       "label": "MGN20 20.6",
       "level": "section",
-      "text": "Investment funds that are managed by an investment advisor are considered distinct entities that are treated separately when applying the threshold as long as the funds are distinct legal entities that are not collateralised by or are otherwise guaranteed or supported by other investment funds or the investment advisor in the event of fund insolvency or bankruptcy. 2 All margin transfers between parties may be subject to a de-minimis minimum transfer amount not to exceed €500,000.",
+      "text": "All margin transfers between parties may be subject to a de-minimis minimum transfer amount not to exceed €500,000.",
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Commissions (IOSCO) note that different treatment is applied with",
+        "section": "First version in the format of the consolidated",
         "paragraph": "20.6",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.6"
@@ -434,7 +422,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Commissions (IOSCO) note that different treatment is applied with",
+        "section": "First version in the format of the consolidated",
         "paragraph": "20.7",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.7"
@@ -449,7 +437,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Commissions (IOSCO) note that different treatment is applied with",
+        "section": "First version in the format of the consolidated",
         "paragraph": "20.8",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.8"
@@ -464,7 +452,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Footnotes",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.9",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.9"
@@ -475,11 +463,11 @@
       "nodeType": "Provision",
       "label": "MGN20 20.10",
       "level": "section",
-      "text": "The 10-day requirement should apply in the case that variation margin is exchanged daily. If variation margin is exchanged at less than daily frequency then the minimum horizon should be set equal to 10 days plus the number of days in between variation margin exchanges; the threshold calculation set out in should nonetheless be made MGN20.5 irrespective of the frequency with which variation margin is exchanged. 3 Because of the discrete subset of transactions covered by the margin requirements, these assumptions differ somewhat from the assumptions used to calculate potential future exposure under the Basel regulatory capital framework for over-the-counter derivatives. 4 The required amount of initial margin may be calculated by reference to either: (1) a quantitative portfolio margin model; or (2) a standardised margin schedule.",
+      "text": "The required amount of initial margin may be calculated by reference to either: (1) a quantitative portfolio margin model; or (2) a standardised margin schedule.",
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Footnotes",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.10",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.10"
@@ -494,7 +482,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Footnotes",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.11",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.11"
@@ -509,7 +497,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Footnotes",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.12",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.12"
@@ -524,7 +512,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Footnotes",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.13",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.13"
@@ -539,7 +527,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Footnotes",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.14",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.14"
@@ -554,7 +542,7 @@
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Footnotes",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.15",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.15"
@@ -565,11 +553,11 @@
       "nodeType": "Provision",
       "label": "MGN20 20.16",
       "level": "section",
-      "text": "together for the purposes of these requirements. As an example, an interest rate swap and a currency option may be margined on a portfolio basis as part of a single asset class. 5 Inflation swaps, which transfer inflation risk between counterparties, may be considered as part of the currency/rates asset class for the purpose of computing model-based initial margin requirements, and as part of the interest rate asset class for the purposes of computing standardised initial margin requirements. 6 While quantitative, portfolio-based initial margin models can be a good risk management tool if monitored and governed appropriately; there are some instances in which a simpler and less risk-sensitive approach to initial margin calculations may be warranted. In particular, smaller market participants may not wish or may be unable to develop and maintain a quantitative model and may be unwilling to rely on counterparty’s model. In addition, some market participants may value simplicity and transparency in initial margin calculations, without resorting to a complex quantitative model. Further, an appropriately conservative alternative for calculating initial margin is needed in the event that no approved initial margin model exists to cover a specific transaction. Accordingly, the Basel Committee and the International Organization of Securities Commissions (IOSCO) have provided an initial margin schedule, included as Table 1, which may be used to compute the amount of initial margin required on a set of derivatives transactions.",
+      "text": "While quantitative, portfolio-based initial margin models can be a good risk management tool if monitored and governed appropriately; there are some instances in which a simpler and less risk-sensitive approach to initial margin calculations may be warranted. In particular, smaller market participants may not wish or may be unable to develop and maintain a quantitative model and may be unwilling to rely on counterparty’s model. In addition, some market participants may value simplicity and transparency in initial margin calculations, without resorting to a complex quantitative model. Further, an appropriately conservative alternative for calculating initial margin is needed in the event that no approved initial margin model exists to cover a specific transaction. Accordingly, the Basel Committee and the International Organization of Securities Commissions (IOSCO) have provided an initial margin schedule, included as Table 1, which may be used to compute the amount of initial margin required on a set of derivatives transactions.",
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
-        "section": "Currency and interest rate derivatives may be portfolio margined",
+        "section": "Baseline minimum amounts and methodologies for initial margin",
         "paragraph": "20.16",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:20.16"
@@ -580,7 +568,7 @@
       "nodeType": "Provision",
       "label": "MGN20 20.17",
       "level": "section",
-      "text": "exposure) Credit: 0-2 year duration 2 Credit: 2-5 year duration 5 Credit: 5+ year duration 10 Commodity 15 Equity 15 Foreign exchange 6 Interest rate: 0-2 year duration 1 Interest rate: 2-5 year duration 2 Interest rate: 5+ year duration 4 Other 15 Footnotes The required initial margin will be computed by referencing the standardised margin rates in and by adjusting the gross initial margin amount by an MGN20.16 amount that relates to the net-to-gross ratio (NGR) pertaining to all derivatives in the legally enforceable netting set. The use of the net-to-gross ratio is an accepted practice in the context of bank capital regulation and recognises important offsets that would not be recognised by strict application of a standardised margin schedule. The required initial margin amount would be calculated in two steps. (1) First, the margin rate in the provided schedule would be multiplied by the gross notional size of the derivatives contract, and then this calculation would be repeated for each derivatives contract.7 (2) Second, the gross initial margin amount is adjusted by the ratio of the net current replacement cost to gross current replacement cost (NGR). The NGR is defined as the level of net replacement cost over the level of gross replacement cost for transactions subject to legally enforceable netting agreements. The total amount of initial margin required on a portfolio according to the standardised margin schedule would be the net standardised initial margin amount. This is expressed through the following formula:",
+      "text": "exposure) Credit: 0-2 year duration 2 Credit: 2-5 year duration 5 Credit: 5+ year duration 10 Commodity 15 Equity 15 Foreign exchange 6 Interest rate: 0-2 year duration 1 Interest rate: 2-5 year duration 2 Interest rate: 5+ year duration 4 Other 15 The required initial margin will be computed by referencing the standardised margin rates in and by adjusting the gross initial margin amount by an MGN20.16 amount that relates to the net-to-gross ratio (NGR) pertaining to all derivatives in the legally enforceable netting set. The use of the net-to-gross ratio is an accepted practice in the context of bank capital regulation and recognises important offsets that would not be recognised by strict application of a standardised margin schedule. The required initial margin amount would be calculated in two steps. (1) First, the margin rate in the provided schedule would be multiplied by the gross notional size of the derivatives contract, and then this calculation would be repeated for each derivatives contract.7 (2) Second, the gross initial margin amount is adjusted by the ratio of the net current replacement cost to gross current replacement cost (NGR). The NGR is defined as the level of net replacement cost over the level of gross replacement cost for transactions subject to legally enforceable netting agreements. The total amount of initial margin required on a portfolio according to the standardised margin schedule would be the net standardised initial margin amount. This is expressed through the following formula:",
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
@@ -595,7 +583,7 @@
       "nodeType": "Provision",
       "label": "MGN20 20.18",
       "level": "section",
-      "text": "Subject to approval by the relevant supervisory authority, a limited degree of netting may be performed at the level of a specific derivatives contract to compute the notional amount that is applied to the margin rate. As an example, one pay-fixed-interest-rate swap with a maturity of three years and a notional of 100 could be netted against another pay-floating-interest-rate swap with a maturity of three years and a notional of 50 to arrive at a single notional of 50 to which the appropriate margin rate would be applied. Derivatives with different fundamental characteristics such as underlying, maturity and so forth may not be netted against each other for the purpose of computing the notional amount against which the standardised margin rate is applied. 7 However, if a regulated entity is already using a schedule-based margin to satisfy requirements under its required capital regime, the appropriate supervisory authority may permit the use of the same schedule for initial margin purposes, provided that it is at least as conservative.",
+      "text": "However, if a regulated entity is already using a schedule-based margin to satisfy requirements under its required capital regime, the appropriate supervisory authority may permit the use of the same schedule for initial margin purposes, provided that it is at least as conservative.",
       "metadata": {
         "chapter": "MGN20",
         "chapterTitle": "Requirements",
@@ -1030,7 +1018,7 @@
       "nodeType": "Provision",
       "label": "MGN90 90.3",
       "level": "section",
-      "text": ".MGN Footnotes Transitional arrangements for variation margin For the purposes of calculating the group aggregate month-end average notional amount for determining whether a covered entity will be subject to the initial margin requirements described in this paper, all of the group’s non-centrally cleared derivatives, including physically settled foreign exchange forwards and swaps, should be included.",
+      "text": ".MGN Transitional arrangements for variation margin For the purposes of calculating the group aggregate month-end average notional amount for determining whether a covered entity will be subject to the initial margin requirements described in this paper, all of the group’s non-centrally cleared derivatives, including physically settled foreign exchange forwards and swaps, should be included.",
       "metadata": {
         "chapter": "MGN90",
         "chapterTitle": "Transition",
@@ -1060,11 +1048,11 @@
       "nodeType": "Provision",
       "label": "MGN90 90.5",
       "level": "section",
-      "text": "as a new derivatives contract. Any amendment that is intended to extend an existing derivatives contract for the purpose of avoiding margin requirements will be considered a new derivatives contract. 1 Global regulators will work together to ensure that there is sufficient transparency regarding which entities are and are not subject to the initial margin requirements during the phase-in period.",
+      "text": "Global regulators will work together to ensure that there is sufficient transparency regarding which entities are and are not subject to the initial margin requirements during the phase-in period.",
       "metadata": {
         "chapter": "MGN90",
         "chapterTitle": "Transition",
-        "section": "Genuine amendments to existing derivatives contracts do not qualify",
+        "section": "This chapter sets out the transitional",
         "paragraph": "90.5",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:90.5"
@@ -1079,7 +1067,7 @@
       "metadata": {
         "chapter": "MGN90",
         "chapterTitle": "Transition",
-        "section": "Genuine amendments to existing derivatives contracts do not qualify",
+        "section": "This chapter sets out the transitional",
         "paragraph": "90.6",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:90.6"
@@ -1094,7 +1082,7 @@
       "metadata": {
         "chapter": "MGN90",
         "chapterTitle": "Transition",
-        "section": "Genuine amendments to existing derivatives contracts do not qualify",
+        "section": "This chapter sets out the transitional",
         "paragraph": "90.7",
         "standard": "MGN",
         "citationUrn": "urn:reg:bcbs:mgn:90.7"
@@ -1106,7 +1094,7 @@
       "label": "MGN10 10.1 — recommended",
       "obligationType": "recommended",
       "actor": "bank",
-      "actionSummary": "Scope of coverage – instruments subject to the requirements Footnotes Appropriate margining practices should be in place with respect to all derivatives transactions that are not cleared by central counterparties (CCPs).1",
+      "actionSummary": "Scope of coverage – instruments subject to the requirements Appropriate margining practices should be in place with respect to all derivatives transactions that are not cleared by central counterparties (CCPs).1",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:mgn:10.1",
         "chapter": "MGN10",
@@ -1118,7 +1106,7 @@
         ],
         "section": "First version in the format of the consolidated"
       },
-      "trigger": "subject to the requirements Footnotes Appropriate margining practices should be in place with respect to all derivatives transactions that are not cleared by central counterparties (CCPs)"
+      "trigger": "subject to the requirements Appropriate margining practices should be in place with respect to all derivatives transactions that are not cleared by central counterparties (CCPs)"
     },
     {
       "id": "OBL-BCBS-MGN-s10.2-1",
@@ -1136,9 +1124,8 @@
         "modalities": [
           "recommended"
         ],
-        "section": "These margining practices only apply to derivatives transactions that"
+        "section": "First version in the format of the consolidated"
       },
-      "trigger": "subject to these requirements as long as (a) the non- member customer is subject to the margin requirements of the clearing house or (b) the non-member customer provides margin consistent with the rel",
       "exception": "Except for physically settled foreign exchange (FX) forwards and swaps, the margin requirements apply to all non-centrally cleared derivatives"
     },
     {
@@ -1157,7 +1144,7 @@
         "modalities": [
           "must"
         ],
-        "section": "The Basel Committee has issued supervisory guidance for managing"
+        "section": "First version in the format of the consolidated"
       },
       "trigger": "if initial margin is being calculated pursuant to an approved initial margin model, the initial margin model need not incorporate the risk associated with the fixed physically settled FX transactions "
     },
@@ -1167,7 +1154,7 @@
       "label": "MGN10 10.4 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "All other payments or cash flows that occur during the life of the swap must be subject to initial margin requirements. 3 Scope of coverage – covered entities Footnotes Derivatives transactions between covered entities with zero counterparty risk require zero initial margin and may be excluded from ",
+      "actionSummary": "Suppose further that the option purchaser makes a payment to the option writer at the outset of the transaction that fully compensates the option writer for the possibility that it will have to sell shares at contract expiry at the predetermined price.",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:mgn:10.4",
         "chapter": "MGN10",
@@ -1178,9 +1165,9 @@
           "must-not",
           "must"
         ],
-        "section": "The Basel Committee has issued supervisory guidance for managing"
+        "section": "Scope of coverage – covered entities"
       },
-      "trigger": "subject to initial margin requirements"
+      "trigger": "if the option purchaser wishes to do so"
     },
     {
       "id": "OBL-BCBS-MGN-s10.5-1",
@@ -1198,28 +1185,8 @@
         "modalities": [
           "must"
         ],
-        "section": "The Basel Committee has issued supervisory guidance for managing"
+        "section": "Scope of coverage – covered entities"
       }
-    },
-    {
-      "id": "OBL-BCBS-MGN-s10.7-1",
-      "nodeType": "Obligation",
-      "label": "MGN10 10.7 — recommended",
-      "obligationType": "recommended",
-      "actor": "national supervisor",
-      "actionSummary": "In considering whether a PSE should be treated as a sovereign for the purpose of determining the applicability of margin requirements, national supervisors should consider the counterparty credit risk of the PSE, as reflected by, for example, whether the PSE has revenue-raising powers and the extent",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:mgn:10.7",
-        "chapter": "MGN10",
-        "paragraph": "10.7",
-        "standard": "MGN",
-        "classificationConfidence": 0.6,
-        "modalities": [
-          "recommended"
-        ],
-        "section": "Footnotes"
-      },
-      "trigger": "Subject to national discretion, public sector entities (PSEs) may be treated as sovereigns for the purpose of determining the applicability of margin requirements"
     },
     {
       "id": "OBL-BCBS-MGN-s10.8-1",
@@ -1237,7 +1204,7 @@
         "modalities": [
           "must"
         ],
-        "section": "Footnotes"
+        "section": "Scope of coverage – covered entities"
       }
     },
     {
@@ -1346,7 +1313,7 @@
       "label": "MGN20 20.4 — must",
       "obligationType": "must",
       "actor": "bank",
-      "actionSummary": "respect to transactions between affiliated entities, as described under .MGN10.15 1 All covered entities that engage in non-centrally cleared derivatives must exchange, on a bilateral basis, the full amount of variation margin (ie a zero threshold) on a regular basis (eg daily).",
+      "actionSummary": "All covered entities that engage in non-centrally cleared derivatives must exchange, on a bilateral basis, the full amount of variation margin (ie a zero threshold) on a regular basis (eg daily).",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:mgn:20.4",
         "chapter": "MGN20",
@@ -1356,7 +1323,7 @@
         "modalities": [
           "must"
         ],
-        "section": "Commissions (IOSCO) note that different treatment is applied with"
+        "section": "First version in the format of the consolidated"
       }
     },
     {
@@ -1375,7 +1342,7 @@
         "modalities": [
           "must"
         ],
-        "section": "Commissions (IOSCO) note that different treatment is applied with"
+        "section": "First version in the format of the consolidated"
       }
     },
     {
@@ -1394,7 +1361,7 @@
         "modalities": [
           "recommended"
         ],
-        "section": "Commissions (IOSCO) note that different treatment is applied with"
+        "section": "First version in the format of the consolidated"
       }
     },
     {
@@ -1414,29 +1381,9 @@
           "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Baseline minimum amounts and methodologies for initial margin"
       },
       "trigger": "when it is most needed and to limit the extent to which the margin can be procyclical"
-    },
-    {
-      "id": "OBL-BCBS-MGN-s20.10-1",
-      "nodeType": "Obligation",
-      "label": "MGN20 20.10 — recommended",
-      "obligationType": "recommended",
-      "actor": "bank",
-      "actionSummary": "The 10-day requirement should apply in the case that variation margin is exchanged daily.",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:mgn:20.10",
-        "chapter": "MGN20",
-        "paragraph": "20.10",
-        "standard": "MGN",
-        "classificationConfidence": 0.6,
-        "modalities": [
-          "recommended"
-        ],
-        "section": "Footnotes"
-      },
-      "trigger": "If variation margin is exchanged at less than daily frequency then the minimum horizon should be set equal to 10 days plus the number of days in between variation margin exchanges"
     },
     {
       "id": "OBL-BCBS-MGN-s20.11-1",
@@ -1455,7 +1402,7 @@
           "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Baseline minimum amounts and methodologies for initial margin"
       },
       "trigger": "When initial margin is calculated by reference to an initial margin model, the period of financial stress used for calibration should be identified and applied separately for each broad asset class fo"
     },
@@ -1476,7 +1423,7 @@
           "must-not",
           "must"
         ],
-        "section": "Footnotes"
+        "section": "Baseline minimum amounts and methodologies for initial margin"
       },
       "exception": "Notwithstanding the utility of quantitative models, the use of such models is predicated on the satisfaction of several prerequisite conditions"
     },
@@ -1497,7 +1444,7 @@
           "must-not",
           "must"
         ],
-        "section": "Footnotes"
+        "section": "Baseline minimum amounts and methodologies for initial margin"
       },
       "trigger": "subject to an internal governance process that continuously assesses the value of the model’s risk assessments, tests the model’s assessments against realised data and experience, and validates the ap"
     },
@@ -1518,7 +1465,7 @@
           "must",
           "recommended"
         ],
-        "section": "Footnotes"
+        "section": "Baseline minimum amounts and methodologies for initial margin"
       }
     },
     {
@@ -1537,29 +1484,9 @@
         "modalities": [
           "must-not"
         ],
-        "section": "Currency and interest rate derivatives may be portfolio margined"
+        "section": "Baseline minimum amounts and methodologies for initial margin"
       },
       "trigger": "if monitored and governed appropriately"
-    },
-    {
-      "id": "OBL-BCBS-MGN-s20.18-1",
-      "nodeType": "Obligation",
-      "label": "MGN20 20.18 — must-not",
-      "obligationType": "must-not",
-      "actor": "supervisor",
-      "actionSummary": "Derivatives with different fundamental characteristics such as underlying, maturity and so forth may not be netted against each other for the purpose of computing the notional amount against which the standardised margin rate is applied. 7 However, if a regulated entity is already using a schedule-b",
-      "metadata": {
-        "sourceProvision": "urn:reg:bcbs:mgn:20.18",
-        "chapter": "MGN20",
-        "paragraph": "20.18",
-        "standard": "MGN",
-        "classificationConfidence": 0.9,
-        "modalities": [
-          "must-not"
-        ],
-        "section": "Asset class Initial margin requirement (% of notional"
-      },
-      "trigger": "Subject to approval by the relevant supervisory authority, a limited degree of netting may be performed at the level of a specific derivatives contract to compute the notional amount that is applied t"
     },
     {
       "id": "OBL-BCBS-MGN-s20.20-1",
@@ -2004,7 +1931,7 @@
       "label": "MGN90 90.3 — recommended",
       "obligationType": "recommended",
       "actor": "bank",
-      "actionSummary": ".MGN Footnotes Transitional arrangements for variation margin For the purposes of calculating the group aggregate month-end average notional amount for determining whether a covered entity will be subject to the initial margin requirements described in this paper, all of the group’s non-centrally cl",
+      "actionSummary": ".MGN Transitional arrangements for variation margin For the purposes of calculating the group aggregate month-end average notional amount for determining whether a covered entity will be subject to the initial margin requirements described in this paper, all of the group’s non-centrally cleared deri",
       "metadata": {
         "sourceProvision": "urn:reg:bcbs:mgn:90.3",
         "chapter": "MGN90",
@@ -2034,7 +1961,7 @@
         "modalities": [
           "must"
         ],
-        "section": "Genuine amendments to existing derivatives contracts do not qualify"
+        "section": "This chapter sets out the transitional"
       },
       "trigger": "when transacting with another covered entity (provided that it also meets that condition)"
     },
@@ -2054,14 +1981,14 @@
         "modalities": [
           "must"
         ],
-        "section": "Genuine amendments to existing derivatives contracts do not qualify"
+        "section": "This chapter sets out the transitional"
       },
       "trigger": "Subject to , the requirement to exchange variation margin MGN90"
     }
   ],
   "edges": [
     {
-      "id": "E-COMPRISES-386603110402",
+      "id": "E-COMPRISES-439816855660",
       "fromId": "FW-basel",
       "toId": "DOC-BCBS-MGN",
       "edgeType": "COMPRISES",
@@ -2070,7 +1997,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-645355793514",
+      "id": "E-CONTAINS-513177822482",
       "fromId": "DOC-BCBS-MGN",
       "toId": "urn:reg:bcbs:mgn:10",
       "edgeType": "CONTAINS",
@@ -2079,7 +2006,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-261546337710",
+      "id": "E-CONTAINS-167055118501",
       "fromId": "DOC-BCBS-MGN",
       "toId": "urn:reg:bcbs:mgn:20",
       "edgeType": "CONTAINS",
@@ -2088,7 +2015,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-099784316914",
+      "id": "E-CONTAINS-657025859092",
       "fromId": "DOC-BCBS-MGN",
       "toId": "urn:reg:bcbs:mgn:90",
       "edgeType": "CONTAINS",
@@ -2097,7 +2024,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-703025774454",
+      "id": "E-CONTAINS-683057350001",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.1",
       "edgeType": "CONTAINS",
@@ -2106,7 +2033,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-568879050240",
+      "id": "E-CONTAINS-788175825442",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.2",
       "edgeType": "CONTAINS",
@@ -2115,7 +2042,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-729352958985",
+      "id": "E-CONTAINS-289597001114",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.3",
       "edgeType": "CONTAINS",
@@ -2124,7 +2051,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-548076098049",
+      "id": "E-CONTAINS-159415490965",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.4",
       "edgeType": "CONTAINS",
@@ -2133,7 +2060,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-121525470863",
+      "id": "E-CONTAINS-102578563522",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.5",
       "edgeType": "CONTAINS",
@@ -2142,7 +2069,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-265513286081",
+      "id": "E-CONTAINS-895416183617",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.6",
       "edgeType": "CONTAINS",
@@ -2151,17 +2078,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-656111714104",
-      "fromId": "urn:reg:bcbs:mgn:10.6",
-      "toId": "urn:reg:bcbs:mgn:10.13",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:mgn:10.6"
-    },
-    {
-      "id": "E-CONTAINS-886687277038",
+      "id": "E-CONTAINS-379774154554",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.7",
       "edgeType": "CONTAINS",
@@ -2170,17 +2087,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-666928535918",
-      "fromId": "urn:reg:bcbs:mgn:10.7",
-      "toId": "urn:reg:bcbs:cre:20",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:mgn:10.7"
-    },
-    {
-      "id": "E-CONTAINS-669687870568",
+      "id": "E-CONTAINS-807829169663",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.8",
       "edgeType": "CONTAINS",
@@ -2189,7 +2096,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-013546606518",
+      "id": "E-CONTAINS-700459505170",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.9",
       "edgeType": "CONTAINS",
@@ -2198,7 +2105,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-662191054639",
+      "id": "E-CONTAINS-060066406595",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.10",
       "edgeType": "CONTAINS",
@@ -2207,7 +2114,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-235259322740",
+      "id": "E-REFERENCES-125632226602",
       "fromId": "urn:reg:bcbs:mgn:10.10",
       "toId": "urn:reg:bcbs:mgn:20",
       "edgeType": "REFERENCES",
@@ -2217,7 +2124,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.10"
     },
     {
-      "id": "E-CONTAINS-499655702622",
+      "id": "E-CONTAINS-284497535107",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.11",
       "edgeType": "CONTAINS",
@@ -2226,7 +2133,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-738721536621",
+      "id": "E-CONTAINS-400108466143",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.12",
       "edgeType": "CONTAINS",
@@ -2235,7 +2142,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-429223409678",
+      "id": "E-CONTAINS-927309435957",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.13",
       "edgeType": "CONTAINS",
@@ -2244,7 +2151,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-682011624353",
+      "id": "E-CONTAINS-354774899057",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.14",
       "edgeType": "CONTAINS",
@@ -2253,7 +2160,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-240701229753",
+      "id": "E-CONTAINS-304223175608",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.15",
       "edgeType": "CONTAINS",
@@ -2262,7 +2169,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-922312674568",
+      "id": "E-CONTAINS-970072342581",
       "fromId": "urn:reg:bcbs:mgn:10",
       "toId": "urn:reg:bcbs:mgn:10.16",
       "edgeType": "CONTAINS",
@@ -2271,7 +2178,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-329405651933",
+      "id": "E-CONTAINS-009434326231",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.1",
       "edgeType": "CONTAINS",
@@ -2280,7 +2187,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-489038708516",
+      "id": "E-CONTAINS-244575315475",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.2",
       "edgeType": "CONTAINS",
@@ -2289,7 +2196,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-592263206812",
+      "id": "E-CONTAINS-039853130770",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.3",
       "edgeType": "CONTAINS",
@@ -2298,7 +2205,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-006679541147",
+      "id": "E-CONTAINS-031495176929",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.4",
       "edgeType": "CONTAINS",
@@ -2307,17 +2214,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-361447250417",
-      "fromId": "urn:reg:bcbs:mgn:20.4",
-      "toId": "urn:reg:bcbs:mgn:10.15",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:mgn:20.4"
-    },
-    {
-      "id": "E-CONTAINS-696081701652",
+      "id": "E-CONTAINS-127688224918",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.5",
       "edgeType": "CONTAINS",
@@ -2326,7 +2223,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-943127716732",
+      "id": "E-CONTAINS-267098317890",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.6",
       "edgeType": "CONTAINS",
@@ -2335,7 +2232,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-466949788416",
+      "id": "E-CONTAINS-030358318846",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.7",
       "edgeType": "CONTAINS",
@@ -2344,7 +2241,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-874512221018",
+      "id": "E-CONTAINS-963746675852",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.8",
       "edgeType": "CONTAINS",
@@ -2353,7 +2250,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-131687512058",
+      "id": "E-CONTAINS-811395528867",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.9",
       "edgeType": "CONTAINS",
@@ -2362,7 +2259,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-063004076663",
+      "id": "E-CONTAINS-426858285175",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.10",
       "edgeType": "CONTAINS",
@@ -2371,17 +2268,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-748692174881",
-      "fromId": "urn:reg:bcbs:mgn:20.10",
-      "toId": "urn:reg:bcbs:mgn:20.5",
-      "edgeType": "REFERENCES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:mgn:20.10"
-    },
-    {
-      "id": "E-CONTAINS-074318686795",
+      "id": "E-CONTAINS-867215627709",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.11",
       "edgeType": "CONTAINS",
@@ -2390,7 +2277,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-812898325383",
+      "id": "E-CONTAINS-453759312687",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.12",
       "edgeType": "CONTAINS",
@@ -2399,7 +2286,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-098386752724",
+      "id": "E-CONTAINS-780812925032",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.13",
       "edgeType": "CONTAINS",
@@ -2408,7 +2295,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-044915020184",
+      "id": "E-CONTAINS-292220967921",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.14",
       "edgeType": "CONTAINS",
@@ -2417,7 +2304,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-284971772135",
+      "id": "E-CONTAINS-734135203588",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.15",
       "edgeType": "CONTAINS",
@@ -2426,7 +2313,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-092720195747",
+      "id": "E-CONTAINS-743903434638",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.16",
       "edgeType": "CONTAINS",
@@ -2435,7 +2322,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-044825276239",
+      "id": "E-CONTAINS-083734996382",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.17",
       "edgeType": "CONTAINS",
@@ -2444,7 +2331,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-800849250585",
+      "id": "E-REFERENCES-273578657963",
       "fromId": "urn:reg:bcbs:mgn:20.17",
       "toId": "urn:reg:bcbs:mgn:20.16",
       "edgeType": "REFERENCES",
@@ -2454,7 +2341,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.17"
     },
     {
-      "id": "E-CONTAINS-552806005088",
+      "id": "E-CONTAINS-746573305052",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.18",
       "edgeType": "CONTAINS",
@@ -2463,7 +2350,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-924601765311",
+      "id": "E-CONTAINS-928823741720",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.19",
       "edgeType": "CONTAINS",
@@ -2472,7 +2359,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-648311967756",
+      "id": "E-CONTAINS-011926605359",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.20",
       "edgeType": "CONTAINS",
@@ -2481,7 +2368,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-659061850156",
+      "id": "E-CONTAINS-916903400698",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.21",
       "edgeType": "CONTAINS",
@@ -2490,7 +2377,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-899127563095",
+      "id": "E-CONTAINS-768008049792",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.22",
       "edgeType": "CONTAINS",
@@ -2499,7 +2386,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-663453122421",
+      "id": "E-CONTAINS-176336805896",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.23",
       "edgeType": "CONTAINS",
@@ -2508,7 +2395,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-954172501298",
+      "id": "E-CONTAINS-809124880257",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.24",
       "edgeType": "CONTAINS",
@@ -2517,7 +2404,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-266186681709",
+      "id": "E-CONTAINS-897109313511",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.25",
       "edgeType": "CONTAINS",
@@ -2526,7 +2413,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-589655072084",
+      "id": "E-CONTAINS-150328388219",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.26",
       "edgeType": "CONTAINS",
@@ -2535,7 +2422,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-953199400450",
+      "id": "E-CONTAINS-633955621442",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.27",
       "edgeType": "CONTAINS",
@@ -2544,7 +2431,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-336663455263",
+      "id": "E-CONTAINS-374396042989",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.28",
       "edgeType": "CONTAINS",
@@ -2553,7 +2440,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-128313680010",
+      "id": "E-CONTAINS-010046322138",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.29",
       "edgeType": "CONTAINS",
@@ -2562,7 +2449,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-505635956488",
+      "id": "E-CONTAINS-422938514493",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.30",
       "edgeType": "CONTAINS",
@@ -2571,7 +2458,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-209644917691",
+      "id": "E-CONTAINS-123939537463",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.31",
       "edgeType": "CONTAINS",
@@ -2580,7 +2467,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-862889212546",
+      "id": "E-REFERENCES-281512691727",
       "fromId": "urn:reg:bcbs:mgn:20.31",
       "toId": "urn:reg:bcbs:mgn:20.30",
       "edgeType": "REFERENCES",
@@ -2590,7 +2477,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.31"
     },
     {
-      "id": "E-CONTAINS-336915527838",
+      "id": "E-CONTAINS-947882215409",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.32",
       "edgeType": "CONTAINS",
@@ -2599,7 +2486,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-259354518856",
+      "id": "E-CONTAINS-641241683667",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.33",
       "edgeType": "CONTAINS",
@@ -2608,7 +2495,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-698443060797",
+      "id": "E-CONTAINS-672391623584",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.34",
       "edgeType": "CONTAINS",
@@ -2617,7 +2504,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-357830593297",
+      "id": "E-CONTAINS-528458633471",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.35",
       "edgeType": "CONTAINS",
@@ -2626,7 +2513,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-651815983268",
+      "id": "E-CONTAINS-442133182647",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.36",
       "edgeType": "CONTAINS",
@@ -2635,7 +2522,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-533042974408",
+      "id": "E-CONTAINS-931779014219",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.37",
       "edgeType": "CONTAINS",
@@ -2644,7 +2531,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-175454031295",
+      "id": "E-CONTAINS-861004862940",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.38",
       "edgeType": "CONTAINS",
@@ -2653,7 +2540,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-894204242564",
+      "id": "E-CONTAINS-345824288498",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.39",
       "edgeType": "CONTAINS",
@@ -2662,7 +2549,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-260225098617",
+      "id": "E-CONTAINS-240595291522",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.40",
       "edgeType": "CONTAINS",
@@ -2671,7 +2558,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-639735595949",
+      "id": "E-REFERENCES-712765309596",
       "fromId": "urn:reg:bcbs:mgn:20.40",
       "toId": "urn:reg:bcbs:mgn:20.38",
       "edgeType": "REFERENCES",
@@ -2681,7 +2568,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.40"
     },
     {
-      "id": "E-CONTAINS-671121954874",
+      "id": "E-CONTAINS-509600838989",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.41",
       "edgeType": "CONTAINS",
@@ -2690,7 +2577,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-062069194538",
+      "id": "E-REFERENCES-955731697297",
       "fromId": "urn:reg:bcbs:mgn:20.41",
       "toId": "urn:reg:bcbs:mgn:20",
       "edgeType": "REFERENCES",
@@ -2700,7 +2587,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.41"
     },
     {
-      "id": "E-REFERENCES-859781728352",
+      "id": "E-REFERENCES-512376702843",
       "fromId": "urn:reg:bcbs:mgn:20.41",
       "toId": "urn:reg:bcbs:mgn:20.42",
       "edgeType": "REFERENCES",
@@ -2710,7 +2597,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.41"
     },
     {
-      "id": "E-CONTAINS-612562736054",
+      "id": "E-CONTAINS-804485209451",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.42",
       "edgeType": "CONTAINS",
@@ -2719,7 +2606,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-501233966162",
+      "id": "E-CONTAINS-720675892864",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.43",
       "edgeType": "CONTAINS",
@@ -2728,7 +2615,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-108903764976",
+      "id": "E-CONTAINS-281924153710",
       "fromId": "urn:reg:bcbs:mgn:20",
       "toId": "urn:reg:bcbs:mgn:20.44",
       "edgeType": "CONTAINS",
@@ -2737,7 +2624,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-559764636374",
+      "id": "E-CONTAINS-760945147595",
       "fromId": "urn:reg:bcbs:mgn:90",
       "toId": "urn:reg:bcbs:mgn:90.1",
       "edgeType": "CONTAINS",
@@ -2746,7 +2633,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-959553759868",
+      "id": "E-CONTAINS-940778843834",
       "fromId": "urn:reg:bcbs:mgn:90",
       "toId": "urn:reg:bcbs:mgn:90.2",
       "edgeType": "CONTAINS",
@@ -2755,7 +2642,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-549655301233",
+      "id": "E-CONTAINS-494750258198",
       "fromId": "urn:reg:bcbs:mgn:90",
       "toId": "urn:reg:bcbs:mgn:90.3",
       "edgeType": "CONTAINS",
@@ -2764,7 +2651,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-718486432713",
+      "id": "E-CONTAINS-891224035221",
       "fromId": "urn:reg:bcbs:mgn:90",
       "toId": "urn:reg:bcbs:mgn:90.4",
       "edgeType": "CONTAINS",
@@ -2773,7 +2660,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-721119945828",
+      "id": "E-CONTAINS-347066624063",
       "fromId": "urn:reg:bcbs:mgn:90",
       "toId": "urn:reg:bcbs:mgn:90.5",
       "edgeType": "CONTAINS",
@@ -2782,7 +2669,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-258114817600",
+      "id": "E-CONTAINS-362725285538",
       "fromId": "urn:reg:bcbs:mgn:90",
       "toId": "urn:reg:bcbs:mgn:90.6",
       "edgeType": "CONTAINS",
@@ -2791,7 +2678,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-CONTAINS-075898058033",
+      "id": "E-CONTAINS-568592819217",
       "fromId": "urn:reg:bcbs:mgn:90",
       "toId": "urn:reg:bcbs:mgn:90.7",
       "edgeType": "CONTAINS",
@@ -2800,7 +2687,7 @@
       "extractedAt": "2026-06-04T00:00:00Z"
     },
     {
-      "id": "E-REFERENCES-782752291288",
+      "id": "E-REFERENCES-207540666185",
       "fromId": "urn:reg:bcbs:mgn:90.7",
       "toId": "urn:reg:bcbs:mgn:90.6",
       "edgeType": "REFERENCES",
@@ -2810,7 +2697,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:90.7"
     },
     {
-      "id": "E-EXPRESSES-628794749517",
+      "id": "E-EXPRESSES-587570486319",
       "fromId": "urn:reg:bcbs:mgn:10.1",
       "toId": "OBL-BCBS-MGN-s10.1-1",
       "edgeType": "EXPRESSES",
@@ -2820,7 +2707,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.1"
     },
     {
-      "id": "E-EXPRESSES-476936004145",
+      "id": "E-EXPRESSES-686740943747",
       "fromId": "urn:reg:bcbs:mgn:10.2",
       "toId": "OBL-BCBS-MGN-s10.2-1",
       "edgeType": "EXPRESSES",
@@ -2830,7 +2717,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.2"
     },
     {
-      "id": "E-EXPRESSES-584716597896",
+      "id": "E-EXPRESSES-470159443670",
       "fromId": "urn:reg:bcbs:mgn:10.3",
       "toId": "OBL-BCBS-MGN-s10.3-1",
       "edgeType": "EXPRESSES",
@@ -2840,7 +2727,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.3"
     },
     {
-      "id": "E-EXPRESSES-575122375011",
+      "id": "E-EXPRESSES-874474855588",
       "fromId": "urn:reg:bcbs:mgn:10.4",
       "toId": "OBL-BCBS-MGN-s10.4-1",
       "edgeType": "EXPRESSES",
@@ -2850,7 +2737,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.4"
     },
     {
-      "id": "E-EXPRESSES-618482783556",
+      "id": "E-EXPRESSES-495091362545",
       "fromId": "urn:reg:bcbs:mgn:10.5",
       "toId": "OBL-BCBS-MGN-s10.5-1",
       "edgeType": "EXPRESSES",
@@ -2860,17 +2747,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.5"
     },
     {
-      "id": "E-EXPRESSES-824252416427",
-      "fromId": "urn:reg:bcbs:mgn:10.7",
-      "toId": "OBL-BCBS-MGN-s10.7-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:mgn:10.7"
-    },
-    {
-      "id": "E-EXPRESSES-833915074106",
+      "id": "E-EXPRESSES-084645589580",
       "fromId": "urn:reg:bcbs:mgn:10.8",
       "toId": "OBL-BCBS-MGN-s10.8-1",
       "edgeType": "EXPRESSES",
@@ -2880,7 +2757,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.8"
     },
     {
-      "id": "E-EXPRESSES-244175908215",
+      "id": "E-EXPRESSES-153412021623",
       "fromId": "urn:reg:bcbs:mgn:10.10",
       "toId": "OBL-BCBS-MGN-s10.10-1",
       "edgeType": "EXPRESSES",
@@ -2890,7 +2767,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.10"
     },
     {
-      "id": "E-EXPRESSES-037003028268",
+      "id": "E-EXPRESSES-241860329391",
       "fromId": "urn:reg:bcbs:mgn:10.13",
       "toId": "OBL-BCBS-MGN-s10.13-1",
       "edgeType": "EXPRESSES",
@@ -2900,7 +2777,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.13"
     },
     {
-      "id": "E-EXPRESSES-835919058647",
+      "id": "E-EXPRESSES-679217210954",
       "fromId": "urn:reg:bcbs:mgn:10.14",
       "toId": "OBL-BCBS-MGN-s10.14-1",
       "edgeType": "EXPRESSES",
@@ -2910,7 +2787,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.14"
     },
     {
-      "id": "E-EXPRESSES-392249039571",
+      "id": "E-EXPRESSES-732324119038",
       "fromId": "urn:reg:bcbs:mgn:10.16",
       "toId": "OBL-BCBS-MGN-s10.16-1",
       "edgeType": "EXPRESSES",
@@ -2920,7 +2797,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:10.16"
     },
     {
-      "id": "E-EXPRESSES-096950444790",
+      "id": "E-EXPRESSES-483632858813",
       "fromId": "urn:reg:bcbs:mgn:20.3",
       "toId": "OBL-BCBS-MGN-s20.3-1",
       "edgeType": "EXPRESSES",
@@ -2930,7 +2807,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.3"
     },
     {
-      "id": "E-EXPRESSES-685494375063",
+      "id": "E-EXPRESSES-040456742602",
       "fromId": "urn:reg:bcbs:mgn:20.4",
       "toId": "OBL-BCBS-MGN-s20.4-1",
       "edgeType": "EXPRESSES",
@@ -2940,7 +2817,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.4"
     },
     {
-      "id": "E-EXPRESSES-386296425392",
+      "id": "E-EXPRESSES-577516326572",
       "fromId": "urn:reg:bcbs:mgn:20.5",
       "toId": "OBL-BCBS-MGN-s20.5-1",
       "edgeType": "EXPRESSES",
@@ -2950,7 +2827,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.5"
     },
     {
-      "id": "E-EXPRESSES-981377788991",
+      "id": "E-EXPRESSES-019111198146",
       "fromId": "urn:reg:bcbs:mgn:20.8",
       "toId": "OBL-BCBS-MGN-s20.8-1",
       "edgeType": "EXPRESSES",
@@ -2960,7 +2837,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.8"
     },
     {
-      "id": "E-EXPRESSES-270074656685",
+      "id": "E-EXPRESSES-518007085428",
       "fromId": "urn:reg:bcbs:mgn:20.9",
       "toId": "OBL-BCBS-MGN-s20.9-1",
       "edgeType": "EXPRESSES",
@@ -2970,17 +2847,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.9"
     },
     {
-      "id": "E-EXPRESSES-563227035913",
-      "fromId": "urn:reg:bcbs:mgn:20.10",
-      "toId": "OBL-BCBS-MGN-s20.10-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:mgn:20.10"
-    },
-    {
-      "id": "E-EXPRESSES-779997592188",
+      "id": "E-EXPRESSES-293747564553",
       "fromId": "urn:reg:bcbs:mgn:20.11",
       "toId": "OBL-BCBS-MGN-s20.11-1",
       "edgeType": "EXPRESSES",
@@ -2990,7 +2857,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.11"
     },
     {
-      "id": "E-EXPRESSES-993107034737",
+      "id": "E-EXPRESSES-479037962535",
       "fromId": "urn:reg:bcbs:mgn:20.13",
       "toId": "OBL-BCBS-MGN-s20.13-1",
       "edgeType": "EXPRESSES",
@@ -3000,7 +2867,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.13"
     },
     {
-      "id": "E-EXPRESSES-735552408672",
+      "id": "E-EXPRESSES-020999821770",
       "fromId": "urn:reg:bcbs:mgn:20.14",
       "toId": "OBL-BCBS-MGN-s20.14-1",
       "edgeType": "EXPRESSES",
@@ -3010,7 +2877,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.14"
     },
     {
-      "id": "E-EXPRESSES-177721561982",
+      "id": "E-EXPRESSES-139724335761",
       "fromId": "urn:reg:bcbs:mgn:20.15",
       "toId": "OBL-BCBS-MGN-s20.15-1",
       "edgeType": "EXPRESSES",
@@ -3020,7 +2887,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.15"
     },
     {
-      "id": "E-EXPRESSES-161987056387",
+      "id": "E-EXPRESSES-120861427299",
       "fromId": "urn:reg:bcbs:mgn:20.16",
       "toId": "OBL-BCBS-MGN-s20.16-1",
       "edgeType": "EXPRESSES",
@@ -3030,17 +2897,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.16"
     },
     {
-      "id": "E-EXPRESSES-516030643166",
-      "fromId": "urn:reg:bcbs:mgn:20.18",
-      "toId": "OBL-BCBS-MGN-s20.18-1",
-      "edgeType": "EXPRESSES",
-      "extractionMethod": "rule-based",
-      "confidenceScore": 1.0,
-      "extractedAt": "2026-06-04T00:00:00Z",
-      "sourceProvision": "urn:reg:bcbs:mgn:20.18"
-    },
-    {
-      "id": "E-EXPRESSES-819265091039",
+      "id": "E-EXPRESSES-503249592552",
       "fromId": "urn:reg:bcbs:mgn:20.20",
       "toId": "OBL-BCBS-MGN-s20.20-1",
       "edgeType": "EXPRESSES",
@@ -3050,7 +2907,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.20"
     },
     {
-      "id": "E-EXPRESSES-814713716675",
+      "id": "E-EXPRESSES-839561288513",
       "fromId": "urn:reg:bcbs:mgn:20.22",
       "toId": "OBL-BCBS-MGN-s20.22-1",
       "edgeType": "EXPRESSES",
@@ -3060,7 +2917,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.22"
     },
     {
-      "id": "E-EXPRESSES-002601233097",
+      "id": "E-EXPRESSES-283296468483",
       "fromId": "urn:reg:bcbs:mgn:20.23",
       "toId": "OBL-BCBS-MGN-s20.23-1",
       "edgeType": "EXPRESSES",
@@ -3070,7 +2927,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.23"
     },
     {
-      "id": "E-EXPRESSES-312223355380",
+      "id": "E-EXPRESSES-776086006790",
       "fromId": "urn:reg:bcbs:mgn:20.24",
       "toId": "OBL-BCBS-MGN-s20.24-1",
       "edgeType": "EXPRESSES",
@@ -3080,7 +2937,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.24"
     },
     {
-      "id": "E-EXPRESSES-049936932714",
+      "id": "E-EXPRESSES-111786781964",
       "fromId": "urn:reg:bcbs:mgn:20.25",
       "toId": "OBL-BCBS-MGN-s20.25-1",
       "edgeType": "EXPRESSES",
@@ -3090,7 +2947,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.25"
     },
     {
-      "id": "E-EXPRESSES-363735209231",
+      "id": "E-EXPRESSES-203206145413",
       "fromId": "urn:reg:bcbs:mgn:20.26",
       "toId": "OBL-BCBS-MGN-s20.26-1",
       "edgeType": "EXPRESSES",
@@ -3100,7 +2957,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.26"
     },
     {
-      "id": "E-EXPRESSES-048497367059",
+      "id": "E-EXPRESSES-709741869207",
       "fromId": "urn:reg:bcbs:mgn:20.27",
       "toId": "OBL-BCBS-MGN-s20.27-1",
       "edgeType": "EXPRESSES",
@@ -3110,7 +2967,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.27"
     },
     {
-      "id": "E-EXPRESSES-462882880933",
+      "id": "E-EXPRESSES-741370272776",
       "fromId": "urn:reg:bcbs:mgn:20.28",
       "toId": "OBL-BCBS-MGN-s20.28-1",
       "edgeType": "EXPRESSES",
@@ -3120,7 +2977,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.28"
     },
     {
-      "id": "E-EXPRESSES-195207472839",
+      "id": "E-EXPRESSES-036249771553",
       "fromId": "urn:reg:bcbs:mgn:20.29",
       "toId": "OBL-BCBS-MGN-s20.29-1",
       "edgeType": "EXPRESSES",
@@ -3130,7 +2987,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.29"
     },
     {
-      "id": "E-EXPRESSES-048244876185",
+      "id": "E-EXPRESSES-005469315670",
       "fromId": "urn:reg:bcbs:mgn:20.30",
       "toId": "OBL-BCBS-MGN-s20.30-1",
       "edgeType": "EXPRESSES",
@@ -3140,7 +2997,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.30"
     },
     {
-      "id": "E-EXPRESSES-816868912367",
+      "id": "E-EXPRESSES-996689654218",
       "fromId": "urn:reg:bcbs:mgn:20.31",
       "toId": "OBL-BCBS-MGN-s20.31-1",
       "edgeType": "EXPRESSES",
@@ -3150,7 +3007,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.31"
     },
     {
-      "id": "E-EXPRESSES-633900337333",
+      "id": "E-EXPRESSES-964897689163",
       "fromId": "urn:reg:bcbs:mgn:20.32",
       "toId": "OBL-BCBS-MGN-s20.32-1",
       "edgeType": "EXPRESSES",
@@ -3160,7 +3017,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.32"
     },
     {
-      "id": "E-EXPRESSES-663502428604",
+      "id": "E-EXPRESSES-337646040864",
       "fromId": "urn:reg:bcbs:mgn:20.34",
       "toId": "OBL-BCBS-MGN-s20.34-1",
       "edgeType": "EXPRESSES",
@@ -3170,7 +3027,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.34"
     },
     {
-      "id": "E-EXPRESSES-090708234592",
+      "id": "E-EXPRESSES-739739743810",
       "fromId": "urn:reg:bcbs:mgn:20.35",
       "toId": "OBL-BCBS-MGN-s20.35-1",
       "edgeType": "EXPRESSES",
@@ -3180,7 +3037,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.35"
     },
     {
-      "id": "E-EXPRESSES-749114952197",
+      "id": "E-EXPRESSES-557023719948",
       "fromId": "urn:reg:bcbs:mgn:20.36",
       "toId": "OBL-BCBS-MGN-s20.36-1",
       "edgeType": "EXPRESSES",
@@ -3190,7 +3047,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.36"
     },
     {
-      "id": "E-EXPRESSES-063119608194",
+      "id": "E-EXPRESSES-529481990243",
       "fromId": "urn:reg:bcbs:mgn:20.37",
       "toId": "OBL-BCBS-MGN-s20.37-1",
       "edgeType": "EXPRESSES",
@@ -3200,7 +3057,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.37"
     },
     {
-      "id": "E-EXPRESSES-331863678658",
+      "id": "E-EXPRESSES-050132095425",
       "fromId": "urn:reg:bcbs:mgn:20.38",
       "toId": "OBL-BCBS-MGN-s20.38-1",
       "edgeType": "EXPRESSES",
@@ -3210,7 +3067,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.38"
     },
     {
-      "id": "E-EXPRESSES-262166597705",
+      "id": "E-EXPRESSES-194735167073",
       "fromId": "urn:reg:bcbs:mgn:20.40",
       "toId": "OBL-BCBS-MGN-s20.40-1",
       "edgeType": "EXPRESSES",
@@ -3220,7 +3077,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.40"
     },
     {
-      "id": "E-EXPRESSES-556277201845",
+      "id": "E-EXPRESSES-433966042832",
       "fromId": "urn:reg:bcbs:mgn:20.41",
       "toId": "OBL-BCBS-MGN-s20.41-1",
       "edgeType": "EXPRESSES",
@@ -3230,7 +3087,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.41"
     },
     {
-      "id": "E-CONDITIONAL_ON-952831491802",
+      "id": "E-CONDITIONAL_ON-928547267381",
       "fromId": "OBL-BCBS-MGN-s20.41-1",
       "toId": "urn:reg:bcbs:mgn:20",
       "edgeType": "CONDITIONAL_ON",
@@ -3243,7 +3100,7 @@
       }
     },
     {
-      "id": "E-EXPRESSES-449815227735",
+      "id": "E-EXPRESSES-608591783852",
       "fromId": "urn:reg:bcbs:mgn:20.42",
       "toId": "OBL-BCBS-MGN-s20.42-1",
       "edgeType": "EXPRESSES",
@@ -3253,7 +3110,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.42"
     },
     {
-      "id": "E-EXPRESSES-268287772927",
+      "id": "E-EXPRESSES-465857205335",
       "fromId": "urn:reg:bcbs:mgn:20.43",
       "toId": "OBL-BCBS-MGN-s20.43-1",
       "edgeType": "EXPRESSES",
@@ -3263,7 +3120,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:20.43"
     },
     {
-      "id": "E-EXPRESSES-775467358269",
+      "id": "E-EXPRESSES-393546392169",
       "fromId": "urn:reg:bcbs:mgn:90.1",
       "toId": "OBL-BCBS-MGN-s90.1-1",
       "edgeType": "EXPRESSES",
@@ -3273,7 +3130,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:90.1"
     },
     {
-      "id": "E-EXPRESSES-344108101306",
+      "id": "E-EXPRESSES-808390475323",
       "fromId": "urn:reg:bcbs:mgn:90.3",
       "toId": "OBL-BCBS-MGN-s90.3-1",
       "edgeType": "EXPRESSES",
@@ -3283,7 +3140,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:90.3"
     },
     {
-      "id": "E-EXPRESSES-962562476370",
+      "id": "E-EXPRESSES-586067687059",
       "fromId": "urn:reg:bcbs:mgn:90.6",
       "toId": "OBL-BCBS-MGN-s90.6-1",
       "edgeType": "EXPRESSES",
@@ -3293,7 +3150,7 @@
       "sourceProvision": "urn:reg:bcbs:mgn:90.6"
     },
     {
-      "id": "E-EXPRESSES-525158345186",
+      "id": "E-EXPRESSES-025688502576",
       "fromId": "urn:reg:bcbs:mgn:90.7",
       "toId": "OBL-BCBS-MGN-s90.7-1",
       "edgeType": "EXPRESSES",

@@ -21,10 +21,50 @@ def is_heading(s):
     if s[-1] in '.,:;)': return False
     return s[0].isupper() and len(s.split())<=9 and not s.lower().split()[-1] in ('and','the','of','to','a','in','or','for')
 
+
+def operative_text(page):
+    """Page text with the supplementary apparatus removed by FONT.
+
+    The BIS consolidated PDF renders FAQ blocks (question + answer, introduced by
+    a 'FAQ'/'FAQ1' marker) AND footnotes in italic (…SegoeUI-Italic); the operative
+    normative paragraph text is regular (…SegoeUI) and headings/markers are bold.
+    Because the paragraph number prints AFTER the text, italic FAQ/footnote blocks
+    frequently interleave INTO the wrong paragraph's line-range (often at the
+    start, ahead of the real lead) and corrupt the obligation — the comma/list
+    heuristics cannot tell italic FAQ-answer prose from normative prose, but the
+    font can. We drop any line whose whole content is italic, which removes the
+    apparatus while preserving operative text, bold paragraph markers, and any
+    line that merely contains an italic term inside regular prose (mixed lines are
+    kept — only wholly-italic lines go)."""
+    ital=[]; reg=[]
+    def visit(text, cm, tm, fd, fs):
+        if text and text.strip():
+            fn=str((fd or {}).get('/BaseFont','')) if isinstance(fd,dict) else ''
+            (ital if 'Italic' in fn else reg).append(text)
+    full=page.extract_text(visitor_text=visit) or ''
+    nz=lambda xs: re.sub(r'\s+','',''.join(xs)).lower()
+    iblob, rblob = nz(ital), nz(reg)
+    out=[]; prev_dropped=False
+    for ln in full.splitlines():
+        s=ln.strip()
+        if not s:
+            out.append(ln); prev_dropped=False; continue
+        if re.match(r'^FAQ\d*\.?$', s):   # FAQ block marker — never operative text
+            prev_dropped=True; continue
+        n=re.sub(r'\s+','',s).lower()
+        # wholly-italic line → FAQ / footnote apparatus. The length gate (or, for
+        # short lines, absence from the regular-font text) guards against a short
+        # operative line coincidentally matching the italic blob; a short wrapped
+        # tail (eg "IMA.") immediately after a dropped italic line is also apparatus.
+        if n in iblob and (len(n)>=10 or n not in rblob or (prev_dropped and len(n)<8)):
+            prev_dropped=True; continue
+        out.append(ln); prev_dropped=False
+    return '\n'.join(out)
+
 def extract(prefix, start, end, std_name=''):
     pages=[]
     for i in range(start,end+1):
-        t=R.pages[i].extract_text() or ''
+        t=operative_text(R.pages[i])
         t=re.sub(r'^\s*\d+\s*/1982','',t)
         pages.append(t)
     chap_line=re.compile(r'^'+prefix+r'(\d{2})?\s*$')
@@ -90,8 +130,13 @@ def extract(prefix, start, end, std_name=''):
                     segs[i].pop(0); continue   # blank (page-break artefact) — skip, don't break the peel
                 if bullet.match(s0):
                     peeled.append(segs[i].pop(0))
-                elif peeled and (s0[0].islower() or s0[0] in '“"(' ):
-                    peeled.append(segs[i].pop(0))   # wrap-continuation of a bullet
+                elif peeled and (s0[0].islower() or s0[0] in '“”"(),;:'):
+                    # wrap-continuation of a bullet: a lowercase word, an open
+                    # quote/paren, OR a punctuation-led line (eg a sentence whose
+                    # subject ended on the previous physical line and wraps onto
+                    # ", for which …"). Without the punctuation cases the peel
+                    # stops mid-sentence and strands the tail on the NEXT paragraph.
+                    peeled.append(segs[i].pop(0))
                 else:
                     break
             if peeled: segs[i-1].extend(peeled)
