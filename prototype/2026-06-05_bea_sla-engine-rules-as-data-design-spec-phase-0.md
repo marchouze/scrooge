@@ -9,9 +9,15 @@ workstream: "WS-SLA-ENGINE"
 authority: "D-SLA-ENGINE-RULES-AS-DATA"
 phase: "Phase 0 — design spec (review-only; no engine code changes)"
 date: "2026-06-05"
-status: "draft-for-sign-off"
+status: "draft-for-sign-off (amended 2026-06-05 — D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE)"
+amendments:
+  - decision: "D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE"
+    date: "2026-06-05"
+    sections: ["3.2", "5.2", "5.4 (new)", "7.3"]
+    summary: "Per-currency resolution (USD=USD; FCY-pool precedence removed); account-resolution miss → balancing FX unresolved-currency suspense (ACC-2100-007) + high-severity urgent-correction alert; distinct from no-matching-row reject."
 citations:
   - "D-SLA-ENGINE-RULES-AS-DATA"
+  - "D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE"
   - "Principles/1-events-are-truth.md"
   - "Principles/2-single-graph-discipline.md"
   - "Principles/5-multi-currency-entity-country.md"
@@ -227,7 +233,9 @@ balancing: assert_zero
 cites: ["urn:obligation:...:ifrs9:3.1.1", "urn:obligation:...:ias21:21"]
 ```
 
-Resolver (§5) maps `fx.receivable` for `(LE-ZA-HOZ-BANK, FX-spot, ZAR, ZA, IFRS)` → `ACC-2100-001`, for USD → `ACC-2100-002`; `fx.payable` ZAR → `ACC-2100-003`, USD → `ACC-2100-004`. **This reproduces today's postings exactly** (the byte-for-byte regression target, §11). The leg currency is taken from the resolved payCurrency/receiveCurrency of the matched leg; the amount-expression yields the minor-unit integer; the engine asserts DR == CR within ZAR and within USD.
+Resolver (§5) maps `fx.receivable` **per currency** for `(LE-ZA-HOZ-BANK, FX-spot, …, ZA, IFRS)`: ZAR → `ACC-2100-001`, **USD → `ACC-2100-002` (USD-only, not a pool)**; `fx.payable` ZAR → `ACC-2100-003`, USD → `ACC-2100-004`. For the **USD/ZAR worked example this reproduces today's postings exactly** (the byte-for-byte regression target for ZAR/USD, §11). The leg currency is taken from the resolved payCurrency/receiveCurrency of the matched leg; the amount-expression yields the minor-unit integer; the engine asserts DR == CR within ZAR and within USD.
+
+> **Per-currency / suspense (`D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE`, 2026-06-05).** If the same rule fires for a **non-ZAR/USD** trade (e.g. a EUR or GBP leg), the resolver finds **no per-currency account** (the COA has dedicated FX-spot trading accounts for ZAR and USD only today). It returns `unresolved-currency`, and the interpreter routes the foreign leg to the **FX unresolved-currency suspense account `ACC-2100-007`** and raises a high-severity urgent-correction alert (§5.4) — **never** silently to the USD account. The entry still balances (the foreign legs net within the suspense account per currency). This **deliberately diverges** from the legacy engine, which mis-booked such legs to the USD slot; the divergence is the latent default-to-USD defect being fixed (§11.3).
 
 #### Regulatory secondary representation — `PR-FX-001-BA@v1` (a *differing* basis)
 
@@ -309,15 +317,30 @@ Resolver entries are data (YAML/JSON), sourced from and validated against `platf
 
 ### 5.2 Lookup precedence
 
-Resolution walks from most-specific to least-specific, **falling back only along declared axes**:
+> **Amended by `D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE` (CEO-approved 2026-06-05).** The original Phase-1 design carried a *currency-wildcard "FCY pool"* precedence (clause 2 below, struck), which faithfully reproduced a latent legacy defect: the legacy `default → USD slot` fallback mis-books any non-ZAR/USD foreign currency into the USD account (`ACC-2100-002`/`ACC-2100-004`). Marc (CEO) rejected the FCY-pool framing: **the USD account is USD-only, not a multi-currency pool.** Resolution is now strictly **per-currency**, and an account-resolution miss routes to a balancing suspense account + a loud urgent-correction alert (see §5.4) rather than to a pool.
 
-1. Exact `(entity, product, currency, jurisdiction, representation, logical)`.
-2. Currency wildcard within the same `(entity, product, jurisdiction, representation, logical)` — for genuinely multi-currency pool accounts only.
-3. **No silent default.** If no row resolves, the resolver **rejects loudly** (`SubLedgerPostingRejected`, §7.3) — it does **not** fall back to a "USD slot" stub. This directly retires the `default → RECEIVABLE_USD` fallbacks in `fx-spot.ts`, which are documented Principle-5 blockers (they silently mis-book any non-ZAR/USD currency to the USD account).
+Resolution is **per-currency**:
+
+1. **Exact** `(entity, product, currency, jurisdiction, representation, logical)`. **Each currency resolves to its own account.** The USD account is reachable **only** for USD.
+2. ~~Currency wildcard within the same `(entity, product, jurisdiction, representation, logical)` — for genuinely multi-currency pool accounts only.~~ **REMOVED** (`D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE`). There is no genuine multi-currency pool account here; the USD account must never be a catch-all.
+3. **No silent default; two distinct miss kinds** (§5.4):
+   - **Account-resolution miss** — the `(entity, product, jurisdiction, representation, logical)` axes are valid but no row covers the leg's currency (e.g. EUR/GBP/JPY today). The resolver returns `unresolved-currency`; the interpreter posts the leg to the **FX unresolved-currency suspense account** (`ACC-2100-007`) so the entry **balances**, and raises a **high-severity urgent-correction alert** (§5.4). Never a silent USD fallback; never a dropped posting.
+   - **No-matching-row miss** — zero candidate rows for the logical/product/entity axes (an unknown logical account, product, or entity — a genuine rule/config bug). The resolver returns `no-matching-row`; the interpreter **rejects loudly** (`SubLedgerPostingRejected`, §7.3). A rule-shape bug is fixed by the rule author, **not** parked in suspense.
+
+   This directly retires the `default → RECEIVABLE_USD` fallbacks in `fx-spot.ts` (documented Principle-5 blockers that silently mis-book any non-ZAR/USD currency to the USD account) — now replaced by per-currency resolution + balancing suspense + a loud alert.
 
 ### 5.3 Per-representation physical mapping
 
 The same logical account maps to **different physical accounts per representation**: `fx.receivable` under `IFRS` → `ACC-2100-001` (trading sub-ledger); the regulatory representation maps its own logical accounts to the BA-return memorandum range. This is what lets one rule set serve the IFRS book while a parallel set serves the regulatory return, both from the same event.
+
+### 5.4 Account-resolution miss → balancing suspense + urgent-correction alert *(added by `D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE`, 2026-06-05)*
+
+When the resolver returns `unresolved-currency` (valid axes, unmapped currency — §5.2 clause 3), the interpreter does **not** drop the posting and does **not** silently fall back to the USD account. Instead:
+
+1. **Balancing suspense posting.** The leg is posted to the dedicated **FX unresolved-currency suspense account `ACC-2100-007`** ("FX Unresolved-Currency Suspense", `category: asset-suspense`). The account name carries **no currency** (`recon:coa-name-no-currency`); the authoritative currency is carried on each `SubLedgerLeg.currency`, following the existing FX-settlement-suspense precedent (`ACC-1100-004`/`ACC-1100-005`). Both the receivable-side (debit) and payable-side (credit) unresolved legs route here, so DR == CR nets within the suspense account per unresolved currency — **double-entry integrity is preserved**. `ACC-2100-007` is **not** a re-introduced FCY pool: a pool is a permanent home, whereas this is a loud, transient holding pen and *every* entry to it raises an urgent-correction alert.
+2. **Urgent-correction signal (never silent).** Each suspense routing produces an `UrgentCorrection` on the `ProposedPosting`, which the caller turns into a **high-severity `SubstrateAlert { alertClass: "integrity", severity: "high" }`** (`alertId: alert:integrity:sla-unresolved-currency-<ccy>`) plus a recon finding. A suspense routing without a paired urgent-correction alert is structurally impossible (the interpreter returns them together) and is a recon violation, not a silent fallback. The unresolved item is therefore **glaringly visible** and tracked for prompt correction — it must not sit silently in suspense.
+
+**Distinction from reject-loudly (§7.3).** `unresolved-currency` (→ suspense + alert, entry still balances) is distinct from `no-matching-row` (→ `SubLedgerPostingRejected`, no GL movement). The former is a *currency-coverage gap* (a real economic event whose currency lacks a dedicated account — book it visibly and correct it); the latter is a *rule/config bug* (the rule references a non-existent logical/product/entity — fix the rule). Conflating them either loses a real posting or papers over a bug.
 
 ---
 
@@ -358,9 +381,10 @@ Pure function. Events in → **proposed balanced entries out, per representation
 
 ### 7.3 Reject-loudly (replaces today's silent skip)
 
-Three new typed outcomes make non-posting first-class and visible (consumed by recon §10 and the preview surface §9):
+Typed outcomes make non-posting (and balanced-but-loud) first-class and visible (consumed by recon §10 and the preview surface §9):
 
-- `SubLedgerPostingRejected` — zero eligible rules, or a resolver miss, where a posting was expected. Payload: source event id, representation, context vector, reason. **No** GL movement; surfaced as a recon finding.
+- `SubLedgerPostingRejected` — zero eligible rules, or a **`no-matching-row`** resolver miss (unknown logical/product/entity — a rule/config bug), where a posting was expected. Payload: source event id, representation, context vector, reason. **No** GL movement; surfaced as a recon finding. *(Amended by `D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE`: an **`unresolved-currency`** resolver miss no longer rejects — it routes to balancing suspense + raises an urgent-correction alert, see the new outcome below and §5.4.)*
+- **`urgent-correction` (balancing suspense)** *(added by `D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE`, 2026-06-05)* — an **`unresolved-currency`** resolver miss (valid axes, unmapped currency). The leg posts to the **FX unresolved-currency suspense account `ACC-2100-007`** so the entry **balances**, and the interpreter returns an `UrgentCorrection` the caller turns into a **high-severity `SubstrateAlert { alertClass: "integrity", severity: "high" }`** + recon finding. This is a *balanced-but-loud* posting (double-entry integrity preserved; the unresolved item glaringly flagged), never a silent USD fallback and never a dropped leg.
 - `SubLedgerPostingAmbiguous` — equal-specificity tie. Payload: candidate rule ids + the tie detail. **No** GL movement; requires a rule-author fix.
 - `intentional-no-impact` skips are recorded with their `condition.detail` (the existing memo path, e.g. `FxSettlementInstructed`) so they read as "intentionally zero", not "missing — substrate gap". This preserves the current `PR-FX-INSTRUCT` / `PR-FX-REGREPORT` semantics in data.
 
