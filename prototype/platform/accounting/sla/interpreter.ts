@@ -31,14 +31,21 @@
 
 import { makeSubstrateAlert } from "../../event-store/event-types/platform";
 import type { Actor, Event } from "../../event-store/types";
-import { evaluateAmount, evaluatePredicate, evaluateString } from "./expression";
-import type { AccountId, AppliesTo, ContextMatch, SlaRule } from "./generated/sla-types";
+import {
+  type EvalScope,
+  evaluateAmount,
+  evaluatePredicate,
+  evaluateString,
+  parseExpression,
+} from "./expression";
+import type { AccountId, AppliesTo, ContextMatch, RuleLine, SlaRule } from "./generated/sla-types";
 import {
   type AccountResolver,
   FX_UNRESOLVED_CURRENCY_SUSPENSE,
   type ResolverKey,
   defaultResolver,
 } from "./resolver";
+import { isAccountId } from "./generated/sla-types";
 
 // ---------------------------------------------------------------------------
 // Context vector (spec §1.2 / §2.1)
@@ -62,6 +69,40 @@ export interface InterpreterEvent {
   readonly entity?: string;
   readonly as_of: string;
   readonly payload: unknown;
+  /**
+   * Pre-resolved prior-event CONTEXT (context-enrichment, spec §2.3 / brief
+   * deliverable 2). Some FX lifecycle rules price amounts off facts that do
+   * NOT live on the triggering event itself — they live on a PRIOR event:
+   *
+   *   - `PR-FX-005` (FxSettlementFailed, one-leg-delivered) needs the
+   *     originating trade's RECEIVE LEG (currency, amount, ZAR-equivalent) —
+   *     that lives on the originating `FxTradeExecuted`, not on the failure
+   *     event.
+   *   - `PR-FX-CANCEL` (cancellation) needs the trade's PRIOR BOOKING LEGS and
+   *     CUMULATIVE unrealised P&L — derived from prior `SubLedgerPostingEmitted`
+   *     events.
+   *
+   * CHOSEN ENRICHMENT MODEL (brief deliverable 2): a PRE-RESOLVED CONTEXT OBJECT
+   * passed in as an INPUT, NOT an event-store lookup performed inside the
+   * tree-walker. Rationale:
+   *   1. The interpreter stays PURE — `interpret(...)` remains a pure function
+   *      of (event + enrichment + rules). No I/O, no `eventStore` import inside
+   *      the interpreter; it cannot read the clock, the network, or the store.
+   *      Dry-run (spec §9.1) and replay stay deterministic.
+   *   2. The enrichment is an AUDITABLE, TYPED step done by the CALLER (the GL
+   *      posting engine, which already has the event stream in hand — see
+   *      `resolveFailedReceiveLeg` in gl-posting-engine.ts), then handed in.
+   *      The same enrichment functions the legacy engine already uses are
+   *      reused, so the interpreter and the legacy engine price off identical
+   *      prior-event facts (byte-for-byte parity is preserved).
+   *   3. It mirrors Principle 1: events are truth; a derived projection (the
+   *      enrichment) is computed once by the caller and passed as data.
+   *
+   * Exposed to the sandbox as `event.enrichment.*` so rule amount-expressions
+   * can read it exactly like any other event path. Absent for events that need
+   * no enrichment (booking, reval, principal, close).
+   */
+  readonly enrichment?: unknown;
 }
 
 // ---------------------------------------------------------------------------
@@ -194,24 +235,60 @@ export const fxTradeExecutedContextBuilder: ContextBuilder = (event) => {
   const nearLeg = payload.legs.find((l) => l.legKind === "near");
 
   const instrumentType = payload.productTaxonomy;
-  const jurisdiction = deriveJurisdiction(event.entity);
+  const eventScope = { ...(payload as object), near: nearLeg ?? null };
 
-  const context: ContextVector = {
+  return {
+    context: fxContextVector(event, instrumentType),
+    eventScope: withEnrichment(eventScope, event.enrichment),
+    contextScope: {},
+  };
+};
+
+/**
+ * Generic FX context builder for the lifecycle events whose payloads are flat
+ * (no `legs` array): FxPositionRevalued, PrincipalPayment, SettlementConfirmed,
+ * FxSettlementFailed, FxTradeCancelled, FxSettlementInstructed,
+ * TradeReportSubmitted. The raw payload is exposed directly as the `event`
+ * scope (so a rule reads e.g. `event.unrealisedPnlZarMinor`, `event.netCash`),
+ * augmented with `event.enrichment.*` for the rules that need prior-event
+ * context (PR-FX-005, PR-FX-CANCEL). `instrument_type` is fixed to "FX-spot":
+ * these are all FX-spot lifecycle events.
+ */
+function makeFlatFxContextBuilder(): ContextBuilder {
+  return (event) => ({
+    context: fxContextVector(event, "FX-spot"),
+    eventScope: withEnrichment({ ...(event.payload as object) }, event.enrichment),
+    contextScope: {},
+  });
+}
+
+/** Common context-vector assembly for every FX-spot lifecycle event. */
+function fxContextVector(event: InterpreterEvent, instrumentType: string | undefined): ContextVector {
+  const jurisdiction = deriveJurisdiction(event.entity);
+  return {
     event_type: event.type,
     entity: event.entity ?? "UNKNOWN",
     effective_date: isoDate(event.as_of),
     ...(instrumentType !== undefined ? { instrument_type: instrumentType } : {}),
     ...(jurisdiction !== undefined ? { jurisdiction } : {}),
   };
+}
 
-  // The `event` scope is the raw payload augmented with a `near` pointer.
-  const eventScope = { ...(payload as object), near: nearLeg ?? null };
-
-  return { context, eventScope, contextScope: {} };
-};
+/** Attach the pre-resolved enrichment object under `event.enrichment` (or {}). */
+function withEnrichment(scope: object, enrichment: unknown): object {
+  return { ...scope, enrichment: enrichment ?? {} };
+}
 
 const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   FxTradeExecuted: fxTradeExecutedContextBuilder,
+  FxPositionRevalued: makeFlatFxContextBuilder(),
+  PrincipalPayment: makeFlatFxContextBuilder(),
+  SettlementConfirmed: makeFlatFxContextBuilder(),
+  FxSettlementFailed: makeFlatFxContextBuilder(),
+  FxTradeCancelled: makeFlatFxContextBuilder(),
+  TradeCancelled: makeFlatFxContextBuilder(),
+  FxSettlementInstructed: makeFlatFxContextBuilder(),
+  TradeReportSubmitted: makeFlatFxContextBuilder(),
 };
 
 function deriveJurisdiction(entity: string | undefined): string | undefined {
@@ -459,7 +536,7 @@ export function interpret(
 function applyRule(
   rule: SlaRule,
   ctx: ContextVector,
-  scope: { event: unknown; context: unknown },
+  scope: EvalScope,
   resolver: AccountResolver,
   representation: string,
 ): InterpretResult {
@@ -492,90 +569,31 @@ function applyRule(
   const urgentCorrections: UrgentCorrection[] = [];
 
   for (const line of rule.lines) {
+    if (line.for_each) {
+      // Declarative iteration: expand one leg per element of an enrichment
+      // array (spec §3.1 extension). The array is read once from the scope
+      // (a pre-resolved enrichment input — interpreter stays pure); each
+      // element is bound as the `item` scope root.
+      const arr = readArrayPath(line.for_each, scope);
+      for (const element of arr) {
+        const itemScope: EvalScope = { ...scope, item: element };
+        const r = emitLine(line, rule, ctx, itemScope, resolver, representation);
+        if ("reject" in r) return r.reject;
+        legs.push(r.leg);
+        resolverDecisions.push(r.decision);
+        if (r.urgent) urgentCorrections.push(r.urgent);
+      }
+      continue;
+    }
+
     // per-line predicate
     if (line.when && !evaluatePredicate(line.when, scope)) continue;
 
-    // currency source: line.currency || account.currency || (none → error)
-    const currencySource = line.currency ?? line.account.currency;
-    if (!currencySource) {
-      throw new Error(
-        `${rule.rule_id}: line for '${line.account.logical}' has no currency source (set line.currency or account.currency)`,
-      );
-    }
-    const currency = resolveCurrency(currencySource, scope);
-
-    // resolve account
-    const product = line.account.product ?? ctx.instrument_type;
-    if (!product) {
-      throw new Error(`${rule.rule_id}: cannot resolve product for '${line.account.logical}'`);
-    }
-    const key: ResolverKey = {
-      entity: ctx.entity,
-      product,
-      currency,
-      jurisdiction: ctx.jurisdiction ?? "",
-      representation: rule.representation,
-      logical: line.account.logical,
-    };
-    const resolved = resolver.resolve(key);
-
-    // Distinguish the two miss kinds (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE):
-    //   - no-matching-row  → genuine rule/config bug (unknown logical/product/
-    //     entity). LOUD REJECT — the rule author must fix it; never park in
-    //     suspense.
-    //   - unresolved-currency → valid axes, unmapped currency. Route the leg to
-    //     the FX unresolved-currency suspense account so the entry still
-    //     BALANCES, and record an UrgentCorrection so the caller raises a
-    //     high-severity alert. NEVER a silent USD fallback, NEVER a dropped leg.
-    if (!resolved.ok && resolved.reason === "no-matching-row") {
-      return {
-        outcome: "rejected",
-        representation,
-        reason: "resolver-miss",
-        detail:
-          `no account row for (${key.entity}, ${key.product}, ${key.jurisdiction}, ` +
-          `${key.representation}, ${key.logical}) — 0 candidate row(s); rule/config bug`,
-        context: ctx,
-      };
-    }
-
-    let physical: AccountId;
-    let via: ResolverDecision["via"];
-    if (resolved.ok) {
-      physical = resolved.physical;
-      via = resolved.via;
-    } else {
-      // unresolved-currency → balancing suspense + urgent-correction alert
-      physical = FX_UNRESOLVED_CURRENCY_SUSPENSE;
-      via = "suspense";
-      urgentCorrections.push({
-        logical: line.account.logical,
-        currency,
-        suspenseAccount: FX_UNRESOLVED_CURRENCY_SUSPENSE,
-        ruleId: rule.rule_id,
-        representation,
-        alertId: `alert:integrity:sla-unresolved-currency-${currency.toLowerCase()}`,
-        detail: `SLA account-resolution miss: no ${rule.representation} ${line.account.logical} account for currency ${currency} (entity ${key.entity}, product ${key.product}) — routed to FX unresolved-currency suspense ${FX_UNRESOLVED_CURRENCY_SUSPENSE}. URGENT CORRECTION: add a dedicated per-currency account and re-book; the USD account is USD-only (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).`,
-      });
-    }
-
-    resolverDecisions.push({
-      logical: line.account.logical,
-      key,
-      physical,
-      via,
-    });
-
-    // evaluate amount — always emitted as a positive minor-unit magnitude
-    const raw = evaluateAmount(line.amount, scope);
-    const magnitude = raw < 0n ? -raw : raw;
-
-    legs.push({
-      accountId: physical,
-      debitCredit: line.side,
-      amountMinor: magnitude.toString(),
-      currency,
-    });
+    const r = emitLine(line, rule, ctx, scope, resolver, representation);
+    if ("reject" in r) return r.reject;
+    legs.push(r.leg);
+    resolverDecisions.push(r.decision);
+    if (r.urgent) urgentCorrections.push(r.urgent);
   }
 
   // balance assertion (assert_zero per currency)
@@ -602,8 +620,185 @@ function applyRule(
   };
 }
 
-/** A currency source is either a fixed ISO-4217 code or an event/context path. */
-function resolveCurrency(source: string, scope: { event: unknown; context: unknown }): string {
+/**
+ * Process a single template line into one ProposedLeg (+ resolver decision,
+ * + optional urgent-correction). For `for_each` lines the caller binds
+ * `scope.item` before calling. Returns either the leg/decision or a `reject`
+ * outcome (no-matching-row resolver miss).
+ */
+function emitLine(
+  line: RuleLine,
+  rule: SlaRule,
+  ctx: ContextVector,
+  scope: EvalScope,
+  resolver: AccountResolver,
+  representation: string,
+):
+  | { leg: ProposedLeg; decision: ResolverDecision; urgent?: UrgentCorrection }
+  | { reject: Extract<InterpretResult, { outcome: "rejected" }> } {
+  // currency source: line.currency || account.currency || (none → error)
+  const currencySource = line.currency ?? line.account.currency;
+  if (!currencySource) {
+    throw new Error(
+      `${rule.rule_id}: line for '${line.account.logical}' has no currency source (set line.currency or account.currency)`,
+    );
+  }
+  const currency = resolveCurrency(currencySource, scope);
+
+  // The line side: an explicit `side_path` (e.g. for_each `item.debitCredit`)
+  // overrides the static `side`. This keeps the data-form of a variable
+  // reversal (each prior leg carries its own already-flipped side) auditable.
+  const side: "debit" | "credit" = line.side_path
+    ? resolveSide(line.side_path, scope, rule.rule_id)
+    : line.side;
+
+  // ── Physical-account-bypass (for_each reversal of exact prior postings) ──
+  // When `use_physical_account` is set, `account.logical` is a path resolving
+  // DIRECTLY to a physical ACC-id (the exact account the original posting used,
+  // carried on the enrichment). This makes a cancellation reverse precisely the
+  // accounts the booking touched — including any suspense account — rather than
+  // re-resolving (which could diverge if the resolver table changed since).
+  if (line.use_physical_account) {
+    const physicalRaw = evaluateString(line.account.logical, scope);
+    if (!isAccountId(physicalRaw)) {
+      return {
+        reject: {
+          outcome: "rejected",
+          representation,
+          reason: "resolver-miss",
+          detail: `${rule.rule_id}: for_each physical account '${physicalRaw}' is not a COA leaf`,
+          context: ctx,
+        },
+      };
+    }
+    const physical = physicalRaw as AccountId;
+    const magnitude = absMinor(evaluateAmount(line.amount, scope));
+    return {
+      leg: { accountId: physical, debitCredit: side, amountMinor: magnitude.toString(), currency },
+      decision: {
+        logical: line.account.logical,
+        key: {
+          entity: ctx.entity,
+          product: line.account.product ?? ctx.instrument_type ?? "",
+          currency,
+          jurisdiction: ctx.jurisdiction ?? "",
+          representation: rule.representation,
+          logical: physical,
+        },
+        physical,
+        via: "exact",
+      },
+    };
+  }
+
+  // resolve account (logical → physical, per-currency)
+  const product = line.account.product ?? ctx.instrument_type;
+  if (!product) {
+    throw new Error(`${rule.rule_id}: cannot resolve product for '${line.account.logical}'`);
+  }
+  const key: ResolverKey = {
+    entity: ctx.entity,
+    product,
+    currency,
+    jurisdiction: ctx.jurisdiction ?? "",
+    representation: rule.representation,
+    logical: line.account.logical,
+  };
+  const resolved = resolver.resolve(key);
+
+  // Distinguish the two miss kinds (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE):
+  //   - no-matching-row  → genuine rule/config bug (unknown logical/product/
+  //     entity). LOUD REJECT — the rule author must fix it; never park in
+  //     suspense.
+  //   - unresolved-currency → valid axes, unmapped currency. Route the leg to
+  //     the FX unresolved-currency suspense account so the entry still
+  //     BALANCES, and record an UrgentCorrection so the caller raises a
+  //     high-severity alert. NEVER a silent USD fallback, NEVER a dropped leg.
+  if (!resolved.ok && resolved.reason === "no-matching-row") {
+    return {
+      reject: {
+        outcome: "rejected",
+        representation,
+        reason: "resolver-miss",
+        detail:
+          `no account row for (${key.entity}, ${key.product}, ${key.jurisdiction}, ` +
+          `${key.representation}, ${key.logical}) — 0 candidate row(s); rule/config bug`,
+        context: ctx,
+      },
+    };
+  }
+
+  let physical: AccountId;
+  let via: ResolverDecision["via"];
+  let urgent: UrgentCorrection | undefined;
+  if (resolved.ok) {
+    physical = resolved.physical;
+    via = resolved.via;
+  } else {
+    // unresolved-currency → balancing suspense + urgent-correction alert
+    physical = FX_UNRESOLVED_CURRENCY_SUSPENSE;
+    via = "suspense";
+    urgent = {
+      logical: line.account.logical,
+      currency,
+      suspenseAccount: FX_UNRESOLVED_CURRENCY_SUSPENSE,
+      ruleId: rule.rule_id,
+      representation,
+      alertId: `alert:integrity:sla-unresolved-currency-${currency.toLowerCase()}`,
+      detail: `SLA account-resolution miss: no ${rule.representation} ${line.account.logical} account for currency ${currency} (entity ${key.entity}, product ${key.product}) — routed to FX unresolved-currency suspense ${FX_UNRESOLVED_CURRENCY_SUSPENSE}. URGENT CORRECTION: add a dedicated per-currency account and re-book; the USD account is USD-only (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).`,
+    };
+  }
+
+  const magnitude = absMinor(evaluateAmount(line.amount, scope));
+  return {
+    leg: { accountId: physical, debitCredit: side, amountMinor: magnitude.toString(), currency },
+    decision: { logical: line.account.logical, key, physical, via },
+    ...(urgent ? { urgent } : {}),
+  };
+}
+
+/** Minor-unit magnitude (always non-negative; sign is carried by side). */
+function absMinor(raw: bigint): bigint {
+  return raw < 0n ? -raw : raw;
+}
+
+/** Resolve a `side_path` to the literal "debit" | "credit", rejecting anything else. */
+function resolveSide(path: string, scope: EvalScope, ruleId: string): "debit" | "credit" {
+  const v = evaluateString(path, scope);
+  if (v === "debit" || v === "credit") return v;
+  throw new Error(`${ruleId}: side_path '${path}' resolved to '${v}' (expected 'debit' | 'credit')`);
+}
+
+/** Read an enrichment array path for a `for_each` line. Empty/absent → []. */
+function readArrayPath(path: string, scope: EvalScope): unknown[] {
+  // Reuse the expression sandbox's path reader by evaluating membership via a
+  // tiny dedicated walk. We parse the path AST and resolve it directly so the
+  // result can be a non-scalar array (the expression evaluator coerces scalars;
+  // here we want the raw array).
+  const ast = parseExpression(path);
+  if (ast.kind !== "path") {
+    throw new Error(`for_each '${path}' must be a plain event/context path`);
+  }
+  const [root, ...rest] = ast.segments;
+  let current: unknown =
+    root === "event" ? scope.event : root === "context" ? scope.context : scope.item;
+  for (const seg of rest) {
+    if (current === null || current === undefined || typeof current !== "object") {
+      // Absent enrichment array → no reversal legs (legitimate: a trade with
+      // no prior postings). Treat as empty rather than throwing.
+      return [];
+    }
+    current = (current as Record<string, unknown>)[seg];
+  }
+  if (current === undefined || current === null) return [];
+  if (!Array.isArray(current)) {
+    throw new Error(`for_each '${path}' did not resolve to an array`);
+  }
+  return current;
+}
+
+/** A currency source is either a fixed ISO-4217 code or an event/context/item path. */
+function resolveCurrency(source: string, scope: EvalScope): string {
   if (/^[A-Z]{3}$/.test(source)) return source; // fixed code
   return evaluateString(source, scope); // path
 }

@@ -171,12 +171,20 @@ export interface AccountResolverRef {
 export interface RuleLine {
   readonly account: AccountResolverRef;
   readonly side: PostingSide;
-  /** Sandboxed amount expression over event/context paths (spec §4). */
+  /** Optional path (e.g. `item.debitCredit`) overriding `side` at eval time. */
+  readonly side_path?: string;
+  /** Sandboxed amount expression over event/context/item paths (spec §4). */
   readonly amount: string;
-  /** Explicit currency source: fixed ISO-4217 code or event/context path. */
+  /** Explicit currency source: fixed ISO-4217 code or event/context/item path. */
   readonly currency?: string;
   /** Optional per-line predicate; the line fires only when it is true. */
   readonly when?: string;
+  /** Optional declarative iteration: a path to an enrichment array; the line
+   *  expands once per element with the element bound as the `item` scope root. */
+  readonly for_each?: string;
+  /** When true on a for_each line, `account.logical` is a path to a physical
+   *  ACC-id, bypassing the logical→physical resolver. */
+  readonly use_physical_account?: boolean;
 }
 
 /** A complete rules-as-data posting rule (spec §3). */

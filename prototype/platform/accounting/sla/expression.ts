@@ -17,6 +17,7 @@
 //   factor    := number | path | func "(" args ")" | "(" expr ")" | "-" factor
 //   path      := "event" ("." ident | "[" string "]")+
 //              | "context" "." ident
+//              | "item" ("." ident | "[" string "]")+    -- for_each iteration item
 //   args      := expr ("," expr)*
 //   func      := "abs" | "min" | "max" | "neg" | "if"
 //   predicate := expr cmp expr | predicate ("&&" | "||") predicate | "!" predicate
@@ -328,7 +329,7 @@ class Parser {
       if (FUNCTIONS.has(t.value) && this.tokens[this.pos + 1]?.type === "lparen") {
         return this.parseCall();
       }
-      if (t.value === "event" || t.value === "context") {
+      if (t.value === "event" || t.value === "context" || t.value === "item") {
         return this.parsePath();
       }
       throw new ExpressionParseError(
@@ -355,7 +356,7 @@ class Parser {
   }
 
   private parsePath(): Ast {
-    const root = this.next().value; // "event" | "context"
+    const root = this.next().value; // "event" | "context" | "item"
     const segments: string[] = [root];
     let raw = root;
 
@@ -395,6 +396,13 @@ export function parseExpression(src: string): Ast {
 export interface EvalScope {
   readonly event: unknown;
   readonly context: unknown;
+  /**
+   * The current `for_each` iteration item (spec §3.1 extension). Bound only
+   * while the interpreter expands a `for_each` line; `undefined` otherwise. An
+   * `item.*` path used outside a `for_each` context resolves as unknown →
+   * UnknownPathError (loud, never silent).
+   */
+  readonly item?: unknown;
 }
 
 type EvalValue = bigint | boolean | string;
@@ -428,9 +436,22 @@ export function bigIntDivHalfEven(numerator: bigint, denominator: bigint): bigin
   return negative ? -rounded : rounded;
 }
 
+function rootValue(scope: EvalScope, root: string): unknown {
+  switch (root) {
+    case "event":
+      return scope.event;
+    case "context":
+      return scope.context;
+    case "item":
+      return scope.item;
+    default:
+      return undefined;
+  }
+}
+
 function readPath(scope: EvalScope, ast: Extract<Ast, { kind: "path" }>): unknown {
   const [root, ...rest] = ast.segments;
-  let current: unknown = root === "event" ? scope.event : scope.context;
+  let current: unknown = rootValue(scope, root as string);
   for (const seg of rest) {
     if (current === null || current === undefined || typeof current !== "object") {
       throw new UnknownPathError(ast.raw);
