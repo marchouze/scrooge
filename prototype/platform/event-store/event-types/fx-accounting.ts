@@ -204,6 +204,10 @@ export const subLedgerPostingEmittedPayloadSchema = z
       // reversal / stale revaluation entries without deleting events.
       "duplicate-reversal-correction",
       "stale-revaluation-correction",
+      // D-SLA-REBOOK-SIMULATED-MISBOOKINGS (CFO-approved): re-books simulated FX
+      // legs silently mis-booked to the USD slot (legacy default→USD fallback)
+      // into their per-currency home account (ACC-2100-010..024). Append-only.
+      "sla-rebook-simulated-misbooking",
       // Observed in production DB but missing from schema (pre-existing postings
       // that landed before this enum was formalised).
       "cancellation-reversal",
