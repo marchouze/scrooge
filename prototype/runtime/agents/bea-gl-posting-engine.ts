@@ -88,6 +88,7 @@ import {
   equityTradeBookingJournals,
 } from "../../platform/accounting/posting-rules/equities";
 import {
+  detectUnresolvedCurrencyLegs,
   fxAmendmentJournals,
   fxCancellationJournals,
   fxLifecycleCloseJournals,
@@ -152,6 +153,7 @@ import type {
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
 } from "../../platform/event-store/event-types/repo-mmd-ibl";
+import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
 import type {
   EquityPositionRevaluedPayload,
@@ -844,6 +846,47 @@ export async function beaGlPostingEngine(
         postedKeys.add(`${e.event_id}:${postingType}`);
         skipped += 1;
         continue;
+      }
+
+      // ── STOP-THE-BLEEDING urgent-correction alert (deliverable 4) ──────────
+      // Any leg routed to the FX unresolved-currency suspense account
+      // (ACC-2100-007) is a non-ZAR/USD currency with no dedicated COA account
+      // — the per-currency correction (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE)
+      // that REPLACED the silent default→USD mis-booking. The entry still
+      // balances; we raise ONE high-severity integrity SubstrateAlert per
+      // distinct unresolved currency so the suspense routing is NEVER silent.
+      // This is the loud companion to the live-path fix in fx-spot.ts.
+      const unresolvedCurrencies = detectUnresolvedCurrencyLegs(legs);
+      if (unresolvedCurrencies.length > 0 && !ctx.dryRun) {
+        for (const ccy of unresolvedCurrencies) {
+          eventStore.append(
+            makeSubstrateAlert({
+              asOf: ctx.asOf,
+              entity: e.entity ?? "LE-ZA-HOZ-BANK",
+              actor: HANDLER_ACTOR,
+              citations: [
+                "D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE",
+                "Principles/5-multi-currency-entity-country.md",
+              ],
+              payload: {
+                alertId: `alert:integrity:sla-unresolved-currency-${ccy.toLowerCase()}`,
+                alertClass: "integrity",
+                severity: "high",
+                details:
+                  `FX posting (${postingType}, source ${e.event_id}) routed a ${ccy} leg to the ` +
+                  `FX unresolved-currency suspense ${ccy === "USD" ? "" : "ACC-2100-007 "}because the COA has no ` +
+                  `dedicated per-currency FX account for ${ccy}. The entry balances but the ` +
+                  `leg sits in suspense. URGENT CORRECTION: provision a dedicated ${ccy} FX ` +
+                  `account (CFO COA-expansion / accounting-policy call) and re-book. The USD ` +
+                  `account is USD-only — never a fallback (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).`,
+              },
+            }),
+          );
+        }
+        logger.warn(
+          { eventId: e.event_id, eventType: e.type, postingType, unresolvedCurrencies },
+          "bea:gl-posting-engine — FX leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
+        );
       }
 
       // Validate balance per currency before emitting (belt-and-suspenders —

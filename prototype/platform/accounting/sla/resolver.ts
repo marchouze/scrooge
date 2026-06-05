@@ -107,6 +107,7 @@ export type ResolveOutcome =
 // ---------------------------------------------------------------------------
 
 export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
+  // ── fx.receivable (per currency; USD=USD, no pool) ──
   {
     entity: "LE-ZA-HOZ-BANK",
     product: "FX-spot",
@@ -126,6 +127,7 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
     physical: "ACC-2100-002",
     note: "USD-only trading receivable (NOT an FCY pool).",
   },
+  // ── fx.payable (per currency; USD=USD, no pool) ──
   {
     entity: "LE-ZA-HOZ-BANK",
     product: "FX-spot",
@@ -144,6 +146,103 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
     logical: "fx.payable",
     physical: "ACC-2100-004",
     note: "USD-only trading payable (NOT an FCY pool).",
+  },
+  // ── ZAR functional-currency P&L + correspondent-nostro accounts ──
+  // Revaluation (PR-FX-002), realised-P&L residual (PR-FX-LIFECYCLE-CLOSE),
+  // and cancellation P&L-reversal (PR-FX-CANCEL) all post in ZAR (functional
+  // currency) only — these logicals have a single ZAR row each.
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.unrealised_pnl",
+    physical: "ACC-2100-005",
+    note: "Unrealised FX P&L — FVTPL (ZAR functional currency, IFRS 9 §5.7.1).",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.realised_pnl",
+    physical: "ACC-2100-006",
+    note: "Realised FX P&L (ZAR functional currency, IAS 21 §28).",
+  },
+  // fx.nostro — correspondent settlement accounts (D-COA-CURRENCY-DECOUPLING:
+  // the 1200 range). Per-currency; ZAR/USD/EUR have dedicated nostros, other
+  // currencies account-resolution-miss → suspense + urgent-correction alert.
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.nostro",
+    physical: "ACC-1200-001",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "USD",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.nostro",
+    physical: "ACC-1200-002",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "EUR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.nostro",
+    physical: "ACC-1200-003",
+  },
+  // ── Settlement-failed receivable sub-ledger + Stage-3 ECL (PR-FX-005) ──
+  // The defaulted receivable is reclassified per-currency (FVTPL trading →
+  // amortised-cost defaulted claim). ZAR/USD have dedicated accounts; other
+  // currencies account-resolution-miss → suspense + urgent-correction alert.
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.settlement_failed_receivable",
+    physical: "ACC-2300-001",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "USD",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.settlement_failed_receivable",
+    physical: "ACC-2300-002",
+  },
+  // ECL allowance + credit-loss expense — ZAR functional currency only.
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.ecl_allowance_settlement_failed",
+    physical: "ACC-2300-003",
+    note: "Contra-asset; lifetime Stage-3 ECL allowance (ZAR, IAS 21 §23).",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.credit_loss_expense",
+    physical: "ACC-2300-004",
+    note: "P&L credit-loss expense — FX settlement failures (ZAR, IAS 1 §82(ba)).",
   },
 ];
 
