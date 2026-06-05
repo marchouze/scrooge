@@ -16,7 +16,7 @@
           "subsections": [
             {
               "number": "10.1",
-              "text": "exposures framework and the definitions of a large exposure and connected counterparties. 01 Jan 2023 Cross references to LEX30 updated. Rationale and objectives of a large exposures framework Footnotes Throughout history there have been instances of banks failing due to concentrated exposures to individual counterparties or groups of connected counterparties. Large exposures regulation has been developed as a tool for limiting the maximum loss a bank could face in the event of a sudden counterparty failure to a level that does not endanger the bank's solvency."
+              "text": "exposures framework and the definitions of a large exposure and connected counterparties. Cross references to LEX30 updated. Rationale and objectives of a large exposures framework Footnotes Throughout history there have been instances of banks failing due to concentrated exposures to individual counterparties or groups of connected counterparties. Large exposures regulation has been developed as a tool for limiting the maximum loss a bank could face in the event of a sudden counterparty failure to a level that does not endanger the bank's solvency."
             },
             {
               "number": "10.2",
@@ -28,11 +28,11 @@
             },
             {
               "number": "10.4",
-              "text": "The large exposures framework is constructed to serve as a backstop and complement to the risk-based capital standards. As a consequence, it must apply at the same level as the risk-based capital requirements are required to be applied following , ie at every tier within a banking group. SCO10"
+              "text": "The large exposures framework is constructed to serve as a backstop and complement to the risk-based capital standards. As a consequence, it must apply at the same level as the risk-based capital requirements are required to be applied following , ie at every tier within a banking group. SCO1010.4"
             },
             {
               "number": "10.5",
-              "text": "The large exposures framework is applicable to all internationally active banks. As with all other standards issued by the Committee, member jurisdictions have the option to set more stringent standards. They also have the option to extend the application to a wider range of banks, with the possibility – if they deem it necessary – to develop a different approach for banks that usually fall outside the scope of the Basel framework.2"
+              "text": "The large exposures framework is applicable to all internationally active banks. As with all other standards issued by the Committee, member jurisdictions have the option to set more stringent standards. They also have the option to extend the application to a wider range of banks, with the possibility – if they deem it necessary – to develop a different approach for banks that usually fall outside the scope of the Basel framework.210.5"
             },
             {
               "number": "10.6",
@@ -44,19 +44,19 @@
             },
             {
               "number": "10.8",
-              "text": "The sum of all exposure values of a bank to a counterparty or to a group of connected counterparties, as defined in to , must be defined as LEX10.9 LEX10.18 a large exposure if it is equal to or above 10% of the bank’s Tier 1 capital (as defined in ). The exposure values must be measured as specified in . CAP10.2 LEX30"
+              "text": "The sum of all exposure values of a bank to a counterparty or to a group of connected counterparties, as defined in to , must be defined as LEX10.9 LEX10.18 a large exposure if it is equal to or above 10% of the bank’s Tier 1 capital (as defined in ). The exposure values must be measured as specified in . CAP10.2 LEX3010.8"
             },
             {
               "number": "10.9",
-              "text": "In some cases, a bank may have exposures to a group of counterparties with specific relationships or dependencies such that, were one of the counterparties to fail, all of the counterparties would very likely fail. A group of this sort, referred to in this framework as a group of connected counterparties, must be treated as a single counterparty. In this case, the sum of the bank’s exposures to all the individual entities included within a group of connected counterparties is subject to the large exposure limit and to the regulatory reporting requirements as specified in to . LEX20.1 LEX20.4"
+              "text": "In some cases, a bank may have exposures to a group of counterparties with specific relationships or dependencies such that, were one of the counterparties to fail, all of the counterparties would very likely fail. A group of this sort, referred to in this framework as a group of connected counterparties, must be treated as a single counterparty. In this case, the sum of the bank’s exposures to all the individual entities included within a group of connected counterparties is subject to the large exposure limit and to the regulatory reporting requirements as specified in to . LEX20.1 LEX20.410.9"
             },
             {
               "number": "10.10",
-              "text": "Two or more natural or legal persons shall be deemed a group of connected counterparties if at least one of the following criteria is satisfied."
+              "text": "Two or more natural or legal persons shall be deemed a group of connected counterparties if at least one of the following criteria is satisfied. (1)Control relationship: one of the counterparties, directly or indirectly, has control over the other(s). (2)Economic interdependence: if one of the counterparties were to experience financial problems, in particular funding or repayment difficulties, the other (s), as a result, would also be likely to encounter funding or repayment difficulties."
             },
             {
               "number": "10.11",
-              "text": "(1)Control relationship: one of the counterparties, directly or indirectly, has control over the other(s). (2)Economic interdependence: if one of the counterparties were to experience financial problems, in particular funding or repayment difficulties, the other (s), as a result, would also be likely to encounter funding or repayment difficulties. Banks must assess the relationship amongst counterparties with reference to (1) and (2) above in order to establish the existence of a group LEX10.10 LEX10.10 of connected counterparties."
+              "text": "Banks must assess the relationship amongst counterparties with reference to (1) and (2) above in order to establish the existence of a group LEX10.10 LEX10.10 of connected counterparties."
             },
             {
               "number": "10.12",
@@ -64,11 +64,11 @@
             },
             {
               "number": "10.13",
-              "text": "In addition, banks must assess connectedness between counterparties based on control using the following criteria:"
+              "text": "In addition, banks must assess connectedness between counterparties based on control using the following criteria: (1)Voting agreements (eg control of a majority of voting rights pursuant to an agreement with other shareholders); (2)Significant influence on the appointment or dismissal of an entity’s administrative, management or supervisory body, such as the right to appoint or remove a majority of members in those bodies, or the fact that a majority of members have been appointed solely as a result of the exercise of an individual entity’s voting rights; (3)Significant influence on senior management, eg an entity has the power, pursuant to a contract or otherwise, to exercise a controlling influence over the management or policies of another entity (eg through consent rights over key decisions)."
             },
             {
               "number": "10.14",
-              "text": "(1)Voting agreements (eg control of a majority of voting rights pursuant to an agreement with other shareholders); (2)Significant influence on the appointment or dismissal of an entity’s administrative, management or supervisory body, such as the right to appoint or remove a majority of members in those bodies, or the fact that a majority of members have been appointed solely as a result of the exercise of an individual entity’s voting rights; (3)Significant influence on senior management, eg an entity has the power, pursuant to a contract or otherwise, to exercise a controlling influence over the management or policies of another entity (eg through consent rights over key decisions). Banks are also expected to refer to criteria specified in appropriate internationally recognised accounting standards for further qualitative guidance when determining control."
+              "text": "Banks are also expected to refer to criteria specified in appropriate internationally recognised accounting standards for further qualitative guidance when determining control."
             },
             {
               "number": "10.15",
@@ -76,11 +76,11 @@
             },
             {
               "number": "10.16",
-              "text": "In establishing connectedness based on economic interdependence, banks must consider, at a minimum, the following qualitative criteria:"
+              "text": "In establishing connectedness based on economic interdependence, banks must consider, at a minimum, the following qualitative criteria: (1)Where 50% or more of one counterparty's gross receipts or gross expenditures (on an annual basis) is derived from transactions with the other counterparty (eg the owner of a residential/commercial property and the tenant who pays a significant part of the rent); (2)Where one counterparty has fully or partly guaranteed the exposure of the other counterparty, or is liable by other means, and the exposure is so significant that the guarantor is likely to default if a claim occurs; (3)Where a significant part of one counterparty’s production/output is sold to another counterparty, which cannot easily be replaced by other customers;"
             },
             {
               "number": "10.17",
-              "text": "(1)Where 50% or more of one counterparty's gross receipts or gross expenditures (on an annual basis) is derived from transactions with the other counterparty (eg the owner of a residential/commercial property and the tenant who pays a significant part of the rent); (2)Where one counterparty has fully or partly guaranteed the exposure of the other counterparty, or is liable by other means, and the exposure is so significant that the guarantor is likely to default if a claim occurs; (3)Where a significant part of one counterparty’s production/output is sold to another counterparty, which cannot easily be replaced by other customers; (4)When the expected source of funds to repay the loans of both counterparties is the same and neither counterparty has another independent source of income from which the loan may be serviced and fully repaid; (5)Where it is likely that the financial problems of one counterparty would cause difficulties for the other counterparties in terms of full and timely repayment of liabilities; (6)Where the insolvency or default of one counterparty is likely to be associated with the insolvency or default of the other(s); (7)When two or more counterparties rely on the same source for the majority of their funding and, in the event of the common provider’s default, an alternative provider cannot be found – in this case, the funding problems of one counterparty are likely to spread to another due to a one-way or two- way dependence on the same main funding source. There may, however, be circumstances where some of these criteria do not automatically imply an economic dependence that results in two or more counterparties being connected. Provided that the bank can demonstrate to its supervisor that a counterparty which is economically closely related to another counterparty may overcome financial difficulties, or even the second counterparty’ s default, by finding alternative business partners or funding sources within an appropriate time period, the bank does not need to combine these counterparties to form a group of connected counterparties."
+              "text": "(4)When the expected source of funds to repay the loans of both counterparties is the same and neither counterparty has another independent source of income from which the loan may be serviced and fully repaid; (5)Where it is likely that the financial problems of one counterparty would cause difficulties for the other counterparties in terms of full and timely repayment of liabilities; (6)Where the insolvency or default of one counterparty is likely to be associated with the insolvency or default of the other(s); (7)When two or more counterparties rely on the same source for the majority of their funding and, in the event of the common provider’s default, an alternative provider cannot be found – in this case, the funding problems of one counterparty are likely to spread to another due to a one-way or two- way dependence on the same main funding source. There may, however, be circumstances where some of these criteria do not automatically imply an economic dependence that results in two or more counterparties being connected. Provided that the bank can demonstrate to its supervisor that a counterparty which is economically closely related to another counterparty may overcome financial difficulties, or even the second counterparty’ s default, by finding alternative business partners or funding sources within an appropriate time period, the bank does not need to combine these counterparties to form a group of connected counterparties."
             },
             {
               "number": "10.18",
@@ -95,11 +95,11 @@
           "subsections": [
             {
               "number": "20.1",
-              "text": "exposures, relative to a bank's Tier 1 capital, and regulatory reporting requirements. 15 Dec 2019 First version in the format of the consolidated framework. Minimum requirement – the large exposure limit Regulatory reporting The sum of all the exposure values of a bank to a single counterparty or to a group of connected counterparties must not be higher than 25% of the bank’s Tier 1 capital at all times. However, as explained in , this figure is set at 15% LEX40 for a global systemically important bank’s (G-SIB’s) exposures to another GSIB."
+              "text": "exposures, relative to a bank's Tier 1 capital, and regulatory reporting requirements. First version in the format of the consolidated framework. Minimum requirement – the large exposure limit Regulatory reporting The sum of all the exposure values of a bank to a single counterparty or to a group of connected counterparties must not be higher than 25% of the bank’s Tier 1 capital at all times. However, as explained in , this figure is set at 15% LEX40 for a global systemically important bank’s (G-SIB’s) exposures to another GSIB."
             },
             {
               "number": "20.2",
-              "text": "The exposures must be measured as specified in . Tier 1 capital for the LEX30 purpose of the large exposures framework is the Tier 1 capital defined in . CAP10.2"
+              "text": "The exposures must be measured as specified in . Tier 1 capital for the LEX30 purpose of the large exposures framework is the Tier 1 capital defined in . CAP10.220.2"
             },
             {
               "number": "20.3",
@@ -118,19 +118,19 @@
           "subsections": [
             {
               "number": "30.1",
-              "text": "This chapter describes the value of exposures to counterparties used in the large exposures framework, including those for which a specific treatment is deemed necessary. 01 Jan 2023 Reflects changes in market risk requirements published January 2017 and the revised implementation date announced on 27 March 2020. General measurement principles Footnotes Definition of exposure value Footnotes Footnotes The exposure values a bank must consider in order to identify large exposures to a counterparty are all those exposures defined under the risk-based capital framework. It must consider both on- and off-balance sheet exposures included in either the banking or trading book and instruments with counterparty credit risk under the risk-based capital framework."
+              "text": "published January 2017 and the revised implementation date announced on . General measurement principles Footnotes Definition of exposure value Footnotes Footnotes The exposure values a bank must consider in order to identify large exposures to a counterparty are all those exposures defined under the risk-based capital framework. It must consider both on- and off-balance sheet exposures included in either the banking or trading book and instruments with counterparty credit risk under the risk-based capital framework."
             },
             {
               "number": "30.2",
-              "text": "An exposure amount to a counterparty that is deducted from capital must not be added to other exposures to that counterparty for the purpose of the large exposure limit.1"
+              "text": "An exposure amount to a counterparty that is deducted from capital must not be added to other exposures to that counterparty for the purpose of the large exposure limit.130.2"
             },
             {
               "number": "30.4",
-              "text": "This general approach does not apply where an exposure is 1,250% risk-weighted. When this is the case, this exposure must be added to any other exposures to the same counterparty and the sum is subject to the large exposure limit, except if this exposure is specifically exempted for other reasons.1 The exposure value must be defined as the accounting value of the exposure.2 As an alternative, a bank may consider the exposure value gross of specific provisions and value adjustments30.3 Net of specific provisions and value adjustments.2 The exposure value for instruments that give rise to counterparty credit risk and are not securities financing transactions must be the exposure at default according to the standardised approach for counterparty credit risk (SA-CCR).3"
+              "text": "This general approach does not apply where an exposure is 1,250% risk-weighted. When this is the case, this exposure must be added to any other exposures to the same counterparty and the sum is subject to the large exposure limit, except if this exposure is specifically exempted for other reasons.1 The exposure value must be defined as the accounting value of the exposure.2 As an alternative, a bank may consider the exposure value gross of specific provisions and value adjustments30.3 Net of specific provisions and value adjustments.2 The exposure value for instruments that give rise to counterparty credit risk and are not securities financing transactions must be the exposure at default according to the standardised approach for counterparty credit risk (SA-CCR).330.4"
             },
             {
               "number": "30.5",
-              "text": "Banks should calculate the exposure value for their securities financing transaction (SFT) exposures applying the comprehensive approach with supervisory haircuts described in . CRE22"
+              "text": "Banks should calculate the exposure value for their securities financing transaction (SFT) exposures applying the comprehensive approach with supervisory haircuts described in . CRE2230.5"
             },
             {
               "number": "30.6",
@@ -154,19 +154,19 @@
             },
             {
               "number": "30.11",
-              "text": "If there is a maturity mismatch in respect of credit risk mitigants (collateral, on- balance sheet netting, guarantees and credit derivatives) recognised in the risk- based capital requirement, the adjustment of the credit protection for the purpose of calculating large exposures is determined using the same approach as in the risk-based capital requirement.6"
+              "text": "If there is a maturity mismatch in respect of credit risk mitigants (collateral, on- balance sheet netting, guarantees and credit derivatives) recognised in the risk- based capital requirement, the adjustment of the credit protection for the purpose of calculating large exposures is determined using the same approach as in the risk-based capital requirement.630.11"
             },
             {
               "number": "30.12",
-              "text": "Where a bank has in place legally enforceable netting arrangements for loans and deposits, it may calculate the exposure values for large exposures purposes according to the calculation it uses for capital requirements purposes – ie on the basis of net credit exposures subject to the conditions set out in the approach to on-balance sheet netting in the risk-based capital requirement.7"
+              "text": "Where a bank has in place legally enforceable netting arrangements for loans and deposits, it may calculate the exposure values for large exposures purposes according to the calculation it uses for capital requirements purposes – ie on the basis of net credit exposures subject to the conditions set out in the approach to on-balance sheet netting in the risk-based capital requirement.730.12"
             },
             {
               "number": "30.13",
-              "text": "A bank must reduce the value of the exposure to the original counterparty by the amount of the eligible CRM technique recognised for risk-based capital requirements purposes. This recognised amount is:"
+              "text": "A bank must reduce the value of the exposure to the original counterparty by the amount of the eligible CRM technique recognised for risk-based capital requirements purposes. This recognised amount is: (1)the value of the protected portion in the case of unfunded credit protection; (2)the value of the portion of claim collateralised by the market value of the recognised financial collateral when the bank uses the simple approach for risk-based capital requirements purposes; (3)the value of the collateral as recognised in the calculation of the counterparty credit risk exposure value for any instruments with counterparty credit risk, such as over-the-counter derivatives; (4)the value of collateral adjusted after applying the required haircuts, in the case of financial collateral when the bank applies the comprehensive approach. The haircuts used to reduce the collateral amount are the supervisory haircuts under the comprehensive approach.8 Internally modelled haircuts must not be used."
             },
             {
               "number": "30.14",
-              "text": "(1)the value of the protected portion in the case of unfunded credit protection; (2)the value of the portion of claim collateralised by the market value of the recognised financial collateral when the bank uses the simple approach for risk-based capital requirements purposes; (3)the value of the collateral as recognised in the calculation of the counterparty credit risk exposure value for any instruments with counterparty credit risk, such as over-the-counter derivatives; (4)the value of collateral adjusted after applying the required haircuts, in the case of financial collateral when the bank applies the comprehensive approach. The haircuts used to reduce the collateral amount are the supervisory haircuts under the comprehensive approach.8 Internally modelled haircuts must not be used. Footnotes Recognition of exposures to CRM providers Calculation of exposure value for trading book positions Footnotes The supervisory haircuts are described in and . CRE22.49 CRE22.508 Whenever a bank is required to recognise a reduction of the exposure to the original counterparty due to an eligible CRM technique, it must also recognise an exposure to the CRM provider. The amount assigned to the CRM provider is the amount by which the exposure to the original counterparty is reduced (except in the cases defined in ). LEX30.28"
+              "text": "The supervisory haircuts are described in and . CRE22.49 CRE22.508 Whenever a bank is required to recognise a reduction of the exposure to the original counterparty due to an eligible CRM technique, it must also recognise an exposure to the CRM provider. The amount assigned to the CRM provider is the amount by which the exposure to the original counterparty is reduced (except in the cases defined in ). LEX30.2830.14"
             },
             {
               "number": "30.15",
@@ -190,11 +190,11 @@
             },
             {
               "number": "30.20",
-              "text": "Exposure values of banks' investments in transactions (ie index positions, securitisations, hedge funds or investment funds) must be calculated applying the same rules as for similar instruments in the banking book (see to LEX30.41 LEX30. ). Hence, the amount invested in a particular structure may be assigned to the 53 structure itself, defined as a distinct counterparty, to the counterparties corresponding to the underlying assets, or to the unknown client, following the rules described in to ). LEX30.41 LEX30.46"
+              "text": "Exposure values of banks' investments in transactions (ie index positions, securitisations, hedge funds or investment funds) must be calculated applying the same rules as for similar instruments in the banking book (see to LEX30.41 LEX30. ). Hence, the amount invested in a particular structure may be assigned to the 53 structure itself, defined as a distinct counterparty, to the counterparties corresponding to the underlying assets, or to the unknown client, following the rules described in to ). LEX30.41 LEX30.4630.20"
             },
             {
               "number": "30.21",
-              "text": "Covered bonds held in the trading book are subject to the treatment described in to . LEX30.37 LEX30.40"
+              "text": "Covered bonds held in the trading book are subject to the treatment described in to . LEX30.37 LEX30.4030.21"
             },
             {
               "number": "30.22",
@@ -218,19 +218,19 @@
             },
             {
               "number": "30.27",
-              "text": "In addition, in the case of positions hedged by credit derivatives, any reduction in exposure to the original counterparty will correspond to a new exposure to the credit protection provider, following the principles underlying the substitution approach stated in , except in the case described in . LEX30.14 LEX30.28"
+              "text": "In addition, in the case of positions hedged by credit derivatives, any reduction in exposure to the original counterparty will correspond to a new exposure to the credit protection provider, following the principles underlying the substitution approach stated in , except in the case described in . LEX30.14 LEX30.2830.27"
             },
             {
               "number": "30.28",
-              "text": "When the credit protection takes the form of a credit default swap (CDS) and either the CDS provider or the referenced entity is not a financial entity, the amount to be assigned to the credit protection provider is not the amount by which the exposure to the original counterparty is reduced but, instead, the counterparty credit risk exposure value calculated according to the SA-CCR.10 For the purposes of this paragraph, financial entities comprise:"
+              "text": "When the credit protection takes the form of a credit default swap (CDS) and either the CDS provider or the referenced entity is not a financial entity, the amount to be assigned to the credit protection provider is not the amount by which the exposure to the original counterparty is reduced but, instead, the counterparty credit risk exposure value calculated according to the SA-CCR.10 For the purposes of this paragraph, financial entities comprise: (1)regulated financial institutions, defined as a parent and its subsidiaries where any substantial legal entity in the consolidated group is supervised by a regulator that imposes prudential requirements consistent with international norms. These include, but are not limited to, prudentially regulated insurance companies, broker/dealers, banks, thrifts and futures commission merchants; and (2)unregulated financial institutions, defined as legal entities whose main business includes: the management of financial assets, lending, factoring, leasing, provision of credit enhancements, securitisation, investments, financial custody, central counterparty services, proprietary trading and other financial services activities identified by supervisors."
             },
             {
               "number": "30.29",
-              "text": "(1)regulated financial institutions, defined as a parent and its subsidiaries where any substantial legal entity in the consolidated group is supervised by a regulator that imposes prudential requirements consistent with international norms. These include, but are not limited to, prudentially regulated insurance companies, broker/dealers, banks, thrifts and futures commission merchants; and (2)unregulated financial institutions, defined as legal entities whose main business includes: the management of financial assets, lending, factoring, leasing, provision of credit enhancements, securitisation, investments, financial custody, central counterparty services, proprietary trading and other financial services activities identified by supervisors. See . CRE5210 Netting across the banking and trading books is not permitted."
+              "text": "Netting across the banking and trading books is not permitted."
             },
             {
               "number": "30.30",
-              "text": "When the result of the offsetting is a net short position with a single counterparty, this net exposure need not be considered as an exposure for large exposure purposes (see ). LEX30.16"
+              "text": "When the result of the offsetting is a net short position with a single counterparty, this net exposure need not be considered as an exposure for large exposure purposes (see ). LEX30.1630.30"
             },
             {
               "number": "30.31",
@@ -238,11 +238,11 @@
             },
             {
               "number": "30.32",
-              "text": "Where two (or more) entities that are outside the scope of the sovereign exemption are controlled by or economically dependent on an entity that falls within the scope of the sovereign exemption defined in , and are LEX30.31 otherwise not connected, those entities need not be deemed to constitute a group of connected counterparties pursuant to to . LEX10.9 LEX10.15"
+              "text": "Where two (or more) entities that are outside the scope of the sovereign exemption are controlled by or economically dependent on an entity that falls within the scope of the sovereign exemption defined in , and are LEX30.31 otherwise not connected, those entities need not be deemed to constitute a group of connected counterparties pursuant to to . LEX10.9 LEX10.1530.32"
             },
             {
               "number": "30.33",
-              "text": "However, as specified in , a bank must report exposures subject to the LEX20.4 sovereign exemption if these exposures meet the criteria for definition as a large exposure (see ). LEX10.8"
+              "text": "However, as specified in , a bank must report exposures subject to the LEX20.4 sovereign exemption if these exposures meet the criteria for definition as a large exposure (see ). LEX10.830.33"
             },
             {
               "number": "30.34",
@@ -266,11 +266,11 @@
             },
             {
               "number": "30.39",
-              "text": "To be eligible to be assigned an exposure value of less than 100%, a covered bond must satisfy all the following conditions:"
+              "text": "To be eligible to be assigned an exposure value of less than 100%, a covered bond must satisfy all the following conditions: (1)it must meet the general definition set out in ; LEX30.37 (2)the pool of underlying assets must exclusively consist of: (a) claims on, or guaranteed by, sovereigns, their central banks, public sector entities or multilateral development banks; (b) claims secured by mortgages on residential real estate that would qualify for a 35% or lower risk weight under for credit risk and CRE20 have a loan-to-value ratio of 80% or lower; and/or (c) claims secured by commercial real estate that would qualify for the"
             },
             {
               "number": "30.40",
-              "text": "(1)it must meet the general definition set out in ; LEX30.37 (2)the pool of underlying assets must exclusively consist of: (a) claims on, or guaranteed by, sovereigns, their central banks, public sector entities or multilateral development banks; (b) claims secured by mortgages on residential real estate that would qualify for a 35% or lower risk weight under for credit risk and CRE20 have a loan-to-value ratio of 80% or lower; and/or (c) claims secured by commercial real estate that would qualify for the 100% or lower risk-weight under and with a loan-to-value ratio CRE20 of 60% or lower; (3)The nominal value of the pool of assets assigned to the covered bond instrument(s) by its issuer should exceed its nominal outstanding value by at least 10%. The value of the pool of assets for this purpose does not need to be that required by the legislative framework. However, if the legislative framework does not stipulate a requirement of at least 10%, the issuing bank needs to publicly disclose on a regular basis that their cover pool meets the 10% requirement in practice. In addition to the primary assets listed in LEX30. (2), the additional collateral may include substitution assets (cash or short 39 term liquid and secure assets held in substitution of the primary assets to top up the cover pool for management purposes) and derivatives entered into for the purposes of hedging the risks arising in the covered bond programme. In order to calculate the required maximum loan-to-value ratio for residential real estate and commercial real estate refered to in , the operational LEX30.39 requirements included in regarding the objective market value of CRE36.131 collateral and the frequent revaluation must be used. The conditions set out in must be satisfied at the inception of the covered bond and throughout LEX30.39 its remaining maturity."
+              "text": "100% or lower risk-weight under and with a loan-to-value ratio CRE20 of 60% or lower; (3)The nominal value of the pool of assets assigned to the covered bond instrument(s) by its issuer should exceed its nominal outstanding value by at least 10%. The value of the pool of assets for this purpose does not need to be that required by the legislative framework. However, if the legislative framework does not stipulate a requirement of at least 10%, the issuing bank needs to publicly disclose on a regular basis that their cover pool meets the 10% requirement in practice. In addition to the primary assets listed in LEX30. (2), the additional collateral may include substitution assets (cash or short 39 term liquid and secure assets held in substitution of the primary assets to top up the cover pool for management purposes) and derivatives entered into for the purposes of hedging the risks arising in the covered bond programme. In order to calculate the required maximum loan-to-value ratio for residential real estate and commercial real estate refered to in , the operational LEX30.39 requirements included in regarding the objective market value of CRE36.131 collateral and the frequent revaluation must be used. The conditions set out in must be satisfied at the inception of the covered bond and throughout LEX30.39 its remaining maturity."
             },
             {
               "number": "30.41",
@@ -286,11 +286,11 @@
             },
             {
               "number": "30.44",
-              "text": "If a bank is unable to identify the underlying assets of a structure:"
+              "text": "If a bank is unable to identify the underlying assets of a structure: (1)where the total amount of its exposure does not exceed 0.25% of its Tier 1 capital, the bank must assign the total exposure amount of its investment to the structure; (2)otherwise, it must assign this total exposure amount to the unknown client."
             },
             {
               "number": "30.45",
-              "text": "(1)where the total amount of its exposure does not exceed 0.25% of its Tier 1 capital, the bank must assign the total exposure amount of its investment to the structure; (2)otherwise, it must assign this total exposure amount to the unknown client. The bank must aggregate all unknown exposures as if they related to a single counterparty (the unknown client), to which the large exposure limit would apply."
+              "text": "The bank must aggregate all unknown exposures as if they related to a single counterparty (the unknown client), to which the large exposure limit would apply."
             },
             {
               "number": "30.46",
@@ -306,11 +306,11 @@
             },
             {
               "number": "30.49",
-              "text": "When the LTA is required according to the paragraphs above, the exposure value to a counterparty is measured for each tranche within the structure, assuming a pro rata distribution of losses amongst investors in a single tranche. To compute the exposure value to the underlying asset, a bank must:"
+              "text": "When the LTA is required according to the paragraphs above, the exposure value to a counterparty is measured for each tranche within the structure, assuming a pro rata distribution of losses amongst investors in a single tranche. To compute the exposure value to the underlying asset, a bank must: (1)first, consider the lower of the value of the tranche in which the bank invests and the nominal value of each underlying asset included in the underlying portfolio of assets (2)second, apply the pro rata share of the bank's investment in the tranche to the value determined in the first step above."
             },
             {
               "number": "30.50",
-              "text": "(1)first, consider the lower of the value of the tranche in which the bank invests and the nominal value of each underlying asset included in the underlying portfolio of assets (2)second, apply the pro rata share of the bank's investment in the tranche to the value determined in the first step above. Banks must identify third parties that may constitute an additional risk factor inherent in a structure itself rather than in the underlying assets. Such a third party could be a risk factor for more than one structure that a bank invests in. Examples of roles played by third parties include originator, fund manager, liquidity provider and credit protection provider."
+              "text": "Banks must identify third parties that may constitute an additional risk factor inherent in a structure itself rather than in the underlying assets. Such a third party could be a risk factor for more than one structure that a bank invests in. Examples of roles played by third parties include originator, fund manager, liquidity provider and credit protection provider."
             },
             {
               "number": "30.51",
@@ -326,7 +326,7 @@
             },
             {
               "number": "30.54",
-              "text": "Banks' exposures to qualifying central counterparties (QCCPs)12 related to clearing activities are exempted from the large exposures framework. However, these exposures are subject to the regulatory reporting requirements as defined in . LEX20.4"
+              "text": "Banks' exposures to qualifying central counterparties (QCCPs)12 related to clearing activities are exempted from the large exposures framework. However, these exposures are subject to the regulatory reporting requirements as defined in . LEX20.430.54"
             },
             {
               "number": "30.55",
@@ -342,7 +342,7 @@
             },
             {
               "number": "30.58",
-              "text": "Trade exposures The exposure value of trade exposures must be calculated using the exposure measures prescribed in other parts of this framework for the respective type of exposures (eg using the SA-CCR for derivative exposures). Segregated initial margin The exposure value is zero.13 Non-segregated initial marginThe exposure value is the nominal amount of initial margin posted. Pre-funded default fund contributionsNominal amount of the funded contribution.14 Unfunded default fund contributionsThe exposure value is zero. Equity stakes The exposure value is the nominal amount.15 When the initial margin (IM) posted is bankruptcy-remote from the CCP – in the sense that it is segregated from the CCP’s own accounts, eg when the IM is held by a third-party custodian – this amount cannot be lost by the bank if the CCP defaults; therefore, the IM posted by the bank can be exempted from the large exposure limit.13 The exposure value for pre-funded default fund contributions may need to be revised if applied to QCCPs and not only to non-QCCPs.14 If equity stakes are deducted from the level of capital on which the large exposure limit is based, such exposures must be excluded from the definition of an exposure to a CCP.15 Regarding exposures subject to clearing services (the bank acting as a clearing member or being a client of a clearing member), the bank must determine the counterparty to which exposures must be assigned by applying the provisions of the risk-based capital requirements.16"
+              "text": "Trade exposures The exposure value of trade exposures must be calculated using the exposure measures prescribed in other parts of this framework for the respective type of exposures (eg using the SA-CCR for derivative exposures). Segregated initial margin The exposure value is zero.13 Non-segregated initial marginThe exposure value is the nominal amount of initial margin posted. Pre-funded default fund contributionsNominal amount of the funded contribution.14 Unfunded default fund contributionsThe exposure value is zero. Equity stakes The exposure value is the nominal amount.15 When the initial margin (IM) posted is bankruptcy-remote from the CCP – in the sense that it is segregated from the CCP’s own accounts, eg when the IM is held by a third-party custodian – this amount cannot be lost by the bank if the CCP defaults; therefore, the IM posted by the bank can be exempted from the large exposure limit.13 The exposure value for pre-funded default fund contributions may need to be revised if applied to QCCPs and not only to non-QCCPs.14 If equity stakes are deducted from the level of capital on which the large exposure limit is based, such exposures must be excluded from the definition of an exposure to a CCP.15 Regarding exposures subject to clearing services (the bank acting as a clearing member or being a client of a clearing member), the bank must determine the counterparty to which exposures must be assigned by applying the provisions of the risk-based capital requirements.1630.58"
             },
             {
               "number": "30.59",
@@ -357,7 +357,7 @@
           "subsections": [
             {
               "number": "40.1",
-              "text": "to exposures between global systemically important banks. 15 Dec 2019 First version in the format of the consolidated framework. The large exposure limit applied to a global systemically important bank’s (G-SIB’ s) exposure to another G-SIB is set at 15% of Tier 1 capital. The limit applies to G- SIBs as identified by the Basel Committee (see ) and published annually by SCO40 the Financial Stability Board (FSB). When a bank becomes a G-SIB, it and other G- SIBs must apply the 15% limit within 12 months of this event, which is the same time frame within which a bank that has become a G-SIB would need to satisfy its higher loss absorbency requirement (see ). RBC40.6"
+              "text": "to exposures between global systemically important banks. First version in the format of the consolidated framework. The large exposure limit applied to a global systemically important bank’s (G-SIB’ s) exposure to another G-SIB is set at 15% of Tier 1 capital. The limit applies to G- SIBs as identified by the Basel Committee (see ) and published annually by SCO40 the Financial Stability Board (FSB). When a bank becomes a G-SIB, it and other G- SIBs must apply the 15% limit within 12 months of this event, which is the same time frame within which a bank that has become a G-SIB would need to satisfy its higher loss absorbency requirement (see ). RBC40.640.1"
             },
             {
               "number": "40.2",

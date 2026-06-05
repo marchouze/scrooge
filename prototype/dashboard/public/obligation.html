@@ -114,6 +114,7 @@
         const fulfil = proj.fulfilmentPolicy || ref.fulfilmentPolicy || "";
         const citation = proj.citation || ref.citation || "";
         const requirement = proj.requirement || ref.requirement || "—";
+        const fullText = d.fullText || "";
         const derives = (proj.derivesFrom || []);
 
         const histHtml = (d.history || []).length
@@ -162,7 +163,8 @@
                 <ul class="od-para-list">${paras}</ul>
               </li>`;
             }).join('')}</ul>
-          </div>` : ''}
+          </div>`
+          : fullText ? `<div class="od-section"><h3>Full text${citation?` <span style="font-weight:400;color:var(--color-text-secondary);font-size:0.85em">${SC.esc(citation)}</span>`:""}</h3><div class="od-req" style="white-space:pre-wrap">${SC.esc(fullText)}</div></div>` : ""}
           <div class="od-section"><h3>Lifecycle</h3>${histHtml}</div>
         `;
 

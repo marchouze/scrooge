@@ -142,6 +142,25 @@ export function listKnowledgeBaseObligations(): KnowledgeBaseObligation[] {
   return [...bcbs, ...register].sort((a, b) => (a.key < b.key ? -1 : 1));
 }
 
+/**
+ * Full provision text — the whole paragraph as it reads in the source
+ * instrument — for a Provision URN, or "" if the node carries no text. The
+ * obligation detail view shows this when an obligation is opened; the
+ * list/summary surfaces use the obligation's shorter `requirement` instead.
+ * The text is folded into Provision-node metadata by importBcbsObligationGraphs
+ * (upsertNode only persists id/label/metadata, so a bare top-level `text` is
+ * otherwise dropped).
+ */
+export function findProvisionText(provisionUrn: string): string {
+  if (!provisionUrn) return "";
+  const row = getDb()
+    .prepare("SELECT metadata FROM graph_nodes WHERE id = ? AND node_type = 'Provision' LIMIT 1")
+    .get(provisionUrn) as { metadata: string | null } | undefined;
+  if (!row?.metadata) return "";
+  const m = JSON.parse(row.metadata) as Record<string, unknown>;
+  return typeof m.text === "string" ? m.text : "";
+}
+
 /** One knowledge-base obligation by canonical key, or null if absent. */
 export function findKnowledgeBaseObligation(key: string): KnowledgeBaseObligation | null {
   // Check chapter-level BCBS obligations first

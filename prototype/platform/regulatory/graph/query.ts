@@ -95,6 +95,10 @@ export interface ObligationChain {
   riskCategories: GraphNode[];
   /** Activities this obligation applies to (to-side of APPLIES_TO_ACTIVITY edge). */
   activities: GraphNode[];
+  /** Defined terms this obligation uses (to-side of USES edge). */
+  terms: GraphNode[];
+  /** Quantitative thresholds this obligation sets (to-side of SETS edge). */
+  thresholds: GraphNode[];
 }
 
 /**
@@ -189,6 +193,28 @@ export function traceObligationChain(obligationId: string, asOf?: string): Oblig
       .all(nodeId) as NodeRow[]
   ).map(rowToNode);
 
+  // Defined terms this obligation uses
+  const terms = (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.to_id = n.id
+         WHERE e.from_id = ? AND e.edge_type = 'USES' ${temporalFilter}`,
+      )
+      .all(nodeId) as NodeRow[]
+  ).map(rowToNode);
+
+  // Quantitative thresholds this obligation sets
+  const thresholds = (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.to_id = n.id
+         WHERE e.from_id = ? AND e.edge_type = 'SETS' ${temporalFilter}`,
+      )
+      .all(nodeId) as NodeRow[]
+  ).map(rowToNode);
+
   return {
     obligation,
     provisions,
@@ -197,6 +223,8 @@ export function traceObligationChain(obligationId: string, asOf?: string): Oblig
     capabilities,
     riskCategories,
     activities,
+    terms,
+    thresholds,
   };
 }
 

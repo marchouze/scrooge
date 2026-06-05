@@ -1,0 +1,2084 @@
+{
+  "instrumentId": "BCBS-MAR",
+  "standardName": "Calculation of RWA for market risk",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge)",
+  "extractionMethod": "llm",
+  "provenance": {
+    "extractionMethod": "llm",
+    "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+    "confidenceScore": 0.85,
+    "extractedAt": "2026-06-04T00:00:00Z"
+  },
+  "generatedAt": "2026-06-04T00:00:00Z",
+  "source": "BIS Basel Framework MAR12 (Definition of trading desk); in-session Claude semantic pass",
+  "scope": "MAR12 only (trading-desk definitions + 25 obligation atoms)",
+  "nodes": [
+    {
+      "id": "TERM-trading-desk",
+      "nodeType": "Term",
+      "label": "trading desk",
+      "term": "trading desk",
+      "definitionText": "A group of traders or trading accounts that implements a well-defined business strategy within a clear risk management structure; the level at which internal-models approval is granted for market-risk capital.",
+      "metadata": {
+        "definedIn": "MAR12",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "TERM-trading-account",
+      "nodeType": "Term",
+      "label": "trading account",
+      "term": "trading account",
+      "definitionText": "An indisputable and unambiguous unit of observation in accounting for trading activity; each is assigned to a single trading desk.",
+      "metadata": {
+        "definedIn": "MAR12",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "TERM-head-trader",
+      "nodeType": "Term",
+      "label": "head trader",
+      "term": "head trader",
+      "definitionText": "The trader with direct oversight of the group of traders or trading accounts comprising a trading desk; a desk must have one and may have up to two.",
+      "metadata": {
+        "definedIn": "MAR12",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "TERM-trader-mandate",
+      "nodeType": "Term",
+      "label": "trader mandate",
+      "term": "trader mandate",
+      "definitionText": "A well-defined mandate governing an individual trader's permitted activity within the trading desk's limits.",
+      "metadata": {
+        "definedIn": "MAR12",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "TERM-risk-scope",
+      "nodeType": "Term",
+      "label": "risk scope",
+      "term": "risk scope",
+      "definitionText": "A trading desk's clearly defined risk scope consistent with its pre-established objectives, specifying its overall risk class and permitted risk factors.",
+      "metadata": {
+        "definedIn": "MAR12",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "TERM-trading-limits",
+      "nodeType": "Term",
+      "label": "trading limits",
+      "term": "trading limits",
+      "definitionText": "Trading limits or directional exposures defined at trading-desk level from the business strategy, reviewed at least annually by senior management.",
+      "metadata": {
+        "definedIn": "MAR12",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "THR-MAR-12.5-HEAD-TRADERS",
+      "nodeType": "Threshold",
+      "label": "<= 2 head traders",
+      "value": 2,
+      "unit": "head traders",
+      "metadata": {
+        "operator": "<=",
+        "note": "A trading desk may have at most two head traders.",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.95,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "THR-MAR-12.5-LIMIT-REVIEW",
+      "nodeType": "Threshold",
+      "label": "<= 12 months",
+      "value": 12,
+      "unit": "months",
+      "metadata": {
+        "operator": "<=",
+        "note": "Trading limits reviewed at least annually (interval <= 12 months).",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.95,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "THR-MAR-12.5-RISK-REPORTS",
+      "nodeType": "Threshold",
+      "label": "<= 1 week",
+      "value": 1,
+      "unit": "week",
+      "metadata": {
+        "operator": "<=",
+        "note": "Risk-management reports produced at least weekly (interval <= 1 week).",
+        "standard": "MAR",
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.95,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "E-c274548688220d687484",
+      "fromId": "urn:reg:bcbs:mar:12.1",
+      "toId": "TERM-trading-desk",
+      "edgeType": "DEFINES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:mar:12.1",
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-91024cff712daf9f7e5b",
+      "fromId": "urn:reg:bcbs:mar:12.5",
+      "toId": "TERM-trading-account",
+      "edgeType": "DEFINES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:mar:12.5",
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-c34ac9c53e214074321f",
+      "fromId": "urn:reg:bcbs:mar:12.5",
+      "toId": "TERM-head-trader",
+      "edgeType": "DEFINES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:mar:12.5",
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-55fe1dc3d2a6f3c2b0f0",
+      "fromId": "urn:reg:bcbs:mar:12.5",
+      "toId": "TERM-trader-mandate",
+      "edgeType": "DEFINES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:mar:12.5",
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-844720b7252833e16d8c",
+      "fromId": "urn:reg:bcbs:mar:12.5",
+      "toId": "TERM-risk-scope",
+      "edgeType": "DEFINES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:mar:12.5",
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-3196b6b6fa2d0036828c",
+      "fromId": "urn:reg:bcbs:mar:12.5",
+      "toId": "TERM-trading-limits",
+      "edgeType": "DEFINES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:mar:12.5",
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-155550eb0fccf7af75bc",
+      "fromId": "OBL-BCBS-MAR-s12.5-1",
+      "toId": "THR-MAR-12.5-HEAD-TRADERS",
+      "edgeType": "SETS",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.95,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.95,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-0efb6577d00bf6d802bf",
+      "fromId": "OBL-BCBS-MAR-s12.5-16",
+      "toId": "THR-MAR-12.5-LIMIT-REVIEW",
+      "edgeType": "SETS",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.95,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.95,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-18b434d546737fb12f12",
+      "fromId": "OBL-BCBS-MAR-s12.5-18",
+      "toId": "THR-MAR-12.5-RISK-REPORTS",
+      "edgeType": "SETS",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.95,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.95,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-62b9ebcacb144c3b9dbc",
+      "fromId": "OBL-BCBS-MAR-s12.3-1",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-a371a8569686c1778e4b",
+      "fromId": "OBL-BCBS-MAR-s12.3-1",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-d419347651bc4643549c",
+      "fromId": "OBL-BCBS-MAR-s12.3-1",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-36df1b366c7c90045cb3",
+      "fromId": "OBL-BCBS-MAR-s12.3-2",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-75f98f29411e0dd2d13e",
+      "fromId": "OBL-BCBS-MAR-s12.3-2",
+      "toId": "RISK-RT-ST-GV",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-b11ff4bb083c2f9f2f3c",
+      "fromId": "OBL-BCBS-MAR-s12.3-2",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-a63ed52b5a06a646fa9d",
+      "fromId": "OBL-BCBS-MAR-s12.3-2",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-5b64938e06f7953978e3",
+      "fromId": "OBL-BCBS-MAR-s12.3-3",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-3f00ab6992a144b35bc6",
+      "fromId": "OBL-BCBS-MAR-s12.3-3",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-28e2e3195f665f254671",
+      "fromId": "OBL-BCBS-MAR-s12.3-3",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-358dd243636d905e6038",
+      "fromId": "OBL-BCBS-MAR-s12.3-4",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-6b985cbde25d76f382ce",
+      "fromId": "OBL-BCBS-MAR-s12.3-4",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-92df5903dd1af8e84f63",
+      "fromId": "OBL-BCBS-MAR-s12.3-4",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-f71d704adbd6fa358247",
+      "fromId": "OBL-BCBS-MAR-s12.3-5",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-f202cd0bfd58adf301a0",
+      "fromId": "OBL-BCBS-MAR-s12.3-5",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-1a7499dbb757d621a8a3",
+      "fromId": "OBL-BCBS-MAR-s12.3-5",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-965914725fab3cf9af4f",
+      "fromId": "OBL-BCBS-MAR-s12.5-1",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-d37770a21a6ffaa340a6",
+      "fromId": "OBL-BCBS-MAR-s12.5-1",
+      "toId": "RISK-RT-ST-GV",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-9b3367d532f3e152a1b0",
+      "fromId": "OBL-BCBS-MAR-s12.5-1",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-ff5004b89ac30f0cfb72",
+      "fromId": "OBL-BCBS-MAR-s12.5-1",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-6e54c996f635257e18cb",
+      "fromId": "OBL-BCBS-MAR-s12.5-1",
+      "toId": "TERM-head-trader",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-cf5c2c50b73ec26f924e",
+      "fromId": "OBL-BCBS-MAR-s12.5-2",
+      "toId": "RISK-RT-ST-GV",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-2d54c846b653ac1e375d",
+      "fromId": "OBL-BCBS-MAR-s12.5-2",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-125c664af4094776163d",
+      "fromId": "OBL-BCBS-MAR-s12.5-2",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-1e4c3be6b92c6bde33b5",
+      "fromId": "OBL-BCBS-MAR-s12.5-2",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-f7227374072fbfed7231",
+      "fromId": "OBL-BCBS-MAR-s12.5-2",
+      "toId": "TERM-head-trader",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-28017194d23eaca12612",
+      "fromId": "OBL-BCBS-MAR-s12.5-3",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-16cbf83a0705c4fa22c9",
+      "fromId": "OBL-BCBS-MAR-s12.5-3",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-ac7e32185ea8debcc27b",
+      "fromId": "OBL-BCBS-MAR-s12.5-3",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-0a8c8f55979e9d517e14",
+      "fromId": "OBL-BCBS-MAR-s12.5-4",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-6f42a442b8647e53a064",
+      "fromId": "OBL-BCBS-MAR-s12.5-4",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-b21fcfd3ce88b6abecac",
+      "fromId": "OBL-BCBS-MAR-s12.5-4",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-be9bd29f54169fe48069",
+      "fromId": "OBL-BCBS-MAR-s12.5-4",
+      "toId": "TERM-trading-account",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-93718bd904e0ea221987",
+      "fromId": "OBL-BCBS-MAR-s12.5-5",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-4d0cace7d76a1f95b613",
+      "fromId": "OBL-BCBS-MAR-s12.5-5",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-fdd2b5f831d381962c2f",
+      "fromId": "OBL-BCBS-MAR-s12.5-5",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-29309b774cbfec5b67d7",
+      "fromId": "OBL-BCBS-MAR-s12.5-5",
+      "toId": "TERM-risk-scope",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-4f90a3501ae7e65a233e",
+      "fromId": "OBL-BCBS-MAR-s12.5-6",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-971740c650abc145972e",
+      "fromId": "OBL-BCBS-MAR-s12.5-6",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-d6a00f8e6ab3cf809bde",
+      "fromId": "OBL-BCBS-MAR-s12.5-6",
+      "toId": "TERM-risk-scope",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-d6c7239f7147ccc77938",
+      "fromId": "OBL-BCBS-MAR-s12.5-7",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-d3fab3d6497aaeb5c25a",
+      "fromId": "OBL-BCBS-MAR-s12.5-7",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-58fb657505d3b02c955a",
+      "fromId": "OBL-BCBS-MAR-s12.5-7",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-0c32a66a02bca7333d50",
+      "fromId": "OBL-BCBS-MAR-s12.5-8",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-640a9e2170893e7adf9f",
+      "fromId": "OBL-BCBS-MAR-s12.5-8",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-7e7d34524074388cdf71",
+      "fromId": "OBL-BCBS-MAR-s12.5-8",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-b0398385608113ac79b1",
+      "fromId": "OBL-BCBS-MAR-s12.5-8",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-937e9ae5462718fa7b1a",
+      "fromId": "OBL-BCBS-MAR-s12.5-9",
+      "toId": "RISK-RT-ST-GV",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-7c2ba6e6ee2f5399b0b0",
+      "fromId": "OBL-BCBS-MAR-s12.5-9",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-9fb41bc29fa25626640a",
+      "fromId": "OBL-BCBS-MAR-s12.5-9",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-efde567d022c56f6fd3b",
+      "fromId": "OBL-BCBS-MAR-s12.5-9",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-417eab9b583a8708aef2",
+      "fromId": "OBL-BCBS-MAR-s12.5-10",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-4b91275801342e07318a",
+      "fromId": "OBL-BCBS-MAR-s12.5-10",
+      "toId": "RISK-RT-ST-GV",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-a4fe27772036bb876beb",
+      "fromId": "OBL-BCBS-MAR-s12.5-10",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-aa3b0a8e6c14263d2e99",
+      "fromId": "OBL-BCBS-MAR-s12.5-10",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-8e870c4c9641e3e30de6",
+      "fromId": "OBL-BCBS-MAR-s12.5-11",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-7ea8b7abc41b96492c76",
+      "fromId": "OBL-BCBS-MAR-s12.5-11",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-4d0e22f2c4235f2c74b7",
+      "fromId": "OBL-BCBS-MAR-s12.5-11",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-2c52b6373e9c354a5993",
+      "fromId": "OBL-BCBS-MAR-s12.5-12",
+      "toId": "RISK-RT-ST-GV",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-0971b960297b9be6e085",
+      "fromId": "OBL-BCBS-MAR-s12.5-12",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-30577fe2b90b9e21c5fb",
+      "fromId": "OBL-BCBS-MAR-s12.5-12",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-a0a35e04950dd23cfd1d",
+      "fromId": "OBL-BCBS-MAR-s12.5-12",
+      "toId": "TERM-head-trader",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-cbf1f60cb7682a7a4037",
+      "fromId": "OBL-BCBS-MAR-s12.5-13",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-203b6820e2b8102c75a2",
+      "fromId": "OBL-BCBS-MAR-s12.5-13",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-51d0ffca646daec4bd10",
+      "fromId": "OBL-BCBS-MAR-s12.5-13",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-8191e8a8f6a41c3dbd06",
+      "fromId": "OBL-BCBS-MAR-s12.5-13",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-f776fcb47fe6f51c90fb",
+      "fromId": "OBL-BCBS-MAR-s12.5-14",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-2cd4fadcbd0ab140ced9",
+      "fromId": "OBL-BCBS-MAR-s12.5-14",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-17a8d96e3c5b2cd0d381",
+      "fromId": "OBL-BCBS-MAR-s12.5-14",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-2baf8f957a1ac46d10c9",
+      "fromId": "OBL-BCBS-MAR-s12.5-14",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-2661bd6758eb9a987d3c",
+      "fromId": "OBL-BCBS-MAR-s12.5-15",
+      "toId": "RISK-RT-ST-GV",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-9e605ec538a6f5c87d2c",
+      "fromId": "OBL-BCBS-MAR-s12.5-15",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-5f588544a802b8730027",
+      "fromId": "OBL-BCBS-MAR-s12.5-15",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-79d85649dbbe707b7506",
+      "fromId": "OBL-BCBS-MAR-s12.5-15",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-988d9df34b214d4f373b",
+      "fromId": "OBL-BCBS-MAR-s12.5-16",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-aa2b68f95f6ccbeb27cf",
+      "fromId": "OBL-BCBS-MAR-s12.5-16",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-7aaf78f00f5d93857566",
+      "fromId": "OBL-BCBS-MAR-s12.5-16",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-b797792a4ea1d24e431d",
+      "fromId": "OBL-BCBS-MAR-s12.5-16",
+      "toId": "TERM-trading-limits",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-721c7d88f29b68f187fa",
+      "fromId": "OBL-BCBS-MAR-s12.5-17",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-11b24ac94eb838d4cbf7",
+      "fromId": "OBL-BCBS-MAR-s12.5-17",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-5fb4c5eaa9099888fb13",
+      "fromId": "OBL-BCBS-MAR-s12.5-17",
+      "toId": "TERM-trading-limits",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-a40b66a11b2e25e1ab98",
+      "fromId": "OBL-BCBS-MAR-s12.5-17",
+      "toId": "TERM-trader-mandate",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-cd41896cd8bc5c785234",
+      "fromId": "OBL-BCBS-MAR-s12.5-18",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-96adebee88871314ac68",
+      "fromId": "OBL-BCBS-MAR-s12.5-18",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-47152d39c5e27354a3a8",
+      "fromId": "OBL-BCBS-MAR-s12.5-18",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-6ccb3884b3c473cf727d",
+      "fromId": "OBL-BCBS-MAR-s12.5-18",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-e848b15344c572bfe171",
+      "fromId": "OBL-BCBS-MAR-s12.5-19",
+      "toId": "RISK-RT-OP",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.7,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.7,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-e63d196839fc4a96e867",
+      "fromId": "OBL-BCBS-MAR-s12.5-19",
+      "toId": "ACT-ACT-RISK-MARKET",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-a95be2dd79f5cd59d1c1",
+      "fromId": "OBL-BCBS-MAR-s12.5-19",
+      "toId": "TERM-trading-desk",
+      "edgeType": "USES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-5048a8cd69294a05f07a",
+      "fromId": "OBL-BCBS-MAR-s12.6-1",
+      "toId": "RISK-RT-MK",
+      "edgeType": "ADDRESSES",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.9,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "E-937934e162d89c9e495a",
+      "fromId": "OBL-BCBS-MAR-s12.6-1",
+      "toId": "ACT-ACT-TRADE-BOOK",
+      "edgeType": "APPLIES_TO_ACTIVITY",
+      "extractionMethod": "llm",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-04T00:00:00Z",
+      "sourceProvision": null,
+      "metadata": {
+        "loader": "mar12-semantic-llm-in-session"
+      },
+      "provenance": {
+        "extractionMethod": "llm",
+        "extractorId": "claude-opus (cowork in-session); pass=mar12-semantic",
+        "confidenceScore": 0.85,
+        "extractedAt": "2026-06-04T00:00:00Z"
+      }
+    }
+  ]
+}

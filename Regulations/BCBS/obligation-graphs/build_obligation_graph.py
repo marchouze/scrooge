@@ -20,14 +20,6 @@ ID conventions (mirroring the project):
 import json, re, sys, os, datetime
 
 EXTRACTED_AT = "2026-06-04T00:00:00Z"
-EXTRACTOR_ID = "build_obligation_graph.py"
-
-# Provenance per the Plane-A ingestion contract
-# (prototype/platform/regulatory/extraction-contract.ts). Every node carries it
-# so the reference graph records who/what/how/when produced each assertion.
-def prov(conf=1.0):
-    return {"extractionMethod": "rule-based", "extractorId": EXTRACTOR_ID,
-            "confidenceScore": round(float(conf), 2), "extractedAt": EXTRACTED_AT}
 
 # ---- normative-language detection -----------------------------------------
 RE_MUSTNOT = re.compile(r'\b(must not|shall not|may not|must never|is prohibited|are prohibited|is not permitted|may in no case)\b', re.I)
@@ -96,6 +88,32 @@ def action_summary(text, otype):
             return re.sub(r'\s+',' ', s)[:300]
     return re.sub(r'\s+',' ', text)[:300]
 
+def conf_for(otype):
+    return {'must':0.9,'must-not':0.9,'recommended':0.6,'may':0.55}.get(otype,0.5)
+
+def modalities_present(text):
+    """All distinct normative forces in a paragraph (not just the strongest).
+    'must' inside 'must not' is not double-counted."""
+    t_wo = RE_MUSTNOT.sub(' ', text)
+    out = []
+    if RE_MUSTNOT.search(text): out.append('must-not')
+    if RE_MUST.search(t_wo):    out.append('must')
+    if RE_SHOULD.search(text):  out.append('recommended')
+    if RE_MAY_ACTOR.search(text): out.append('may')
+    return out
+
+def lead_modality(text):
+    """The first modal-bearing sentence in reading order -> (modality, summary).
+    Types a multi-duty paragraph by its LEAD duty rather than by whichever
+    modality ranks 'strongest', so a paragraph led by a 'must' is not mislabelled
+    'must-not' because of a buried exception clause."""
+    for s in sentences(text):
+        o = classify(s)[0]
+        if o:
+            return o, re.sub(r'\s+', ' ', s)[:300]
+    o = classify(text)[0]
+    return (o, action_summary(text, o)) if o else (None, '')
+
 # ---- atomic decomposition ---------------------------------------------------
 # Enumeration markers: (1) (a) (iv) etc. — BIS sub-paragraph duties.
 RE_ENUM = re.compile(r'(?<![\w.])\(\s*(\d{1,2}|[a-z]|[ivxl]{1,5})\s*\)', re.I)
@@ -113,15 +131,18 @@ def split_enum(text):
         items.append((m.group(0), text[s:e].strip()))
     return stem, items
 
-def decompose(text):
-    """Break a normative paragraph into atomic duty units.
+def decompose(text, atomic=True):
+    """Break a normative paragraph into duty units.
 
-    Each unit -> {text, enum, stemTrigger}. Granularity:
-      - enumerated sub-items (each duty-bearing item / its sentences), and/or
-      - the stem directive combined with each object item when items carry no
-        modal of their own, and/or
-      - sentence level for non-enumerated paragraphs.
+    atomic=True  -> fine-grained: enumerated sub-items / sentence-level duties.
+    atomic=False -> one duty unit per normative PARAGRAPH (paragraph-level
+                    decomposition); the action summary is the modal-bearing
+                    sentence, the trigger is any leading conditional clause.
     """
+    if not atomic:
+        if classify(text)[0]:
+            return [{'text': text, 'enum': None, 'stemTrigger': first_clause(text, RE_TRIGGER)}]
+        return []
     stem, items = split_enum(text)
     enumerated = items[0][0] is not None
     stem_type = classify(stem)[0] if stem else None
@@ -167,7 +188,7 @@ def valid_term(term):
     if len(term) < 4: return None
     return term
 
-def build(std, std_name, in_path, jurisdiction='supranational'):
+def build(std, std_name, in_path, jurisdiction='supranational', atomic=True):
     std_lc = std.lower()
     data = json.load(open(in_path))
     paras = data['paragraphs']
@@ -176,9 +197,14 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
     nodes = {}   # id -> node
     edges = []
     def add_node(n):
-        if n['id'] not in nodes:
-            n.setdefault('provenance', prov(n.get('classificationConfidence', 1.0)))
+        existing = nodes.get(n['id'])
+        if existing is None:
             nodes[n['id']] = n
+        else:
+            # a full provision (with text) always supersedes a cross-ref stub;
+            # a later stub never clobbers an already-defined full node.
+            if existing.get('metadata',{}).get('stub') and not n.get('metadata',{}).get('stub'):
+                nodes[n['id']] = n
         return n['id']
     def add_edge(frm, to, etype, conf, method='rule-based', src=None, meta=None):
         eid = f"E-{etype}-{abs(hash((frm,to,etype)))%10**12:012d}"
@@ -268,28 +294,39 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
         ref = p['paragraph']; pid = prov_id(ref); text = p['text']
         if not classify(text)[0]:
             continue
-        units = decompose(text)
+        units = decompose(text, atomic)
         if units:
             n_paras_norm += 1
         for u in units:
             utext = re.sub(r'\s+', ' ', u['text']).strip()
-            otype, conf = classify(utext)
+            # paragraph-level: type by the LEAD duty + record all modalities;
+            # atomic: a unit is a single duty, so strongest == only modality.
+            if atomic:
+                otype, conf = classify(utext)
+                summary = utext[:300]
+                mods = [otype] if otype else []
+            else:
+                otype, summary = lead_modality(utext)
+                conf = conf_for(otype)
+                mods = modalities_present(utext)
             if not otype:
                 continue
             n_obl += 1
             seq = obl_seq.get(ref, 0) + 1; obl_seq[ref] = seq
             oid = f'OBL-{instrument}-s{ref}-{seq}'
-            actor = detect_actor(utext) if detect_actor(utext) != 'bank' else detect_actor(text)
-            trig = first_clause(utext, RE_TRIGGER) or u.get('stemTrigger')
+            actor = detect_actor(summary) if detect_actor(summary) != 'bank' else detect_actor(text)
+            trig = (first_clause(utext, RE_TRIGGER) or u.get('stemTrigger'))
             exc  = first_clause(utext, RE_EXCEPT)
             md = {'sourceProvision':pid,'chapter':p['chapter'],'paragraph':ref,
                   'standard':std,'classificationConfidence':conf,
-                  'section':p.get('section') or None,'atomicSeq':seq}
+                  'modalities':mods,
+                  'section':p.get('section') or None}
+            if atomic: md['atomicSeq']=seq
             if u.get('enum'): md['enumLabel']=u['enum']
             obl = {'id':oid,'nodeType':'Obligation',
                    'label':f"{p['chapter']} {ref}{(' '+u['enum']) if u.get('enum') else ''} — {otype}",
                    'obligationType':otype,'actor':actor,
-                   'actionSummary':utext[:300],'metadata':md}
+                   'actionSummary':summary,'metadata':md}
             if trig: obl['trigger']=trig[:200]
             if exc:  obl['exception']=exc[:200]
             add_node(obl)
@@ -320,7 +357,6 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
         'instrumentId': instrument,
         'ontology': 'platform/regulatory/graph/types.ts (GraphNode/GraphEdge)',
         'extractionMethod': 'rule-based',
-        'provenance': prov(1.0),
         'generatedAt': EXTRACTED_AT,
         'source': data.get('source',''),
         'stats': {},
@@ -333,13 +369,14 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
     et = Counter(e['edgeType'] for e in graph['edges'])
     graph['stats'] = {'nodes':len(graph['nodes']),'edges':len(graph['edges']),
                       'obligations':n_obl,'normativeParagraphs':n_paras_norm,
-                      'decomposition':'atomic',
+                      'decomposition': 'atomic' if atomic else 'paragraph',
                       'nodesByType':dict(nt),'edgesByType':dict(et),
                       'obligationsByType':dict(Counter(n.get('obligationType') for n in graph['nodes'] if n['nodeType']=='Obligation'))}
     return graph
 
 if __name__ == '__main__':
     std = sys.argv[1]; std_name = sys.argv[2]; in_path = sys.argv[3]; out_path = sys.argv[4]
-    g = build(std, std_name, in_path)
+    mode = sys.argv[5] if len(sys.argv) > 5 else 'atomic'   # 'atomic' | 'paragraph'
+    g = build(std, std_name, in_path, atomic=(mode != 'paragraph'))
     json.dump(g, open(out_path,'w'), indent=2, ensure_ascii=False)
     print(json.dumps(g['stats'], indent=2))

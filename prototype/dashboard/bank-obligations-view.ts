@@ -17,6 +17,7 @@ import { resolve } from "node:path";
 import type { EventStore } from "../platform/event-store/store";
 import {
   findKnowledgeBaseObligation,
+  findProvisionText,
   listKnowledgeBaseObligations,
 } from "../platform/obligations/knowledge-base";
 import { type BankObligation, loadBankObligations } from "../platform/obligations/projection";
@@ -197,6 +198,10 @@ export interface ObligationDetail {
   adopted: boolean;
   seed: ObligationSeedRow | null;
   projection: BankObligation | null;
+  /** Full source-provision paragraph text, when the obligation derives from a
+   * Provision node that carries it (BCBS). "" when unavailable (e.g. register
+   * obligations whose requirement already IS the full text). */
+  fullText: string;
   history: Array<{ kind: string; at: string; detail?: string; status?: string }>;
   headingGroups: ChapterHeadingGroup[];
 }
@@ -234,9 +239,11 @@ export function getObligationDetail(
   // Reference data: prefer the authored seed row; otherwise synthesise one from
   // the knowledge-base node so BCBS (and other extracted) obligations resolve.
   let seed = loadObligationSeed(repoRoot).find((r) => r.id === id) ?? null;
+  let provisionUrn = "";
   if (!seed) {
     const kb = findKnowledgeBaseObligation(id);
     if (kb) {
+      provisionUrn = kb.sourceProvision;
       seed = {
         id: kb.key,
         urn: kb.nodeId,
@@ -248,6 +255,10 @@ export function getObligationDetail(
       };
     }
   }
+  // The full source-provision paragraph (BCBS obligations derive from a
+  // Provision node that carries the whole text). Fall back to the seed citation
+  // when it is itself a provision URN.
+  const fullText = findProvisionText(provisionUrn || seed?.citation || "");
   const projection = loadBankObligations(store).find((o) => o.id === id) ?? null;
   if (!seed && !projection) return null;
 
@@ -323,5 +334,13 @@ export function getObligationDetail(
     }
   }
 
-  return { id, adopted: projection?.adopted ?? false, seed, projection, history, headingGroups };
+  return {
+    id,
+    adopted: projection?.adopted ?? false,
+    seed,
+    projection,
+    fullText,
+    history,
+    headingGroups,
+  };
 }

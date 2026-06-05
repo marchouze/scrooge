@@ -33,6 +33,7 @@ import {
   upsertEdge,
   upsertNode,
 } from "./db";
+import { defaultExtractionsDir, seedExtractionArtefacts } from "./extraction-artefact-loader";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
 import type { DocumentApplicabilityStatus, GraphNode, GraphNodeMetadata } from "./types";
@@ -50,6 +51,13 @@ export interface SeedStats {
   /** Pre-built BCBS obligation graphs imported (Regulations/BCBS/obligation-graphs/). */
   obligationGraphs?: {
     standards: number;
+    nodes: number;
+    edges: number;
+    skipped: number;
+  };
+  /** On-demand extraction artefacts imported (Regulations/_extractions/*.artefact.json). */
+  extractionArtefacts?: {
+    files: number;
     nodes: number;
     edges: number;
     skipped: number;
@@ -358,8 +366,11 @@ function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligat
         const provenance = n.provenance ?? fileProvenance;
         // Fold all descriptive top-level fields into metadata — upsertNode only
         // persists id/label/metadata, so top-level fields are lost unless copied.
-        // Obligation nodes: actionSummary (requirement text), obligationType, actor, trigger.
-        // Provision nodes: text (full regulatory paragraph text), level (chapter/section).
+        // Obligation nodes: actionSummary (the lead-duty requirement text),
+        // obligationType (normative force), actor, trigger. For Provision nodes:
+        // `text` is the FULL paragraph as it reads in the source instrument — the
+        // detail view shows it when an obligation is opened — and level
+        // (chapter/section). The adoption surface reads these from the node.
         const raw = n as unknown as Record<string, unknown>;
         const descriptive: GraphNodeMetadata = {};
         for (const k of ["actionSummary", "obligationType", "actor", "trigger", "text", "level"]) {
@@ -1488,6 +1499,15 @@ export async function runSeed(): Promise<SeedStats> {
   // ontology. Imported as part of the projection so it survives re-seeds.
   const obligationGraphs = importBcbsObligationGraphs(now);
 
+  // ── On-demand extraction artefacts ───────────────────────────────────────
+  // Ingest any *.artefact.json under Regulations/_extractions/ — the drop-zone
+  // for on-demand LLM / agent / human semantic analyses (Term / Threshold /
+  // RiskCategory / Activity nodes + ADDRESSES / USES / SETS / DEFINES /
+  // APPLIES_TO_ACTIVITY edges). Plane-A reference data; rebuilt every seed so the
+  // analysis survives the truncate-and-rebuild projection. See
+  // Regulations/_extractions/README.md.
+  const extractionArtefacts = seedExtractionArtefacts(defaultExtractionsDir(), now);
+
   // ── DERIVES_FROM bridge (Plane B → Plane A) ──────────────────────────────
   // Fold the bank's ObligationAdopted decisions (Plane B, the source of truth)
   // into a re-derivable graph edge: the adopted obligation DERIVES_FROM the
@@ -1528,7 +1548,15 @@ export async function runSeed(): Promise<SeedStats> {
 
   const durationMs = Math.round(performance.now() - startMs);
 
-  return { nodesByType, edgesByType, totalNodes, totalEdges, durationMs, obligationGraphs };
+  return {
+    nodesByType,
+    edgesByType,
+    totalNodes,
+    totalEdges,
+    durationMs,
+    obligationGraphs,
+    extractionArtefacts,
+  };
 }
 
 // ---------------------------------------------------------------------------
