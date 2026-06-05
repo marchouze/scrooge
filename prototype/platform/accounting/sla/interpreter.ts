@@ -555,12 +555,7 @@ function applyRule(
         ruleId: rule.rule_id,
         representation,
         alertId: `alert:integrity:sla-unresolved-currency-${currency.toLowerCase()}`,
-        detail:
-          `SLA account-resolution miss: no ${rule.representation} ${line.account.logical} ` +
-          `account for currency ${currency} (entity ${key.entity}, product ${key.product}) — ` +
-          `routed to FX unresolved-currency suspense ${FX_UNRESOLVED_CURRENCY_SUSPENSE}. ` +
-          "URGENT CORRECTION: add a dedicated per-currency account and re-book; " +
-          "the USD account is USD-only (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).",
+        detail: `SLA account-resolution miss: no ${rule.representation} ${line.account.logical} account for currency ${currency} (entity ${key.entity}, product ${key.product}) — routed to FX unresolved-currency suspense ${FX_UNRESOLVED_CURRENCY_SUSPENSE}. URGENT CORRECTION: add a dedicated per-currency account and re-book; the USD account is USD-only (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).`,
       });
     }
 

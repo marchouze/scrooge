@@ -295,7 +295,8 @@ describe("interpreter — unresolved currency → suspense + urgent-correction a
     // per-currency DR == CR still holds (EUR nets to zero within suspense)
     const byCcy = new Map<string, number>();
     for (const leg of r.legs) {
-      const signed = leg.debitCredit === "debit" ? Number(leg.amountMinor) : -Number(leg.amountMinor);
+      const signed =
+        leg.debitCredit === "debit" ? Number(leg.amountMinor) : -Number(leg.amountMinor);
       byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0) + signed);
     }
     for (const [, net] of byCcy) expect(net).toBe(0);
