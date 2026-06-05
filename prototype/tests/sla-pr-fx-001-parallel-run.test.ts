@@ -5,17 +5,17 @@
 // through BOTH the new rules-as-data interpreter (PR_FX_001) and the legacy
 // `fxTradeBookingJournals` / `runGlPostingEngine`.
 //
-// CORRECTED success criterion (CEO design call, Marc, 2026-06-05):
-//   - ZAR and USD legs MUST match the legacy engine BYTE-FOR-BYTE — same
-//     accounts, same minor amounts, same currencies, balanced. These are the
-//     currencies the legacy engine books CORRECTLY.
-//   - EUR / GBP / any non-ZAR/USD currency MUST DELIBERATELY DIVERGE from the
-//     legacy engine: the legacy `default → USD` fallback mis-booked them into
-//     the USD account (ACC-2100-002/004); the corrected interpreter routes them
-//     to the FX unresolved-currency suspense account (ACC-2100-007) and raises a
-//     high-severity urgent-correction alert. The test asserts the CORRECTED
-//     behaviour, NOT legacy parity — that divergence is the latent default-to-USD
-//     defect being fixed.
+// CORRECTED success criterion (CEO design call, Marc, 2026-06-05; extended by
+// D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING, CFO-approved 2026-06-05):
+//   - ZAR, USD, AND the newly-provisioned GBP/EUR/CHF/AUD/JPY legs MUST match
+//     the legacy engine BYTE-FOR-BYTE — same accounts, same minor amounts, same
+//     currencies, balanced. Each of these seven currencies now has its OWN
+//     dedicated trading account, so the corrected interpreter and the corrected
+//     legacy helper agree to PROPER ACCOUNTS (no longer parity-to-suspense).
+//   - Any STILL-unprovisioned currency (e.g. SGD) MUST route — in BOTH engines —
+//     to the FX unresolved-currency suspense account (ACC-2100-007) and raise a
+//     high-severity urgent-correction alert. The interpreter and legacy helper
+//     AGREE on this suspense routing; never a silent USD fallback.
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
@@ -42,8 +42,11 @@ interface FixtureSpec {
   readonly rate: number;
 }
 
-// Fixtures the LEGACY engine books CORRECTLY (ZAR/USD only) — byte-for-byte
-// parity is the regression target for these.
+// Fixtures the engines book to dedicated per-currency accounts — byte-for-byte
+// parity is the regression target. ZAR/USD plus the newly-provisioned
+// GBP/EUR/CHF/AUD/JPY (D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING). The GBP/EUR
+// fixture exercises a trade where BOTH legs are non-ZAR/USD provisioned
+// currencies — the case that previously double-mis-booked to the USD slot.
 const PARITY_FIXTURES: readonly FixtureSpec[] = [
   {
     name: "buy USD/ZAR (pay ZAR, receive USD)",
@@ -67,12 +70,6 @@ const PARITY_FIXTURES: readonly FixtureSpec[] = [
     receiveMinor: 945_000_000,
     rate: 18.9,
   },
-];
-
-// Fixtures the legacy engine MIS-BOOKS (non-ZAR/USD → legacy USD-slot fallback).
-// The corrected interpreter routes these to suspense + raises an urgent
-// correction; the test asserts DIVERGENCE from legacy, NOT parity.
-const DIVERGENCE_FIXTURES: readonly FixtureSpec[] = [
   {
     name: "buy EUR/ZAR (pay ZAR, receive EUR)",
     side: "buy",
@@ -85,7 +82,51 @@ const DIVERGENCE_FIXTURES: readonly FixtureSpec[] = [
     rate: 20.5,
   },
   {
-    name: "buy GBP/EUR (pay EUR, receive GBP) — both legs non-ZAR/USD",
+    name: "buy GBP/ZAR (pay ZAR, receive GBP)",
+    side: "buy",
+    base: "GBP",
+    quote: "ZAR",
+    payCurrency: "ZAR",
+    receiveCurrency: "GBP",
+    payMinor: 2_400_000_000,
+    receiveMinor: 100_000_000,
+    rate: 24.0,
+  },
+  {
+    name: "buy CHF/ZAR (pay ZAR, receive CHF)",
+    side: "buy",
+    base: "CHF",
+    quote: "ZAR",
+    payCurrency: "ZAR",
+    receiveCurrency: "CHF",
+    payMinor: 2_100_000_000,
+    receiveMinor: 100_000_000,
+    rate: 21.0,
+  },
+  {
+    name: "buy AUD/ZAR (pay ZAR, receive AUD)",
+    side: "buy",
+    base: "AUD",
+    quote: "ZAR",
+    payCurrency: "ZAR",
+    receiveCurrency: "AUD",
+    payMinor: 1_250_000_000,
+    receiveMinor: 100_000_000,
+    rate: 12.5,
+  },
+  {
+    name: "buy JPY/ZAR (pay ZAR, receive JPY) — zero-minor-unit currency",
+    side: "buy",
+    base: "JPY",
+    quote: "ZAR",
+    payCurrency: "ZAR",
+    receiveCurrency: "JPY",
+    payMinor: 1_240_000_000,
+    receiveMinor: 1_000_000, // JPY minor unit = 0; amountMinor == major units
+    rate: 0.124,
+  },
+  {
+    name: "buy GBP/EUR (pay EUR, receive GBP) — both legs provisioned non-ZAR/USD",
     side: "buy",
     base: "GBP",
     quote: "EUR",
@@ -94,6 +135,23 @@ const DIVERGENCE_FIXTURES: readonly FixtureSpec[] = [
     payMinor: 117_000_000,
     receiveMinor: 100_000_000,
     rate: 1.17,
+  },
+];
+
+// Fixtures with a STILL-unprovisioned currency (SGD) — both engines route the
+// foreign leg to the FX unresolved-currency suspense (ACC-2100-007) and raise an
+// urgent correction. The engines AGREE (parity-to-suspense); never the USD slot.
+const DIVERGENCE_FIXTURES: readonly FixtureSpec[] = [
+  {
+    name: "buy SGD/ZAR (pay ZAR, receive SGD) — SGD unprovisioned",
+    side: "buy",
+    base: "SGD",
+    quote: "ZAR",
+    payCurrency: "ZAR",
+    receiveCurrency: "SGD",
+    payMinor: 1_400_000_000,
+    receiveMinor: 100_000_000,
+    rate: 14.0,
   },
 ];
 
@@ -163,7 +221,7 @@ function normaliseInterpreterLegs(payload: FxTradeExecutedPayload): NormalLeg[] 
   }));
 }
 
-describe("PR-FX-001 parallel run (ZAR/USD) — byte-for-byte vs legacy fxTradeBookingJournals", () => {
+describe("PR-FX-001 parallel run (ZAR/USD/GBP/EUR/CHF/AUD/JPY) — byte-for-byte vs legacy fxTradeBookingJournals", () => {
   for (const f of PARITY_FIXTURES) {
     it(`matches byte-for-byte: ${f.name}`, () => {
       const payload = buildPayload(f);
@@ -182,7 +240,48 @@ describe("PR-FX-001 parallel run (ZAR/USD) — byte-for-byte vs legacy fxTradeBo
   }
 });
 
-describe("PR-FX-001 parallel run (ZAR/USD) — byte-for-byte vs runGlPostingEngine", () => {
+describe("PR-FX-001 — newly-provisioned currencies land on their DEDICATED accounts (not suspense, not USD)", () => {
+  // D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING: lock in the exact per-currency
+  // account ids in BOTH engines (parity to PROPER accounts, not parity-to-suspense).
+  const EXPECTED: Record<string, { rec: string; pay: string }> = {
+    GBP: { rec: "ACC-2100-010", pay: "ACC-2100-011" },
+    EUR: { rec: "ACC-2100-013", pay: "ACC-2100-014" },
+    CHF: { rec: "ACC-2100-016", pay: "ACC-2100-017" },
+    AUD: { rec: "ACC-2100-019", pay: "ACC-2100-020" },
+    JPY: { rec: "ACC-2100-022", pay: "ACC-2100-023" },
+  };
+  for (const f of PARITY_FIXTURES) {
+    const foreign = [f.payCurrency, f.receiveCurrency].filter((c) => c in EXPECTED);
+    if (foreign.length === 0) continue;
+    it(`books ${foreign.join("/")} to dedicated accounts in both engines: ${f.name}`, () => {
+      const payload = buildPayload(f);
+      const legacy = fxTradeBookingJournals({
+        tradeId: payload.tradeId.value,
+        side: payload.side,
+        legs: payload.legs,
+        currencyPair: payload.currencyPair,
+      });
+      const interp = normaliseInterpreterLegs(payload);
+      for (const engine of [legacy, interp]) {
+        // never suspense, never the USD slot for a provisioned currency
+        const provisionedLegs = engine.filter((l) => l.currency in EXPECTED);
+        expect(provisionedLegs.length).toBeGreaterThan(0);
+        for (const leg of provisionedLegs) {
+          const want = EXPECTED[leg.currency as keyof typeof EXPECTED];
+          expect([want.rec, want.pay]).toContain(leg.accountId);
+        }
+        expect(engine.some((l) => l.accountId === "ACC-2100-007")).toBe(false);
+        // the USD slot must not carry a non-USD leg
+        for (const slot of ["ACC-2100-002", "ACC-2100-004"]) {
+          const onSlot = engine.filter((l) => l.accountId === slot);
+          for (const leg of onSlot) expect(leg.currency).toBe("USD");
+        }
+      }
+    });
+  }
+});
+
+describe("PR-FX-001 parallel run (ZAR/USD/GBP/EUR/CHF/AUD/JPY) — byte-for-byte vs runGlPostingEngine", () => {
   for (const f of PARITY_FIXTURES) {
     it(`matches the production dispatcher's emitted legs: ${f.name}`, () => {
       const payload = buildPayload(f);
@@ -220,16 +319,16 @@ describe("PR-FX-001 parallel run (ZAR/USD) — byte-for-byte vs runGlPostingEngi
   }
 });
 
-describe("PR-FX-001 parallel run (non-ZAR/USD) — suspense routing + urgent correction", () => {
+describe("PR-FX-001 parallel run (still-unprovisioned currency) — suspense routing + urgent correction", () => {
   for (const f of DIVERGENCE_FIXTURES) {
-    it(`routes foreign leg(s) to suspense, never the USD slot: ${f.name}`, () => {
+    it(`routes the unprovisioned leg to suspense, never the USD slot: ${f.name}`, () => {
       const payload = buildPayload(f);
 
-      // After the Phase-2 deliverable-4 live-path fix, the LEGACY helper ALSO
-      // routes non-ZAR/USD legs to the FX unresolved-currency suspense
-      // (ACC-2100-007) — the silent default→USD mis-booking was removed. So the
-      // corrected interpreter and the corrected legacy helper now AGREE
-      // (parity-to-suspense), both landing the foreign leg on suspense.
+      // A currency WITHOUT a dedicated account (SGD) routes — in BOTH the
+      // corrected legacy helper and the corrected interpreter — to the FX
+      // unresolved-currency suspense (ACC-2100-007). The silent default→USD
+      // mis-booking was removed. So the two engines AGREE (parity-to-suspense),
+      // both landing the foreign leg on suspense.
       const legacy = fxTradeBookingJournals({
         tradeId: payload.tradeId.value,
         side: payload.side,
@@ -248,8 +347,8 @@ describe("PR-FX-001 parallel run (non-ZAR/USD) — suspense routing + urgent cor
       // 1. Interpreter and (corrected) legacy now agree — both route to suspense.
       expect(interp).toEqual(legacy.map((l) => ({ ...l })));
 
-      // 2. Every non-ZAR/USD leg routes to the suspense account, NOT the USD
-      //    slot (no silent USD fallback) — in BOTH paths.
+      // 2. The unprovisioned (non-ZAR/USD) leg routes to the suspense account,
+      //    NOT the USD slot (no silent USD fallback) — in BOTH paths.
       const foreignLegs = interp.filter((l) => l.currency !== "ZAR" && l.currency !== "USD");
       expect(foreignLegs.length).toBeGreaterThan(0);
       for (const leg of foreignLegs) expect(leg.accountId).toBe("ACC-2100-007");

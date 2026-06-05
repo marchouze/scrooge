@@ -52,26 +52,56 @@ describe("account resolver — per-currency (USD=USD; no FCY pool)", () => {
   });
 
   it("the USD account is UNREACHABLE for a non-USD currency (no pool fallback)", () => {
+    // D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING gave GBP/EUR/CHF/AUD/JPY their
+    // OWN dedicated accounts; none must EVER resolve to the USD slot
+    // (ACC-2100-002). A still-unprovisioned currency (SGD) misses → suspense.
     for (const ccy of ["EUR", "GBP", "JPY", "CHF", "AUD"]) {
       const r = defaultResolver.resolve({ ...KEY_BASE, currency: ccy, logical: "fx.receivable" });
-      // valid axes, unmapped currency → account-resolution miss → suspense,
-      // NEVER silently the USD slot (ACC-2100-002).
-      expect(r.ok).toBe(false);
-      if (!r.ok) {
-        expect(r.reason).toBe("unresolved-currency");
-        expect(r.candidates).toBeGreaterThan(0); // axes valid; only currency missing
-      }
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.physical).not.toBe("ACC-2100-002");
+    }
+    // SGD remains unprovisioned → account-resolution miss (NOT the USD slot).
+    const sgd = defaultResolver.resolve({ ...KEY_BASE, currency: "SGD", logical: "fx.receivable" });
+    expect(sgd.ok).toBe(false);
+    if (!sgd.ok) {
+      expect(sgd.reason).toBe("unresolved-currency");
+      expect(sgd.candidates).toBeGreaterThan(0); // axes valid; only currency missing
     }
   });
 
-  it("payable resolves per-currency (ZAR → 003, USD → 004; EUR → unresolved)", () => {
+  it("GBP/EUR/CHF/AUD/JPY resolve to their OWN dedicated per-currency accounts", () => {
+    // D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING (CFO, 2026-06-05).
+    const expected: Record<string, { rec: string; pay: string; pnl: string }> = {
+      GBP: { rec: "ACC-2100-010", pay: "ACC-2100-011", pnl: "ACC-2100-012" },
+      EUR: { rec: "ACC-2100-013", pay: "ACC-2100-014", pnl: "ACC-2100-015" },
+      CHF: { rec: "ACC-2100-016", pay: "ACC-2100-017", pnl: "ACC-2100-018" },
+      AUD: { rec: "ACC-2100-019", pay: "ACC-2100-020", pnl: "ACC-2100-021" },
+      JPY: { rec: "ACC-2100-022", pay: "ACC-2100-023", pnl: "ACC-2100-024" },
+    };
+    for (const [ccy, want] of Object.entries(expected)) {
+      const rec = defaultResolver.resolve({ ...KEY_BASE, currency: ccy, logical: "fx.receivable" });
+      const pay = defaultResolver.resolve({ ...KEY_BASE, currency: ccy, logical: "fx.payable" });
+      const pnl = defaultResolver.resolve({
+        ...KEY_BASE,
+        currency: ccy,
+        logical: "fx.unrealised_pnl",
+      });
+      expect(rec.ok && rec.physical).toBe(want.rec);
+      expect(pay.ok && pay.physical).toBe(want.pay);
+      expect(pnl.ok && pnl.physical).toBe(want.pnl);
+    }
+  });
+
+  it("payable resolves per-currency (ZAR → 003, USD → 004, EUR → 014; SGD → unresolved)", () => {
     const zar = defaultResolver.resolve({ ...KEY_BASE, currency: "ZAR", logical: "fx.payable" });
     const usd = defaultResolver.resolve({ ...KEY_BASE, currency: "USD", logical: "fx.payable" });
     const eur = defaultResolver.resolve({ ...KEY_BASE, currency: "EUR", logical: "fx.payable" });
+    const sgd = defaultResolver.resolve({ ...KEY_BASE, currency: "SGD", logical: "fx.payable" });
     expect(zar.ok && zar.physical).toBe("ACC-2100-003");
     expect(usd.ok && usd.physical).toBe("ACC-2100-004");
-    expect(eur.ok).toBe(false);
-    if (!eur.ok) expect(eur.reason).toBe("unresolved-currency");
+    expect(eur.ok && eur.physical).toBe("ACC-2100-014");
+    expect(sgd.ok).toBe(false);
+    if (!sgd.ok) expect(sgd.reason).toBe("unresolved-currency");
   });
 });
 
@@ -254,11 +284,11 @@ describe("interpreter — reject loudly", () => {
   });
 });
 
-describe("interpreter — unresolved currency → suspense + urgent-correction alert", () => {
-  // D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE: a non-ZAR/USD FX leg with no
-  // dedicated account does NOT silently fall back to USD and is NOT dropped —
-  // it posts to the FX unresolved-currency suspense account, the entry still
-  // balances, and a high-severity urgent-correction alert is raised.
+describe("interpreter — per-currency resolution (GBP/EUR/CHF/AUD/JPY) → own accounts", () => {
+  // D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING (CFO, 2026-06-05): these five
+  // currencies now resolve to their OWN dedicated trading accounts — NOT
+  // suspense — and raise NO urgent-correction alert. The byte-for-byte parity
+  // target moves from parity-to-suspense to parity-to-proper-accounts.
   function eurEvent(): InterpreterEvent {
     return fxEvent({
       payload: {
@@ -277,22 +307,26 @@ describe("interpreter — unresolved currency → suspense + urgent-correction a
     });
   }
 
-  it("routes the EUR leg to ACC-2100-007 suspense and STILL balances", () => {
+  it("routes the EUR leg to its dedicated accounts (013/014), never suspense or USD", () => {
     const results = interpret(eurEvent(), [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
     expect(results).toHaveLength(1);
     const r = results[0];
     expect(r?.outcome).toBe("post");
     if (r?.outcome !== "post") return;
 
-    // ZAR legs resolve normally; EUR legs go to the suspense account.
     const eurLegs = r.legs.filter((l) => l.currency === "EUR");
     expect(eurLegs.length).toBeGreaterThan(0);
-    for (const leg of eurLegs) expect(leg.accountId).toBe("ACC-2100-007");
-    // the USD account must NOT appear for a EUR trade (no silent USD fallback)
+    for (const leg of eurLegs) {
+      expect(["ACC-2100-013", "ACC-2100-014"]).toContain(leg.accountId);
+    }
+    // never suspense, never the USD slot
+    expect(r.legs.some((l) => l.accountId === "ACC-2100-007")).toBe(false);
     expect(r.legs.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
     expect(r.legs.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
+    // no urgent corrections — the currency is now provisioned
+    expect(r.urgentCorrections).toHaveLength(0);
 
-    // per-currency DR == CR still holds (EUR nets to zero within suspense)
+    // per-currency DR == CR still holds
     const byCcy = new Map<string, number>();
     for (const leg of r.legs) {
       const signed =
@@ -302,31 +336,7 @@ describe("interpreter — unresolved currency → suspense + urgent-correction a
     for (const [, net] of byCcy) expect(net).toBe(0);
   });
 
-  it("raises a high-severity urgent-correction signal for the EUR legs", () => {
-    const results = interpret(eurEvent(), [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
-    const r = results[0];
-    if (r?.outcome !== "post") throw new Error("expected post");
-    expect(r.urgentCorrections.length).toBeGreaterThan(0);
-    for (const c of r.urgentCorrections) {
-      expect(c.currency).toBe("EUR");
-      expect(c.suspenseAccount).toBe("ACC-2100-007");
-      expect(c.alertId).toBe("alert:integrity:sla-unresolved-currency-eur");
-    }
-    // and the bridge produces a real high-severity integrity SubstrateAlert
-    const correction = r.urgentCorrections[0];
-    if (!correction) throw new Error("expected a correction");
-    const alert = urgentCorrectionToSubstrateAlert(correction, {
-      asOf: "2026-06-05T10:00:00.000Z",
-      entity: "LE-ZA-HOZ-BANK",
-      actor: { type: "service", id: "agent:bea:sla-interpreter" },
-    });
-    expect(alert.type).toBe("SubstrateAlert");
-    const payload = alert.payload as { alertClass: string; severity: string };
-    expect(payload.alertClass).toBe("integrity");
-    expect(payload.severity).toBe("high");
-  });
-
-  it("a wholly-unknown currency (JPY) also routes to suspense + raises the alert", () => {
+  it("routes the JPY (zero-minor-unit) leg to its dedicated accounts (022/023)", () => {
     const jpyEvent = fxEvent({
       payload: {
         productTaxonomy: "FX-spot",
@@ -346,15 +356,13 @@ describe("interpreter — unresolved currency → suspense + urgent-correction a
     const r = results[0];
     expect(r?.outcome).toBe("post");
     if (r?.outcome !== "post") return;
-    // USD legs resolve to the USD account; JPY legs go to suspense.
+    // USD legs resolve to the USD account; JPY legs to JPY accounts.
     expect(r.legs.some((l) => l.currency === "USD" && l.accountId === "ACC-2100-002")).toBe(true);
     const jpyLegs = r.legs.filter((l) => l.currency === "JPY");
-    for (const leg of jpyLegs) expect(leg.accountId).toBe("ACC-2100-007");
-    expect(
-      r.urgentCorrections.some(
-        (c) => c.currency === "JPY" && c.alertId === "alert:integrity:sla-unresolved-currency-jpy",
-      ),
-    ).toBe(true);
+    for (const leg of jpyLegs) {
+      expect(["ACC-2100-022", "ACC-2100-023"]).toContain(leg.accountId);
+    }
+    expect(r.urgentCorrections).toHaveLength(0);
   });
 
   it("a fully-resolvable trade (USD/ZAR) raises NO urgent corrections", () => {
@@ -362,6 +370,71 @@ describe("interpreter — unresolved currency → suspense + urgent-correction a
     const r = results[0];
     if (r?.outcome !== "post") throw new Error("expected post");
     expect(r.urgentCorrections).toHaveLength(0);
+  });
+});
+
+describe("interpreter — STILL-unprovisioned currency → suspense + urgent-correction alert", () => {
+  // The ACC-2100-007 suspense safety net remains for any currency WITHOUT a
+  // dedicated account (e.g. SGD): the leg posts to suspense, the entry still
+  // balances, and a high-severity urgent-correction alert is raised. NEVER a
+  // silent USD fallback (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
+  function sgdEvent(): InterpreterEvent {
+    return fxEvent({
+      payload: {
+        productTaxonomy: "FX-spot",
+        currencyPair: { base: "SGD", quote: "ZAR" },
+        legs: [
+          {
+            legKind: "near",
+            payCurrency: "ZAR",
+            receiveCurrency: "SGD",
+            notional: { currency: "ZAR", amountMinor: 1_400_000_000 },
+            counterNotional: { currency: "SGD", amountMinor: 100_000_000 },
+          },
+        ],
+      },
+    });
+  }
+
+  it("routes the SGD leg to ACC-2100-007 suspense and STILL balances", () => {
+    const results = interpret(sgdEvent(), [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
+    const r = results[0];
+    expect(r?.outcome).toBe("post");
+    if (r?.outcome !== "post") return;
+    const sgdLegs = r.legs.filter((l) => l.currency === "SGD");
+    expect(sgdLegs.length).toBeGreaterThan(0);
+    for (const leg of sgdLegs) expect(leg.accountId).toBe("ACC-2100-007");
+    expect(r.legs.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
+    const byCcy = new Map<string, number>();
+    for (const leg of r.legs) {
+      const signed =
+        leg.debitCredit === "debit" ? Number(leg.amountMinor) : -Number(leg.amountMinor);
+      byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0) + signed);
+    }
+    for (const [, net] of byCcy) expect(net).toBe(0);
+  });
+
+  it("raises a high-severity urgent-correction integrity SubstrateAlert for SGD", () => {
+    const results = interpret(sgdEvent(), [PR_FX_001], ["IFRS"], "2026-06-05T10:00:00.000Z");
+    const r = results[0];
+    if (r?.outcome !== "post") throw new Error("expected post");
+    expect(r.urgentCorrections.length).toBeGreaterThan(0);
+    for (const c of r.urgentCorrections) {
+      expect(c.currency).toBe("SGD");
+      expect(c.suspenseAccount).toBe("ACC-2100-007");
+      expect(c.alertId).toBe("alert:integrity:sla-unresolved-currency-sgd");
+    }
+    const correction = r.urgentCorrections[0];
+    if (!correction) throw new Error("expected a correction");
+    const alert = urgentCorrectionToSubstrateAlert(correction, {
+      asOf: "2026-06-05T10:00:00.000Z",
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service", id: "agent:bea:sla-interpreter" },
+    });
+    expect(alert.type).toBe("SubstrateAlert");
+    const payload = alert.payload as { alertClass: string; severity: string };
+    expect(payload.alertClass).toBe("integrity");
+    expect(payload.severity).toBe("high");
   });
 });
 

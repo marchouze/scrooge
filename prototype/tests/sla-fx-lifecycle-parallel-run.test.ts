@@ -5,16 +5,18 @@
 // Every FX lifecycle event is fed through BOTH the rules-as-data interpreter
 // (FX_IFRS_RULES) and the legacy posting-rule functions / runGlPostingEngine.
 //
-// Success criterion (CEO design call, Marc, 2026-06-05):
-//   - ZAR / USD legs MUST match the legacy engine BYTE-FOR-BYTE (the currencies
-//     the legacy engine books correctly).
-//   - non-ZAR/USD legs DELIBERATELY DIVERGE: after the deliverable-4 live-path
-//     fix, BOTH the legacy helpers AND the interpreter route the foreign leg to
-//     the FX unresolved-currency suspense (ACC-2100-007) — so here we assert
-//     PARITY-TO-SUSPENSE (legacy == interp == suspense), plus the interpreter
-//     raises an urgent-correction. (The legacy default→USD mis-booking was
-//     removed in deliverable 4, so legacy no longer diverges from the corrected
-//     interpreter for these — both land in suspense.)
+// Success criterion (CEO design call, Marc, 2026-06-05; extended by
+// D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING, CFO-approved 2026-06-05):
+//   - Legacy and interpreter MUST agree BYTE-FOR-BYTE on every stage (the core
+//     invariant). ZAR/USD plus the newly-provisioned GBP/EUR/CHF/AUD/JPY TRADING
+//     legs now book to their own dedicated trading accounts (ACC-2100-010..024).
+//   - The per-currency provisioning covers FX TRADING accounts only — NOT the
+//     correspondent nostros (ACC-1200) nor the settlement-failed sub-ledger
+//     (ACC-2300). So for GBP/CHF/AUD/JPY a PR-FX-PRIN NOSTRO leg, and for
+//     GBP/EUR/CHF/AUD/JPY a PR-FX-005 settlement-failed-receivable leg, still
+//     route to the FX unresolved-currency suspense (ACC-2100-007) + an
+//     urgent-correction alert (these sub-ledgers are a follow-on provisioning).
+//     Legacy and interpreter AGREE on this suspense routing.
 //
 // Stages covered: open, reval (gain/loss/zero), principal (receive/deliver),
 // close (gain/loss/zero), settlement-failed (Herstatt + no-GL branches),
@@ -162,7 +164,7 @@ describe("Stage: open (PR-FX-001) — ZAR/USD parity + cross-currency suspense",
     expect(interp).toEqual(legacy);
   });
 
-  it("EUR/ZAR — both legacy (post deliverable-4) and interp route EUR to suspense", () => {
+  it("EUR/ZAR — both legacy and interp book EUR to its dedicated trading accounts", () => {
     const payload = buildExecuted({
       side: "buy",
       base: "EUR",
@@ -182,16 +184,17 @@ describe("Stage: open (PR-FX-001) — ZAR/USD parity + cross-currency suspense",
     );
     const r = runOne("FxTradeExecuted", payload);
     const interp = interpLegs(r);
-    // Parity-to-suspense: after deliverable 4 the legacy helper ALSO routes EUR
-    // to suspense — both agree, both land on ACC-2100-007, neither on USD.
+    // Parity-to-PROPER-ACCOUNTS (D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING):
+    // EUR now has dedicated trading accounts; both engines agree, neither on
+    // suspense nor on the USD slot, and NO urgent-correction is raised.
     expect(interp).toEqual(legacy);
     const eurLegs = interp.filter((l) => l.currency === "EUR");
     expect(eurLegs.length).toBeGreaterThan(0);
-    for (const l of eurLegs) expect(l.accountId).toBe(SUSPENSE);
+    for (const l of eurLegs) expect(["ACC-2100-013", "ACC-2100-014"]).toContain(l.accountId);
+    expect(interp.some((l) => l.accountId === SUSPENSE)).toBe(false);
     expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
     expect(interp.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
-    // The interpreter raises an urgent-correction for EUR.
-    expect(postOf(r).urgentCorrections.some((c) => c.currency === "EUR")).toBe(true);
+    expect(postOf(r).urgentCorrections.some((c) => c.currency === "EUR")).toBe(false);
     assertBalances(interp);
   });
 });
@@ -249,7 +252,7 @@ function prinPayload(legKind: "receive" | "deliver", currency: string, netCash: 
   };
 }
 
-describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR parity + JPY suspense", () => {
+describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR parity + JPY trading/nostro split", () => {
   const cases: Array<{ legKind: "receive" | "deliver"; ccy: string; net: number }> = [
     { legKind: "receive", ccy: "USD", net: 100_000_000 },
     { legKind: "deliver", ccy: "ZAR", net: -1_900_000_000 },
@@ -257,7 +260,7 @@ describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR parity + JPY suspense", 
     { legKind: "deliver", ccy: "JPY", net: -14_500_000_000 },
   ];
   for (const c of cases) {
-    it(`${c.legKind} ${c.ccy} — parity (incl. parity-to-suspense for JPY)`, () => {
+    it(`${c.legKind} ${c.ccy} — parity (JPY: trading→dedicated, nostro→suspense)`, () => {
       const p = prinPayload(c.legKind, c.ccy, c.net);
       const legacy = normalise(fxPrincipalPaymentJournals(p as never));
       const r = runOne("PrincipalPayment", p);
@@ -265,8 +268,16 @@ describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR parity + JPY suspense", 
       expect(interp).toEqual(legacy);
       assertBalances(interp);
       if (c.ccy === "JPY") {
-        // JPY has neither a trading account nor a nostro → suspense both sides.
-        for (const l of interp) expect(l.accountId).toBe(SUSPENSE);
+        // JPY now has a dedicated TRADING payable (ACC-2100-023) but NO
+        // correspondent nostro — so the deliver leg splits: trading-payable on
+        // the dedicated account, nostro side on suspense (+ urgent correction).
+        const payableLeg = interp.find((l) => l.accountId === "ACC-2100-023");
+        const nostroLeg = interp.find((l) => l.accountId === SUSPENSE);
+        expect(payableLeg).toBeDefined();
+        expect(nostroLeg).toBeDefined();
+        // never the USD slot
+        expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
+        expect(interp.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
         expect(postOf(r).urgentCorrections.some((u) => u.currency === "JPY")).toBe(true);
       }
     });
@@ -329,7 +340,7 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branc
     assertBalances(interp);
   });
 
-  it("one-leg-delivered EUR — receive-leg reclass routes to suspense (deliverable 4 parity)", () => {
+  it("one-leg-delivered EUR — reclass splits: trading-receivable dedicated, settlement-failed→suspense", () => {
     const event = {
       tradeRef: "T2",
       failureKind: "one-leg-delivered" as const,
@@ -346,10 +357,14 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branc
     const r = runOne("FxSettlementFailed", event, { failedReceiveLeg });
     const interp = interpLegs(r);
     expect(interp).toEqual(legacy);
-    // The EUR reclass legs land on suspense (no dedicated EUR settlement-failed
-    // receivable); the ZAR ECL legs resolve normally.
+    // EUR now has a dedicated TRADING receivable (ACC-2100-013) — the credit
+    // leg that derecognises it resolves there. The DEBIT leg targets the
+    // amortised-cost Settlement-Failed Receivable sub-ledger, which is NOT
+    // provisioned for EUR (only ZAR/USD ACC-2300) → suspense + urgent
+    // correction. The ZAR ECL legs resolve normally.
     const eurLegs = interp.filter((l) => l.currency === "EUR");
-    for (const l of eurLegs) expect(l.accountId).toBe(SUSPENSE);
+    expect(eurLegs.some((l) => l.accountId === "ACC-2100-013")).toBe(true);
+    expect(eurLegs.some((l) => l.accountId === SUSPENSE)).toBe(true);
     expect(postOf(r).urgentCorrections.some((u) => u.currency === "EUR")).toBe(true);
     assertBalances(interp);
   });
