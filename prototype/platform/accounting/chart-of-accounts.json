@@ -153,6 +153,112 @@
     },
 
     {
+      "id": "ACC-2100-010",
+      "name": "FX Trading Receivable",
+      "currency": "GBP",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-011",
+      "name": "FX Trading Payable",
+      "currency": "GBP",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-012",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "GBP",
+      "category": "income",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-013",
+      "name": "FX Trading Receivable",
+      "currency": "EUR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-014",
+      "name": "FX Trading Payable",
+      "currency": "EUR",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-015",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "EUR",
+      "category": "income",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-016",
+      "name": "FX Trading Receivable",
+      "currency": "CHF",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-017",
+      "name": "FX Trading Payable",
+      "currency": "CHF",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-018",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "CHF",
+      "category": "income",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-019",
+      "name": "FX Trading Receivable",
+      "currency": "AUD",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-020",
+      "name": "FX Trading Payable",
+      "currency": "AUD",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-021",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "AUD",
+      "category": "income",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-022",
+      "name": "FX Trading Receivable",
+      "currency": "JPY",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-023",
+      "name": "FX Trading Payable",
+      "currency": "JPY",
+      "category": "liability",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-024",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "JPY",
+      "category": "income",
+      "side": "credit"
+    },
+
+    {
       "id": "ACC-2300-001",
       "name": "Settlement-Failed Receivable",
       "currency": "ZAR",

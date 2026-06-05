@@ -477,6 +477,159 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   },
 
   // ------------------------------------------------------------------
+  // 2100 — Per-currency FX-spot trading accounts (GBP/EUR/CHF/AUD/JPY)
+  //
+  // Authority: D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING (CFO-approved by
+  //   Camille (Chief Financial Officer, finance), 2026-06-05). The CFO memo
+  //   (record:documents:camille:cfo-sla-decisions-memo:2026-06-05) is the
+  //   authoritative provisioning spec.
+  //
+  // The bank actively trades GBP/EUR/CHF/AUD/JPY but the COA carried dedicated
+  // FX-spot trading accounts for ZAR (ACC-2100-001/003/005) and USD
+  // (ACC-2100-002/004) only, so every leg in those five currencies routed to
+  // the ACC-2100-007 unresolved-currency suspense + a high-severity alert.
+  // These 15 leaf accounts give each traded currency its own trading
+  // receivable / payable / unrealised-FVTPL-P&L home, mirroring the ZAR/USD
+  // structure exactly. ACC-2100-007 suspense remains the permanent last-resort
+  // safety net for any FURTHER unprovisioned currency
+  // (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
+  //
+  // Account NAMES carry no currency (D-COA-CURRENCY-DECOUPLING /
+  // recon:coa-name-no-currency); the authoritative currency is the per-account
+  // `currency` field plus each `SubLedgerLeg.currency`. Realised FX P&L stays
+  // consolidated at ACC-2100-006 (ZAR presentation) — per-currency realised
+  // P&L is out of scope for this provisioning (CFO memo §4 notes).
+  //
+  // ID NOTE: the CFO memo's authoritative table enumerated ACC-2100-008..022,
+  // assuming the FX block ended at ACC-2100-007. ACC-2100-009 is, however,
+  // already in active use as the "FX Sub-Ledger Build-Phase Remediation
+  // Suspense" (chart-of-accounts.json + fx-subledger-trade-reconciliation.ts
+  // FX_REMEDIATION_SUSPENSE, live since PR #958, 2026-06-01) — predating and
+  // unknown to the memo. Overwriting a live account would be a Principle-1
+  // integrity breach, so the 15-account block is provisioned CONTIGUOUSLY at
+  // ACC-2100-010..024, clearing the occupied ACC-2100-009 (and the now-vacant
+  // ACC-2100-008 left as a documented gap immediately before it). The CFO
+  // POLICY (15 dedicated per-currency accounts, three per currency, mirroring
+  // ZAR/USD) is unchanged; only the numeric ids shift to avoid the collision.
+  // Flagged to the CFO for awareness.
+  // ------------------------------------------------------------------
+  // GBP
+  {
+    id: "ACC-2100-010",
+    name: "FX Trading Receivable",
+    category: "asset-receivable",
+    currency: "GBP",
+    side: "debit",
+    // GBP trading receivable. Mirror of ACC-2100-002 (USD); currency-free name.
+  },
+  {
+    id: "ACC-2100-011",
+    name: "FX Trading Payable",
+    category: "liability-payable",
+    currency: "GBP",
+    side: "credit",
+    // GBP trading payable. Mirror of ACC-2100-004 (USD).
+  },
+  {
+    id: "ACC-2100-012",
+    name: "Unrealised FX P&L — FVTPL",
+    category: "income-trading",
+    currency: "GBP",
+    side: "credit",
+    // GBP unrealised FX P&L (FVTPL, IFRS 9 §5.7.1). Mirror of ACC-2100-005.
+  },
+  // EUR
+  {
+    id: "ACC-2100-013",
+    name: "FX Trading Receivable",
+    category: "asset-receivable",
+    currency: "EUR",
+    side: "debit",
+  },
+  {
+    id: "ACC-2100-014",
+    name: "FX Trading Payable",
+    category: "liability-payable",
+    currency: "EUR",
+    side: "credit",
+  },
+  {
+    id: "ACC-2100-015",
+    name: "Unrealised FX P&L — FVTPL",
+    category: "income-trading",
+    currency: "EUR",
+    side: "credit",
+  },
+  // CHF
+  {
+    id: "ACC-2100-016",
+    name: "FX Trading Receivable",
+    category: "asset-receivable",
+    currency: "CHF",
+    side: "debit",
+  },
+  {
+    id: "ACC-2100-017",
+    name: "FX Trading Payable",
+    category: "liability-payable",
+    currency: "CHF",
+    side: "credit",
+  },
+  {
+    id: "ACC-2100-018",
+    name: "Unrealised FX P&L — FVTPL",
+    category: "income-trading",
+    currency: "CHF",
+    side: "credit",
+  },
+  // AUD
+  {
+    id: "ACC-2100-019",
+    name: "FX Trading Receivable",
+    category: "asset-receivable",
+    currency: "AUD",
+    side: "debit",
+  },
+  {
+    id: "ACC-2100-020",
+    name: "FX Trading Payable",
+    category: "liability-payable",
+    currency: "AUD",
+    side: "credit",
+  },
+  {
+    id: "ACC-2100-021",
+    name: "Unrealised FX P&L — FVTPL",
+    category: "income-trading",
+    currency: "AUD",
+    side: "credit",
+  },
+  // JPY — zero-minor-unit currency (ISO-4217 minor unit 0). Amounts are held in
+  // minor units per the currency's minorFactor (1 for JPY), so no special-casing
+  // beyond correct `currency` tagging is required (CFO memo §4 notes).
+  {
+    id: "ACC-2100-022",
+    name: "FX Trading Receivable",
+    category: "asset-receivable",
+    currency: "JPY",
+    side: "debit",
+  },
+  {
+    id: "ACC-2100-023",
+    name: "FX Trading Payable",
+    category: "liability-payable",
+    currency: "JPY",
+    side: "credit",
+  },
+  {
+    id: "ACC-2100-024",
+    name: "Unrealised FX P&L — FVTPL",
+    category: "income-trading",
+    currency: "JPY",
+    side: "credit",
+  },
+
+  // ------------------------------------------------------------------
   // 2200 — Customer payables
   // ------------------------------------------------------------------
   {

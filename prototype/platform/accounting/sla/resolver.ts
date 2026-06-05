@@ -99,11 +99,15 @@ export type ResolveOutcome =
 // Resolver table (IFRS representation only — Phase 1)
 //
 // FX-spot IFRS account map, PER-CURRENCY (no pool rows):
-//   fx.receivable  ZAR → ACC-2100-001 ; USD → ACC-2100-002
-//   fx.payable     ZAR → ACC-2100-003 ; USD → ACC-2100-004
+//   fx.receivable     ZAR→001 USD→002 GBP→010 EUR→013 CHF→016 AUD→019 JPY→022
+//   fx.payable        ZAR→003 USD→004 GBP→011 EUR→014 CHF→017 AUD→020 JPY→023
+//   fx.unrealised_pnl ZAR→005 GBP→012 EUR→015 CHF→018 AUD→021 JPY→024
 // ACC-2100-002 / -004 are USD-ONLY (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
-// EUR/GBP/JPY/etc have NO dedicated FX-spot trading account today, so they
-// account-resolution-miss → suspense (ACC-2100-007) + urgent-correction alert.
+// GBP/EUR/CHF/AUD/JPY now have DEDICATED per-currency trading accounts
+// (ACC-2100-010..024, D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING, CFO-approved
+// 2026-06-05) and resolve to their own account. Any OTHER currency (e.g.
+// SGD/NOK) still account-resolution-misses → suspense (ACC-2100-007) +
+// urgent-correction alert — the permanent last-resort safety net.
 // ---------------------------------------------------------------------------
 
 export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
@@ -146,6 +150,154 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
     logical: "fx.payable",
     physical: "ACC-2100-004",
     note: "USD-only trading payable (NOT an FCY pool).",
+  },
+  // ── Per-currency FX-spot trading accounts (GBP/EUR/CHF/AUD/JPY) ──
+  // Authority: D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING (CFO-approved by
+  // Camille (Chief Financial Officer, finance), 2026-06-05). These five
+  // currencies now resolve to their OWN dedicated trading accounts
+  // (ACC-2100-010..024), no longer account-resolution-missing to suspense.
+  // ACC-2100-007 suspense remains the last-resort for any FURTHER unprovisioned
+  // currency. ID note: the memo enumerated ACC-2100-008..022; the block was
+  // provisioned at 010..024 to clear the live, occupied ACC-2100-009 (FX
+  // remediation suspense) — see coa-registry.ts header for the full rationale.
+  // fx.receivable
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "GBP",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.receivable",
+    physical: "ACC-2100-010",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "EUR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.receivable",
+    physical: "ACC-2100-013",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "CHF",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.receivable",
+    physical: "ACC-2100-016",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "AUD",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.receivable",
+    physical: "ACC-2100-019",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "JPY",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.receivable",
+    physical: "ACC-2100-022",
+    note: "JPY is a zero-minor-unit currency (ISO-4217 minor unit 0); amounts are minor-unit per minorFactor (1).",
+  },
+  // fx.payable
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "GBP",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.payable",
+    physical: "ACC-2100-011",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "EUR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.payable",
+    physical: "ACC-2100-014",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "CHF",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.payable",
+    physical: "ACC-2100-017",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "AUD",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.payable",
+    physical: "ACC-2100-020",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "JPY",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.payable",
+    physical: "ACC-2100-023",
+  },
+  // fx.unrealised_pnl (per-currency FVTPL trading P&L; IFRS 9 §5.7.1)
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "GBP",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.unrealised_pnl",
+    physical: "ACC-2100-012",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "EUR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.unrealised_pnl",
+    physical: "ACC-2100-015",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "CHF",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.unrealised_pnl",
+    physical: "ACC-2100-018",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "AUD",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.unrealised_pnl",
+    physical: "ACC-2100-021",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "JPY",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.unrealised_pnl",
+    physical: "ACC-2100-024",
   },
   // ── ZAR functional-currency P&L + correspondent-nostro accounts ──
   // Revaluation (PR-FX-002), realised-P&L residual (PR-FX-LIFECYCLE-CLOSE),

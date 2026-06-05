@@ -46,8 +46,13 @@
 //   ACC-2100-002  FX Trading Receivable — USD
 //   ACC-2100-003  FX Trading Payable    — ZAR
 //   ACC-2100-004  FX Trading Payable    — USD
-//   ACC-2100-005  Unrealised FX P&L — FVTPL
+//   ACC-2100-005  Unrealised FX P&L — FVTPL (ZAR)
 //   ACC-2100-006  Realised FX P&L
+//   ACC-2100-010..024  Per-currency FX-spot trading accounts
+//                 (GBP/EUR/CHF/AUD/JPY: receivable/payable/unrealised-P&L each)
+//                 — D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING (CFO, 2026-06-05).
+//                 Note: provisioned at 010..024 (not the memo's 008..022) to
+//                 clear the live ACC-2100-009 FX remediation suspense.
 //   ACC-1200-001  Nostro (ZAR correspondent — FX settlement target for ZAR)
 //   ACC-1200-002  Nostro (USD correspondent; ACC-1100-002 merged here)
 //   ACC-1200-003  Nostro (EUR correspondent; ACC-1100-003 merged here)
@@ -177,6 +182,29 @@ export const FX_ACCOUNTS = {
   PAYABLE_USD: "ACC-2100-004",
   UNREALISED_PNL: "ACC-2100-005",
   REALISED_PNL: "ACC-2100-006",
+  // Per-currency FX-spot trading accounts (GBP/EUR/CHF/AUD/JPY) — provisioned
+  // under D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING (CFO-approved by Camille
+  // (Chief Financial Officer, finance), 2026-06-05). These five currencies now
+  // book to their OWN dedicated trading receivable/payable, replacing the
+  // stop-the-bleeding routing to suspense (ACC-2100-007). Suspense remains the
+  // last-resort for any FURTHER unprovisioned currency. Mirrors ZAR/USD.
+  // (Provisioned at ACC-2100-010..024 — clearing the live, occupied
+  // ACC-2100-009 FX remediation suspense; see coa-registry.ts header.)
+  RECEIVABLE_GBP: "ACC-2100-010",
+  PAYABLE_GBP: "ACC-2100-011",
+  UNREALISED_PNL_GBP: "ACC-2100-012",
+  RECEIVABLE_EUR: "ACC-2100-013",
+  PAYABLE_EUR: "ACC-2100-014",
+  UNREALISED_PNL_EUR: "ACC-2100-015",
+  RECEIVABLE_CHF: "ACC-2100-016",
+  PAYABLE_CHF: "ACC-2100-017",
+  UNREALISED_PNL_CHF: "ACC-2100-018",
+  RECEIVABLE_AUD: "ACC-2100-019",
+  PAYABLE_AUD: "ACC-2100-020",
+  UNREALISED_PNL_AUD: "ACC-2100-021",
+  RECEIVABLE_JPY: "ACC-2100-022",
+  PAYABLE_JPY: "ACC-2100-023",
+  UNREALISED_PNL_JPY: "ACC-2100-024",
   // D-COA-CURRENCY-DECOUPLING (2026-05-30): FX settles through the correspondent
   // nostros (1200 range), NOT the central-bank reserve account (ACC-1100-001).
   // The USD/EUR 1100 nostros were duplicates of the 1200 correspondent nostros
@@ -211,55 +239,84 @@ export const FX_ACCOUNTS = {
 // ---------------------------------------------------------------------------
 
 // ───────────────────────────────────────────────────────────────────────────
-// STOP-THE-BLEEDING (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE — live-path fix,
-// brief deliverable 4). The `default → USD slot` fallbacks below SILENTLY
-// mis-booked any non-ZAR/USD foreign currency (EUR/GBP/CHF/AUD/JPY) into the
-// USD trading accounts (ACC-2100-002/004), the documented Principle-5 blocker
-// that produced the 66 mis-booked simulated trades. They are REPLACED here by
-// per-currency resolution + suspense-on-miss (ACC-2100-007) so new non-ZAR/USD
-// FX postings STOP landing in the USD account immediately — without waiting for
-// the interpreter to go live (Phase 3). The USD account is USD-ONLY.
+// PER-CURRENCY FX-ACCOUNT RESOLUTION (live legacy posting path).
 //
-// This is a SURGICAL change to the existing live posting path (the one place
-// deliverable 4 may change live GL behaviour). It is consistent with the
-// corrected SLA resolver: foreign legs route to the balancing FX
-// unresolved-currency suspense account, and the engines that call these helpers
-// surface a high-severity urgent-correction `SubstrateAlert` per unresolved
-// currency (see `detectUnresolvedCurrencyLegs` + the engine wiring). The proper
-// fix — dedicated per-currency FX accounts (GBP/EUR/CHF/AUD/JPY) — is a CFO
-// COA-expansion / accounting-policy call (see the CFO provisioning note); until
-// then suspense + alert correctly signal "provision an account".
+// History (two CEO/CFO decisions on the same live path):
+//   1. STOP-THE-BLEEDING (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE, 2026-06-05):
+//      the original `default → USD slot` fallbacks SILENTLY mis-booked any
+//      non-ZAR/USD foreign currency into the USD trading accounts
+//      (ACC-2100-002/004) — the Principle-5 blocker behind the 66 mis-booked
+//      simulated trades. That silent USD fallback was REPLACED by
+//      suspense-on-miss (ACC-2100-007) + a loud urgent-correction alert.
+//   2. PER-CURRENCY PROVISIONING (D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING,
+//      CFO-approved by Camille (Chief Financial Officer, finance), 2026-06-05):
+//      the five actively-traded currencies GBP/EUR/CHF/AUD/JPY now have their
+//      OWN dedicated trading accounts (ACC-2100-010..024). The helpers below
+//      resolve those five to their proper per-currency accounts — NO LONGER to
+//      suspense. This is a LIVE GL BEHAVIOUR IMPROVEMENT: these currencies move
+//      from the transient suspense holding-pen to their permanent accounting
+//      home (and, byte-for-byte, agree with the corrected SLA interpreter,
+//      whose resolver carries the same per-currency rows).
 //
-// NOTE: ZAR/USD continue to resolve EXACTLY as before, so the byte-for-byte
-// parallel-run parity for the currencies the legacy engine books correctly is
-// untouched. Only the latent default-to-USD defect is removed.
+// Suspense (ACC-2100-007) REMAINS the last-resort for any FURTHER currency that
+// has no dedicated account (e.g. SGD/NOK): such a leg still routes to suspense
+// and the engine raises a high-severity urgent-correction `SubstrateAlert` (see
+// `detectUnresolvedCurrencyLegs` + the engine wiring). The USD account stays
+// USD-ONLY; ZAR/USD resolve EXACTLY as before — byte-for-byte parity for those
+// two currencies is untouched.
 // ───────────────────────────────────────────────────────────────────────────
 
 /** FX unresolved-currency suspense (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). */
 export const FX_UNRESOLVED_CURRENCY_SUSPENSE = "ACC-2100-007";
 
-/** Map a currency code to the FX Trading Receivable account ID (per-currency). */
+/** Map a currency code to the FX Trading Receivable account ID (per-currency).
+ *  ZAR/USD/GBP/EUR/CHF/AUD/JPY have dedicated accounts; any OTHER currency →
+ *  balancing FX unresolved-currency suspense (NEVER the USD slot — the USD
+ *  account is USD-only). The caller raises a high-severity urgent-correction
+ *  alert (detectUnresolvedCurrencyLegs).
+ *  Authority: D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING. */
 function receivableAccountFor(currency: string): string {
   switch (currency) {
     case "ZAR":
       return FX_ACCOUNTS.RECEIVABLE_ZAR;
     case "USD":
       return FX_ACCOUNTS.RECEIVABLE_USD;
+    case "GBP":
+      return FX_ACCOUNTS.RECEIVABLE_GBP;
+    case "EUR":
+      return FX_ACCOUNTS.RECEIVABLE_EUR;
+    case "CHF":
+      return FX_ACCOUNTS.RECEIVABLE_CHF;
+    case "AUD":
+      return FX_ACCOUNTS.RECEIVABLE_AUD;
+    case "JPY":
+      return FX_ACCOUNTS.RECEIVABLE_JPY;
     default:
       // No dedicated account → balancing FX unresolved-currency suspense.
-      // NEVER the USD slot (the USD account is USD-only). The caller raises a
-      // high-severity urgent-correction alert (detectUnresolvedCurrencyLegs).
       return FX_UNRESOLVED_CURRENCY_SUSPENSE;
   }
 }
 
-/** Map a currency code to the FX Trading Payable account ID (per-currency). */
+/** Map a currency code to the FX Trading Payable account ID (per-currency).
+ *  ZAR/USD/GBP/EUR/CHF/AUD/JPY have dedicated accounts; any OTHER currency →
+ *  balancing suspense (NOT the USD slot).
+ *  Authority: D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING. */
 function payableAccountFor(currency: string): string {
   switch (currency) {
     case "ZAR":
       return FX_ACCOUNTS.PAYABLE_ZAR;
     case "USD":
       return FX_ACCOUNTS.PAYABLE_USD;
+    case "GBP":
+      return FX_ACCOUNTS.PAYABLE_GBP;
+    case "EUR":
+      return FX_ACCOUNTS.PAYABLE_EUR;
+    case "CHF":
+      return FX_ACCOUNTS.PAYABLE_CHF;
+    case "AUD":
+      return FX_ACCOUNTS.PAYABLE_AUD;
+    case "JPY":
+      return FX_ACCOUNTS.PAYABLE_JPY;
     default:
       // No dedicated account → balancing suspense (NOT the USD slot).
       return FX_UNRESOLVED_CURRENCY_SUSPENSE;
@@ -271,6 +328,13 @@ function payableAccountFor(currency: string): string {
  * (PR-FX-005). Used when a defaulted receive-leg is reclassified from the
  * FVTPL trading receivable to the amortised-cost defaulted-claim sub-ledger.
  * Per-currency; non-ZAR/USD → suspense (never the USD slot).
+ *
+ * SUBSTRATE GAP: the D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING 15-account
+ * block covers the FX TRADING accounts only, NOT the amortised-cost
+ * Settlement-Failed Receivable sub-ledger (ACC-2300), which exists for ZAR/USD
+ * only. A GBP/EUR/CHF/AUD/JPY Herstatt failure therefore still reclassifies its
+ * defaulted receivable to suspense + alert until a per-currency
+ * settlement-failed account is provisioned (follow-on CFO call).
  */
 function settlementFailedReceivableAccountFor(currency: string): string {
   switch (currency) {
@@ -299,10 +363,22 @@ export function detectUnresolvedCurrencyLegs(legs: ReadonlyArray<SubLedgerLeg>):
   return [...unresolved];
 }
 
-/** Map a currency code to the Nostro account ID (per-currency).
- *  ZAR/USD/EUR have dedicated correspondent nostros; any other currency →
- *  balancing suspense (NOT the USD nostro). Same stop-the-bleeding correction
- *  as the trading-account helpers (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). */
+/** Map a currency code to the Nostro (correspondent settlement) account ID
+ *  (per-currency). ZAR/USD/EUR have dedicated correspondent nostros
+ *  (ACC-1200-001/002/003); any other currency → balancing suspense (NOT the USD
+ *  nostro). Same per-currency discipline as the trading-account helpers
+ *  (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
+ *
+ *  SUBSTRATE GAP (flagged under D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING):
+ *  the CFO's 15-account provisioning covers the FX TRADING
+ *  receivable/payable/unrealised-P&L accounts for GBP/EUR/CHF/AUD/JPY but NOT
+ *  the correspondent-nostro (ACC-1200) settlement accounts. So a GBP/CHF/AUD/JPY
+ *  trade's TRADING legs now book to dedicated accounts (ACC-2100-010..024),
+ *  while its principal-payment (PR-FX-PRIN) NOSTRO leg still routes to suspense
+ *  until a correspondent nostro is provisioned for that currency. EUR already
+ *  has ACC-1200-003. The corrected SLA resolver agrees (its `fx.nostro` rows
+ *  cover only ZAR/USD/EUR), so legacy and interpreter stay in lock-step.
+ *  Provisioning GBP/CHF/AUD/JPY nostros is a follow-on CFO/treasury call. */
 export function nostroAccountFor(currency: string): string {
   switch (currency) {
     case "ZAR":
