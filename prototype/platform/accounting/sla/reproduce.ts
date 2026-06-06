@@ -25,13 +25,13 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4b, CEO-approved 2026-06-06).
 // Citations: Principles/1-events-are-truth.md.
 
+import type { SlaRule } from "./generated/sla-types";
 import {
   type InterpretResult,
   type InterpreterEvent,
   type ProposedLeg,
   interpret,
 } from "./interpreter";
-import type { SlaRule } from "./generated/sla-types";
 import { findRuleVersion } from "./versioning";
 
 export type ReproduceOutcome =
@@ -69,12 +69,7 @@ export function reproduceAsOf(args: {
   readonly enrichment?: unknown;
 }): ReproduceOutcome {
   const representation = args.representation ?? "IFRS";
-  const rule = findRuleVersion(
-    args.registry,
-    args.ruleId,
-    args.ruleVersion,
-    representation,
-  );
+  const rule = findRuleVersion(args.registry, args.ruleId, args.ruleVersion, representation);
   if (!rule) {
     return {
       kind: "version-not-found",
@@ -117,10 +112,7 @@ export function reproduceAsOf(args: {
 }
 
 /** Byte-for-byte leg equality (order-sensitive): same length, same fields. */
-export function legsEqual(
-  a: readonly ProposedLeg[],
-  b: readonly ProposedLeg[],
-): boolean {
+export function legsEqual(a: readonly ProposedLeg[], b: readonly ProposedLeg[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
     const x = a[i] as ProposedLeg;

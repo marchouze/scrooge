@@ -358,6 +358,15 @@ Effective windows are **per representation**. A `SARB-BA-RETURN` rule can change
 
 An entry posted last period must be **reproducible from the rule version in force then**. Because (a) rules are version-stamped and effective-date-scoped, (b) the posting carries `ruleVersion` (§8), and (c) the event store is append-only, replaying the original event through the rule version cited on its posting reproduces the original entry byte-for-byte. This is the audit guarantee: "show me why this entry was booked" resolves to a specific rule version + a specific event + a specific resolver state, all reproducible.
 
+### 6.4 Authoring convention + enforcement (Phase 4b)
+
+The supersede-never-edit discipline is **codified, not just documented** (`platform/accounting/sla/versioning.ts`):
+
+- **`supersede(prior, next)`** is the single authoring helper. It returns the `(priorClosed, nextVersion)` pair: the prior version with its `effective_to` set to the new `effective_from`, and the new version stamped `version: n+1`, `supersedes: "<rule_id>@<n>"`. It never mutates the original object and rejects (loudly) a cutover at/before the prior version's start. Authoring a change = call `supersede`, then commit **both** rules to the registry (replacing the open-ended prior entry with its closed copy). The 2026-07-01 PR-FX-001-BA v1→v2 reclassification (`rules/pr-fx-001-ba-v2.ts`) is the worked example.
+- **Effective-date selection** is the shared `withinEffectiveWindow` predicate — the interpreter (rule selection) and the recon (window-integrity) read the *same* `[from, to)` function, so they cannot drift.
+- **`reproduceAsOf(...)`** (`reproduce.ts`) is the temporal-reproducibility path: given the original event + the `ruleId`/`ruleVersion` cited on its posting, it re-runs the interpreter against exactly that version and returns the legs for byte-for-byte comparison.
+- **`recon:sla-rule-versioning`** (wired into `bun run ci`) asserts, over the committed registry + the live event store: (a) per `(representation, rule_id)` lineage, effective windows are gap-free + overlap-free with monotonic contiguous versions; (b) every `supersedes` resolves to the immediately-prior version in the same lineage and every version > 1 carries one; (c) every `ruleVersion` stamped on a `SubLedgerPostingEmitted` exists in the registry (a posting that cites a vanished version is an un-reproducible audit-trail break). Legacy postings with no rule lineage are out of scope (additivity, §2.2).
+
 ---
 
 ## 7. Entry-generation engine (interpreter)

@@ -60,6 +60,7 @@
 // 2026-06-05). Citations: Principles/1-events-are-truth.md.
 
 import type { SubLedgerLeg } from "../../platform/accounting/fx-accounting-types";
+import type { Representation } from "../../platform/accounting/sla/generated/sla-types";
 import {
   type InterpretResult,
   type ProposedPosting,
@@ -200,6 +201,10 @@ export type TreasuryInterpretOutcome =
       readonly postingType: TreasuryPostingType;
       readonly legs: SubLedgerLeg[];
       readonly urgentCorrections: readonly UrgentCorrection[];
+      // SLA rule lineage (spec §8.1; versioning recon §6.3).
+      readonly representation: Representation;
+      readonly ruleId: string;
+      readonly ruleVersion: number;
     }
   | { readonly kind: "no-gl"; readonly detail: string }
   | { readonly kind: "reject"; readonly detail: string };
@@ -268,5 +273,13 @@ export function interpretTreasuryEvent(
     return { kind: "reject", detail: `no postingType mapped for treasury event ${event.type}` };
   }
 
-  return { kind: "post", postingType, legs, urgentCorrections: r.urgentCorrections };
+  return {
+    kind: "post",
+    postingType,
+    legs,
+    urgentCorrections: r.urgentCorrections,
+    representation: "IFRS",
+    ruleId: r.ruleId,
+    ruleVersion: r.ruleVersion,
+  };
 }

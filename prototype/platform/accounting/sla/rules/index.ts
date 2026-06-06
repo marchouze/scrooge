@@ -25,6 +25,7 @@
 import type { SlaRule } from "../generated/sla-types";
 import { PR_FX_001 } from "./pr-fx-001";
 import { PR_FX_001_BA } from "./pr-fx-001-ba";
+import { PR_FX_001_BA_V1_CLOSED, PR_FX_001_BA_V2 } from "./pr-fx-001-ba-v2";
 import { PR_FX_002 } from "./pr-fx-002";
 import { PR_FX_005 } from "./pr-fx-005";
 import {
@@ -59,13 +60,22 @@ export const FX_IFRS_RULES: readonly SlaRule[] = [
  * NOP memo (PR-FX-001-BA); cancellation unwinds it (PR-FX-CANCEL-BA); every
  * other FX-lifecycle event is NOP-neutral (intentional-no-impact).
  *
+ * VERSIONED (Phase 4b, spec §6): PR-FX-001-BA carries TWO versions — v1
+ * (receive-leg NOP, effective [2026-01-01, 2026-07-01)) superseded by v2
+ * (pay-leg NOP, effective [2026-07-01, ∞)) on a regulator's BA-350
+ * reclassification date. The two windows abut exactly (no gap/overlap); the
+ * interpreter's effective-date selection picks the version in force at the
+ * event's `as_of`. `PR_FX_001_BA_V1_CLOSED` (not the open-ended v1) is the
+ * registry entry so the lineage is window-complete.
+ *
  * NOT ACTIVATED IN PRODUCTION: the production GL posting engine evaluates the
  * IFRS representation only. This set is exercised by the SLA interpreter dry-run
  * + the side-by-side preview surface + tests until CFO + Owen jointly approve
  * activation (Phase-4c). See pr-fx-001-ba.ts.
  */
 export const FX_SARB_BA_RULES: readonly SlaRule[] = [
-  PR_FX_001_BA,
+  PR_FX_001_BA_V1_CLOSED,
+  PR_FX_001_BA_V2,
   PR_FX_002_BA,
   PR_FX_PRIN_BA,
   PR_FX_CLOSE_BA,
@@ -90,6 +100,8 @@ export const FX_ALL_REPRESENTATION_RULES: readonly SlaRule[] = [
 export {
   PR_FX_001,
   PR_FX_001_BA,
+  PR_FX_001_BA_V1_CLOSED,
+  PR_FX_001_BA_V2,
   PR_FX_002,
   PR_FX_002_BA,
   PR_FX_PRIN,

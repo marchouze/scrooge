@@ -235,6 +235,21 @@ export const subLedgerPostingEmittedPayloadSchema = z
     legs: z.array(subLedgerLegSchema).min(2),
     /** ISO 8601 timestamp when the posting was generated. */
     postedAt: z.string().min(1),
+    // ── SLA rules-as-data lineage (D-SLA-ENGINE-RULES-AS-DATA, spec §8.1) ──
+    // Additive + OPTIONAL: the `.passthrough()` schema already tolerated these
+    // extras; Phase 4b formalises them so the versioning recon can assert that
+    // every posted `ruleVersion` exists in the rule registry (temporal
+    // reproducibility, spec §6.3). Legacy postings that predate the SLA
+    // interpreter cutover carry none of these → they read as `representation:
+    // IFRS` with no rule lineage, which the recon treats as out-of-scope (not a
+    // violation) — the additivity guarantee (spec §2.2): NO replay/backfill of
+    // existing postings is required.
+    /** Accounting basis this posting serves; defaults to IFRS for legacy events. */
+    representation: z.enum(["IFRS", "SARB-BA-RETURN", "ZA-TAX"]).optional(),
+    /** The SLA rule that produced this posting (e.g. "PR-FX-001"). */
+    ruleId: z.string().min(1).optional(),
+    /** The exact rule version in force at the event's effective date (spec §6). */
+    ruleVersion: z.number().int().min(1).optional(),
   })
   .passthrough()
   .superRefine((p, ctx) => {

@@ -51,9 +51,7 @@ export function ruleVersionRef(rule: Pick<SlaRule, "rule_id" | "version">): Rule
 }
 
 /** Parse a `rule_id@version` reference. Returns null on a malformed string. */
-export function parseRuleVersionRef(
-  ref: string,
-): { ruleId: string; version: number } | null {
+export function parseRuleVersionRef(ref: string): { ruleId: string; version: number } | null {
   const at = ref.lastIndexOf("@");
   if (at <= 0) return null;
   const ruleId = ref.slice(0, at);
@@ -105,18 +103,14 @@ export function supersede(
 ): readonly [SlaRule, SlaRule] {
   if (next.effective_from <= prior.effective_from) {
     throw new Error(
-      `supersede(${ruleVersionRef(prior)}): new effective_from ${next.effective_from} ` +
-        `must be strictly after the prior version's effective_from ${prior.effective_from} ` +
-        "(a supersession is a forward cutover; left-closed/right-open windows)",
+      `supersede(${ruleVersionRef(prior)}): new effective_from ${next.effective_from} must be strictly after the prior version's effective_from ${prior.effective_from} (a supersession is a forward cutover; left-closed/right-open windows)`,
     );
   }
   if (prior.effective_to != null && prior.effective_to <= next.effective_from) {
     // The prior version was already closed at or before the proposed cutover —
     // superseding it here would create a gap or an overlap. Reject loudly.
     throw new Error(
-      `supersede(${ruleVersionRef(prior)}): prior version already closes at ` +
-        `${prior.effective_to}, which is <= the proposed cutover ${next.effective_from} ` +
-        "(would create a gap/overlap; supersede the in-force tail version instead)",
+      `supersede(${ruleVersionRef(prior)}): prior version already closes at ${prior.effective_to}, which is <= the proposed cutover ${next.effective_from} (would create a gap/overlap; supersede the in-force tail version instead)`,
     );
   }
 
