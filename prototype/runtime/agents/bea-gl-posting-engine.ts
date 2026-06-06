@@ -140,10 +140,7 @@ import {
   interpretFxEvent,
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
-import {
-  IRD_INTERPRETER_EVENT_TYPES,
-  interpretIrdEvent,
-} from "./bea-gl-ird-interpreter-cutover";
+import { IRD_INTERPRETER_EVENT_TYPES, interpretIrdEvent } from "./bea-gl-ird-interpreter-cutover";
 import {
   DEFAULT_BOND_MATURITY_PORTFOLIO,
   DEFAULT_BOND_SALE_PORTFOLIO,
