@@ -142,7 +142,8 @@ import {
   FX_INTERPRETER_EVENT_TYPES,
   buildCancelEnrichment,
   buildFxApprovalGate,
-  interpretFxEvent,
+  buildNopReversalEnrichment,
+  interpretFxEventAll,
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
 
@@ -246,8 +247,30 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "InterbankLoanRecalledEarly",
 ]);
 
-// Idempotency key format: "${sourceEventId}:${postingType}"
+// Idempotency key format: "${sourceEventId}:${postingType}" for the IFRS
+// (primary) representation — UNCHANGED so existing IFRS postings dedup exactly —
+// and "${sourceEventId}:${postingType}:${representation}" for any secondary
+// representation (SARB-BA-RETURN). One FX event therefore yields one IFRS posting
+// AND one SARB posting under DISTINCT keys (no collision / double-post), while
+// the IFRS key stays byte-for-byte identical to the pre-flip key (additivity).
 type IdempotencyKey = string;
+
+/**
+ * Compose the idempotency key for a posting, disambiguated by representation.
+ * IFRS (the primary basis) keeps the legacy `${sourceEventId}:${postingType}`
+ * key (so no IFRS posting is re-emitted after the SARB flip); every other
+ * representation appends `:${representation}` so its parallel posting is a
+ * distinct key.
+ */
+function postingIdempotencyKey(
+  sourceEventId: string,
+  postingType: string,
+  representation: string,
+): IdempotencyKey {
+  return representation === "IFRS"
+    ? `${sourceEventId}:${postingType}`
+    : `${sourceEventId}:${postingType}:${representation}`;
+}
 
 // ---------------------------------------------------------------------------
 // Idempotency helpers
@@ -264,9 +287,14 @@ function buildPostedKeySet(): Set<IdempotencyKey> {
     const p = e.payload as {
       sourceEventId?: unknown;
       postingType?: unknown;
+      representation?: unknown;
     };
     if (typeof p.sourceEventId === "string" && typeof p.postingType === "string") {
-      keys.add(`${p.sourceEventId}:${p.postingType}`);
+      // Representation defaults to "IFRS" for legacy postings emitted before the
+      // SARB flip (they carry no representation, and were the primary basis), so
+      // they hash to the unchanged bare key and never re-post.
+      const representation = typeof p.representation === "string" ? p.representation : "IFRS";
+      keys.add(postingIdempotencyKey(p.sourceEventId, p.postingType, representation));
     }
   }
   return keys;
@@ -373,13 +401,20 @@ async function processFxViaInterpreter(
   getCancellationIndex: () => CancellationIndex,
   approvalGate: import("../../platform/accounting/sla/approval").InterpreterApprovalGate,
 ): Promise<FxProcessResult> {
-  // Build enrichment for the two rules that price off prior events.
+  // Build enrichment for the rules that price off prior events. For a
+  // cancellation the enrichment carries BOTH the IFRS reversal legs
+  // (`reversalBookingLegs`, read by PR-FX-CANCEL) AND the SARB NOP reversal
+  // (`nopReversal`, read by PR-FX-CANCEL-BA) — non-overlapping keys, so one
+  // merged object serves both representations' rules (SARB activation Round 3).
   let enrichment: unknown;
   if (e.type === "FxTradeCancelled") {
     const payload = e.payload as FxTradeCancelledPayload;
     const cidx = getCancellationIndex();
     const recon = buildFxCancelEnrichmentForTrade(payload.tradeId, cidx);
-    enrichment = buildCancelEnrichment(recon);
+    const ifrsCancel = buildCancelEnrichment(recon);
+    const allTrades = [...eventStore.replay({ type: "FxTradeExecuted" })];
+    const nopCancel = buildNopReversalEnrichment(allTrades, payload.tradeId);
+    enrichment = { ...ifrsCancel, ...(nopCancel ?? {}) };
   } else if (e.type === "FxSettlementFailed") {
     // PR-FX-005 (one-leg-delivered) needs the originating trade's receive leg.
     const allEvents = [...eventStore.replay({ type: "FxTradeExecuted" })];
@@ -390,83 +425,102 @@ async function processFxViaInterpreter(
     enrichment = failedReceiveLeg ? { failedReceiveLeg } : {};
   }
 
-  const outcome = interpretFxEvent(e, ctx.asOf, enrichment, approvalGate);
+  // Fan out over every activated representation (IFRS + SARB-BA-RETURN). One FX
+  // event yields one IFRS posting AND one SARB NOP posting, each balanced
+  // independently; the IFRS posting is byte-for-byte unchanged from the IFRS-only
+  // path (additivity, spec §2.2). Each representation has its own idempotency key.
+  const outcomes = interpretFxEventAll(e, ctx.asOf, enrichment, approvalGate);
 
-  if (outcome.kind === "reject") {
-    // Loud reject — never silent. Surface via logger; the caller's per-event
-    // try/catch records nothing here (we do not throw), but the rejection is
-    // logged at error level so recon catches a wedged FX posting.
-    logger.error(
-      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
-      "bea:gl-posting-engine — SLA interpreter rejected FX posting",
+  let emitted = 0;
+  let skipped = 0;
+
+  for (const { representation, outcome } of outcomes) {
+    if (outcome.kind === "reject") {
+      // Loud reject — never silent. Surface via logger; the caller's per-event
+      // try/catch records nothing here (we do not throw), but the rejection is
+      // logged at error level so recon catches a wedged FX posting.
+      logger.error(
+        { eventId: e.event_id, eventType: e.type, representation, detail: outcome.detail },
+        "bea:gl-posting-engine — SLA interpreter rejected FX posting",
+      );
+      skipped += 1;
+      continue;
+    }
+
+    if (outcome.kind === "no-gl") {
+      logger.info(
+        { eventId: e.event_id, eventType: e.type, representation, detail: outcome.detail },
+        "bea:gl-posting-engine — FX event has no GL impact (interpreter intentional-no-impact)",
+      );
+      skipped += 1;
+      continue;
+    }
+
+    // outcome.kind === "post"
+    const key: IdempotencyKey = postingIdempotencyKey(
+      e.event_id,
+      outcome.postingType,
+      outcome.representation,
     );
-    return { emitted: 0, skipped: 1 };
-  }
+    if (postedKeys.has(key)) {
+      skipped += 1;
+      continue;
+    }
 
-  if (outcome.kind === "no-gl") {
-    logger.info(
-      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
-      "bea:gl-posting-engine — FX event has no GL impact (interpreter intentional-no-impact)",
-    );
-    return { emitted: 0, skipped: 1 };
-  }
-
-  // outcome.kind === "post"
-  const key: IdempotencyKey = `${e.event_id}:${outcome.postingType}`;
-  if (postedKeys.has(key)) {
-    return { emitted: 0, skipped: 1 };
-  }
-
-  // Urgent-correction alerts for any suspense leg (loud, never silent). One
-  // high-severity integrity SubstrateAlert per correction — sourced directly
-  // from the interpreter's returned `urgentCorrections` (the single-sourced
-  // data → event mapping; impossible to forget).
-  if (!ctx.dryRun && outcome.urgentCorrections.length > 0) {
-    for (const correction of outcome.urgentCorrections) {
-      eventStore.append(
-        urgentCorrectionToSubstrateAlert(correction, {
-          asOf: ctx.asOf,
-          entity: e.entity ?? "LE-ZA-HOZ-BANK",
-          actor: HANDLER_ACTOR,
-        }),
+    // Urgent-correction alerts for any suspense leg (loud, never silent). One
+    // high-severity integrity SubstrateAlert per correction — sourced directly
+    // from the interpreter's returned `urgentCorrections` (the single-sourced
+    // data → event mapping; impossible to forget).
+    if (!ctx.dryRun && outcome.urgentCorrections.length > 0) {
+      for (const correction of outcome.urgentCorrections) {
+        eventStore.append(
+          urgentCorrectionToSubstrateAlert(correction, {
+            asOf: ctx.asOf,
+            entity: e.entity ?? "LE-ZA-HOZ-BANK",
+            actor: HANDLER_ACTOR,
+          }),
+        );
+      }
+      logger.warn(
+        {
+          eventId: e.event_id,
+          eventType: e.type,
+          representation: outcome.representation,
+          postingType: outcome.postingType,
+          unresolvedCurrencies: outcome.urgentCorrections.map((c) => c.currency),
+        },
+        "bea:gl-posting-engine — FX leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
       );
     }
-    logger.warn(
-      {
-        eventId: e.event_id,
-        eventType: e.type,
-        postingType: outcome.postingType,
-        unresolvedCurrencies: outcome.urgentCorrections.map((c) => c.currency),
-      },
-      "bea:gl-posting-engine — FX leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
-    );
+
+    if (!ctx.dryRun) {
+      const postingEvent = makeSubLedgerPostingEmitted({
+        asOf: ctx.asOf,
+        entity: e.entity ?? "LE-ZA-HOZ-BANK",
+        actor: HANDLER_ACTOR,
+        citations: [...GL_POSTING_CITATIONS],
+        payload: {
+          sourceEventId: e.event_id,
+          postingType: outcome.postingType,
+          legs: outcome.legs,
+          postedAt: ctx.asOf,
+          // SLA rules-as-data lineage (spec §8.1) — stamps the exact rule version
+          // in force at this event's effective date so the posting is reproducible
+          // (temporal reproducibility, spec §6.3). Asserted by recon:sla-rule-versioning.
+          representation: outcome.representation,
+          ruleId: outcome.ruleId,
+          ruleVersion: outcome.ruleVersion,
+        },
+        eventId: newEventId(),
+      });
+      eventStore.append(postingEvent);
+      postedKeys.add(key);
+    }
+
+    emitted += 1;
   }
 
-  if (!ctx.dryRun) {
-    const postingEvent = makeSubLedgerPostingEmitted({
-      asOf: ctx.asOf,
-      entity: e.entity ?? "LE-ZA-HOZ-BANK",
-      actor: HANDLER_ACTOR,
-      citations: [...GL_POSTING_CITATIONS],
-      payload: {
-        sourceEventId: e.event_id,
-        postingType: outcome.postingType,
-        legs: outcome.legs,
-        postedAt: ctx.asOf,
-        // SLA rules-as-data lineage (spec §8.1) — stamps the exact rule version
-        // in force at this event's effective date so the posting is reproducible
-        // (temporal reproducibility, spec §6.3). Asserted by recon:sla-rule-versioning.
-        representation: outcome.representation,
-        ruleId: outcome.ruleId,
-        ruleVersion: outcome.ruleVersion,
-      },
-      eventId: newEventId(),
-    });
-    eventStore.append(postingEvent);
-    postedKeys.add(key);
-  }
-
-  return { emitted: 1, skipped: 0 };
+  return { emitted, skipped };
 }
 
 /**
