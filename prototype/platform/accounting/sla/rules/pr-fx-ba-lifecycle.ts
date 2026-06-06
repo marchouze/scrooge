@@ -41,17 +41,20 @@
 //   }
 //
 // The reversal flips the booking memo (Cr nop_long / Dr nop_short), netting the
-// position memo to zero per currency. Until SARB-BA-RETURN is activated in
-// production (CFO + Owen joint approval, Phase-4c), no caller computes this
-// enrichment — the rule is exercised by tests + the dry-run preview only, where
-// the enrichment is supplied directly. Wiring a NOP-enrichment builder into the
-// FX cutover bridge is a Phase-4c activation task (flagged in the deliverable).
+// position memo to zero per currency.
 //
-// NOT ACTIVATED IN PRODUCTION (see pr-fx-001-ba.ts header).
+// ACTIVATED IN PRODUCTION (SARB activation Round 3 — the flip): the FX cutover
+// bridge (`bea-gl-fx-interpreter-cutover.ts`) now wires `buildNopReversalEnrichment`,
+// which reconstructs `event.enrichment.nopReversal` from the originating
+// FxTradeExecuted's receive leg, so PR-FX-CANCEL-BA unwinds the NOP memo on a
+// live cancellation (representation-scoped — it touches ONLY the 9000-range memo;
+// the IFRS PR-FX-CANCEL reverses only the IFRS trading accounts).
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
-//            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
+//            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille);
+//            D-SLA-SARB-ACTIVATION-CFO + D-SLA-SARB-BA-RETURN-ACTIVATION-COSEC
+//            (joint production activation, Round 3).
 // Cites: SARB BA 350 (net open position); Banks Act 94 of 1990.
 
 import type { SlaRule } from "../generated/sla-types";

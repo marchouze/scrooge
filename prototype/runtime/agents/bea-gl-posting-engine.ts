@@ -367,9 +367,18 @@ function buildFxCancelEnrichmentForTrade(
   for (const p of cidx.postings) {
     const pp = p.payload as {
       postingType?: string;
+      representation?: string;
       legs?: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
     };
     if (typeof pp.postingType !== "string" || !Array.isArray(pp.legs)) continue;
+    // Reverse ONLY the IFRS booking legs. A booking with no `representation` is a
+    // legacy (pre-SARB-flip) IFRS posting; an explicit non-IFRS representation
+    // (the SARB-BA-RETURN NOP memo) is reversed by its OWN rule (PR-FX-CANCEL-BA)
+    // via the `nopReversal` enrichment — folding it here would double-reverse the
+    // NOP memo AND break IFRS additivity (the IFRS cancel must touch only IFRS
+    // accounts). SARB activation Round 3.
+    const representation = typeof pp.representation === "string" ? pp.representation : "IFRS";
+    if (representation !== "IFRS") continue;
     const sourceEventId = (p.payload as { sourceEventId?: string }).sourceEventId;
     if (!sourceEventId) continue;
     const srcTradeIdValue = cidx.tradeIdBySourceEvent.get(sourceEventId);

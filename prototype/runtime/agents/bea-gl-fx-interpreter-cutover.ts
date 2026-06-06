@@ -6,7 +6,15 @@
 // Bea's universal GL posting engine (`bea-gl-posting-engine.ts`) stops calling
 // the hand-coded posting-rule functions (`platform/accounting/posting-rules/
 // fx-spot.ts`) and starts calling the rules-as-data SLA interpreter
-// (`platform/accounting/sla/interpreter.ts`) with the IFRS rule set.
+// (`platform/accounting/sla/interpreter.ts`).
+//
+// SARB activation Round 3 (the flip): the seam now FANS OUT over every activated
+// representation (`PRODUCTION_REPRESENTATIONS` = ["IFRS","SARB-BA-RETURN"]) via
+// `interpretFxEventAll`. One FX-lifecycle event yields the IFRS posting AND the
+// SARB-BA-RETURN NOP-memo posting, each balanced independently per currency, each
+// under its own representation-disambiguated idempotency key. The IFRS posting is
+// byte-for-byte unchanged from the IFRS-only path (additivity, spec §2.2).
+// `interpretFxEvent` (IFRS-only) is RETAINED for the parity / dry-run callers.
 //
 // SCOPE (D-SLA-ENGINE-RULES-AS-DATA Phase 3; brief deliverable 1): FX-ONLY.
 // The eight FX-lifecycle event types below post via the interpreter. Every
