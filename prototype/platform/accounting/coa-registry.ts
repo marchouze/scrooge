@@ -1089,6 +1089,60 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     currency: "ZAR",
     side: "credit",
   },
+
+  // ------------------------------------------------------------------
+  // 9000 — SARB BA-350 Net-Open-Position (NOP) memorandum accounts
+  // ------------------------------------------------------------------
+  //
+  // These accounts belong to the SARB-BA-RETURN secondary accounting
+  // representation, NOT to the IFRS primary books. They are REGULATORY
+  // MEMORANDUM accounts: the SARB BA-350 (foreign-currency / net-open-position
+  // return) classifies an FX-spot booking by the gross open position it creates
+  // (long vs short by currency), independent of the IFRS trading
+  // receivable/payable split. They never touch the IFRS balance sheet or P&L —
+  // they form the parallel regulatory NOP basis (Phase-0 spec §2.2 / §3.2).
+  //
+  // A fresh 9000 range (distinct from every IFRS trading range) keeps the two
+  // representations physically un-confusable: an IFRS trial-balance scan can
+  // never accidentally fold a regulatory NOP memo, and vice-versa.
+  //
+  // Account names are CURRENCY-FREE (D-COA-CURRENCY-DECOUPLING); the per-leg
+  // currency is carried on each SubLedgerLeg.currency, and the NOP memo balances
+  // per currency (long == short within a currency). `currency` is omitted on the
+  // two memo accounts because they are designed to hold ANY traded currency —
+  // exactly like a multi-currency pool — with the authoritative currency on each
+  // entry; this is the documented omission case for currency-decoupling.
+  //
+  // Provisioned within Camille (Chief Financial Officer, finance)'s authority
+  // D-SLA-FIRST-REPRESENTATION-SARB-BA (SARB-BA-RETURN is the first secondary
+  // representation). The "NOP long / short memorandum" structure is the minimal
+  // BA-350 shape needed for the FX worked example; any richer BA-350 line
+  // decomposition (per-maturity buckets, structural vs trading split) is a
+  // deeper CFO accounting-policy call flagged in the Phase-4a deliverable.
+  //
+  // NOT ACTIVATED IN PRODUCTION. The production GL posting engine emits ONLY the
+  // IFRS representation; these accounts receive postings only via the SLA
+  // interpreter dry-run / preview + tests until CFO + Owen jointly approve
+  // SARB-BA-RETURN activation (the Phase-4c approval workflow).
+  //
+  // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
+  //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
+  // Citations: SARB BA 350 (net open position return); Banks Act 94 of 1990;
+  //            Regulations Relating to Banks; Principle 5 (multi-currency).
+  {
+    id: "ACC-9000-001",
+    name: "Net Open Position Memorandum — Long",
+    category: "memorandum-regulatory-nop",
+    side: "debit",
+    // No `currency` — multi-currency NOP memo (per-entry currency authoritative).
+  },
+  {
+    id: "ACC-9000-002",
+    name: "Net Open Position Memorandum — Short",
+    category: "memorandum-regulatory-nop",
+    side: "credit",
+    // No `currency` — multi-currency NOP memo (per-entry currency authoritative).
+  },
 ];
 
 // ---------------------------------------------------------------------------

@@ -24,8 +24,18 @@
 
 import type { SlaRule } from "../generated/sla-types";
 import { PR_FX_001 } from "./pr-fx-001";
+import { PR_FX_001_BA } from "./pr-fx-001-ba";
 import { PR_FX_002 } from "./pr-fx-002";
 import { PR_FX_005 } from "./pr-fx-005";
+import {
+  PR_FX_002_BA,
+  PR_FX_005_BA,
+  PR_FX_CANCEL_BA,
+  PR_FX_CLOSE_BA,
+  PR_FX_INSTRUCT_BA,
+  PR_FX_PRIN_BA,
+  PR_FX_REGREPORT_BA,
+} from "./pr-fx-ba-lifecycle";
 import { PR_FX_CANCEL } from "./pr-fx-cancel";
 import { PR_FX_LIFECYCLE_CLOSE } from "./pr-fx-lifecycle-close";
 import { PR_FX_INSTRUCT, PR_FX_REGREPORT } from "./pr-fx-memo";
@@ -43,13 +53,55 @@ export const FX_IFRS_RULES: readonly SlaRule[] = [
   PR_FX_REGREPORT,
 ];
 
+/**
+ * Every FX SARB-BA-RETURN posting rule (the first SECONDARY representation —
+ * D-SLA-FIRST-REPRESENTATION-SARB-BA), in lifecycle order. Booking opens the
+ * NOP memo (PR-FX-001-BA); cancellation unwinds it (PR-FX-CANCEL-BA); every
+ * other FX-lifecycle event is NOP-neutral (intentional-no-impact).
+ *
+ * NOT ACTIVATED IN PRODUCTION: the production GL posting engine evaluates the
+ * IFRS representation only. This set is exercised by the SLA interpreter dry-run
+ * + the side-by-side preview surface + tests until CFO + Owen jointly approve
+ * activation (Phase-4c). See pr-fx-001-ba.ts.
+ */
+export const FX_SARB_BA_RULES: readonly SlaRule[] = [
+  PR_FX_001_BA,
+  PR_FX_002_BA,
+  PR_FX_PRIN_BA,
+  PR_FX_CLOSE_BA,
+  PR_FX_005_BA,
+  PR_FX_CANCEL_BA,
+  PR_FX_INSTRUCT_BA,
+  PR_FX_REGREPORT_BA,
+];
+
+/**
+ * The full FX rule set across ALL representations — fed to the interpreter when
+ * the dry-run / preview fans an FX event out over `["IFRS", "SARB-BA-RETURN"]`.
+ * The interpreter partitions by `representation` internally (spec §2.2), so the
+ * IFRS and SARB rules never cross-contaminate. The production path uses
+ * `FX_IFRS_RULES` + `["IFRS"]` exclusively.
+ */
+export const FX_ALL_REPRESENTATION_RULES: readonly SlaRule[] = [
+  ...FX_IFRS_RULES,
+  ...FX_SARB_BA_RULES,
+];
+
 export {
   PR_FX_001,
+  PR_FX_001_BA,
   PR_FX_002,
+  PR_FX_002_BA,
   PR_FX_PRIN,
+  PR_FX_PRIN_BA,
   PR_FX_LIFECYCLE_CLOSE,
+  PR_FX_CLOSE_BA,
   PR_FX_005,
+  PR_FX_005_BA,
   PR_FX_CANCEL,
+  PR_FX_CANCEL_BA,
   PR_FX_INSTRUCT,
+  PR_FX_INSTRUCT_BA,
   PR_FX_REGREPORT,
+  PR_FX_REGREPORT_BA,
 };
