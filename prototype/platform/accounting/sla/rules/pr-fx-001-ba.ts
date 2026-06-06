@@ -36,16 +36,20 @@
 // authored as multi-currency (any traded currency resolves), this is the
 // permanent last-resort safety net only.
 //
-// ─── NOT ACTIVATED IN PRODUCTION ────────────────────────────────────────────
+// ─── ACTIVATED IN PRODUCTION (SARB activation Round 3 — the flip) ────────────
 // The production GL posting engine (`bea-gl-posting-engine.ts` via
-// `bea-gl-fx-interpreter-cutover.ts`) calls `interpret(..., ["IFRS"], ...)` —
-// IFRS ONLY. This rule is exercised by tests + the dry-run preview surface only.
-// Live activation of the SARB-BA-RETURN representation requires CFO + Owen
-// (Company Secretary, governance) joint approval via the Phase-4c workflow.
+// `bea-gl-fx-interpreter-cutover.ts`) now calls
+// `interpret(..., ["IFRS","SARB-BA-RETURN"], ...)` — every FX booking yields the
+// IFRS trading split AND this SARB NOP memo, each balanced independently. The
+// rule is interpreter-eligible only because it carries a four-eyes SlaRuleApproved
+// (approver Camille ≠ publisher Bea); the CFO+CoSec joint activation Decisions are
+// on the log. Additivity holds: the IFRS posting is byte-for-byte unchanged.
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
-//            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
+//            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille);
+//            D-SLA-SARB-ACTIVATION-CFO + D-SLA-SARB-BA-RETURN-ACTIVATION-COSEC
+//            (joint production activation, Round 3).
 // Cites: SARB BA 350 (net open position); Banks Act 94 of 1990 (exposure).
 
 import type { SlaRule } from "../generated/sla-types";

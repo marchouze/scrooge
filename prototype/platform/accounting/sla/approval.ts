@@ -49,12 +49,21 @@ import type { SlaRule } from "./generated/sla-types";
  * joint-approval rule (a non-IFRS representation here ⇒ a CFO Decision AND a
  * CoSec Decision must exist, per D-SLA-REPRESENTATION-ACTIVATION-JOINT-APPROVAL).
  *
- * PHASE 4c: production stays IFRS-ONLY. SARB-BA-RETURN is NOT activated; it
- * remains a dry-run/preview-only parallel basis until the post-4c CFO+CoSec
- * joint-approval round flips this constant (see the activation runbook). Adding
- * "SARB-BA-RETURN" here WITHOUT both Decisions present is a recon failure.
+ * ACTIVATED (SARB activation Round 3 — the production flip, spec §9.5 runbook):
+ * SARB-BA-RETURN is now a live secondary production representation alongside
+ * IFRS. The governance preconditions the recon enforces are all on the log:
+ * the CFO+CoSec joint activation Decisions (D-SLA-SARB-ACTIVATION-CFO +
+ * D-SLA-SARB-BA-RETURN-ACTIVATION-COSEC) and a four-eyes SlaRuleApproved
+ * (approver agent:camille ≠ publisher agent:bea) for every published SARB rule
+ * version. Adding a non-IFRS representation here WITHOUT both Decisions + the
+ * four-eyes approvals present is a `recon:sla-approval-workflow` failure.
+ *
+ * Additivity (spec §2.2): the IFRS basis is byte-for-byte unchanged by this
+ * flip — the FX seam fans an event out over both representations, each rule set
+ * is partitioned by `representation`, and each posting balances independently.
+ * SARB postings land only in the 9000-range NOP memorandum accounts.
  */
-export const PRODUCTION_REPRESENTATIONS: readonly string[] = ["IFRS"];
+export const PRODUCTION_REPRESENTATIONS: readonly string[] = ["IFRS", "SARB-BA-RETURN"];
 
 // ---------------------------------------------------------------------------
 // Eligibility key

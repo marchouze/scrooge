@@ -6,7 +6,15 @@
 // Bea's universal GL posting engine (`bea-gl-posting-engine.ts`) stops calling
 // the hand-coded posting-rule functions (`platform/accounting/posting-rules/
 // fx-spot.ts`) and starts calling the rules-as-data SLA interpreter
-// (`platform/accounting/sla/interpreter.ts`) with the IFRS rule set.
+// (`platform/accounting/sla/interpreter.ts`).
+//
+// SARB activation Round 3 (the flip): the seam now FANS OUT over every activated
+// representation (`PRODUCTION_REPRESENTATIONS` = ["IFRS","SARB-BA-RETURN"]) via
+// `interpretFxEventAll`. One FX-lifecycle event yields the IFRS posting AND the
+// SARB-BA-RETURN NOP-memo posting, each balanced independently per currency, each
+// under its own representation-disambiguated idempotency key. The IFRS posting is
+// byte-for-byte unchanged from the IFRS-only path (additivity, spec §2.2).
+// `interpretFxEvent` (IFRS-only) is RETAINED for the parity / dry-run callers.
 //
 // SCOPE (D-SLA-ENGINE-RULES-AS-DATA Phase 3; brief deliverable 1): FX-ONLY.
 // The eight FX-lifecycle event types below post via the interpreter. Every
@@ -65,7 +73,7 @@ import {
   type UrgentCorrection,
   interpret,
 } from "../../platform/accounting/sla/interpreter";
-import { FX_IFRS_RULES } from "../../platform/accounting/sla/rules";
+import { FX_ALL_REPRESENTATION_RULES, FX_IFRS_RULES } from "../../platform/accounting/sla/rules";
 import { logger } from "../../platform/composition";
 import type { FxSettlementFailedPayload } from "../../platform/event-store/event-types/fx-accounting";
 import type { Event } from "../../platform/event-store/types";
@@ -206,6 +214,58 @@ export function buildCancelEnrichment(args: {
 }
 
 // ---------------------------------------------------------------------------
+// NOP-reversal enrichment (PR-FX-CANCEL-BA — SARB-BA-RETURN) — the 4a gap.
+// ---------------------------------------------------------------------------
+
+/** The SARB BA-350 NOP reversal context for a cancelled FX-spot trade. */
+export interface NopReversal {
+  /** The original receive-leg (bought) currency the NOP memo was opened on. */
+  readonly currency: string;
+  /** |original receive-leg counterNotional| (magnitude, minor units). */
+  readonly amountMinor: number;
+}
+
+/** Enrichment payload for PR-FX-CANCEL-BA, exposed as `event.enrichment.nopReversal`. */
+export interface NopCancelEnrichment {
+  readonly nopReversal: NopReversal;
+}
+
+/**
+ * Build the SARB BA-350 NOP-reversal enrichment for an `FxTradeCancelled` event.
+ *
+ * PR-FX-001-BA opened the NOP memo on the trade's RECEIVE-leg (bought) currency,
+ * magnitude = |near.counterNotional.amountMinor| (the bought-currency notional).
+ * PR-FX-CANCEL-BA must unwind exactly that memo, so the reversal prices off the
+ * SAME receive-leg facts — reconstructed from the originating `FxTradeExecuted`
+ * (the cancellation event does not carry them). Mirrors the receive-leg
+ * reconstruction `resolveFailedReceiveLeg` performs for PR-FX-005, so the open
+ * and the unwind price off identical prior-event facts (the memo nets to zero).
+ *
+ * Returns `undefined` when the originating trade or its near leg cannot be found
+ * — the caller supplies NO enrichment, so PR-FX-CANCEL-BA's `for_each`-free
+ * reversal lines read an absent path and the rule rejects loudly (never a silent
+ * skip; a cancellation with no resolvable booking is a genuine integrity signal).
+ */
+export function buildNopReversalEnrichment(
+  events: ReadonlyArray<Event>,
+  cancelledTradeId: string,
+): NopCancelEnrichment | undefined {
+  const trade = findFxTradeExecuted(events, cancelledTradeId);
+  if (!trade) return undefined;
+
+  const payload = trade.payload as FxTradeExecutedPayload;
+  const nearLeg = payload.legs.find((l) => l.legKind === "near");
+  if (!nearLeg) return undefined;
+
+  return {
+    nopReversal: {
+      currency: nearLeg.receiveCurrency,
+      amountMinor: Math.abs(nearLeg.counterNotional.amountMinor),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // interpretFxEvent — the production cutover seam.
 // ---------------------------------------------------------------------------
 
@@ -239,21 +299,69 @@ function toSubLedgerLegs(post: ProposedPosting): SubLedgerLeg[] {
 }
 
 /**
- * Run the IFRS SLA interpreter for a single FX-lifecycle source event and map
- * the result to the production engine's outcome shape.
+ * Map ONE interpreter `InterpretResult` (a single representation's outcome) to
+ * the production engine's outcome shape. Shared by the IFRS-only seam and the
+ * multi-representation fan-out so both representations are mapped identically.
  *
- * `enrichment` is the pre-resolved prior-event context (cancel reversal legs /
- * failed-receive-leg) the caller computed; omit for events that need none
- * (booking, reval, principal, close, memos).
- *
- * The interpreter returns exactly one IFRS result per event (one active
- * representation in Phase 3). Outcomes:
  *   - "post"                  → emit SubLedgerPostingEmitted + any urgent
  *                               corrections (suspense legs).
  *   - "intentional-no-impact" → no GL (memo rules; zero-delta reval; zero-pnl
- *                               close). Matches legacy `legs.length === 0` skip.
+ *                               close; every NOP-neutral SARB lifecycle rule).
  *   - "rejected" / "ambiguous" → loud reject (the caller logs + records an
  *                               error; never silent).
+ */
+function mapResultToOutcome(eventType: string, r: InterpretResult): FxInterpretOutcome {
+  if (r.outcome === "intentional-no-impact") {
+    return { kind: "no-gl", detail: r.detail };
+  }
+  if (r.outcome === "rejected") {
+    return { kind: "reject", detail: `${r.representation} ${r.reason}: ${r.detail}` };
+  }
+  if (r.outcome === "ambiguous") {
+    return {
+      kind: "reject",
+      detail: `${r.representation} ambiguous rule selection: ${r.candidateRuleIds.join(", ")} — ${r.detail}`,
+    };
+  }
+
+  // outcome === "post"
+  const legs = toSubLedgerLegs(r);
+  if (legs.length === 0) {
+    // A balanced posting with zero legs is the no-GL case (e.g. settlement
+    // failure no-GL branch) — matches the legacy `legs.length === 0` skip.
+    return { kind: "no-gl", detail: `${r.ruleId}: zero legs` };
+  }
+
+  const postingType = FX_POSTING_TYPE[eventType];
+  if (!postingType) {
+    return {
+      kind: "reject",
+      detail: `no postingType mapped for FX event ${eventType}`,
+    };
+  }
+
+  return {
+    kind: "post",
+    postingType,
+    legs,
+    urgentCorrections: r.urgentCorrections,
+    representation: r.representation as Representation,
+    ruleId: r.ruleId,
+    ruleVersion: r.ruleVersion,
+  };
+}
+
+/**
+ * Run the IFRS-ONLY SLA interpreter for a single FX-lifecycle source event and
+ * map the result to the production engine's outcome shape. RETAINED for the
+ * parity / dry-run callers that evaluate the IFRS basis alone; the production
+ * engine now uses `interpretFxEventAll` to fan out across the activated
+ * representations. The IFRS outcome this returns is byte-for-byte identical to
+ * the IFRS element of `interpretFxEventAll` (same rules, same enrichment,
+ * representations partitioned — additivity, spec §2.2).
+ *
+ * `enrichment` is the pre-resolved prior-event context (cancel reversal legs /
+ * failed-receive-leg) the caller computed; omit for events that need none.
  */
 export function interpretFxEvent(
   event: Event,
@@ -270,7 +378,7 @@ export function interpretFxEvent(
       enrichment,
     },
     FX_IFRS_RULES,
-    PRODUCTION_REPRESENTATIONS,
+    ["IFRS"],
     asOf,
     approvalGate ? { approvalGate } : {},
   );
@@ -282,45 +390,66 @@ export function interpretFxEvent(
       detail: `interpreter produced no IFRS result for ${event.type}`,
     };
   }
+  return mapResultToOutcome(event.type, r);
+}
 
-  if (r.outcome === "intentional-no-impact") {
-    return { kind: "no-gl", detail: r.detail };
-  }
-  if (r.outcome === "rejected") {
-    return { kind: "reject", detail: `${r.reason}: ${r.detail}` };
-  }
-  if (r.outcome === "ambiguous") {
-    return {
-      kind: "reject",
-      detail: `ambiguous rule selection: ${r.candidateRuleIds.join(", ")} — ${r.detail}`,
-    };
-  }
+/** One activated representation's outcome for an FX-lifecycle event. */
+export interface FxRepresentationOutcome {
+  readonly representation: Representation;
+  readonly outcome: FxInterpretOutcome;
+}
 
-  // outcome === "post"
-  const legs = toSubLedgerLegs(r);
-  if (legs.length === 0) {
-    // A balanced posting with zero legs is the no-GL case (e.g. settlement
-    // failure no-GL branch) — matches the legacy `legs.length === 0` skip.
-    return { kind: "no-gl", detail: `${r.ruleId}: zero legs` };
-  }
+/**
+ * Run the SLA interpreter for a single FX-lifecycle source event across ALL the
+ * activated production representations (`PRODUCTION_REPRESENTATIONS`), mapping
+ * each representation's result to the engine's outcome shape. The production
+ * cutover seam (SARB activation Round 3 — the flip): one FX event now yields one
+ * IFRS posting AND one SARB-BA-RETURN posting (the NOP memo), each rule set
+ * partitioned by `representation` inside the interpreter, each balanced
+ * independently per currency. The IFRS outcome is byte-for-byte unchanged from
+ * the IFRS-only path (additivity, spec §2.2) — adding SARB rules cannot alter
+ * IFRS rule selection because the interpreter filters rules by representation.
+ *
+ * `enrichment` is the pre-resolved prior-event context. For a cancellation it
+ * carries BOTH the IFRS reversal legs (`reversalBookingLegs`, read by
+ * PR-FX-CANCEL) AND the SARB NOP reversal (`nopReversal`, read by
+ * PR-FX-CANCEL-BA) — non-overlapping enrichment keys, so one merged object
+ * serves both representations' rules.
+ *
+ * Returns one `FxRepresentationOutcome` per activated representation, in the
+ * `PRODUCTION_REPRESENTATIONS` order. A representation with no eligible rule for
+ * the event yields a loud `reject` outcome (never silent).
+ */
+export function interpretFxEventAll(
+  event: Event,
+  asOf: string,
+  enrichment?: unknown,
+  approvalGate?: InterpreterApprovalGate,
+): FxRepresentationOutcome[] {
+  const results: InterpretResult[] = interpret(
+    {
+      type: event.type,
+      entity: event.entity ?? "LE-ZA-HOZ-BANK",
+      as_of: event.as_of,
+      payload: event.payload,
+      enrichment,
+    },
+    FX_ALL_REPRESENTATION_RULES,
+    PRODUCTION_REPRESENTATIONS,
+    asOf,
+    approvalGate ? { approvalGate } : {},
+  );
 
-  const postingType = FX_POSTING_TYPE[event.type];
-  if (!postingType) {
-    return {
-      kind: "reject",
-      detail: `no postingType mapped for FX event ${event.type}`,
-    };
-  }
-
-  return {
-    kind: "post",
-    postingType,
-    legs,
-    urgentCorrections: r.urgentCorrections,
-    representation: "IFRS",
-    ruleId: r.ruleId,
-    ruleVersion: r.ruleVersion,
-  };
+  return PRODUCTION_REPRESENTATIONS.map((representation) => {
+    const r = results.find((x) => x.representation === representation);
+    const outcome: FxInterpretOutcome = r
+      ? mapResultToOutcome(event.type, r)
+      : {
+          kind: "reject",
+          detail: `interpreter produced no ${representation} result for ${event.type}`,
+        };
+    return { representation: representation as Representation, outcome };
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -68,10 +68,12 @@ export const FX_IFRS_RULES: readonly SlaRule[] = [
  * event's `as_of`. `PR_FX_001_BA_V1_CLOSED` (not the open-ended v1) is the
  * registry entry so the lineage is window-complete.
  *
- * NOT ACTIVATED IN PRODUCTION: the production GL posting engine evaluates the
- * IFRS representation only. This set is exercised by the SLA interpreter dry-run
- * + the side-by-side preview surface + tests until CFO + Owen jointly approve
- * activation (Phase-4c). See pr-fx-001-ba.ts.
+ * ACTIVATED IN PRODUCTION (SARB activation Round 3 — the flip): the production
+ * GL posting engine now evaluates `["IFRS","SARB-BA-RETURN"]` (the activated
+ * `PRODUCTION_REPRESENTATIONS`), so every FX-lifecycle event posts both bases in
+ * parallel. The CFO+CoSec joint activation Decisions and a four-eyes approval for
+ * every rule version are on the log (recon:sla-approval-workflow). See
+ * pr-fx-001-ba.ts.
  */
 export const FX_SARB_BA_RULES: readonly SlaRule[] = [
   PR_FX_001_BA_V1_CLOSED,
