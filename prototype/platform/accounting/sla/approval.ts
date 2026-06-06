@@ -39,6 +39,24 @@ import { createHash } from "node:crypto";
 import type { SlaRule } from "./generated/sla-types";
 
 // ---------------------------------------------------------------------------
+// Activated production representations (the single source of truth)
+// ---------------------------------------------------------------------------
+
+/**
+ * The representations the PRODUCTION GL posting path evaluates. This is the ONE
+ * place the activated-representation set is declared — the FX cutover seam reads
+ * it (not a bare `["IFRS"]` literal), and the recon reads it to enforce the
+ * joint-approval rule (a non-IFRS representation here ⇒ a CFO Decision AND a
+ * CoSec Decision must exist, per D-SLA-REPRESENTATION-ACTIVATION-JOINT-APPROVAL).
+ *
+ * PHASE 4c: production stays IFRS-ONLY. SARB-BA-RETURN is NOT activated; it
+ * remains a dry-run/preview-only parallel basis until the post-4c CFO+CoSec
+ * joint-approval round flips this constant (see the activation runbook). Adding
+ * "SARB-BA-RETURN" here WITHOUT both Decisions present is a recon failure.
+ */
+export const PRODUCTION_REPRESENTATIONS: readonly string[] = ["IFRS"];
+
+// ---------------------------------------------------------------------------
 // Eligibility key
 // ---------------------------------------------------------------------------
 

@@ -140,6 +140,7 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   FX_INTERPRETER_EVENT_TYPES,
   buildCancelEnrichment,
+  buildFxApprovalGate,
   interpretFxEvent,
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
@@ -366,6 +367,7 @@ async function processFxViaInterpreter(
   ctx: AgentRunContext,
   postedKeys: Set<IdempotencyKey>,
   getCancellationIndex: () => CancellationIndex,
+  approvalGate: import("../../platform/accounting/sla/approval").InterpreterApprovalGate,
 ): Promise<FxProcessResult> {
   // Build enrichment for the two rules that price off prior events.
   let enrichment: unknown;
@@ -384,7 +386,7 @@ async function processFxViaInterpreter(
     enrichment = failedReceiveLeg ? { failedReceiveLeg } : {};
   }
 
-  const outcome = interpretFxEvent(e, ctx.asOf, enrichment);
+  const outcome = interpretFxEvent(e, ctx.asOf, enrichment, approvalGate);
 
   if (outcome.kind === "reject") {
     // Loud reject — never silent. Surface via logger; the caller's per-event
@@ -975,6 +977,17 @@ export async function beaGlPostingEngine(
   // Build idempotency set once — avoids N² replays.
   const postedKeys = buildPostedKeySet();
 
+  // Phase-4c approval gate (D-SLA-ENGINE-RULES-AS-DATA; D-SLA-APPROVAL-WORKFLOW-
+  // SEGREGATION). Built ONCE per run from the append-only approval stream. A
+  // published-but-unapproved (or withheld) FX rule version is NOT eligible and
+  // never posts; grandfathered in-force rules carry a seeded build-phase
+  // grandfather approval so production posting is unchanged.
+  const fxApprovalGate = buildFxApprovalGate([
+    ...eventStore.replay({ type: "SlaRulePublished" }),
+    ...eventStore.replay({ type: "SlaRuleApproved" }),
+    ...eventStore.replay({ type: "SlaRuleWithheld" }),
+  ]);
+
   let eventsEmitted = 0;
   let skipped = 0;
   const errors: string[] = [];
@@ -1016,7 +1029,13 @@ export async function beaGlPostingEngine(
       // legacy dispatch below, UNTOUCHED.
       // -----------------------------------------------------------------------
       if (FX_INTERPRETER_EVENT_TYPES.has(e.type)) {
-        const handled = await processFxViaInterpreter(e, ctx, postedKeys, getCancellationIndex);
+        const handled = await processFxViaInterpreter(
+          e,
+          ctx,
+          postedKeys,
+          getCancellationIndex,
+          fxApprovalGate,
+        );
         eventsEmitted += handled.emitted;
         skipped += handled.skipped;
         continue;
