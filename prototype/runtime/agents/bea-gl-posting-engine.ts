@@ -49,11 +49,13 @@
 //   - EquityDividendAccrued         → PR-EQ-003: equityDividendJournals()
 //   - EquitySold                    → PR-EQ-004: equitySaleJournals()
 //
-//   IRD swap lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR C):
-//   - IrdSwapTradeExecuted          → PR-IRS-001: irdSwapTradeBookingJournals()
-//   - IrdSwapPositionRevalued       → PR-IRS-002: irdSwapRevaluationJournals()
-//   - IrdSwapCouponSettled          → PR-IRS-003: irdSwapCouponJournals()
-//   - IrdSwapTerminated             → PR-IRS-TERM: irdSwapTerminationJournals()
+//   IRD swap lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR C; CUT OVER to the
+//   rules-as-data SLA interpreter — D-SLA-ENGINE-RULES-AS-DATA, full-retirement
+//   Batch 3 — see `bea-gl-ird-interpreter-cutover.ts`):
+//   - IrdSwapTradeExecuted          → PR-IRS-001  [ird-swap-trade-booking]
+//   - IrdSwapPositionRevalued       → PR-IRS-002  [ird-swap-revaluation]
+//   - IrdSwapCouponSettled          → PR-IRS-003  [ird-swap-coupon-settlement]
+//   - IrdSwapTerminated             → PR-IRS-TERM [ird-swap-termination]
 //
 //   Treasury lifecycle (WS1-PR1a; IFRS 9 §3.1.1; IAS 39 §27):
 //   - RepoTradeOpened               → PR-REPO-001: prRepo001()  [postingType: "repo-trade-booking"]
@@ -84,14 +86,16 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
-// NOTE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 2): the legacy
-// bonds.ts / equities.ts posting-rule functions are NO LONGER called from this
-// production engine — bond + equity lifecycle events route through the
-// rules-as-data SLA interpreter (see `bea-gl-securities-interpreter-cutover.ts`
-// + `processSecuritiesViaInterpreter` below). The legacy files are retained as
-// the byte-for-byte parity reference
-// (tests/sla-securities-lifecycle-parallel-run.test.ts), deprecated-for-
-// production but NOT deleted.
+// NOTE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 2 + Batch 3): the
+// legacy bonds.ts / equities.ts (Batch 2) AND ird-swaps.ts (Batch 3) posting-rule
+// functions are NO LONGER called from this production engine — bond + equity +
+// IRD-swap lifecycle events route through the rules-as-data SLA interpreter (see
+// `bea-gl-securities-interpreter-cutover.ts` + `processSecuritiesViaInterpreter`
+// and `bea-gl-ird-interpreter-cutover.ts` + `processIrdViaInterpreter` below).
+// The legacy files are retained as the byte-for-byte parity reference
+// (tests/sla-securities-lifecycle-parallel-run.test.ts +
+// tests/sla-ird-lifecycle-parallel-run.test.ts), deprecated-for-production but
+// NOT deleted.
 import {
   detectUnresolvedCurrencyLegs,
   fxAmendmentJournals,
@@ -99,12 +103,6 @@ import {
   fxSettlementJournals,
   fxSettlementReversalJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
-import {
-  irdSwapCouponJournals,
-  irdSwapRevaluationJournals,
-  irdSwapTerminationJournals,
-  irdSwapTradeBookingJournals,
-} from "../../platform/accounting/posting-rules/ird-swaps";
 import {
   paymentInitiatedJournals,
   paymentSettledJournals,
@@ -125,12 +123,6 @@ import {
   makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
 import type {
-  IrdSwapCouponSettledPayload,
-  IrdSwapPositionRevaluedPayload,
-  IrdSwapTerminatedPayload,
-  IrdSwapTradeExecutedPayload,
-} from "../../platform/event-store/event-types/ird-accounting";
-import type {
   TradeAmendedPayload,
   TradeCancelledPayload,
 } from "../../platform/event-store/event-types/markets-trading-extended";
@@ -148,6 +140,10 @@ import {
   interpretFxEvent,
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
+import {
+  IRD_INTERPRETER_EVENT_TYPES,
+  interpretIrdEvent,
+} from "./bea-gl-ird-interpreter-cutover";
 import {
   DEFAULT_BOND_MATURITY_PORTFOLIO,
   DEFAULT_BOND_SALE_PORTFOLIO,
@@ -666,6 +662,93 @@ async function processSecuritiesViaInterpreter(
   return { emitted: 1, skipped: 0 };
 }
 
+/**
+ * Process one IRD-swap (OTC interest-rate swap) source event via the rules-as-
+ * data SLA interpreter and emit the resulting `SubLedgerPostingEmitted` (+
+ * urgent-correction `SubstrateAlert`s for any suspense leg). The FOURTH
+ * production cutover seam (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 3).
+ * The four postingType strings are UNCHANGED from the legacy engine (no double-
+ * post on replay).
+ *
+ * No enrichment: every IRD rule prices off integer minor-unit fields carried
+ * directly on the triggering event (NPV / delta / opening / closing / net cash /
+ * termination payment / carrying NPV / realised P&L), so the interpreter reads
+ * them directly. The pure interpreter receives the bare event.
+ */
+async function processIrdViaInterpreter(
+  e: import("../../platform/event-store/types").Event,
+  ctx: AgentRunContext,
+  postedKeys: Set<IdempotencyKey>,
+): Promise<FxProcessResult> {
+  const outcome = interpretIrdEvent(e, ctx.asOf);
+
+  if (outcome.kind === "reject") {
+    logger.error(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — SLA interpreter rejected IRD-swap posting",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  if (outcome.kind === "no-gl") {
+    logger.info(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — IRD-swap event has no GL impact (interpreter intentional-no-impact)",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // outcome.kind === "post"
+  const key: IdempotencyKey = `${e.event_id}:${outcome.postingType}`;
+  if (postedKeys.has(key)) {
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // Urgent-correction alerts for any suspense leg (loud, never silent). Domestic
+  // OTC swaps are ZAR, so this is normally empty; a non-ZAR leg with no
+  // per-currency account routes to suspense exactly as FX does.
+  if (!ctx.dryRun && outcome.urgentCorrections.length > 0) {
+    for (const correction of outcome.urgentCorrections) {
+      eventStore.append(
+        urgentCorrectionToSubstrateAlert(correction, {
+          asOf: ctx.asOf,
+          entity: e.entity ?? "LE-ZA-HOZ-BANK",
+          actor: HANDLER_ACTOR,
+        }),
+      );
+    }
+    logger.warn(
+      {
+        eventId: e.event_id,
+        eventType: e.type,
+        postingType: outcome.postingType,
+        unresolvedCurrencies: outcome.urgentCorrections.map((c) => c.currency),
+      },
+      "bea:gl-posting-engine — IRD-swap leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
+    );
+  }
+
+  if (!ctx.dryRun) {
+    const postingEvent = makeSubLedgerPostingEmitted({
+      asOf: ctx.asOf,
+      entity: e.entity ?? "LE-ZA-HOZ-BANK",
+      actor: HANDLER_ACTOR,
+      citations: [...GL_POSTING_CITATIONS],
+      payload: {
+        sourceEventId: e.event_id,
+        postingType: outcome.postingType,
+        legs: outcome.legs,
+        postedAt: ctx.asOf,
+      },
+      eventId: newEventId(),
+    });
+    eventStore.append(postingEvent);
+    postedKeys.add(key);
+  }
+
+  return { emitted: 1, skipped: 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -850,6 +933,23 @@ export async function beaGlPostingEngine(
       // -----------------------------------------------------------------------
       if (SECURITIES_INTERPRETER_EVENT_TYPES.has(e.type)) {
         const handled = await processSecuritiesViaInterpreter(e, ctx, postedKeys);
+        eventsEmitted += handled.emitted;
+        skipped += handled.skipped;
+        continue;
+      }
+
+      // -----------------------------------------------------------------------
+      // IRD-SWAP CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 3) ─────────────────
+      // The four OTC interest-rate / IRD swap lifecycle event types post via the
+      // rules-as-data SLA interpreter (IFRS), NOT the legacy ird-swaps.ts posting-
+      // rule functions. Byte-for-byte safe — proven by
+      // tests/sla-ird-lifecycle-parallel-run.test.ts. No enrichment is required
+      // (all IRD amounts are integer minor-unit fields on the triggering event).
+      // The remaining family (payments) + the already-done families (FX,
+      // treasury, securities) fall through to their existing dispatch, UNTOUCHED.
+      // -----------------------------------------------------------------------
+      if (IRD_INTERPRETER_EVENT_TYPES.has(e.type)) {
+        const handled = await processIrdViaInterpreter(e, ctx, postedKeys);
         eventsEmitted += handled.emitted;
         skipped += handled.skipped;
         continue;
@@ -1054,52 +1154,15 @@ export async function beaGlPostingEngine(
         // EquityDividendAccrued / EquitySold are intercepted ABOVE by the
         // SECURITIES_INTERPRETER_EVENT_TYPES branch and posted via the SLA
         // interpreter (D-SLA-ENGINE-RULES-AS-DATA, Batch 2) — they never reach
-        // this legacy dispatch chain.
-      } else if (e.type === "IrdSwapTradeExecuted") {
-        // PR-IRS-001: Initial recognition — IFRS 9 §4.1.4
-        postingType = "ird-swap-trade-booking";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as IrdSwapTradeExecutedPayload;
-        legs = irdSwapTradeBookingJournals(payload);
-      } else if (e.type === "IrdSwapPositionRevalued") {
-        // PR-IRS-002: FVTPL NPV re-measurement — IFRS 9 §5.7.1
-        postingType = "ird-swap-revaluation";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as IrdSwapPositionRevaluedPayload;
-        legs = irdSwapRevaluationJournals(payload);
-      } else if (e.type === "IrdSwapCouponSettled") {
-        // PR-IRS-003: Net coupon cash settlement
-        postingType = "ird-swap-coupon-settlement";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as IrdSwapCouponSettledPayload;
-        legs = irdSwapCouponJournals(payload);
-      } else if (e.type === "IrdSwapTerminated") {
-        // PR-IRS-TERM: Derecognition on termination — IFRS 9 §3.2.3
-        postingType = "ird-swap-termination";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as IrdSwapTerminatedPayload;
-        legs = irdSwapTerminationJournals(payload);
+        // this legacy dispatch chain. The four IrdSwap* event types are likewise
+        // intercepted ABOVE by the IRD_INTERPRETER_EVENT_TYPES branch (Batch 3).
       } else {
         // Unreachable — SUBSCRIBED_TYPES guard above. The treasury money-market
-        // event types (deposit / funding / IBL / repo) are routed to the SLA
-        // interpreter by the TREASURY_INTERPRETER_EVENT_TYPES branch earlier in
-        // this loop (D-SLA-ENGINE-RULES-AS-DATA Batch 1) and never reach here.
+        // event types (deposit / funding / IBL / repo) and the IRD-swap event
+        // types are routed to the SLA interpreter by the
+        // TREASURY_INTERPRETER_EVENT_TYPES / IRD_INTERPRETER_EVENT_TYPES branches
+        // earlier in this loop (D-SLA-ENGINE-RULES-AS-DATA Batch 1 / Batch 3) and
+        // never reach here.
         continue;
       }
 

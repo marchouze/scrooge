@@ -356,6 +356,19 @@ const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   EquityDividendAccrued: makeFlatProductContextBuilder("EQUITY"),
   EquitySettlementInstructed: makeFlatProductContextBuilder("EQUITY"),
   EquitySold: makeFlatProductContextBuilder("EQUITY"),
+  // IRD-swap family (full-retirement Batch 3) — OTC interest-rate / IRD swaps.
+  // Flat payloads (one product per lifecycle); every amount (npvMinor,
+  // npvDeltaMinor, netCashMinor, terminationPaymentMinor, carryingNpv,
+  // realisedPnl) is an integer minor-unit field read directly off the event, so
+  // no enrichment is required. The two `Irs*` memos (schedule / instruction) are
+  // intentional-no-impact rules. The canonical termination event is
+  // IrdSwapTerminated (the old IrsSwapTerminated registry typo never fired).
+  IrdSwapTradeExecuted: makeFlatProductContextBuilder("IRD"),
+  IrdSwapPositionRevalued: makeFlatProductContextBuilder("IRD"),
+  IrdSwapCouponSettled: makeFlatProductContextBuilder("IRD"),
+  IrdSwapTerminated: makeFlatProductContextBuilder("IRD"),
+  IrsCouponScheduleGenerated: makeFlatProductContextBuilder("IRD"),
+  IrsCouponPaymentInstructed: makeFlatProductContextBuilder("IRD"),
 };
 
 function deriveJurisdiction(entity: string | undefined): string | undefined {

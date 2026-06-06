@@ -513,6 +513,45 @@ export const IFRS_SECURITIES_RESOLVER_ROWS: readonly ResolverRow[] = [
   zarRow("EQUITY", "equity.retained_earnings", "ACC-5000-002"),
 ];
 
+// ---------------------------------------------------------------------------
+// IRD-swap resolver rows (IFRS, full-retirement Batch 3)
+//
+// The OTC interest-rate / IRD swap family. Physical accounts are the same COA
+// leaves the legacy `ird-swaps.ts` functions used (the `IRD_ACCOUNTS` constant),
+// so the interpreter output is byte-for-byte equal to legacy. Domestic OTC swaps
+// are ZAR; any non-ZAR leg follows the shared no-silent-fallback suspense
+// discipline via the resolver's per-currency miss → ACC-2100-007 + alert.
+//
+//   IRD — Nostro ACC-1200-001 (ZAR correspondent settlement cash); swap asset
+//     FVTPL (positive NPV) ACC-3300-001; swap liability FVTPL (negative NPV)
+//     ACC-3300-002; unrealised P&L — IRD (FVTPL) ACC-3300-003.
+//
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 3, CEO-approved
+// 2026-06-05). Cites: IFRS 9 §3.2.3/§4.1.4/§5.7.1.
+// ---------------------------------------------------------------------------
+
+export const IFRS_IRD_RESOLVER_ROWS: readonly ResolverRow[] = [
+  zarRow("IRD", "ird.nostro", "ACC-1200-001", "ZAR correspondent settlement cash (IRD swaps)."),
+  zarRow(
+    "IRD",
+    "ird.swap_asset_fvtpl",
+    "ACC-3300-001",
+    "Swap Asset — FVTPL (positive NPV; IFRS 9 §4.1.4).",
+  ),
+  zarRow(
+    "IRD",
+    "ird.swap_liability_fvtpl",
+    "ACC-3300-002",
+    "Swap Liability — FVTPL (negative NPV; IFRS 9 §4.1.4).",
+  ),
+  zarRow(
+    "IRD",
+    "ird.unrealised_pnl",
+    "ACC-3300-003",
+    "Unrealised P&L — IRD (FVTPL; IFRS 9 §5.7.1).",
+  ),
+];
+
 /**
  * The dedicated FX unresolved-currency suspense account
  * (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). The interpreter posts an
@@ -589,4 +628,5 @@ export const defaultResolver = new AccountResolver([
   ...IFRS_FX_SPOT_RESOLVER_ROWS,
   ...IFRS_TREASURY_RESOLVER_ROWS,
   ...IFRS_SECURITIES_RESOLVER_ROWS,
+  ...IFRS_IRD_RESOLVER_ROWS,
 ]);
