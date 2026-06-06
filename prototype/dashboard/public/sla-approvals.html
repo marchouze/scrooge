@@ -6,7 +6,9 @@
   <title>SLA Rule Approvals — Scrooge Bank</title>
   <meta name="description" content="Four-eyes approval workflow for rules-as-data SLA posting rules. A rule/version is interpreter-eligible only after a four-eyes SlaRuleApproved (approver != publisher). SARB-BA-RETURN is not activated in production.">
   <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
+  <script src="/provenance-badge.js" defer></script>
 <style>
   .ap-page { max-width: 1180px; margin: 0 auto; padding: var(--space-6); }
   .ap-page h1 { font: var(--text-h1); color: var(--color-text-primary); margin-bottom: var(--space-2); }
@@ -29,7 +31,7 @@
   .muted { color: var(--color-text-secondary); }
 </style>
 </head>
-<body>
+<body data-provenance-content="none">
   <div class="ap-page">
     <h1>SLA Rule Approvals</h1>
     <p class="ap-lede">Four-eyes governance gate for the rules-as-data sub-ledger accounting (SLA) engine. A rule/version is <strong>interpreter-eligible</strong> only after an attested <span class="mono">SlaRuleApproved</span> whose approver &ne; publisher. The events are canonical; this page is a render plus an action that emits the attested event. No per-posting approval exists (Principle 6 — the gate is on the rule, not the booking).</p>
