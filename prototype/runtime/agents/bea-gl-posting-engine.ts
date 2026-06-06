@@ -5,10 +5,12 @@
 // in `platform/accounting/posting-rules/`.
 //
 // Subscriptions:
-//   Payment lifecycle:
-//   - PaymentInitiated              → PR-PAY-001: paymentInitiatedJournals()
-//   - PaymentSettled                → PR-PAY-002: paymentSettledJournals()
-//   - SettlementInstructionReceived → PR-SET-001: settlementInstructionJournals()
+//   Payment lifecycle — CUT OVER TO THE SLA INTERPRETER (D-SLA-ENGINE-RULES-AS-
+//   DATA, full-retirement Batch 4 — the LAST family; see
+//   `bea-gl-payments-interpreter-cutover.ts`):
+//   - PaymentInitiated              → PR-PAY-001  [payment-initiation]
+//   - PaymentSettled                → PR-PAY-002  [payment-settlement]
+//   - SettlementInstructionReceived → PR-SET-001  [settlement-instruction]
 //   - ConfirmationMatched           → log only, no SubLedgerPostingEmitted
 //   - ConfirmationMismatch          → log only, no SubLedgerPostingEmitted
 //   - SettlementFailed              → log only, no SubLedgerPostingEmitted
@@ -34,7 +36,8 @@
 //   - FxSettlementInstructed → PR-FX-INSTRUCT       (memo; no GL)
 //   - TradeReportSubmitted   → PR-FX-REGREPORT      (memo; no GL)
 //   All NON-FX product families (bond/equity/IRS/repo/deposit/funding/interbank/
-//   payments) remain on the legacy dispatch below, UNTOUCHED.
+//   payments) have ALSO been cut over to the SLA interpreter (Batches 1–4); as of
+//   Batch 4 every product family routes through an interpreter bridge.
 //
 //   Bond lifecycle (D-TRADE-LIFECYCLE-IFRS-CHAIN Slice 4 PR A):
 //   - BondTradeExecuted             → PR-BOND-001: bondBankingBookJournals() / bondTradingBookJournals()
@@ -86,16 +89,20 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
-// NOTE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 2 + Batch 3): the
-// legacy bonds.ts / equities.ts (Batch 2) AND ird-swaps.ts (Batch 3) posting-rule
-// functions are NO LONGER called from this production engine — bond + equity +
-// IRD-swap lifecycle events route through the rules-as-data SLA interpreter (see
-// `bea-gl-securities-interpreter-cutover.ts` + `processSecuritiesViaInterpreter`
-// and `bea-gl-ird-interpreter-cutover.ts` + `processIrdViaInterpreter` below).
-// The legacy files are retained as the byte-for-byte parity reference
-// (tests/sla-securities-lifecycle-parallel-run.test.ts +
-// tests/sla-ird-lifecycle-parallel-run.test.ts), deprecated-for-production but
-// NOT deleted.
+// NOTE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batches 1–4 — COMPLETE): the
+// legacy posting-rule functions for EVERY product family are NO LONGER called
+// from this production engine. FX (Phase 3), treasury repo-mmd-ibl.ts (Batch 1),
+// bonds.ts / equities.ts (Batch 2), ird-swaps.ts (Batch 3) and payments.ts
+// (Batch 4 — the LAST family) all route through the rules-as-data SLA interpreter
+// via their cutover bridges (`bea-gl-{fx,treasury,securities,ird,payments}-
+// interpreter-cutover.ts` + the `process*ViaInterpreter` seams below). The legacy
+// files are retained as the byte-for-byte parity references (the
+// `tests/sla-*-lifecycle-parallel-run.test.ts` suites), deprecated-for-production
+// but NOT deleted. No production posting-rule dispatch arm remains: the only
+// remaining hand-coded arms in the dispatch loop below (TradeMatured /
+// SettlementReversed / TradeCancelled / TradeAmended) are FX-family rules NOT in
+// the FX cutover scope (the non-FX markets-trading-extended kinds and the
+// deprecated TradeMatured back-compat path), still calling fx-spot.ts.
 import {
   detectUnresolvedCurrencyLegs,
   fxAmendmentJournals,
@@ -103,11 +110,12 @@ import {
   fxSettlementJournals,
   fxSettlementReversalJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
-import {
-  paymentInitiatedJournals,
-  paymentSettledJournals,
-  settlementInstructionJournals,
-} from "../../platform/accounting/posting-rules/payments";
+// NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
+// paymentSettledJournals / settlementInstructionJournals) are no longer imported
+// here — the three payment event types now post via the SLA interpreter
+// (PAYMENTS_INTERPRETER_EVENT_TYPES). They are retained in payments.ts as the
+// byte-for-byte parity reference (deprecated-for-production, not deleted) and are
+// exercised only by tests/sla-payments-lifecycle-parallel-run.test.ts.
 import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
@@ -126,11 +134,6 @@ import type {
   TradeAmendedPayload,
   TradeCancelledPayload,
 } from "../../platform/event-store/event-types/markets-trading-extended";
-import type {
-  PaymentInitiatedPayload,
-  PaymentSettledPayload,
-  SettlementInstructionReceivedPayload,
-} from "../../platform/event-store/event-types/payments";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -141,6 +144,10 @@ import {
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
 import { IRD_INTERPRETER_EVENT_TYPES, interpretIrdEvent } from "./bea-gl-ird-interpreter-cutover";
+import {
+  PAYMENTS_INTERPRETER_EVENT_TYPES,
+  interpretPaymentEvent,
+} from "./bea-gl-payments-interpreter-cutover";
 import {
   DEFAULT_BOND_MATURITY_PORTFOLIO,
   DEFAULT_BOND_SALE_PORTFOLIO,
@@ -746,6 +753,92 @@ async function processIrdViaInterpreter(
   return { emitted: 1, skipped: 0 };
 }
 
+/**
+ * Process one payment / settlement source event via the rules-as-data SLA
+ * interpreter and emit the resulting `SubLedgerPostingEmitted` (+ urgent-
+ * correction `SubstrateAlert`s for any suspense leg). The FIFTH and LAST
+ * production cutover seam (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 4).
+ * The three postingType strings are UNCHANGED from the legacy engine (no double-
+ * post on replay).
+ *
+ * No enrichment: every payment rule prices off the integer `netCash` field on the
+ * triggering event, so the interpreter reads it directly. The pure interpreter
+ * receives the bare event.
+ */
+async function processPaymentsViaInterpreter(
+  e: import("../../platform/event-store/types").Event,
+  ctx: AgentRunContext,
+  postedKeys: Set<IdempotencyKey>,
+): Promise<FxProcessResult> {
+  const outcome = interpretPaymentEvent(e, ctx.asOf);
+
+  if (outcome.kind === "reject") {
+    logger.error(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — SLA interpreter rejected payment posting",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  if (outcome.kind === "no-gl") {
+    logger.info(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — payment event has no GL impact (interpreter intentional-no-impact)",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // outcome.kind === "post"
+  const key: IdempotencyKey = `${e.event_id}:${outcome.postingType}`;
+  if (postedKeys.has(key)) {
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // Urgent-correction alerts for any suspense leg (loud, never silent). Payment
+  // legs are ZAR/USD (and EUR for the nostro); a non-mapped currency routes to
+  // suspense exactly as FX does.
+  if (!ctx.dryRun && outcome.urgentCorrections.length > 0) {
+    for (const correction of outcome.urgentCorrections) {
+      eventStore.append(
+        urgentCorrectionToSubstrateAlert(correction, {
+          asOf: ctx.asOf,
+          entity: e.entity ?? "LE-ZA-HOZ-BANK",
+          actor: HANDLER_ACTOR,
+        }),
+      );
+    }
+    logger.warn(
+      {
+        eventId: e.event_id,
+        eventType: e.type,
+        postingType: outcome.postingType,
+        unresolvedCurrencies: outcome.urgentCorrections.map((c) => c.currency),
+      },
+      "bea:gl-posting-engine — payment leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
+    );
+  }
+
+  if (!ctx.dryRun) {
+    const postingEvent = makeSubLedgerPostingEmitted({
+      asOf: ctx.asOf,
+      entity: e.entity ?? "LE-ZA-HOZ-BANK",
+      actor: HANDLER_ACTOR,
+      citations: [...GL_POSTING_CITATIONS],
+      payload: {
+        sourceEventId: e.event_id,
+        postingType: outcome.postingType,
+        legs: outcome.legs,
+        postedAt: ctx.asOf,
+      },
+      eventId: newEventId(),
+    });
+    eventStore.append(postingEvent);
+    postedKeys.add(key);
+  }
+
+  return { emitted: 1, skipped: 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -953,6 +1046,25 @@ export async function beaGlPostingEngine(
       }
 
       // -----------------------------------------------------------------------
+      // PAYMENT / SETTLEMENT CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 4) ──────
+      // The three payment lifecycle event types (PaymentInitiated /
+      // PaymentSettled / SettlementInstructionReceived) post via the rules-as-data
+      // SLA interpreter (IFRS), NOT the legacy payments.ts posting-rule functions.
+      // Byte-for-byte safe — proven by
+      // tests/sla-payments-lifecycle-parallel-run.test.ts. No enrichment is
+      // required (each payment rule prices off the integer `netCash` field on the
+      // triggering event). This is the FIFTH and LAST family — after this branch,
+      // EVERY product family routes through an interpreter bridge and the legacy
+      // posting-rule dispatch arms below are fully strangled.
+      // -----------------------------------------------------------------------
+      if (PAYMENTS_INTERPRETER_EVENT_TYPES.has(e.type)) {
+        const handled = await processPaymentsViaInterpreter(e, ctx, postedKeys);
+        eventsEmitted += handled.emitted;
+        skipped += handled.skipped;
+        continue;
+      }
+
+      // -----------------------------------------------------------------------
       // Audit/control-only events — log and record idempotency key but emit
       // no SubLedgerPostingEmitted.
       // -----------------------------------------------------------------------
@@ -991,34 +1103,12 @@ export async function beaGlPostingEngine(
       let postingType: string;
       let legs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
 
-      if (e.type === "PaymentInitiated") {
-        postingType = "payment-initiation";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as PaymentInitiatedPayload;
-        legs = paymentInitiatedJournals(payload);
-      } else if (e.type === "PaymentSettled") {
-        postingType = "payment-settlement";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as PaymentSettledPayload;
-        legs = paymentSettledJournals(payload);
-      } else if (e.type === "SettlementInstructionReceived") {
-        postingType = "settlement-instruction";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as SettlementInstructionReceivedPayload;
-        legs = settlementInstructionJournals(payload);
-      } else if (e.type === "TradeMatured") {
+      // NOTE: PaymentInitiated / PaymentSettled / SettlementInstructionReceived
+      // are intercepted ABOVE by the PAYMENTS_INTERPRETER_EVENT_TYPES branch and
+      // posted via the SLA interpreter (D-SLA-ENGINE-RULES-AS-DATA, Batch 4 — the
+      // LAST family). They never reach this legacy dispatch chain. The legacy
+      // payments.ts functions are retained as the parity reference only.
+      if (e.type === "TradeMatured") {
         // PR-FX-003 (DEPRECATED 2026-05-20): Derecognition — IFRS 9 §3.2.3.
         // Retained for back-compat with legacy test-only emitters. Production
         // lifecycle now routes through PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE.
