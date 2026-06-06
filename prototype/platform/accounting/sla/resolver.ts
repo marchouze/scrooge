@@ -643,15 +643,7 @@ export const IFRS_PAYMENTS_RESOLVER_ROWS: readonly ResolverRow[] = [
 // Cites: SARB BA 350 (net open position); Banks Act 94 of 1990.
 // ---------------------------------------------------------------------------
 
-const SARB_BA_NOP_CURRENCIES: readonly string[] = [
-  "ZAR",
-  "USD",
-  "GBP",
-  "EUR",
-  "CHF",
-  "AUD",
-  "JPY",
-];
+const SARB_BA_NOP_CURRENCIES: readonly string[] = ["ZAR", "USD", "GBP", "EUR", "CHF", "AUD", "JPY"];
 
 function sarbNopRows(logical: string, physical: AccountId): ResolverRow[] {
   return SARB_BA_NOP_CURRENCIES.map((currency) => ({

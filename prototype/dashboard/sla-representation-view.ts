@@ -21,11 +21,11 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
 //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
 
-import { nowUtc } from "../platform/core/types";
 import {
   type RepresentationPreviewResult,
   buildRepresentationPreview,
 } from "../platform/accounting/sla/representation-preview";
+import { nowUtc } from "../platform/core/types";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 
 const PREVIEW_ENTITY = "LE-ZA-HOZ-BANK";

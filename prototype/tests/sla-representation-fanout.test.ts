@@ -24,10 +24,7 @@ import { describe, expect, it } from "bun:test";
 import { interpret } from "../platform/accounting/sla/interpreter";
 import type { InterpreterEvent, ProposedPosting } from "../platform/accounting/sla/interpreter";
 import { buildRepresentationPreview } from "../platform/accounting/sla/representation-preview";
-import {
-  FX_ALL_REPRESENTATION_RULES,
-  FX_IFRS_RULES,
-} from "../platform/accounting/sla/rules";
+import { FX_ALL_REPRESENTATION_RULES, FX_IFRS_RULES } from "../platform/accounting/sla/rules";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 
 const ASOF = "2026-06-06T10:00:00.000Z";
@@ -124,10 +121,7 @@ describe("SLA fan-out — one FX event → IFRS + SARB-BA-RETURN, each balanced"
   });
 
   it("ADDITIVITY — the IFRS posting is byte-for-byte unchanged by adding SARB", () => {
-    const ifrsAlone = asPost(
-      interpret(bookingEvent(), FX_IFRS_RULES, ["IFRS"], ASOF),
-      "IFRS",
-    );
+    const ifrsAlone = asPost(interpret(bookingEvent(), FX_IFRS_RULES, ["IFRS"], ASOF), "IFRS");
     const ifrsWithSarb = asPost(
       interpret(bookingEvent(), FX_ALL_REPRESENTATION_RULES, REPS, ASOF),
       "IFRS",

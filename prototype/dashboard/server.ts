@@ -189,7 +189,6 @@ import { registerFxSimRoutes } from "./fx-sim-view";
 import { registerGlRoutes } from "./gl-view";
 import { registerGraphRoutes } from "./graph-view";
 import { registerInstrumentRoutes } from "./instruments-view";
-import { registerSlaRepresentationRoutes } from "./sla-representation-view";
 import { buildKycCandidatesView } from "./kyc-candidates-view";
 import {
   buildKycCandidateDetailView,
@@ -250,6 +249,7 @@ import {
   StartWorkstreamBodySchema,
 } from "./server-schemas";
 import { registerSimHubRoutes } from "./sim-hub-view";
+import { registerSlaRepresentationRoutes } from "./sla-representation-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";

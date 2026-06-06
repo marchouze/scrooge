@@ -6,7 +6,9 @@
   <title>SLA Parallel Representations — Scrooge Bank</title>
   <meta name="description" content="Dry-run side-by-side preview of one FX event posted under the IFRS book and the SARB-BA-RETURN regulatory NOP memorandum basis. Read-only; SARB-BA-RETURN is not activated in production.">
   <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
+  <script src="/provenance-badge.js" defer></script>
 <style>
   .sla-page { max-width: 1100px; margin: 0 auto; padding: var(--space-6); }
   .sla-page h1 { font: var(--text-h1); color: var(--color-text-primary); margin-bottom: var(--space-2); }
@@ -49,7 +51,11 @@
   .sla-err { color: #b42318; font: var(--text-body); }
 </style>
 </head>
-<body>
+<!-- Reference / dry-run demonstration page: the journals shown are PROPOSED by
+     the pure SLA interpreter from a built-in sample event, not sourced from the
+     event store. There is no production-vs-simulated data state to badge, so the
+     page declares no provenance content (data-provenance-content="none"). -->
+<body data-provenance-content="none">
   <div class="sla-page">
     <h1>SLA Parallel Representations — dry-run preview</h1>
     <p class="sla-lede">

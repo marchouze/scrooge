@@ -143,8 +143,7 @@ export const PR_FX_PRIN_BA: SlaRule = nopNeutralRule({
 export const PR_FX_CLOSE_BA: SlaRule = nopNeutralRule({
   ruleId: "PR-FX-CLOSE-BA",
   eventType: "SettlementConfirmed",
-  detail:
-    "SARB BA-350 NOP unchanged by physical settlement of an FX-spot — NOP-neutral",
+  detail: "SARB BA-350 NOP unchanged by physical settlement of an FX-spot — NOP-neutral",
   cites: ["urn:obligation:sarb:ba350:nop"],
 });
 
