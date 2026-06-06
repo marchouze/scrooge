@@ -340,6 +340,22 @@ const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   RepoInterestAccrued: makeFlatProductContextBuilder("REPO"),
   RepoEndLegSettled: makeFlatProductContextBuilder("REPO"),
   RepoTradeTerminatedEarly: makeFlatProductContextBuilder("REPO"),
+  // Securities family (full-retirement Batch 2) — bond + equity. Bond payloads
+  // are flat (one product per lifecycle); equity CDM payloads carry nested Money
+  // objects (consideration / unrealisedPnl) which a flat builder still exposes
+  // directly as nested event paths. Enrichment is supplied by the caller for the
+  // bond booking (pre-computed dirty-price amount) and bond maturity/sale
+  // (portfolio resolved from the originating trade).
+  BondTradeExecuted: makeFlatProductContextBuilder("BOND"),
+  BondInterestAccrued: makeFlatProductContextBuilder("BOND"),
+  BondPositionRevalued: makeFlatProductContextBuilder("BOND"),
+  BondMatured: makeFlatProductContextBuilder("BOND"),
+  BondSold: makeFlatProductContextBuilder("BOND"),
+  EquityTradeExecuted: makeFlatProductContextBuilder("EQUITY"),
+  EquityPositionRevalued: makeFlatProductContextBuilder("EQUITY"),
+  EquityDividendAccrued: makeFlatProductContextBuilder("EQUITY"),
+  EquitySettlementInstructed: makeFlatProductContextBuilder("EQUITY"),
+  EquitySold: makeFlatProductContextBuilder("EQUITY"),
 };
 
 function deriveJurisdiction(entity: string | undefined): string | undefined {

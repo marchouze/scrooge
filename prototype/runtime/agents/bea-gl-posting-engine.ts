@@ -84,20 +84,14 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
-import {
-  bondBankingBookJournals,
-  bondInterestAccrualJournals,
-  bondMaturityJournals,
-  bondRevaluationJournals,
-  bondSaleJournals,
-  bondTradingBookJournals,
-} from "../../platform/accounting/posting-rules/bonds";
-import {
-  equityDividendJournals,
-  equityRevaluationJournals,
-  equitySaleJournals,
-  equityTradeBookingJournals,
-} from "../../platform/accounting/posting-rules/equities";
+// NOTE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 2): the legacy
+// bonds.ts / equities.ts posting-rule functions are NO LONGER called from this
+// production engine — bond + equity lifecycle events route through the
+// rules-as-data SLA interpreter (see `bea-gl-securities-interpreter-cutover.ts`
+// + `processSecuritiesViaInterpreter` below). The legacy files are retained as
+// the byte-for-byte parity reference
+// (tests/sla-securities-lifecycle-parallel-run.test.ts), deprecated-for-
+// production but NOT deleted.
 import {
   detectUnresolvedCurrencyLegs,
   fxAmendmentJournals,
@@ -120,16 +114,10 @@ import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import type {
-  BondInterestAccruedPayload,
   BondMaturedPayload,
-  BondPositionRevaluedPayload,
   BondSoldPayload,
   BondTradeExecutedPayload,
 } from "../../platform/event-store/event-types/bond-accounting";
-import type {
-  EquityDividendAccruedPayload,
-  EquitySoldPayload,
-} from "../../platform/event-store/event-types/equity-accounting";
 import {
   type FxSettlementFailedPayload,
   type FxTradeCancelledPayload,
@@ -153,10 +141,6 @@ import type {
 } from "../../platform/event-store/event-types/payments";
 import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
 import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
-import type {
-  EquityPositionRevaluedPayload,
-  EquityTradeExecutedPayload,
-} from "../../platform/markets/cdm/equity";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   FX_INTERPRETER_EVENT_TYPES,
@@ -164,6 +148,14 @@ import {
   interpretFxEvent,
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
+import {
+  DEFAULT_BOND_MATURITY_PORTFOLIO,
+  DEFAULT_BOND_SALE_PORTFOLIO,
+  SECURITIES_INTERPRETER_EVENT_TYPES,
+  bondDirtyPriceAmountMinor,
+  interpretSecuritiesEvent,
+  resolveBondPortfolio,
+} from "./bea-gl-securities-interpreter-cutover";
 import {
   TREASURY_INTERPRETER_EVENT_TYPES,
   interpretTreasuryEvent,
@@ -565,6 +557,115 @@ async function processTreasuryViaInterpreter(
   return { emitted: 1, skipped: 0 };
 }
 
+/**
+ * Process one bond/equity securities source event via the rules-as-data SLA
+ * interpreter and emit the resulting `SubLedgerPostingEmitted` (+ urgent-
+ * correction `SubstrateAlert`s for any suspense leg). The THIRD production
+ * cutover seam (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 2). The nine
+ * postingType strings are UNCHANGED from the legacy engine (no double-post on
+ * replay).
+ *
+ * Enrichment: bond booking needs the integer dirty-price amount (the
+ * `dirtyPricePercent` is a non-integer the integer-only sandbox cannot multiply
+ * by); bond maturity / sale need the originating trade's portfolio. Both are
+ * reconstructed HERE (the engine has the event stream) and handed to the pure
+ * interpreter — mirroring the legacy posting-rule computation / default
+ * arguments so parity holds byte-for-byte. Equity rules need no enrichment.
+ */
+async function processSecuritiesViaInterpreter(
+  e: import("../../platform/event-store/types").Event,
+  ctx: AgentRunContext,
+  postedKeys: Set<IdempotencyKey>,
+): Promise<FxProcessResult> {
+  // Build enrichment for the bond rules that price off non-integer / prior-event
+  // facts.
+  let enrichment: unknown;
+  if (e.type === "BondTradeExecuted") {
+    const payload = e.payload as BondTradeExecutedPayload;
+    enrichment = { dirtyPriceAmountMinor: bondDirtyPriceAmountMinor(payload) };
+  } else if (e.type === "BondMatured") {
+    const tradeId = (e.payload as BondMaturedPayload).tradeId;
+    const allTrades = [...eventStore.replay({ type: "BondTradeExecuted" })];
+    enrichment = {
+      portfolio: resolveBondPortfolio(allTrades, tradeId, DEFAULT_BOND_MATURITY_PORTFOLIO),
+    };
+  } else if (e.type === "BondSold") {
+    const tradeId = (e.payload as BondSoldPayload).tradeId;
+    const allTrades = [...eventStore.replay({ type: "BondTradeExecuted" })];
+    enrichment = {
+      portfolio: resolveBondPortfolio(allTrades, tradeId, DEFAULT_BOND_SALE_PORTFOLIO),
+    };
+  }
+
+  const outcome = interpretSecuritiesEvent(e, ctx.asOf, enrichment);
+
+  if (outcome.kind === "reject") {
+    logger.error(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — SLA interpreter rejected securities posting",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  if (outcome.kind === "no-gl") {
+    logger.info(
+      { eventId: e.event_id, eventType: e.type, detail: outcome.detail },
+      "bea:gl-posting-engine — securities event has no GL impact (interpreter intentional-no-impact)",
+    );
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // outcome.kind === "post"
+  const key: IdempotencyKey = `${e.event_id}:${outcome.postingType}`;
+  if (postedKeys.has(key)) {
+    return { emitted: 0, skipped: 1 };
+  }
+
+  // Urgent-correction alerts for any suspense leg (loud, never silent). JSE
+  // bonds + equities are predominantly ZAR, so this is normally empty; a non-ZAR
+  // leg with no per-currency account routes to suspense exactly as FX does.
+  if (!ctx.dryRun && outcome.urgentCorrections.length > 0) {
+    for (const correction of outcome.urgentCorrections) {
+      eventStore.append(
+        urgentCorrectionToSubstrateAlert(correction, {
+          asOf: ctx.asOf,
+          entity: e.entity ?? "LE-ZA-HOZ-BANK",
+          actor: HANDLER_ACTOR,
+        }),
+      );
+    }
+    logger.warn(
+      {
+        eventId: e.event_id,
+        eventType: e.type,
+        postingType: outcome.postingType,
+        unresolvedCurrencies: outcome.urgentCorrections.map((c) => c.currency),
+      },
+      "bea:gl-posting-engine — securities leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
+    );
+  }
+
+  if (!ctx.dryRun) {
+    const postingEvent = makeSubLedgerPostingEmitted({
+      asOf: ctx.asOf,
+      entity: e.entity ?? "LE-ZA-HOZ-BANK",
+      actor: HANDLER_ACTOR,
+      citations: [...GL_POSTING_CITATIONS],
+      payload: {
+        sourceEventId: e.event_id,
+        postingType: outcome.postingType,
+        legs: outcome.legs,
+        postedAt: ctx.asOf,
+      },
+      eventId: newEventId(),
+    });
+    eventStore.append(postingEvent);
+    postedKeys.add(key);
+  }
+
+  return { emitted: 1, skipped: 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -731,6 +832,24 @@ export async function beaGlPostingEngine(
       // -----------------------------------------------------------------------
       if (TREASURY_INTERPRETER_EVENT_TYPES.has(e.type)) {
         const handled = await processTreasuryViaInterpreter(e, ctx, postedKeys);
+        eventsEmitted += handled.emitted;
+        skipped += handled.skipped;
+        continue;
+      }
+
+      // -----------------------------------------------------------------------
+      // SECURITIES CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 2) ───────────────
+      // The nine bond + equity lifecycle event types post via the rules-as-data
+      // SLA interpreter (IFRS), NOT the legacy bonds.ts / equities.ts posting-
+      // rule functions. Byte-for-byte safe — proven by
+      // tests/sla-securities-lifecycle-parallel-run.test.ts. Enrichment for the
+      // bond booking (dirty-price amount) and maturity / sale (portfolio) is
+      // reconstructed inside processSecuritiesViaInterpreter and handed to the
+      // pure interpreter. All remaining families (IRS, payments + FX, treasury
+      // already done) fall through to their existing dispatch, UNTOUCHED.
+      // -----------------------------------------------------------------------
+      if (SECURITIES_INTERPRETER_EVENT_TYPES.has(e.type)) {
+        const handled = await processSecuritiesViaInterpreter(e, ctx, postedKeys);
         eventsEmitted += handled.emitted;
         skipped += handled.skipped;
         continue;
@@ -930,102 +1049,12 @@ export async function beaGlPostingEngine(
           field: payload.field,
           deltaZarMinor,
         });
-      } else if (e.type === "BondTradeExecuted") {
-        // PR-BOND-001: Initial recognition — IFRS 9 §3.1.1, §5.1.1
-        postingType = "bond-trade-booking";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as BondTradeExecutedPayload;
-        legs =
-          payload.portfolio === "banking-book"
-            ? bondBankingBookJournals(payload)
-            : bondTradingBookJournals(payload);
-      } else if (e.type === "BondInterestAccrued") {
-        // PR-BOND-002: EIR accrual — IFRS 9 §5.4.1
-        postingType = "bond-interest-accrual";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as BondInterestAccruedPayload;
-        legs = bondInterestAccrualJournals(payload);
-      } else if (e.type === "BondPositionRevalued") {
-        // PR-BOND-003: Trading-book FVTPL revaluation — IFRS 9 §5.7.1
-        postingType = "bond-revaluation";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as BondPositionRevaluedPayload;
-        legs = bondRevaluationJournals(payload);
-      } else if (e.type === "BondMatured") {
-        // PR-BOND-004: Derecognition at maturity — IFRS 9 §3.2.3
-        postingType = "bond-maturity";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as BondMaturedPayload;
-        // Portfolio tracked via position projection; default banking-book for maturity
-        // (trading-book bonds are typically sold, not held to maturity)
-        legs = bondMaturityJournals(payload, "banking-book");
-      } else if (e.type === "BondSold") {
-        // PR-BOND-005: Derecognition on sale — IFRS 9 §3.2.3
-        postingType = "bond-sale";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as BondSoldPayload;
-        // Portfolio comes from position state; default trading-book for sales
-        legs = bondSaleJournals(payload, "trading-book");
-      } else if (e.type === "EquityTradeExecuted") {
-        // PR-EQ-001: Initial recognition — IFRS 9 §4.1.4 (FVTPL via CDM trading-book)
-        postingType = "equity-trade-booking";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as EquityTradeExecutedPayload;
-        legs = equityTradeBookingJournals(payload);
-      } else if (e.type === "EquityPositionRevalued") {
-        // PR-EQ-002: FVTPL → P&L (§5.7.1); FVOCI → OCI reserve (§5.7.5)
-        postingType = "equity-revaluation";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as EquityPositionRevaluedPayload;
-        legs = equityRevaluationJournals(payload);
-      } else if (e.type === "EquityDividendAccrued") {
-        // PR-EQ-003: Dividend accrual — IFRS 9 §5.7.1A; IAS 32 §35
-        postingType = "equity-dividend-accrual";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as EquityDividendAccruedPayload;
-        legs = equityDividendJournals(payload);
-      } else if (e.type === "EquitySold") {
-        // PR-EQ-004: Derecognition on sale — IFRS 9 §3.2.3; FVOCI no-recycling §5.7.5
-        postingType = "equity-sale";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as EquitySoldPayload;
-        legs = equitySaleJournals(payload);
+        // NOTE: BondTradeExecuted / BondInterestAccrued / BondPositionRevalued /
+        // BondMatured / BondSold / EquityTradeExecuted / EquityPositionRevalued /
+        // EquityDividendAccrued / EquitySold are intercepted ABOVE by the
+        // SECURITIES_INTERPRETER_EVENT_TYPES branch and posted via the SLA
+        // interpreter (D-SLA-ENGINE-RULES-AS-DATA, Batch 2) — they never reach
+        // this legacy dispatch chain.
       } else if (e.type === "IrdSwapTradeExecuted") {
         // PR-IRS-001: Initial recognition — IFRS 9 §4.1.4
         postingType = "ird-swap-trade-booking";

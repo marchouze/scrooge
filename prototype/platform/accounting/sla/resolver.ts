@@ -464,6 +464,55 @@ export const IFRS_TREASURY_RESOLVER_ROWS: readonly ResolverRow[] = [
   zarRow("REPO", "repo.interest_pnl", "ACC-5100-005"),
 ];
 
+// ---------------------------------------------------------------------------
+// Securities resolver rows (IFRS, full-retirement Batch 2)
+//
+// The bond and equity families. Physical accounts are the same COA leaves the
+// legacy `bonds.ts` / `equities.ts` functions used, so the interpreter output is
+// byte-for-byte equal to legacy. JSE bonds + equities are ZAR; any non-ZAR leg
+// follows the shared no-silent-fallback suspense discipline.
+//
+//   BOND — Nostro ACC-1200-001; asset banking ACC-3100-001 / trading
+//     ACC-3100-002; accrued-interest receivable ACC-3100-003; unrealised P&L
+//     ACC-3100-005; realised P&L ACC-3100-006; interest income (EIR)
+//     ACC-4101-001. (Discount/premium ACC-3100-004 is not touched by any of the
+//     ported posting rules — the legacy functions never emit a leg to it.)
+//   EQUITY — Nostro ACC-1200-001; asset FVTPL ACC-3200-001 / FVOCI ACC-3200-002;
+//     unrealised P&L FVTPL ACC-3200-003; OCI reserve FVOCI ACC-3200-004;
+//     dividend receivable ACC-3200-005; dividend income ACC-3200-006;
+//     withholding-tax payable ACC-3200-007; retained earnings ACC-5000-002.
+//
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 2, CEO-approved
+// 2026-06-05). Cites: IFRS 9 §3.1.1/§3.2.3/§5.1.1/§5.4.1/§5.7.1/§5.7.1A/§5.7.5;
+// IAS 32 §35.
+// ---------------------------------------------------------------------------
+
+export const IFRS_SECURITIES_RESOLVER_ROWS: readonly ResolverRow[] = [
+  // ── Bond ──
+  zarRow("BOND", "bond.nostro", "ACC-1200-001"),
+  zarRow(
+    "BOND",
+    "bond.asset_banking",
+    "ACC-3100-001",
+    "Bond asset — banking book (amortised cost).",
+  ),
+  zarRow("BOND", "bond.asset_trading", "ACC-3100-002", "Bond asset — trading book (FVTPL)."),
+  zarRow("BOND", "bond.accrued_interest_receivable", "ACC-3100-003"),
+  zarRow("BOND", "bond.unrealised_pnl", "ACC-3100-005", "Unrealised P&L — bonds (FVTPL)."),
+  zarRow("BOND", "bond.realised_pnl", "ACC-3100-006"),
+  zarRow("BOND", "bond.interest_income_eir", "ACC-4101-001", "Interest income (EIR)."),
+  // ── Equity ──
+  zarRow("EQUITY", "equity.nostro", "ACC-1200-001"),
+  zarRow("EQUITY", "equity.asset_fvtpl", "ACC-3200-001"),
+  zarRow("EQUITY", "equity.asset_fvoci", "ACC-3200-002"),
+  zarRow("EQUITY", "equity.unrealised_pnl_fvtpl", "ACC-3200-003"),
+  zarRow("EQUITY", "equity.oci_reserve_fvoci", "ACC-3200-004", "OCI reserve — equities (FVOCI)."),
+  zarRow("EQUITY", "equity.dividend_receivable", "ACC-3200-005"),
+  zarRow("EQUITY", "equity.dividend_income", "ACC-3200-006"),
+  zarRow("EQUITY", "equity.withholding_tax_payable", "ACC-3200-007"),
+  zarRow("EQUITY", "equity.retained_earnings", "ACC-5000-002"),
+];
+
 /**
  * The dedicated FX unresolved-currency suspense account
  * (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). The interpreter posts an
@@ -539,4 +588,5 @@ export class AccountResolver {
 export const defaultResolver = new AccountResolver([
   ...IFRS_FX_SPOT_RESOLVER_ROWS,
   ...IFRS_TREASURY_RESOLVER_ROWS,
+  ...IFRS_SECURITIES_RESOLVER_ROWS,
 ]);
