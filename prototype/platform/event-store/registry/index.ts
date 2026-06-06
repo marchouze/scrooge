@@ -270,6 +270,7 @@ import {
 } from "./runtime";
 import { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
+import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
@@ -449,6 +450,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: ORG-ODP-RPT-003; ORG-MK-RPT-002; urn:regulation:odp:cs-3-2018;
   //   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
   ...ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY,
+  // WS-SLA-ENGINE Phase 4c — SLA rule approval-workflow events.
+  // SlaRulePublished, SlaRuleApproved, SlaRuleWithheld (four-eyes governance gate).
+  // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4c); D-SLA-APPROVAL-WORKFLOW-SEGREGATION
+  //   (CoSec Owen — the 5 SoD controls); D-SLA-REPRESENTATION-ACTIVATION-JOINT-APPROVAL.
+  ...SLA_APPROVAL_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
