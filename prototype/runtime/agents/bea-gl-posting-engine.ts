@@ -110,6 +110,7 @@ import {
   fxSettlementJournals,
   fxSettlementReversalJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
+import { seedGrandfatherApprovals } from "../../platform/accounting/sla/grandfather";
 // NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
 // paymentSettledJournals / settlementInstructionJournals) are no longer imported
 // here — the three payment event types now post via the SLA interpreter
@@ -140,9 +141,13 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   FX_INTERPRETER_EVENT_TYPES,
   buildCancelEnrichment,
+  buildFxApprovalGate,
   interpretFxEvent,
   resolveFailedReceiveLeg,
 } from "./bea-gl-fx-interpreter-cutover";
+
+/** Fixed early instant for grandfather approvals (precedes any real approval). */
+const GRANDFATHER_ASOF = "2026-01-01T00:00:00.000Z";
 import { IRD_INTERPRETER_EVENT_TYPES, interpretIrdEvent } from "./bea-gl-ird-interpreter-cutover";
 import {
   PAYMENTS_INTERPRETER_EVENT_TYPES,
@@ -366,6 +371,7 @@ async function processFxViaInterpreter(
   ctx: AgentRunContext,
   postedKeys: Set<IdempotencyKey>,
   getCancellationIndex: () => CancellationIndex,
+  approvalGate: import("../../platform/accounting/sla/approval").InterpreterApprovalGate,
 ): Promise<FxProcessResult> {
   // Build enrichment for the two rules that price off prior events.
   let enrichment: unknown;
@@ -384,7 +390,7 @@ async function processFxViaInterpreter(
     enrichment = failedReceiveLeg ? { failedReceiveLeg } : {};
   }
 
-  const outcome = interpretFxEvent(e, ctx.asOf, enrichment);
+  const outcome = interpretFxEvent(e, ctx.asOf, enrichment, approvalGate);
 
   if (outcome.kind === "reject") {
     // Loud reject — never silent. Surface via logger; the caller's per-event
@@ -975,6 +981,29 @@ export async function beaGlPostingEngine(
   // Build idempotency set once — avoids N² replays.
   const postedKeys = buildPostedKeySet();
 
+  // Phase-4c approval gate (D-SLA-ENGINE-RULES-AS-DATA; D-SLA-APPROVAL-WORKFLOW-
+  // SEGREGATION). Built ONCE per run from the append-only approval stream. A
+  // published-but-unapproved (or withheld) FX rule version is NOT eligible and
+  // never posts.
+  //
+  // NON-REGRESSION (grandfather): every in-force IFRS rule must carry a
+  // four-eyes grandfather approval, else introducing the gate would make the
+  // production basis ineligible and break posting. We ENSURE the grandfather
+  // approvals exist before building the gate — idempotent (a rule already
+  // approved is skipped), append-only, and deterministic. This is the
+  // documented non-regression mechanism, not a silent accounting fallback: it
+  // grandfathers ONLY the in-force IFRS rules (SARB-BA-RETURN stays ineligible),
+  // and a genuinely-new IFRS rule version is NOT auto-approved unless it is
+  // in-force in the registry (a registry change is itself a reviewed PR). The
+  // ci:migrate backfill seeds the same approvals up front; this call makes the
+  // engine self-sufficient for any store (tests, fresh runs).
+  if (!ctx.dryRun) seedGrandfatherApprovals(eventStore, GRANDFATHER_ASOF);
+  const fxApprovalGate = buildFxApprovalGate([
+    ...eventStore.replay({ type: "SlaRulePublished" }),
+    ...eventStore.replay({ type: "SlaRuleApproved" }),
+    ...eventStore.replay({ type: "SlaRuleWithheld" }),
+  ]);
+
   let eventsEmitted = 0;
   let skipped = 0;
   const errors: string[] = [];
@@ -1016,7 +1045,13 @@ export async function beaGlPostingEngine(
       // legacy dispatch below, UNTOUCHED.
       // -----------------------------------------------------------------------
       if (FX_INTERPRETER_EVENT_TYPES.has(e.type)) {
-        const handled = await processFxViaInterpreter(e, ctx, postedKeys, getCancellationIndex);
+        const handled = await processFxViaInterpreter(
+          e,
+          ctx,
+          postedKeys,
+          getCancellationIndex,
+          fxApprovalGate,
+        );
         eventsEmitted += handled.emitted;
         skipped += handled.skipped;
         continue;

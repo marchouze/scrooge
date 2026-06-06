@@ -51,6 +51,13 @@
 // Citations: Principles/1-events-are-truth.md, Principles/5-multi-currency-entity-country.md.
 
 import type { SubLedgerLeg } from "../../platform/accounting/fx-accounting-types";
+import {
+  type InterpreterApprovalGate,
+  PRODUCTION_REPRESENTATIONS,
+  approvalGate as buildApprovalGate,
+  computeEligibility,
+} from "../../platform/accounting/sla/approval";
+import { loadApprovalCorpus } from "../../platform/accounting/sla/approval-loader";
 import type { Representation } from "../../platform/accounting/sla/generated/sla-types";
 import {
   type InterpretResult,
@@ -59,6 +66,7 @@ import {
   interpret,
 } from "../../platform/accounting/sla/interpreter";
 import { FX_IFRS_RULES } from "../../platform/accounting/sla/rules";
+import { logger } from "../../platform/composition";
 import type { FxSettlementFailedPayload } from "../../platform/event-store/event-types/fx-accounting";
 import type { Event } from "../../platform/event-store/types";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
@@ -251,6 +259,7 @@ export function interpretFxEvent(
   event: Event,
   asOf: string,
   enrichment?: unknown,
+  approvalGate?: InterpreterApprovalGate,
 ): FxInterpretOutcome {
   const results: InterpretResult[] = interpret(
     {
@@ -261,8 +270,9 @@ export function interpretFxEvent(
       enrichment,
     },
     FX_IFRS_RULES,
-    ["IFRS"],
+    PRODUCTION_REPRESENTATIONS,
     asOf,
+    approvalGate ? { approvalGate } : {},
   );
 
   const r = results.find((x) => x.representation === "IFRS");
@@ -311,4 +321,34 @@ export function interpretFxEvent(
     ruleId: r.ruleId,
     ruleVersion: r.ruleVersion,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Production approval gate (Phase 4c)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the Phase-4c approval-eligibility gate for the production FX path from
+ * the approval event stream. The engine calls this ONCE per run (replaying the
+ * three approval event types) and passes the result to every `interpretFxEvent`
+ * call, so a published-but-unapproved (or withheld) FX rule version never posts.
+ *
+ * Grandfathered in-force rules carry a seeded build-phase grandfather approval
+ * (see `scripts/seed-sla-grandfather-approvals.ts`), so they remain eligible and
+ * production posting is unchanged. If the grandfather seed has NOT run yet (e.g.
+ * a fresh store), the eligible set is empty and FX postings would all reject
+ * loudly — the deliberately LOUD non-regression signal, never a silent skip.
+ *
+ * Defects (self-approval / dangling approval) are logged loudly, never silenced.
+ */
+export function buildFxApprovalGate(approvalEvents: readonly Event[]): InterpreterApprovalGate {
+  const corpus = loadApprovalCorpus(approvalEvents);
+  const { eligible, defects } = computeEligibility(corpus);
+  if (defects.length > 0) {
+    logger.error(
+      { defects },
+      "bea:sla-approval — rejected approval(s) (self-approval / no matching publish) — NOT eligible",
+    );
+  }
+  return buildApprovalGate(eligible);
 }

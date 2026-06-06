@@ -493,11 +493,31 @@ type RuleSelection =
   | { kind: "winner"; winner: SlaRule }
   | { kind: "ambiguous"; ambiguous: readonly SlaRule[] };
 
+/**
+ * The Phase-4c approval-eligibility gate. When supplied, a rule/version is only
+ * a candidate if its `approvalKey` is in this set — i.e. it carries a four-eyes
+ * SlaRuleApproved (approver ≠ publisher) that is not currently withheld. When
+ * `undefined`, the gate is OFF (the preview / dry-run / parity callers that
+ * inspect rules without the governance gate). The PRODUCTION cutover seam ALWAYS
+ * passes it (populated from the approval event stream incl. grandfathers), so a
+ * published-but-unapproved rule never posts.
+ */
+export interface ApprovalGate {
+  readonly eligibleKeys: ReadonlySet<string>;
+  /** Compose the approvalKey for a rule (kept identical to approval.ts). */
+  readonly keyOf: (rule: SlaRule) => string;
+}
+
 /** Select the winning rule by specificity + tie-break order. */
-function selectRule(rules: readonly SlaRule[], ctx: ContextVector): RuleSelection {
+function selectRule(
+  rules: readonly SlaRule[],
+  ctx: ContextVector,
+  approvalGate?: ApprovalGate,
+): RuleSelection {
   const eligible = rules
     .filter((r) => ruleMatches(r, ctx))
-    .filter((r) => withinEffectiveWindow(r, ctx.effective_date));
+    .filter((r) => withinEffectiveWindow(r, ctx.effective_date))
+    .filter((r) => approvalGate == null || approvalGate.eligibleKeys.has(approvalGate.keyOf(r)));
 
   if (eligible.length === 0) return { kind: "none" };
   if (eligible.length === 1) return { kind: "winner", winner: eligible[0] as SlaRule };
@@ -549,6 +569,17 @@ function assertBalanced(
 export interface InterpretOptions {
   readonly resolver?: AccountResolver;
   readonly contextBuilders?: Readonly<Record<string, ContextBuilder>>;
+  /**
+   * Phase-4c approval-eligibility gate (spec §9.3). When provided, only
+   * rule/versions whose `approvalKey` is in `eligibleKeys` are candidates — the
+   * governance gate that requires a four-eyes SlaRuleApproved. Omit to run the
+   * engine WITHOUT the gate (preview / parity / dry-run callers). The production
+   * cutover seam always provides it. A published-but-unapproved (or withheld)
+   * rule is therefore not selected and the event falls through to a loud
+   * `no-eligible-rule` reject (or the prior approved version, if its window also
+   * contains the date).
+   */
+  readonly approvalGate?: ApprovalGate;
 }
 
 /**
@@ -584,7 +615,7 @@ export function interpret(
     const repRules = rules.filter((r) => r.representation === representation);
     const ctxForRep: ContextVector = { ...context };
 
-    const selection = selectRule(repRules, ctxForRep);
+    const selection = selectRule(repRules, ctxForRep, options.approvalGate);
 
     if (selection.kind === "ambiguous") {
       results.push({

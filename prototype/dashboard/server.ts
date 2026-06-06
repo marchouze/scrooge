@@ -249,6 +249,7 @@ import {
   StartWorkstreamBodySchema,
 } from "./server-schemas";
 import { registerSimHubRoutes } from "./sim-hub-view";
+import { registerSlaApprovalRoutes } from "./sla-approval-view";
 import { registerSlaRepresentationRoutes } from "./sla-representation-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
@@ -4254,6 +4255,15 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && url.pathname === "/sla-representations") {
       return serveStatic("/sla-representations.html");
+    }
+    // SLA rule approval workflow surface (Phase 4c).
+    // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4c); D-SLA-APPROVAL-WORKFLOW-SEGREGATION.
+    {
+      const approvalResponse = await registerSlaApprovalRoutes(url.pathname, req.method, req);
+      if (approvalResponse) return approvalResponse;
+    }
+    if (req.method === "GET" && url.pathname === "/sla-approvals") {
+      return serveStatic("/sla-approvals.html");
     }
     // Financial-instrument register pages.
     // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
