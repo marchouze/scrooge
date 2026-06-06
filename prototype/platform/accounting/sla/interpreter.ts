@@ -268,12 +268,14 @@ function fxContextVector(
   instrumentType: string | undefined,
 ): ContextVector {
   const jurisdiction = deriveJurisdiction(event.entity);
+  const regulatoryRegime = deriveRegulatoryRegime(jurisdiction);
   return {
     event_type: event.type,
     entity: event.entity ?? "UNKNOWN",
     effective_date: isoDate(event.as_of),
     ...(instrumentType !== undefined ? { instrument_type: instrumentType } : {}),
     ...(jurisdiction !== undefined ? { jurisdiction } : {}),
+    ...(regulatoryRegime !== undefined ? { regulatory_regime: regulatoryRegime } : {}),
   };
 }
 
@@ -303,12 +305,14 @@ function makeFlatProductContextBuilder(product: string): ContextBuilder {
 /** Common context-vector assembly for a flat-payload product lifecycle event. */
 function makeProductContextVector(event: InterpreterEvent, product: string): ContextVector {
   const jurisdiction = deriveJurisdiction(event.entity);
+  const regulatoryRegime = deriveRegulatoryRegime(jurisdiction);
   return {
     event_type: event.type,
     entity: event.entity ?? "UNKNOWN",
     effective_date: isoDate(event.as_of),
     instrument_type: product,
     ...(jurisdiction !== undefined ? { jurisdiction } : {}),
+    ...(regulatoryRegime !== undefined ? { regulatory_regime: regulatoryRegime } : {}),
   };
 }
 
@@ -383,6 +387,21 @@ function deriveJurisdiction(entity: string | undefined): string | undefined {
   // LE-<JURIS>-... convention (e.g. LE-ZA-HOZ-BANK → ZA).
   const parts = entity.split("-");
   return parts.length >= 2 ? parts[1] : undefined;
+}
+
+/**
+ * Map a jurisdiction to its prudential regulatory regime. This is an ADDITIVE
+ * context dimension — IFRS rules do not constrain `regulatory_regime`, so adding
+ * it leaves their matching (and therefore their postings) byte-for-byte
+ * unchanged (the additivity guarantee, spec §2.2). The SARB-BA-RETURN rules,
+ * which classify by SARB regulatory return, constrain
+ * `regulatory_regime: "SARB-banks-act"`, so they only match ZA-entity events —
+ * exactly the spec §3.2 context vector. ZA → SARB-banks-act; other jurisdictions
+ * carry no regime yet (their regulatory representations are future work).
+ */
+function deriveRegulatoryRegime(jurisdiction: string | undefined): string | undefined {
+  if (jurisdiction === "ZA") return "SARB-banks-act";
+  return undefined;
 }
 
 function isoDate(asOf: string): string {
