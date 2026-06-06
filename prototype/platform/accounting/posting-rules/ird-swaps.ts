@@ -30,6 +30,15 @@
 //
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
+//
+// ─── DEPRECATED-FOR-PRODUCTION (D-SLA-ENGINE-RULES-AS-DATA, full-retirement
+//     Batch 3) ───────────────────────────────────────────────────────────────
+// These functions are NO LONGER called by the production GL posting engine
+// (runtime/agents/bea-gl-posting-engine.ts). The four IRD-swap lifecycle event
+// types now post via the rules-as-data SLA interpreter (platform/accounting/sla/
+// rules/pr-ird.ts, routed by bea-gl-ird-interpreter-cutover.ts). This module is
+// RETAINED as the byte-for-byte parity reference asserted by
+// tests/sla-ird-lifecycle-parallel-run.test.ts — do NOT delete.
 
 import type {
   IrdSwapCouponSettledPayload,
