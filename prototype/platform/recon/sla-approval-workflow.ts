@@ -58,6 +58,7 @@ import type { SlaRule } from "../accounting/sla/generated/sla-types";
 import { ALL_SLA_RULES } from "../accounting/sla/rules/all-rules";
 import { withinEffectiveWindow } from "../accounting/sla/versioning";
 import { eventStore } from "../composition";
+import { nowUtc } from "../core/types";
 import { run as runVersioning } from "./sla-rule-versioning";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -124,7 +125,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   // at "today") is eligible — i.e. carries a four-eyes approval. Rules of a
   // non-activated representation (e.g. SARB-BA-RETURN in Phase 4c) are out of
   // scope of (a): they are dry-run only and deliberately ungated/ineligible.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = nowUtc().slice(0, 10);
   const productionRuleVersions = rules.filter(
     (r) => productionReps.includes(r.representation) && withinEffectiveWindow(r, today),
   );
