@@ -369,6 +369,13 @@ const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   IrdSwapTerminated: makeFlatProductContextBuilder("IRD"),
   IrsCouponScheduleGenerated: makeFlatProductContextBuilder("IRD"),
   IrsCouponPaymentInstructed: makeFlatProductContextBuilder("IRD"),
+  // Payment / settlement family (full-retirement Batch 4 — the LAST family).
+  // Flat payloads; each rule prices off the single integer `netCash` field read
+  // directly off the event, so no enrichment is required. Three lifecycle event
+  // types, one product (PAY).
+  PaymentInitiated: makeFlatProductContextBuilder("PAY"),
+  PaymentSettled: makeFlatProductContextBuilder("PAY"),
+  SettlementInstructionReceived: makeFlatProductContextBuilder("PAY"),
 };
 
 function deriveJurisdiction(entity: string | undefined): string | undefined {

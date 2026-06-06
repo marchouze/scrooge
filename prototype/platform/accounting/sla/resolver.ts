@@ -552,6 +552,63 @@ export const IFRS_IRD_RESOLVER_ROWS: readonly ResolverRow[] = [
   ),
 ];
 
+// ---------------------------------------------------------------------------
+// Payment / settlement resolver rows (IFRS, full-retirement Batch 4 — LAST)
+//
+// The payment-in-flight / settlement family. Physical accounts are the same COA
+// leaves the legacy `payments.ts` `*AccountForCurrency` helpers used
+// (PAYMENT_ACCOUNTS), so the interpreter output is byte-for-byte equal to legacy
+// for every currency the legacy engine booked correctly.
+//
+// Legacy per-currency support (the `*AccountForCurrency` switch arms):
+//   payment.nostro                ZAR→ACC-1200-001 USD→ACC-1200-002 EUR→ACC-1200-003
+//   payment.suspense              ZAR→ACC-2400-001 USD→ACC-2400-002
+//   payment.customer_payable      ZAR→ACC-2200-001 USD→ACC-2200-002
+//   payment.settlement_receivable ZAR→ACC-4100-001 USD→ACC-4100-002
+//
+// The legacy helpers THREW for any other currency; the resolver instead routes an
+// unmapped-currency leg to the FX unresolved-currency suspense (ACC-2100-007) +
+// urgent-correction alert — the no-silent-fallback discipline shared with the FX /
+// treasury / securities / IRD families (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
+//
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 4, CEO-approved
+// 2026-06-05). Cites: IFRS 9 §3.1.1; IAS 32 §11; PROC-PAY-RBH-01.
+// ---------------------------------------------------------------------------
+
+function payRow(
+  currency: string,
+  logical: string,
+  physical: AccountId,
+  note?: string,
+): ResolverRow {
+  return {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "PAY",
+    currency,
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical,
+    physical,
+    ...(note ? { note } : {}),
+  };
+}
+
+export const IFRS_PAYMENTS_RESOLVER_ROWS: readonly ResolverRow[] = [
+  // ── payment.nostro (correspondent settlement cash; ZAR/USD/EUR) ──
+  payRow("ZAR", "payment.nostro", "ACC-1200-001"),
+  payRow("USD", "payment.nostro", "ACC-1200-002"),
+  payRow("EUR", "payment.nostro", "ACC-1200-003"),
+  // ── payment.suspense (payment-in-flight; ZAR/USD) ──
+  payRow("ZAR", "payment.suspense", "ACC-2400-001"),
+  payRow("USD", "payment.suspense", "ACC-2400-002"),
+  // ── payment.customer_payable (obligation to customer; ZAR/USD) ──
+  payRow("ZAR", "payment.customer_payable", "ACC-2200-001"),
+  payRow("USD", "payment.customer_payable", "ACC-2200-002"),
+  // ── payment.settlement_receivable (right to receive funds; ZAR/USD) ──
+  payRow("ZAR", "payment.settlement_receivable", "ACC-4100-001"),
+  payRow("USD", "payment.settlement_receivable", "ACC-4100-002"),
+];
+
 /**
  * The dedicated FX unresolved-currency suspense account
  * (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). The interpreter posts an
@@ -629,4 +686,5 @@ export const defaultResolver = new AccountResolver([
   ...IFRS_TREASURY_RESOLVER_ROWS,
   ...IFRS_SECURITIES_RESOLVER_ROWS,
   ...IFRS_IRD_RESOLVER_ROWS,
+  ...IFRS_PAYMENTS_RESOLVER_ROWS,
 ]);
