@@ -249,6 +249,7 @@ import {
   StartWorkstreamBodySchema,
 } from "./server-schemas";
 import { registerSimHubRoutes } from "./sim-hub-view";
+import { registerSlaRepresentationRoutes } from "./sla-representation-view";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
@@ -4236,6 +4237,23 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && url.pathname === "/gl") {
       return serveStatic("/gl.html");
+    }
+    // ── SLA parallel-representation preview (read-only / dry-run) ──────────
+    // Phase-0 spec §9.2: side-by-side IFRS book entry + SARB-BA-RETURN NOP
+    // memorandum entry for one FX event. SARB-BA-RETURN is NOT activated in
+    // the production posting path — this is the demonstration surface only.
+    // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4); D-SLA-FIRST-
+    // REPRESENTATION-SARB-BA (CFO Camille).
+    {
+      const slaResponse = registerSlaRepresentationRoutes(
+        url.pathname,
+        req.method,
+        url.searchParams,
+      );
+      if (slaResponse) return slaResponse;
+    }
+    if (req.method === "GET" && url.pathname === "/sla-representations") {
+      return serveStatic("/sla-representations.html");
     }
     // Financial-instrument register pages.
     // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).

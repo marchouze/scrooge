@@ -609,6 +609,60 @@ export const IFRS_PAYMENTS_RESOLVER_ROWS: readonly ResolverRow[] = [
   payRow("USD", "payment.settlement_receivable", "ACC-4100-002"),
 ];
 
+// ---------------------------------------------------------------------------
+// SARB-BA-RETURN resolver rows (the FIRST SECONDARY representation)
+//
+// The BA-350 net-open-position (NOP) memorandum. Distinct from every IFRS row by
+// the `representation: "SARB-BA-RETURN"` axis, so the resolver partitions the
+// two representations cleanly — an IFRS lookup can never reach a NOP memo account
+// and vice-versa (spec §5.3 per-representation physical mapping).
+//
+//   reg.nop_long  → ACC-9000-001 (NOP Memorandum — Long, debit)
+//   reg.nop_short → ACC-9000-002 (NOP Memorandum — Short, credit)
+//
+// Both NOP memo accounts are MULTI-CURRENCY (the memo balances per currency:
+// long == short within a traded currency). A row is authored per traded currency
+// so each resolves to its own NOP memo account; any UNprovisioned currency
+// follows the SAME no-silent-fallback discipline as IFRS — it
+// account-resolution-misses to the FX unresolved-currency suspense
+// (ACC-2100-007) + a high-severity urgent-correction alert
+// (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). The provisioned set mirrors the IFRS
+// FX-spot currencies (ZAR/USD/GBP/EUR/CHF/AUD/JPY).
+//
+// NOT ACTIVATED IN PRODUCTION: these rows are reachable only when the SLA
+// interpreter is run with `["IFRS", "SARB-BA-RETURN"]` (the dry-run preview +
+// tests). The production resolver (`defaultResolver`) below DOES include them —
+// inertly — because a resolver row carries no behaviour on its own: a SARB row
+// is only ever consulted when a SARB rule fires, and no SARB rule fires in the
+// production path (the engine calls `interpret(..., ["IFRS"], ...)`). Including
+// the rows in the single resolver keeps the preview and any future activation
+// using the exact same resolver state — no second resolver to drift.
+//
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
+//            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
+// Cites: SARB BA 350 (net open position); Banks Act 94 of 1990.
+// ---------------------------------------------------------------------------
+
+const SARB_BA_NOP_CURRENCIES: readonly string[] = ["ZAR", "USD", "GBP", "EUR", "CHF", "AUD", "JPY"];
+
+function sarbNopRows(logical: string, physical: AccountId): ResolverRow[] {
+  return SARB_BA_NOP_CURRENCIES.map((currency) => ({
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency,
+    jurisdiction: "ZA",
+    representation: "SARB-BA-RETURN",
+    logical,
+    physical,
+    note: "SARB BA-350 NOP memorandum (multi-currency; balances per currency).",
+  }));
+}
+
+export const SARB_BA_FX_RESOLVER_ROWS: readonly ResolverRow[] = [
+  ...sarbNopRows("reg.nop_long", "ACC-9000-001"),
+  ...sarbNopRows("reg.nop_short", "ACC-9000-002"),
+];
+
 /**
  * The dedicated FX unresolved-currency suspense account
  * (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE). The interpreter posts an
@@ -687,4 +741,9 @@ export const defaultResolver = new AccountResolver([
   ...IFRS_SECURITIES_RESOLVER_ROWS,
   ...IFRS_IRD_RESOLVER_ROWS,
   ...IFRS_PAYMENTS_RESOLVER_ROWS,
+  // SARB-BA-RETURN NOP memo rows (the first secondary representation). Inert in
+  // the production path — only consulted when a SARB rule fires, and no SARB
+  // rule fires in production (engine evaluates ["IFRS"] only). Keeps the preview
+  // + any future activation on the exact same resolver state.
+  ...SARB_BA_FX_RESOLVER_ROWS,
 ]);

@@ -567,6 +567,18 @@
       "currency": "ZAR",
       "category": "income",
       "side": "credit"
+    },
+    {
+      "id": "ACC-9000-001",
+      "name": "Net Open Position Memorandum — Long",
+      "category": "memorandum",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-9000-002",
+      "name": "Net Open Position Memorandum — Short",
+      "category": "memorandum",
+      "side": "credit"
     }
   ]
 }

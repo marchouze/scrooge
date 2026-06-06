@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SLA Parallel Representations — Scrooge Bank</title>
+  <meta name="description" content="Dry-run side-by-side preview of one FX event posted under the IFRS book and the SARB-BA-RETURN regulatory NOP memorandum basis. Read-only; SARB-BA-RETURN is not activated in production.">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <script src="/provenance-badge.js" defer></script>
+<style>
+  .sla-page { max-width: 1100px; margin: 0 auto; padding: var(--space-6); }
+  .sla-page h1 { font: var(--text-h1); color: var(--color-text-primary); margin-bottom: var(--space-2); }
+  .sla-lede { color: var(--color-text-secondary); font: var(--text-body); margin-bottom: var(--space-4); line-height: 1.6; max-width: 80ch; }
+  .sla-banner {
+    border: 1px solid var(--color-border-strong); background: var(--color-surface);
+    border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+    font: var(--text-caption); color: var(--color-text-secondary); margin-bottom: var(--space-5);
+  }
+  .sla-banner strong { color: var(--color-text-primary); }
+  .sla-controls { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: end; margin-bottom: var(--space-5); }
+  .sla-controls label { display: flex; flex-direction: column; gap: 4px; font: var(--text-caption); color: var(--color-text-secondary); }
+  .sla-controls input, .sla-controls select {
+    padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    font: var(--text-body); background: var(--color-bg); color: var(--color-text-primary); min-width: 96px;
+  }
+  .sla-btn {
+    padding: 9px 18px; background: var(--color-accent); color: #fff; border: none;
+    border-radius: var(--radius-md); cursor: pointer; font: var(--text-body); font-weight: 700;
+  }
+  .sla-btn:hover { background: var(--color-accent-hover); }
+  .sla-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  @media (max-width: 820px) { .sla-grid { grid-template-columns: 1fr; } }
+  .sla-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); overflow: hidden; }
+  .sla-card-head { padding: var(--space-4); border-bottom: 1px solid var(--color-border); }
+  .sla-card-head .rep { font: var(--text-h3); font-weight: 800; color: var(--color-text-primary); }
+  .sla-card-head .rule { font: var(--text-caption); color: var(--color-text-secondary); margin-top: 2px; }
+  .sla-card-body { padding: var(--space-4); }
+  table.sla-legs { width: 100%; border-collapse: collapse; font: var(--text-caption); }
+  table.sla-legs th, table.sla-legs td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--color-border); }
+  table.sla-legs td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .sla-balance { margin-top: var(--space-3); font: var(--text-caption); }
+  .sla-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+  .sla-pill.ok { background: #e7f6ec; color: #1a7f37; }
+  .sla-pill.bad { background: #fde8e8; color: #b42318; }
+  .sla-pill.skip { background: #eef0f3; color: #555; }
+  .sla-cites { margin-top: var(--space-3); font: var(--text-caption); color: var(--color-text-secondary); }
+  .sla-cites code { font-size: 11px; }
+  .sla-detail { font: var(--text-caption); color: var(--color-text-secondary); }
+  .sla-err { color: #b42318; font: var(--text-body); }
+</style>
+</head>
+<!-- Reference / dry-run demonstration page: the journals shown are PROPOSED by
+     the pure SLA interpreter from a built-in sample event, not sourced from the
+     event store. There is no production-vs-simulated data state to badge, so the
+     page declares no provenance content (data-provenance-content="none"). -->
+<body data-provenance-content="none">
+  <div class="sla-page">
+    <h1>SLA Parallel Representations — dry-run preview</h1>
+    <p class="sla-lede">
+      One business event, two accounting bases. The rules-as-data SLA interpreter fans a single
+      <code>FxTradeExecuted</code> event out across the <strong>IFRS</strong> primary book and the
+      <strong>SARB-BA-RETURN</strong> regulatory net-open-position (BA-350) memorandum — each balanced
+      independently per currency. This is the demonstration of the parallel-basis fan-out (Phase-0 spec §2.2 / §3.2).
+    </p>
+    <div class="sla-banner">
+      <strong>Read-only / dry-run.</strong> This page proposes journals; it never posts. The production GL
+      posting engine emits the <strong>IFRS</strong> representation only — <strong>SARB-BA-RETURN is NOT
+      activated in the production posting path</strong> (activation requires CFO + Owen joint approval via the
+      Phase-4c workflow). The IFRS entry shown here is byte-for-byte identical to interpreting IFRS alone
+      (additivity).
+    </div>
+
+    <div class="sla-controls">
+      <label>Side
+        <select id="side"><option value="buy">buy</option><option value="sell">sell</option></select>
+      </label>
+      <label>Base <input id="base" value="USD" size="5"></label>
+      <label>Quote <input id="quote" value="ZAR" size="5"></label>
+      <label>Pay ccy <input id="payCurrency" value="ZAR" size="5"></label>
+      <label>Recv ccy <input id="receiveCurrency" value="USD" size="5"></label>
+      <label>Pay minor <input id="payMinor" value="1900000000"></label>
+      <label>Recv minor <input id="receiveMinor" value="100000000"></label>
+      <label>Rate <input id="rate" value="19"></label>
+      <button class="sla-btn" id="run">Preview fan-out</button>
+    </div>
+
+    <div id="meta" class="sla-detail"></div>
+    <div id="out" class="sla-grid"></div>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function fmtMinor(s) {
+  // group thousands; keep as integer minor units (no decimal assumption).
+  return String(s).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function balancePill(b) {
+  if (b.balanced) return '<span class="sla-pill ok">balanced</span>';
+  return '<span class="sla-pill bad">OUT OF BALANCE</span>';
+}
+
+function renderRep(rep) {
+  const head = `<div class="sla-card-head">
+      <div class="rep">${rep.representation}</div>
+      <div class="rule">${rep.ruleId ? rep.ruleId + (rep.ruleVersion != null ? ' @v' + rep.ruleVersion : '') : '—'} · outcome: ${rep.outcome}</div>
+    </div>`;
+
+  if (rep.outcome !== 'post') {
+    const pillClass = rep.outcome === 'intentional-no-impact' ? 'skip' : 'bad';
+    return `<div class="sla-card">${head}<div class="sla-card-body">
+      <span class="sla-pill ${pillClass}">${rep.outcome}</span>
+      <p class="sla-detail" style="margin-top:8px">${rep.detail || ''}</p>
+    </div></div>`;
+  }
+
+  const rows = rep.legs.map(l => `<tr>
+      <td>${l.accountId}</td>
+      <td>${l.debitCredit}</td>
+      <td class="num">${fmtMinor(l.amountMinor)}</td>
+      <td>${l.currency}</td>
+    </tr>`).join('');
+
+  const bal = rep.perCurrencyBalance.map(b => `<div>${b.currency}: Dr ${fmtMinor(b.debitMinor)} / Cr ${fmtMinor(b.creditMinor)} → net ${fmtMinor(b.netMinor)} ${balancePill(b)}</div>`).join('');
+
+  const alerts = rep.urgentCorrectionAlertIds.length
+    ? `<div class="sla-balance"><span class="sla-pill bad">urgent correction</span> ${rep.urgentCorrectionAlertIds.join(', ')}</div>`
+    : '';
+
+  const cites = rep.cites.length
+    ? `<div class="sla-cites">cites: ${rep.cites.map(c => '<code>' + c + '</code>').join(' · ')}</div>`
+    : '';
+
+  return `<div class="sla-card">${head}<div class="sla-card-body">
+    <table class="sla-legs"><thead><tr><th>account</th><th>side</th><th class="num">amount (minor)</th><th>ccy</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="sla-balance">${bal}</div>
+    ${alerts}
+    ${cites}
+  </div></div>`;
+}
+
+async function run() {
+  const qs = new URLSearchParams({
+    side: $('side').value, base: $('base').value, quote: $('quote').value,
+    payCurrency: $('payCurrency').value, receiveCurrency: $('receiveCurrency').value,
+    payMinor: $('payMinor').value, receiveMinor: $('receiveMinor').value, rate: $('rate').value,
+  });
+  $('out').innerHTML = '<p class="sla-detail">loading…</p>';
+  try {
+    const res = await fetch('/api/sla/representation-preview?' + qs.toString());
+    const data = await res.json();
+    if (!data.ok) { $('out').innerHTML = '<p class="sla-err">' + (data.error || 'error') + '</p>'; return; }
+    const p = data.preview;
+    $('meta').textContent = `event ${p.eventType} · entity ${p.entity} · as_of ${p.asOf}`;
+    $('out').innerHTML = p.representations.map(renderRep).join('');
+  } catch (e) {
+    $('out').innerHTML = '<p class="sla-err">' + e.message + '</p>';
+  }
+}
+
+$('run').addEventListener('click', run);
+run();
+</script>
+</body>
+</html>

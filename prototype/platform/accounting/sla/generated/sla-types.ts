@@ -99,7 +99,9 @@ export type AccountId =
   | "ACC-7100-001"
   | "ACC-7100-002"
   | "ACC-7100-003"
-  | "ACC-7100-004";
+  | "ACC-7100-004"
+  | "ACC-9000-001"
+  | "ACC-9000-002";
 
 /** All account IDs as a runtime-checkable readonly tuple (same order as the type). */
 export const ACCOUNT_IDS = [
@@ -180,6 +182,8 @@ export const ACCOUNT_IDS = [
   "ACC-7100-002",
   "ACC-7100-003",
   "ACC-7100-004",
+  "ACC-9000-001",
+  "ACC-9000-002",
 ] as const;
 
 /** Runtime membership guard for `AccountId`. */
