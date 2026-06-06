@@ -46,6 +46,7 @@ import {
   type ResolverKey,
   defaultResolver,
 } from "./resolver";
+import { withinEffectiveWindow } from "./versioning";
 
 // ---------------------------------------------------------------------------
 // Context vector (spec §1.2 / §2.1)
@@ -482,12 +483,10 @@ function specificityScore(rule: SlaRule): number {
   return score;
 }
 
-/** Effective-date window contains the effective date (left-closed, right-open). */
-function withinEffectiveWindow(rule: SlaRule, effectiveDate: string): boolean {
-  if (effectiveDate < rule.effective_from) return false;
-  if (rule.effective_to != null && effectiveDate >= rule.effective_to) return false;
-  return true;
-}
+// Effective-date window matching (left-closed, right-open `[from, to)`) is the
+// shared single source of truth in ./versioning (spec §6.3) — the interpreter
+// (selection) and the versioning recon (window-integrity) read the SAME
+// predicate, so they cannot drift.
 
 type RuleSelection =
   | { kind: "none" }

@@ -447,6 +447,12 @@ async function processFxViaInterpreter(
         postingType: outcome.postingType,
         legs: outcome.legs,
         postedAt: ctx.asOf,
+        // SLA rules-as-data lineage (spec §8.1) — stamps the exact rule version
+        // in force at this event's effective date so the posting is reproducible
+        // (temporal reproducibility, spec §6.3). Asserted by recon:sla-rule-versioning.
+        representation: outcome.representation,
+        ruleId: outcome.ruleId,
+        ruleVersion: outcome.ruleVersion,
       },
       eventId: newEventId(),
     });
@@ -547,6 +553,12 @@ async function processTreasuryViaInterpreter(
         postingType: outcome.postingType,
         legs: outcome.legs,
         postedAt: ctx.asOf,
+        // SLA rules-as-data lineage (spec §8.1) — stamps the exact rule version
+        // in force at this event's effective date so the posting is reproducible
+        // (temporal reproducibility, spec §6.3). Asserted by recon:sla-rule-versioning.
+        representation: outcome.representation,
+        ruleId: outcome.ruleId,
+        ruleVersion: outcome.ruleVersion,
       },
       eventId: newEventId(),
     });
@@ -656,6 +668,12 @@ async function processSecuritiesViaInterpreter(
         postingType: outcome.postingType,
         legs: outcome.legs,
         postedAt: ctx.asOf,
+        // SLA rules-as-data lineage (spec §8.1) — stamps the exact rule version
+        // in force at this event's effective date so the posting is reproducible
+        // (temporal reproducibility, spec §6.3). Asserted by recon:sla-rule-versioning.
+        representation: outcome.representation,
+        ruleId: outcome.ruleId,
+        ruleVersion: outcome.ruleVersion,
       },
       eventId: newEventId(),
     });
@@ -743,6 +761,12 @@ async function processIrdViaInterpreter(
         postingType: outcome.postingType,
         legs: outcome.legs,
         postedAt: ctx.asOf,
+        // SLA rules-as-data lineage (spec §8.1) — stamps the exact rule version
+        // in force at this event's effective date so the posting is reproducible
+        // (temporal reproducibility, spec §6.3). Asserted by recon:sla-rule-versioning.
+        representation: outcome.representation,
+        ruleId: outcome.ruleId,
+        ruleVersion: outcome.ruleVersion,
       },
       eventId: newEventId(),
     });
@@ -829,6 +853,12 @@ async function processPaymentsViaInterpreter(
         postingType: outcome.postingType,
         legs: outcome.legs,
         postedAt: ctx.asOf,
+        // SLA rules-as-data lineage (spec §8.1) — stamps the exact rule version
+        // in force at this event's effective date so the posting is reproducible
+        // (temporal reproducibility, spec §6.3). Asserted by recon:sla-rule-versioning.
+        representation: outcome.representation,
+        ruleId: outcome.ruleId,
+        ruleVersion: outcome.ruleVersion,
       },
       eventId: newEventId(),
     });
