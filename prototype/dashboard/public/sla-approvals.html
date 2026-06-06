@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SLA Rule Approvals — Scrooge Bank</title>
+  <meta name="description" content="Four-eyes approval workflow for rules-as-data SLA posting rules. A rule/version is interpreter-eligible only after a four-eyes SlaRuleApproved (approver != publisher). SARB-BA-RETURN is not activated in production.">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/_shell.css">
+<style>
+  .ap-page { max-width: 1180px; margin: 0 auto; padding: var(--space-6); }
+  .ap-page h1 { font: var(--text-h1); color: var(--color-text-primary); margin-bottom: var(--space-2); }
+  .ap-lede { color: var(--color-text-secondary); font: var(--text-body); margin-bottom: var(--space-4); line-height: 1.6; max-width: 88ch; }
+  .ap-banner { border: 1px solid var(--color-border-strong); background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font: var(--text-caption); color: var(--color-text-secondary); margin-bottom: var(--space-5); }
+  .ap-banner strong { color: var(--color-text-primary); }
+  table.ap { width: 100%; border-collapse: collapse; font: var(--text-caption); }
+  table.ap th, table.ap td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  table.ap th { color: var(--color-text-secondary); font-weight: 700; }
+  .st { display: inline-block; padding: 1px 8px; border-radius: 999px; font-weight: 700; font-size: 11px; }
+  .st-eligible { background: #0a5; color: #fff; }
+  .st-published-pending { background: #c80; color: #fff; }
+  .st-withheld { background: #a22; color: #fff; }
+  .st-unpublished { background: var(--color-border-strong); color: var(--color-text-primary); }
+  .ap-act { display: flex; gap: 6px; }
+  .ap-act button { padding: 4px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; background: var(--color-bg); font: var(--text-caption); }
+  .ap-act button.approve { border-color: #0a5; color: #0a5; }
+  .ap-act button.withhold { border-color: #a22; color: #a22; }
+  .mono { font-family: ui-monospace, monospace; }
+  .muted { color: var(--color-text-secondary); }
+</style>
+</head>
+<body>
+  <div class="ap-page">
+    <h1>SLA Rule Approvals</h1>
+    <p class="ap-lede">Four-eyes governance gate for the rules-as-data sub-ledger accounting (SLA) engine. A rule/version is <strong>interpreter-eligible</strong> only after an attested <span class="mono">SlaRuleApproved</span> whose approver &ne; publisher. The events are canonical; this page is a render plus an action that emits the attested event. No per-posting approval exists (Principle 6 — the gate is on the rule, not the booking).</p>
+    <div class="ap-banner">
+      <strong>Production stays IFRS-only.</strong> SARB-BA-RETURN rules are published/dry-run only and are <strong>NOT activated</strong>; activation is the separate CFO + CoSec joint-approval round. In-force IFRS rules carry a build-phase <em>grandfather</em> approval so production posting is unchanged.
+    </div>
+    <div id="status" class="muted">Loading…</div>
+    <table class="ap" id="tbl" hidden>
+      <thead>
+        <tr><th>Representation</th><th>Rule</th><th>Ver</th><th>Window</th><th>Status</th><th>Publisher</th><th>Approver</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+<script>
+async function api(path, body) {
+  const opts = body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {};
+  const r = await fetch(path, opts);
+  return r.json();
+}
+function cell(t) { const td = document.createElement("td"); td.textContent = t; return td; }
+async function load() {
+  const res = await api("/api/sla/approvals");
+  const status = document.getElementById("status");
+  const tbl = document.getElementById("tbl");
+  if (!res.ok) { status.textContent = "Error: " + (res.error || "unknown"); return; }
+  const tbody = tbl.querySelector("tbody");
+  tbody.innerHTML = "";
+  for (const row of res.rows) {
+    const tr = document.createElement("tr");
+    tr.appendChild(cell(row.representation));
+    const ruleTd = cell(row.ruleId); ruleTd.className = "mono"; tr.appendChild(ruleTd);
+    tr.appendChild(cell("v" + row.version));
+    tr.appendChild(cell(row.effectiveFrom + " → " + (row.effectiveTo || "∞")));
+    const stTd = document.createElement("td");
+    const span = document.createElement("span");
+    span.className = "st st-" + row.status;
+    span.textContent = row.status + (row.grandfather ? " (gf)" : "");
+    stTd.appendChild(span); tr.appendChild(stTd);
+    tr.appendChild(cell(row.publisher ? row.publisher.name : "—"));
+    tr.appendChild(cell(row.approver ? row.approver.name : "—"));
+    const actTd = document.createElement("td");
+    const wrap = document.createElement("div"); wrap.className = "ap-act";
+    if (row.status === "unpublished") {
+      const b = document.createElement("button"); b.textContent = "Publish";
+      b.onclick = () => act("publish", row);
+      wrap.appendChild(b);
+    } else if (row.status === "published-pending" || row.status === "withheld") {
+      const a = document.createElement("button"); a.className = "approve"; a.textContent = "Approve";
+      a.onclick = () => act("approve", row); wrap.appendChild(a);
+      const w = document.createElement("button"); w.className = "withhold"; w.textContent = "Withhold";
+      w.onclick = () => act("withhold", row); wrap.appendChild(w);
+    }
+    actTd.appendChild(wrap); tr.appendChild(actTd);
+    tbody.appendChild(tr);
+  }
+  status.hidden = true; tbl.hidden = false;
+}
+async function act(kind, row) {
+  const body = { representation: row.representation, ruleId: row.ruleId, version: row.version };
+  if (kind === "publish") { body.publisherName = prompt("Publisher name (seat)", "Bea"); if (!body.publisherName) return; }
+  if (kind === "approve") { body.approverName = prompt("Approver name (must differ from publisher)", ""); if (!body.approverName) return; }
+  if (kind === "withhold") { body.approverName = prompt("Your name (seat)", ""); if (!body.approverName) return; body.reason = prompt("Reason for withholding", ""); if (!body.reason) return; }
+  const res = await api("/api/sla/approvals/" + kind, body);
+  if (!res.ok) { alert("Failed: " + (res.error || "unknown")); return; }
+  load();
+}
+load();
+</script>
+</body>
+</html>

@@ -441,6 +441,28 @@ For rule *activation* (a new rule or version going live), an explicit **approval
 
 > **Flagged for CFO/Owen at sign-off (§9.3):** who approves a *rule* vs a *representation activation*. Recommendation: rule-version activation → CFO seat (accounting policy, per the decision-authority routing table: "IFRS accounting policy → CFO"); new *representation* activation (e.g. turning on the SARB regulatory basis) → CFO + Owen jointly (it spans accounting policy and the governance/approval workflow). This is a sign-off decision, not an engineering one.
 
+### 9.4 Approval workflow — Phase 4c implementation (BUILT)
+
+The §9.3 flow is implemented as an append-only event family + an interpreter eligibility gate + a recon, under `D-SLA-ENGINE-RULES-AS-DATA` (Phase 4c), `D-SLA-APPROVAL-WORKFLOW-SEGREGATION` (CoSec Owen — the five SoD controls), and `D-SLA-REPRESENTATION-ACTIVATION-JOINT-APPROVAL` (CFO + CoSec joint for representation activation).
+
+- **Event family** (`platform/event-store/event-types/sla-approval.ts`, registered in `registry/sla-approval.ts`): `SlaRulePublished` (publisher name+position + rule-content hash), `SlaRuleApproved` (approver name+position + reviewed-rule hash + reviewed-preview hash; `grandfather?` marker), `SlaRuleWithheld` (approver + reason). Append-only; corrections are new events.
+- **Eligibility core** (`platform/accounting/sla/approval.ts`): a rule/version is eligible iff its last append-ordered decision is a four-eyes `approve` (approver ≠ publisher, reviewed hash matches a publish) and it is not currently withheld. Pure; the interpreter consumes the eligible-key set via `InterpretOptions.approvalGate` (`interpreter.ts`).
+- **Production seam**: `bea-gl-fx-interpreter-cutover.ts` `buildFxApprovalGate(...)` loads the approval stream once per GL run and passes the gate, so a published-but-unapproved FX rule never posts. `PRODUCTION_REPRESENTATIONS` (in `approval.ts`) is the single activation source — currently `["IFRS"]`.
+- **Grandfather (non-regression)**: `platform/accounting/sla/grandfather.ts` + `scripts/backfill-sla-grandfather-approvals.ts` (wired into `ci:migrate`) seed a four-eyes grandfather approval for every in-force **IFRS** rule version. SARB-BA-RETURN is **not** grandfathered — it stays ineligible until activation.
+- **Owen's five SoD controls**: (i) author ≠ approver — enforced in `isFourEyesApproval` + the UI before emit; (ii) attested typed event with approver + rule_id + version + preview hash; (iii) append-only audit; (iv) Principle-6 boundary — the gate is per (representation, rule_id, version), never per posting; (v) enforced by `recon:sla-approval-workflow`.
+- **Recon** (`platform/recon/sla-approval-workflow.ts`, in `ci:recon:domain`): (a) every in-force production-path rule has a four-eyes approval; (b) any activated non-IFRS representation requires both a CFO and a CoSec approved `Decision`; (c) composes the 4b versioning recon.
+- **Surface** (`dashboard/sla-approval-view.ts` + `public/sla-approvals.html`, route `/sla-approvals`): lists every rule/version + status (eligible / published-pending / withheld / unpublished) with publish / approve / withhold actions emitting the attested events.
+
+### 9.5 Activation runbook — turning on SARB-BA-RETURN (DO NOT run as part of 4c)
+
+Phase 4c builds the machinery but **does not** activate SARB-BA-RETURN; production stays IFRS-only. The post-4c governance round, executed through this very workflow, is:
+
+1. **CFO confirms BA-350 NOP structure.** Camille (CFO) reviews the SARB-BA-RETURN preview (`/sla-representations`) and confirms the net-open-position memo is correct for BA-350.
+2. **Joint Decisions.** Record a CFO approved `Decision` AND a CoSec approved `Decision` authorising activation (per `D-SLA-REPRESENTATION-ACTIVATION-JOINT-APPROVAL`). Both are required — neither seat may activate alone.
+3. **Four-eyes approval of the SARB rules.** For each SARB-BA-RETURN rule version (incl. `PR-FX-001-BA@v1`/`@v2`), publish (if not already) then approve with **approver ≠ publisher** — via the `/sla-approvals` surface or `SlaRuleApproved` events. This makes the SARB rules interpreter-eligible.
+4. **Flip the production representation set.** Change `PRODUCTION_REPRESENTATIONS` in `platform/accounting/sla/approval.ts` from `["IFRS"]` to `["IFRS","SARB-BA-RETURN"]`, and wire the NOP-enrichment builder + multi-result handling in `bea-gl-fx-interpreter-cutover.ts` (the seam currently `.find`s the single IFRS result and stamps `representation:"IFRS"`; it must fan out to both representations).
+5. **Recon proves it.** `recon:sla-approval-workflow` (b) now requires the CFO+CoSec pair (present from step 2) and (a) requires the SARB rules to be four-eyes-approved (present from step 3). CI is the gate.
+
 ---
 
 ## 10. Recon
