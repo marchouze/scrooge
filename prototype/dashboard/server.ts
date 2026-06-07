@@ -143,6 +143,8 @@ import {
 } from "../platform/projections/markets";
 import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-policy-coverage";
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
+import { getActiveBondCounterparties } from "../platform/simulation/bond-counterparty-registry";
+import { BondSimEngine } from "../platform/simulation/bond-sim-engine";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
 
 import {
@@ -156,6 +158,7 @@ import {
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
+import { StdbankCustodianSim } from "../platform/simulation/stdbank-custodian-sim/index";
 import { isPresent } from "../platform/types/financial-input";
 import {
   buildDecisionsRegister,
@@ -182,7 +185,7 @@ import {
   getUnadoptedObligationsView,
   loadObligationSeed,
 } from "./bank-obligations-view";
-import { registerBondGatewayRoutes } from "./bond-gateway";
+import { bookBondTrade, registerBondGatewayRoutes } from "./bond-gateway";
 import { buildConfigView } from "./config-view";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { registerFxSimRoutes } from "./fx-sim-view";
@@ -365,10 +368,35 @@ const fxSimEngine = new FxSimEngine(eventStore, {
 // and therefore the canonical operating-book filter + the sandbox-simulator gate.
 syncBankModeToLifecyclePhase(eventStore);
 
+// Standard Bank bond custodian — shared by the bond-gateway HTTP route and the
+// bond market-making simulator (both book through bookBondTrade).
+const custodianSim = new StdbankCustodianSim(eventStore);
+custodianSim.start();
+
+// Bond market-making simulator — counterparty RFQ loop + synthetic bond-price
+// feed. Counterparties resolve from the party register; trades book through the
+// bank's normal bookBondTrade path (BondTradeExecuted → GL → settlement →
+// custodian), exactly like a manual bond booking.
+const bondSimEngine = new BondSimEngine(eventStore, {
+  marketDataStore,
+  getCounterparties: () => getActiveBondCounterparties(eventStore),
+  executeBondTrade: (body) => {
+    void bookBondTrade(body, eventStore, custodianSim).catch((err: unknown) => {
+      console.error("[sim] bond booking via normal path failed:", err);
+    });
+  },
+});
+
 // Centralised 3rd-party simulator hub — registers the FX-counterparty stimulus
 // plus the external sub-simulators (market data, nostro, correspondent, SARB
-// ack) behind one registry, reusing the live fxSimEngine instance.
-const { hub: simHub, custodianSim } = buildDefaultHub({ eventStore, envSimEngine: fxSimEngine });
+// ack) and the bond market-making modules behind one registry, reusing the live
+// fxSimEngine + bondSimEngine + custodianSim instances.
+const { hub: simHub } = buildDefaultHub({
+  eventStore,
+  envSimEngine: fxSimEngine,
+  custodianSim,
+  bondSimEngine,
+});
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections

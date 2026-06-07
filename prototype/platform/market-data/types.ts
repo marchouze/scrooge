@@ -123,8 +123,13 @@ export interface BondPricePayload {
   yieldToMaturity: string;
   /** Human-readable bond code, e.g. "R186" (ISIN is carried in the tick's instrument field) */
   bondCode: string;
-  /** Build-phase marker */
-  fixingVariant: "build-phase-fixture" | "live-jse-debt";
+  /**
+   * Variant marker:
+   *   "build-phase-fixture" — JSE Debt fixture seed (reference prices)
+   *   "live-jse-debt"       — production JSE Debt Market feed (post-licence)
+   *   "simulated-walk"      — bond-sim continuous clean-price walk (provenance "simulated")
+   */
+  fixingVariant: "build-phase-fixture" | "live-jse-debt" | "simulated-walk";
 }
 
 // ---------------------------------------------------------------------------
@@ -142,4 +147,5 @@ export const MarketDataSources = {
   JIBAR_SWAP_SARB: "jibar-swap-sarb",
   SARB_REPO: "sarb-repo",
   JSE_DEBT: "jse-debt",
+  BOND_SIM: "bond-sim",
 } as const;
