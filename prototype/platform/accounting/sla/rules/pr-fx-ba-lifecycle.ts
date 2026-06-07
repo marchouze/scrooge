@@ -1,11 +1,20 @@
 // platform/accounting/sla/rules/pr-fx-ba-lifecycle.ts
 //
-// SARB BA-350 net-open-position (NOP) memorandum — the FX-lifecycle rules
+// SARB FX net-open-position (NOP) memorandum — the FX-lifecycle rules
 // beyond trade booking, expressed as rules-as-data. Companion to PR-FX-001-BA
 // (pr-fx-001-ba.ts), which owns the headline booking entry.
 //
+// ─── Return-form attribution (D-FX-NOP-SLA-CITATION-D5-MIGRATION) ────────────
+// The FX effective NOP attestation is carried on form BA 325 under reg 29(3)
+// (RRB reg 29; D5/2025 §2.1.14), NOT BA 350. Earlier "BA-350" labels in this
+// file were a form-number error; the human-facing comments are corrected to
+// BA 325 (reg 29(3)) in this LABEL pass. The replay-sensitive opaque `cites`
+// URNs and the `condition.detail` strings (both inside the four-eyes content
+// hash) are LEFT UNCHANGED — their forward-only migration to ba325:nop is the
+// deferred supersession ceremony documented in the pr-fx-001-ba.ts footer.
+//
 // ─── Lifecycle scope of the SARB-BA-RETURN NOP basis ────────────────────────
-// The BA-350 NOP is a POSITION measure: the bank's net open foreign-currency
+// The NOP is a POSITION measure: the bank's net open foreign-currency
 // exposure. That is materially different from the IFRS fair-value basis. The NOP
 // changes ONLY when the open position itself opens or closes:
 //
@@ -55,12 +64,19 @@
 //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille);
 //            D-SLA-SARB-ACTIVATION-CFO + D-SLA-SARB-BA-RETURN-ACTIVATION-COSEC
 //            (joint production activation, Round 3).
-// Cites: SARB BA 310 (market risk; net open position); Banks Act 94 of 1990.
+// Cites: SARB BA 325 (reg 29(3) — daily NOP attestation); Banks Act 94 of 1990.
 
 import type { SlaRule } from "../generated/sla-types";
 
 const SARB_REGIME = "SARB-banks-act" as const;
 
+// NOTE (D-FX-NOP-SLA-CITATION-D5-MIGRATION): the `detail` strings (→
+// condition.detail) and `cites` arrays passed to nopNeutralRule / PR_FX_CANCEL_BA
+// below STILL read "BA-350" and `urn:obligation:sarb:ba350:nop`. They are
+// LEFT UNCHANGED on purpose: both are inside the four-eyes content hash
+// (approval.ts ruleContentHash), so editing them would de-activate these in-force
+// production rules. The form is correctly BA 325 (reg 29(3)); the forward-only
+// migration is the deferred supersession ceremony (pr-fx-001-ba.ts footer).
 /** Build a NOP-neutral intentional-no-impact rule for a lifecycle event type. */
 function nopNeutralRule(args: {
   ruleId: string;

@@ -612,8 +612,9 @@ export const IFRS_PAYMENTS_RESOLVER_ROWS: readonly ResolverRow[] = [
 // ---------------------------------------------------------------------------
 // SARB-BA-RETURN resolver rows (the FIRST SECONDARY representation)
 //
-// The BA-350 net-open-position (NOP) memorandum. Distinct from every IFRS row by
-// the `representation: "SARB-BA-RETURN"` axis, so the resolver partitions the
+// The SARB BA 325 (reg 29(3)) net-open-position (NOP) memorandum (form re-labelled
+// from "BA 350" per D-FX-NOP-SLA-CITATION-D5-MIGRATION). Distinct from every IFRS
+// row by the `representation: "SARB-BA-RETURN"` axis, so the resolver partitions the
 // two representations cleanly — an IFRS lookup can never reach a NOP memo account
 // and vice-versa (spec §5.3 per-representation physical mapping).
 //
@@ -640,7 +641,7 @@ export const IFRS_PAYMENTS_RESOLVER_ROWS: readonly ResolverRow[] = [
 //
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
 //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
-// Cites: SARB BA 310 (market risk; net open position); Banks Act 94 of 1990.
+// Cites: SARB BA 325 (reg 29(3) — daily NOP attestation); Banks Act 94 of 1990.
 // ---------------------------------------------------------------------------
 
 const SARB_BA_NOP_CURRENCIES: readonly string[] = ["ZAR", "USD", "GBP", "EUR", "CHF", "AUD", "JPY"];
@@ -654,7 +655,7 @@ function sarbNopRows(logical: string, physical: AccountId): ResolverRow[] {
     representation: "SARB-BA-RETURN",
     logical,
     physical,
-    note: "SARB BA-350 NOP memorandum (multi-currency; balances per currency).",
+    note: "SARB BA 325 (reg 29(3)) NOP memorandum (multi-currency; balances per currency).",
   }));
 }
 

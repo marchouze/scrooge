@@ -1,13 +1,22 @@
 // platform/accounting/sla/rules/pr-fx-001-ba-v2.ts
 //
-// PR-FX-001-BA @ version 2 — a REAL v2 supersession of the 4a SARB BA-350
+// PR-FX-001-BA @ version 2 — a REAL v2 supersession of the 4a SARB FX NOP
 // net-open-position (NOP) memo rule (D-SLA-ENGINE-RULES-AS-DATA Phase 4b
 // deliverable 6). This exercises the supersede-never-edit machinery end-to-end:
 //   - v1 (pr-fx-001-ba.ts) records the NOP on the RECEIVE leg (bought currency)
 //     at the receive-leg counter-notional, effective [2026-01-01, 2026-07-01).
 //   - v2 (this file) reclassifies the NOP onto the PAY leg (sold currency) at the
-//     pay-leg notional, effective [2026-07-01, ∞) — modelling a SARB BA-350
+//     pay-leg notional, effective [2026-07-01, ∞) — modelling a NOP
 //     reclassification that takes effect on a regulator's cutover date.
+//
+// FORM ATTRIBUTION (D-FX-NOP-SLA-CITATION-D5-MIGRATION, CEO 2026-06-07): the FX
+// effective NOP attestation is carried on form BA 325 under reg 29(3) (RRB reg
+// 29; D5/2025 §2.1.14), NOT BA 350. Earlier "BA-350" comments here were a
+// form-number error; corrected to BA 325 in this LABEL pass. The opaque `cites`
+// URN (`urn:obligation:sarb:ba350:nop`) and `condition.detail` are replay-
+// sensitive (the four-eyes hash includes both) and are LEFT UNCHANGED — their
+// forward-only migration to ba325:nop is the deferred supersession ceremony
+// documented in the v1 file footer (pr-fx-001-ba.ts).
 //
 // The two windows ABUT exactly (left-closed / right-open): v1 closes at
 // 2026-07-01, v2 opens at 2026-07-01 — no gap, no overlap. The IFRS rule
@@ -25,7 +34,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4b, CEO-approved 2026-06-06);
 //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
-// Cites: SARB BA 310 (market risk; net open position); Banks Act 94 of 1990 (exposure).
+// Cites: SARB BA 325 (reg 29(3) — daily NOP attestation); Banks Act 94 of 1990 (exposure).
 
 import type { SlaRule } from "../generated/sla-types";
 import { supersede } from "../versioning";
@@ -39,6 +48,9 @@ const [v1Closed, v2] = supersede(PR_FX_001_BA, {
   effective_to: null,
   applies_to: PR_FX_001_BA.applies_to,
   condition: {
+    // LEFT UNCHANGED (replay-sensitive: detail is part of the four-eyes content
+    // hash). Correct form is BA 325 (reg 29(3)); re-label is part of the deferred
+    // supersession ceremony (see pr-fx-001-ba.ts footer), not this label pass.
     kind: "always",
     detail: "SARB BA-350 (reclassified 2026-07-01) — NOP recorded on the sold (pay) leg",
   },
@@ -60,6 +72,7 @@ const [v1Closed, v2] = supersede(PR_FX_001_BA, {
     },
   ],
   balancing: "assert_zero",
+  // LEFT UNCHANGED (replay-sensitive — opaque identity in emitted events + hash).
   cites: ["urn:obligation:sarb:ba350:nop", "urn:obligation:reg:banks-act:fx-exposure"],
   notes:
     "v2 reclassification — records the NOP on the sold (pay) leg per the 2026-07-01 BA-350 revision.",
