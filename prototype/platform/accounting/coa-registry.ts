@@ -630,6 +630,32 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   },
 
   // ------------------------------------------------------------------
+  // 2105 — FX sub-ledger build-phase write-off P&L
+  //
+  // Authority: D-FX-SUBLEDGER-WRITEOFF-CFO (CFO authority — Bea (Chief Financial
+  //   Officer, governance), 2026-06-07).
+  //
+  // Dedicated write-off line for the build-phase residue swept out of the FX
+  // remediation suspense (ACC-2100-009). Deliberately sits OUTSIDE the ACC-2100-*
+  // trading sub-ledger range so the legacy-account reconciliation engine
+  // (fx-subledger-legacy-reconciliation.ts, which scans the `ACC-2100-` prefix)
+  // never treats the write-off charge as orphaned trading gross to re-sweep. The
+  // residue is build-phase SYNTHETIC corruption; the write-off is substrate
+  // hygiene (the GL must end clean), NOT a real financial loss. Kept distinct
+  // from Realised FX P&L (ACC-2100-006) so genuine trading P&L is not polluted by
+  // a one-off build-phase cleanup. Currency-free name (D-COA-CURRENCY-DECOUPLING);
+  // the residue is written off in the currency in which it was stranded (each
+  // SubLedgerLeg.currency), ZAR is the presentation currency.
+  // ------------------------------------------------------------------
+  {
+    id: "ACC-2105-001",
+    name: "FX Sub-Ledger Build-Phase Write-Off",
+    category: "income-trading",
+    currency: "ZAR",
+    side: "debit",
+  },
+
+  // ------------------------------------------------------------------
   // 2200 — Customer payables
   // ------------------------------------------------------------------
   {
