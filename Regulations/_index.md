@@ -19,7 +19,7 @@
 | BA 200 — Credit risk *(D5/2025 §2.1.8)* | SARB-PA/ba-returns/ba-200.md | STUB | resbank.co.za |
 | BA 300 — Operational risk *(D5/2025 §2.1.11; was the GG-era off-balance-sheet stub, re-numbered)* | SARB-PA/ba-returns/ba-300.md | STUB | resbank.co.za |
 | BA 310 — Market risk *(D5/2025 §2.1.12; was BA 320 under GG 35950, superseded)* | SARB-PA/ba-returns/ba-310.md | STUB | resbank.co.za |
-| BA 330 — IRRBB repricing-gap return *(Reg 30 / D2/2023; D5/2025 §2.1.15 completes per D2/2023; analysis not yet authored)* | SARB-PA/ba-returns/ba-330.md | STUB | resbank.co.za |
+| BA 330 — IRRBB repricing-gap return *(Reg 30 / D2/2023; D5/2025 §2.1.15 completes per D2/2023)* | [SARB-PA/ba-returns/ba-330.md](SARB-PA/ba-returns/ba-330.md) | **POPULATED** | resbank.co.za |
 | BA 400 — Leverage ratio *(D5/2025 §2.1.18)* | SARB-PA/ba-returns/ba-400.md | STUB | resbank.co.za |
 | BA 600 — Balance sheet (financial position) *(D5/2025 §2.1.21)* | SARB-PA/ba-returns/ba-600.md | STUB | resbank.co.za |
 | BA 610 — Income statement *(D5/2025 §2.1.22)* | SARB-PA/ba-returns/ba-610.md | STUB | resbank.co.za |
@@ -167,7 +167,7 @@
 
 ## Status summary
 
-- **POPULATED:** 8 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, Large exposures (Reg 24 + D3/2022)) — as at 2026-06-07.
+- **POPULATED:** 9 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, Large exposures (Reg 24 + D3/2022), BA 330 — IRRBB (Reg 30 + D2/2023)) — as at 2026-06-07.
 - **STUB:** ~60 — scaffolded for population per the regulatory-change management cadence.
 - **Total instruments tracked:** ~64.
 
