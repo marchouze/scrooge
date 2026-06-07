@@ -1,0 +1,1118 @@
+[
+  {
+    "id": "BCBS-BCP01",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP01",
+    "title": "Foreword",
+    "citation": "urn:reg:bcbs:bcp:01",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-BCP02",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP02",
+    "title": "Introduction to the Core Principles",
+    "citation": "urn:reg:bcbs:bcp:02",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-BCP10",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP10",
+    "title": "Explanation of certain terms used in the Core Principles",
+    "citation": "urn:reg:bcbs:bcp:10",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-BCP20",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP20",
+    "title": "Assessment methodology",
+    "citation": "urn:reg:bcbs:bcp:20",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-BCP30",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP30",
+    "title": "Preconditions for effective banking supervision",
+    "citation": "urn:reg:bcbs:bcp:30",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-BCP40",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP40",
+    "title": "The Core Principles and assessment criteria",
+    "citation": "urn:reg:bcbs:bcp:40",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-BCP98",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP98",
+    "title": "Update on Committee standards, guidelines and sound practices",
+    "citation": "urn:reg:bcbs:bcp:98",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-BCP99",
+    "standard": "BCP",
+    "standardTitle": "Core Principles for effective banking supervision",
+    "chapter": "BCP99",
+    "title": "Structure and guidance for assessment reports prepared by the International Monetary Fund and World Bank",
+    "citation": "urn:reg:bcbs:bcp:99",
+    "domain": "Core Principles"
+  },
+  {
+    "id": "BCBS-CAP10",
+    "standard": "CAP",
+    "standardTitle": "Definition of capital",
+    "chapter": "CAP10",
+    "title": "Definition of eligible capital",
+    "citation": "urn:reg:bcbs:cap:10",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-CAP30",
+    "standard": "CAP",
+    "standardTitle": "Definition of capital",
+    "chapter": "CAP30",
+    "title": "Regulatory adjustments",
+    "citation": "urn:reg:bcbs:cap:30",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-CAP50",
+    "standard": "CAP",
+    "standardTitle": "Definition of capital",
+    "chapter": "CAP50",
+    "title": "Prudent valuation guidance",
+    "citation": "urn:reg:bcbs:cap:50",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-CAP90",
+    "standard": "CAP",
+    "standardTitle": "Definition of capital",
+    "chapter": "CAP90",
+    "title": "Transitional arrangements",
+    "citation": "urn:reg:bcbs:cap:90",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-CAP99",
+    "standard": "CAP",
+    "standardTitle": "Definition of capital",
+    "chapter": "CAP99",
+    "title": "Application guidance",
+    "citation": "urn:reg:bcbs:cap:99",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-CRE20",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE20",
+    "title": "Standardised approach: individual exposures",
+    "citation": "urn:reg:bcbs:cre:20",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE21",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE21",
+    "title": "Standardised approach: use of external ratings",
+    "citation": "urn:reg:bcbs:cre:21",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE22",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE22",
+    "title": "Standardised approach: credit risk mitigation",
+    "citation": "urn:reg:bcbs:cre:22",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE30",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE30",
+    "title": "IRB approach: overview and asset class definitions",
+    "citation": "urn:reg:bcbs:cre:30",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE31",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE31",
+    "title": "IRB approach: risk weight functions",
+    "citation": "urn:reg:bcbs:cre:31",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE32",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE32",
+    "title": "IRB approach: risk components",
+    "citation": "urn:reg:bcbs:cre:32",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE33",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE33",
+    "title": "IRB approach: supervisory slotting approach for specialised lending",
+    "citation": "urn:reg:bcbs:cre:33",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE34",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE34",
+    "title": "IRB approach: RWA for purchased receivables",
+    "citation": "urn:reg:bcbs:cre:34",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE35",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE35",
+    "title": "IRB approach: treatment of expected losses and provisions",
+    "citation": "urn:reg:bcbs:cre:35",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE36",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE36",
+    "title": "IRB approach: minimum requirements to use IRB approach",
+    "citation": "urn:reg:bcbs:cre:36",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE40",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE40",
+    "title": "Securitisation: general provisions",
+    "citation": "urn:reg:bcbs:cre:40",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE41",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE41",
+    "title": "Securitisation: standardised approach",
+    "citation": "urn:reg:bcbs:cre:41",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE42",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE42",
+    "title": "Securitisation: External-ratings-based approach (SEC-ERBA)",
+    "citation": "urn:reg:bcbs:cre:42",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE43",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE43",
+    "title": "Securitisation: Internal assessment approach (SEC-IAA)",
+    "citation": "urn:reg:bcbs:cre:43",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE44",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE44",
+    "title": "Securitisation: Internal-ratings-based approach",
+    "citation": "urn:reg:bcbs:cre:44",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE45",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE45",
+    "title": "Securitisations of non-performing loans",
+    "citation": "urn:reg:bcbs:cre:45",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE50",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE50",
+    "title": "Counterparty credit risk definitions and terminology",
+    "citation": "urn:reg:bcbs:cre:50",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE51",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE51",
+    "title": "Counterparty credit risk overview",
+    "citation": "urn:reg:bcbs:cre:51",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE52",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE52",
+    "title": "Standardised approach to counterparty credit risk",
+    "citation": "urn:reg:bcbs:cre:52",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE53",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE53",
+    "title": "Internal models method for counterparty credit risk",
+    "citation": "urn:reg:bcbs:cre:53",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE54",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE54",
+    "title": "Capital requirements for bank exposures to central counterparties",
+    "citation": "urn:reg:bcbs:cre:54",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE55",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE55",
+    "title": "Counterparty credit risk in the trading book",
+    "citation": "urn:reg:bcbs:cre:55",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE56",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE56",
+    "title": "Minimum haircut floors for securities financing transactions",
+    "citation": "urn:reg:bcbs:cre:56",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE60",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE60",
+    "title": "Equity investments in funds",
+    "citation": "urn:reg:bcbs:cre:60",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE70",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE70",
+    "title": "Capital treatment of unsettled transactions and failed trades",
+    "citation": "urn:reg:bcbs:cre:70",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE90",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE90",
+    "title": "Transition",
+    "citation": "urn:reg:bcbs:cre:90",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-CRE99",
+    "standard": "CRE",
+    "standardTitle": "Calculation of RWA for credit risk",
+    "chapter": "CRE99",
+    "title": "Application guidance",
+    "citation": "urn:reg:bcbs:cre:99",
+    "domain": "Credit Risk"
+  },
+  {
+    "id": "BCBS-DIS10",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS10",
+    "title": "Definitions and applications",
+    "citation": "urn:reg:bcbs:dis:10",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS20",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS20",
+    "title": "Overview of risk management, key prudential metrics and RWA",
+    "citation": "urn:reg:bcbs:dis:20",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS21",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS21",
+    "title": "Comparison of modelled and standardised RWA",
+    "citation": "urn:reg:bcbs:dis:21",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS25",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS25",
+    "title": "Composition of capital and TLAC",
+    "citation": "urn:reg:bcbs:dis:25",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS26",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS26",
+    "title": "Capital distribution constraints",
+    "citation": "urn:reg:bcbs:dis:26",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS30",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS30",
+    "title": "Links between financial statements and regulatory exposures",
+    "citation": "urn:reg:bcbs:dis:30",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS31",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS31",
+    "title": "Asset encumbrance",
+    "citation": "urn:reg:bcbs:dis:31",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS35",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS35",
+    "title": "Remuneration",
+    "citation": "urn:reg:bcbs:dis:35",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS40",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS40",
+    "title": "Credit risk",
+    "citation": "urn:reg:bcbs:dis:40",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS42",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS42",
+    "title": "Counterparty credit risk",
+    "citation": "urn:reg:bcbs:dis:42",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS43",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS43",
+    "title": "Securitisation",
+    "citation": "urn:reg:bcbs:dis:43",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS45",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS45",
+    "title": "Sovereign exposures",
+    "citation": "urn:reg:bcbs:dis:45",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS50",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS50",
+    "title": "Market risk",
+    "citation": "urn:reg:bcbs:dis:50",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS51",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS51",
+    "title": "Credit valuation adjustment risk",
+    "citation": "urn:reg:bcbs:dis:51",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS55",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS55",
+    "title": "Cryptoasset exposures",
+    "citation": "urn:reg:bcbs:dis:55",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS60",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS60",
+    "title": "Operational risk",
+    "citation": "urn:reg:bcbs:dis:60",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS70",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS70",
+    "title": "Interest rate risk in the banking book",
+    "citation": "urn:reg:bcbs:dis:70",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS75",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS75",
+    "title": "Macroprudential supervisory measures",
+    "citation": "urn:reg:bcbs:dis:75",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS80",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS80",
+    "title": "Leverage ratio",
+    "citation": "urn:reg:bcbs:dis:80",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS85",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS85",
+    "title": "Liquidity",
+    "citation": "urn:reg:bcbs:dis:85",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-DIS99",
+    "standard": "DIS",
+    "standardTitle": "Disclosure requirements",
+    "chapter": "DIS99",
+    "title": "Worked examples",
+    "citation": "urn:reg:bcbs:dis:99",
+    "domain": "Disclosure"
+  },
+  {
+    "id": "BCBS-LCR10",
+    "standard": "LCR",
+    "standardTitle": "Liquidity Coverage Ratio",
+    "chapter": "LCR10",
+    "title": "Definitions and application",
+    "citation": "urn:reg:bcbs:lcr:10",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-LCR20",
+    "standard": "LCR",
+    "standardTitle": "Liquidity Coverage Ratio",
+    "chapter": "LCR20",
+    "title": "Calculation",
+    "citation": "urn:reg:bcbs:lcr:20",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-LCR30",
+    "standard": "LCR",
+    "standardTitle": "Liquidity Coverage Ratio",
+    "chapter": "LCR30",
+    "title": "High-quality liquid assets",
+    "citation": "urn:reg:bcbs:lcr:30",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-LCR31",
+    "standard": "LCR",
+    "standardTitle": "Liquidity Coverage Ratio",
+    "chapter": "LCR31",
+    "title": "Alternative liquidity approaches",
+    "citation": "urn:reg:bcbs:lcr:31",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-LCR40",
+    "standard": "LCR",
+    "standardTitle": "Liquidity Coverage Ratio",
+    "chapter": "LCR40",
+    "title": "Cash inflows and outflows",
+    "citation": "urn:reg:bcbs:lcr:40",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-LCR90",
+    "standard": "LCR",
+    "standardTitle": "Liquidity Coverage Ratio",
+    "chapter": "LCR90",
+    "title": "Transition",
+    "citation": "urn:reg:bcbs:lcr:90",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-LCR99",
+    "standard": "LCR",
+    "standardTitle": "Liquidity Coverage Ratio",
+    "chapter": "LCR99",
+    "title": "Application guidance",
+    "citation": "urn:reg:bcbs:lcr:99",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-LEV10",
+    "standard": "LEV",
+    "standardTitle": "Leverage ratio",
+    "chapter": "LEV10",
+    "title": "Definitions and application",
+    "citation": "urn:reg:bcbs:lev:10",
+    "domain": "Leverage"
+  },
+  {
+    "id": "BCBS-LEV20",
+    "standard": "LEV",
+    "standardTitle": "Leverage ratio",
+    "chapter": "LEV20",
+    "title": "Calculation",
+    "citation": "urn:reg:bcbs:lev:20",
+    "domain": "Leverage"
+  },
+  {
+    "id": "BCBS-LEV30",
+    "standard": "LEV",
+    "standardTitle": "Leverage ratio",
+    "chapter": "LEV30",
+    "title": "Exposure measurement",
+    "citation": "urn:reg:bcbs:lev:30",
+    "domain": "Leverage"
+  },
+  {
+    "id": "BCBS-LEV40",
+    "standard": "LEV",
+    "standardTitle": "Leverage ratio",
+    "chapter": "LEV40",
+    "title": "Leverage ratio requirements for global systemically important banks",
+    "citation": "urn:reg:bcbs:lev:40",
+    "domain": "Leverage"
+  },
+  {
+    "id": "BCBS-LEV90",
+    "standard": "LEV",
+    "standardTitle": "Leverage ratio",
+    "chapter": "LEV90",
+    "title": "Transition",
+    "citation": "urn:reg:bcbs:lev:90",
+    "domain": "Leverage"
+  },
+  {
+    "id": "BCBS-LEX10",
+    "standard": "LEX",
+    "standardTitle": "Large exposures",
+    "chapter": "LEX10",
+    "title": "Definitions and application",
+    "citation": "urn:reg:bcbs:lex:10",
+    "domain": "Large Exposures"
+  },
+  {
+    "id": "BCBS-LEX20",
+    "standard": "LEX",
+    "standardTitle": "Large exposures",
+    "chapter": "LEX20",
+    "title": "Requirements",
+    "citation": "urn:reg:bcbs:lex:20",
+    "domain": "Large Exposures"
+  },
+  {
+    "id": "BCBS-LEX30",
+    "standard": "LEX",
+    "standardTitle": "Large exposures",
+    "chapter": "LEX30",
+    "title": "Exposure measurement",
+    "citation": "urn:reg:bcbs:lex:30",
+    "domain": "Large Exposures"
+  },
+  {
+    "id": "BCBS-LEX40",
+    "standard": "LEX",
+    "standardTitle": "Large exposures",
+    "chapter": "LEX40",
+    "title": "Large exposure rules for global systemically important banks",
+    "citation": "urn:reg:bcbs:lex:40",
+    "domain": "Large Exposures"
+  },
+  {
+    "id": "BCBS-MAR10",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR10",
+    "title": "Market risk terminology",
+    "citation": "urn:reg:bcbs:mar:10",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR11",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR11",
+    "title": "Definitions and application of market risk",
+    "citation": "urn:reg:bcbs:mar:11",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR12",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR12",
+    "title": "Definition of trading desk",
+    "citation": "urn:reg:bcbs:mar:12",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR20",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR20",
+    "title": "Standardised approach: general provisions and structure",
+    "citation": "urn:reg:bcbs:mar:20",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR21",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR21",
+    "title": "Standardised approach: sensitivities-based method",
+    "citation": "urn:reg:bcbs:mar:21",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR22",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR22",
+    "title": "Standardised approach: default risk capital requirement",
+    "citation": "urn:reg:bcbs:mar:22",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR23",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR23",
+    "title": "Standardised approach: residual risk add-on",
+    "citation": "urn:reg:bcbs:mar:23",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR30",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR30",
+    "title": "Internal models approach: general provisions",
+    "citation": "urn:reg:bcbs:mar:30",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR31",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR31",
+    "title": "Internal models approach: model requirements",
+    "citation": "urn:reg:bcbs:mar:31",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR32",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR32",
+    "title": "Internal models approach: backtesting and P&L attribution test requirements",
+    "citation": "urn:reg:bcbs:mar:32",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR33",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR33",
+    "title": "Internal models approach: capital requirements calculation",
+    "citation": "urn:reg:bcbs:mar:33",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR40",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR40",
+    "title": "Simplified standardised approach",
+    "citation": "urn:reg:bcbs:mar:40",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR50",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR50",
+    "title": "Credit valuation adjustment framework",
+    "citation": "urn:reg:bcbs:mar:50",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR90",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR90",
+    "title": "Transitional arrangements",
+    "citation": "urn:reg:bcbs:mar:90",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MAR99",
+    "standard": "MAR",
+    "standardTitle": "Calculation of RWA for market risk",
+    "chapter": "MAR99",
+    "title": "Guidance on use of the internal models approach",
+    "citation": "urn:reg:bcbs:mar:99",
+    "domain": "Market Risk"
+  },
+  {
+    "id": "BCBS-MGN10",
+    "standard": "MGN",
+    "standardTitle": "Margin requirements",
+    "chapter": "MGN10",
+    "title": "Definitions and application",
+    "citation": "urn:reg:bcbs:mgn:10",
+    "domain": "Margin / Derivatives"
+  },
+  {
+    "id": "BCBS-MGN20",
+    "standard": "MGN",
+    "standardTitle": "Margin requirements",
+    "chapter": "MGN20",
+    "title": "Requirements",
+    "citation": "urn:reg:bcbs:mgn:20",
+    "domain": "Margin / Derivatives"
+  },
+  {
+    "id": "BCBS-MGN90",
+    "standard": "MGN",
+    "standardTitle": "Margin requirements",
+    "chapter": "MGN90",
+    "title": "Transition",
+    "citation": "urn:reg:bcbs:mgn:90",
+    "domain": "Margin / Derivatives"
+  },
+  {
+    "id": "BCBS-NSF10",
+    "standard": "NSF",
+    "standardTitle": "Net stable funding ratio",
+    "chapter": "NSF10",
+    "title": "Definitions and applications",
+    "citation": "urn:reg:bcbs:nsf:10",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-NSF20",
+    "standard": "NSF",
+    "standardTitle": "Net stable funding ratio",
+    "chapter": "NSF20",
+    "title": "Calculation and reporting",
+    "citation": "urn:reg:bcbs:nsf:20",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-NSF30",
+    "standard": "NSF",
+    "standardTitle": "Net stable funding ratio",
+    "chapter": "NSF30",
+    "title": "Available and required stable funding",
+    "citation": "urn:reg:bcbs:nsf:30",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-NSF99",
+    "standard": "NSF",
+    "standardTitle": "Net stable funding ratio",
+    "chapter": "NSF99",
+    "title": "Definitions and applications",
+    "citation": "urn:reg:bcbs:nsf:99",
+    "domain": "Liquidity"
+  },
+  {
+    "id": "BCBS-OPE10",
+    "standard": "OPE",
+    "standardTitle": "Calculation of RWA for operational risk",
+    "chapter": "OPE10",
+    "title": "Definitions and application",
+    "citation": "urn:reg:bcbs:ope:10",
+    "domain": "Operational Risk"
+  },
+  {
+    "id": "BCBS-OPE25",
+    "standard": "OPE",
+    "standardTitle": "Calculation of RWA for operational risk",
+    "chapter": "OPE25",
+    "title": "Standardised approach",
+    "citation": "urn:reg:bcbs:ope:25",
+    "domain": "Operational Risk"
+  },
+  {
+    "id": "BCBS-RBC20",
+    "standard": "RBC",
+    "standardTitle": "Risk-based capital requirements",
+    "chapter": "RBC20",
+    "title": "Calculation of minimum risk-based capital requirements",
+    "citation": "urn:reg:bcbs:rbc:20",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-RBC25",
+    "standard": "RBC",
+    "standardTitle": "Risk-based capital requirements",
+    "chapter": "RBC25",
+    "title": "Boundary between the banking book and the trading book",
+    "citation": "urn:reg:bcbs:rbc:25",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-RBC30",
+    "standard": "RBC",
+    "standardTitle": "Risk-based capital requirements",
+    "chapter": "RBC30",
+    "title": "Buffers above the regulatory minimum",
+    "citation": "urn:reg:bcbs:rbc:30",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-RBC40",
+    "standard": "RBC",
+    "standardTitle": "Risk-based capital requirements",
+    "chapter": "RBC40",
+    "title": "Systemically important bank buffers",
+    "citation": "urn:reg:bcbs:rbc:40",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-RBC90",
+    "standard": "RBC",
+    "standardTitle": "Risk-based capital requirements",
+    "chapter": "RBC90",
+    "title": "Transitional arrangements",
+    "citation": "urn:reg:bcbs:rbc:90",
+    "domain": "Capital"
+  },
+  {
+    "id": "BCBS-SCO10",
+    "standard": "SCO",
+    "standardTitle": "Scope and definitions",
+    "chapter": "SCO10",
+    "title": "Introduction",
+    "citation": "urn:reg:bcbs:sco:10",
+    "domain": "Scope"
+  },
+  {
+    "id": "BCBS-SCO30",
+    "standard": "SCO",
+    "standardTitle": "Scope and definitions",
+    "chapter": "SCO30",
+    "title": "Banking, securities and other financial subsidiaries",
+    "citation": "urn:reg:bcbs:sco:30",
+    "domain": "Scope"
+  },
+  {
+    "id": "BCBS-SCO40",
+    "standard": "SCO",
+    "standardTitle": "Scope and definitions",
+    "chapter": "SCO40",
+    "title": "Global systemically important banks",
+    "citation": "urn:reg:bcbs:sco:40",
+    "domain": "Scope"
+  },
+  {
+    "id": "BCBS-SCO50",
+    "standard": "SCO",
+    "standardTitle": "Scope and definitions",
+    "chapter": "SCO50",
+    "title": "Domestic systemically important banks",
+    "citation": "urn:reg:bcbs:sco:50",
+    "domain": "Scope"
+  },
+  {
+    "id": "BCBS-SCO60",
+    "standard": "SCO",
+    "standardTitle": "Scope and definitions",
+    "chapter": "SCO60",
+    "title": "Cryptoasset exposures",
+    "citation": "urn:reg:bcbs:sco:60",
+    "domain": "Scope"
+  },
+  {
+    "id": "BCBS-SCO95",
+    "standard": "SCO",
+    "standardTitle": "Scope and definitions",
+    "chapter": "SCO95",
+    "title": "Glossary and abbreviations",
+    "citation": "urn:reg:bcbs:sco:95",
+    "domain": "Scope"
+  },
+  {
+    "id": "BCBS-SRP10",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP10",
+    "title": "Importance of supervisory review",
+    "citation": "urn:reg:bcbs:srp:10",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP20",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP20",
+    "title": "Four key principles",
+    "citation": "urn:reg:bcbs:srp:20",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP30",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP30",
+    "title": "Risk management",
+    "citation": "urn:reg:bcbs:srp:30",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP31",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP31",
+    "title": "Interest rate risk in the banking book",
+    "citation": "urn:reg:bcbs:srp:31",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP32",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP32",
+    "title": "Credit risk",
+    "citation": "urn:reg:bcbs:srp:32",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP33",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP33",
+    "title": "Market risk",
+    "citation": "urn:reg:bcbs:srp:33",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP35",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP35",
+    "title": "Compensation practices",
+    "citation": "urn:reg:bcbs:srp:35",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP36",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP36",
+    "title": "Risk data aggregation and risk reporting",
+    "citation": "urn:reg:bcbs:srp:36",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP50",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP50",
+    "title": "Liquidity monitoring metrics",
+    "citation": "urn:reg:bcbs:srp:50",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP90",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP90",
+    "title": "Transition",
+    "citation": "urn:reg:bcbs:srp:90",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP98",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP98",
+    "title": "Application guidance on interest rate risk in the banking book",
+    "citation": "urn:reg:bcbs:srp:98",
+    "domain": "Supervisory Review"
+  },
+  {
+    "id": "BCBS-SRP99",
+    "standard": "SRP",
+    "standardTitle": "Supervisory review process",
+    "chapter": "SRP99",
+    "title": "Application guidance",
+    "citation": "urn:reg:bcbs:srp:99",
+    "domain": "Supervisory Review"
+  }
+]
