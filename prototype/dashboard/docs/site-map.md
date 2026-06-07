@@ -49,7 +49,7 @@ Target departments per PAX role brief (§3 §2). Coverage assessed 2026-05-12.
 | Department | Coverage status | Page(s) | Notes / Spec (if Scaffolded or Missing) |
 |---|---|---|---|
 | CEO Office | **Covered** | `home.html`, `decision.html`, `escalations.html` | Functional launcher + decisions drill-down; escalations page uses legacy shell |
-| Finance | **Scaffolded** | `finance.html` | Improved in this PR. Primary widget: capital/liquidity metrics. Primary data source: `/api/state → capitalPositions, liquidityMetrics`. Primary user action: review Tier 1 capital position and LCR/NSFR ratios. Full BA-325/BA-700 derivation pipeline deferred to M-phase (Camille + Bea). |
+| Finance | **Scaffolded** | `finance.html` | Improved in this PR. Primary widget: capital/liquidity metrics. Primary data source: `/api/state → capitalPositions, liquidityMetrics`. Primary user action: review Tier 1 capital position and LCR/NSFR ratios. Full BA-110/BA-700 derivation pipeline deferred to M-phase (Camille + Bea). |
 | Risk | **Scaffolded** | `risk.html` | Improved in this PR. Primary widget: RAS cluster B1–B5 traffic lights. Primary data source: `/api/state → rasMetrics, stressTestResults`. Primary user action: review appetite-statement status and open risk decisions. |
 | Markets / Trading | **Covered** | `markets/fx/desk.html` | Functional FX desk with RFQ and live rates. JSE bonds/equities desk and OTC IRD desk are Missing — see below. |
 | Compliance / Legal | **Covered** | `compliance.html`, `obligations.html`, `forward-obligations.html`, `policies.html` | Multiple pages; `compliance.html` improved in this PR. |
@@ -81,7 +81,7 @@ current structure; Noa recommends adding AgentOps and Party/Identity groups when
 | Nav group | Pages included | Notes |
 |---|---|---|
 | Executive | `home.html`, decisions (`index.html#decisionsOpen`), `escalations.html` | CEO-only pages; decisions is the primary action surface |
-| Finance | `finance.html` | Single page today; BA-325/BA-700 sub-pages to follow |
+| Finance | `finance.html` | Single page today; BA-110/BA-700 sub-pages to follow |
 | Risk | `risk.html` | Single page today; ICAAP/ILAAP sub-pages to follow |
 | Markets & Trading | `markets/fx/desk.html`, `onboarding.html` | FX desk only; bonds/equities and IRD desks are roadmap |
 | Compliance & Legal | `compliance.html`, `obligations.html`, `forward-obligations.html`, `policies.html` | Richest department coverage |
