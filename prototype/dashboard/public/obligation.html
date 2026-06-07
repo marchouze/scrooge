@@ -44,7 +44,9 @@
     .od-para-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-3); }
     .od-para-item { display:grid; grid-template-columns:3.5em 1fr; gap:var(--space-3); align-items:start; }
     .od-para-num { font-family:var(--font-mono); font-size:0.85em; font-weight:600; color:var(--color-accent); padding-top:2px; }
-    .od-para-text { font:var(--text-body); line-height:1.75; white-space:pre-wrap; word-break:break-word; }
+    .od-para-text { font:var(--text-body); line-height:1.75; word-break:break-word; }
+    .od-sub { margin-top:var(--space-2); }
+    .od-para-text > .od-sub:first-child { margin-top:0; }
   </style>
 </head>
 <body>
@@ -78,6 +80,29 @@
       }
 
       function mi(label, val) { return val ? `<div class="od-mi"><span class="od-ml">${SC.esc(label)}</span><span class="od-mv">${val}</span></div>` : ""; }
+
+      // Break a flat paragraph into its enumerated sub-points — (1)/(2) at one
+      // level, (a)/(b) one deeper, romans (ii)/(iii) deeper still — and indent
+      // each. Markers must follow start/space/punctuation (not a letter) so
+      // "desk(s)", "(IMA)", "(P&L)" stay inline. `raw` is already HTML-escaped.
+      function formatProvisionText(raw) {
+        const lines = raw
+          .split(/(?<=[\s:;.,]|^)(?=\((?:\d+|[a-z]|[ivx]{2,4})\))/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (lines.length <= 1) return `<div>${raw}</div>`;
+        return lines
+          .map((line) => {
+            const m = line.match(/^\((\d+|[a-z]|[ivx]{2,4})\)/);
+            let depth = 0;
+            if (m) {
+              const tok = m[1];
+              depth = /^\d+$/.test(tok) ? 1 : tok.length > 1 ? 3 : 2;
+            }
+            return `<div class="od-sub" style="padding-left:${depth * 1.6}em">${line}</div>`;
+          })
+          .join("");
+      }
 
       function render(d) {
         const ref = d.seed || {};
@@ -130,7 +155,7 @@
               const paras = g.paragraphs.map(p => `
                 <li class="od-para-item">
                   <span class="od-para-num">${SC.esc(p.paragraph)}</span>
-                  <div class="od-para-text">${SC.esc(p.text)}</div>
+                  <div class="od-para-text">${formatProvisionText(SC.esc(p.text))}</div>
                 </li>`).join('');
               return `<li>
                 ${g.heading ? `<div class="od-hg-head"><h4 class="od-hg-title">${SC.esc(g.heading)}</h4><span class="od-hg-range">${SC.esc(range)}</span></div>` : ''}
