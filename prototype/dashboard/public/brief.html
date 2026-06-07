@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brief — Scrooge Bank</title>
+  <meta name="description" content="Brief drill-down — a single AgentBriefIssued event with its directive, expected outputs and run lifecycle (D-RMS-PHASE-1, Phase 2 Block A).">
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    /* Breadcrumb (matches /decisions and /rms pattern). */
+    .breadcrumbs { font: var(--text-caption); color: var(--color-text-secondary); margin-bottom: var(--space-3); }
+    .breadcrumbs a { color: var(--color-text-secondary); text-decoration: underline; cursor: pointer; }
+    .breadcrumbs a:hover { color: var(--color-text-primary); }
+    .breadcrumbs .sep { margin: 0 0.5em; opacity: 0.6; }
+    .breadcrumbs .leaf { color: var(--color-text-primary); font-weight: 600; }
+    .brief-title { font: var(--text-h2); color: var(--color-text-primary); margin: 0 0 var(--space-2); }
+    .brief-meta-strip { display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center; font:var(--text-caption); color:var(--color-text-secondary); margin-bottom:var(--space-4); }
+    .pill { display:inline-block; padding:2px 8px; border-radius:var(--radius-sm); font:var(--text-caption); font-weight:600; background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .band { margin-bottom:var(--space-6); }
+    .band > h2 { font:var(--text-h3); color:var(--color-text-primary); margin:0 0 var(--space-3); }
+    .drill-card { background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-4) var(--space-5); box-shadow:var(--shadow-sm); }
+    .kv-grid { display:grid; grid-template-columns:auto 1fr; gap:var(--space-2) var(--space-4); font:var(--text-body); }
+    .kv-label { font-weight:600; color:var(--color-text-secondary); white-space:nowrap; }
+    .directive-pre { white-space:pre-wrap; background:var(--color-surface); padding:var(--space-3); border-radius:var(--radius-sm); overflow:auto; font-size:0.85rem; border:1px solid var(--color-border); }
+    .runs-list { list-style:none; margin:0; padding:0; }
+    .runs-list > li { padding:var(--space-3) 0; border-bottom:1px solid var(--color-border); }
+    .runs-list > li:last-child { border-bottom:none; }
+    .muted { color:var(--color-text-secondary); }
+    .small { font-size:0.85rem; }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <nav id="briefBreadcrumbs" class="breadcrumbs" aria-label="Breadcrumb"></nav>
+    <div class="page-body" style="padding: 0 var(--space-6) var(--space-6);">
+      <div id="briefContent"><p class="muted">Loading…</p></div>
+    </div>
+  </main>
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>initShell({ title: "Briefs" });</script>
+  <script src="/brief.js"></script>
+</body>
+</html>
