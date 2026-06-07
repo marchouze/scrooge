@@ -19,7 +19,7 @@
 | BA 325 — LCR | SARB-PA/ba-returns/ba-325.md | STUB | resbank.co.za |
 | BA 326 — NSFR | SARB-PA/ba-returns/ba-326.md | STUB | resbank.co.za |
 | BA 330 — Large exposures | SARB-PA/ba-returns/ba-330.md | STUB | resbank.co.za |
-| Currency and Exchanges Manual for Authorised Dealers (Excon) | SARB-PA/excon-manual.md | STUB | resbank.co.za |
+| Currency and Exchanges Manual for Authorised Dealers (Excon) | [SARB-PA/excon-manual.md](SARB-PA/excon-manual.md) | **POPULATED** | resbank.co.za |
 
 ## Joint Standards (PA + FSCA)
 
@@ -161,7 +161,7 @@
 
 ## Status summary
 
-- **POPULATED:** 6 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC) — as at 2026-05-12.
+- **POPULATED:** 7 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual) — as at 2026-06-07.
 - **STUB:** ~60 — scaffolded for population per the regulatory-change management cadence.
 - **Total instruments tracked:** ~64.
 
