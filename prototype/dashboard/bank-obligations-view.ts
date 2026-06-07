@@ -20,6 +20,7 @@ import {
   listKnowledgeBaseObligations,
 } from "../platform/obligations/knowledge-base";
 import { type BankObligation, loadBankObligations } from "../platform/obligations/projection";
+import { getDb } from "../platform/regulatory/graph/db";
 
 /** A reference row from the committed obligations seed (the authored origin). */
 export interface ObligationSeedRow {
@@ -175,12 +176,23 @@ export function getUnadoptedObligationsView(
   };
 }
 
+export interface AtomicProvision {
+  id: string;
+  label: string;
+  actionSummary: string;
+  obligationType: string;
+  actor: string;
+  paragraph: string;
+  section: string;
+}
+
 export interface ObligationDetail {
   id: string;
   adopted: boolean;
   seed: ObligationSeedRow | null;
   projection: BankObligation | null;
   history: Array<{ kind: string; at: string; detail?: string; status?: string }>;
+  provisions: AtomicProvision[];
 }
 
 /** Full detail for one obligation: reference (seed) + projection state + lifecycle history. */
@@ -232,5 +244,36 @@ export function getObligationDetail(
   }
   history.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 
-  return { id, adopted: projection?.adopted ?? false, seed, projection, history };
+  // For BCBS chapter-level obligations (BCBS-CRE45, BCBS-SCO10, etc.) fetch
+  // the atomic obligation nodes from the graph DB so the detail page can show
+  // the actual requirement text (actionSummary) rather than just the chapter title.
+  const provisions: AtomicProvision[] = [];
+  const chapterCode = id.startsWith("BCBS-") ? id.slice(5) : null;
+  if (chapterCode) {
+    type NodeRow = { id: string; label: string; metadata: string | null };
+    const rows = getDb()
+      .prepare(
+        `SELECT id, label, metadata FROM graph_nodes
+         WHERE node_type = 'Obligation'
+           AND json_extract(metadata, '$.chapter') = ?
+         ORDER BY json_extract(metadata, '$.paragraph'),
+                  CAST(json_extract(metadata, '$.atomicSeq') AS INTEGER)`,
+      )
+      .all(chapterCode) as NodeRow[];
+    for (const row of rows) {
+      const m = (row.metadata ? JSON.parse(row.metadata) : {}) as Record<string, unknown>;
+      const str = (v: unknown) => (typeof v === "string" ? v : "");
+      provisions.push({
+        id: row.id,
+        label: row.label,
+        actionSummary: str(m.actionSummary),
+        obligationType: str(m.obligationType),
+        actor: str(m.actor),
+        paragraph: str(m.paragraph),
+        section: str(m.section),
+      });
+    }
+  }
+
+  return { id, adopted: projection?.adopted ?? false, seed, projection, history, provisions };
 }
