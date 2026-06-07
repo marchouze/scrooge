@@ -11,7 +11,7 @@
 
 ## Scope
 
-The leverage ratio is a non-risk-based backstop: Tier 1 capital divided by a total exposure measure (on-balance-sheet + derivatives + SFTs + off-balance-sheet). The bank's `ba-700-leverage-ratio.ts` engine computes it; the RAS sets green/amber/red appetite bands above the regulatory minimum.
+The leverage ratio is a non-risk-based backstop: Tier 1 capital divided by a total exposure measure (on-balance-sheet + derivatives + SFTs + off-balance-sheet). The bank's `ba-400-leverage-ratio.ts` engine computes it; the RAS sets green/amber/red appetite bands above the regulatory minimum.
 
 ## Key provisions (paragraph-level)
 
@@ -29,4 +29,4 @@ The leverage ratio is a non-risk-based backstop: Tier 1 capital divided by a tot
 
 ## Live engine linkage
 
-`prototype/platform/reporting/ba-700-leverage-ratio.ts`. The `leverage.threshold.{green,amber,red}` RAS bands cite `lev:20.7` via `BASEL_PROVISION_LINKAGE`.
+`prototype/platform/reporting/ba-400-leverage-ratio.ts`. The `leverage.threshold.{green,amber,red}` RAS bands cite `lev:20.7` via `BASEL_PROVISION_LINKAGE`.
