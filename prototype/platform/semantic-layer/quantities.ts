@@ -106,7 +106,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula: "CommonEquityTier1Capital / RiskWeightedAssets",
     regulatorySource:
       "Basel III / Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 23 + Reg 38(2)",
-    sarbReturnCell: "BA 700 — CET1 ratio (%) exit cell",
+    sarbReturnCell: "BA 100 — CET1 ratio (%) exit cell",
     dataLineage: [
       "capital-stack projection",
       "BankAccountOpened",
@@ -125,7 +125,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula: "Tier1Capital / TotalExposureMeasure",
     regulatorySource:
       "Basel III / Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 38(12) — minimum 3%",
-    sarbReturnCell: "BA 700 — Leverage ratio (%) exit cell",
+    sarbReturnCell: "BA 100 — Leverage ratio (%) exit cell",
     dataLineage: ["capital-stack projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Camille (Chief Financial Officer, governance)",
@@ -139,7 +139,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula: "sum(CreditRwa) + sum(MarketRwa) + sum(OperationalRwa)",
     regulatorySource:
       "Basel III / BCBS credit-risk framework + FRTB + SMA / Regulations Relating to Banks Reg 38",
-    sarbReturnCell: "BA 700 — Total Risk-Weighted Assets",
+    sarbReturnCell: "BA 100 — Total Risk-Weighted Assets",
     dataLineage: [
       "rwa projection",
       "OrderApprovedAtGateway",
@@ -159,7 +159,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "(CommonEquityTier1Capital + AdditionalTier1Capital + Tier2Capital) / RiskWeightedAssets",
     regulatorySource:
       "Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 38(2) — Total capital ≥ 8%",
-    sarbReturnCell: "BA 700 — Total capital ratio (%) exit cell",
+    sarbReturnCell: "BA 100 — Total capital ratio (%) exit cell",
     dataLineage: ["capital-stack projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Camille (Chief Financial Officer, governance)",
@@ -178,7 +178,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "HqlaStock / max(LcrCashOutflows30D - min(LcrCashInflows30D, 0.75*LcrCashOutflows30D), 0.25*LcrCashOutflows30D)",
     regulatorySource:
       "Basel III (BCBS D295) / Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 26(2) — LCR ≥ 100%",
-    sarbReturnCell: "BA 325 — Liquidity Coverage Ratio (%) exit cell",
+    sarbReturnCell: "BA 110 — Liquidity Coverage Ratio (%) exit cell",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Eitan (Treasurer, governance)",
@@ -192,7 +192,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula: "AvailableStableFunding / RequiredStableFunding",
     regulatorySource:
       "Basel III (BCBS d295-nsfr) / Regulations Relating to Banks Reg 26A — NSFR ≥ 100%",
-    sarbReturnCell: "BA 326 — Net Stable Funding Ratio (%) exit cell",
+    sarbReturnCell: "BA 120 — Net Stable Funding Ratio (%) exit cell",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
     owner: "Eitan (Treasurer, governance)",
@@ -207,7 +207,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "HqlaLevel1 + min(HqlaLevel2A*0.85, 0.40*totalHqla) + min(HqlaLevel2B*assetFactor, 0.15*totalHqla)",
     regulatorySource:
       "BCBS D295 §47–§55 / Regulations Relating to Banks Reg 26(7) — HQLA composition and haircuts",
-    sarbReturnCell: "BA 325 — HQLA stock (LCR numerator)",
+    sarbReturnCell: "BA 110 — HQLA stock (LCR numerator)",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "daily",
     owner: "Eitan (Treasurer, governance)",
@@ -222,7 +222,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "max(LcrCashOutflows30D - min(LcrCashInflows30D, 0.75*LcrCashOutflows30D), 0.25*LcrCashOutflows30D)",
     regulatorySource:
       "BCBS D295 §69–§142 / Regulations Relating to Banks Reg 26(8)+(11) — outflow run-off rates + 75% inflow cap",
-    sarbReturnCell: "BA 325 — Total net cash outflows (LCR denominator)",
+    sarbReturnCell: "BA 110 — Total net cash outflows (LCR denominator)",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "daily",
     owner: "Eitan (Treasurer, governance)",
@@ -335,7 +335,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "quantile(PnLDistribution, 0.99) over 1 trading day holding period; historical simulation or parametric",
     regulatorySource:
       "Basel III FRTB / Regulations Relating to Banks Reg 38 — internal models approach IMA",
-    sarbReturnCell: "BA 350 — VaR (99%, 1-day)",
+    sarbReturnCell: "BA 310 — VaR (99%, 1-day)",
     dataLineage: [
       "market-risk-projection",
       "OrderApprovedAtGateway",
@@ -355,7 +355,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
       "quantile(PnLDistribution, 0.99) over 1-day holding period using 12-month stressed market data window",
     regulatorySource:
       "Basel 2.5 / BCBS 158 / Regulations Relating to Banks Reg 38 — stressed VaR capital charge",
-    sarbReturnCell: "BA 350 — Stressed VaR",
+    sarbReturnCell: "BA 310 — Stressed VaR",
     dataLineage: ["market-risk-projection", "BacktestRun", "MarkToMarketObserved"],
     reportingFrequency: "daily",
     owner: "Helena (Chief Risk Officer, governance)",
@@ -369,8 +369,8 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula:
       "sum(position.dv01) = sum(-(dPrice/dYield) * notional * 0.0001) across all interest-rate positions",
     regulatorySource:
-      "BCBS FRTB SA §330 — sensitivity-based method; SARB BA 350 interest-rate risk",
-    sarbReturnCell: "BA 350 — DV01 sensitivity",
+      "BCBS FRTB SA §330 — sensitivity-based method; SARB BA 310 interest-rate risk",
+    sarbReturnCell: "BA 310 — DV01 sensitivity",
     dataLineage: ["market-risk-projection", "OrderApprovedAtGateway", "MarkToMarketObserved"],
     reportingFrequency: "daily",
     owner: "Helena (Chief Risk Officer, governance)",
@@ -384,7 +384,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula:
       "sum(position.cs01) = sum(-(dPrice/dCreditSpread) * notional * 0.0001) across all credit positions",
     regulatorySource: "BCBS FRTB SA §330 — sensitivity-based method, CSR non-securitisation bucket",
-    sarbReturnCell: "BA 350 — CS01 credit spread sensitivity",
+    sarbReturnCell: "BA 310 — CS01 credit spread sensitivity",
     dataLineage: ["market-risk-projection", "OrderApprovedAtGateway", "MarkToMarketObserved"],
     reportingFrequency: "daily",
     owner: "Helena (Chief Risk Officer, governance)",

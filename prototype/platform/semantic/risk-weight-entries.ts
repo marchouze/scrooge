@@ -4,7 +4,7 @@
 //
 // Extends the Slice-1 base registry (`entries.ts`) and the Slice-3 (LCR)
 // liquidity registry (`liquidity-entries.ts`) with the minimum vocabulary
-// the RWA engine + downstream BA 700 (capital-adequacy) generator need to
+// the RWA engine + downstream BA 100 (capital-adequacy) generator need to
 // compute Pillar-1 risk-weighted assets under the **standardised approach**.
 //
 // Scope (per W2 pack §3 Slice 3 + dispatch brief):
@@ -156,13 +156,13 @@ export const creditRwa: SemanticEntry = {
     "sum(exposure.eadMinor * lookup(RiskWeight, exposure) for exposure in creditExposures where {entity, asOf <= asOfQuery})",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Credit risk-weighted exposures — standardised approach (Pillar 1)",
       side: "positive",
-      note: "Aggregated to the BA 700 capital-adequacy summary via Reporting Slice 4 generator. BA 400 (credit risk return) decomposes the same total into per-exposure-class sub-lines.",
+      note: "Aggregated to the BA 100 capital-adequacy summary via Reporting Slice 4 generator. BA 300 (credit risk return) decomposes the same total into per-exposure-class sub-lines.",
     },
     {
-      form: "BA 400",
+      form: "BA 300",
       line: "Credit risk — standardised approach total RWA",
       side: "positive",
       note: "Per-exposure-class decomposition via the credit-risk return generator (Slice 4+).",
@@ -225,16 +225,16 @@ export const marketRwa: SemanticEntry = {
     "12.5 * sum(position.notionalMinor * marketRiskWeight(riskType, residualMaturity) for position in tradingBookPositions where {entity, asOf <= asOfQuery})",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Market risk-weighted exposures — standardised approach (Pillar 1)",
       side: "positive",
-      note: "Aggregated to the BA 700 capital-adequacy summary via Reporting Slice 4 generator. BA 350 decomposes the same total into per-risk-type sub-lines.",
+      note: "Aggregated to the BA 100 capital-adequacy summary via Reporting Slice 4 generator. BA 310 decomposes the same total into per-risk-type sub-lines.",
     },
     {
-      form: "BA 350",
+      form: "BA 310",
       line: "Market risk — standardised approach total RWA",
       side: "positive",
-      note: "Per-risk-type decomposition via the market-risk return generator (Reporting Slice 5 — BA 350).",
+      note: "Per-risk-type decomposition via the market-risk return generator (Reporting Slice 5 — BA 310).",
     },
   ],
   citations: [
@@ -303,10 +303,10 @@ export const operationalRwa: SemanticEntry = {
   formula: "12.5 * businessIndicatorComponent(BI) * internalLossMultiplier(ILM = 1 build-phase)",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Operational risk-weighted exposures — standardised approach (Pillar 1)",
       side: "positive",
-      note: "Aggregated to the BA 700 capital-adequacy summary via Reporting Slice 4 generator. BA 340 carries the per-business-line decomposition.",
+      note: "Aggregated to the BA 100 capital-adequacy summary via Reporting Slice 4 generator. BA 340 carries the per-business-line decomposition.",
     },
     {
       form: "BA 340",
@@ -347,7 +347,7 @@ export const operationalRwa: SemanticEntry = {
 /**
  * `TotalRwa` — sum of credit + market + operational + CVA RWAs. The
  * denominator of every Pillar-1 capital ratio (CET1, AT1, T2). Reported
- * on BA 700 capital-adequacy summary.
+ * on BA 100 capital-adequacy summary.
  *
  * v0.1 sums credit + market + operational; CVA is treated as zero
  * placeholder pending Reporting Slice-4 BA 600 build (CVA exists as its
@@ -364,7 +364,7 @@ export const totalRwa: SemanticEntry = {
   id: "TotalRwa",
   version: "v0.1",
   description:
-    "Total Pillar-1 risk-weighted assets — sum of credit + market + operational + CVA RWAs. Denominator of every Pillar-1 capital ratio. Reported on BA 700.",
+    "Total Pillar-1 risk-weighted assets — sum of credit + market + operational + CVA RWAs. Denominator of every Pillar-1 capital ratio. Reported on BA 100.",
   units: "money-minor",
   dimensions: ["currency", "rwaApproach"],
   projection: "rwa-projection",
@@ -372,10 +372,10 @@ export const totalRwa: SemanticEntry = {
     "max(CreditRwa + MarketRwa + OperationalRwa + CvaRwa, 0.725 * standardisedRwa) — output floor (no-op at v0.1 since engine IS standardised)",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Total risk-weighted exposures (Pillar-1 denominator)",
       side: "positive",
-      note: "Total RWA — denominator of the BA 700 capital ratios. Reporting Slice 4 BA 700 generator consumes this.",
+      note: "Total RWA — denominator of the BA 100 capital ratios. Reporting Slice 4 BA 100 generator consumes this.",
     },
   ],
   citations: [
@@ -404,13 +404,13 @@ export const totalRwa: SemanticEntry = {
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,
   notes:
-    "Bank-licence-bound (`Hoz Bank Limited`) on solo basis; consolidated reading via `Hoz Group Limited` per `ORG-BNK-ICAAP-CONS` consolidated supervision. Reporting Slice 4 (BA 700) is the primary downstream consumer — defines the API contract via `RwaEngineOutput` shape from `prototype/platform/risk/rwa-engine.ts`.",
+    "Bank-licence-bound (`Hoz Bank Limited`) on solo basis; consolidated reading via `Hoz Group Limited` per `ORG-BNK-ICAAP-CONS` consolidated supervision. Reporting Slice 4 (BA 100) is the primary downstream consumer — defines the API contract via `RwaEngineOutput` shape from `prototype/platform/risk/rwa-engine.ts`.",
 };
 
 /**
  * Slice-3 risk-weight + RWA semantic entries, exported as a single array
  * for ease of registry construction in tests + downstream consumers
- * (Reporting Slice-4 BA 700 generator, future BA 350 + BA 340 + BA 400
+ * (Reporting Slice-4 BA 100 generator, future BA 310 + BA 340 + BA 300
  * generators).
  */
 export const SLICE_3_RWA_ENTRIES: readonly SemanticEntry[] = [

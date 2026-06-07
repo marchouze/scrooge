@@ -80,7 +80,7 @@
 //   Principle 1 — Events are the only source of truth.
 //   Principle 2 — Single-graph discipline (each projection traces to the
 //     same source events).
-//   BCBS D295 §50 (HQLA classification), BA 325 (LCR), BA 326 (NSFR).
+//   BCBS D295 §50 (HQLA classification), BA 110 (LCR), BA 120 (NSFR).
 //
 // Author: Atlas (Core banking platform architect, engineering)
 

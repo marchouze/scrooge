@@ -5,15 +5,15 @@
 // Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22)
 // Citations:
 //   BCBS D295 (Basel III LCR standard, Jan 2013) §II.A — HQLA tiers
-//   SARB BA 325 — Liquidity Coverage Ratio return
+//   SARB BA 110 — Liquidity Coverage Ratio return
 //   Regulations Relating to Banks Reg 26 — LCR
 //   Principle 2 — single-graph discipline (policy → procedure → system capability)
 //
 // ## Purpose
 //
-// Moves the HQLA account classification from the BA 325 generator's hard-coded
+// Moves the HQLA account classification from the BA 110 generator's hard-coded
 // lookup into a first-class COA attribute. Each account entry carries an optional
-// `hqlaLevel` field ("level-1" | "level-2a" | "level-2b") that the BA 325
+// `hqlaLevel` field ("level-1" | "level-2a" | "level-2b") that the BA 110
 // generator reads dynamically, applying Basel III haircuts by level:
 //   - level-1:  0% haircut  (100% contribution)
 //   - level-2a: 15% haircut (85% contribution)  per BCBS D295 §52 / Reg 26(7)(b)
@@ -26,7 +26,7 @@
 //   (b) the Zod schema for runtime validation (`CoaAccountEntrySchema`),
 //   (c) the typed account registry (`COA_ACCOUNTS`).
 //
-// Downstream consumers (BA 325 generator, BA 100, reporting) import from here.
+// Downstream consumers (BA 110 generator, BA 600, reporting) import from here.
 // The `chart-of-accounts.json` flat file is the simplified seed used by some
 // GL modules; the typed registry here is the authoritative form.
 //
@@ -95,8 +95,8 @@
 
 import { z } from "zod";
 
-import type { AccountLiquidityClassification, HqlaLevel } from "../reporting/ba-325-lcr";
-import type { AccountCapitalClassification, CapitalTier } from "../reporting/ba-700-capital";
+import type { AccountCapitalClassification, CapitalTier } from "../reporting/ba-100-capital";
+import type { AccountLiquidityClassification, HqlaLevel } from "../reporting/ba-110-lcr";
 
 // ---------------------------------------------------------------------------
 // TypeScript type
@@ -106,11 +106,11 @@ import type { AccountCapitalClassification, CapitalTier } from "../reporting/ba-
  * A single account entry in the chart of accounts.
  *
  * The `hqlaLevel` field is the key addition in G-4. It marks which Basel III
- * HQLA tier an account contributes to, enabling the BA 325 generator to derive
+ * HQLA tier an account contributes to, enabling the BA 110 generator to derive
  * its classification map directly from the COA rather than a separate lookup.
  *
  * Citations:
- *   D-HQLA-COA-CLASSIFICATION; BCBS D295 §II.A; SARB BA 325; Reg 26(7).
+ *   D-HQLA-COA-CLASSIFICATION; BCBS D295 §II.A; SARB BA 110; Reg 26(7).
  */
 export interface CoaAccountEntry {
   /** Stable GL account identifier. Convention: ACC-<TYPE><CATEGORY>-<NNN>. */
@@ -149,27 +149,27 @@ export interface CoaAccountEntry {
   readonly currency?: string;
   /**
    * HQLA tier per BCBS D295 §49–§54 / Reg 26(7).
-   * Absent = not HQLA-eligible; excluded from BA 325 HQLA stock scan.
+   * Absent = not HQLA-eligible; excluded from BA 110 HQLA stock scan.
    *
    * - "level-1"  → 0% haircut (central-bank reserves, 0%-RW sovereign)
    * - "level-2a" → 15% haircut (qualifying sovereign/covered bonds/corporates)
    * - "level-2b" → 25–50% haircut (qualifying equities / RMBS / corporates)
    *
    * Authority: D-HQLA-COA-CLASSIFICATION; BCBS D295 §II.A (Jan 2013);
-   *            SARB BA 325; Regulations Relating to Banks Reg 26(7).
+   *            SARB BA 110; Regulations Relating to Banks Reg 26(7).
    */
   readonly hqlaLevel?: HqlaLevel;
   /**
-   * Sub-category label for BA 325 line rendering.
+   * Sub-category label for BA 110 line rendering.
    * Only meaningful when `hqlaLevel` is set.
    * Example: "level-1.central-bank-reserves".
-   * Authority: D-HQLA-COA-CLASSIFICATION; SARB BA 325.
+   * Authority: D-HQLA-COA-CLASSIFICATION; SARB BA 110.
    */
   readonly hqlaSubCategory?: string;
   /**
    * Per-asset haircut factor for level-2b accounts per BCBS D295 §54.
    * Minimum 0.50 for equities/non-RMBS; 0.25 for RMBS.
-   * Unset defaults to 0.50 in the BA 325 generator.
+   * Unset defaults to 0.50 in the BA 110 generator.
    * Only meaningful when `hqlaLevel === "level-2b"`.
    * Authority: D-HQLA-COA-CLASSIFICATION; BCBS D295 §54.
    */
@@ -182,7 +182,7 @@ export interface CoaAccountEntry {
    * - "at1"  → Additional Tier 1 (perpetual AT1 instruments, contingent capital)
    * - "t2"   → Tier 2 (subordinated debt ≥5yr, qualifying general provisions)
    *
-   * Absent = not a capital-stack account; excluded from BA 700 capital fold.
+   * Absent = not a capital-stack account; excluded from BA 100 capital fold.
    *
    * Citation: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8); BCBS Basel III §50–§57.
    * Placeholder entries added per D-DATA-QUALITY-CROSS-DOMAIN-V1 pending
@@ -190,16 +190,16 @@ export interface CoaAccountEntry {
    */
   readonly capitalTier?: CapitalTier;
   /**
-   * Sub-category label for BA 700 line rendering.
+   * Sub-category label for BA 100 line rendering.
    * Only meaningful when `capitalTier` is set.
    * Example: "t2.subordinated-debt", "cet1.paid-up-ordinary-shares".
-   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; SARB BA 700.
+   * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; SARB BA 100.
    */
   readonly capitalSubCategory?: string;
   /**
    * ISIN of the security held in this GL account.
    *
-   * When present, the BA 325 generator will look up this ISIN in the
+   * When present, the BA 110 generator will look up this ISIN in the
    * SecurityMaster override map (`opts.hqlaOverrides`) and use the
    * instrument-level HQLA classification in preference to the COA `hqlaLevel`
    * tag. This enables per-instrument HQLA tier accuracy for bond / equity
@@ -214,10 +214,10 @@ export interface CoaAccountEntry {
    * individual securities. This field will be populated when bond seeds land
    * (Slice 10) and bond-booking events pair instrumentId ↔ leafAccountId.
    * Until then the override map is empty and the COA fallback drives all
-   * BA 325 HQLA stock calculations unchanged.
+   * BA 110 HQLA stock calculations unchanged.
    *
    * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
-   * Citations: BA-325-LCR; BCBS-LCR-2013.
+   * Citations: BA-110-LCR; BCBS-LCR-2013.
    */
   readonly isin?: string;
   /**
@@ -228,7 +228,7 @@ export interface CoaAccountEntry {
    * determines whether cash held here is HQLA and at which tier: cash at the
    * central bank (custodian Party classified `central-bank`) is Level-1
    * (Reg 26(7)(a)(i)); cash at a correspondent commercial bank is generally
-   * not HQLA. The BA 325 cash-HQLA fold (`computeCashHqlaFromCustodian`)
+   * not HQLA. The BA 110 cash-HQLA fold (`computeCashHqlaFromCustodian`)
    * derives the tier by looking the custodian up in the event-sourced Party
    * register — never from an authored tag on this row. This removes the
    * authored-tag failure mode (Principle 1: risk derives its figures from the
@@ -265,7 +265,7 @@ export const CoaAccountEntrySchema = z.object({
   isin: z.string().optional(),
   // Custodian-derived HQLA (2026-05-29): cash-account custodian Party URN.
   custodianPartyId: z.string().optional(),
-  // D-DATA-QUALITY-CROSS-DOMAIN-V1: capital tier for BA 700 capital fold.
+  // D-DATA-QUALITY-CROSS-DOMAIN-V1: capital tier for BA 100 capital fold.
   capitalTier: z.enum(["cet1", "at1", "t2"]).optional(),
   capitalSubCategory: z.string().optional(),
 });
@@ -282,7 +282,7 @@ export const CoaAccountEntrySchema = z.object({
  * All other accounts are unannotated.
  *
  * HQLA tagging authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).
- * Citations: BCBS D295 §II.A; SARB BA 325; Reg 26(7).
+ * Citations: BCBS D295 §II.A; SARB BA 110; Reg 26(7).
  */
 export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ------------------------------------------------------------------
@@ -310,7 +310,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     side: "debit",
     // HQLA tier is DERIVED from the custodian, not authored here. This account
     // holds the bank's reserve/settlement balance at the SARB; the SARB Party
-    // is classified `central-bank`, so the BA 325 cash-HQLA fold derives
+    // is classified `central-bank`, so the BA 110 cash-HQLA fold derives
     // Level-1 (Reg 26(7)(a)(i); BCBS D295 §50(a)). The previous authored
     // `hqlaLevel: "level-1"` tag was removed in the custodian-derived rework
     // (2026-05-29) — risk must derive its figures from the source (Principle 1).
@@ -955,7 +955,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   //
   // Substrate gap (D-DATA-QUALITY-CROSS-DOMAIN-V1): posting rules for
   // T2 instrument issuance and general-provision accumulation are not
-  // yet implemented. The BA 700 fold will return zero T2 capital until
+  // yet implemented. The BA 100 fold will return zero T2 capital until
   // those rules land and produce SubLedgerPostingEmitted credits to
   // these accounts. This is expected and non-blocking.
   // ------------------------------------------------------------------
@@ -1035,7 +1035,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
 
   // ------------------------------------------------------------------
   // 6100 — Money-Market-Deposit (MMD) liabilities + interest
-  // (BA 325 Table 1 LCR categories). WS1-PR1a; IFRS 9 §4.2.1.
+  // (BA 110 Table 1 LCR categories). WS1-PR1a; IFRS 9 §4.2.1.
   // ------------------------------------------------------------------
   {
     id: "ACC-6100-001",
@@ -1085,7 +1085,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
 
   // ------------------------------------------------------------------
   // 7100 — Interbank-Loan (IBL, bank as lender) assets + interest
-  // WS1-PR1a; IFRS 9 §4.1.2 (amortised cost); BA 326 (NSFR).
+  // WS1-PR1a; IFRS 9 §4.1.2 (amortised cost); BA 120 (NSFR).
   // ------------------------------------------------------------------
   {
     id: "ACC-7100-001",
@@ -1153,7 +1153,7 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   //
   // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
   //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
-  // Citations: SARB BA 350 (net open position return); Banks Act 94 of 1990;
+  // Citations: SARB BA 310 (market risk; net open position); Banks Act 94 of 1990;
   //            Regulations Relating to Banks; Principle 5 (multi-currency).
   {
     id: "ACC-9000-001",
@@ -1188,19 +1188,19 @@ export const COA_BY_ID: ReadonlyMap<string, CoaAccountEntry> = new Map(
  *
  * Scans all accounts in `COA_ACCOUNTS` for those with a `capitalTier` set,
  * and maps them to `AccountCapitalClassification` entries suitable for
- * passing directly to `generateBa700CapitalFromEvents` as the `classifications`
+ * passing directly to `generateBa100CapitalFromEvents` as the `classifications`
  * input.
  *
- * This provides the canonical T2 (and CET1/AT1) account set for the BA 700
+ * This provides the canonical T2 (and CET1/AT1) account set for the BA 100
  * generator without requiring callers to hard-code account IDs.
  *
  * Substrate gap (D-DATA-QUALITY-CROSS-DOMAIN-V1): T2 accounts (ACC-5200-001,
  * ACC-5200-002) are placeholder entries. No real T2 instruments are outstanding
- * at build-phase; the BA 700 tier2Capital will be 0 until posting rules for
+ * at build-phase; the BA 100 tier2Capital will be 0 until posting rules for
  * T2 instrument issuance and general-provision accumulation are implemented.
  *
  * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
- * Citations: Reg 38(8); BCBS Basel III §50–§60; SARB BA 700.
+ * Citations: Reg 38(8); BCBS Basel III §50–§60; SARB BA 100.
  */
 export function coaToCapitalClassifications(): readonly AccountCapitalClassification[] {
   return COA_ACCOUNTS.filter(
@@ -1217,16 +1217,16 @@ export function coaToCapitalClassifications(): readonly AccountCapitalClassifica
  *
  * Scans all accounts in `COA_ACCOUNTS` for those with an `hqlaLevel` set,
  * and maps them to `AccountLiquidityClassification` entries suitable for
- * passing directly to `generateBa325Lcr` as the `classifications` input.
+ * passing directly to `generateBa110Lcr` as the `classifications` input.
  *
  * This replaces the hard-coded `BUILD_PHASE_DEFAULT_CLASSIFICATIONS` in the
- * render script and makes the BA 325 generator dynamically driven by COA data.
+ * render script and makes the BA 110 generator dynamically driven by COA data.
  *
- * Basel III haircut application is handled inside `generateBa325Lcr`; this
+ * Basel III haircut application is handled inside `generateBa110Lcr`; this
  * function only constructs the typed mapping.
  *
  * Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).
- * Citations: BCBS D295 §II.A; SARB BA 325; Reg 26(7).
+ * Citations: BCBS D295 §II.A; SARB BA 110; Reg 26(7).
  */
 export function coaToHqlaClassifications(): readonly AccountLiquidityClassification[] {
   return COA_ACCOUNTS.filter(
@@ -1239,7 +1239,7 @@ export function coaToHqlaClassifications(): readonly AccountLiquidityClassificat
       ? { assetSpecificFactor: a.hqlaAssetSpecificFactor }
       : {}),
     // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9: carry ISIN forward so the
-    // BA 325 generator can resolve SecurityMaster HQLA overrides per account.
+    // BA 110 generator can resolve SecurityMaster HQLA overrides per account.
     ...(a.isin ? { isin: a.isin } : {}),
   }));
 }

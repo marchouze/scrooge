@@ -96,10 +96,10 @@ export { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
 export { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 // D-TREASURY-GAPS-WAVE1 — settlement instruction outflow substrate (LCR §23).
-// Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 110 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 export { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 // D-TREASURY-GAPS-WAVE1 — balance-sheet projection (NSFR ASF/RSF substrate).
-// Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 120; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
 export { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
 export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
@@ -141,12 +141,12 @@ export { OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./obligation-lifecycl
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
-//   IFRS-9; ACTUS v1.1; BA 325.
+//   IFRS-9; ACTUS v1.1; BA 110.
 export { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
 // WS1-PR1a — Repo / Money Market Deposit / Funding Line / Interbank Loan
 // event types (20 events across 4 treasury instrument families).
 // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9; IAS 39 §27;
-//   Banks Act 94/1990 Reg 26/27; BA 325; BA 326; BCBS d365.
+//   Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d365.
 export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 // D-IFRS9-STAGING-V1 — IFRS 9 impairment stage classification events.
 // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
@@ -341,25 +341,25 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19).
   ...CLIMATE_RISK_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
-  // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  // Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...COLLATERAL_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — settlement instruction outflow substrate (LCR §23).
-  // Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  // Authority: BA 110 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...SETTLEMENT_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — balance-sheet projection (NSFR ASF/RSF substrate).
-  // Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+  // Authority: BA 120; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
   ...BALANCE_SHEET_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
-  // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+  // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
   ...LIQUIDITY_EVENT_TYPES_REGISTRY,
   // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit breach lifecycle events.
   // Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
   ...LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
-  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
   ...ILAAP_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
-  // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
   ...ALCO_EVENT_TYPES_REGISTRY,
   // Product Control — daily FX P&L report event.
   // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
@@ -401,12 +401,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
-  //   IFRS-9; ACTUS v1.1; BA 325.
+  //   IFRS-9; ACTUS v1.1; BA 110.
   ...FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY,
   // WS1-PR1a — Repo / Money Market Deposit / Funding Line / Interbank Loan
   // event types (20 events across 4 treasury instrument families).
   // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
-  //   IFRS 9; IAS 39 §27; Banks Act 94/1990 Reg 26/27; BA 325; BA 326; BCBS d365.
+  //   IFRS 9; IAS 39 §27; Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d365.
   ...REPO_MMD_IBL_EVENT_TYPES_REGISTRY,
   // D-IFRS9-STAGING-V1 — IFRS 9 impairment stage classification events.
   // Placed last so typed schema rows override any placeholder rows.

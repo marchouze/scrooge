@@ -191,7 +191,7 @@ export const cashAndBalancesAtSARB: SemanticEntry = {
   id: "CashAndBalancesAtSARB",
   version: "v0.1",
   description:
-    "Operational cash balance held at the South African Reserve Bank by Hoz Bank Limited. Held-to-collect, SPPI, IFRS-9 amortised-cost. Feeds AFS Statement of Financial Position cash line, BA 300 cash-and-central-bank-balances, and BA 325 HQLA Level-1 (LCR).",
+    "Operational cash balance held at the South African Reserve Bank by Hoz Bank Limited. Held-to-collect, SPPI, IFRS-9 amortised-cost. Feeds AFS Statement of Financial Position cash line, BA 610 cash-and-central-bank-balances, and BA 110 HQLA Level-1 (LCR).",
   units: "money-minor",
   dimensions: ["currency", "account"],
   projection: "gl-projection",
@@ -199,19 +199,19 @@ export const cashAndBalancesAtSARB: SemanticEntry = {
     "Balance(account=ACC-1100-001, entity=urn:legal-entity:hoz:hoz-bank:v1, currency=ZAR, asOf=asOfQuery)",
   regulatoryCells: [
     {
-      form: "BA 300",
+      form: "BA 610",
       line: "Cash and balances at central bank (Item 1)",
       side: "positive",
       note: "Primary line for SARB operational balance.",
     },
     {
-      form: "BA 325",
+      form: "BA 110",
       line: "HQLA Level 1 — central-bank reserves (LCR)",
       side: "positive",
-      note: "LCR HQLA contribution per BCBS D295 / BA 325; canonical first-end-to-end return per pack §6 Slice 3.",
+      note: "LCR HQLA contribution per BCBS D295 / BA 110; canonical first-end-to-end return per pack §6 Slice 3.",
     },
     {
-      form: "BA 100",
+      form: "BA 600",
       line: "Total qualifying capital and reserve funds — supporting cash element (memo)",
       side: "memo",
       note: "Operational cash; not a capital component itself.",
@@ -245,7 +245,7 @@ export const cashAndBalancesAtSARB: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 / BA 325 — LCR HQLA composition (central-bank reserves rank as Level 1).",
+      note: "BCBS D295 / BA 110 — LCR HQLA composition (central-bank reserves rank as Level 1).",
     },
     {
       type: "policy",

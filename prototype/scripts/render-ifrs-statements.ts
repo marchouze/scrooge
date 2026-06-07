@@ -183,7 +183,7 @@ function loadJson<T>(path: string, label: string): T {
 }
 
 // ---------------------------------------------------------------------------
-// Trial-balance discovery (mirror of render-ba-700.ts)
+// Trial-balance discovery (mirror of render-ba-100.ts)
 // ---------------------------------------------------------------------------
 
 interface TrialBalanceResolution {

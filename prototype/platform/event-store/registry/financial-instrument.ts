@@ -21,7 +21,7 @@
 //   IFRS 9 §4.1 (classification categories);
 //   Banks Act 94 of 1990 (prudential record-keeping);
 //   ACTUS Financial Research Foundation contract-type standard v1.1;
-//   BA 325 (HQLA tiering).
+//   BA 110 (HQLA tiering).
 //
 // Author: Kai (Trading Systems Engineer, engineering)
 
@@ -64,7 +64,7 @@ export const FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     replay: "latest-wins-per-key",
     retention: RETENTION_JSE_TRADE_7Y,
     payloadSchema: financialInstrumentClassifiedPayloadSchema,
-    citationsHint: ["D-FINANCIAL-INSTRUMENT-ENTITY", "IFRS9-4-1", "BA-325", "BCBS-279"],
+    citationsHint: ["D-FINANCIAL-INSTRUMENT-ENTITY", "IFRS9-4-1", "BA-110", "BCBS-279"],
     source: "platform/markets/cdm/instrument.ts",
   },
   {

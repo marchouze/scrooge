@@ -449,7 +449,7 @@ describe("FX Spot end-to-end lifecycle (PR-FX-001 + PR-FX-PRIN x2 + PR-FX-LIFECY
 // `TradeMatured` event-type is no longer emitted by production
 // code paths; PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE replace it. This block
 // pins the legacy shape so that any remaining test-only emitters (the
-// rev-engine tests, ba-325 LCR test) keep producing the same legs they
+// rev-engine tests, ba-110 LCR test) keep producing the same legs they
 // did before.
 // ---------------------------------------------------------------------------
 

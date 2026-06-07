@@ -40,14 +40,14 @@ const result = recordDecision(
     recommendation:
       "Wire the CorrespondentNostroSimulator to emit a paired SettlementInstructionIssued " +
       "(repayment leg) for each intraday FundingDrawnDown, so correspondent funding lands in the " +
-      "LCR 30-day contractual-outflow denominator (BA 325 §23) via buildSettlementOutflows.",
+      "LCR 30-day contractual-outflow denominator (BA 110 §23) via buildSettlementOutflows.",
     rationale:
       "The SettlementInstructionIssued event class was defined and consumed by the LCR fold " +
       "(buildSettlementOutflows) but had no emitter — the 30-day liquidity horizon omitted all " +
       "non-trade contractual outflows (ALM substrate gap on the treasury dashboard). The obvious " +
       "source (maturing deposits / funding-lines) was rejected because buildFundingPositions already " +
       "folds DepositTaken / FundingLineDrawn / InterbankLoanPlaced into the LCR denominator at " +
-      "BA 325 runoff rates — deriving instructions from those would double-count. The event's own " +
+      "BA 110 runoff rates — deriving instructions from those would double-count. The event's own " +
       "docstring scopes it to outflows outside the MMD/IBL/funding-line/trade stream. Correspondent " +
       "intraday-line drawdowns (FundingDrawnDown) are NOT folded by buildFundingPositions, so wiring " +
       "their repayment leg both closes the gap and fixes a genuine LCR coverage hole — with no " +

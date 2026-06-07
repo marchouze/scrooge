@@ -5,12 +5,12 @@
 //
 // Background
 // ----------
-// Helena (Chief Risk Officer, governance) identified that the BA 325 LCR
+// Helena (Chief Risk Officer, governance) identified that the BA 110 LCR
 // ratio of 87.30% is an artifact of entity-id mismatch:
 //
 //   - ~28 `FxSettlementInstructed` events carry `entity: "BANK-ZA-001"`
 //   - ~122 `SubLedgerPostingEmitted` events carry `entity: "BANK-ZA-001"`
-//   - BA 325 generator asserts `LE-ZA-HOZ-BANK` as canonical entity ID
+//   - BA 110 generator asserts `LE-ZA-HOZ-BANK` as canonical entity ID
 //   - Cash-flow denominator sees zero FX settlement events → LCR depressed
 //
 // Root cause: early fixture-authoring code used `BANK-ZA-001` before the

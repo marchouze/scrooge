@@ -171,7 +171,7 @@ const DIRECTIVES: Instrument[] = [
     slug: "banks-d2-2011",
     reference: "D2/2011",
     description:
-      "Reporting daily value-at-risk amounts for market risk using specified items of the form BA 325",
+      "Reporting daily value-at-risk amounts for market risk using specified items of the form BA 110",
     type: "directive",
   },
   {

@@ -3,17 +3,17 @@
 // Liquidity projection event-type registry rows.
 //
 // Covers:
-//   LCRComputed  — LCR computation result (BA 325 / Basel III)
-//   NSFRComputed — NSFR computation result (BA 326 / Basel III)
+//   LCRComputed  — LCR computation result (BA 110 / Basel III)
+//   NSFRComputed — NSFR computation result (BA 120 / Basel III)
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
 //
 // Retention classification:
 //   - LCRComputed → RETENTION_GOVERNANCE_7Y
-//     (SARB prudential return BA 325 submissions require supporting computation
+//     (SARB prudential return BA 110 submissions require supporting computation
 //      audit trail for at least 7 years)
 //   - NSFRComputed → RETENTION_GOVERNANCE_7Y
-//     (SARB prudential return BA 326; same reasoning as LCRComputed)
+//     (SARB prudential return BA 120; same reasoning as LCRComputed)
 //
 // Author: Anya (Liquidity & projections engineer, engineering)
 
@@ -40,7 +40,7 @@ export const LIQUIDITY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: lcrComputedPayloadSchema,
-    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-325"],
+    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-110"],
     source: "platform/event-store/event-types/liquidity.ts",
   },
   {
@@ -51,7 +51,7 @@ export const LIQUIDITY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: nsfrComputedPayloadSchema,
-    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-326"],
+    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-120"],
     source: "platform/event-store/event-types/liquidity.ts",
   },
 ];

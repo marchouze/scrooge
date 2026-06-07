@@ -5,9 +5,9 @@
 // Slice 3 of D-REGULATORY-READINESS-W2 ships the standardised-approach RWA
 // engine producing credit / market / operational risk-weighted assets per
 // Reg 38 + BCBS Basel III/IV (CRE20, MAR, OPE25). Reporting Slices 4-5
-// consume this package via the `RwaEngineOutput` contract for the BA 700
+// consume this package via the `RwaEngineOutput` contract for the BA 100
 // (capital adequacy), BA 350 (market risk), BA 340 (operational risk),
-// and BA 400 (credit risk) generators.
+// and BA 300 (credit risk) generators.
 //
 // IRB foundation / IRB advanced approaches register under separate
 // `version`-bumped semantic entries in a later slice; the v0.1 engine

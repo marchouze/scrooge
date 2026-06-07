@@ -2,7 +2,7 @@
 //
 // One-shot: emit a CeoDecision event for D-REPORTING-CAPABILITY-SLICE-1 —
 // the semantic-layer registry skeleton that Slice 2 (period-close events)
-// and Slice 3 (BA 325 LCR generator harness) consume.
+// and Slice 3 (BA 110 LCR generator harness) consume.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-
 // approved 2026-05-10). This script records the slice-1 sub-authorisation

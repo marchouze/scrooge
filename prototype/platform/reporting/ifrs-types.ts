@@ -96,7 +96,7 @@ export interface IfrsAccountClassification {
 // ---------------------------------------------------------------------------
 
 /**
- * The common envelope every IFRS generator consumes. Mirrors the BA 700
+ * The common envelope every IFRS generator consumes. Mirrors the BA 100
  * generator's input shape so the same period-close artefact can drive
  * both prudential and IFRS renders.
  */
@@ -222,7 +222,7 @@ export function assertIso4217(currency: string, label: string): void {
 
 /**
  * Build an account → classification index, throwing on duplicate
- * registration. Mirrors the pattern in BA 700 (Slice 4).
+ * registration. Mirrors the pattern in BA 100 (Slice 4).
  */
 export function indexClassifications(
   classifications: readonly IfrsAccountClassification[],
@@ -241,7 +241,7 @@ export function indexClassifications(
 
 /**
  * Deterministic fingerprint of a classification map. Sorted-stable JSON.
- * Mirrors BA 700 Slice 4 fingerprintClassifications.
+ * Mirrors BA 100 Slice 4 fingerprintClassifications.
  */
 export function fingerprintIfrsClassifications(
   classifications: readonly IfrsAccountClassification[],

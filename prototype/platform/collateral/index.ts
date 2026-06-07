@@ -6,7 +6,7 @@
 //   - HQLA classifier (classifyHQLA, SecurityDescriptor, HQLAClassification)
 //   - Collateral inventory projection (getCollateralInventory, CollateralInventoryResult)
 //
-// Authority: BA 325 Annex 1; Banks Act Reg 26.
+// Authority: BA 110 Annex 1; Banks Act Reg 26.
 // Author: Atlas (Core banking platform architect, engineering)
 
 export {

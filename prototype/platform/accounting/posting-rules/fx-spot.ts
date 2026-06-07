@@ -548,7 +548,7 @@ export function fxRevaluationJournals(event: FxPositionRevaluedPayload): SubLedg
 //
 // This function is kept (a) for backwards compatibility with the rare
 // callers that still construct `TradeMatured` payloads in tests
-// for purposes other than FX accounting (e.g. `ba-325-lcr.test.ts` settled-
+// for purposes other than FX accounting (e.g. `ba-110-lcr.test.ts` settled-
 // trade detection); and (b) so the `bea-fx-posting-engine` / `bea-gl-
 // posting-engine` handlers can continue to route a stray
 // `TradeMatured` if anything emits one during the deprecation

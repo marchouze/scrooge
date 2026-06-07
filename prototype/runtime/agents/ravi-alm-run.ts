@@ -172,14 +172,14 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         payload: {
           escalationId: `ALM-LCR-BREACH-${date}`,
           raisedBy: "agent:ravi:alm-run",
-          question: `ALM run detected LCR below the 100% regulatory minimum (BA 325 §11). Management action required. Current ratio: ${lcrT30.lcrRatioPct?.toFixed(1)}% (HQLA R${lcrT30.hqlaZar.toLocaleString()}, net outflows R${lcrT30.netCashOutflowsZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
+          question: `ALM run detected LCR below the 100% regulatory minimum (BA 110 §11). Management action required. Current ratio: ${lcrT30.lcrRatioPct?.toFixed(1)}% (HQLA R${lcrT30.hqlaZar.toLocaleString()}, net outflows R${lcrT30.netCashOutflowsZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
           options: [
             "Increase HQLA via repo or FX swap (Ravi)",
             "Reduce short-term contractual outflows (Ravi + Eitan)",
             "Invoke ILAAP contingency funding plan (Eitan)",
           ],
           blockedBy:
-            "LCR below 100% regulatory minimum (BA 325 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
+            "LCR below 100% regulatory minimum (BA 110 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
           severity: "high",
           routedTo: "agent:ravi + agent:eitan + agent:helena",
         },

@@ -16,7 +16,7 @@
 // ILAAP engine PR). The ALCO pack generator reads it from the event store
 // using the ilaap.ts schema.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365;
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365;
 //   Banks Act 94 of 1990.
 // Author: Atlas (Core banking platform architect, engineering)
 

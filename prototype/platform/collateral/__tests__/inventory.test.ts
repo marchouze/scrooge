@@ -2,7 +2,7 @@
 //
 // Unit tests for the collateral inventory projection.
 // Uses computeInventoryTotals (pure function) to avoid event-store dependency.
-// Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 
 import { describe, expect, it } from "bun:test";
 import { computeInventoryTotals } from "../inventory";

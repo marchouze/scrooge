@@ -468,12 +468,12 @@ export function computeRwaFromPositions(
 }
 
 // ---------------------------------------------------------------------------
-// Type export (RwaDecomposition from ba-700-capital.ts shape)
+// Type export (RwaDecomposition from ba-100-capital.ts shape)
 // ---------------------------------------------------------------------------
 
 /**
- * Derive a `RwaDecomposition` (BA 700 input shape) from a live
- * `RwaFromPositionsResult`.  Shortcut for callers wiring BA 700.
+ * Derive a `RwaDecomposition` (BA 100 input shape) from a live
+ * `RwaFromPositionsResult`.  Shortcut for callers wiring BA 100.
  */
 export function toRwaDecomposition(result: RwaFromPositionsResult): {
   readonly creditRwaMinor: number;

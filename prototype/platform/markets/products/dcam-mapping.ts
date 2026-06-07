@@ -219,7 +219,7 @@ export const PRODUCT_FAMILY_LAYER3: Record<ProductFamily, ProductFamilyDcamLayer
         label: "IRD Mark-to-Market / NPV",
         description:
           "Daily NPV (ZAR), DV01, PV01, sensitivity vectors per tenor bucket. " +
-          "FRTB SBA input (BCBS d352). BA350 market-risk return feed.",
+          "FRTB SBA input (BCBS d352). BA320 market-risk return feed.",
         carriedByEvents: ["OtcIrdMarkToMarket"],
       },
       {
@@ -274,7 +274,7 @@ export const PRODUCT_FAMILY_LAYER3: Record<ProductFamily, ProductFamilyDcamLayer
         label: "FX Rate Observable",
         description:
           "SARB ZAR Fixing Rate (ORG-MK-08), Reuters spot rate, bid/ask spread, " +
-          "intraday rate snapshots. Level-1 fair value (IFRS 13). BA350 FX open-position feed.",
+          "intraday rate snapshots. Level-1 fair value (IFRS 13). BA320 FX open-position feed.",
         carriedByEvents: ["FxTradeExecuted", "FxSettlementInstructed"],
       },
     ],

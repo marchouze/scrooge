@@ -3,7 +3,7 @@
 // Tests for the multi-horizon liquidity projection runner and the
 // EventStoreLiquidityInputProvider factory.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326.
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
 import { describe, expect, it } from "bun:test";

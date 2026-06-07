@@ -16,7 +16,7 @@
 //      each ALM pipeline that *would* emit those events, what's the
 //      build-state of the projection / engine / connector behind it.
 //   2. Walks Ravi-owned obligations from `_obligations-register.md`:
-//      LCR (BA 325 / Banks Act Reg 26), NSFR (BA 326 / Banks Act Reg 27),
+//      LCR (BA 110 / Banks Act Reg 26), NSFR (BA 120 / Banks Act Reg 27),
 //      IRRBB (BCBS d365), intraday liquidity (BCBS 248), Excon FX
 //      position (Currency & Exchanges Manual). Includes ORG-PR-06 / -07
 //      / -08 / -11 / -14 / -15 and ORG-MK-08.

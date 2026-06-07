@@ -19,7 +19,7 @@
 //   - Once those substrates land, this handler replaces the empty-array
 //     inputs with event-store queries.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -38,7 +38,7 @@ import { getALMPositionSnapshot } from "../../platform/projections/alm-positions
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const EVENT_CITATIONS = ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-325", "BA-326"];
+const EVENT_CITATIONS = ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-110", "BA-120"];
 
 /** Regulatory minimum LCR: 100%. Near-minimum threshold for alert: 105%. */
 const LCR_NEAR_MINIMUM_THRESHOLD_PCT = 105;
@@ -199,14 +199,14 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         payload: {
           escalationId: lcrEscalationId,
           raisedBy: "agent:anya:liquidity-projection",
-          question: `LCR is below the 100% regulatory minimum (BA 325 §11). Management action required. Current ratio: ${lcrT30.lcrRatioPct?.toFixed(1)}% (HQLA R${lcrT30.hqlaZar.toLocaleString()}, net outflows R${lcrT30.netCashOutflowsZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
+          question: `LCR is below the 100% regulatory minimum (BA 110 §11). Management action required. Current ratio: ${lcrT30.lcrRatioPct?.toFixed(1)}% (HQLA R${lcrT30.hqlaZar.toLocaleString()}, net outflows R${lcrT30.netCashOutflowsZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
           options: [
             "Increase HQLA via repo or FX swap (Ravi)",
             "Reduce short-term contractual outflows (Ravi + Eitan)",
             "Invoke ILAAP contingency funding plan (Eitan)",
           ],
           blockedBy:
-            "LCR below 100% regulatory minimum (BA 325 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
+            "LCR below 100% regulatory minimum (BA 110 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
           severity: "high",
           routedTo: "agent:ravi + agent:eitan + agent:helena",
         },
@@ -226,14 +226,14 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         payload: {
           escalationId: nsfrEscalationId,
           raisedBy: "agent:anya:liquidity-projection",
-          question: `NSFR is below the 100% regulatory minimum (BA 326 §11). Management action required. Current ratio: ${nsfrT30.nsfrRatioPct?.toFixed(1)}% (ASF R${nsfrT30.asfZar.toLocaleString()}, RSF R${nsfrT30.rsfZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
+          question: `NSFR is below the 100% regulatory minimum (BA 120 §11). Management action required. Current ratio: ${nsfrT30.nsfrRatioPct?.toFixed(1)}% (ASF R${nsfrT30.asfZar.toLocaleString()}, RSF R${nsfrT30.rsfZar.toLocaleString()}). Build-phase synthetic breach — response chain rehearsal per D-BUILD-PHASE-SYNTHETIC-RESPONSE.`,
           options: [
             "Increase stable funding sources (Ravi + Eitan)",
             "Reduce required stable funding via asset composition (Ravi)",
             "Invoke contingency funding plan (Eitan)",
           ],
           blockedBy:
-            "NSFR below 100% regulatory minimum (BA 326 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
+            "NSFR below 100% regulatory minimum (BA 120 §11). Build-phase synthetic: no real capital at risk; response chain under rehearsal.",
           severity: "high",
           routedTo: "agent:ravi + agent:eitan + agent:helena",
         },
@@ -254,7 +254,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push(`# Anya — Liquidity projection, ${date}`);
     lines.push("");
     lines.push(
-      "Daily LCR / NSFR projection — BA 325 / BA 326 calibration, ZAR, 30-day stress horizon.",
+      "Daily LCR / NSFR projection — BA 110 / BA 120 calibration, ZAR, 30-day stress horizon.",
     );
     lines.push("");
     lines.push("## LCR (Liquidity Coverage Ratio)");
@@ -307,7 +307,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       lines.push("");
     }
     lines.push(`**Events emitted:** ${eventsEmitted}`);
-    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1; D-RAS; BA 325; BA 326");
+    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1; D-RAS; BA 110; BA 120");
     lines.push("");
     writeFileSync(resolve(ctx.ownerInboxDir, filename), lines.join("\n"), "utf8");
   }

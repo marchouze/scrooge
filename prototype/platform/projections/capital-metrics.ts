@@ -298,7 +298,7 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
 // `computeCapitalMetrics().availableCapitalMinor` (ICAAP v1 build-phase
 // baseline of R300m; switches to live CapitalEvent fold when live events
 // exist). That single envelope IS the eligible-capital amount until the
-// Tier-1 / Tier-2 split lands as part of the BA 700 capital-adequacy
+// Tier-1 / Tier-2 split lands as part of the BA 100 capital-adequacy
 // projection wave.
 //
 // Until the split lands, `getEligibleCapital(asOf)` returns the same
@@ -318,7 +318,7 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
  * from `LexUtilisationComputed` payloads (would create a recon cycle).
  *
  * v0: returns the single capital envelope (no Tier-1 / Tier-2 split). The
- * Tier-1 / Tier-2 split is delivered by the BA 700 capital-adequacy
+ * Tier-1 / Tier-2 split is delivered by the BA 100 capital-adequacy
  * projection wave and will refine this helper without changing its
  * signature.
  */

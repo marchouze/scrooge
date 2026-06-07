@@ -513,7 +513,7 @@ export interface ZeroBalanceResult {
  * triage where it becomes `timing-difference` (< 2bd) or `unexplained` (> 2bd).
  *
  * Citations: PROC-FIN-BSS-01 §5 step 3d; Accounting Policies v0.1 §3.4;
- * BA 300 Item 30 note.
+ * BA 610 Item 30 note.
  */
 export function assertZeroBalance(args: {
   trialBalance: TrialBalance;

@@ -10,11 +10,11 @@
 // What Phase D does (per pack §5):
 //   - At period-end (immediately after Phase B's `AccountingPeriodClosed`),
 //     generate four SARB BA returns from the post-close trial balance:
-//       * BA 325 (LCR)              — Reporting Slice 3
-//       * BA 700 (Capital Adequacy) — Reporting Slice 4
-//       * BA 350 (Market Risk)      — Reporting Slice 5
-//       * BA 600 (Operational Risk) — Reporting Slice 5
-//   - Render each BA as canonical (deterministic) JSON; for BA 350 / BA 600
+//       * BA 110 (LCR)              — Reporting Slice 3
+//       * BA 100 (Capital Adequacy) — Reporting Slice 4
+//       * BA 310 (Market Risk)      — Reporting Slice 5
+//       * BA 300 (Operational Risk) — Reporting Slice 5
+//   - Render each BA as canonical (deterministic) JSON; for BA 310 / BA 300
 //     also produce the SARB-XML (per Reporting Slice 5).
 //   - Tag every render with the scenario provenance:
 //       { kind: "simulated", scenario: "first-dry-run-2026-Q1",
@@ -25,15 +25,15 @@
 //     scenario.
 //
 // Substrate gaps (forward-link in the decision record):
-//   1. **Real classifications.** The BA 325 / BA 350 / BA 600 generators
+//   1. **Real classifications.** The BA 110 / BA 310 / BA 300 generators
 //      take caller-supplied classification + position inputs. Until Mira's
 //      WS-INSTRUMENT-ANALYSES + Reporting Slice 6 expand the semantic-layer
 //      registry, the scenario uses rehearsal-grade fixtures derived from
 //      Phase A+B's own footprint (USD nostro = HQLA-Level-1 placeholder;
 //      ZAR nostro = inflow placeholder; FX revaluation row excluded from
-//      LCR; long USD net = BA 350 FX position; etc.). Fixture origin is
+//      LCR; long USD net = BA 310 FX position; etc.). Fixture origin is
 //      surfaced in each render's `placeholders` field.
-//   2. **Real RWA inputs.** The BA 700 generator takes a typed
+//   2. **Real RWA inputs.** The BA 100 generator takes a typed
 //      `RwaDecomposition` directly. The W2 Slice 3 RWA engine (PR #177) is
 //      merged but takes its own typed inputs (CreditExposure / TradingBookPosition
 //      / BusinessIndicatorInput) — wiring the engine into the scenario is
@@ -68,22 +68,22 @@ import type { Event } from "@platform/event-store/types";
 import {
   type AccountCapitalClassification,
   type AccountLiquidityClassification,
-  type Ba325Output,
-  type Ba350Output,
-  type Ba600Output,
-  type Ba700Output,
+  type Ba100Output,
+  type Ba110Output,
+  type Ba300Output,
+  type Ba310Output,
   type OpRiskGrossIncomeRow,
   type RegulatoryDeduction,
   type RwaDecomposition,
-  ba350ToXmlPayload,
-  ba600ToXmlPayload,
-  generateBa325Lcr,
-  generateBa350MarketRisk,
-  generateBa600OpRisk,
-  generateBa700Capital,
-  generateBa700CapitalFromEvents,
-  renderBa325Canonical,
-  renderBa700Canonical,
+  ba300ToXmlPayload,
+  ba310ToXmlPayload,
+  generateBa100Capital,
+  generateBa100CapitalFromEvents,
+  generateBa110Lcr,
+  generateBa300OpRisk,
+  generateBa310MarketRisk,
+  renderBa100Canonical,
+  renderBa110Canonical,
   renderSarbXml,
 } from "@platform/reporting";
 
@@ -91,7 +91,7 @@ import {
 // Constants — the four BA forms Phase D produces.
 // ---------------------------------------------------------------------------
 
-export const PHASE_D_FORMS = ["ba-325", "ba-700", "ba-350", "ba-600"] as const;
+export const PHASE_D_FORMS = ["ba-110", "ba-100", "ba-310", "ba-300"] as const;
 export type PhaseDForm = (typeof PHASE_D_FORMS)[number];
 
 // Matches the registered `scenario-runner:<name>` pattern in
@@ -115,18 +115,18 @@ export interface PhaseDInputs {
   readonly periodId: string;
   readonly functionalCurrency: string;
   /**
-   * Trial-balance rows — used for BA 325 (LCR) and as the fallback for
-   * BA 700 capital stock when `eventStore` is not supplied.
+   * Trial-balance rows — used for BA 110 (LCR) and as the fallback for
+   * BA 100 capital stock when `eventStore` is not supplied.
    *
-   * @deprecated for BA 700 — use `eventStore` + `periodStart`/`periodEnd`
+   * @deprecated for BA 100 — use `eventStore` + `periodStart`/`periodEnd`
    * for the P1-compliant path (C-3 fix). Authority: Principles/1-events-are-truth.md.
    */
   readonly trialBalance: ClosePeriodResult["trialBalance"]["rows"];
   readonly trialBalanceSnapshotEventId?: string;
   /**
    * Event store — required for all P1-compliant BA return paths (C-1/C-2/C-3):
-   * BA 325 folds FxSettlementInstructed/TradeMatured; BA 700 folds
-   * SubLedgerPostingEmitted + CapitalContributionRecorded; BA 350 folds
+   * BA 110 folds FxSettlementInstructed/TradeMatured; BA 100 folds
+   * SubLedgerPostingEmitted + CapitalContributionRecorded; BA 310 folds
    * FxTradeExecuted. Authority: Principles/1-events-are-truth.md.
    */
   readonly eventStore: EventStore;
@@ -141,7 +141,7 @@ export interface PhaseDInputs {
 }
 
 // ---------------------------------------------------------------------------
-// BA 325 — LCR fixture inputs.
+// BA 110 — LCR fixture inputs.
 //
 // Phase A+B's footprint at month-end:
 //   - USD nostro stub (ACC-usd-nostro-stub) holds USD 5m  — debit (asset).
@@ -162,7 +162,7 @@ export interface PhaseDInputs {
 //   outflows.
 // ---------------------------------------------------------------------------
 
-export const BA_325_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassification[] = [
+export const BA_110_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassification[] = [
   // USD nostro (asset side) — fixture HQLA Level-1 (real classification:
   // correspondent-bank deposit, not Level-1; rehearsal placeholder).
   {
@@ -179,21 +179,21 @@ export const BA_325_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassifica
 ];
 
 // ---------------------------------------------------------------------------
-// BA 700 — Capital classification + RWA fixture.
+// BA 100 — Capital classification + RWA fixture.
 //
 // Phase A's CapitalContributionRecorded posts +R300m to ACC-ZAR-CAPITAL-001
 // — but that account does NOT appear in the post-close trial balance because
 // `CapitalContributionRecorded` is not (yet) a sub-ledger-posting event in
 // the M1 stub posting-rules engine (substrate gap §3 of Phase B). For Phase
 // D, classify the balance-sheet equity proxy via a synthetic CET1 stock
-// fixture line of R300m so the BA 700 capital-adequacy ratios are
+// fixture line of R300m so the BA 100 capital-adequacy ratios are
 // non-trivially populated.
 // ---------------------------------------------------------------------------
 
-export const BA_700_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
+export const BA_100_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
   // P1-compliant path (C-3 fix): classify the account that actually appears
   // in Phase A's CapitalContributionRecorded event (ACC-ZAR-CAPITAL-001).
-  // The events-first adapter (`generateBa700CapitalFromEvents`) folds the
+  // The events-first adapter (`generateBa100CapitalFromEvents`) folds the
   // CapitalContributionRecorded event with this accountId to derive capital stock.
   // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
   {
@@ -212,12 +212,12 @@ export const BA_700_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassificati
   },
 ];
 
-export const BA_700_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
+export const BA_100_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
 
 /**
  * Fixture RWA — R1.5bn credit + R1.0bn market + R500m operational =
  * R3.0bn total (in minor units: 300_000_000_000). With a synthetic R300m
- * CET1 base (per `BA_700_SYNTHETIC_CET1_ROW` below), the resulting CET1
+ * CET1 base (per `BA_100_SYNTHETIC_CET1_ROW` below), the resulting CET1
  * ratio = R300m / R3bn = 10.00% — comfortably above the Reg 38(2) all-in
  * 7% minimum (4.5% base + 2.5% CCB) but below a "trivially compliant"
  * threshold so the rehearsal shows a meaningful headline metric. The
@@ -226,9 +226,9 @@ export const BA_700_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
  * Forward-link: the W2 Slice 3 RWA engine (PR #177 — `computeRwa`) produces
  * the same shape from typed `CreditExposure` / `TradingBookPosition` /
  * `BusinessIndicatorInput` inputs. Wiring is a future slice; the typed
- * input shape on `generateBa700Capital` is unchanged.
+ * input shape on `generateBa100Capital` is unchanged.
  */
-export const BA_700_FIXTURE_RWA: RwaDecomposition = {
+export const BA_100_FIXTURE_RWA: RwaDecomposition = {
   creditRwaMinor: 1_500_000_000_00, // R1.5bn
   marketRwaMinor: 1_000_000_000_00, // R1.0bn
   operationalRwaMinor: 500_000_000_00, // R500m
@@ -237,18 +237,18 @@ export const BA_700_FIXTURE_RWA: RwaDecomposition = {
 
 /**
  * Synthetic CET1 stock — R300m to mirror Phase A's CapitalContributionRecorded.
- * Inserted into the BA 700 input via a synthetic trial-balance row so the
+ * Inserted into the BA 100 input via a synthetic trial-balance row so the
  * generator's capital-stack projection produces a non-zero CET1 stock.
  * Substrate gap #1 (real classifications come from semantic-layer expansion).
  */
-export const BA_700_SYNTHETIC_CET1_ROW = {
+export const BA_100_SYNTHETIC_CET1_ROW = {
   leafAccountId: "ACC-equity-paid-up-capital-stub",
   currency: "ZAR",
   amountMinor: -300_000_000_00, // negative = credit-side (equity)
 } as const;
 
 // ---------------------------------------------------------------------------
-// BA 350 — Market-risk fixture inputs.
+// BA 310 — Market-risk fixture inputs.
 //
 // Phase A+B's open USD position at month-end: long USD 5m (settled into USD
 // nostro). Converted to ZAR functional ccy at month-end rate 18.45:
@@ -259,12 +259,12 @@ export const BA_700_SYNTHETIC_CET1_ROW = {
 
 const PHASE_D_FX_NET_USD_FUNCTIONAL_MINOR = 9_225_000_000; // R92.25m
 
-export const BA_350_FIXTURE_FX_POSITIONS = [
+export const BA_310_FIXTURE_FX_POSITIONS = [
   { currency: "USD", netPositionFunctionalMinor: PHASE_D_FX_NET_USD_FUNCTIONAL_MINOR },
 ] as const;
 
 // ---------------------------------------------------------------------------
-// BA 600 — Operational-risk fixture inputs.
+// BA 300 — Operational-risk fixture inputs.
 //
 // Build-phase has no real 3-year gross-income history (no commencement of
 // trading per `project_rules_bind_at_commencement`). The fixture supplies a
@@ -274,7 +274,7 @@ export const BA_350_FIXTURE_FX_POSITIONS = [
 // origin obvious).
 // ---------------------------------------------------------------------------
 
-export const BA_600_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
+export const BA_300_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
   // Single positive-year row — BIA capital = 15% × R10m = R1.5m.
   // Satisfies BIA's `nPositiveYears > 0` condition.
   { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 10_000_000_00 },
@@ -285,17 +285,17 @@ export const BA_600_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
 // ---------------------------------------------------------------------------
 
 export interface PhaseDGenerated {
-  readonly ba325: Ba325Output;
-  readonly ba700: Ba700Output;
-  readonly ba350: Ba350Output;
-  readonly ba600: Ba600Output;
+  readonly ba110: Ba110Output;
+  readonly ba100: Ba100Output;
+  readonly ba310: Ba310Output;
+  readonly ba300: Ba300Output;
 }
 
 export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
   // P1-compliant: cash flows folded from FxSettlement events in the event
   // store; trial balance used for HQLA stock only.
   // Citation: Principles/1-events-are-truth.md (updated 2026-05-12).
-  const ba325 = generateBa325Lcr({
+  const ba110 = generateBa110Lcr({
     entity: inputs.entity,
     asOf: inputs.asOf,
     periodId: inputs.periodId,
@@ -304,51 +304,51 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
     periodStart: inputs.periodStart,
     periodEnd: inputs.periodEnd,
     trialBalance: inputs.trialBalance,
-    classifications: BA_325_FIXTURE_CLASSIFICATIONS,
+    classifications: BA_110_FIXTURE_CLASSIFICATIONS,
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
       : {}),
   });
 
-  // BA 700 — P1-compliant path (C-3 fix): fold SubLedgerPostingEmitted +
+  // BA 100 — P1-compliant path (C-3 fix): fold SubLedgerPostingEmitted +
   // CapitalContributionRecorded events directly when eventStore is available.
   // Falls back to augmented-trial-balance path (deprecated) when not.
   // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
-  let ba700: Ba700Output;
+  let ba100: Ba100Output;
   if (inputs.eventStore && inputs.periodStart && inputs.periodEnd) {
-    ba700 = generateBa700CapitalFromEvents(inputs.eventStore, {
+    ba100 = generateBa100CapitalFromEvents(inputs.eventStore, {
       entity: inputs.entity,
       asOf: inputs.asOf,
       periodId: inputs.periodId,
       functionalCurrency: inputs.functionalCurrency,
       periodStart: inputs.periodStart,
       periodEnd: inputs.periodEnd,
-      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
-      deductions: BA_700_FIXTURE_DEDUCTIONS,
-      rwa: BA_700_FIXTURE_RWA,
+      classifications: BA_100_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_100_FIXTURE_DEDUCTIONS,
+      rwa: BA_100_FIXTURE_RWA,
     });
   } else {
     // Deprecated fallback: augment the trial balance with a synthetic CET1-equity
     // row so the capital-stack projection is non-trivially populated.
     // Substrate gap §1 above; real CET1 derivation comes from chart-of-accounts
     // capitalTier field at Reporting Slice 6+.
-    const augmentedTb = [...inputs.trialBalance, BA_700_SYNTHETIC_CET1_ROW];
-    ba700 = generateBa700Capital({
+    const augmentedTb = [...inputs.trialBalance, BA_100_SYNTHETIC_CET1_ROW];
+    ba100 = generateBa100Capital({
       entity: inputs.entity,
       asOf: inputs.asOf,
       periodId: inputs.periodId,
       functionalCurrency: inputs.functionalCurrency,
       trialBalance: augmentedTb,
-      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
-      deductions: BA_700_FIXTURE_DEDUCTIONS,
-      rwa: BA_700_FIXTURE_RWA,
+      classifications: BA_100_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_100_FIXTURE_DEDUCTIONS,
+      rwa: BA_100_FIXTURE_RWA,
       ...(inputs.trialBalanceSnapshotEventId
         ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
         : {}),
     });
   }
 
-  const ba350 = generateBa350MarketRisk({
+  const ba310 = generateBa310MarketRisk({
     entity: inputs.entity,
     asOf: inputs.asOf,
     periodId: inputs.periodId,
@@ -356,73 +356,73 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
     irGeneralMaturityLadder: [],
     irSpecificRisk: [],
     equity: [],
-    fxPositions: BA_350_FIXTURE_FX_POSITIONS,
+    fxPositions: BA_310_FIXTURE_FX_POSITIONS,
     commodity: [],
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
       : {}),
   });
 
-  const ba600 = generateBa600OpRisk({
+  const ba300 = generateBa300OpRisk({
     entity: inputs.entity,
     asOf: inputs.asOf,
     periodId: inputs.periodId,
     functionalCurrency: inputs.functionalCurrency,
-    grossIncome: BA_600_FIXTURE_GROSS_INCOME,
+    grossIncome: BA_300_FIXTURE_GROSS_INCOME,
     approach: "bia",
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
       : {}),
   });
 
-  return { ba325, ba700, ba350, ba600 };
+  return { ba110, ba100, ba310, ba300 };
 }
 
 // ---------------------------------------------------------------------------
 // Renderers — produce canonical bytes for each BA. JSON for all four; XML
-// for BA 350 / BA 600 (per Reporting Slice 5 design).
+// for BA 310 / BA 300 (per Reporting Slice 5 design).
 // ---------------------------------------------------------------------------
 
 export interface PhaseDRendered {
-  readonly ba325Json: string;
-  readonly ba700Json: string;
-  readonly ba350Json: string;
-  readonly ba350Xml: string;
-  readonly ba600Json: string;
-  readonly ba600Xml: string;
+  readonly ba110Json: string;
+  readonly ba100Json: string;
+  readonly ba310Json: string;
+  readonly ba310Xml: string;
+  readonly ba300Json: string;
+  readonly ba300Xml: string;
 }
 
 export function renderPhaseDReports(generated: PhaseDGenerated): PhaseDRendered {
-  // BA 325 + BA 700 have typed canonical-JSON renderers (Slice 3+4).
-  const ba325 = renderBa325Canonical(generated.ba325, { renderedAt: PHASE_D_RENDERED_AT });
-  const ba700 = renderBa700Canonical(generated.ba700, { renderedAt: PHASE_D_RENDERED_AT });
+  // BA 110 + BA 100 have typed canonical-JSON renderers (Slice 3+4).
+  const ba110 = renderBa110Canonical(generated.ba110, { renderedAt: PHASE_D_RENDERED_AT });
+  const ba100 = renderBa100Canonical(generated.ba100, { renderedAt: PHASE_D_RENDERED_AT });
 
-  // BA 350 + BA 600 ship XML adapters (Slice 5). For JSON we serialise the
+  // BA 310 + BA 300 ship XML adapters (Slice 5). For JSON we serialise the
   // typed Output directly (deterministic via sorted-keys).
-  const ba350Json = canonicaliseAsJson(generated.ba350);
-  const ba600Json = canonicaliseAsJson(generated.ba600);
+  const ba310Json = canonicaliseAsJson(generated.ba310);
+  const ba300Json = canonicaliseAsJson(generated.ba300);
 
-  const ba350XmlPayload = ba350ToXmlPayload(generated.ba350);
-  const ba350Xml = renderSarbXml(ba350XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
+  const ba310XmlPayload = ba310ToXmlPayload(generated.ba310);
+  const ba310Xml = renderSarbXml(ba310XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
 
-  const ba600XmlPayload = ba600ToXmlPayload(generated.ba600);
-  const ba600Xml = renderSarbXml(ba600XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
+  const ba300XmlPayload = ba300ToXmlPayload(generated.ba300);
+  const ba300Xml = renderSarbXml(ba300XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
 
   return {
-    ba325Json: ba325.canonicalJson,
-    ba700Json: ba700.canonicalJson,
-    ba350Json,
-    ba350Xml,
-    ba600Json,
-    ba600Xml,
+    ba110Json: ba110.canonicalJson,
+    ba100Json: ba100.canonicalJson,
+    ba310Json,
+    ba310Xml,
+    ba300Json,
+    ba300Xml,
   };
 }
 
 /**
  * Deterministic JSON serialisation — walks the value, sorts object keys
  * recursively, then `JSON.stringify`s with two-space indent (mirroring the
- * Slice-3 / Slice-4 BA-render canonicalisation pattern). Used for BA 350 /
- * BA 600 where Slice 5 ships the XML adapter but no typed JSON renderer.
+ * Slice-3 / Slice-4 BA-render canonicalisation pattern). Used for BA 310 /
+ * BA 300 where Slice 5 ships the XML adapter but no typed JSON renderer.
  */
 function canonicaliseAsJson(value: unknown): string {
   return JSON.stringify(sortKeys(value), null, 2);
@@ -553,14 +553,14 @@ export function runPhaseD(args: {
 
 function canonicalForForm(form: PhaseDForm, rendered: PhaseDRendered): string {
   switch (form) {
-    case "ba-325":
-      return rendered.ba325Json;
-    case "ba-700":
-      return rendered.ba700Json;
-    case "ba-350":
-      return rendered.ba350Json;
-    case "ba-600":
-      return rendered.ba600Json;
+    case "ba-110":
+      return rendered.ba110Json;
+    case "ba-100":
+      return rendered.ba100Json;
+    case "ba-310":
+      return rendered.ba310Json;
+    case "ba-300":
+      return rendered.ba300Json;
   }
 }
 

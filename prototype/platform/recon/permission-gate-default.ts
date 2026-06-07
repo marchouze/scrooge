@@ -202,11 +202,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.
   "platform/accounting/period-close-handler.test.ts",
-  // M3 Slice 4 — BA 700 period-close return scenario test. Co-located in the
-  // returns/ba700/ package per the per-module test convention. Raw
+  // M3 Slice 4 — BA 100 period-close return scenario test. Co-located in the
+  // returns/ba100/ package per the per-module test convention. Raw
   // EventStore(":memory:") is a build-phase fixture, not a production access
   // path. T-01 carve-out.
-  "platform/returns/ba700/ba700.test.ts",
+  "platform/returns/ba100/ba100.test.ts",
   // Backfill CLI entry point — emits CeoDecision events synthesised from
   // on-disk Owner Inbox records at boot / CI. Acts as a composition root in
   // the same way platform/composition.ts does: the raw store is constructed
@@ -259,12 +259,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Build-phase fixture store, not a production access path. T-01 carve-out.
   // Citation: P4-SECURITY-DESIGNED-IN.
   "platform/agent-runtime/bun-worker-bus-runner.test.ts",
-  // BA 325 LCR generator unit tests — co-located per-module test convention.
+  // BA 110 LCR generator unit tests — co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for testing the
   // HQLA override logic (D-FINANCIAL-INSTRUMENT-ENTITY Slice 9); not a
   // production access path. T-01 carve-out.
-  // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-325-LCR; P4-SECURITY-DESIGNED-IN.
-  "platform/reporting/ba-325-lcr.test.ts",
+  // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-110-LCR; P4-SECURITY-DESIGNED-IN.
+  "platform/reporting/ba-110-lcr.test.ts",
   // pricing-model-definitions — platform module containing seedValidationMethodologies,
   // seedModelValidations, seedModelRegisteredEvents, and seedModelRegistry. Called from
   // standalone scripts (scripts/run-model-*.ts) which receive the raw store; the retired
@@ -346,13 +346,13 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // Per-module unit test directory — same carve-out rationale as tests/.
   // The semantic-layer module co-locates its fixture-store tests here.
   "platform/semantic-layer/__tests__/",
-  // M2 Slice 3 BA 325 subscriber — per-module fixture test (same carve-out
+  // M2 Slice 3 BA 110 subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
-  "platform/returns/ba325/",
-  // M3 Slice 5 BA 350 subscriber — per-module fixture test; same rationale.
+  "platform/returns/ba110/",
+  // M3 Slice 5 BA 310 (market-risk) subscriber — per-module fixture test; same rationale.
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
-  "platform/returns/ba350/",
+  "platform/returns/ba310/",
   // M3 Slice 8 CMS subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for conduct scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
@@ -392,7 +392,7 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // Liquidity projection unit tests — per-module fixture stores for multi-horizon
   // LCR/NSFR scenario assertion (empty-store baseline, SAGB HQLA, provider caching).
   // T-01 carve-out; no production access path.
-  // Citation: D-TREASURY-GAPS-WAVE1, BA-325, BA-326, P4-SECURITY-DESIGNED-IN.
+  // Citation: D-TREASURY-GAPS-WAVE1, BA-110, BA-120, P4-SECURITY-DESIGNED-IN.
   "platform/liquidity/__tests__/",
 ];
 

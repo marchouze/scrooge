@@ -6,10 +6,10 @@
 // first-class platform module rather than a boot-seed artefact.
 //
 // Models registered (each: ModelSubmitted → ModelTierClassified → ModelValidationApproved):
-//   1. model:lcr-ba325-v1               — Liquidity Coverage Ratio (Tier-1, BA 325)
-//   2. model:nsfr-ba325-v1              — Net Stable Funding Ratio (Tier-1, BA 325)
-//   3. model:capital-cet1-ba700-v1      — CET1 Capital Ratio (Tier-1, BA 700)
-//   4. model:rwa-sa-v1                  — Risk-Weighted Assets, standardised (Tier-1, BA 700)
+//   1. model:lcr-ba110-v1               — Liquidity Coverage Ratio (Tier-1, BA 110)
+//   2. model:nsfr-ba110-v1              — Net Stable Funding Ratio (Tier-1, BA 110)
+//   3. model:capital-cet1-ba100-v1      — CET1 Capital Ratio (Tier-1, BA 100)
+//   4. model:rwa-sa-v1                  — Risk-Weighted Assets, standardised (Tier-1, BA 100)
 //   5. model:ecl-staging-ifrs9-v1       — IFRS 9 staging / SICR (Tier-1, IFRS 9 §B5.5)
 //   6. model:ecl-pd-ifrs9-v1            — IFRS 9 12-month PD (Tier-1, IFRS 9 §B5.5)
 //   7. model:ecl-lgd-ifrs9-v1           — IFRS 9 LGD (Tier-1, IFRS 9 §B5.5)
@@ -74,44 +74,44 @@ export interface CalcModelDef {
 
 export const MODELS: ReadonlyArray<CalcModelDef> = [
   {
-    modelId: "model:lcr-ba325-v1",
+    modelId: "model:lcr-ba110-v1",
     version: "1.0.0",
     tier: 1,
     description:
       "Liquidity Coverage Ratio engine (computeLCR). HQLA stock (post-haircut, L1/L2A/L2B " +
-      "with caps) over net 30-day stressed cash outflows. Feeds the BA 325 liquidity return.",
+      "with caps) over net 30-day stressed cash outflows. Feeds the BA 110 liquidity return.",
     methodologyDescription:
-      "lcr-ba325-v1.0-hqla-haircut-l1-l2a-l2b-caps-net-30d-stressed-outflows-runoff-rates",
+      "lcr-ba110-v1.0-hqla-haircut-l1-l2a-l2b-caps-net-30d-stressed-outflows-runoff-rates",
     tierRationale:
       "Tier-1 under SR 11-7 §V: direct regulatory-submission consequence — the output feeds " +
-      "the BA 325 statutory liquidity return to the PA. A misstated LCR is a regulatory " +
+      "the BA 110 statutory liquidity return to the PA. A misstated LCR is a regulatory " +
       "reporting failure. Full independent validation applies.",
     expiryDate: "2027-05-29",
   },
   {
-    modelId: "model:nsfr-ba325-v1",
+    modelId: "model:nsfr-ba110-v1",
     version: "1.0.0",
     tier: 1,
     description:
       "Net Stable Funding Ratio engine (computeNSFR). Available Stable Funding over Required " +
-      "Stable Funding, factor-weighted by tenor and counterparty class. Feeds the BA 325 return.",
-    methodologyDescription: "nsfr-ba325-v1.0-asf-rsf-factor-weighting-tenor-counterparty-class",
+      "Stable Funding, factor-weighted by tenor and counterparty class. Feeds the BA 110 return.",
+    methodologyDescription: "nsfr-ba110-v1.0-asf-rsf-factor-weighting-tenor-counterparty-class",
     tierRationale:
       "Tier-1 under SR 11-7 §V: direct regulatory-submission consequence — the output feeds " +
-      "the BA 325 statutory structural-liquidity return to the PA. Full independent validation applies.",
+      "the BA 110 statutory structural-liquidity return to the PA. Full independent validation applies.",
     expiryDate: "2027-05-29",
   },
   {
-    modelId: "model:capital-cet1-ba700-v1",
+    modelId: "model:capital-cet1-ba100-v1",
     version: "1.0.0",
     tier: 1,
     description:
       "CET1 Capital Ratio engine (computeCapitalMetrics). Available CET1 capital over " +
-      "risk-weighted assets (RWA engine, model:rwa-sa-v1). Feeds the BA 700 capital-adequacy return.",
-    methodologyDescription: "capital-cet1-ba700-v1.0-available-cet1-over-rwa-sa-approach",
+      "risk-weighted assets (RWA engine, model:rwa-sa-v1). Feeds the BA 100 capital-adequacy return.",
+    methodologyDescription: "capital-cet1-ba100-v1.0-available-cet1-over-rwa-sa-approach",
     tierRationale:
       "Tier-1 under SR 11-7 §V: direct regulatory-capital consequence — the output feeds the " +
-      "BA 700 statutory capital-adequacy return to the PA and gates RAS capital limits. " +
+      "BA 100 statutory capital-adequacy return to the PA and gates RAS capital limits. " +
       "Full independent validation applies.",
     expiryDate: "2027-05-29",
   },
@@ -124,16 +124,16 @@ export const MODELS: ReadonlyArray<CalcModelDef> = [
       "RWA (Σ EAD × standardised risk-weight, CRE20) + market RWA (12.5 × Σ capital charge, " +
       "pre-FRTB Basel-2.5 MAR) + operational RWA (12.5 × BIC × ILM, OPE25) + CVA RWA " +
       "(placeholder). RWA is the direct denominator of every capital ratio (CET1, Tier-1, total) " +
-      "and feeds the BA 700 capital-adequacy return.",
+      "and feeds the BA 100 capital-adequacy return.",
     methodologyDescription:
       "rwa-sa-v1.0-standardised-credit-cre20-market-mar-pre-frtb-operational-ope25-bic-ilm-cva-placeholder",
     tierRationale:
       "Tier-1 under SR 11-7 §V and Model Risk Policy RISK-MRP-01 §2: RWA is the direct " +
-      "denominator of every regulatory capital ratio and feeds the BA 700 statutory " +
+      "denominator of every regulatory capital ratio and feeds the BA 100 statutory " +
       "capital-adequacy return to the PA. A misstated RWA misstates CET1, Tier-1 and total " +
       "capital ratios and the RAS capital limits derived from them — the highest-consequence " +
       "capital figure the bank computes. Full independent validation applies. NOTE: the " +
-      "prescribed inputs the engine consumes (SA risk-weight tables, BA 325 haircuts, SA-CCR " +
+      "prescribed inputs the engine consumes (SA risk-weight tables, BA 110 haircuts, SA-CCR " +
       "supervisory factors) are regulatory-prescribed constants, NOT bank models, and are " +
       "intentionally out of model-registry scope.",
     expiryDate: "2027-05-29",
@@ -435,7 +435,7 @@ export const MODELS: ReadonlyArray<CalcModelDef> = [
       "ownership: Helena (CRO) — CVA is CRO-owned per the decision-authority routing table; the " +
       "counterparty credit-spread inputs are supplied by Ravi (market-data infrastructure " +
       "engineer). Full independent validation applies. NOTE: the prescribed inputs the engine " +
-      "would otherwise consume (SA-CCR supervisory factors, BA 325 haircuts, SA risk-weight " +
+      "would otherwise consume (SA-CCR supervisory factors, BA 110 haircuts, SA risk-weight " +
       "tables) are regulatory-prescribed constants, NOT bank models, and are intentionally out " +
       "of model-registry scope (per the Slice-5 exclusions).",
     expiryDate: "2027-05-29",

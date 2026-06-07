@@ -21,7 +21,7 @@
 //      MMD/IBL/funding-line/trade stream) and is the ONLY path that puts
 //      correspondent funding into the LCR 30-day denominator — buildSettlementOutflows
 //      (Ravi, Treasury and ALM engineer) folds it; buildFundingPositions does not
-//      see FundingDrawnDown, so there is no double-count. Authority: BA 325 §23.
+//      see FundingDrawnDown, so there is no double-count. Authority: BA 110 §23.
 //
 // Build-phase vs production: in production Tomas's connector ingests real MT942
 // messages and emits the same FundingDrawnDown + SettlementInstructionIssued
@@ -31,7 +31,7 @@
 // (build-phase posture).
 //
 // Authority: D-FX-CLS-MEMBERSHIP; BCBS 248 (intraday liquidity monitoring);
-//   Banks Act 94 of 1990 Reg 26; BA 325 §23 (LCR contractual outflows).
+//   Banks Act 94 of 1990 Reg 26; BA 110 §23 (LCR contractual outflows).
 // Author: Tomas (Operations & payments engineer, engineering)
 
 import { newEventId, nowUtc } from "../../core/types";
@@ -46,7 +46,7 @@ const SIM_ID = "correspondent-nostro-sim";
 const ACTOR = { type: "service" as const, id: "agent:env:correspondent-nostro-sim" };
 const ENTITY = "LE-ZA-HOZ-BANK";
 const CITATIONS = ["D-FX-CLS-MEMBERSHIP", "BCBS-248"];
-/** Repayment-leg citations — adds the LCR contractual-outflow authority (BA 325 §23 / Reg 26). */
+/** Repayment-leg citations — adds the LCR contractual-outflow authority (BA 110 §23 / Reg 26). */
 const REPAYMENT_CITATIONS = ["D-FX-CLS-MEMBERSHIP", "BCBS-248", "BANKS-REG-26"];
 const CORRESPONDENT_BIC = "SBZAZAJJXXX";
 const NOSTRO_IBAN = "ZA00BANK0000000000000";
@@ -294,7 +294,7 @@ export class CorrespondentNostroSimulator implements SimulatorModule {
       // Repayment leg — drawing the intraday line creates a contractual
       // obligation to repay it the next settlement day. Emitted as a non-trade
       // SettlementInstructionIssued so it lands in the LCR 30-day contractual-
-      // outflow denominator (BA 325 §23) via buildSettlementOutflows. Settlement
+      // outflow denominator (BA 110 §23) via buildSettlementOutflows. Settlement
       // date is derived from the drawdown date + 1 calendar day — never a direct
       // wall-clock read (nowUtc()-derived only). outflowAmountZar is in MINOR
       // units (cents); the projection divides by 100. drawnAmountMinor is already

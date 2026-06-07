@@ -3,7 +3,7 @@
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 — capital-classification
 // semantic entries. Extends the Slice 1 registry (`entries.ts`) and the
 // Slice 3 liquidity-classification entries (`liquidity-entries.ts`) with
-// the minimum vocabulary the BA 700 (Capital Adequacy Return) generator
+// the minimum vocabulary the BA 100 (Capital Adequacy Return) generator
 // needs:
 //
 //   CommonEquityTier1Capital       — CET1 capital after regulatory
@@ -37,11 +37,11 @@
 //   - one resolved citation chain (Banks Act 94/1990 §70 + Regulations
 //     Relating to Banks Reg 38 + BCBS Basel III), and
 //   - a `[citation: TBC]` marker pointing at Mira's WS-INSTRUMENT-ANALYSES
-//     workstream which will resolve the precise SARB BA 700 line numbers
+//     workstream which will resolve the precise SARB BA 100 line numbers
 //     once the published schema is fully analysed.
 //
 // Hoz Bank only — Hoz Securities + Hoz Group are not bank-licence-bound
-// for BA 700 (the consolidated capital position lands in a later slice
+// for BA 100 (the consolidated capital position lands in a later slice
 // once the legal-entity-tree group consolidation projection is built).
 // Bank-licence scope per `Regulations/_legal-entity-tree.md` and
 // `D-REGULATORY-PERIMETER`.
@@ -83,7 +83,7 @@ export const commonEquityTier1Capital: SemanticEntry = {
     "sum(BalanceForCapitalComponent where {entity, capitalTier='cet1', asOf=asOfQuery}) - sum(RegulatoryDeduction where {entity, deductionTier='cet1', asOf=asOfQuery})",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Common Equity Tier 1 capital — total (post-deductions)",
       side: "positive",
       note: "Reg 38(8) — net CET1 amount entering the capital-adequacy ratio numerator.",
@@ -102,7 +102,7 @@ export const commonEquityTier1Capital: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 700 line-number sequencing for CET1 sub-categories pending published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 100 line-number sequencing for CET1 sub-categories pending published-schema ingestion]",
     },
   ],
   signers: ["Camille", "Helena"],
@@ -124,7 +124,7 @@ export const commonEquityTier1Capital: SemanticEntry = {
  * Build-phase posture: Hoz Bank issues no AT1 instruments at v0 (target
  * capital structure per W2 Slice 1 ICAAP framework: CET1-heavy stack,
  * AT1 sized at 1.5% of RWA at steady-state). v0 AT1 stock = 0; the entry
- * exists so the BA 700 generator's three-ratio chain is structurally
+ * exists so the BA 100 generator's three-ratio chain is structurally
  * complete from day one.
  */
 export const additionalTier1Capital: SemanticEntry = {
@@ -139,7 +139,7 @@ export const additionalTier1Capital: SemanticEntry = {
     "sum(BalanceForCapitalComponent where {entity, capitalTier='at1', asOf=asOfQuery}) - sum(RegulatoryDeduction where {entity, deductionTier='at1', asOf=asOfQuery})",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Additional Tier 1 capital — total (post-deductions)",
       side: "positive",
       note: "Reg 38(8) — AT1 amount entering Tier 1 ratio numerator.",
@@ -158,7 +158,7 @@ export const additionalTier1Capital: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — AT1 instrument-eligibility criteria + SARB BA 700 line-mapping per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — AT1 instrument-eligibility criteria + SARB BA 100 line-mapping per published-schema ingestion]",
     },
   ],
   signers: ["Camille", "Helena"],
@@ -192,7 +192,7 @@ export const tier2Capital: SemanticEntry = {
     "sum(BalanceForCapitalComponent where {entity, capitalTier='t2', asOf=asOfQuery}) - sum(RegulatoryDeduction where {entity, deductionTier='t2', asOf=asOfQuery})",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Tier 2 capital — total (post-deductions)",
       side: "positive",
       note: "Reg 38(8) — T2 amount entering Total Capital ratio numerator.",
@@ -211,7 +211,7 @@ export const tier2Capital: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — T2 sub-debt eligibility criteria + general-provisions cap arithmetic + SARB BA 700 line-mapping per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — T2 sub-debt eligibility criteria + general-provisions cap arithmetic + SARB BA 100 line-mapping per published-schema ingestion]",
     },
   ],
   signers: ["Camille", "Helena"],
@@ -255,10 +255,10 @@ export const regulatoryCapitalDeductions: SemanticEntry = {
     "sum(RegulatoryDeduction where {entity, asOf=asOfQuery}) — decomposed by deductionTier (cet1 / at1 / t2) at the generator",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Regulatory deductions — aggregate (memo)",
       side: "memo",
-      note: "Decomposition into per-tier deductions appears on the BA 700 deduction sub-section; this aggregate is a forensic-transparency line.",
+      note: "Decomposition into per-tier deductions appears on the BA 100 deduction sub-section; this aggregate is a forensic-transparency line.",
     },
   ],
   citations: [
@@ -274,7 +274,7 @@ export const regulatoryCapitalDeductions: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — full SARB BA 700 deduction-line mapping + threshold-deduction arithmetic per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — full SARB BA 100 deduction-line mapping + threshold-deduction arithmetic per published-schema ingestion]",
     },
   ],
   signers: ["Camille", "Helena"],
@@ -299,7 +299,7 @@ export const regulatoryCapitalDeductions: SemanticEntry = {
  *   - Operational RWA — Standardised Measurement Approach per BCBS Basel
  *     III §148 / Reg 38 BSA.
  *
- * v0 BA 700 generator accepts RWA inputs via the `Ba700GeneratorInput.rwa`
+ * v0 BA 100 generator accepts RWA inputs via the `Ba100GeneratorInput.rwa`
  * field — fixture constants per asset-class for the build-phase rehearsal.
  * The W2 Slice 3 RWA engine wires in once it lands; the generator's
  * downstream contract is unchanged (the engine produces a typed RWA
@@ -309,17 +309,17 @@ export const riskWeightedAssets: SemanticEntry = {
   id: "RiskWeightedAssets",
   version: "v0.1",
   description:
-    "Total Risk-Weighted Assets — credit + market + operational. Denominator of every capital-adequacy ratio. Sourced from the RWA engine (W2 Slice 3); v0 BA 700 accepts fixture inputs.",
+    "Total Risk-Weighted Assets — credit + market + operational. Denominator of every capital-adequacy ratio. Sourced from the RWA engine (W2 Slice 3); v0 BA 100 accepts fixture inputs.",
   units: "money-minor",
   dimensions: ["currency"],
   projection: "rwa",
   formula: "sum(CreditRwa) + sum(MarketRwa) + sum(OperationalRwa) where {entity, asOf=asOfQuery}",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Total Risk-Weighted Assets — credit + market + operational",
       side: "positive",
-      note: "Decomposition lines by risk type appear in the BA 700 RWA sub-section; this aggregate is the ratio denominator.",
+      note: "Decomposition lines by risk type appear in the BA 100 RWA sub-section; this aggregate is the ratio denominator.",
     },
   ],
   citations: [
@@ -335,7 +335,7 @@ export const riskWeightedAssets: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 700 RWA decomposition cell-numbering + W2 Slice 3 RWA-engine integration once the engine lands]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 100 RWA decomposition cell-numbering + W2 Slice 3 RWA-engine integration once the engine lands]",
     },
   ],
   signers: ["Helena", "Camille", "Bea"],
@@ -343,12 +343,12 @@ export const riskWeightedAssets: SemanticEntry = {
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,
   notes:
-    "v0 substrate-gap: BA 700 generator accepts pre-computed RWA components as fixture inputs pending W2 Slice 3 RWA-engine landing. Once the engine lands, the generator switches to consuming the engine's typed decomposition without API change. Documented in the Slice-4 decision record §Substrate gaps.",
+    "v0 substrate-gap: BA 100 generator accepts pre-computed RWA components as fixture inputs pending W2 Slice 3 RWA-engine landing. Once the engine lands, the generator switches to consuming the engine's typed decomposition without API change. Documented in the Slice-4 decision record §Substrate gaps.",
 };
 
 /**
  * `CommonEquityTier1Ratio` — CET1 / RWA. The most stringent capital-adequacy
- * cell on BA 700. Required ≥ 4.5% under BCBS Basel III §50; SA add-ons
+ * cell on BA 100. Required ≥ 4.5% under BCBS Basel III §50; SA add-ons
  * raise the *all-in* CET1 minimum via:
  *   - Capital Conservation Buffer (CCB) — 2.5% (BCBS §122–§128)
  *   - Counter-cyclical Buffer (CCyB) — 0–2.5% (BCBS §136–§148; SARB Pillar 1
@@ -358,7 +358,7 @@ export const riskWeightedAssets: SemanticEntry = {
  *   - SARB-specific Pillar 2A surcharge (Reg 38) — bank-specific
  *
  * Render layer multiplies by 100 for the percentage form the regulator's
- * BA 700 cell shows.
+ * BA 100 cell shows.
  */
 export const commonEquityTier1Ratio: SemanticEntry = {
   id: "CommonEquityTier1Ratio",
@@ -371,7 +371,7 @@ export const commonEquityTier1Ratio: SemanticEntry = {
   formula: "CommonEquityTier1Capital / RiskWeightedAssets",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "CET1 ratio (%) — exit cell",
       side: "positive",
       note: "Compared against per-bank minimum (4.5% + buffers + Pillar-2A); render layer multiplies by 100 for percentage display.",
@@ -390,7 +390,7 @@ export const commonEquityTier1Ratio: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — bank-specific Pillar-2A SARB add-on calibration + SARB BA 700 CET1-cell line-number per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — bank-specific Pillar-2A SARB add-on calibration + SARB BA 100 CET1-cell line-number per published-schema ingestion]",
     },
   ],
   signers: ["Camille", "Helena"],
@@ -398,7 +398,7 @@ export const commonEquityTier1Ratio: SemanticEntry = {
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,
   notes:
-    "Exit-criterion semantic entry for BA 700 CET1 cell. RAS B2 (`Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md`) sets a +1.5pp CET1 management buffer above the regulatory all-in minimum — calibration ratify path tracked under W2 Slice 2 (separate parallel dispatch).",
+    "Exit-criterion semantic entry for BA 100 CET1 cell. RAS B2 (`Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md`) sets a +1.5pp CET1 management buffer above the regulatory all-in minimum — calibration ratify path tracked under W2 Slice 2 (separate parallel dispatch).",
 };
 
 /**
@@ -416,7 +416,7 @@ export const tier1CapitalRatio: SemanticEntry = {
   formula: "(CommonEquityTier1Capital + AdditionalTier1Capital) / RiskWeightedAssets",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Tier 1 capital ratio (%)",
       side: "positive",
       note: "Compared against per-bank minimum (6% + buffers + Pillar-2A); render layer multiplies by 100.",
@@ -435,7 +435,7 @@ export const tier1CapitalRatio: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 700 Tier-1-cell line-number per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 100 Tier-1-cell line-number per published-schema ingestion]",
     },
   ],
   signers: ["Camille", "Helena"],
@@ -462,7 +462,7 @@ export const totalCapitalRatio: SemanticEntry = {
     "(CommonEquityTier1Capital + AdditionalTier1Capital + Tier2Capital) / RiskWeightedAssets",
   regulatoryCells: [
     {
-      form: "BA 700",
+      form: "BA 100",
       line: "Total capital ratio (%) — exit cell",
       side: "positive",
       note: "Compared against per-bank minimum (8% + buffers + Pillar-2A); render layer multiplies by 100. The regulator-facing 'capital adequacy ratio' in colloquial terms.",
@@ -481,7 +481,7 @@ export const totalCapitalRatio: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 700 Total-capital-cell line-number per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 100 Total-capital-cell line-number per published-schema ingestion]",
     },
   ],
   signers: ["Camille", "Helena"],
@@ -494,7 +494,7 @@ export const totalCapitalRatio: SemanticEntry = {
 
 /**
  * Slice-4 capital-classification entries, exported as a single array for
- * ease of registry construction in tests and downstream consumers (BA 700
+ * ease of registry construction in tests and downstream consumers (BA 100
  * generator + future capital-stack-projection consumers).
  */
 export const SLICE_4_CAPITAL_ENTRIES: readonly SemanticEntry[] = [

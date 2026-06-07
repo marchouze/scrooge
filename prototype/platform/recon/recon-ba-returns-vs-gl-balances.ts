@@ -8,21 +8,21 @@
 //      bounded by the period's eventSequence frozen cursor (D-DATA-QUALITY-
 //      CROSS-DOMAIN-V1) to compute glTier2 = sum(credits) - sum(debits).
 //
-//   2. Checks whether BA-700 results are available as events (ReportGenerated
+//   2. Checks whether BA-100 results are available as events (ReportGenerated
 //      or similar typed event with a tier2Capital field). In the current
-//      substrate BA-700 outputs are not persisted as events — this is a known
-//      substrate gap. The gate emits a non-blocking finding message when BA-700
+//      substrate BA-100 outputs are not persisted as events — this is a known
+//      substrate gap. The gate emits a non-blocking finding message when BA-100
 //      outputs are absent and exits 0.  DO NOT fail CI for this substrate gap.
 //
-//   3. When both GL and BA-700 values are available, asserts:
-//        |glTier2 - ba700Tier2| <= TOLERANCE
+//   3. When both GL and BA-100 values are available, asserts:
+//        |glTier2 - ba100Tier2| <= TOLERANCE
 //      Tolerance: 1 ZAR cent (1 minor unit). Double-entry arithmetic should be
 //      exact; the tolerance absorbs rounding in future multi-currency folds.
 //
 // Substrate gap (D-DATA-QUALITY-CROSS-DOMAIN-V1):
-//   BA-700 outputs are not yet stored as events. The full assertion (step 3)
+//   BA-100 outputs are not yet stored as events. The full assertion (step 3)
 //   is deferred until a ReportGenerated event or equivalent typed event that
-//   carries tier2Capital is emitted by the BA-700 subscriber.  This gate will
+//   carries tier2Capital is emitted by the BA-100 subscriber.  This gate will
 //   automatically activate once that substrate lands.
 //
 // T2 account set (canonical per coa-registry.ts):
@@ -46,7 +46,7 @@
 //   BCBS Basel III §58–§60 — T2 subordinated debt + general provisions
 //   IFRS 9 §5.5.3 — Stage-1 / Stage-2 ECL provisioning (qualifying provisions)
 //   Principles/1-events-are-truth.md — fold from events, not stored state
-//   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN — BA 700 generator authority
+//   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN — BA 100 generator authority
 //
 // Author: Atlas (Core banking platform architect, engineering — Gap 3 recon).
 
@@ -69,7 +69,7 @@ import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projec
 const T2_ACCOUNT_IDS = new Set<string>(["ACC-5200-001", "ACC-5200-002"]);
 
 /**
- * Rounding tolerance for the GL vs BA-700 assertion.
+ * Rounding tolerance for the GL vs BA-100 assertion.
  *
  * 1 minor unit = 1 ZAR cent. Double-entry arithmetic inside
  * SubLedgerPostingEmitted is integer-exact (the Zod .superRefine check
@@ -91,7 +91,7 @@ interface PeriodResult {
   entityId: string;
   eventSequence: number | undefined;
   glTier2Minor: number;
-  ba700Tier2Minor: number | undefined;
+  ba100Tier2Minor: number | undefined;
   deltaMinor: number | undefined;
   withinTolerance: boolean | undefined;
   substrateGapNote: string | undefined;
@@ -147,14 +147,14 @@ function foldGlTier2(entity: string, asOf: string, untilSequence: number | undef
 }
 
 // ---------------------------------------------------------------------------
-// BA-700 result lookup
+// BA-100 result lookup
 // ---------------------------------------------------------------------------
 
 /**
- * Attempt to retrieve the BA-700 tier2Capital for a given (entity, periodId)
+ * Attempt to retrieve the BA-100 tier2Capital for a given (entity, periodId)
  * from the event store.
  *
- * Substrate gap: BA-700 outputs are not yet stored as typed events. This
+ * Substrate gap: BA-100 outputs are not yet stored as typed events. This
  * function currently returns `undefined` for all periods, triggering a
  * non-blocking substrate-gap note in the recon output.
  *
@@ -163,14 +163,14 @@ function foldGlTier2(entity: string, asOf: string, untilSequence: number | undef
  *
  * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
  */
-function lookupBa700Tier2(
+function lookupBa100Tier2(
   _entity: string,
   _periodId: string,
   _untilSequence: number | undefined,
 ): number | undefined {
-  // Substrate gap: BA-700 outputs not persisted as events yet.
+  // Substrate gap: BA-100 outputs not persisted as events yet.
   // Returns undefined until a typed ReportGenerated (or BA700ReturnRecorded)
-  // event is emitted by the ba700 period-close subscriber.
+  // event is emitted by the ba100 period-close subscriber.
   return undefined;
 }
 
@@ -202,18 +202,18 @@ for (const ev of eventStore.replay({ type: "AccountingPeriodClosed" })) {
   // Step 1: fold GL T2 balance bounded by the frozen cursor.
   const glTier2Minor = foldGlTier2(entity, closedAt, eventSequence);
 
-  // Step 2: attempt BA-700 lookup.
-  const ba700Tier2Minor = lookupBa700Tier2(entity, periodId, eventSequence);
+  // Step 2: attempt BA-100 lookup.
+  const ba100Tier2Minor = lookupBa100Tier2(entity, periodId, eventSequence);
 
   // Step 3: assert if both values available.
   let deltaMinor: number | undefined;
   let withinTolerance: boolean | undefined;
   let substrateGapNote: string | undefined;
 
-  if (ba700Tier2Minor === undefined) {
-    substrateGapNote = `BA-700 tier2Capital not available as an event for period ${periodId} (entity=${entity}). Substrate gap: BA-700 outputs not yet persisted as typed events. Full GL↔BA-700 assertion deferred until ReportGenerated (or equivalent BA700ReturnRecorded) event lands. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`;
+  if (ba100Tier2Minor === undefined) {
+    substrateGapNote = `BA-100 tier2Capital not available as an event for period ${periodId} (entity=${entity}). Substrate gap: BA-100 outputs not yet persisted as typed events. Full GL↔BA-100 assertion deferred until ReportGenerated (or equivalent BA700ReturnRecorded) event lands. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`;
   } else {
-    deltaMinor = Math.abs(glTier2Minor - ba700Tier2Minor);
+    deltaMinor = Math.abs(glTier2Minor - ba100Tier2Minor);
     withinTolerance = deltaMinor <= TOLERANCE_MINOR_UNITS;
   }
 
@@ -222,7 +222,7 @@ for (const ev of eventStore.replay({ type: "AccountingPeriodClosed" })) {
     entityId: entity,
     eventSequence,
     glTier2Minor,
-    ba700Tier2Minor,
+    ba100Tier2Minor,
     deltaMinor,
     withinTolerance,
     substrateGapNote,
@@ -241,26 +241,26 @@ for (const r of periodResults) {
   if (r.substrateGapNote) {
     substrateGapCount++;
     console.log(
-      `[substrate-gap] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba700Tier2=<not-available> note: ${r.substrateGapNote}`,
+      `[substrate-gap] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=<not-available> note: ${r.substrateGapNote}`,
     );
   } else if (r.withinTolerance === false) {
     findings++;
     assertedCount++;
     console.error(
-      `[FINDING] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba700Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} > tolerance=${TOLERANCE_MINOR_UNITS}. GL T2 balance does not reconcile to BA-700 tier2Capital. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.`,
+      `[FINDING] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba100Tier2Minor} delta=${r.deltaMinor} > tolerance=${TOLERANCE_MINOR_UNITS}. GL T2 balance does not reconcile to BA-100 tier2Capital. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.`,
     );
   } else if (r.withinTolerance === true) {
     assertedCount++;
     console.log(
-      `[ok] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba700Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} within tolerance=${TOLERANCE_MINOR_UNITS}`,
+      `[ok] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba100Tier2Minor} delta=${r.deltaMinor} within tolerance=${TOLERANCE_MINOR_UNITS}`,
     );
   }
 }
 
 console.log(
-  `${PIPELINE}: ${periodResults.length} periods checked, ${assertedCount} asserted (full GL↔BA-700), ${substrateGapCount} substrate-gap (BA-700 output not yet persisted), ${findings} findings`,
+  `${PIPELINE}: ${periodResults.length} periods checked, ${assertedCount} asserted (full GL↔BA-100), ${substrateGapCount} substrate-gap (BA-100 output not yet persisted), ${findings} findings`,
 );
 
 // Non-blocking: substrate gaps do not fail CI.
-// Only hard GL↔BA-700 reconciliation failures exit non-zero.
+// Only hard GL↔BA-100 reconciliation failures exit non-zero.
 process.exit(findings > 0 ? 1 : 0);

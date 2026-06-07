@@ -8,7 +8,7 @@
 // the composition event store singleton. Tests pass an isolated store via
 // `makeEventStoreLiquidityInputProvider(isolatedStore)` explicitly.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
 import { eventStore as compositionEventStore } from "../composition";

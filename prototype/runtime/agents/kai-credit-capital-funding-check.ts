@@ -6,7 +6,7 @@
 // Authority:
 //   - RAS-B3 (counterparty credit risk appetite — single-counterparty credit limit)
 //   - ORG-PR-01 (ICAAP — Internal Capital Adequacy Assessment Process)
-//   - Banks Act 94/1990 Reg 38 (BA 325 capital adequacy — Pillar 1 RWA calculation)
+//   - Banks Act 94/1990 Reg 38 (BA 100 capital adequacy — Pillar 1 RWA calculation)
 //   - BCBS 238 (LCR — Liquidity Coverage Ratio minimum 100%)
 //   - D-CREDIT-LIMIT-ENGINE-BUILD Phase 4 — credit-limit-engine wiring into
 //     PROC-MK-PCG-01 Check 1(c). Replaces the prior credit-limit-stub.json
@@ -33,7 +33,7 @@
 //
 //   On GatewayCheckRequested[capital-impact]:
 //     1. Compute proposed RWA = notional × RWA weight for instrument class.
-//     2. Check current RWA + proposed RWA vs BA 325 RWA limit.
+//     2. Check current RWA + proposed RWA vs BA 100 RWA limit.
 //     3. Emit GatewayCheckCompleted[capital-impact] approve or reject.
 //
 //   On GatewayCheckRequested[funding]:
@@ -43,7 +43,7 @@
 //
 // Build-phase limitations:
 //   - Capital RWA weights and LCR parameters are read from capital-funding-stub.json.
-//     Production: derive from live BA 325 projection (Anya) and Eitan's LCR
+//     Production: derive from live BA 100 projection (Anya) and Eitan's LCR
 //     projection (LCR ratio event, not yet built).
 //   - SA-CCR add-on / RC fallback uses supervisory factors only; pivot to
 //     Rohan's @platform/risk/sa-ccr once merged.
@@ -158,7 +158,7 @@ function proposedCreditExposureMinor(instrument: string, quantity: number, price
 /**
  * Compute total RWA currently on the books (approximate — from
  * EquityTradeBooked notional × 35% default equity weight).
- * Production: use Anya's BA 325 projection directly.
+ * Production: use Anya's BA 100 projection directly.
  */
 function computeCurrentRwaZAR(stub: CapitalFundingStub): number {
   // In the build phase, defer to the stub's currentRwaZAR baseline.
@@ -490,7 +490,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         outcome = "reject";
         rejectionReason =
           `Capital RWA limit breached: pro-forma RWA ZAR ${proFormaRwaZAR.toFixed(0)} ` +
-          `exceeds BA 325 limit ZAR ${capitalFundingStub.rwa.totalRwaLimitZAR.toFixed(0)} ` +
+          `exceeds BA 100 limit ZAR ${capitalFundingStub.rwa.totalRwaLimitZAR.toFixed(0)} ` +
           `(current RWA ZAR ${currentRwaZAR.toFixed(0)}, ` +
           `proposed add ZAR ${proposedRwaZAR.toFixed(0)} at RWA weight ${rwaWeight} for ${instClass}).`;
         citationToRule = "ORG-PR-01";

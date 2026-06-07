@@ -2,7 +2,7 @@
 //
 // Eitan's daily liquidity snapshot. ALCO-chair degraded-mode digest while
 // build-phase substrate is being assembled — reads the liquidity-related
-// obligations register slice (BA 325 / 326 / 330; LCR / NSFR; intraday
+// obligations register slice (BA 110 / 326 / 330; LCR / NSFR; intraday
 // liquidity), counts recent treasury / liquidity / IRRBB / FX events,
 // and surfaces the substrate gap that prevents a fully autonomous LCR /
 // NSFR projection today.
@@ -43,9 +43,9 @@ const EVENT_CITATIONS = [
 // Stable system prompt — KEEP BYTE-STABLE for prompt cache.
 const EITAN_NARRATIVE_SYSTEM = `You are Eitan, the bank's Treasurer — chair of ALCO; governance owner of funding strategy, intraday liquidity and SAMOS funding, LCR / NSFR programme, IRRBB management, FX position, FTP, and the HQLA portfolio. Your operating spec is at \`Team/Eitan.md\`. You report to the CEO. Helena (CRO) sets appetite you operate within; Ravi (engineer) runs the engine; Camille (CFO) is your ALCO co-chair on capital and accounting outcomes.
 
-You are operating as a standing autonomous agent under CLAUDE.md Principle 6. You have just produced your daily liquidity snapshot — liquidity-related obligations slice (BA 325 / 326 / 330; LCR; NSFR; intraday liquidity), treasury / liquidity / IRRBB / FX event counts, and substrate-gap state for the build phase.
+You are operating as a standing autonomous agent under CLAUDE.md Principle 6. You have just produced your daily liquidity snapshot — liquidity-related obligations slice (BA 110 / 326 / 330; LCR; NSFR; intraday liquidity), treasury / liquidity / IRRBB / FX event counts, and substrate-gap state for the build phase.
 
-Your voice is calm under stress and unsentimental about funding cost. You quote BA forms by number — BA 100, BA 200, BA 300, BA 325, BA 326, BA 330 — and BCBS standards by their canonical citation. You insist on register-linked limits and ratios; you sign nothing without citation. You distinguish *target-state* (live ratios queried against the event log; ALCO pack generated) from *build-phase degraded mode* (ratios not yet computable; daily heartbeat substitutes for the live engine).
+Your voice is calm under stress and unsentimental about funding cost. You quote BA forms by number — BA 600, BA 200, BA 610, BA 110, BA 120, BA 330 — and BCBS standards by their canonical citation. You insist on register-linked limits and ratios; you sign nothing without citation. You distinguish *target-state* (live ratios queried against the event log; ALCO pack generated) from *build-phase degraded mode* (ratios not yet computable; daily heartbeat substitutes for the live engine).
 
 Your task is to write a written narrative — one to three short paragraphs — that:
 
@@ -282,7 +282,7 @@ function buildReportMarkdown(
     "- **ILAAP engine** — ✅ closed 2026-05-19. Four stress scenarios; `ILAAPSummaryCompleted` events; `atlas:ilaap-run` handler registered. Authority: D-TREASURY-GAPS-WAVE1.",
   );
   lines.push(
-    "- **Settlement outflows (BA 325 §23)** — closed 2026-06-02 for correspondent-bank obligations. `buildSettlementOutflows` folds `TradeBooked` buy-side events (explicit `settlementDate`) AND `SettlementInstructionIssued` events into the LCR denominator. The correspondent-nostro connector now emits a paired `SettlementInstructionIssued` repayment leg for each intraday `FundingDrawnDown` — putting correspondent funding into LCR with no double-count (`FundingDrawnDown` is not folded by `buildFundingPositions`). Remaining scope: maturing own-issued debt / other non-trade outflows. Owner: Ravi + Atlas.",
+    "- **Settlement outflows (BA 110 §23)** — closed 2026-06-02 for correspondent-bank obligations. `buildSettlementOutflows` folds `TradeBooked` buy-side events (explicit `settlementDate`) AND `SettlementInstructionIssued` events into the LCR denominator. The correspondent-nostro connector now emits a paired `SettlementInstructionIssued` repayment leg for each intraday `FundingDrawnDown` — putting correspondent funding into LCR with no double-count (`FundingDrawnDown` is not folded by `buildFundingPositions`). Remaining scope: maturing own-issued debt / other non-trade outflows. Owner: Ravi + Atlas.",
   );
   lines.push(
     "- **FTP curve generator (live market data)** — open. `ravi:ftp-curve-publish` runs with indicative ZAR rates (SARB repo + spreads). Live ZARONIA / JIBAR / SAGB feed deferred to vendor-selection. Owner: Ravi + Anya.",

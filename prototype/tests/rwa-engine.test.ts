@@ -3,7 +3,7 @@
 // D-REGULATORY-READINESS-W2-SLICE-3 — exit-criterion tests for the RWA
 // engine + risk-weight semantic entries + per-entity isolation +
 // standardised-approach computation + BIC piecewise + Reporting Slice-4
-// (BA 700) integration contract.
+// (BA 100) integration contract.
 //
 // Asserts:
 //   1. Five risk-weight semantic entries register without error.
@@ -562,11 +562,11 @@ describe("D-REGULATORY-READINESS-W2-SLICE-3 — boundary errors", () => {
 });
 
 // =====================================================================
-// 8. Reporting Slice 4 (BA 700) integration contract.
+// 8. Reporting Slice 4 (BA 100) integration contract.
 // =====================================================================
 
 describe("D-REGULATORY-READINESS-W2-SLICE-3 — Reporting Slice 4 API contract", () => {
-  it("rwaEngine.compute({entityId, asOf, ...}) is the documented BA 700 entry point", () => {
+  it("rwaEngine.compute({entityId, asOf, ...}) is the documented BA 100 entry point", () => {
     const out = rwaEngine.compute({
       entityId: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
@@ -583,12 +583,12 @@ describe("D-REGULATORY-READINESS-W2-SLICE-3 — Reporting Slice 4 API contract",
       tradingBookPositions: [],
       businessIndicator: ZERO_BI,
     });
-    // Slice 4 BA 700 generator reads:
+    // Slice 4 BA 100 generator reads:
     //   out.totalRwaMinor — denominator of CET1 / AT1 / T2 ratios
-    //   out.credit.totalMinor — BA 700 credit-RWA cell
-    //   out.market.totalMinor — BA 700 market-RWA cell
-    //   out.operational.totalMinor — BA 700 operational-RWA cell
-    //   out.cvaMinor — BA 700 CVA-RWA cell
+    //   out.credit.totalMinor — BA 100 credit-RWA cell
+    //   out.market.totalMinor — BA 100 market-RWA cell
+    //   out.operational.totalMinor — BA 100 operational-RWA cell
+    //   out.cvaMinor — BA 100 CVA-RWA cell
     expect(typeof out.totalRwaMinor).toBe("number");
     expect(typeof out.credit.totalMinor).toBe("number");
     expect(typeof out.market.totalMinor).toBe("number");

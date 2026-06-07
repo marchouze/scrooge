@@ -5,7 +5,7 @@
 // floor, forcing a floor breach. The breach emits:
 //   1. FundingDrawnDown — the correspondent draws on the bank's intraday line; and
 //   2. SettlementInstructionIssued — the paired repayment leg (a non-trade
-//      contractual outflow, BA 325 §23) that lands in the LCR 30-day denominator
+//      contractual outflow, BA 110 §23) that lands in the LCR 30-day denominator
 //      via buildSettlementOutflows (alm-positions.ts).
 //
 // This closes the "SettlementInstructionIssued: 0 settlement instructions within
@@ -20,7 +20,7 @@
 // Environment:
 //   BANK_EVENT_DB   path to SQLite event store (default: $HOME/.local/share/bank/event.db)
 //
-// Authority: D-FX-CLS-MEMBERSHIP; BCBS 248; Banks Act 94 of 1990 Reg 26; BA 325 §23.
+// Authority: D-FX-CLS-MEMBERSHIP; BCBS 248; Banks Act 94 of 1990 Reg 26; BA 110 §23.
 // Author: Tomas (Operations & payments engineer, engineering); consumed by the
 //   LCR fold owned by Ravi (Treasury and ALM engineer, engineering).
 

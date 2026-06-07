@@ -10,7 +10,7 @@
 // (markets/margin schema). The Ravi ALM readiness handler references
 // `CollateralUpdated` as a zero-count event type via that existing definition.
 //
-// Authority: BA 325 Annex 1; Banks Act Reg 26 (LCR); D-TREASURY-GAPS-WAVE1.
+// Authority: BA 110 Annex 1; Banks Act Reg 26 (LCR); D-TREASURY-GAPS-WAVE1.
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { z } from "zod";

@@ -25,7 +25,7 @@
 //     - InterbankLoanPlaced → RSF by residual maturity.
 //     - HQLA positions → RSF by tier.
 //     - BalanceSheetProjected (Bea + Ravi substrate; gap still outstanding for
-//       full BA 326 scope).
+//       full BA 120 scope).
 //
 // Build-phase posture (CLAUDE.md "build phase vs licence-day"):
 //   Funding / ASF / RSF are now partially wired via WS1-PR1a events. HQLA is
@@ -36,7 +36,7 @@
 //
 // Authority: D-RAS (CEO-approved 2026-05-06) · D-MARKETS-CAPITAL-TIME-SHAPE
 //   (CEO-approved 2026-05-12) · RRTB Regulation 26 (LCR) · RRTB Regulation
-//   26A (NSFR) · BCBS D295 · BCBS D396 · BA 325 · BA 326.
+//   26A (NSFR) · BCBS D295 · BCBS D396 · BA 110 · BA 120.
 //
 // Author: Ravi (Treasury and ALM engineer, engineering)
 
@@ -220,9 +220,9 @@ function extractRawPosition(type: string, payload: Record<string, unknown>): Raw
 // Entity scoping — WS-LCR-ENGINE-RECONCILIATION (D-LCR-TILE-PROVENANCE follow-on)
 // ---------------------------------------------------------------------------
 // The LCR / NSFR the dashboard tile renders is a *bank* ratio: Regulation 26
-// (LCR) and 26A (NSFR) are bank-licence-bound, and the BA 325 generator
+// (LCR) and 26A (NSFR) are bank-licence-bound, and the BA 110 generator
 // already refuses any entity other than `LE-ZA-HOZ-BANK`
-// (`BA_325_BANK_ENTITIES`, ba-325-lcr.ts:518). The LCR-feeding folds below
+// (`BA_110_BANK_ENTITIES`, ba-110-lcr.ts:518). The LCR-feeding folds below
 // historically replayed the WHOLE store with no entity predicate, so a
 // non-fixture flow booked on a sibling legal entity (`LE-ZA-HOZ-SECURITIES`,
 // `LE-ZA-HOZ-GROUP`, or the legacy `LE-BANK-SA` identifier) would silently
@@ -339,7 +339,7 @@ function readHQLAFromEventStore(
   }
 
   // Bond positions (BondTradeExecuted): the banking-book bond inventory is HQLA
-  // when the issuer qualifies (BA 325 Annex 1). The bond desk books via
+  // when the issuer qualifies (BA 110 Annex 1). The bond desk books via
   // BondTradeExecuted — NOT the older TradeBooked/TradeSettled vocabulary the
   // CollateralInventorySnapshotted fold above covers — so this fold ALWAYS runs
   // (additive, like repo cash) regardless of any security snapshot. Each open
@@ -348,7 +348,7 @@ function readHQLAFromEventStore(
   // rating on the booking event → non-HQLA (conservative; a rating-bearing
   // SecurityMaster feed would reclassify them). Sells / matured / sold positions
   // are excluded. Market value = nominalMinor × cleanPricePercent / 100, in major
-  // ZAR. Authority: BA 325 Annex 1; BCBS D295 §50.
+  // ZAR. Authority: BA 110 Annex 1; BCBS D295 §50.
   const closedBondTradeIds = new Set<string>();
   for (const evType of ["BondSold", "BondMatured"] as const) {
     for (const ev of eventStore.replay({ type: evType })) {
@@ -431,7 +431,7 @@ interface InterbankLoanClosedPayload {
  * FundingPosition entries for the LCR denominator.
  *
  * - DepositTaken → category maps directly from depositCategory (string literals match).
- * - FundingLineDrawn → "wholesale-non-operational" (conservative, BA 325 §34).
+ * - FundingLineDrawn → "wholesale-non-operational" (conservative, BA 110 §34).
  * - InterbankLoanPlaced → "wholesale-non-operational" (counterparty claim; outflow).
  *
  * Closed positions (DepositMatured, DepositWithdrawnEarly, FundingLineRepaid,
@@ -497,7 +497,7 @@ function buildFundingPositions(
     if (!p.fundingLineId || repaidLineIds.has(p.fundingLineId)) continue;
     const amountZar = (p.drawnAmountZar ?? 0) / 100;
     if (amountZar <= 0) continue;
-    // Conservative per BA 325 §34: classify as wholesale-non-operational (100% runoff)
+    // Conservative per BA 110 §34: classify as wholesale-non-operational (100% runoff)
     positions.push({ amountZar, category: "wholesale-non-operational" });
     fundingLineCount++;
   }
@@ -567,7 +567,7 @@ interface SettlementInstructionPayload {
 
 /**
  * Fold `TradeBooked` buy-side events into contractual settlement outflows
- * for the LCR denominator (BA 325 §23 — contractual maturity within the
+ * for the LCR denominator (BA 110 §23 — contractual maturity within the
  * stress horizon).
  *
  * Only includes trades that:
@@ -577,7 +577,7 @@ interface SettlementInstructionPayload {
  *   4. Are buy-side (`side === "buy"`).
  *
  * Conservative treatment: classified as `"wholesale-non-operational"` per
- * BA 325 §23 contractual-maturity outflow bucket.
+ * BA 110 §23 contractual-maturity outflow bucket.
  */
 function buildSettlementOutflows(
   rawEventStore: EventStore,
@@ -638,7 +638,7 @@ function buildSettlementOutflows(
     count++;
   }
 
-  // SettlementInstructionIssued — non-trade contractual outflows per BA 325 §23.
+  // SettlementInstructionIssued — non-trade contractual outflows per BA 110 §23.
   let instructionCount = 0;
   for (const ev of eventStore.replay({ type: "SettlementInstructionIssued" })) {
     if (ev.as_of > asOf) continue;
@@ -657,7 +657,7 @@ function buildSettlementOutflows(
 
 // ---------------------------------------------------------------------------
 // ASF / RSF fold — CapitalEvent + DepositTaken + InterbankLoanPlaced + HQLA
-//                  + BalanceSheetProjected (supplemental BA 326 scope)
+//                  + BalanceSheetProjected (supplemental BA 120 scope)
 // ---------------------------------------------------------------------------
 
 interface BalanceSheetPayload {
@@ -671,7 +671,7 @@ interface BalanceSheetPayload {
 }
 
 /**
- * Build ASF items per BA 326 §8:
+ * Build ASF items per BA 120 §8:
  *   - Tier 1 capital: 100% ASF weight (from computeCapitalMetrics).
  *   - DepositTaken: weight by category × residual maturity.
  */
@@ -709,7 +709,7 @@ function buildASFItems(
         category = residualDays >= 365 ? "wholesale-gt1y" : "wholesale-lt1y-operational";
         break;
       case "wholesale-non-operational":
-        // 0% ASF weight regardless of tenor (BA 326 Table 1)
+        // 0% ASF weight regardless of tenor (BA 120 Table 1)
         category = "wholesale-lt1y-non-operational";
         break;
       default:
@@ -718,7 +718,7 @@ function buildASFItems(
     asfItems.push({ amountZar, category });
   }
 
-  // BalanceSheetProjected — supplemental BA 326 ASF items (latest snapshot wins).
+  // BalanceSheetProjected — supplemental BA 120 ASF items (latest snapshot wins).
   let latestBs: { as_of: string; payload: BalanceSheetPayload } | null = null;
   for (const ev of eventStore.replay({ type: "BalanceSheetProjected" })) {
     if (ev.as_of > asOf) continue;
@@ -742,7 +742,7 @@ function buildASFItems(
 }
 
 /**
- * Build RSF items per BA 326:
+ * Build RSF items per BA 120:
  *   - HQLA L1: 5%, L2a: 15%, L2b: 50%.
  *   - InterbankLoanPlaced (live placements): RSF by residual maturity.
  *   - BalanceSheetProjected: retail loans + encumbered assets + OBS commitments.
@@ -763,7 +763,7 @@ function buildRSFItems(
     rsfItems.push({ amountZar: pos.amountZar, category });
   }
 
-  // IBL placements → RSF by residual maturity (BA 326 §14)
+  // IBL placements → RSF by residual maturity (BA 120 §14)
   for (const ibl of liveIBLs) {
     const amountZar = ibl.principalZar / 100;
     if (amountZar <= 0) continue;
@@ -779,7 +779,7 @@ function buildRSFItems(
     rsfItems.push({ amountZar, category });
   }
 
-  // BalanceSheetProjected — supplemental BA 326 RSF items (latest snapshot wins).
+  // BalanceSheetProjected — supplemental BA 120 RSF items (latest snapshot wins).
   let latestBsRsf: { as_of: string; payload: BalanceSheetPayload } | null = null;
   for (const ev of eventStore.replay({ type: "BalanceSheetProjected" })) {
     if (ev.as_of > asOf) continue;
@@ -820,7 +820,7 @@ function buildRSFItems(
  *   - ASF: CapitalEvent (via computeCapitalMetrics) + DepositTaken.
  *   - RSF: HQLA positions (via readHQLAFromEventStore) + InterbankLoanPlaced.
  *   - SettlementInstructionIssued: gap still outstanding.
- *   - BalanceSheetProjected: gap partially wired; full BA 326 scope pending.
+ *   - BalanceSheetProjected: gap partially wired; full BA 120 scope pending.
  *
  * @param eventStore  - the event store to fold against (caller passes the
  *                      composition singleton in production; tests pass an
@@ -831,7 +831,7 @@ function buildRSFItems(
  *                      `LE-ZA-HOZ-BANK`). When supplied, the LCR-feeding
  *                      folds (HQLA, funding, settlement outflows) are
  *                      narrowed to that entity — a per-entity LCR, matching
- *                      the BA 325 generator's `LE-ZA-HOZ-BANK`-only scope.
+ *                      the BA 110 generator's `LE-ZA-HOZ-BANK`-only scope.
  *                      When omitted the snapshot is store-wide (legacy
  *                      behaviour; every existing caller / test is unaffected).
  *                      The ASF / RSF capital reads are intentionally NOT
@@ -881,7 +881,7 @@ export function getALMPositionSnapshot(
     !hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken)
   ) {
     gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken}: not yet emitted (Ravi + Atlas substrate). Retail / wholesale deposit classification per BA 325 §19 not yet queryable.`,
+      `${ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken}: not yet emitted (Ravi + Atlas substrate). Retail / wholesale deposit classification per BA 110 §19 not yet queryable.`,
     );
   }
 
@@ -983,7 +983,7 @@ export function getALMPositionSnapshot(
   // BalanceSheetProjected gap: conditional on event existence
   if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet)) {
     gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced; BalanceSheetProjected event pending for complete BA 326 scope (Bea + Ravi substrate).`,
+      `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced; BalanceSheetProjected event pending for complete BA 120 scope (Bea + Ravi substrate).`,
     );
   }
 

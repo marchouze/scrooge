@@ -30,8 +30,8 @@ import { EventStore } from "@platform/event-store/store";
 import { makeEquitySettlementInstructed } from "@platform/markets/cdm/equity";
 import { makeFxSettlementInstructed } from "@platform/markets/cdm/fx";
 import { logger } from "@platform/observability/logger";
-import { type Ba325Output, generateBa325LcrWithEvents } from "@platform/reporting/ba-325-lcr";
-import { generateNsfrProjection } from "@platform/reporting/ba-350-nsfr";
+import { type Ba110Output, generateBa110LcrWithEvents } from "@platform/reporting/ba-110-lcr";
+import { generateNsfrProjection } from "@platform/reporting/ba-120-nsfr";
 
 // ---------------------------------------------------------------------------
 // Scenario constants
@@ -201,9 +201,9 @@ async function main(): Promise<void> {
   const { setDefaultProvenanceModeOverride } = await import("@platform/projections/filter");
   setDefaultProvenanceModeOverride("combined");
 
-  let lcrOutput: Ba325Output;
+  let lcrOutput: Ba110Output;
   try {
-    lcrOutput = await generateBa325LcrWithEvents({
+    lcrOutput = await generateBa110LcrWithEvents({
       entity: ENTITY,
       asOf: PERIOD_END,
       periodId: PERIOD_ID,

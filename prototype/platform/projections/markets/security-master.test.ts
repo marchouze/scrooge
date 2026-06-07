@@ -229,7 +229,7 @@ describe("SecurityMasterProjection — FinancialInstrumentClassified", () => {
       asOf: AS_OF,
       entity: ENTITY,
       actor: ACTOR,
-      citations: [...CITATIONS, "BA-325", "IFRS9-4-1"],
+      citations: [...CITATIONS, "BA-110", "IFRS9-4-1"],
       payload: {
         instrumentId: "fi:bond:ZAG000149017",
         hqlaLevel: "level-1",
@@ -238,7 +238,7 @@ describe("SecurityMasterProjection — FinancialInstrumentClassified", () => {
         saCcrAssetClass: "n-a",
         classifiedBy: "Helena (Chief Risk Officer, governance)",
         effectiveDate: "2026-05-22",
-        rationale: "Sovereign ZAR bond; meets all Level-1 HQLA criteria under BA 325.",
+        rationale: "Sovereign ZAR bond; meets all Level-1 HQLA criteria under BA 110.",
       },
     });
 

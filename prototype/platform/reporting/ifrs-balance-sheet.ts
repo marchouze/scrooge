@@ -6,7 +6,7 @@
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved
 // 2026-05-10), pack §6 Slice 6.
 //
-// Pipeline (mirrors BA 700 Slice 4 architecture):
+// Pipeline (mirrors BA 100 Slice 4 architecture):
 //
 //   EVENT LOG (P1) → PROJECTION RUNTIME → PERIOD CLOSE (Slice 2)
 //      → SEMANTIC LAYER (Slice 6 IFRS entries)

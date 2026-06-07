@@ -11,7 +11,7 @@
 //   - L2b cap: L2b ≤ 15% of total HQLA (if breached → l2bCapBreached: true).
 //
 // Build-phase note: zero real positions → all totals are zero.
-// Authority: BA 325 Annex 1; Banks Act Reg 26.
+// Authority: BA 110 Annex 1; Banks Act Reg 26.
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { eventStore } from "../composition";

@@ -65,7 +65,7 @@ export interface FinancialConstant {
 }
 
 export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
-  // ── LCR run-off rates (BA 325 calibration) — CFO ──────────────────────────
+  // ── LCR run-off rates (BA 110 calibration) — CFO ──────────────────────────
   {
     key: "lcr.runoff.retail-stable",
     value: 0.03,
@@ -74,7 +74,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Run-off — retail stable",
     description: "30-day stressed run-off rate for stable retail deposits.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
   {
     key: "lcr.runoff.retail-less-stable",
@@ -84,7 +84,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Run-off — retail less stable",
     description: "30-day stressed run-off rate for less-stable retail deposits.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
   {
     key: "lcr.runoff.wholesale-operational",
@@ -94,7 +94,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Run-off — wholesale operational",
     description: "Run-off rate for unsecured operational wholesale funding.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
   {
     key: "lcr.runoff.wholesale-non-operational",
@@ -104,7 +104,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Run-off — wholesale non-operational",
     description: "Run-off rate for unsecured non-operational wholesale funding.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
   {
     key: "lcr.runoff.secured-level1",
@@ -114,7 +114,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Run-off — secured (L1 collateral)",
     description: "Run-off rate for secured funding backed by Level-1 collateral.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
   {
     key: "lcr.runoff.secured-level2",
@@ -124,7 +124,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Run-off — secured (L2 collateral)",
     description: "Run-off rate for secured funding backed by Level-2 collateral.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
 
   // ── LCR inflow rates — CFO ─────────────────────────────────────────────────
@@ -136,7 +136,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Inflow — contractual",
     description: "Recognition rate for fully-contractual 30-day inflows.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
   {
     key: "lcr.inflow.other",
@@ -146,10 +146,10 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Inflow — other",
     description: "Recognition rate for other (non-contractual) 30-day inflows.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
 
-  // ── LCR HQLA haircuts (BA 325 Annex 1) — CFO ──────────────────────────────
+  // ── LCR HQLA haircuts (BA 110 Annex 1) — CFO ──────────────────────────────
   {
     key: "lcr.haircut.L1",
     value: 0.0,
@@ -158,7 +158,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Haircut — Level 1",
     description: "Haircut applied to Level-1 HQLA (cash, reserves, 0% RW sovereigns).",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325 Annex 1",
+    citation: "BA 110 Annex 1",
   },
   {
     key: "lcr.haircut.L2a",
@@ -168,7 +168,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Haircut — Level 2a",
     description: "Haircut applied to Level-2a HQLA (20% RW sovereigns, AA- corporates).",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325 Annex 1",
+    citation: "BA 110 Annex 1",
   },
   {
     key: "lcr.haircut.L2b",
@@ -178,7 +178,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Haircut — Level 2b",
     description: "Build-phase floor haircut for Level-2b HQLA (actual up to 50%).",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325 Annex 1",
+    citation: "BA 110 Annex 1",
   },
 
   // ── LCR caps + recognition + minimum — CFO ────────────────────────────────
@@ -190,7 +190,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Cap — L2 as share of HQLA",
     description: "Maximum Level-2 (post-haircut) as a fraction of total HQLA.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325 §37-40",
+    citation: "BA 110 §37-40",
   },
   {
     key: "lcr.cap.l2b-of-hqla",
@@ -200,7 +200,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Cap — L2b as share of HQLA",
     description: "Maximum Level-2b (post-haircut) as a fraction of total HQLA.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325 §37-40",
+    citation: "BA 110 §37-40",
   },
   {
     key: "lcr.inflow-recognition-cap",
@@ -210,7 +210,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "Inflow recognition cap",
     description: "Recognised inflows capped at this fraction of stressed outflows.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325 §19",
+    citation: "BA 110 §19",
   },
   {
     key: "lcr.minimum-ratio",
@@ -220,7 +220,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "LCR regulatory minimum",
     description: "Minimum LCR (1.00 = 100%) below which the bank is non-compliant.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 325",
+    citation: "BA 110",
   },
   {
     key: "lcr.at-minimum-tolerance-pct",
@@ -233,7 +233,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     citation: "D-TREASURY-GAPS-WAVE1",
   },
 
-  // ── NSFR ASF weights (BA 326) — CFO ───────────────────────────────────────
+  // ── NSFR ASF weights (BA 120) — CFO ───────────────────────────────────────
   {
     key: "nsfr.asf.tier1-capital",
     value: 1.0,
@@ -242,7 +242,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "ASF — Tier-1 capital",
     description: "Available stable funding factor for Tier-1 capital.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.asf.tier2-capital-gt1y",
@@ -252,7 +252,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "ASF — Tier-2 capital >1Y",
     description: "ASF factor for Tier-2 capital with residual maturity over one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.asf.retail-stable-lt1y",
@@ -262,7 +262,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "ASF — retail stable <1Y",
     description: "ASF factor for stable retail deposits under one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.asf.retail-less-stable-lt1y",
@@ -272,7 +272,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "ASF — retail less stable <1Y",
     description: "ASF factor for less-stable retail deposits under one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.asf.wholesale-gt1y",
@@ -282,7 +282,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "ASF — wholesale >1Y",
     description: "ASF factor for wholesale deposits over one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.asf.wholesale-lt1y-operational",
@@ -292,7 +292,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "ASF — wholesale <1Y operational",
     description: "ASF factor for operational wholesale deposits under one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.asf.wholesale-lt1y-non-operational",
@@ -302,10 +302,10 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "ASF — wholesale <1Y non-operational",
     description: "ASF factor for non-operational wholesale deposits under one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
 
-  // ── NSFR RSF weights (BA 326) — CFO ───────────────────────────────────────
+  // ── NSFR RSF weights (BA 120) — CFO ───────────────────────────────────────
   {
     key: "nsfr.rsf.hqla-l1",
     value: 0.05,
@@ -314,7 +314,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — HQLA L1",
     description: "Required stable funding factor for Level-1 HQLA.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.hqla-l2a",
@@ -324,7 +324,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — HQLA L2a",
     description: "RSF factor for Level-2a HQLA.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.hqla-l2b",
@@ -334,7 +334,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — HQLA L2b",
     description: "RSF factor for Level-2b HQLA.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.loan-lt6m",
@@ -344,7 +344,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — loans <6M",
     description: "RSF factor for loans maturing within six months.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.loan-6m-1y",
@@ -354,7 +354,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — loans 6M–1Y",
     description: "RSF factor for loans maturing in six months to one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.loan-gt1y-standard",
@@ -364,7 +364,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — loans >1Y standard",
     description: "RSF factor for standard loans maturing beyond one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.loan-gt1y-residential",
@@ -374,7 +374,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — loans >1Y residential",
     description: "RSF factor for residential loans maturing beyond one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.security-lt1y",
@@ -384,7 +384,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — securities <1Y",
     description: "RSF factor for securities maturing within one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.security-gt1y-non-hqla",
@@ -394,7 +394,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — securities >1Y non-HQLA",
     description: "RSF factor for non-HQLA securities maturing beyond one year.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.operational-deposit-at-fi",
@@ -404,7 +404,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — operational deposit at FI",
     description: "RSF factor for operational deposits placed at other financial institutions.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.rsf.derivative-net",
@@ -414,7 +414,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "RSF — derivatives (net)",
     description: "RSF factor for net derivative positions (simplified; full netting deferred).",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
 
   // ── NSFR threshold — CFO ──────────────────────────────────────────────────
@@ -426,7 +426,7 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     label: "NSFR regulatory minimum",
     description: "Minimum NSFR (1.00 = 100%) below which the bank is non-compliant.",
     owningRole: "Chief Financial Officer",
-    citation: "BA 326",
+    citation: "BA 120",
   },
   {
     key: "nsfr.at-minimum-tolerance-pct",
@@ -674,7 +674,7 @@ export interface BaselLinkage {
 }
 
 export const BASEL_PROVISION_LINKAGE: Readonly<Record<string, BaselLinkage>> = {
-  // LCR — Reg 26 / BA 325 adopt the Basel LCR (urn:reg:bcbs:lcr:*).
+  // LCR — Reg 26 / BA 110 adopt the Basel LCR (urn:reg:bcbs:lcr:*).
   "lcr.runoff.retail-stable": {
     baselProvision: "urn:reg:bcbs:lcr:40.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
@@ -735,7 +735,7 @@ export const BASEL_PROVISION_LINKAGE: Readonly<Record<string, BaselLinkage>> = {
     baselProvision: "urn:reg:bcbs:lcr:20.5",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26",
   },
-  // NSFR — Reg 26A / BA 326 adopt the Basel NSFR (urn:reg:bcbs:nsf:*).
+  // NSFR — Reg 26A / BA 120 adopt the Basel NSFR (urn:reg:bcbs:nsf:*).
   "nsfr.asf.tier1-capital": {
     baselProvision: "urn:reg:bcbs:nsf:30.1",
     localOverride: "urn:reg:za:regs-relating-to-banks:reg26a",

@@ -2,15 +2,15 @@
 //
 // File a Decision(requested) for D-PROVENANCE-BUILD-PHASE-CLASS — the
 // proposed third provenance class `build-phase-fixture` that lets real
-// build-phase events flow through production projections (BA-325, BA-350,
-// BA-700, dashboard reporting tiles) without polluting the `simulated`
+// build-phase events flow through production projections (BA-110, BA-350,
+// BA-100, dashboard reporting tiles) without polluting the `simulated`
 // class reserved for scenario / rehearsal / counterfactual data.
 //
 // Brief:    brief:atlas:d-provenance-build-phase-class-decision-card-sco:2026-05-22
 // Run:      run:atlas:2026-05-22T07-03-45-966Z
 // Authority: D-DATA-PROVENANCE-SUBSTRATE · D-PROVENANCE-FILTER-ENFORCEMENT ·
 //            Principles/1-events-are-truth.md · Principles/6-autonomous-by-default.md
-// Trigger:   Eitan (Treasurer, governance) BA-325 first end-to-end validation
+// Trigger:   Eitan (Treasurer, governance) BA-110 first end-to-end validation
 //            report 2026-05-22 — gap G-1 (CRITICAL — blocks M2).
 // Author:    Atlas (Core banking platform architect, engineering — substrate)
 
@@ -25,18 +25,18 @@ const result = requestDecision({
   category: "engineering",
   recommendation:
     "Option A — introduce a third ProvenanceKind value `build-phase-fixture`, distinct from `simulated`. " +
-    "Production projections (BA-325, every M2 return, dashboard reporting tiles) accept `production` AND " +
+    "Production projections (BA-110, every M2 return, dashboard reporting tiles) accept `production` AND " +
     "`build-phase-fixture` events during the build phase; a one-shot operator command " +
     "(`bun run provenance:commence-trading`) flips to `production`-only at commencement-of-trading and " +
     "re-emits surviving rows under `production` via typed `ProvenanceReclassified` events. The currently-" +
     "overloaded `simulated` class is preserved for scenario / rehearsal / counterfactual fixtures that must " +
     "NEVER flow into production projections. Refines (does not loosen) D-PROVENANCE-FILTER-ENFORCEMENT.",
   rationale:
-    "Eitan's BA-325 first end-to-end validation (2026-05-22, blake3:ea05a7cacda07b3f9432e0177cbb622160d4d3150ce5475068f0db10b61fcd1d) " +
+    "Eitan's BA-110 first end-to-end validation (2026-05-22, blake3:ea05a7cacda07b3f9432e0177cbb622160d4d3150ce5475068f0db10b61fcd1d) " +
     "found that all 386 build-phase events (SubLedgerPostingEmitted, FxSettlementInstructed) are tagged " +
-    "`provenance.kind = simulated` and excluded by the production-grade BA-325 filter, producing a " +
+    "`provenance.kind = simulated` and excluded by the production-grade BA-110 filter, producing a " +
     "structurally empty return (totalStockHqlaMinor = 0, lcrRatio = infinity). The same gap blocks every " +
-    "M2 return, not just BA-325. Three options analysed in the scoping card; Option A chosen because " +
+    "M2 return, not just BA-110. Three options analysed in the scoping card; Option A chosen because " +
     "(1) it aligns with the operating-model semantics (simulated for scenarios; build-phase-fixture for real " +
     "data substituted during the build phase; production for post-licence-day real data — three classes, " +
     "three meanings, no overload), (2) it preserves the strong audit-integrity property that scenarios stay " +
@@ -52,7 +52,7 @@ const result = requestDecision({
     "D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
     "Principles/1-events-are-truth.md",
     "Principles/6-autonomous-by-default.md",
-    "docs/2026-05-22_eitan_ba-325-first-end-to-end-validation.md",
+    "docs/2026-05-22_eitan_ba-110-first-end-to-end-validation.md",
   ],
   followOnDispatch: [
     {

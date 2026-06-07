@@ -7,7 +7,7 @@
 // What this handler does:
 //   1. Calls getCollateralInventory(asOf) from the collateral projection module.
 //   2. Emits a CollateralInventorySnapshotted event with the HQLA buffer totals
-//      and BA 325 Annex 1 cap-check results.
+//      and BA 110 Annex 1 cap-check results.
 //   3. If l2CapBreached or l2bCapBreached: also emits HQLACompositionDrift
 //      with severity "breach".
 //   4. Writes a brief daily deliverable record.
@@ -18,7 +18,7 @@
 //   - The substrate is wired and ready; real positions flow once trade-booking
 //     events start appearing in the event store at licence-day.
 //
-// Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -35,7 +35,7 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 const EVENT_CITATIONS = [
   "BANKS-ACT-94-1990",
   "BANKS-REG-26",
-  "BA-325-ANNEX-1",
+  "BA-110-ANNEX-1",
   "D-TREASURY-GAPS-WAVE1",
 ];
 
@@ -77,8 +77,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       const l1PctOfTotal = totalHQLA > 0 ? (inventory.l1Zar / totalHQLA) * 100 : 0;
 
       const breachedBand = inventory.l2bCapBreached
-        ? "L2b > 15% of total HQLA (BA 325 Annex 1 cap)"
-        : "L2 > 40% of total HQLA (BA 325 Annex 1 cap)";
+        ? "L2b > 15% of total HQLA (BA 110 Annex 1 cap)"
+        : "L2 > 40% of total HQLA (BA 110 Annex 1 cap)";
 
       const driftEvent = makeHQLACompositionDrift({
         asOf: ctx.asOf,
@@ -109,7 +109,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push(`# Atlas — Collateral inventory snapshot, ${date}`);
     lines.push("");
     lines.push(
-      `Daily HQLA collateral inventory snapshot — BA 325 Annex 1 classification, ${date}.`,
+      `Daily HQLA collateral inventory snapshot — BA 110 Annex 1 classification, ${date}.`,
     );
     lines.push("");
     lines.push("## HQLA buffer summary");
@@ -135,7 +135,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     );
     lines.push(`| **Total HQLA buffer** | **${fmt(inventory.totalHQLAZar)}** | 100% |`);
     lines.push("");
-    lines.push("## BA 325 cap checks");
+    lines.push("## BA 110 cap checks");
     lines.push("");
     lines.push(`- **L2 cap (max 40% of HQLA):** ${inventory.l2CapBreached ? "BREACHED" : "OK"}`);
     lines.push(`- **L2b cap (max 15% of HQLA):** ${inventory.l2bCapBreached ? "BREACHED" : "OK"}`);

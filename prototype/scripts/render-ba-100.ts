@@ -1,6 +1,6 @@
 // scripts/render-ba-100.ts
 //
-// CLI wrapper for the BA 100 (Balance Sheet) generator + renderer.
+// CLI wrapper for the BA 100 (Capital Adequacy) generator + renderer.
 //
 // Usage:
 //   bun run scripts/render-ba-100.ts \
@@ -11,60 +11,80 @@
 //       --period-end 2026-05-31T23:59:59.999Z \
 //       [--functional-currency ZAR] \
 //       [--classifications path/to/classifications.json] \
-//       [--tolerate-imbalance-minor N] \
+//       [--deductions path/to/deductions.json] \
+//       [--rwa path/to/rwa.json] \
 //       [--out path/to/ba-100.json]
 //
-// What it does:
-//   1. Opens / replays the period via the period-close orchestration.
-//   2. Closes the period and obtains the trial balance.
-//   3. Loads a per-account BA 100 line-classification map from
-//      `--classifications` JSON file (defaults to a minimal built-in
-//      fixture).
+// What it does (P1-compliant path per C-3 fix):
+//   1. Replays the event store for the entity.
+//   2. Folds SubLedgerPostingEmitted + CapitalContributionRecorded events
+//      directly to derive capital account balances (no trial-balance routing).
+//   3. Loads per-account capital classifications, regulatory deductions,
+//      and RWA decomposition from `--classifications` / `--deductions` /
+//      `--rwa` JSON files. Each defaults to a built-in build-phase fixture.
 //   4. Generates the BA 100 projection.
-//   5. Renders to canonical JSON.
+//   5. Renders to canonical JSON (deterministic, schema-validated).
 //   6. Writes to stdout (default) or `--out`.
 //
-// This script is rehearsal-grade. The production form (downstream slice)
-// emits a `ReportGenerated` event that hashes the rendered bytes into the
-// RMS document store.
+// P1 fix (C-3): this script now uses `generateBa100CapitalFromEvents()` which
+// folds primary posting events directly, bypassing the trial-balance routing.
+// Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
+//
+// This script is rehearsal-grade. The production form (Slice 5) emits a
+// `ReportGenerated` event that hashes the rendered bytes into the RMS
+// document store. RWA inputs land via the W2 Slice 3 RWA engine once it
+// merges; until then the fixture provides a worked rehearsal example.
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
-//   reports to Camille CFO) + Anya (Data / analytics engineer,
-//   engineering — reports to Devon COO).
+//   reports to Camille CFO) + Atlas (Core banking platform architect,
+//   engineering — P1-fix C-3) + Anya (Data / analytics engineer,
+//   engineering — reports to Devon COO; semantic-layer integration).
 
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import {
-  type Ba100LineClassification,
-  generateBa100BalanceSheet,
+  type AccountCapitalClassification,
+  type RegulatoryDeduction,
+  type RwaDecomposition,
+  generateBa100CapitalFromEvents,
   renderBa100Canonical,
 } from "../platform/reporting";
 
 // ---------------------------------------------------------------------------
-// Built-in fixture classifications — fallback when --classifications not
-// supplied. Minimal placeholder until Mira's WS-INSTRUMENT-ANALYSES lands
-// the SARB BA 100 published-schema mapping.
+// Build-phase default classifications — fallback when --classifications
+// not supplied. Pinned to a synthetic capital line so the CLI produces a
+// non-empty rehearsal output. The chart-of-accounts capital-tier fields
+// land at Slice 6+ once Mira's WS-INSTRUMENT-ANALYSES finalises the
+// SARB BA 100 published mapping.
 // ---------------------------------------------------------------------------
 
-const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba100LineClassification[] = [
-  {
-    leafAccountId: "ACC-1100-001",
-    section: "assets",
-    lineLabel: "assets.cash-and-balances-at-sarb",
-  },
+const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
   {
     leafAccountId: "ACC-equity-position-stub",
-    section: "equity",
-    lineLabel: "equity.share-capital",
-  },
-  {
-    leafAccountId: "ACC-retained-earnings-stub",
-    section: "equity",
-    lineLabel: "equity.retained-earnings",
+    capitalTier: "cet1",
+    subCategory: "cet1.paid-up-ordinary-shares",
   },
 ];
+
+const BUILD_PHASE_DEFAULT_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
+
+/**
+ * Build-phase default RWA. R30,000,000 in minor units (3,000,000,000
+ * cents) split notionally across credit / market / operational. Stand-in
+ * until W2 Slice 3 RWA engine lands; the source label "fixture-rehearsal"
+ * makes the placeholder origin obvious in the rendered output.
+ */
+const BUILD_PHASE_DEFAULT_RWA: RwaDecomposition = {
+  creditRwaMinor: 1_500_000_000,
+  marketRwaMinor: 1_000_000_000,
+  operationalRwaMinor: 500_000_000,
+  source: "fixture-rehearsal",
+};
+
+// ---------------------------------------------------------------------------
+// Argv parsing — minimal, hand-rolled (no external dep).
+// ---------------------------------------------------------------------------
 
 interface CliArgs {
   readonly entity: string;
@@ -74,7 +94,8 @@ interface CliArgs {
   readonly periodStart: string;
   readonly periodEnd: string;
   readonly classificationsPath?: string;
-  readonly tolerateImbalanceMinor?: number;
+  readonly deductionsPath?: string;
+  readonly rwaPath?: string;
   readonly outPath?: string;
 }
 
@@ -90,13 +111,13 @@ function parseArgs(argv: readonly string[]): CliArgs {
   const periodEnd = get("--period-end");
   if (!entity || !asOf || !periodId || !periodStart || !periodEnd) {
     throw new Error(
-      "render-ba-100: --entity, --as-of, --period-id, --period-start, --period-end are required.",
+      "render-ba-100: --entity, --as-of, --period-id, --period-start, --period-end are required. See script header for usage.",
     );
   }
   const functionalCurrency = get("--functional-currency") ?? "ZAR";
   const classificationsPath = get("--classifications");
-  const tolStr = get("--tolerate-imbalance-minor");
-  const tolerateImbalanceMinor = tolStr !== undefined ? Number.parseInt(tolStr, 10) : undefined;
+  const deductionsPath = get("--deductions");
+  const rwaPath = get("--rwa");
   const outPath = get("--out");
   return {
     entity,
@@ -106,7 +127,8 @@ function parseArgs(argv: readonly string[]): CliArgs {
     periodStart,
     periodEnd,
     ...(classificationsPath ? { classificationsPath } : {}),
-    ...(tolerateImbalanceMinor !== undefined ? { tolerateImbalanceMinor } : {}),
+    ...(deductionsPath ? { deductionsPath } : {}),
+    ...(rwaPath ? { rwaPath } : {}),
     ...(outPath ? { outPath } : {}),
   };
 }
@@ -120,55 +142,38 @@ function loadJson<T>(path: string, label: string): T {
   return parsed as T;
 }
 
+// ---------------------------------------------------------------------------
+// main — P1-compliant path: fold primary events directly (C-3 fix).
+// ---------------------------------------------------------------------------
+
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const classifications = args.classificationsPath
-    ? loadJson<readonly Ba100LineClassification[]>(args.classificationsPath, "classifications")
+    ? loadJson<readonly AccountCapitalClassification[]>(args.classificationsPath, "classifications")
     : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
+  const deductions = args.deductionsPath
+    ? loadJson<readonly RegulatoryDeduction[]>(args.deductionsPath, "deductions")
+    : BUILD_PHASE_DEFAULT_DEDUCTIONS;
+  const rwa = args.rwaPath
+    ? loadJson<RwaDecomposition>(args.rwaPath, "rwa")
+    : BUILD_PHASE_DEFAULT_RWA;
 
-  // Open + close the period to produce a trial balance.
-  const ACTOR = { type: "service" as const, id: "agent:Bea" };
-  const CITATIONS = ["D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN", "WS-FINANCE-BA-RETURNS-QUINTET"];
-  openPeriod({
-    eventStore,
-    entity: args.entity,
-    actor: ACTOR,
-    citations: CITATIONS,
-    payload: {
-      periodId: args.periodId,
-      periodKind: "month",
-      periodStart: args.periodStart,
-      periodEnd: args.periodEnd,
-      openedAt: args.periodStart,
-      functionalCurrency: args.functionalCurrency,
-    },
-  });
-  const close = closePeriod({
-    eventStore,
-    entity: args.entity,
-    periodId: args.periodId,
-    closedAt: args.asOf,
-    actor: ACTOR,
-    citations: CITATIONS,
-  });
-
-  const output = generateBa100BalanceSheet({
+  // P1-compliant: fold SubLedgerPostingEmitted + CapitalContributionRecorded
+  // events directly — no trial-balance routing.
+  const output = generateBa100CapitalFromEvents(eventStore, {
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,
     functionalCurrency: args.functionalCurrency,
-    trialBalance: close.trialBalance.rows,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
     classifications,
-    trialBalanceSnapshotEventId: close.trialBalanceSnapshotEvent.event_id,
-    ...(args.tolerateImbalanceMinor !== undefined
-      ? { tolerateImbalanceMinor: args.tolerateImbalanceMinor }
-      : {}),
+    deductions,
+    rwa,
   });
-
   const { canonicalJson } = renderBa100Canonical(output, {
     renderedAt: new Date().toISOString(),
   });
-
   if (args.outPath) {
     writeFileSync(args.outPath, canonicalJson, "utf8");
   } else {

@@ -144,7 +144,7 @@ import { run as runNoPropAttributionRecon } from "../platform/recon/no-prop-attr
 import { run as runPersonaAttributionCoherenceRecon } from "../platform/recon/persona-attribution-coherence";
 import { run as runPositionRevaluedRecon } from "../platform/recon/position-revalued-cites-mark";
 import type { ReconResult } from "../platform/recon/types";
-import { ba325PeriodCloseSubscriber } from "../platform/returns/ba325/period-close-subscriber";
+import { ba110PeriodCloseSubscriber } from "../platform/returns/ba110/period-close-subscriber";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -160,10 +160,10 @@ const ENTITY = "LE-ZA-HOZ-BANK";
 
 // Entity-identity unified per Atlas + Imani PR (D-PARTY-REGISTER,
 // CEO-approved 2026-05-11; canonical short-id `LE-ZA-HOZ-BANK` maps to
-// `urn:party:legal-entity:hoz-bank`). BA_325_BANK_ENTITIES, fx-revaluation,
+// `urn:party:legal-entity:hoz-bank`). BA_110_BANK_ENTITIES, fx-revaluation,
 // daily-pnl, and SA-CCR now all reference the same canonical short-id —
 // the trading entity IS the bank-licence entity. Block A below seeds
-// HQLA capital + a settlement outflow to give BA-325 a non-trivial LCR
+// HQLA capital + a settlement outflow to give BA-110 a non-trivial LCR
 // computation; it is no longer a "mirror-block workaround" because there
 // is no second entity to mirror, but the seeding is still required to
 // exercise the HQLA + cash-flow folding logic in the subscriber.
@@ -1546,13 +1546,13 @@ async function runPhase5(): Promise<PhaseResult> {
 }
 
 // ---------------------------------------------------------------------------
-// Phase 6 — BA-325 LCR, Daily P&L, GL projection, and recon assertions
+// Phase 6 — BA-110 LCR, Daily P&L, GL projection, and recon assertions
 // (Wave-2 Kai PR — this PR).
 //
 // Phase 6 drives the downstream pieces that landed in Bea PR #652:
-//   - BA-325 LCR period-close (Block A): runs against the unified
+//   - BA-110 LCR period-close (Block A): runs against the unified
 //     bank entity `LE-ZA-HOZ-BANK` (which is now both the trading
-//     entity AND the BA-325-whitelisted bank-licence entity per the
+//     entity AND the BA-110-whitelisted bank-licence entity per the
 //     entity-identity unification — Atlas + Imani PR following
 //     D-PARTY-REGISTER). Block A seeds HQLA capital + a settlement
 //     outflow so the LCR computation is non-trivial.
@@ -1565,21 +1565,21 @@ async function runPhase5(): Promise<PhaseResult> {
 // ---------------------------------------------------------------------------
 
 async function runPhase6(): Promise<PhaseResult> {
-  const r = new PhaseRecorder("Phase 6 — BA-325 + Daily P&L + GL projection + recons");
+  const r = new PhaseRecorder("Phase 6 — BA-110 + Daily P&L + GL projection + recons");
 
   // -------------------------------------------------------------------------
-  // Block A — BA-325 LCR period-close from synthetic trade
+  // Block A — BA-110 LCR period-close from synthetic trade
   // -------------------------------------------------------------------------
   //
-  // The ba325PeriodCloseSubscriber (Bea PR #652) accepts the
+  // The ba110PeriodCloseSubscriber (Bea PR #652) accepts the
   // bank-licence entity `LE-ZA-HOZ-BANK`. With the entity-identity
   // unification (Atlas + Imani PR following D-PARTY-REGISTER) the
   // scenario's trading entity IS `LE-ZA-HOZ-BANK` — fx-revaluation,
-  // daily-pnl, SA-CCR, and the BA-325 whitelist now all reference the
+  // daily-pnl, SA-CCR, and the BA-110 whitelist now all reference the
   // same canonical short-id. Block A opens a monthly accounting period
   // on that entity, seeds HQLA capital (SARB cash) and a settlement
   // outflow representing the trade's settlement cash flow, then closes
-  // the period and runs the subscriber. This exercises the BA-325
+  // the period and runs the subscriber. This exercises the BA-110
   // generator's HQLA + cash-flow folding logic end-to-end against the
   // unified entity.
   // -------------------------------------------------------------------------
@@ -1657,7 +1657,7 @@ async function runPhase6(): Promise<PhaseResult> {
     eventStore.append(hqlaSeedEvent);
 
     // Mirror outflow for the trade settlement (BUY USD vs ZAR — bank pays
-    // ZAR ≈ ZAR 9.262m). Posted on settlement date so the BA-325 30-day
+    // ZAR ≈ ZAR 9.262m). Posted on settlement date so the BA-110 30-day
     // stress window includes it.
     const mirrorOutflow = makeFxSettlementInstructed({
       asOf: "2026-05-21T10:00:00.000Z",
@@ -1712,8 +1712,8 @@ async function runPhase6(): Promise<PhaseResult> {
         `uptoSequence=${closeResult.trialBalance.uptoSequence}`,
     );
 
-    // Run the BA-325 subscriber.
-    const ba325Result = ba325PeriodCloseSubscriber({
+    // Run the BA-110 subscriber.
+    const ba110Result = ba110PeriodCloseSubscriber({
       closedPayload: {
         periodId,
         closedAt: periodClosedAt,
@@ -1729,9 +1729,9 @@ async function runPhase6(): Promise<PhaseResult> {
     });
 
     r.assert(
-      "Block A — BA-325 subscriber (Bea PR #652) ran for LE-ZA-HOZ-BANK without skip",
-      ba325Result.skipped === false,
-      `skipped=${ba325Result.skipped}; reason=${ba325Result.skipReason ?? "n/a"}`,
+      "Block A — BA-110 subscriber (Bea PR #652) ran for LE-ZA-HOZ-BANK without skip",
+      ba110Result.skipped === false,
+      `skipped=${ba110Result.skipped}; reason=${ba110Result.skipReason ?? "n/a"}`,
     );
     // HQLA Level-1 stock = initial SARB-cash capital (ZAR 100m) net of
     // the trade-settlement ZAR outflow (~ZAR 9.262m, USD_500K_MINOR ×
@@ -1739,39 +1739,39 @@ async function runPhase6(): Promise<PhaseResult> {
     // bank-licence entity, so the GL projection sees both postings as
     // belonging to the same trial balance. Pre-unification the trade
     // was on a separate (BANK-ZA-001) entity and was invisible to the
-    // BA-325 subscriber.
+    // BA-110 subscriber.
     const expectedLevel1StockMinor =
       100_000_000_00 - Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR);
     r.assert(
-      `Block A — BA-325 HQLA Level-1 stock = ZAR ${(expectedLevel1StockMinor / 100).toLocaleString("en-ZA")} (initial SARB-cash capital net of trade-settlement outflow)`,
-      ba325Result.ba325Output.hqla.level1.stockMinor === expectedLevel1StockMinor,
-      `level1.stockMinor=${ba325Result.ba325Output.hqla.level1.stockMinor}; expected=${expectedLevel1StockMinor}`,
+      `Block A — BA-110 HQLA Level-1 stock = ZAR ${(expectedLevel1StockMinor / 100).toLocaleString("en-ZA")} (initial SARB-cash capital net of trade-settlement outflow)`,
+      ba110Result.ba110Output.hqla.level1.stockMinor === expectedLevel1StockMinor,
+      `level1.stockMinor=${ba110Result.ba110Output.hqla.level1.stockMinor}; expected=${expectedLevel1StockMinor}`,
     );
     r.assert(
-      "Block A — BA-325 total HQLA stock > 0",
-      ba325Result.ba325Output.hqla.totalStockHqlaMinor > 0,
-      `totalStockHqlaMinor=${ba325Result.ba325Output.hqla.totalStockHqlaMinor}`,
+      "Block A — BA-110 total HQLA stock > 0",
+      ba110Result.ba110Output.hqla.totalStockHqlaMinor > 0,
+      `totalStockHqlaMinor=${ba110Result.ba110Output.hqla.totalStockHqlaMinor}`,
     );
     r.assert(
-      "Block A — BA-325 cash outflows include the mirrored ZAR settlement leg",
-      ba325Result.ba325Output.cashFlows.outflows.grossMinor >=
+      "Block A — BA-110 cash outflows include the mirrored ZAR settlement leg",
+      ba110Result.ba110Output.cashFlows.outflows.grossMinor >=
         Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR),
-      `outflows.grossMinor=${ba325Result.ba325Output.cashFlows.outflows.grossMinor}; ` +
+      `outflows.grossMinor=${ba110Result.ba110Output.cashFlows.outflows.grossMinor}; ` +
         `expected≥${Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR)}`,
     );
     r.assert(
-      "Block A — BA-325 LCR ratio is compliant (ratio > 1)",
-      ba325Result.ba325Output.lcrRatio > 1 && ba325Result.ba325Output.lcrCompliant === true,
-      `lcrRatio=${ba325Result.ba325Output.lcrRatio}; lcrCompliant=${ba325Result.ba325Output.lcrCompliant}`,
+      "Block A — BA-110 LCR ratio is compliant (ratio > 1)",
+      ba110Result.ba110Output.lcrRatio > 1 && ba110Result.ba110Output.lcrCompliant === true,
+      `lcrRatio=${ba110Result.ba110Output.lcrRatio}; lcrCompliant=${ba110Result.ba110Output.lcrCompliant}`,
     );
     r.assert(
-      "Block A — BA-325 trialBalanceSnapshotEventId chains to TB snapshot",
-      ba325Result.ba325Output.meta.trialBalanceSnapshotEventId ===
+      "Block A — BA-110 trialBalanceSnapshotEventId chains to TB snapshot",
+      ba110Result.ba110Output.meta.trialBalanceSnapshotEventId ===
         closeResult.trialBalanceSnapshotEvent.event_id,
-      `meta.tbId=${ba325Result.ba325Output.meta.trialBalanceSnapshotEventId} vs close.tbId=${closeResult.trialBalanceSnapshotEvent.event_id}`,
+      `meta.tbId=${ba110Result.ba110Output.meta.trialBalanceSnapshotEventId} vs close.tbId=${closeResult.trialBalanceSnapshotEvent.event_id}`,
     );
   } catch (err) {
-    r.assert("Block A — BA-325 LCR period-close evaluated", false, String(err));
+    r.assert("Block A — BA-110 LCR period-close evaluated", false, String(err));
   }
 
   // -------------------------------------------------------------------------
@@ -2110,7 +2110,7 @@ export async function runFxSpotInternalPreLicenceTest(
   const p6 = p1.ok
     ? await runPhase6()
     : {
-        phase: "Phase 6 — BA-325 + Daily P&L + GL projection + recons",
+        phase: "Phase 6 — BA-110 + Daily P&L + GL projection + recons",
         ok: false,
         notes: [],
         failures: ["skipped (Phase 1 failed)"],
@@ -2146,7 +2146,7 @@ export async function runFxSpotInternalPreLicenceTest(
   //     autonomous bea-gl-posting-engine subscriber is still upstream of
   //     the scenario (no event-driven engine), but the wire-up no longer
   //     blocks the scenario's GL projection assertions.
-  //   - "BA-325 / Daily P&L integration scope" — STRUCK. Both subscribers
+  //   - "BA-110 / Daily P&L integration scope" — STRUCK. Both subscribers
   //     now drive end-to-end from synthetic trade events in Phase 6.
   //   - "SicrTriggered event flow" — STRUCK. Bea PR #652 SICR subscriber
   //     runs in Phase 4 (Block D).
@@ -2161,12 +2161,12 @@ export async function runFxSpotInternalPreLicenceTest(
       "engine subscriber (subscribes to each lifecycle event and emits " +
       "SubLedgerPostingEmitted unprompted) is still pending — production " +
       "wire-up is a follow-on substrate slice for Bea.",
-    // BA-325 entity-identity unification — RESOLVED in the Atlas + Imani
+    // BA-110 entity-identity unification — RESOLVED in the Atlas + Imani
     // entity-identity-unification PR (follows D-PARTY-REGISTER,
     // CEO-approved 2026-05-11). The canonical short-id is `LE-ZA-HOZ-BANK`
     // mapping to `urn:party:legal-entity:hoz-bank`; the legacy
     // `LE-ZA-HOZ-BANK` form has been retired. fx-revaluation, daily-pnl,
-    // SA-CCR, and the BA-325 whitelist now share the same identifier.
+    // SA-CCR, and the BA-110 whitelist now share the same identifier.
     "FxPositionRevalued.officialMarkRef field (Slice D of D-EVENT-VIEW-" +
       "BOUNDARY-WIRE) — current recon is advisory (Slice B.1); schema-typed " +
       "gating is the next slice.",

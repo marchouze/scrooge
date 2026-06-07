@@ -5,7 +5,7 @@
 //
 // Instrument-level HQLA override utility — builds a map of ISIN → HQLA tier
 // from the SecurityMaster projection. Used to override COA-level hqlaLevel tags
-// in the BA 325 LCR calculation when instrument-level classification exists
+// in the BA 110 LCR calculation when instrument-level classification exists
 // (FinancialInstrumentClassified events).
 //
 // Design intent:
@@ -20,12 +20,12 @@
 //   instrument-level data exists, it is more precise than the COA tag:
 //     - SecurityMaster knows the actual hqlaLevel for a specific ISIN
 //       (e.g. R186 is Level-1; a corporate bond in the same account is Level-2A).
-//     - The override map lets the BA 325 generator prefer the SecurityMaster
+//     - The override map lets the BA 110 generator prefer the SecurityMaster
 //       classification while still falling back to COA tags for accounts that
 //       hold no identifiable instrument (e.g. cash / SARB operational balances).
 //
 //   This module provides the utility function that builds the override map.
-//   The caller (generateBa325Lcr) receives the map via `opts.hqlaOverrides`
+//   The caller (generateBa110Lcr) receives the map via `opts.hqlaOverrides`
 //   and resolves the per-account tier at computation time.
 //
 //   The COA fallback is explicitly preserved: accounts with no ISIN or whose
@@ -41,12 +41,12 @@
 //   will carry both the instrumentId (from SecurityMaster) and the target
 //   leafAccountId, enabling the override map to be applied per account.
 //   Until Slice 10 lands and bond seeds are populated, the override map
-//   will be empty and the COA-tag fallback continues to drive all BA 325
+//   will be empty and the COA-tag fallback continues to drive all BA 110
 //   HQLA stock calculations. This is the correct behaviour — no regression.
 //
 // Citations:
 //   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22)
-//   BA-325-LCR (SARB BA 325 Liquidity Coverage Ratio return)
+//   BA-110-LCR (SARB BA 110 Liquidity Coverage Ratio return)
 //   BCBS-LCR-2013 (BCBS D295, Basel III LCR and liquidity risk monitoring tools, Jan 2013)
 
 import type { SecurityMasterState } from "../projections/markets/security-master";
@@ -61,7 +61,7 @@ import type { SecurityMasterState } from "../projections/markets/security-master
  * instruments explicitly classified as not eligible for HQLA stock.
  *
  * Authority: D-FINANCIAL-INSTRUMENT-ENTITY Slice 9.
- * Citations: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS-LCR-2013 §II.A; BA-325-LCR.
+ * Citations: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS-LCR-2013 §II.A; BA-110-LCR.
  */
 export type HqlaLevelOverride = "level-1" | "level-2a" | "level-2b" | "non-hqla";
 
@@ -72,7 +72,7 @@ export type HqlaLevelOverride = "level-1" | "level-2a" | "level-2b" | "non-hqla"
 /**
  * Build a map of ISIN → HQLA tier from the SecurityMaster projection.
  *
- * Used to override COA-level hqlaLevel tags in the BA 325 LCR calculation
+ * Used to override COA-level hqlaLevel tags in the BA 110 LCR calculation
  * when instrument-level classification exists (FinancialInstrumentClassified).
  *
  * Only rows that have BOTH an `isin` AND an `hqlaLevel` set on their
@@ -91,7 +91,7 @@ export type HqlaLevelOverride = "level-1" | "level-2a" | "level-2b" | "non-hqla"
  *
  * Citations:
  *   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
- *   BA-325-LCR; BCBS-LCR-2013.
+ *   BA-110-LCR; BCBS-LCR-2013.
  */
 export function buildHqlaOverridesFromSecurityMaster(
   sm: SecurityMasterState,
@@ -101,7 +101,7 @@ export function buildHqlaOverridesFromSecurityMaster(
   for (const row of sm.instruments.values()) {
     // Both ISIN and hqlaLevel must be set for the override to be meaningful.
     // - No ISIN: instrument is OTC / unidentifiable by ISIN; override map cannot
-    //   help the BA 325 generator match it to a GL account.
+    //   help the BA 110 generator match it to a GL account.
     // - No hqlaLevel: classification event has not fired yet; defer to COA tag.
     if (!row.isin || !row.hqlaLevel) continue;
 

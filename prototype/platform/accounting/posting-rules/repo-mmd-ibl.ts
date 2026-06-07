@@ -57,7 +57,7 @@
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
 //   - IFRS 9 §3.1.1, §3.2.3, §3.2.4, §4.1.2, §5.4.1, §5.7.1
 //   - IAS 39 §27 (repos as secured borrowings)
-//   - Banks Act 94 of 1990 Reg 26/27 (LCR/NSFR); BA 325; BA 326
+//   - Banks Act 94 of 1990 Reg 26/27 (LCR/NSFR); BA 110; BA 120
 //   - BCBS d365 (IRRBB)
 //
 // Authors: Ravi (Treasury/ALM Engineer, engineering),
@@ -130,7 +130,7 @@ const IBL = {
 
 /**
  * Map a DepositTaken depositCategory to the appropriate GL liability account.
- * The four categories drive LCR outflow rates (BA 325 Table 1).
+ * The four categories drive LCR outflow rates (BA 110 Table 1).
  */
 function depositLiabilityAccount(category: DepositTakenPayload["depositCategory"]): string {
   switch (category) {
@@ -316,7 +316,7 @@ export function prRepoCancel(_event: RepoTradeTerminatedEarlyPayload): SubLedger
  *   Dr  NOSTRO_ZAR                 principalZar  (cash received)
  *   Cr  <liability account>        principalZar  (deposit liability by category)
  *
- * The liability account is selected by depositCategory (BA 325 Table 1).
+ * The liability account is selected by depositCategory (BA 110 Table 1).
  */
 export function prMmd001(event: DepositTakenPayload): SubLedgerLeg[] {
   const amount = Math.abs(event.principalZar);
@@ -505,7 +505,7 @@ export function prMmdRollover(_event: { depositId: string }): SubLedgerLeg[] {
  *   Cr  DEPOSIT.liabilityWholesaleNonOp   drawnAmountZar  (funding liability)
  *
  * Wholesale non-operational is the correct LCR category for committed facility
- * drawdowns from banks / financial institutions (BA 325 Table 2, 100% outflow).
+ * drawdowns from banks / financial institutions (BA 110 Table 2, 100% outflow).
  */
 export function prFunding001(event: FundingLineDrawnPayload): SubLedgerLeg[] {
   const amount = Math.abs(event.drawnAmountZar);

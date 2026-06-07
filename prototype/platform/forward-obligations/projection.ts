@@ -101,7 +101,7 @@ interface RegulatoryReturnSpec {
 
 const REGULATORY_RETURN_SPECS: RegulatoryReturnSpec[] = [
   {
-    id: "reg:ba325",
+    id: "reg:ba110",
     title: "BA325 daily SARB return",
     owner: "Bea (Financial accounting engineer, engineering)",
     relatedRef: "ORG-BA325-001",
@@ -111,7 +111,7 @@ const REGULATORY_RETURN_SPECS: RegulatoryReturnSpec[] = [
     cadence: "daily",
   },
   {
-    id: "reg:ba700",
+    id: "reg:ba100",
     title: "BA700 monthly capital adequacy return",
     owner: "Camille (Chief Financial Officer, governance)",
     relatedRef: "ORG-BA700-001",

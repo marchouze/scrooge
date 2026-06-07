@@ -20,7 +20,7 @@
 //   Zero real positions → base HQLA = 0 → all scenarios "no-positions" (expected).
 //   The engine is wired; real positions flow at licence-day.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -44,7 +44,7 @@ import {
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BA-325", "D-TREASURY-GAPS-WAVE1"];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BA-110", "D-TREASURY-GAPS-WAVE1"];
 
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const date = fmtDateUTC(ctx.asOf);

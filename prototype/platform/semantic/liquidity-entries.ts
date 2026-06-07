@@ -2,7 +2,7 @@
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 3 — liquidity-classification
 // semantic entries. Extends the Slice 1 registry (`entries.ts`) with the
-// minimum vocabulary the BA 325 (LCR) generator needs:
+// minimum vocabulary the BA 110 (LCR) generator needs:
 //
 //   HqlaLevel1                     — High-Quality Liquid Assets, Level 1.
 //                                    100% factor in the LCR numerator.
@@ -19,21 +19,21 @@
 //                                    outflows per BCBS D295 / Reg 26(11).
 //   LiquidityCoverageRatio         — derived ratio (HQLA stock / net cash
 //                                    outflows). Exit-criterion quantity for
-//                                    the BA 325 form.
+//                                    the BA 110 form.
 //
 // Per pack §6 Slice 3 + Marc's Q1 default (rehearsal-grade with placeholders),
 // each entry carries:
 //   - one resolved citation chain (Banks Act 94/1990 + Regulations Relating
 //     to Banks Reg 26 + BCBS D295), and
 //   - a `[citation: TBC]` marker pointing at Mira's WS-INSTRUMENT-ANALYSES
-//     workstream which will resolve the precise SARB BA 325 line numbers
+//     workstream which will resolve the precise SARB BA 110 line numbers
 //     once the published schema is fully analysed.
 //
 // The Slice-1 `CashAndBalancesAtSARB` entry already carries the
-// `BA 325 — HQLA Level 1 — central-bank reserves (LCR)` mapping; this slice
+// `BA 110 — HQLA Level 1 — central-bank reserves (LCR)` mapping; this slice
 // adds the *general* HqlaLevel1/2A/2B + outflow/inflow + ratio entries that
-// downstream cells (BA 325 sub-lines beyond central-bank reserves; future
-// BA 326 NSFR) compose against.
+// downstream cells (BA 110 sub-lines beyond central-bank reserves; future
+// BA 120 NSFR) compose against.
 //
 // Hoz Bank only — Hoz Securities + Hoz Group are not LCR-bound. Bank-licence
 // scope per `Regulations/_legal-entity-tree.md` and `D-REGULATORY-PERIMETER`.
@@ -72,7 +72,7 @@ export const hqlaLevel1: SemanticEntry = {
     "sum(Balance where {entity, hqlaLevel='level-1', asOf=asOfQuery}) — equivalent to sum(CashAndBalancesAtSARB) + sum(BalancesAtOtherCentralBanks) + sum(Level1SovereignSecurities)",
   regulatoryCells: [
     {
-      form: "BA 325",
+      form: "BA 110",
       line: "HQLA Level 1 — total stock (LCR numerator component)",
       side: "positive",
       note: "Aggregated Level-1 stock per Reg 26(7)(a); CashAndBalancesAtSARB is the worked Slice-1 sub-line.",
@@ -91,7 +91,7 @@ export const hqlaLevel1: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 325 line-number sequencing for Level-1 sub-categories pending published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 110 line-number sequencing for Level-1 sub-categories pending published-schema ingestion]",
     },
   ],
   signers: ["Eitan", "Camille"],
@@ -124,7 +124,7 @@ export const hqlaLevel2A: SemanticEntry = {
     "min(sum(Balance where {entity, hqlaLevel='level-2a', asOf=asOfQuery}) * 0.85, 0.4 * totalHqlaPostCap)",
   regulatoryCells: [
     {
-      form: "BA 325",
+      form: "BA 110",
       line: "HQLA Level 2A — post-haircut stock (LCR numerator component, post-cap)",
       side: "positive",
       note: "Cap arithmetic per Reg 26(7); generator applies cap at numerator-assembly time.",
@@ -143,7 +143,7 @@ export const hqlaLevel2A: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — Level-2A asset eligibility per SARB BA 325 published taxonomy]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — Level-2A asset eligibility per SARB BA 110 published taxonomy]",
     },
   ],
   signers: ["Eitan", "Camille"],
@@ -152,7 +152,7 @@ export const hqlaLevel2A: SemanticEntry = {
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,
   notes:
-    "Aggregated quantity post-haircut. The 40%-cap is a property of the LCR numerator assembly, not of this entry alone; the BA 325 generator (Slice 3) carries the cap arithmetic.",
+    "Aggregated quantity post-haircut. The 40%-cap is a property of the LCR numerator assembly, not of this entry alone; the BA 110 generator (Slice 3) carries the cap arithmetic.",
 };
 
 /**
@@ -173,7 +173,7 @@ export const hqlaLevel2B: SemanticEntry = {
     "min(sum(Balance * assetSpecificFactor where {entity, hqlaLevel='level-2b', asOf=asOfQuery}), 0.15 * totalHqlaPostCap)",
   regulatoryCells: [
     {
-      form: "BA 325",
+      form: "BA 110",
       line: "HQLA Level 2B — post-haircut stock (LCR numerator component, post-cap)",
       side: "positive",
       note: "Asset-specific factor + 15% cap applied at numerator-assembly time per Reg 26(7).",
@@ -192,7 +192,7 @@ export const hqlaLevel2B: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — Level-2B asset eligibility + per-asset factor table per SARB BA 325 published taxonomy]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — Level-2B asset eligibility + per-asset factor table per SARB BA 110 published taxonomy]",
     },
   ],
   signers: ["Eitan", "Camille"],
@@ -227,7 +227,7 @@ export const lcrCashOutflows30D: SemanticEntry = {
     "sum(category.outstandingBalance * category.runOffRate for category in outflowCategories where entity = entity and asOf <= asOfQuery)",
   regulatoryCells: [
     {
-      form: "BA 325",
+      form: "BA 110",
       line: "Total cash outflows (LCR denominator, gross)",
       side: "positive",
       note: "Pre-inflow-cap aggregate per Reg 26(8); generator decomposes into category sub-lines for line-by-line render.",
@@ -246,7 +246,7 @@ export const lcrCashOutflows30D: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 325 outflow sub-category line-numbering + run-off-rate calibration per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 110 outflow sub-category line-numbering + run-off-rate calibration per published-schema ingestion]",
     },
   ],
   signers: ["Eitan", "Camille"],
@@ -278,7 +278,7 @@ export const lcrCashInflows30D: SemanticEntry = {
     "min(sum(category.outstandingBalance * category.inflowRate for category in inflowCategories), 0.75 * LcrCashOutflows30D)",
   regulatoryCells: [
     {
-      form: "BA 325",
+      form: "BA 110",
       line: "Total cash inflows (LCR denominator, post-cap)",
       side: "negative",
       note: "Cap arithmetic at min(75% × outflows, gross-inflows); generator carries it.",
@@ -297,7 +297,7 @@ export const lcrCashInflows30D: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 325 inflow sub-category line-numbering per published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 110 inflow sub-category line-numbering per published-schema ingestion]",
     },
   ],
   signers: ["Eitan", "Camille"],
@@ -305,13 +305,13 @@ export const lcrCashInflows30D: SemanticEntry = {
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,
   notes:
-    "Cap arithmetic is generator-level, not entry-level; the entry stores the definition. BCBS 248 (intraday liquidity monitoring) is a separate operational lens that does not feed BA 325 directly; the intraday monitoring family is downstream substrate.",
+    "Cap arithmetic is generator-level, not entry-level; the entry stores the definition. BCBS 248 (intraday liquidity monitoring) is a separate operational lens that does not feed BA 110 directly; the intraday monitoring family is downstream substrate.",
 };
 
 /**
  * `LiquidityCoverageRatio` — the derived ratio (HQLA stock / net cash
  * outflows over 30 days). Required to be ≥ 100% per BCBS D295 §22 / Reg
- * 26(2). Exit-criterion quantity for the BA 325 form: the cell that the
+ * 26(2). Exit-criterion quantity for the BA 110 form: the cell that the
  * supervisor reads to assess compliance.
  *
  * Computation:
@@ -323,13 +323,13 @@ export const lcrCashInflows30D: SemanticEntry = {
  *   LCR        = numerator / denominator   (ratio, dimensionless)
  *
  * Render layer multiplies by 100 for the percentage form the regulator's
- * BA 325 cell shows.
+ * BA 110 cell shows.
  */
 export const liquidityCoverageRatio: SemanticEntry = {
   id: "LiquidityCoverageRatio",
   version: "v0.1",
   description:
-    "Liquidity Coverage Ratio — stock of HQLA divided by total net cash outflows over a 30-day stress period. Required ≥ 100% per BCBS D295 §22 / Reg 26(2). Reported on BA 325.",
+    "Liquidity Coverage Ratio — stock of HQLA divided by total net cash outflows over a 30-day stress period. Required ≥ 100% per BCBS D295 §22 / Reg 26(2). Reported on BA 110.",
   units: "ratio",
   dimensions: ["currency"],
   projection: "liquidity-projection",
@@ -337,7 +337,7 @@ export const liquidityCoverageRatio: SemanticEntry = {
     "(HqlaLevel1 + min(HqlaLevel2A*0.85, 0.40*stockHQLA) + min(HqlaLevel2B*factor, 0.15*stockHQLA)) / max(LcrCashOutflows30D - min(LcrCashInflows30D, 0.75*LcrCashOutflows30D), 0.25*LcrCashOutflows30D)",
   regulatoryCells: [
     {
-      form: "BA 325",
+      form: "BA 110",
       line: "Liquidity Coverage Ratio (%) — exit cell",
       side: "positive",
       note: "The single cell the regulator reads for compliance assessment; render layer multiplies by 100 for percentage display.",
@@ -356,7 +356,7 @@ export const liquidityCoverageRatio: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 325 LCR-cell line-number per published-schema ingestion; SARB transitional buffer waivers if any]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 110 LCR-cell line-number per published-schema ingestion; SARB transitional buffer waivers if any]",
     },
   ],
   signers: ["Eitan", "Camille", "Helena"],
@@ -364,12 +364,12 @@ export const liquidityCoverageRatio: SemanticEntry = {
   status: "in-force",
   firstAuthored: FIRST_AUTHORED,
   notes:
-    "The exit-criterion semantic entry for BA 325. Reported as a ratio; render-layer formats as percentage. RAS B7 (`Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md`) classifies the LCR model as Tier-1; independent validation per the Tier-1 model-validation pipeline (Helena CRO + future model-validation function) gates production use post-licence-day. Build-phase trials are rehearsal-grade.",
+    "The exit-criterion semantic entry for BA 110. Reported as a ratio; render-layer formats as percentage. RAS B7 (`Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md`) classifies the LCR model as Tier-1; independent validation per the Tier-1 model-validation pipeline (Helena CRO + future model-validation function) gates production use post-licence-day. Build-phase trials are rehearsal-grade.",
 };
 
 /**
  * Slice-3 liquidity-classification entries, exported as a single array for
- * ease of registry construction in tests and downstream consumers (BA 325
+ * ease of registry construction in tests and downstream consumers (BA 110
  * generator).
  */
 export const SLICE_3_LIQUIDITY_ENTRIES: readonly SemanticEntry[] = [

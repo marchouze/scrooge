@@ -1,11 +1,11 @@
 // tests/coa-hqla-registry.test.ts
 //
-// G-4 — Tests for the HQLA COA classification field and dynamic BA 325 scan.
+// G-4 — Tests for the HQLA COA classification field and dynamic BA 110 scan.
 //
 // Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22)
 // Citations:
 //   BCBS D295 §II.A (Basel III LCR standard, Jan 2013)
-//   SARB BA 325 — Liquidity Coverage Ratio return
+//   SARB BA 110 — Liquidity Coverage Ratio return
 //   Regulations Relating to Banks Reg 26(7)
 //
 // ## What these tests assert
@@ -14,7 +14,7 @@
 //  2. HQLA accounts are tagged — expected accounts carry hqlaLevel.
 //  3. Non-HQLA accounts are NOT tagged — trading receivables, suspense, P&L etc.
 //  4. coaToHqlaClassifications() returns the correct mapping.
-//  5. BA 325 generator picks up COA-tagged accounts (level-1 haircut = 100%).
+//  5. BA 110 generator picks up COA-tagged accounts (level-1 haircut = 100%).
 //  6. Haircut arithmetic — level-2a accounts at 85%, level-2b at 75%.
 //  7. COA-derived LCR is compliant (≥ 100%) against a synthetic fixture.
 //  8. Regression guard — adding bond accounts to trial balance increases HQLA.
@@ -31,7 +31,7 @@ import {
 } from "../platform/accounting/coa-registry";
 import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
-import { generateBa325Lcr } from "../platform/reporting/ba-325-lcr";
+import { generateBa110Lcr } from "../platform/reporting/ba-110-lcr";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const PERIOD_START = "2026-05-01T00:00:00.000Z";
@@ -218,10 +218,10 @@ describe("D-HQLA-COA-CLASSIFICATION — coaToHqlaClassifications()", () => {
 });
 
 // =====================================================================
-// 5. BA 325 generator dynamically driven by COA classifications
+// 5. BA 110 generator dynamically driven by COA classifications
 // =====================================================================
 
-describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
+describe("D-HQLA-COA-CLASSIFICATION — BA 110 dynamic COA scan", () => {
   it("COA-derived classifications drive HQLA stock (level-1 at 100%)", () => {
     const store = makeStore();
     const classifications = coaToHqlaClassifications();
@@ -231,7 +231,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 1_000_000 },
     ];
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -259,7 +259,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
       { leafAccountId: "ACC-3100-002", currency: "ZAR", amountMinor: 300_000 },
     ];
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -285,7 +285,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
     const baselineTrialBalance = [
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 },
     ];
-    const baselineOut = generateBa325Lcr({
+    const baselineOut = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -302,7 +302,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 325 dynamic COA scan", () => {
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 },
       { leafAccountId: "ACC-3100-002", currency: "ZAR", amountMinor: 300_000 },
     ];
-    const withBondsOut = generateBa325Lcr({
+    const withBondsOut = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -342,7 +342,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2A-SYNTH", currency: "ZAR", amountMinor: 100_000 },
     ];
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -389,7 +389,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2A-SYNTH", currency: "ZAR", amountMinor: 20_000 },
     ];
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -435,7 +435,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2B-SYNTH", currency: "ZAR", amountMinor: 100_000 },
     ];
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -479,7 +479,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2B-RMBS", currency: "ZAR", amountMinor: 40_000 },
     ];
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -511,7 +511,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
 
     // HQLA: 500k ZAR in level-1 banking-book bonds.
     // No settlement events → infinite LCR.
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -531,7 +531,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
     const store = makeStore();
     const classifications = coaToHqlaClassifications();
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -557,7 +557,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
       { leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 100_000 }, // suspense
     ];
 
-    const out = generateBa325Lcr({
+    const out = generateBa110Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,

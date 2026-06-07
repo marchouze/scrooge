@@ -1,46 +1,81 @@
 // scripts/render-ba-600.ts
 //
-// CLI wrapper for the BA 600 (operational-risk) generator + XML renderer.
+// CLI wrapper for the BA 600 (Balance Sheet) generator + renderer.
 //
 // Usage:
 //   bun run scripts/render-ba-600.ts \
 //       --entity LE-ZA-HOZ-BANK \
 //       --as-of 2026-05-31T23:59:59.999Z \
 //       --period-id period:hoz-bank:month:2026-05 \
+//       --period-start 2026-05-01T00:00:00.000Z \
+//       --period-end 2026-05-31T23:59:59.999Z \
 //       [--functional-currency ZAR] \
-//       [--approach bia|tsa]                          # default bia
-//       [--gross-income path/to/gi.json] \
-//       [--out-xml path/to/ba-600.xml]
+//       [--classifications path/to/classifications.json] \
+//       [--tolerate-imbalance-minor N] \
+//       [--out path/to/ba-600.json]
 //
-// Gross-income JSON shape (free-form fixture for build-phase rehearsal):
-//   [
-//     { "fiscalYear": "2024", "businessLine": "trading-and-sales", "grossIncomeMinor": 0 },
-//     ...
-//   ]
+// What it does:
+//   1. Opens / replays the period via the period-close orchestration.
+//   2. Closes the period and obtains the trial balance.
+//   3. Loads a per-account BA 600 line-classification map from
+//      `--classifications` JSON file (defaults to a minimal built-in
+//      fixture).
+//   4. Generates the BA 600 projection.
+//   5. Renders to canonical JSON.
+//   6. Writes to stdout (default) or `--out`.
 //
-// If `--gross-income` not supplied, an empty fixture is used. Build-phase
-// posture: Hoz Bank has no audited gross income yet (no commencement-of-
-// trading); the engine produces `0` capital and surfaces placeholders.
+// This script is rehearsal-grade. The production form (downstream slice)
+// emits a `ReportGenerated` event that hashes the rendered bytes into the
+// RMS document store.
 //
-// Authors: Bea + Helena + Anya (per script header convention).
+// Authors: Bea (Accounting & financial reporting engineer, engineering —
+//   reports to Camille CFO) + Anya (Data / analytics engineer,
+//   engineering — reports to Devon COO).
 
 import { readFileSync, writeFileSync } from "node:fs";
 
+import { closePeriod, openPeriod } from "../platform/accounting/period-close";
+import { eventStore } from "../platform/composition";
 import {
-  type OpRiskGrossIncomeRow,
-  ba600ToXmlPayload,
-  generateBa600OpRisk,
-  renderSarbXml,
+  type Ba600LineClassification,
+  generateBa600BalanceSheet,
+  renderBa600Canonical,
 } from "../platform/reporting";
+
+// ---------------------------------------------------------------------------
+// Built-in fixture classifications — fallback when --classifications not
+// supplied. Minimal placeholder until Mira's WS-INSTRUMENT-ANALYSES lands
+// the SARB BA 600 published-schema mapping.
+// ---------------------------------------------------------------------------
+
+const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba600LineClassification[] = [
+  {
+    leafAccountId: "ACC-1100-001",
+    section: "assets",
+    lineLabel: "assets.cash-and-balances-at-sarb",
+  },
+  {
+    leafAccountId: "ACC-equity-position-stub",
+    section: "equity",
+    lineLabel: "equity.share-capital",
+  },
+  {
+    leafAccountId: "ACC-retained-earnings-stub",
+    section: "equity",
+    lineLabel: "equity.retained-earnings",
+  },
+];
 
 interface CliArgs {
   readonly entity: string;
   readonly asOf: string;
   readonly periodId: string;
   readonly functionalCurrency: string;
-  readonly approach: "bia" | "tsa";
-  readonly grossIncomePath?: string;
-  readonly outXmlPath?: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly classificationsPath?: string;
+  readonly tolerateImbalanceMinor?: number;
+  readonly outPath?: string;
 }
 
 function parseArgs(argv: readonly string[]): CliArgs {
@@ -51,56 +86,93 @@ function parseArgs(argv: readonly string[]): CliArgs {
   const entity = get("--entity");
   const asOf = get("--as-of");
   const periodId = get("--period-id");
-  if (!entity || !asOf || !periodId) {
+  const periodStart = get("--period-start");
+  const periodEnd = get("--period-end");
+  if (!entity || !asOf || !periodId || !periodStart || !periodEnd) {
     throw new Error(
-      "render-ba-600: --entity, --as-of, --period-id are required. See script header for usage.",
+      "render-ba-600: --entity, --as-of, --period-id, --period-start, --period-end are required.",
     );
   }
   const functionalCurrency = get("--functional-currency") ?? "ZAR";
-  const approachRaw = get("--approach") ?? "bia";
-  if (approachRaw !== "bia" && approachRaw !== "tsa") {
-    throw new Error(`render-ba-600: --approach must be 'bia' or 'tsa', got '${approachRaw}'`);
-  }
-  const grossIncomePath = get("--gross-income");
-  const outXmlPath = get("--out-xml");
+  const classificationsPath = get("--classifications");
+  const tolStr = get("--tolerate-imbalance-minor");
+  const tolerateImbalanceMinor = tolStr !== undefined ? Number.parseInt(tolStr, 10) : undefined;
+  const outPath = get("--out");
   return {
     entity,
     asOf,
     periodId,
     functionalCurrency,
-    approach: approachRaw,
-    ...(grossIncomePath ? { grossIncomePath } : {}),
-    ...(outXmlPath ? { outXmlPath } : {}),
+    periodStart,
+    periodEnd,
+    ...(classificationsPath ? { classificationsPath } : {}),
+    ...(tolerateImbalanceMinor !== undefined ? { tolerateImbalanceMinor } : {}),
+    ...(outPath ? { outPath } : {}),
   };
 }
 
-function loadGrossIncome(path: string | undefined): readonly OpRiskGrossIncomeRow[] {
-  if (!path) return [];
+function loadJson<T>(path: string, label: string): T {
   const raw = readFileSync(path, "utf8");
   const parsed = JSON.parse(raw);
-  if (!Array.isArray(parsed)) {
-    throw new Error(`render-ba-600: --gross-income file at ${path} must be a JSON array`);
+  if (parsed === null || parsed === undefined) {
+    throw new Error(`render-ba-600: --${label} file at ${path} parsed to null/undefined`);
   }
-  return parsed as readonly OpRiskGrossIncomeRow[];
+  return parsed as T;
 }
 
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
-  const grossIncome = loadGrossIncome(args.grossIncomePath);
-  const out = generateBa600OpRisk({
+  const classifications = args.classificationsPath
+    ? loadJson<readonly Ba600LineClassification[]>(args.classificationsPath, "classifications")
+    : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
+
+  // Open + close the period to produce a trial balance.
+  const ACTOR = { type: "service" as const, id: "agent:Bea" };
+  const CITATIONS = ["D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN", "WS-FINANCE-BA-RETURNS-QUINTET"];
+  openPeriod({
+    eventStore,
+    entity: args.entity,
+    actor: ACTOR,
+    citations: CITATIONS,
+    payload: {
+      periodId: args.periodId,
+      periodKind: "month",
+      periodStart: args.periodStart,
+      periodEnd: args.periodEnd,
+      openedAt: args.periodStart,
+      functionalCurrency: args.functionalCurrency,
+    },
+  });
+  const close = closePeriod({
+    eventStore,
+    entity: args.entity,
+    periodId: args.periodId,
+    closedAt: args.asOf,
+    actor: ACTOR,
+    citations: CITATIONS,
+  });
+
+  const output = generateBa600BalanceSheet({
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,
     functionalCurrency: args.functionalCurrency,
-    grossIncome,
-    approach: args.approach,
+    trialBalance: close.trialBalance.rows,
+    classifications,
+    trialBalanceSnapshotEventId: close.trialBalanceSnapshotEvent.event_id,
+    ...(args.tolerateImbalanceMinor !== undefined
+      ? { tolerateImbalanceMinor: args.tolerateImbalanceMinor }
+      : {}),
   });
-  const payload = ba600ToXmlPayload(out);
-  const xml = renderSarbXml(payload, { renderedAt: new Date().toISOString() });
-  if (args.outXmlPath) {
-    writeFileSync(args.outXmlPath, xml, "utf8");
+
+  const { canonicalJson } = renderBa600Canonical(output, {
+    renderedAt: new Date().toISOString(),
+  });
+
+  if (args.outPath) {
+    writeFileSync(args.outPath, canonicalJson, "utf8");
   } else {
-    process.stdout.write(xml);
+    process.stdout.write(canonicalJson);
     process.stdout.write("\n");
   }
   return 0;

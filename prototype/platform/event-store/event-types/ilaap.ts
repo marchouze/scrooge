@@ -10,7 +10,7 @@
 // (or on-demand). Consumers: Eitan (Treasurer), Helena (CRO), Camille (CFO),
 // Atlas (substrate monitoring), Anya (liquidity projections).
 //
-// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { z } from "zod";

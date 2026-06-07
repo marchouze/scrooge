@@ -1113,7 +1113,7 @@ export function runPhaseAandB(opts: { dbPath: string; cleanup: boolean }): Phase
     citations: ["IAS-1", "COMPANIES-ACT-71-2008-S24", "D-REPORTING-CAPABILITY-SLICE-2"],
     provenance: SCENARIO_PROVENANCE,
     // documentStore omitted: the EvSS Slice-2 snapshot caches the trial
-    // balance regardless. The Phase-D BA-325 generator will read from the
+    // balance regardless. The Phase-D BA-110 generator will read from the
     // RMS document store when wired; for Phase B the snapshot is enough.
   });
 
@@ -1177,7 +1177,7 @@ export function runPhaseAandB(opts: { dbPath: string; cleanup: boolean }): Phase
 // the post-close state from Phase B with four SARB BA returns, each:
 //
 //   - generated against the post-close trial balance (Phase B output);
-//   - rendered as canonical (deterministic) JSON (XML for BA 350 / BA 600
+//   - rendered as canonical (deterministic) JSON (XML for BA 310 / BA 300
 //     via Reporting Slice 5's xml-render adapter);
 //   - tagged with the Phase-D source lineage
 //     `scenario:03-fx-end-to-end-rehearsal:phase-d` (overrides the
@@ -1193,7 +1193,7 @@ export function runPhaseAandB(opts: { dbPath: string; cleanup: boolean }): Phase
 // generators and emit the writes.
 //
 // Substrate gaps surfaced in the decision record:
-//   1. **Real classifications** — BA 325 / BA 350 / BA 600 generators take
+//   1. **Real classifications** — BA 110 / BA 310 / BA 300 generators take
 //      caller-supplied classification + position inputs. Until Mira's
 //      WS-INSTRUMENT-ANALYSES + Reporting Slice 6 expand the semantic-layer
 //      registry, Phase D uses rehearsal-grade fixtures derived from Phase
@@ -1243,15 +1243,15 @@ export interface PhaseDResult {
 }
 
 export interface PhaseDSummary {
-  readonly ba325: { readonly lcrPercent: string; readonly compliant: boolean };
-  readonly ba700: {
+  readonly ba110: { readonly lcrPercent: string; readonly compliant: boolean };
+  readonly ba100: {
     readonly cet1Ratio: string;
     readonly tier1Ratio: string;
     readonly totalRatio: string;
     readonly compliant: boolean;
   };
-  readonly ba350: { readonly capitalMinor: number; readonly rwaMinor: number };
-  readonly ba600: { readonly capitalMinor: number; readonly rwaMinor: number };
+  readonly ba310: { readonly capitalMinor: number; readonly rwaMinor: number };
+  readonly ba300: { readonly capitalMinor: number; readonly rwaMinor: number };
 }
 
 export function runPhaseAandBandD(opts: {
@@ -1326,7 +1326,7 @@ export function runPhaseAandBandD(opts: {
   const periodId = openedPayload.periodId;
   const docStore = makePhaseDDocumentStore(opts.docStoreRoot);
 
-  // Phase-D BA generators (BA 325 / 350 / 600 / 700) bank-licence-gate on
+  // Phase-D BA generators (BA 110 / 320 / 400 / 700) bank-licence-gate on
   // the canonical SARB legal-entity short-id `LE-ZA-HOZ-BANK`. The event
   // store uses the brand-typed alias `LE-ZA-HOZ-BANK` (per `BANK_ZA_001` in
   // `@platform/core/types`). Phase D emits its `RecordFiled` events under
@@ -1342,8 +1342,8 @@ export function runPhaseAandBandD(opts: {
     functionalCurrency: openedPayload.functionalCurrency,
     trialBalance: closeResult.trialBalance.rows,
     trialBalanceSnapshotEventId: closeResult.trialBalanceSnapshotEvent.event_id,
-    // P1-compliant (C-1/C-2/C-3): event store + period window so BA 325 folds
-    // FxSettlement events, BA 350 folds FxTradeExecuted, BA 700 folds
+    // P1-compliant (C-1/C-2/C-3): event store + period window so BA 110 folds
+    // FxSettlement events, BA 310 folds FxTradeExecuted, BA 100 folds
     // SubLedgerPostingEmitted + CapitalContributionRecorded events directly.
     // Authority: Principles/1-events-are-truth.md.
     eventStore: store,
@@ -1396,28 +1396,28 @@ export function runPhaseAandBandD(opts: {
   //    rendered bytes) so the runner / decision-record / test all see the
   //    same numbers without re-parsing.
   const summary: PhaseDSummary = {
-    ba325: {
-      lcrPercent: Number.isFinite(phaseDOut.generated.ba325.lcrRatio)
-        ? `${(phaseDOut.generated.ba325.lcrRatio * 100).toFixed(2)}%`
+    ba110: {
+      lcrPercent: Number.isFinite(phaseDOut.generated.ba110.lcrRatio)
+        ? `${(phaseDOut.generated.ba110.lcrRatio * 100).toFixed(2)}%`
         : "infinity",
-      compliant: phaseDOut.generated.ba325.lcrCompliant,
+      compliant: phaseDOut.generated.ba110.lcrCompliant,
     },
-    ba700: {
-      cet1Ratio: `${(phaseDOut.generated.ba700.ratios.cet1Ratio * 100).toFixed(2)}%`,
-      tier1Ratio: `${(phaseDOut.generated.ba700.ratios.tier1Ratio * 100).toFixed(2)}%`,
-      totalRatio: `${(phaseDOut.generated.ba700.ratios.totalRatio * 100).toFixed(2)}%`,
+    ba100: {
+      cet1Ratio: `${(phaseDOut.generated.ba100.ratios.cet1Ratio * 100).toFixed(2)}%`,
+      tier1Ratio: `${(phaseDOut.generated.ba100.ratios.tier1Ratio * 100).toFixed(2)}%`,
+      totalRatio: `${(phaseDOut.generated.ba100.ratios.totalRatio * 100).toFixed(2)}%`,
       compliant:
-        phaseDOut.generated.ba700.ratios.cet1Compliant &&
-        phaseDOut.generated.ba700.ratios.tier1Compliant &&
-        phaseDOut.generated.ba700.ratios.totalCompliant,
+        phaseDOut.generated.ba100.ratios.cet1Compliant &&
+        phaseDOut.generated.ba100.ratios.tier1Compliant &&
+        phaseDOut.generated.ba100.ratios.totalCompliant,
     },
-    ba350: {
-      capitalMinor: phaseDOut.generated.ba350.totalMarketRiskCapitalMinor,
-      rwaMinor: phaseDOut.generated.ba350.totalMarketRiskRwaMinor,
+    ba310: {
+      capitalMinor: phaseDOut.generated.ba310.totalMarketRiskCapitalMinor,
+      rwaMinor: phaseDOut.generated.ba310.totalMarketRiskRwaMinor,
     },
-    ba600: {
-      capitalMinor: phaseDOut.generated.ba600.opRiskCapitalMinor,
-      rwaMinor: phaseDOut.generated.ba600.opRiskRwaMinor,
+    ba300: {
+      capitalMinor: phaseDOut.generated.ba300.opRiskCapitalMinor,
+      rwaMinor: phaseDOut.generated.ba300.opRiskRwaMinor,
     },
   };
 
@@ -1450,8 +1450,8 @@ export type { PhaseDForm, PhaseDInputs, PhaseDWriteResult };
 //
 // BANK_SCENARIO_SHARED=1 opt-in (D-PROVENANCE-FILTER-ENFORCEMENT):
 // When this env var is set, the scenario runner switches the default
-// provenance mode to "combined" so the BA generators (BA 700, BA 350,
-// BA 325) can fold the scenario's simulated events. Without this flag
+// provenance mode to "combined" so the BA generators (BA 100, BA 310,
+// BA 110) can fold the scenario's simulated events. Without this flag
 // the default is production-only and generators return zero capital.
 // This flag is for scenario dry-run invocations only — CI tests set
 // the override via beforeEach() and do not need this flag.

@@ -45,7 +45,7 @@
 //   Principles/5-multi-currency-entity-country.md — functional-currency scope.
 //
 // Author: Ravi (Treasury/ALM quantitative engineer, engineering)
-//   per brief:ravi:fix-ba-325-hqla-stock-instrument-level-positions:2026-05-29.
+//   per brief:ravi:fix-ba-110-hqla-stock-instrument-level-positions:2026-05-29.
 
 import type { SecurityMasterState } from "../projections/markets/security-master";
 import type { UnifiedPositionState } from "../projections/markets/unified-position";
@@ -91,8 +91,8 @@ export interface HqlaStockLine {
  * Input to `computeHqlaStockFromPositions()`.
  *
  * Pass the folded state of the unified-position and security-master projections.
- * This interface is also the type consumed by `generateBa325Lcr()` as
- * `Ba325GeneratorInput.hqlaStock`.
+ * This interface is also the type consumed by `generateBa110Lcr()` as
+ * `Ba110GeneratorInput.hqlaStock`.
  *
  * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D295; Reg 26(7).
  */
@@ -123,7 +123,7 @@ export interface HqlaStockInput {
  * The computed HQLA stock broken down by tier.
  *
  * Note: caps (BCBS D295 §47 — 40% Level-2A cap, 15% Level-2B cap) are NOT
- * applied here. The caps are applied inside `generateBa325Lcr()` via the
+ * applied here. The caps are applied inside `generateBa110Lcr()` via the
  * existing `applyHqlaCaps()` function, which operates on the pre-cap tier
  * totals. This separation keeps the instrument-level computation and the
  * regulatory cap arithmetic independently testable.
@@ -177,7 +177,7 @@ const HAIRCUT: Record<"level-1" | "level-2a" | "level-2b", number> = {
  *   5. Apply BCBS D295 haircut for the tier.
  *   6. Accumulate into level1Lines / level2aLines / level2bLines.
  *
- * BCBS D295 caps (§47) are NOT applied here — they are applied by the BA 325
+ * BCBS D295 caps (§47) are NOT applied here — they are applied by the BA 110
  * generator via `applyHqlaCaps()`.
  *
  * Citations:

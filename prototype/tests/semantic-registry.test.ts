@@ -208,10 +208,10 @@ describe("SemanticRegistry — Slice 1 entries match pack §6 acceptance", () =>
     expect(cashAndBalancesAtSARB.formula).toContain("ACC-1100-001");
   });
 
-  it("CashAndBalancesAtSARB feeds BA 325 HQLA Level-1 (per pack Slice 3)", () => {
-    const ba325 = cashAndBalancesAtSARB.regulatoryCells?.find((c) => c.form === "BA 325");
-    expect(ba325).toBeDefined();
-    expect(ba325?.line).toMatch(/HQLA Level 1/);
+  it("CashAndBalancesAtSARB feeds BA 110 HQLA Level-1 (per pack Slice 3)", () => {
+    const ba110 = cashAndBalancesAtSARB.regulatoryCells?.find((c) => c.form === "BA 110");
+    expect(ba110).toBeDefined();
+    expect(ba110?.line).toMatch(/HQLA Level 1/);
   });
 
   it("every Slice 1 entry has at least one citation (P2)", () => {

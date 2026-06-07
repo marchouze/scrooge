@@ -92,7 +92,7 @@ describe("alm-positions — build-phase empty store", () => {
     expect(snap.hqlaPositions.length).toBe(0);
     expect(snap.fundingPositions.length).toBe(0);
     // WS2: ASF always has at least one item (Tier 1 capital from computeCapitalMetrics
-    // build-phase baseline — R300m ICAAP v1 figure, 100% ASF weight per BA 326 §8).
+    // build-phase baseline — R300m ICAAP v1 figure, 100% ASF weight per BA 120 §8).
     expect(snap.asfItems.length).toBeGreaterThanOrEqual(1);
     expect(snap.rsfItems.length).toBe(0);
     // buildPhase is false now that ASF is partially wired (Tier 1 capital always present)
@@ -699,7 +699,7 @@ describe("alm-positions — live-flow provenance gate (D-LCR-TILE-PROVENANCE)", 
 // Entity scoping — WS-LCR-ENGINE-RECONCILIATION (D-LCR-TILE-PROVENANCE follow-on)
 // ---------------------------------------------------------------------------
 // Regression: the LCR the dashboard tile renders is a *bank* ratio (Reg 26 /
-// 26A are bank-licence-bound; the BA 325 generator refuses any entity other
+// 26A are bank-licence-bound; the BA 110 generator refuses any entity other
 // than LE-ZA-HOZ-BANK). Before this fix the LCR-feeding folds replayed the
 // WHOLE store with no entity predicate, so a non-fixture flow booked on a
 // sibling legal entity (e.g. LE-ZA-HOZ-SECURITIES) leaked into the bank's

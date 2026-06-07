@@ -418,7 +418,7 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
 //
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 1, CEO-approved
 // 2026-06-05). Cites: IAS 39 §27; IFRS 9 §3.1.1/§3.2.3/§4.1.2/§4.2.1/B5.4.1;
-// BA 325 Table 1/2 (LCR categories).
+// BA 110 Table 1/2 (LCR categories).
 // ---------------------------------------------------------------------------
 
 function zarRow(product: string, logical: string, physical: AccountId, note?: string): ResolverRow {
@@ -449,7 +449,7 @@ export const IFRS_TREASURY_RESOLVER_ROWS: readonly ResolverRow[] = [
     "FUNDING",
     "funding.liability_wholesale_non_operational",
     "ACC-6100-004",
-    "Wholesale non-operational funding liability (BA 325 Table 2, 100% outflow) — shared with the deposit family.",
+    "Wholesale non-operational funding liability (BA 110 Table 2, 100% outflow) — shared with the deposit family.",
   ),
   // ── Interbank loan (bank as lender) ──
   zarRow("IBL", "ibl.nostro", "ACC-1200-001"),
@@ -640,7 +640,7 @@ export const IFRS_PAYMENTS_RESOLVER_ROWS: readonly ResolverRow[] = [
 //
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4, CEO-approved 2026-06-06);
 //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
-// Cites: SARB BA 350 (net open position); Banks Act 94 of 1990.
+// Cites: SARB BA 310 (market risk; net open position); Banks Act 94 of 1990.
 // ---------------------------------------------------------------------------
 
 const SARB_BA_NOP_CURRENCIES: readonly string[] = ["ZAR", "USD", "GBP", "EUR", "CHF", "AUD", "JPY"];
