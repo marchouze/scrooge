@@ -21,7 +21,7 @@
 | BA 310 — Market risk *(D5/2025 §2.1.12; was BA 320 under GG 35950, superseded)* | SARB-PA/ba-returns/ba-310.md | STUB | resbank.co.za |
 | BA 325 — FRTB market risk *(D5/2025 §2.1.14; Reg 28 + PC 18/2024 FRTB roadmap)* | [SARB-PA/ba-returns/ba-325.md](SARB-PA/ba-returns/ba-325.md) | **POPULATED** | resbank.co.za |
 | BA 330 — IRRBB repricing-gap return *(Reg 30 / D2/2023; D5/2025 §2.1.15 completes per D2/2023)* | [SARB-PA/ba-returns/ba-330.md](SARB-PA/ba-returns/ba-330.md) | **POPULATED** | resbank.co.za |
-| BA 400 — Leverage ratio *(D5/2025 §2.1.18)* | SARB-PA/ba-returns/ba-400.md | STUB | resbank.co.za |
+| BA 400 — Leverage ratio *(D5/2025 §2.1.18; Reg 38 + BCBS-LEV; the non-risk-based backstop to BA 100; derivative exposure via SA-CCR per D7/2020)* | [SARB-PA/ba-returns/ba-400.md](SARB-PA/ba-returns/ba-400.md) | **POPULATED** | resbank.co.za |
 | BA 600 — Balance sheet (financial position) *(D5/2025 §2.1.21)* | SARB-PA/ba-returns/ba-600.md | STUB | resbank.co.za |
 | BA 610 — Income statement *(D5/2025 §2.1.22)* | SARB-PA/ba-returns/ba-610.md | STUB | resbank.co.za |
 | Off-balance-sheet exposures — no standalone D5/2025 return; reported within BA 200 (credit), BA 210 (CCR) and BA 600 (balance sheet) | SARB-PA/ba-returns/off-balance-sheet.md | STUB | resbank.co.za |
@@ -168,7 +168,7 @@
 
 ## Status summary
 
-- **POPULATED:** 14 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, Large exposures (Reg 24 + D3/2022), BA 330 — IRRBB (Reg 30 + D2/2023), BA 110 — LCR (D5/2025 §2.1.4 + Reg 26), BA 120 — NSFR (D5/2025 §2.1.5 + Reg 26(14) + D1/2023), BA 325 — FRTB market risk (D5/2025 §2.1.14 + Reg 28 + PC 18/2024), BA 200 — credit risk (D5/2025 §2.1.8 + Reg 23 + BCBS-CRE; SA election per D-CREDIT-RISK-CAPITAL-APPROACH-V1), BA 100 — capital adequacy (D5/2025 §2.1.3 + Reg 38 + BCBS-CAP/RBC; integrates credit BA 200 + market BA 325 + operational RWA)) — as at 2026-06-07. *(This count tracks the SARB-PA / Joint-Standards / FSCA / FIC / IR core regulator instruments; the eight POPULATED BCBS Pillar-1 spines are catalogued separately in the BCBS section above.)*
+- **POPULATED:** 15 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, Large exposures (Reg 24 + D3/2022), BA 330 — IRRBB (Reg 30 + D2/2023), BA 110 — LCR (D5/2025 §2.1.4 + Reg 26), BA 120 — NSFR (D5/2025 §2.1.5 + Reg 26(14) + D1/2023), BA 325 — FRTB market risk (D5/2025 §2.1.14 + Reg 28 + PC 18/2024), BA 200 — credit risk (D5/2025 §2.1.8 + Reg 23 + BCBS-CRE; SA election per D-CREDIT-RISK-CAPITAL-APPROACH-V1), BA 100 — capital adequacy (D5/2025 §2.1.3 + Reg 38 + BCBS-CAP/RBC; integrates credit BA 200 + market BA 325 + operational RWA), BA 400 — leverage ratio (D5/2025 §2.1.18 + Reg 38 + BCBS-LEV; the non-risk-based backstop to BA 100; derivative exposure via SA-CCR per D7/2020)) — as at 2026-06-07. *(This count tracks the SARB-PA / Joint-Standards / FSCA / FIC / IR core regulator instruments; the eight POPULATED BCBS Pillar-1 spines are catalogued separately in the BCBS section above.)*
 - **STUB:** ~60 — scaffolded for population per the regulatory-change management cadence.
 - **Total instruments tracked:** ~64.
 
