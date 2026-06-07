@@ -4983,7 +4983,7 @@
     "section": "Domain A — Prudential (capital, liquidity, large exposures, leverage)",
     "id": "ORG-PR-06",
     "urn": "[TBD]",
-    "citation": "BCBS D295 / BA 325",
+    "citation": "BCBS LCR (`urn:reg:bcbs:lcr:20.5` ≥ 100%; lineage d295) → SA: **Regulation 26** of the Regulations relating to Banks (LCR definition, HQLA, run-off rates, 30-day stress) read with SARB PA **Directive D5/2025 §2.1.4** (form **BA 110** — LCR return) `[correction (Mira, v1.44, D-ROADMAP-WS-C-RECONCILE): legacy \"BA 325\" form number replaced with BA 110 per D5/2025 §2.1.4 canonical schedule — BA 325 was the superseded GG 35950 number; substantive content is Reg 26; Basel spine Regulations/BCBS/lcr-liquidity-coverage.md. URN [TBD] left unchanged (replay-sensitive identity field). See Regulations/SARB-PA/ba-returns/ba-110.md]`",
     "requirement": "Maintain LCR ≥ 100% (PA min); buffer to internal floor (B2 calibration).",
     "fulfilmentPolicy": "Liquidity Risk Management Policy",
     "owner": "Helena + Eitan",
