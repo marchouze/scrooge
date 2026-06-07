@@ -368,8 +368,9 @@
       blockers: ["S5"],
       done: [
         {
-          text: "Obligations register v1.12 — ~224 obligations across 16 domains, ~68 instruments; entity-scope + applies-at vocabulary",
+          text: "Obligations register — entity-scope + applies-at vocabulary; bind-status taxonomy live",
           ref: "Regulations/_obligations-register.md",
+          live: "obligations-summary",
         },
         {
           text: "FAIS Posture A confirmed — bank entity does not need its own FSP licence; securities entity holds FSP path",
@@ -381,7 +382,8 @@
           ref: "PROC-CORP-NPC-01 PRs #74 #83",
         },
         {
-          text: "42+ procedures populated (up from 9 at 2026-05-06 — five-fold increase across Batches A–K)",
+          text: "Procedures populated across Batches A–K (up from 9 at 2026-05-06)",
+          live: "procedures-count",
         },
         { text: "Records Management Policy + retention citation coverage", ref: "v1.12" },
         { text: "Per-entity POPIA s.55–56 IO designation scoping + procedure", ref: "PR #91" },
@@ -431,10 +433,12 @@
       ],
       todo: [
         {
-          text: "Complete instrument analyses — drive ~45 → 0; each unlocks obligations register rows",
+          text: "Complete instrument analyses — markets-profile priority; each unlocks obligations register rows",
+          live: "instrument-analyses",
         },
         {
-          text: "Drive procedures backlog — ~103 populated → ~80 identified total, prioritised by profile",
+          text: "Drive procedures backlog — prioritised by profile",
+          live: "procedures-backlog",
         },
         {
           text: "Obligation-source tagging — every policy carries Source column (Regulation OR Bank Objective)",
@@ -656,13 +660,84 @@
       .join("");
   }
 
+  // ── Live count resolution ────────────────────────────────────────────────
+  // Milestone items tagged with a `live` key render from /api/state's
+  // bank.metrics instead of a hardcoded snapshot, so the roadmap never drifts
+  // from the canonical _index.md / register counts (D-ROADMAP-WS-C-RECONCILE).
+  // An item that resolves with `_done: true` is relocated from the To-do
+  // panel into the Done panel.
+  function resolveLiveItem(item, m) {
+    if (!item.live || !m) return { ...item };
+    const n = (v) => (typeof v === "number" ? v : null);
+    switch (item.live) {
+      case "obligations-summary": {
+        const obl = n(m.obligations);
+        const inst = n(m.instruments);
+        const pop = n(m.instrumentsAnalysed);
+        if (obl == null || inst == null) return { ...item };
+        return {
+          ...item,
+          text: `Obligations register — ${obl} obligations registered; ${inst} instruments indexed (${pop} populated)`,
+        };
+      }
+      case "procedures-count": {
+        const pop = n(m.proceduresPopulated);
+        if (pop == null) return { ...item };
+        const stub = n(m.proceduresStub) ?? 0;
+        const planned = n(m.proceduresPlanned) ?? 0;
+        return { ...item, text: `${pop} procedures populated (${stub} STUB · ${planned} PLANNED)` };
+      }
+      case "instrument-analyses": {
+        const stub = n(m.instrumentsStub);
+        const pop = n(m.instrumentsAnalysed);
+        if (stub == null) return { ...item };
+        if (stub > 0) {
+          return {
+            ...item,
+            text: `Complete instrument analyses — ${stub} STUB remaining (${pop ?? "?"} populated), markets-profile priority; each unlocks obligations register rows`,
+          };
+        }
+        return {
+          ...item,
+          text: `Instrument analyses complete — ${pop ?? 0} populated, 0 STUB`,
+          _done: true,
+        };
+      }
+      case "procedures-backlog": {
+        const pop = n(m.proceduresPopulated);
+        if (pop == null) return { ...item };
+        const stub = n(m.proceduresStub) ?? 0;
+        const planned = n(m.proceduresPlanned) ?? 0;
+        if (stub + planned === 0) {
+          return {
+            ...item,
+            text: `Procedures backlog closed — ${pop} populated, 0 STUB, 0 PLANNED (target met)`,
+            _done: true,
+          };
+        }
+        return {
+          ...item,
+          text: `Drive procedures backlog — ${pop} populated · ${stub} STUB · ${planned} PLANNED, prioritised by profile`,
+        };
+      }
+      default:
+        return { ...item };
+    }
+  }
+
   // ── Render workstreams ───────────────────────────────────────────────────
 
-  function renderWorkstreams(resolvedIds = new Set(), liveInFlight = []) {
+  function renderWorkstreams(resolvedIds = new Set(), liveInFlight = [], metrics = null) {
     const container = document.getElementById("rm-workstreams");
     if (!container) return;
 
     container.innerHTML = WORKSTREAMS.map((ws) => {
+      // Resolve live-tagged milestone items against bank.metrics. Items that
+      // resolve as `_done` move from the To-do queue into Done.
+      const doneStatic = ws.done.map((it) => resolveLiveItem(it, metrics));
+      const todoResolved = ws.todo.map((it) => resolveLiveItem(it, metrics));
+      const doneItems = doneStatic.concat(todoResolved.filter((it) => it._done));
+      const todoItems = todoResolved.filter((it) => !it._done);
       // Derive inflight from the live event store (inFlight items tagged for this workstream)
       const wsInflight = liveInFlight
         .filter((item) => item.roadmapWorkstream === ws.id && item.active === true)
@@ -692,10 +767,10 @@
               <summary>
                 <span class="rm-panel-badge done">✓ Done</span>
                 Past milestones
-                <span class="rm-panel-count">${ws.done.length} items</span>
+                <span class="rm-panel-count">${doneItems.length} items</span>
               </summary>
               <div class="rm-panel-body">
-                <ul class="rm-items">${itemsHtml(ws.done, "icon-done", "✓")}</ul>
+                <ul class="rm-items">${itemsHtml(doneItems, "icon-done", "✓")}</ul>
               </div>
             </details>
             <details class="rm-panel" open>
@@ -712,10 +787,10 @@
               <summary>
                 <span class="rm-panel-badge todo">→ To do</span>
                 Forward queue (sequenced)
-                <span class="rm-panel-count">${ws.todo.length} items</span>
+                <span class="rm-panel-count">${todoItems.length} items</span>
               </summary>
               <div class="rm-panel-body">
-                <ul class="rm-items">${itemsHtml(ws.todo, "icon-todo", "→")}</ul>
+                <ul class="rm-items">${itemsHtml(todoItems, "icon-todo", "→")}</ul>
               </div>
             </details>
             ${
@@ -768,6 +843,8 @@
     const inFlight = state?.inFlight ?? [];
     const decisionsOpen = state?.decisionsOpen ?? [];
     const decisionsResolved = state?.decisionsResolvedSeed ?? state?.decisionsResolved ?? [];
+    // Canonical live counts are nested under bank.metrics (see derive.ts).
+    const metrics = state?.bank?.metrics ?? null;
 
     // Stat cards
     setMetric(
@@ -778,10 +855,16 @@
     setMetric("rm-open", decisionsOpen.length || "–", decisionsOpen.length > 0 ? "amber" : "muted");
     setMetric("rm-inflight", inFlight.filter((w) => w.active !== false).length || "–", "muted");
 
-    // These come from state fields that may vary; use counts if available
-    const procedureCount = state?.procedures?.populated ?? state?.proceduresPopulated ?? null;
-    const obligationsCount = state?.obligations?.total ?? state?.obligationsTotal ?? null;
-    const policiesCount = state?.policies?.total ?? state?.policiesTotal ?? null;
+    // Canonical counts live under bank.metrics; fall back to legacy shapes.
+    const procedureCount =
+      metrics?.proceduresPopulated ??
+      state?.procedures?.populated ??
+      state?.proceduresPopulated ??
+      null;
+    const obligationsCount =
+      metrics?.obligations ?? state?.obligations?.total ?? state?.obligationsTotal ?? null;
+    const policiesCount =
+      metrics?.policies ?? state?.policies?.total ?? state?.policiesTotal ?? null;
 
     setMetric("rm-procedures", procedureCount != null ? String(procedureCount) : "103+", "muted");
     setMetric(
@@ -792,7 +875,7 @@
     setMetric("rm-policies", policiesCount != null ? String(policiesCount) : "112+", "muted");
 
     const resolvedIds = new Set(decisionsResolved.map((r) => r.id ?? r));
-    renderWorkstreams(resolvedIds, inFlight);
+    renderWorkstreams(resolvedIds, inFlight, metrics);
 
     // CEO queue
     renderCeoQueue(decisionsOpen);

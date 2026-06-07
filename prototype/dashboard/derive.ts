@@ -552,18 +552,34 @@ function countObligations(obligationsRegister: string): number {
 interface RegStats {
   total: number;
   populated: number;
+  stub: number;
+  planned: number;
+  sourceWired: number;
 }
 
-// source: Regulations/_index.md — instrument totals and POPULATED count
+// source: Regulations/_index.md — instrument totals + per-status breakdown.
+// `total` counts the analysis-track rows (POPULATED / STUB / PLANNED / n/a);
+// SOURCE-WIRED rows are a separate track (BIS extracts wired into the
+// horizon-scan runner, hand-authored analysis not yet written) and are
+// reported in their own bucket rather than folded into `total`. The
+// per-status breakdown lets the roadmap render "drive STUB → 0" honestly
+// instead of from a hardcoded snapshot (anti-drift, D-ROADMAP-WS-C-RECONCILE).
 function regulationStats(regulationsIndex: string): RegStats {
   const rows = tableRows(readLines(regulationsIndex));
   let total = 0;
   let populated = 0;
+  let stub = 0;
+  let planned = 0;
+  let sourceWired = 0;
   for (const row of rows) {
     if (row.length < 4) continue;
     const status = row[2] ?? "";
     if (!status) continue;
     if (isHeaderRow(row, ["Instrument"])) continue;
+    if (status.includes("SOURCE-WIRED")) {
+      sourceWired++;
+      continue;
+    }
     if (
       !["POPULATED", "STUB", "PLANNED", "**POPULATED**", "**STUB**", "**PLANNED**", "n/a"].some(
         (s) => status.includes(s),
@@ -573,30 +589,35 @@ function regulationStats(regulationsIndex: string): RegStats {
     }
     total++;
     if (status.includes("POPULATED")) populated++;
+    else if (status.includes("STUB")) stub++;
+    else if (status.includes("PLANNED")) planned++;
   }
-  return { total, populated };
+  return { total, populated, stub, planned, sourceWired };
 }
 
 interface ProcStats {
   populated: number;
   planned: number;
+  stub: number;
 }
 
-// source: Procedures/_index.md — POPULATED and PLANNED row counts
+// source: Procedures/_index.md — POPULATED / PLANNED / STUB row counts.
+// STUB is now tracked (was previously dropped) so a consumer can assert
+// "backlog closed" honestly when stub + planned === 0.
 function procedureStats(proceduresIndex: string): ProcStats {
   const rows = tableRows(readLines(proceduresIndex));
   let populated = 0;
   let planned = 0;
+  let stub = 0;
   for (const row of rows) {
     if (row.length < 4) continue;
     const status = row[3] ?? "";
     if (isHeaderRow(row, ["Policy"])) continue;
     if (status.includes("POPULATED")) populated++;
     else if (status.includes("PLANNED")) planned++;
-    // STUB and others are not counted in either bucket (matches the registry's
-    // current convention; the dashboard tracks the two endpoints).
+    else if (status.includes("STUB")) stub++;
   }
-  return { populated, planned };
+  return { populated, planned, stub };
 }
 
 // source: Team/_team-roster.json `topOfHouse` block. The roster JSON is
@@ -1389,8 +1410,12 @@ export function deriveState(opts: DeriveOpts): DashboardState {
         obligations,
         instruments: regs.total,
         instrumentsAnalysed: regs.populated,
+        instrumentsStub: regs.stub,
+        instrumentsPlanned: regs.planned,
+        instrumentsSourceWired: regs.sourceWired,
         proceduresPopulated: procs.populated,
         proceduresPlanned: procs.planned,
+        proceduresStub: procs.stub,
         ceoDecisionsActioned: resolved.length,
         directReports: directReports.length,
         openGovernanceSeats: openSeats.length,

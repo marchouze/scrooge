@@ -211,6 +211,7 @@ function makeFixture(): Fixture {
       "| Reg Banks | SARB-PA/regs.md | STUB | resbank.co.za |",
       "| FIC Act | FIC/fic-act.md | **POPULATED** | fic.gov.za |",
       "| BCBS 239 | BCBS/239.md | PLANNED | bis.org |",
+      "| SCO | BCBS/source-docs/sco.json | SOURCE-WIRED | bis.org |",
       "",
     ].join("\n"),
   );
@@ -332,8 +333,12 @@ describe("deriveState — canonical-source parsers", () => {
     expect(state.bank.metrics.obligations).toBe(3); // ORG-PR(IV)-01 included
     expect(state.bank.metrics.instruments).toBe(4);
     expect(state.bank.metrics.instrumentsAnalysed).toBe(2);
+    expect(state.bank.metrics.instrumentsStub).toBe(1);
+    expect(state.bank.metrics.instrumentsPlanned).toBe(1);
+    expect(state.bank.metrics.instrumentsSourceWired).toBe(1); // SOURCE-WIRED tracked separately, excluded from total
     expect(state.bank.metrics.proceduresPopulated).toBe(2);
     expect(state.bank.metrics.proceduresPlanned).toBe(3);
+    expect(state.bank.metrics.proceduresStub).toBe(1);
   });
 
   it("parses principles with title and summary", () => {

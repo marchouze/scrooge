@@ -13,8 +13,12 @@ export interface BankMetrics {
   obligations: number;
   instruments: number;
   instrumentsAnalysed: number;
+  instrumentsStub: number;
+  instrumentsPlanned: number;
+  instrumentsSourceWired: number;
   proceduresPopulated: number;
   proceduresPlanned: number;
+  proceduresStub: number;
   ceoDecisionsActioned: number;
   directReports: number;
   openGovernanceSeats: number;
