@@ -18,10 +18,19 @@
 //       the ACC-2100-009 remediation suspense backed by a CFO write-off
 //       Decision. Concretely: the only non-suspense ACC-2100 balances permitted
 //       are the live trade's canonical footprint; any ACC-2100-009 residue must
-//       have a `D-FX-SUBLEDGER-WRITEOFF-CFO` Decision (requested or approved) in
-//       the store. Residue with NO backing CFO decision is a FAIL (write-off
-//       not surfaced); residue with a `requested` (not yet approved) decision is
-//       a WARN (awaiting CFO sign-off) — never silently passed.
+//       have a `D-FX-SUBLEDGER-WRITEOFF-CFO` Decision in the store. Residue with
+//       NO backing CFO decision is a FAIL (write-off not surfaced); residue with
+//       a `requested` (not yet approved) decision is a WARN (awaiting CFO
+//       sign-off) — never silently passed. Residue that PERSISTS after the CFO
+//       has APPROVED the write-off is itself a FAIL: an approved write-off whose
+//       clearing journal never posted leaves the GL un-hygienic (the suspense
+//       was authorised to be cleared but still carries the balance).
+//
+//   (2b) Post-write-off zero: once the CFO write-off is approved, ACC-2100-009
+//       MUST net to zero across every currency. This is the direct assertion the
+//       write-off runner (scripts/writeoff-fx-subledger-suspense.ts) is built to
+//       satisfy — covered by the FAIL branch of (2) above; stated separately
+//       here for clarity.
 //
 //   (3) No orphaned legacy ACC-2100-001..004 balances remain beyond the live
 //       trade's footprint. This is the direct read of (1) restricted to the
@@ -177,8 +186,19 @@ export function run(opts: RunOpts = {}): ReconResult {
         severity: "warn",
         message: `FX remediation suspense (ACC-2100-009) residue (${residueLine}) is awaiting CFO sign-off (${WRITEOFF_DECISION_ID} phase=requested). Tracked, not hidden; clears when the CFO approves and the residue is written off out of suspense.`,
       });
+    } else if (phase === "approved") {
+      // Approved write-off but residue still parked ⇒ the clearing journal never
+      // posted. An authorised write-off that was not executed leaves the GL
+      // un-hygienic — FAIL, not a silent pass.
+      violations.push({
+        subject: "ACC-2100-009",
+        severity: "fail",
+        message: `FX remediation suspense (ACC-2100-009) still holds residue (${residueLine}) AFTER the CFO write-off was approved (${WRITEOFF_DECISION_ID} phase=approved). The clearing journal must post to zero the suspense. Run scripts/writeoff-fx-subledger-suspense.ts --emit. Authority: ${WRITEOFF_DECISION_ID}; Principle 1.`,
+      });
     }
-    // phase === "approved" (or any terminal) ⇒ substantiated; no violation.
+    // any other terminal phase (rejected / deferred / withdrawn / superseded)
+    // ⇒ the residue is not actively pending a CFO write-off; no violation here
+    // (the residue's disposition is governed by that terminal decision).
   }
 
   // Empty-state guard — always record at least one assertion.

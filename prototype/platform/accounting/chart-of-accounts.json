@@ -257,6 +257,13 @@
       "category": "income",
       "side": "credit"
     },
+    {
+      "id": "ACC-2105-001",
+      "name": "FX Sub-Ledger Build-Phase Write-Off",
+      "currency": "ZAR",
+      "category": "income",
+      "side": "debit"
+    },
 
     {
       "id": "ACC-2300-001",

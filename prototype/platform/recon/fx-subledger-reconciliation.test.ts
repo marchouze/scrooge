@@ -148,4 +148,45 @@ describe("recon:fx-subledger-reconciliation", () => {
     expect(r.ok).toBe(true);
     expect(r.violations.some((v) => v.severity === "warn")).toBe(true);
   });
+
+  it("FAILs when residue persists AFTER the CFO write-off was approved", () => {
+    // The CFO approved the write-off but the clearing journal never posted, so
+    // ACC-2100-009 still carries the residue. An authorised-but-unexecuted
+    // write-off leaves the GL un-hygienic ⇒ FAIL (not a silent pass).
+    const t = tradeEvent("CANCELLED-3");
+    const c = cancelEvent("CANCELLED-3", t.event_id);
+    const p = posting(c.event_id, [
+      leg("ACC-2100-009", "debit", 75_00, "ZAR"),
+      leg("ACC-1100-001", "credit", 75_00, "ZAR"),
+    ]);
+    const r = run({ events: [t, c, p, writeoffDecision("approved")], asOf: NOW });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((v) => v.subject === "ACC-2100-009" && v.severity === "fail")).toBe(
+      true,
+    );
+  });
+
+  it("PASSes (clean) when the suspense nets to zero after the write-off cleared", () => {
+    // The clearing journal posted: ACC-2100-009 holds a balanced debit+credit in
+    // the currency, netting to zero, AND the CFO write-off is approved. No
+    // residue, no orphaned gross ⇒ clean pass, no violations.
+    const t = tradeEvent("CANCELLED-4");
+    const c = cancelEvent("CANCELLED-4", t.event_id);
+    const parked = posting(c.event_id, [
+      leg("ACC-2100-009", "debit", 75_00, "ZAR"),
+      leg("ACC-1100-001", "credit", 75_00, "ZAR"),
+    ]);
+    // Clearing journal: credit 009 back out to the dedicated write-off P&L line
+    // (ACC-2105-001, outside the ACC-2100-* trading range the legacy engine scans).
+    const cleared = posting(`${c.event_id}-clear`, [
+      leg("ACC-2100-009", "credit", 75_00, "ZAR"),
+      leg("ACC-2105-001", "debit", 75_00, "ZAR"),
+    ]);
+    const r = run({
+      events: [t, c, parked, cleared, writeoffDecision("approved")],
+      asOf: NOW,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations).toEqual([]);
+  });
 });
