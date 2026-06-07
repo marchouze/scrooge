@@ -260,7 +260,7 @@ const CONDITIONS: readonly ConditionAssessment[] = [
       "FinSurv ExCon: Rashida's PR #644 rules the build-phase scenario activity outside Regulations 2(1)/3(1) scope — " +
       "FinSurv pipeline production wiring is deferred until commencement-of-trading. " +
       "BA-325 (LCR) is wired and tested via the Kai scenario. BA-700/600/350 capability exists but is not exercised " +
-      "by the FX-spot scenario (those are credit/IRRBB returns; FX-spot drives BA-325 + BA-330). " +
+      "by the FX-spot scenario (those are capital/credit/derivatives returns; FX-spot drives the market-risk returns BA-320/BA-325 — NOT BA-330, which is the IRRBB return). " +
       "InProgress: the pipelines that fire for FX-spot (BA-325) are live and tested; the pipelines that don't fire " +
       "for FX-spot (FinSurv production wiring) are correctly deferred per Rashida's CISO assessment. Acceptable for " +
       "INTERNAL TEST scope; production fire would require FinSurv production wiring + Vera audit + real SARB filing " +

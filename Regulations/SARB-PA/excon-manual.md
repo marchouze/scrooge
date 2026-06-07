@@ -128,7 +128,7 @@ The Manual is organised into lettered Sections A–K, each with numbered chapter
 | Documentary-evidence verification (A.3(C)) | Excon Compliance Policy; FinSurv reporting procedure (planned: `Procedures/by-policy/finsurv-reporting.md`) | Zara (Mira) |
 | FinSurv per-transaction reporting + BoP coding (Section J) | FinSurv reporting pipeline / BoP-code library (build); reconciliation engine | Zara (Mira) + Bea (engineering) |
 | FX forward / swap conduct (Section D) | OTC Trading Policy (planned); Trading Mandate (`Policies/trading-mandate-v1.md`) | Saskia + Helena; Zara (CCO) |
-| Net open position (separate PA return, not Manual) | Market Risk Policy; BA 125 / BA 330 returns | Helena + Camille (Bea) |
+| Net open position (separate PA return, not Manual) | Market Risk Policy; BA 320 (market risk) / BA 325 (daily effective NOP, reg 29(3)) returns *(corrected from "BA 330", which is the IRRBB repricing-gap return — D-BA-330-REATTRIBUTION-IRRBB)* | Helena + Camille (Bea) |
 | Cross-border loans (Section I) | Excon Compliance Policy; loan-agreement clause library | Zara (Mira); Imani |
 | CFC / nostro accounts (Section E) | Treasury / correspondent-banking design | Eitan + Tomas |
 

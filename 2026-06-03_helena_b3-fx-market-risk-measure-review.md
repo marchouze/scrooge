@@ -10,6 +10,8 @@ decision-required: false
 
 # B3 FX market-risk measure — basis & best-practice review
 
+> ⚠️ **Form-number correction (Mira, Compliance / RegTech engineer, 2026-06-07; `D-BA-330-REATTRIBUTION-IRRBB`).** This record cites **BA 330** as the SARB market-risk / FX-net-open-position return. That attribution is **incorrect** and is superseded: per the Regulations relating to Banks form schedule, **BA 330 is the IRRBB repricing-gap return**; the FX-NOP / market-risk return is **BA 320 (Market risk)**, with the daily effective net open position attested on **BA 325 under regulation 29(3)**. The body below is retained unchanged as a historical record; read "BA 330" in the market-risk context as "BA 320 / BA 325 reg 29(3)". See `Regulations/SARB-PA/large-exposures.md` §7.
+
 **For:** Marc (CEO) — awareness. **Owner:** Helena (Chief Risk Officer, governance).
 **Engineer:** Rohan (Risk engineer). **Authority chain:** D-MARKETS-SCHEMA-FOUNDATION
 (Slice 5) → D-BRC-INTERIM-MR-1-FX (2026-05-21).

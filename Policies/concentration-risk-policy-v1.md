@@ -49,7 +49,7 @@ The concentration risk framework applies to all credit-bearing exposures: funded
 
 ### Roles
 
-Helena (Chief Risk Officer, governance) is the policy owner. She is responsible for: maintaining the concentration limit framework; reviewing the large exposure register; approving or declining large exposure requests approaching the hard regulatory cap; notifying the SARB of large exposures per reg.38. Rohan (Market risk quantitative engineer, engineering — reports to Helena) builds and operates the concentration monitoring system: the large exposure aggregation engine, the connected-party algorithm, and the concentration reporting dashboard. Imani (Legal-as-code engineer, engineering) maintains the legal entity hierarchy and connected-party mappings. Camille (Chief Financial Officer, governance) integrates the large exposure register into the BA-330 (large exposures) regulatory return. Owen (Company Secretary, governance) manages the SARB notification filings for large exposures.
+Helena (Chief Risk Officer, governance) is the policy owner. She is responsible for: maintaining the concentration limit framework; reviewing the large exposure register; approving or declining large exposure requests approaching the hard regulatory cap; notifying the SARB of large exposures per Reg 24(6)–(8) read with Directive 3 of 2022. Rohan (Market risk quantitative engineer, engineering — reports to Helena) builds and operates the concentration monitoring system: the large exposure aggregation engine, the connected-party algorithm, and the concentration reporting dashboard. Imani (Legal-as-code engineer, engineering) maintains the legal entity hierarchy and connected-party mappings. Camille (Chief Financial Officer, governance) integrates the large exposure register into the large-exposures regulatory return (BA 200-series credit-risk return family — NOT BA 330, which is the IRRBB repricing-gap return; corrected per D-BA-330-REATTRIBUTION-IRRBB). Owen (Company Secretary, governance) manages the SARB notification filings for large exposures.
 
 ---
 
@@ -171,7 +171,7 @@ The Bank must notify the SARB when any single counterparty exposure exceeds 10% 
 
 - **Concentration aggregation engine (Rohan).** Automated daily aggregation of all credit-bearing exposures per counterparty group (including CCR EAD from the SA-CCR engine, funded credit exposures, off-balance sheet). Discharge exit signal: `LargeExposureRegisterUpdated { date, topExposures[] }` event.
 - **Connected-party algorithm (Imani + Rohan).** Legal entity hierarchy + economic interdependence model producing connected-party group assignments. Currently manual; substrate build formalises the classification.
-- **BA-330 regulatory return integration (Camille + Rohan).** Large exposure data fed into the SARB BA-330 return; currently in build phase.
+- **Large-exposures regulatory return integration (Camille + Rohan).** Large exposure data fed into the SARB large-exposures return (BA 200-series credit-risk return family — NOT BA 330, which is the IRRBB repricing-gap return; corrected per D-BA-330-REATTRIBUTION-IRRBB); currently in build phase.
 
 ---
 
