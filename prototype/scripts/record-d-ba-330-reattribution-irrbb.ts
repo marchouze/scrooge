@@ -43,8 +43,7 @@ import { recordDecision, requestDecision } from "../runtime/decisions/record";
 const REQUESTED_ASOF = "2026-06-07T08:59:00.000Z";
 const ASOF = "2026-06-07T09:00:00.000Z";
 
-const TITLE =
-  "BA-330 re-attribution sweep — IRRBB vs large-exposures vs FX-NOP";
+const TITLE = "BA-330 re-attribution sweep — IRRBB vs large-exposures vs FX-NOP";
 
 const CITATIONS = [
   "D-ROADMAP-WS-C-RECONCILE",
@@ -128,8 +127,7 @@ const result = recordDecision(
     citations: CITATIONS,
     followOnDispatch: [
       {
-        route:
-          "Reporting-layer BA-form-number reconciliation (prototype/platform/reporting/*)",
+        route: "Reporting-layer BA-form-number reconciliation (prototype/platform/reporting/*)",
         note:
           "Separate out-of-scope defect: the reporting modules use their own inconsistent " +
           "BA-form numbering (e.g. ba-320 labelled credit risk; ba-350 labelled market-risk/NSFR) " +
