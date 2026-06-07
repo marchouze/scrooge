@@ -15,10 +15,16 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { makeFxSettlementFailed } from "../../event-store/event-types/fx-accounting";
 import { makeRasLimitSchedulePublished } from "../../event-store/event-types/trading";
 import type { RasLimitRow } from "../../event-store/event-types/trading";
 import type { Event } from "../../event-store/types";
-import { makeFxTradeExecuted } from "../../markets/cdm/fx";
+import { MarketDataStore } from "../../market-data/store";
+import {
+  makeFxTradeExecuted,
+  makePrincipalPayment,
+  makeSettlementConfirmed,
+} from "../../markets/cdm/fx";
 import { getLimitUtilisations, rebuildLimitUtilisation } from "./limit-utilisation";
 
 // ---------------------------------------------------------------------------
@@ -254,5 +260,162 @@ describe("LimitUtilisationProjection — RAS B3 review enhancements", () => {
     // Without the injected sensitivity → B4 falls back to the folded accumulator (0 here).
     const noSens = getLimitUtilisations();
     expect(noSens.find((r) => r.cluster === "B4")?.currentExposure).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: B2 settlement-window (Herstatt) exposure + B1 ZAR conversion
+// (D-RAS-B2-SETTLEMENT-EXPOSURE-FIX). Before this fix B2 had NO feeder — it
+// read zero even mid-settlement (declared-but-uncomputed), and B1 was reported
+// in notional-CCY units against a ZAR limit (unit mismatch).
+// ---------------------------------------------------------------------------
+
+const SETTLEMENT_CITATIONS = ["urn:reg:bcbs:d226", "D-RAS-B2-SETTLEMENT-EXPOSURE-FIX"];
+
+/** PrincipalPayment for the bank's outgoing (deliver) leg — opens Herstatt. */
+function makeDeliverLeg(tradeId: string, currency: string, amountMajor: number): Event {
+  return makePrincipalPayment({
+    asOf: AS_OF,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: SETTLEMENT_CITATIONS,
+    payload: {
+      tradeId,
+      legKind: "deliver",
+      currencyPair: "USD/ZAR",
+      currency,
+      // netCash is minor units, negative = outflow (deliver convention).
+      netCash: -Math.round(amountMajor * 100),
+      settlementDate: "2026-05-23",
+      settlementPath: "correspondent",
+      correspondent: { name: "JPMorgan Chase", bic: "CHASUS33" },
+      citations: SETTLEMENT_CITATIONS,
+    },
+  });
+}
+
+function makeSettlementConfirmedFor(tradeId: string): Event {
+  return makeSettlementConfirmed({
+    asOf: AS_OF,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: SETTLEMENT_CITATIONS,
+    payload: {
+      tradeId,
+      currencyPair: "USD/ZAR",
+      settledDate: "2026-05-23",
+      realisedPnlDelta: 0,
+      settlementRef: `SWIFT-${tradeId}`,
+      citations: SETTLEMENT_CITATIONS,
+    },
+  });
+}
+
+/** Market data store with USD/ZAR = 18.5 so ZAR conversion is observable. */
+function makeMdsUsdZar(): MarketDataStore {
+  const store = new MarketDataStore(":memory:");
+  store.append({
+    id: "test-usdzar",
+    source: "test",
+    instrument: "USD/ZAR",
+    dataType: "fx-quote",
+    provenance: "production",
+    asOf: "2026-05-21T12:00:00Z",
+    payload: { mid: 18.5 },
+  });
+  return store;
+}
+
+describe("LimitUtilisationProjection — B2 settlement-window exposure", () => {
+  it("B2 stays zero pre-settlement (no PrincipalPayment delivered)", () => {
+    // A live FxTradeExecuted with no settlement legs is genuinely pre-Herstatt:
+    // no leg has been delivered, so no settlement-window exposure exists.
+    rebuildLimitUtilisation([makeFxSpotTrade("B2-PRE-0001")]);
+    const rows = getLimitUtilisations();
+    const b2 = rows.find((r) => r.cluster === "B2");
+    expect(b2).toBeDefined();
+    expect(b2?.currentExposure).toBe(0);
+  });
+
+  it("B2 lights up when one leg is delivered (mid-settlement / Herstatt-active)", () => {
+    // Bank delivers USD 1,000,000 (PrincipalPayment{deliver}); counter-leg
+    // unconfirmed → settlement-window exposure of USD 1,000,000.
+    const events: Event[] = [
+      makeFxSpotTrade("B2-OPEN-0001"),
+      makeDeliverLeg("B2-OPEN-0001", "USD", 1_000_000),
+    ];
+    rebuildLimitUtilisation(events);
+    const rows = getLimitUtilisations(); // no MDS → raw CCY units
+    const b2 = rows.find((r) => r.cluster === "B2");
+    expect(b2?.currentExposure).toBe(1_000_000);
+  });
+
+  it("B2 clears once SettlementConfirmed lands (both legs settled)", () => {
+    const events: Event[] = [
+      makeFxSpotTrade("B2-CLOSE-0001"),
+      makeDeliverLeg("B2-CLOSE-0001", "USD", 1_000_000),
+      makeSettlementConfirmedFor("B2-CLOSE-0001"),
+    ];
+    rebuildLimitUtilisation(events);
+    const rows = getLimitUtilisations();
+    const b2 = rows.find((r) => r.cluster === "B2");
+    expect(b2?.currentExposure).toBe(0);
+    // B1 (pre-settlement credit) also clears on confirmation.
+    const b1 = rows.find((r) => r.cluster === "B1");
+    expect(b1?.currentExposure).toBe(0);
+  });
+
+  it("B2 lights up via FxSettlementFailed{one-leg-delivered} with no PrincipalPayment", () => {
+    // The structured Herstatt-active signal: correspondent reports the bank's
+    // pay leg out, counterparty's leg unreceived, but no PrincipalPayment was
+    // captured. Exposure synthesised from the trade's pay leg (USD 1,000,000).
+    const failed = makeFxSettlementFailed({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: SETTLEMENT_CITATIONS,
+      payload: {
+        tradeRef: "B2-FAIL-0001",
+        settlementInstructionRef: "SI-B2-FAIL-0001",
+        failedAt: AS_OF,
+        failureKind: "one-leg-delivered",
+        failureReason: "Counterparty leg not received by cutoff.",
+        legStatus: { payLegDelivered: true, receiveLegDelivered: false },
+      },
+    });
+    rebuildLimitUtilisation([makeFxSpotTrade("B2-FAIL-0001"), failed]);
+    const rows = getLimitUtilisations();
+    const b2 = rows.find((r) => r.cluster === "B2");
+    expect(b2?.currentExposure).toBe(1_000_000);
+  });
+
+  it("B2 exposure is ZAR-converted when a market-data store is supplied", () => {
+    // USD 1,000,000 delivered × 18.5 USD/ZAR = ZAR 18,500,000.
+    const events: Event[] = [
+      makeFxSpotTrade("B2-ZAR-0001"),
+      makeDeliverLeg("B2-ZAR-0001", "USD", 1_000_000),
+    ];
+    rebuildLimitUtilisation(events);
+    const rows = getLimitUtilisations(makeMdsUsdZar());
+    const b2 = rows.find((r) => r.cluster === "B2");
+    expect(b2?.currentExposure).toBeCloseTo(18_500_000, 2);
+  });
+});
+
+describe("LimitUtilisationProjection — B1 ZAR conversion", () => {
+  it("B1 reads ZAR-equivalent when a market-data store is supplied", () => {
+    // Pay leg USD 1,000,000 → 10% credit = USD 100,000 → × 18.5 = ZAR 1,850,000.
+    rebuildLimitUtilisation([makeFxSpotTrade("B1-ZAR-0001")]);
+    const rows = getLimitUtilisations(makeMdsUsdZar());
+    const b1 = rows.find((r) => r.cluster === "B1");
+    expect(b1?.currentExposure).toBeCloseTo(1_850_000, 2);
+  });
+
+  it("B1 falls back to raw CCY units without a market-data store", () => {
+    rebuildLimitUtilisation([makeFxSpotTrade("B1-RAW-0001")]);
+    const rows = getLimitUtilisations();
+    const b1 = rows.find((r) => r.cluster === "B1");
+    // 10% of USD 1,000,000 = 100,000 raw units (matches legacy behaviour).
+    expect(b1?.currentExposure).toBe(100_000);
   });
 });
