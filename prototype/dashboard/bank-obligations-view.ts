@@ -176,14 +176,21 @@ export function getUnadoptedObligationsView(
   };
 }
 
-export interface AtomicProvision {
+export interface ObligationAnnotation {
   id: string;
-  label: string;
-  actionSummary: string;
   obligationType: string;
   actor: string;
+  actionSummary: string;
+}
+
+/** One paragraph from the regulation, with any extracted normative obligations. */
+export interface ChapterSection {
+  id: string;
   paragraph: string;
+  label: string;
+  text: string;
   section: string;
+  obligations: ObligationAnnotation[];
 }
 
 export interface ObligationDetail {
@@ -192,7 +199,7 @@ export interface ObligationDetail {
   seed: ObligationSeedRow | null;
   projection: BankObligation | null;
   history: Array<{ kind: string; at: string; detail?: string; status?: string }>;
-  provisions: AtomicProvision[];
+  sections: ChapterSection[];
 }
 
 /** Full detail for one obligation: reference (seed) + projection state + lifecycle history. */
@@ -244,14 +251,18 @@ export function getObligationDetail(
   }
   history.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 
-  // For BCBS chapter-level obligations (BCBS-CRE45, BCBS-SCO10, etc.) fetch
-  // the atomic obligation nodes from the graph DB so the detail page can show
-  // the actual requirement text (actionSummary) rather than just the chapter title.
-  const provisions: AtomicProvision[] = [];
+  // For BCBS chapter-level obligations fetch paragraph-level Provision nodes
+  // (which carry the full regulatory text) and annotate each with any extracted
+  // Obligation nodes for the same paragraph.
+  const sections: ChapterSection[] = [];
   const chapterCode = id.startsWith("BCBS-") ? id.slice(5) : null;
   if (chapterCode) {
     type NodeRow = { id: string; label: string; metadata: string | null };
-    const rows = getDb()
+    const db = getDb();
+    const str = (v: unknown) => (typeof v === "string" ? v : "");
+
+    // Obligation nodes — group by paragraph for annotation.
+    const oblRows = db
       .prepare(
         `SELECT id, label, metadata FROM graph_nodes
          WHERE node_type = 'Obligation'
@@ -260,20 +271,54 @@ export function getObligationDetail(
                   CAST(json_extract(metadata, '$.atomicSeq') AS INTEGER)`,
       )
       .all(chapterCode) as NodeRow[];
-    for (const row of rows) {
+    const oblByPara = new Map<string, ObligationAnnotation[]>();
+    for (const row of oblRows) {
       const m = (row.metadata ? JSON.parse(row.metadata) : {}) as Record<string, unknown>;
-      const str = (v: unknown) => (typeof v === "string" ? v : "");
-      provisions.push({
+      const para = str(m.paragraph);
+      const list = oblByPara.get(para) ?? [];
+      list.push({
         id: row.id,
-        label: row.label,
-        actionSummary: str(m.actionSummary),
         obligationType: str(m.obligationType),
         actor: str(m.actor),
-        paragraph: str(m.paragraph),
+        actionSummary: str(m.actionSummary),
+      });
+      oblByPara.set(para, list);
+    }
+
+    // Provision nodes — one row per paragraph (skip the chapter-level stub).
+    const provRows = db
+      .prepare(
+        `SELECT id, label, metadata FROM graph_nodes
+         WHERE node_type = 'Provision'
+           AND json_extract(metadata, '$.chapter') = ?
+           AND json_extract(metadata, '$.paragraph') IS NOT NULL
+         ORDER BY json_extract(metadata, '$.paragraph')`,
+      )
+      .all(chapterCode) as NodeRow[];
+
+    // Sort numerically: "20.1" < "20.9" < "20.10".
+    provRows.sort((a, b) => {
+      const ma = (a.metadata ? JSON.parse(a.metadata) : {}) as Record<string, unknown>;
+      const mb = (b.metadata ? JSON.parse(b.metadata) : {}) as Record<string, unknown>;
+      const numParts = (para: string) => para.split(".").map(Number);
+      const [, pa] = numParts(str(ma.paragraph));
+      const [, pb] = numParts(str(mb.paragraph));
+      return (pa ?? 0) - (pb ?? 0);
+    });
+
+    for (const row of provRows) {
+      const m = (row.metadata ? JSON.parse(row.metadata) : {}) as Record<string, unknown>;
+      const para = str(m.paragraph);
+      sections.push({
+        id: row.id,
+        paragraph: para,
+        label: row.label,
+        text: str(m.text),
         section: str(m.section),
+        obligations: oblByPara.get(para) ?? [],
       });
     }
   }
 
-  return { id, adopted: projection?.adopted ?? false, seed, projection, history, provisions };
+  return { id, adopted: projection?.adopted ?? false, seed, projection, history, sections };
 }
