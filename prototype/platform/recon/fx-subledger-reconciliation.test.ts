@@ -161,9 +161,9 @@ describe("recon:fx-subledger-reconciliation", () => {
     ]);
     const r = run({ events: [t, c, p, writeoffDecision("approved")], asOf: NOW });
     expect(r.ok).toBe(false);
-    expect(
-      r.violations.some((v) => v.subject === "ACC-2100-009" && v.severity === "fail"),
-    ).toBe(true);
+    expect(r.violations.some((v) => v.subject === "ACC-2100-009" && v.severity === "fail")).toBe(
+      true,
+    );
   });
 
   it("PASSes (clean) when the suspense nets to zero after the write-off cleared", () => {

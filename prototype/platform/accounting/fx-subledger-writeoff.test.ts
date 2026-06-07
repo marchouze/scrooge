@@ -10,10 +10,7 @@ import { makeSubLedgerPostingEmitted } from "../event-store/event-types/fx-accou
 import { simulatedTag } from "../event-store/provenance";
 import type { Event } from "../event-store/types";
 import type { SubLedgerLeg } from "./fx-accounting-types";
-import {
-  FX_WRITEOFF_ACCOUNT,
-  computeFxSubledgerWriteoff,
-} from "./fx-subledger-writeoff";
+import { FX_WRITEOFF_ACCOUNT, computeFxSubledgerWriteoff } from "./fx-subledger-writeoff";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const PROV = simulatedTag({ scenario: "test", sourceLineage: "fx-writeoff-test" });
@@ -64,10 +61,7 @@ describe("computeFxSubledgerWriteoff", () => {
 
   it("returns no legs when ACC-2100-009 already nets to zero", () => {
     // Equal debit + credit in the same currency nets to zero ⇒ nothing to clear.
-    const events = [
-      parkResidue("p1", "ZAR", 100_00),
-      parkResidue("p2", "ZAR", -100_00),
-    ];
+    const events = [parkResidue("p1", "ZAR", 100_00), parkResidue("p2", "ZAR", -100_00)];
     const r = computeFxSubledgerWriteoff(events, NOW);
     expect(r.clearingLegs).toEqual([]);
     expect(r.suspenseBefore).toEqual([]);
