@@ -201,22 +201,28 @@ export interface ObligationDetail {
   headingGroups: ChapterHeadingGroup[];
 }
 
-interface BcbsHeadingsDoc {
-  chapters: Record<string, Record<string, string>>;
+interface BcbsChapterRow {
+  paragraph: string;
+  heading: string | null;
+  text: string;
 }
-let _bcbsHeadings: BcbsHeadingsDoc["chapters"] | null = null;
+interface BcbsChaptersDoc {
+  chapters: Record<string, BcbsChapterRow[]>;
+}
+let _bcbsChapters: BcbsChaptersDoc["chapters"] | null = null;
 
-/** Load the BCBS section-heading map (paragraph → heading), extracted from the
- * Basel Framework PDF. Reference data (Plane A), keyed by chapter then paragraph. */
-function loadBcbsHeadings(repoRoot: string): BcbsHeadingsDoc["chapters"] {
-  if (_bcbsHeadings) return _bcbsHeadings;
-  const path = resolve(repoRoot, "Regulations/BCBS/headings.json");
-  if (!existsSync(path)) {
-    _bcbsHeadings = {};
-    return _bcbsHeadings;
-  }
-  _bcbsHeadings = (JSON.parse(readFileSync(path, "utf8")) as BcbsHeadingsDoc).chapters;
-  return _bcbsHeadings;
+/** Load clean BCBS chapter text — paragraph bodies + section headings — extracted
+ * from the authoritative Basel Framework PDF (Regulations/BCBS/chapter-text.json).
+ * Reference data (Plane A). This is the canonical source-text for BCBS chapters;
+ * it supersedes the noisier graph-DB Provision text (scrambled cross-refs and
+ * mis-split paragraph boundaries). */
+function loadBcbsChapters(repoRoot: string): BcbsChaptersDoc["chapters"] {
+  if (_bcbsChapters) return _bcbsChapters;
+  const path = resolve(repoRoot, "Regulations/BCBS/chapter-text.json");
+  _bcbsChapters = existsSync(path)
+    ? (JSON.parse(readFileSync(path, "utf8")) as BcbsChaptersDoc).chapters
+    : {};
+  return _bcbsChapters;
 }
 
 /** Full detail for one obligation: reference (seed) + projection state + lifecycle history. */
@@ -268,44 +274,52 @@ export function getObligationDetail(
   }
   history.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 
-  // For BCBS chapter-level obligations fetch paragraph-level Provision nodes
-  // (which carry the full source text) and group them under the section headings
-  // extracted from the Basel Framework PDF (Regulations/BCBS/headings.json).
+  // For BCBS chapter obligations, render the chapter's paragraph bodies grouped
+  // under their section headings. Primary source is the clean PDF-extracted text
+  // (chapter-text.json); fall back to the graph-DB Provision nodes for any
+  // chapter the sidecar doesn't cover.
   const headingGroups: ChapterHeadingGroup[] = [];
   const chapterCode = id.startsWith("BCBS-") ? id.slice(5) : null;
   if (chapterCode) {
-    type NodeRow = { id: string; label: string; metadata: string | null };
-    const db = getDb();
-    const str = (v: unknown) => (typeof v === "string" ? v : "");
-    const headingMap = loadBcbsHeadings(repoRoot)[chapterCode] ?? {};
-
-    const provRows = db
-      .prepare(
-        `SELECT id, label, metadata FROM graph_nodes
-         WHERE node_type = 'Provision'
-           AND json_extract(metadata, '$.chapter') = ?
-           AND json_extract(metadata, '$.paragraph') IS NOT NULL
-         ORDER BY json_extract(metadata, '$.paragraph')`,
-      )
-      .all(chapterCode) as NodeRow[];
-
-    // Sort numerically by the minor part: "20.1" < "20.9" < "20.10".
-    const minor = (m: Record<string, unknown>) => Number(str(m.paragraph).split(".")[1] ?? 0);
-    const parsed = provRows
-      .map((r) => ({ r, m: (r.metadata ? JSON.parse(r.metadata) : {}) as Record<string, unknown> }))
-      .sort((a, b) => minor(a.m) - minor(b.m));
-
-    // Walk paragraphs in order, opening a new group whenever the heading changes.
-    for (const { r, m } of parsed) {
-      const para = str(m.paragraph);
-      const heading = headingMap[para] ?? null;
+    const minorOf = (para: string) => Number(para.split(".")[1] ?? 0);
+    const pushParagraph = (heading: string | null, p: ChapterParagraph) => {
       let group = headingGroups[headingGroups.length - 1];
       if (!group || group.heading !== heading) {
-        group = { heading, fromPara: para, toPara: para, paragraphs: [] };
+        group = { heading, fromPara: p.paragraph, toPara: p.paragraph, paragraphs: [] };
         headingGroups.push(group);
       }
-      group.paragraphs.push({ id: r.id, paragraph: para, text: str(m.text) });
-      group.toPara = para;
+      group.paragraphs.push(p);
+      group.toPara = p.paragraph;
+    };
+
+    const rows = loadBcbsChapters(repoRoot)[chapterCode];
+    if (rows && rows.length > 0) {
+      const sorted = [...rows].sort((a, b) => minorOf(a.paragraph) - minorOf(b.paragraph));
+      for (const row of sorted) {
+        const nodeId = `urn:reg:bcbs:${chapterCode.replace(/^([A-Z]+)(\d+)$/, (_, s, n) => `${s.toLowerCase()}:${n}`)}.${row.paragraph.split(".")[1]}`;
+        pushParagraph(row.heading, { id: nodeId, paragraph: row.paragraph, text: row.text });
+      }
+    } else {
+      // Fallback: graph-DB Provision nodes (no headings available off-PDF).
+      const str = (v: unknown) => (typeof v === "string" ? v : "");
+      type NodeRow = { id: string; metadata: string | null };
+      const provRows = getDb()
+        .prepare(
+          `SELECT id, metadata FROM graph_nodes
+           WHERE node_type = 'Provision'
+             AND json_extract(metadata, '$.chapter') = ?
+             AND json_extract(metadata, '$.paragraph') IS NOT NULL`,
+        )
+        .all(chapterCode) as NodeRow[];
+      const parsed = provRows
+        .map((r) => ({
+          r,
+          m: (r.metadata ? JSON.parse(r.metadata) : {}) as Record<string, unknown>,
+        }))
+        .sort((a, b) => minorOf(str(a.m.paragraph)) - minorOf(str(b.m.paragraph)));
+      for (const { r, m } of parsed) {
+        pushParagraph(null, { id: r.id, paragraph: str(m.paragraph), text: str(m.text) });
+      }
     }
   }
 
