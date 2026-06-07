@@ -5003,7 +5003,7 @@
     "section": "Domain A — Prudential (capital, liquidity, large exposures, leverage)",
     "id": "ORG-PR-07",
     "urn": "[TBD]",
-    "citation": "BCBS D335 / BA 326",
+    "citation": "BCBS NSF (`urn:reg:bcbs:nsf:20.2` ≥ 100%; lineage bcbs295) → SA: **Regulation 26** of the Regulations relating to Banks, at **Reg 26(14)** (NSFR requirements) read with **Reg 26(14)(d)** (NSFR formula = ASF ÷ RSF × 100), read with SARB PA **Directive D5/2025 §2.1.5** (form **BA 120** — NSFR return) + SARB PA **Directive 1 of 2023 (D1/2023)** (NSFR calibration — ASF/RSF factors + ZAR national-discretion phase-out) `[correction (Mira, v1.45, D-ROADMAP-WS-C-RECONCILE): legacy \"BCBS D335 / BA 326\" replaced with the canonical chain — BA 326 was the superseded GG 35950 form number (canonical current number is BA 120 per D5/2025 §2.1.5); the verified SA reference is Reg 26(14)/(14)(d), NOT the unverified \"Reg 26A\" carried in the engine/Basel-spine labels (no Reg 26A exists in the in-corpus RRB source); Basel spine Regulations/BCBS/nsf-net-stable-funding.md. URN [TBD] left unchanged (replay-sensitive identity field). See Regulations/SARB-PA/ba-returns/ba-120.md]`",
     "requirement": "Maintain NSFR ≥ 100% (PA min); buffer to internal floor (B2 calibration).",
     "fulfilmentPolicy": "Liquidity Risk Management Policy",
     "owner": "Helena + Eitan",
