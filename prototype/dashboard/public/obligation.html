@@ -37,6 +37,18 @@
     .od-btn:disabled { opacity:0.5; cursor:not-allowed; }
     .od-derives { font-family:var(--font-mono); font-size:0.82em; color:var(--color-accent); }
     #od-msg { margin:var(--space-3) 0; font:var(--text-body); }
+    .od-prov-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-3); }
+    .od-prov-item { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-4); }
+    .od-prov-header { display:flex; gap:var(--space-2); align-items:center; margin-bottom:var(--space-2); flex-wrap:wrap; }
+    .od-prov-para { font-family:var(--font-mono); font-size:0.82em; color:var(--color-text-secondary); }
+    .od-prov-type { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.75em; font-weight:700; }
+    .od-prov-type.must { background:#fee2e2; color:#b91c1c; }
+    .od-prov-type.must-not { background:#fce7f3; color:#9d174d; }
+    .od-prov-type.may { background:#dbeafe; color:#1d4ed8; }
+    .od-prov-type.recommended { background:#fef9c3; color:#854d0e; }
+    .od-prov-type.other { background:#f3f4f6; color:#374151; }
+    .od-prov-actor { font-size:0.8em; color:var(--color-text-secondary); }
+    .od-prov-text { font:var(--text-body); line-height:1.65; }
   </style>
 </head>
 <body>
@@ -114,6 +126,21 @@
             ${derives.length?mi("Derives from", derives.map(x=>`<span class="od-derives">${SC.esc(x)}</span>`).join(" ")):""}
           </div>
           <div class="od-section"><h3>Requirement</h3><div class="od-req">${SC.esc(requirement)}</div></div>
+          ${(d.provisions && d.provisions.length) ? `
+          <div class="od-section">
+            <h3>Atomic provisions (${d.provisions.length})</h3>
+            <ul class="od-prov-list">${d.provisions.map(p => {
+              const typeClass = ['must','must-not','may','recommended'].includes(p.obligationType) ? p.obligationType : 'other';
+              return `<li class="od-prov-item">
+                <div class="od-prov-header">
+                  <span class="od-prov-para">${SC.esc(p.paragraph)}</span>
+                  <span class="od-prov-type ${typeClass}">${SC.esc(p.obligationType||'—')}</span>
+                  ${p.actor ? `<span class="od-prov-actor">actor: ${SC.esc(p.actor)}</span>` : ''}
+                </div>
+                <div class="od-prov-text">${SC.esc(p.actionSummary)}</div>
+              </li>`;
+            }).join('')}</ul>
+          </div>` : ''}
           <div class="od-section"><h3>Lifecycle</h3>${histHtml}</div>
         `;
 
