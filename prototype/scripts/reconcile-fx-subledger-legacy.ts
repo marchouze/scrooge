@@ -124,6 +124,19 @@ function main(): void {
     );
   }
 
+  // Already reconciled (or nothing to do) — no closing legs to post. This is
+  // the idempotent steady state once the journal has landed: the engine finds
+  // the sub-ledger already at the live-trade-only target.
+  if (result.closingLegs.length === 0) {
+    const alreadyPosted = journalExists(events, JOURNAL_ID);
+    console.log(
+      alreadyPosted
+        ? `\nClosing journal ${JOURNAL_ID} already posted — sub-ledger reconciled, nothing to do (idempotent).\n`
+        : "\nNo closing legs required — FX trading sub-ledger is already reconciled.\n",
+    );
+    return;
+  }
+
   // Empirical before/after via the real GL projection.
   const before = acc2100Net(events, now);
   const closingEvent = buildClosingEvent(result.closingLegs, now);
@@ -191,7 +204,10 @@ function main(): void {
   // Open (do NOT approve) the CFO write-off decision-request. Authored for
   // Bea (Chief Financial Officer, governance); left in `requested` phase.
   const residueLines = result.suspenseResidue
-    .map((s) => `${s.currency} ${s.netDebitMinor >= 0 ? "Dr" : "Cr"} ${fmt(Math.abs(s.netDebitMinor))}`)
+    .map(
+      (s) =>
+        `${s.currency} ${s.netDebitMinor >= 0 ? "Dr" : "Cr"} ${fmt(Math.abs(s.netDebitMinor))}`,
+    )
     .join("; ");
   if (result.suspenseResidue.length > 0 && !hasRequestedWriteoff(events)) {
     requestDecision(
@@ -201,12 +217,7 @@ function main(): void {
         authorityRef: "agent:bea:cfo",
         title: "FX sub-ledger build-phase residue write-off",
         category: "finance",
-        recommendation:
-          "Approve the write-off of the FX sub-ledger build-phase residue currently quarantined " +
-          `in ACC-2100-009 (per currency: ${residueLines}). On approval, post a closing journal ` +
-          "moving the residue out of ACC-2100-009 to a P&L / equity write-off line. The residue " +
-          "is the net unreconciled corruption left by the cancelled/orphaned build-phase trades; " +
-          "none of it substantiates to a live position.",
+        recommendation: `Approve the write-off of the FX sub-ledger build-phase residue currently quarantined in ACC-2100-009 (per currency: ${residueLines}). On approval, post a closing journal moving the residue out of ACC-2100-009 to a P&L / equity write-off line. The residue is the net unreconciled corruption left by the cancelled/orphaned build-phase trades; none of it substantiates to a live position.`,
         rationale:
           "The legacy-account reconciliation (D-FX-SUBLEDGER-LEGACY-RECONCILIATION) left the FX " +
           "trading sub-ledger holding only the live trade's footprint; the residual swept into " +

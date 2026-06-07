@@ -48,7 +48,7 @@ import {
 import { buildGlView } from "../accounting/gl-projection";
 import { eventStore } from "../composition";
 import type { Event } from "../event-store/types";
-import { type ReconResult, type ReconViolation } from "./types";
+import type { ReconResult, ReconViolation } from "./types";
 
 const PIPELINE = "recon:fx-subledger-reconciliation";
 const WRITEOFF_DECISION_ID = "D-FX-SUBLEDGER-WRITEOFF-CFO";
@@ -136,12 +136,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `${l.accountId}|${l.currency}`,
         severity: "fail",
-        message:
-          `Orphaned FX sub-ledger gross: ACC-2100 trading account ${l.accountId} (${l.currency}) ` +
-          `is not at the live-trade-only target — ${l.debitCredit === "debit" ? "Dr" : "Cr"} ` +
-          `${fmt(l.amountMinor)} closing move still required. Run ` +
-          `scripts/reconcile-fx-subledger-legacy.ts --emit. Authority: ` +
-          `D-FX-SUBLEDGER-LEGACY-RECONCILIATION; Principle 1.`,
+        message: `Orphaned FX sub-ledger gross: ACC-2100 trading account ${l.accountId} (${l.currency}) is not at the live-trade-only target — ${l.debitCredit === "debit" ? "Dr" : "Cr"} ${fmt(l.amountMinor)} closing move still required. Run scripts/reconcile-fx-subledger-legacy.ts --emit. Authority: D-FX-SUBLEDGER-LEGACY-RECONCILIATION; Principle 1.`,
       });
     }
   }
@@ -160,10 +155,12 @@ export function run(opts: RunOpts = {}): ReconResult {
   const suspenseGl = suspenseBalances(events, asOf);
   const residueLines = [
     ...result.suspenseResidue.map(
-      (s) => `${s.currency} ${s.netDebitMinor >= 0 ? "Dr" : "Cr"} ${fmt(Math.abs(s.netDebitMinor))}`,
+      (s) =>
+        `${s.currency} ${s.netDebitMinor >= 0 ? "Dr" : "Cr"} ${fmt(Math.abs(s.netDebitMinor))}`,
     ),
     ...suspenseGl.map(
-      (s) => `${s.currency} ${s.netDebitMinor >= 0 ? "Dr" : "Cr"} ${fmt(Math.abs(s.netDebitMinor))}`,
+      (s) =>
+        `${s.currency} ${s.netDebitMinor >= 0 ? "Dr" : "Cr"} ${fmt(Math.abs(s.netDebitMinor))}`,
     ),
   ];
   if (result.suspenseResidue.length > 0 || suspenseGl.length > 0) {
@@ -172,21 +169,13 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: "ACC-2100-009",
         severity: "fail",
-        message:
-          `FX remediation suspense (ACC-2100-009) holds un-substantiated residue (${residueLine}) ` +
-          `with NO backing CFO write-off decision. The write-off must be surfaced as a ` +
-          `${WRITEOFF_DECISION_ID} Decision (requested) for CFO sign-off — never silently parked. ` +
-          `Authority: D-FX-SUBLEDGER-LEGACY-RECONCILIATION; decision-authority routing (finance ` +
-          `write-off → CFO).`,
+        message: `FX remediation suspense (ACC-2100-009) holds un-substantiated residue (${residueLine}) with NO backing CFO write-off decision. The write-off must be surfaced as a ${WRITEOFF_DECISION_ID} Decision (requested) for CFO sign-off — never silently parked. Authority: D-FX-SUBLEDGER-LEGACY-RECONCILIATION; decision-authority routing (finance write-off → CFO).`,
       });
     } else if (phase === "requested") {
       violations.push({
         subject: "ACC-2100-009",
         severity: "warn",
-        message:
-          `FX remediation suspense (ACC-2100-009) residue (${residueLine}) is awaiting CFO ` +
-          `sign-off (${WRITEOFF_DECISION_ID} phase=requested). Tracked, not hidden; clears when ` +
-          `the CFO approves and the residue is written off out of suspense.`,
+        message: `FX remediation suspense (ACC-2100-009) residue (${residueLine}) is awaiting CFO sign-off (${WRITEOFF_DECISION_ID} phase=requested). Tracked, not hidden; clears when the CFO approves and the residue is written off out of suspense.`,
       });
     }
     // phase === "approved" (or any terminal) ⇒ substantiated; no violation.

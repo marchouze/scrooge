@@ -81,10 +81,10 @@
 // Author: Atlas (Core banking platform architect, engineering),
 //   Scrooge-coordinated run.
 
-import type { SubLedgerLeg } from "./fx-accounting-types";
-import { buildGlView } from "./gl-projection";
-import { computeFxSubledgerReconciliation } from "./fx-subledger-trade-reconciliation";
 import type { Event } from "../event-store/types";
+import type { SubLedgerLeg } from "./fx-accounting-types";
+import { computeFxSubledgerReconciliation } from "./fx-subledger-trade-reconciliation";
+import { buildGlView } from "./gl-projection";
 
 // ---------------------------------------------------------------------------
 // Account constants

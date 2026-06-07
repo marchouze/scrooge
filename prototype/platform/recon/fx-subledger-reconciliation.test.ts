@@ -7,15 +7,15 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { run } from "./fx-subledger-reconciliation";
+import type { SubLedgerLeg } from "../accounting/fx-accounting-types";
 import {
   makeFxTradeCancelled,
   makeSubLedgerPostingEmitted,
 } from "../event-store/event-types/fx-accounting";
-import { makeFxTradeExecuted } from "../markets/cdm/fx";
 import { simulatedTag } from "../event-store/provenance";
 import type { Event } from "../event-store/types";
-import type { SubLedgerLeg } from "../accounting/fx-accounting-types";
+import { makeFxTradeExecuted } from "../markets/cdm/fx";
+import { run } from "./fx-subledger-reconciliation";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const PROV = simulatedTag({ scenario: "recon-test", sourceLineage: "fx-legacy-recon-test" });
@@ -85,7 +85,12 @@ function posting(sourceEventId: string, legs: SubLedgerLeg[]): Event {
   return { ...e, provenance: PROV };
 }
 
-function leg(accountId: string, dc: "debit" | "credit", amountMinor: number, currency: string): SubLedgerLeg {
+function leg(
+  accountId: string,
+  dc: "debit" | "credit",
+  amountMinor: number,
+  currency: string,
+): SubLedgerLeg {
   return { accountId, debitCredit: dc, amountMinor, currency };
 }
 
