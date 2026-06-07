@@ -46,13 +46,6 @@
     return `<span class="status-badge" data-tone="${tone}">${esc(status)}</span>`;
   }
 
-  function hashShort(h) {
-    if (typeof h !== "string") return "";
-    const colon = h.indexOf(":");
-    if (colon === -1) return `${h.slice(0, 14)}…`;
-    return `${h.slice(0, colon + 1)}${h.slice(colon + 1, colon + 13)}…`;
-  }
-
   // ------------------------------------------------------------------
   // State
   // ------------------------------------------------------------------
@@ -196,8 +189,9 @@
     const body = visible
       .map((r) => {
         const expected = Array.isArray(r.expectedOutputs) ? r.expectedOutputs.length : 0;
-        return `<tr data-brief-id="${esc(r.briefId)}" style="cursor:pointer;" tabindex="0" role="button" aria-label="Open brief ${esc(r.briefId)}">
-          <td><code>${esc(r.briefId)}</code></td>
+        const href = `/briefs/${encodeURIComponent(r.briefId)}`;
+        return `<tr data-href="${esc(href)}" style="cursor:pointer;" tabindex="0" role="link" aria-label="Open brief ${esc(r.briefId)}">
+          <td><a href="${esc(href)}"><code>${esc(r.briefId)}</code></a></td>
           <td>${esc(r.title)}</td>
           <td>${renderAgent(r.issuedTo)}</td>
           <td>${renderAgent(r.issuedBy)}</td>
@@ -220,118 +214,24 @@
         </table>
       </div>`;
 
-    // Wire row clicks.
-    for (const tr of content.querySelectorAll("tr[data-brief-id]")) {
-      tr.addEventListener("click", () => openDrawer(tr.getAttribute("data-brief-id")));
+    // Wire row navigation — clicking a row (or Enter/Space on it) opens the
+    // brief drill-down on its own page. The brief-id cell is also a plain
+    // anchor so middle-click / cmd-click opens in a new tab.
+    for (const tr of content.querySelectorAll("tr[data-href]")) {
+      const href = tr.getAttribute("data-href");
+      tr.addEventListener("click", (e) => {
+        // Let real clicks on the inner anchor (incl. modifier-clicks) behave
+        // natively; only synthesise navigation for clicks elsewhere in the row.
+        if (e.target.closest("a")) return;
+        window.location.href = href;
+      });
       tr.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          openDrawer(tr.getAttribute("data-brief-id"));
+          window.location.href = href;
         }
       });
     }
-  }
-
-  // ------------------------------------------------------------------
-  // Detail drawer
-  // ------------------------------------------------------------------
-
-  async function fetchDoc(hash) {
-    if (!hash) return "";
-    try {
-      const r = await fetch(`/api/rms/document-content?hash=${encodeURIComponent(hash)}`);
-      if (!r.ok) return `(document not resolvable — HTTP ${r.status})`;
-      return await r.text();
-    } catch (err) {
-      return `(document fetch error: ${esc(String(err))})`;
-    }
-  }
-
-  async function fetchAgentRuns() {
-    try {
-      const r = await fetch("/api/rms/agent-runs");
-      if (!r.ok) return [];
-      const data = await r.json();
-      return Array.isArray(data.rows) ? data.rows : [];
-    } catch (_) {
-      return [];
-    }
-  }
-
-  async function openDrawer(briefId) {
-    if (!briefId) return;
-    const row = registerData.rows.find((r) => r.briefId === briefId);
-    if (!row) return;
-
-    $("drawerTitle").textContent = row.title || briefId;
-    $("drawerMeta").innerHTML = `
-      <code>${esc(briefId)}</code> ·
-      ${esc(row.status ?? "")} ·
-      ${row.workstreamId ? `workstream <code>${esc(row.workstreamId)}</code>` : "no workstream"} ·
-      issued ${esc(fmtTs(row.issuedAt))}
-    `;
-    $("drawerBody").innerHTML = '<p class="muted">Loading directive + run timeline…</p>';
-    $("briefDrawer").style.display = "flex";
-    $("briefDrawer").hidden = false;
-
-    const [directive, allRuns] = await Promise.all([
-      fetchDoc(row.directiveDocumentHash),
-      fetchAgentRuns(),
-    ]);
-    const myRuns = allRuns.filter((r) => r.briefId === briefId);
-
-    const expectedHtml =
-      Array.isArray(row.expectedOutputs) && row.expectedOutputs.length > 0
-        ? `<ul style="margin:var(--space-2) 0;padding-left:var(--space-4);">${row.expectedOutputs
-            .map((eo) => `<li><strong>${esc(eo.kind)}</strong> — ${esc(eo.description)}</li>`)
-            .join("")}</ul>`
-        : '<p class="muted">none declared</p>';
-
-    const runsHtml =
-      myRuns.length === 0
-        ? '<p class="muted">No agent runs recorded yet — brief still in <code>issued</code> state.</p>'
-        : myRuns
-            .sort((a, b) => (a.startedAt < b.startedAt ? -1 : 1))
-            .map((r) => {
-              const deliverables =
-                Array.isArray(r.deliverableHashes) && r.deliverableHashes.length > 0
-                  ? `<ul style="margin:var(--space-1) 0;padding-left:var(--space-4);">${r.deliverableHashes
-                      .map(
-                        (h) =>
-                          `<li><a href="/api/rms/document-content?hash=${encodeURIComponent(h)}" target="_blank" rel="noopener"><code>${esc(hashShort(h))}</code></a></li>`,
-                      )
-                      .join("")}</ul>`
-                  : '<p class="muted small" style="margin:var(--space-1) 0;">No deliverable hashes recorded.</p>';
-              return `<li style="margin-bottom:var(--space-3);">
-                <div><code>${esc(r.runId)}</code> · ${esc(r.outcome ?? "in-flight")} · ${esc(r.substrate ?? "")}</div>
-                <div class="muted small">started ${esc(fmtTs(r.startedAt))}${r.completedAt ? ` · completed ${esc(fmtTs(r.completedAt))}` : ""}</div>
-                ${deliverables}
-              </li>`;
-            })
-            .join("");
-
-    const directiveHtml = `<pre style="white-space:pre-wrap;background:var(--surface-2,#f6f6f6);padding:var(--space-3);border-radius:4px;max-height:360px;overflow:auto;font-size:0.85rem;border:1px solid var(--border);">${esc(directive)}</pre>`;
-
-    $("drawerBody").innerHTML = `
-      <section style="margin-bottom:var(--space-4);">
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Directive</h3>
-        <div class="muted small" style="margin-bottom:var(--space-1);">document hash: <code>${esc(row.directiveDocumentHash)}</code></div>
-        ${directiveHtml}
-      </section>
-      <section style="margin-bottom:var(--space-4);">
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Expected outputs</h3>
-        ${expectedHtml}
-      </section>
-      <section>
-        <h3 style="margin:0 0 var(--space-2);font-size:0.95rem;">Run lifecycle</h3>
-        <ul style="margin:0;padding-left:var(--space-4);">${runsHtml}</ul>
-      </section>
-    `;
-  }
-
-  function closeDrawer() {
-    $("briefDrawer").hidden = true;
-    $("briefDrawer").style.display = "";
   }
 
   // ------------------------------------------------------------------
@@ -374,13 +274,6 @@
       currentSearch = e.target.value;
       writeUrl();
       render();
-    });
-    $("drawerClose").addEventListener("click", closeDrawer);
-    $("briefDrawer").addEventListener("click", (e) => {
-      if (e.target === $("briefDrawer")) closeDrawer();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !$("briefDrawer").hidden) closeDrawer();
     });
   }
 
