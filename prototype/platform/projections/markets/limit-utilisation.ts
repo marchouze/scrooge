@@ -6,10 +6,22 @@
 //   - RasLimitSchedulePublished — sets the denominator (limit values) per cluster.
 //   - TradeExecuted             — adds notional to the relevant cluster bucket.
 //   - EquityTradeBooked         — adds consideration amount to B3 (market risk).
-//   - FxTradeExecuted           — adds notional to B3 (FX) or B1 (credit).
+//   - FxTradeExecuted           — adds net position to B3 (FX) + 10%-notional
+//                                 pre-settlement credit to B1 (per pay-CCY).
+//   - PrincipalPayment{deliver} — opens B2 settlement-window (Herstatt)
+//                                 exposure: the bank delivered one leg and the
+//                                 counter-leg is unconfirmed (per delivered-CCY).
+//   - SettlementConfirmed       — closes B1 credit AND B2 settlement-window for
+//                                 the trade (both legs settled).
+//   - FxSettlementFailed        — {one-leg-delivered} keeps B2 open (Herstatt-
+//                                 active) until SettlementConfirmed resolves it.
 //   - OrderRejected             — records the utilisation snapshot at rejection
 //                                 (no exposure change; the order was blocked).
 //   - PositionUpdated           — if emitted, updates cluster exposure directly.
+//
+// B1 and B2 are tracked per ISO 4217 currency and converted to ZAR-equivalent
+// at read time (the RAS limits are in ZAR; trade notionals are not) — see
+// `sumZarEquivalent`. D-RAS-B2-SETTLEMENT-EXPOSURE-FIX.
 //
 // RAG status per cluster:
 //   green  — utilisationPct < 0.70
@@ -92,7 +104,19 @@ interface LimitUtilisationState {
   // Signed net FX position per ISO 4217 currency code (major units)
   // Buy EUR/USD: +EUR, −USD. Netting is automatic. Never drops on settlement.
   fxNetPosition: Map<string, number>;
-  // Accumulated exposure per cluster — B1 pre-settlement credit, B2/B4/B5, non-FX B3
+  // B1 — pre-settlement counterparty credit (10% of pay-leg notional), kept per
+  // ISO 4217 currency code in major units so it can be ZAR-converted at read
+  // time against the ZAR limit (the limit is in ZAR; the notional is not).
+  // Drops to zero for a trade once its SettlementConfirmed lands.
+  b1CreditByCurrency: Map<string, number>;
+  // B2 — settlement-window (Herstatt) exposure: the bank has delivered one leg
+  // (PrincipalPayment) but the counter-leg is unconfirmed. Kept per delivered-leg
+  // currency in major units; ZAR-converted at read time. Clears on
+  // SettlementConfirmed (both legs settled) or failure resolution.
+  b2SettlementByCurrency: Map<string, number>;
+  // Accumulated exposure per cluster — non-FX B3 (TradeExecuted/EquityTradeBooked),
+  // B4/B5. B1 and B2 are tracked per-currency above (NOT here). PositionUpdated
+  // may still overwrite a cluster directly.
   exposure: Map<RiskCluster, number>;
   // Latest event timestamp
   asOf: string;
@@ -104,6 +128,8 @@ function initialState(): LimitUtilisationState {
   return {
     schedule: new Map(),
     fxNetPosition: new Map(),
+    b1CreditByCurrency: new Map(),
+    b2SettlementByCurrency: new Map(),
     exposure: new Map(CLUSTERS.map((c) => [c, 0])),
     asOf: new Date().toISOString(),
   };
@@ -133,6 +159,36 @@ function addExposure(
   const next = new Map(state.exposure);
   next.set(cluster, prev + Math.abs(amount));
   return { ...state, exposure: next, asOf };
+}
+
+/**
+ * Sum a per-currency exposure map into a single ZAR-equivalent figure, mirroring
+ * `computeB3Exposure`'s conversion approach: ZAR amounts pass through 1:1, each
+ * foreign currency is converted at its <CCY>/ZAR market rate, and a missing rate
+ * contributes 0 rather than silently summing raw units. Used for B1 (credit) and
+ * B2 (settlement-window) exposures, both of which are measured against ZAR limits.
+ */
+function sumZarEquivalent(
+  byCurrency: ReadonlyMap<string, number>,
+  marketDataStore?: MarketDataStore,
+): number {
+  let total = 0;
+  for (const [ccy, amount] of byCurrency) {
+    const abs = Math.abs(amount);
+    if (abs === 0) continue;
+    if (ccy === "ZAR") {
+      total += abs;
+      continue;
+    }
+    if (marketDataStore) {
+      const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);
+      if (quote) total += abs * quote.rate;
+      // No rate → 0 contribution (rather than reporting a raw-unit figure).
+    } else {
+      total += abs; // raw CCY units — tests / fallback only (matches computeB3Exposure).
+    }
+  }
+  return total;
 }
 
 // ---------------------------------------------------------------------------
@@ -249,10 +305,73 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
   // closure and is collected directly.
   const lifecycleIdx = resolveTradeLifecycle(events);
   const confirmedTradeIds = new Set<string>();
+  // Per-trade settlement-leg progress, used to detect the Herstatt window (B2):
+  //   deliveredLegs:  tradeId → array of PrincipalPayment delivered legs
+  //                   ({ currency, amountMajor }) the bank has actioned.
+  // The window is OPEN for a trade iff it has ≥1 delivered leg AND is not yet
+  // SettlementConfirmed (both legs settled). Confirmation closes the window:
+  // the counter-leg has landed, so Herstatt risk is extinguished.
+  const deliveredLegsByTrade = new Map<string, Array<{ currency: string; amountMajor: number }>>();
   for (const e of events) {
     if (e.type === "SettlementConfirmed") {
       const p = e.payload as Record<string, unknown>;
       if (typeof p.tradeId === "string") confirmedTradeIds.add(p.tradeId);
+    }
+    if (e.type === "PrincipalPayment") {
+      const p = e.payload as Record<string, unknown>;
+      const tradeId = typeof p.tradeId === "string" ? p.tradeId : null;
+      const legKind = p.legKind === "receive" || p.legKind === "deliver" ? p.legKind : null;
+      const currency = typeof p.currency === "string" ? p.currency : null;
+      const netCash = typeof p.netCash === "number" ? p.netCash : 0;
+      // Only the bank's OUTGOING (deliver) leg opens settlement exposure: the
+      // bank has paid away currency and is awaiting the counter-leg. A receive
+      // leg is the counter-leg landing — it does not add Herstatt exposure.
+      if (tradeId && legKind === "deliver" && currency) {
+        const list = deliveredLegsByTrade.get(tradeId) ?? [];
+        list.push({ currency, amountMajor: Math.abs(netCash) / 100 });
+        deliveredLegsByTrade.set(tradeId, list);
+      }
+    }
+    // FxSettlementFailed{one-leg-delivered} is the structured Herstatt-active
+    // signal (correspondent reports the bank's leg out, counterparty's leg
+    // unreceived). When the legStatus identifies the delivered leg's currency
+    // but no PrincipalPayment carried it, record the delivered notional so the
+    // window still lights up. Resolution lands as SettlementConfirmed (close).
+    if (e.type === "FxSettlementFailed") {
+      const p = e.payload as Record<string, unknown>;
+      const failureKind = p.failureKind;
+      const tradeRef = typeof p.tradeRef === "string" ? p.tradeRef : null;
+      const legStatus = p.legStatus as Record<string, unknown> | undefined;
+      const payDelivered = legStatus?.payLegDelivered === true;
+      if (failureKind === "one-leg-delivered" && tradeRef && payDelivered) {
+        // Only synthesise an entry if no PrincipalPayment already recorded a
+        // delivered leg for this trade (avoid double-count). The currency /
+        // amount come from the originating FxTradeExecuted's pay leg in Pass 2.
+        if (!deliveredLegsByTrade.has(tradeRef)) {
+          // Marker entry with no currency yet; resolved against the trade's
+          // pay leg during Pass 2 (see fxFailedOneLegDelivered).
+          deliveredLegsByTrade.set(tradeRef, []);
+        }
+      }
+    }
+  }
+  // Trades flagged Herstatt-active by an FxSettlementFailed{one-leg-delivered}
+  // event but with no PrincipalPayment delivered-leg recorded — resolved to the
+  // trade's pay leg during Pass 2.
+  const fxFailedOneLegDelivered = new Set<string>();
+  for (const e of events) {
+    if (e.type === "FxSettlementFailed") {
+      const p = e.payload as Record<string, unknown>;
+      const tradeRef = typeof p.tradeRef === "string" ? p.tradeRef : null;
+      const legStatus = p.legStatus as Record<string, unknown> | undefined;
+      if (
+        p.failureKind === "one-leg-delivered" &&
+        tradeRef &&
+        legStatus?.payLegDelivered === true &&
+        (deliveredLegsByTrade.get(tradeRef)?.length ?? 0) === 0
+      ) {
+        fxFailedOneLegDelivered.add(tradeRef);
+      }
     }
   }
 
@@ -315,16 +434,54 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
         }
       }
 
-      // B1 — pre-settlement counterparty credit (10% of notional).
-      // Drops to zero once SettlementConfirmed: the bank no longer has a
-      // receivable from the counterparty.
+      // Resolve the pay leg (currency the bank delivers). Used for both B1
+      // (10% credit add-on) and the B2 failed-one-leg-delivered synthesis.
+      const leg0 = legs[0] as Record<string, unknown> | undefined;
+      const leg0Notional = leg0?.notional as Record<string, unknown> | undefined;
+      const payAmountMinor =
+        typeof leg0Notional?.amountMinor === "number" ? leg0Notional.amountMinor : 0;
+      const payCurrency =
+        typeof leg0?.payCurrency === "string"
+          ? leg0.payCurrency
+          : typeof leg0Notional?.currency === "string"
+            ? (leg0Notional.currency as string)
+            : null;
+
+      // B1 — pre-settlement counterparty credit (10% of notional), kept per
+      // pay-leg currency so it can be ZAR-converted against the ZAR limit at
+      // read time. Drops to zero once SettlementConfirmed: the bank no longer
+      // has a receivable from the counterparty.
       if (!tradeIdValue || !confirmedTradeIds.has(tradeIdValue)) {
-        const leg0 = legs[0] as Record<string, unknown> | undefined;
-        const leg0Notional = leg0?.notional as Record<string, unknown> | undefined;
-        const amountMinor =
-          typeof leg0Notional?.amountMinor === "number" ? leg0Notional.amountMinor : 0;
-        if (amountMinor > 0) {
-          _state = addExposure(_state, "B1", (amountMinor / 100) * 0.1, asOf);
+        if (payAmountMinor > 0 && payCurrency) {
+          const credit = (payAmountMinor / 100) * 0.1;
+          const next = new Map(_state.b1CreditByCurrency);
+          next.set(payCurrency, (next.get(payCurrency) ?? 0) + credit);
+          _state = { ..._state, b1CreditByCurrency: next, asOf };
+        }
+      }
+
+      // B2 — settlement-window (Herstatt) exposure. The bank has delivered one
+      // leg (PrincipalPayment{deliver}) but the counter-leg is unconfirmed.
+      // Window OPEN iff there is a delivered leg AND the trade is not yet
+      // SettlementConfirmed. Settlement confirmation closes the window.
+      if (tradeIdValue && !confirmedTradeIds.has(tradeIdValue)) {
+        const delivered = deliveredLegsByTrade.get(tradeIdValue) ?? [];
+        for (const leg of delivered) {
+          const next = new Map(_state.b2SettlementByCurrency);
+          next.set(leg.currency, (next.get(leg.currency) ?? 0) + Math.abs(leg.amountMajor));
+          _state = { ..._state, b2SettlementByCurrency: next, asOf };
+        }
+        // FxSettlementFailed{one-leg-delivered} with no PrincipalPayment: the
+        // delivered notional is the trade's pay leg (bank's outgoing currency).
+        if (
+          delivered.length === 0 &&
+          fxFailedOneLegDelivered.has(tradeIdValue) &&
+          payAmountMinor > 0 &&
+          payCurrency
+        ) {
+          const next = new Map(_state.b2SettlementByCurrency);
+          next.set(payCurrency, (next.get(payCurrency) ?? 0) + payAmountMinor / 100);
+          _state = { ..._state, b2SettlementByCurrency: next, asOf };
         }
       }
 
@@ -435,9 +592,20 @@ export function getLimitUtilisations(
   );
   const b3PerCurrency = computeB3PerCurrency(_state.fxNetPosition, marketDataStore);
 
-  // Resolve current exposure per cluster. B3 = FX NOP; B4 = injected IR
-  // sensitivity when supplied (R7), else the folded accumulator; others fold.
+  // B1 (pre-settlement credit) and B2 (settlement-window / Herstatt) are tracked
+  // per pay-leg currency in the fold and ZAR-converted here against the ZAR
+  // limit, mirroring computeB3Exposure's conversion (D-RAS-B2-SETTLEMENT-
+  // EXPOSURE-FIX). Without a market-data store they fall back to raw CCY units.
+  const b1Exposure = sumZarEquivalent(_state.b1CreditByCurrency, marketDataStore);
+  const b2Exposure = sumZarEquivalent(_state.b2SettlementByCurrency, marketDataStore);
+
+  // Resolve current exposure per cluster. B1 = ZAR-equivalent pre-settlement
+  // credit; B2 = ZAR-equivalent settlement-window exposure; B3 = FX NOP; B4 =
+  // injected IR sensitivity when supplied (R7), else the folded accumulator;
+  // B5 folds.
   const exposureFor = (cluster: RiskCluster): number => {
+    if (cluster === "B1") return b1Exposure;
+    if (cluster === "B2") return b2Exposure;
     if (cluster === "B3") return b3Exposure;
     if (cluster === "B4" && typeof deps?.b4IrSensitivityZar === "number") {
       return deps.b4IrSensitivityZar;
