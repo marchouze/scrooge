@@ -5243,7 +5243,7 @@
     "section": "Domain A — Prudential (capital, liquidity, large exposures, leverage)",
     "id": "ORG-PR-19",
     "urn": "[TBD]",
-    "citation": "BCBS Market Risk (FRTB / D352, D457)",
+    "citation": "BCBS Market Risk (FRTB / d352, d457) → SA transposition: Regulations relating to Banks **Reg 28** (market risk / position risk; FX in either book per Reg 28(3)(c)) + **D5/2025 §2.1.14** form **BA 325** (FRTB market-risk return) + PA **PC 18/2024** (FRTB implementation roadmap, `ORG-PR-33`); BA 325 = FRTB return per D5/2025 §2.1.14 (`D-SARB-RETURN-SCHEDULE-CANONICAL-D5-2025`); BCBS MAR spine `urn:reg:bcbs:mar:20.1` (SA = SBM + DRC + RRAO).",
     "requirement": "Measure trading-book market risk per FRTB; capital under standardised or internal-model approach.",
     "fulfilmentPolicy": "Market Risk Policy",
     "owner": "Helena (Rohan)",

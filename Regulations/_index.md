@@ -19,6 +19,7 @@
 | BA 200 — Credit risk *(D5/2025 §2.1.8)* | SARB-PA/ba-returns/ba-200.md | STUB | resbank.co.za |
 | BA 300 — Operational risk *(D5/2025 §2.1.11; was the GG-era off-balance-sheet stub, re-numbered)* | SARB-PA/ba-returns/ba-300.md | STUB | resbank.co.za |
 | BA 310 — Market risk *(D5/2025 §2.1.12; was BA 320 under GG 35950, superseded)* | SARB-PA/ba-returns/ba-310.md | STUB | resbank.co.za |
+| BA 325 — FRTB market risk *(D5/2025 §2.1.14; Reg 28 + PC 18/2024 FRTB roadmap)* | [SARB-PA/ba-returns/ba-325.md](SARB-PA/ba-returns/ba-325.md) | **POPULATED** | resbank.co.za |
 | BA 330 — IRRBB repricing-gap return *(Reg 30 / D2/2023; D5/2025 §2.1.15 completes per D2/2023)* | [SARB-PA/ba-returns/ba-330.md](SARB-PA/ba-returns/ba-330.md) | **POPULATED** | resbank.co.za |
 | BA 400 — Leverage ratio *(D5/2025 §2.1.18)* | SARB-PA/ba-returns/ba-400.md | STUB | resbank.co.za |
 | BA 600 — Balance sheet (financial position) *(D5/2025 §2.1.21)* | SARB-PA/ba-returns/ba-600.md | STUB | resbank.co.za |
@@ -167,7 +168,7 @@
 
 ## Status summary
 
-- **POPULATED:** 11 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, Large exposures (Reg 24 + D3/2022), BA 330 — IRRBB (Reg 30 + D2/2023), BA 110 — LCR (D5/2025 §2.1.4 + Reg 26), BA 120 — NSFR (D5/2025 §2.1.5 + Reg 26(14) + D1/2023)) — as at 2026-06-07. *(This count tracks the SARB-PA / Joint-Standards / FSCA / FIC / IR core regulator instruments; the eight POPULATED BCBS Pillar-1 spines are catalogued separately in the BCBS section above.)*
+- **POPULATED:** 12 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, Large exposures (Reg 24 + D3/2022), BA 330 — IRRBB (Reg 30 + D2/2023), BA 110 — LCR (D5/2025 §2.1.4 + Reg 26), BA 120 — NSFR (D5/2025 §2.1.5 + Reg 26(14) + D1/2023), BA 325 — FRTB market risk (D5/2025 §2.1.14 + Reg 28 + PC 18/2024)) — as at 2026-06-07. *(This count tracks the SARB-PA / Joint-Standards / FSCA / FIC / IR core regulator instruments; the eight POPULATED BCBS Pillar-1 spines are catalogued separately in the BCBS section above.)*
 - **STUB:** ~60 — scaffolded for population per the regulatory-change management cadence.
 - **Total instruments tracked:** ~64.
 
