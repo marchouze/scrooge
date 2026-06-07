@@ -4199,6 +4199,14 @@ const server = Bun.serve({
     if (req.method === "GET" && (url.pathname === "/briefs" || url.pathname === "/briefs/")) {
       return serveStatic("/briefs.html");
     }
+    // Brief drill-down — pretty URL `/briefs/<briefId>`. Mirrors the
+    // /decisions/:id pattern: Bun serves the static detail page and brief.js
+    // reads the briefId from `window.location.pathname`. Must be checked after
+    // the exact `/briefs` route above.
+    // Authority: D-RMS-PHASE-1; D-RMS-PHASE-2-4-AUTHORSHIP.
+    if (req.method === "GET" && url.pathname.startsWith("/briefs/")) {
+      return serveStatic("/brief.html");
+    }
     // Document register page — RMS Phase 2 Block B (RecordFiled wiring).
     // Mirrors the /briefs pattern: dedicated route with classification +
     // register-key filters and a drawer for full hash + body preview +
