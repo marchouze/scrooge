@@ -117,7 +117,10 @@ export const balance: SemanticEntry = {
  * `Exposure` — counterparty-level exposure measure sliced by exposure
  * kind (loan, deposit, derivative, repo). Drives BA 600 (counterparty
  * credit risk + CVA), BA 410 (credit-risk concentration), and the
- * consolidated large-exposures BA 330.
+ * large-exposures regime (Reg 24(6)–(8) + Directive 3 of 2022), which is
+ * reported within the BA 200-series credit-risk return family — NOT BA 330
+ * (BA 330 is the IRRBB repricing-gap return). See
+ * Regulations/SARB-PA/large-exposures.md; D-BA-330-REATTRIBUTION-IRRBB.
  *
  * Computation source: M2 GL projection joined to counterparty master
  * data via the `counterparty` dimension; for derivatives, the projection
@@ -149,17 +152,17 @@ export const exposure: SemanticEntry = {
       note: "Pre-CVA exposure component; CVA-add-on lives in a separate semantic entry (Slice 4).",
     },
     {
-      form: "BA 330",
+      form: "BA 200-series [form TBC — verify]",
       line: "Large exposures — single-name counterparty (memo)",
       side: "memo",
-      note: "Consolidated-supervision basis per Banks Act § 60.",
+      note: "Large-exposures regime (Reg 24(6)–(8) + D3/2022) reported via the BA 200-series credit-risk return family; the exact form/line is counsel-gated (Imani + external counsel at the licence gate). Corrected from the prior BA 330 attribution — BA 330 is the IRRBB return (D-BA-330-REATTRIBUTION-IRRBB). Consolidated-supervision basis per Banks Act § 60.",
     },
   ],
   citations: [
     {
       type: "regulation",
       regulationId: "ORG-PR-09",
-      note: "BCBS Large Exposures / BA 330 — single-name large exposure cap.",
+      note: "BCBS Large Exposures framework — single-name large exposure cap (SA: Reg 24(6)–(8) + D3/2022, BA 200-series). NB: not BA 330 (IRRBB) — see D-BA-330-REATTRIBUTION-IRRBB.",
     },
     {
       type: "tbc",

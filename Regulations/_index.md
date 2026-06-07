@@ -18,7 +18,8 @@
 | BA 300 — Off-balance-sheet | SARB-PA/ba-returns/ba-300.md | STUB | resbank.co.za |
 | BA 325 — LCR | SARB-PA/ba-returns/ba-325.md | STUB | resbank.co.za |
 | BA 326 — NSFR | SARB-PA/ba-returns/ba-326.md | STUB | resbank.co.za |
-| BA 330 — Large exposures *(form scope: see analysis — BA 330 is the IRRBB return; large-exposures regime = Reg 24 + D3/2022)* | [SARB-PA/ba-returns/ba-330.md](SARB-PA/ba-returns/ba-330.md) | **POPULATED** | resbank.co.za |
+| BA 330 — IRRBB repricing-gap return *(Reg 30 / D2/2023; analysis not yet authored)* | SARB-PA/ba-returns/ba-330.md | STUB | resbank.co.za |
+| Large exposures (Reg 24(6)–(8) + Directive 3 of 2022; reported via BA 200-series credit-risk family) | [SARB-PA/large-exposures.md](SARB-PA/large-exposures.md) | **POPULATED** | resbank.co.za |
 | Currency and Exchanges Manual for Authorised Dealers (Excon) | [SARB-PA/excon-manual.md](SARB-PA/excon-manual.md) | **POPULATED** | resbank.co.za |
 
 ## Joint Standards (PA + FSCA)
@@ -161,7 +162,7 @@
 
 ## Status summary
 
-- **POPULATED:** 8 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, BA 330 — Large exposures) — as at 2026-06-07.
+- **POPULATED:** 8 (Banks Act, FIC Act, POPIA, Joint Standard 2 of 2024, FAIS Act 37/2002, FAIS GCC, Excon Manual, Large exposures (Reg 24 + D3/2022)) — as at 2026-06-07.
 - **STUB:** ~60 — scaffolded for population per the regulatory-change management cadence.
 - **Total instruments tracked:** ~64.
 

@@ -1,10 +1,10 @@
-# BA 330 — Large exposures (Large-Exposures regime instrument analysis)
+# Large exposures (SARB large-exposures regime — instrument analysis)
 
 **Curator:** Mira (Compliance / RegTech engineer) · **Status:** POPULATED · **Last reviewed:** 2026-06-07 · **Governance:** Zara (Chief Compliance Officer)
 
-> **Workstream:** WS-INSTRUMENT-ANALYSES (markets-priority run, instrument 2 of N). **Decision:** `D-ROADMAP-WS-C-RECONCILE` (CEO-approved 2026-06-07). **Brief:** `brief:mira:ws-instrument-analyses-drive-markets-profile-pri:2026-06-07`. This is REFERENCE data (two-plane Plane A per `D-REGULATORY-ARCHITECTURE-TWO-PLANE`); no events are emitted.
+> **Workstream:** WS-INSTRUMENT-ANALYSES (markets-priority run, instrument 2 of N). **Decision:** `D-ROADMAP-WS-C-RECONCILE` (CEO-approved 2026-06-07). **Re-attribution sweep decision:** `D-BA-330-REATTRIBUTION-IRRBB` (CEO-approved 2026-06-07). **Brief:** `brief:mira:ba-330-re-attribution-sweep-irrbb-vs-large-expos:2026-06-07`. This is REFERENCE data (two-plane Plane A per `D-REGULATORY-ARCHITECTURE-TWO-PLANE`); no events are emitted.
 
-> ⚠️ **MATERIAL FORM-NUMBER FINDING — read first.** This file was scoped under the brief as *"BA 330 (Large Exposures)"*. On sourcing the actual SARB form-completion directive, the public record shows that **form BA 330 is the Interest-Rate-Risk-in-the-Banking-Book (IRRBB) repricing-gap return**, issued under **regulation 30** of the Regulations relating to Banks (SARB PA **Directive 2 of 2023 (D2/2023)**, "Reporting requirements in terms of regulation 30 … instructions for completing the form BA 330", gazetted 23 December 2022, effective 1 January 2023). It is **not** the large-exposures return. The large-exposures regime is carried by **regulations 24(6)–24(8)** of the Regulations relating to Banks and **Directive 3 of 2022 (D3/2022)**, and is reported on the **credit-risk return family (the BA 200-series)**, not BA 330. See §7 (Material finding) for the full evidence trail and the register-correction recommendation. **This analysis nonetheless documents the large-exposures regime in full** — that is the substantive obligation the markets/trading profile must satisfy — and flags the form-number defect honestly rather than propagating it.
+> ⚠️ **PROVENANCE — why this file used to be `ba-returns/ba-330.md`.** This analysis was originally scoped (and filed) under its first brief as *"BA 330 (Large Exposures)"*. On sourcing the actual SARB form-completion directive **and the Regulations relating to Banks form schedule**, the public record shows that **form BA 330 is the Interest-Rate-Risk-in-the-Banking-Book (IRRBB) repricing-gap return** — the Regulations relating to Banks (GG 35950, 12 December 2012) form schedule reads *"Form BA 330 — Interest-rate risk: banking book"*, and the form is completed per **Directive 2 of 2023 (D2/2023)**, issued in terms of **regulation 30**, gazetted 23 December 2022, effective 1 January 2023. It is **not** the large-exposures return. The large-exposures regime is carried by **regulations 24(6)–24(8)** of the Regulations relating to Banks and **Directive 3 of 2022 (D3/2022)**, and is reported on the **credit-risk return family (the BA 200-series)**, not BA 330. The file has accordingly been **renamed to `large-exposures.md`** (the substantive obligation it documents). §7 below preserves the full evidence trail of how the mis-attribution was discovered and the register-corrections it triggered. The IRRBB form (BA 330) is catalogued separately as a `BA 330 — IRRBB repricing-gap return` STUB row in `Regulations/_index.md`. **This analysis documents the large-exposures regime in full** — that is the substantive obligation the markets/trading profile must satisfy.
 
 ## Citation
 
@@ -13,7 +13,7 @@
 - **Gazette / commencement:** the LEX-incorporating amendments to the Regulations were published in **Government Gazette No 46159 of 31 March 2022** (Government Notice No 943) and **implemented with effect from 1 April 2022**.
 - **Core large-exposures regulations:** primarily **regulations 24(6) to 24(8)** of the Regulations relating to Banks, read with **regulations 23(8), 23(9) and 23(18)**.
 - **Directive:** **Directive 3 of 2022 — Large exposure requirements** (effective 1 April 2022). Addresses, in particular: treatment of and limits on interbank exposures; application of LEX to other entities within a banking group where a group member is a D-SIB / D-SIFI / G-SIB; application to intragroup exposures; application to a foreign subsidiary of a controlling company required to report on a solo basis; and treatment of breaches of the LEX limit.
-- **Basel anchor:** BCBS *Supervisory framework for measuring and controlling large exposures* (April 2014), with the *FAQ on the supervisory framework for measuring and controlling large exposures* (September 2016). Catalogued in this repo at [`Regulations/BCBS/lex-large-exposures.md`](../../BCBS/lex-large-exposures.md).
+- **Basel anchor:** BCBS *Supervisory framework for measuring and controlling large exposures* (April 2014), with the *FAQ on the supervisory framework for measuring and controlling large exposures* (September 2016). Catalogued in this repo at [`Regulations/BCBS/lex-large-exposures.md`](../BCBS/lex-large-exposures.md).
 - **Independent compliance opinion:** BCBS Regulatory Consistency Assessment Programme — *Assessment of Basel large exposures regulations — South Africa* (April 2023, BIS, ISBN 978-92-9259-647-7). Overall grade and all three component grades: **Compliant (C)**.
 - **Reporting form (large exposures):** large-exposure exposures are reported within the **credit-risk return family (BA 200-series)**, not on form BA 330. (See §7; the precise form number/table and cadence remain counsel-gated — see §6 and citation note in `_obligations-register.md`.)
 - **Source:** [resbank.co.za — Prudential Authority / Banks Directives](https://www.resbank.co.za); BCBS RCAP report [bis.org/bcbs/publ/d549.pdf](https://www.bis.org/bcbs/publ/d549.pdf); D2/2023 form-BA330 directive (resbank.co.za, banks-directives/2023/d2).
@@ -90,7 +90,7 @@ RCAP overall grade: **Compliant (C)** — scope and definitions (C), minimum req
 ## Live engine linkage
 
 - `prototype/platform/risk/credit-limit-engine/` — single-name + connected-counterparty exposure limits, breach detection and escalation. RAS §B2 concentration appetite sits stricter than the regulatory ceiling.
-- Cross-reference: [`Regulations/BCBS/lex-large-exposures.md`](../../BCBS/lex-large-exposures.md) (the Basel spine this regime implements).
+- Cross-reference: [`Regulations/BCBS/lex-large-exposures.md`](../BCBS/lex-large-exposures.md) (the Basel spine this regime implements).
 
 ## Cross-references in the obligations register
 
@@ -106,12 +106,25 @@ RCAP overall grade: **Compliant (C)** — scope and definitions (C), minimum req
 - **SARB PA Directive 2 of 2023 (D2/2023)** — *"Directive issued in terms of section 6(6) of the Banks Act 94 of 1990 — Reporting requirements in terms of **regulation 30** of the Regulations relating to Banks"* — its Executive Summary states: *"This Directive sets out, amongst others, **the instructions for completing the form BA 330** and matters related thereto."* §1.3 states: *"The Pillar 2 **Interest rate risk in the banking book (IRRBB)** framework requires banks to assess, and stress test their overall interest rate risk exposure …"*. The form's columns and line-items are repricing time-buckets (overnight, variable-rate, fixed-rate, benchmark-rate, discretionary-rate, non-rate-sensitive; net funding to/from trading book). **Form BA 330 is unambiguously the IRRBB repricing-gap return.**
 - The **large-exposures regime** lives in **regulations 24(6)–24(8)** + D3/2022 and is reported within the **credit-risk return family (BA 200-series)**, per the BCBS RCAP (April 2023) and the SARB BA-returns catalogue.
 
-**Why the confusion is endemic in the repo.** Several legacy artefacts pin "BA 330 = large exposures" (this brief; `banks-act.md` §Large exposures and §Reporting; `_index.md` BA 330 row label; `ORG-PR-RETURNS-014`). The repo's own `prototype/platform/reporting/ba-330` path (referenced from `lex-large-exposures.md`) inherits the same mislabel.
+**Authoritative BA-return form schedule (verified from the primary source).** The Regulations relating to Banks (Government Gazette No 35950, 12 December 2012) form schedule, cross-checked against the SARB PA *Proposed Directive — Returns to be submitted to the PA* (2024), maps the BA 3xx family as follows — recorded here so the re-attribution rests on the primary source, not inference:
 
-**Recommendations (for Helena (CRO) / Camille (CFO) / Bea ratification — not actioned in this REFERENCE pass):**
-1. Re-label the BA 330 index row and this file's *form scope* to **IRRBB / regulation 30**, and create/relabel the **large-exposures return** entry against the correct **BA 200-series** form once the precise form number is confirmed with external counsel at the licence gate.
-2. Correct `ORG-PR-RETURNS-014` (which states "BA 330 is the large exposures return" and cites "Reg 25") — both the form attribution and the regulation number are wrong; the LEX enabling regulation is **Reg 24(6)–(8)**, not Reg 25 and not Reg 28.
-3. Audit the `prototype/platform/reporting/ba-330` capability path for the same mislabel.
+| Form | Subject (verbatim from the Regulations form schedule) |
+|---|---|
+| **BA 320** | **Market risk** (market-risk capital / RWA return) |
+| **BA 325** | **Daily return: selected risk exposure arising from trading and treasury activities** — carries the FX **effective net open position** attestation (regulation 29(3)) |
+| **BA 330** | **Interest-rate risk: banking book** (IRRBB; completed per D2/2023, reg 30) |
+| **BA 340** | **Equity risk in the banking book** |
+| **BA 350** | **Derivative instruments** |
+
+The FX **net open position** / market-risk return is therefore **BA 320 (Market risk)**, with the daily NOP limit attested on **BA 325** under **regulation 29(3)** — it is **not** BA 350 (derivatives) and **not** BA 330 (IRRBB).
+
+**Why the confusion is endemic in the repo.** Several legacy artefacts pinned "BA 330 = large exposures" (the original brief; `banks-act.md` §Large exposures; `_index.md` BA 330 row label; `ORG-PR-RETURNS-014`) and a separate set of artefacts pinned "BA 330 = FX net open position" (the markets limit-utilisation projection comments). Both are wrong for the same root reason: BA 330 is the IRRBB return.
+
+**Recommendations — ACTIONED by the re-attribution sweep (`D-BA-330-REATTRIBUTION-IRRBB`, CEO-approved 2026-06-07):**
+1. ✅ The `_index.md` BA 330 row is relabelled to **BA 330 — IRRBB repricing-gap return** (status STUB — no full IRRBB analysis exists yet) and a separate **POPULATED** large-exposures row (Reg 24 + D3/2022) now points at this renamed file.
+2. ✅ `ORG-PR-RETURNS-014` corrected in register v1.39 (BA 330 = IRRBB; LEX = Reg 24(6)–(8), not Reg 25/Reg 28).
+3. ✅ The markets FX-NOP comments (`limit-utilisation.ts`, `trading.ts`) corrected from "BA 330" to **BA 320 (market risk) / BA 325 reg 29(3) NOP attestation**; the LEX semantic-registry entries and `basel-adoption.ts` LEX comment corrected to **Reg 24(6)–(8) + D3/2022 / BA 200-series**.
+4. Remaining: no `prototype/platform/reporting/ba-330` path exists (the earlier reference in `lex-large-exposures.md` pointed at a non-existent module — corrected). **Separate out-of-scope finding flagged for a future pass:** the `prototype/platform/reporting/` module set uses its **own internally-inconsistent BA-form numbering** that does not match the authoritative SARB schedule (e.g. `ba-320-credit-risk.ts` — but BA 320 is *market risk*; `ba-350-market-risk.ts` / `ba-350-nsfr.ts` — but BA 350 is *derivative instruments* and NSFR is BA 326). That reporting-layer renumbering is a distinct defect from the BA-330 re-attribution and is left for a dedicated reporting-form-number reconciliation (it does not involve BA 330). Confirm the precise large-exposures BA 200-series form number/cadence with external counsel at the licence gate.
 
 This file deliberately **does not silently propagate** the defect: it analyses the large-exposures *regime* (the real obligation) in full and records the form-number correction as the headline finding.
 

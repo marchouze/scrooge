@@ -27,4 +27,4 @@ The large-exposures framework caps concentration to a single counterparty or gro
 
 ## Live engine linkage
 
-`prototype/platform/risk/credit-limit-engine/` (single-name + connected limits) and `prototype/platform/reporting/ba-330` large-exposures return. RAS §B2 concentration appetite sits stricter, above the regulatory ceiling.
+`prototype/platform/risk/credit-limit-engine/` (single-name + connected limits) feeds the large-exposures return (SARB: Reg 24(6)–(8) + Directive 3 of 2022, reported via the BA 200-series credit-risk return family). RAS §B2 concentration appetite sits stricter, above the regulatory ceiling. *(Corrected from a reference to a non-existent `prototype/platform/reporting/ba-330` path — BA 330 is the IRRBB repricing-gap return, not the large-exposures return; D-BA-330-REATTRIBUTION-IRRBB. See `Regulations/SARB-PA/large-exposures.md` §7.)*

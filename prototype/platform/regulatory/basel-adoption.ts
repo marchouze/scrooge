@@ -435,13 +435,18 @@ export const ADOPTION_EDGES: readonly AdoptionEdge[] = [
     stricter: true,
     effectiveFrom: "2018-01-01",
   },
-  // LEX — large exposures via Reg 38 / BA 330.
+  // LEX — large exposures. Enabling regulation is Reg 24(6)–(8) (read with
+  // SARB Directive 3 of 2022); reported via the BA 200-series credit-risk
+  // return family. NB: corrected from the prior "Reg 38 / BA 330" attribution
+  // — Reg 38 is the capital-adequacy/leverage regulation, and BA 330 is the
+  // IRRBB repricing-gap return, neither of which carries large exposures.
+  // (D-BA-330-REATTRIBUTION-IRRBB; see Regulations/SARB-PA/large-exposures.md.)
   {
     baselProvision: "urn:reg:bcbs:lex:10.8",
     jurisdiction: "za",
-    localInstrument: "urn:reg:za:regs-relating-to-banks:reg38",
+    localInstrument: "urn:reg:za:regs-relating-to-banks:reg24",
     adoptionType: "ADOPTS",
-    effectiveFrom: "2019-01-01",
+    effectiveFrom: "2022-04-01",
   },
 ] as const;
 

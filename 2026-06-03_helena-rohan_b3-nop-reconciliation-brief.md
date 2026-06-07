@@ -9,6 +9,8 @@ priority: next-tick
 
 # Brief — B3 FX measure reconciliation (Rohan)
 
+> ⚠️ **Form-number correction (Mira, Compliance / RegTech engineer, 2026-06-07; `D-BA-330-REATTRIBUTION-IRRBB`).** Where this brief refers to **BA 330** for the FX net open position / per-currency market-risk reporting, that attribution is **incorrect** and superseded: **BA 330 is the IRRBB repricing-gap return**; the FX-NOP / market-risk return is **BA 320 (Market risk)**, daily NOP attested on **BA 325 / regulation 29(3)**. Record retained unchanged; see `Regulations/SARB-PA/large-exposures.md` §7.
+
 Source: `record:documents:helena:b3-fx-market-risk-measure-review:2026-06-03`.
 Governance owner: Helena (CRO). All limit-value changes remain Helena calibration acts —
 this brief is substrate + label reconciliation, not re-calibration.

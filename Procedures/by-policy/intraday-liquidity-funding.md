@@ -41,7 +41,7 @@ Regulation (Banks Act Reg 39 / PA LCR Directive / BCBS ILAAP / BCBS Intraday Liq
 |---|---|
 | `ORG-PR-11` (Banks Act s.73 / Reg 39 — liquidity risk) | Bank must measure, monitor, and control liquidity risk; intraday liquidity management is a sub-set of the overall liquidity framework. |
 | `ORG-PR-15` (PA LCR Directive — BA 300 return) | LCR ≥ 100%; intraday liquidity monitoring is a PA reporting expectation under ILAAP. |
-| `ORG-PR-16` (PA NSFR Directive — BA 330 return) | NSFR ≥ 100%; intraday funding is distinct from NSFR but reported in the same ILAAP framework. |
+| `ORG-PR-16` (PA NSFR Directive — BA 326 return) | NSFR ≥ 100%; intraday funding is distinct from NSFR but reported in the same ILAAP framework. *(Corrected from "BA 330": NSFR is reported on BA 326; BA 330 is the IRRBB repricing-gap return — D-BA-330-REATTRIBUTION-IRRBB.)* |
 | `ORG-PR-23` (Reg 39 — ILAAP) | ILAAP must include intraday liquidity management; Pillar 2 add-on for liquidity risk where applicable. |
 | `ORG-PS-01` (NPS Act — SARB oversight of payment systems) | As an indirect NPS participant (via correspondent bank), the bank must manage intraday payment obligations and ensure settlement finality; intraday liquidity is the enabling resource. |
 

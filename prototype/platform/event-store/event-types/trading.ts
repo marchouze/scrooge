@@ -530,9 +530,12 @@ export function makeOrderRejected(args: {
 // ---------------------------------------------------------------------------
 
 // Per-currency sub-limit beneath an aggregate cluster limit (RAS B3 review F6 /
-// R6). Mirrors SARB BA 330's per-currency reporting: an aggregate NOP can mask
-// large offsetting single-currency positions, so each significant currency
-// carries its own ceiling. Optional — absent rows behave exactly as before.
+// R6). Mirrors the SARB market-risk return's per-currency reporting (BA 320 —
+// Market risk; daily effective net open position attested on BA 325 / reg 29(3)):
+// an aggregate NOP can mask large offsetting single-currency positions, so each
+// significant currency carries its own ceiling. Optional — absent rows behave
+// exactly as before. (NB: corrected from "BA 330" — BA 330 is the IRRBB return,
+// not the FX-NOP/market-risk return; D-BA-330-REATTRIBUTION-IRRBB.)
 export const currencySubLimitSchema = z.object({
   currency: z
     .string()

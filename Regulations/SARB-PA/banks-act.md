@@ -37,7 +37,7 @@ The bank is **pre-licence** as of 2026-05-06; the licence application is forthco
 
 ### Large exposures
 
-- **Regs Ch.6 + BA 330** — Single-name and connected-counterparty exposures capped per the regulatory ceiling.
+- **Reg 24(6)–(8) + Directive 3 of 2022** — Single-name and connected-counterparty exposures capped per the regulatory ceiling; reported via the BA 200-series credit-risk return family. *(NB: BA 330 is the IRRBB repricing-gap return, not the large-exposures return — see `Regulations/SARB-PA/large-exposures.md` §7.)*
 
 ### Risk management
 
