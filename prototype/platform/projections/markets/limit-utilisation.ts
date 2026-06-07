@@ -508,8 +508,8 @@ export function getFxNetPositions(): ReadonlyMap<string, number> {
  *      + nonFxB3   (notional from TradeExecuted / EquityTradeBooked)
  *
  * ZAR is the bank's reporting/home currency and is excluded from NOP per
- * the SARB market-risk return (BA 320 — Market risk; the daily effective net
- * open position is attested on BA 325 under regulation 29(3)) — home-currency
+ * the SARB market-risk return (BA 310 — Market risk; the daily effective net
+ * open position is attested on BA 110 under regulation 29(3)) — home-currency
  * residuals are not an FX risk. NB: corrected from the prior "BA 330"
  * attribution — BA 330 is the IRRBB repricing-gap return, not the FX-NOP /
  * market-risk return (D-BA-330-REATTRIBUTION-IRRBB; see
@@ -532,7 +532,7 @@ export function computeB3Exposure(
   for (const [ccy, position] of netPositions) {
     const absPos = Math.abs(position);
     if (absPos === 0) continue;
-    if (ccy === "ZAR") continue; // home currency — excluded from NOP (BA 320 market risk / BA 325 reg 29(3))
+    if (ccy === "ZAR") continue; // home currency — excluded from NOP (BA 310 market risk / BA 110 reg 29(3))
     if (marketDataStore) {
       const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);
       if (quote) fxB3 += absPos * quote.rate;
@@ -548,8 +548,8 @@ export function computeB3Exposure(
  * Per-currency net-open-position breakdown for the B3 (FX) cluster (R6 / F6).
  * Each foreign currency's absolute net position, ZAR-converted when a market
  * data store is supplied (raw CCY units otherwise, matching computeB3Exposure).
- * ZAR (home currency) is excluded per the SARB market-risk return (BA 320; daily
- * NOP attested on BA 325 / reg 29(3)) — not BA 330 (IRRBB). Sorted by descending exposure.
+ * ZAR (home currency) is excluded per the SARB market-risk return (BA 310; daily
+ * NOP attested on BA 110 / reg 29(3)) — not BA 330 (IRRBB). Sorted by descending exposure.
  */
 export function computeB3PerCurrency(
   netPositions: ReadonlyMap<string, number>,
@@ -559,7 +559,7 @@ export function computeB3PerCurrency(
   for (const [ccy, position] of netPositions) {
     const absPos = Math.abs(position);
     if (absPos === 0) continue;
-    if (ccy === "ZAR") continue; // home currency — excluded from NOP (BA 320 market risk / BA 325 reg 29(3))
+    if (ccy === "ZAR") continue; // home currency — excluded from NOP (BA 310 market risk / BA 110 reg 29(3))
     let exposure = absPos;
     if (marketDataStore) {
       const quote = lookupQuoteWithInverse(marketDataStore, `${ccy}/ZAR`);

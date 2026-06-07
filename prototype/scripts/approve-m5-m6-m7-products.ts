@@ -83,14 +83,14 @@ const PRODUCTS: ProductNpaDef[] = [
         result: "implementation-attested",
         citationChain: [...BASE_CITATIONS, "WS1-PR1a"],
         notes:
-          "SAGB collateral is HQLA-eligible L1. Repo cash leg modelled as LCR inflow (BA 325). Funding profile: repo-funded.",
+          "SAGB collateral is HQLA-eligible L1. Repo cash leg modelled as LCR inflow (BA 110). Funding profile: repo-funded.",
       },
       // accounting: implementation-attested — IFRS 9 §3.2.3 collateral on-balance-sheet; amortised cost
       accounting: {
         result: "implementation-attested",
         citationChain: [...BASE_CITATIONS, "WS1-PR1a"],
         notes:
-          "IFRS 9 §3.2.3–3.2.4: collateral not derecognised (no substantive transfer of risks/rewards). Cash leg recognised as secured borrowing at amortised cost. BA100.line.repo-borrowing + BA325.line.hqla-collateral.",
+          "IFRS 9 §3.2.3–3.2.4: collateral not derecognised (no substantive transfer of risks/rewards). Cash leg recognised as secured borrowing at amortised cost. BA600.line.repo-borrowing + BA110.line.hqla-collateral.",
       },
     },
   },
@@ -111,14 +111,14 @@ const PRODUCTS: ProductNpaDef[] = [
         result: "implementation-attested",
         citationChain: [...BASE_CITATIONS, "WS1-PR1a"],
         notes:
-          "Financial liability at amortised cost (IFRS 9 §4.2.1). LCR outflow modelling: BA 325 institutional depositor bucket. BA100.line.deposits + BA325.line.lcr-outflow-institutional.",
+          "Financial liability at amortised cost (IFRS 9 §4.2.1). LCR outflow modelling: BA 110 institutional depositor bucket. BA600.line.deposits + BA110.line.lcr-outflow-institutional.",
       },
-      // liquidity: implementation-attested — LCR outflow bucket wired in BA 325
+      // liquidity: implementation-attested — LCR outflow bucket wired in BA 110
       "liquidity-risk": {
         result: "implementation-attested",
         citationChain: [...BASE_CITATIONS, "WS1-PR1a"],
         notes:
-          "Contributes to LCR outflow modelling (BA 325) and NSFR required stable funding (BA 326). Settlement path: SAMOS via correspondent T+0.",
+          "Contributes to LCR outflow modelling (BA 110) and NSFR required stable funding (BA 120). Settlement path: SAMOS via correspondent T+0.",
       },
     },
   },
@@ -138,14 +138,14 @@ const PRODUCTS: ProductNpaDef[] = [
         result: "implementation-attested",
         citationChain: [...BASE_CITATIONS, "WS1-PR1a"],
         notes:
-          "Financial liability recognised at amortised cost on drawdown (IFRS 9 §4.2.1). 100% LCR outflow (BA 325 Table 2). BA100.line.funding-lines + BA325.line.lcr-outflow-100pct.",
+          "Financial liability recognised at amortised cost on drawdown (IFRS 9 §4.2.1). 100% LCR outflow (BA 110 Table 2). BA600.line.funding-lines + BA110.line.lcr-outflow-100pct.",
       },
       // liquidity: implementation-attested — 100% LCR outflow; NSFR required stable funding
       "liquidity-risk": {
         result: "implementation-attested",
         citationChain: [...BASE_CITATIONS, "WS1-PR1a"],
         notes:
-          "100% LCR outflow (BA 325 Table 2) and required stable funding under NSFR (BA 326). Contingency liquidity management instrument. Settlement: SAMOS via correspondent T+0.",
+          "100% LCR outflow (BA 110 Table 2) and required stable funding under NSFR (BA 120). Contingency liquidity management instrument. Settlement: SAMOS via correspondent T+0.",
       },
     },
   },

@@ -4,14 +4,14 @@
 //
 // Covers:
 //   SettlementInstructionIssued — a contractual settlement outflow issued to
-//     a counterparty; feeds the LCR denominator (BA 325 §23 contractual-
+//     a counterparty; feeds the LCR denominator (BA 110 §23 contractual-
 //     maturity-within-30-day-stress-horizon bucket). Distinct from
 //     TradeBooked settlement (which is trade-originated); this covers
 //     non-trade contractual funding outflows (e.g. maturing bonds issued,
 //     correspondent-bank obligations, scheduled funding repayments outside
 //     the repo/MMD/IBL trade-event stream).
 //
-// Authority: BA 325 §23; Banks Act Reg 26 (LCR); D-TREASURY-GAPS-WAVE1.
+// Authority: BA 110 §23; Banks Act Reg 26 (LCR); D-TREASURY-GAPS-WAVE1.
 // Author: Ravi (Treasury and ALM engineer, engineering)
 
 import { z } from "zod";

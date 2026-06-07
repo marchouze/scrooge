@@ -28,7 +28,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05).
 // Cites: IFRS 9 §4.1.2 (amortised cost), §3.1.1 (recognition), §3.2.3
-//        (derecognition), B5.4.1 (EIR accrual), BA 326 (NSFR).
+//        (derecognition), B5.4.1 (EIR accrual), BA 120 (NSFR).
 
 import type { SlaRule } from "../generated/sla-types";
 

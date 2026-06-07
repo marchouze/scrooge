@@ -7,7 +7,7 @@
 // where:
 //   Net Cash Outflows = stressed outflows − min(stressed inflows, 75% × stressed outflows)
 //
-// HQLA haircuts (BA 325 Annex 1 / Basel III):
+// HQLA haircuts (BA 110 Annex 1 / Basel III):
 //   L1:  0%  haircut — cash, central bank reserves, 0% RW sovereign bonds
 //   L2a: 15% haircut — 20% RW sovereign bonds; qualifying corporate bonds AA- or better
 //   L2b: 25–50% haircut — qualifying equities; BBB- to A+ corporate bonds
@@ -15,7 +15,7 @@
 //   L2 cap:  L2 total ≤ 40% of total HQLA (post-haircut)
 //   L2b cap: L2b ≤ 15% of total HQLA (post-haircut)
 //
-// Run-off rates (build phase, SA BA 325 calibration):
+// Run-off rates (build phase, SA BA 110 calibration):
 //   Retail deposits stable:            3%
 //   Retail deposits less stable:      10%
 //   Unsecured wholesale operational:  25%
@@ -23,7 +23,7 @@
 //   Secured funding — Level 1 collateral:  0%
 //   Secured funding — Level 2 collateral: 15%
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325.
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110.
 // Author: Anya (Liquidity & projections engineer, engineering)
 //
 // Calibration constants (run-off / inflow / haircut rates, caps, minimum,
@@ -46,7 +46,7 @@ import { requireWeight } from "../types/financial-input";
 export interface HQLAPosition {
   /** Market value in ZAR before haircut. */
   amountZar: number;
-  /** HQLA tier as defined in BA 325 Annex 1. */
+  /** HQLA tier as defined in BA 110 Annex 1. */
   tier: "L1" | "L2a" | "L2b";
 }
 
@@ -65,7 +65,7 @@ export interface FundingPosition {
 }
 
 // ---------------------------------------------------------------------------
-// Run-off rates (BA 325 calibration)
+// Run-off rates (BA 110 calibration)
 // ---------------------------------------------------------------------------
 
 const RUNOFF_RATES: Record<string, number> = lcrRunoffRates();
@@ -74,7 +74,7 @@ const INFLOW_RATE_CONTRACTUAL = getFinancialConstant("lcr.inflow.contractual");
 const INFLOW_RATE_OTHER = getFinancialConstant("lcr.inflow.other");
 
 // ---------------------------------------------------------------------------
-// HQLA haircut rates (BA 325 Annex 1) — owned in financial-constants
+// HQLA haircut rates (BA 110 Annex 1) — owned in financial-constants
 // ---------------------------------------------------------------------------
 
 const HAIRCUT_RATES: Record<string, number> = lcrHaircutRates();
@@ -186,7 +186,7 @@ export function computeLCR(
   //     Equivalently: L2b ≤ (15/85) × L1 post-haircut
   // (c) L2 cap: (L2a + L2b_capped) ≤ (40/60) × L1
   //
-  // BA 325 §37-40: caps expressed as fractions of total HQLA.
+  // BA 110 §37-40: caps expressed as fractions of total HQLA.
   // Let H = L1 + L2. Then L2 ≤ 0.40 × H → L2 ≤ (40/60) × L1.
   // Similarly L2b ≤ 0.15 × H → L2b ≤ (15/85) × L1.
 
@@ -241,7 +241,7 @@ export function computeLCR(
   }
 
   // -------------------------------------------------------------------------
-  // Step 3 — Net cash outflows (BA 325 §19)
+  // Step 3 — Net cash outflows (BA 110 §19)
   // -------------------------------------------------------------------------
   // Net outflows = stressed outflows − min(stressed inflows, 75% × stressed outflows)
   const inflowCap = getFinancialConstant("lcr.inflow-recognition-cap") * stressedOutflows;

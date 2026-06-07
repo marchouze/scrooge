@@ -2,7 +2,7 @@
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) —
 // operational-risk semantic-layer entries. Extends the Slice-1 / Slice-3 /
-// Slice-5-market-risk registry with the minimum vocabulary the BA 600
+// Slice-5-market-risk registry with the minimum vocabulary the BA 300
 // (operational-risk) generator needs.
 //
 // Entries:
@@ -62,7 +62,7 @@ export const grossIncomeBusinessLine: SemanticEntry = {
     "sum(grossIncome where businessLine = bl and fiscalYear = fy) for bl in {corporate-finance, trading-and-sales, retail-banking, commercial-banking, payment-and-settlement, agency-services, asset-management, retail-brokerage}",
   regulatoryCells: [
     {
-      form: "BA 600",
+      form: "BA 300",
       line: "Gross income by business line — input to op-risk capital",
       side: "positive",
       note: "BIA uses bank-aggregate gross income; TSA uses per-business-line decomposition.",
@@ -81,7 +81,7 @@ export const grossIncomeBusinessLine: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 600 business-line line numbering + SMA Business Indicator Component crosswalk]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 300 business-line line numbering + SMA Business Indicator Component crosswalk]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -111,7 +111,7 @@ export const opRiskCapitalBia: SemanticEntry = {
   formula: "0.15 × (sum(grossIncome over last 3 fiscal years where grossIncome > 0) / nPositive)",
   regulatoryCells: [
     {
-      form: "BA 600",
+      form: "BA 300",
       line: "Op-risk capital charge — Basic Indicator Approach",
       side: "positive",
       note: "Build-phase default approach; Reg 33(3).",
@@ -130,7 +130,7 @@ export const opRiskCapitalBia: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 600 BIA cell line numbering + SMA transition timeline]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 300 BIA cell line numbering + SMA transition timeline]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -158,7 +158,7 @@ export const opRiskCapitalTsa: SemanticEntry = {
   formula: "(1/3) × sum_y max(0, sum_i (β_i × grossIncome_{y,i})) for y in {y-2, y-1, y}",
   regulatoryCells: [
     {
-      form: "BA 600",
+      form: "BA 300",
       line: "Op-risk capital charge — Standardised Approach",
       side: "positive",
       note: "TSA per Reg 33(4) Annex β-factor table.",
@@ -203,10 +203,10 @@ export const opRiskRwa: SemanticEntry = {
   formula: "12.5 × selectedApproachCapital",
   regulatoryCells: [
     {
-      form: "BA 600",
+      form: "BA 300",
       line: "Total operational-risk RWA",
       side: "positive",
-      note: "Aggregate that flows into BA 700 / capital-stack.",
+      note: "Aggregate that flows into BA 100 / capital-stack.",
     },
   ],
   citations: [
@@ -222,7 +222,7 @@ export const opRiskRwa: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 600 RWA-aggregate line]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 300 RWA-aggregate line]",
     },
   ],
   signers: ["Helena", "Camille"],

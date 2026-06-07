@@ -3,8 +3,8 @@
 // Public surface of the reporting package — D-REPORTING-CAPABILITY-M2-M3-
 // BUILD-PLAN Slice 3 + downstream slices.
 //
-// Slice 3 ships BA 325 (LCR) end-to-end as the proof-of-architecture for
-// the BA-form generator pipeline. Slices 4-5 add BA 700 / BA 350 / BA 600,
+// Slice 3 ships BA 110 (LCR) end-to-end as the proof-of-architecture for
+// the BA-form generator pipeline. Slices 4-5 add BA 100 / BA 310 / BA 300,
 // the regulator-portal handshake, and the SARB XML render. Slice 6+ adds
 // IFRS AFS skeletons + capital-stack + RWA projections.
 //
@@ -13,19 +13,19 @@
 
 export {
   type AccountLiquidityClassification,
-  type Ba325CashFlowSection,
-  type Ba325GeneratorInput,
-  Ba325GeneratorError,
-  type Ba325HqlaSection,
-  type Ba325LineItem,
-  type Ba325LcrOpts,
-  type Ba325Output,
-  BA_325_BANK_ENTITIES,
+  type Ba110CashFlowSection,
+  type Ba110GeneratorInput,
+  Ba110GeneratorError,
+  type Ba110HqlaSection,
+  type Ba110LineItem,
+  type Ba110LcrOpts,
+  type Ba110Output,
+  BA_110_BANK_ENTITIES,
   applyHqlaCaps,
-  generateBa325Lcr,
-  generateBa325LcrWithEvents,
+  generateBa110Lcr,
+  generateBa110LcrWithEvents,
   type HqlaLevel,
-} from "./ba-325-lcr";
+} from "./ba-110-lcr";
 
 // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 — SecurityMaster HQLA override utility.
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
@@ -40,41 +40,134 @@ export {
   type NsfrComponents,
   NsfrGeneratorError,
   generateNsfrProjection,
-} from "./ba-350-nsfr";
+} from "./ba-120-nsfr";
 
 export {
-  Ba325RenderSchema,
-  type Ba325Render,
-  BA_325_SCHEMA_URL,
-  BA_325_RENDERER_VERSION,
-  canonicaliseBa325,
-  renderBa325Canonical,
-  renderBa325ToJson,
-  type RenderBa325Options,
-} from "./ba-325-render";
+  Ba110RenderSchema,
+  type Ba110Render,
+  BA_110_SCHEMA_URL,
+  BA_110_RENDERER_VERSION,
+  canonicaliseBa110,
+  renderBa110Canonical,
+  renderBa110ToJson,
+  type RenderBa110Options,
+} from "./ba-110-render";
 
 // ---------------------------------------------------------------------------
-// WS-FINANCE-BA-RETURNS-QUINTET — BA 100 (Balance Sheet) + BA 300 (Income
-// Statement) + BA 310 (Selected Income-Statement Information) projections.
+// WS-FINANCE-BA-RETURNS-QUINTET — BA 600 (Balance Sheet) + BA 610 (Income
+// Statement) + BA 610 detail (Selected Income-Statement Information) projections.
 // Standing authority D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN extended
 // 2026-05-17 by Marc's directive.
 // ---------------------------------------------------------------------------
 
 export {
-  type Ba100BalanceSheet,
-  type Ba100BalanceCheck,
-  type Ba100ClassificationGap,
-  type Ba100ClassificationMap,
+  type Ba600BalanceSheet,
+  type Ba600BalanceCheck,
+  type Ba600ClassificationGap,
+  type Ba600ClassificationMap,
+  type Ba600GeneratorInput,
+  Ba600GeneratorError,
+  type Ba600LineClassification,
+  type Ba600LineItem,
+  type Ba600PerCurrencyTotal,
+  type Ba600Section,
+  type Ba600Section_Output,
+  BA_600_BANK_ENTITIES,
+  generateBa600BalanceSheet,
+} from "./ba-600-balance-sheet";
+
+export {
+  Ba600RenderSchema,
+  type Ba600Render,
+  BA_600_SCHEMA_URL,
+  BA_600_RENDERER_VERSION,
+  canonicaliseBa600,
+  renderBa600Canonical,
+  renderBa600ToJson,
+  type RenderBa600Options,
+} from "./ba-600-render";
+
+export {
+  type Ba610ClassificationGap,
+  type Ba610ClassificationMap,
+  type Ba610GeneratorInput,
+  Ba610GeneratorError,
+  type Ba610IncomeStatement,
+  type Ba610LineCategory,
+  type Ba610LineCategorySection,
+  type Ba610LineClassification,
+  type Ba610LineItem,
+  BA_610_BANK_ENTITIES,
+  generateBa610IncomeStatement,
+} from "./ba-610-income-statement";
+
+export {
+  Ba610RenderSchema,
+  type Ba610Render,
+  BA_610_SCHEMA_URL,
+  BA_610_RENDERER_VERSION,
+  canonicaliseBa610,
+  renderBa610Canonical,
+  renderBa610ToJson,
+  type RenderBa610Options,
+} from "./ba-610-render";
+
+export {
+  type Ba610DetailAlmBandingSection,
+  type Ba610DetailBandingEntry,
+  type Ba610DetailBandingMap,
+  type Ba610DetailEfficiencySection,
+  type Ba610DetailFtpRateBand,
+  type Ba610DetailFtpRates,
+  type Ba610DetailGeneratorInput,
+  Ba610DetailGeneratorError,
+  type Ba610DetailIncomeDetail,
+  type Ba610DetailInstrumentClass,
+  type Ba610DetailLineItem,
+  type Ba610DetailMaturityBand,
+  type Ba610DetailNiiBreakdown,
+  type Ba610DetailNiiByBand,
+  type Ba610DetailNiiByClass,
+  type Ba610DetailNimSection,
+  type Ba610DetailNonInterestSection,
+  BA_610_DETAIL_BANK_ENTITIES,
+  generateBa610DetailIncomeDetail,
+} from "./ba-610-income-detail";
+
+export {
+  Ba610DetailRenderSchema,
+  type Ba610DetailRender,
+  BA_610_DETAIL_SCHEMA_URL,
+  BA_610_DETAIL_RENDERER_VERSION,
+  canonicaliseBa610Detail,
+  renderBa610DetailCanonical,
+  renderBa610DetailToJson,
+  type RenderBa610DetailOptions,
+} from "./ba-610-detail-render";
+
+// ---------------------------------------------------------------------------
+// Slice 4 — BA 100 Capital Adequacy Return
+// ---------------------------------------------------------------------------
+
+export {
+  type AccountCapitalClassification,
+  type Ba100CapitalStackSection,
+  type Ba100CapitalTierSection,
   type Ba100GeneratorInput,
   Ba100GeneratorError,
-  type Ba100LineClassification,
   type Ba100LineItem,
-  type Ba100PerCurrencyTotal,
-  type Ba100Section,
-  type Ba100Section_Output,
+  type Ba100Output,
+  type Ba100RatiosSection,
+  type Ba100RwaSection,
+  type BufferRequirements,
+  BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
   BA_100_BANK_ENTITIES,
-  generateBa100BalanceSheet,
-} from "./ba-100-balance-sheet";
+  type CapitalTier,
+  computeRequiredMinimums,
+  generateBa100Capital,
+  type RegulatoryDeduction,
+  type RwaDecomposition,
+} from "./ba-100-capital";
 
 export {
   Ba100RenderSchema,
@@ -87,101 +180,8 @@ export {
   type RenderBa100Options,
 } from "./ba-100-render";
 
-export {
-  type Ba300ClassificationGap,
-  type Ba300ClassificationMap,
-  type Ba300GeneratorInput,
-  Ba300GeneratorError,
-  type Ba300IncomeStatement,
-  type Ba300LineCategory,
-  type Ba300LineCategorySection,
-  type Ba300LineClassification,
-  type Ba300LineItem,
-  BA_300_BANK_ENTITIES,
-  generateBa300IncomeStatement,
-} from "./ba-300-income-statement";
-
-export {
-  Ba300RenderSchema,
-  type Ba300Render,
-  BA_300_SCHEMA_URL,
-  BA_300_RENDERER_VERSION,
-  canonicaliseBa300,
-  renderBa300Canonical,
-  renderBa300ToJson,
-  type RenderBa300Options,
-} from "./ba-300-render";
-
-export {
-  type Ba310AlmBandingSection,
-  type Ba310BandingEntry,
-  type Ba310BandingMap,
-  type Ba310EfficiencySection,
-  type Ba310FtpRateBand,
-  type Ba310FtpRates,
-  type Ba310GeneratorInput,
-  Ba310GeneratorError,
-  type Ba310IncomeDetail,
-  type Ba310InstrumentClass,
-  type Ba310LineItem,
-  type Ba310MaturityBand,
-  type Ba310NiiBreakdown,
-  type Ba310NiiByBand,
-  type Ba310NiiByClass,
-  type Ba310NimSection,
-  type Ba310NonInterestSection,
-  BA_310_BANK_ENTITIES,
-  generateBa310IncomeDetail,
-} from "./ba-310-income-detail";
-
-export {
-  Ba310RenderSchema,
-  type Ba310Render,
-  BA_310_SCHEMA_URL,
-  BA_310_RENDERER_VERSION,
-  canonicaliseBa310,
-  renderBa310Canonical,
-  renderBa310ToJson,
-  type RenderBa310Options,
-} from "./ba-310-render";
-
-// ---------------------------------------------------------------------------
-// Slice 4 — BA 700 Capital Adequacy Return
-// ---------------------------------------------------------------------------
-
-export {
-  type AccountCapitalClassification,
-  type Ba700CapitalStackSection,
-  type Ba700CapitalTierSection,
-  type Ba700GeneratorInput,
-  Ba700GeneratorError,
-  type Ba700LineItem,
-  type Ba700Output,
-  type Ba700RatiosSection,
-  type Ba700RwaSection,
-  type BufferRequirements,
-  BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
-  BA_700_BANK_ENTITIES,
-  type CapitalTier,
-  computeRequiredMinimums,
-  generateBa700Capital,
-  type RegulatoryDeduction,
-  type RwaDecomposition,
-} from "./ba-700-capital";
-
-export {
-  Ba700RenderSchema,
-  type Ba700Render,
-  BA_700_SCHEMA_URL,
-  BA_700_RENDERER_VERSION,
-  canonicaliseBa700,
-  renderBa700Canonical,
-  renderBa700ToJson,
-  type RenderBa700Options,
-} from "./ba-700-render";
-
 // Basel III leverage ratio (BCBS §147–§165) — separate primitive composed
-// into BA 700 when the caller supplies an exposure-measure decomposition.
+// into BA 100 when the caller supplies an exposure-measure decomposition.
 export {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   BUILD_PHASE_LEVERAGE_BASELINE_EXPOSURE_MINOR,
@@ -193,45 +193,45 @@ export {
   LeverageRatioGeneratorError,
   type LeverageRatioOutput,
   generateLeverageRatio,
-} from "./ba-700-leverage-ratio";
+} from "./ba-400-leverage-ratio";
 
 // ---------------------------------------------------------------------------
-// Slice 5 — BA 350 (market risk), BA 600 (operational risk), XML render
+// Slice 5 — BA 310 (market risk), BA 300 (operational risk), XML render
 // layer.
 // ---------------------------------------------------------------------------
 
 export {
-  type Ba350GeneratorInput,
-  Ba350GeneratorError,
-  type Ba350LineItem,
-  type Ba350Output,
-  type Ba350IrGeneralSection,
-  type Ba350IrSpecificSection,
-  type Ba350EquitySection,
-  type Ba350FxSection,
-  type Ba350CommoditySection,
+  type Ba310GeneratorInput,
+  Ba310GeneratorError,
+  type Ba310LineItem,
+  type Ba310Output,
+  type Ba310IrGeneralSection,
+  type Ba310IrSpecificSection,
+  type Ba310EquitySection,
+  type Ba310FxSection,
+  type Ba310CommoditySection,
   type IrMaturityBandRow,
   type IrSpecificRiskRow,
   type EquityRow,
   type FxPositionRow,
   type CommodityPositionRow,
-  BA_350_BANK_ENTITIES,
-  generateBa350MarketRisk,
-} from "./ba-350-market-risk";
+  BA_310_BANK_ENTITIES,
+  generateBa310MarketRisk,
+} from "./ba-310-market-risk";
 
 export {
-  type Ba600GeneratorInput,
-  Ba600GeneratorError,
-  type Ba600LineItem,
-  type Ba600Output,
-  type Ba600BiaSection,
-  type Ba600TsaSection,
+  type Ba300GeneratorInput,
+  Ba300GeneratorError,
+  type Ba300LineItem,
+  type Ba300Output,
+  type Ba300BiaSection,
+  type Ba300TsaSection,
   type BaselBusinessLine,
   type OpRiskGrossIncomeRow,
-  BA_600_BANK_ENTITIES,
+  BA_300_BANK_ENTITIES,
   BUSINESS_LINE_BETA,
-  generateBa600OpRisk,
-} from "./ba-600-op-risk";
+  generateBa300OpRisk,
+} from "./ba-300-op-risk";
 
 export {
   type RenderXmlOptions,
@@ -244,20 +244,20 @@ export {
 } from "./xml-render";
 
 export {
-  BA_350_NAMESPACE,
-  BA_350_REQUIRED_ELEMENTS,
-  BA_350_XSD_URI,
-  ba350ToXmlPayload,
-} from "./ba-350-xml-adapter";
+  BA_310_NAMESPACE,
+  BA_310_REQUIRED_ELEMENTS,
+  BA_310_XSD_URI,
+  ba310ToXmlPayload,
+} from "./ba-310-xml-adapter";
 
 // ---------------------------------------------------------------------------
-// FX adapter — bridges fxPositionCalculator output to BA 350 FxPositionRow[]
+// FX adapter — bridges fxPositionCalculator output to BA 310 FxPositionRow[]
 // ---------------------------------------------------------------------------
 
 export {
-  fxPositionsToBa350Input,
+  fxPositionsToBa310Input,
   fxPositionSummaryNote,
-} from "./ba-350-fx-adapter";
+} from "./ba-310-fx-adapter";
 
 // ---------------------------------------------------------------------------
 // P1-compliant events-first entry points (C-2 / C-3 fixes).
@@ -269,115 +269,115 @@ export {
 // ---------------------------------------------------------------------------
 
 export {
-  type Ba350FromEventsInput,
-  generateBa350MarketRiskFromEvents,
-} from "./ba-350-events-adapter";
+  type Ba310FromEventsInput,
+  generateBa310MarketRiskFromEvents,
+} from "./ba-310-events-adapter";
 
 export {
-  type Ba700FromEventsInput,
-  generateBa700CapitalFromEvents,
-} from "./ba-700-events-adapter";
+  type Ba100FromEventsInput,
+  generateBa100CapitalFromEvents,
+} from "./ba-100-events-adapter";
 
 export {
-  BA_600_NAMESPACE,
-  BA_600_REQUIRED_ELEMENTS,
-  BA_600_XSD_URI,
-  ba600ToXmlPayload,
-} from "./ba-600-xml-adapter";
+  BA_300_NAMESPACE,
+  BA_300_REQUIRED_ELEMENTS,
+  BA_300_XSD_URI,
+  ba300ToXmlPayload,
+} from "./ba-300-xml-adapter";
 
 export {
-  BA_325_NAMESPACE,
-  BA_325_REQUIRED_ELEMENTS,
-  BA_325_XSD_URI,
-  ba325ToXmlPayload,
-} from "./ba-325-xml-adapter";
+  BA_110_NAMESPACE,
+  BA_110_REQUIRED_ELEMENTS,
+  BA_110_XSD_URI,
+  ba110ToXmlPayload,
+} from "./ba-110-xml-adapter";
 
 export {
-  BA_700_NAMESPACE,
-  BA_700_REQUIRED_ELEMENTS,
-  BA_700_XSD_URI,
-  ba700ToXmlPayload,
-} from "./ba-700-xml-adapter";
+  BA_100_NAMESPACE,
+  BA_100_REQUIRED_ELEMENTS,
+  BA_100_XSD_URI,
+  ba100ToXmlPayload,
+} from "./ba-100-xml-adapter";
 
 // ---------------------------------------------------------------------------
-// Slice 9 — BA 120 (Off-Balance-Sheet Activities) monthly return
+// Slice 9 — off-balance-sheet (Off-Balance-Sheet Activities) monthly return
 // ---------------------------------------------------------------------------
 
 export {
-  type Ba120ClassificationEntry,
-  type Ba120ClassificationMap,
-  type Ba120CommitmentsEntry,
-  type Ba120CommitmentsRow,
-  type Ba120CommitmentsSection,
-  type Ba120DerivativeEntry,
-  type Ba120DerivativeProductType,
-  type Ba120DerivativeRow,
-  type Ba120DerivativesSection,
-  type Ba120DocumentarySection,
-  type Ba120GeneratorInput,
-  Ba120GeneratorError,
-  type Ba120GuaranteeRow,
-  type Ba120GuaranteesEntry,
-  type Ba120GuaranteesSection,
-  type Ba120MaturityBand,
-  type Ba120OffBalanceSheet,
-  type Ba120OtherItem,
-  type Ba120OtherSection,
-  type Ba120Section,
-  type Ba120Total,
-  BA_120_BANK_ENTITIES,
+  type OffBalanceSheetClassificationEntry,
+  type OffBalanceSheetClassificationMap,
+  type OffBalanceSheetCommitmentsEntry,
+  type OffBalanceSheetCommitmentsRow,
+  type OffBalanceSheetCommitmentsSection,
+  type OffBalanceSheetDerivativeEntry,
+  type OffBalanceSheetDerivativeProductType,
+  type OffBalanceSheetDerivativeRow,
+  type OffBalanceSheetDerivativesSection,
+  type OffBalanceSheetDocumentarySection,
+  type OffBalanceSheetGeneratorInput,
+  OffBalanceSheetGeneratorError,
+  type OffBalanceSheetGuaranteeRow,
+  type OffBalanceSheetGuaranteesEntry,
+  type OffBalanceSheetGuaranteesSection,
+  type OffBalanceSheetMaturityBand,
+  type OffBalanceSheet,
+  type OffBalanceSheetOtherItem,
+  type OffBalanceSheetOtherSection,
+  type OffBalanceSheetSection,
+  type OffBalanceSheetTotal,
+  OFF_BALANCE_SHEET_BANK_ENTITIES,
   fingerprintClassificationMap,
-  generateBa120OffBalanceSheet,
+  generateOffBalanceSheet,
   maturityBandFromDays,
   remainingDaysTo,
-} from "./ba-120-off-balance-sheet";
+} from "./off-balance-sheet";
 
 export {
-  Ba120RenderSchema,
-  type Ba120Render,
-  BA_120_SCHEMA_URL,
-  BA_120_RENDERER_VERSION,
-  canonicaliseBa120,
-  renderBa120Canonical,
-  renderBa120ToJson,
-  type RenderBa120Options,
-} from "./ba-120-render";
+  OffBalanceSheetRenderSchema,
+  type OffBalanceSheetRender,
+  OFF_BALANCE_SHEET_SCHEMA_URL,
+  OFF_BALANCE_SHEET_RENDERER_VERSION,
+  canonicaliseOffBalanceSheet,
+  renderOffBalanceSheetCanonical,
+  renderOffBalanceSheetToJson,
+  type RenderOffBalanceSheetOptions,
+} from "./off-balance-sheet-render";
 
 // ---------------------------------------------------------------------------
 // Slice 6 — IFRS statement renderer (BS / IS / CF / Equity / Notes skeleton)
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// Slice 11 — BA 320 (Credit-Risk Loans-and-Advances Breakdown)
+// Slice 11 — BA 310 (Credit-Risk Loans-and-Advances Breakdown)
 // ---------------------------------------------------------------------------
 
 export {
-  type Ba320CreditRisk,
-  type Ba320CategorySection,
-  type Ba320ClassificationEntry,
-  type Ba320GeneratorInput,
-  Ba320GeneratorError,
-  type Ba320LoanEntry,
-  type Ba320Stage,
-  type Ba320StageSection,
-  type Ba320Total,
-  BA_320_BANK_ENTITIES,
-  ba320CategorySectionSchema,
-  ba320StageSectionSchema,
-  ba320TotalSchema,
-  generateBa320CreditRisk,
-} from "./ba-320-credit-risk";
+  type Ba200CreditRisk,
+  type Ba200CategorySection,
+  type Ba200ClassificationEntry,
+  type Ba200GeneratorInput,
+  Ba200GeneratorError,
+  type Ba200LoanEntry,
+  type Ba200Stage,
+  type Ba200StageSection,
+  type Ba200Total,
+  BA_200_BANK_ENTITIES,
+  ba200CategorySectionSchema,
+  ba200StageSectionSchema,
+  ba200TotalSchema,
+  generateBa200CreditRisk,
+} from "./ba-200-credit-risk";
 
 export {
-  Ba320RenderSchema,
-  type Ba320Render,
-  BA_320_SCHEMA_URL,
-  BA_320_RENDERER_VERSION,
-  canonicaliseBa320,
-  renderBa320Canonical,
-  renderBa320ToJson,
-  type RenderBa320Options,
-} from "./ba-320-render";
+  Ba200RenderSchema,
+  type Ba200Render,
+  BA_200_SCHEMA_URL,
+  BA_200_RENDERER_VERSION,
+  canonicaliseBa200,
+  renderBa200Canonical,
+  renderBa200ToJson,
+  type RenderBa200Options,
+} from "./ba-200-render";
 
 export {
   type IfrsAccountClass,

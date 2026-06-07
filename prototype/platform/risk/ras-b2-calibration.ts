@@ -88,7 +88,7 @@ export const ESCALATE_BUFFER_PCT = 0.25;
 /**
  * Pillar-1 inputs into the CET1 calibration. All fields are percentage
  * points (e.g. 4.5 means 4.5%) unless otherwise stated. The shape mirrors
- * the BA 110 (Pillar 1 capital adequacy) and BA 100 (capital + reserves)
+ * the BA 100 (Pillar 1 capital adequacy; capital + reserves) D5/2025
  * line-set per Bea (Accounting & financial reporting engineer)'s
  * reporting-capability spec at
  * `Owner Inbox/2026-05-06_reporting-capability-spec.md`.

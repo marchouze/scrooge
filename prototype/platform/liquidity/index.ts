@@ -4,7 +4,7 @@
 //
 // Exports: LCR engine, NSFR engine, multi-horizon projection runner.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
 export * from "./lcr";

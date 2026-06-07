@@ -35,7 +35,7 @@
 //            D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
 //            IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1;
 //            Banks Act 94 of 1990 — Reg 26/27 (LCR/NSFR);
-//            BCBS d365 (IRRBB); BA 325 / BA 326.
+//            BCBS d365 (IRRBB); BA 110 / BA 120.
 //
 // Authors: Ravi (Treasury/ALM Engineer, engineering),
 //          Eitan (Treasurer, governance)
@@ -274,7 +274,7 @@ export function makeRepoTradeTerminatedEarly(args: {
 
 // DepositTaken — opening event for a money market deposit lifecycle.
 // Bank receives a deposit from a counterparty. The deposit category determines
-// the LCR outflow rate (BA 325 Table 1) and the GL sub-ledger used.
+// the LCR outflow rate (BA 110 Table 1) and the GL sub-ledger used.
 //
 // NOTE: The exact name "DepositTaken" is required by alm-positions.ts gap stubs.
 
@@ -290,7 +290,7 @@ export const depositTakenPayloadSchema = z.object({
   /** ISO 8601 date — scheduled maturity of the deposit. */
   maturityDate: z.string(),
   /**
-   * Deposit category per BA 325 Table 1 LCR outflow classification:
+   * Deposit category per BA 110 Table 1 LCR outflow classification:
    *   retail-stable            — stable retail (5% outflow rate)
    *   retail-less-stable       — less stable retail (10% outflow rate)
    *   wholesale-operational    — operational wholesale (25% outflow rate)
@@ -467,7 +467,7 @@ export function makeDepositRolledOver(args: {
 // FundingLineDrawn — opening event for a funding line lifecycle.
 // Bank draws down on a committed wholesale credit facility (e.g. from a
 // correspondent bank or parent entity). Classified as non-operational wholesale
-// for LCR purposes (BA 325 Table 2, 100% outflow rate).
+// for LCR purposes (BA 110 Table 2, 100% outflow rate).
 //
 // NOTE: The exact name "FundingLineDrawn" is required by alm-positions.ts gap stubs.
 

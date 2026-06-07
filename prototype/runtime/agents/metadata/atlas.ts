@@ -27,10 +27,10 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
     subscribesTo: ["AgentRegistered"],
   }),
   // atlas:collateral-snapshot — daily HQLA collateral inventory snapshot.
-  // Classifies security positions per BA 325 Annex 1, checks L2/L2b caps,
+  // Classifies security positions per BA 110 Annex 1, checks L2/L2b caps,
   // emits CollateralInventorySnapshot and (if caps breached) HQLACompositionDrift.
   // Closes Eitan's substrate gap "Collateral inventory substrate — not yet built."
-  // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  // Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   entry("Atlas", "collateral-snapshot", "scheduled", {
     cadenceHours: 24,
     cronExpression: "30 6 * * *",
@@ -40,7 +40,7 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
   // Emits ILAAPScenarioRun (×4) + ILAAPSummaryCompleted + IcaapIlaapInputReady.
   // Escalates via AgentEscalation if overallStatus === "inadequate".
   // Closes Eitan's substrate gap "ILAAP engine — not yet built."
-  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
   entry("Atlas", "ilaap-run", "scheduled", {
     cadenceHours: 24 * 90,
     cronExpression: "0 7 1 1,4,7,10 *",
@@ -49,7 +49,7 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
   // Assembles all 8 ALCO pack sections from live projection events, serialises
   // to structured markdown, files via RecordFiled, emits ALCOPackGenerated.
   // Closes Eitan's substrate gap "Auto-generated ALCO pack — not yet built."
-  // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
   entry("Atlas", "alco-pack", "scheduled", {
     cadenceHours: 24 * 30, // monthly
     cronExpression: "0 7 1 * *",

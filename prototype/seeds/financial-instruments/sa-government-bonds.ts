@@ -13,7 +13,7 @@
 //     PAM contractTerms per pamContractTermsSchema from instrument.ts Slice 5).
 //   - A FinancialInstrumentClassified payload:
 //       hqlaLevel     = "level-1"   (SA sovereign bonds qualify as Level 1 HQLA
-//                                    per BA 325 §42; 0% risk-weight domestic-currency
+//                                    per BA 110 §42; 0% risk-weight domestic-currency
 //                                    sovereign meets level-1 criteria).
 //       baselRiskWeight = "0pct"    (sovereign domestic-currency, 0% RW per
 //                                    RRB Regulation 23 / BCBS SA Table 1).
@@ -34,7 +34,7 @@
 // Citations:
 //   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22) Slice 10.
 //   ACTUS-FRF-V1.1 §PAM — Principal at Maturity contract-type standard.
-//   BA-325 §42–§54 — HQLA tiering under Basel III LCR implementation (SA).
+//   BA-110 §42–§54 — HQLA tiering under Basel III LCR implementation (SA).
 //   RRB-REG-23 — Banks Act Regulation 23 SA standardised risk weights.
 //   IFRS-9-§4.1 — classification and measurement; §4.1.2A FVTOCI criteria.
 //   JSE-RULES-BONDS — JSE Debt Listings Requirements; ACT/365 day-count;
@@ -136,7 +136,7 @@ export const SA_GOVERNMENT_BOND_DEFINED_PAYLOADS: FinancialInstrumentDefinedPayl
 // ---------------------------------------------------------------------------
 //
 // SA government bonds in domestic currency (ZAR) qualify as:
-//   hqlaLevel     = "level-1"    — BA 325 §42: central-government securities
+//   hqlaLevel     = "level-1"    — BA 110 §42: central-government securities
 //     in domestic currency, 0% risk-weight, meet Level-1 criteria without
 //     haircut adjustment; same treatment as SARB reserves for LCR buffer.
 //   baselRiskWeight = "0pct"     — RRB Regulation 23 / Basel III SA Table 1:
@@ -155,7 +155,7 @@ const BOND_CLASSIFICATION_COMMON = {
   classifiedBy: "Eitan (IRRBB / derivatives engineer, engineering)",
   effectiveDate: "2026-05-22",
   rationale:
-    "SA government bonds denominated in ZAR qualify as Level-1 HQLA (BA 325 §42), carry 0% Basel III standardised risk weight (RRB Regulation 23), and are classified as FVTOCI under IFRS 9 §4.1.2A for the held-to-collect-and-sell bond portfolio. SA-CCR does not apply to non-derivative instruments.",
+    "SA government bonds denominated in ZAR qualify as Level-1 HQLA (BA 110 §42), carry 0% Basel III standardised risk weight (RRB Regulation 23), and are classified as FVTOCI under IFRS 9 §4.1.2A for the held-to-collect-and-sell bond portfolio. SA-CCR does not apply to non-derivative instruments.",
 };
 
 const R186_CLASSIFIED: FinancialInstrumentClassifiedPayload = {

@@ -4,7 +4,7 @@
 //
 // Replaces the `balance-sheet-baseline` boot seed. Emits a single
 // BalanceSheetProjected event with the correct build-phase values:
-//   - All supplemental BA 326 items are zero (pre-revenue, pre-licence bank)
+//   - All supplemental BA 120 items are zero (pre-revenue, pre-licence bank)
 //   - No Tier 2 capital, no wholesale funding, no retail loans, no OBS commitments
 //
 // Idempotent: if a BalanceSheetProjected event with projectionId
@@ -13,7 +13,7 @@
 // Run from prototype/:
 //   BANK_EVENT_DB=$HOME/.local/share/bank/event.db bun run scripts/run-balance-sheet-baseline.ts
 //
-// Authority: BA 326; BCBS D396; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 120; BCBS D396; D-TREASURY-GAPS-WAVE1.
 // Author: Eitan (Treasurer, markets)
 
 import { resolve } from "node:path";
@@ -31,7 +31,7 @@ const PROJECTION_ID = "BS-BUILD-PHASE-2026-05-27";
 const AS_OF = "2026-05-27T00:00:00.000Z";
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:eitan:balance-sheet-baseline" };
-const CITATIONS = ["BA-326", "BCBS-D396", "D-TREASURY-GAPS-WAVE1"] as const;
+const CITATIONS = ["BA-120", "BCBS-D396", "D-TREASURY-GAPS-WAVE1"] as const;
 
 // Idempotency: check for any existing projection with this ID
 const existing = Array.from(store.replay({ type: "BalanceSheetProjected" })).find((ev) => {

@@ -21,7 +21,7 @@
 //   IT-7:  Missing namespaceUri → rejected with namespaceUri error
 //   IT-8:  Missing body.Meta.PeriodId → rejected with PeriodId error
 //   IT-9:  Multiple valid submissions each get distinct referenceNumbers
-//   IT-10: Valid BA 700 payload → accepted
+//   IT-10: Valid BA 100 payload → accepted
 //
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10).
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
@@ -39,30 +39,30 @@ import { submitToSarbPortal } from "../simulators/sarb-prudential";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const PERIOD_ID = "period:hoz-bank:month:2026-05";
-const NAMESPACE_BA325 = "https://hoz.bank/ns/ba-325/v0.1";
-const NAMESPACE_BA700 = "https://hoz.bank/ns/ba-700/v0.1";
+const NAMESPACE_BA325 = "https://hoz.bank/ns/ba-110/v0.1";
+const NAMESPACE_BA700 = "https://hoz.bank/ns/ba-100/v0.1";
 
 function makeStore(): EventStore {
   return new EventStore(":memory:");
 }
 
 /**
- * Minimal valid BA 325 payload that passes all simulator validation rules:
+ * Minimal valid BA 110 payload that passes all simulator validation rules:
  * - formId matches /^BA\d+$/
  * - namespaceUri non-empty
  * - body.Meta present and is a non-null object
  * - body.Meta.Entity non-empty
  * - body.Meta.PeriodId matches period:<slug>:<cadence>:<period>
  */
-function makeValidBa325Payload(): SarbXmlReportPayload {
+function makeValidBa110Payload(): SarbXmlReportPayload {
   return {
     formId: "BA325",
     formVersion: "v0.1-rehearsal",
-    xsdUri: "https://hoz.bank/xsd/ba-325/v0.1-rehearsal.xsd",
+    xsdUri: "https://hoz.bank/xsd/ba-110/v0.1-rehearsal.xsd",
     namespaceUri: NAMESPACE_BA325,
     body: {
       Meta: {
-        Form: "BA 325",
+        Form: "BA 110",
         FormVersion: "v0.1-rehearsal",
         Entity: ENTITY,
         AsOf: "2026-05-31T23:59:59.999Z",
@@ -78,16 +78,16 @@ function makeValidBa325Payload(): SarbXmlReportPayload {
   };
 }
 
-/** Minimal valid BA 700 payload. */
-function makeValidBa700Payload(): SarbXmlReportPayload {
+/** Minimal valid BA 100 payload. */
+function makeValidBa100Payload(): SarbXmlReportPayload {
   return {
     formId: "BA700",
     formVersion: "v0.1-rehearsal",
-    xsdUri: "https://hoz.bank/xsd/ba-700/v0.1-rehearsal.xsd",
+    xsdUri: "https://hoz.bank/xsd/ba-100/v0.1-rehearsal.xsd",
     namespaceUri: NAMESPACE_BA700,
     body: {
       Meta: {
-        Form: "BA 700",
+        Form: "BA 100",
         FormVersion: "v0.1-rehearsal",
         Entity: ENTITY,
         AsOf: "2026-05-31T23:59:59.999Z",
@@ -107,10 +107,10 @@ function makeValidBa700Payload(): SarbXmlReportPayload {
 // IT-1: Valid payload → accepted
 // ---------------------------------------------------------------------------
 
-describe("SARB dry-run integration — IT-1: Valid BA 325 payload accepted", () => {
+describe("SARB dry-run integration — IT-1: Valid BA 110 payload accepted", () => {
   it("returns ok = true with referenceNumber and submittedAt", async () => {
     const store = makeStore();
-    const result = await submitToSarbPortal(makeValidBa325Payload(), store);
+    const result = await submitToSarbPortal(makeValidBa110Payload(), store);
 
     expect(result.ok).toBe(true);
     expect(result.referenceNumber).toBeDefined();
@@ -123,7 +123,7 @@ describe("SARB dry-run integration — IT-1: Valid BA 325 payload accepted", () 
 
   it("referenceNumber starts with 'SARB-' (simulator prefix)", async () => {
     const store = makeStore();
-    const result = await submitToSarbPortal(makeValidBa325Payload(), store);
+    const result = await submitToSarbPortal(makeValidBa110Payload(), store);
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.referenceNumber?.startsWith("SARB-")).toBe(true);
@@ -139,11 +139,11 @@ describe("SARB dry-run integration — IT-2: Missing Entity → rejected", () =>
   it("returns ok = false with errors array containing Entity message", async () => {
     const store = makeStore();
     const payload: SarbXmlReportPayload = {
-      ...makeValidBa325Payload(),
+      ...makeValidBa110Payload(),
       body: {
         Meta: {
           // Entity deliberately omitted.
-          Form: "BA 325",
+          Form: "BA 110",
           PeriodId: PERIOD_ID,
           FunctionalCurrency: "ZAR",
         },
@@ -173,7 +173,7 @@ describe("SARB dry-run integration — IT-3: SarbSubmissionAttempted event emitt
     // Capture events before.
     const eventsBefore = [...store.replay({ entity: ENTITY })].length;
 
-    await submitToSarbPortal(makeValidBa325Payload(), store);
+    await submitToSarbPortal(makeValidBa110Payload(), store);
 
     const eventsAfter = [...store.replay({ entity: ENTITY })];
     expect(eventsAfter.length).toBe(eventsBefore + 1);
@@ -185,7 +185,7 @@ describe("SARB dry-run integration — IT-3: SarbSubmissionAttempted event emitt
   it("failed submission also appends one SarbSubmissionAttempted event (audit trail)", async () => {
     const store = makeStore();
     const invalidPayload: SarbXmlReportPayload = {
-      ...makeValidBa325Payload(),
+      ...makeValidBa110Payload(),
       formId: "NOT_A_BA_FORM", // will fail formId validation
     };
 
@@ -206,7 +206,7 @@ describe("SARB dry-run integration — IT-3: SarbSubmissionAttempted event emitt
 describe("SARB dry-run integration — IT-4: submittedAt is ISO 8601", () => {
   it("submittedAt is present and parseable on success", async () => {
     const store = makeStore();
-    const result = await submitToSarbPortal(makeValidBa325Payload(), store);
+    const result = await submitToSarbPortal(makeValidBa110Payload(), store);
     expect(result.submittedAt).toBeDefined();
     const d = new Date(result.submittedAt);
     expect(Number.isNaN(d.getTime())).toBe(false);
@@ -217,7 +217,7 @@ describe("SARB dry-run integration — IT-4: submittedAt is ISO 8601", () => {
   it("submittedAt is present and parseable on failure", async () => {
     const store = makeStore();
     const result = await submitToSarbPortal(
-      { ...makeValidBa325Payload(), formId: "INVALID" },
+      { ...makeValidBa110Payload(), formId: "INVALID" },
       store,
     );
     expect(result.submittedAt).toBeDefined();
@@ -233,7 +233,7 @@ describe("SARB dry-run integration — IT-4: submittedAt is ISO 8601", () => {
 describe("SARB dry-run integration — IT-5: referenceNumber on success", () => {
   it("referenceNumber is a non-empty string when submission accepted", async () => {
     const store = makeStore();
-    const result = await submitToSarbPortal(makeValidBa325Payload(), store);
+    const result = await submitToSarbPortal(makeValidBa110Payload(), store);
     expect(result.ok).toBe(true);
     expect(typeof result.referenceNumber).toBe("string");
     expect((result.referenceNumber as string).length).toBeGreaterThan(0);
@@ -242,7 +242,7 @@ describe("SARB dry-run integration — IT-5: referenceNumber on success", () => 
   it("referenceNumber is absent when submission rejected", async () => {
     const store = makeStore();
     const result = await submitToSarbPortal(
-      { ...makeValidBa325Payload(), formId: "INVALID_FORM" },
+      { ...makeValidBa110Payload(), formId: "INVALID_FORM" },
       store,
     );
     expect(result.ok).toBe(false);
@@ -257,7 +257,7 @@ describe("SARB dry-run integration — IT-5: referenceNumber on success", () => 
 describe("SARB dry-run integration — IT-6: Invalid formId rejected", () => {
   it("non-BA formId returns ok = false with formId in error message", async () => {
     const store = makeStore();
-    const result = await submitToSarbPortal({ ...makeValidBa325Payload(), formId: "XY999" }, store);
+    const result = await submitToSarbPortal({ ...makeValidBa110Payload(), formId: "XY999" }, store);
     expect(result.ok).toBe(false);
     const hasFormIdError = (result.errors ?? []).some(
       (e) => e.toLowerCase().includes("formid") || e.includes("XY999"),
@@ -276,7 +276,7 @@ describe("SARB dry-run integration — IT-6: Invalid formId rejected", () => {
     let ok = false;
     let threw = false;
     try {
-      const result = await submitToSarbPortal({ ...makeValidBa325Payload(), formId: "" }, store);
+      const result = await submitToSarbPortal({ ...makeValidBa110Payload(), formId: "" }, store);
       ok = result.ok;
     } catch {
       threw = true;
@@ -294,7 +294,7 @@ describe("SARB dry-run integration — IT-7: Missing namespaceUri rejected", () 
   it("empty namespaceUri returns ok = false with namespaceUri error", async () => {
     const store = makeStore();
     const result = await submitToSarbPortal(
-      { ...makeValidBa325Payload(), namespaceUri: "" },
+      { ...makeValidBa110Payload(), namespaceUri: "" },
       store,
     );
     expect(result.ok).toBe(false);
@@ -313,10 +313,10 @@ describe("SARB dry-run integration — IT-8: Missing PeriodId rejected", () => {
   it("absent PeriodId in Meta returns ok = false with PeriodId error", async () => {
     const store = makeStore();
     const payload: SarbXmlReportPayload = {
-      ...makeValidBa325Payload(),
+      ...makeValidBa110Payload(),
       body: {
         Meta: {
-          Form: "BA 325",
+          Form: "BA 110",
           Entity: ENTITY,
           // PeriodId deliberately omitted.
           FunctionalCurrency: "ZAR",
@@ -337,10 +337,10 @@ describe("SARB dry-run integration — IT-8: Missing PeriodId rejected", () => {
   it("malformed PeriodId (wrong format) returns ok = false", async () => {
     const store = makeStore();
     const payload: SarbXmlReportPayload = {
-      ...makeValidBa325Payload(),
+      ...makeValidBa110Payload(),
       body: {
         Meta: {
-          Form: "BA 325",
+          Form: "BA 110",
           Entity: ENTITY,
           PeriodId: "2026-05", // valid date but not the portal format
           FunctionalCurrency: "ZAR",
@@ -362,10 +362,10 @@ describe("SARB dry-run integration — IT-8: Missing PeriodId rejected", () => {
 describe("SARB dry-run integration — IT-9: Distinct referenceNumbers per submission", () => {
   it("two sequential submissions return different referenceNumbers", async () => {
     const store = makeStore();
-    const result1 = await submitToSarbPortal(makeValidBa325Payload(), store);
+    const result1 = await submitToSarbPortal(makeValidBa110Payload(), store);
     // Small delay to ensure Date.now() differs — the simulator uses Date.now() for refs.
     await new Promise((r) => setTimeout(r, 5));
-    const result2 = await submitToSarbPortal(makeValidBa325Payload(), store);
+    const result2 = await submitToSarbPortal(makeValidBa110Payload(), store);
 
     expect(result1.ok).toBe(true);
     expect(result2.ok).toBe(true);
@@ -378,8 +378,8 @@ describe("SARB dry-run integration — IT-9: Distinct referenceNumbers per submi
 
   it("two submissions → two SarbSubmissionAttempted events in store", async () => {
     const store = makeStore();
-    await submitToSarbPortal(makeValidBa325Payload(), store);
-    await submitToSarbPortal(makeValidBa325Payload(), store);
+    await submitToSarbPortal(makeValidBa110Payload(), store);
+    await submitToSarbPortal(makeValidBa110Payload(), store);
 
     const events = [...store.replay({ entity: ENTITY })].filter(
       (e) => e.type === "SarbSubmissionAttempted",
@@ -389,20 +389,20 @@ describe("SARB dry-run integration — IT-9: Distinct referenceNumbers per submi
 });
 
 // ---------------------------------------------------------------------------
-// IT-10: Valid BA 700 payload → accepted
+// IT-10: Valid BA 100 payload → accepted
 // ---------------------------------------------------------------------------
 
-describe("SARB dry-run integration — IT-10: Valid BA 700 payload accepted", () => {
-  it("BA 700 payload returns ok = true", async () => {
+describe("SARB dry-run integration — IT-10: Valid BA 100 payload accepted", () => {
+  it("BA 100 payload returns ok = true", async () => {
     const store = makeStore();
-    const result = await submitToSarbPortal(makeValidBa700Payload(), store);
+    const result = await submitToSarbPortal(makeValidBa100Payload(), store);
     expect(result.ok).toBe(true);
     expect(result.referenceNumber).toBeDefined();
   });
 
-  it("BA 700 submission emits SarbSubmissionAttempted event with formId BA700", async () => {
+  it("BA 100 submission emits SarbSubmissionAttempted event with formId BA700", async () => {
     const store = makeStore();
-    await submitToSarbPortal(makeValidBa700Payload(), store);
+    await submitToSarbPortal(makeValidBa100Payload(), store);
 
     const events = [...store.replay({ entity: ENTITY })].filter(
       (e) => e.type === "SarbSubmissionAttempted",

@@ -44,7 +44,7 @@ export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 — local SARB portal simulator.
     // Emitted by `simulators/sarb-prudential.ts` for every BA-return submission
-    // attempt (BA 325 / LCR, BA 700 / Capital Adequacy, and future BA-forms).
+    // attempt (BA 110 / LCR, BA 100 / Capital Adequacy, and future BA-forms).
     // Both successes and failures are recorded so the audit trail is complete
     // (Principle 1). Mode field disambiguates simulator from live submissions.
     // M8 migration: swaps the simulator implementation for a real HTTPS POST to

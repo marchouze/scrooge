@@ -1,47 +1,46 @@
 // scripts/render-ba-300.ts
 //
-// CLI wrapper for the BA 300 (Income Statement) generator + renderer.
+// CLI wrapper for the BA 300 (operational-risk) generator + XML renderer.
 //
 // Usage:
 //   bun run scripts/render-ba-300.ts \
 //       --entity LE-ZA-HOZ-BANK \
+//       --as-of 2026-05-31T23:59:59.999Z \
 //       --period-id period:hoz-bank:month:2026-05 \
-//       --period-start 2026-05-01T00:00:00.000Z \
-//       --period-end 2026-05-31T23:59:59.999Z \
 //       [--functional-currency ZAR] \
-//       [--classifications path/to/classifications.json] \
-//       [--out path/to/ba-300.json]
+//       [--approach bia|tsa]                          # default bia
+//       [--gross-income path/to/gi.json] \
+//       [--out-xml path/to/ba-300.xml]
 //
-// Authors: Bea (Accounting & financial reporting engineer, engineering —
-//   reports to Camille CFO) + Anya (Data / analytics engineer,
-//   engineering — reports to Devon COO).
+// Gross-income JSON shape (free-form fixture for build-phase rehearsal):
+//   [
+//     { "fiscalYear": "2024", "businessLine": "trading-and-sales", "grossIncomeMinor": 0 },
+//     ...
+//   ]
+//
+// If `--gross-income` not supplied, an empty fixture is used. Build-phase
+// posture: Hoz Bank has no audited gross income yet (no commencement-of-
+// trading); the engine produces `0` capital and surfaces placeholders.
+//
+// Authors: Bea + Helena + Anya (per script header convention).
 
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { closePeriod, openPeriod } from "../platform/accounting/period-close";
-import { eventStore } from "../platform/composition";
 import {
-  type Ba300LineClassification,
-  generateBa300IncomeStatement,
-  renderBa300Canonical,
+  type OpRiskGrossIncomeRow,
+  ba300ToXmlPayload,
+  generateBa300OpRisk,
+  renderSarbXml,
 } from "../platform/reporting";
-
-const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba300LineClassification[] = [
-  {
-    leafAccountId: "ACC-pl-revenue-stub",
-    category: "interest-income",
-    lineLabel: "interest-income.loans-and-advances",
-  },
-];
 
 interface CliArgs {
   readonly entity: string;
+  readonly asOf: string;
   readonly periodId: string;
   readonly functionalCurrency: string;
-  readonly periodStart: string;
-  readonly periodEnd: string;
-  readonly classificationsPath?: string;
-  readonly outPath?: string;
+  readonly approach: "bia" | "tsa";
+  readonly grossIncomePath?: string;
+  readonly outXmlPath?: string;
 }
 
 function parseArgs(argv: readonly string[]): CliArgs {
@@ -50,88 +49,58 @@ function parseArgs(argv: readonly string[]): CliArgs {
     return i >= 0 && i + 1 < argv.length ? argv[i + 1] : undefined;
   };
   const entity = get("--entity");
+  const asOf = get("--as-of");
   const periodId = get("--period-id");
-  const periodStart = get("--period-start");
-  const periodEnd = get("--period-end");
-  if (!entity || !periodId || !periodStart || !periodEnd) {
+  if (!entity || !asOf || !periodId) {
     throw new Error(
-      "render-ba-300: --entity, --period-id, --period-start, --period-end are required.",
+      "render-ba-300: --entity, --as-of, --period-id are required. See script header for usage.",
     );
   }
   const functionalCurrency = get("--functional-currency") ?? "ZAR";
-  const classificationsPath = get("--classifications");
-  const outPath = get("--out");
+  const approachRaw = get("--approach") ?? "bia";
+  if (approachRaw !== "bia" && approachRaw !== "tsa") {
+    throw new Error(`render-ba-300: --approach must be 'bia' or 'tsa', got '${approachRaw}'`);
+  }
+  const grossIncomePath = get("--gross-income");
+  const outXmlPath = get("--out-xml");
   return {
     entity,
+    asOf,
     periodId,
     functionalCurrency,
-    periodStart,
-    periodEnd,
-    ...(classificationsPath ? { classificationsPath } : {}),
-    ...(outPath ? { outPath } : {}),
+    approach: approachRaw,
+    ...(grossIncomePath ? { grossIncomePath } : {}),
+    ...(outXmlPath ? { outXmlPath } : {}),
   };
 }
 
-function loadJson<T>(path: string, label: string): T {
+function loadGrossIncome(path: string | undefined): readonly OpRiskGrossIncomeRow[] {
+  if (!path) return [];
   const raw = readFileSync(path, "utf8");
   const parsed = JSON.parse(raw);
-  if (parsed === null || parsed === undefined) {
-    throw new Error(`render-ba-300: --${label} file at ${path} parsed to null/undefined`);
+  if (!Array.isArray(parsed)) {
+    throw new Error(`render-ba-300: --gross-income file at ${path} must be a JSON array`);
   }
-  return parsed as T;
+  return parsed as readonly OpRiskGrossIncomeRow[];
 }
 
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
-  const classifications = args.classificationsPath
-    ? loadJson<readonly Ba300LineClassification[]>(args.classificationsPath, "classifications")
-    : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
-
-  const ACTOR = { type: "service" as const, id: "agent:Bea" };
-  const CITATIONS = ["D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN", "WS-FINANCE-BA-RETURNS-QUINTET"];
-
-  openPeriod({
-    eventStore,
+  const grossIncome = loadGrossIncome(args.grossIncomePath);
+  const out = generateBa300OpRisk({
     entity: args.entity,
-    actor: ACTOR,
-    citations: CITATIONS,
-    payload: {
-      periodId: args.periodId,
-      periodKind: "month",
-      periodStart: args.periodStart,
-      periodEnd: args.periodEnd,
-      openedAt: args.periodStart,
-      functionalCurrency: args.functionalCurrency,
-    },
-  });
-  const close = closePeriod({
-    eventStore,
-    entity: args.entity,
-    periodId: args.periodId,
-    closedAt: args.periodEnd,
-    actor: ACTOR,
-    citations: CITATIONS,
-  });
-
-  const output = generateBa300IncomeStatement({
-    entity: args.entity,
-    periodStart: args.periodStart,
-    periodEnd: args.periodEnd,
+    asOf: args.asOf,
     periodId: args.periodId,
     functionalCurrency: args.functionalCurrency,
-    trialBalance: close.trialBalance.rows,
-    classifications,
-    trialBalanceSnapshotEventId: close.trialBalanceSnapshotEvent.event_id,
+    grossIncome,
+    approach: args.approach,
   });
-
-  const { canonicalJson } = renderBa300Canonical(output, {
-    renderedAt: new Date().toISOString(),
-  });
-
-  if (args.outPath) {
-    writeFileSync(args.outPath, canonicalJson, "utf8");
+  const payload = ba300ToXmlPayload(out);
+  const xml = renderSarbXml(payload, { renderedAt: new Date().toISOString() });
+  if (args.outXmlPath) {
+    writeFileSync(args.outXmlPath, xml, "utf8");
   } else {
-    process.stdout.write(canonicalJson);
+    process.stdout.write(xml);
     process.stdout.write("\n");
   }
   return 0;

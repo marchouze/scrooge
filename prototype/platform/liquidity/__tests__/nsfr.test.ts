@@ -2,7 +2,7 @@
 //
 // Unit tests for the NSFR computation engine.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BA 326; Basel III.
+// Authority: D-TREASURY-GAPS-WAVE1; BA 120; Basel III.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
 import { describe, expect, it } from "bun:test";

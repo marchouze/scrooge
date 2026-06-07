@@ -176,21 +176,21 @@ export * from "./alm";
 // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
 // CollateralInventorySnapshotted (daily HQLA buffer snapshot + cap checks),
 //   CollateralUpdated (per-security inventory change — add/remove/revalue).
-// Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 export * from "./collateral";
 // D-TREASURY-GAPS-WAVE1 — settlement instruction event (LCR outflow substrate).
-// SettlementInstructionIssued — non-trade contractual outflow per BA 325 §23.
-// Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+// SettlementInstructionIssued — non-trade contractual outflow per BA 110 §23.
+// Authority: BA 110 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 export * from "./settlement";
 // D-TREASURY-GAPS-WAVE1 — balance-sheet projection event (NSFR ASF/RSF substrate).
-// BalanceSheetProjected — supplemental BA 326 line items (Tier 2 capital,
+// BalanceSheetProjected — supplemental BA 120 line items (Tier 2 capital,
 //   wholesale funding GT 1Y, covered bonds, retail loans, encumbered assets).
-// Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 120; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
 export * from "./balance-sheet";
 // D-TREASURY-GAPS-WAVE1 — liquidity projection engine (LCR/NSFR).
-// LCRComputed — result of a single LCR computation (BA 325 / Basel III).
-// NSFRComputed — result of a single NSFR computation (BA 326 / Basel III).
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+// LCRComputed — result of a single LCR computation (BA 110 / Basel III).
+// NSFRComputed — result of a single NSFR computation (BA 120 / Basel III).
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
 export * from "./liquidity";
 // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit breach lifecycle events.
 // LiquidityLimitBreached + LiquidityLimitBreachDisposed; tiered breaches
@@ -202,12 +202,12 @@ export * from "./liquidity-limit";
 // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
 // ILAAPScenarioRun — per-scenario liquidity stress result (4 scenarios).
 // ILAAPSummaryCompleted — aggregated worst-case ILAAP assessment.
-// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
 export * from "./ilaap";
 // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
 // ALCOPackGenerated — monthly ALCO pack generation event (8 sections).
 // IntradayHQLAStressProjection — intraday HQLA stress-scenario output.
-// Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
 export * from "./alco";
 // Product Control — daily FX P&L report event.
 // DailyPnLReportGenerated — aggregated unrealised + realised P&L by pair/counterparty/book.
@@ -540,27 +540,27 @@ export const TYPED_EVENT_TYPES = [
   // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
   ...ALM_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
-  // Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  // Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...COLLATERAL_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — settlement instruction outflow substrate (LCR §23).
-  // Authority: BA 325 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+  // Authority: BA 110 §23; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
   ...SETTLEMENT_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — balance-sheet projection (NSFR ASF/RSF substrate).
-  // Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+  // Authority: BA 120; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
   ...BALANCE_SHEET_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — liquidity projection engine event types (LCR/NSFR).
-  // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+  // Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
   ...LIQUIDITY_TYPED_EVENT_TYPES,
   // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit breach lifecycle events.
   // LiquidityLimitBreached + LiquidityLimitBreachDisposed.
   // Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
   ...LIQUIDITY_LIMIT_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine event types (stress scenarios + survival horizon).
-  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+  // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
   ...ILAAP_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
   // ALCOPackGenerated, IntradayHQLAStressProjection.
-  // Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
   ...ALCO_TYPED_EVENT_TYPES,
   // Product Control — daily FX P&L report, attribution, sign-off & commentary.
   // DailyPnLReportGenerated, PnLAttributionGenerated, PnLAttributionExceptionRaised,

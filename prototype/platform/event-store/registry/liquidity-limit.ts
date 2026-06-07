@@ -51,7 +51,7 @@ import type { EventTypeMetadata } from "./types";
  *   Anya (Liquidity & projections engineer) — every event; upstream
  *     LCR/NSFR computation owner; needs visibility on which thresholds
  *     fire.
- *   Mira (Compliance / RegTech engineer) — every event; BA 325 / BA 326
+ *   Mira (Compliance / RegTech engineer) — every event; BA 110 / BA 120
  *     return commentary attaches breach narratives.
  *   Owen (Company Secretary, governance) — every event; the decisions
  *     register cites BRC/ALCO/CEO exception decisions, which the breach
@@ -73,8 +73,8 @@ export const LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "BANKS-ACT-94-1990",
       "RRB-REG-26",
       "RRB-REG-26A",
-      "BA-325",
-      "BA-326",
+      "BA-110",
+      "BA-120",
       "POLICY:liquidity-risk-management-policy-v1-S9.1",
       "PROC-RISK-LLM-01",
     ],

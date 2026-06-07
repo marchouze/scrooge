@@ -2,8 +2,8 @@
 //
 // Smoke + acceptance tests for Phase D of the first-dry-run FX scenario
 // (`scenarios/03-fx-end-to-end-rehearsal.ts`). Asserts:
-//   - `runPhaseAandBandD` produces all four BA renders (BA 325 / BA 700 /
-//     BA 350 / BA 600) under a single end-to-end run.
+//   - `runPhaseAandBandD` produces all four BA renders (BA 110 / BA 100 /
+//     BA 310 / BA 300) under a single end-to-end run.
 //   - Each rendered file lands at `.local/dry-run-outputs/<period>/<form>.json`
 //     (the test uses an isolated tmp dir so it does not collide with the
 //     bun-run script's well-known path).
@@ -32,7 +32,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { type DocumentHash, LocalFsDocumentStore, hashContent } from "../platform/document-store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections";
-import type { Ba325Output, Ba350Output, Ba600Output, Ba700Output } from "../platform/reporting";
+import type { Ba100Output, Ba110Output, Ba300Output, Ba310Output } from "../platform/reporting";
 import {
   PHASE_D_FORMS,
   PHASE_D_SOURCE_LINEAGE,
@@ -87,7 +87,7 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     expect(result.writeResults.length).toBe(4);
 
     const forms = result.writeResults.map((w) => w.form);
-    expect(forms).toEqual(["ba-325", "ba-700", "ba-350", "ba-600"]);
+    expect(forms).toEqual(["ba-110", "ba-100", "ba-310", "ba-300"]);
 
     for (const w of result.writeResults) {
       // Each output path is under the requested output dir, named <form>.json.
@@ -160,27 +160,27 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     const layout = makeTempLayout();
     const result = runPhaseAandBandD({ ...layout, cleanup: false });
 
-    // BA 325 — LCR present (string; "infinity" valid for fixture without
+    // BA 110 — LCR present (string; "infinity" valid for fixture without
     // outflows). The fixture footprint produces no outflows so LCR is
     // either infinite or trivially-compliant — both acceptable for a
     // rehearsal.
-    expect(typeof result.summary.ba325.lcrPercent).toBe("string");
-    expect(result.summary.ba325.lcrPercent.length).toBeGreaterThan(0);
+    expect(typeof result.summary.ba110.lcrPercent).toBe("string");
+    expect(result.summary.ba110.lcrPercent.length).toBeGreaterThan(0);
 
-    // BA 700 — three ratios, all positive, all in percent form. With the
+    // BA 100 — three ratios, all positive, all in percent form. With the
     // fixture R300m CET1 / R3bn RWA the ratio is exactly 10.00%.
-    expect(result.summary.ba700.cet1Ratio).toBe("10.00%");
-    expect(result.summary.ba700.tier1Ratio).toBe("10.00%");
-    expect(result.summary.ba700.totalRatio).toBe("10.00%");
+    expect(result.summary.ba100.cet1Ratio).toBe("10.00%");
+    expect(result.summary.ba100.tier1Ratio).toBe("10.00%");
+    expect(result.summary.ba100.totalRatio).toBe("10.00%");
 
-    // BA 350 — long USD 5m × 18.45 = ZAR 92.25m → 8% × 92.25m = 7.38m
+    // BA 310 — long USD 5m × 18.45 = ZAR 92.25m → 8% × 92.25m = 7.38m
     // capital → 12.5 × 7.38m = 92.25m RWA.
-    expect(result.summary.ba350.capitalMinor).toBe(738_000_000); // R7.38m
-    expect(result.summary.ba350.rwaMinor).toBe(9_225_000_000); // R92.25m
+    expect(result.summary.ba310.capitalMinor).toBe(738_000_000); // R7.38m
+    expect(result.summary.ba310.rwaMinor).toBe(9_225_000_000); // R92.25m
 
-    // BA 600 — BIA fixture: 15% × R10m = R1.5m capital → 12.5 × R1.5m = R18.75m RWA.
-    expect(result.summary.ba600.capitalMinor).toBe(150_000_000); // R1.5m
-    expect(result.summary.ba600.rwaMinor).toBe(1_875_000_000); // R18.75m
+    // BA 300 — BIA fixture: 15% × R10m = R1.5m capital → 12.5 × R1.5m = R18.75m RWA.
+    expect(result.summary.ba300.capitalMinor).toBe(150_000_000); // R1.5m
+    expect(result.summary.ba300.rwaMinor).toBe(1_875_000_000); // R18.75m
   });
 
   it("each on-disk render parses against its expected typed shape", () => {
@@ -190,36 +190,36 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     const byForm: Record<string, string> = {};
     for (const w of result.writeResults) byForm[w.form] = w.outputPath;
 
-    // BA 325 — Slice-3 typed render (`Ba325Render`).
-    const ba325 = JSON.parse(readFileSync(byForm["ba-325"] as string, "utf8")) as Record<
+    // BA 110 — Slice-3 typed render (`Ba110Render`).
+    const ba110 = JSON.parse(readFileSync(byForm["ba-110"] as string, "utf8")) as Record<
       string,
       unknown
     >;
-    expect((ba325.meta as { form: string }).form).toBe("BA 325");
-    expect((ba325.meta as { entity: string }).entity).toBe("LE-ZA-HOZ-BANK");
-    expect((ba325.meta as { periodId: string }).periodId).toBe("2026-Q1-M01");
+    expect((ba110.meta as { form: string }).form).toBe("BA 110");
+    expect((ba110.meta as { entity: string }).entity).toBe("LE-ZA-HOZ-BANK");
+    expect((ba110.meta as { periodId: string }).periodId).toBe("2026-Q1-M01");
 
-    // BA 700 — Slice-4 typed render (`Ba700Render`).
-    const ba700 = JSON.parse(readFileSync(byForm["ba-700"] as string, "utf8")) as Record<
+    // BA 100 — Slice-4 typed render (`Ba100Render`).
+    const ba100 = JSON.parse(readFileSync(byForm["ba-100"] as string, "utf8")) as Record<
       string,
       unknown
     >;
-    expect((ba700.meta as { form: string }).form).toBe("BA 700");
-    expect((ba700.capitalStack as { netTotalCapitalMinor: number }).netTotalCapitalMinor).toBe(
+    expect((ba100.meta as { form: string }).form).toBe("BA 100");
+    expect((ba100.capitalStack as { netTotalCapitalMinor: number }).netTotalCapitalMinor).toBe(
       30_000_000_000,
     );
 
-    // BA 350 — Slice-5 generator output (no typed JSON renderer; emitted as
-    // sorted-keys canonical JSON of `Ba350Output`).
-    const ba350 = JSON.parse(readFileSync(byForm["ba-350"] as string, "utf8")) as Ba350Output;
-    expect(ba350.meta.form).toBe("BA 350");
-    expect(ba350.totalMarketRiskCapitalMinor).toBe(738_000_000);
+    // BA 310 — Slice-5 generator output (no typed JSON renderer; emitted as
+    // sorted-keys canonical JSON of `Ba310Output`).
+    const ba310 = JSON.parse(readFileSync(byForm["ba-310"] as string, "utf8")) as Ba310Output;
+    expect(ba310.meta.form).toBe("BA 310");
+    expect(ba310.totalMarketRiskCapitalMinor).toBe(738_000_000);
 
-    // BA 600 — same shape pattern as BA 350.
-    const ba600 = JSON.parse(readFileSync(byForm["ba-600"] as string, "utf8")) as Ba600Output;
-    expect(ba600.meta.form).toBe("BA 600");
-    expect(ba600.opRiskCapitalMinor).toBe(150_000_000);
-    expect(ba600.meta.approach).toBe("bia");
+    // BA 300 — same shape pattern as BA 310.
+    const ba300 = JSON.parse(readFileSync(byForm["ba-300"] as string, "utf8")) as Ba300Output;
+    expect(ba300.meta.form).toBe("BA 300");
+    expect(ba300.opRiskCapitalMinor).toBe(150_000_000);
+    expect(ba300.meta.approach).toBe("bia");
   });
 
   it("backwards-compatibility: Phase A+B counts unchanged from prior phases", () => {
@@ -236,5 +236,5 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
 // generator API change, remove them then. Bun's typecheck flags unused
 // type-only imports under noUnusedLocals=false (project default), so they
 // remain harmless even if unused.
-const _typeKeepalive: Ba325Output | Ba700Output | Ba350Output | Ba600Output | undefined = undefined;
+const _typeKeepalive: Ba110Output | Ba100Output | Ba310Output | Ba300Output | undefined = undefined;
 void _typeKeepalive;

@@ -8,8 +8,8 @@
 // 12 December 2012, form schedule, cross-checked against the SARB PA *Proposed
 // Directive — Returns to be submitted to the PA*, 2024, and SARB Directive 2 of
 // 2023):
-//   - BA 320 = Market risk (market-risk capital / RWA)
-//   - BA 325 = Daily return: selected risk exposure from trading and treasury
+//   - BA 310 = Market risk (market-risk capital / RWA)
+//   - BA 110 = Daily return: selected risk exposure from trading and treasury
 //              activities — carries the FX effective net open position
 //              attestation under regulation 29(3)
 //   - BA 330 = Interest-rate risk: banking book (IRRBB; completed per D2/2023,
@@ -69,7 +69,7 @@ requestDecision(
     recommendation:
       "Correct the conflicting BA-330 attributions across code + register to the " +
       "verified SARB form schedule (BA 330 = IRRBB; large exposures = Reg 24 + " +
-      "D3/2022 / BA 200-series; FX-NOP = BA 320 market risk / BA 325 reg 29(3)).",
+      "D3/2022 / BA 200-series; FX-NOP = BA 310 market risk / BA 110 reg 29(3)).",
     rationale: "Plan approved in-session 2026-06-07; opens the decision lifecycle.",
     citations: CITATIONS,
     recordedVia: "scrooge:session-delegation",
@@ -94,22 +94,22 @@ const result = recordDecision(
       "the banking book (IRRBB repricing-gap return, reg 30 / D2/2023) — the only " +
       "correct BA-330 attribution; the large-exposures regime = Reg 24(6)-(8) + " +
       "Directive 3 of 2022, reported via the BA 200-series credit-risk return family " +
-      "(NOT BA 330); the FX net open position / market-risk return = BA 320 (Market " +
-      "risk), with the daily effective NOP attested on BA 325 under regulation 29(3) " +
+      "(NOT BA 330); the FX net open position / market-risk return = BA 310 (Market " +
+      "risk), with the daily effective NOP attested on BA 110 under regulation 29(3) " +
       "(NOT BA 350, NOT BA 330). Sites corrected this run: Regulations/_index.md " +
       "(BA 330 row -> IRRBB STUB + new POPULATED large-exposures row); rename " +
       "Regulations/SARB-PA/ba-returns/ba-330.md -> Regulations/SARB-PA/large-exposures.md; " +
       "Regulations/SARB-PA/banks-act.md (large-exposures line -> Reg 24 + D3/2022); " +
-      "Regulations/SARB-PA/excon-manual.md (NOP -> BA 320 / BA 325); " +
+      "Regulations/SARB-PA/excon-manual.md (NOP -> BA 310 / BA 110); " +
       "Regulations/BCBS/lex-large-exposures.md (non-existent reporting/ba-330 path); " +
       "Regulations/_obligations-register.md v1.40 (ORG-PR-09) + regenerated seed; " +
       "prototype/platform/regulatory/basel-adoption.ts (LEX localInstrument reg38 -> " +
       "reg24, comment); prototype/platform/semantic/entries.ts (Exposure large-exposures " +
       "cell BA 330 -> BA 200-series [form TBC — verify]); " +
       "prototype/platform/projections/markets/limit-utilisation.ts + " +
-      "prototype/platform/event-store/event-types/trading.ts (FX-NOP comments -> BA 320 / " +
-      "BA 325 reg 29(3)); two pre-licence rehearsal scripts; one intraday-liquidity " +
-      "procedure (NSFR mis-cited as BA 330 -> BA 326); two historical Helena/Rohan B3 " +
+      "prototype/platform/event-store/event-types/trading.ts (FX-NOP comments -> BA 310 / " +
+      "BA 110 reg 29(3)); two pre-licence rehearsal scripts; one intraday-liquidity " +
+      "procedure (NSFR mis-cited as BA 330 -> BA 120); two historical Helena/Rohan B3 " +
       "review records (correction banner). The IRRBB exemplar " +
       "prototype/platform/model-registry/calc-model-definitions.ts was already correct " +
       "('BA 330 IRRBB return') and left unchanged.",
@@ -119,7 +119,7 @@ const result = recordDecision(
       "(single citable graph; no conflicting citations). The IRRBB attribution is verified " +
       "correct against the SARB Regulations relating to Banks form schedule and Directive 2 " +
       "of 2023; the large-exposures regime is Reg 24(6)-(8) + D3/2022 (BCBS RCAP April 2023) " +
-      "reported on the BA 200-series; the FX-NOP / market-risk return is BA 320 / BA 325 " +
+      "reported on the BA 200-series; the FX-NOP / market-risk return is BA 310 / BA 110 " +
       "(reg 29(3)). This run brings all attributions into line with the verified mapping. " +
       "Where the exact BA 200-series large-exposures form/line could not be confirmed from " +
       "the public source it is left counsel-gated and annotated '[form TBC — verify]' rather " +
@@ -130,7 +130,7 @@ const result = recordDecision(
         route: "Reporting-layer BA-form-number reconciliation (prototype/platform/reporting/*)",
         note:
           "Separate out-of-scope defect: the reporting modules use their own inconsistent " +
-          "BA-form numbering (e.g. ba-320 labelled credit risk; ba-350 labelled market-risk/NSFR) " +
+          "BA-form numbering (e.g. ba-310 labelled credit risk; ba-350 labelled market-risk/NSFR) " +
           "that does not match the SARB schedule. Does not involve BA 330. Flagged for a dedicated pass.",
       },
     ],

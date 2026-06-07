@@ -45,8 +45,8 @@ import type { EventStore } from "../event-store/store";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   type LeverageExposureDecomposition,
-} from "../reporting/ba-700-leverage-ratio";
-import { generateLeverageRatio } from "../reporting/ba-700-leverage-ratio";
+} from "../reporting/ba-400-leverage-ratio";
+import { generateLeverageRatio } from "../reporting/ba-400-leverage-ratio";
 import { BUILD_PHASE_TOTAL_CAPITAL_MINOR, computeCapitalMetrics } from "./capital-metrics";
 
 // ---------------------------------------------------------------------------
@@ -159,7 +159,7 @@ function readLiveExposureDecomposition(
 ): LeverageExposureDecomposition | null {
   // v0: no periodic exposure-measure projection yet — returning null
   // routes the caller to the build-phase baseline. This is the substrate
-  // gap surfaced in `placeholders` on the BA 700 output and in the
+  // gap surfaced in `placeholders` on the BA 100 output and in the
   // appetite-line `note`.
   return null;
 }
@@ -186,9 +186,9 @@ export function computeLeverageRatioMetrics(
   asOf: string,
 ): LeverageRatioMetrics {
   // Tier-1 capital numerator — re-uses `computeCapitalMetrics` so the
-  // leverage ratio and the BA 700 CET1 view share a single source of
+  // leverage ratio and the BA 100 CET1 view share a single source of
   // truth for the capital envelope (currently the same single envelope;
-  // splits when the BA 700 capital-stack projection wave lands).
+  // splits when the BA 100 capital-stack projection wave lands).
   const capital = computeCapitalMetrics(eventStore, asOf);
   const tier1CapitalMinor = capital.availableCapitalMinor;
 

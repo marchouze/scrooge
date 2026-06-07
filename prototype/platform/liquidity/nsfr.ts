@@ -4,7 +4,7 @@
 //
 // NSFR = Available Stable Funding (ASF) / Required Stable Funding (RSF)
 //
-// ASF weights (BA 326 / Basel III):
+// ASF weights (BA 120 / Basel III):
 //   Tier 1/2 capital > 1Y:                          100%
 //   Retail deposits stable < 1Y:                     95%
 //   Retail deposits less stable < 1Y:                90%
@@ -12,7 +12,7 @@
 //   Wholesale deposits < 1Y operational:             50%
 //   Wholesale deposits < 1Y non-operational:          0%
 //
-// RSF weights (BA 326 / Basel III):
+// RSF weights (BA 120 / Basel III):
 //   HQLA L1:                                          5%
 //   HQLA L2a:                                        15%
 //   HQLA L2b:                                        50%
@@ -24,7 +24,7 @@
 //   Operational deposits placed at other FIs:        10%
 //   Derivatives (net):                              100%  (simplified; full netting complex)
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 326.
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 120.
 // Author: Anya (Liquidity & projections engineer, engineering)
 //
 // ASF/RSF weights, the regulatory minimum and the tolerance band are owned in
@@ -46,7 +46,7 @@ import { requireWeight } from "../types/financial-input";
 export interface ASFItem {
   /** Amount in ZAR. */
   amountZar: number;
-  /** ASF category from the BA 326 table. */
+  /** ASF category from the BA 120 table. */
   category:
     | "tier1-capital"
     | "tier2-capital-gt1y"
@@ -61,7 +61,7 @@ export interface ASFItem {
 export interface RSFItem {
   /** Amount in ZAR (market value or book value as appropriate). */
   amountZar: number;
-  /** RSF category from the BA 326 table. */
+  /** RSF category from the BA 120 table. */
   category:
     | "hqla-l1"
     | "hqla-l2a"
@@ -77,7 +77,7 @@ export interface RSFItem {
 }
 
 // ---------------------------------------------------------------------------
-// ASF and RSF weight tables (BA 326)
+// ASF and RSF weight tables (BA 120)
 // ---------------------------------------------------------------------------
 
 const ASF_WEIGHTS: Record<string, number> = nsfrAsfWeights();

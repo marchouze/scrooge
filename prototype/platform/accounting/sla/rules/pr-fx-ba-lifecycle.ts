@@ -55,7 +55,7 @@
 //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille);
 //            D-SLA-SARB-ACTIVATION-CFO + D-SLA-SARB-BA-RETURN-ACTIVATION-COSEC
 //            (joint production activation, Round 3).
-// Cites: SARB BA 350 (net open position); Banks Act 94 of 1990.
+// Cites: SARB BA 310 (market risk; net open position); Banks Act 94 of 1990.
 
 import type { SlaRule } from "../generated/sla-types";
 

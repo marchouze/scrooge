@@ -1,7 +1,7 @@
 // platform/collateral/__tests__/hqla-classifier.test.ts
 //
 // Unit tests for the HQLA classifier.
-// Authority: BA 325 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
 
 import { describe, expect, it } from "bun:test";
 import { classifyHQLA } from "../hqla-classifier";

@@ -512,7 +512,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
 
   // ══════════════════════════════════════════════════════════════════════════
   // MMD / DEPOSIT  (lifecycleId: "mmd-deposit")
-  // Authority: WS1-PR1a; IFRS 9 §4.2.1; BA 325 (LCR outflow rates)
+  // Authority: WS1-PR1a; IFRS 9 §4.2.1; BA 110 (LCR outflow rates)
   // ══════════════════════════════════════════════════════════════════════════
 
   // PR-MMD-001 — Initial recognition of deposit liability
@@ -567,7 +567,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
 
   // ══════════════════════════════════════════════════════════════════════════
   // FUNDING LINE  (lifecycleId: "funding-line")
-  // Authority: WS1-PR1a; IFRS 9 §4.2.1; BA 325 Table 2 (100% outflow rate)
+  // Authority: WS1-PR1a; IFRS 9 §4.2.1; BA 110 Table 2 (100% outflow rate)
   // ══════════════════════════════════════════════════════════════════════════
 
   // PR-FUNDING-001 — Drawdown recognition
@@ -596,7 +596,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
 
   // ══════════════════════════════════════════════════════════════════════════
   // INTERBANK LOAN  (lifecycleId: "interbank-loan")
-  // Authority: WS1-PR1a; IFRS 9 §4.1.2 (amortised cost); BA 326 (NSFR)
+  // Authority: WS1-PR1a; IFRS 9 §4.1.2 (amortised cost); BA 120 (NSFR)
   // ══════════════════════════════════════════════════════════════════════════
 
   // PR-IBL-001 — Initial recognition of placement (bank as lender)

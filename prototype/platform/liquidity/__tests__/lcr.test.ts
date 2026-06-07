@@ -2,7 +2,7 @@
 //
 // Unit tests for the LCR computation engine.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BA 325; Basel III.
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; Basel III.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
 import { describe, expect, it } from "bun:test";

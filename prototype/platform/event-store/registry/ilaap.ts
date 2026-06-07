@@ -6,7 +6,7 @@
 //   ILAAPScenarioRun      — per-scenario liquidity stress result
 //   ILAAPSummaryCompleted — aggregated worst-case ILAAP assessment
 //
-// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
 //
 // Retention classification:
 //   - ILAAPScenarioRun → RETENTION_GOVERNANCE_7Y
@@ -42,7 +42,7 @@ export const ILAAP_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: ilaapScenarioRunPayloadSchema,
-    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-325"],
+    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-110"],
     source: "platform/event-store/event-types/ilaap.ts",
   },
   {
@@ -53,7 +53,7 @@ export const ILAAP_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: ilaapSummaryCompletedPayloadSchema,
-    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-325"],
+    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-110"],
     source: "platform/event-store/event-types/ilaap.ts",
   },
 ];

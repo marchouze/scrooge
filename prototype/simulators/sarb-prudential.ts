@@ -19,7 +19,7 @@
 // Validation rules (build-phase minimal set — Mira's WS-INSTRUMENT-ANALYSES
 // will extend these once the SARB XSD and portal taxonomy are ingested):
 //   - `payload.formId` must be non-empty and match a known BA-form prefix
-//     ("BA325", "BA350", "BA600", "BA700", or "BA" followed by digits).
+//     ("BA325", "BA320", "BA400", "BA700", or "BA" followed by digits).
 //   - `payload.body` must be a non-null object.
 //   - `body.Meta` must be present (structural gate per the XSD envelope).
 //   - `body.Meta.Entity` must be non-empty (institutionId proxy).
@@ -158,8 +158,8 @@ function validatePayload(
  * Principle 1: every submission attempt (success or failure) is recorded as
  * a typed event in the shared event store.
  *
- * @param payload - The typed XML report payload from `ba325ToXmlPayload()` /
- *   `ba700ToXmlPayload()` (or any other adapter).
+ * @param payload - The typed XML report payload from `ba110ToXmlPayload()` /
+ *   `ba100ToXmlPayload()` (or any other adapter).
  * @param store - The shared event store (receives the `SarbSubmissionAttempted` event).
  * @returns A `SarbSubmissionResult` with `ok`, optional `referenceNumber` /
  *   `errors`, and `submittedAt`.

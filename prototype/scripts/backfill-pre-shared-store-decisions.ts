@@ -451,9 +451,9 @@ const CLOSURES: Closure[] = [
     authority: "CEO",
     authorityRef: "marc@tgv.co.za",
     category: "engineering",
-    title: "HQLA COA classification fields + dynamic BA 325 HQLA scan",
+    title: "HQLA COA classification fields + dynamic BA 110 HQLA scan",
     recommendation:
-      "Add hqlaLevel/hqlaSubCategory/hqlaAssetSpecificFactor to COA schema, tag accounts by Level 1/2a/2b, wire dynamic HQLA scan into BA 325 with 41 test cases.",
+      "Add hqlaLevel/hqlaSubCategory/hqlaAssetSpecificFactor to COA schema, tag accounts by Level 1/2a/2b, wire dynamic HQLA scan into BA 110 with 41 test cases.",
     rationale:
       "PR #739 merged 2026-05-22. Decision event never emitted. CEO approved via session delegation 2026-05-26 (backfill).",
     asOf: "2026-05-22T09:33:35.000Z",

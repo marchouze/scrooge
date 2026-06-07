@@ -13,7 +13,7 @@
 // Retention classification:
 //   RETENTION_JSE_TRADE_7Y — official marks are the load-bearing inputs to
 //     daily P&L, IFRS-9 expected-credit-loss, and IFRS-13 fair-value
-//     hierarchy disclosures (BA 700). Banks Act 94 of 1990 §7-year
+//     hierarchy disclosures (BA 100). Banks Act 94 of 1990 §7-year
 //     retention norm for trading records applies.
 //
 // Issuer / authority routing:
@@ -26,7 +26,7 @@
 //       Bea (Accounting & financial reporting engineer, engineering) — P&L
 //         chain; OfficialMarkAdopted feeds *PositionRevalued downstream
 //         (until Slice D's reclassification).
-//       Mira (Regulatory reporting engineer, engineering) — BA 700 fair-value
+//       Mira (Regulatory reporting engineer, engineering) — BA 100 fair-value
 //         hierarchy disclosure inputs.
 //       Vera (Internal audit engineer, engineering) — recon assertion
 //         carrier (`recon:position-revalued-cites-mark` in Slice B.1).

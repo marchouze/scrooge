@@ -21,8 +21,8 @@ export const KAI_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Kai", "suitability-gateway-check", "event-driven", {
     subscribesTo: ["GatewayCheckRequested"],
   }),
-  // Slice 7 — Credit limit, capital impact (BA 325 RWA), and funding (LCR) checks.
-  // Authority: RAS-B3, ORG-PR-01, Banks Act 94/1990 Reg 38 (BA 325), BCBS 238.
+  // Slice 7 — Credit limit, capital impact (BA 100 RWA), and funding (LCR) checks.
+  // Authority: RAS-B3, ORG-PR-01, Banks Act 94/1990 Reg 38 (BA 100), BCBS 238.
   entry("Kai", "credit-capital-funding-check", "event-driven", {
     subscribesTo: ["GatewayCheckRequested"],
   }),

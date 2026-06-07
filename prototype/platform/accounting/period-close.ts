@@ -65,7 +65,7 @@
 //     and `ACC-<slug>` for forward-compat.
 //   - **IFRS statement renderer** — Slice 6+ territory; not built here.
 //     `TrialBalanceSnapshotted.rows` is the input contract.
-//   - **BA 325 / BA-form generators** — Slice 3+ territory; not built
+//   - **BA 110 / BA-form generators** — Slice 3+ territory; not built
 //     here.
 //   - **Concurrency control** — close orchestration assumes single-writer
 //     per (entity, periodId). Multi-writer guard is a Vera follow-on
@@ -469,7 +469,7 @@ export function closePeriod(args: ClosePeriodArgs): ClosePeriodResult {
   // Capture the event store high-watermark immediately after appending the
   // trial-balance snapshot. This frozen cursor flows into
   // `AccountingPeriodClosed.eventSequence` so that all downstream subscribers
-  // (BA 325, BA 350, BA 600, conduct, CMS, climate) replay against the same
+  // (BA 110, BA 310, BA 300, conduct, CMS, climate) replay against the same
   // event window, preventing divergence when new events append concurrently.
   // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
   const closedAtSequence = args.eventStore.highWatermark();

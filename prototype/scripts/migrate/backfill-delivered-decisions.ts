@@ -111,24 +111,24 @@ const DELIVERED: readonly DeliveredDecision[] = [
   },
   {
     decisionId: "D-REPORTING-CAPABILITY-SLICE-3",
-    title: "Reporting Capability Slice 3 — BA 325 LCR end-to-end (first SARB return)",
+    title: "Reporting Capability Slice 3 — BA 110 LCR end-to-end (first SARB return)",
     category: "engineering",
     deliveredAt: "2026-05-10T09:56:27Z",
     pr: 174,
     recommendation:
-      "Approve — deliver the BA 325 LCR return as the first end-to-end SARB return harness",
+      "Approve — deliver the BA 110 LCR return as the first end-to-end SARB return harness",
     rationale:
-      "BA 325 (Liquidity Coverage Ratio) is the first mandatory SARB return in scope. A passing BA 325 end-to-end proves the semantic registry, period-close trigger, and XML render layer work together. PR #174 delivered the BA 325 generator, its test suite, and the first passing SARB-format output file. All subsequent BA returns follow the same pattern.",
+      "BA 110 (Liquidity Coverage Ratio) is the first mandatory SARB return in scope. A passing BA 110 end-to-end proves the semantic registry, period-close trigger, and XML render layer work together. PR #174 delivered the BA 110 generator, its test suite, and the first passing SARB-format output file. All subsequent BA returns follow the same pattern.",
   },
   {
     decisionId: "D-REPORTING-CAPABILITY-SLICE-4",
-    title: "Reporting Capability Slice 4 — BA 700 Capital Adequacy Return end-to-end",
+    title: "Reporting Capability Slice 4 — BA 100 Capital Adequacy Return end-to-end",
     category: "engineering",
     deliveredAt: "2026-05-10T10:32:31Z",
     pr: 176,
-    recommendation: "Approve — deliver the BA 700 Capital Adequacy return generator",
+    recommendation: "Approve — deliver the BA 100 Capital Adequacy return generator",
     rationale:
-      "BA 700 is the primary capital adequacy return under Regulation 28. It is the most scrutinised return by SARB examiners. PR #176 delivered the full BA 700 generator with Tier 1/2/3 capital disaggregation, RWA roll-up, and the required XML/JSON dual output. Aligns with D-RMS-PHASE-1 provenance tagging requirements.",
+      "BA 100 is the primary capital adequacy return under Regulation 28. It is the most scrutinised return by SARB examiners. PR #176 delivered the full BA 100 generator with Tier 1/2/3 capital disaggregation, RWA roll-up, and the required XML/JSON dual output. Aligns with D-RMS-PHASE-1 provenance tagging requirements.",
   },
   {
     decisionId: "D-REPORTING-CAPABILITY-SLICE-6",

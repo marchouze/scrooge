@@ -156,7 +156,7 @@ export type SemanticDimension =
  * accounts schema for consistency.
  */
 export interface RegulatoryCellMapping {
-  /** BA-form identifier, e.g. `BA 100`, `BA 325`, `BA 700`. */
+  /** BA-form identifier, e.g. `BA 600`, `BA 110`, `BA 100`. */
   readonly form: string;
   /** Line / cell identifier within the form. */
   readonly line: string;
@@ -185,8 +185,8 @@ export interface IfrsLineMapping {
  * The signer dimension records which governance accountable signs off
  * the entry's outputs. Mirrors the dispatch-discipline rule that every
  * report's `ReportApproved` event is signed by the accountable seat
- * (e.g. BA-100 capital → Camille CFO; BA-325 LCR → Camille CFO with
- * Eitan Treasurer methodology; market-risk BA-700 → Helena CRO).
+ * (e.g. BA-100 capital → Camille CFO; BA-110 LCR → Camille CFO with
+ * Eitan Treasurer methodology; market-risk BA-100 → Helena CRO).
  *
  * Multiple signers permitted (e.g. methodology + accounting accountable).
  */

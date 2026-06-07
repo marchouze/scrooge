@@ -12,7 +12,7 @@
 //      (b) unrealisedPnlCalculator — mark-to-market P&L
 //      (c) realisedPnlCalculator — settlement P&L
 //      (d) fxRwaCalculator — standardised-approach capital charge
-//   5. BA-350 FX adapter — fxPositionsToBa350Input + generateBa350MarketRisk
+//   5. BA-310 FX adapter — fxPositionsToBa310Input + generateBa310MarketRisk
 //      with live FX positions.
 //   6. Sub-ledger projection — FX events fold to SubLedgerRow[].
 //
@@ -53,9 +53,9 @@ import {
   unrealisedPnlCalculator,
 } from "../platform/accounting/fx-calculators";
 
-import { fxPositionsToBa350Input } from "../platform/reporting/ba-350-fx-adapter";
+import { fxPositionsToBa310Input } from "../platform/reporting/ba-310-fx-adapter";
 
-import { generateBa350MarketRisk } from "../platform/reporting/ba-350-market-risk";
+import { generateBa310MarketRisk } from "../platform/reporting/ba-310-market-risk";
 
 import {
   fxSubLedgerProjection,
@@ -893,11 +893,11 @@ describe("fxRwaCalculator", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 5. BA-350 FX section integration
+// 5. BA-310 FX section integration
 // ---------------------------------------------------------------------------
 
-describe("BA-350 FX section — fxPositionsToBa350Input + generateBa350MarketRisk", () => {
-  it("seeds one open USD position into BA 350 FX section", () => {
+describe("BA-310 FX section — fxPositionsToBa310Input + generateBa310MarketRisk", () => {
+  it("seeds one open USD position into BA 310 FX section", () => {
     const positions = [
       {
         currencyPair: "USD/ZAR",
@@ -910,12 +910,12 @@ describe("BA-350 FX section — fxPositionsToBa350Input + generateBa350MarketRis
       },
     ];
 
-    const fxRows = fxPositionsToBa350Input(positions, "ZAR");
+    const fxRows = fxPositionsToBa310Input(positions, "ZAR");
     expect(fxRows).toHaveLength(1);
     expect(fxRows[0]?.currency).toBe("USD");
     expect(fxRows[0]?.netPositionFunctionalMinor).toBe(1_900_000_000);
 
-    const ba350 = generateBa350MarketRisk({
+    const ba310 = generateBa310MarketRisk({
       entity: "LE-ZA-HOZ-BANK",
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "period:hoz-bank:month:2026-05",
@@ -928,13 +928,13 @@ describe("BA-350 FX section — fxPositionsToBa350Input + generateBa350MarketRis
     });
 
     // FX section should contain the USD position line
-    expect(ba350.fx.currencyLines).toHaveLength(1);
-    expect(ba350.fx.currencyLines[0]?.lineId).toBe("fx.USD");
+    expect(ba310.fx.currencyLines).toHaveLength(1);
+    expect(ba310.fx.currencyLines[0]?.lineId).toBe("fx.USD");
     // Capital = 8% × 1,900,000,000 = 152,000,000
-    expect(ba350.fx.capitalMinor).toBe(152_000_000);
+    expect(ba310.fx.capitalMinor).toBe(152_000_000);
   });
 
-  it("excludes ZAR-leg positions from BA 350 input", () => {
+  it("excludes ZAR-leg positions from BA 310 input", () => {
     const positions = [
       {
         currencyPair: "ZAR/USD", // functional currency leg
@@ -947,7 +947,7 @@ describe("BA-350 FX section — fxPositionsToBa350Input + generateBa350MarketRis
       },
     ];
 
-    const fxRows = fxPositionsToBa350Input(positions, "ZAR");
+    const fxRows = fxPositionsToBa310Input(positions, "ZAR");
     expect(fxRows).toHaveLength(0);
   });
 });

@@ -3,10 +3,10 @@
 // End-to-end SARB BA-return dry-run script.
 //
 // What it does:
-//   1. Reads current BA 325 (LCR) and BA 700 (Capital Adequacy) data from
+//   1. Reads current BA 110 (LCR) and BA 100 (Capital Adequacy) data from
 //      the event store / projection (using build-phase defaults where the
 //      store has no events).
-//   2. Generates XML payloads via `ba325ToXmlPayload()` and `ba700ToXmlPayload()`.
+//   2. Generates XML payloads via `ba110ToXmlPayload()` and `ba100ToXmlPayload()`.
 //   3. Calls `submitToSarbPortal()` for each payload.
 //   4. Prints results to stdout.
 //   5. Exits 0 on success, 1 on any submission failure.
@@ -23,9 +23,9 @@
 // All flags are optional; build-phase defaults are used when omitted.
 //
 // P1 compliance:
-//   - BA 325: cash flows are folded from FxSettlementInstructed + TradeMatured
+//   - BA 110: cash flows are folded from FxSettlementInstructed + TradeMatured
 //     events (Principle 1 compliant). HQLA stock from the trial balance.
-//   - BA 700: capital stock is folded from SubLedgerPostingEmitted +
+//   - BA 100: capital stock is folded from SubLedgerPostingEmitted +
 //     CapitalContributionRecorded events (C-3 P1 fix).
 //
 // Synthetic-data fallback: when the event store has no events for the
@@ -44,16 +44,16 @@ import "../platform/event-store/resolve-event-db-boot";
 import { coaToHqlaClassifications } from "../platform/accounting/coa-registry";
 import { computeTrialBalance, periodAuditChain } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
-import type { AccountLiquidityClassification, Ba325GeneratorInput } from "../platform/reporting";
+import type { AccountLiquidityClassification, Ba110GeneratorInput } from "../platform/reporting";
 import {
   type AccountCapitalClassification,
   type RegulatoryDeduction,
   type RwaDecomposition,
-  generateBa325Lcr,
-  generateBa700CapitalFromEvents,
+  generateBa100CapitalFromEvents,
+  generateBa110Lcr,
 } from "../platform/reporting";
-import { ba325ToXmlPayload } from "../platform/reporting/ba-325-xml-adapter";
-import { ba700ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
+import { ba100ToXmlPayload } from "../platform/reporting/ba-100-xml-adapter";
+import { ba110ToXmlPayload } from "../platform/reporting/ba-110-xml-adapter";
 import { renderSarbXml } from "../platform/reporting/xml-render";
 import { submitToSarbPortal } from "../simulators/sarb-prudential";
 
@@ -126,11 +126,11 @@ function parseArgs(argv: readonly string[]): CliArgs {
 }
 
 // ---------------------------------------------------------------------------
-// Trial-balance discovery (for HQLA stock — BA 325 only)
+// Trial-balance discovery (for HQLA stock — BA 110 only)
 // ---------------------------------------------------------------------------
 
 interface TrialBalanceResolution {
-  readonly rows: Ba325GeneratorInput["trialBalance"];
+  readonly rows: Ba110GeneratorInput["trialBalance"];
   readonly trialBalanceSnapshotEventId?: string;
 }
 
@@ -144,7 +144,7 @@ function resolveTrialBalance(args: CliArgs): TrialBalanceResolution {
   for (let i = chain.length - 1; i >= 0; i--) {
     const e = chain[i];
     if (e && e.type === "TrialBalanceSnapshotted") {
-      const p = e.payload as { rows: Ba325GeneratorInput["trialBalance"] };
+      const p = e.payload as { rows: Ba110GeneratorInput["trialBalance"] };
       return { rows: p.rows, trialBalanceSnapshotEventId: e.event_id };
     }
   }
@@ -176,13 +176,13 @@ async function main(argv: readonly string[]): Promise<number> {
   let anyFailed = false;
 
   // --------------------------------------------------------------------------
-  // BA 325 — Liquidity Coverage Ratio
+  // BA 110 — Liquidity Coverage Ratio
   // --------------------------------------------------------------------------
 
-  console.log("--- BA 325 (LCR) ---");
+  console.log("--- BA 110 (LCR) ---");
   try {
     const tb = resolveTrialBalance(args);
-    const ba325Output = generateBa325Lcr({
+    const ba110Output = generateBa110Lcr({
       entity: args.entity,
       asOf: args.asOf,
       periodId: args.periodId,
@@ -197,27 +197,27 @@ async function main(argv: readonly string[]): Promise<number> {
         : {}),
     });
 
-    const ba325Payload = ba325ToXmlPayload(ba325Output);
-    const ba325Xml = renderSarbXml(ba325Payload, { renderedAt: new Date().toISOString() });
-    console.log(`  Generated XML: ${ba325Xml.length} bytes`);
+    const ba110Payload = ba110ToXmlPayload(ba110Output);
+    const ba110Xml = renderSarbXml(ba110Payload, { renderedAt: new Date().toISOString() });
+    console.log(`  Generated XML: ${ba110Xml.length} bytes`);
     console.log(
-      `  LCR ratio:     ${Number.isFinite(ba325Output.lcrRatio) ? `${(ba325Output.lcrRatio * 100).toFixed(2)}%` : "∞ (no outflows in window)"}`,
+      `  LCR ratio:     ${Number.isFinite(ba110Output.lcrRatio) ? `${(ba110Output.lcrRatio * 100).toFixed(2)}%` : "∞ (no outflows in window)"}`,
     );
-    console.log(`  LCR compliant: ${ba325Output.lcrCompliant ? "YES" : "NO"}`);
+    console.log(`  LCR compliant: ${ba110Output.lcrCompliant ? "YES" : "NO"}`);
 
-    const ba325Result = await submitToSarbPortal(ba325Payload, eventStore);
-    if (ba325Result.ok) {
-      console.log(`  Submission:    ACCEPTED — ref ${ba325Result.referenceNumber}`);
+    const ba110Result = await submitToSarbPortal(ba110Payload, eventStore);
+    if (ba110Result.ok) {
+      console.log(`  Submission:    ACCEPTED — ref ${ba110Result.referenceNumber}`);
     } else {
       console.log("  Submission:    REJECTED");
-      for (const err of ba325Result.errors ?? []) {
+      for (const err of ba110Result.errors ?? []) {
         console.log(`    ERROR: ${err}`);
       }
       anyFailed = true;
     }
   } catch (err) {
     console.error(
-      `  FAILED to generate or submit BA 325: ${err instanceof Error ? err.message : String(err)}`,
+      `  FAILED to generate or submit BA 110: ${err instanceof Error ? err.message : String(err)}`,
     );
     anyFailed = true;
   }
@@ -225,12 +225,12 @@ async function main(argv: readonly string[]): Promise<number> {
   console.log("");
 
   // --------------------------------------------------------------------------
-  // BA 700 — Capital Adequacy
+  // BA 100 — Capital Adequacy
   // --------------------------------------------------------------------------
 
-  console.log("--- BA 700 (Capital Adequacy) ---");
+  console.log("--- BA 100 (Capital Adequacy) ---");
   try {
-    const ba700Output = generateBa700CapitalFromEvents(eventStore, {
+    const ba100Output = generateBa100CapitalFromEvents(eventStore, {
       entity: args.entity,
       asOf: args.asOf,
       periodId: args.periodId,
@@ -242,11 +242,11 @@ async function main(argv: readonly string[]): Promise<number> {
       rwa: BUILD_PHASE_DEFAULT_RWA,
     });
 
-    const ba700Payload = ba700ToXmlPayload(ba700Output);
-    const ba700Xml = renderSarbXml(ba700Payload, { renderedAt: new Date().toISOString() });
-    console.log(`  Generated XML: ${ba700Xml.length} bytes`);
+    const ba100Payload = ba100ToXmlPayload(ba100Output);
+    const ba100Xml = renderSarbXml(ba100Payload, { renderedAt: new Date().toISOString() });
+    console.log(`  Generated XML: ${ba100Xml.length} bytes`);
 
-    const { ratios } = ba700Output;
+    const { ratios } = ba100Output;
     const fmtRatio = (r: number) => (Number.isFinite(r) ? `${(r * 100).toFixed(2)}%` : "∞");
     console.log(
       `  CET1 ratio:    ${fmtRatio(ratios.cet1Ratio)} (min ${fmtRatio(ratios.cet1RatioRequiredMinimum)}) — ${ratios.cet1Compliant ? "PASS" : "BREACH"}`,
@@ -258,19 +258,19 @@ async function main(argv: readonly string[]): Promise<number> {
       `  Total ratio:   ${fmtRatio(ratios.totalRatio)} (min ${fmtRatio(ratios.totalRatioRequiredMinimum)}) — ${ratios.totalCompliant ? "PASS" : "BREACH"}`,
     );
 
-    const ba700Result = await submitToSarbPortal(ba700Payload, eventStore);
-    if (ba700Result.ok) {
-      console.log(`  Submission:    ACCEPTED — ref ${ba700Result.referenceNumber}`);
+    const ba100Result = await submitToSarbPortal(ba100Payload, eventStore);
+    if (ba100Result.ok) {
+      console.log(`  Submission:    ACCEPTED — ref ${ba100Result.referenceNumber}`);
     } else {
       console.log("  Submission:    REJECTED");
-      for (const err of ba700Result.errors ?? []) {
+      for (const err of ba100Result.errors ?? []) {
         console.log(`    ERROR: ${err}`);
       }
       anyFailed = true;
     }
   } catch (err) {
     console.error(
-      `  FAILED to generate or submit BA 700: ${err instanceof Error ? err.message : String(err)}`,
+      `  FAILED to generate or submit BA 100: ${err instanceof Error ? err.message : String(err)}`,
     );
     anyFailed = true;
   }

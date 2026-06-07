@@ -11,7 +11,7 @@
 //   A — Slice-1 completeness. The three required Slice 1 entries
 //       (`Balance`, `Exposure`, `CashAndBalancesAtSARB`) must be
 //       registered and in-force. Missing any is a fail — the Slice 3
-//       BA 325 LCR harness (Bea + Eitan + Anya) depends on
+//       BA 110 LCR harness (Bea + Eitan + Anya) depends on
 //       `CashAndBalancesAtSARB`; Slice 2 period-close events depend on
 //       `Balance`.
 //
@@ -167,7 +167,7 @@ export function run(): ReconResult {
     if (!entry) {
       violations.push({
         subject: `semantic-entry:${requiredId}`,
-        message: `Required Slice-1 entry \`${requiredId}\` is not registered as in-force in the SemanticRegistry. Slice 2 (period-close events) and Slice 3 (BA 325 LCR harness) depend on this entry. Re-register or restore. Citations: ${CITATIONS.join(", ")}.`,
+        message: `Required Slice-1 entry \`${requiredId}\` is not registered as in-force in the SemanticRegistry. Slice 2 (period-close events) and Slice 3 (BA 110 LCR harness) depend on this entry. Re-register or restore. Citations: ${CITATIONS.join(", ")}.`,
         severity: "fail",
       });
     }

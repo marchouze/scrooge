@@ -12,7 +12,7 @@
 // renderer composes all five into one document for the dry-run scenario
 // (per pack §6 Slice 6: "Phase C of the dry-run scenario — simulated IFRS
 // statements rendered from event-store data"). All JSON is byte-
-// deterministic via the same `sortKeys` walker pattern used in BA 700
+// deterministic via the same `sortKeys` walker pattern used in BA 100
 // Slice 4.
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
@@ -358,8 +358,8 @@ export function renderIfrsBundle(
 // ---------------------------------------------------------------------------
 
 /**
- * Sort-keyed JSON serialisation. Mirrors `canonicaliseBa700` in
- * `ba-700-render.ts`. Two calls with the same input produce byte-identical
+ * Sort-keyed JSON serialisation. Mirrors `canonicaliseBa100` in
+ * `ba-100-render.ts`. Two calls with the same input produce byte-identical
  * output.
  */
 export function canonicaliseIfrs<T>(render: T): string {

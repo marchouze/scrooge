@@ -1030,7 +1030,7 @@ interface PartyRegisterLegalEntitySeed {
   /**
    * Free-form classifications folded into `PartyClassified` events (e.g.
    * `central-bank`). These are the SOURCE FACT downstream derivations query —
-   * e.g. the BA 325 cash-HQLA fold derives Level-1 for cash whose custodian is
+   * e.g. the BA 110 cash-HQLA fold derives Level-1 for cash whose custodian is
    * classified `central-bank`, rather than reading an authored COA tag.
    */
   readonly classifications?: readonly string[];

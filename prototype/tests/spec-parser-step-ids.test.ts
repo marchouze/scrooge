@@ -157,7 +157,7 @@ Test procedure without step anchors (pre-backfill).
 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
-| 1 | Check ratio | \`agent\` | \`@platform/ba-700\` | Daily check. |
+| 1 | Check ratio | \`agent\` | \`@platform/ba-100\` | Daily check. |
 | 2 | Alert if breached | \`agent\` | \`@platform/escalation\` | Threshold alert. |
 `;
 

@@ -13,12 +13,17 @@
 | Directive 3 of 2018 — Cloud computing & offshoring of data | SARB-PA/directive-3-of-2018.md | STUB | resbank.co.za |
 | Guidance Note 1 of 2024 — Climate-related risks | SARB-PA/gn-1-of-2024-climate.md | STUB | resbank.co.za |
 | Guidance Note 7 (FIC RBA) — Risk-based approach | (FIC) — see FIC subfolder | n/a | fic.gov.za |
-| BA 100 — Capital and reserve funds | SARB-PA/ba-returns/ba-100.md | STUB | resbank.co.za |
-| BA 200 — Statement of financial position | SARB-PA/ba-returns/ba-200.md | STUB | resbank.co.za |
-| BA 300 — Off-balance-sheet | SARB-PA/ba-returns/ba-300.md | STUB | resbank.co.za |
-| BA 325 — LCR | SARB-PA/ba-returns/ba-325.md | STUB | resbank.co.za |
-| BA 326 — NSFR | SARB-PA/ba-returns/ba-326.md | STUB | resbank.co.za |
-| BA 330 — IRRBB repricing-gap return *(Reg 30 / D2/2023; analysis not yet authored)* | SARB-PA/ba-returns/ba-330.md | STUB | resbank.co.za |
+| BA 100 — Capital adequacy *(D5/2025 §2.1.3; canonical per `D-SARB-RETURN-SCHEDULE-CANONICAL-D5-2025`)* | SARB-PA/ba-returns/ba-100.md | STUB | resbank.co.za |
+| BA 110 — LCR *(D5/2025 §2.1.4; was BA 325 under GG 35950, superseded)* | SARB-PA/ba-returns/ba-110.md | STUB | resbank.co.za |
+| BA 120 — NSFR *(D5/2025 §2.1.5; was BA 326 under GG 35950, superseded)* | SARB-PA/ba-returns/ba-120.md | STUB | resbank.co.za |
+| BA 200 — Credit risk *(D5/2025 §2.1.8)* | SARB-PA/ba-returns/ba-200.md | STUB | resbank.co.za |
+| BA 300 — Operational risk *(D5/2025 §2.1.11; was the GG-era off-balance-sheet stub, re-numbered)* | SARB-PA/ba-returns/ba-300.md | STUB | resbank.co.za |
+| BA 310 — Market risk *(D5/2025 §2.1.12; was BA 320 under GG 35950, superseded)* | SARB-PA/ba-returns/ba-310.md | STUB | resbank.co.za |
+| BA 330 — IRRBB repricing-gap return *(Reg 30 / D2/2023; D5/2025 §2.1.15 completes per D2/2023; analysis not yet authored)* | SARB-PA/ba-returns/ba-330.md | STUB | resbank.co.za |
+| BA 400 — Leverage ratio *(D5/2025 §2.1.18)* | SARB-PA/ba-returns/ba-400.md | STUB | resbank.co.za |
+| BA 600 — Balance sheet (financial position) *(D5/2025 §2.1.21)* | SARB-PA/ba-returns/ba-600.md | STUB | resbank.co.za |
+| BA 610 — Income statement *(D5/2025 §2.1.22)* | SARB-PA/ba-returns/ba-610.md | STUB | resbank.co.za |
+| Off-balance-sheet exposures — no standalone D5/2025 return; reported within BA 200 (credit), BA 210 (CCR) and BA 600 (balance sheet) | SARB-PA/ba-returns/off-balance-sheet.md | STUB | resbank.co.za |
 | Large exposures (Reg 24(6)–(8) + Directive 3 of 2022; reported via BA 200-series credit-risk family) | [SARB-PA/large-exposures.md](SARB-PA/large-exposures.md) | **POPULATED** | resbank.co.za |
 | Currency and Exchanges Manual for Authorised Dealers (Excon) | [SARB-PA/excon-manual.md](SARB-PA/excon-manual.md) | **POPULATED** | resbank.co.za |
 

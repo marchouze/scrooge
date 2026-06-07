@@ -21,7 +21,7 @@
 //   7. Open risk     — AppetiteBreach + HQLACompositionDrift (past 30 days)
 //   8. Proposed      — placeholder (to be completed by Eitan at ALCO)
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BA 325; BA 326; BCBS d365;
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365;
 //   Banks Act 94 of 1990.
 // Author: Atlas (Core banking platform architect, engineering)
 

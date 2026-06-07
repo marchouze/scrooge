@@ -11,7 +11,7 @@
 // Atlas) subscribe to them for ALCO packs, RAS appetite monitoring,
 // and ICAAP/ILAAP inputs.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 325; BA 326.
+// Authority: D-TREASURY-GAPS-WAVE1; BANKS-ACT-94-1990; BA 110; BA 120.
 // Author: Anya (Liquidity & projections engineer, engineering)
 
 import { z } from "zod";

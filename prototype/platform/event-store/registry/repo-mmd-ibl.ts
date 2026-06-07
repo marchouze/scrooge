@@ -25,7 +25,7 @@
 //            D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
 //            IFRS 9 §3.1.1, §4.1.2, §4.2.1, §5.4.1, §5.7.1;
 //            IAS 39 §27 (repos as secured borrowings);
-//            Banks Act 94 of 1990 Reg 26/27; BA 325; BA 326; BCBS d365.
+//            Banks Act 94 of 1990 Reg 26/27; BA 110; BA 120; BCBS d365.
 //
 // Retention: RETENTION_JSE_TRADE_7Y — treasury trades documented under ISDA
 // / GMRA Master Agreement, mirrors bond/equity/IRD retention.

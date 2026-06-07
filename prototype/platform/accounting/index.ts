@@ -7,7 +7,7 @@
 //   - openPeriod / snapshotTrialBalance / closePeriod
 //
 // The pure orchestration functions from period-close.ts are also re-exported
-// directly for consumers (like tests and Slice 3 BA 325 harness) that need
+// directly for consumers (like tests and Slice 3 BA 110 harness) that need
 // the internal helpers (computeTrialBalance, periodAuditChain, etc.).
 //
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN

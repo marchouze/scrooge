@@ -4,13 +4,13 @@
 //
 // Covers:
 //   BalanceSheetProjected — period-end balance-sheet projection providing
-//     supplemental BA 326 ASF/RSF line items not captured in trade events.
+//     supplemental BA 120 ASF/RSF line items not captured in trade events.
 //
 // Retention classification:
 //   - BalanceSheetProjected → RETENTION_ACCOUNTING_7Y
 //     (statutory financial-statement supporting record; NSFR computation input)
 //
-// Authority: BA 326; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
+// Authority: BA 120; BCBS D396; Banks Act Reg 26A; D-TREASURY-GAPS-WAVE1.
 // Author: Bea (Accounting and financial reporting engineer, engineering)
 
 import { balanceSheetProjectedPayloadSchema } from "../event-types/balance-sheet";
@@ -35,7 +35,7 @@ export const BALANCE_SHEET_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     replay: "latest-wins-per-key",
     retention: RETENTION_ACCOUNTING_7Y,
     payloadSchema: balanceSheetProjectedPayloadSchema,
-    citationsHint: ["BA-326", "BCBS-D396", "BANKS-ACT-REG-26A", "D-TREASURY-GAPS-WAVE1"],
+    citationsHint: ["BA-120", "BCBS-D396", "BANKS-ACT-REG-26A", "D-TREASURY-GAPS-WAVE1"],
     source: "platform/event-store/event-types/balance-sheet.ts",
   },
 ];

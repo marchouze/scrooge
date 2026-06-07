@@ -99,7 +99,7 @@ export function makeTradeReportSubmitted(args: {
 // SarbSubmissionAttempted
 //
 // Emitted by the SARB portal simulator (`prototype/simulators/sarb-prudential.ts`)
-// for every BA-return submission attempt (BA 325, BA 700, etc.).
+// for every BA-return submission attempt (BA 110, BA 100, etc.).
 // Records both successful and failed attempts for the audit trail.
 //
 // Regulatory chain:

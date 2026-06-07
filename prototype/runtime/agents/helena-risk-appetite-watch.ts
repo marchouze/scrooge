@@ -321,7 +321,7 @@ function buildLiquidityMetric(asOf: string): {
   nsfr: LiquidityMetricForLine;
 } {
   // T+30 snapshot is the canonical horizon for the RAS §B3 buffer line
-  // (30-day stress per BA 325). Anya's daily handler computes both T+0 and
+  // (30-day stress per BA 110). Anya's daily handler computes both T+0 and
   // T+30; the appetite line uses T+30 for forward-looking buffer adequacy.
   const alm = getALMPositionSnapshot(eventStore, asOf, 30);
   const lcr = computeLCR([...alm.hqlaPositions], [...alm.fundingPositions]);

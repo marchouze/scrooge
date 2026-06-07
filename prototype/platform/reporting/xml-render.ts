@@ -2,14 +2,14 @@
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) — generic
 // SARB-XML render layer. Companion to the JSON render layer at
-// `ba-325-render.ts`. Marc's Q5 default is JSON-first; this XML layer is
+// `ba-110-render.ts`. Marc's Q5 default is JSON-first; this XML layer is
 // produced *in parallel* from the same projection so the engine can emit
 // the SARB-portal submission shape when the regulator's XSD is wired.
 //
 // Architectural placement:
 //
-//   PROJECTION                    (pure typed payload — Ba325Output / Ba350Output / Ba600Output)
-//      → JSON RENDER             ── ba-325-render.ts (canonical JSON, hash-store-friendly)
+//   PROJECTION                    (pure typed payload — Ba110Output / Ba310Output / Ba300Output)
+//      → JSON RENDER             ── ba-110-render.ts (canonical JSON, hash-store-friendly)
 //      → XML RENDER              ── this module     (canonical XML, XSD-validatable)
 //      → REPORTGENERATED EVENT   (cites both hashes)
 //      → SARB PORTAL             (M8 simulator at prototype/simulators/sarb-prudential.ts)
@@ -31,8 +31,8 @@
 //   period, sub-sections of typed line-items). Rather than hand-roll one
 //   `renderXxxToXml` per form, the API takes a *typed report payload*
 //   (`SarbXmlReportPayload`) — a recursive tree of named sections + line-
-//   items + scalars + key-value blocks. Each generator (BA 325 / BA 350 /
-//   BA 600 / BA 700 in the future) has a thin adapter that maps its typed
+//   items + scalars + key-value blocks. Each generator (BA 110 / BA 310 /
+//   BA 300 / BA 100 in the future) has a thin adapter that maps its typed
 //   output into this shape. The generic renderer then emits XML.
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
@@ -78,7 +78,7 @@ export interface SarbXmlSection {
  * The complete report payload ready to render.
  */
 export interface SarbXmlReportPayload {
-  /** Form identifier (e.g. "BA325", "BA350", "BA600", "BA700"). */
+  /** Form identifier (e.g. "BA325", "BA320", "BA400", "BA700"). */
   readonly formId: string;
   /** Form version (e.g. "v0.1-rehearsal"). */
   readonly formVersion: string;

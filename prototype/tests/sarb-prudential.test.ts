@@ -3,7 +3,7 @@
 // Unit tests for the local SARB prudential portal simulator.
 //
 // Tests:
-//   1. submitToSarbPortal() — accepts a valid BA 325 payload and returns ok: true.
+//   1. submitToSarbPortal() — accepts a valid BA 110 payload and returns ok: true.
 //   2. submitToSarbPortal() — generates a referenceNumber on success.
 //   3. submitToSarbPortal() — emits a SarbSubmissionAttempted event to the store (success).
 //   4. submitToSarbPortal() — rejects a payload with missing formId.
@@ -11,7 +11,7 @@
 //   6. submitToSarbPortal() — rejects a payload with missing Meta.
 //   7. submitToSarbPortal() — emits a SarbSubmissionAttempted event on failure.
 //   8. submitToSarbPortal() — mode field in emitted event is "simulator".
-//   9. submitToSarbPortal() — accepts a valid BA 700 payload.
+//   9. submitToSarbPortal() — accepts a valid BA 100 payload.
 //  10. submitToSarbPortal() — rejects payload with empty namespaceUri.
 //
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10).
@@ -21,10 +21,10 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { generateBa325Lcr } from "../platform/reporting/ba-325-lcr";
-import { ba325ToXmlPayload } from "../platform/reporting/ba-325-xml-adapter";
-import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
-import { ba700ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
+import { generateBa100Capital } from "../platform/reporting/ba-100-capital";
+import { ba100ToXmlPayload } from "../platform/reporting/ba-100-xml-adapter";
+import { generateBa110Lcr } from "../platform/reporting/ba-110-lcr";
+import { ba110ToXmlPayload } from "../platform/reporting/ba-110-xml-adapter";
 import type { SarbXmlReportPayload } from "../platform/reporting/xml-render";
 import { submitToSarbPortal } from "../simulators/sarb-prudential";
 
@@ -43,9 +43,9 @@ function makeStore(): EventStore {
   return new EventStore(":memory:");
 }
 
-function makeValidBa325Payload(): SarbXmlReportPayload {
+function makeValidBa110Payload(): SarbXmlReportPayload {
   const store = makeStore();
-  const output = generateBa325Lcr({
+  const output = generateBa110Lcr({
     entity: ENTITY,
     asOf: AS_OF,
     periodId: PERIOD_ID,
@@ -62,11 +62,11 @@ function makeValidBa325Payload(): SarbXmlReportPayload {
       },
     ],
   });
-  return ba325ToXmlPayload(output);
+  return ba110ToXmlPayload(output);
 }
 
-function makeValidBa700Payload(): SarbXmlReportPayload {
-  const output = generateBa700Capital({
+function makeValidBa100Payload(): SarbXmlReportPayload {
+  const output = generateBa100Capital({
     entity: ENTITY,
     asOf: AS_OF,
     periodId: PERIOD_ID,
@@ -83,7 +83,7 @@ function makeValidBa700Payload(): SarbXmlReportPayload {
       source: "fixture-rehearsal",
     },
   });
-  return ba700ToXmlPayload(output);
+  return ba100ToXmlPayload(output);
 }
 
 // ---------------------------------------------------------------------------
@@ -91,16 +91,16 @@ function makeValidBa700Payload(): SarbXmlReportPayload {
 // ---------------------------------------------------------------------------
 
 describe("submitToSarbPortal() — valid payloads", () => {
-  it("TC-1: returns ok:true for a valid BA 325 payload", async () => {
+  it("TC-1: returns ok:true for a valid BA 110 payload", async () => {
     const store = makeStore();
-    const payload = makeValidBa325Payload();
+    const payload = makeValidBa110Payload();
     const result = await submitToSarbPortal(payload, store);
     expect(result.ok).toBe(true);
   });
 
   it("TC-2: generates a referenceNumber on success", async () => {
     const store = makeStore();
-    const payload = makeValidBa325Payload();
+    const payload = makeValidBa110Payload();
     const result = await submitToSarbPortal(payload, store);
     expect(result.ok).toBe(true);
     expect(typeof result.referenceNumber).toBe("string");
@@ -109,7 +109,7 @@ describe("submitToSarbPortal() — valid payloads", () => {
 
   it("TC-3: emits a SarbSubmissionAttempted event (success) to the store", async () => {
     const store = makeStore();
-    const payload = makeValidBa325Payload();
+    const payload = makeValidBa110Payload();
     await submitToSarbPortal(payload, store);
 
     const events = [...store.replay({ type: "SarbSubmissionAttempted" })];
@@ -123,9 +123,9 @@ describe("submitToSarbPortal() — valid payloads", () => {
     }
   });
 
-  it("TC-9: accepts a valid BA 700 payload", async () => {
+  it("TC-9: accepts a valid BA 100 payload", async () => {
     const store = makeStore();
-    const payload = makeValidBa700Payload();
+    const payload = makeValidBa100Payload();
     const result = await submitToSarbPortal(payload, store);
     expect(result.ok).toBe(true);
     expect(result.referenceNumber?.startsWith("SARB-")).toBe(true);
@@ -158,8 +158,8 @@ describe("submitToSarbPortal() — invalid payloads", () => {
     const payload: SarbXmlReportPayload = {
       formId: "BA325",
       formVersion: "v0.1-rehearsal",
-      xsdUri: "https://hoz.bank/xsd/ba-325.xsd",
-      namespaceUri: "https://hoz.bank/ns/ba-325",
+      xsdUri: "https://hoz.bank/xsd/ba-110.xsd",
+      namespaceUri: "https://hoz.bank/ns/ba-110",
       body: {
         Meta: {
           Entity: ENTITY,
@@ -177,8 +177,8 @@ describe("submitToSarbPortal() — invalid payloads", () => {
     const payload: SarbXmlReportPayload = {
       formId: "BA325",
       formVersion: "v0.1-rehearsal",
-      xsdUri: "https://hoz.bank/xsd/ba-325.xsd",
-      namespaceUri: "https://hoz.bank/ns/ba-325",
+      xsdUri: "https://hoz.bank/xsd/ba-110.xsd",
+      namespaceUri: "https://hoz.bank/ns/ba-110",
       body: {
         // Deliberately no Meta.
         SomeOtherSection: { foo: "bar" },
@@ -212,7 +212,7 @@ describe("submitToSarbPortal() — invalid payloads", () => {
 
   it("TC-8: mode field in emitted event is 'simulator'", async () => {
     const store = makeStore();
-    const payload = makeValidBa325Payload();
+    const payload = makeValidBa110Payload();
     await submitToSarbPortal(payload, store);
 
     const events = [...store.replay({ type: "SarbSubmissionAttempted" })];
@@ -228,7 +228,7 @@ describe("submitToSarbPortal() — invalid payloads", () => {
     const payload: SarbXmlReportPayload = {
       formId: "BA325",
       formVersion: "v0.1-rehearsal",
-      xsdUri: "https://hoz.bank/xsd/ba-325.xsd",
+      xsdUri: "https://hoz.bank/xsd/ba-110.xsd",
       namespaceUri: "", // empty
       body: {
         Meta: {

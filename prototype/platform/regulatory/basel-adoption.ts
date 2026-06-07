@@ -378,7 +378,7 @@ export const ADOPTION_EDGES: readonly AdoptionEdge[] = [
     adoptionType: "ADOPTS",
     effectiveFrom: "2013-01-01",
   },
-  // LCR — liquidity coverage via Reg 26 / BA 325.
+  // LCR — liquidity coverage via Reg 26 / BA 110.
   {
     baselProvision: "urn:reg:bcbs:lcr:20.5",
     jurisdiction: "za",
@@ -391,7 +391,7 @@ export const ADOPTION_EDGES: readonly AdoptionEdge[] = [
     jurisdiction: "za",
     localInstrument: "urn:reg:za:regs-relating-to-banks:reg26",
     adoptionType: "ADOPTS",
-    delta: "Operationalised in BA 325 Annex 1 haircut schedule.",
+    delta: "Operationalised in BA 110 Annex 1 haircut schedule.",
     effectiveFrom: "2015-01-01",
   },
   {
@@ -399,7 +399,7 @@ export const ADOPTION_EDGES: readonly AdoptionEdge[] = [
     jurisdiction: "za",
     localInstrument: "urn:reg:za:regs-relating-to-banks:reg26",
     adoptionType: "ADOPTS",
-    delta: "BA 325 run-off schedule.",
+    delta: "BA 110 run-off schedule.",
     effectiveFrom: "2015-01-01",
   },
   {
@@ -409,7 +409,7 @@ export const ADOPTION_EDGES: readonly AdoptionEdge[] = [
     adoptionType: "ADOPTS",
     effectiveFrom: "2015-01-01",
   },
-  // NSF — net stable funding via Reg 26A / BA 326.
+  // NSF — net stable funding via Reg 26A / BA 120.
   {
     baselProvision: "urn:reg:bcbs:nsf:20.2",
     jurisdiction: "za",

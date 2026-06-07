@@ -98,7 +98,7 @@ export interface SnapshotTrialBalanceResult {
  * Compute and append a point-in-time `TrialBalanceSnapshotted` event
  * (kind: "interim") for the named period. Does NOT close the period —
  * use `closePeriod` for that. Useful for interim reporting, intra-period
- * sanity checks, and BA 325 harness inputs (Slice 3).
+ * sanity checks, and BA 110 harness inputs (Slice 3).
  *
  * Throws if no `AccountingPeriodOpened` exists for (entity, periodId).
  */
@@ -205,7 +205,7 @@ export function closePeriod(args: ClosePeriodArgs): ClosePeriodResult {
 // Accounting index — what Slice 3 imports
 // ---------------------------------------------------------------------------
 //
-// Slice 3 (BA 325 LCR harness — Bea + Eitan + Anya) imports:
+// Slice 3 (BA 110 LCR harness — Bea + Eitan + Anya) imports:
 //   import { closePeriod, openPeriod, snapshotTrialBalance } from
 //     "@platform/accounting";
 //

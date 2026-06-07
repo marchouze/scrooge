@@ -469,7 +469,7 @@ export function makeFinancialInstrumentDefined(args: {
  * is the authoritative classification.
  *
  * Classification dimensions:
- *   hqlaLevel       — LCR / NSFR HQLA tiering (BA 325 / Basel III §42–§54).
+ *   hqlaLevel       — LCR / NSFR HQLA tiering (BA 110 / Basel III §42–§54).
  *   baselRiskWeight — SA standardised approach risk weight (RRB Regulation 23).
  *   ifrs9Category   — IFRS 9 §4.1 measurement category.
  *   saCcrAssetClass — SA-CCR asset class for derivative EAD calculation
@@ -480,7 +480,7 @@ export const financialInstrumentClassifiedPayloadSchema = z.object({
   instrumentId: z.string().min(1),
 
   /**
-   * HQLA (High-Quality Liquid Asset) tier under Basel III / BA 325.
+   * HQLA (High-Quality Liquid Asset) tier under Basel III / BA 110.
    *   level-1   — central bank reserves, sovereign bonds (0% RW), Level-1 qualifying criteria
    *   level-2a  — high-grade covered bonds, sovereign bonds (20% RW)
    *   level-2b  — RMBS, corporate bonds (≥BBB-), equities meeting LCR criteria

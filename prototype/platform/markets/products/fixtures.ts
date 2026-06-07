@@ -98,7 +98,7 @@ export const M1_JSE_EQUITY_CASH_FIXTURE: Product = {
     ifrs9Family: "fvtpl",
     ifrs13FairValueHierarchy: "level-1",
     ias21FxTreatment: "n/a",
-    baReturnLineMapping: ["BA100.line.34", "BA200.line.18"],
+    baReturnLineMapping: ["BA600.line.34", "BA200.line.18"],
   },
   legalDocumentation: {
     masterAgreement: "none-listed",
@@ -216,7 +216,7 @@ export const M2_SAGB_FIXED_COUPON_FIXTURE: Product = {
     ifrs9Family: "fvoci",
     ifrs13FairValueHierarchy: "level-2",
     ias21FxTreatment: "n/a",
-    baReturnLineMapping: ["BA100.line.31", "BA325.line.10"],
+    baReturnLineMapping: ["BA600.line.31", "BA110.line.10"],
   },
   legalDocumentation: {
     masterAgreement: "none-listed",
@@ -365,8 +365,8 @@ export const M4_FX_SPOT_FIXTURE: Product = {
     ifrs13FairValueHierarchy: "level-2",
     // FX monetary item — IAS 21 §23: retranslate at closing rate each period.
     ias21FxTreatment: "monetary",
-    // BA-return line mapping: BA350 (market risk) + BA700 (capital adequacy).
-    baReturnLineMapping: ["BA350.line.fx-open-position", "BA700.line.rwa-fx"],
+    // BA-return line mapping: BA320 (market risk) + BA700 (capital adequacy).
+    baReturnLineMapping: ["BA310.line.fx-open-position", "BA100.line.rwa-fx"],
   },
   legalDocumentation: {
     // ISDA 2002 master agreement (FX confirmation under ISDA FX definitions).
@@ -545,7 +545,7 @@ export const M3_VANILLA_IRS_FIXTURE: Product = {
     ifrs9Family: "fvtpl",
     ifrs13FairValueHierarchy: "level-2",
     ias21FxTreatment: "n/a",
-    baReturnLineMapping: ["BA200.line.12", "BA350.line.ir-delta", "BA700.line.rwa-ird"],
+    baReturnLineMapping: ["BA200.line.12", "BA310.line.ir-delta", "BA100.line.rwa-ird"],
   },
   legalDocumentation: {
     masterAgreement: "isda-2002",
@@ -678,7 +678,7 @@ export const M5_REPO_FIXTURE: Product = {
     ifrs9Family: "amortised-cost",
     ifrs13FairValueHierarchy: "level-2",
     ias21FxTreatment: "n/a",
-    baReturnLineMapping: ["BA100.line.repo-borrowing", "BA325.line.hqla-collateral"],
+    baReturnLineMapping: ["BA600.line.repo-borrowing", "BA110.line.hqla-collateral"],
   },
   legalDocumentation: {
     masterAgreement: "gmra-2011",
@@ -712,7 +712,7 @@ export const M6_MMD_DEPOSIT_FIXTURE: Product = {
   version: "1.0.0",
   name: "Money Market Deposit",
   description:
-    "Short-term ZAR deposit accepted from institutional counterparties (corporate treasuries, NBFIs, other banks). Fixed-term tenors from overnight to 12 months. The bank pays an agreed fixed or floating rate on the deposit principal. Recognised as a financial liability at amortised cost (IFRS 9 §4.2.1). Contributes to LCR outflow modelling (BA 325) and NSFR required stable funding (BA 326).",
+    "Short-term ZAR deposit accepted from institutional counterparties (corporate treasuries, NBFIs, other banks). Fixed-term tenors from overnight to 12 months. The bank pays an agreed fixed or floating rate on the deposit principal. Recognised as a financial liability at amortised cost (IFRS 9 §4.2.1). Contributes to LCR outflow modelling (BA 110) and NSFR required stable funding (BA 120).",
   franchiseScope: "institutional",
   legalEntityId: "LE-BANK-SA",
   currency: "ZAR",
@@ -762,7 +762,7 @@ export const M6_MMD_DEPOSIT_FIXTURE: Product = {
     ifrs9Family: "amortised-cost",
     ifrs13FairValueHierarchy: "level-2",
     ias21FxTreatment: "n/a",
-    baReturnLineMapping: ["BA100.line.deposits", "BA325.line.lcr-outflow-institutional"],
+    baReturnLineMapping: ["BA600.line.deposits", "BA110.line.lcr-outflow-institutional"],
   },
   legalDocumentation: {
     masterAgreement: "none-listed",
@@ -795,7 +795,7 @@ export const M7_FUNDING_LINE_FIXTURE: Product = {
   version: "1.0.0",
   name: "Committed Funding Line",
   description:
-    "Bilateral committed credit facility where the bank draws cash from a facility provider (another bank or institutional investor). The bank recognises a financial liability on drawdown (IFRS 9 §4.2.1). Used for contingency liquidity management and to bridge settlement gaps. Classified as 100% LCR outflow (BA 325 Table 2) and required stable funding under NSFR (BA 326).",
+    "Bilateral committed credit facility where the bank draws cash from a facility provider (another bank or institutional investor). The bank recognises a financial liability on drawdown (IFRS 9 §4.2.1). Used for contingency liquidity management and to bridge settlement gaps. Classified as 100% LCR outflow (BA 110 Table 2) and required stable funding under NSFR (BA 120).",
   franchiseScope: "institutional",
   legalEntityId: "LE-BANK-SA",
   currency: "ZAR",
@@ -839,7 +839,7 @@ export const M7_FUNDING_LINE_FIXTURE: Product = {
     ifrs9Family: "amortised-cost",
     ifrs13FairValueHierarchy: "level-2",
     ias21FxTreatment: "n/a",
-    baReturnLineMapping: ["BA100.line.funding-lines", "BA325.line.lcr-outflow-100pct"],
+    baReturnLineMapping: ["BA600.line.funding-lines", "BA110.line.lcr-outflow-100pct"],
   },
   legalDocumentation: {
     masterAgreement: "none-listed",
@@ -873,7 +873,7 @@ export const M8_IBL_FIXTURE: Product = {
   version: "1.0.0",
   name: "Interbank Loan Placement",
   description:
-    "Short-term unsecured cash placement by the bank with another licensed bank. The bank is the lender; the counterparty bank is the borrower. Tenors typically overnight to 3 months. Interest accrues daily at the agreed fixed rate (JIBAR-referenced or fixed). Asset classified at amortised cost under IFRS 9 §4.1.2 (SPPI test passes; held-to-collect business model). Contributes to NSFR available stable funding (BA 326).",
+    "Short-term unsecured cash placement by the bank with another licensed bank. The bank is the lender; the counterparty bank is the borrower. Tenors typically overnight to 3 months. Interest accrues daily at the agreed fixed rate (JIBAR-referenced or fixed). Asset classified at amortised cost under IFRS 9 §4.1.2 (SPPI test passes; held-to-collect business model). Contributes to NSFR available stable funding (BA 120).",
   franchiseScope: "institutional",
   legalEntityId: "LE-BANK-SA",
   currency: "ZAR",
@@ -922,7 +922,7 @@ export const M8_IBL_FIXTURE: Product = {
     ifrs9Family: "amortised-cost",
     ifrs13FairValueHierarchy: "level-2",
     ias21FxTreatment: "n/a",
-    baReturnLineMapping: ["BA100.line.interbank-placements", "BA326.line.nsfr-asf"],
+    baReturnLineMapping: ["BA600.line.interbank-placements", "BA120.line.nsfr-asf"],
   },
   legalDocumentation: {
     masterAgreement: "none-listed",

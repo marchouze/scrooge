@@ -10,13 +10,13 @@
 //   PR-FUNDING-END FundingLineRepaid — full repayment (terminal)
 //
 // Both legs are ZAR. The drawdown liability books to the shared
-// wholesale-non-operational deposit liability (BA 325 Table 2, 100% outflow) —
+// wholesale-non-operational deposit liability (BA 110 Table 2, 100% outflow) —
 // the SAME physical account the deposit family uses for that category, so the
 // resolver row reuses `deposit.liability_wholesale_non_operational`.
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05).
-// Cites: IFRS 9 §4.2.1 (recognition), §3.3.1 (derecognition), BA 325 Table 2.
+// Cites: IFRS 9 §4.2.1 (recognition), §3.3.1 (derecognition), BA 110 Table 2.
 
 import type { SlaRule } from "../generated/sla-types";
 

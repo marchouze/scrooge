@@ -21,8 +21,8 @@
 //
 // **Pure function; no event side-effects; no document-store writes; no
 // event-store reads.** Callers compose the as-of inputs from upstream
-// projections (RWA engine — Slice 3; capital stack — BA 700 generator;
-// LCR — BA 325 generator; bank-account substrate — D-BANK-ACCOUNT-
+// projections (RWA engine — Slice 3; capital stack — BA 100 generator;
+// LCR — BA 110 generator; bank-account substrate — D-BANK-ACCOUNT-
 // SUBSTRATE) and consume the typed output.
 //
 // Pipeline (mirrors the rest of the risk substrate):
@@ -30,8 +30,8 @@
 //   EVENT LOG          (Principle 1 — sole truth)
 //      → PROJECTION RUNTIME    — folds events into balances + positions
 //      → RWA ENGINE (Slice 3)  — current-state RWA decomposition
-//      → BA 700 GENERATOR      — current-state capital stack + ratios
-//      → BA 325 GENERATOR      — current-state LCR
+//      → BA 100 GENERATOR      — current-state capital stack + ratios
+//      → BA 110 GENERATOR      — current-state LCR
 //      → STRESS ENGINE (this)  — projects current-state forward × scenarios
 //      → ICAAP NARRATIVE FEED  — typed shape consumed by Helena's narrative
 //      → PILLAR-2 ADD-ON CALC  — derives capital add-on from stress severity
@@ -98,7 +98,7 @@ import {
 // ---------------------------------------------------------------------------
 
 /**
- * Current-state capital stack (from BA 700 generator). Net of regulatory
+ * Current-state capital stack (from BA 100 generator). Net of regulatory
  * deductions per BCBS Basel III §66–§90 — caller pre-computes deductions.
  * All amounts in functional-currency minor units.
  */
@@ -112,8 +112,8 @@ export interface CurrentStateCapital {
 }
 
 /**
- * Current-state liquidity inputs. Caller supplies from BA 325 generator
- * (LCR) + a (future) BA 320 generator (NSFR). All amounts in functional-
+ * Current-state liquidity inputs. Caller supplies from BA 110 generator
+ * (LCR) + a (future) BA 310 generator (NSFR). All amounts in functional-
  * currency minor units.
  */
 export interface CurrentStateLiquidity {
@@ -149,7 +149,7 @@ export interface StressEngineInput {
   readonly functionalCurrency: string;
   /** Current-state RWA decomposition (Slice 3 RWA-engine output). */
   readonly rwa: RwaEngineOutput;
-  /** Current-state capital stack (BA 700 net CET1 / AT1 / T2). */
+  /** Current-state capital stack (BA 100 net CET1 / AT1 / T2). */
   readonly capital: CurrentStateCapital;
   /** Current-state liquidity (HQLA + net outflows + ASF + RSF). */
   readonly liquidity: CurrentStateLiquidity;

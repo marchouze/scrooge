@@ -59,11 +59,11 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
   lcr: {
     calcKey: "lcr",
     figure: "Liquidity Coverage Ratio",
-    modelId: "model:lcr-ba325-v1",
+    modelId: "model:lcr-ba110-v1",
     modelVersion: "1.0.0",
     owningAgent: "Camille (Chief Financial Officer)",
     outputUnit: "pct",
-    citations: [PROGRAM, "BANKS-ACT-94-1990", "BA-325"],
+    citations: [PROGRAM, "BANKS-ACT-94-1990", "BA-110"],
     inputContract: [
       {
         name: "hqlaZar",
@@ -82,11 +82,11 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
   nsfr: {
     calcKey: "nsfr",
     figure: "Net Stable Funding Ratio",
-    modelId: "model:nsfr-ba325-v1",
+    modelId: "model:nsfr-ba110-v1",
     modelVersion: "1.0.0",
     owningAgent: "Camille (Chief Financial Officer)",
     outputUnit: "pct",
-    citations: [PROGRAM, "BANKS-ACT-94-1990", "BA-325"],
+    citations: [PROGRAM, "BANKS-ACT-94-1990", "BA-110"],
     inputContract: [
       {
         name: "asfZar",
@@ -105,11 +105,11 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
   "capital-cet1": {
     calcKey: "capital-cet1",
     figure: "CET1 Capital Ratio",
-    modelId: "model:capital-cet1-ba700-v1",
+    modelId: "model:capital-cet1-ba100-v1",
     modelVersion: "1.0.0",
     owningAgent: "Camille (Chief Financial Officer)",
     outputUnit: "pct",
-    citations: [PROGRAM, "BANKS-ACT-94-1990", "BA-700"],
+    citations: [PROGRAM, "BANKS-ACT-94-1990", "BA-100"],
     inputContract: [
       {
         name: "availableCapitalMinor",
@@ -137,7 +137,7 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
     // closes the D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 control gap.
     owningAgent: "Helena (Chief Risk Officer)",
     outputUnit: "ZAR-minor",
-    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BA-700"],
+    citations: [PROGRAM, "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1", "BANKS-ACT-94-1990", "BA-100"],
     inputContract: [
       {
         name: "creditRwaMinor",

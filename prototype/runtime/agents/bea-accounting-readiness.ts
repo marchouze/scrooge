@@ -177,9 +177,9 @@ function buildReadinessMap(camille: CamilleReadiness): readonly CycleReadiness[]
       camilleObserves: camille.lastBaReturnSigned ?? "never — substrate gap",
       engineerSideState: "specified",
       substrateRequired:
-        "BA-return generator (BA 100 / 200 / 300 / 700) — cell-level mapping from sub-ledger + RWA + obligations register. Owner: Bea joint with Anya.",
+        "BA-return generator (BA 600 / 200 / 300 / 700) — cell-level mapping from sub-ledger + RWA + obligations register. Owner: Bea joint with Anya.",
       nextEngineeringStep:
-        "Draft BA 100 cell-map register against synthetic capital line per Banks Act Reg 38; commission Anya's BA-return projection harness; first dry-run BAReturnGenerated when sub-ledger projection lands.",
+        "Draft BA 600 cell-map register against synthetic capital line per Banks Act Reg 38; commission Anya's BA-return projection harness; first dry-run BAReturnGenerated when sub-ledger projection lands.",
     },
     {
       cycle: "Annual AFS",
@@ -445,7 +445,7 @@ function buildReportMarkdown(
     "- **Chart-of-accounts schema (Bea)** — chart not yet authored as a typed register; required input for posting-rule publication.",
   );
   lines.push(
-    "- **BA-return generator (Bea + Anya)** — BA 100 / 200 / 300 / 700 cell-map register drafted but not wired to projections. Required pre-first quarterly BA submission.",
+    "- **BA-return generator (Bea + Anya)** — BA 600 / 200 / 300 / 700 cell-map register drafted but not wired to projections. Required pre-first quarterly BA submission.",
   );
   lines.push(
     "- **IFRS engine (Bea)** — IFRS 9 staging logic prototyped; IFRS 13 FV-hierarchy classification prototyped; IFRS 15 / 16 not yet started. Required pre-licence.",

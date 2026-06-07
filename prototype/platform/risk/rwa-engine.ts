@@ -8,7 +8,7 @@
 // This module is a **pure projection** producing risk-weighted assets per
 // asset class (credit, market, operational) from typed exposure +
 // trading-position + business-indicator inputs. No event side-effects;
-// no document-store writes; no event-store reads. Callers (the BA 700
+// no document-store writes; no event-store reads. Callers (the BA 100
 // capital-adequacy generator from Reporting Slice 4, downstream
 // `RwaSnapshot` event emitters, the W2 Slice-2 RAS B2 calibration brief)
 // compose the inputs and consume the output.
@@ -21,7 +21,7 @@
 //      → TRADING-BOOK PROJ.    — derives positions per market-risk type
 //      → BI PROJECTION         — derives business indicator per OPE25
 //      → RWA ENGINE            — this module — pure function
-//      → BA 700 / 400 / 350 / 340 GENERATORS  — Reporting Slices 4-5+
+//      → BA 100 / 400 / 350 / 340 GENERATORS  — Reporting Slices 4-5+
 //
 // Computation per Reg 38 + BCBS Basel III/IV:
 //
@@ -60,9 +60,9 @@
 //     consumes `RwaEngineInput` directly.
 //
 // Coordination with parallel work (per dispatch brief):
-//   - **Reporting Slice 4 (Bea+Atlas+Anya — BA 700)** consumes this
+//   - **Reporting Slice 4 (Bea+Atlas+Anya — BA 100)** consumes this
 //     engine via the `RwaEngineOutput` contract. The form-rendering
-//     (BA 700 cell labels, XML schema) is Slice 4's responsibility.
+//     (BA 100 cell labels, XML schema) is Slice 4's responsibility.
 //   - **Reporting Slice 5 (Bea+Atlas+Anya — BA 350)** consumes
 //     `MarketRwa` per-risk-type from this engine.
 //   - **W2 Slice 2 (Helena+Rohan+Bea — RAS B2)** uses `TotalRwa` as a
@@ -797,16 +797,16 @@ export function computeRwa(input: RwaEngineInput): RwaEngineOutput {
 }
 
 // ---------------------------------------------------------------------------
-// Convenience: API contract used by Reporting Slice 4 (BA 700) generator
+// Convenience: API contract used by Reporting Slice 4 (BA 100) generator
 // ---------------------------------------------------------------------------
 
 /**
- * Reporting Slice 4 BA 700 generator consumes this shape. Documenting it
+ * Reporting Slice 4 BA 100 generator consumes this shape. Documenting it
  * explicitly here so the integration contract is stable.
  *
  * Slice 4 callers do:
  *   const rwa = computeRwa(input);
- *   const ba700 = generateBa700CapitalAdequacy({ rwa, capitalStack, ... });
+ *   const ba100 = generateBa100CapitalAdequacy({ rwa, capitalStack, ... });
  *
  * This thin re-export of `computeRwa` under a Slice-4-friendly name makes
  * the consumer-call-site intent explicit without coupling Slice 4's API

@@ -18,7 +18,7 @@
 //  12. Zero-value position → excluded.
 //  13. Stable sort — output lines are in instrumentId order.
 //
-// Authority: brief:ravi:fix-ba-325-hqla-stock-instrument-level-positions:2026-05-29.
+// Authority: brief:ravi:fix-ba-110-hqla-stock-instrument-level-positions:2026-05-29.
 // Citations: BCBS D295 §50–§54; D-FINANCIAL-INSTRUMENT-ENTITY; Reg 26(7).
 //
 // Author: Ravi (Treasury/ALM quantitative engineer, engineering).

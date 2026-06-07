@@ -1,7 +1,7 @@
 // platform/collateral/hqla-classifier.ts
 //
 // HQLA classifier — classifies any security into L1 / L2a / L2b / non-HQLA
-// per BA 325 Annex 1 (Banks Act Regulations relating to Banks, Regulation 26,
+// per BA 110 Annex 1 (Banks Act Regulations relating to Banks, Regulation 26,
 // LCR liquidity-buffer eligibility framework).
 //
 // Classification logic:
@@ -13,7 +13,7 @@
 //         BBB- to A+ → haircut 25–50%
 //   non-HQLA: everything else → not eligible (haircut 100%)
 //
-// Authority: BA 325 Annex 1; Banks Act Reg 26; BCBS-D365-IRRBB.
+// Authority: BA 110 Annex 1; Banks Act Reg 26; BCBS-D365-IRRBB.
 // Author: Atlas (Core banking platform architect, engineering)
 
 // ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ function isBBBminusToAplus(rating: string | undefined): boolean {
 // ---------------------------------------------------------------------------
 
 /**
- * Classify a security into an HQLA bucket per BA 325 Annex 1.
+ * Classify a security into an HQLA bucket per BA 110 Annex 1.
  *
  * Build-phase note: in production this would cross-check against the SARB
  * published eligible-securities register. During the build phase the
@@ -106,7 +106,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
     return {
       level: "L1",
       haircut: 0,
-      eligibilityRationale: "ZAR cash equivalent — L1 per BA 325 Annex 1 para 1(a). Zero haircut.",
+      eligibilityRationale: "ZAR cash equivalent — L1 per BA 110 Annex 1 para 1(a). Zero haircut.",
     };
   }
 
@@ -116,7 +116,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
       level: "L1",
       haircut: 0,
       eligibilityRationale:
-        "SA sovereign bond 0% RW (SARB/Republic claim) — L1 per BA 325 Annex 1 para 1(b). Zero haircut.",
+        "SA sovereign bond 0% RW (SARB/Republic claim) — L1 per BA 110 Annex 1 para 1(b). Zero haircut.",
     };
   }
 
@@ -140,7 +140,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
       level: "L2a",
       haircut: 0.15,
       eligibilityRationale:
-        "SA sovereign bond 20% RW — L2a per BA 325 Annex 1 para 2(a). Haircut 15%.",
+        "SA sovereign bond 20% RW — L2a per BA 110 Annex 1 para 2(a). Haircut 15%.",
     };
   }
 
@@ -150,7 +150,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
       level: "L2a",
       haircut: 0.15,
       eligibilityRationale:
-        "Qualifying covered bond — L2a per BA 325 Annex 1 para 2(b). Haircut 15%.",
+        "Qualifying covered bond — L2a per BA 110 Annex 1 para 2(b). Haircut 15%.",
     };
   }
 
@@ -159,7 +159,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
     return {
       level: "L2a",
       haircut: 0.15,
-      eligibilityRationale: `Corporate bond rated ${creditRating ?? "AA- or better"} — L2a per BA 325 Annex 1 para 2(c). Haircut 15%.`,
+      eligibilityRationale: `Corporate bond rated ${creditRating ?? "AA- or better"} — L2a per BA 110 Annex 1 para 2(c). Haircut 15%.`,
     };
   }
 
@@ -173,7 +173,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
       level: "L2b",
       haircut: 0.5,
       eligibilityRationale:
-        "JSE-listed equity — L2b per BA 325 Annex 1 para 3(a). Haircut 50% (qualifying equity).",
+        "JSE-listed equity — L2b per BA 110 Annex 1 para 3(a). Haircut 50% (qualifying equity).",
     };
   }
 
@@ -182,7 +182,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
     return {
       level: "L2b",
       haircut: 0.25,
-      eligibilityRationale: `Corporate bond rated ${creditRating ?? "BBB- to A+"} — L2b per BA 325 Annex 1 para 3(b). Haircut 25%.`,
+      eligibilityRationale: `Corporate bond rated ${creditRating ?? "BBB- to A+"} — L2b per BA 110 Annex 1 para 3(b). Haircut 25%.`,
     };
   }
 
@@ -199,7 +199,7 @@ export function classifyHQLA(sec: SecurityDescriptor): HQLAClassification {
 }
 
 function buildNonHQLARationale(sec: SecurityDescriptor): string {
-  const parts: string[] = ["Not HQLA-eligible per BA 325 Annex 1."];
+  const parts: string[] = ["Not HQLA-eligible per BA 110 Annex 1."];
   if (sec.assetClass === "corporate-bond") {
     if (!sec.creditRating) {
       parts.push("Corporate bond has no credit rating — minimum BBB- required for L2b.");

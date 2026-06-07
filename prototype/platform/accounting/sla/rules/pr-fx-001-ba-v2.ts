@@ -25,7 +25,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4b, CEO-approved 2026-06-06);
 //            D-SLA-FIRST-REPRESENTATION-SARB-BA (CFO Camille).
-// Cites: SARB BA 350 (net open position); Banks Act 94 of 1990 (exposure).
+// Cites: SARB BA 310 (market risk; net open position); Banks Act 94 of 1990 (exposure).
 
 import type { SlaRule } from "../generated/sla-types";
 import { supersede } from "../versioning";

@@ -10,7 +10,7 @@
 // lifecycle-aware (production-only ALSO admits build-phase-fixture rows
 // during the build phase). At that point no event in the live store was
 // yet tagged `build-phase-fixture`. This script performs the one-shot
-// idempotent re-tag so M2 returns (BA 325, BA 350, BA 700, IFRS
+// idempotent re-tag so M2 returns (BA 110, BA 350, BA 100, IFRS
 // statements, dashboard reporting tiles) populate during the build phase
 // under the production-only filter.
 //

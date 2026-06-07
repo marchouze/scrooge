@@ -227,7 +227,7 @@ export const TRADE_LIFECYCLE_REGISTRY: readonly LifecycleDefinition[] = [
   },
 
   // ── Money Market Deposit ─────────────────────────────────────────────────
-  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9 §4.1.1; BA 325.
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9 §4.1.1; BA 110.
   {
     lifecycleId: "mmd-deposit",
     productType: "MMD",
@@ -249,7 +249,7 @@ export const TRADE_LIFECYCLE_REGISTRY: readonly LifecycleDefinition[] = [
   },
 
   // ── Funding Line ─────────────────────────────────────────────────────────
-  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; BA 325 Table 2.
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; BA 110 Table 2.
   {
     lifecycleId: "funding-line",
     productType: "FUNDING-LINE",
@@ -266,7 +266,7 @@ export const TRADE_LIFECYCLE_REGISTRY: readonly LifecycleDefinition[] = [
   },
 
   // ── Interbank Loan ───────────────────────────────────────────────────────
-  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9 §4.1.2; BA 325.
+  // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9 §4.1.2; BA 110.
   {
     lifecycleId: "interbank-loan",
     productType: "IBL",

@@ -2,13 +2,13 @@
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) —
 // market-risk semantic-layer entries. Extends the Slice-1 / Slice-3
-// registry with the minimum vocabulary the BA 350 (market-risk) generator
+// registry with the minimum vocabulary the BA 310 (market-risk) generator
 // needs.
 //
-// Per pack §6 Slice 4 (BA 350 + BA 700 + BA 600) consolidated with §6
+// Per pack §6 Slice 4 (BA 310 + BA 100 + BA 300) consolidated with §6
 // Slice 5 (XML render layer) into the dispatch's "Slice 5". The parallel
-// dispatch handles BA 700 (IRRBB) + the rate-risk semantic family; this
-// file lands the *market-risk-trading-book* family that BA 350 consumes.
+// dispatch handles BA 100 (IRRBB) + the rate-risk semantic family; this
+// file lands the *market-risk-trading-book* family that BA 310 consumes.
 //
 // Entries:
 //
@@ -33,7 +33,7 @@
 // Per pack §9 Q1 default (rehearsal-grade with placeholders), each entry
 // carries one resolved citation chain plus one `[citation: TBC]` marker
 // pointing at Mira's WS-INSTRUMENT-ANALYSES workstream that resolves the
-// precise SARB BA 350 line numbers post published-schema ingestion.
+// precise SARB BA 310 line numbers post published-schema ingestion.
 //
 // Hoz Bank only — Hoz Securities + Hoz Group are not bank-licence-bound.
 // Bank-licence scope per `Regulations/_legal-entity-tree.md` and
@@ -69,7 +69,7 @@ export const interestRateGeneralRisk: SemanticEntry = {
     "sum(maturityBand.weightedNet for band in maturityLadder) + verticalDisallowances + horizontalDisallowances",
   regulatoryCells: [
     {
-      form: "BA 350",
+      form: "BA 310",
       line: "Interest-rate risk — general-risk capital requirement",
       side: "positive",
       note: "Maturity-method per Reg 28(3)(a); sub-sums by currency for multi-currency books (build-phase: ZAR only).",
@@ -88,7 +88,7 @@ export const interestRateGeneralRisk: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 350 maturity-ladder line numbering pending published-schema ingestion]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 310 maturity-ladder line numbering pending published-schema ingestion]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -116,7 +116,7 @@ export const interestRateSpecificRisk: SemanticEntry = {
     "sum(grossPosition × specificRiskWeight for instrument in tradingBook where issuer = counterparty)",
   regulatoryCells: [
     {
-      form: "BA 350",
+      form: "BA 310",
       line: "Interest-rate risk — specific-risk capital requirement",
       side: "positive",
       note: "Per-issuer/rating risk weight per Reg 28(3)(b).",
@@ -135,7 +135,7 @@ export const interestRateSpecificRisk: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 350 specific-risk line numbering + per-rating weight calibration]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 310 specific-risk line numbering + per-rating weight calibration]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -162,7 +162,7 @@ export const equityPositionRisk: SemanticEntry = {
     "0.08 × |netLongShortByMarket| + 0.08 × grossPositionByMarket  (4% if liquid + diversified)",
   regulatoryCells: [
     {
-      form: "BA 350",
+      form: "BA 310",
       line: "Equity position risk — capital requirement",
       side: "positive",
       note: "Standardised approach per Reg 28(4); diversification factor applies for qualifying portfolios.",
@@ -181,7 +181,7 @@ export const equityPositionRisk: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — JSE-listed-equity diversification-factor eligibility per SARB BA 350]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — JSE-listed-equity diversification-factor eligibility per SARB BA 310]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -209,7 +209,7 @@ export const foreignExchangeRisk: SemanticEntry = {
     "0.08 × max(sum(netOpenPosition where side='long' across non-functional currencies), sum(netOpenPosition where side='short' across non-functional currencies))",
   regulatoryCells: [
     {
-      form: "BA 350",
+      form: "BA 310",
       line: "Foreign-exchange risk — capital requirement",
       side: "positive",
       note: "Net-open-position method per Reg 28(5); functional-currency leg excluded.",
@@ -228,7 +228,7 @@ export const foreignExchangeRisk: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 350 FX-position line numbering + structural-position carve-out criteria]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 310 FX-position line numbering + structural-position carve-out criteria]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -256,7 +256,7 @@ export const commodityRisk: SemanticEntry = {
   formula: "sum(commodityPosition × 15%) + sum(grossPosition × 3%)  (simplified method)",
   regulatoryCells: [
     {
-      form: "BA 350",
+      form: "BA 310",
       line: "Commodity position risk — capital requirement",
       side: "positive",
       note: "Simplified method per Reg 28(6); build-phase zero exposure planned.",
@@ -275,7 +275,7 @@ export const commodityRisk: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 350 commodity-line numbering]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — SARB BA 310 commodity-line numbering]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -302,10 +302,10 @@ export const marketRiskRwa: SemanticEntry = {
     "12.5 × (InterestRateGeneralRisk + InterestRateSpecificRisk + EquityPositionRisk + ForeignExchangeRisk + CommodityRisk)",
   regulatoryCells: [
     {
-      form: "BA 350",
+      form: "BA 310",
       line: "Total market-risk RWA",
       side: "positive",
-      note: "RWA equivalent of the aggregated capital charge; flows up to BA 700 capital-adequacy aggregate.",
+      note: "RWA equivalent of the aggregated capital charge; flows up to BA 100 capital-adequacy aggregate.",
     },
   ],
   citations: [
@@ -321,7 +321,7 @@ export const marketRiskRwa: SemanticEntry = {
     },
     {
       type: "tbc",
-      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 350 RWA-aggregate line]",
+      note: "[citation: TBC — Mira's WS-INSTRUMENT-ANALYSES — exact SARB BA 310 RWA-aggregate line]",
     },
   ],
   signers: ["Helena", "Camille"],
@@ -334,7 +334,7 @@ export const marketRiskRwa: SemanticEntry = {
 
 /**
  * Slice-5 market-risk semantic entries, exported as a single array for
- * registry construction in tests and downstream consumers (BA 350
+ * registry construction in tests and downstream consumers (BA 310
  * generator).
  */
 export const SLICE_5_MARKET_RISK_ENTRIES: readonly SemanticEntry[] = [

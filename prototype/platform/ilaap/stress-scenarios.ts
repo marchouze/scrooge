@@ -23,7 +23,7 @@
 // Build-phase posture:
 //   Zero real positions → base HQLA = 0 → all scenarios return "no-positions".
 //
-// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 325; PA ILAAP guidance.
+// Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { computeLCR } from "../liquidity/lcr";
@@ -44,7 +44,7 @@ interface ScenarioParams {
   outflowUpliftFactor: number;
   /** Fraction by which stressed inflows are reduced (e.g. 0.25 = −25% inflow reduction). */
   inflowReductionFactor: number;
-  /** Additional HQLA haircut applied on top of base BA 325 haircuts (e.g. 0.05 = +5%). */
+  /** Additional HQLA haircut applied on top of base BA 110 haircuts (e.g. 0.05 = +5%). */
   additionalHQLAHaircutFactor: number;
 }
 

@@ -15,7 +15,7 @@
 //
 // ─── CATEGORY-DRIVEN LIABILITY ACCOUNT ──────────────────────────────────────
 // The legacy `depositLiabilityAccount(category)` switch selects one of four LCR
-// liability accounts (BA 325 Table 1). The resolver cannot key on a payload
+// liability accounts (BA 110 Table 1). The resolver cannot key on a payload
 // enum, so the four branches are expressed as four `when`-gated lines per the
 // `deposit.liability_<category>` logical accounts — exactly one fires.
 //
@@ -33,7 +33,7 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05);
 //            D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE (CEO-approved 2026-06-05).
 // Cites: IFRS 9 §3.1.1, §4.2.1 (recognition), §3.3.1 (derecognition),
-//        IFRS 9 B5.4.1 (EIR accrual), BA 325 Table 1 (LCR categories).
+//        IFRS 9 B5.4.1 (EIR accrual), BA 110 Table 1 (LCR categories).
 
 import type { SlaRule } from "../generated/sla-types";
 

@@ -1922,7 +1922,7 @@ describe("kai:credit-capital-funding-check (slice 7)", () => {
     }
   });
 
-  it("rejects capital-impact check when RWA would exceed BA 325 limit", async () => {
+  it("rejects capital-impact check when RWA would exceed BA 100 limit", async () => {
     const orderId = uniqueId("capital-fail");
     const orderEventId = newEventId();
     // 3,000,000 shares * 2500 ZAR = 7.5 billion ZAR * 0.35 = 2.625bn RWA
