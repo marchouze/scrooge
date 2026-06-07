@@ -1,46 +1,96 @@
 // platform/obligations/knowledge-base.ts
 //
-// Reads the regulatory KNOWLEDGE BASE (Plane A, reference data) — the
-// `Obligation` nodes in the reference graph — and normalises them to a
-// canonical shape for the adoption surface (Plane B). This is the source for
-// the Unadopted view: every candidate obligation the bank could adopt lives
-// here, regardless of which extractor (BCBS rule-based, register, future LLM)
-// produced it.
+// Reads the regulatory KNOWLEDGE BASE (Plane A, reference data) and normalises
+// obligations to a canonical shape for the adoption surface (Plane B). Two sources:
 //
-// Two id schemes coexist in the graph; the canonical obligation KEY is the
-// node id minus the `OBL-` prefix, which is exactly the `obligationId` the
-// ObligationAdopted events use — so the adopted set reconciles with no
-// migration:
-//   - BCBS source obligation:  OBL-BCBS-LCR-s10.1-1  ->  key BCBS-LCR-s10.1-1
-//   - register-derived:        OBL-ORG-PR-01         ->  key ORG-PR-01
+//   1. BCBS chapter-level obligations — sourced from Regulations/BCBS/toc-chapters.json.
+//      One entry per Basel Framework ToC chapter (e.g. SCO10, CAP10, CRE20…).
+//      This replaces the prior paragraph-level extraction (5,167 atomic nodes) with
+//      the 124 chapter-level obligations from the official Basel Framework ToC.
+//      Keys: BCBS-SCO10, BCBS-CAP10, etc.
+//
+//   2. Register-derived obligations — sourced from the reference graph (OBL-ORG-* nodes).
+//      Keys: ORG-PR-01 etc.
 //
 // D-REGULATORY-ARCHITECTURE-TWO-PLANE. Author: Mira (Compliance / RegTech
 // engineer, engineering).
 
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { getBankConfig } from "../config/loader";
 import { getDb } from "../regulatory/graph/db";
 
 /** One knowledge-base obligation, normalised across extractor sources. */
 export interface KnowledgeBaseObligation {
   /** Canonical key = node id sans "OBL-". Reconciles with ObligationAdopted.obligationId. */
   key: string;
-  /** The graph node id (OBL-…). */
+  /** Synthetic graph node id (OBL-…). */
   nodeId: string;
   /** Which extractor/source produced it. */
   source: "bcbs" | "register";
-  /** Standard / framework label (e.g. "LCR", "Banks Act"). */
+  /** Standard code (e.g. "SCO", "CAP", "LCR"). */
   standard: string;
   /** Plain-language requirement text. */
   requirement: string;
   /** Source citation — provision URN preferred. */
   citation: string;
   domain: string;
-  /** must | may | recommended | must-not | "". */
+  /** must | may | recommended | must-not | "" (chapter-level entries use ""). */
   obligationType: string;
   /** Source provision URN, for the DERIVES_FROM bridge. */
   sourceProvision: string;
   /** Fulfilment policy if the source carried one (register rows). */
   fulfilmentPolicy: string;
 }
+
+// ---------------------------------------------------------------------------
+// ToC chapter source (BCBS obligations at chapter granularity)
+// ---------------------------------------------------------------------------
+
+interface TocChapterRow {
+  id: string;
+  standard: string;
+  standardTitle: string;
+  chapter: string;
+  title: string;
+  citation: string;
+  domain: string;
+}
+
+let _tocChapters: TocChapterRow[] | null = null;
+
+function loadTocChapters(): TocChapterRow[] {
+  if (_tocChapters) return _tocChapters;
+  // Resolve relative to this source file (3 levels up to repo root, then into Regulations/).
+  // Falls back to getBankConfig().repoRoot for deployments where import.meta.dir differs.
+  const candidates = [
+    resolve(import.meta.dir, "../../../Regulations/BCBS/toc-chapters.json"),
+    resolve(getBankConfig().repoRoot, "Regulations/BCBS/toc-chapters.json"),
+  ];
+  const path = candidates.find(existsSync);
+  if (!path) return [];
+  _tocChapters = JSON.parse(readFileSync(path, "utf8")) as TocChapterRow[];
+  return _tocChapters;
+}
+
+function tocChapterToKb(row: TocChapterRow): KnowledgeBaseObligation {
+  return {
+    key: row.id,
+    nodeId: `OBL-${row.id}`,
+    source: "bcbs",
+    standard: row.standard,
+    requirement: `${row.chapter} — ${row.title}`,
+    citation: row.citation,
+    domain: row.domain,
+    obligationType: "",
+    sourceProvision: row.citation,
+    fulfilmentPolicy: "",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Register source (graph OBL-ORG-* nodes)
+// ---------------------------------------------------------------------------
 
 interface ObligationNodeRow {
   id: string;
@@ -54,24 +104,18 @@ function str(v: unknown): string {
   return String(v);
 }
 
-function normalise(row: ObligationNodeRow): KnowledgeBaseObligation {
+function normaliseRegisterNode(row: ObligationNodeRow): KnowledgeBaseObligation {
   const m = (row.metadata ? JSON.parse(row.metadata) : {}) as Record<string, unknown>;
   const nodeId = row.id;
   const key = nodeId.startsWith("OBL-") ? nodeId.slice(4) : nodeId;
-  const source: "bcbs" | "register" = nodeId.startsWith("OBL-BCBS-") ? "bcbs" : "register";
   const standard = str(m.standard) || str(m.domain);
   const sourceProvision = str(m.sourceProvision);
-  // BCBS nodes carry the obligation text in metadata.actionSummary (persisted by
-  // the importer); the label is just "<chapter> <para> — <type>". Register nodes
-  // carry the requirement directly in the node label.
-  const requirement =
-    source === "bcbs" ? str(m.actionSummary) || row.label : row.label || str(m.requirement);
   return {
     key,
     nodeId,
-    source,
+    source: "register",
     standard,
-    requirement,
+    requirement: row.label || str(m.requirement),
     citation: sourceProvision || str(m.citation),
     domain: str(m.domain) || standard,
     obligationType: str(m.obligationType),
@@ -80,22 +124,35 @@ function normalise(row: ObligationNodeRow): KnowledgeBaseObligation {
   };
 }
 
-/** Every obligation in the knowledge base (Plane A reference graph). */
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/** Every obligation in the knowledge base — 124 BCBS chapters + register obligations. */
 export function listKnowledgeBaseObligations(): KnowledgeBaseObligation[] {
-  const rows = getDb()
+  const bcbs = loadTocChapters().map(tocChapterToKb);
+
+  const registerRows = getDb()
     .prepare(
-      "SELECT id, label, metadata FROM graph_nodes WHERE node_type = 'Obligation' ORDER BY id",
+      "SELECT id, label, metadata FROM graph_nodes WHERE node_type = 'Obligation' AND id LIKE 'OBL-ORG-%' ORDER BY id",
     )
     .all() as ObligationNodeRow[];
-  return rows.map(normalise);
+  const register = registerRows.map(normaliseRegisterNode);
+
+  return [...bcbs, ...register].sort((a, b) => (a.key < b.key ? -1 : 1));
 }
 
 /** One knowledge-base obligation by canonical key, or null if absent. */
 export function findKnowledgeBaseObligation(key: string): KnowledgeBaseObligation | null {
+  // Check chapter-level BCBS obligations first
+  const chapter = loadTocChapters().find((c) => c.id === key || c.id === `BCBS-${key}`);
+  if (chapter) return tocChapterToKb(chapter);
+
+  // Fall back to register graph nodes
   const row = getDb()
     .prepare(
       "SELECT id, label, metadata FROM graph_nodes WHERE node_type = 'Obligation' AND (id = ? OR id = ?) LIMIT 1",
     )
     .get(`OBL-${key}`, key) as ObligationNodeRow | null;
-  return row ? normalise(row) : null;
+  return row ? normaliseRegisterNode(row) : null;
 }
