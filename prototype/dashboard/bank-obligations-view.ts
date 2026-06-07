@@ -176,21 +176,20 @@ export function getUnadoptedObligationsView(
   };
 }
 
-export interface ObligationAnnotation {
-  id: string;
-  obligationType: string;
-  actor: string;
-  actionSummary: string;
-}
-
-/** One paragraph from the regulation, with any extracted normative obligations. */
-export interface ChapterSection {
+/** One paragraph of the regulation: number + full source text. */
+export interface ChapterParagraph {
   id: string;
   paragraph: string;
-  label: string;
   text: string;
-  section: string;
-  obligations: ObligationAnnotation[];
+}
+
+/** A run of paragraphs under one section heading (e.g. "Qualitative standards"
+ * spanning 30.5–30.16). `heading` is null for paragraphs before the first heading. */
+export interface ChapterHeadingGroup {
+  heading: string | null;
+  fromPara: string;
+  toPara: string;
+  paragraphs: ChapterParagraph[];
 }
 
 export interface ObligationDetail {
@@ -199,7 +198,25 @@ export interface ObligationDetail {
   seed: ObligationSeedRow | null;
   projection: BankObligation | null;
   history: Array<{ kind: string; at: string; detail?: string; status?: string }>;
-  sections: ChapterSection[];
+  headingGroups: ChapterHeadingGroup[];
+}
+
+interface BcbsHeadingsDoc {
+  chapters: Record<string, Record<string, string>>;
+}
+let _bcbsHeadings: BcbsHeadingsDoc["chapters"] | null = null;
+
+/** Load the BCBS section-heading map (paragraph → heading), extracted from the
+ * Basel Framework PDF. Reference data (Plane A), keyed by chapter then paragraph. */
+function loadBcbsHeadings(repoRoot: string): BcbsHeadingsDoc["chapters"] {
+  if (_bcbsHeadings) return _bcbsHeadings;
+  const path = resolve(repoRoot, "Regulations/BCBS/headings.json");
+  if (!existsSync(path)) {
+    _bcbsHeadings = {};
+    return _bcbsHeadings;
+  }
+  _bcbsHeadings = (JSON.parse(readFileSync(path, "utf8")) as BcbsHeadingsDoc).chapters;
+  return _bcbsHeadings;
 }
 
 /** Full detail for one obligation: reference (seed) + projection state + lifecycle history. */
@@ -252,40 +269,16 @@ export function getObligationDetail(
   history.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 
   // For BCBS chapter-level obligations fetch paragraph-level Provision nodes
-  // (which carry the full regulatory text) and annotate each with any extracted
-  // Obligation nodes for the same paragraph.
-  const sections: ChapterSection[] = [];
+  // (which carry the full source text) and group them under the section headings
+  // extracted from the Basel Framework PDF (Regulations/BCBS/headings.json).
+  const headingGroups: ChapterHeadingGroup[] = [];
   const chapterCode = id.startsWith("BCBS-") ? id.slice(5) : null;
   if (chapterCode) {
     type NodeRow = { id: string; label: string; metadata: string | null };
     const db = getDb();
     const str = (v: unknown) => (typeof v === "string" ? v : "");
+    const headingMap = loadBcbsHeadings(repoRoot)[chapterCode] ?? {};
 
-    // Obligation nodes — group by paragraph for annotation.
-    const oblRows = db
-      .prepare(
-        `SELECT id, label, metadata FROM graph_nodes
-         WHERE node_type = 'Obligation'
-           AND json_extract(metadata, '$.chapter') = ?
-         ORDER BY json_extract(metadata, '$.paragraph'),
-                  CAST(json_extract(metadata, '$.atomicSeq') AS INTEGER)`,
-      )
-      .all(chapterCode) as NodeRow[];
-    const oblByPara = new Map<string, ObligationAnnotation[]>();
-    for (const row of oblRows) {
-      const m = (row.metadata ? JSON.parse(row.metadata) : {}) as Record<string, unknown>;
-      const para = str(m.paragraph);
-      const list = oblByPara.get(para) ?? [];
-      list.push({
-        id: row.id,
-        obligationType: str(m.obligationType),
-        actor: str(m.actor),
-        actionSummary: str(m.actionSummary),
-      });
-      oblByPara.set(para, list);
-    }
-
-    // Provision nodes — one row per paragraph (skip the chapter-level stub).
     const provRows = db
       .prepare(
         `SELECT id, label, metadata FROM graph_nodes
@@ -296,29 +289,25 @@ export function getObligationDetail(
       )
       .all(chapterCode) as NodeRow[];
 
-    // Sort numerically: "20.1" < "20.9" < "20.10".
-    provRows.sort((a, b) => {
-      const ma = (a.metadata ? JSON.parse(a.metadata) : {}) as Record<string, unknown>;
-      const mb = (b.metadata ? JSON.parse(b.metadata) : {}) as Record<string, unknown>;
-      const numParts = (para: string) => para.split(".").map(Number);
-      const [, pa] = numParts(str(ma.paragraph));
-      const [, pb] = numParts(str(mb.paragraph));
-      return (pa ?? 0) - (pb ?? 0);
-    });
+    // Sort numerically by the minor part: "20.1" < "20.9" < "20.10".
+    const minor = (m: Record<string, unknown>) => Number(str(m.paragraph).split(".")[1] ?? 0);
+    const parsed = provRows
+      .map((r) => ({ r, m: (r.metadata ? JSON.parse(r.metadata) : {}) as Record<string, unknown> }))
+      .sort((a, b) => minor(a.m) - minor(b.m));
 
-    for (const row of provRows) {
-      const m = (row.metadata ? JSON.parse(row.metadata) : {}) as Record<string, unknown>;
+    // Walk paragraphs in order, opening a new group whenever the heading changes.
+    for (const { r, m } of parsed) {
       const para = str(m.paragraph);
-      sections.push({
-        id: row.id,
-        paragraph: para,
-        label: row.label,
-        text: str(m.text),
-        section: str(m.section),
-        obligations: oblByPara.get(para) ?? [],
-      });
+      const heading = headingMap[para] ?? null;
+      let group = headingGroups[headingGroups.length - 1];
+      if (!group || group.heading !== heading) {
+        group = { heading, fromPara: para, toPara: para, paragraphs: [] };
+        headingGroups.push(group);
+      }
+      group.paragraphs.push({ id: r.id, paragraph: para, text: str(m.text) });
+      group.toPara = para;
     }
   }
 
-  return { id, adopted: projection?.adopted ?? false, seed, projection, history, sections };
+  return { id, adopted: projection?.adopted ?? false, seed, projection, history, headingGroups };
 }
