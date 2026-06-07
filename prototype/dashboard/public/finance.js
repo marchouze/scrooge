@@ -2,7 +2,7 @@
 //
 // Pulls from /api/state for capitalPositions, liquidityMetrics,
 // and balanceSheet fields. Shows sensible placeholders when fields
-// are absent (build-phase: BA-325 / BA-700 pipeline not yet live).
+// are absent (build-phase: BA-110 / BA-700 pipeline not yet live).
 //
 // Also surfaces the CEO-approved capital plan figures
 // (R150m trading book, ~R125m ILAAP, R5m CapEx) and the open
@@ -64,11 +64,11 @@
 
   function renderKvTable(obj, caption) {
     if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
-      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">Build-phase — awaiting BA-325 / BA-700 derivation pipeline (Camille + Bea, M-phase).</p>`;
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">Build-phase — awaiting BA-110 / BA-700 derivation pipeline (Camille + Bea, M-phase).</p>`;
     }
     const entries = Object.entries(obj);
     if (!entries.length) {
-      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">Build-phase — awaiting BA-325 / BA-700 derivation pipeline (Camille + Bea, M-phase).</p>`;
+      return `<p style="color:var(--neutral-stone);font-size:var(--type-small)">Build-phase — awaiting BA-110 / BA-700 derivation pipeline (Camille + Bea, M-phase).</p>`;
     }
     const rows = entries
       .map(([k, v]) => {
