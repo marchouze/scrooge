@@ -37,21 +37,14 @@
     .od-btn:disabled { opacity:0.5; cursor:not-allowed; }
     .od-derives { font-family:var(--font-mono); font-size:0.82em; color:var(--color-accent); }
     #od-msg { margin:var(--space-3) 0; font:var(--text-body); }
-    .od-sec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-4); }
-    .od-sec-item { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-4) var(--space-5); }
-    .od-sec-head { display:flex; gap:var(--space-2); align-items:baseline; margin-bottom:var(--space-3); flex-wrap:wrap; }
-    .od-sec-para { font-family:var(--font-mono); font-size:0.85em; font-weight:600; color:var(--color-text-secondary); min-width:3em; }
-    .od-sec-label { font-size:0.82em; color:var(--color-text-secondary); }
-    .od-obl-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.72em; font-weight:700; }
-    .od-obl-badge.must { background:#fee2e2; color:#b91c1c; }
-    .od-obl-badge.must-not { background:#fce7f3; color:#9d174d; }
-    .od-obl-badge.may { background:#dbeafe; color:#1d4ed8; }
-    .od-obl-badge.recommended { background:#fef9c3; color:#854d0e; }
-    .od-obl-badge.other { background:#f3f4f6; color:#374151; }
-    .od-sec-text { font:var(--text-body); line-height:1.75; white-space:pre-wrap; word-break:break-word; }
-    .od-obl-list { margin-top:var(--space-3); border-top:1px solid var(--color-border); padding-top:var(--space-3); display:flex; flex-direction:column; gap:var(--space-2); }
-    .od-obl-item { display:flex; gap:var(--space-2); align-items:flex-start; font-size:0.88em; }
-    .od-obl-actor { color:var(--color-text-secondary); font-style:italic; white-space:nowrap; }
+    .od-hg-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-6); }
+    .od-hg-head { display:flex; gap:var(--space-3); align-items:baseline; margin-bottom:var(--space-3); padding-bottom:var(--space-2); border-bottom:2px solid var(--color-accent); flex-wrap:wrap; }
+    .od-hg-title { font:var(--text-h2); color:var(--color-text-primary); margin:0; }
+    .od-hg-range { font-family:var(--font-mono); font-size:0.78em; color:var(--color-text-secondary); }
+    .od-para-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-3); }
+    .od-para-item { display:grid; grid-template-columns:3.5em 1fr; gap:var(--space-3); align-items:start; }
+    .od-para-num { font-family:var(--font-mono); font-size:0.85em; font-weight:600; color:var(--color-accent); padding-top:2px; }
+    .od-para-text { font:var(--text-body); line-height:1.75; white-space:pre-wrap; word-break:break-word; }
   </style>
 </head>
 <body>
@@ -129,26 +122,19 @@
             ${derives.length?mi("Derives from", derives.map(x=>`<span class="od-derives">${SC.esc(x)}</span>`).join(" ")):""}
           </div>
           <div class="od-section"><h3>Requirement</h3><div class="od-req">${SC.esc(requirement)}</div></div>
-          ${(d.sections && d.sections.length) ? `
+          ${(d.headingGroups && d.headingGroups.length) ? `
           <div class="od-section">
-            <h3>Text (${d.sections.length} paragraph${d.sections.length===1?'':'s'})</h3>
-            <ul class="od-sec-list">${d.sections.map(s => {
-              const oblBadges = s.obligations.map(o => {
-                const tc = ['must','must-not','may','recommended'].includes(o.obligationType) ? o.obligationType : 'other';
-                return `<span class="od-obl-badge ${tc}">${SC.esc(o.obligationType)}</span>`;
-              }).join('');
-              const oblDetail = s.obligations.length ? `<div class="od-obl-list">${s.obligations.map(o => {
-                const tc = ['must','must-not','may','recommended'].includes(o.obligationType) ? o.obligationType : 'other';
-                return `<div class="od-obl-item"><span class="od-obl-badge ${tc}">${SC.esc(o.obligationType)}</span>${o.actor?`<span class="od-obl-actor">${SC.esc(o.actor)}</span>`:''}<span>${SC.esc(o.actionSummary)}</span></div>`;
-              }).join('')}</div>` : '';
-              return `<li class="od-sec-item">
-                <div class="od-sec-head">
-                  <span class="od-sec-para">${SC.esc(s.paragraph)}</span>
-                  ${oblBadges}
-                  ${s.section && !/^Introduces\b/i.test(s.section) ? `<span class="od-sec-label">${SC.esc(s.section)}</span>` : ''}
-                </div>
-                ${s.text ? `<div class="od-sec-text">${SC.esc(s.text)}</div>` : ''}
-                ${oblDetail}
+            <h3>Text</h3>
+            <ul class="od-hg-list">${d.headingGroups.map(g => {
+              const range = g.fromPara === g.toPara ? g.fromPara : `${g.fromPara}–${g.toPara}`;
+              const paras = g.paragraphs.map(p => `
+                <li class="od-para-item">
+                  <span class="od-para-num">${SC.esc(p.paragraph)}</span>
+                  <div class="od-para-text">${SC.esc(p.text)}</div>
+                </li>`).join('');
+              return `<li>
+                ${g.heading ? `<div class="od-hg-head"><h4 class="od-hg-title">${SC.esc(g.heading)}</h4><span class="od-hg-range">${SC.esc(range)}</span></div>` : ''}
+                <ul class="od-para-list">${paras}</ul>
               </li>`;
             }).join('')}</ul>
           </div>` : ''}
