@@ -31,6 +31,8 @@ import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-
 import { makeBondSettlementInstructed } from "../platform/event-store/event-types/bond-settlement";
 import { productionTag, simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
+import type { BondTradeBookBody } from "../platform/markets/cdm/bond-book";
+import { SA_BOND_REFERENCE } from "../platform/markets/reference/sa-bond-reference";
 import {
   buildBondSettlementRegister,
   getBondSettlement,
@@ -56,27 +58,18 @@ const BOND_CITATIONS = [
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 
-// SA benchmark bond metadata for UI convenience (ISIN → details).
+// SA benchmark bond metadata for UI convenience (ISIN → details). Derived from
+// the canonical reference table (platform/markets/reference/sa-bond-reference.ts)
+// so the three benchmark bonds are described in exactly one place.
 const BOND_METADATA: Record<
   string,
   { description: string; couponRate: number; maturityDate: string }
-> = {
-  ZAG000030108: {
-    description: "R186 — SA Government Bond 10.5% 2026-12-21",
-    couponRate: 0.105,
-    maturityDate: "2026-12-21",
-  },
-  ZAG000057547: {
-    description: "R2030 — SA Government Bond 7.75% 2030-01-31",
-    couponRate: 0.0775,
-    maturityDate: "2030-01-31",
-  },
-  ZAG000074989: {
-    description: "R2040 — SA Government Bond 9.0% 2040-01-31",
-    couponRate: 0.09,
-    maturityDate: "2040-01-31",
-  },
-};
+> = Object.fromEntries(
+  Object.values(SA_BOND_REFERENCE).map((b) => [
+    b.isin,
+    { description: b.description, couponRate: b.couponRate, maturityDate: b.maturityDate },
+  ]),
+);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -184,36 +177,95 @@ async function handleBookBilateral(
   if (!counterpartyLei)
     return jsonResponse({ ok: false, error: "counterpartyLei is required" }, 400);
 
-  const asOf = clock.now();
+  const result = await bookBondTrade(
+    {
+      tradeId,
+      isin,
+      side,
+      nominalMinor,
+      cleanPricePct,
+      accruedInterestMinor,
+      portfolio,
+      couponRate,
+      maturityDate,
+      counterpartyLei,
+      ...(typeof body.settlementDate === "string" && isValidDate(body.settlementDate)
+        ? { settlementDate: body.settlementDate }
+        : {}),
+      provenanceMode: body.provenanceMode === "simulated" ? "simulated" : "production",
+    },
+    store,
+    custodianSim,
+  );
 
-  // Settlement date: use provided value or default to T+3.
-  let settlementDate: string;
-  if (typeof body.settlementDate === "string" && isValidDate(body.settlementDate)) {
-    settlementDate = body.settlementDate;
-  } else {
-    settlementDate = defaultSettlementDate(asOf);
-  }
+  return jsonResponse(result, result.ok ? 200 : 400);
+}
+
+// ---------------------------------------------------------------------------
+// bookBondTrade — shared booking core (HTTP route + bond sim both call this)
+// ---------------------------------------------------------------------------
+
+export interface BookBondTradeResult {
+  readonly ok: boolean;
+  readonly tradeId: string;
+  readonly tradeEventId: string;
+  readonly settlementId: string;
+  readonly settlementDate: string;
+  readonly dirtyConsiderationZarMinor: number;
+  readonly glWarning?: string;
+}
+
+/**
+ * Book a bond trade end-to-end: emit BondTradeExecuted, run the GL posting
+ * engine scoped to that event, emit BondSettlementInstructed, and instruct the
+ * Standard Bank custodian simulator (async, post-return). Shared by the HTTP
+ * route and the bond market-making simulator.
+ */
+export async function bookBondTrade(
+  body: BondTradeBookBody,
+  store: EventStore,
+  custodianSim: StdbankCustodianSim,
+): Promise<BookBondTradeResult> {
+  const {
+    tradeId,
+    isin,
+    side,
+    nominalMinor,
+    cleanPricePct,
+    accruedInterestMinor,
+    portfolio,
+    couponRate,
+    maturityDate,
+    counterpartyLei,
+  } = body;
+
+  const asOf = clock.now();
+  const settlementDate =
+    typeof body.settlementDate === "string" && isValidDate(body.settlementDate)
+      ? body.settlementDate
+      : defaultSettlementDate(asOf);
 
   // --- Compute derived fields ---
 
   const dirtyPricePercent = cleanPricePct + (accruedInterestMinor / nominalMinor) * 100;
-
   const dirtyConsiderationZarMinor = Math.round((nominalMinor * dirtyPricePercent) / 100);
 
   // --- Provenance ---
 
-  const provenanceMode = body.provenanceMode;
-  const provenance =
-    provenanceMode === "simulated"
-      ? simulatedTag({
-          scenario: "operator:bilateral-bond-booking",
-          sourceLineage: "operator:bond-gateway",
-          tags: ["manual", "sim", "bond"],
-        })
-      : productionTag({
-          sourceLineage: "operator:bond-gateway",
-          tags: ["manual", "bond"],
-        });
+  const isSim = body.provenanceMode === "simulated";
+  const sourceLineage = body.traderRef ?? "operator:bond-gateway";
+  const provenance = isSim
+    ? simulatedTag({
+        scenario: "operator:bilateral-bond-booking",
+        sourceLineage,
+        tags: ["sim", "bond"],
+      })
+    : productionTag({
+        sourceLineage,
+        tags: ["bond"],
+      });
+
+  const actor = body.actor ?? { type: "human" as const, id: "operator" };
 
   // --- Emit BondTradeExecuted ---
 
@@ -221,7 +273,7 @@ async function handleBookBilateral(
   const bondEvent = makeBondTradeExecuted({
     asOf,
     entity: ENTITY,
-    actor: { type: "human", id: "operator" },
+    actor,
     citations: [...BOND_CITATIONS],
     eventId: tradeEventId,
     payload: {
@@ -269,7 +321,7 @@ async function handleBookBilateral(
   const settlementEvent = makeBondSettlementInstructed({
     asOf,
     entity: ENTITY,
-    actor: { type: "human", id: "operator" },
+    actor,
     citations: [...BOND_CITATIONS],
     eventId: settlementEventId,
     payload: {
@@ -304,7 +356,7 @@ async function handleBookBilateral(
       // fire() handles its own errors; ignore here
     });
 
-  return jsonResponse({
+  return {
     ok: true,
     tradeId,
     tradeEventId,
@@ -312,7 +364,7 @@ async function handleBookBilateral(
     settlementDate,
     dirtyConsiderationZarMinor,
     ...(glWarning ? { glWarning } : {}),
-  });
+  };
 }
 
 // ---------------------------------------------------------------------------
