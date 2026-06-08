@@ -4,6 +4,7 @@
 
 import type { AgentRunHandler } from "../../types";
 import beaAccountingReadiness from "../bea-accounting-readiness";
+import beaBa310PeriodClose from "../bea-ba310-period-close";
 import beaEventTriage from "../bea-event-triage";
 import { beaGlPostingEngine } from "../bea-gl-posting-engine";
 import beaGoalLoop from "../bea-goal-loop";
@@ -18,5 +19,6 @@ export const BEA_CALLABLES: Record<string, AgentRunHandler> = {
   "bea:m1-ifrs-classification-rules": beaM1IfrsClassificationRules,
   "bea:event-triage": beaEventTriage,
   "bea:period-close": beaPeriodClose,
+  "bea:ba310-period-close": beaBa310PeriodClose,
   "bea:product-control-daily": beaProductControlDaily,
 };

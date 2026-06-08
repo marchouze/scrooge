@@ -63,7 +63,13 @@ export function ba310ToXmlPayload(out: Ba310Output): SarbXmlReportPayload {
   };
 
   return {
-    formId: "BA320",
+    // Form code is BA 310 (market / position risk — Regulations Relating to
+    // Banks Reg 28(5)). The prior "BA320" label was a numbering drift; FX NOP
+    // rides BA 310 (with the BA 110 daily-return NOP attestation), there is no
+    // BA 320. The `formId` flows through to the XML root element AND to the
+    // `SarbSubmissionAttempted.formId` submission record, so it must be the
+    // canonical code. Authority: D-BA-RETURN-FORM-NUMBERING-RECON.
+    formId: "BA310",
     formVersion: out.meta.formVersion,
     xsdUri: BA_310_XSD_URI,
     namespaceUri: BA_310_NAMESPACE,
