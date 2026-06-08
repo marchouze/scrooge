@@ -2,8 +2,8 @@
 //
 // IFRS 9 classifier output types for the FX Spot accounting pipeline.
 //
-// These types form the contract between the sub-ledger projection
-// (fxSubLedgerProjection) and the trial balance / GL layer.
+// These types form the contract between the SLA-interpreter sub-ledger
+// postings (SubLedgerPostingEmitted) and the trial balance / GL layer.
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)

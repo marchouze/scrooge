@@ -6,10 +6,8 @@
 // CORRECT double-entry legs for every payment lifecycle stage. It replaces the
 // retired byte-for-byte parallel-run suite (the legacy posting-rule functions in
 // platform/accounting/posting-rules/payments.ts were the dead reference oracle;
-// they were retired together with the legacy GL posting engine in the SLA
-// full-retirement Stage 3). The expected legs below are the interpreter's own
-// output — which the now-retired parallel-run proved equal to the legacy engine
-// for every currency the legacy engine booked correctly (ZAR / USD).
+// they were excised from tree under SLA full-retirement Stage 3b). The expected
+// legs below are the interpreter's own output, asserted directly (ZAR / USD).
 //
 // Stages covered:
 //   initiation  (PR-PAY-001): suspense ↔ nostro — ZAR / USD.

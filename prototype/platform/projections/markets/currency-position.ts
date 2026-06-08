@@ -32,7 +32,7 @@
 // event (the canonical realised source, replacing the always-0
 // SettlementConfirmed.realisedPnlDelta).
 //
-// Pure read — multi-pass replay, mirroring buildFxSubLedger / buildPositionSet.
+// Pure read — multi-pass replay, mirroring buildPositionSet.
 //
 // Authority:
 //   - IAS 21 §23/§28 (monetary items retranslated at closing rate;

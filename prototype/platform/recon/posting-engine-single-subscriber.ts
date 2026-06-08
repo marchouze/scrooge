@@ -48,14 +48,10 @@
 // callables (and their local runtime/agents/ imports), so the dead legacy
 // surface is structurally out of scope. It additionally excludes, by path:
 //   - `*.test.ts`                              — tests are not production wiring.
-//   - `platform/accounting/posting-rules/*`    — deprecated-for-production parity
-//                                                reference, retained only for the
-//                                                `tests/sla-*-parallel-run` suites.
-//   - `platform/accounting/gl-posting-engine.ts` — test-only / legacy engine
-//                                                (`bea-gl-fx-interpreter-cutover`
-//                                                header: "the legacy test-only
-//                                                engine"); never registered as a
-//                                                live callable.
+//   - `platform/accounting/posting-rules/*`    — leg-construction helpers
+//                                                (e.g. fx-spot.ts); pure
+//                                                functions, never registered
+//                                                callables that emit postings.
 //   - `platform/accounting/sla/*`              — the pure interpreter returns
 //                                                proposed postings; it never emits
 //                                                `SubLedgerPostingEmitted`.

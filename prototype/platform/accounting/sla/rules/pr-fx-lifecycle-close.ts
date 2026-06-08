@@ -1,10 +1,10 @@
 // platform/accounting/sla/rules/pr-fx-lifecycle-close.ts
 //
 // PR-FX-LIFECYCLE-CLOSE — IFRS realised-P&L residual on the CDM
-// SettlementConfirmed lifecycle-close event. Rules-as-data form of the legacy
-// `fxLifecycleCloseJournals` (platform/accounting/posting-rules/fx-spot.ts).
+// SettlementConfirmed lifecycle-close event, expressed as rules-as-data. The
+// sole production posting path for SettlementConfirmed.
 //
-// Legacy behaviour (SettlementConfirmed.realisedPnlDelta = signed ZAR minor):
+// Behaviour (SettlementConfirmed.realisedPnlDelta = signed ZAR minor):
 //   realisedPnlDelta === 0 → no posting
 //   realisedPnlDelta  >  0 (gain) → Dr fx.nostro[ZAR]    / Cr fx.realised_pnl
 //   realisedPnlDelta  <  0 (loss) → Dr fx.realised_pnl   / Cr fx.nostro[ZAR]

@@ -1,13 +1,12 @@
 // platform/accounting/sla/rules/pr-ird.ts
 //
-// OTC IRD swap lifecycle IFRS posting rules, expressed as rules-as-data. Data
-// form of the legacy `irdSwapTradeBookingJournals / irdSwapRevaluationJournals /
-// irdSwapCouponJournals / irdSwapTerminationJournals` functions
-// (platform/accounting/posting-rules/ird-swaps.ts). The parallel-run regression
-// (tests/sla-ird-lifecycle-parallel-run.test.ts) asserts the interpreter's legs
-// match the legacy engine BYTE-FOR-BYTE on real IRS-lifecycle fixtures (booking
-// asset/liability, NPV reval gain/loss/sign-flip, coupon net-receive/net-pay,
-// termination asset/liability close-out).
+// OTC IRD swap lifecycle IFRS posting rules, expressed as rules-as-data. The
+// sole production posting path for IRS booking / revaluation / coupon /
+// termination; account mappings come from IRD_ACCOUNTS (resolver.ts). The
+// interpreter suite (tests/sla-ird-lifecycle-interpreter.test.ts) pins the leg
+// footprints on real IRS-lifecycle fixtures (booking asset/liability, NPV reval
+// gain/loss/sign-flip, coupon net-receive/net-pay, termination asset/liability
+// close-out).
 //
 // Coverage (one rule per registry posting-producing entry + the two memos —
 // posting-rule-registry.ts):
@@ -37,12 +36,11 @@
 // lines fire for any given event.
 //
 // ─── ZERO-SKIP CONDITIONS ───────────────────────────────────────────────────
-// The legacy booking, revaluation and coupon functions early-return `[]` when the
-// driving amount is zero (`npvMinor`, `npvDeltaMinor`, `netCashMinor`). That maps
-// to `condition: non-zero-delta` keyed on the absolute driving amount — the
-// interpreter returns the explicit `intentional-no-impact` skip (no legs),
-// matching the legacy no-posting path byte-for-byte. The termination function
-// early-returns `[]` only when BOTH `terminationPaymentMinor == 0` AND
+// Booking, revaluation and coupon produce no posting when the driving amount is
+// zero (`npvMinor`, `npvDeltaMinor`, `netCashMinor`). That maps to
+// `condition: non-zero-delta` keyed on the absolute driving amount — the
+// interpreter returns the explicit `intentional-no-impact` skip (no legs).
+// Termination produces no legs only when BOTH `terminationPaymentMinor == 0` AND
 // `carryingNpvAtTerminationMinor == 0`; that compound all-zero case produces zero
 // legs here too (no line fires, no pnl leg — and a consistent event has
 // realisedPnl == terminationPayment − carryingNpv == 0), so PR-IRS-TERM stays

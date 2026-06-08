@@ -1,7 +1,8 @@
 // platform/accounting/sla/rules/pr-fx-cancel.ts
 //
-// PR-FX-CANCEL — IFRS trade-cancellation reversal. Rules-as-data form of the
-// legacy `fxCancellationJournals` (platform/accounting/posting-rules/fx-spot.ts).
+// PR-FX-CANCEL — IFRS trade-cancellation reversal, expressed as rules-as-data.
+// The sole production posting path for FxTradeCancelled; coverage lives in
+// tests/sla-fx-lifecycle-interpreter.test.ts.
 //
 // ─── CONTEXT-ENRICHMENT (brief deliverable 2) ──────────────────────────────
 // Cancellation reverses the trade's PRIOR postings — facts that live on prior

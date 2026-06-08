@@ -14,7 +14,6 @@
 //      (d) fxRwaCalculator — standardised-approach capital charge
 //   5. BA-310 FX adapter — fxPositionsToBa310Input + generateBa310MarketRisk
 //      with live FX positions.
-//   6. Sub-ledger projection — FX events fold to SubLedgerRow[].
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION + D-MARKETS-CAPITAL-TIME-SHAPE
 // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
@@ -56,11 +55,6 @@ import {
 import { fxPositionsToBa310Input } from "../platform/reporting/ba-310-fx-adapter";
 
 import { generateBa310MarketRisk } from "../platform/reporting/ba-310-market-risk";
-
-import {
-  fxSubLedgerProjection,
-  subLedgerInitial,
-} from "../platform/projections/markets/sub-ledger";
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -949,116 +943,5 @@ describe("BA-310 FX section — fxPositionsToBa310Input + generateBa310MarketRis
 
     const fxRows = fxPositionsToBa310Input(positions, "ZAR");
     expect(fxRows).toHaveLength(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 6. FX sub-ledger projection
-// ---------------------------------------------------------------------------
-
-describe("fxSubLedgerProjection — fold FX events into SubLedgerRow[]", () => {
-  it("FxTradeExecuted produces fx-receivable and fx-payable rows", () => {
-    const event = {
-      event_id: "evt-fx-trade-001",
-      type: "FxTradeExecuted" as const,
-      as_of: "2026-05-12T09:00:00.000Z",
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      payload: BASE_TRADE_PAYLOAD,
-    };
-
-    const state = fxSubLedgerProjection.reduce(
-      subLedgerInitial,
-      event as Parameters<typeof fxSubLedgerProjection.reduce>[1],
-    );
-    expect(state.rows.length).toBeGreaterThan(0);
-
-    const legKinds = state.rows.map((r) => r.legKind);
-    expect(legKinds).toContain("fx-receivable");
-    expect(legKinds).toContain("fx-payable");
-  });
-
-  it("FxPositionRevalued produces fx-revaluation row", () => {
-    const event = {
-      event_id: "evt-fx-reval-001",
-      type: "FxPositionRevalued" as const,
-      as_of: "2026-05-12T16:00:00.000Z",
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      payload: {
-        tradeId: "FX-TEST-001",
-        currencyPair: "ZAR/USD",
-        bookRate: 19.0,
-        revalRate: 19.5,
-        notionalBaseMinor: 1_900_000_000,
-        unrealisedPnlZarMinor: 2_500_000,
-        revaluedAt: "2026-05-12T16:00:00.000Z",
-        rateSource: "stub",
-      },
-    };
-
-    const state = fxSubLedgerProjection.reduce(
-      subLedgerInitial,
-      event as Parameters<typeof fxSubLedgerProjection.reduce>[1],
-    );
-    const revalRows = state.rows.filter((r) => r.legKind === "fx-revaluation");
-    expect(revalRows.length).toBeGreaterThan(0);
-  });
-
-  it("TradeMatured produces settlement rows", () => {
-    const event = {
-      event_id: "evt-fx-settle-001",
-      type: "TradeMatured" as const,
-      as_of: "2026-05-14T10:00:00.000Z",
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      payload: {
-        productKind: "fx-spot" as const,
-        tradeId: "FX-TEST-001",
-        currencyPair: "ZAR/USD",
-        legKind: "near" as const,
-        settledBaseCurrencyMinor: -1_900_000_000,
-        settledQuoteCurrencyMinor: 100_000_000,
-        settledAt: "2026-05-14T10:00:00.000Z",
-        nostroAccountBase: "ACC-1100-001",
-        nostroAccountQuote: "ACC-1100-002",
-        realisedPnlZarMinor: 0,
-      },
-    };
-
-    const state = fxSubLedgerProjection.reduce(
-      subLedgerInitial,
-      event as Parameters<typeof fxSubLedgerProjection.reduce>[1],
-    );
-    const settleRows = state.rows.filter(
-      (r) => r.legKind === "fx-settlement-receive" || r.legKind === "fx-settlement-deliver",
-    );
-    expect(settleRows.length).toBeGreaterThan(0);
-  });
-
-  it("projection accepts only FX event types", () => {
-    expect(
-      fxSubLedgerProjection.accepts({ type: "FxTradeExecuted" } as Parameters<
-        typeof fxSubLedgerProjection.accepts
-      >[0]),
-    ).toBe(true);
-    expect(
-      fxSubLedgerProjection.accepts({ type: "FxPositionRevalued" } as Parameters<
-        typeof fxSubLedgerProjection.accepts
-      >[0]),
-    ).toBe(true);
-    expect(
-      fxSubLedgerProjection.accepts({ type: "TradeMatured" } as Parameters<
-        typeof fxSubLedgerProjection.accepts
-      >[0]),
-    ).toBe(true);
-    expect(
-      fxSubLedgerProjection.accepts({ type: "EquityTradeBooked" } as Parameters<
-        typeof fxSubLedgerProjection.accepts
-      >[0]),
-    ).toBe(false);
   });
 });

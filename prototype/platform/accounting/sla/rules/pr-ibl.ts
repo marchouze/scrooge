@@ -1,9 +1,10 @@
 // platform/accounting/sla/rules/pr-ibl.ts
 //
 // Interbank-Loan (IBL — bank as lender / cash placer) IFRS posting rules,
-// expressed as rules-as-data. Data form of the legacy `prIbl001 / prIblAccrual
-// / prIblMat / prIblRecall` functions (platform/accounting/posting-rules/
-// repo-mmd-ibl.ts). The parallel-run regression asserts byte-for-byte parity.
+// expressed as rules-as-data. The sole production posting path for IBL
+// placement / accrual / maturity / recall; account mappings come from
+// IBL_ACCOUNTS (resolver.ts). Coverage lives in
+// tests/sla-treasury-lifecycle-interpreter.test.ts.
 //
 // Coverage:
 //   PR-IBL-001     InterbankLoanPlaced          — asset recognition (by type)

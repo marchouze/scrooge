@@ -1,10 +1,10 @@
 // platform/accounting/sla/rules/pr-repo.ts
 //
 // Repo (bank as cash borrower / secured borrowing, IAS 39 §27) IFRS posting
-// rules, expressed as rules-as-data. Data form of the legacy `prRepo001 /
-// prRepoSettleStart / prRepoAccrual / prRepoEnd / prRepoCancel` functions
-// (platform/accounting/posting-rules/repo-mmd-ibl.ts). The parallel-run
-// regression asserts byte-for-byte parity.
+// rules, expressed as rules-as-data. The sole production posting path for repo
+// open / settle-start / accrual / close / cancel; account mappings come from
+// REPO_ACCOUNTS (resolver.ts). Coverage lives in
+// tests/sla-treasury-lifecycle-interpreter.test.ts.
 //
 // Coverage:
 //   PR-REPO-001          RepoTradeOpened          — secured-borrowing recognition

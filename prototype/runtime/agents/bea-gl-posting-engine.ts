@@ -22,15 +22,16 @@
 //   deprecated TradeMatured (PR-FX-003) — were the LAST hand-coded posting-rule
 //   arms in this handler. All four event types have ZERO production emitters and
 //   ZERO live events (verified against the event store), so they were removed and
-//   the handler no longer imports fx-spot.ts. The legacy functions survive only
-//   as the byte-for-byte parity references in the parallel-run suites (a separate
-//   retirement stage removes the dead legacy engine + those functions in tree).
+//   the handler no longer imports those journal functions. The dead fx-spot.ts
+//   lifecycle journal functions themselves have since been excised from tree
+//   (SLA full-retirement Stage 3b); fx-spot.ts retains only the live
+//   leg-construction helpers (booking / revaluation / settlement / failure).
 //
 //   FX LIFECYCLE — CUT OVER TO THE SLA INTERPRETER (D-SLA-ENGINE-RULES-AS-DATA
 //   Phase 3). The eight FX-lifecycle event types below no longer call the
 //   hand-coded fx-spot.ts posting-rule functions in production; they post via
-//   the rules-as-data SLA interpreter (IFRS), byte-for-byte equal to legacy
-//   (proven by the permanent parallel-run regression). See
+//   the rules-as-data SLA interpreter (IFRS). Leg footprints are pinned by the
+//   interpreter suites (tests/sla-fx-lifecycle-interpreter.test.ts). See
 //   `bea-gl-fx-interpreter-cutover.ts` + `processFxViaInterpreter` below.
 //   - FxTradeExecuted        → PR-FX-001            (trade-booking)
 //   - FxPositionRevalued     → PR-FX-002            (revaluation)
@@ -94,28 +95,24 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
-// NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
-// paymentSettledJournals / settlementInstructionJournals) are no longer imported
-// here — the three payment event types now post via the SLA interpreter
-// (PAYMENTS_INTERPRETER_EVENT_TYPES). They are retained in payments.ts as the
-// byte-for-byte parity reference (deprecated-for-production, not deleted) and are
-// exercised only by tests/sla-payments-lifecycle-parallel-run.test.ts.
+// NOTE: the three payment event types post via the SLA interpreter
+// (PAYMENTS_INTERPRETER_EVENT_TYPES). The hand-coded payments.ts posting-rule
+// functions were retired from tree under SLA full-retirement Stage 3b; leg
+// footprints are pinned by tests/sla-payments-lifecycle-interpreter.test.ts.
 import { FX_ACCOUNTS } from "../../platform/accounting/posting-rules/fx-spot";
 // NOTE (D-SLA-ENGINE-RULES-AS-DATA, full retirement — COMPLETE incl. FX tail):
 // the legacy posting-rule functions for EVERY product family are NO LONGER called
 // from this production engine, AND this handler imports NO journal function from
-// `platform/accounting/posting-rules/*`. FX (Phase 3), treasury repo-mmd-ibl.ts
-// (Batch 1), bonds.ts / equities.ts (Batch 2), ird-swaps.ts (Batch 3) and
-// payments.ts (Batch 4 — the LAST family) all route through the rules-as-data SLA
+// `platform/accounting/posting-rules/*` (only the FX_ACCOUNTS constant above).
+// FX (Phase 3), treasury (Batch 1), securities (Batch 2), IRD (Batch 3) and
+// payments (Batch 4 — the LAST family) all route through the rules-as-data SLA
 // interpreter via their cutover bridges (`bea-gl-{fx,treasury,securities,ird,
 // payments}-interpreter-cutover.ts` + the `process*ViaInterpreter` seams below).
-// The four final hand-coded fx-spot.ts dispatch arms (TradeMatured /
-// SettlementReversed / TradeCancelled non-FX / TradeAmended) were RETIRED in the
-// FX-lifecycle tail: those event types have ZERO production emitters and ZERO live
-// events. The legacy files are retained ONLY as the byte-for-byte parity
-// references (the `tests/sla-*-lifecycle-parallel-run.test.ts` suites),
-// deprecated-for-production but not yet deleted — a separate retirement stage
-// removes the dead legacy engine + those functions from tree.
+// The dead hand-coded posting-rule functions + their five sibling files
+// (bonds/equities/ird-swaps/payments/repo-mmd-ibl) and the dead fx-spot.ts
+// lifecycle journal functions have been excised from tree (SLA full-retirement
+// Stage 3b); leg footprints are now pinned by the interpreter suites
+// (tests/sla-*-lifecycle-interpreter.test.ts).
 import { seedGrandfatherApprovals } from "../../platform/accounting/sla/grandfather";
 import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
@@ -1119,9 +1116,9 @@ export async function beaGlPostingEngine(
       // -----------------------------------------------------------------------
       // FX-LIFECYCLE CUTOVER (D-SLA-ENGINE-RULES-AS-DATA Phase 3) ─────────────
       // The eight FX-lifecycle event types post via the rules-as-data SLA
-      // interpreter (IFRS), NOT the legacy fx-spot.ts posting-rule functions.
-      // The cutover is byte-for-byte safe — proven by the permanent parallel-run
-      // regression. Enrichment (cancel reversal legs / failed-receive-leg) is
+      // interpreter (IFRS). Leg footprints are pinned by
+      // tests/sla-fx-lifecycle-interpreter.test.ts.
+      // Enrichment (cancel reversal legs / failed-receive-leg) is
       // reconstructed HERE by the engine (which has the event stream) and handed
       // to the pure interpreter. Non-FX product families fall through to the
       // legacy dispatch below, UNTOUCHED.
@@ -1142,9 +1139,9 @@ export async function beaGlPostingEngine(
       // -----------------------------------------------------------------------
       // TREASURY MONEY-MARKET CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 1) ────
       // The 15 deposit / funding-line / interbank-loan / repo lifecycle event
-      // types post via the rules-as-data SLA interpreter (IFRS), NOT the legacy
-      // repo-mmd-ibl.ts posting-rule functions. Byte-for-byte safe — proven by
-      // tests/sla-treasury-lifecycle-parallel-run.test.ts. Enrichment for the
+      // types post via the rules-as-data SLA interpreter (IFRS). Leg footprints
+      // are pinned by tests/sla-treasury-lifecycle-interpreter.test.ts.
+      // Enrichment for the
       // maturity / early-termination rules is reconstructed inside
       // processTreasuryViaInterpreter and handed to the pure interpreter. All
       // other product families (bond/equity/IRS/payments + FX already done) fall
@@ -1160,9 +1157,8 @@ export async function beaGlPostingEngine(
       // -----------------------------------------------------------------------
       // SECURITIES CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 2) ───────────────
       // The nine bond + equity lifecycle event types post via the rules-as-data
-      // SLA interpreter (IFRS), NOT the legacy bonds.ts / equities.ts posting-
-      // rule functions. Byte-for-byte safe — proven by
-      // tests/sla-securities-lifecycle-parallel-run.test.ts. Enrichment for the
+      // SLA interpreter (IFRS). Leg footprints are pinned by
+      // tests/sla-securities-lifecycle-interpreter.test.ts. Enrichment for the
       // bond booking (dirty-price amount) and maturity / sale (portfolio) is
       // reconstructed inside processSecuritiesViaInterpreter and handed to the
       // pure interpreter. All remaining families (IRS, payments + FX, treasury
@@ -1178,9 +1174,8 @@ export async function beaGlPostingEngine(
       // -----------------------------------------------------------------------
       // IRD-SWAP CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 3) ─────────────────
       // The four OTC interest-rate / IRD swap lifecycle event types post via the
-      // rules-as-data SLA interpreter (IFRS), NOT the legacy ird-swaps.ts posting-
-      // rule functions. Byte-for-byte safe — proven by
-      // tests/sla-ird-lifecycle-parallel-run.test.ts. No enrichment is required
+      // rules-as-data SLA interpreter (IFRS). Leg footprints are pinned by
+      // tests/sla-ird-lifecycle-interpreter.test.ts. No enrichment is required
       // (all IRD amounts are integer minor-unit fields on the triggering event).
       // The remaining family (payments) + the already-done families (FX,
       // treasury, securities) fall through to their existing dispatch, UNTOUCHED.
@@ -1196,9 +1191,8 @@ export async function beaGlPostingEngine(
       // PAYMENT / SETTLEMENT CUTOVER (D-SLA-ENGINE-RULES-AS-DATA, Batch 4) ──────
       // The three payment lifecycle event types (PaymentInitiated /
       // PaymentSettled / SettlementInstructionReceived) post via the rules-as-data
-      // SLA interpreter (IFRS), NOT the legacy payments.ts posting-rule functions.
-      // Byte-for-byte safe — proven by
-      // tests/sla-payments-lifecycle-parallel-run.test.ts. No enrichment is
+      // SLA interpreter (IFRS). Leg footprints are pinned by
+      // tests/sla-payments-lifecycle-interpreter.test.ts. No enrichment is
       // required (each payment rule prices off the integer `netCash` field on the
       // triggering event). This is the FIFTH and LAST family — after this branch,
       // EVERY product family routes through an interpreter bridge and the legacy
@@ -1253,10 +1247,10 @@ export async function beaGlPostingEngine(
       // TradeCancelled / TradeAmended) have been RETIRED: those four event types
       // have ZERO production emitters and ZERO live events (verified against the
       // event store), so the live handler no longer imports any journal function
-      // from `platform/accounting/posting-rules/*`. The legacy `fx-spot.ts`
-      // functions survive only as the byte-for-byte parity references exercised
-      // by the parallel-run regression suites (a separate retirement stage will
-      // remove them once the dead legacy engine is taken out of tree).
+      // from `platform/accounting/posting-rules/*`. The dead `fx-spot.ts`
+      // lifecycle journal functions have themselves been excised from tree (SLA
+      // full-retirement Stage 3b); leg footprints now live in the interpreter
+      // suites (tests/sla-*-lifecycle-interpreter.test.ts).
       //
       // Anything reaching this point is an event type listed in SUBSCRIBED_TYPES
       // but NOT intercepted by an interpreter branch above — a subscription /

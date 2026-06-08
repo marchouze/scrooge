@@ -1,12 +1,11 @@
 // platform/accounting/sla/rules/pr-equity.ts
 //
-// JSE equity lifecycle IFRS posting rules, expressed as rules-as-data. Data form
-// of the legacy `equityTradeBookingJournals / equityRevaluationJournals /
-// equityDividendJournals / equitySaleJournals` functions
-// (platform/accounting/posting-rules/equities.ts). The parallel-run regression
-// (tests/sla-securities-lifecycle-parallel-run.test.ts) asserts the
-// interpreter's legs match the legacy engine BYTE-FOR-BYTE, including the FVOCI
-// OCI-vs-P&L split on sale, dividend WHT, and FVTPL revaluation.
+// JSE equity lifecycle IFRS posting rules, expressed as rules-as-data. The sole
+// production posting path for equity trade-booking / revaluation / dividend /
+// sale; account mappings come from EQUITY_ACCOUNTS (resolver.ts). The
+// interpreter suite (tests/sla-securities-lifecycle-interpreter.test.ts) pins
+// the leg footprints, including the FVOCI OCI-vs-P&L split on sale, dividend
+// WHT, and FVTPL revaluation.
 //
 // Coverage (one rule per posting-producing registry entry + the memo rule):
 //   PR-EQ-001      EquityTradeExecuted   — initial recognition (FVTPL, at cost)

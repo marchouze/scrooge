@@ -402,14 +402,13 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
 //
 // The deposit (MMD), funding-line, interbank-loan (IBL) and repo families. All
 // ZAR (predominantly ZAR per the brief; any non-ZAR leg follows the FX suspense
-// discipline via the shared no-silent-fallback resolver). Physical accounts are
-// the same COA leaves the legacy `repo-mmd-ibl.ts` functions used, so the
-// interpreter output is byte-for-byte equal to legacy.
+// discipline via the shared no-silent-fallback resolver). These rows are the
+// canonical COA mapping for the treasury money-market families.
 //
 //   MMD / FUNDING — Nostro ACC-1200-001; liability ACC-6100-001..004 (by LCR
 //     category); accrued interest ACC-6100-005; interest expense ACC-6100-006.
 //     (Funding reuses the wholesale-non-operational liability ACC-6100-004 and
-//      the same Nostro, exactly as the legacy `prFunding001/End`.)
+//      the same Nostro.)
 //   IBL — Nostro ACC-1200-001; due-from-banks call ACC-7100-001 / fixed
 //     ACC-7100-002; accrued interest ACC-7100-003; interest income ACC-7100-004.
 //   REPO — Nostro ACC-1200-001; repo asset ACC-5100-001; accrued interest
@@ -466,9 +465,8 @@ export const IFRS_TREASURY_RESOLVER_ROWS: readonly ResolverRow[] = [
 // ---------------------------------------------------------------------------
 // Securities resolver rows (IFRS, full-retirement Batch 2)
 //
-// The bond and equity families. Physical accounts are the same COA leaves the
-// legacy `bonds.ts` / `equities.ts` functions used, so the interpreter output is
-// byte-for-byte equal to legacy. JSE bonds + equities are ZAR; any non-ZAR leg
+// The bond and equity families. These rows are the canonical COA mapping for
+// the securities families. JSE bonds + equities are ZAR; any non-ZAR leg
 // follows the shared no-silent-fallback suspense discipline.
 //
 //   BOND — Nostro ACC-1200-001; asset banking ACC-3100-001 / trading
@@ -515,11 +513,10 @@ export const IFRS_SECURITIES_RESOLVER_ROWS: readonly ResolverRow[] = [
 // ---------------------------------------------------------------------------
 // IRD-swap resolver rows (IFRS, full-retirement Batch 3)
 //
-// The OTC interest-rate / IRD swap family. Physical accounts are the same COA
-// leaves the legacy `ird-swaps.ts` functions used (the `IRD_ACCOUNTS` constant),
-// so the interpreter output is byte-for-byte equal to legacy. Domestic OTC swaps
-// are ZAR; any non-ZAR leg follows the shared no-silent-fallback suspense
-// discipline via the resolver's per-currency miss → ACC-2100-007 + alert.
+// The OTC interest-rate / IRD swap family. These rows are the canonical COA
+// mapping for the IRD-swap family. Domestic OTC swaps are ZAR; any non-ZAR leg
+// follows the shared no-silent-fallback suspense discipline via the resolver's
+// per-currency miss → ACC-2100-007 + alert.
 //
 //   IRD — Nostro ACC-1200-001 (ZAR correspondent settlement cash); swap asset
 //     FVTPL (positive NPV) ACC-3300-001; swap liability FVTPL (negative NPV)
@@ -554,21 +551,19 @@ export const IFRS_IRD_RESOLVER_ROWS: readonly ResolverRow[] = [
 // ---------------------------------------------------------------------------
 // Payment / settlement resolver rows (IFRS, full-retirement Batch 4 — LAST)
 //
-// The payment-in-flight / settlement family. Physical accounts are the same COA
-// leaves the legacy `payments.ts` `*AccountForCurrency` helpers used
-// (PAYMENT_ACCOUNTS), so the interpreter output is byte-for-byte equal to legacy
-// for every currency the legacy engine booked correctly.
+// The payment-in-flight / settlement family. These rows (PAYMENT_ACCOUNTS) are
+// the canonical per-currency COA mapping for the payment family.
 //
-// Legacy per-currency support (the `*AccountForCurrency` switch arms):
+// Per-currency support:
 //   payment.nostro                ZAR→ACC-1200-001 USD→ACC-1200-002 EUR→ACC-1200-003
 //   payment.suspense              ZAR→ACC-2400-001 USD→ACC-2400-002
 //   payment.customer_payable      ZAR→ACC-2200-001 USD→ACC-2200-002
 //   payment.settlement_receivable ZAR→ACC-4100-001 USD→ACC-4100-002
 //
-// The legacy helpers THREW for any other currency; the resolver instead routes an
-// unmapped-currency leg to the FX unresolved-currency suspense (ACC-2100-007) +
-// urgent-correction alert — the no-silent-fallback discipline shared with the FX /
-// treasury / securities / IRD families (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
+// Any other currency routes an unmapped-currency leg to the FX
+// unresolved-currency suspense (ACC-2100-007) + urgent-correction alert — the
+// no-silent-fallback discipline shared with the FX / treasury / securities / IRD
+// families (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
 //
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 4, CEO-approved
 // 2026-06-05). Cites: IFRS 9 §3.1.1; IAS 32 §11; PROC-PAY-RBH-01.

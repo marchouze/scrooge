@@ -114,8 +114,8 @@ export interface ProposedLeg {
   readonly accountId: AccountId;
   readonly debitCredit: "debit" | "credit";
   /** Minor units, always positive (matches SubLedgerLeg). Stored as string
-   *  to survive >2^53 BigInt magnitudes losslessly; the legacy engine uses
-   *  `number` and the parallel-run test compares numerically. */
+   *  to survive >2^53 BigInt magnitudes losslessly; the leg-construction
+   *  helpers (e.g. fx-spot.ts) use `number`. */
   readonly amountMinor: string;
   readonly currency: string;
 }

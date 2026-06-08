@@ -1,11 +1,11 @@
 // platform/accounting/sla/rules/pr-payments.ts
 //
 // Payment / settlement lifecycle IFRS posting rules, expressed as rules-as-data.
-// Data form of the legacy `paymentInitiatedJournals / paymentSettledJournals /
-// settlementInstructionJournals` functions
-// (platform/accounting/posting-rules/payments.ts). The parallel-run regression
-// (tests/sla-payments-lifecycle-parallel-run.test.ts) asserts the interpreter's
-// legs match the legacy engine BYTE-FOR-BYTE on real payment-lifecycle fixtures.
+// The sole production posting path for payment-initiated / payment-settled /
+// settlement-instruction-received; account mappings come from PAYMENT_ACCOUNTS
+// (resolver.ts). The interpreter suite
+// (tests/sla-payments-lifecycle-interpreter.test.ts) pins the leg footprints on
+// real payment-lifecycle fixtures.
 //
 // This is the FIFTH and LAST product family in the full-retirement series (after
 // FX, treasury, securities and IRD). After the cutover (Batch 4) every product

@@ -2,10 +2,10 @@
 //
 // PR-FX-001 — IFRS FX trade-booking, expressed as rules-as-data (spec §3.2).
 //
-// This is the data form of the legacy `fxTradeBookingJournals`
-// (platform/accounting/posting-rules/fx-spot.ts). The parallel-run test
-// (tests/sla-pr-fx-001-parallel-run.test.ts) asserts the interpreter's legs
-// match the legacy engine BYTE-FOR-BYTE on real FxTradeExecuted fixtures.
+// The sole production posting path for FX trade-booking. The interpreter suite
+// (tests/sla-pr-fx-001-interpreter.test.ts) pins the leg footprint on real
+// FxTradeExecuted fixtures. `fxTradeBookingJournals` (fx-spot.ts) remains the
+// shared leg-construction helper this rule's account mapping mirrors.
 //
 // Legacy posting (per the natural-side convention, fx-spot.ts §PR-FX-001):
 //   payCcy sub-entry:     Dr Receivable[payCcy]     / Cr Payable[payCcy]

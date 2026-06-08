@@ -2,10 +2,10 @@
 //
 // SLA full-retirement Batch 2 — securities (bond + equity) cutover bridge
 // (strangler-fig). The THIRD production seam (after the FX and treasury
-// cutovers) where Bea's universal GL posting engine stops calling the hand-coded
-// posting-rule functions (platform/accounting/posting-rules/bonds.ts +
-// equities.ts) and starts calling the rules-as-data SLA interpreter (IFRS) for
-// the bond + equity lifecycles.
+// cutovers) where Bea's universal GL posting engine routes the bond + equity
+// lifecycles through the rules-as-data SLA interpreter (IFRS). The hand-coded
+// bonds.ts / equities.ts posting-rule functions this seam replaced have since
+// been retired from tree (SLA full-retirement Stage 3b).
 //
 // SCOPE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 2): the nine bond +
 // equity lifecycle event types below post via the interpreter. Every OTHER
