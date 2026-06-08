@@ -247,6 +247,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   "runtime/agents/ravi-goal-loop.test.ts",
   "runtime/agents/helena-goal-loop.test.ts",
   "runtime/agents/eitan-goal-loop.test.ts",
+  // Rohan risk-run derive-from-store helper unit tests — co-located
+  // per-module test convention. Raw EventStore(":memory:") is a build-phase
+  // fixture for asserting readLatestHelenaSnapshot reads the event's
+  // lineStatuses payload + hasModelValidationApproved derives the
+  // independent-validation staffing gap, not a production access path.
+  // T-01 carve-out. Citation: D-CRO-GAP-REMEDIATION-FOLLOWON,
+  // P4-SECURITY-DESIGNED-IN.
+  "runtime/agents/rohan-risk-run.test.ts",
   // Climate-risk projection unit tests — co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for scenario assertion,
   // not a production access path. T-01 carve-out.
