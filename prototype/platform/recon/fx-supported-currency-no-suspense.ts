@@ -29,10 +29,11 @@
 // fx.credit_loss_expense. These intentionally have a single ZAR home and are
 // excluded from the per-currency assertion.
 //
-// The gate resolves through the production `defaultResolver` (and asserts the
-// legacy posting-rule helpers `receivableAccountFor`/`payableAccountFor`/
-// `nostroAccountFor` agree byte-for-byte where they exist), so it cannot drift
-// from either booking path.
+// The gate resolves through the production `defaultResolver` (the live SLA
+// booking path), so it cannot drift from the interpreter's account resolution.
+// The legacy posting-rule helpers (receivableAccountFor / payableAccountFor /
+// nostroAccountFor / settlementFailedReceivableAccountFor in fx-spot.ts) carry
+// the SAME per-currency mapping and are pinned to it by the interpreter tests.
 //
 // Authority: D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (CEO build-phase,
 //   2026-06-08); D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE (CEO-approved 2026-06-05).
@@ -42,13 +43,13 @@
 
 import { fileURLToPath } from "node:url";
 
+import { TWELVE_DATA_TARGET_PAIRS } from "../../scripts/agents/fx-twelvedata-parse.ts";
 import {
   FX_UNRESOLVED_CURRENCY_SUSPENSE,
   type ResolverKey,
   defaultResolver,
 } from "../accounting/sla/resolver.ts";
 import { SEED_MID_RATES_KEYS } from "../simulation/fx-sim-rates.ts";
-import { TWELVE_DATA_TARGET_PAIRS } from "../../scripts/agents/fx-twelvedata-parse.ts";
 
 const PIPELINE = "recon:fx-supported-currency-no-suspense";
 
@@ -108,21 +109,14 @@ export function main(): { violations: Violation[]; asserted: number } {
       if (!outcome.ok) {
         violations.push({
           subject: `${logical}:${currency}`,
-          message:
-            `supported currency ${currency} does NOT resolve ${logical} to a dedicated account ` +
-            `(resolver returned '${outcome.reason}') — it would route to the FX unresolved-currency ` +
-            `suspense (${FX_UNRESOLVED_CURRENCY_SUSPENSE}). A supported currency must never book to ` +
-            `suspense in steady state (D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS, Principle 5).`,
+          message: `supported currency ${currency} does NOT resolve ${logical} to a dedicated account (resolver returned '${outcome.reason}') — it would route to the FX unresolved-currency suspense (${FX_UNRESOLVED_CURRENCY_SUSPENSE}). A supported currency must never book to suspense in steady state (D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS, Principle 5).`,
         });
         continue;
       }
       if (outcome.physical === FX_UNRESOLVED_CURRENCY_SUSPENSE) {
         violations.push({
           subject: `${logical}:${currency}`,
-          message:
-            `supported currency ${currency} resolves ${logical} to the FX unresolved-currency suspense ` +
-            `(${FX_UNRESOLVED_CURRENCY_SUSPENSE}) — suspense is reserved for UNsupported currencies only ` +
-            `(D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS, Principle 5).`,
+          message: `supported currency ${currency} resolves ${logical} to the FX unresolved-currency suspense (${FX_UNRESOLVED_CURRENCY_SUSPENSE}) — suspense is reserved for UNsupported currencies only (D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS, Principle 5).`,
         });
       }
     }
