@@ -84,6 +84,18 @@ import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
 // component. These strings MUST be IDENTICAL to the legacy engine's
 // `postingType` for each event type so the `${sourceEventId}:${postingType}`
 // idempotency key is unchanged (no double-post on replay).
+//
+// TODO(recon): add `recon:posting-engine-single-subscriber` — a static gate
+// asserting exactly one PRODUCTION callable emits `SubLedgerPostingEmitted` for
+// each `source-event-type : postingType` pair. The retired `bea-fx-posting-engine`
+// double-subscribed FxTradeCancelled (it owned the MTM-undo `reversal` postings
+// while this engine owned the booking-leg reversal); that split is what stranded
+// the accumulated unrealised P&L when the engine was deleted (PR #1095 follow-up).
+// A subscriber-ownership gate would have caught the orphaned `postingType` at the
+// moment of deletion. Scope note: must EXCLUDE the deprecated-for-production
+// parity-reference posting-rule files (`platform/accounting/posting-rules/*`,
+// retained only for the `tests/sla-*-parallel-run` suites) and all `*.test.ts`.
+// Routed to Atlas/Vera (>30 min for a false-positive-free static analysis).
 // ---------------------------------------------------------------------------
 
 export type FxPostingType =

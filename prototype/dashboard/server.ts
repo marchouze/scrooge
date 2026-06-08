@@ -166,7 +166,6 @@ import {
   buildOpenDecisionsFromEscalations,
   decisionsSourceFromStore,
 } from "../projections/decisions";
-import beaFxPostingEngine from "../runtime/agents/bea-fx-posting-engine";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import { recordBankModePolicy } from "../runtime/bank-mode/record";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
@@ -1036,10 +1035,13 @@ function refresh(reason: string): void {
       logger.warn({ err: (agingErr as Error).message }, "aging-watchdog: check skipped");
     }
 
-    // GL posting engine — catch-all for any events (cancellations, sim trades,
-    // script-emitted events) that weren't posted inline. Idempotent: already-
-    // posted events are skipped. Fire-and-forget so the refresh cycle is not
-    // blocked; errors are logged but do not abort derivation.
+    // GL posting engine — catch-all for any events (FX lifecycle, cancellations,
+    // sim trades, script-emitted events) that weren't posted inline. This is now
+    // the SOLE FX + non-FX posting path: the redundant `bea:fx-posting-engine`
+    // was retired under WS-SLA-FULL-RETIREMENT (D-SLA-ENGINE-RULES-AS-DATA) — it
+    // subscribed to the same FX event types and was a latent double-posting path.
+    // Idempotent: already-posted events are skipped. Fire-and-forget so the
+    // refresh cycle is not blocked; errors are logged but do not abort derivation.
     const glCtx = {
       agent: "Bea",
       trigger: { kind: "scheduled" as const, id: "refresh-cycle-gl-catch-all" },
@@ -1048,7 +1050,7 @@ function refresh(reason: string): void {
       ownerInboxDir: `${process.cwd()}/Owner Inbox`,
       dryRun: false,
     };
-    Promise.all([beaGlPostingEngine(glCtx), beaFxPostingEngine(glCtx)]).catch((err) => {
+    beaGlPostingEngine(glCtx).catch((err) => {
       logger.warn({ err: (err as Error).message }, "refresh: GL posting engine error");
     });
   } catch (e) {

@@ -19,7 +19,6 @@ import { clock } from "../platform/composition";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
 import type { EventStore } from "../platform/event-store/store";
-import { beaFxPostingEngine } from "../runtime/agents/bea-fx-posting-engine";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
 
@@ -255,18 +254,15 @@ async function handleRunPostingEngine(): Promise<Response> {
       dryRun: false,
     };
 
-    const [glResult, fxResult] = await Promise.all([
-      beaGlPostingEngine(ctx),
-      beaFxPostingEngine(ctx),
-    ]);
+    // Sole posting path: beaGlPostingEngine covers FX (via the SLA interpreter)
+    // and all non-FX families. The redundant bea:fx-posting-engine was retired
+    // under WS-SLA-FULL-RETIREMENT (D-SLA-ENGINE-RULES-AS-DATA).
+    const glResult = await beaGlPostingEngine(ctx);
 
-    const ok = glResult.ok && fxResult.ok;
-    const eventsEmitted = glResult.eventsEmitted + fxResult.eventsEmitted;
-    const errors = [
-      ...((glResult as { errors?: string[] }).errors ?? []),
-      ...((fxResult as { errors?: string[] }).errors ?? []),
-    ];
-    const summary = `${glResult.summary}; ${fxResult.summary}`;
+    const ok = glResult.ok;
+    const eventsEmitted = glResult.eventsEmitted;
+    const errors = [...((glResult as { errors?: string[] }).errors ?? [])];
+    const summary = glResult.summary;
 
     return jsonResponse({ ok, eventsEmitted, skipped: 0, errors, summary });
   } catch (err) {

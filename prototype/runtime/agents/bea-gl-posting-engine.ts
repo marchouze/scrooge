@@ -94,6 +94,13 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+// NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
+// paymentSettledJournals / settlementInstructionJournals) are no longer imported
+// here — the three payment event types now post via the SLA interpreter
+// (PAYMENTS_INTERPRETER_EVENT_TYPES). They are retained in payments.ts as the
+// byte-for-byte parity reference (deprecated-for-production, not deleted) and are
+// exercised only by tests/sla-payments-lifecycle-parallel-run.test.ts.
+import { FX_ACCOUNTS } from "../../platform/accounting/posting-rules/fx-spot";
 // NOTE (D-SLA-ENGINE-RULES-AS-DATA, full retirement — COMPLETE incl. FX tail):
 // the legacy posting-rule functions for EVERY product family are NO LONGER called
 // from this production engine, AND this handler imports NO journal function from
@@ -110,12 +117,6 @@
 // deprecated-for-production but not yet deleted — a separate retirement stage
 // removes the dead legacy engine + those functions from tree.
 import { seedGrandfatherApprovals } from "../../platform/accounting/sla/grandfather";
-// NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
-// paymentSettledJournals / settlementInstructionJournals) are no longer imported
-// here — the three payment event types now post via the SLA interpreter
-// (PAYMENTS_INTERPRETER_EVENT_TYPES). They are retained in payments.ts as the
-// byte-for-byte parity reference (deprecated-for-production, not deleted) and are
-// exercised only by tests/sla-payments-lifecycle-parallel-run.test.ts.
 import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
@@ -338,13 +339,24 @@ function buildCancellationIndex(): CancellationIndex {
  * unrealised P&L) for an FxTradeCancelled trade, from the per-run cancellation
  * index. Mirrors the legacy `TradeCancelled` reconstruction below.
  *
- * Production parity note: for the FX-specific `FxTradeCancelled` kind, the
- * per-revaluation MTM undo is owned by `bea-fx-posting-engine` (it emits
- * `reversal` postings). The legacy GL engine therefore passed
- * `cumulativeUnrealisedPnlZarMinor = 0` for FxTradeCancelled so PR-FX-CANCEL
- * emits ONLY the booking-leg reversal. We preserve that exactly: this builder
- * returns cumulative P&L = 0, and only the prior booking legs drive the
- * reversal.
+ * MTM-undo ownership (corrected 2026-06-08, PR #1095 follow-up): the per-
+ * revaluation MTM undo was historically owned by the now-retired
+ * `bea-fx-posting-engine`, which emitted leg-by-leg `reversal` postings against
+ * each prior PR-FX-002 revaluation. This GL engine therefore used to pass
+ * `cumulativeUnrealisedPnlZarMinor = 0` so PR-FX-CANCEL emitted ONLY the
+ * booking-leg reversal — the cumulative-P&L reversal (step-ii of PR-FX-CANCEL)
+ * was a deliberate NO-OP. With `bea-fx-posting-engine` deleted, that split
+ * leaves the accumulated unrealised P&L STRANDED in the GL on cancellation.
+ *
+ * The MTM undo is now folded into the interpreter path: this builder computes
+ * the REAL cumulative — the signed sum of every prior `revaluation` posting on
+ * the trade — and returns it so PR-FX-CANCEL step-(ii) reverses it as a single
+ * net ZAR pair (Dr/Cr fx.unrealised_pnl ↔ fx.receivable[ZAR], direction by
+ * sign). PR-FX-002 only ever posts revaluations against those same two ZAR
+ * accounts (RECEIVABLE_ZAR = ACC-2100-001, UNREALISED_PNL = ACC-2100-005), so
+ * the consolidated single-pair reversal nets the GL to ZERO on exactly the
+ * accounts the leg-by-leg form hit — same physical accounts, one event instead
+ * of N. Authority: D-SLA-ENGINE-RULES-AS-DATA.
  */
 function buildFxCancelEnrichmentForTrade(
   tradeId: string,
@@ -354,6 +366,7 @@ function buildFxCancelEnrichmentForTrade(
   cumulativeUnrealisedPnlZarMinor: number;
 } {
   const bookingLegs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[] = [];
+  let cumulativeUnrealisedPnlZarMinor = 0;
   for (const p of cidx.postings) {
     const pp = p.payload as {
       postingType?: string;
@@ -361,22 +374,39 @@ function buildFxCancelEnrichmentForTrade(
       legs?: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
     };
     if (typeof pp.postingType !== "string" || !Array.isArray(pp.legs)) continue;
-    // Reverse ONLY the IFRS booking legs. A booking with no `representation` is a
-    // legacy (pre-SARB-flip) IFRS posting; an explicit non-IFRS representation
-    // (the SARB-BA-RETURN NOP memo) is reversed by its OWN rule (PR-FX-CANCEL-BA)
-    // via the `nopReversal` enrichment — folding it here would double-reverse the
-    // NOP memo AND break IFRS additivity (the IFRS cancel must touch only IFRS
-    // accounts). SARB activation Round 3.
+    // Reverse ONLY the IFRS booking/revaluation legs. A posting with no
+    // `representation` is a legacy (pre-SARB-flip) IFRS posting; an explicit
+    // non-IFRS representation (the SARB-BA-RETURN NOP memo) is reversed by its
+    // OWN rule (PR-FX-CANCEL-BA) via the `nopReversal` enrichment — folding it
+    // here would double-reverse the NOP memo AND break IFRS additivity (the IFRS
+    // cancel must touch only IFRS accounts). SARB activation Round 3.
     const representation = typeof pp.representation === "string" ? pp.representation : "IFRS";
     if (representation !== "IFRS") continue;
     const sourceEventId = (p.payload as { sourceEventId?: string }).sourceEventId;
     if (!sourceEventId) continue;
     const srcTradeIdValue = cidx.tradeIdBySourceEvent.get(sourceEventId);
     if (!srcTradeIdValue || srcTradeIdValue !== tradeId) continue;
-    if (pp.postingType === "trade-booking") bookingLegs.push(...pp.legs);
+    if (pp.postingType === "trade-booking") {
+      bookingLegs.push(...pp.legs);
+    } else if (pp.postingType === "revaluation") {
+      // Accumulate the signed delta of each prior PR-FX-002 revaluation. A
+      // revaluation is a balanced ZAR pair: a GAIN (delta > 0) DEBITS the
+      // FX receivable (Dr RECEIVABLE_ZAR / Cr UNREALISED_PNL); a LOSS (delta
+      // < 0) CREDITS it. So the signed cumulative = +amount when the receivable
+      // leg is a debit, −amount when it is a credit. This is exactly the set the
+      // retired fx-engine reversed leg-by-leg; summing it here lets PR-FX-CANCEL
+      // step-(ii) undo the whole MTM in one net pair.
+      const receivableLeg = pp.legs.find((l) => l.accountId === FX_ACCOUNTS.RECEIVABLE_ZAR);
+      if (receivableLeg) {
+        const signed =
+          receivableLeg.debitCredit === "debit"
+            ? receivableLeg.amountMinor
+            : -receivableLeg.amountMinor;
+        cumulativeUnrealisedPnlZarMinor += signed;
+      }
+    }
   }
-  // FX-specific kind: MTM undo owned by bea-fx-posting-engine → cumulative = 0.
-  return { bookingLegs, cumulativeUnrealisedPnlZarMinor: 0 };
+  return { bookingLegs, cumulativeUnrealisedPnlZarMinor };
 }
 
 /**

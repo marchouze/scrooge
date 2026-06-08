@@ -4,9 +4,13 @@
 // Backfill script: replays all payment and FX lifecycle events from the event
 // store and emits SubLedgerPostingEmitted events for each, idempotently.
 //
-// Engines run:
-//   - beaGlPostingEngine  → PaymentInitiated / PaymentSettled / SettlementInstructionReceived
-//   - beaFxPostingEngine  → FxTradeExecuted / FxPositionRevalued / TradeMatured
+// Engine run:
+//   - beaGlPostingEngine  → the SOLE posting path: payments
+//     (PaymentInitiated / PaymentSettled / SettlementInstructionReceived),
+//     treasury, securities, IRD, and FX lifecycle
+//     (FxTradeExecuted / FxPositionRevalued / TradeMatured / FxTradeCancelled).
+//     The redundant bea:fx-posting-engine was retired under
+//     WS-SLA-FULL-RETIREMENT (D-SLA-ENGINE-RULES-AS-DATA).
 //
 // Usage:
 //   bun run gl:backfill-postings
@@ -23,7 +27,6 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import { clock } from "../../platform/composition";
-import { beaFxPostingEngine } from "../../runtime/agents/bea-fx-posting-engine";
 import { beaGlPostingEngine } from "../../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../../runtime/types";
 
@@ -55,16 +58,12 @@ console.log(`\nGL Backfill Postings — ${dryRun ? "DRY RUN" : "LIVE"}`);
 console.log(`As-of: ${asOf}`);
 console.log("─".repeat(60));
 
-const [glResult, fxResult] = await Promise.all([beaGlPostingEngine(ctx), beaFxPostingEngine(ctx)]);
+const glResult = await beaGlPostingEngine(ctx);
 
 console.log(`\n${glResult.summary}`);
-console.log(`${fxResult.summary}`);
 
-const ok = glResult.ok && fxResult.ok;
-const allErrors = [
-  ...((glResult as { errors?: string[] }).errors ?? []),
-  ...((fxResult as { errors?: string[] }).errors ?? []),
-];
+const ok = glResult.ok;
+const allErrors = [...((glResult as { errors?: string[] }).errors ?? [])];
 
 if (ok) {
   console.log("\n✓ Completed successfully");

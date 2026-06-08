@@ -447,12 +447,11 @@ const CATEGORY_E: AgentSpec[] = [
   // Citation: P4-SECURITY-DESIGNED-IN; P6-AUTONOMOUS-BY-DEFAULT.
   makeSubAgentSpec("agent:devon:fx-sim-engine", ["FxTradeExecuted", "AgentEscalation"]),
 
-  // Bea — FX posting engine sub-agent
-  // Emits: SubLedgerPostingEmitted (for FxTradeExecuted, FxPositionRevalued,
-  //   TradeMatured trade events)
-  // Parent: Bea (Finance Engineer, engineering)
-  // Citation: P4-SECURITY-DESIGNED-IN; P6-AUTONOMOUS-BY-DEFAULT.
-  makeSubAgentSpec("agent:bea:fx-posting-engine", ["SubLedgerPostingEmitted", "AgentEscalation"]),
+  // Bea — FX posting engine sub-agent RETIRED under WS-SLA-FULL-RETIREMENT
+  // (D-SLA-ENGINE-RULES-AS-DATA). The `agent:bea:fx-posting-engine` callable
+  // was removed (it duplicated the FX subscriptions of agent:bea:gl-posting-engine,
+  // a latent double-posting path). FX SubLedgerPostingEmitted events now flow
+  // solely from agent:bea:gl-posting-engine (spec below).
 
   // PAX (Research, engineering) — role research queue
   // PAX §11: WorkstreamRegistered, RoleBriefDelivered, SourceScanCompleted,

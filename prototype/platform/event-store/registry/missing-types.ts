@@ -220,7 +220,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     // Emitted by Kai / trading infrastructure when an FX position revaluation
     // completes (e.g. end-of-day mark-to-market on an open FX position).
-    // Subscribes: Bea (fx-posting-engine).
+    // Subscribes: Bea (gl-posting-engine; FX posts via the SLA interpreter).
     type: "FxPositionRevalued",
     class: "markets",
     payloadSchema: fxPositionRevaluedPayloadSchema,
@@ -249,7 +249,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // settled. Discriminated-union payload (productKind: "fx-spot" today).
     // Retires `TradeMatured` (2026-05-21) per
     // brief:bea:tradematured-event-schema-and-retire-fxsettlemen:2026-05-21.
-    // Subscribes: Bea (fx-posting-engine).
+    // Subscribes: Bea (gl-posting-engine; FX posts via the SLA interpreter).
     type: "TradeMatured",
     class: "markets",
     payloadSchema: tradeMaturedPayloadSchema,
