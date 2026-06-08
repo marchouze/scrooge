@@ -49,14 +49,14 @@ import type { AccountingPeriodClosedPayload } from "../../event-store/event-type
 import type { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
 import {
+  buildBondIrGeneralLadder,
+  buildBondIrSpecificRiskRows,
+} from "../../reporting/ba-310-bond-events-adapter";
+import {
   type Ba310FromEventsInput,
   type Ba310Output,
   generateBa310MarketRiskFromEvents,
 } from "../../reporting/ba-310-events-adapter";
-import {
-  buildBondIrGeneralLadder,
-  buildBondIrSpecificRiskRows,
-} from "../../reporting/ba-310-bond-events-adapter";
 import type {
   CommodityPositionRow,
   EquityRow,

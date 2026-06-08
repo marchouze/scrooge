@@ -128,13 +128,14 @@ describe("buildBondIrSpecificRiskRows — empty store", () => {
 describe("buildBondIrGeneralLadder — single live trading-book bond", () => {
   it("assigns a 3-year bond to the 2-3y band with correct weighted long", () => {
     const store = new EventStore(":memory:");
-    // Period end = 2026-06-30. Bond matures 2029-07-01 = ~3.0 years residual.
+    // Period end = 2026-06-30. Bond matures 2029-06-29 = exactly 3.0 years residual.
+    // 3y ≤ upperYears(2-3y band=3) → 2-3y band.
     appendBondTrade(store, {
       tradeId: "T001",
       isin: CORP_ISIN,
       side: "buy",
       nominalMinor: 10_000_000, // R100,000 face
-      maturityDate: "2029-07-01",
+      maturityDate: "2029-06-29",
       portfolio: "trading-book",
     });
 
@@ -369,13 +370,13 @@ describe("buildBondIrGeneralLadder — BondSold derecognition", () => {
 describe("buildBondIrGeneralLadder — long/short netting", () => {
   it("nets long and short in the same maturity band", () => {
     const store = new EventStore(":memory:");
-    // Both bonds mature 2029-07-01 (~3 years) → 2-3y band.
+    // Both bonds mature 2029-06-29 (exactly 3.0 years) → 2-3y band (upperYears=3).
     appendBondTrade(store, {
       tradeId: "LONG001",
       isin: CORP_ISIN,
       side: "buy",
       nominalMinor: 10_000_000, // 10m long → weighted 175_000
-      maturityDate: "2029-07-01",
+      maturityDate: "2029-06-29",
       portfolio: "trading-book",
     });
     appendBondTrade(store, {
@@ -383,7 +384,7 @@ describe("buildBondIrGeneralLadder — long/short netting", () => {
       isin: SA_GOV_ISIN,
       side: "sell",
       nominalMinor: 4_000_000, // 4m short → weighted 70_000
-      maturityDate: "2029-07-01",
+      maturityDate: "2029-06-29",
       portfolio: "trading-book",
     });
 
@@ -402,22 +403,22 @@ describe("buildBondIrGeneralLadder — long/short netting", () => {
 
   it("separates long and short into distinct band rows when in different bands", () => {
     const store = new EventStore(":memory:");
-    // Buy: 3-year bond → 2-3y band
+    // Buy: exactly 3.0-year bond → 2-3y band (upperYears=3)
     appendBondTrade(store, {
       tradeId: "LB001",
       isin: CORP_ISIN,
       side: "buy",
       nominalMinor: 5_000_000,
-      maturityDate: "2029-07-01",
+      maturityDate: "2029-06-29",
       portfolio: "trading-book",
     });
-    // Sell: 5-year bond → 4-5y band
+    // Sell: exactly 5.0-year bond → 4-5y band (upperYears=5)
     appendBondTrade(store, {
       tradeId: "SB001",
       isin: SA_GOV_ISIN,
       side: "sell",
       nominalMinor: 3_000_000,
-      maturityDate: "2031-07-01",
+      maturityDate: "2031-06-29",
       portfolio: "trading-book",
     });
 
