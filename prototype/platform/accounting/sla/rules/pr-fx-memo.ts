@@ -1,9 +1,8 @@
 // platform/accounting/sla/rules/pr-fx-memo.ts
 //
-// Memo-only FX rules — `condition: intentional-no-impact`. These port the
-// legacy `fxSettlementInstructedJournals` (PR-FX-INSTRUCT) and
-// `fxTradeReportSubmittedJournals` (PR-FX-REGREPORT), both of which return `[]`
-// BY DESIGN (no GL movement). Expressing them as data with the
+// Memo-only FX rules — `condition: intentional-no-impact`. PR-FX-INSTRUCT
+// (FxSettlementInstructed) and PR-FX-REGREPORT (TradeReportSubmitted) produce
+// no GL movement BY DESIGN. Expressing them as data with the
 // `intentional-no-impact` condition (spec §2.1 / §7.3) keeps them LOUD-yet-zero:
 // the interpreter records an `intentional-no-impact` outcome with the reason,
 // so they read as "intentionally no GL impact", NOT "missing — substrate gap".

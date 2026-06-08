@@ -207,8 +207,7 @@ export interface CancelEnrichment {
 /**
  * Build the cancellation enrichment from the trade's prior booking legs +
  * cumulative unrealised P&L. The caller (the production engine) reconstructs
- * these via its cancellation index exactly as it did for the legacy
- * `fxCancellationJournals` input; this helper turns them into the
+ * these via its cancellation index; this helper turns them into the
  * interpreter's enrichment shape by FLIPPING each booking leg's side (the
  * reversal direction) — the `for_each` line then expands one reversal leg per
  * element with `use_physical_account` (lands on the EXACT prior account).

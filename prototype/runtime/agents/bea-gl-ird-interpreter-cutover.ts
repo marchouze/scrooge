@@ -2,10 +2,10 @@
 //
 // SLA full-retirement Batch 3 — IRD-swap (OTC interest-rate swap) cutover bridge
 // (strangler-fig). The FOURTH production seam (after FX, treasury and securities)
-// where Bea's universal GL posting engine stops calling the hand-coded
-// posting-rule functions (platform/accounting/posting-rules/ird-swaps.ts) and
-// starts calling the rules-as-data SLA interpreter (IFRS) for the IRD-swap
-// lifecycle.
+// where Bea's universal GL posting engine routes the IRD-swap lifecycle through
+// the rules-as-data SLA interpreter (IFRS). The hand-coded ird-swaps.ts
+// posting-rule functions this seam replaced have since been retired from tree
+// (SLA full-retirement Stage 3b).
 //
 // SCOPE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 3): the four IRD-swap
 // lifecycle event types below post via the interpreter. Every OTHER product

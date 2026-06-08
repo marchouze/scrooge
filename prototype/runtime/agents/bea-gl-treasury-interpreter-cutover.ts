@@ -2,10 +2,11 @@
 //
 // SLA full-retirement Batch 1 — treasury money-market cutover bridge
 // (strangler-fig). The SECOND production seam (after the FX cutover) where
-// Bea's universal GL posting engine stops calling the hand-coded posting-rule
-// functions (platform/accounting/posting-rules/repo-mmd-ibl.ts) and starts
-// calling the rules-as-data SLA interpreter (IFRS) for the four treasury
-// money-market families: deposit (MMD), funding-line, interbank-loan, repo.
+// Bea's universal GL posting engine routes the four treasury money-market
+// families — deposit (MMD), funding-line, interbank-loan, repo — through the
+// rules-as-data SLA interpreter (IFRS). The hand-coded repo-mmd-ibl.ts
+// posting-rule functions this seam replaced have since been retired from tree
+// (SLA full-retirement Stage 3b).
 //
 // SCOPE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 1): the 15 treasury
 // lifecycle event types below post via the interpreter. Every OTHER product

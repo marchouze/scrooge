@@ -1,9 +1,9 @@
 // platform/accounting/sla/rules/pr-funding.ts
 //
 // Funding-line (wholesale committed facility) IFRS posting rules, expressed as
-// rules-as-data. Data form of the legacy `prFunding001 / prFundingEnd`
-// functions (platform/accounting/posting-rules/repo-mmd-ibl.ts). The
-// parallel-run regression asserts byte-for-byte parity.
+// rules-as-data. The sole production posting path for funding-line drawdown /
+// repayment; account mappings come from FUNDING_ACCOUNTS (resolver.ts).
+// Coverage lives in tests/sla-treasury-lifecycle-interpreter.test.ts.
 //
 // Coverage:
 //   PR-FUNDING-001 FundingLineDrawn  — drawdown recognition (wholesale-non-op)

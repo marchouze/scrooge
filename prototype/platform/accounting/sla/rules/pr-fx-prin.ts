@@ -1,9 +1,9 @@
 // platform/accounting/sla/rules/pr-fx-prin.ts
 //
-// PR-FX-PRIN — IFRS per-leg principal-payment cash, rules-as-data form of the
-// legacy `fxPrincipalPaymentJournals` (platform/accounting/posting-rules/fx-spot.ts).
+// PR-FX-PRIN — IFRS per-leg principal-payment cash, expressed as rules-as-data.
+// The sole production posting path for PrincipalPayment.
 //
-// Legacy behaviour (PrincipalPayment payload; one event per leg):
+// Behaviour (PrincipalPayment payload; one event per leg):
 //   netCash === 0          → no posting (defensive; schema says non-zero)
 //   legKind === "receive"  → Dr fx.nostro[ccy]   / Cr fx.receivable[ccy]
 //   legKind === "deliver"  → Dr fx.payable[ccy]  / Cr fx.nostro[ccy]

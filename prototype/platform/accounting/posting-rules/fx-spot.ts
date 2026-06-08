@@ -81,11 +81,9 @@ import type { SubLedgerLeg } from "../fx-accounting-types";
  * Input for `fxSettlementFailedJournals` (PR-FX-005).
  *
  * The `FxSettlementFailed` payload itself carries refs + classification but
- * NOT the currency / amount of the failed receive-leg — the same shape
- * issue that `FxCancellationInput` solves for cancellations. The booking
- * context (the receive-leg amount that the bank was due to collect) is
- * supplied by the engine which has access to the originating
- * `FxTradeExecuted` event.
+ * NOT the currency / amount of the failed receive-leg. The booking context
+ * (the receive-leg amount that the bank was due to collect) is supplied by the
+ * engine which has access to the originating `FxTradeExecuted` event.
  *
  * Used only by the `one-leg-delivered` branch. For `neither-delivered`
  * and `operational-delay`, the rule returns `[]` and the booking-context

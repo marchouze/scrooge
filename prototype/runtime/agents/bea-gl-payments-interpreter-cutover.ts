@@ -2,11 +2,11 @@
 //
 // SLA full-retirement Batch 4 — payment / settlement cutover bridge
 // (strangler-fig). The FIFTH and LAST production seam where Bea's universal GL
-// posting engine stops calling the hand-coded posting-rule functions
-// (platform/accounting/posting-rules/payments.ts) and starts calling the
-// rules-as-data SLA interpreter (IFRS) for the payment lifecycle. After this
-// cutover EVERY product family routes through an interpreter bridge — the legacy
-// posting-rule dispatch arms are fully strangled.
+// posting engine routes the payment lifecycle through the rules-as-data SLA
+// interpreter (IFRS). After this cutover EVERY product family routes through an
+// interpreter bridge — the legacy posting-rule dispatch arms are fully
+// strangled, and the hand-coded payments.ts posting-rule functions this seam
+// replaced have since been retired from tree (SLA full-retirement Stage 3b).
 //
 // SCOPE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batch 4): the three payment
 // lifecycle event types below post via the interpreter. The already-ported

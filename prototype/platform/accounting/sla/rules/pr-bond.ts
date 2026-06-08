@@ -1,12 +1,10 @@
 // platform/accounting/sla/rules/pr-bond.ts
 //
-// JSE bond lifecycle IFRS posting rules, expressed as rules-as-data. Data form
-// of the legacy `bondBankingBookJournals / bondTradingBookJournals /
-// bondInterestAccrualJournals / bondRevaluationJournals / bondMaturityJournals /
-// bondSaleJournals` functions (platform/accounting/posting-rules/bonds.ts). The
-// parallel-run regression (tests/sla-securities-lifecycle-parallel-run.test.ts)
-// asserts the interpreter's legs match the legacy engine BYTE-FOR-BYTE on real
-// bond-lifecycle fixtures (banking AND trading book).
+// JSE bond lifecycle IFRS posting rules, expressed as rules-as-data. The sole
+// production posting path for bond booking / interest-accrual / revaluation /
+// maturity / sale; account mappings come from BOND_ACCOUNTS (resolver.ts). The
+// interpreter suite (tests/sla-securities-lifecycle-interpreter.test.ts) pins
+// the leg footprints on real bond-lifecycle fixtures (banking AND trading book).
 //
 // Coverage (one rule per registry entry — posting-rule-registry.ts):
 //   PR-BOND-001  BondTradeExecuted    — initial recognition (banking vs trading)
@@ -16,31 +14,26 @@
 //   PR-BOND-SALE BondSold             — derecognition on sale
 //
 // ─── BANKING-BOOK vs TRADING-BOOK SELECTION ─────────────────────────────────
-// The legacy engine routes on `payload.portfolio` ("banking-book" →
-// bondBankingBookJournals, "trading-book" → bondTradingBookJournals). The two
-// functions differ ONLY in the asset account (banking ACC-3100-001 vs trading
-// ACC-3100-002). The resolver cannot key on a payload enum, so the two asset
-// legs are expressed as `when`-gated lines on `event.portfolio` (mirroring the
-// treasury deposit-category approach) — exactly one fires. The maturity / sale
-// rules read the portfolio from ENRICHMENT (the triggering event does not carry
-// it; the legacy engine passes a hard-coded default — see below).
+// Banking-book and trading-book bookings differ ONLY in the asset account
+// (banking ACC-3100-001 vs trading ACC-3100-002). The resolver cannot key on a
+// payload enum, so the two asset legs are expressed as `when`-gated lines on
+// `event.portfolio` (mirroring the treasury deposit-category approach) — exactly
+// one fires. The maturity / sale rules read the portfolio from ENRICHMENT (the
+// triggering event does not carry it; see PORTFOLIO ENRICHMENT below).
 //
 // ─── DIRTY-PRICE ENRICHMENT (booking) ───────────────────────────────────────
-// The legacy booking amount is `Math.round(nominalMinor * dirtyPricePercent /
-// 100)`. `dirtyPricePercent` is a NON-INTEGER (e.g. 98.0, 99.4); the SLA
-// expression sandbox is integer-only money arithmetic (a non-integer path value
-// is rejected by design — spec §4.2: supply pre-translated minor-unit amounts).
-// So the caller (GL posting engine) pre-computes the integer dirty-price amount
-// with the SAME `Math.round` and hands it in as
-// `event.enrichment.dirtyPriceAmountMinor`. Parity is exact because the
-// enrichment reproduces the legacy rounding byte-for-byte.
+// The booking amount is `Math.round(nominalMinor * dirtyPricePercent / 100)`.
+// `dirtyPricePercent` is a NON-INTEGER (e.g. 98.0, 99.4); the SLA expression
+// sandbox is integer-only money arithmetic (a non-integer path value is rejected
+// by design — spec §4.2: supply pre-translated minor-unit amounts). So the
+// caller (GL posting engine) pre-computes the integer dirty-price amount with
+// `Math.round` and hands it in as `event.enrichment.dirtyPriceAmountMinor`.
 //
 // ─── PORTFOLIO ENRICHMENT (maturity / sale) ─────────────────────────────────
-// BondMatured / BondSold do NOT carry `portfolio`. The legacy engine hard-codes
-// "banking-book" for maturity and "trading-book" for sale. The caller resolves
-// the real portfolio from the originating BondTradeExecuted and supplies it as
-// `event.enrichment.portfolio`, falling back to the SAME legacy default when the
-// opening event is not found — preserving parity.
+// BondMatured / BondSold do NOT carry `portfolio`. The caller resolves the real
+// portfolio from the originating BondTradeExecuted and supplies it as
+// `event.enrichment.portfolio`, defaulting to "banking-book" for maturity and
+// "trading-book" for sale when the opening event is not found.
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 2, CEO-approved

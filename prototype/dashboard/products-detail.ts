@@ -415,12 +415,12 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
   // FX
   FxTradeExecuted: {
     ruleId: "PR-FX-001",
-    module: "platform/accounting/posting-rules/fx-spot.ts",
+    module: "platform/accounting/sla/rules/pr-fx-001.ts",
     legs: "Dr FX Trading Receivable (bought ccy) · Cr FX Trading Payable (sold ccy). Balances per currency.",
   },
   FxPositionRevalued: {
     ruleId: "PR-FX-002",
-    module: "platform/accounting/posting-rules/fx-spot.ts",
+    module: "platform/accounting/sla/rules/pr-fx-002.ts",
     legs: "Dr/Cr Unrealised FX P&L (FVTPL) · Cr/Dr FX Trading Receivable revaluation. Daily mark.",
   },
   TradeMatured: {
@@ -430,59 +430,59 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
   },
   FxSettlementInstructed: {
     ruleId: "PR-FX-INSTRUCT",
-    module: "platform/accounting/posting-rules/fx-spot.ts",
+    module: "platform/accounting/sla/rules/pr-fx-memo.ts",
     legs: "Memorandum — instruction issued (MT202 / pacs.009); no cash moved, no GL impact.",
   },
   PrincipalPayment: {
     ruleId: "PR-FX-PRIN",
-    module: "platform/accounting/posting-rules/fx-spot.ts",
+    module: "platform/accounting/sla/rules/pr-fx-prin.ts",
     legs: "Dr Nostro / Cr FX Receivable (receive leg); Dr FX Payable / Cr Nostro (deliver leg). Per-leg cash at correspondent confirmation.",
   },
   SettlementConfirmed: {
     ruleId: "PR-FX-LIFECYCLE-CLOSE",
-    module: "platform/accounting/posting-rules/fx-spot.ts",
+    module: "platform/accounting/sla/rules/pr-fx-lifecycle-close.ts",
     legs: "Realised FX P&L residual: Dr Nostro ZAR / Cr Realised FX P&L (gain); Dr Realised FX P&L / Cr Nostro ZAR (loss). Closes the trade.",
   },
   TradeReportSubmitted: {
     ruleId: "PR-FX-REGREPORT",
-    module: "platform/accounting/posting-rules/fx-spot.ts",
+    module: "platform/accounting/sla/rules/pr-fx-memo.ts",
     legs: "Memorandum — regulatory dispatch (SARB FinSurv / DTCC); no GL impact.",
   },
   // Equities
   EquityTradeBooked: {
     ruleId: "PR-EQ-001",
-    module: "platform/accounting/posting-rules/equities.ts",
+    module: "platform/accounting/sla/rules/pr-equity.ts",
     legs: "Dr Equity Trading Asset (FVTPL) · Cr Equity Trading Settlement Payable. T+3 booking.",
   },
   EquitySettlementInstructed: {
     ruleId: "PR-EQ-003",
-    module: "platform/accounting/posting-rules/equities.ts",
+    module: "platform/accounting/sla/rules/pr-equity.ts",
     legs: "Dr Equity Trading Settlement Payable · Cr Nostro (cash leg). Settlement on T+3.",
   },
   EquityCorporateActionApplied: {
     ruleId: "PR-EQ-CA",
-    module: "platform/accounting/posting-rules/equities.ts",
+    module: "platform/accounting/sla/rules/pr-equity.ts",
     legs: "Varies by action type: dividend (Dr Cash Receivable / Cr P&L), stock split (memo only).",
   },
   // Bonds
   BondTradeBooked: {
     ruleId: "PR-BOND-001",
-    module: "platform/accounting/posting-rules/bonds.ts",
+    module: "platform/accounting/sla/rules/pr-bond.ts",
     legs: "Dr Bond Asset (FVOCI for banking book; FVTPL for trading) · Cr Trading Settlement Payable.",
   },
   BondCouponPaid: {
     ruleId: "PR-BOND-EIR",
-    module: "platform/accounting/posting-rules/bonds.ts",
+    module: "platform/accounting/sla/rules/pr-bond.ts",
     legs: "Dr Cash · Cr Interest Income (EIR for amortised cost; coupon for trading).",
   },
   BondRedeemed: {
     ruleId: "PR-BOND-MAT",
-    module: "platform/accounting/posting-rules/bonds.ts",
+    module: "platform/accounting/sla/rules/pr-bond.ts",
     legs: "Dr Cash (redemption proceeds) · Cr Bond Asset (carrying amount).",
   },
   BondSettlementInstructed: {
     ruleId: "PR-BOND-SETTLE",
-    module: "platform/accounting/posting-rules/bonds.ts",
+    module: "platform/accounting/sla/rules/pr-bond.ts",
     legs: "Dr Trading Settlement Payable · Cr Nostro (cash leg). Settlement on T+3.",
   },
   // Lifecycle / lifecycle-shared events with no Bea posting rule today.

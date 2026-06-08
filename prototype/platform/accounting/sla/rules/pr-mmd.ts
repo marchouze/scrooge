@@ -1,11 +1,10 @@
 // platform/accounting/sla/rules/pr-mmd.ts
 //
 // Money-Market-Deposit (MMD) IFRS posting rules, expressed as rules-as-data.
-// Data form of the legacy `prMmd001 / prMmdAccrual / prMmdMat / prMmdCancel`
-// functions (platform/accounting/posting-rules/repo-mmd-ibl.ts). The
-// parallel-run regression (tests/sla-treasury-lifecycle-parallel-run.test.ts)
-// asserts the interpreter's legs match the legacy engine BYTE-FOR-BYTE on real
-// deposit-lifecycle fixtures.
+// The sole production posting path for MMD booking / accrual / maturity /
+// cancellation; account mappings come from MMD_ACCOUNTS (resolver.ts). The
+// interpreter suite (tests/sla-treasury-lifecycle-interpreter.test.ts) pins the
+// leg footprints on real deposit-lifecycle fixtures.
 //
 // Coverage (one rule per registry entry — posting-rule-registry.ts):
 //   PR-MMD-001     DepositTaken            — liability recognition (by category)
