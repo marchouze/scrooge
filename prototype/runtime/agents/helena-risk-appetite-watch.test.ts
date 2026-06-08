@@ -25,10 +25,16 @@
 // Author: Atlas (Substrate engineer).
 
 import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
 
 import { makeModelValidationApproved } from "../../platform/event-store/event-types/model-risk";
 import { EventStore } from "../../platform/event-store/store";
 import { makeFxTradeExecuted } from "../../platform/markets/cdm/fx";
+import {
+  RAS_APPETITE_LINES,
+  formatThresholds,
+  requireRasAppetiteLine,
+} from "../../platform/risk/ras-appetite-register";
 import { type AppetiteSnapshot, buildSubstrateGapLines } from "./helena-risk-appetite-watch";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -46,6 +52,9 @@ const SNAP: AppetiteSnapshot = {
 
 const RWA_BULLET = "**RWA engine**";
 const MODEL_VALIDATION_BULLET = "**Independent model-validation function**";
+// The structured-RAS-register meta-gap is CLOSED by D-RAS-STRUCTURED-REGISTER
+// (the typed register at platform/risk/ras-appetite-register.ts now exists), so
+// this bullet must NO LONGER appear in the report.
 const STRUCTURED_RAS_BULLET = "**Structured RAS register**";
 
 // Seed one live FX trade so computeRwaFromPositions().buildPhaseFallback === false.
@@ -120,18 +129,20 @@ describe("helena-risk-appetite-watch — substrate gaps derived from store (D-CR
 
     expect(gaps).not.toContain(RWA_BULLET);
     expect(gaps).not.toContain(MODEL_VALIDATION_BULLET);
-    // The structured-RAS meta-gap remains the standing open gap.
-    expect(gaps).toContain(STRUCTURED_RAS_BULLET);
+    // The structured-RAS meta-gap is CLOSED — the bullet must be absent.
+    expect(gaps).not.toContain(STRUCTURED_RAS_BULLET);
   });
 
-  it("empty store: RWA + model-validation bullets PRESENT", () => {
+  it("empty store: RWA + model-validation bullets PRESENT; structured-RAS gap CLOSED", () => {
     const store = new EventStore(":memory:");
 
     const gaps = buildSubstrateGapLines(store, ASOF, SNAP).join("\n");
 
     expect(gaps).toContain(RWA_BULLET);
     expect(gaps).toContain(MODEL_VALIDATION_BULLET);
-    expect(gaps).toContain(STRUCTURED_RAS_BULLET);
+    // Structured-RAS-register gap is closed by D-RAS-STRUCTURED-REGISTER even
+    // against an empty store — the register exists regardless of event state.
+    expect(gaps).not.toContain(STRUCTURED_RAS_BULLET);
   });
 
   it("zero unmeasured lines: measurement-substrate bullet drops off", () => {
@@ -141,5 +152,55 @@ describe("helena-risk-appetite-watch — substrate gaps derived from store (D-CR
     const gaps = buildSubstrateGapLines(store, ASOF, measuredSnap).join("\n");
 
     expect(gaps).not.toContain("**Measurement substrate**");
+  });
+});
+
+// Faithfulness of the register extraction (D-RAS-STRUCTURED-REGISTER). Proves
+// the handler now sources its appetite lines + LCR/NSFR thresholds from the
+// canonical register, with NO semantic change vs the pre-change hand-curated
+// constants. The 14 line ids and the LCR/NSFR threshold strings are
+// byte-identical to what the report has always printed.
+describe("helena-risk-appetite-watch — faithful register extraction (D-RAS-STRUCTURED-REGISTER)", () => {
+  const HANDLER_SRC = readFileSync(
+    new URL("./helena-risk-appetite-watch.ts", import.meta.url),
+    "utf8",
+  );
+
+  it("the register carries exactly the 14 pre-change line ids", () => {
+    expect(RAS_APPETITE_LINES.map((l) => l.id)).toEqual([
+      "appetite:liquidity:lcr",
+      "appetite:liquidity:nsfr",
+      "appetite:capital:cet1-buffer",
+      "appetite:capital:leverage-ratio",
+      "appetite:credit:single-name-concentration",
+      "appetite:credit:sector-concentration",
+      "appetite:market:trading-var",
+      "appetite:market:counterparty-concentration",
+      "appetite:financial-crime:sanctions-match",
+      "appetite:financial-crime:str-filing-judgement",
+      "appetite:operational:cyber-severity-tiers",
+      "appetite:model:tier-discipline",
+      "appetite:climate:guidance-note-1-2024",
+      "appetite:conduct:tcf",
+    ]);
+  });
+
+  it("LCR/NSFR threshold strings the report prints come from the register", () => {
+    // These are the EXACT strings the pre-change render embedded inline.
+    expect(formatThresholds(requireRasAppetiteLine("appetite:liquidity:lcr").thresholds)).toBe(
+      "green ≥120% / amber 110-120% / red <110% / critical <105%",
+    );
+    expect(formatThresholds(requireRasAppetiteLine("appetite:liquidity:nsfr").thresholds)).toBe(
+      "green ≥115% / amber 108-115% / red <108% / critical <103%",
+    );
+  });
+
+  it("the handler no longer hardcodes the LCR/NSFR threshold strings or an appetite-line array", () => {
+    // The handler must read thresholds from the register, not re-type them.
+    // (The literal strings now live ONLY in the register module.)
+    expect(HANDLER_SRC).not.toContain("green ≥120% / amber 110-120%");
+    expect(HANDLER_SRC).not.toContain("green ≥115% / amber 108-115%");
+    // No re-declared local appetite-line array literal.
+    expect(HANDLER_SRC).not.toContain('id: "appetite:');
   });
 });

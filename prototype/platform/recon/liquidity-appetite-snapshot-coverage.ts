@@ -50,12 +50,14 @@
 //         Vera (Internal audit engineer, third line of defence — recon shape).
 
 import { eventStore } from "../composition";
+import { requireRasAppetiteLine } from "../risk/ras-appetite-register";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "liquidity-appetite-snapshot-coverage";
 
-const LCR_LINE_ID = "appetite:liquidity:lcr";
-const NSFR_LINE_ID = "appetite:liquidity:nsfr";
+// Line identities read from the canonical register (single source of truth).
+const LCR_LINE_ID = requireRasAppetiteLine("appetite:liquidity:lcr").id;
+const NSFR_LINE_ID = requireRasAppetiteLine("appetite:liquidity:nsfr").id;
 
 const REQUIRED_LINE_IDS: readonly string[] = [LCR_LINE_ID, NSFR_LINE_ID];
 

@@ -171,6 +171,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8, D-NEW-PRODUCT-APPROVAL-POLICY,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/product-approval-attestation-integrity.ts",
+  // ras-register-parity — read-only replay of RiskAppetiteSnapshot events +
+  // read-only scan of runtime handler source files; no appends; gate is a
+  // no-op on the read path. Citation: D-RAS-STRUCTURED-REGISTER,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/recon/ras-register-parity.ts",
   // model-risk-gap-inventory — read-only replay to surface Slice 7 substrate
   // gaps as info findings. No appends; gate is a no-op on the read path.
   // Citation: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 7, D-PRODUCT-CONSTRUCTION-SLICES-4-8.

@@ -15,7 +15,7 @@ import {
   RAS_APPETITE_LINE_IDS,
   classifyRatio,
   formatThresholds,
-  getRasAppetiteLine,
+  requireRasAppetiteLine,
 } from "./ras-appetite-register";
 
 // The EXACT 14 ids in the EXACT order the pre-change `APPETITE_LINES` array
@@ -79,15 +79,13 @@ describe("RAS appetite register — canonical 14-line contract", () => {
 
 describe("RAS appetite register — structured thresholds round-trip the legacy strings", () => {
   it("LCR thresholds format byte-identically to the pre-change render", () => {
-    const lcr = getRasAppetiteLine("appetite:liquidity:lcr");
-    expect(lcr).toBeDefined();
-    expect(formatThresholds(lcr!.thresholds)).toBe(LCR_THRESHOLDS);
+    const lcr = requireRasAppetiteLine("appetite:liquidity:lcr");
+    expect(formatThresholds(lcr.thresholds)).toBe(LCR_THRESHOLDS);
   });
 
   it("NSFR thresholds format byte-identically to the pre-change render", () => {
-    const nsfr = getRasAppetiteLine("appetite:liquidity:nsfr");
-    expect(nsfr).toBeDefined();
-    expect(formatThresholds(nsfr!.thresholds)).toBe(NSFR_THRESHOLDS);
+    const nsfr = requireRasAppetiteLine("appetite:liquidity:nsfr");
+    expect(formatThresholds(nsfr.thresholds)).toBe(NSFR_THRESHOLDS);
   });
 
   it("ratio printed string equals the joined band tokens", () => {
@@ -102,7 +100,7 @@ describe("RAS appetite register — structured thresholds round-trip the legacy 
 
 describe("RAS appetite register — classifier reproduces legacy LCR/NSFR band logic", () => {
   // Legacy statusForLcrRatio: null→green; <105→red; <110→red; <120→amber; else green.
-  const lcr = getRasAppetiteLine("appetite:liquidity:lcr")!;
+  const lcr = requireRasAppetiteLine("appetite:liquidity:lcr");
   it.each([
     [null, "green"],
     [200, "green"],
@@ -116,7 +114,7 @@ describe("RAS appetite register — classifier reproduces legacy LCR/NSFR band l
   });
 
   // Legacy statusForNsfrRatio: null→green; <103→red; <108→red; <115→amber; else green.
-  const nsfr = getRasAppetiteLine("appetite:liquidity:nsfr")!;
+  const nsfr = requireRasAppetiteLine("appetite:liquidity:nsfr");
   it.each([
     [null, "green"],
     [200, "green"],
@@ -130,7 +128,7 @@ describe("RAS appetite register — classifier reproduces legacy LCR/NSFR band l
   });
 
   it("posture thresholds classify to null (no numeric band)", () => {
-    const tcf = getRasAppetiteLine("appetite:conduct:tcf")!;
+    const tcf = requireRasAppetiteLine("appetite:conduct:tcf");
     expect(classifyRatio(tcf.thresholds, 50)).toBeNull();
   });
 });

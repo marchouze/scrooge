@@ -7,10 +7,11 @@
 // substrate alert."
 //
 // What this handler does:
-//   1. Walks the appetite-line shadow set — the hard-coded mirror of
-//      the Risk Appetite Statement (RAS) §§B1–B8 until a structured RAS
-//      register exists. The shadow's citations point back into the RAS
-//      sections that define each line.
+//   1. Walks the canonical RAS appetite-line register
+//      (`platform/risk/ras-appetite-register.ts`) — the typed
+//      citation-bound mirror of the Risk Appetite Statement (RAS) §§B1–B8.
+//      Each line's citations point back into the RAS sections + decisions
+//      that define it (D-RAS, D-RAS-STRUCTURED-REGISTER).
 //   2. For each line, attempts to compute current value + status from
 //      the event store. Today most are `unmeasured` because Rohan's
 //      measurement substrate is not yet built — that's the dominant
@@ -55,6 +56,17 @@ import { computeCyberSeverityPosture } from "../../platform/projections/cyber-in
 import { computeLeverageRatioMetrics } from "../../platform/projections/leverage-ratio-metrics";
 import { getModelTierDisciplineMetric } from "../../platform/projections/model-tier-discipline";
 import { computeRwaFromPositions } from "../../platform/projections/rwa-from-positions";
+// Canonical appetite-line register — the single source of truth for the 14
+// RAS appetite lines, their tiers, structured thresholds, measurement
+// bindings, and citations. Replaces the former hand-curated AppetiteLine
+// interface + APPETITE_LINES array (gap #6; D-RAS-STRUCTURED-REGISTER).
+import {
+  RAS_APPETITE_LINES,
+  type RasAppetiteLine,
+  type RasMetricStatus,
+  formatThresholds,
+  requireRasAppetiteLine,
+} from "../../platform/risk/ras-appetite-register";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -80,179 +92,15 @@ Do not include a markdown header for your section — the calling pipeline wraps
 
 If the input shows zero measurements (build phase), say so plainly. The dominant signal in build phase is the *gap inventory*, not the metrics themselves.`;
 
-type Tier = "tier-1" | "tier-2" | "tier-3" | "zero-appetite";
-type MetricStatus = "green" | "amber" | "red" | "unmeasured" | "n/a-build-phase";
+// Appetite-line types + the 14-line set are now the canonical register's
+// (platform/risk/ras-appetite-register.ts). These aliases keep the handler's
+// internal references stable while the register is the single source of truth.
+type Tier = RasAppetiteLine["tier"];
+type MetricStatus = RasMetricStatus;
+type AppetiteLine = RasAppetiteLine;
 
-interface AppetiteLine {
-  /** Stable id; convention: `appetite:<category>:<short-slug>`. */
-  readonly id: string;
-  /** Human-readable label. */
-  readonly label: string;
-  /** RAS section this line is sourced from. */
-  readonly rasSection: string;
-  /** Risk taxonomy category (Helena's domain). */
-  readonly category:
-    | "credit"
-    | "market"
-    | "liquidity"
-    | "irrbb"
-    | "operational"
-    | "conduct"
-    | "financial-crime"
-    | "legal-regulatory"
-    | "strategic"
-    | "model"
-    | "climate"
-    | "capital";
-  /** Tier per RAS §B9 breach taxonomy. */
-  readonly tier: Tier;
-  /** What the line says, in one line. Source of truth is the RAS section. */
-  readonly summary: string;
-  /** Which engineer-owner builds the measurement substrate for this line. */
-  readonly measurementOwner: string;
-}
-
-/**
- * Shadow of the RAS appetite lines as of the 2026-05-06 RAS approval.
- * Hand-curated until a structured RAS register exists (substrate gap;
- * owner Helena + Atlas; closes when Rohan's measurement projection or
- * a structured RAS-document parser ships).
- */
-const APPETITE_LINES: readonly AppetiteLine[] = [
-  {
-    id: "appetite:liquidity:lcr",
-    label: "LCR buffer",
-    rasSection: "RAS §B3",
-    category: "liquidity",
-    tier: "tier-1",
-    summary:
-      "Operate at 120% PA min in normal conditions; trigger management action <110%; mandatory BRC escalation <105%.",
-    measurementOwner: "Ravi (eng) → Eitan (Treasurer)",
-  },
-  {
-    id: "appetite:liquidity:nsfr",
-    label: "NSFR buffer",
-    rasSection: "RAS §B3",
-    category: "liquidity",
-    tier: "tier-1",
-    summary: "Operate at 115% PA min; trigger at 108%; escalate at 103%.",
-    measurementOwner: "Ravi (eng) → Eitan (Treasurer)",
-  },
-  {
-    id: "appetite:capital:cet1-buffer",
-    label: "CET1 buffer over PA min",
-    rasSection: "RAS §B3",
-    category: "capital",
-    tier: "tier-1",
-    summary:
-      "Operate above PA min + Pillar 2A + CCB + 1.5pp; trigger at PA min + 0.75pp; escalate at PA min + 0.25pp.",
-    measurementOwner: "Bea (eng) → Camille (CFO) joint with Helena (CRO)",
-  },
-  {
-    id: "appetite:capital:leverage-ratio",
-    label: "Basel III leverage ratio (Tier-1 / total exposure)",
-    rasSection: "RAS §B3",
-    category: "capital",
-    tier: "tier-1",
-    summary:
-      "Non-risk-weighted Tier-1 / total exposure measure per BCBS §147–§165 + RRTB Reg 38. Regulatory minimum 3%; proposed appetite thresholds green ≥4.5% / amber 4.0-4.5% / red 3.5-4.0% / critical <3.5% (Marc pending — Decision(requested) D-RAS-LEVERAGE-RATIO-THRESHOLDS).",
-    measurementOwner: "Bea (eng) → Camille (CFO) joint with Helena (CRO)",
-  },
-  {
-    id: "appetite:credit:single-name-concentration",
-    label: "Single-name credit concentration",
-    rasSection: "RAS §B2",
-    category: "credit",
-    tier: "tier-2",
-    summary:
-      "Default single-name exposure cap as % of CET1 (RAS §B2 default; PA Concentration Risk regs binding).",
-    measurementOwner: "Rohan (eng) → Helena (CRO)",
-  },
-  {
-    id: "appetite:credit:sector-concentration",
-    label: "Sector concentration",
-    rasSection: "RAS §B2",
-    category: "credit",
-    tier: "tier-2",
-    summary:
-      "Default sector cap as % of credit RWA (RAS §B2; cascade authored at first portfolio).",
-    measurementOwner: "Rohan (eng) → Helena (CRO)",
-  },
-  {
-    id: "appetite:market:trading-var",
-    label: "Trading-book 1-day 99% VaR",
-    rasSection: "RAS §B4",
-    category: "market",
-    tier: "tier-2",
-    summary: "Default trading-book VaR as % of CET1 (RAS §B4; calibrated when book opens).",
-    measurementOwner: "Rohan (eng) joint with Kai (eng) → Saskia (Head of Markets)",
-  },
-  {
-    id: "appetite:market:counterparty-concentration",
-    label: "Counterparty concentration (markets)",
-    rasSection: "RAS §B8",
-    category: "market",
-    tier: "tier-2",
-    summary: "Default per-counterparty cap PFE-based (RAS §B8; cascade at first counterparty).",
-    measurementOwner: "Rohan (eng) joint with Kai (eng) → Saskia (Head of Markets)",
-  },
-  {
-    id: "appetite:financial-crime:sanctions-match",
-    label: "Sanctions true-positive matches blocked end-to-end pre-execution",
-    rasSection: "RAS §B5",
-    category: "financial-crime",
-    tier: "zero-appetite",
-    summary:
-      "All true-positive matches blocked pre-execution; any production override is a Zara-signed event.",
-    measurementOwner: "Mira (eng) → Zara (CCO)",
-  },
-  {
-    id: "appetite:financial-crime:str-filing-judgement",
-    label: "STR-filing judgement (no internal override)",
-    rasSection: "RAS §B5",
-    category: "financial-crime",
-    tier: "zero-appetite",
-    summary: "STR filing is Zara's judgement; no internal override permitted.",
-    measurementOwner: "Mira (eng) → Zara (CCO)",
-  },
-  {
-    id: "appetite:operational:cyber-severity-tiers",
-    label: "Cyber-incident severity tiering",
-    rasSection: "RAS §B6",
-    category: "operational",
-    tier: "tier-2",
-    summary: "Default cyber-incident severity tiers and response SLAs (RAS §B6).",
-    measurementOwner: "Senna (eng) → Rashida (CISO)",
-  },
-  {
-    id: "appetite:model:tier-discipline",
-    label: "Model-risk tier discipline",
-    rasSection: "RAS §B7",
-    category: "model",
-    tier: "tier-2",
-    summary: "Independent validation per model tier; production-use gated on validation status.",
-    measurementOwner: "Independent Validation (Nolan hire) → Helena (CRO)",
-  },
-  {
-    id: "appetite:climate:guidance-note-1-2024",
-    label: "Climate-risk governance per PA GN 1 of 2024",
-    rasSection: "RAS A2 — Climate risk",
-    category: "climate",
-    tier: "tier-2",
-    summary: "Governance posture for climate risk per PA Guidance Note 1 of 2024.",
-    measurementOwner: "Helena (CRO) — substrate not yet specified",
-  },
-  {
-    id: "appetite:conduct:tcf",
-    label: "Treating Customers Fairly — zero appetite for unfair treatment",
-    rasSection: "RAS A2 — Conduct risk",
-    category: "conduct",
-    tier: "zero-appetite",
-    summary:
-      "Zero appetite for treating customers unfairly, mis-selling, fee opacity, conflicts of interest unmanaged, or market abuse.",
-    measurementOwner: "Niko (eng) [paused] joint with Mira (eng) → Zara (CCO)",
-  },
-];
+/** The canonical 14 RAS appetite lines, imported from the register. */
+const APPETITE_LINES: readonly AppetiteLine[] = RAS_APPETITE_LINES;
 
 interface LineState {
   readonly line: AppetiteLine;
@@ -287,9 +135,10 @@ export interface AppetiteSnapshot {
 // construction (no outflows → no shortfall) while explicitly carrying the
 // gap inventory for the BRC pack.
 //
-// RAS §B3 thresholds (D-RAS, 2026-05-06):
-//   LCR:  green ≥120% / amber 110-120% / red <110% / critical <105%
-//   NSFR: green ≥115% / amber 108-115% / red <108% / critical <103%
+// RAS §B3 thresholds are canonical in `platform/risk/ras-appetite-register.ts`
+// (the `appetite:liquidity:lcr` / `appetite:liquidity:nsfr` lines'
+// `thresholds`); `formatThresholds` round-trips them to the exact strings the
+// report prints. The numeric band logic below mirrors those bounds.
 
 interface LiquidityMetricForLine {
   /** Computed status under RAS §B3 — never `unmeasured`. */
@@ -334,19 +183,29 @@ function buildLiquidityMetric(asOf: string): {
   // above the regulatory minimum. Report green-with-substrate-gap.
   const gapSummary = alm.gaps.length > 0 ? ` Substrate gaps: ${alm.gaps.length} class(es).` : "";
 
+  // Threshold strings are read from the canonical register — NOT re-typed
+  // here. `formatThresholds` round-trips to the exact human string the report
+  // has always printed (parity gate + faithfulness test pin this).
+  const lcrThresholds = formatThresholds(
+    requireRasAppetiteLine("appetite:liquidity:lcr").thresholds,
+  );
+  const nsfrThresholds = formatThresholds(
+    requireRasAppetiteLine("appetite:liquidity:nsfr").thresholds,
+  );
+
   const lcrStatus: MetricStatus =
     lcr.status === "no-positions" ? "green" : statusForLcrRatio(lcr.lcrRatioPct);
   const lcrNote =
     lcr.status === "no-positions"
       ? `Build-phase: no positions in store → no-outflow construction; RAS §B3 LCR appetite line resolves to green-with-substrate-gap.${gapSummary} Source: Ravi (Treasury and ALM engineer, engineering) ALM-positions projection T+30.`
-      : `LCR T+30 = ${lcr.lcrRatioPct === null ? "∞" : `${lcr.lcrRatioPct.toFixed(1)}%`} (HQLA R${lcr.hqlaZar.toLocaleString()}, net outflows R${lcr.netCashOutflowsZar.toLocaleString()}). RAS §B3 thresholds: green ≥120% / amber 110-120% / red <110% / critical <105%.${gapSummary}`;
+      : `LCR T+30 = ${lcr.lcrRatioPct === null ? "∞" : `${lcr.lcrRatioPct.toFixed(1)}%`} (HQLA R${lcr.hqlaZar.toLocaleString()}, net outflows R${lcr.netCashOutflowsZar.toLocaleString()}). RAS §B3 thresholds: ${lcrThresholds}.${gapSummary}`;
 
   const nsfrStatus: MetricStatus =
     nsfr.status === "no-positions" ? "green" : statusForNsfrRatio(nsfr.nsfrRatioPct);
   const nsfrNote =
     nsfr.status === "no-positions"
       ? `Build-phase: no positions in store → no-RSF construction; RAS §B3 NSFR appetite line resolves to green-with-substrate-gap.${gapSummary} Source: Ravi (Treasury and ALM engineer, engineering) ALM-positions projection T+30.`
-      : `NSFR T+30 = ${nsfr.nsfrRatioPct === null ? "∞" : `${nsfr.nsfrRatioPct.toFixed(1)}%`} (ASF R${nsfr.asfZar.toLocaleString()}, RSF R${nsfr.rsfZar.toLocaleString()}). RAS §B3 thresholds: green ≥115% / amber 108-115% / red <108% / critical <103%.${gapSummary}`;
+      : `NSFR T+30 = ${nsfr.nsfrRatioPct === null ? "∞" : `${nsfr.nsfrRatioPct.toFixed(1)}%`} (ASF R${nsfr.asfZar.toLocaleString()}, RSF R${nsfr.rsfZar.toLocaleString()}). RAS §B3 thresholds: ${nsfrThresholds}.${gapSummary}`;
 
   return {
     lcr: { status: lcrStatus, note: lcrNote },
@@ -729,12 +588,13 @@ export function buildSubstrateGapLines(
     );
   }
 
-  // Structured RAS register — the single remaining standing meta-gap: appetite
-  // lines are still read from a hand-curated shadow in this handler's source.
-  // No structured register exists yet, so this is unconditionally open for now.
-  gaps.push(
-    "- **Structured RAS register** — appetite lines are read from a hand-curated shadow in this handler's source. A structured RAS register (parseable, citation-bound) replaces the shadow when Helena + Atlas ship it.",
-  );
+  // Structured RAS register — CLOSED by D-RAS-STRUCTURED-REGISTER
+  // (2026-06-08). Appetite lines are now read from the typed citation-bound
+  // register `platform/risk/ras-appetite-register.ts`; the hand-curated shadow
+  // is retired. The `recon:ras-register-parity` gate asserts no handler
+  // re-defines a parallel appetite-line array. No bullet emitted — the gap is
+  // closed, and a closed gap drops off the report by construction (same rule
+  // as the RWA / model-validation bullets above).
 
   // Independent model-validation — only while no ModelValidationApproved events
   // exist. Nadia (Model Validation lead, governance) has emitted these since
@@ -840,7 +700,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    'Hand-curated appetite-line shadow of `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` (RAS); breach counts via `eventStore.replay({type:"AppetiteBreach"})` reconciled against `AppetiteBreachDisposed`; RAS cadence anchored to the `D-RAS` decision date.',
+    'Appetite lines sourced from the typed citation-bound register `platform/risk/ras-appetite-register.ts` (canonical mirror of the RAS, `D-RAS` / `D-RAS-STRUCTURED-REGISTER`); breach counts via `eventStore.replay({type:"AppetiteBreach"})` reconciled against `AppetiteBreachDisposed`; RAS cadence anchored to the `D-RAS` decision date.',
   );
   lines.push("");
   return lines.join("\n");

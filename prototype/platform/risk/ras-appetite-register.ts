@@ -324,7 +324,8 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
     tier: "tier-2",
     thresholds: {
       kind: "posture",
-      printed: "Default sector cap as % of credit RWA (RAS §B2; cascade authored at first portfolio).",
+      printed:
+        "Default sector cap as % of credit RWA (RAS §B2; cascade authored at first portfolio).",
     },
     measurementBinding: null,
     measurementOwner: "Rohan (eng) → Helena (CRO)",
@@ -417,8 +418,7 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
     tier: "tier-2",
     thresholds: {
       kind: "posture",
-      printed:
-        "Independent validation per model tier; production-use gated on validation status.",
+      printed: "Independent validation per model tier; production-use gated on validation status.",
     },
     measurementBinding: "getModelTierDisciplineMetric",
     measurementOwner: "Independent Validation (Nolan hire) → Helena (CRO)",
@@ -469,4 +469,18 @@ export const RAS_APPETITE_LINE_IDS: readonly string[] = RAS_APPETITE_LINES.map((
 /** Look up an appetite line by id. */
 export function getRasAppetiteLine(id: string): RasAppetiteLine | undefined {
   return RAS_APPETITE_LINES.find((l) => l.id === id);
+}
+
+/**
+ * Look up an appetite line by id, throwing if it is not in the register.
+ * Use this at call sites that depend on a stable known id (handler render,
+ * recon line-identity reads) so a removed/renamed id fails loudly rather than
+ * via a non-null assertion.
+ */
+export function requireRasAppetiteLine(id: string): RasAppetiteLine {
+  const line = getRasAppetiteLine(id);
+  if (line === undefined) {
+    throw new Error(`Unknown RAS appetite-line id: ${id}`);
+  }
+  return line;
 }
