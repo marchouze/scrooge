@@ -40,8 +40,9 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { eventStore, logger } from "../../platform/composition";
+import { eventStore as defaultEventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
+import type { EventStore } from "../../platform/event-store/store";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -73,15 +74,6 @@ Do not include a markdown header for your section — the calling pipeline wraps
 
 If the input shows zero measurements (build phase), say so plainly. The dominant signal in build phase is the queue of measurement-substrate tickets between today and Helena's first measured RAS run.`;
 
-interface AppetiteLineState {
-  readonly id: string;
-  readonly label: string;
-  readonly category: string;
-  readonly tier: string;
-  readonly status: string;
-  readonly note: string;
-}
-
 interface MeasurementReadiness {
   readonly appetiteLineId: string;
   readonly engineerSideState: "ready" | "drafting" | "specified" | "not-yet-specified";
@@ -91,143 +83,52 @@ interface MeasurementReadiness {
 
 interface RohanSnapshot {
   readonly latestHelenaRun: string | null;
-  readonly appetiteLines: readonly AppetiteLineState[];
+  /** Per-line status map read straight from Helena's RiskAppetiteSnapshot
+   * event payload (`lineStatuses`, keyed by appetite-line id). Empty when
+   * no snapshot exists yet. */
+  readonly appetiteLineStatuses: Record<string, string>;
   readonly readiness: readonly MeasurementReadiness[];
   readonly positionEventsLast7d: number;
   readonly riskRaisedEventsLast7d: number;
   readonly riskRaisedSeverityCounts: Record<string, number>;
+  /** True once the independent-validation function is staffed — derived
+   * from the presence of ≥1 `ModelValidationApproved` event in the store. */
+  readonly independentValidationStaffed: boolean;
 }
 
-function readLatestHelenaSnapshot(): {
+// Reads Helena's latest RiskAppetiteSnapshot and returns the per-line
+// status map carried in its payload (`lineStatuses`, keyed by appetite-
+// line id). Helena's payload now carries this map directly (added under
+// the liquidity-appetite-snapshot-coverage work), so Rohan consumes the
+// live status from the event rather than a hand-copied shadow of Helena's
+// APPETITE_LINES. Static line metadata (label / category / tier / RAS §)
+// is not consumed by this handler — only the line count and live status —
+// so no shadow constant is retained.
+export function readLatestHelenaSnapshot(store: EventStore = defaultEventStore): {
   asOf: string | null;
-  lineStates: readonly AppetiteLineState[];
+  lineStatuses: Record<string, string>;
 } {
   let latest: { asOf: string; payload: unknown } | null = null;
-  for (const e of eventStore.replay({ type: "RiskAppetiteSnapshot" })) {
+  for (const e of store.replay({ type: "RiskAppetiteSnapshot" })) {
     if (latest === null || e.as_of > latest.asOf) {
       latest = { asOf: e.as_of, payload: e.payload };
     }
   }
-  if (!latest) return { asOf: null, lineStates: [] };
-  // Helena emits a flat payload (counts only) rather than the per-line
-  // detail. Per-line detail lives in her deliverable file. For Rohan's
-  // first handler we mirror Helena's appetite-line shadow with the
-  // same set; once Helena's payload is extended to include lineStates,
-  // Rohan reads them from the event directly.
-  return { asOf: latest.asOf, lineStates: helenaAppetiteShadow() };
+  if (!latest) return { asOf: null, lineStatuses: {} };
+  const raw = (latest.payload as { lineStatuses?: Record<string, string> })?.lineStatuses;
+  return { asOf: latest.asOf, lineStatuses: raw ?? {} };
 }
 
-// Mirror of Helena's appetite-line shadow. Keep in sync with
-// `runtime/agents/helena-risk-appetite-watch.ts:APPETITE_LINES`.
-// Substrate gap to fold both into a structured RAS register; closes
-// when that register exists.
-function helenaAppetiteShadow(): readonly AppetiteLineState[] {
-  return [
-    {
-      id: "appetite:liquidity:lcr",
-      label: "LCR buffer",
-      category: "liquidity",
-      tier: "tier-1",
-      status: "unmeasured",
-      note: "Substrate: Ravi (eng) → Eitan (Treasurer).",
-    },
-    {
-      id: "appetite:liquidity:nsfr",
-      label: "NSFR buffer",
-      category: "liquidity",
-      tier: "tier-1",
-      status: "unmeasured",
-      note: "Substrate: Ravi (eng) → Eitan (Treasurer).",
-    },
-    {
-      id: "appetite:capital:cet1-buffer",
-      label: "CET1 buffer over PA min",
-      category: "capital",
-      tier: "tier-1",
-      status: "unmeasured",
-      note: "Substrate: Bea (eng) joint with Helena.",
-    },
-    {
-      id: "appetite:credit:single-name-concentration",
-      label: "Single-name credit concentration",
-      category: "credit",
-      tier: "tier-2",
-      status: "n/a-build-phase",
-      note: "Activates at commencement of trading.",
-    },
-    {
-      id: "appetite:credit:sector-concentration",
-      label: "Sector concentration",
-      category: "credit",
-      tier: "tier-2",
-      status: "n/a-build-phase",
-      note: "Activates at commencement of trading.",
-    },
-    {
-      id: "appetite:market:trading-var",
-      label: "Trading-book 1-day 99% VaR",
-      category: "market",
-      tier: "tier-2",
-      status: "n/a-build-phase",
-      note: "Activates at commencement of trading.",
-    },
-    {
-      id: "appetite:market:counterparty-concentration",
-      label: "Counterparty concentration (markets)",
-      category: "market",
-      tier: "tier-2",
-      status: "n/a-build-phase",
-      note: "Activates at commencement of trading.",
-    },
-    {
-      id: "appetite:financial-crime:sanctions-match",
-      label: "Sanctions matches blocked",
-      category: "financial-crime",
-      tier: "zero-appetite",
-      status: "green",
-      note: "Mira's gate enforces.",
-    },
-    {
-      id: "appetite:financial-crime:str-filing-judgement",
-      label: "STR-filing judgement",
-      category: "financial-crime",
-      tier: "zero-appetite",
-      status: "green",
-      note: "Mira's gate enforces.",
-    },
-    {
-      id: "appetite:operational:cyber-severity-tiers",
-      label: "Cyber severity tiers",
-      category: "operational",
-      tier: "tier-2",
-      status: "unmeasured",
-      note: "Substrate: Senna (eng) → Rashida (CISO).",
-    },
-    {
-      id: "appetite:model:tier-discipline",
-      label: "Model-risk tier discipline",
-      category: "model",
-      tier: "tier-2",
-      status: "unmeasured",
-      note: "Independent Validation function not yet staffed.",
-    },
-    {
-      id: "appetite:climate:guidance-note-1-2024",
-      label: "Climate-risk governance",
-      category: "climate",
-      tier: "tier-2",
-      status: "unmeasured",
-      note: "PA GN 1 of 2024 substrate not yet specified.",
-    },
-    {
-      id: "appetite:conduct:tcf",
-      label: "TCF — zero unfair treatment",
-      category: "conduct",
-      tier: "zero-appetite",
-      status: "green",
-      note: "Mira's gate enforces; Niko paused.",
-    },
-  ];
+// The independent-validation staffing gap is derived from the store: a
+// `ModelValidationApproved` event can only exist once an independent-
+// validation engineer is staffed and has approved a model. Nadia
+// (Independent-validation engineer) was hired 2026-05-09; once ≥1 such
+// event exists, the "not yet staffed" gap can no longer re-assert.
+export function hasModelValidationApproved(store: EventStore = defaultEventStore): boolean {
+  for (const _ of store.replay({ type: "ModelValidationApproved" })) {
+    return true;
+  }
+  return false;
 }
 
 // Engineer-side measurement-readiness map. Each appetite line maps to
@@ -237,7 +138,29 @@ function helenaAppetiteShadow(): readonly AppetiteLineState[] {
 //   - drafting: substrate work in flight (script / module exists)
 //   - specified: substrate spec exists (in /Team/<name>.md or RAS)
 //   - not-yet-specified: appetite-line known but no substrate spec yet
-function buildReadinessMap(): readonly MeasurementReadiness[] {
+function buildReadinessMap(independentValidationStaffed: boolean): readonly MeasurementReadiness[] {
+  // The model-tier-discipline line's engineer-side state and prose are
+  // derived from whether the independent-validation function is staffed
+  // (presence of ≥1 ModelValidationApproved event). Nadia (Independent-
+  // validation engineer) was hired 2026-05-09; once she has approved a
+  // model the "Nolan hire" wording must not re-assert.
+  const modelTier: MeasurementReadiness = independentValidationStaffed
+    ? {
+        appetiteLineId: "appetite:model:tier-discipline",
+        engineerSideState: "ready",
+        substrateRequired:
+          "Model registry + independent-validation function. Owner: Rohan (Risk engineer, registry); Nadia (Independent-validation engineer) holds the validation function.",
+        nextEngineeringStep:
+          "Independent-validation function staffed (Nadia); model registry live. Keep tier classifications + validation approvals current as models enter the registry.",
+      }
+    : {
+        appetiteLineId: "appetite:model:tier-discipline",
+        engineerSideState: "specified",
+        substrateRequired:
+          "Model registry + independent-validation function. Owner: Rohan (registry); independent-validation team (Nolan hire).",
+        nextEngineeringStep:
+          "Build model registry (no models in build phase, but registry is substrate); flag Independent Validation hire to Nolan.",
+      };
   return [
     {
       appetiteLineId: "appetite:liquidity:lcr",
@@ -316,14 +239,7 @@ function buildReadinessMap(): readonly MeasurementReadiness[] {
       nextEngineeringStep:
         "Out of Rohan's primary scope; co-consumer of Senna's outputs for op-risk taxonomy.",
     },
-    {
-      appetiteLineId: "appetite:model:tier-discipline",
-      engineerSideState: "specified",
-      substrateRequired:
-        "Model registry + independent-validation function. Owner: Rohan (registry); independent-validation team (Nolan hire).",
-      nextEngineeringStep:
-        "Build model registry (no models in build phase, but registry is substrate); flag Independent Validation hire to Nolan.",
-    },
+    modelTier,
     {
       appetiteLineId: "appetite:climate:guidance-note-1-2024",
       engineerSideState: "not-yet-specified",
@@ -351,7 +267,7 @@ function isoDaysAgo(asOf: string, days: number): string {
 function readPositionEventsCount(sinceIso: string): number {
   let n = 0;
   for (const t of ["TradeBooked", "PositionAdjusted", "CollateralUpdated"]) {
-    for (const e of eventStore.replay({ type: t })) {
+    for (const e of defaultEventStore.replay({ type: t })) {
       if (e.as_of >= sinceIso) n++;
     }
   }
@@ -364,7 +280,7 @@ function readRiskRaisedCounts(sinceIso: string): {
 } {
   let total = 0;
   const bySeverity: Record<string, number> = {};
-  for (const e of eventStore.replay({ type: "RiskRaised" })) {
+  for (const e of defaultEventStore.replay({ type: "RiskRaised" })) {
     if (e.as_of < sinceIso) continue;
     total++;
     const sev = (e.payload as { severity?: string })?.severity ?? "unknown";
@@ -376,16 +292,18 @@ function readRiskRaisedCounts(sinceIso: string): {
 function buildSnapshot(ctx: AgentRunContext): RohanSnapshot {
   const sinceIso = isoDaysAgo(ctx.asOf, 7);
   const helena = readLatestHelenaSnapshot();
-  const readiness = buildReadinessMap();
+  const independentValidationStaffed = hasModelValidationApproved();
+  const readiness = buildReadinessMap(independentValidationStaffed);
   const positions = readPositionEventsCount(sinceIso);
   const risks = readRiskRaisedCounts(sinceIso);
   return {
     latestHelenaRun: helena.asOf,
-    appetiteLines: helena.lineStates,
+    appetiteLineStatuses: helena.lineStatuses,
     readiness,
     positionEventsLast7d: positions,
     riskRaisedEventsLast7d: risks.total,
     riskRaisedSeverityCounts: risks.bySeverity,
+    independentValidationStaffed,
   };
 }
 
@@ -395,7 +313,7 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: RohanSnapshot): string 
   lines.push(`Trigger: ${ctx.trigger.id}`);
   lines.push("");
   lines.push(`Helena's latest RiskAppetiteSnapshot: ${snap.latestHelenaRun ?? "never"}`);
-  lines.push(`Appetite lines inventoried: ${snap.appetiteLines.length}`);
+  lines.push(`Appetite lines inventoried: ${Object.keys(snap.appetiteLineStatuses).length}`);
   lines.push("");
   lines.push("measurement readiness by appetite line:");
   for (const r of snap.readiness) {
@@ -433,6 +351,7 @@ function buildReportMarkdown(
     "Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the engineer-side of Helena's measurement-substrate gap.",
   );
   lines.push("");
+  const appetiteLineCount = Object.keys(snap.appetiteLineStatuses).length;
   const readyN = snap.readiness.filter((r) => r.engineerSideState === "ready").length;
   const draftingN = snap.readiness.filter((r) => r.engineerSideState === "drafting").length;
   const specifiedN = snap.readiness.filter((r) => r.engineerSideState === "specified").length;
@@ -440,7 +359,7 @@ function buildReportMarkdown(
     (r) => r.engineerSideState === "not-yet-specified",
   ).length;
   lines.push(
-    `**Headline:** ${snap.appetiteLines.length} appetite lines tracked · measurement readiness ${readyN} ready / ${draftingN} drafting / ${specifiedN} specified / ${unspecifiedN} not-yet-specified · ${snap.positionEventsLast7d} position event${snap.positionEventsLast7d === 1 ? "" : "s"} (last 7d) · ${snap.riskRaisedEventsLast7d} RiskRaised event${snap.riskRaisedEventsLast7d === 1 ? "" : "s"}.`,
+    `**Headline:** ${appetiteLineCount} appetite lines tracked · measurement readiness ${readyN} ready / ${draftingN} drafting / ${specifiedN} specified / ${unspecifiedN} not-yet-specified · ${snap.positionEventsLast7d} position event${snap.positionEventsLast7d === 1 ? "" : "s"} (last 7d) · ${snap.riskRaisedEventsLast7d} RiskRaised event${snap.riskRaisedEventsLast7d === 1 ? "" : "s"}.`,
   );
   lines.push("");
 
@@ -448,7 +367,7 @@ function buildReportMarkdown(
   lines.push("");
   if (snap.latestHelenaRun === null) {
     lines.push(
-      "_No `RiskAppetiteSnapshot` event in the store. Helena's daily handler has not yet run on this event-store instance — Rohan's run still produces the engineer-side readiness against the static appetite-line shadow._",
+      "_No `RiskAppetiteSnapshot` event in the store. Helena's daily handler has not yet run on this event-store instance — Rohan's run reports the engineer-side readiness map; the appetite-line inventory and per-line status are read from Helena's snapshot once it exists._",
     );
   } else {
     lines.push(`Latest \`RiskAppetiteSnapshot\` event: ${snap.latestHelenaRun}`);
@@ -516,14 +435,17 @@ function buildReportMarkdown(
   lines.push(
     "- **Model registry (Rohan)** — substrate exists for zero models today; first model entry blocks on first measurement.",
   );
-  lines.push(
-    "- **Independent-validation function (Nolan hire)** — RAS § B7 model-tier discipline depends on independent-validation capacity.",
-  );
+  if (!snap.independentValidationStaffed) {
+    // Derived gap: surface only while zero ModelValidationApproved events
+    // exist. Once the independent-validation function is staffed (Nadia,
+    // hired 2026-05-09) and has approved a model, this gap is closed and
+    // must not re-assert.
+    lines.push(
+      "- **Independent-validation function (Nolan hire)** — RAS § B7 model-tier discipline depends on independent-validation capacity.",
+    );
+  }
   lines.push(
     "- **Climate-scenario substrate** — multi-quarter build; defer to 2026 H2 unless PA cadence forces earlier.",
-  );
-  lines.push(
-    "- **Structured RAS register** — appetite lines mirrored in two places (Helena's handler + this handler); folds into a single canonical register when authored.",
   );
   lines.push("");
 
@@ -542,7 +464,7 @@ function buildReportMarkdown(
   lines.push("## Provenance");
   lines.push("");
   lines.push(
-    'Helena\'s latest `RiskAppetiteSnapshot` via `eventStore.replay({type:"RiskAppetiteSnapshot"})` (max as_of); appetite-line shadow mirrored from `runtime/agents/helena-risk-appetite-watch.ts`; readiness map curated by Rohan; position-event count via `eventStore.replay({type:"TradeBooked|PositionAdjusted|CollateralUpdated"})`; RiskRaised counts via `eventStore.replay({type:"RiskRaised"})` filtered to last 7 days.',
+    'Helena\'s latest `RiskAppetiteSnapshot` via `eventStore.replay({type:"RiskAppetiteSnapshot"})` (max as_of); appetite-line inventory + per-line status read directly from that event\'s `lineStatuses` payload (no local shadow); readiness map curated by Rohan, with the model-tier-discipline line\'s state derived from the presence of `ModelValidationApproved` events; position-event count via `eventStore.replay({type:"TradeBooked|PositionAdjusted|CollateralUpdated"})`; RiskRaised counts via `eventStore.replay({type:"RiskRaised"})` filtered to last 7 days.',
   );
   lines.push("");
   return lines.join("\n");
@@ -553,7 +475,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   let eventsEmitted = 0;
   if (!ctx.dryRun) {
-    eventStore.append({
+    defaultEventStore.append({
       event_id: newEventId(),
       type: "RiskRunCompleted",
       as_of: ctx.asOf,
@@ -561,7 +483,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       actor: { type: "service", id: "agent:rohan:risk-run" },
       citations: EVENT_CITATIONS,
       payload: {
-        appetiteLineCount: snap.appetiteLines.length,
+        appetiteLineCount: Object.keys(snap.appetiteLineStatuses).length,
         readinessReady: snap.readiness.filter((r) => r.engineerSideState === "ready").length,
         readinessDrafting: snap.readiness.filter((r) => r.engineerSideState === "drafting").length,
         readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified")
@@ -624,7 +546,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   logger.debug(
     {
-      appetiteLines: snap.appetiteLines.length,
+      appetiteLines: Object.keys(snap.appetiteLineStatuses).length,
       readinessSpecified: snap.readiness.filter((r) => r.engineerSideState === "specified").length,
       positionEvents: snap.positionEventsLast7d,
       risksRaised: snap.riskRaisedEventsLast7d,
@@ -641,7 +563,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   return {
     eventsEmitted,
     ...(deliverable ? { deliverable } : {}),
-    summary: `${snap.appetiteLines.length} appetite lines · ${readyN}/${draftingN}/${specifiedN}/${unspecifiedN} ready/drafting/specified/unspecified · ${snap.positionEventsLast7d} positions · ${snap.riskRaisedEventsLast7d} risks.`,
+    summary: `${Object.keys(snap.appetiteLineStatuses).length} appetite lines · ${readyN}/${draftingN}/${specifiedN}/${unspecifiedN} ready/drafting/specified/unspecified · ${snap.positionEventsLast7d} positions · ${snap.riskRaisedEventsLast7d} risks.`,
     ok: true,
   };
 };
