@@ -21,6 +21,20 @@ export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "0 18 * * 1-5",
   }),
+  // Daily market-risk measure (VaR / SVaR / ES — MR-1-FX, RAS B3 review R8).
+  // Cron: 18:30 UTC weekdays = 30 min AFTER the daily MTM (18:00 UTC) so the
+  // open book is marked-to-market before VaR reads the position set. Closes
+  // FX functionality domain review gap #4: the MarketRiskMeasureComputed emitter
+  // was on-request-only (`bun run mr:measure-run`) and could go stale. The
+  // staleness watchdog (expected-event-watchdog `mr-1-fx-var-measure`,
+  // maxAgeBusinessDays 1) raises a SubstrateAlert if the measure is older than
+  // one business day. Idempotent: one measure per entity per UTC day.
+  // Authority: D-B3-5 (R8); D-BRC-INTERIM-MR-1-FX; WS-MARKET-RISK-PROCEDURES.
+  // Brief: brief:rohan:close-fx-gap-schedule-var-mr-1-fx-market-risk-me:2026-06-08.
+  entry("Rohan", "market-risk-measure", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "30 18 * * 1-5",
+  }),
   // rohan:goal-loop — daily 06:17 UTC; autonomous promotion (risk/treasury pilot),
   // placed after rohan:risk-run (03:43) so a same-day RiskRunCompleted exists.
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3; D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.

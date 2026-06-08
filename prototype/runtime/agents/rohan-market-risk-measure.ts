@@ -1,0 +1,163 @@
+// runtime/agents/rohan-market-risk-measure.ts
+//
+// Rohan's daily market-risk-measure handler — wraps the on-demand
+// `scripts/market-risk-measure-run.ts` logic into an AgentRunContext-shaped
+// scheduled handler so the VaR / SVaR / ES figure (MR-1-FX, RAS B3 review R8)
+// refreshes daily on a post-market-close cadence instead of only when an
+// operator runs the script by hand.
+//
+// Why this exists (FX functionality domain review gap #4):
+//   - The measure engine (platform/market-risk/var-engine.ts) and the
+//     `MarketRiskMeasureComputed` event are built + tested, but the emitter
+//     was wired ONLY as an on-request CLI (`bun run mr:measure-run`). It sat in
+//     no cron / scheduled-handler metadata, so the surfaced VaR could go stale
+//     with no automated daily refresh — Helena's MR-1-FX appetite would then be
+//     compared against an out-of-date risk figure.
+//   - This handler registers the run on the daily scheduled cadence (cron via
+//     `runtime/handlers-metadata.ts`, the canonical cron source) at 18:30 UTC
+//     weekdays — 30 minutes AFTER the daily MTM run (18:00 UTC) so the open
+//     book is marked-to-market before VaR reads the position set.
+//   - The companion staleness watchdog (the `mr-1-fx-var-measure` expectation in
+//     platform/model-registry/expected-event-watchdog.ts, maxAgeBusinessDays 1)
+//     is what actually closes the "can go stale" gap: it raises a loud
+//     SubstrateAlert if the latest MarketRiskMeasureComputed is older than one
+//     business day.
+//
+// Idempotency: one MarketRiskMeasureComputed per entity per UTC day. The
+// measureId is `MR-MEASURE-<entity>-<YYYY-MM-DD>`; a same-day re-run is a no-op
+// (skipped, zero events). Identical to the script's contract — the engine
+// numbers + methodology are unchanged; only the scheduling is new.
+//
+// Provenance: the var-engine reads market-data ticks with
+// `provenance: "production"` exclusively (deriveRiskFactorExposures /
+// resolveZarRate), so simulated ticks never enter the VaR computation. This
+// handler does not relax that — it calls computeMarketRisk unchanged.
+//
+// Authority: D-B3-5 (R8); D-BRC-INTERIM-MR-1-FX; WS-MARKET-RISK-PROCEDURES;
+//            D-MARKETS-SCHEMA-FOUNDATION.
+// Brief: brief:rohan:close-fx-gap-schedule-var-mr-1-fx-market-risk-me:2026-06-08.
+// Author: Rohan (Risk engineer, engineering).
+
+import { eventStore, logger } from "../../platform/composition";
+import { makeMarketRiskMeasureComputed } from "../../platform/event-store/event-types/market-risk-measure";
+import type { EventStore } from "../../platform/event-store/store";
+import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
+import { MarketDataStore } from "../../platform/market-data/store";
+import { computeMarketRisk } from "../../platform/market-risk/var-engine";
+import type { AgentRunContext, AgentRunOutput } from "../types";
+import { fmtDateUTC } from "./_shared";
+
+const BANK_ENTITY = "LE-ZA-HOZ-BANK";
+
+// Helena MR-1-FX §1.1 — 1-day 99% VaR appetite ceiling (ZAR). Mirrors the
+// constant in scripts/market-risk-measure-run.ts.
+const VAR_APPETITE_ZAR = 350_000;
+
+const ENGINE_ACTOR = {
+  type: "service" as const,
+  id: "agent:rohan:market-risk-measure",
+};
+
+const CITATIONS = [
+  "D-BRC-INTERIM-MR-1-FX",
+  "WS-MARKET-RISK-PROCEDURES",
+  "model:market-risk-var-hs-v1",
+  "model:market-risk-es-hs-v1",
+];
+
+/** Stable idempotency key — one measure per entity per UTC day. */
+export function marketRiskMeasureId(entity: string, asOf: string): string {
+  return `MR-MEASURE-${entity}-${asOf.slice(0, 10)}`;
+}
+
+/** True when a MarketRiskMeasureComputed with this measureId already exists. */
+function alreadyEmitted(store: EventStore, measureId: string): boolean {
+  for (const e of store.replay({ type: "MarketRiskMeasureComputed" })) {
+    if ((e.payload as { measureId?: string }).measureId === measureId) return true;
+  }
+  return false;
+}
+
+const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
+  const asOf = ctx.asOf;
+  const dateStr = fmtDateUTC(asOf);
+  const measureId = marketRiskMeasureId(BANK_ENTITY, asOf);
+
+  logger.info(
+    { asOf, measureId, agent: ctx.agent, trigger: ctx.trigger.id, dryRun: ctx.dryRun },
+    "rohan:market-risk-measure — starting daily VaR / MR-1-FX measure run",
+  );
+
+  // Idempotency: one measure per entity per UTC day. Skip if already emitted.
+  if (alreadyEmitted(eventStore, measureId)) {
+    logger.info({ measureId }, "rohan:market-risk-measure — already emitted today; skipping");
+    return {
+      eventsEmitted: 0,
+      summary: `MR measure ${dateStr}: already emitted (${measureId}) — idempotent skip`,
+      ok: true,
+    };
+  }
+
+  // Dry-run: do not emit, do not open the market-data store.
+  if (ctx.dryRun) {
+    return {
+      eventsEmitted: 0,
+      summary: `MR measure ${dateStr}: dry-run — no MarketRiskMeasureComputed emitted`,
+      ok: true,
+    };
+  }
+
+  // The var-engine needs a MarketDataStore for the production FX ticks.
+  let marketDataStore: MarketDataStore;
+  try {
+    marketDataStore = new MarketDataStore(resolveMarketDataDbPath().path);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error({ error: msg }, "rohan:market-risk-measure — failed to open MarketDataStore");
+    return {
+      eventsEmitted: 0,
+      summary: `MR measure ${dateStr}: MarketDataStore open failed — ${msg}`,
+      ok: false,
+    };
+  }
+
+  // Compute the measure. NO SILENT ZEROS: a flat book or too-short history
+  // yields absent figures + a loud status; we emit them verbatim — the
+  // methodology + numbers are exactly the on-demand script's.
+  const report = computeMarketRisk({ eventStore, marketData: marketDataStore, asOf });
+  marketDataStore.close();
+
+  eventStore.append(
+    makeMarketRiskMeasureComputed({
+      asOf,
+      entity: BANK_ENTITY,
+      actor: ENGINE_ACTOR,
+      citations: CITATIONS,
+      payload: {
+        measureId,
+        asOf,
+        status: report.status,
+        var: report.var,
+        svar: report.svar,
+        es: report.es,
+        riskFactorCount: report.exposures.length,
+        minObservations: report.minObservations,
+        varAppetiteZar: VAR_APPETITE_ZAR,
+      },
+    }),
+  );
+
+  const varStr = report.var.present ? `ZAR ${report.var.value.toFixed(2)}` : `absent (${report.var.reason})`;
+  logger.info(
+    { measureId, status: report.status, var: varStr },
+    "rohan:market-risk-measure — MarketRiskMeasureComputed emitted",
+  );
+
+  return {
+    eventsEmitted: 1,
+    summary: `MR measure ${dateStr}: status=${report.status} · VaR ${varStr} · ${report.exposures.length} risk-factor(s) · appetite ZAR ${VAR_APPETITE_ZAR}`,
+    ok: true,
+  };
+};
+
+export default handler;
