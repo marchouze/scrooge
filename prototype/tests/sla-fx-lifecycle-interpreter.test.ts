@@ -8,11 +8,17 @@
 // legacy GL posting engine in SLA full-retirement Stage 3). The expected legs
 // below are the interpreter's own output — which the now-retired parallel-run
 // proved equal to the legacy engine for every currency the legacy engine booked
-// correctly. Per-currency provisioning (D-SLA-FX-PER-CURRENCY-ACCOUNT-
-// PROVISIONING) is asserted directly: GBP/EUR/CHF/AUD/JPY trading legs book to
-// their own dedicated accounts; still-unprovisioned nostro / settlement-failed
-// sub-ledgers route to the FX unresolved-currency suspense (ACC-2100-007) + an
-// urgent-correction alert.
+// correctly. Per-currency provisioning is asserted directly across BOTH
+// provisioning waves:
+//   - D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING: GBP/EUR/CHF/AUD/JPY TRADING
+//     legs book to their own dedicated accounts (ACC-2100-010..024).
+//   - D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (2026-06-08): the supported FX set
+//     (ZAR/USD/EUR/GBP/JPY/CHF/AUD) now ALSO has dedicated correspondent nostros
+//     (ACC-1200-001..007) and settlement-failed receivables (ACC-2300), so the
+//     NOSTRO + settlement-failed sub-ledger legs for those currencies no longer
+//     route to the FX unresolved-currency suspense (ACC-2100-007). Suspense +
+//     urgent-correction remain the last-resort ONLY for genuinely UNsupported
+//     currencies.
 //
 // Stages covered: open, reval (gain/loss/zero), principal (receive/deliver),
 // close (gain/loss/zero), settlement-failed (Herstatt + no-GL branches),
@@ -318,7 +324,10 @@ describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR + JPY trading/nostro spl
       },
     ]);
   });
-  it("deliver JPY — trading→dedicated (ACC-2100-023), nostro→suspense + urgent correction", () => {
+  it("deliver JPY — trading→dedicated (ACC-2100-023), nostro→dedicated (ACC-1200-005), NO suspense, NO urgent correction", () => {
+    // D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (2026-06-08): JPY now has a
+    // dedicated correspondent nostro (ACC-1200-005), so the nostro leg no longer
+    // account-resolution-misses to suspense.
     const r = runOne("PrincipalPayment", prinPayload("deliver", "JPY", -14_500_000_000));
     const interp = interpLegs(r);
     expect(interp).toEqual([
@@ -329,16 +338,17 @@ describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR + JPY trading/nostro spl
         currency: "JPY",
       },
       {
-        accountId: SUSPENSE,
+        accountId: "ACC-1200-005",
         debitCredit: "credit",
         amountMinor: 14_500_000_000,
         currency: "JPY",
       },
     ]);
-    // never the USD slot
+    // never the USD slot, never suspense
     expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
     expect(interp.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
-    expect(postOf(r).urgentCorrections.some((u) => u.currency === "JPY")).toBe(true);
+    expect(interp.some((l) => l.accountId === SUSPENSE)).toBe(false);
+    expect(postOf(r).urgentCorrections.some((u) => u.currency === "JPY")).toBe(false);
     assertBalances(interp);
   });
 });
@@ -425,7 +435,12 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt + no-GL branches", (
     );
   });
 
-  it("one-leg-delivered EUR — reclass splits: EUR trading-receivable dedicated, settlement-failed→suspense", () => {
+  it("one-leg-delivered EUR — reclass splits: EUR trading-receivable + settlement-failed BOTH dedicated, NO suspense", () => {
+    // D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (2026-06-08): EUR now has a
+    // dedicated settlement-failed receivable (ACC-2300-005), so the defaulted-
+    // claim leg no longer account-resolution-misses to suspense. The reclass
+    // splits cleanly: Dr ACC-2300-005 (EUR defaulted claim) / Cr ACC-2100-013
+    // (EUR trading receivable). The ZAR ECL allowance + expense remain ZAR.
     const event = {
       tradeRef: "T2",
       failureKind: "one-leg-delivered" as const,
@@ -439,7 +454,12 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt + no-GL branches", (
     const r = runOne("FxSettlementFailed", event, { failedReceiveLeg });
     const interp = interpLegs(r);
     expect(interp).toEqual([
-      { accountId: SUSPENSE, debitCredit: "debit", amountMinor: 90_000_000, currency: "EUR" },
+      {
+        accountId: "ACC-2300-005",
+        debitCredit: "debit",
+        amountMinor: 90_000_000,
+        currency: "EUR",
+      },
       {
         accountId: "ACC-2100-013",
         debitCredit: "credit",
@@ -459,13 +479,13 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt + no-GL branches", (
         currency: "ZAR",
       },
     ]);
-    // EUR has a dedicated TRADING receivable (ACC-2100-013); the settlement-
-    // failed receivable sub-ledger is NOT provisioned for EUR (only ZAR/USD
-    // ACC-2300) → suspense + urgent correction. ZAR ECL legs resolve normally.
+    // EUR has a dedicated TRADING receivable (ACC-2100-013) AND a dedicated
+    // settlement-failed receivable (ACC-2300-005) — neither routes to suspense.
     const eurLegs = interp.filter((l) => l.currency === "EUR");
     expect(eurLegs.some((l) => l.accountId === "ACC-2100-013")).toBe(true);
-    expect(eurLegs.some((l) => l.accountId === SUSPENSE)).toBe(true);
-    expect(postOf(r).urgentCorrections.some((u) => u.currency === "EUR")).toBe(true);
+    expect(eurLegs.some((l) => l.accountId === "ACC-2300-005")).toBe(true);
+    expect(eurLegs.some((l) => l.accountId === SUSPENSE)).toBe(false);
+    expect(postOf(r).urgentCorrections.some((u) => u.currency === "EUR")).toBe(false);
     assertBalances(interp);
   });
 
@@ -630,9 +650,13 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal", () => {
     );
   });
 
-  it("cancel reverses suspense legs exactly (foreign-currency booking)", () => {
-    // A EUR trade booked to suspense; cancellation must reverse the EXACT
-    // suspense legs (use_physical_account), netting to zero.
+  it("cancel reverses suspense legs exactly (historical foreign-currency booking)", () => {
+    // A EUR trade HISTORICALLY booked to suspense (pre-
+    // D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS); cancellation must reverse the
+    // EXACT original legs verbatim (use_physical_account), netting to zero —
+    // the reversal path replays stored legs and does NOT re-resolve through the
+    // resolver, so it correctly reverses to suspense even though a fresh EUR
+    // booking would now route to dedicated accounts.
     const eurBooking: SubLedgerLeg[] = [
       {
         accountId: "ACC-2100-001",

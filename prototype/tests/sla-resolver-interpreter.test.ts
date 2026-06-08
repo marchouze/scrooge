@@ -106,6 +106,67 @@ describe("account resolver — per-currency (USD=USD; no FCY pool)", () => {
     expect(sgd.ok).toBe(false);
     if (!sgd.ok) expect(sgd.reason).toBe("unresolved-currency");
   });
+
+  it("nostro resolves per-currency for the full supported FX set (NOT suspense)", () => {
+    // D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (2026-06-08): correspondent nostros
+    // for ZAR/USD/EUR/GBP/JPY/CHF/AUD (ACC-1200-001..007). None routes to the FX
+    // unresolved-currency suspense (ACC-2100-007).
+    const expected: Record<string, AccountId> = {
+      ZAR: "ACC-1200-001",
+      USD: "ACC-1200-002",
+      EUR: "ACC-1200-003",
+      GBP: "ACC-1200-004",
+      JPY: "ACC-1200-005",
+      CHF: "ACC-1200-006",
+      AUD: "ACC-1200-007",
+    };
+    for (const [ccy, want] of Object.entries(expected)) {
+      const r = defaultResolver.resolve({ ...KEY_BASE, currency: ccy, logical: "fx.nostro" });
+      expect(r.ok).toBe(true);
+      if (r.ok) {
+        expect(r.physical).toBe(want);
+        expect(r.physical).not.toBe("ACC-2100-007");
+      }
+    }
+    // An unsupported currency (SGD) still misses → suspense safety net.
+    const sgd = defaultResolver.resolve({ ...KEY_BASE, currency: "SGD", logical: "fx.nostro" });
+    expect(sgd.ok).toBe(false);
+    if (!sgd.ok) expect(sgd.reason).toBe("unresolved-currency");
+  });
+
+  it("settlement-failed receivable resolves per-currency for the full supported FX set (NOT suspense)", () => {
+    // D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (2026-06-08): defaulted-claim
+    // sub-ledger for ZAR/USD/EUR/GBP/JPY/CHF/AUD (ACC-2300-001/002/005..009).
+    const expected: Record<string, AccountId> = {
+      ZAR: "ACC-2300-001",
+      USD: "ACC-2300-002",
+      EUR: "ACC-2300-005",
+      GBP: "ACC-2300-006",
+      JPY: "ACC-2300-007",
+      CHF: "ACC-2300-008",
+      AUD: "ACC-2300-009",
+    };
+    for (const [ccy, want] of Object.entries(expected)) {
+      const r = defaultResolver.resolve({
+        ...KEY_BASE,
+        currency: ccy,
+        logical: "fx.settlement_failed_receivable",
+      });
+      expect(r.ok).toBe(true);
+      if (r.ok) {
+        expect(r.physical).toBe(want);
+        expect(r.physical).not.toBe("ACC-2100-007");
+      }
+    }
+    // An unsupported currency (SGD) still misses → suspense safety net.
+    const sgd = defaultResolver.resolve({
+      ...KEY_BASE,
+      currency: "SGD",
+      logical: "fx.settlement_failed_receivable",
+    });
+    expect(sgd.ok).toBe(false);
+    if (!sgd.ok) expect(sgd.reason).toBe("unresolved-currency");
+  });
 });
 
 describe("account resolver — reject loudly (NO silent default)", () => {

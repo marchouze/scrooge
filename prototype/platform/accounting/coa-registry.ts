@@ -389,6 +389,51 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     side: "debit",
     // Correspondent-bank nostro in EUR (canonical; ACC-1100-003 merged here).
   },
+  // Per-currency correspondent nostros for the remaining actively-traded
+  // currencies (GBP/JPY/CHF/AUD). Provisioned under
+  // D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (CEO build-phase, 2026-06-08): the
+  // earlier 15-account trading-block provisioning (D-SLA-FX-PER-CURRENCY-
+  // ACCOUNT-PROVISIONING) covered the FX trading receivable/payable/unrealised-
+  // P&L accounts only, NOT the ACC-1200 correspondent-settlement nostros. A
+  // GBP/JPY/CHF/AUD FX trade's principal-payment (PR-FX-PRIN) NOSTRO leg
+  // therefore still account-resolution-missed to the FX suspense (ACC-2100-007)
+  // until now. These four nostros close that hole; the supported settlement set
+  // (ZAR/USD/EUR/GBP/JPY/CHF/AUD) now mirrors the supported FX trading set and
+  // the TwelveData live feed universe (TWELVE_DATA_TARGET_PAIRS). Currency is a
+  // separate field, never in the name (D-COA-CURRENCY-DECOUPLING).
+  {
+    id: "ACC-1200-004",
+    name: "Nostro",
+    category: "asset-cash",
+    currency: "GBP",
+    side: "debit",
+    // Correspondent-bank nostro in GBP (FX settlement target for GBP).
+  },
+  {
+    id: "ACC-1200-005",
+    name: "Nostro",
+    category: "asset-cash",
+    currency: "JPY",
+    side: "debit",
+    // Correspondent-bank nostro in JPY (zero-minor-unit currency; amounts are
+    // minor-unit per minorFactor 1).
+  },
+  {
+    id: "ACC-1200-006",
+    name: "Nostro",
+    category: "asset-cash",
+    currency: "CHF",
+    side: "debit",
+    // Correspondent-bank nostro in CHF (FX settlement target for CHF).
+  },
+  {
+    id: "ACC-1200-007",
+    name: "Nostro",
+    category: "asset-cash",
+    currency: "AUD",
+    side: "debit",
+    // Correspondent-bank nostro in AUD (FX settlement target for AUD).
+  },
 
   // ------------------------------------------------------------------
   // 2100 — FX trading receivables / payables / P&L
@@ -688,6 +733,54 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     name: "Settlement-Failed Receivable",
     category: "asset-receivable",
     currency: "USD",
+    side: "debit",
+  },
+  // Per-currency settlement-failed (defaulted-claim, amortised-cost) receivables
+  // for the remaining supported FX currencies (EUR/GBP/JPY/CHF/AUD). Provisioned
+  // under D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (CEO build-phase, 2026-06-08).
+  // PR-FX-005 reclassifies a defaulted receive-leg from the FVTPL trading
+  // receivable to the amortised-cost defaulted-claim sub-ledger per IFRS 9
+  // §4.4.1; previously only ZAR/USD had a per-currency account, so a
+  // EUR/GBP/JPY/CHF/AUD Herstatt failure reclassified to the FX suspense
+  // (ACC-2100-007) + alert. These five accounts close that hole so the
+  // settlement-failed sub-ledger mirrors the supported FX trading set. The ECL
+  // allowance (ACC-2300-003) and credit-loss expense (ACC-2300-004) remain ZAR
+  // functional-currency only (IAS 21 §23 — the bank's exposure is measured in
+  // its functional currency). Currency is a separate field (D-COA-CURRENCY-
+  // DECOUPLING).
+  {
+    id: "ACC-2300-005",
+    name: "Settlement-Failed Receivable",
+    category: "asset-receivable",
+    currency: "EUR",
+    side: "debit",
+  },
+  {
+    id: "ACC-2300-006",
+    name: "Settlement-Failed Receivable",
+    category: "asset-receivable",
+    currency: "GBP",
+    side: "debit",
+  },
+  {
+    id: "ACC-2300-007",
+    name: "Settlement-Failed Receivable",
+    category: "asset-receivable",
+    currency: "JPY",
+    side: "debit",
+  },
+  {
+    id: "ACC-2300-008",
+    name: "Settlement-Failed Receivable",
+    category: "asset-receivable",
+    currency: "CHF",
+    side: "debit",
+  },
+  {
+    id: "ACC-2300-009",
+    name: "Settlement-Failed Receivable",
+    category: "asset-receivable",
+    currency: "AUD",
     side: "debit",
   },
   {
