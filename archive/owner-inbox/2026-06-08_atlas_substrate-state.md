@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-08T12:00:00.511Z
+asOf: 2026-06-08T13:00:45.636Z
 decision-required: false
 ---
 
@@ -9,28 +9,28 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 84693 events across 158 types; 31/31 personas have operating specs; 130 runtime handlers registered; 673 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 84853 events across 158 types; 31/31 personas have operating specs; 131 runtime handlers registered; 673 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 84693
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 84853
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `SubstrateAgentRunStarted` | 12849 | 2026-05-25 | 2026-06-08 |
-| `SubstrateAgentRunCompleted` | 12677 | 2026-05-25 | 2026-06-08 |
+| `SubstrateAgentRunStarted` | 12883 | 2026-05-25 | 2026-06-08 |
+| `SubstrateAgentRunCompleted` | 12711 | 2026-05-25 | 2026-06-08 |
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `BusDispatched` | 11338 | 2026-05-25 | 2026-06-08 |
-| `LegacyFanoutShadowed` | 7856 | 2026-05-25 | 2026-06-08 |
+| `BusDispatched` | 11372 | 2026-05-25 | 2026-06-08 |
+| `LegacyFanoutShadowed` | 7889 | 2026-05-25 | 2026-06-08 |
 | `Decision` | 2685 | 2026-04-30 | 2026-06-08 |
 | `RiskRaised` | 2448 | 2025-12-01 | 2026-06-02 |
-| `WorkstreamRegistered` | 2404 | 2026-05-07 | 2026-06-08 |
-| `DashboardProjectionRefreshed` | 2386 | 2026-05-25 | 2026-06-08 |
-| `RecordFiled` | 1612 | 2026-05-05 | 2026-06-08 |
+| `WorkstreamRegistered` | 2412 | 2026-05-07 | 2026-06-08 |
+| `DashboardProjectionRefreshed` | 2395 | 2026-05-25 | 2026-06-08 |
+| `RecordFiled` | 1613 | 2026-05-05 | 2026-06-08 |
 | `CalculationPerformed` | 1518 | 2026-06-01 | 2026-06-08 |
 | `SubstrateAlert` | 1244 | 2025-01-01 | 2026-06-08 |
-| `ScheduledTrigger` | 1072 | 2026-05-25 | 2026-06-08 |
-| `AgentGoalEvaluated` | 860 | 2026-05-25 | 2026-06-08 |
+| `ScheduledTrigger` | 1073 | 2026-05-25 | 2026-06-08 |
+| `AgentGoalEvaluated` | 861 | 2026-05-25 | 2026-06-08 |
 | `ReconResult` | 837 | 2026-05-07 | 2026-06-08 |
 | `BacktestRequested` | 786 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 740 | 2026-05-09 | 2026-05-09 |
@@ -42,12 +42,12 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 84693
 | `ObligationAdopted` | 418 | 2026-06-04 | 2026-06-04 |
 | `AgentPerformanceEvaluated` | 401 | 2026-05-25 | 2026-06-08 |
 | `AgentFeedbackIssued` | 401 | 2026-05-25 | 2026-06-08 |
-| `AgentGoalSelected` | 360 | 2026-05-25 | 2026-06-08 |
-| `AgentRunCompleted` | 352 | 2026-05-10 | 2026-06-08 |
-| `AgentBriefIssued` | 342 | 2026-05-10 | 2026-06-08 |
-| `AgentRunStarted` | 341 | 2026-05-10 | 2026-06-08 |
+| `AgentGoalSelected` | 361 | 2026-05-25 | 2026-06-08 |
+| `AgentRunCompleted` | 353 | 2026-05-10 | 2026-06-08 |
+| `AgentBriefIssued` | 343 | 2026-05-10 | 2026-06-08 |
+| `AgentRunStarted` | 342 | 2026-05-10 | 2026-06-08 |
 | `PermissionPolicyPublished` | 325 | 2026-05-25 | 2026-06-01 |
-| `SubstrateStateSnapshot` | 300 | 2026-05-07 | 2026-06-08 |
+| `SubstrateStateSnapshot` | 301 | 2026-05-07 | 2026-06-08 |
 | `AuditFindingClosed` | 227 | 2026-06-02 | 2026-06-02 |
 | `AuditFinding` | 217 | 2026-05-07 | 2026-05-30 |
 | `M1CitationTrancheRegistered` | 176 | 2026-05-09 | 2026-05-09 |
@@ -182,7 +182,7 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 84693
 
 ## Runtime handlers
 
-130 agent run handlers registered in `runtime/run.ts`. Each can be invoked locally via `bun run agent:<slug>` and on cron via `.github/workflows/agent-runtime-*.yml`.
+131 agent run handlers registered in `runtime/run.ts`. Each can be invoked locally via `bun run agent:<slug>` and on cron via `.github/workflows/agent-runtime-*.yml`.
 
 | Agent | Trigger |
 |---|---|
@@ -205,6 +205,7 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 84693
 | Bea | `m1-ifrs-classification-rules` |
 | Bea | `event-triage` |
 | Bea | `period-close` |
+| Bea | `ba310-period-close` |
 | Bea | `product-control-daily` |
 | Helena | `risk-appetite-watch` |
 | Helena | `goal-loop` |
@@ -331,7 +332,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cbqkn3L5SCdraiVEnAQon"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbqqQecLezVMVretSJG65"})._
 
 ## Provenance
 
