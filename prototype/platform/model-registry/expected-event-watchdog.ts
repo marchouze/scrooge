@@ -152,6 +152,27 @@ const STANDALONE_EXPECTATIONS: readonly ExpectedEvent[] = [
     citation: "D-BRC-INTERIM-MR-1-FX",
     maxAgeBusinessDays: 1,
   },
+  {
+    // FX functionality domain review gap #1: the BA-310 (market / position
+    // risk — FX-NOP) return is generated + its SARB submission recorded by the
+    // event-driven `bea:ba310-period-close` handler on every
+    // AccountingPeriodClosed. Presence-only ("≥1 BA-310 submission exists"):
+    // if no SarbSubmissionAttempted{formId:"BA310"} is in the store, the
+    // BA-310 generation/submission path has never fired on the live event flow
+    // and there is no automated SARB FX-NOP submission record at all. The
+    // per-period completeness assertion (every CLOSED period has its BA-310
+    // record) is the bespoke `recon:ba310-submission-completeness` gate; this
+    // watchdog expectation guards the coarser "path never fired" shape and
+    // surfaces it on the cross-page data-failure banner.
+    id: "ba310-fx-nop-submission",
+    eventType: "SarbSubmissionAttempted",
+    matches: (p) => p.formId === "BA310",
+    label: "BA-310 FX-NOP submission record",
+    owningRole: "Bea (Accounting and financial reporting engineer, engineering)",
+    rationale:
+      "no SarbSubmissionAttempted{formId:BA310} exists — the BA-310 (market / position risk, FX-NOP) generation/submission path (bea:ba310-period-close) has never fired, so there is no automated SARB FX-NOP submission record on the live event flow",
+    citation: "D-BA-RETURN-FORM-NUMBERING-RECON",
+  },
 ];
 
 /** The full set of events the watchdog asserts must exist. */

@@ -63,19 +63,19 @@
 //   form-numbering + completeness recon) on Bea's period-close return surface.
 
 import { eventStore, logger } from "../../platform/composition";
+import type { AccountingPeriodClosedPayload } from "../../platform/event-store/event-types";
+import type { EventStore } from "../../platform/event-store/store";
 import type { Event } from "../../platform/event-store/types";
+import type { Actor } from "../../platform/event-store/types";
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import { deriveZarRatesFromMarketData } from "../../platform/market-risk/var-engine";
 import {
-  ba310PeriodCloseSubscriber,
   BA_310_SUBSCRIBER_ENTITIES,
+  ba310PeriodCloseSubscriber,
 } from "../../platform/returns/ba310/period-close-subscriber";
 import { ba310ToXmlPayload } from "../../platform/returns/ba310/xml";
 import { submitToSarbPortal } from "../../simulators/sarb-prudential";
-import type { EventStore } from "../../platform/event-store/store";
-import type { Actor } from "../../platform/event-store/types";
-import type { AccountingPeriodClosedPayload } from "../../platform/event-store/event-types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const ACTOR: Actor = { type: "service", id: "agent:bea:ba310-period-close" };
@@ -102,7 +102,11 @@ export function ba310SubmissionExists(store: EventStore, periodId: string): bool
  * found (the BA-310 generator then folds the whole-history window — still a
  * valid, if unbounded, fold; logged as a degraded resolution).
  */
-function resolvePeriodStart(store: EventStore, entity: string, periodId: string): string | undefined {
+function resolvePeriodStart(
+  store: EventStore,
+  entity: string,
+  periodId: string,
+): string | undefined {
   for (const e of store.replay({ entity, type: "AccountingPeriodOpened" })) {
     const p = e.payload as { periodId?: string; periodStart?: string; reopenOf?: unknown };
     if (p.periodId === periodId && !p.reopenOf && typeof p.periodStart === "string") {
