@@ -589,7 +589,10 @@ describe("GL posting engine — manual-provenance FxTradeExecuted", () => {
 // ===========================================================================
 
 import { eventStore as compositionEventStore } from "../../platform/composition";
-import { makeFxTradeCancelled } from "../../platform/event-store/event-types/fx-accounting";
+import {
+  makeFxPositionRevalued,
+  makeFxTradeCancelled,
+} from "../../platform/event-store/event-types/fx-accounting";
 import {
   makeFxTradeExecuted,
   makePrincipalPayment,
@@ -601,6 +604,10 @@ import { beaGlPostingEngine } from "./bea-gl-posting-engine";
 const REG_ENTITY = "LE-ZA-HOZ-BANK";
 const REG_ACTOR = { type: "service" as const, id: "agent:bea:gl-posting-engine" };
 const REG_CITATIONS = ["IFRS-9-§3.2.3", "IAS-21-§28", "D-MARKETS-SCHEMA-FOUNDATION"];
+// FX_ACCOUNTS.UNREALISED_PNL — the ZAR FVTPL unrealised-P&L account PR-FX-002
+// revaluations and PR-FX-CANCEL step-(ii) both post to (kept literal here so the
+// test asserts the concrete account, not the symbol it is derived from).
+const FX_REG_UNREALISED_PNL = "ACC-2100-005";
 
 function buildRegressionCtx(asOf: string): AgentRunContext {
   return {
@@ -715,6 +722,127 @@ describe("Regression — FxTradeCancelled produces a 'cancellation' posting", ()
     const bookingLegs = (bookingPostings[0].payload as { legs: SubLedgerLeg[] }).legs;
 
     const combined = netPerAccount([...bookingLegs, ...cancellationLegs]);
+    for (const [, net] of combined.entries()) {
+      expect(net).toBe(0);
+    }
+  });
+});
+
+describe("Regression — cancelling a REVALUED FxTrade reverses the accumulated MTM (no stranded unrealised P&L)", () => {
+  // PR #1095 follow-up guard. Before this fix, the retired bea-fx-posting-engine
+  // owned the per-revaluation MTM undo, and buildFxCancelEnrichmentForTrade fed
+  // PR-FX-CANCEL step-(ii) a cumulative of 0 — so deleting that engine left the
+  // accumulated unrealised P&L STRANDED in the GL on cancellation. This proves
+  // end-to-end: book → revalue (twice, net gain) → cancel → GL nets to zero on
+  // EVERY account, including the unrealised-P&L pair.
+  it("seeded FxTradeExecuted + 2× FxPositionRevalued + FxTradeCancelled → full GL (booking + revaluation + cancellation) nets to zero per account", async () => {
+    const tradeId = `REG-FX-REVAL-CANCEL-${newEventId()}`;
+    const asOf = "2026-05-21T10:00:00.000Z";
+
+    // 1) Seed FxTradeExecuted
+    const tradeEvent = makeMinimalFxTradeExecuted({ tradeId, asOf });
+    compositionEventStore.append(tradeEvent);
+
+    // 2) Run the engine to emit the trade-booking posting first (the cancellation
+    //    reconstruction reads the persisted booking legs).
+    const bookResult = await beaGlPostingEngine(buildRegressionCtx("2026-05-21T10:30:00.000Z"));
+    expect(bookResult.ok).toBe(true);
+
+    // 3) Seed two daily revaluations — a gain (+R12,000) then a loss (−R4,500),
+    //    net cumulative = +R7,500 unrealised gain accumulated in the GL.
+    const reval1 = makeFxPositionRevalued({
+      asOf: "2026-05-21T17:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId,
+        currencyPair: "USD/ZAR",
+        bookRate: 18.5,
+        revalRate: 18.62,
+        notionalBaseMinor: 1_000_000_00,
+        unrealisedPnlZarMinor: 12_000_00,
+        revaluedAt: "2026-05-21T17:00:00Z",
+        rateSource: "stub",
+      },
+    });
+    compositionEventStore.append(reval1);
+    const reval2 = makeFxPositionRevalued({
+      asOf: "2026-05-22T17:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId,
+        currencyPair: "USD/ZAR",
+        bookRate: 18.5,
+        revalRate: 18.575,
+        notionalBaseMinor: 1_000_000_00,
+        unrealisedPnlZarMinor: -4_500_00,
+        revaluedAt: "2026-05-22T17:00:00Z",
+        rateSource: "stub",
+      },
+    });
+    compositionEventStore.append(reval2);
+
+    // 4) Run the engine to emit both revaluation postings.
+    const revalResult = await beaGlPostingEngine(buildRegressionCtx("2026-05-22T17:30:00.000Z"));
+    expect(revalResult.ok).toBe(true);
+
+    const revaluationPostings = [
+      ...postingsForSource(reval1.event_id),
+      ...postingsForSource(reval2.event_id),
+    ].filter((ev) => (ev.payload as { postingType?: string }).postingType === "revaluation");
+    // Both non-zero deltas must have produced a revaluation posting — otherwise
+    // there is no accumulated MTM and the regression cannot be exercised.
+    expect(revaluationPostings).toHaveLength(2);
+
+    // 5) Cancel the (revalued) trade.
+    const cancelEvent = makeFxTradeCancelled({
+      asOf: "2026-05-23T11:00:00.000Z",
+      entity: REG_ENTITY,
+      actor: REG_ACTOR,
+      citations: REG_CITATIONS,
+      payload: {
+        tradeId,
+        reason: "regression-test-revalued-cancel",
+        cancelledBy: "agent:test",
+        originalEventId: tradeEvent.event_id,
+      },
+    });
+    compositionEventStore.append(cancelEvent);
+
+    const cancelResult = await beaGlPostingEngine(buildRegressionCtx("2026-05-23T12:00:00.000Z"));
+    expect(cancelResult.ok).toBe(true);
+
+    // 6) The cancellation posting (PR-FX-CANCEL, IFRS representation) must now
+    //    carry BOTH the booking-leg reversal AND the cumulative MTM reversal.
+    const cancellations = postingsForSource(cancelEvent.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string; representation?: string };
+      const representation = p.representation ?? "IFRS";
+      return p.postingType === "cancellation" && representation === "IFRS";
+    });
+    expect(cancellations).toHaveLength(1);
+
+    // 7) The unrealised-P&L pair (ACC-2100-005) must appear in the cancellation
+    //    legs — the proof the MTM undo is no longer stranded.
+    const cancellationLegs = (cancellations[0].payload as { legs: SubLedgerLeg[] }).legs;
+    const unrealisedLeg = cancellationLegs.find((l) => l.accountId === FX_REG_UNREALISED_PNL);
+    expect(unrealisedLeg).toBeDefined();
+    // Net cumulative was a +R7,500 GAIN (Dr receivable / Cr unrealised over the
+    // revaluations); the reversal must DEBIT unrealised P&L by exactly R7,500.
+    expect(unrealisedLeg?.debitCredit).toBe("debit");
+    expect(unrealisedLeg?.amountMinor).toBe(7_500_00);
+
+    // 8) END-TO-END: every IFRS posting on this trade — booking + both
+    //    revaluations + cancellation — must net to ZERO on EVERY account.
+    const bookingLegs = postingsForSource(tradeEvent.event_id)
+      .filter((ev) => (ev.payload as { postingType?: string }).postingType === "trade-booking")
+      .flatMap((ev) => (ev.payload as { legs: SubLedgerLeg[] }).legs);
+    const revalLegs = revaluationPostings.flatMap(
+      (ev) => (ev.payload as { legs: SubLedgerLeg[] }).legs,
+    );
+    const combined = netPerAccount([...bookingLegs, ...revalLegs, ...cancellationLegs]);
     for (const [, net] of combined.entries()) {
       expect(net).toBe(0);
     }

@@ -94,6 +94,13 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+// NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
+// paymentSettledJournals / settlementInstructionJournals) are no longer imported
+// here — the three payment event types now post via the SLA interpreter
+// (PAYMENTS_INTERPRETER_EVENT_TYPES). They are retained in payments.ts as the
+// byte-for-byte parity reference (deprecated-for-production, not deleted) and are
+// exercised only by tests/sla-payments-lifecycle-parallel-run.test.ts.
+import { FX_ACCOUNTS } from "../../platform/accounting/posting-rules/fx-spot";
 // NOTE (D-SLA-ENGINE-RULES-AS-DATA, full retirement — COMPLETE incl. FX tail):
 // the legacy posting-rule functions for EVERY product family are NO LONGER called
 // from this production engine, AND this handler imports NO journal function from
@@ -110,12 +117,6 @@
 // deprecated-for-production but not yet deleted — a separate retirement stage
 // removes the dead legacy engine + those functions from tree.
 import { seedGrandfatherApprovals } from "../../platform/accounting/sla/grandfather";
-// NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
-// paymentSettledJournals / settlementInstructionJournals) are no longer imported
-// here — the three payment event types now post via the SLA interpreter
-// (PAYMENTS_INTERPRETER_EVENT_TYPES). They are retained in payments.ts as the
-// byte-for-byte parity reference (deprecated-for-production, not deleted) and are
-// exercised only by tests/sla-payments-lifecycle-parallel-run.test.ts.
 import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
@@ -124,7 +125,6 @@ import type {
   BondSoldPayload,
   BondTradeExecutedPayload,
 } from "../../platform/event-store/event-types/bond-accounting";
-import { FX_ACCOUNTS } from "../../platform/accounting/posting-rules/fx-spot";
 import {
   type FxSettlementFailedPayload,
   type FxTradeCancelledPayload,
