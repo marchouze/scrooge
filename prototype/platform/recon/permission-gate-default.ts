@@ -346,6 +346,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: brief:bea:all-asset-class-p-l-ipv-coverage-mvp:2026-05-31,
   // P4-SECURITY-DESIGNED-IN.
   "platform/product-control/position-source.test.ts",
+  // Cross-asset Product Control breakdown test. Raw EventStore(":memory:") is a
+  // build-phase fixture for the FX spot/forward bucketing, no-silent-zero and
+  // book-aggregation assertions, not a production access path. T-01 carve-out.
+  // Citation: Marc (CEO) 2026-06-08 (all instruments / all books),
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/product-control/cross-asset-positions.test.ts",
   // Per-currency ZAR MTM byCurrency recon test. Raw EventStore(":memory:") is
   // a build-phase fixture for the EUR/USD byCurrency split assertion, not a
   // production access path. T-01 carve-out.
