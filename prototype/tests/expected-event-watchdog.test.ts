@@ -2,28 +2,35 @@
 //
 // Unit tests for the expected-event watchdog (Trusted-Figures Program,
 // objective 4 — loud failure modes). Asserts:
-//   - An empty store yields a gap for every expectation (3 calc-bound + 2
-//     standalone = 5).
+//   - An empty store yields a gap (kind "absent") for every expectation
+//     (calc-bound + 3 standalone, including the daily market-risk measure).
 //   - A store with all expected events present yields no gaps.
 //   - emitExpectedEventGapAlerts emits one SubstrateAlert{integrity} per open
 //     gap and is idempotent on a second call (append-only, no duplicates).
 //   - The recon manifest gate (run()) passes against the live manifest.
+//   - Freshness (maxAgeBusinessDays): the MR-1-FX VaR measure is flagged as a
+//     "stale" gap when older than one business day, with a date-stamped alert
+//     that re-fires each stale day and stops once a fresh measure lands.
 //
-// Author: Atlas (Core banking platform architect, engineering).
+// Author: Atlas (Core banking platform architect, engineering); freshness
+//         extension by Rohan (Risk engineer, engineering).
 
 import { describe, expect, it } from "bun:test";
 
 import { makeBalanceSheetProjected } from "../platform/event-store/event-types/balance-sheet";
 import { makeCalculationPerformed } from "../platform/event-store/event-types/calculation";
+import { makeMarketRiskMeasureComputed } from "../platform/event-store/event-types/market-risk-measure";
 import { makeDailyPnLReportGenerated } from "../platform/event-store/event-types/product-control";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 import { CALC_BINDINGS } from "../platform/model-registry/calculation-binding";
 import {
+  businessDaysBetween,
   checkExpectedEvents,
   emitExpectedEventGapAlerts,
   expectedEvents,
   gapAlertId,
+  staleGapAlertId,
 } from "../platform/model-registry/expected-event-watchdog";
 import { run as runReconGate } from "../platform/recon/expected-event-watchdog";
 
@@ -102,6 +109,49 @@ function seedAllExpectedEvents(store: EventStore): void {
       },
     }),
   );
+
+  store.append(
+    makeMarketRiskMeasureComputed({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: ["D-BRC-INTERIM-MR-1-FX"],
+      payload: {
+        measureId: `MR-MEASURE-${ENTITY}-${AS_OF.slice(0, 10)}`,
+        asOf: AS_OF,
+        status: "no-positions",
+        var: { present: false, reason: "flat book", expectedFrom: "live FX positions" },
+        svar: { present: false, reason: "flat book", expectedFrom: "live FX positions" },
+        es: { present: false, reason: "flat book", expectedFrom: "live FX positions" },
+        riskFactorCount: 0,
+        minObservations: 0,
+        varAppetiteZar: 350_000,
+      },
+    }),
+  );
+}
+
+/** Append one MarketRiskMeasureComputed with a chosen as_of (for freshness tests). */
+function seedMarketRiskMeasure(store: EventStore, asOf: string): void {
+  store.append(
+    makeMarketRiskMeasureComputed({
+      asOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: ["D-BRC-INTERIM-MR-1-FX"],
+      payload: {
+        measureId: `MR-MEASURE-${ENTITY}-${asOf.slice(0, 10)}`,
+        asOf,
+        status: "no-positions",
+        var: { present: false, reason: "flat book", expectedFrom: "live FX positions" },
+        svar: { present: false, reason: "flat book", expectedFrom: "live FX positions" },
+        es: { present: false, reason: "flat book", expectedFrom: "live FX positions" },
+        riskFactorCount: 0,
+        minObservations: 0,
+        varAppetiteZar: 350_000,
+      },
+    }),
+  );
 }
 
 describe("expected-event watchdog", () => {
@@ -109,11 +159,14 @@ describe("expected-event watchdog", () => {
     const store = new EventStore();
     const gaps = checkExpectedEvents(store);
     expect(gaps.length).toBe(expectedEvents().length);
-    // One calc-bound expectation per CALC_BINDINGS entry + 2 standalone.
-    expect(gaps.length).toBe(Object.keys(CALC_BINDINGS).length + 2);
+    // One calc-bound expectation per CALC_BINDINGS entry + 3 standalone.
+    expect(gaps.length).toBe(Object.keys(CALC_BINDINGS).length + 3);
     const ids = new Set(gaps.map((g) => g.id));
     expect(ids.has("daily-pnl")).toBe(true);
     expect(ids.has("balance-sheet")).toBe(true);
+    expect(ids.has("mr-1-fx-var-measure")).toBe(true);
+    // Every gap on an empty store is "absent" (no asOf → no freshness grading).
+    expect(gaps.every((g) => g.kind === "absent")).toBe(true);
     for (const b of Object.values(CALC_BINDINGS)) {
       expect(ids.has(`calc-${b.calcKey}`)).toBe(true);
     }
@@ -193,5 +246,125 @@ describe("expected-event watchdog", () => {
     expect(fails).toEqual([]);
     expect(result.ok).toBe(true);
     expect(result.asserted).toBe(expectedEvents().length);
+  });
+});
+
+describe("expected-event watchdog — freshness (maxAgeBusinessDays)", () => {
+  // The MR-1-FX VaR measure carries maxAgeBusinessDays: 1. These tests exercise
+  // the freshness extension (FX functionality domain review gap #4 watchdog).
+
+  it("businessDaysBetween counts Mon–Fri only and skips weekends", () => {
+    // Fri 2026-06-05 → Mon 2026-06-08 is ONE business day (Sat/Sun skipped).
+    expect(
+      businessDaysBetween(
+        new Date("2026-06-05T00:00:00.000Z"),
+        new Date("2026-06-08T18:30:00.000Z"),
+      ),
+    ).toBe(1);
+    // Mon 2026-06-08 → Wed 2026-06-10 is two business days.
+    expect(
+      businessDaysBetween(
+        new Date("2026-06-08T00:00:00.000Z"),
+        new Date("2026-06-10T18:30:00.000Z"),
+      ),
+    ).toBe(2);
+    // Same instant → 0.
+    expect(
+      businessDaysBetween(
+        new Date("2026-06-08T18:30:00.000Z"),
+        new Date("2026-06-08T18:30:00.000Z"),
+      ),
+    ).toBe(0);
+    // Later before earlier → 0.
+    expect(
+      businessDaysBetween(
+        new Date("2026-06-09T00:00:00.000Z"),
+        new Date("2026-06-08T00:00:00.000Z"),
+      ),
+    ).toBe(0);
+  });
+
+  it("does NOT flag a same-day MarketRiskMeasureComputed as stale", () => {
+    const store = new EventStore();
+    const asOf = "2026-06-08T18:30:00.000Z"; // Monday
+    seedMarketRiskMeasure(store, asOf);
+    const gap = checkExpectedEvents(store, asOf).find((g) => g.id === "mr-1-fx-var-measure");
+    expect(gap).toBeUndefined();
+  });
+
+  it("does NOT flag a measure one business day old (within the window)", () => {
+    const store = new EventStore();
+    // Measure as_of Friday; check as_of Monday — exactly 1 business day (weekend skipped).
+    seedMarketRiskMeasure(store, "2026-06-05T18:30:00.000Z");
+    const gap = checkExpectedEvents(store, "2026-06-08T18:30:00.000Z").find(
+      (g) => g.id === "mr-1-fx-var-measure",
+    );
+    expect(gap).toBeUndefined();
+  });
+
+  it("flags a measure older than one business day as a STALE gap", () => {
+    const store = new EventStore();
+    // Measure as_of Monday; check as_of Thursday — 3 business days old > window 1.
+    seedMarketRiskMeasure(store, "2026-06-08T18:30:00.000Z");
+    const asOf = "2026-06-11T18:30:00.000Z";
+    const gap = checkExpectedEvents(store, asOf).find((g) => g.id === "mr-1-fx-var-measure");
+    expect(gap).toBeDefined();
+    expect(gap?.kind).toBe("stale");
+    expect(gap?.latestAsOf).toBe("2026-06-08T18:30:00.000Z");
+  });
+
+  it("presence-only check (no asOf) treats a stale measure as present", () => {
+    const store = new EventStore();
+    seedMarketRiskMeasure(store, "2026-06-08T18:30:00.000Z");
+    // No asOf → freshness window is not evaluated; the figure is present.
+    const gap = checkExpectedEvents(store).find((g) => g.id === "mr-1-fx-var-measure");
+    expect(gap).toBeUndefined();
+  });
+
+  it("emits a date-stamped stale alert that re-fires on a later stale day", () => {
+    const store = new EventStore();
+    seedMarketRiskMeasure(store, "2026-06-08T18:30:00.000Z");
+
+    // Thursday: stale → one stale alert, date-stamped for that day.
+    const thu = "2026-06-11T18:30:00.000Z";
+    const r1 = emitExpectedEventGapAlerts(store, thu);
+    expect(r1.emitted).toContain("mr-1-fx-var-measure");
+    const alertIds1 = [...store.replay({ type: "SubstrateAlert" })].map(
+      (e) => (e.payload as { alertId: string }).alertId,
+    );
+    expect(alertIds1).toContain(staleGapAlertId("mr-1-fx-var-measure", thu));
+
+    // Same day re-run: idempotent — the date-stamped stale alert is skipped.
+    const r1b = emitExpectedEventGapAlerts(store, thu);
+    expect(r1b.emitted).not.toContain("mr-1-fx-var-measure");
+    expect(r1b.skipped).toContain("mr-1-fx-var-measure");
+
+    // Friday: still stale, NEW day → a fresh date-stamped stale alert fires.
+    const fri = "2026-06-12T18:30:00.000Z";
+    const r2 = emitExpectedEventGapAlerts(store, fri);
+    expect(r2.emitted).toContain("mr-1-fx-var-measure");
+    const alertIds2 = [...store.replay({ type: "SubstrateAlert" })].map(
+      (e) => (e.payload as { alertId: string }).alertId,
+    );
+    expect(alertIds2).toContain(staleGapAlertId("mr-1-fx-var-measure", fri));
+  });
+
+  it("stops alerting once a fresh measure lands", () => {
+    const store = new EventStore();
+    seedMarketRiskMeasure(store, "2026-06-08T18:30:00.000Z");
+    const stale = "2026-06-11T18:30:00.000Z";
+    emitExpectedEventGapAlerts(store, stale);
+    const before = [...store.replay({ type: "SubstrateAlert" })].length;
+    // A fresh measure lands for the check day — no longer stale.
+    seedMarketRiskMeasure(store, stale);
+    const after = emitExpectedEventGapAlerts(store, stale);
+    expect(after.emitted).not.toContain("mr-1-fx-var-measure");
+    // No new stale alert for mr-1-fx-var-measure (other gaps may still alert,
+    // but the freshly-marked measure must not).
+    const staleAlerts = [...store.replay({ type: "SubstrateAlert" })]
+      .map((e) => (e.payload as { alertId: string }).alertId)
+      .filter((id) => id.startsWith("alert:integrity:expected-event-stale-mr-1-fx-var-measure"));
+    expect(staleAlerts.length).toBe(1); // only the one from the stale day
+    expect(before).toBeGreaterThan(0);
   });
 });

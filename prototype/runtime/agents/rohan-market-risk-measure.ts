@@ -78,6 +78,80 @@ function alreadyEmitted(store: EventStore, measureId: string): boolean {
   return false;
 }
 
+export interface MeasureRunResult {
+  readonly emitted: boolean;
+  readonly measureId: string;
+  readonly status: string;
+  readonly varSummary: string;
+  readonly riskFactorCount: number;
+}
+
+/**
+ * Compute + (idempotently) emit the daily MarketRiskMeasureComputed against an
+ * explicit store — the testable core, decoupled from the composition singleton.
+ *
+ * Idempotency: one measure per entity per UTC day. If a MarketRiskMeasureComputed
+ * with the day's measureId already exists in `store`, this is a no-op (returns
+ * `emitted: false`, appends nothing) — so a same-day re-run never double-emits.
+ *
+ * Methodology + numbers are exactly the on-demand script's: `computeMarketRisk`
+ * is called unchanged; the var-engine reads production-provenance ticks only.
+ */
+export function computeAndEmitMarketRiskMeasure(args: {
+  store: EventStore;
+  marketData: MarketDataStore;
+  asOf: string;
+  entity?: string;
+}): MeasureRunResult {
+  const { store, marketData, asOf } = args;
+  const entity = args.entity ?? BANK_ENTITY;
+  const measureId = marketRiskMeasureId(entity, asOf);
+
+  if (alreadyEmitted(store, measureId)) {
+    return {
+      emitted: false,
+      measureId,
+      status: "skipped-idempotent",
+      varSummary: "already emitted",
+      riskFactorCount: 0,
+    };
+  }
+
+  const report = computeMarketRisk({ eventStore: store, marketData, asOf });
+
+  store.append(
+    makeMarketRiskMeasureComputed({
+      asOf,
+      entity,
+      actor: ENGINE_ACTOR,
+      citations: CITATIONS,
+      payload: {
+        measureId,
+        asOf,
+        status: report.status,
+        var: report.var,
+        svar: report.svar,
+        es: report.es,
+        riskFactorCount: report.exposures.length,
+        minObservations: report.minObservations,
+        varAppetiteZar: VAR_APPETITE_ZAR,
+      },
+    }),
+  );
+
+  const varSummary = report.var.present
+    ? `ZAR ${report.var.value.toFixed(2)}`
+    : `absent (${report.var.reason})`;
+
+  return {
+    emitted: true,
+    measureId,
+    status: report.status,
+    varSummary,
+    riskFactorCount: report.exposures.length,
+  };
+}
+
 const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const asOf = ctx.asOf;
   const dateStr = fmtDateUTC(asOf);
@@ -88,21 +162,22 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     "rohan:market-risk-measure — starting daily VaR / MR-1-FX measure run",
   );
 
-  // Idempotency: one measure per entity per UTC day. Skip if already emitted.
-  if (alreadyEmitted(eventStore, measureId)) {
-    logger.info({ measureId }, "rohan:market-risk-measure — already emitted today; skipping");
-    return {
-      eventsEmitted: 0,
-      summary: `MR measure ${dateStr}: already emitted (${measureId}) — idempotent skip`,
-      ok: true,
-    };
-  }
-
   // Dry-run: do not emit, do not open the market-data store.
   if (ctx.dryRun) {
     return {
       eventsEmitted: 0,
       summary: `MR measure ${dateStr}: dry-run — no MarketRiskMeasureComputed emitted`,
+      ok: true,
+    };
+  }
+
+  // Idempotency short-circuit BEFORE opening the market-data store — a same-day
+  // re-run is a cheap no-op.
+  if (alreadyEmitted(eventStore, measureId)) {
+    logger.info({ measureId }, "rohan:market-risk-measure — already emitted today; skipping");
+    return {
+      eventsEmitted: 0,
+      summary: `MR measure ${dateStr}: already emitted (${measureId}) — idempotent skip`,
       ok: true,
     };
   }
@@ -121,41 +196,21 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
-  // Compute the measure. NO SILENT ZEROS: a flat book or too-short history
-  // yields absent figures + a loud status; we emit them verbatim — the
-  // methodology + numbers are exactly the on-demand script's.
-  const report = computeMarketRisk({ eventStore, marketData: marketDataStore, asOf });
+  const result = computeAndEmitMarketRiskMeasure({
+    store: eventStore,
+    marketData: marketDataStore,
+    asOf,
+  });
   marketDataStore.close();
 
-  eventStore.append(
-    makeMarketRiskMeasureComputed({
-      asOf,
-      entity: BANK_ENTITY,
-      actor: ENGINE_ACTOR,
-      citations: CITATIONS,
-      payload: {
-        measureId,
-        asOf,
-        status: report.status,
-        var: report.var,
-        svar: report.svar,
-        es: report.es,
-        riskFactorCount: report.exposures.length,
-        minObservations: report.minObservations,
-        varAppetiteZar: VAR_APPETITE_ZAR,
-      },
-    }),
-  );
-
-  const varStr = report.var.present ? `ZAR ${report.var.value.toFixed(2)}` : `absent (${report.var.reason})`;
   logger.info(
-    { measureId, status: report.status, var: varStr },
+    { measureId: result.measureId, status: result.status, var: result.varSummary },
     "rohan:market-risk-measure — MarketRiskMeasureComputed emitted",
   );
 
   return {
-    eventsEmitted: 1,
-    summary: `MR measure ${dateStr}: status=${report.status} · VaR ${varStr} · ${report.exposures.length} risk-factor(s) · appetite ZAR ${VAR_APPETITE_ZAR}`,
+    eventsEmitted: result.emitted ? 1 : 0,
+    summary: `MR measure ${dateStr}: status=${result.status} · VaR ${result.varSummary} · ${result.riskFactorCount} risk-factor(s) · appetite ZAR ${VAR_APPETITE_ZAR}`,
     ok: true,
   };
 };
