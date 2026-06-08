@@ -116,6 +116,7 @@ import {
 } from "../platform/model-registry/expected-event-watchdog";
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { findKnowledgeBaseObligation } from "../platform/obligations/knowledge-base";
+import { buildCrossAssetBreakdown } from "../platform/product-control/cross-asset-positions";
 import {
   classifyUnmarkable,
   computeDailyPnL,
@@ -3555,6 +3556,48 @@ const server = Bun.serve({
         totalRealisedZarMinor: set.totalRealisedZarMinor,
         markableUnrealisedZarMinor: set.markableUnrealisedZarMinor,
         unmarkableKeys: set.unmarkableKeys,
+        asOf: nowUtc(),
+        pageProvenance: eventDerivedPageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/product-control/cross-asset" && req.method === "GET") {
+      // Cross-asset Product Control breakdown — P&L by instrument and by book
+      // across EVERY asset class (FX spot & forward, desk cash, bonds, equities,
+      // IRD). Pure composition of the FX daily-pnl engine, desk-cash pricer and
+      // the all-asset position-source. FinancialInput<number> is flattened at
+      // the API boundary into { markable: boolean, valueZarMinor: number }.
+      // Authority: Marc (CEO) 2026-06-08 (all instruments / all books); Camille
+      //   (CFO) R3; D-TRUSTED-FIGURES-PROGRAM-V1 (no-silent-zero).
+      const bd = buildCrossAssetBreakdown(eventStore, nowUtc().slice(0, 10));
+      const instruments = bd.instruments.map((r) => ({
+        instrumentKey: r.instrumentKey,
+        assetClass: r.assetClass,
+        fxTaxonomy: r.fxTaxonomy ?? null,
+        bookId: r.bookId,
+        currency: r.currency,
+        quantity: r.quantity,
+        markable: isPresent(r.unrealised),
+        unrealisedZarMinor: isPresent(r.unrealised) ? r.unrealised.value : 0,
+        realisedZarMinor: r.realisedZarMinor,
+        positionCount: r.positionCount,
+        markStatus: r.markStatus,
+      }));
+      const books = bd.books.map((b) => ({
+        bookId: b.bookId,
+        assetClasses: b.assetClasses,
+        instrumentCount: b.instrumentCount,
+        positionCount: b.positionCount,
+        markable: isPresent(b.unrealised),
+        unrealisedZarMinor: isPresent(b.unrealised) ? b.unrealised.value : 0,
+        realisedZarMinor: b.realisedZarMinor,
+      }));
+      return jsonResponse({
+        instruments,
+        books,
+        markableUnrealisedZarMinor: bd.markableUnrealisedZarMinor,
+        totalRealisedZarMinor: bd.totalRealisedZarMinor,
+        unrealisedComplete: isPresent(bd.totalUnrealised),
+        unmarkableKeys: bd.unmarkableKeys,
         asOf: nowUtc(),
         pageProvenance: eventDerivedPageProvenance(),
       });

@@ -49,6 +49,8 @@ import { computeDeskCashPositions } from "./desk-cash-positions";
 export interface TradeDetailRow {
   tradeId: string;
   pair: string;
+  /** FX product taxonomy — Spot / Forward / Swap / NDF (all folded by this engine). */
+  productTaxonomy: "FX-spot" | "FX-forward" | "FX-swap" | "NDF";
   side: string;
   counterpartyId: string;
   counterpartyName: string;
@@ -397,6 +399,7 @@ export function computeDailyPnL(
     trades.push({
       tradeId,
       pair,
+      productTaxonomy: trade.productTaxonomy,
       side: trade.side,
       counterpartyId: cid,
       counterpartyName: cname,

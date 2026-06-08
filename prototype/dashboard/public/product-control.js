@@ -32,6 +32,84 @@
     return "var(--color-text-secondary)";
   }
 
+  // Asset-class display labels. "fx" spans FX Spot & Forward (+ swap/NDF), per
+  // Marc (CEO) 2026-06-08 — the FX bucket is not spot-only.
+  const ASSET_LABELS = {
+    fx: "FX (Spot & Forward)",
+    cash: "Cash",
+    bond: "Bond",
+    equity: "Equity",
+    ird: "IRS",
+  };
+  function assetLabel(ac) {
+    return ASSET_LABELS[ac] || ac;
+  }
+
+  // Unrealised cell honouring no-silent-zero: an unmarkable row shows "⚠ no mark"
+  // (the badge, not a 0, is the signal) rather than a misleading ZAR 0.
+  function unrealCell(markable, minor) {
+    return markable
+      ? `<span style="color:${pnlColour(minor)}">${zarFmt(minor)}</span>`
+      : `<span style="color:#ff4d4f;font-style:italic" title="No production mark — cannot revalue (no silent 0)">⚠ no mark</span>`;
+  }
+
+  // Position size, shown in the row's natural unit.
+  function qtyCell(r) {
+    if (r.assetClass === "fx") {
+      const base = (r.instrumentKey.split("/")[0] || "").trim();
+      return base ? numFmt(r.quantity, base) : String(r.quantity);
+    }
+    return numFmt(r.quantity, r.currency);
+  }
+
+  const INSTRUMENT_HEADERS = [
+    "Instrument",
+    "Asset Class",
+    "Book",
+    "Currency",
+    "Quantity",
+    "Unrealised P&L (ZAR)",
+    "Realised P&L (ZAR)",
+    "Mark",
+  ];
+
+  // One By-Instrument table row ({cells, data}) — shared by the main filtered
+  // table and the By-Book drill-down modal.
+  function instrumentRow(r) {
+    const taxo =
+      r.assetClass === "fx" && r.fxTaxonomy
+        ? ` <small style="opacity:.65">${SC.esc(r.fxTaxonomy.replace("FX-", ""))}</small>`
+        : "";
+    return {
+      cells: [
+        `<code style="font:12px var(--font-mono)">${SC.esc(r.instrumentKey)}</code>`,
+        `${SC.esc(assetLabel(r.assetClass))}${taxo}`,
+        SC.esc(r.bookId),
+        `<strong>${SC.esc(r.currency)}</strong>`,
+        qtyCell(r),
+        unrealCell(r.markable, r.unrealisedZarMinor),
+        r.realisedZarMinor
+          ? `<span style="color:${pnlColour(r.realisedZarMinor)}">${zarFmt(r.realisedZarMinor)}</span>`
+          : `<span style="color:var(--color-text-secondary)">—</span>`,
+        markBadge(r.markStatus),
+      ],
+      data: r,
+    };
+  }
+
+  function markBadge(status) {
+    const map = {
+      live: ["#52c41a", "live"],
+      marked: ["#52c41a", "marked"],
+      stale: ["#d48806", "stale"],
+      overnight: ["#d48806", "close"],
+      unavailable: ["#ff4d4f", "no mark"],
+      "no-mark": ["#ff4d4f", "no mark"],
+    };
+    const [colour, label] = map[status] || ["var(--color-text-secondary)", status || "—"];
+    return `<span style="color:${colour};font:var(--text-small)">${SC.esc(label)}</span>`;
+  }
+
   function tradeModalBody(t) {
     const rows = [
       ["Trade ID", `<code style="font:12px var(--font-mono)">${SC.esc(t.tradeId)}</code>`],
@@ -121,10 +199,11 @@
   }
 
   async function load() {
-    const [pnlData, history, cashData] = await Promise.all([
+    const [pnlData, history, cashData, crossAsset] = await Promise.all([
       fetch("/api/product-control/daily-pnl").then((r) => (r.ok ? r.json() : null)),
       fetch("/api/product-control/report-history").then((r) => (r.ok ? r.json() : null)),
       fetch("/api/product-control/desk-cash").then((r) => (r.ok ? r.json() : null)),
+      fetch("/api/product-control/cross-asset").then((r) => (r.ok ? r.json() : null)),
     ]);
 
     const report = pnlData?.report;
@@ -170,11 +249,18 @@
 
     // ── Summary tiles ──────────────────────────────────────────────────────
     if (tilesEl && report) {
-      // Realised P&L: prefer the directly-derived cash figure (computeCurrencyPositions
-      // → PrincipalPayment events — always correct) over the event-sourced report value
-      // (RealisedPnlRecognised events — only present if the daily MTM run has fired).
-      const realisedZarMinor = cashData?.totalRealisedZarMinor ?? report.totalRealisedPnlZarMinor;
-      const totalZarMinor = report.totalUnrealisedPnlZarMinor + realisedZarMinor;
+      // Headline figures span ALL asset classes (cross-asset engine) when
+      // available, falling back to the FX-only report if that fetch failed.
+      // Cross-asset unrealised is the markable sum (no-silent-zero); realised is
+      // the cross-asset total. Active/Cancelled remain the FX trade counts.
+      const unrealZarMinor = crossAsset
+        ? crossAsset.markableUnrealisedZarMinor
+        : report.totalUnrealisedPnlZarMinor;
+      const realisedZarMinor = crossAsset
+        ? crossAsset.totalRealisedZarMinor
+        : (cashData?.totalRealisedZarMinor ?? report.totalRealisedPnlZarMinor);
+      const totalZarMinor = unrealZarMinor + realisedZarMinor;
+      const incomplete = crossAsset && crossAsset.unrealisedComplete === false;
       const tiles = [
         SC.renderTile({
           label: "Total P&L",
@@ -182,9 +268,9 @@
           status: totalZarMinor < 0 ? "danger" : "ok",
         }),
         SC.renderTile({
-          label: "Unrealised P&L",
-          value: zarFmt(report.totalUnrealisedPnlZarMinor),
-          status: report.totalUnrealisedPnlZarMinor < 0 ? "danger" : "ok",
+          label: incomplete ? "Unrealised P&L (markable)" : "Unrealised P&L",
+          value: zarFmt(unrealZarMinor),
+          status: unrealZarMinor < 0 ? "danger" : "ok",
         }),
         SC.renderTile({
           label: "Realised P&L",
@@ -192,13 +278,13 @@
           status: realisedZarMinor < 0 ? "danger" : "ok",
         }),
         SC.renderTile({
-          label: "Active Positions",
-          value: report.activePositions,
+          label: "Instruments",
+          value: crossAsset ? crossAsset.instruments.length : "—",
           status: "info",
         }),
         SC.renderTile({
-          label: "Cancelled",
-          value: report.cancelledPositions,
+          label: "Books",
+          value: crossAsset ? crossAsset.books.length : "—",
           status: null,
         }),
       ];
@@ -209,40 +295,116 @@
         '<p style="color:var(--color-text-secondary)">No P&L data available. Execute some FX trades to populate this page.</p>';
     }
 
-    // ── By currency ────────────────────────────────────────────────────────
-    const ccyEl = document.getElementById("pc-by-currency");
-    if (ccyEl && report?.byCurrency?.length) {
-      ccyEl.innerHTML = SC.renderSectionHeader("P&L by Currency", null);
+    // ── By Book (cross-asset, drill into instruments) ──────────────────────
+    const bookEl = document.getElementById("pc-by-book");
+    if (bookEl && crossAsset) {
+      bookEl.innerHTML = SC.renderSectionHeader("P&L by Book", null);
+      const note = document.createElement("p");
+      note.style.cssText =
+        "font:var(--text-small);color:var(--color-text-secondary);margin:0 0 var(--space-3)";
+      note.textContent =
+        "Every trading book, aggregated across all asset classes. Click a book to drill into its instruments.";
+      bookEl.appendChild(note);
       const tableWrap = document.createElement("div");
-      ccyEl.appendChild(tableWrap);
+      bookEl.appendChild(tableWrap);
       SC.renderTable({
         container: tableWrap,
         headers: [
-          "Currency",
-          "Trades",
+          "Book",
+          "Asset Classes",
+          "Instruments",
+          "Positions",
           "Unrealised P&L (ZAR)",
           "Realised P&L (ZAR)",
           "Total (ZAR)",
         ],
-        rows: report.byCurrency.map((r) => ({
-          cells: [
-            `<strong>${SC.esc(r.currency)}</strong>`,
-            String(r.tradeCount),
-            `<span style="color:${pnlColour(r.unrealisedPnlZarMinor)}">${zarFmt(r.unrealisedPnlZarMinor)}</span>`,
-            zarFmt(r.realisedPnlZarMinor),
-            `<span style="color:${pnlColour(r.unrealisedPnlZarMinor + r.realisedPnlZarMinor)}">${zarFmt(r.unrealisedPnlZarMinor + r.realisedPnlZarMinor)}</span>`,
-          ],
-          data: r,
-        })),
-        onRowClick: (r) =>
-          SC.openModal({
-            title: `P&L — ${r.currency}`,
-            body: `<pre style="font:13px/1.6 var(--font-mono);white-space:pre-wrap">${SC.esc(JSON.stringify(r, null, 2))}</pre>`,
-          }),
-        emptyMessage: "No positions",
+        rows: crossAsset.books.map((b) => {
+          const total = (b.markable ? b.unrealisedZarMinor : 0) + b.realisedZarMinor;
+          return {
+            cells: [
+              `<strong>${SC.esc(b.bookId)}</strong>`,
+              b.assetClasses.map((ac) => assetLabel(ac)).join(", "),
+              String(b.instrumentCount),
+              String(b.positionCount),
+              unrealCell(b.markable, b.unrealisedZarMinor),
+              zarFmt(b.realisedZarMinor),
+              `<span style="color:${pnlColour(total)}">${zarFmt(total)}</span>`,
+            ],
+            data: b,
+          };
+        }),
+        onRowClick: (b) => {
+          const inBook = crossAsset.instruments.filter((r) => r.bookId === b.bookId);
+          const wrap = document.createElement("div");
+          SC.renderTable({
+            container: wrap,
+            headers: INSTRUMENT_HEADERS,
+            rows: inBook.map(instrumentRow),
+            emptyMessage: "No instruments in this book",
+          });
+          SC.openModal({ title: `Book — ${b.bookId}`, body: wrap });
+        },
+        emptyMessage: "No books",
       });
-    } else if (ccyEl && report) {
-      ccyEl.innerHTML = `${SC.renderSectionHeader("P&L by Currency", null)}<p style="color:var(--color-text-secondary);padding:var(--space-2) 0">No currency data.</p>`;
+    }
+
+    // ── By Instrument (cross-asset, asset-class filter) ────────────────────
+    const instEl = document.getElementById("pc-by-instrument");
+    if (instEl && crossAsset) {
+      instEl.innerHTML = SC.renderSectionHeader("P&L by Instrument", null);
+      const all = crossAsset.instruments;
+      const classes = [...new Set(all.map((r) => r.assetClass))];
+
+      const toolbar = document.createElement("div");
+      toolbar.style.cssText =
+        "display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;margin:var(--space-2) 0 var(--space-3)";
+      const chipDefs = [{ key: "all", label: "All" }].concat(
+        classes.map((ac) => ({ key: ac, label: assetLabel(ac) })),
+      );
+      let active = "all";
+      for (const def of chipDefs) {
+        const chip = document.createElement("button");
+        chip.dataset.key = def.key;
+        chip.textContent = def.label;
+        chip.style.cssText =
+          "border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);border-radius:999px;padding:4px 12px;font:var(--text-small);cursor:pointer";
+        toolbar.appendChild(chip);
+      }
+      instEl.appendChild(toolbar);
+      const tableWrap = document.createElement("div");
+      instEl.appendChild(tableWrap);
+
+      function paintChips() {
+        for (const chip of toolbar.children) {
+          const on = chip.dataset.key === active;
+          chip.style.background = on ? "var(--color-accent, #1677ff)" : "var(--color-surface)";
+          chip.style.color = on ? "#fff" : "var(--color-text-primary)";
+          chip.style.borderColor = on ? "var(--color-accent, #1677ff)" : "var(--color-border)";
+        }
+      }
+      function renderInstruments() {
+        const shown = active === "all" ? all : all.filter((r) => r.assetClass === active);
+        SC.renderTable({
+          container: tableWrap,
+          headers: INSTRUMENT_HEADERS,
+          rows: shown.map(instrumentRow),
+          onRowClick: (r) =>
+            SC.openModal({
+              title: r.instrumentKey,
+              body: `<pre style="font:13px/1.6 var(--font-mono);white-space:pre-wrap">${SC.esc(JSON.stringify(r, null, 2))}</pre>`,
+            }),
+          emptyMessage: "No instruments",
+        });
+      }
+      toolbar.addEventListener("click", (e) => {
+        const key = e.target?.dataset?.key;
+        if (!key) return;
+        active = key;
+        paintChips();
+        renderInstruments();
+      });
+      paintChips();
+      renderInstruments();
     }
 
     // ── Desk FX cash instruments (settled foreign-currency inventory) ──────
