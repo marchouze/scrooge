@@ -13,6 +13,12 @@ export interface ProcedureFrontmatter {
   owner?: string | undefined;
   /** Links to a policy-id — sourced from "Source policy" section or frontmatter. */
   policyCited?: string | undefined;
+  /**
+   * Raw `system-capability:` frontmatter value (the "@platform/..." reference
+   * list, "·"/"+"-separated). Undefined when the procedure has no binding —
+   * a Principle-2 lower-half gap. Parsed by capability-parser.ts.
+   */
+  systemCapability?: string | undefined;
 }
 
 /**
@@ -46,6 +52,8 @@ export function parseProcedureFile(filePath: string): ProcedureFrontmatter | nul
       if (ownerVal) r.owner = ownerVal;
       const policyVal = fm["policy-cited"] ?? fm.policyCited;
       if (policyVal) r.policyCited = policyVal;
+      const capVal = fm["system-capability"] ?? fm.systemCapability;
+      if (capVal) r.systemCapability = capVal;
       return r;
     }
   }
@@ -88,9 +96,18 @@ function parseProcedureBody(content: string, filePath: string): ProcedureFrontma
   let status = "UNKNOWN";
   let owner: string | undefined;
   let policyCited: string | undefined;
+  let systemCapability: string | undefined;
   let inSourcePolicy = false;
 
   for (const line of lines) {
+    // system-capability frontmatter / inline field (e.g. `system-capability: "@platform/..."`)
+    if (!systemCapability) {
+      const capMatch = line.match(/^\s*system-capability:\s*(.+)$/i);
+      if (capMatch) {
+        systemCapability = (capMatch[1] as string).trim().replace(/^["']|["']$/g, "");
+      }
+    }
+
     // Procedure ID
     const idMatch = line.match(/\*\*Procedure\s+ID[:\*]+\s*([A-Z][A-Z0-9-]+)/i);
     if (idMatch) {
@@ -146,6 +163,7 @@ function parseProcedureBody(content: string, filePath: string): ProcedureFrontma
   const result: ProcedureFrontmatter = { procedureId, title, status };
   if (owner) result.owner = owner;
   if (policyCited) result.policyCited = policyCited;
+  if (systemCapability) result.systemCapability = systemCapability;
   return result;
 }
 

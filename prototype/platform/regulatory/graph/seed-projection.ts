@@ -31,6 +31,8 @@ import {
   upsertEdge,
   upsertNode,
 } from "./db";
+import { parseSystemCapabilityValue } from "./capability-parser";
+import { INFRA_CAPABILITY_SLUGS, isOrphanAllowlisted } from "./capability-infra";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
 import type { DocumentApplicabilityStatus, GraphNode, GraphNodeMetadata } from "./types";
@@ -1218,6 +1220,12 @@ export async function runSeed(): Promise<SeedStats> {
   const proceduresDir = repoPath("Procedures");
   const procedureMdFiles = walkMd(proceduresDir);
 
+  // Capability nodes are deduplicated across procedures — one node per distinct
+  // slug. A capability seen "live" anywhere is "live" even if another procedure
+  // marks it "(PLANNED)" (a real binding dominates a planned one).
+  const capabilityNodes = new Map<string, GraphNode>();
+  let proceduresWithCapability = 0;
+
   for (const filePath of procedureMdFiles) {
     // Skip README and template files
     const basename = filePath.split("/").pop() ?? "";
@@ -1255,7 +1263,85 @@ export async function runSeed(): Promise<SeedStats> {
         });
       }
     }
+
+    // ── Step 10b: Capability nodes + REALISES/REALISED_BY edges ──────────────
+    //
+    // Parse the `system-capability:` frontmatter (capability-parser.ts owns the
+    // deterministic, reversible slug rule). Each distinct slug becomes ONE
+    // Capability node; the procedure earns a Procedure → Capability REALISES
+    // edge (+ inverse Capability → Procedure REALISED_BY). Closes the
+    // Principle-2 lower half: the executable chain now reaches code, not just
+    // the procedure text. D-PRINCIPLE-2-CAPABILITY-LAYER.
+    if (fm.systemCapability) {
+      const caps = parseSystemCapabilityValue(fm.systemCapability);
+      if (caps.length > 0) proceduresWithCapability++;
+      for (const cap of caps) {
+        const existing = capabilityNodes.get(cap.slug);
+        if (!existing) {
+          const capNode: GraphNode = {
+            id: cap.nodeId,
+            nodeType: "Capability",
+            label: cap.slug,
+            metadata: { slug: cap.slug, urn: cap.urn, status: cap.status },
+          };
+          upsertNode(capNode);
+          capabilityNodes.set(cap.slug, capNode);
+        } else if (cap.status === "live" && existing.metadata.status === "planned") {
+          // Upgrade a previously-planned node to live (real binding dominates).
+          existing.metadata.status = "live";
+          upsertNode(existing);
+        }
+        // Procedure → Capability (REALISES) + inverse Capability → Procedure.
+        upsertEdge({
+          id: edgeId("REALISES"),
+          fromId: nodeId,
+          toId: cap.nodeId,
+          edgeType: "REALISES",
+          extractionMethod: "frontmatter",
+          confidenceScore: 0.9,
+          extractedAt: now,
+        });
+        upsertEdge({
+          id: edgeId("REALISED_BY"),
+          fromId: cap.nodeId,
+          toId: nodeId,
+          edgeType: "REALISED_BY",
+          extractionMethod: "frontmatter",
+          confidenceScore: 0.9,
+          extractedAt: now,
+        });
+      }
+    }
   }
+
+  // ── Step 10c: Infrastructure capability nodes (F2) ──────────────────────────
+  //
+  // The six cross-cutting agent-substrate capabilities (scheduler, dispatch,
+  // agent-identity, agent-runtime, event-trigger, observability) are seeded so
+  // they exist in the graph even if a procedure never names them. Each is
+  // resolved deliberately (capability-infra.ts): five are PROCEDURE-BOUND via
+  // PROC-OPS-AR-01's `system-capability:` frontmatter (so they already have a
+  // REALISES edge from Step 10b — upsert here is idempotent), and
+  // platform/observability is on the published orphan-exemption allowlist.
+  // D-PRINCIPLE-2-CAPABILITY-LAYER F2.
+  for (const slug of INFRA_CAPABILITY_SLUGS) {
+    if (capabilityNodes.has(slug)) continue; // already seeded (procedure-bound)
+    const capNode: GraphNode = {
+      id: `CAP-${slug}`,
+      nodeType: "Capability",
+      label: slug,
+      metadata: {
+        slug,
+        urn: `urn:capability:bank:${slug}`,
+        status: "live",
+        infrastructure: true,
+        orphanAllowlisted: isOrphanAllowlisted(slug),
+      },
+    };
+    upsertNode(capNode);
+    capabilityNodes.set(slug, capNode);
+  }
+  void proceduresWithCapability; // surfaced via Capability node count in stats
 
   // ── Step 11: EffectivePeriod nodes for Documents ─────────────────────────
 
