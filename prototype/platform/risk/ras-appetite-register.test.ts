@@ -1,10 +1,11 @@
 // platform/risk/ras-appetite-register.test.ts
 //
 // Pins the canonical RAS appetite register (D-RAS-STRUCTURED-REGISTER,
-// CEO-approved 2026-06-08). This is the byte-faithful-extraction contract:
-// the 14 lines, their ids, thresholds, and citations are asserted against the
-// pre-change handler's hand-curated set so the extraction provably changes no
-// appetite semantics.
+// CEO-approved 2026-06-08; D-BOND-RAS-APPETITE, CRO-approved 2026-06-08).
+// This is the byte-faithful-extraction contract:
+// the 14 original lines + 2 bond-trading lines (16 total), their ids,
+// thresholds, and citations are asserted against the canonical set so the
+// extraction provably changes no appetite semantics.
 //
 // Author: Atlas (Substrate engineer, engineering).
 
@@ -18,10 +19,11 @@ import {
   requireRasAppetiteLine,
 } from "./ras-appetite-register";
 
-// The EXACT 14 ids in the EXACT order the pre-change `APPETITE_LINES` array
-// declared them in runtime/agents/helena-risk-appetite-watch.ts. The
-// RiskAppetiteSnapshot.lineStatuses keyset must equal this set.
-const PRE_CHANGE_LINE_IDS: readonly string[] = [
+// The canonical 16 ids in the canonical order:
+//   - 14 original lines extracted from the pre-change handler (D-RAS-STRUCTURED-REGISTER)
+//   - 2 bond-trading lines added 2026-06-08 (D-BOND-RAS-APPETITE)
+// The RiskAppetiteSnapshot.lineStatuses keyset must equal this set.
+const CANONICAL_LINE_IDS: readonly string[] = [
   "appetite:liquidity:lcr",
   "appetite:liquidity:nsfr",
   "appetite:capital:cet1-buffer",
@@ -36,21 +38,24 @@ const PRE_CHANGE_LINE_IDS: readonly string[] = [
   "appetite:model:tier-discipline",
   "appetite:climate:guidance-note-1-2024",
   "appetite:conduct:tcf",
+  // Bond-trading lines — D-BOND-RAS-APPETITE (CRO-approved 2026-06-08)
+  "appetite:market:bond-inventory-face-value",
+  "appetite:irrbb:delta-eve-outlier",
 ];
 
 // The EXACT threshold strings the pre-change LCR/NSFR render printed.
 const LCR_THRESHOLDS = "green ≥120% / amber 110-120% / red <110% / critical <105%";
 const NSFR_THRESHOLDS = "green ≥115% / amber 108-115% / red <108% / critical <103%";
 
-describe("RAS appetite register — canonical 14-line contract", () => {
-  it("has exactly 14 lines in the pre-change order", () => {
-    expect(RAS_APPETITE_LINES).toHaveLength(14);
-    expect(RAS_APPETITE_LINE_IDS).toEqual(PRE_CHANGE_LINE_IDS);
+describe("RAS appetite register — canonical 16-line contract", () => {
+  it("has exactly 16 lines (14 original + 2 bond-trading) in the canonical order", () => {
+    expect(RAS_APPETITE_LINES).toHaveLength(16);
+    expect(RAS_APPETITE_LINE_IDS).toEqual(CANONICAL_LINE_IDS);
   });
 
-  it("keyset equals the pre-change handler id list", () => {
+  it("keyset equals the canonical id list", () => {
     const ids = new Set(RAS_APPETITE_LINES.map((l) => l.id));
-    expect(ids).toEqual(new Set(PRE_CHANGE_LINE_IDS));
+    expect(ids).toEqual(new Set(CANONICAL_LINE_IDS));
     // No duplicate ids.
     expect(RAS_APPETITE_LINES.map((l) => l.id)).toHaveLength(ids.size);
   });

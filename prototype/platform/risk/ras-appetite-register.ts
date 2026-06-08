@@ -24,7 +24,8 @@
 // `recon:ras-register-parity` gate + the handler faithfulness test pin this.
 //
 // Authority: D-RAS (CEO-approved 2026-05-06); D-RAS-STRUCTURED-REGISTER
-//   (CEO-approved 2026-06-08); RAS §§B2–B8 + A2.
+//   (CEO-approved 2026-06-08); D-BOND-RAS-APPETITE (CRO-approved 2026-06-08);
+//   RAS §§B2–B8 + A2.
 // Author: Atlas (Substrate engineer, engineering) — extraction substrate;
 //         Helena (Chief Risk Officer, governance) — appetite-line authority.
 
@@ -182,7 +183,9 @@ const D_RAS = "D-RAS";
 const RAS_FRAMEWORK = "RAS-FRAMEWORK-2026-05-06";
 
 // ---------------------------------------------------------------------------
-// Canonical register — 14 appetite lines as of the 2026-05-06 RAS approval.
+// Canonical register — 14 appetite lines as of the 2026-05-06 RAS approval
+// (D-RAS-STRUCTURED-REGISTER), plus 2 bond-trading lines added 2026-06-08
+// (D-BOND-RAS-APPETITE): 16 lines total.
 // Byte-faithful extraction (D-RAS-STRUCTURED-REGISTER). Order preserved from
 // the legacy APPETITE_LINES array so the snapshot keyset is identical.
 // ---------------------------------------------------------------------------
@@ -456,6 +459,76 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
     citations: [D_RAS, RAS_FRAMEWORK],
     summary:
       "Zero appetite for treating customers unfairly, mis-selling, fee opacity, conflicts of interest unmanaged, or market abuse.",
+  },
+  // ── Bond trading appetite lines — added 2026-06-08 per D-BOND-RAS-APPETITE ──
+  // Authority: D-BOND-RAS-APPETITE (CRO-approved 2026-06-08).
+  {
+    id: "appetite:market:bond-inventory-face-value",
+    label: "Gross long bond inventory cap — trading book face value",
+    rasSection: "RAS §B4",
+    category: "market",
+    tier: "tier-2",
+    thresholds: {
+      kind: "ratio",
+      printed: "green <R140m face value / amber R140m-R200m / red ≥R200m",
+      bands: [
+        { band: "green", formatted: "green <R140m face value", comparator: "lt", upperPct: 70 },
+        {
+          band: "amber",
+          formatted: "amber R140m-R200m",
+          comparator: "between",
+          lowerPct: 70,
+          upperPct: 100,
+        },
+        { band: "red", formatted: "red ≥R200m", comparator: "gte", lowerPct: 100 },
+      ],
+    },
+    measurementBinding:
+      "UnifiedPositionProjection: sum(nominalMinor) where assetClass='bond' AND side='long' — as % of R200m cap",
+    measurementOwner: "Rohan (eng) joint with Kai (eng) → Saskia (Head of Markets, governance)",
+    citations: [
+      D_RAS,
+      "D-BOND-RAS-APPETITE",
+      "D-NPA-SAGB-BOND-INTERNAL-TEST",
+      "D-MARKETS-SCHEMA-FOUNDATION",
+    ],
+    summary:
+      "Gross long bond inventory (face value ZAR, trading book) capped at R200m. " +
+      "Amber warning at R140m (70%); red at R200m. " +
+      "Build-phase cap promotes BondSimEngine positionCapZarMinor hardcoded constant into structured governance register. " +
+      "Position guard in BondSimEngine engages at amber (70%) and red (95%); CRO review within 1 business day on breach.",
+  },
+  {
+    id: "appetite:irrbb:delta-eve-outlier",
+    label: "IRRBB δEVE outlier threshold — BCBS d365 §A-3.4 supervisory test",
+    rasSection: "RAS §B4",
+    category: "irrbb",
+    tier: "tier-1",
+    thresholds: {
+      kind: "ratio",
+      printed: "green <10% Tier-1 / amber 10-15% Tier-1 / red ≥15% Tier-1",
+      bands: [
+        { band: "green", formatted: "green <10% Tier-1", comparator: "lt", upperPct: 10 },
+        {
+          band: "amber",
+          formatted: "amber 10-15% Tier-1",
+          comparator: "between",
+          lowerPct: 10,
+          upperPct: 15,
+        },
+        { band: "red", formatted: "red ≥15% Tier-1", comparator: "gte", lowerPct: 15 },
+      ],
+    },
+    measurementBinding:
+      "IRRBBChecked: max(abs(deltaEveMinor)) / tier1CapitalTargetMinor × 100 across all BCBS d365 shock scenarios",
+    measurementOwner: "Rohan (eng) → Helena (CRO, governance)",
+    citations: [D_RAS, "D-BOND-RAS-APPETITE", "BCBS-D365-IRRBB", "BANKS-REG-26"],
+    summary:
+      "Maximum |δEVE| under any BCBS d365 shock scenario as % of Tier-1 capital. " +
+      "BCBS d365 §A-3.4 supervisory outlier threshold is 15% of Tier-1; early-warning amber at 10%. " +
+      "Build-phase Tier-1 target R300m (licence-day capital plan). " +
+      "Breach triggers ALCO escalation within 1 business day and PA notification pathway per BCBS d365 Principle 5; " +
+      "escalate to CEO if breach persists >5 business days.",
   },
 ];
 
