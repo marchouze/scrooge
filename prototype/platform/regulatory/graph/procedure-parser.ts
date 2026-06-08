@@ -73,9 +73,27 @@ function extractFrontmatter(content: string): Record<string, string> | null {
   if (end < 0) return null;
   const block = stripped.slice(4, end);
   const result: Record<string, string> = {};
-  for (const line of block.split("\n")) {
+  const blockLines = block.split("\n");
+  for (let i = 0; i < blockLines.length; i++) {
+    const line = blockLines[i] as string;
     const m = line.match(/^([A-Za-z0-9_-]+):\s+(.+)$/);
-    if (m) result[m[1] as string] = (m[2] as string).replace(/^["']|["']$/g, "").trim();
+    if (!m) continue;
+    const key = m[1] as string;
+    let val = (m[2] as string).trim();
+    // YAML block scalar (folded ">" or literal "|"): the value is on the
+    // following more-indented lines. Fold them into a single space-joined
+    // string so downstream parsers see the whole capability list.
+    if (val === ">" || val === "|" || val === ">-" || val === "|-") {
+      const folded: string[] = [];
+      for (let j = i + 1; j < blockLines.length; j++) {
+        const cont = blockLines[j] as string;
+        if (!/^\s+\S/.test(cont)) break; // dedent → end of block scalar
+        folded.push(cont.trim());
+        i = j;
+      }
+      val = folded.join(" ").trim();
+    }
+    result[key] = val.replace(/^["']|["']$/g, "").trim();
   }
   return result;
 }

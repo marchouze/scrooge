@@ -20,13 +20,13 @@
 // Source finding: record:documents:scrooge:principle-2-capability-to-procedure-review:2026-06-04 (F1/F2).
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import {
   INFRA_CAPABILITY_SLUGS,
-  isOrphanAllowlisted,
   ORPHAN_CAPABILITY_ALLOWLIST,
+  isOrphanAllowlisted,
 } from "../regulatory/graph/capability-infra";
 import { parseSystemCapabilityValue } from "../regulatory/graph/capability-parser";
 import { parseProcedureFile } from "../regulatory/graph/procedure-parser";

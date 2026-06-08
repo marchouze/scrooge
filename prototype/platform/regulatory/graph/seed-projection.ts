@@ -23,6 +23,8 @@ import {
   normaliseInstrumentId,
   parseObligationsRegister,
 } from "../obligation-linker";
+import { INFRA_CAPABILITY_SLUGS, isOrphanAllowlisted } from "./capability-infra";
+import { parseSystemCapabilityValue } from "./capability-parser";
 import {
   getDb,
   getEdgeCount,
@@ -31,8 +33,6 @@ import {
   upsertEdge,
   upsertNode,
 } from "./db";
-import { parseSystemCapabilityValue } from "./capability-parser";
-import { INFRA_CAPABILITY_SLUGS, isOrphanAllowlisted } from "./capability-infra";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
 import type { DocumentApplicabilityStatus, GraphNode, GraphNodeMetadata } from "./types";

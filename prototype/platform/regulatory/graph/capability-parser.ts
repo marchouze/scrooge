@@ -49,7 +49,8 @@ export interface ParsedCapability {
 // `urn:capability:bank:[a-z0-9][a-z0-9._/-]*` so slashes survive in the URN.
 // ---------------------------------------------------------------------------
 
-const SPLIT_RE = /[·+]/;
+// Tokens are separated by "·", "+", or ";" (folded block-scalar lists use ";").
+const SPLIT_RE = /[·+;]/;
 
 /** True when a token carries an explicit "(PLANNED)" marker. */
 function isPlanned(token: string): boolean {
@@ -72,7 +73,11 @@ export function capabilitySlug(token: string): string {
   }
   // 3. Strip a trailing ".ts" extension (file-path forms).
   s = s.replace(/\.ts$/i, "");
-  // 4. Normalise: lower-case, trim surrounding slashes/whitespace.
+  // 4. Drop a trailing decorative marker / note after the path — anything from
+  //    the first whitespace onward (e.g. "platform/document-store ✓"). A valid
+  //    capability path has no spaces; only the leading path segment is the slug.
+  s = s.split(/\s+/)[0] ?? "";
+  // 5. Normalise: lower-case, trim surrounding slashes/whitespace.
   s = s
     .toLowerCase()
     .trim()
