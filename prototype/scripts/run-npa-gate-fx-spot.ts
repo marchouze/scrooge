@@ -62,6 +62,20 @@
 // Co-author: Owen (Company Secretary, governance) — PROC-NPA-GATE-01
 //            procedure owner; pair-attributed for procedure-execution
 //            authority.
+//
+// Citation-correctness fix (2026-06-08, Mira — Compliance / RegTech engineer,
+// engineering). The liquidity-impact + technology-systems dimensions cited the
+// LCR subscriber as "BA-325 LCR" — the GG-35950-era form number. Per
+// `Regulations/_index.md` (canonical as at 2026-06-07) the current LCR form is
+// BA 110 (D5/2025 §2.1.4; "was BA 325 under GG 35950, superseded"), and under
+// D5/2025 BA 325 now denotes FRTB market risk — so "BA-325 LCR" was doubly
+// stale. Corrected to BA 110, annotated with the BA-110 LCR-vs-daily-return
+// open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON. SOURCE-FIX ONLY: the
+// already-emitted ProductDimensionAttested events (immutable, Principle 1) are
+// NOT rewritten; this corrects the script so future re-runs/audits read the
+// right form. Authority: CEO build-phase; D-BA-RETURN-FORM-NUMBERING-RECON
+// (2026-06-07) + D-NEW-PRODUCT-APPROVAL-POLICY-V2; backing brief
+// `brief:mira:fix-stale-ba-325-lcr-references-in-run-npa-gate-:2026-06-08`.
 
 import { eventStore } from "../platform/composition";
 import { HOZ_BANK_ENTITY } from "../platform/core/types";
@@ -225,16 +239,16 @@ const DIMENSIONS: readonly DimensionAttestation[] = [
     result: "design-attested",
     actor: ACTOR_SASKIA,
     evidence:
-      "PR #663 + PR #645 — Kai (Markets engineering lead, engineering) BA-325 LCR subscriber driven by FX-spot scenario, asserting LCR shifts on trade-settlement and intra-day liquidity consumption; D-RAS-V1.0 schedule includes LCR + NSFR thresholds (`project_continuation_2026_05_18_ras_schedule`)",
+      "PR #663 + PR #645 — Kai (Markets engineering lead, engineering) BA 110 (LCR, D5/2025 §2.1.4 — the BA-110 LCR-vs-daily-return form question is a flagged open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON; old GG-35950-era form number was BA 325, now superseded; under D5/2025 BA 325 denotes FRTB market risk) LCR subscriber driven by FX-spot scenario, asserting LCR shifts on trade-settlement and intra-day liquidity consumption; D-RAS-V1.0 schedule includes LCR + NSFR thresholds (`project_continuation_2026_05_18_ras_schedule`)",
     citationChain: [
       "Policies/liquidity-risk-policy-v1.md",
-      "BA-325",
+      "BA-110",
       "PR-645",
       "PR-663",
       "D-RAS-V1.0",
     ],
     notes:
-      "BA-325 LCR pipeline is wired and exercised by the Kai FX-spot scenario. LCR consumption per internal-test trade is tracked. NSFR engine PLANNED per RAS schedule. InProgress because production fire requires NSFR + intraday-liquidity monitor wired; for internal-test perimeter the BA-325 subscriber is sufficient. Re-activation trigger: NSFR engine landed + intraday-liquidity monitor wired.",
+      "BA 110 (LCR, D5/2025 §2.1.4 — the BA-110 LCR-vs-daily-return form question is a flagged open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON) LCR pipeline is wired and exercised by the Kai FX-spot scenario. The form was BA 325 under GG 35950 (superseded); under D5/2025 BA 325 now denotes FRTB market risk, so the legacy 'BA-325 LCR' label was doubly stale. LCR consumption per internal-test trade is tracked. NSFR engine PLANNED per RAS schedule. InProgress because production fire requires NSFR + intraday-liquidity monitor wired; for internal-test perimeter the BA 110 LCR subscriber is sufficient. Re-activation trigger: NSFR engine landed + intraday-liquidity monitor wired.",
   },
   // ─── 7. Compliance ───────────────────────────────────────────────────────
   {
@@ -318,7 +332,7 @@ const DIMENSIONS: readonly DimensionAttestation[] = [
     result: "implementation-attested",
     actor: ACTOR_SASKIA,
     evidence:
-      "PR #645 — Kai (Markets engineering lead, engineering) `scenarios/fx-spot-internal-pre-licence-test.ts` returns READY-FOR-CONTROLLED-LAUNCH; PR #647 — Saskia + Kai CEO end-to-end FX-trade walkthrough at `2026-05-21_saskia-kai_fx-trade-end-to-end-walkthrough.md`; PR #663 — Kai BA-325 LCR subscriber + scenario integration; manual booking UI at `dashboard/public/trade-book.html`",
+      "PR #645 — Kai (Markets engineering lead, engineering) `scenarios/fx-spot-internal-pre-licence-test.ts` returns READY-FOR-CONTROLLED-LAUNCH; PR #647 — Saskia + Kai CEO end-to-end FX-trade walkthrough at `2026-05-21_saskia-kai_fx-trade-end-to-end-walkthrough.md`; PR #663 — Kai BA 110 (LCR, D5/2025 §2.1.4 — the BA-110 LCR-vs-daily-return form question is a flagged open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON; was BA 325 under GG 35950, superseded — under D5/2025 BA 325 now denotes FRTB market risk) LCR subscriber + scenario integration; manual booking UI at `dashboard/public/trade-book.html`",
     citationChain: [
       "PR-645",
       "PR-647",
