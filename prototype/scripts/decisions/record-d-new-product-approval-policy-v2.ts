@@ -87,7 +87,8 @@ import { recordDecision, requestDecision } from "../../runtime/decisions/record"
 const REQUESTED_ASOF = "2026-06-08T11:14:00.000Z";
 const ASOF = "2026-06-08T11:15:00.000Z";
 
-const TITLE = "New Product Approval Policy v2 — bind attestation to liveness, forward-track deferrals, close coverage holes";
+const TITLE =
+  "New Product Approval Policy v2 — bind attestation to liveness, forward-track deferrals, close coverage holes";
 
 const CITATIONS = [
   // The diagnosis source.

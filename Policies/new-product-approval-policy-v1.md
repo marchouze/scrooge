@@ -2,7 +2,10 @@
 policy-id: new-product-approval-policy
 title: New Product Approval Policy v1
 version: "1"
-status: IN FORCE
+status: SUPERSEDED
+superseded-by: new-product-approval-policy-v2.md
+superseded-on: "2026-06-08"
+superseded-decision: D-NEW-PRODUCT-APPROVAL-POLICY-V2
 owner: Saskia (Head of Global Markets, governance)
 effective-from: "2026-05-22"
 next-review: "2027-05-22"
@@ -24,6 +27,8 @@ riskTaxonomy:
 ---
 
 # New Product Approval Policy v1
+
+> **⚠ SUPERSEDED by `Policies/new-product-approval-policy-v2.md`** (authority `D-NEW-PRODUCT-APPROVAL-POLICY-V2`, CEO session-delegation 2026-06-08). v2 binds `implementation-attested` to a green completeness recon, forward-tracks every deferral into the gap register with a production re-gate, enumerates the BA-series returns per product class (refreshing the stale BA-325 → BA-310/BA-110 per `D-BA-RETURN-FORM-NUMBERING-RECON`), and forbids silent out-of-scope absorption. This v1 is retained for the audit trail; the living policy is v2.
 
 > **Authors.** Saskia (Head of Global Markets, governance) — lead; Owen (Company Secretary, governance) — co-author.
 > **Status.** CORPORATE-BIND. The NPA governance framework is established from incorporation. While the NPA gate fires at the pre-go-live stage before any new product is traded commercially, the policy framework, committee mandate, and approval processes are required from the formation stage. The PA expects to see a functioning NPA framework at the licence-application stage.
