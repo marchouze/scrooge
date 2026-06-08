@@ -44,11 +44,15 @@
 //         Vera (Internal audit engineer, third line of defence — recon shape).
 
 import { eventStore } from "../composition";
+import { requireRasAppetiteLine } from "../risk/ras-appetite-register";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "ras-b6-cyber-severity-coverage";
 
-const CYBER_LINE_ID = "appetite:operational:cyber-severity-tiers";
+// Line identity is read from the canonical register (single source of truth),
+// not hardcoded here. getRasAppetiteLine throws-by-non-existence if the id is
+// ever removed from the register — the recon then fails loudly at load.
+const CYBER_LINE_ID = requireRasAppetiteLine("appetite:operational:cyber-severity-tiers").id;
 
 /**
  * Statuses that count as "measured" for the cyber-severity line.

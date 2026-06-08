@@ -43,11 +43,13 @@
 //         Vera (Internal audit engineer, third line of defence — recon shape).
 
 import { eventStore } from "../composition";
+import { requireRasAppetiteLine } from "../risk/ras-appetite-register";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "ras-b7-model-tier-discipline-coverage";
 
-const MODEL_TIER_LINE_ID = "appetite:model:tier-discipline";
+// Line identity read from the canonical register (single source of truth).
+const MODEL_TIER_LINE_ID = requireRasAppetiteLine("appetite:model:tier-discipline").id;
 
 /**
  * Statuses that count as "measured" — RAG plus the build-phase `n/a-build-phase`
