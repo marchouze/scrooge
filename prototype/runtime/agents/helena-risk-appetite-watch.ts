@@ -40,6 +40,7 @@ import { resolve } from "node:path";
 import { eventStore, logger } from "../../platform/composition";
 import { newEventId } from "../../platform/core/types";
 import { makeAgentEscalation } from "../../platform/event-store/event-types";
+import type { EventStore } from "../../platform/event-store/store";
 
 // How many consecutive RiskAppetiteSnapshot runs with unmeasuredCount > 0
 // before Helena emits a formal substrate-gap escalation to Scrooge.
@@ -53,6 +54,7 @@ import { getClimateRiskMetric } from "../../platform/projections/climate-risk-pr
 import { computeCyberSeverityPosture } from "../../platform/projections/cyber-incident-severity";
 import { computeLeverageRatioMetrics } from "../../platform/projections/leverage-ratio-metrics";
 import { getModelTierDisciplineMetric } from "../../platform/projections/model-tier-discipline";
+import { computeRwaFromPositions } from "../../platform/projections/rwa-from-positions";
 import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
@@ -265,7 +267,7 @@ interface BreachCounts {
   readonly tier2Open: number;
 }
 
-interface AppetiteSnapshot {
+export interface AppetiteSnapshot {
   readonly lineStates: readonly LineState[];
   readonly measuredCount: number;
   readonly unmeasuredCount: number;
@@ -665,6 +667,94 @@ function buildNarrativeInput(ctx: AgentRunContext, snap: AppetiteSnapshot): stri
   return lines.join("\n");
 }
 
+/** True when the store holds zero events of the given type (probe helper). */
+function storeHasNoEventsOfType(store: EventStore, type: string): boolean {
+  for (const _ of store.replay({ type })) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Derive the "Substrate gaps surfaced this run" bullets from the event store,
+ * NOT from unconditional string literals. Each gap is emitted ONLY when its
+ * closing condition is actually unmet; a closed gap drops off the report
+ * automatically (D-CRO-GAP-SECTION-DERIVE-FROM-STORE, 2026-06-08). Before this
+ * fix the section was a split-brain render: the appetite-line table derived its
+ * status live from the store while these bullets were hard-coded, so the RWA-
+ * engine and independent-model-validation gaps kept printing as open long after
+ * `computeRwaFromPositions` (2026-05-30) and Nadia (Model Validation lead,
+ * governance — hired 2026-05-09) closed them. Prose wording per bullet is
+ * preserved; only the emission moved from unconditional to store-derived.
+ *
+ * Probe → bullet map:
+ *   - Measurement substrate: `snap.unmeasuredCount > 0`.
+ *   - Live capital events: zero `CapitalEvent` events (same condition as the
+ *     `live === null` branch in `capital-metrics.ts`).
+ *   - RWA engine: `computeRwaFromPositions(store, asOf).buildPhaseFallback`
+ *     (true ⇒ no live trade positions ⇒ CET1 denominator still ICAAP v1).
+ *   - Structured RAS register: the one remaining standing meta-gap (no
+ *     structured register exists yet).
+ *   - Independent model-validation: zero `ModelValidationApproved` events.
+ *   - Climate-risk substrate: zero `ClimateScenarioRun` events.
+ */
+export function buildSubstrateGapLines(
+  store: EventStore,
+  asOf: string,
+  snap: AppetiteSnapshot,
+): string[] {
+  const gaps: string[] = [];
+
+  // Measurement substrate — only while some line is still unmeasured.
+  if (snap.unmeasuredCount > 0) {
+    gaps.push(
+      `- **Measurement substrate** — ${snap.unmeasuredCount} of ${APPETITE_LINES.length} lines are unmeasured pending Rohan engineering (next handler #5 in the fleet-rollout plan). Closed: \`appetite:capital:cet1-buffer\` (Bea's capital-metrics module, D-MARKETS-CAPITAL-TIME-SHAPE); \`appetite:liquidity:lcr\` and \`appetite:liquidity:nsfr\` (Ravi's ALM-positions projection wired to RAS §B3 thresholds, build-phase green-with-substrate-gap per brief \`brief:ravi:alm-position-substrate-and-helena-liquidity-line:2026-05-21\`).`,
+    );
+  }
+
+  // Live capital events — only while no CapitalEvent events exist in the store
+  // (mirrors the `live === null` build-phase branch in capital-metrics.ts).
+  if (storeHasNoEventsOfType(store, "CapitalEvent")) {
+    gaps.push(
+      "- **Live capital events** — CET1 metrics currently use ICAAP v1 build-phase baseline (D-MARKETS-CAPITAL-TIME-SHAPE). Substrate gap: no live CapitalEvent events (CapitalContributionRecorded / equity-issuance) in the store. When real capital is raised at licence-day, the module auto-switches to live-event mode.",
+    );
+  }
+
+  // RWA engine — only while the live RWA projection falls back (no live trades).
+  // Reuses computeRwaFromPositions; the CET1 line already prints live RWA when
+  // trades exist, so this gap closes automatically the moment trades are booked.
+  if (computeRwaFromPositions(store, asOf).buildPhaseFallback) {
+    gaps.push(
+      "- **RWA engine** — CET1 ratio denominator uses build-phase ICAAP v1 RWA (R73.75m) until W2 Slice 3 RWA engine lands. Owner: Bea + Rohan.",
+    );
+  }
+
+  // Structured RAS register — the single remaining standing meta-gap: appetite
+  // lines are still read from a hand-curated shadow in this handler's source.
+  // No structured register exists yet, so this is unconditionally open for now.
+  gaps.push(
+    "- **Structured RAS register** — appetite lines are read from a hand-curated shadow in this handler's source. A structured RAS register (parseable, citation-bound) replaces the shadow when Helena + Atlas ship it.",
+  );
+
+  // Independent model-validation — only while no ModelValidationApproved events
+  // exist. Nadia (Model Validation lead, governance) has emitted these since
+  // 2026-05-09, so this gap closes against any live store.
+  if (storeHasNoEventsOfType(store, "ModelValidationApproved")) {
+    gaps.push(
+      "- **Independent model-validation function** — RAS §B7 model-tier discipline depends on an independent validation team that is not yet staffed. Owner: PAX research / Nolan hire.",
+    );
+  }
+
+  // Climate-risk substrate — only while no ClimateScenarioRun events exist.
+  if (storeHasNoEventsOfType(store, "ClimateScenarioRun")) {
+    gaps.push(
+      "- **Climate-risk substrate** — PA Guidance Note 1 of 2024 measurement substrate is now live (`PROC-RISK-CR-01`, `platform/projections/climate-risk-projection.ts`). The `appetite:climate:guidance-note-1-2024` line is wired; it returns `n/a-build-phase` until the first quarterly `ClimateScenarioRun` event is emitted. Remaining gap: Rohan (Risk engineer) to produce the first quarterly run and the daily `ClimateExposureRevalued` proxy.",
+    );
+  }
+
+  return gaps;
+}
+
 function buildReportMarkdown(
   ctx: AgentRunContext,
   snap: AppetiteSnapshot,
@@ -722,24 +812,17 @@ function buildReportMarkdown(
 
   lines.push("## Substrate gaps surfaced this run");
   lines.push("");
-  lines.push(
-    `- **Measurement substrate** — ${snap.unmeasuredCount} of ${APPETITE_LINES.length} lines are unmeasured pending Rohan engineering (next handler #5 in the fleet-rollout plan). Closed: \`appetite:capital:cet1-buffer\` (Bea's capital-metrics module, D-MARKETS-CAPITAL-TIME-SHAPE); \`appetite:liquidity:lcr\` and \`appetite:liquidity:nsfr\` (Ravi's ALM-positions projection wired to RAS §B3 thresholds, build-phase green-with-substrate-gap per brief \`brief:ravi:alm-position-substrate-and-helena-liquidity-line:2026-05-21\`).`,
-  );
-  lines.push(
-    "- **Live capital events** — CET1 metrics currently use ICAAP v1 build-phase baseline (D-MARKETS-CAPITAL-TIME-SHAPE). Substrate gap: no live CapitalEvent events (CapitalContributionRecorded / equity-issuance) in the store. When real capital is raised at licence-day, the module auto-switches to live-event mode.",
-  );
-  lines.push(
-    "- **RWA engine** — CET1 ratio denominator uses build-phase ICAAP v1 RWA (R73.75m) until W2 Slice 3 RWA engine lands. Owner: Bea + Rohan.",
-  );
-  lines.push(
-    "- **Structured RAS register** — appetite lines are read from a hand-curated shadow in this handler's source. A structured RAS register (parseable, citation-bound) replaces the shadow when Helena + Atlas ship it.",
-  );
-  lines.push(
-    "- **Independent model-validation function** — RAS §B7 model-tier discipline depends on an independent validation team that is not yet staffed. Owner: PAX research / Nolan hire.",
-  );
-  lines.push(
-    "- **Climate-risk substrate** — PA Guidance Note 1 of 2024 measurement substrate is now live (`PROC-RISK-CR-01`, `platform/projections/climate-risk-projection.ts`). The `appetite:climate:guidance-note-1-2024` line is wired; it returns `n/a-build-phase` until the first quarterly `ClimateScenarioRun` event is emitted. Remaining gap: Rohan (Risk engineer) to produce the first quarterly run and the daily `ClimateExposureRevalued` proxy.",
-  );
+  // Derived from the event store — each bullet is gated on a real probe (see
+  // buildSubstrateGapLines). A gap whose closing condition is met drops off
+  // automatically (D-CRO-GAP-SECTION-DERIVE-FROM-STORE).
+  const gapLines = buildSubstrateGapLines(eventStore, ctx.asOf, snap);
+  if (gapLines.length > 0) {
+    for (const g of gapLines) lines.push(g);
+  } else {
+    lines.push(
+      "_No open substrate gaps this run — every gap's closing condition is met against the live event store._",
+    );
+  }
   lines.push("");
 
   if (narrative) {
