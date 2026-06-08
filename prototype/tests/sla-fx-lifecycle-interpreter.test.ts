@@ -1,40 +1,30 @@
-// tests/sla-fx-lifecycle-parallel-run.test.ts
+// tests/sla-fx-lifecycle-interpreter.test.ts
 //
-// Phase-2 FULL byte-for-byte regression suite (spec §11.3, brief deliverable 3).
-//
-// Every FX lifecycle event is fed through BOTH the rules-as-data interpreter
-// (FX_IFRS_RULES) and the legacy posting-rule functions / runGlPostingEngine.
-//
-// Success criterion (CEO design call, Marc, 2026-06-05; extended by
-// D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING, CFO-approved 2026-06-05):
-//   - Legacy and interpreter MUST agree BYTE-FOR-BYTE on every stage (the core
-//     invariant). ZAR/USD plus the newly-provisioned GBP/EUR/CHF/AUD/JPY TRADING
-//     legs now book to their own dedicated trading accounts (ACC-2100-010..024).
-//   - The per-currency provisioning covers FX TRADING accounts only — NOT the
-//     correspondent nostros (ACC-1200) nor the settlement-failed sub-ledger
-//     (ACC-2300). So for GBP/CHF/AUD/JPY a PR-FX-PRIN NOSTRO leg, and for
-//     GBP/EUR/CHF/AUD/JPY a PR-FX-005 settlement-failed-receivable leg, still
-//     route to the FX unresolved-currency suspense (ACC-2100-007) + an
-//     urgent-correction alert (these sub-ledgers are a follow-on provisioning).
-//     Legacy and interpreter AGREE on this suspense routing.
+// Interpreter-side leg-correctness regression for the FX product family. The
+// durable guard that the rules-as-data SLA interpreter (FX_IFRS_RULES) produces
+// the CORRECT double-entry legs for every FX lifecycle stage. It replaces the
+// retired byte-for-byte parallel-run suite (the legacy fx-spot.ts posting-rule
+// functions + runGlPostingEngine were the dead reference oracle, retired with the
+// legacy GL posting engine in SLA full-retirement Stage 3). The expected legs
+// below are the interpreter's own output — which the now-retired parallel-run
+// proved equal to the legacy engine for every currency the legacy engine booked
+// correctly. Per-currency provisioning (D-SLA-FX-PER-CURRENCY-ACCOUNT-
+// PROVISIONING) is asserted directly: GBP/EUR/CHF/AUD/JPY trading legs book to
+// their own dedicated accounts; still-unprovisioned nostro / settlement-failed
+// sub-ledgers route to the FX unresolved-currency suspense (ACC-2100-007) + an
+// urgent-correction alert.
 //
 // Stages covered: open, reval (gain/loss/zero), principal (receive/deliver),
 // close (gain/loss/zero), settlement-failed (Herstatt + no-GL branches),
 // cancel (with/without cumulative P&L). Multi-leg + cross-currency included.
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
+// Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Stage 3, CEO-approved —
+//            standing decision; Marc in-session 2026-06-08).
 
 import { describe, expect, it } from "bun:test";
 
 import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
-import {
-  fxCancellationJournals,
-  fxLifecycleCloseJournals,
-  fxPrincipalPaymentJournals,
-  fxRevaluationJournals,
-  fxSettlementFailedJournals,
-  fxTradeBookingJournals,
-} from "../platform/accounting/posting-rules/fx-spot";
 import {
   type InterpretResult,
   type ProposedPosting,
@@ -52,15 +42,6 @@ interface NormalLeg {
   debitCredit: string;
   amountMinor: number;
   currency: string;
-}
-
-function normalise(legs: ReadonlyArray<SubLedgerLeg>): NormalLeg[] {
-  return legs.map((l) => ({
-    accountId: l.accountId,
-    debitCredit: l.debitCredit,
-    amountMinor: l.amountMinor,
-    currency: l.currency,
-  }));
 }
 
 function runOne(type: string, payload: unknown, enrichment?: unknown): InterpretResult {
@@ -99,9 +80,21 @@ function assertBalances(legs: NormalLeg[]): void {
   for (const [, net] of byCcy) expect(net).toBe(0);
 }
 
+/** Assert the interpreter produces exactly `expected` legs (+ balanced). */
+function expectInterpreterLegs(
+  type: string,
+  payload: unknown,
+  expected: NormalLeg[],
+  enrichment?: unknown,
+): void {
+  const interp = interpLegs(runOne(type, payload, enrichment));
+  expect(interp).toEqual(expected);
+  assertBalances(interp);
+}
+
 // ---------------------------------------------------------------------------
-// STAGE 1 — open (FxTradeExecuted). PR-FX-001 already has its own dedicated
-// parallel-run test; cover the cross-currency multi-leg case here.
+// STAGE 1 — open (FxTradeExecuted). PR-FX-001 has its own dedicated suite; cover
+// the cross-currency multi-leg case here (ZAR/USD + the dedicated-account EUR).
 // ---------------------------------------------------------------------------
 
 function buildExecuted(args: {
@@ -141,8 +134,8 @@ function buildExecuted(args: {
   } as FxTradeExecutedPayload;
 }
 
-describe("Stage: open (PR-FX-001) — ZAR/USD parity + cross-currency suspense", () => {
-  it("ZAR/USD buy — byte-for-byte parity", () => {
+describe("Stage: open (PR-FX-001) — ZAR/USD + EUR dedicated-account", () => {
+  it("ZAR/USD buy", () => {
     const payload = buildExecuted({
       side: "buy",
       base: "USD",
@@ -152,19 +145,15 @@ describe("Stage: open (PR-FX-001) — ZAR/USD parity + cross-currency suspense",
       payMinor: 1_900_000_000,
       receiveMinor: 100_000_000,
     });
-    const legacy = normalise(
-      fxTradeBookingJournals({
-        tradeId: payload.tradeId.value,
-        side: payload.side,
-        legs: payload.legs,
-        currencyPair: payload.currencyPair,
-      }),
-    );
-    const interp = interpLegs(runOne("FxTradeExecuted", payload));
-    expect(interp).toEqual(legacy);
+    expectInterpreterLegs("FxTradeExecuted", payload, [
+      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
+      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
+      { accountId: "ACC-2100-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
+      { accountId: "ACC-2100-004", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+    ]);
   });
 
-  it("EUR/ZAR — both legacy and interp book EUR to its dedicated trading accounts", () => {
+  it("EUR/ZAR — EUR books to its dedicated trading accounts (no suspense, no USD slot, no alert)", () => {
     const payload = buildExecuted({
       side: "buy",
       base: "EUR",
@@ -174,22 +163,15 @@ describe("Stage: open (PR-FX-001) — ZAR/USD parity + cross-currency suspense",
       payMinor: 2_050_000_000,
       receiveMinor: 100_000_000,
     });
-    const legacy = normalise(
-      fxTradeBookingJournals({
-        tradeId: payload.tradeId.value,
-        side: payload.side,
-        legs: payload.legs,
-        currencyPair: payload.currencyPair,
-      }),
-    );
     const r = runOne("FxTradeExecuted", payload);
     const interp = interpLegs(r);
-    // Parity-to-PROPER-ACCOUNTS (D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING):
-    // EUR now has dedicated trading accounts; both engines agree, neither on
-    // suspense nor on the USD slot, and NO urgent-correction is raised.
-    expect(interp).toEqual(legacy);
+    expect(interp).toEqual([
+      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_050_000_000, currency: "ZAR" },
+      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 2_050_000_000, currency: "ZAR" },
+      { accountId: "ACC-2100-013", debitCredit: "debit", amountMinor: 100_000_000, currency: "EUR" },
+      { accountId: "ACC-2100-014", debitCredit: "credit", amountMinor: 100_000_000, currency: "EUR" },
+    ]);
     const eurLegs = interp.filter((l) => l.currency === "EUR");
-    expect(eurLegs.length).toBeGreaterThan(0);
     for (const l of eurLegs) expect(["ACC-2100-013", "ACC-2100-014"]).toContain(l.accountId);
     expect(interp.some((l) => l.accountId === SUSPENSE)).toBe(false);
     expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
@@ -216,26 +198,26 @@ function revalPayload(delta: number) {
   };
 }
 
-describe("Stage: reval (PR-FX-002) — ZAR parity", () => {
-  for (const delta of [5_000_000, -4_250_000]) {
-    it(`delta ${delta} — byte-for-byte`, () => {
-      const p = revalPayload(delta);
-      const legacy = normalise(fxRevaluationJournals(p as never));
-      const interp = interpLegs(runOne("FxPositionRevalued", p));
-      expect(interp).toEqual(legacy);
-      assertBalances(interp);
-    });
-  }
-  it("zero delta — both produce no posting (intentional-no-impact)", () => {
-    const p = revalPayload(0);
-    expect(fxRevaluationJournals(p as never)).toEqual([]);
-    const r = runOne("FxPositionRevalued", p);
-    expect(r.outcome).toBe("intentional-no-impact");
+describe("Stage: reval (PR-FX-002) — ZAR", () => {
+  it("gain (delta +5,000,000)", () => {
+    expectInterpreterLegs("FxPositionRevalued", revalPayload(5_000_000), [
+      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 5_000_000, currency: "ZAR" },
+      { accountId: "ACC-2100-005", debitCredit: "credit", amountMinor: 5_000_000, currency: "ZAR" },
+    ]);
+  });
+  it("loss (delta -4,250,000)", () => {
+    expectInterpreterLegs("FxPositionRevalued", revalPayload(-4_250_000), [
+      { accountId: "ACC-2100-005", debitCredit: "debit", amountMinor: 4_250_000, currency: "ZAR" },
+      { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 4_250_000, currency: "ZAR" },
+    ]);
+  });
+  it("zero delta — no posting (intentional-no-impact)", () => {
+    expect(runOne("FxPositionRevalued", revalPayload(0)).outcome).toBe("intentional-no-impact");
   });
 });
 
 // ---------------------------------------------------------------------------
-// STAGE 3 — principal (PR-FX-PRIN). receive/deliver; ZAR/USD parity + EUR + JPY.
+// STAGE 3 — principal (PR-FX-PRIN). receive/deliver; ZAR/USD/EUR + JPY split.
 // ---------------------------------------------------------------------------
 
 function prinPayload(legKind: "receive" | "deliver", currency: string, netCash: number) {
@@ -252,36 +234,48 @@ function prinPayload(legKind: "receive" | "deliver", currency: string, netCash: 
   };
 }
 
-describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR parity + JPY trading/nostro split", () => {
-  const cases: Array<{ legKind: "receive" | "deliver"; ccy: string; net: number }> = [
-    { legKind: "receive", ccy: "USD", net: 100_000_000 },
-    { legKind: "deliver", ccy: "ZAR", net: -1_900_000_000 },
-    { legKind: "receive", ccy: "EUR", net: 90_000_000 },
-    { legKind: "deliver", ccy: "JPY", net: -14_500_000_000 },
-  ];
-  for (const c of cases) {
-    it(`${c.legKind} ${c.ccy} — parity (JPY: trading→dedicated, nostro→suspense)`, () => {
-      const p = prinPayload(c.legKind, c.ccy, c.net);
-      const legacy = normalise(fxPrincipalPaymentJournals(p as never));
-      const r = runOne("PrincipalPayment", p);
-      const interp = interpLegs(r);
-      expect(interp).toEqual(legacy);
-      assertBalances(interp);
-      if (c.ccy === "JPY") {
-        // JPY now has a dedicated TRADING payable (ACC-2100-023) but NO
-        // correspondent nostro — so the deliver leg splits: trading-payable on
-        // the dedicated account, nostro side on suspense (+ urgent correction).
-        const payableLeg = interp.find((l) => l.accountId === "ACC-2100-023");
-        const nostroLeg = interp.find((l) => l.accountId === SUSPENSE);
-        expect(payableLeg).toBeDefined();
-        expect(nostroLeg).toBeDefined();
-        // never the USD slot
-        expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
-        expect(interp.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
-        expect(postOf(r).urgentCorrections.some((u) => u.currency === "JPY")).toBe(true);
-      }
-    });
-  }
+describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR + JPY trading/nostro split", () => {
+  it("receive USD", () => {
+    expectInterpreterLegs("PrincipalPayment", prinPayload("receive", "USD", 100_000_000), [
+      { accountId: "ACC-1200-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
+      { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+    ]);
+  });
+  it("deliver ZAR", () => {
+    expectInterpreterLegs("PrincipalPayment", prinPayload("deliver", "ZAR", -1_900_000_000), [
+      { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
+      { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
+    ]);
+  });
+  it("receive EUR — dedicated trading + dedicated nostro", () => {
+    expectInterpreterLegs("PrincipalPayment", prinPayload("receive", "EUR", 90_000_000), [
+      { accountId: "ACC-1200-003", debitCredit: "debit", amountMinor: 90_000_000, currency: "EUR" },
+      { accountId: "ACC-2100-013", debitCredit: "credit", amountMinor: 90_000_000, currency: "EUR" },
+    ]);
+  });
+  it("deliver JPY — trading→dedicated (ACC-2100-023), nostro→suspense + urgent correction", () => {
+    const r = runOne("PrincipalPayment", prinPayload("deliver", "JPY", -14_500_000_000));
+    const interp = interpLegs(r);
+    expect(interp).toEqual([
+      {
+        accountId: "ACC-2100-023",
+        debitCredit: "debit",
+        amountMinor: 14_500_000_000,
+        currency: "JPY",
+      },
+      {
+        accountId: SUSPENSE,
+        debitCredit: "credit",
+        amountMinor: 14_500_000_000,
+        currency: "JPY",
+      },
+    ]);
+    // never the USD slot
+    expect(interp.some((l) => l.accountId === "ACC-2100-002")).toBe(false);
+    expect(interp.some((l) => l.accountId === "ACC-2100-004")).toBe(false);
+    expect(postOf(r).urgentCorrections.some((u) => u.currency === "JPY")).toBe(true);
+    assertBalances(interp);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -299,20 +293,21 @@ function closePayload(pnl: number) {
   };
 }
 
-describe("Stage: close (PR-FX-LIFECYCLE-CLOSE) — ZAR parity", () => {
-  for (const pnl of [250_000, -175_000]) {
-    it(`pnl ${pnl} — byte-for-byte`, () => {
-      const p = closePayload(pnl);
-      const legacy = normalise(fxLifecycleCloseJournals(p as never));
-      const interp = interpLegs(runOne("SettlementConfirmed", p));
-      expect(interp).toEqual(legacy);
-      assertBalances(interp);
-    });
-  }
-  it("zero pnl — both produce no posting", () => {
-    const p = closePayload(0);
-    expect(fxLifecycleCloseJournals(p as never)).toEqual([]);
-    expect(runOne("SettlementConfirmed", p).outcome).toBe("intentional-no-impact");
+describe("Stage: close (PR-FX-LIFECYCLE-CLOSE) — ZAR", () => {
+  it("gain (pnl +250,000)", () => {
+    expectInterpreterLegs("SettlementConfirmed", closePayload(250_000), [
+      { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 250_000, currency: "ZAR" },
+      { accountId: "ACC-2100-006", debitCredit: "credit", amountMinor: 250_000, currency: "ZAR" },
+    ]);
+  });
+  it("loss (pnl -175,000)", () => {
+    expectInterpreterLegs("SettlementConfirmed", closePayload(-175_000), [
+      { accountId: "ACC-2100-006", debitCredit: "debit", amountMinor: 175_000, currency: "ZAR" },
+      { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 175_000, currency: "ZAR" },
+    ]);
+  });
+  it("zero pnl — no posting (intentional-no-impact)", () => {
+    expect(runOne("SettlementConfirmed", closePayload(0)).outcome).toBe("intentional-no-impact");
   });
 });
 
@@ -320,8 +315,8 @@ describe("Stage: close (PR-FX-LIFECYCLE-CLOSE) — ZAR parity", () => {
 // STAGE 5 — settlement-failed (PR-FX-005). Herstatt (enrichment) + no-GL.
 // ---------------------------------------------------------------------------
 
-describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branches", () => {
-  it("one-leg-delivered USD — byte-for-byte (enrichment-driven)", () => {
+describe("Stage: settlement-failed (PR-FX-005) — Herstatt + no-GL branches", () => {
+  it("one-leg-delivered USD — enrichment-driven Stage-3 ECL legs", () => {
     const event = {
       tradeRef: "T1",
       failureKind: "one-leg-delivered" as const,
@@ -332,15 +327,30 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branc
       amountMinor: 100_000_000,
       zarEquivalentMinor: 1_900_000_000,
     };
-    const legacy = normalise(
-      fxSettlementFailedJournals({ event: event as never, failedReceiveLeg }),
+    expectInterpreterLegs(
+      "FxSettlementFailed",
+      event,
+      [
+        { accountId: "ACC-2300-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
+        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+        {
+          accountId: "ACC-2300-004",
+          debitCredit: "debit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2300-003",
+          debitCredit: "credit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+      ],
+      { failedReceiveLeg },
     );
-    const interp = interpLegs(runOne("FxSettlementFailed", event, { failedReceiveLeg }));
-    expect(interp).toEqual(legacy);
-    assertBalances(interp);
   });
 
-  it("one-leg-delivered EUR — reclass splits: trading-receivable dedicated, settlement-failed→suspense", () => {
+  it("one-leg-delivered EUR — reclass splits: EUR trading-receivable dedicated, settlement-failed→suspense", () => {
     const event = {
       tradeRef: "T2",
       failureKind: "one-leg-delivered" as const,
@@ -351,17 +361,27 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branc
       amountMinor: 90_000_000,
       zarEquivalentMinor: 1_840_000_000,
     };
-    const legacy = normalise(
-      fxSettlementFailedJournals({ event: event as never, failedReceiveLeg }),
-    );
     const r = runOne("FxSettlementFailed", event, { failedReceiveLeg });
     const interp = interpLegs(r);
-    expect(interp).toEqual(legacy);
-    // EUR now has a dedicated TRADING receivable (ACC-2100-013) — the credit
-    // leg that derecognises it resolves there. The DEBIT leg targets the
-    // amortised-cost Settlement-Failed Receivable sub-ledger, which is NOT
-    // provisioned for EUR (only ZAR/USD ACC-2300) → suspense + urgent
-    // correction. The ZAR ECL legs resolve normally.
+    expect(interp).toEqual([
+      { accountId: SUSPENSE, debitCredit: "debit", amountMinor: 90_000_000, currency: "EUR" },
+      { accountId: "ACC-2100-013", debitCredit: "credit", amountMinor: 90_000_000, currency: "EUR" },
+      {
+        accountId: "ACC-2300-004",
+        debitCredit: "debit",
+        amountMinor: 1_840_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2300-003",
+        debitCredit: "credit",
+        amountMinor: 1_840_000_000,
+        currency: "ZAR",
+      },
+    ]);
+    // EUR has a dedicated TRADING receivable (ACC-2100-013); the settlement-
+    // failed receivable sub-ledger is NOT provisioned for EUR (only ZAR/USD
+    // ACC-2300) → suspense + urgent correction. ZAR ECL legs resolve normally.
     const eurLegs = interp.filter((l) => l.currency === "EUR");
     expect(eurLegs.some((l) => l.accountId === "ACC-2100-013")).toBe(true);
     expect(eurLegs.some((l) => l.accountId === SUSPENSE)).toBe(true);
@@ -370,13 +390,12 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt parity + no-GL branc
   });
 
   for (const kind of ["neither-delivered", "operational-delay"] as const) {
-    it(`${kind} — no GL (both legacy [] and interp empty post)`, () => {
+    it(`${kind} — no GL (empty post)`, () => {
       const event = {
         tradeRef: "T3",
         failureKind: kind,
         legStatus: { payLegDelivered: false, receiveLegDelivered: false },
       };
-      expect(fxSettlementFailedJournals({ event: event as never })).toEqual([]);
       const r = runOne("FxSettlementFailed", event, {});
       expect(postOf(r).legs).toEqual([]);
     });
@@ -406,27 +425,54 @@ function cancelEnrichment(cumPnl: number) {
   };
 }
 
-describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal parity", () => {
-  for (const cumPnl of [3_000_000, -2_100_000, 0]) {
-    it(`cumPnl ${cumPnl} — byte-for-byte`, () => {
-      const legacy = normalise(
-        fxCancellationJournals({
-          tradeId: "T1",
-          cumulativeUnrealisedPnlZarMinor: cumPnl,
-          bookingLegs: BOOKING_LEGS,
-        }),
-      );
-      const interp = interpLegs(
-        runOne("FxTradeCancelled", { tradeId: "T1" }, cancelEnrichment(cumPnl)),
-      );
-      expect(interp).toEqual(legacy);
-      assertBalances(interp);
-    });
-  }
+describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal", () => {
+  it("cumPnl +3,000,000 — booking reversal + MTM-undo gain reversal", () => {
+    expectInterpreterLegs(
+      "FxTradeCancelled",
+      { tradeId: "T1" },
+      [
+        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
+        { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
+        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+        { accountId: "ACC-2100-004", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
+        { accountId: "ACC-2100-005", debitCredit: "debit", amountMinor: 3_000_000, currency: "ZAR" },
+        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 3_000_000, currency: "ZAR" },
+      ],
+      cancelEnrichment(3_000_000),
+    );
+  });
+  it("cumPnl -2,100,000 — booking reversal + MTM-undo loss reversal", () => {
+    expectInterpreterLegs(
+      "FxTradeCancelled",
+      { tradeId: "T1" },
+      [
+        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
+        { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
+        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+        { accountId: "ACC-2100-004", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
+        { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_100_000, currency: "ZAR" },
+        { accountId: "ACC-2100-005", debitCredit: "credit", amountMinor: 2_100_000, currency: "ZAR" },
+      ],
+      cancelEnrichment(-2_100_000),
+    );
+  });
+  it("cumPnl 0 — booking reversal only (no MTM-undo leg)", () => {
+    expectInterpreterLegs(
+      "FxTradeCancelled",
+      { tradeId: "T1" },
+      [
+        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
+        { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
+        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+        { accountId: "ACC-2100-004", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
+      ],
+      cancelEnrichment(0),
+    );
+  });
 
   it("cancel reverses suspense legs exactly (foreign-currency booking)", () => {
-    // A EUR trade booked post-deliverable-4 sits on suspense; cancellation must
-    // reverse the EXACT suspense legs (use_physical_account), netting to zero.
+    // A EUR trade booked to suspense; cancellation must reverse the EXACT
+    // suspense legs (use_physical_account), netting to zero.
     const eurBooking: SubLedgerLeg[] = [
       {
         accountId: "ACC-2100-001",
@@ -466,20 +512,19 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal parity", () => {
 
 describe("Memo rules — intentional-no-impact", () => {
   it("FxSettlementInstructed (PR-FX-INSTRUCT) — no GL", () => {
-    const r = runOne("FxSettlementInstructed", { tradeId: "T1" });
-    expect(r.outcome).toBe("intentional-no-impact");
+    expect(runOne("FxSettlementInstructed", { tradeId: "T1" }).outcome).toBe(
+      "intentional-no-impact",
+    );
   });
   it("TradeReportSubmitted (PR-FX-REGREPORT) — no GL", () => {
-    const r = runOne("TradeReportSubmitted", { tradeId: "T1" });
-    expect(r.outcome).toBe("intentional-no-impact");
+    expect(runOne("TradeReportSubmitted", { tradeId: "T1" }).outcome).toBe(
+      "intentional-no-impact",
+    );
   });
 });
 
 // ---------------------------------------------------------------------------
-// Schema conformance — every ported rule satisfies the required-field shape +
-// representation/condition enums, and every account-resolver currency the rules
-// reference is well-formed. (Phase-2 rules are TS-only; this validates them in
-// lieu of per-rule JSON mirrors.)
+// Schema conformance — every ported FX rule satisfies the contract.
 // ---------------------------------------------------------------------------
 
 describe("FX_IFRS_RULES schema conformance", () => {
@@ -494,7 +539,6 @@ describe("FX_IFRS_RULES schema conformance", () => {
       expect(["always", "non-zero-delta", "non-zero-pnl", "intentional-no-impact"]).toContain(
         rule.condition.kind,
       );
-      // non-zero conditions must carry a delta_path.
       if (rule.condition.kind === "non-zero-delta" || rule.condition.kind === "non-zero-pnl") {
         expect(rule.condition.delta_path).toBeDefined();
       }
