@@ -55,7 +55,7 @@ afterEach(() => setDefaultProvenanceModeOverride(undefined));
 // 1. Per-entity guard — BA_310_SUBSCRIBER_ENTITIES
 // =====================================================================
 
-describe("BA320 period-close subscriber — per-entity guard", () => {
+describe("BA310 period-close subscriber — per-entity guard", () => {
   it("BA_310_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
     expect(BA_310_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
@@ -78,7 +78,7 @@ describe("BA320 period-close subscriber — per-entity guard", () => {
 // 2. Zero-position baseline — bank entity, empty store
 // =====================================================================
 
-describe("BA320 period-close subscriber — zero-position baseline", () => {
+describe("BA310 period-close subscriber — zero-position baseline", () => {
   it("generates a BA 310 with zero capital for empty event store", () => {
     const store = new EventStore(":memory:");
     const result = ba310PeriodCloseSubscriber({
@@ -137,7 +137,7 @@ describe("BA320 period-close subscriber — zero-position baseline", () => {
 // 3. Caller-supplied sub-charge inputs are wired through
 // =====================================================================
 
-describe("BA320 period-close subscriber — caller-supplied inputs", () => {
+describe("BA310 period-close subscriber — caller-supplied inputs", () => {
   it("IR general maturity ladder flows into output", () => {
     const store = new EventStore(":memory:");
     const result = ba310PeriodCloseSubscriber({
@@ -196,7 +196,7 @@ describe("BA320 period-close subscriber — caller-supplied inputs", () => {
 // 4. XML serialiser round-trip
 // =====================================================================
 
-describe("BA320 period-close subscriber — XML serialiser", () => {
+describe("BA310 period-close subscriber — XML serialiser", () => {
   it("renders well-formed XML with declared SARB envelope", () => {
     const store = new EventStore(":memory:");
     const result = ba310PeriodCloseSubscriber({
@@ -212,10 +212,10 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
     const xml = renderSarbXml(payload, { renderedAt: "2026-06-01T00:00:00.000Z" });
 
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
-    expect(xml.includes("<BA320")).toBe(true);
+    expect(xml.includes("<BA310")).toBe(true);
     expect(xml.includes(`xmlns="${BA_310_NAMESPACE}"`)).toBe(true);
     expect(xml.includes(`xsdUri="${BA_310_XSD_URI}"`)).toBe(true);
-    expect(xml.includes("</BA320>")).toBe(true);
+    expect(xml.includes("</BA310>")).toBe(true);
   });
 
   it("structural validator passes for all required elements", () => {
@@ -232,7 +232,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
     const xml = renderSarbXml(payload, { renderedAt: "2026-06-01T00:00:00.000Z" });
     const validation = validateSarbXmlStructural({
       xml,
-      formId: "BA320",
+      formId: "BA310",
       namespaceUri: BA_310_NAMESPACE,
       requiredElements: [...BA_310_REQUIRED_ELEMENTS],
     });

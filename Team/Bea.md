@@ -67,6 +67,7 @@ Bea does **not** own tax (Yael's domain — they share the deferred-tax surface)
 | `RepoTradeOpened` event | `@platform/event-store` | Repo opening journal within 60 seconds; build-phase |
 | `DepositTaken` event | `@platform/event-store` | Deposit liability posting within 60 seconds; build-phase |
 | `InterbankLoanPlaced` event | `@platform/event-store` | Interbank loan asset posting within 60 seconds; build-phase |
+| `AccountingPeriodClosed` event | Event store (Bea period-close) | BA-310 (market / position risk — FX-NOP) return generated from the live event flow + SARB submission attempt recorded (ba310-period-close handler); within 1 working day. Form numbering BA 310 (Reg 28(5)) + BA 110 attestation (Reg 29(3)); build-phase records via the SARB simulator (live transport is licence-day). Authority: D-BA-RETURN-FORM-NUMBERING-RECON |
 | Inbound query — Camille / external auditor | Owner Inbox / direct ask | Within 2 working days |
 
 ## 8. Inputs

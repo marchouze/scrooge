@@ -302,10 +302,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 XML render round-trip", () =
     const payload = ba310ToXmlPayload(out);
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
-    expect(xml.includes("<BA320")).toBe(true);
+    expect(xml.includes("<BA310")).toBe(true);
     expect(xml.includes(`xmlns="${BA_310_NAMESPACE}"`)).toBe(true);
     expect(xml.includes(`xsdUri="${BA_310_XSD_URI}"`)).toBe(true);
-    expect(xml.includes("</BA320>")).toBe(true);
+    expect(xml.includes("</BA310>")).toBe(true);
   });
 
   it("structural validator passes when all required elements present", () => {
@@ -321,7 +321,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 XML render round-trip", () =
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     const result = validateSarbXmlStructural({
       xml,
-      formId: "BA320",
+      formId: "BA310",
       namespaceUri: BA_310_NAMESPACE,
       requiredElements: [...BA_310_REQUIRED_ELEMENTS],
     });
