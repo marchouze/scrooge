@@ -66,6 +66,7 @@ import type {
   SettlementConfirmedPayload,
 } from "../../platform/markets/cdm/fx";
 import { baseAmountMinor } from "../../platform/markets/cdm/fx-helpers";
+import { runEodBondRevaluation } from "../../platform/markets/eod/bond-revaluation";
 import { runEodIrsRevaluation } from "../../platform/markets/eod/irs-revaluation";
 import { computeCurrencyPositions } from "../../platform/projections/markets/currency-position";
 import {
@@ -747,10 +748,44 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   // -------------------------------------------------------------------------
-  // Honest skip messages for Bond / Equity — substrate gap markers, not bugs.
-  // Carried into MtmRunCompleted.skippedReasons[] so the dashboard renders them.
+  // Bond MTM — EOD fair-value revaluation for trading-book bond positions.
+  //
+  // runEodBondRevaluation marks open trading-book bond positions against the
+  // latest jse-debt reference price tick from MarketDataStore (build-phase
+  // fixture; production JSE Debt Market feed is sequenced post-licence per
+  // [GAP-BOND-1]). Banking-book bonds excluded (amortised cost, IFRS 9 §4.1.2).
+  // Idempotent per (tradeId, revalDate). Gated on !dryRun and mdStore.
+  // Authority: D-MARKETS-SCHEMA-FOUNDATION; IFRS-9-§5.7.1; JSE-RULES-BONDS.
   // -------------------------------------------------------------------------
-  skippedReasons.push(BOND_SKIP_REASON);
+  if (mdStore && !ctx.dryRun) {
+    try {
+      const bondReval = runEodBondRevaluation(
+        eventStore as unknown as import("../../platform/event-store/store").EventStore,
+        mdStore,
+        dateStr,
+      );
+      positionsValued += bondReval.revalued;
+      positionsSkipped += bondReval.skipped;
+      for (const reason of bondReval.skipReasons) {
+        if (!skippedReasons.includes(reason)) skippedReasons.push(reason);
+      }
+      for (const err of bondReval.errors) skippedReasons.push(`Bond reval: ${err}`);
+      logger.info(
+        {
+          runId,
+          revalued: bondReval.revalued,
+          skipped: bondReval.skipped,
+          totalUnrealisedPnlZarMinor: bondReval.totalUnrealisedPnlZarMinor,
+        },
+        "rohan:daily-mtm — bond EOD revaluation complete",
+      );
+    } catch (err) {
+      skippedReasons.push(`Bond reval failed: ${String(err)}`);
+    }
+  } else if (!ctx.dryRun) {
+    // MarketDataStore unavailable — can't look up bond prices.
+    skippedReasons.push(BOND_SKIP_REASON);
+  }
   skippedReasons.push(EQUITY_SKIP_REASON);
 
   // -------------------------------------------------------------------------
