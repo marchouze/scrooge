@@ -14,21 +14,25 @@
 //   1. Folds `FxTradeExecuted` and `TradeMatured` events from the
 //      event store for the period window to compute open FX positions
 //      (P1-compliant path; see `ba-310-events-adapter.ts`).
-//   2. Uses caller-supplied IR general / IR specific / equity / commodity
-//      inputs (build-phase: placeholder zeros; post-trading-book milestone:
-//      event-derived).
-//   3. Calls `generateBa310MarketRiskFromEvents` with the composed input.
-//   4. Returns the typed `Ba310Output` for the caller to render / store.
+//   2. Folds `BondTradeExecuted`, `BondMatured`, and `BondSold` events to
+//      derive the IR general maturity-ladder and IR specific-risk rows
+//      (P1-compliant path; see `ba-310-bond-events-adapter.ts`).
+//      Banking-book bonds are excluded (BA-330 IRRBB, not BA-310).
+//   3. Uses caller-supplied equity / commodity inputs (build-phase:
+//      placeholder zeros; post-trading-book milestone: event-derived).
+//   4. Calls `generateBa310MarketRiskFromEvents` with the composed input.
+//   5. Returns the typed `Ba310Output` for the caller to render / store.
 //
 // ## Principle 1 compliance
 //
 // FX positions are folded directly from `FxTradeExecuted` events (minus
 // `TradeMatured` settled trades) — not from the trial balance.
-// This is the Principle 1 compliant architecture per
-// `Principles/1-events-are-truth.md` and per the P1 fix (C-2) filed at
-// `reporting/ba-310-events-adapter.ts`.
+// Bond IR positions are folded directly from `BondTradeExecuted` events
+// (minus `BondMatured`/`BondSold` derecognitions) — not from the trial
+// balance. This is the P1-compliant architecture per
+// `Principles/1-events-are-truth.md`, P1 fix C-2, and D-MARKETS-CAPITAL-TIME-SHAPE.
 //
-// IR, equity, and commodity sub-charges remain caller-supplied placeholders
+// Equity and commodity sub-charges remain caller-supplied placeholders
 // (zero by default) until the respective trading-book event streams are
 // implemented (substrate gap, roadmap item D-MARKETS-CAPITAL-TIME-SHAPE).
 //
@@ -44,6 +48,10 @@
 import type { AccountingPeriodClosedPayload } from "../../event-store/event-types";
 import type { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
+import {
+  buildBondIrGeneralLadder,
+  buildBondIrSpecificRiskRows,
+} from "../../reporting/ba-310-bond-events-adapter";
 import {
   type Ba310FromEventsInput,
   type Ba310Output,
@@ -91,14 +99,22 @@ export interface Ba310PeriodCloseSubscriberInput {
    */
   readonly zarRates?: ReadonlyMap<string, number>;
   /**
-   * IR general maturity-ladder rows (caller-supplied). Build-phase default: [].
-   * Populated at D-MARKETS-CAPITAL-TIME-SHAPE milestone.
-   * // TODO: derive from BondPositionOpened / BondPositionClosed events.
+   * IR general maturity-ladder rows (optional override). When omitted, the
+   * subscriber derives the ladder from BondTradeExecuted events via
+   * `buildBondIrGeneralLadder` (P1-compliant path). Supply an explicit value
+   * only in tests or when overriding event-derived output.
+   *
+   * Authority: Regulations Relating to Banks Reg 28(3)(a); BCBS D352 §718(b);
+   * D-MARKETS-CAPITAL-TIME-SHAPE.
    */
   readonly irGeneralMaturityLadder?: readonly IrMaturityBandRow[];
   /**
-   * IR specific-risk rows (caller-supplied). Build-phase default: [].
-   * // TODO: derive from issuer-classification events.
+   * IR specific-risk rows (optional override). When omitted, the subscriber
+   * derives rows from BondTradeExecuted events via `buildBondIrSpecificRiskRows`
+   * (P1-compliant path). Supply an explicit value only in tests or overrides.
+   *
+   * Authority: Regulations Relating to Banks Reg 28(3)(b); BCBS D352 §718(c)–(e);
+   * D-MARKETS-CAPITAL-TIME-SHAPE.
    */
   readonly irSpecificRisk?: readonly IrSpecificRiskRow[];
   /**
@@ -141,8 +157,10 @@ export interface Ba310PeriodCloseSubscriberResult {
  *
  * **Principle 1 compliance**: FX positions are derived from `FxTradeExecuted`
  * primary events via `generateBa310MarketRiskFromEvents`, NOT from the trial
- * balance. IR / equity / commodity remain caller-supplied placeholders until
- * the respective event streams are implemented.
+ * balance. Bond IR general and IR specific-risk are derived from
+ * `BondTradeExecuted` events via `buildBondIrGeneralLadder` and
+ * `buildBondIrSpecificRiskRows`. Equity / commodity remain caller-supplied
+ * placeholders until the respective event streams are implemented.
  *
  * Citations:
  *   Principles/1-events-are-truth.md (updated 2026-05-12);
@@ -167,6 +185,34 @@ export function ba310PeriodCloseSubscriber(
   const ccy = input.functionalCurrency ?? "ZAR";
   const periodEnd = input.closedPayload.closedAt;
 
+  // Frozen-cursor bound from AccountingPeriodClosed.
+  // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  const untilSequence =
+    input.closedPayload.eventSequence !== undefined ? input.closedPayload.eventSequence : undefined;
+
+  // ---- Derive bond IR inputs from events (P1-compliant path) ---------------
+  //
+  // When the caller does not supply explicit override values, derive both the
+  // IR general maturity-ladder and IR specific-risk rows from BondTradeExecuted
+  // events via the bond events adapter.  Caller-supplied values take precedence
+  // (for testing and edge-case overrides).
+  //
+  // Authority: Regulations Relating to Banks Reg 28(3)(a)–(b);
+  //   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN; D-MARKETS-CAPITAL-TIME-SHAPE;
+  //   Principles/1-events-are-truth.md.
+
+  const bondAdapterInput = {
+    entity: input.entity,
+    periodEnd,
+    eventStore: input.eventStore,
+    ...(untilSequence !== undefined ? { untilSequence } : {}),
+  };
+
+  const derivedIrGeneralMaturityLadder =
+    input.irGeneralMaturityLadder ?? buildBondIrGeneralLadder(bondAdapterInput);
+  const derivedIrSpecificRisk =
+    input.irSpecificRisk ?? buildBondIrSpecificRiskRows(bondAdapterInput);
+
   const fromEventsInput: Ba310FromEventsInput = {
     entity: input.entity,
     asOf: periodEnd,
@@ -175,19 +221,17 @@ export function ba310PeriodCloseSubscriber(
     periodStart: input.periodStart,
     periodEnd,
     zarRates: input.zarRates ?? new Map(),
-    irGeneralMaturityLadder: input.irGeneralMaturityLadder ?? [],
-    irSpecificRisk: input.irSpecificRisk ?? [],
+    irGeneralMaturityLadder: derivedIrGeneralMaturityLadder,
+    irSpecificRisk: derivedIrSpecificRisk,
     equity: input.equity ?? [],
     commodity: input.commodity ?? [],
     ...(input.irGeneralDisallowancesMinor !== undefined
       ? { irGeneralDisallowancesMinor: input.irGeneralDisallowancesMinor }
       : {}),
-    // Thread the frozen cursor from AccountingPeriodClosed so all replay
-    // calls inside the events adapter are bounded to the same event window.
+    // Thread the frozen cursor so all replay calls inside the events adapter
+    // are bounded to the same event window as the bond adapter above.
     // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
-    ...(input.closedPayload.eventSequence !== undefined
-      ? { untilSequence: input.closedPayload.eventSequence }
-      : {}),
+    ...(untilSequence !== undefined ? { untilSequence } : {}),
   };
 
   const ba310Output = generateBa310MarketRiskFromEvents(input.eventStore, fromEventsInput);
