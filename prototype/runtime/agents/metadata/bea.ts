@@ -16,11 +16,12 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "47 5 * * *",
   }),
-  // B-1 — Bea FX posting engine. Authority: D-MARKETS-CAPITAL-TIME-SHAPE.
-  entry("Bea", "fx-posting-engine", "event-driven", {
-    subscribesTo: ["FxTradeExecuted", "FxPositionRevalued", "TradeMatured", "FxTradeCancelled"],
-  }),
-  // B-2 — Bea universal GL posting engine. Authority: PROC-PAY-RBH-01.
+  // B-2 — Bea universal GL posting engine — the SOLE live FX + non-FX posting
+  // path. FX lifecycle posts via the rules-as-data SLA interpreter
+  // (D-SLA-ENGINE-RULES-AS-DATA Phase 3). The separate `bea:fx-posting-engine`
+  // (D-MARKETS-CAPITAL-TIME-SHAPE) was retired under WS-SLA-FULL-RETIREMENT
+  // (D-SLA-ENGINE-RULES-AS-DATA) — it duplicated the FX event subscriptions
+  // below and was a latent double-posting path. Authority: PROC-PAY-RBH-01.
   entry("Bea", "gl-posting-engine", "event-driven", {
     subscribesTo: [
       "PaymentInitiated",
@@ -29,6 +30,10 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "RepoTradeOpened",
       "DepositTaken",
       "InterbankLoanPlaced",
+      "FxTradeExecuted",
+      "FxPositionRevalued",
+      "TradeMatured",
+      "FxTradeCancelled",
     ],
   }),
   // M1 — Bea IFRS-9 classification rules.
