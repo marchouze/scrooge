@@ -14,8 +14,26 @@ ID conventions (mirroring the project):
   Document   : DOC-BCBS-<STD>                         (e.g. DOC-BCBS-MAR)
   Provision  : urn:reg:bcbs:<std>:<chapter.para>      (e.g. urn:reg:bcbs:mar:21.1)
                chapter-level: urn:reg:bcbs:<std>:<chapter>
-  Obligation : OBL-BCBS-<STD>-s<chapter.para>-<seq>
+  Obligation : OBL-BCBS-<STD>-s<chapter.para>     (one per normative paragraph)
   Term       : TERM-<slug>
+
+Decomposition (D-OBLIGATION-DECOMPOSITION-PARAGRAPH-LEVEL, CEO-approved
+2026-06-08): the Obligation layer is one Obligation per normative *paragraph*
+(provision), NOT one per enumerated sub-item. The provision URN
+(metadata.sourceProvision) is the stable join key; adopted ORG-* obligations
+cite provision URNs, so paragraph-level ids do not break any adoption.
+
+Footnotes (D-OBLIGATION-FOOTNOTE-REPRESENTATION, CEO-approved 2026-06-08):
+the "Footnotes <n> …" apparatus is parsed out of the provision body into a
+structured `footnotes: [{marker, text}]` field on the Provision node. The
+inline superscript marker stays in the body; the footnote body is no longer
+concatenated into the main provision text. Governing: D-REGULATORY-
+ARCHITECTURE-TWO-PLANE.
+
+Input: Regulations/BCBS/chapter-text.json — the live, footnote-preserving
+PDF extraction, shape { generatedFrom, chapters: { <CHAP>: [ {paragraph,
+heading, text} ] } }. Run per standard; chapters whose code starts with <STD>
+are selected.
 """
 import json, re, sys, os, datetime
 
@@ -96,59 +114,97 @@ def action_summary(text, otype):
             return re.sub(r'\s+',' ', s)[:300]
     return re.sub(r'\s+',' ', text)[:300]
 
-# ---- atomic decomposition ---------------------------------------------------
-# Enumeration markers: (1) (a) (iv) etc. — BIS sub-paragraph duties.
+# ---- footnote separation (D-OBLIGATION-FOOTNOTE-REPRESENTATION) -------------
+# Footnotes are appended to the PDF-extracted paragraph body as a literal
+# "Footnotes <n> <body> [<n+1> <body> …]" apparatus (sometimes more than one
+# such block per paragraph, interleaved with resumed body text). We lift the
+# apparatus out into structured {marker, text} footnotes and return a clean
+# body that keeps the inline superscript markers but drops the footnote bodies.
+RE_FOOTNOTES_TOKEN = re.compile(r'\s*Footnotes\s+')
+
+
+def parse_footnotes(text):
+    """Split a provision body into (clean_body, [{marker, text}, ...]).
+
+    Each 'Footnotes' token introduces a block of one or more sequentially
+    numbered footnotes. Within a block, the next footnote starts at the first
+    standalone integer equal to the running marker + 1 (so digits inside a
+    footnote body — cross-refs like 'CRE20. 71', percentages like '10%' — do
+    not falsely split). The clean body is the paragraph text with every
+    'Footnotes …' block removed; inline numeric markers stay in place.
+    """
+    parts = RE_FOOTNOTES_TOKEN.split(text)
+    if len(parts) == 1:
+        return re.sub(r'\s+', ' ', text).strip(), []
+    body = parts[0]
+    footnotes = []
+    for block in parts[1:]:
+        block = block.strip()
+        m = re.match(r'^(\d{1,3})\s+', block)
+        if not m:
+            # not a real footnote apparatus — fold the text back into the body
+            body = (body + ' ' + block).strip()
+            continue
+        cur_marker = int(m.group(1))
+        rest = block[m.end():]
+        # Walk the block, opening a new footnote each time the next sequential
+        # marker (cur+1) appears as a footnote-start token: a standalone number
+        # following a sentence terminator + space ('. 2 …'). This deliberately
+        # ignores inline superscript references such as '(M)6' or 'M.5' (no
+        # ". "-boundary), which would otherwise mis-split an interleaved block
+        # (e.g. CRE30.36, where footnote-5 body resumes into '(M)6').
+        cur_text_parts = []
+        def nxt_re(n):
+            return re.compile(r'(?<=[.;]\s)(' + str(n) + r')\s+(?=[A-Z(])')
+        nxt = nxt_re(cur_marker + 1)
+        while True:
+            mm = nxt.search(rest)
+            if not mm:
+                cur_text_parts.append(rest)
+                footnotes.append((cur_marker, ''.join(cur_text_parts)))
+                break
+            cur_text_parts.append(rest[:mm.start()])
+            footnotes.append((cur_marker, ''.join(cur_text_parts)))
+            cur_marker = int(mm.group(1))
+            cur_text_parts = []
+            rest = rest[mm.end():]
+            nxt = nxt_re(cur_marker + 1)
+    body = re.sub(r'\s+', ' ', body).strip()
+    out = []
+    for marker, ftext in footnotes:
+        ft = re.sub(r'\s+', ' ', ftext).strip()
+        if ft:
+            out.append({'marker': str(marker), 'text': ft})
+    return body, out
+
+
+# ---- paragraph-level decomposition (D-OBLIGATION-DECOMPOSITION-PARAGRAPH-LEVEL)
+# Enumeration markers: (1) (a) (iv) etc. — used only for stem-trigger detection
+# now; the per-sub-item split is retired (one Obligation per normative paragraph).
 RE_ENUM = re.compile(r'(?<![\w.])\(\s*(\d{1,2}|[a-z]|[ivxl]{1,5})\s*\)', re.I)
 
-def split_enum(text):
-    """Return (stem, [(label, chunk), ...]). If <2 markers, no enumeration."""
+def stem_of(text):
+    """Text before the first enumeration marker, when ≥2 markers exist."""
     ms = list(RE_ENUM.finditer(text))
     if len(ms) < 2:
-        return '', [(None, text)]
-    stem = text[:ms[0].start()].strip()
-    items = []
-    for i, m in enumerate(ms):
-        s = m.end()
-        e = ms[i+1].start() if i+1 < len(ms) else len(text)
-        items.append((m.group(0), text[s:e].strip()))
-    return stem, items
+        return ''
+    return text[:ms[0].start()].strip()
 
 def decompose(text):
-    """Break a normative paragraph into atomic duty units.
+    """One normative duty unit per paragraph.
 
-    Each unit -> {text, enum, stemTrigger}. Granularity:
-      - enumerated sub-items (each duty-bearing item / its sentences), and/or
-      - the stem directive combined with each object item when items carry no
-        modal of their own, and/or
-      - sentence level for non-enumerated paragraphs.
+    The Obligation layer is paragraph-level: the whole provision is a single
+    obligation whose classification (must / must-not / recommended / may) and
+    action summary derive from the paragraph as a unit. Triggers are detected
+    on the paragraph (or its enumeration stem, when present).
+    Returns [] when the paragraph carries no normative modal.
     """
-    stem, items = split_enum(text)
-    enumerated = items[0][0] is not None
-    stem_type = classify(stem)[0] if stem else None
+    if not classify(text)[0]:
+        return []
+    stem = stem_of(text)
+    # prefer a trigger cued in the stem (governs all sub-items), else paragraph-wide
     stem_trig = first_clause(stem, RE_TRIGGER) if stem else None
-    units = []
-    if enumerated:
-        any_item_modal = any(classify(c)[0] for _, c in items)
-        if any_item_modal:
-            if stem_type:
-                units.append({'text': stem, 'enum': None, 'stemTrigger': None})
-            for label, chunk in items:
-                if classify(chunk)[0]:
-                    for sent in sentences(chunk):
-                        if classify(sent)[0]:
-                            units.append({'text': sent, 'enum': label, 'stemTrigger': stem_trig})
-        elif stem_type:
-            for label, chunk in items:
-                combined = (stem.rstrip(' :;.,') + ': ' + chunk).strip()
-                units.append({'text': combined, 'enum': label, 'stemTrigger': stem_trig})
-    else:
-        for sent in sentences(text):
-            if classify(sent)[0]:
-                units.append({'text': sent, 'enum': None, 'stemTrigger': stem_trig})
-    # fallback: normative paragraph that produced no clean unit
-    if not units and classify(text)[0]:
-        units.append({'text': re.sub(r'\s+',' ',text)[:300], 'enum': None, 'stemTrigger': stem_trig})
-    return units
+    return [{'text': re.sub(r'\s+', ' ', text).strip(), 'enum': None, 'stemTrigger': stem_trig}]
 
 def slugify(s):
     s = re.sub(r'[^A-Za-z0-9]+','-', s.strip().lower()).strip('-')
@@ -167,11 +223,64 @@ def valid_term(term):
     if len(term) < 4: return None
     return term
 
+# Inline cross-reference like "CRE20.4" / "MAR33" embedded in body text.
+RE_XREF = re.compile(r'\b([A-Z]{2,4})(\d{2})(?:\.(\d+))?\b')
+
+def load_chapter_titles():
+    """chapter code (e.g. CRE20) -> chapter title, from toc-chapters.json."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    toc_path = os.path.join(here, '..', 'toc-chapters.json')
+    titles = {}
+    try:
+        for row in json.load(open(toc_path)):
+            if row.get('chapter') and row.get('title'):
+                titles[row['chapter']] = row['title']
+    except Exception:
+        pass
+    return titles
+
+
+def load_paragraphs(in_path, std):
+    """Flatten Regulations/BCBS/chapter-text.json into the paragraph list this
+    builder consumes. Footnotes are parsed out of each body into a structured
+    `footnotes` field; the inline superscript markers stay in `text`.
+
+    Input shape : { generatedFrom, chapters: { <CHAP>: [ {paragraph, heading,
+                    text} ] } }   (the live, footnote-preserving PDF extraction)
+    Output rows : { chapter, paragraph, text, footnotes, chapter_title,
+                    section, cross_refs }
+    """
+    data = json.load(open(in_path))
+    src_chapters = data.get('chapters', {})
+    titles = load_chapter_titles()
+    paras = []
+    chapter_codes = {}
+    for code, rows in src_chapters.items():
+        if not code.startswith(std):
+            continue
+        chapter_codes[code] = titles.get(code, '')
+        for r in rows:
+            body, footnotes = parse_footnotes(r.get('text', '') or '')
+            heading = r.get('heading') or None
+            xrefs = []
+            for m in RE_XREF.finditer(body):
+                xrefs.append(f"{m.group(1)}{m.group(2)}" + (f".{m.group(3)}" if m.group(3) else ''))
+            paras.append({
+                'chapter': code,
+                'paragraph': r['paragraph'],
+                'text': body,
+                'footnotes': footnotes,
+                'chapter_title': titles.get(code, ''),
+                'section': heading,
+                'cross_refs': sorted(set(xrefs)),
+            })
+    return paras, chapter_codes
+
+
 def build(std, std_name, in_path, jurisdiction='supranational'):
     std_lc = std.lower()
     data = json.load(open(in_path))
-    paras = data['paragraphs']
-    chapters = data.get('chapters', {})
+    paras, chapters = load_paragraphs(in_path, std)
 
     nodes = {}   # id -> node
     edges = []
@@ -214,35 +323,30 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
     # term registry (term phrase lower -> term node id)
     term_index = {}
 
-    # first pass: provisions + terms
+    # first pass (a): real provision nodes + terms. Register EVERY real
+    # provision before any cross-reference is resolved, so an inbound xref to a
+    # provision we own can never pre-empt it with a text-less stub (latent
+    # ordering bug — e.g. CRE40.95 referenced by an earlier paragraph would
+    # otherwise lose its body + footnotes).
     for p in paras:
         ref = p['paragraph']                 # "21.1"
-        ch  = p['chapter'][len(std):]        # "21"
         pid = prov_id(ref)
-        text = p['text']
-        add_node({'id':pid,'nodeType':'Provision',
+        text = p['text']                     # footnote-clean body (markers kept inline)
+        footnotes = p.get('footnotes', [])   # [{marker, text}] — separated apparatus
+        prov_node = {'id':pid,'nodeType':'Provision',
                   'label':f"{p['chapter']} {ref}",
                   'level':'section','text':text,
                   'metadata':{'chapter':p['chapter'],'chapterTitle':p.get('chapter_title',''),
                               'section':p.get('section') or None,'paragraph':ref,
-                              'standard':std,'citationUrn':pid}})
-        # chapter -> paragraph containment
-        add_edge(prov_id(ch), pid, 'CONTAINS', 1.0)
-        # cross references
-        for xref in p.get('cross_refs', []):
-            m = re.match(r'^([A-Z]{3})(\d{2})\.(\d+)$', xref) or re.match(r'^([A-Z]{3})(\d{2})$', xref)
-            if not m: continue
-            g = m.groups()
-            tgt_std = g[0].lower()
-            tgt_ref = f"{g[1]}.{g[2]}" if len(g)==3 else g[1]
-            tgt = f'urn:reg:bcbs:{tgt_std}:{tgt_ref}'
-            if tgt == pid: continue
-            # create stub node for external/unseen provisions
-            if tgt not in nodes:
-                add_node({'id':tgt,'nodeType':'Provision','label':xref,'level':'section',
-                          'metadata':{'standard':g[0],'paragraph':tgt_ref,
-                                      'external': g[0]!=std,'stub':True}})
-            add_edge(pid, tgt, 'REFERENCES', 1.0, src=pid)
+                              'standard':std,'citationUrn':pid}}
+        # D-OBLIGATION-FOOTNOTE-REPRESENTATION: footnotes are a structured,
+        # paragraph-level element on the Provision node — referenced inline by
+        # superscript marker in `text`, carried separately here (never glued
+        # into the body). Stored in metadata so the seed importer (which folds
+        # node metadata into graph_nodes) persists it without code changes.
+        if footnotes:
+            prov_node['metadata']['footnotes'] = footnotes
+        add_node(prov_node)
         # term definitions
         for dm in RE_DEFN.finditer(text):
             term = valid_term(dm.group(1))
@@ -258,11 +362,33 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
                 term_index[term.lower()] = tid
             add_edge(pid, nodes[tid]['id'], 'DEFINES', 0.85, src=pid)
 
+    # first pass (b): containment + cross references. Provisions all exist now,
+    # so stubs are created only for genuinely unseen / external targets.
+    for p in paras:
+        ref = p['paragraph']                 # "21.1"
+        ch  = p['chapter'][len(std):]        # "21"
+        pid = prov_id(ref)
+        add_edge(prov_id(ch), pid, 'CONTAINS', 1.0)
+        for xref in p.get('cross_refs', []):
+            m = re.match(r'^([A-Z]{3})(\d{2})\.(\d+)$', xref) or re.match(r'^([A-Z]{3})(\d{2})$', xref)
+            if not m: continue
+            gm = m.groups()
+            tgt_std = gm[0].lower()
+            tgt_ref = f"{gm[1]}.{gm[2]}" if len(gm)==3 else gm[1]
+            tgt = f'urn:reg:bcbs:{tgt_std}:{tgt_ref}'
+            if tgt == pid: continue
+            # create stub node for external/unseen provisions
+            if tgt not in nodes:
+                add_node({'id':tgt,'nodeType':'Provision','label':xref,'level':'section',
+                          'metadata':{'standard':gm[0],'paragraph':tgt_ref,
+                                      'external': gm[0]!=std,'stub':True}})
+            add_edge(pid, tgt, 'REFERENCES', 1.0, src=pid)
+
     # only multiword terms used for USES matching (precision)
     multiword_terms = [(t, tid) for t, tid in term_index.items() if len(t.split()) >= 2]
 
-    # second pass: obligations (atomic — one node per duty unit)
-    obl_seq = {}
+    # second pass: obligations (paragraph-level — one node per normative provision,
+    # per D-OBLIGATION-DECOMPOSITION-PARAGRAPH-LEVEL)
     n_obl = 0; n_paras_norm = 0
     for p in paras:
         ref = p['paragraph']; pid = prov_id(ref); text = p['text']
@@ -277,17 +403,15 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
             if not otype:
                 continue
             n_obl += 1
-            seq = obl_seq.get(ref, 0) + 1; obl_seq[ref] = seq
-            oid = f'OBL-{instrument}-s{ref}-{seq}'
+            oid = f'OBL-{instrument}-s{ref}'   # one obligation per provision
             actor = detect_actor(utext) if detect_actor(utext) != 'bank' else detect_actor(text)
             trig = first_clause(utext, RE_TRIGGER) or u.get('stemTrigger')
             exc  = first_clause(utext, RE_EXCEPT)
             md = {'sourceProvision':pid,'chapter':p['chapter'],'paragraph':ref,
                   'standard':std,'classificationConfidence':conf,
-                  'section':p.get('section') or None,'atomicSeq':seq}
-            if u.get('enum'): md['enumLabel']=u['enum']
+                  'section':p.get('section') or None}
             obl = {'id':oid,'nodeType':'Obligation',
-                   'label':f"{p['chapter']} {ref}{(' '+u['enum']) if u.get('enum') else ''} — {otype}",
+                   'label':f"{p['chapter']} {ref} — {otype}",
                    'obligationType':otype,'actor':actor,
                    'actionSummary':utext[:300],'metadata':md}
             if trig: obl['trigger']=trig[:200]
@@ -331,9 +455,13 @@ def build(std, std_name, in_path, jurisdiction='supranational'):
     from collections import Counter
     nt = Counter(n['nodeType'] for n in graph['nodes'])
     et = Counter(e['edgeType'] for e in graph['edges'])
+    n_footnotes = sum(len(n['metadata'].get('footnotes', []))
+                      for n in graph['nodes']
+                      if n['nodeType'] == 'Provision' and isinstance(n.get('metadata'), dict))
     graph['stats'] = {'nodes':len(graph['nodes']),'edges':len(graph['edges']),
                       'obligations':n_obl,'normativeParagraphs':n_paras_norm,
-                      'decomposition':'atomic',
+                      'decomposition':'paragraph-level',
+                      'footnotes':n_footnotes,
                       'nodesByType':dict(nt),'edgesByType':dict(et),
                       'obligationsByType':dict(Counter(n.get('obligationType') for n in graph['nodes'] if n['nodeType']=='Obligation'))}
     return graph

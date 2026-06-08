@@ -177,10 +177,21 @@ export function getUnadoptedObligationsView(
 }
 
 /** One paragraph of the regulation: number + full source text. */
+/** A footnote separated out of a provision body (D-OBLIGATION-FOOTNOTE-
+ * REPRESENTATION). The `marker` superscript stays referenced inline in the
+ * paragraph `text`; the `text` here is the footnote body, rendered as a
+ * distinct element beneath the paragraph. */
+export interface ProvisionFootnote {
+  marker: string;
+  text: string;
+}
+
 export interface ChapterParagraph {
   id: string;
   paragraph: string;
   text: string;
+  /** Footnotes lifted out of the body; inline markers remain in `text`. */
+  footnotes?: ProvisionFootnote[];
 }
 
 /** A run of paragraphs under one section heading (e.g. "Qualitative standards"
@@ -210,6 +221,53 @@ interface BcbsChaptersDoc {
   chapters: Record<string, BcbsChapterRow[]>;
 }
 let _bcbsChapters: BcbsChaptersDoc["chapters"] | null = null;
+
+/** Lift the "Footnotes <n> …" apparatus out of a PDF-extracted provision body
+ * into structured {marker, text} footnotes, returning the clean body (inline
+ * superscript markers kept) plus the separated footnotes. Mirrors the data-side
+ * parser in Regulations/BCBS/obligation-graphs/build_obligation_graph.py, so the
+ * rendered detail view and the seeded graph agree (D-OBLIGATION-FOOTNOTE-
+ * REPRESENTATION). The committed chapter-text.json still carries footnotes inline;
+ * this normalises them at render time for chapters the graph build hasn't reseeded. */
+export function parseFootnotes(raw: string): {
+  body: string;
+  footnotes: ProvisionFootnote[];
+} {
+  const collapse = (s: string) => s.replace(/\s+/g, " ").trim();
+  const parts = raw.split(/\s*Footnotes\s+/);
+  if (parts.length === 1) return { body: collapse(raw), footnotes: [] };
+
+  let body = parts[0];
+  const acc: Array<{ marker: number; text: string }> = [];
+  for (const block of parts.slice(1)) {
+    const trimmed = block.trim();
+    const head = /^(\d{1,3})\s+/.exec(trimmed);
+    if (!head) {
+      // not a real footnote apparatus — fold back into the body
+      body = `${body} ${trimmed}`.trim();
+      continue;
+    }
+    let marker = Number(head[1]);
+    let rest = trimmed.slice(head[0].length);
+    // open a new footnote each time the next sequential marker appears as a
+    // footnote-start token ('. 2 At …'); inline refs like '(M)6' / 'M.5' are
+    // ignored (no ". "-boundary), so interleaved blocks (CRE30.36) don't mis-split.
+    const nextRe = (n: number) => new RegExp(`(?<=[.;]\\s)(${n})\\s+(?=[A-Z(])`);
+    // walk forward, opening a new footnote at each sequential marker boundary
+    let mm = nextRe(marker + 1).exec(rest);
+    while (mm && mm.index !== undefined) {
+      acc.push({ marker, text: rest.slice(0, mm.index) });
+      marker = Number(mm[1]);
+      rest = rest.slice(mm.index + mm[0].length);
+      mm = nextRe(marker + 1).exec(rest);
+    }
+    acc.push({ marker, text: rest });
+  }
+  const footnotes = acc
+    .map((f) => ({ marker: String(f.marker), text: collapse(f.text) }))
+    .filter((f) => f.text.length > 0);
+  return { body: collapse(body), footnotes };
+}
 
 /** Load clean BCBS chapter text — paragraph bodies + section headings — extracted
  * from the authoritative Basel Framework PDF (Regulations/BCBS/chapter-text.json).
@@ -297,7 +355,16 @@ export function getObligationDetail(
       const sorted = [...rows].sort((a, b) => minorOf(a.paragraph) - minorOf(b.paragraph));
       for (const row of sorted) {
         const nodeId = `urn:reg:bcbs:${chapterCode.replace(/^([A-Z]+)(\d+)$/, (_, s, n) => `${s.toLowerCase()}:${n}`)}.${row.paragraph.split(".")[1]}`;
-        pushParagraph(row.heading, { id: nodeId, paragraph: row.paragraph, text: row.text });
+        // Separate footnotes from the body (D-OBLIGATION-FOOTNOTE-REPRESENTATION):
+        // the inline superscript marker stays in `text`; footnote bodies render
+        // as distinct elements beneath the paragraph.
+        const { body, footnotes } = parseFootnotes(row.text);
+        pushParagraph(row.heading, {
+          id: nodeId,
+          paragraph: row.paragraph,
+          text: body,
+          ...(footnotes.length ? { footnotes } : {}),
+        });
       }
     } else {
       // Fallback: graph-DB Provision nodes (no headings available off-PDF).
