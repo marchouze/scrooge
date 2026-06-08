@@ -1,7 +1,7 @@
 ---
 agent: Eitan
 trigger: liquidity-snapshot
-asOf: 2026-06-08T06:53:22.841Z
+asOf: 2026-06-08T07:13:26.158Z
 decision-required: false
 ---
 
@@ -76,7 +76,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 |---|---|
 | `ALCODecision` | 0 |
 | `HedgeProgrammeApproved` | 0 |
-| Prior `LiquiditySnapshot` (this agent) | 12 |
+| Prior `LiquiditySnapshot` (this agent) | 13 |
 
 ## Substrate gaps (build-phase)
 
@@ -91,7 +91,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 
 ## Eitan's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbqMPAdoHVSr7iQgSagsc"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbqNvpfWtQCU96Sk5Qj9V"})._
 
 ## Provenance
 
