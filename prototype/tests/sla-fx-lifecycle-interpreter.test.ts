@@ -146,10 +146,30 @@ describe("Stage: open (PR-FX-001) — ZAR/USD + EUR dedicated-account", () => {
       receiveMinor: 100_000_000,
     });
     expectInterpreterLegs("FxTradeExecuted", payload, [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
-      { accountId: "ACC-2100-004", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 1_900_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 1_900_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-002",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "USD",
+      },
+      {
+        accountId: "ACC-2100-004",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "USD",
+      },
     ]);
   });
 
@@ -166,10 +186,30 @@ describe("Stage: open (PR-FX-001) — ZAR/USD + EUR dedicated-account", () => {
     const r = runOne("FxTradeExecuted", payload);
     const interp = interpLegs(r);
     expect(interp).toEqual([
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_050_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 2_050_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-013", debitCredit: "debit", amountMinor: 100_000_000, currency: "EUR" },
-      { accountId: "ACC-2100-014", debitCredit: "credit", amountMinor: 100_000_000, currency: "EUR" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 2_050_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 2_050_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-013",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "EUR",
+      },
+      {
+        accountId: "ACC-2100-014",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "EUR",
+      },
     ]);
     const eurLegs = interp.filter((l) => l.currency === "EUR");
     for (const l of eurLegs) expect(["ACC-2100-013", "ACC-2100-014"]).toContain(l.accountId);
@@ -237,20 +277,45 @@ function prinPayload(legKind: "receive" | "deliver", currency: string, netCash: 
 describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR + JPY trading/nostro split", () => {
   it("receive USD", () => {
     expectInterpreterLegs("PrincipalPayment", prinPayload("receive", "USD", 100_000_000), [
-      { accountId: "ACC-1200-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
-      { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+      {
+        accountId: "ACC-1200-002",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "USD",
+      },
+      {
+        accountId: "ACC-2100-002",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "USD",
+      },
     ]);
   });
   it("deliver ZAR", () => {
     expectInterpreterLegs("PrincipalPayment", prinPayload("deliver", "ZAR", -1_900_000_000), [
-      { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
-      { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "debit",
+        amountMinor: 1_900_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-1200-001",
+        debitCredit: "credit",
+        amountMinor: 1_900_000_000,
+        currency: "ZAR",
+      },
     ]);
   });
   it("receive EUR — dedicated trading + dedicated nostro", () => {
     expectInterpreterLegs("PrincipalPayment", prinPayload("receive", "EUR", 90_000_000), [
       { accountId: "ACC-1200-003", debitCredit: "debit", amountMinor: 90_000_000, currency: "EUR" },
-      { accountId: "ACC-2100-013", debitCredit: "credit", amountMinor: 90_000_000, currency: "EUR" },
+      {
+        accountId: "ACC-2100-013",
+        debitCredit: "credit",
+        amountMinor: 90_000_000,
+        currency: "EUR",
+      },
     ]);
   });
   it("deliver JPY — trading→dedicated (ACC-2100-023), nostro→suspense + urgent correction", () => {
@@ -331,8 +396,18 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt + no-GL branches", (
       "FxSettlementFailed",
       event,
       [
-        { accountId: "ACC-2300-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
-        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+        {
+          accountId: "ACC-2300-002",
+          debitCredit: "debit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
+        {
+          accountId: "ACC-2100-002",
+          debitCredit: "credit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
         {
           accountId: "ACC-2300-004",
           debitCredit: "debit",
@@ -365,7 +440,12 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt + no-GL branches", (
     const interp = interpLegs(r);
     expect(interp).toEqual([
       { accountId: SUSPENSE, debitCredit: "debit", amountMinor: 90_000_000, currency: "EUR" },
-      { accountId: "ACC-2100-013", debitCredit: "credit", amountMinor: 90_000_000, currency: "EUR" },
+      {
+        accountId: "ACC-2100-013",
+        debitCredit: "credit",
+        amountMinor: 90_000_000,
+        currency: "EUR",
+      },
       {
         accountId: "ACC-2300-004",
         debitCredit: "debit",
@@ -431,12 +511,42 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal", () => {
       "FxTradeCancelled",
       { tradeId: "T1" },
       [
-        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
-        { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
-        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
-        { accountId: "ACC-2100-004", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
-        { accountId: "ACC-2100-005", debitCredit: "debit", amountMinor: 3_000_000, currency: "ZAR" },
-        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 3_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-003",
+          debitCredit: "debit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-002",
+          debitCredit: "credit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
+        {
+          accountId: "ACC-2100-004",
+          debitCredit: "debit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
+        {
+          accountId: "ACC-2100-005",
+          debitCredit: "debit",
+          amountMinor: 3_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          amountMinor: 3_000_000,
+          currency: "ZAR",
+        },
       ],
       cancelEnrichment(3_000_000),
     );
@@ -446,12 +556,42 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal", () => {
       "FxTradeCancelled",
       { tradeId: "T1" },
       [
-        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
-        { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
-        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
-        { accountId: "ACC-2100-004", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
-        { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_100_000, currency: "ZAR" },
-        { accountId: "ACC-2100-005", debitCredit: "credit", amountMinor: 2_100_000, currency: "ZAR" },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-003",
+          debitCredit: "debit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-002",
+          debitCredit: "credit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
+        {
+          accountId: "ACC-2100-004",
+          debitCredit: "debit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "debit",
+          amountMinor: 2_100_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-005",
+          debitCredit: "credit",
+          amountMinor: 2_100_000,
+          currency: "ZAR",
+        },
       ],
       cancelEnrichment(-2_100_000),
     );
@@ -461,10 +601,30 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal", () => {
       "FxTradeCancelled",
       { tradeId: "T1" },
       [
-        { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
-        { accountId: "ACC-2100-003", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
-        { accountId: "ACC-2100-002", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
-        { accountId: "ACC-2100-004", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
+        {
+          accountId: "ACC-2100-001",
+          debitCredit: "credit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-003",
+          debitCredit: "debit",
+          amountMinor: 1_900_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-2100-002",
+          debitCredit: "credit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
+        {
+          accountId: "ACC-2100-004",
+          debitCredit: "debit",
+          amountMinor: 100_000_000,
+          currency: "USD",
+        },
       ],
       cancelEnrichment(0),
     );
@@ -517,9 +677,7 @@ describe("Memo rules — intentional-no-impact", () => {
     );
   });
   it("TradeReportSubmitted (PR-FX-REGREPORT) — no GL", () => {
-    expect(runOne("TradeReportSubmitted", { tradeId: "T1" }).outcome).toBe(
-      "intentional-no-impact",
-    );
+    expect(runOne("TradeReportSubmitted", { tradeId: "T1" }).outcome).toBe("intentional-no-impact");
   });
 });
 

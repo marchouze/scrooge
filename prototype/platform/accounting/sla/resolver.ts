@@ -31,14 +31,13 @@
 //      is distinct from the currency miss in (2): a rule-shape bug must be
 //      fixed by the rule author, not parked in suspense.
 //
-// Note on byte-for-byte parity (spec §3.2 / §11.3): the corrected resolver
-// reproduces the legacy `receivableAccountFor`/`payableAccountFor` output
-// EXACTLY for the two currencies the legacy engine books correctly — ZAR and
-// USD. For every OTHER currency the legacy engine mis-booked to the USD slot
-// (its `default → USD` fallback); the corrected resolver DELIBERATELY DIVERGES
-// (own account if the COA has one, else suspense + urgent-correction alert).
-// That divergence is the latent default-to-USD defect being fixed, not a
-// regression — parallel-run parity now holds for ZAR/USD only, by design.
+// Note on per-currency account routing (spec §3.2): the resolver books each
+// currency to its OWN dedicated COA account where one exists. ZAR and USD always
+// have dedicated FX trading accounts; the per-currency provisioning programme
+// (D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING) added GBP/EUR/CHF/AUD/JPY. Any
+// currency WITHOUT a dedicated account routes to suspense + a high-severity
+// urgent-correction alert — never a silent `default → USD` fallback (the latent
+// defect this resolver was designed to prevent).
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05);

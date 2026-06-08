@@ -125,8 +125,18 @@ describe("BOND booking (PR-BOND-001) — banking vs trading, buy/sell", () => {
       "BondTradeExecuted",
       p,
       [
-        { accountId: "ACC-3100-001", debitCredit: "debit", amountMinor: 9_800_000, currency: "ZAR" },
-        { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 9_800_000, currency: "ZAR" },
+        {
+          accountId: "ACC-3100-001",
+          debitCredit: "debit",
+          amountMinor: 9_800_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "credit",
+          amountMinor: 9_800_000,
+          currency: "ZAR",
+        },
       ],
       bookingEnrichment(p),
     );
@@ -137,8 +147,18 @@ describe("BOND booking (PR-BOND-001) — banking vs trading, buy/sell", () => {
       "BondTradeExecuted",
       p,
       [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 10_125_000, currency: "ZAR" },
-        { accountId: "ACC-3100-001", debitCredit: "credit", amountMinor: 10_125_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 10_125_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-3100-001",
+          debitCredit: "credit",
+          amountMinor: 10_125_000,
+          currency: "ZAR",
+        },
       ],
       bookingEnrichment(p),
     );
@@ -154,8 +174,18 @@ describe("BOND booking (PR-BOND-001) — banking vs trading, buy/sell", () => {
       "BondTradeExecuted",
       p,
       [
-        { accountId: "ACC-3100-002", debitCredit: "debit", amountMinor: 4_970_000, currency: "ZAR" },
-        { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 4_970_000, currency: "ZAR" },
+        {
+          accountId: "ACC-3100-002",
+          debitCredit: "debit",
+          amountMinor: 4_970_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "credit",
+          amountMinor: 4_970_000,
+          currency: "ZAR",
+        },
       ],
       bookingEnrichment(p),
     );
@@ -171,8 +201,18 @@ describe("BOND booking (PR-BOND-001) — banking vs trading, buy/sell", () => {
       "BondTradeExecuted",
       p,
       [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 4_970_000, currency: "ZAR" },
-        { accountId: "ACC-3100-002", debitCredit: "credit", amountMinor: 4_970_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 4_970_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-3100-002",
+          debitCredit: "credit",
+          amountMinor: 4_970_000,
+          currency: "ZAR",
+        },
       ],
       bookingEnrichment(p),
     );
@@ -256,9 +296,19 @@ describe("BOND maturity (PR-BOND-MAT) — portfolio via enrichment", () => {
       "BondMatured",
       matured(425_000),
       [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 10_425_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 10_425_000,
+          currency: "ZAR",
+        },
         { accountId: "ACC-3100-003", debitCredit: "credit", amountMinor: 425_000, currency: "ZAR" },
-        { accountId: "ACC-3100-001", debitCredit: "credit", amountMinor: 10_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-3100-001",
+          debitCredit: "credit",
+          amountMinor: 10_000_000,
+          currency: "ZAR",
+        },
       ],
       { portfolio: "banking-book" },
     );
@@ -268,9 +318,19 @@ describe("BOND maturity (PR-BOND-MAT) — portfolio via enrichment", () => {
       "BondMatured",
       matured(425_000),
       [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 10_425_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 10_425_000,
+          currency: "ZAR",
+        },
         { accountId: "ACC-3100-003", debitCredit: "credit", amountMinor: 425_000, currency: "ZAR" },
-        { accountId: "ACC-3100-002", debitCredit: "credit", amountMinor: 10_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-3100-002",
+          debitCredit: "credit",
+          amountMinor: 10_000_000,
+          currency: "ZAR",
+        },
       ],
       { portfolio: "trading-book" },
     );
@@ -280,8 +340,18 @@ describe("BOND maturity (PR-BOND-MAT) — portfolio via enrichment", () => {
       "BondMatured",
       matured(0),
       [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 10_000_000, currency: "ZAR" },
-        { accountId: "ACC-3100-001", debitCredit: "credit", amountMinor: 10_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 10_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-3100-001",
+          debitCredit: "credit",
+          amountMinor: 10_000_000,
+          currency: "ZAR",
+        },
       ],
       { portfolio: "banking-book" },
     );
@@ -311,14 +381,24 @@ describe("BOND sale (PR-BOND-SALE) — portfolio via enrichment", () => {
         "BondSold",
         sold(9_900_000, 9_800_000, 100_000),
         [
-          { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 9_900_000, currency: "ZAR" },
+          {
+            accountId: "ACC-1200-001",
+            debitCredit: "debit",
+            amountMinor: 9_900_000,
+            currency: "ZAR",
+          },
           {
             accountId: ASSET_BY_PORTFOLIO[portfolio],
             debitCredit: "credit",
             amountMinor: 9_800_000,
             currency: "ZAR",
           },
-          { accountId: "ACC-3100-006", debitCredit: "credit", amountMinor: 100_000, currency: "ZAR" },
+          {
+            accountId: "ACC-3100-006",
+            debitCredit: "credit",
+            amountMinor: 100_000,
+            currency: "ZAR",
+          },
         ],
         { portfolio },
       );
@@ -328,8 +408,18 @@ describe("BOND sale (PR-BOND-SALE) — portfolio via enrichment", () => {
         "BondSold",
         sold(9_700_000, 9_800_000, -100_000),
         [
-          { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 9_700_000, currency: "ZAR" },
-          { accountId: "ACC-3100-006", debitCredit: "debit", amountMinor: 100_000, currency: "ZAR" },
+          {
+            accountId: "ACC-1200-001",
+            debitCredit: "debit",
+            amountMinor: 9_700_000,
+            currency: "ZAR",
+          },
+          {
+            accountId: "ACC-3100-006",
+            debitCredit: "debit",
+            amountMinor: 100_000,
+            currency: "ZAR",
+          },
           {
             accountId: ASSET_BY_PORTFOLIO[portfolio],
             debitCredit: "credit",
@@ -345,7 +435,12 @@ describe("BOND sale (PR-BOND-SALE) — portfolio via enrichment", () => {
         "BondSold",
         sold(9_800_000, 9_800_000, 0),
         [
-          { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 9_800_000, currency: "ZAR" },
+          {
+            accountId: "ACC-1200-001",
+            debitCredit: "debit",
+            amountMinor: 9_800_000,
+            currency: "ZAR",
+          },
           {
             accountId: ASSET_BY_PORTFOLIO[portfolio],
             debitCredit: "credit",
@@ -381,7 +476,12 @@ describe("EQUITY booking (PR-EQ-001)", () => {
     };
     expectInterpreterLegs("EquityTradeExecuted", p, [
       { accountId: "ACC-3200-001", debitCredit: "debit", amountMinor: 18_500_000, currency: "ZAR" },
-      { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 18_500_000, currency: "ZAR" },
+      {
+        accountId: "ACC-1200-001",
+        debitCredit: "credit",
+        amountMinor: 18_500_000,
+        currency: "ZAR",
+      },
     ]);
   });
 });
@@ -476,27 +576,47 @@ describe("EQUITY sale (PR-EQ-004) — FVTPL P&L vs FVOCI OCI split", () => {
   it("fvtpl gain", () => {
     expectInterpreterLegs("EquitySold", sold("fvtpl", 19_000_000, 18_500_000, 500_000), [
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 19_000_000, currency: "ZAR" },
-      { accountId: "ACC-3200-001", debitCredit: "credit", amountMinor: 18_500_000, currency: "ZAR" },
+      {
+        accountId: "ACC-3200-001",
+        debitCredit: "credit",
+        amountMinor: 18_500_000,
+        currency: "ZAR",
+      },
       { accountId: "ACC-3200-003", debitCredit: "credit", amountMinor: 500_000, currency: "ZAR" },
     ]);
   });
   it("fvtpl loss", () => {
     expectInterpreterLegs("EquitySold", sold("fvtpl", 18_100_000, 18_500_000, -400_000), [
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 18_100_000, currency: "ZAR" },
-      { accountId: "ACC-3200-001", debitCredit: "credit", amountMinor: 18_500_000, currency: "ZAR" },
+      {
+        accountId: "ACC-3200-001",
+        debitCredit: "credit",
+        amountMinor: 18_500_000,
+        currency: "ZAR",
+      },
       { accountId: "ACC-3200-003", debitCredit: "debit", amountMinor: 400_000, currency: "ZAR" },
     ]);
   });
   it("fvtpl break-even", () => {
     expectInterpreterLegs("EquitySold", sold("fvtpl", 18_500_000, 18_500_000, 0), [
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 18_500_000, currency: "ZAR" },
-      { accountId: "ACC-3200-001", debitCredit: "credit", amountMinor: 18_500_000, currency: "ZAR" },
+      {
+        accountId: "ACC-3200-001",
+        debitCredit: "credit",
+        amountMinor: 18_500_000,
+        currency: "ZAR",
+      },
     ]);
   });
   it("fvoci gain — OCI parked + transferred within equity (no P&L recycle)", () => {
     expectInterpreterLegs("EquitySold", sold("fvoci", 19_000_000, 18_500_000, 500_000), [
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 19_000_000, currency: "ZAR" },
-      { accountId: "ACC-3200-002", debitCredit: "credit", amountMinor: 18_500_000, currency: "ZAR" },
+      {
+        accountId: "ACC-3200-002",
+        debitCredit: "credit",
+        amountMinor: 18_500_000,
+        currency: "ZAR",
+      },
       { accountId: "ACC-3200-004", debitCredit: "credit", amountMinor: 500_000, currency: "ZAR" },
       { accountId: "ACC-3200-004", debitCredit: "debit", amountMinor: 500_000, currency: "ZAR" },
       { accountId: "ACC-5000-002", debitCredit: "credit", amountMinor: 500_000, currency: "ZAR" },
@@ -505,7 +625,12 @@ describe("EQUITY sale (PR-EQ-004) — FVTPL P&L vs FVOCI OCI split", () => {
   it("fvoci loss — OCI parked + transferred within equity (no P&L recycle)", () => {
     expectInterpreterLegs("EquitySold", sold("fvoci", 18_100_000, 18_500_000, -400_000), [
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 18_100_000, currency: "ZAR" },
-      { accountId: "ACC-3200-002", debitCredit: "credit", amountMinor: 18_500_000, currency: "ZAR" },
+      {
+        accountId: "ACC-3200-002",
+        debitCredit: "credit",
+        amountMinor: 18_500_000,
+        currency: "ZAR",
+      },
       { accountId: "ACC-3200-004", debitCredit: "debit", amountMinor: 400_000, currency: "ZAR" },
       { accountId: "ACC-5000-002", debitCredit: "debit", amountMinor: 400_000, currency: "ZAR" },
       { accountId: "ACC-3200-004", debitCredit: "credit", amountMinor: 400_000, currency: "ZAR" },
@@ -514,7 +639,12 @@ describe("EQUITY sale (PR-EQ-004) — FVTPL P&L vs FVOCI OCI split", () => {
   it("fvoci break-even", () => {
     expectInterpreterLegs("EquitySold", sold("fvoci", 18_500_000, 18_500_000, 0), [
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 18_500_000, currency: "ZAR" },
-      { accountId: "ACC-3200-002", debitCredit: "credit", amountMinor: 18_500_000, currency: "ZAR" },
+      {
+        accountId: "ACC-3200-002",
+        debitCredit: "credit",
+        amountMinor: 18_500_000,
+        currency: "ZAR",
+      },
     ]);
   });
 });

@@ -118,7 +118,12 @@ describe("MMD recognition (PR-MMD-001) — per-category liability account", () =
         instrumentRef: "MMD-ZAR-001",
       };
       expectInterpreterLegs("DepositTaken", payload, [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 7_500_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 7_500_000,
+          currency: "ZAR",
+        },
         {
           accountId: MMD_LIABILITY_BY_CATEGORY[category],
           debitCredit: "credit",
@@ -184,7 +189,12 @@ describe("MMD maturity (PR-MMD-MAT) — category via enrichment", () => {
       "DepositMatured",
       payload,
       [
-        { accountId: "ACC-6100-004", debitCredit: "debit", amountMinor: 7_500_000, currency: "ZAR" },
+        {
+          accountId: "ACC-6100-004",
+          debitCredit: "debit",
+          amountMinor: 7_500_000,
+          currency: "ZAR",
+        },
         {
           accountId: "ACC-1200-001",
           debitCredit: "credit",
@@ -204,7 +214,12 @@ describe("MMD early withdrawal (PR-MMD-CANCEL)", () => {
       "DepositWithdrawnEarly",
       payload,
       [
-        { accountId: "ACC-6100-001", debitCredit: "debit", amountMinor: 7_500_000, currency: "ZAR" },
+        {
+          accountId: "ACC-6100-001",
+          debitCredit: "debit",
+          amountMinor: 7_500_000,
+          currency: "ZAR",
+        },
         {
           accountId: "ACC-1200-001",
           debitCredit: "credit",
@@ -222,7 +237,12 @@ describe("MMD early withdrawal (PR-MMD-CANCEL)", () => {
       "DepositWithdrawnEarly",
       payload,
       [
-        { accountId: "ACC-6100-003", debitCredit: "debit", amountMinor: 4_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-6100-003",
+          debitCredit: "debit",
+          amountMinor: 4_000_000,
+          currency: "ZAR",
+        },
         {
           accountId: "ACC-1200-001",
           debitCredit: "credit",
@@ -248,10 +268,25 @@ describe("Funding line (PR-FUNDING-001 / PR-FUNDING-END)", () => {
   it("FundingLineDrawn", () => {
     expectInterpreterLegs(
       "FundingLineDrawn",
-      { fundingLineId: "F1", drawnAmountZar: 25_000_000, maturityDate: "2026-12-01", rateDecimal: 0.085 },
+      {
+        fundingLineId: "F1",
+        drawnAmountZar: 25_000_000,
+        maturityDate: "2026-12-01",
+        rateDecimal: 0.085,
+      },
       [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 25_000_000, currency: "ZAR" },
-        { accountId: "ACC-6100-004", debitCredit: "credit", amountMinor: 25_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 25_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-6100-004",
+          debitCredit: "credit",
+          amountMinor: 25_000_000,
+          currency: "ZAR",
+        },
       ],
     );
   });
@@ -260,8 +295,18 @@ describe("Funding line (PR-FUNDING-001 / PR-FUNDING-END)", () => {
       "FundingLineRepaid",
       { fundingLineId: "F1", repaidAmountZar: 25_000_000 },
       [
-        { accountId: "ACC-6100-004", debitCredit: "debit", amountMinor: 25_000_000, currency: "ZAR" },
-        { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 25_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-6100-004",
+          debitCredit: "debit",
+          amountMinor: 25_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "credit",
+          amountMinor: 25_000_000,
+          currency: "ZAR",
+        },
       ],
     );
   });
@@ -297,7 +342,12 @@ describe("IBL recognition (PR-IBL-001) — per-placement-type asset account", ()
           amountMinor: 9_000_000,
           currency: "ZAR",
         },
-        { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 9_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "credit",
+          amountMinor: 9_000_000,
+          currency: "ZAR",
+        },
       ]);
     });
   }
@@ -345,7 +395,12 @@ describe("IBL maturity (PR-IBL-MAT) — placement type via enrichment", () => {
             amountMinor: 9_000_000,
             currency: "ZAR",
           },
-          { accountId: "ACC-7100-003", debitCredit: "credit", amountMinor: 61_200, currency: "ZAR" },
+          {
+            accountId: "ACC-7100-003",
+            debitCredit: "credit",
+            amountMinor: 61_200,
+            currency: "ZAR",
+          },
         ],
         { placementType },
       );
@@ -357,8 +412,18 @@ describe("IBL maturity (PR-IBL-MAT) — placement type via enrichment", () => {
       "InterbankLoanMatured",
       payload,
       [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 9_000_000, currency: "ZAR" },
-        { accountId: "ACC-7100-002", debitCredit: "credit", amountMinor: 9_000_000, currency: "ZAR" },
+        {
+          accountId: "ACC-1200-001",
+          debitCredit: "debit",
+          amountMinor: 9_000_000,
+          currency: "ZAR",
+        },
+        {
+          accountId: "ACC-7100-002",
+          debitCredit: "credit",
+          amountMinor: 9_000_000,
+          currency: "ZAR",
+        },
       ],
       { placementType: "fixed-term" },
     );
@@ -373,10 +438,14 @@ describe("IBL recall (PR-IBL-RECALL)", () => {
   });
   it("with enrichment — principal returned (Dr nostro / Cr due-from-banks), balanced", () => {
     const interp = interpLegs(
-      runOne("InterbankLoanRecalledEarly", { placementId: "P1" }, {
-        placementType: "fixed-term",
-        openingPrincipalZar: 9_000_000,
-      }),
+      runOne(
+        "InterbankLoanRecalledEarly",
+        { placementId: "P1" },
+        {
+          placementType: "fixed-term",
+          openingPrincipalZar: 9_000_000,
+        },
+      ),
     );
     expect(interp).toEqual([
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 9_000_000, currency: "ZAR" },
@@ -410,7 +479,12 @@ describe("Repo (PR-REPO-*)", () => {
   it("RepoTradeOpened", () => {
     expectInterpreterLegs("RepoTradeOpened", opened, [
       { accountId: "ACC-5100-001", debitCredit: "debit", amountMinor: 12_000_000, currency: "ZAR" },
-      { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 12_000_000, currency: "ZAR" },
+      {
+        accountId: "ACC-1200-001",
+        debitCredit: "credit",
+        amountMinor: 12_000_000,
+        currency: "ZAR",
+      },
     ]);
   });
 
@@ -441,14 +515,15 @@ describe("Repo (PR-REPO-*)", () => {
   });
 
   it("RepoEndLegSettled", () => {
-    expectInterpreterLegs(
-      "RepoEndLegSettled",
-      { tradeId: "R1", repurchasePriceZar: 12_098_400 },
-      [
-        { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 12_098_400, currency: "ZAR" },
-        { accountId: "ACC-5100-001", debitCredit: "credit", amountMinor: 12_098_400, currency: "ZAR" },
-      ],
-    );
+    expectInterpreterLegs("RepoEndLegSettled", { tradeId: "R1", repurchasePriceZar: 12_098_400 }, [
+      { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 12_098_400, currency: "ZAR" },
+      {
+        accountId: "ACC-5100-001",
+        debitCredit: "credit",
+        amountMinor: 12_098_400,
+        currency: "ZAR",
+      },
+    ]);
   });
 
   it("RepoTradeTerminatedEarly no enrichment — no posting (intentional-no-impact)", () => {
@@ -458,13 +533,22 @@ describe("Repo (PR-REPO-*)", () => {
   });
   it("RepoTradeTerminatedEarly with enrichment — reversal (Dr nostro / Cr repo asset), balanced", () => {
     const interp = interpLegs(
-      runOne("RepoTradeTerminatedEarly", { tradeId: "R1", reason: "counterparty unwind" }, {
-        unwindCashZar: 12_000_000,
-      }),
+      runOne(
+        "RepoTradeTerminatedEarly",
+        { tradeId: "R1", reason: "counterparty unwind" },
+        {
+          unwindCashZar: 12_000_000,
+        },
+      ),
     );
     expect(interp).toEqual([
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 12_000_000, currency: "ZAR" },
-      { accountId: "ACC-5100-001", debitCredit: "credit", amountMinor: 12_000_000, currency: "ZAR" },
+      {
+        accountId: "ACC-5100-001",
+        debitCredit: "credit",
+        amountMinor: 12_000_000,
+        currency: "ZAR",
+      },
     ]);
     assertBalances(interp);
   });

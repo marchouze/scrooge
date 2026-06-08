@@ -59,10 +59,30 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     receiveMinor: 100_000_000,
     rate: 19.0,
     expected: [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
-      { accountId: "ACC-2100-004", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 1_900_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 1_900_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-002",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "USD",
+      },
+      {
+        accountId: "ACC-2100-004",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "USD",
+      },
     ],
   },
   {
@@ -77,9 +97,24 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     rate: 18.9,
     expected: [
       { accountId: "ACC-2100-002", debitCredit: "debit", amountMinor: 50_000_000, currency: "USD" },
-      { accountId: "ACC-2100-004", debitCredit: "credit", amountMinor: 50_000_000, currency: "USD" },
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 945_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 945_000_000, currency: "ZAR" },
+      {
+        accountId: "ACC-2100-004",
+        debitCredit: "credit",
+        amountMinor: 50_000_000,
+        currency: "USD",
+      },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 945_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 945_000_000,
+        currency: "ZAR",
+      },
     ],
   },
   {
@@ -93,10 +128,30 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     receiveMinor: 100_000_000,
     rate: 20.5,
     expected: [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_050_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 2_050_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-013", debitCredit: "debit", amountMinor: 100_000_000, currency: "EUR" },
-      { accountId: "ACC-2100-014", debitCredit: "credit", amountMinor: 100_000_000, currency: "EUR" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 2_050_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 2_050_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-013",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "EUR",
+      },
+      {
+        accountId: "ACC-2100-014",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "EUR",
+      },
     ],
   },
   {
@@ -110,10 +165,30 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     receiveMinor: 100_000_000,
     rate: 24.0,
     expected: [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_400_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 2_400_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-010", debitCredit: "debit", amountMinor: 100_000_000, currency: "GBP" },
-      { accountId: "ACC-2100-011", debitCredit: "credit", amountMinor: 100_000_000, currency: "GBP" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 2_400_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 2_400_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-010",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "GBP",
+      },
+      {
+        accountId: "ACC-2100-011",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "GBP",
+      },
     ],
   },
   {
@@ -127,10 +202,30 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     receiveMinor: 100_000_000,
     rate: 21.0,
     expected: [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 2_100_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 2_100_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-016", debitCredit: "debit", amountMinor: 100_000_000, currency: "CHF" },
-      { accountId: "ACC-2100-017", debitCredit: "credit", amountMinor: 100_000_000, currency: "CHF" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 2_100_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 2_100_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-016",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "CHF",
+      },
+      {
+        accountId: "ACC-2100-017",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "CHF",
+      },
     ],
   },
   {
@@ -144,10 +239,30 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     receiveMinor: 100_000_000,
     rate: 12.5,
     expected: [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 1_250_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 1_250_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-019", debitCredit: "debit", amountMinor: 100_000_000, currency: "AUD" },
-      { accountId: "ACC-2100-020", debitCredit: "credit", amountMinor: 100_000_000, currency: "AUD" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 1_250_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 1_250_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-019",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "AUD",
+      },
+      {
+        accountId: "ACC-2100-020",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "AUD",
+      },
     ],
   },
   {
@@ -161,8 +276,18 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     receiveMinor: 1_000_000, // JPY minor unit = 0; amountMinor == major units
     rate: 0.124,
     expected: [
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 1_240_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 1_240_000_000, currency: "ZAR" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 1_240_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 1_240_000_000,
+        currency: "ZAR",
+      },
       { accountId: "ACC-2100-022", debitCredit: "debit", amountMinor: 1_000_000, currency: "JPY" },
       { accountId: "ACC-2100-023", debitCredit: "credit", amountMinor: 1_000_000, currency: "JPY" },
     ],
@@ -178,10 +303,30 @@ const PARITY_FIXTURES: ReadonlyArray<FixtureSpec & { expected: NormalLeg[] }> = 
     receiveMinor: 100_000_000,
     rate: 1.17,
     expected: [
-      { accountId: "ACC-2100-013", debitCredit: "debit", amountMinor: 117_000_000, currency: "EUR" },
-      { accountId: "ACC-2100-014", debitCredit: "credit", amountMinor: 117_000_000, currency: "EUR" },
-      { accountId: "ACC-2100-010", debitCredit: "debit", amountMinor: 100_000_000, currency: "GBP" },
-      { accountId: "ACC-2100-011", debitCredit: "credit", amountMinor: 100_000_000, currency: "GBP" },
+      {
+        accountId: "ACC-2100-013",
+        debitCredit: "debit",
+        amountMinor: 117_000_000,
+        currency: "EUR",
+      },
+      {
+        accountId: "ACC-2100-014",
+        debitCredit: "credit",
+        amountMinor: 117_000_000,
+        currency: "EUR",
+      },
+      {
+        accountId: "ACC-2100-010",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "GBP",
+      },
+      {
+        accountId: "ACC-2100-011",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "GBP",
+      },
     ],
   },
 ];
@@ -306,10 +451,30 @@ describe("PR-FX-001 — still-unprovisioned currency routes to suspense + urgent
 
     // 1. Exact legs: ZAR books normally; SGD (unprovisioned) routes to suspense.
     expect(interp).toEqual([
-      { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 1_400_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 1_400_000_000, currency: "ZAR" },
-      { accountId: "ACC-2100-007", debitCredit: "debit", amountMinor: 100_000_000, currency: "SGD" },
-      { accountId: "ACC-2100-007", debitCredit: "credit", amountMinor: 100_000_000, currency: "SGD" },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "debit",
+        amountMinor: 1_400_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-003",
+        debitCredit: "credit",
+        amountMinor: 1_400_000_000,
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-007",
+        debitCredit: "debit",
+        amountMinor: 100_000_000,
+        currency: "SGD",
+      },
+      {
+        accountId: "ACC-2100-007",
+        debitCredit: "credit",
+        amountMinor: 100_000_000,
+        currency: "SGD",
+      },
     ]);
 
     // 2. The unprovisioned (non-ZAR/USD) leg lands on suspense, never the USD slot.
