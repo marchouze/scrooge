@@ -47,6 +47,11 @@
     .od-para-text { font:var(--text-body); line-height:1.75; word-break:break-word; }
     .od-sub { margin-top:var(--space-2); }
     .od-para-text > .od-sub:first-child { margin-top:0; }
+    .od-fn-ref { font-size:0.7em; color:var(--color-accent); font-weight:600; padding:0 1px; }
+    .od-footnotes { grid-column:2; list-style:none; margin:var(--space-2) 0 0; padding:var(--space-2) 0 0; border-top:1px dashed var(--color-border); display:flex; flex-direction:column; gap:var(--space-2); }
+    .od-footnote { display:grid; grid-template-columns:1.6em 1fr; gap:var(--space-2); align-items:start; font-size:0.85em; color:var(--color-text-secondary); line-height:1.6; }
+    .od-fn-marker { font-family:var(--font-mono); font-weight:600; color:var(--color-accent); }
+    .od-fn-text { word-break:break-word; }
   </style>
 </head>
 <body>
@@ -104,6 +109,23 @@
           .join("");
       }
 
+      // The PDF extraction flattened footnote superscripts into the body text
+      // (e.g. "1%²⁵" -> "1%25"). Given the known footnote markers for a
+      // paragraph, re-superscript the marker digits where they sit glued to a
+      // preceding non-digit (…%25, …)6, …M.5) so the inline reference is visible
+      // and distinct from ordinary numbers. `html` is already escaped.
+      function superscriptMarkers(html, markers) {
+        if (!markers || !markers.length) return html;
+        let out = html;
+        for (const m of markers) {
+          if (!/^\d{1,3}$/.test(m)) continue;
+          // glued to a preceding non-space, non-digit char (the referenced word/symbol)
+          const re = new RegExp(`([^\\s\\d>])(${m})(?![\\d])`);
+          out = out.replace(re, (_full, pre, num) => `${pre}<sup class="od-fn-ref">${num}</sup>`);
+        }
+        return out;
+      }
+
       function render(d) {
         const ref = d.seed || {};
         const proj = d.projection || {};
@@ -152,11 +174,19 @@
             <h3>Text</h3>
             <ul class="od-hg-list">${d.headingGroups.map(g => {
               const range = g.fromPara === g.toPara ? g.fromPara : `${g.fromPara}–${g.toPara}`;
-              const paras = g.paragraphs.map(p => `
+              const paras = g.paragraphs.map(p => {
+                const markers = (p.footnotes || []).map(f => f.marker);
+                const footHtml = (p.footnotes && p.footnotes.length) ? `
+                  <ul class="od-footnotes">${p.footnotes.map(f =>
+                    `<li class="od-footnote"><sup class="od-fn-marker">${SC.esc(f.marker)}</sup><span class="od-fn-text">${SC.esc(f.text)}</span></li>`
+                  ).join('')}</ul>` : '';
+                return `
                 <li class="od-para-item">
                   <span class="od-para-num">${SC.esc(p.paragraph)}</span>
-                  <div class="od-para-text">${formatProvisionText(SC.esc(p.text))}</div>
-                </li>`).join('');
+                  <div class="od-para-text">${superscriptMarkers(formatProvisionText(SC.esc(p.text)), markers)}</div>
+                  ${footHtml}
+                </li>`;
+              }).join('');
               return `<li>
                 ${g.heading ? `<div class="od-hg-head"><h4 class="od-hg-title">${SC.esc(g.heading)}</h4><span class="od-hg-range">${SC.esc(range)}</span></div>` : ''}
                 <ul class="od-para-list">${paras}</ul>
