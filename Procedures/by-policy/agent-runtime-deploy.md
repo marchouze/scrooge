@@ -3,6 +3,7 @@ id: PROC-OPS-AR-01
 policy-parent: -  — release approval & deployment gate
 last-reviewed: 2026-05-07
 status: POPULATED
+system-capability: "@platform/agent-runtime · @platform/scheduler · @platform/event-trigger · @platform/agent-identity · @platform/dispatch"
 ---
 # Procedure — Agent-runtime deploy
 

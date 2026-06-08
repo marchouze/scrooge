@@ -84,6 +84,13 @@ export interface ObligationChain {
   policies: GraphNode[];
   /** Procedures governed by any of the policies above (via GOVERNS edges). */
   procedures: GraphNode[];
+  /**
+   * Capabilities (code) realising any of the procedures above (to-side of the
+   * Procedure → Capability REALISES edge). This is the Principle-2 lower-half
+   * hop: the chain now reaches code, not just procedure text.
+   * D-PRINCIPLE-2-CAPABILITY-LAYER.
+   */
+  capabilities: GraphNode[];
   /** RiskCategories addressed by this obligation (to-side of ADDRESSES edge). */
   riskCategories: GraphNode[];
   /** Activities this obligation applies to (to-side of APPLIES_TO_ACTIVITY edge). */
@@ -143,6 +150,23 @@ export function traceObligationChain(obligationId: string, asOf?: string): Oblig
     procedures.push(...procs);
   }
 
+  // Capabilities (code) realising any of the procedures above — the Principle-2
+  // lower-half hop: Procedure → Capability via REALISES.
+  const capabilitiesMap = new Map<string, GraphNode>();
+  for (const procedure of procedures) {
+    const caps = (
+      db
+        .prepare(
+          `SELECT n.* FROM graph_nodes n
+           JOIN graph_edges e ON e.to_id = n.id
+           WHERE e.from_id = ? AND e.edge_type = 'REALISES' ${temporalFilter}`,
+        )
+        .all(procedure.id) as NodeRow[]
+    ).map(rowToNode);
+    for (const cap of caps) capabilitiesMap.set(cap.id, cap);
+  }
+  const capabilities = [...capabilitiesMap.values()];
+
   // RiskCategories addressed by this obligation
   const riskCategories = (
     db
@@ -165,7 +189,41 @@ export function traceObligationChain(obligationId: string, asOf?: string): Oblig
       .all(nodeId) as NodeRow[]
   ).map(rowToNode);
 
-  return { obligation, provisions, policies, procedures, riskCategories, activities };
+  return {
+    obligation,
+    provisions,
+    policies,
+    procedures,
+    capabilities,
+    riskCategories,
+    activities,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// findOrphanCapabilities
+// ---------------------------------------------------------------------------
+
+/**
+ * Return all Capability nodes that have NO incoming REALISES edge — i.e. a
+ * capability not realising any procedure. These are Principle-2 lower-half
+ * orphans (Rule 3: "no orphan capabilities"). recon:orphan-capability FAILs on
+ * any such node not on the published infrastructure-exemption allowlist.
+ */
+export function findOrphanCapabilities(): GraphNode[] {
+  const db = getDb();
+  return (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         WHERE n.node_type = 'Capability'
+           AND NOT EXISTS (
+             SELECT 1 FROM graph_edges e
+             WHERE e.to_id = n.id AND e.edge_type = 'REALISES'
+           )`,
+      )
+      .all() as NodeRow[]
+  ).map(rowToNode);
 }
 
 // ---------------------------------------------------------------------------

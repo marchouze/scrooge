@@ -37,6 +37,8 @@ const GRAPH_NODE_TYPES = [
   "Policy",
   "Procedure",
   "ProductInstrument",
+  // Capability layer (Principle 2 lower-half — D-PRINCIPLE-2-CAPABILITY-LAYER).
+  "Capability",
 ] as const;
 
 const GRAPH_EDGE_TYPES = [
@@ -71,6 +73,9 @@ const GRAPH_EDGE_TYPES = [
   "IMPLEMENTS",
   "CLOSES",
   "GOVERNS",
+  // Capability layer (D-PRINCIPLE-2-CAPABILITY-LAYER): Procedure → Capability.
+  "REALISES",
+  "REALISED_BY",
   // Two-plane bridge (D-REGULATORY-ARCHITECTURE-TWO-PLANE)
   "DERIVES_FROM",
 ] as const;
@@ -337,6 +342,7 @@ NODE TYPES (16 total):
   EffectivePeriod   — A time window during which rules apply
   Policy            — A bank-internal policy that implements an Obligation
   Procedure         — A bank-internal procedure that operationalises a Policy
+  Capability        — A system capability (code module) that realises a Procedure
 
 EDGE TYPES (23 total — format: FROM → TO):
   STRUCTURAL:
@@ -374,6 +380,8 @@ EDGE TYPES (23 total — format: FROM → TO):
     IMPLEMENTS         Policy → Obligation       (policy implements obligation)
     CLOSES             Control → Obligation      (control closes an obligation gap)
     GOVERNS            Policy → Activity         (policy governs an activity)
+    REALISES           Procedure → Capability    (procedure realised by a code capability)
+    REALISED_BY        Capability → Procedure    (inverse of REALISES)
 
 ID NAMING CONVENTIONS:
   Provision:  "{instrumentId}:s{section}"          e.g. "FAIS-ACT-37-2002:s7"
@@ -384,6 +392,7 @@ ID NAMING CONVENTIONS:
   Regulator:  "REG-{slug}"                          e.g. "REG-fsca"
   Policy:     same as policy code                   e.g. "POL-FAIS-001"
   Procedure:  same as procedure code                e.g. "PROC-FAIS-001"
+  Capability: "CAP-{canonical-path-slug}"           e.g. "CAP-platform/markets/cdm/fx"
 
 CONFIDENCE SCORE RUBRIC (for edges):
   1.0   — Explicitly stated in the provision text

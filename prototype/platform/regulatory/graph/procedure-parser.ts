@@ -13,6 +13,12 @@ export interface ProcedureFrontmatter {
   owner?: string | undefined;
   /** Links to a policy-id — sourced from "Source policy" section or frontmatter. */
   policyCited?: string | undefined;
+  /**
+   * Raw `system-capability:` frontmatter value (the "@platform/..." reference
+   * list, "·"/"+"-separated). Undefined when the procedure has no binding —
+   * a Principle-2 lower-half gap. Parsed by capability-parser.ts.
+   */
+  systemCapability?: string | undefined;
 }
 
 /**
@@ -46,6 +52,8 @@ export function parseProcedureFile(filePath: string): ProcedureFrontmatter | nul
       if (ownerVal) r.owner = ownerVal;
       const policyVal = fm["policy-cited"] ?? fm.policyCited;
       if (policyVal) r.policyCited = policyVal;
+      const capVal = fm["system-capability"] ?? fm.systemCapability;
+      if (capVal) r.systemCapability = capVal;
       return r;
     }
   }
@@ -65,9 +73,27 @@ function extractFrontmatter(content: string): Record<string, string> | null {
   if (end < 0) return null;
   const block = stripped.slice(4, end);
   const result: Record<string, string> = {};
-  for (const line of block.split("\n")) {
+  const blockLines = block.split("\n");
+  for (let i = 0; i < blockLines.length; i++) {
+    const line = blockLines[i] as string;
     const m = line.match(/^([A-Za-z0-9_-]+):\s+(.+)$/);
-    if (m) result[m[1] as string] = (m[2] as string).replace(/^["']|["']$/g, "").trim();
+    if (!m) continue;
+    const key = m[1] as string;
+    let val = (m[2] as string).trim();
+    // YAML block scalar (folded ">" or literal "|"): the value is on the
+    // following more-indented lines. Fold them into a single space-joined
+    // string so downstream parsers see the whole capability list.
+    if (val === ">" || val === "|" || val === ">-" || val === "|-") {
+      const folded: string[] = [];
+      for (let j = i + 1; j < blockLines.length; j++) {
+        const cont = blockLines[j] as string;
+        if (!/^\s+\S/.test(cont)) break; // dedent → end of block scalar
+        folded.push(cont.trim());
+        i = j;
+      }
+      val = folded.join(" ").trim();
+    }
+    result[key] = val.replace(/^["']|["']$/g, "").trim();
   }
   return result;
 }
@@ -88,9 +114,18 @@ function parseProcedureBody(content: string, filePath: string): ProcedureFrontma
   let status = "UNKNOWN";
   let owner: string | undefined;
   let policyCited: string | undefined;
+  let systemCapability: string | undefined;
   let inSourcePolicy = false;
 
   for (const line of lines) {
+    // system-capability frontmatter / inline field (e.g. `system-capability: "@platform/..."`)
+    if (!systemCapability) {
+      const capMatch = line.match(/^\s*system-capability:\s*(.+)$/i);
+      if (capMatch) {
+        systemCapability = (capMatch[1] as string).trim().replace(/^["']|["']$/g, "");
+      }
+    }
+
     // Procedure ID
     const idMatch = line.match(/\*\*Procedure\s+ID[:\*]+\s*([A-Z][A-Z0-9-]+)/i);
     if (idMatch) {
@@ -146,6 +181,7 @@ function parseProcedureBody(content: string, filePath: string): ProcedureFrontma
   const result: ProcedureFrontmatter = { procedureId, title, status };
   if (owner) result.owner = owner;
   if (policyCited) result.policyCited = policyCited;
+  if (systemCapability) result.systemCapability = systemCapability;
   return result;
 }
 

@@ -26,7 +26,10 @@ export type GraphNodeType =
   | "Policy"
   | "Procedure"
   | "ProductInstrument"
-  | "RegulatoryTheme";
+  | "RegulatoryTheme"
+  // Capability layer (Principle 2 lower-half — D-PRINCIPLE-2-CAPABILITY-LAYER):
+  // a system capability (code module) that realises a Procedure.
+  | "Capability";
 
 export type GraphEdgeType =
   // Structural
@@ -61,6 +64,10 @@ export type GraphEdgeType =
   | "CLOSES"
   | "GOVERNS"
   | "ADDRESSES_THEME"
+  // Capability layer (D-PRINCIPLE-2-CAPABILITY-LAYER): Procedure realises a
+  // system Capability (code); REALISED_BY is its inverse.
+  | "REALISES"
+  | "REALISED_BY"
   // Two-plane bridge (D-REGULATORY-ARCHITECTURE-TWO-PLANE): a bank obligation
   // the bank adopted derives from the source provision/obligation it implements.
   | "DERIVES_FROM";
