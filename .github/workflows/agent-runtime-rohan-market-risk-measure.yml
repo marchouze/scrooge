@@ -1,0 +1,55 @@
+# Rohan — daily market-risk measure (VaR / MR-1-FX) run (autonomous)
+#
+# Daily VaR / SVaR / ES measure per Rohan's operating spec § 6 (Cadence).
+# Closes FX functionality domain review gap #4: the MarketRiskMeasureComputed
+# emitter (`bun run mr:measure-run`) was on-request-only and could go stale.
+#
+# Cadence is via the launchd scheduler (com.scrooge.scheduler-tick), which reads
+# the cron from runtime/agents/metadata/rohan.ts (`30 18 * * 1-5` — 18:30 UTC
+# weekdays, 30 min after the daily MTM at 18:00 UTC so the book is marked first).
+# This workflow is workflow_dispatch-only for manual / on-demand runs (GH-Actions
+# schedule crons were decommissioned 2026-05-11; metadata is the sole cron source).
+#
+# Idempotent: one MarketRiskMeasureComputed per entity per UTC day.
+# Brief: brief:rohan:close-fx-gap-schedule-var-mr-1-fx-market-risk-me:2026-06-08
+# Authority: D-B3-5 (R8); D-BRC-INTERIM-MR-1-FX; WS-MARKET-RISK-PROCEDURES;
+#            D-MARKETS-SCHEMA-FOUNDATION.
+
+name: Rohan daily market-risk measure
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - working-directory: prototype
+        run: bun install --frozen-lockfile
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
+      - working-directory: prototype
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bun run agent:rohan-market-risk-measure
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync

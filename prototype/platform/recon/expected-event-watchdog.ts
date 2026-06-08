@@ -28,6 +28,7 @@ import {
   type ExpectedEvent,
   expectedEvents,
   gapAlertId,
+  staleGapAlertId,
 } from "../model-registry/expected-event-watchdog";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -80,6 +81,27 @@ export function run(): ReconResult {
         message: `expected-event "${e.id}" yields an invalid alertId "${alertId}" — SubstrateAlert emission would throw (id must be [a-z0-9-])`,
         severity: "fail",
       });
+    }
+
+    // 3b. Freshness-window expectations: maxAgeBusinessDays must be a positive
+    // integer, and the date-stamped stale alertId must also be a valid slug
+    // (the stale path emits via staleGapAlertId, not gapAlertId).
+    if (e.maxAgeBusinessDays !== undefined) {
+      if (!Number.isInteger(e.maxAgeBusinessDays) || e.maxAgeBusinessDays < 1) {
+        violations.push({
+          subject: e.id,
+          message: `expected-event "${e.id}" has maxAgeBusinessDays=${e.maxAgeBusinessDays} — must be a positive integer (a freshness window of ≥1 business day)`,
+          severity: "fail",
+        });
+      }
+      const staleAlertId = staleGapAlertId(e.id, "2026-01-01T00:00:00.000Z");
+      if (!ALERT_ID_RE.test(staleAlertId)) {
+        violations.push({
+          subject: e.id,
+          message: `expected-event "${e.id}" yields an invalid stale alertId "${staleAlertId}" — SubstrateAlert emission would throw (id must be [a-z0-9-])`,
+          severity: "fail",
+        });
+      }
     }
   }
 

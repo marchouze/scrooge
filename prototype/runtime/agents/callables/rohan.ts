@@ -9,6 +9,7 @@ import rohanDailyMtm from "../rohan-daily-mtm";
 import rohanEventTriage from "../rohan-event-triage";
 import rohanGoalLoop from "../rohan-goal-loop";
 import rohanMarketRiskLimitCheck from "../rohan-market-risk-limit-check";
+import rohanMarketRiskMeasure from "../rohan-market-risk-measure";
 import rohanRiskRun from "../rohan-risk-run";
 
 export const ROHAN_CALLABLES: Record<string, AgentRunHandler> = {
@@ -19,4 +20,5 @@ export const ROHAN_CALLABLES: Record<string, AgentRunHandler> = {
   "rohan:market-risk-limit-check": rohanMarketRiskLimitCheck,
   "rohan:conduct-risk-events": rohanConductRiskEvents,
   "rohan:daily-mtm": rohanDailyMtm,
+  "rohan:market-risk-measure": rohanMarketRiskMeasure,
 };

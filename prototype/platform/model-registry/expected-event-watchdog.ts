@@ -56,6 +56,44 @@ export interface ExpectedEvent {
   /** Why this event must exist — the silent gap it guards. */
   readonly rationale: string;
   readonly citation: string;
+  /**
+   * Optional freshness window, in business days. When set, presence alone is
+   * NOT enough: the latest matching event's `as_of` must be no older than this
+   * many business days from the check's `asOf`, else the expectation is a gap
+   * (a *stale* gap). When omitted, the expectation is presence-only ("≥1 such
+   * event exists") — the original build-phase contract.
+   *
+   * This is the freshness extension the module header flagged as future work:
+   * it activates for events with a real wall-clock cadence (e.g. the daily
+   * market-risk measure), without changing the presence-only semantics of the
+   * existing boot-derive expectations. A freshness check only runs when the
+   * caller supplies an `asOf` (e.g. `emitExpectedEventGapAlerts`); a presence-
+   * only call (`checkExpectedEvents(store)` with no asOf) treats the figure as
+   * present once ≥1 event exists.
+   */
+  readonly maxAgeBusinessDays?: number;
+}
+
+/**
+ * Business days elapsed from `earlier` to `later`, counting Mon–Fri only.
+ * Weekends do not age a figure (no JSE close → no fresh mark). Public holidays
+ * are not netted out — a ≥1-business-day window is forgiving enough that a
+ * single holiday cannot trip a false positive (skipping weekends already
+ * absorbs it). Returns 0 when `later <= earlier`.
+ */
+export function businessDaysBetween(earlier: Date, later: Date): number {
+  if (later.getTime() <= earlier.getTime()) return 0;
+  let count = 0;
+  const cursor = new Date(
+    Date.UTC(earlier.getUTCFullYear(), earlier.getUTCMonth(), earlier.getUTCDate()),
+  );
+  const end = new Date(Date.UTC(later.getUTCFullYear(), later.getUTCMonth(), later.getUTCDate()));
+  while (cursor.getTime() < end.getTime()) {
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+    const dow = cursor.getUTCDay();
+    if (dow !== 0 && dow !== 6) count += 1;
+  }
+  return count;
 }
 
 /**
@@ -98,6 +136,22 @@ const STANDALONE_EXPECTATIONS: readonly ExpectedEvent[] = [
       "no BalanceSheetProjected exists — the NSFR supplemental ASF/RSF line items (Tier-2, wholesale funding, encumbered assets) have no source, silently understating RSF",
     citation: "BA-326",
   },
+  {
+    // FX functionality domain review gap #4: the daily VaR / MR-1-FX measure
+    // is emitted by Rohan's scheduled rohan:market-risk-measure run (cron
+    // `30 18 * * 1-5`). maxAgeBusinessDays 1 makes this a FRESHNESS check, not
+    // presence-only: if the latest MarketRiskMeasureComputed is older than one
+    // business day, the scheduled run has not fired and Helena's MR-1-FX
+    // appetite would be compared against a stale VaR — a loud SubstrateAlert.
+    id: "mr-1-fx-var-measure",
+    eventType: "MarketRiskMeasureComputed",
+    label: "Daily market-risk measure (VaR / MR-1-FX)",
+    owningRole: "Rohan (Risk engineer, engineering)",
+    rationale:
+      "the latest MarketRiskMeasureComputed (1-day 99% VaR / SVaR / ES) is missing or older than one business day — Rohan's daily rohan:market-risk-measure run has not fired, so Helena's MR-1-FX VaR appetite would be compared against a stale figure",
+    citation: "D-BRC-INTERIM-MR-1-FX",
+    maxAgeBusinessDays: 1,
+  },
 ];
 
 /** The full set of events the watchdog asserts must exist. */
@@ -113,23 +167,42 @@ export interface ExpectedEventGap {
   readonly owningRole: string;
   readonly rationale: string;
   readonly citation: string;
+  /**
+   * Why the expectation is a gap. `"absent"` — no matching event exists at all.
+   * `"stale"` — a matching event exists but its `as_of` is older than the
+   * expectation's `maxAgeBusinessDays` window (only possible when the caller
+   * supplied an `asOf`).
+   */
+  readonly kind: "absent" | "stale";
+  /** For `kind: "stale"`, the `as_of` of the freshest matching event. */
+  readonly latestAsOf?: string;
 }
 
 /**
- * Every expected event that has no matching instance in the store. Empty when
- * the bank's derive cycle emitted everything it should — the trustworthy state.
+ * Every expected event that has no matching instance in the store — or, for an
+ * expectation with `maxAgeBusinessDays` set and an `asOf` supplied, whose
+ * freshest matching event is older than its business-day window (a *stale*
+ * gap). Empty when the bank's derive cycle emitted everything it should, fresh
+ * — the trustworthy state.
+ *
+ * `asOf` is optional: when omitted, freshness windows are NOT evaluated and the
+ * check is presence-only (the original build-phase contract). When supplied
+ * (e.g. from `emitExpectedEventGapAlerts`), `maxAgeBusinessDays` expectations
+ * are graded against it.
  */
-export function checkExpectedEvents(store: EventStore): ExpectedEventGap[] {
+export function checkExpectedEvents(store: EventStore, asOf?: string): ExpectedEventGap[] {
   const gaps: ExpectedEventGap[] = [];
+  const asOfDate = asOf ? new Date(asOf) : null;
   for (const exp of expectedEvents()) {
-    let found = false;
+    // Find the freshest matching event (by as_of) in one pass.
+    let latestAsOf: string | null = null;
     for (const ev of store.replay({ type: exp.eventType })) {
-      if (!exp.matches || exp.matches(ev.payload)) {
-        found = true;
-        break;
-      }
+      if (exp.matches && !exp.matches(ev.payload)) continue;
+      if (latestAsOf === null || ev.as_of > latestAsOf) latestAsOf = ev.as_of;
     }
-    if (!found) {
+
+    if (latestAsOf === null) {
+      // Absent — no matching event at all.
       gaps.push({
         id: exp.id,
         eventType: exp.eventType,
@@ -137,15 +210,49 @@ export function checkExpectedEvents(store: EventStore): ExpectedEventGap[] {
         owningRole: exp.owningRole,
         rationale: exp.rationale,
         citation: exp.citation,
+        kind: "absent",
+      });
+      continue;
+    }
+
+    // Present — apply the freshness window if one is declared and we have an asOf.
+    if (
+      exp.maxAgeBusinessDays !== undefined &&
+      asOfDate !== null &&
+      businessDaysBetween(new Date(latestAsOf), asOfDate) > exp.maxAgeBusinessDays
+    ) {
+      const ageBd = businessDaysBetween(new Date(latestAsOf), asOfDate);
+      gaps.push({
+        id: exp.id,
+        eventType: exp.eventType,
+        label: exp.label,
+        owningRole: exp.owningRole,
+        rationale: `${exp.rationale} (latest as_of ${latestAsOf.slice(0, 10)} is ${ageBd} business day(s) old; window is ${exp.maxAgeBusinessDays})`,
+        citation: exp.citation,
+        kind: "stale",
+        latestAsOf,
       });
     }
   }
   return gaps;
 }
 
-/** The alertId a gap raises — stable so emission is idempotent. */
+/**
+ * The alertId an ABSENT gap raises — stable so emission is idempotent (one
+ * alert per never-emitted figure).
+ */
 export function gapAlertId(gapId: string): string {
   return `alert:integrity:expected-event-${gapId}`;
+}
+
+/**
+ * The alertId a STALE gap raises. Date-stamped (`<asOf YYYY-MM-DD>`) so a
+ * freshly-stale business day re-alerts rather than being suppressed by the
+ * idempotency guard — staleness is an ongoing condition that must keep
+ * surfacing until the scheduled run catches up, unlike a one-shot absence.
+ */
+export function staleGapAlertId(gapId: string, asOf: string): string {
+  return `alert:integrity:expected-event-stale-${gapId}-${asOf.slice(0, 10)}`;
 }
 
 /**
@@ -168,8 +275,8 @@ export function emitExpectedEventGapAlerts(
     if (id) existingAlertIds.add(id);
   }
 
-  for (const gap of checkExpectedEvents(store)) {
-    const alertId = gapAlertId(gap.id);
+  for (const gap of checkExpectedEvents(store, asOf)) {
+    const alertId = gap.kind === "stale" ? staleGapAlertId(gap.id, asOf) : gapAlertId(gap.id);
     if (existingAlertIds.has(alertId)) {
       skipped.push(gap.id);
       continue;
