@@ -154,6 +154,15 @@ export const FX_ACCOUNTS = {
   NOSTRO_ZAR: "ACC-1200-001",
   NOSTRO_USD: "ACC-1200-002",
   NOSTRO_EUR: "ACC-1200-003",
+  // Per-currency correspondent nostros for the remaining supported FX
+  // currencies (GBP/JPY/CHF/AUD), provisioned under
+  // D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (CEO build-phase, 2026-06-08). The
+  // FX NOSTRO leg for these currencies now books to its dedicated correspondent
+  // nostro instead of account-resolution-missing to suspense (ACC-2100-007).
+  NOSTRO_GBP: "ACC-1200-004",
+  NOSTRO_JPY: "ACC-1200-005",
+  NOSTRO_CHF: "ACC-1200-006",
+  NOSTRO_AUD: "ACC-1200-007",
   SUSPENSE_ZAR: "ACC-1100-004",
   SUSPENSE_USD: "ACC-1100-005",
   // Settlement-failed receivable sub-ledger (PR-FX-005; added 2026-05-20).
@@ -165,6 +174,16 @@ export const FX_ACCOUNTS = {
   // amortised cost brings the receivable in-scope for ECL §5.5.
   SETTLEMENT_FAILED_RECEIVABLE_ZAR: "ACC-2300-001",
   SETTLEMENT_FAILED_RECEIVABLE_USD: "ACC-2300-002",
+  // Per-currency settlement-failed (defaulted-claim, amortised-cost)
+  // receivables for the remaining supported FX currencies (EUR/GBP/JPY/CHF/AUD),
+  // provisioned under D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (CEO build-phase,
+  // 2026-06-08). A defaulted receive-leg in these currencies now reclassifies to
+  // its dedicated amortised-cost sub-ledger account instead of suspense.
+  SETTLEMENT_FAILED_RECEIVABLE_EUR: "ACC-2300-005",
+  SETTLEMENT_FAILED_RECEIVABLE_GBP: "ACC-2300-006",
+  SETTLEMENT_FAILED_RECEIVABLE_JPY: "ACC-2300-007",
+  SETTLEMENT_FAILED_RECEIVABLE_CHF: "ACC-2300-008",
+  SETTLEMENT_FAILED_RECEIVABLE_AUD: "ACC-2300-009",
   /** Contra-asset; lifetime ECL allowance on the settlement-failed receivable
    *  sub-ledger (IFRS 9 §5.5.3 — Stage 3 lifetime ECL). Carried in ZAR
    *  (functional currency) per IAS 21 §23 — the allowance is the bank's
@@ -269,14 +288,15 @@ function payableAccountFor(currency: string): string {
  * Map a currency code to the Settlement-Failed Receivable account ID
  * (PR-FX-005). Used when a defaulted receive-leg is reclassified from the
  * FVTPL trading receivable to the amortised-cost defaulted-claim sub-ledger.
- * Per-currency; non-ZAR/USD → suspense (never the USD slot).
+ * Per-currency; the full supported FX set (ZAR/USD/EUR/GBP/JPY/CHF/AUD) now has
+ * a dedicated account (ACC-2300-001/002/005..009). Any OTHER currency →
+ * suspense (never the USD slot).
  *
- * SUBSTRATE GAP: the D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING 15-account
- * block covers the FX TRADING accounts only, NOT the amortised-cost
- * Settlement-Failed Receivable sub-ledger (ACC-2300), which exists for ZAR/USD
- * only. A GBP/EUR/CHF/AUD/JPY Herstatt failure therefore still reclassifies its
- * defaulted receivable to suspense + alert until a per-currency
- * settlement-failed account is provisioned (follow-on CFO call).
+ * D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (CEO build-phase, 2026-06-08) closed
+ * the prior gap: the amortised-cost Settlement-Failed Receivable sub-ledger
+ * (ACC-2300) previously existed for ZAR/USD only, so a EUR/GBP/JPY/CHF/AUD
+ * Herstatt failure reclassified its defaulted receivable to suspense + alert.
+ * The five new accounts (ACC-2300-005..009) close that hole.
  */
 function settlementFailedReceivableAccountFor(currency: string): string {
   switch (currency) {
@@ -284,6 +304,16 @@ function settlementFailedReceivableAccountFor(currency: string): string {
       return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_ZAR;
     case "USD":
       return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD;
+    case "EUR":
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_EUR;
+    case "GBP":
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_GBP;
+    case "JPY":
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_JPY;
+    case "CHF":
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_CHF;
+    case "AUD":
+      return FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_AUD;
     default:
       return FX_UNRESOLVED_CURRENCY_SUSPENSE;
   }
@@ -306,21 +336,20 @@ export function detectUnresolvedCurrencyLegs(legs: ReadonlyArray<SubLedgerLeg>):
 }
 
 /** Map a currency code to the Nostro (correspondent settlement) account ID
- *  (per-currency). ZAR/USD/EUR have dedicated correspondent nostros
- *  (ACC-1200-001/002/003); any other currency → balancing suspense (NOT the USD
- *  nostro). Same per-currency discipline as the trading-account helpers
- *  (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
+ *  (per-currency). The full supported FX set (ZAR/USD/EUR/GBP/JPY/CHF/AUD) now
+ *  has dedicated correspondent nostros (ACC-1200-001..007); any OTHER currency →
+ *  balancing suspense (NOT the USD nostro). Same per-currency discipline as the
+ *  trading-account helpers (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).
  *
- *  SUBSTRATE GAP (flagged under D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING):
- *  the CFO's 15-account provisioning covers the FX TRADING
- *  receivable/payable/unrealised-P&L accounts for GBP/EUR/CHF/AUD/JPY but NOT
- *  the correspondent-nostro (ACC-1200) settlement accounts. So a GBP/CHF/AUD/JPY
- *  trade's TRADING legs now book to dedicated accounts (ACC-2100-010..024),
- *  while its principal-payment (PR-FX-PRIN) NOSTRO leg still routes to suspense
- *  until a correspondent nostro is provisioned for that currency. EUR already
- *  has ACC-1200-003. The corrected SLA resolver agrees (its `fx.nostro` rows
- *  cover only ZAR/USD/EUR), so legacy and interpreter stay in lock-step.
- *  Provisioning GBP/CHF/AUD/JPY nostros is a follow-on CFO/treasury call. */
+ *  D-SLA-FX-PER-CURRENCY-CHART-OF-ACCOUNTS (CEO build-phase, 2026-06-08) closed
+ *  the prior gap: the earlier 15-account trading-block provisioning
+ *  (D-SLA-FX-PER-CURRENCY-ACCOUNT-PROVISIONING) covered the FX TRADING
+ *  receivable/payable/unrealised-P&L accounts only, so a GBP/JPY/CHF/AUD trade's
+ *  principal-payment (PR-FX-PRIN) NOSTRO leg used to account-resolution-miss to
+ *  suspense. The four new nostros (ACC-1200-004..007) close that hole; the
+ *  supported settlement set now mirrors the supported FX trading set and the
+ *  TwelveData live feed universe. The corrected SLA resolver carries the same
+ *  per-currency `fx.nostro` rows, so legacy and interpreter stay in lock-step. */
 export function nostroAccountFor(currency: string): string {
   switch (currency) {
     case "ZAR":
@@ -329,6 +358,14 @@ export function nostroAccountFor(currency: string): string {
       return FX_ACCOUNTS.NOSTRO_USD;
     case "EUR":
       return FX_ACCOUNTS.NOSTRO_EUR;
+    case "GBP":
+      return FX_ACCOUNTS.NOSTRO_GBP;
+    case "JPY":
+      return FX_ACCOUNTS.NOSTRO_JPY;
+    case "CHF":
+      return FX_ACCOUNTS.NOSTRO_CHF;
+    case "AUD":
+      return FX_ACCOUNTS.NOSTRO_AUD;
     default:
       return FX_UNRESOLVED_CURRENCY_SUSPENSE;
   }

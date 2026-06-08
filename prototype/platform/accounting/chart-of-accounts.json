@@ -95,6 +95,34 @@
       "category": "asset",
       "side": "debit"
     },
+    {
+      "id": "ACC-1200-004",
+      "name": "Nostro",
+      "currency": "GBP",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-005",
+      "name": "Nostro",
+      "currency": "JPY",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-006",
+      "name": "Nostro",
+      "currency": "CHF",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-007",
+      "name": "Nostro",
+      "currency": "AUD",
+      "category": "asset",
+      "side": "debit"
+    },
 
     {
       "id": "ACC-2100-001",
@@ -276,6 +304,41 @@
       "id": "ACC-2300-002",
       "name": "Settlement-Failed Receivable",
       "currency": "USD",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-005",
+      "name": "Settlement-Failed Receivable",
+      "currency": "EUR",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-006",
+      "name": "Settlement-Failed Receivable",
+      "currency": "GBP",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-007",
+      "name": "Settlement-Failed Receivable",
+      "currency": "JPY",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-008",
+      "name": "Settlement-Failed Receivable",
+      "currency": "CHF",
+      "category": "asset",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-009",
+      "name": "Settlement-Failed Receivable",
+      "currency": "AUD",
       "category": "asset",
       "side": "debit"
     },
