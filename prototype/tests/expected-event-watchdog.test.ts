@@ -3,7 +3,8 @@
 // Unit tests for the expected-event watchdog (Trusted-Figures Program,
 // objective 4 — loud failure modes). Asserts:
 //   - An empty store yields a gap (kind "absent") for every expectation
-//     (calc-bound + 3 standalone, including the daily market-risk measure).
+//     (calc-bound + 4 standalone, including the daily market-risk measure and
+//     the BA-310 FX-NOP submission).
 //   - A store with all expected events present yields no gaps.
 //   - emitExpectedEventGapAlerts emits one SubstrateAlert{integrity} per open
 //     gap and is idempotent on a second call (append-only, no duplicates).
@@ -21,6 +22,7 @@ import { makeBalanceSheetProjected } from "../platform/event-store/event-types/b
 import { makeCalculationPerformed } from "../platform/event-store/event-types/calculation";
 import { makeMarketRiskMeasureComputed } from "../platform/event-store/event-types/market-risk-measure";
 import { makeDailyPnLReportGenerated } from "../platform/event-store/event-types/product-control";
+import { makeSarbSubmissionAttempted } from "../platform/event-store/event-types/regulatory-reporting";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 import { CALC_BINDINGS } from "../platform/model-registry/calculation-binding";
@@ -129,6 +131,25 @@ function seedAllExpectedEvents(store: EventStore): void {
       },
     }),
   );
+
+  store.append(
+    makeSarbSubmissionAttempted({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: ["D-BA-RETURN-FORM-NUMBERING-RECON"],
+      payload: {
+        formId: "BA310",
+        formVersion: "v0.1-rehearsal",
+        institutionId: ENTITY,
+        reportingPeriod: "period:hoz-bank:month:2026-05",
+        submittedAt: AS_OF,
+        accepted: true,
+        referenceNumber: "SARB-TEST-1",
+        mode: "simulator",
+      },
+    }),
+  );
 }
 
 /** Append one MarketRiskMeasureComputed with a chosen as_of (for freshness tests). */
@@ -159,8 +180,8 @@ describe("expected-event watchdog", () => {
     const store = new EventStore();
     const gaps = checkExpectedEvents(store);
     expect(gaps.length).toBe(expectedEvents().length);
-    // One calc-bound expectation per CALC_BINDINGS entry + 3 standalone.
-    expect(gaps.length).toBe(Object.keys(CALC_BINDINGS).length + 3);
+    // One calc-bound expectation per CALC_BINDINGS entry + 4 standalone.
+    expect(gaps.length).toBe(Object.keys(CALC_BINDINGS).length + 4);
     const ids = new Set(gaps.map((g) => g.id));
     expect(ids.has("daily-pnl")).toBe(true);
     expect(ids.has("balance-sheet")).toBe(true);
