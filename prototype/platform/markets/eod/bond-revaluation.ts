@@ -37,12 +37,12 @@
 // Author: Rohan (Market risk engineer, engineering)
 
 import { newEventId } from "../../core/types";
-import type { EventStore } from "../../event-store/store";
 import {
   type BondSoldPayload,
   type BondTradeExecutedPayload,
   makeBondPositionRevalued,
 } from "../../event-store/event-types/bond-accounting";
+import type { EventStore } from "../../event-store/store";
 import type { MarketDataStore } from "../../market-data/store";
 import { MarketDataSources } from "../../market-data/types";
 import { accruedInterestZarMinor } from "../../markets/reference/sa-bond-reference";
@@ -191,11 +191,24 @@ export function runEodBondRevaluation(
       // Resolve clean price from MarketDataStore.
       // Try production first, then simulated as a fallback.
       // -----------------------------------------------------------------------
-      let tick = mdStore.getLatest(MarketDataSources.JSE_DEBT, isin, undefined, "production");
+      let tick = mdStore.getLatest(
+        MarketDataSources.JSE_DEBT,
+        isin,
+        undefined,
+        "production", // provenance: production-only for valuation (jse-debt is exchange-grade)
+      );
 
       // Fallback to simulated (bond-sim) if no production tick available.
+      // [GAP-BOND-1]: production JSE Debt Market live feed is sequenced post-licence;
+      // the build-phase fixture is tagged production, but bond-sim provides a continuous
+      // intraday walk for live positions when no fixture tick is available.
       if (!tick) {
-        tick = mdStore.getLatest(MarketDataSources.BOND_SIM, isin, undefined, "simulated");
+        tick = mdStore.getLatest(
+          MarketDataSources.BOND_SIM,
+          isin,
+          undefined,
+          "simulated", // provenance: simulated — fallback when no production tick
+        );
       }
 
       if (!tick) {
