@@ -42,9 +42,6 @@ import { EventStore } from "../../platform/event-store/store";
 import type { SubLedgerLeg } from "../../platform/accounting/fx-accounting-types";
 import { fxTradeBookingJournals } from "../../platform/accounting/posting-rules/fx-spot";
 
-const ENTITY = "LE-ZA-HOZ-BANK";
-const ACTOR = { type: "service" as const, id: "agent:bea:gl-posting-engine" };
-
 // Helper: sum debit/credit per account across a set of legs, returning net
 // (positive = net debit, negative = net credit).
 function netPerAccount(legs: SubLedgerLeg[]): Map<string, number> {

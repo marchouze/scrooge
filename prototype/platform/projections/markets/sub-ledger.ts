@@ -203,4 +203,3 @@ export const subLedgerProjection: Projection<SubLedgerState, EquityLifecycleEven
     }
   },
 };
-
