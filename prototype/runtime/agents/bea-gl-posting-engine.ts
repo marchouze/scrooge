@@ -1,12 +1,13 @@
 // runtime/agents/bea-gl-posting-engine.ts
 //
-// Bea's universal GL posting engine — wires payment and FX trade lifecycle
-// events to balanced double-entry GL postings via posting-rule functions
-// in `platform/accounting/posting-rules/`.
+// Bea's universal GL posting engine — wires payment and trade lifecycle events
+// to balanced double-entry GL postings. EVERY GL-generating event type now posts
+// via the rules-as-data SLA interpreter (cutover bridges below); the live handler
+// imports NO journal function from `platform/accounting/posting-rules/*`.
 //
 // Subscriptions:
 //   Payment lifecycle — CUT OVER TO THE SLA INTERPRETER (D-SLA-ENGINE-RULES-AS-
-//   DATA, full-retirement Batch 4 — the LAST family; see
+//   DATA, full-retirement Batch 4 — the LAST product family; see
 //   `bea-gl-payments-interpreter-cutover.ts`):
 //   - PaymentInitiated              → PR-PAY-001  [payment-initiation]
 //   - PaymentSettled                → PR-PAY-002  [payment-settlement]
@@ -14,12 +15,16 @@
 //   - ConfirmationMatched           → log only, no SubLedgerPostingEmitted
 //   - ConfirmationMismatch          → log only, no SubLedgerPostingEmitted
 //   - SettlementFailed              → log only, no SubLedgerPostingEmitted
-//   - SettlementReversed            → PR-FX-REV: fxSettlementReversalJournals()
-//   - TradeCancelled                → PR-FX-CANCEL: fxCancellationJournals()
-//                                     (the non-FX markets-trading-extended kind;
-//                                      stays on the legacy posting-rule path.)
-//   - TradeAmended                  → PR-FX-AMD: fxAmendmentJournals()
-//   - TradeMatured                  → PR-FX-003 (deprecated): fxSettlementJournals()
+//
+//   RETIRED (D-SLA-ENGINE-RULES-AS-DATA, full-retirement FX tail): the four
+//   legacy fx-spot.ts dispatch arms — SettlementReversed (PR-FX-REV),
+//   TradeCancelled non-FX (PR-FX-CANCEL), TradeAmended (PR-FX-AMD), and the
+//   deprecated TradeMatured (PR-FX-003) — were the LAST hand-coded posting-rule
+//   arms in this handler. All four event types have ZERO production emitters and
+//   ZERO live events (verified against the event store), so they were removed and
+//   the handler no longer imports fx-spot.ts. The legacy functions survive only
+//   as the byte-for-byte parity references in the parallel-run suites (a separate
+//   retirement stage removes the dead legacy engine + those functions in tree).
 //
 //   FX LIFECYCLE — CUT OVER TO THE SLA INTERPRETER (D-SLA-ENGINE-RULES-AS-DATA
 //   Phase 3). The eight FX-lifecycle event types below no longer call the
@@ -89,27 +94,21 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
-// NOTE (D-SLA-ENGINE-RULES-AS-DATA, full-retirement Batches 1–4 — COMPLETE): the
-// legacy posting-rule functions for EVERY product family are NO LONGER called
-// from this production engine. FX (Phase 3), treasury repo-mmd-ibl.ts (Batch 1),
-// bonds.ts / equities.ts (Batch 2), ird-swaps.ts (Batch 3) and payments.ts
-// (Batch 4 — the LAST family) all route through the rules-as-data SLA interpreter
-// via their cutover bridges (`bea-gl-{fx,treasury,securities,ird,payments}-
-// interpreter-cutover.ts` + the `process*ViaInterpreter` seams below). The legacy
-// files are retained as the byte-for-byte parity references (the
-// `tests/sla-*-lifecycle-parallel-run.test.ts` suites), deprecated-for-production
-// but NOT deleted. No production posting-rule dispatch arm remains: the only
-// remaining hand-coded arms in the dispatch loop below (TradeMatured /
-// SettlementReversed / TradeCancelled / TradeAmended) are FX-family rules NOT in
-// the FX cutover scope (the non-FX markets-trading-extended kinds and the
-// deprecated TradeMatured back-compat path), still calling fx-spot.ts.
-import {
-  detectUnresolvedCurrencyLegs,
-  fxAmendmentJournals,
-  fxCancellationJournals,
-  fxSettlementJournals,
-  fxSettlementReversalJournals,
-} from "../../platform/accounting/posting-rules/fx-spot";
+// NOTE (D-SLA-ENGINE-RULES-AS-DATA, full retirement — COMPLETE incl. FX tail):
+// the legacy posting-rule functions for EVERY product family are NO LONGER called
+// from this production engine, AND this handler imports NO journal function from
+// `platform/accounting/posting-rules/*`. FX (Phase 3), treasury repo-mmd-ibl.ts
+// (Batch 1), bonds.ts / equities.ts (Batch 2), ird-swaps.ts (Batch 3) and
+// payments.ts (Batch 4 — the LAST family) all route through the rules-as-data SLA
+// interpreter via their cutover bridges (`bea-gl-{fx,treasury,securities,ird,
+// payments}-interpreter-cutover.ts` + the `process*ViaInterpreter` seams below).
+// The four final hand-coded fx-spot.ts dispatch arms (TradeMatured /
+// SettlementReversed / TradeCancelled non-FX / TradeAmended) were RETIRED in the
+// FX-lifecycle tail: those event types have ZERO production emitters and ZERO live
+// events. The legacy files are retained ONLY as the byte-for-byte parity
+// references (the `tests/sla-*-lifecycle-parallel-run.test.ts` suites),
+// deprecated-for-production but not yet deleted — a separate retirement stage
+// removes the dead legacy engine + those functions from tree.
 import { seedGrandfatherApprovals } from "../../platform/accounting/sla/grandfather";
 // NOTE: the legacy payments.ts posting-rule functions (paymentInitiatedJournals /
 // paymentSettledJournals / settlementInstructionJournals) are no longer imported
@@ -128,15 +127,8 @@ import type {
 import {
   type FxSettlementFailedPayload,
   type FxTradeCancelledPayload,
-  type SettlementReversedPayload,
   makeSubLedgerPostingEmitted,
 } from "../../platform/event-store/event-types/fx-accounting";
-import type {
-  TradeAmendedPayload,
-  TradeCancelledPayload,
-} from "../../platform/event-store/event-types/markets-trading-extended";
-import { makeSubstrateAlert } from "../../platform/event-store/event-types/platform";
-import type { TradeMaturedFxSpotPayload } from "../../platform/event-store/event-types/trade-matured";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   FX_INTERPRETER_EVENT_TYPES,
@@ -186,7 +178,6 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "SettlementInstructionReceived",
   "FxTradeExecuted",
   "FxPositionRevalued",
-  "TradeMatured",
   // FX lifecycle (CDM) — GL-significant since 2026-05-20 (D-MARKETS-SCHEMA-FOUNDATION).
   // PR-FX-PRIN posts per-leg cash at correspondent confirmation; PR-FX-LIFECYCLE-CLOSE
   // posts the realised-P&L residual at trade close.
@@ -195,13 +186,12 @@ const SUBSCRIBED_TYPES = new Set<string>([
   "ConfirmationMatched",
   "ConfirmationMismatch",
   "SettlementFailed",
-  "SettlementReversed",
-  "TradeCancelled",
-  // FxTradeCancelled is the FX-specific cancellation kind. Same posting rule
-  // as TradeCancelled — both carry `tradeId: string` and re-use PR-FX-CANCEL.
-  // Authority: D-MARKETS-SCHEMA-FOUNDATION; PR #616.
+  // FxTradeCancelled is the FX-specific cancellation kind — posts via the SLA
+  // interpreter (PR-FX-CANCEL). The legacy non-FX TradeCancelled / TradeMatured /
+  // SettlementReversed / TradeAmended kinds (and their fx-spot.ts dispatch arms)
+  // were RETIRED in the full-retirement FX tail (zero production emitters / zero
+  // live events). Authority: D-MARKETS-SCHEMA-FOUNDATION; D-SLA-ENGINE-RULES-AS-DATA.
   "FxTradeCancelled",
-  "TradeAmended",
   // FX-lifecycle events newly cut over to the SLA interpreter (D-SLA-ENGINE-
   // RULES-AS-DATA Phase 3). FxSettlementFailed posts the Stage-3-ECL/Herstatt
   // journals (PR-FX-005); the two memo events are intentional-no-impact.
@@ -983,18 +973,17 @@ export async function beaGlPostingEngine(
     ...eventStore.replay({ type: "SettlementInstructionReceived" }),
     ...eventStore.replay({ type: "FxTradeExecuted" }),
     ...eventStore.replay({ type: "FxPositionRevalued" }),
-    ...eventStore.replay({ type: "TradeMatured" }),
     // FX CDM lifecycle (PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE, since 2026-05-20).
     ...eventStore.replay({ type: "PrincipalPayment" }),
     ...eventStore.replay({ type: "SettlementConfirmed" }),
     ...eventStore.replay({ type: "ConfirmationMatched" }),
     ...eventStore.replay({ type: "ConfirmationMismatch" }),
     ...eventStore.replay({ type: "SettlementFailed" }),
-    ...eventStore.replay({ type: "SettlementReversed" }),
-    ...eventStore.replay({ type: "TradeCancelled" }),
-    // FxTradeCancelled is the FX-specific cancellation kind (PR #616).
+    // FxTradeCancelled is the FX-specific cancellation kind, posts via the SLA
+    // interpreter (PR-FX-CANCEL). The legacy TradeMatured / SettlementReversed /
+    // TradeCancelled / TradeAmended replays were RETIRED with their fx-spot.ts
+    // dispatch arms (zero production emitters / zero live events).
     ...eventStore.replay({ type: "FxTradeCancelled" }),
-    ...eventStore.replay({ type: "TradeAmended" }),
     // FX-lifecycle events newly cut over to the SLA interpreter (Phase 3).
     ...eventStore.replay({ type: "FxSettlementFailed" }),
     ...eventStore.replay({ type: "FxSettlementInstructed" }),
@@ -1226,256 +1215,27 @@ export async function beaGlPostingEngine(
       }
 
       // -----------------------------------------------------------------------
-      // GL-generating events
-      // -----------------------------------------------------------------------
-      let postingType: string;
-      let legs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
-
-      // NOTE: PaymentInitiated / PaymentSettled / SettlementInstructionReceived
-      // are intercepted ABOVE by the PAYMENTS_INTERPRETER_EVENT_TYPES branch and
-      // posted via the SLA interpreter (D-SLA-ENGINE-RULES-AS-DATA, Batch 4 — the
-      // LAST family). They never reach this legacy dispatch chain. The legacy
-      // payments.ts functions are retained as the parity reference only.
-      if (e.type === "TradeMatured") {
-        // PR-FX-003 (DEPRECATED 2026-05-20): Derecognition — IFRS 9 §3.2.3.
-        // Retained for back-compat with legacy test-only emitters. Production
-        // lifecycle now routes through PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE.
-        postingType = "settlement";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as TradeMaturedFxSpotPayload;
-        legs = fxSettlementJournals(payload);
-      } else if (e.type === "SettlementReversed") {
-        postingType = "settlement-reversal";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as SettlementReversedPayload;
-        // Look up the original TradeMatured event.
-        const origEvents = [...eventStore.replay({ type: "TradeMatured" })].filter(
-          (ev) => ev.event_id === payload.originalSettlementEventId,
-        );
-        if (origEvents.length === 0) {
-          throw new Error(
-            `SettlementReversed: original TradeMatured event '${payload.originalSettlementEventId}' not found in store`,
-          );
-        }
-        const origPayload = origEvents[0]?.payload as TradeMaturedFxSpotPayload;
-        legs = fxSettlementReversalJournals({
-          tradeId: payload.tradeId,
-          originalSettlement: origPayload,
-        });
-      } else if (e.type === "TradeCancelled") {
-        // PR-FX-CANCEL — TradeCancelled (markets-trading-extended) only. The
-        // FX-specific FxTradeCancelled kind now posts via the SLA interpreter
-        // (D-SLA-ENGINE-RULES-AS-DATA Phase 3) — see processFxViaInterpreter;
-        // this legacy arm is retained for the non-FX TradeCancelled kind, which
-        // is NOT in the FX cutover scope. Both kinds expose `tradeId: string`
-        // and use the IAS-21 §28 / IFRS-9 §3.2.3 derecognition logic.
-        postingType = "cancellation";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as TradeCancelledPayload | FxTradeCancelledPayload;
-        // Gather all prior SubLedgerPostingEmitted for this trade to reconstruct
-        // booking legs and cumulative unrealised P&L.
-        //
-        // Uses the per-run cancellation index (postings materialised once;
-        // sourceEventId → tradeId map built once) instead of full-replaying the
-        // entire store for every posting — the O(store²) wedge that previously
-        // blocked the event loop for minutes on every booking.
-        const cidx = getCancellationIndex();
-        // For cancellation we need to compute cumulative net unrealised P&L.
-        // We do this by summing all revaluation postings linked to this tradeId.
-        let cumulativeUnrealisedPnlZarMinor = 0;
-        const bookingLegs: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[] =
-          [];
-        for (const p of cidx.postings) {
-          const pp = p.payload as {
-            postingType?: string;
-            legs?: import("../../platform/accounting/fx-accounting-types").SubLedgerLeg[];
-            tradeId?: string;
-          };
-          if (typeof pp.postingType !== "string" || !Array.isArray(pp.legs)) continue;
-          const sourceEventId = (p.payload as { sourceEventId?: string }).sourceEventId;
-          if (!sourceEventId) continue;
-          // Look up the source event's tradeId via the prebuilt index. tradeId on
-          // source events may be either a string (TradeCancelled,
-          // FxPositionRevalued, etc.) or an identifier object with `{value}`
-          // (FxTradeExecuted — see fxTradeBookingJournals call site above); the
-          // index already normalised both shapes to the string form. A source
-          // event not present in the index has no tradeId — skip it (same effect
-          // as the previous "source event not found / no tradeId" continue).
-          const srcTradeIdValue = cidx.tradeIdBySourceEvent.get(sourceEventId);
-          if (!srcTradeIdValue || srcTradeIdValue !== payload.tradeId) continue;
-
-          if (pp.postingType === "trade-booking") {
-            bookingLegs.push(...pp.legs);
-          } else if (pp.postingType === "revaluation") {
-            // Accumulate gross unrealised P&L from ZAR legs (TradeCancelled,
-            // non-FX). The UNREALISED_PNL account credit = gain, debit = loss.
-            // For the non-FX TradeCancelled kind the fx-posting-engine does not
-            // fire, so this accumulator is the only mechanism that undoes the
-            // cumulative P&L.
-            for (const leg of pp.legs) {
-              if (leg.currency === "ZAR") {
-                if (leg.accountId === "ACC-2100-005") {
-                  cumulativeUnrealisedPnlZarMinor +=
-                    leg.debitCredit === "credit" ? leg.amountMinor : -leg.amountMinor;
-                }
-              }
-            }
-          }
-        }
-        legs = fxCancellationJournals({
-          tradeId: payload.tradeId,
-          cumulativeUnrealisedPnlZarMinor,
-          bookingLegs,
-        });
-      } else if (e.type === "TradeAmended") {
-        postingType = "amendment";
-        const key: IdempotencyKey = `${e.event_id}:${postingType}`;
-        if (postedKeys.has(key)) {
-          skipped += 1;
-          continue;
-        }
-        const payload = e.payload as TradeAmendedPayload;
-        // For rate/notional amendments, compute the delta from old/new values.
-        // Values are stored as strings in the event; parse to numbers.
-        let deltaZarMinor = 0;
-        if (payload.field === "rate" || payload.field === "notional") {
-          const oldVal = Number.parseFloat(payload.oldValue);
-          const newVal = Number.parseFloat(payload.newValue);
-          if (!Number.isNaN(oldVal) && !Number.isNaN(newVal)) {
-            // deltaZarMinor is the difference in ZAR minor units.
-            // Convention: values are already in ZAR minor units (integer).
-            deltaZarMinor = Math.round(newVal - oldVal);
-          }
-        }
-        legs = fxAmendmentJournals({
-          tradeId: payload.tradeId,
-          field: payload.field,
-          deltaZarMinor,
-        });
-        // NOTE: BondTradeExecuted / BondInterestAccrued / BondPositionRevalued /
-        // BondMatured / BondSold / EquityTradeExecuted / EquityPositionRevalued /
-        // EquityDividendAccrued / EquitySold are intercepted ABOVE by the
-        // SECURITIES_INTERPRETER_EVENT_TYPES branch and posted via the SLA
-        // interpreter (D-SLA-ENGINE-RULES-AS-DATA, Batch 2) — they never reach
-        // this legacy dispatch chain. The four IrdSwap* event types are likewise
-        // intercepted ABOVE by the IRD_INTERPRETER_EVENT_TYPES branch (Batch 3).
-      } else {
-        // Unreachable — SUBSCRIBED_TYPES guard above. The treasury money-market
-        // event types (deposit / funding / IBL / repo) and the IRD-swap event
-        // types are routed to the SLA interpreter by the
-        // TREASURY_INTERPRETER_EVENT_TYPES / IRD_INTERPRETER_EVENT_TYPES branches
-        // earlier in this loop (D-SLA-ENGINE-RULES-AS-DATA Batch 1 / Batch 3) and
-        // never reach here.
-        continue;
-      }
-
-      if (legs.length === 0) {
-        logger.info(
-          { eventId: e.event_id, eventType: e.type, postingType },
-          "bea:gl-posting-engine — posting rule produced zero legs (expected for non-economic amendments); skipping",
-        );
-        postedKeys.add(`${e.event_id}:${postingType}`);
-        skipped += 1;
-        continue;
-      }
-
-      // ── STOP-THE-BLEEDING urgent-correction alert (deliverable 4) ──────────
-      // Any leg routed to the FX unresolved-currency suspense account
-      // (ACC-2100-007) is a non-ZAR/USD currency with no dedicated COA account
-      // — the per-currency correction (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE)
-      // that REPLACED the silent default→USD mis-booking. The entry still
-      // balances; we raise ONE high-severity integrity SubstrateAlert per
-      // distinct unresolved currency so the suspense routing is NEVER silent.
-      // This is the loud companion to the live-path fix in fx-spot.ts.
-      const unresolvedCurrencies = detectUnresolvedCurrencyLegs(legs);
-      if (unresolvedCurrencies.length > 0 && !ctx.dryRun) {
-        for (const ccy of unresolvedCurrencies) {
-          eventStore.append(
-            makeSubstrateAlert({
-              asOf: ctx.asOf,
-              entity: e.entity ?? "LE-ZA-HOZ-BANK",
-              actor: HANDLER_ACTOR,
-              citations: [
-                "D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE",
-                "Principles/5-multi-currency-entity-country.md",
-              ],
-              payload: {
-                alertId: `alert:integrity:sla-unresolved-currency-${ccy.toLowerCase()}`,
-                alertClass: "integrity",
-                severity: "high",
-                details: `FX posting (${postingType}, source ${e.event_id}) routed a ${ccy} leg to the FX unresolved-currency suspense ACC-2100-007 because the COA has no dedicated per-currency FX account for ${ccy}. The entry balances but the leg sits in suspense. URGENT CORRECTION: provision a dedicated ${ccy} FX account (CFO COA-expansion / accounting-policy call) and re-book. The USD account is USD-only — never a fallback (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE).`,
-              },
-            }),
-          );
-        }
-        logger.warn(
-          { eventId: e.event_id, eventType: e.type, postingType, unresolvedCurrencies },
-          "bea:gl-posting-engine — FX leg(s) routed to unresolved-currency suspense; urgent-correction alert raised",
-        );
-      }
-
-      // Validate balance per currency before emitting (belt-and-suspenders —
-      // posting rules call assertBalanced internally, but we catch errors here).
-      if (!ctx.dryRun) {
-        const postingEvent = makeSubLedgerPostingEmitted({
-          asOf: ctx.asOf,
-          entity: e.entity ?? "LE-ZA-HOZ-BANK",
-          actor: HANDLER_ACTOR,
-          citations: [...GL_POSTING_CITATIONS],
-          payload: {
-            sourceEventId: e.event_id,
-            postingType: postingType as
-              | "payment-initiation"
-              | "payment-settlement"
-              | "settlement-instruction"
-              | "trade-booking"
-              | "revaluation"
-              | "settlement"
-              | "settlement-reversal"
-              | "cancellation"
-              | "amendment"
-              | "bond-trade-booking"
-              | "bond-interest-accrual"
-              | "bond-revaluation"
-              | "bond-maturity"
-              | "bond-sale"
-              | "equity-trade-booking"
-              | "equity-revaluation"
-              | "equity-dividend-accrual"
-              | "equity-sale"
-              | "ird-swap-trade-booking"
-              | "ird-swap-revaluation"
-              | "ird-swap-coupon-settlement"
-              | "ird-swap-termination"
-              | "fx-principal-payment"
-              | "fx-lifecycle-close"
-              | "repo-trade-booking"
-              | "deposit-taken"
-              | "ibl-placement",
-            legs,
-            postedAt: ctx.asOf,
-          },
-          eventId: newEventId(),
-        });
-        eventStore.append(postingEvent);
-        // Add to in-memory set so subsequent events in the same run don't
-        // double-post (covers re-entrant / batched runs).
-        postedKeys.add(`${e.event_id}:${postingType}`);
-      }
-
-      eventsEmitted += 1;
+      // FULLY-STRANGLED LEGACY DISPATCH (D-SLA-ENGINE-RULES-AS-DATA, full
+      // retirement — FX-lifecycle tail). Every GL-generating event type now
+      // posts via the rules-as-data SLA interpreter through one of the cutover
+      // branches above (FX / treasury / securities / IRD / payments). The legacy
+      // hand-coded `fx-spot.ts` dispatch arms (TradeMatured / SettlementReversed /
+      // TradeCancelled / TradeAmended) have been RETIRED: those four event types
+      // have ZERO production emitters and ZERO live events (verified against the
+      // event store), so the live handler no longer imports any journal function
+      // from `platform/accounting/posting-rules/*`. The legacy `fx-spot.ts`
+      // functions survive only as the byte-for-byte parity references exercised
+      // by the parallel-run regression suites (a separate retirement stage will
+      // remove them once the dead legacy engine is taken out of tree).
+      //
+      // Anything reaching this point is an event type listed in SUBSCRIBED_TYPES
+      // but NOT intercepted by an interpreter branch above — a subscription /
+      // routing drift. Log loudly and skip (never a silent mis-route).
+      logger.warn(
+        { eventId: e.event_id, eventType: e.type },
+        "bea:gl-posting-engine — subscribed event reached the retired legacy dispatch tail with no interpreter branch; skipping (routing drift)",
+      );
+      skipped += 1;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       logger.error(

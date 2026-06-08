@@ -50,11 +50,7 @@ import { EventStore } from "../../platform/event-store/store";
 import type { SubLedgerLeg } from "../../platform/accounting/fx-accounting-types";
 import {
   FX_ACCOUNTS,
-  fxAmendmentJournals,
-  fxCancellationJournals,
   fxRevaluationJournals,
-  fxSettlementJournals,
-  fxSettlementReversalJournals,
   fxTradeBookingJournals,
 } from "../../platform/accounting/posting-rules/fx-spot";
 import {
@@ -421,35 +417,11 @@ describe("GL posting engine — FX trade lifecycle posting rules", () => {
     expect(legs).toHaveLength(0);
   });
 
-  it("PR-FX-003: TradeMatured with positive realised P&L → balanced legs per currency", () => {
-    const settlementPayload = {
-      tradeId: "FX-TRADE-001",
-      currencyPair: "ZAR/USD",
-      legKind: "near" as const,
-      settledBaseCurrencyMinor: 1800000_00, // bank received ZAR 1,800,000
-      settledQuoteCurrencyMinor: -100000_00, // bank paid USD 100,000
-      settledAt: "2026-05-20T10:00:00Z",
-      nostroAccountBase: FX_ACCOUNTS.NOSTRO_ZAR,
-      nostroAccountQuote: FX_ACCOUNTS.NOSTRO_USD,
-      realisedPnlZarMinor: 5000_00, // ZAR 50 gain
-    };
-    const legs = fxSettlementJournals(settlementPayload);
-    // Expect: ZAR legs (receive + P&L) + USD legs
-    expect(legs.length).toBeGreaterThanOrEqual(4);
-
-    // Balance per currency
-    const currencies = [...new Set(legs.map((l) => l.currency))];
-    for (const ccy of currencies) {
-      const ccyLegs = legs.filter((l) => l.currency === ccy);
-      const debit = ccyLegs
-        .filter((l) => l.debitCredit === "debit")
-        .reduce((s, l) => s + l.amountMinor, 0);
-      const credit = ccyLegs
-        .filter((l) => l.debitCredit === "credit")
-        .reduce((s, l) => s + l.amountMinor, 0);
-      expect(debit).toBe(credit);
-    }
-  });
+  // NOTE: the PR-FX-003 (TradeMatured) legacy `fxSettlementJournals` unit test
+  // was RETIRED with the legacy fx-spot.ts dispatch arm (zero production emitters
+  // / zero live events; D-SLA-ENGINE-RULES-AS-DATA full-retirement FX tail). The
+  // function remains exercised by the byte-for-byte parity suites and
+  // platform/accounting/posting-rules/fx-spot.test.ts.
 
   it("FX idempotency: same (sourceEventId, postingType) not re-posted", () => {
     // Verify idempotency key matching for FX events
@@ -513,265 +485,23 @@ describe("FX lifecycle — ConfirmationMatched: no GL entries", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 2: SettlementReversed — mirror of PR-FX-003
+// RETIRED — legacy fx-spot.ts posting-rule unit tests.
+//
+// The describe blocks that exercised the four legacy fx-spot.ts journal
+// functions directly — `fxSettlementJournals` (PR-FX-003 / TradeMatured),
+// `fxSettlementReversalJournals` (SettlementReversed), `fxCancellationJournals`
+// (non-FX TradeCancelled) and `fxAmendmentJournals` (TradeAmended) — were
+// removed together with their dispatch arms in the live GL handler
+// (D-SLA-ENGINE-RULES-AS-DATA, full-retirement FX tail). Those four event types
+// have zero production emitters and zero live events; the handler no longer
+// imports fx-spot.ts. The functions themselves remain covered as the
+// byte-for-byte parity references in `platform/accounting/posting-rules/
+// fx-spot.test.ts` and the parallel-run suites until the dead legacy engine is
+// removed from tree (separate retirement stage). The live FX cancellation path
+// (FxTradeCancelled → SLA interpreter PR-FX-CANCEL) is covered by the handler
+// integration regression test below ("Regression — FxTradeCancelled produces a
+// 'cancellation' posting").
 // ---------------------------------------------------------------------------
-
-describe("FX lifecycle — SettlementReversed: mirrors PR-FX-003", () => {
-  it("SettlementReversed legs are exact debit/credit inverse of TradeMatured legs", () => {
-    // Construct a minimal TradeMatured payload.
-    const settlementPayload = {
-      tradeId: "FX-REV-TEST-001",
-      currencyPair: "ZAR/USD",
-      legKind: "near" as const,
-      settledBaseCurrencyMinor: 100000, // bank received 100k ZAR
-      settledQuoteCurrencyMinor: -5000, // bank paid 5k USD
-      settledAt: "2026-05-20T12:00:00Z",
-      nostroAccountBase: "ACC-1100-001",
-      nostroAccountQuote: "ACC-1100-002",
-      realisedPnlZarMinor: 500, // small residual gain
-      correspondentRef: "SWIFT-MT300-001",
-    } as const;
-
-    const originalLegs = fxSettlementJournals(settlementPayload);
-    const reversalLegs = fxSettlementReversalJournals({
-      tradeId: "FX-REV-TEST-001",
-      originalSettlement: settlementPayload,
-    });
-
-    // Same number of legs.
-    expect(reversalLegs).toHaveLength(originalLegs.length);
-
-    // Each reversal leg has the same accountId, currency, amountMinor as
-    // the corresponding original, but opposite debitCredit.
-    originalLegs.forEach((orig, i) => {
-      const rev = reversalLegs[i];
-      if (!rev) throw new Error(`Missing reversal leg at index ${i}`);
-      expect(rev.accountId).toBe(orig.accountId);
-      expect(rev.amountMinor).toBe(orig.amountMinor);
-      expect(rev.currency).toBe(orig.currency);
-      expect(rev.debitCredit).toBe(orig.debitCredit === "debit" ? "credit" : "debit");
-    });
-  });
-
-  it("SettlementReversed: reversal legs are balanced per currency", () => {
-    const settlementPayload = {
-      tradeId: "FX-REV-BALANCE-001",
-      currencyPair: "ZAR/USD",
-      legKind: "near" as const,
-      settledBaseCurrencyMinor: 200000,
-      settledQuoteCurrencyMinor: -10000,
-      settledAt: "2026-05-20T14:00:00Z",
-      nostroAccountBase: "ACC-1100-001",
-      nostroAccountQuote: "ACC-1100-002",
-      realisedPnlZarMinor: 0,
-      correspondentRef: undefined,
-    } as const;
-
-    const reversalLegs = fxSettlementReversalJournals({
-      tradeId: "FX-REV-BALANCE-001",
-      originalSettlement: settlementPayload,
-    });
-
-    // Validate balance per currency.
-    const totals = new Map<string, { debit: number; credit: number }>();
-    for (const leg of reversalLegs) {
-      const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
-      if (leg.debitCredit === "debit") t.debit += leg.amountMinor;
-      else t.credit += leg.amountMinor;
-      totals.set(leg.currency, t);
-    }
-    for (const [, t] of totals.entries()) {
-      expect(t.debit).toBe(t.credit);
-    }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Test 3: TradeCancelled — net-zero GL
-// ---------------------------------------------------------------------------
-
-describe("FX lifecycle — TradeCancelled: net-zero GL", () => {
-  it("TradeCancelled with no revaluations: booking + cancel entries net to zero", () => {
-    // Construct booking legs first (PR-FX-001).
-    // Use a minimal trade: bank buys USD, pays ZAR.
-    const bookingLegs = fxTradeBookingJournals({
-      tradeId: "FX-CANCEL-TEST-001",
-      side: "buy",
-      currencyPair: "ZAR/USD",
-      legs: [
-        {
-          legKind: "near" as const,
-          payCurrency: "ZAR",
-          receiveCurrency: "USD",
-          notional: { amountMinor: 100000, currency: "ZAR" as const },
-          counterNotional: { amountMinor: 5000, currency: "USD" as const },
-          rate: { currency: "USD" as const, amount: 0.05 },
-          settlementDate: "2026-05-22",
-        },
-      ],
-    });
-
-    // Cancel with no cumulative unrealised P&L (fresh trade, no revaluations).
-    const cancellationLegs = fxCancellationJournals({
-      tradeId: "FX-CANCEL-TEST-001",
-      cumulativeUnrealisedPnlZarMinor: 0,
-      bookingLegs,
-    });
-
-    // Combined: all booking + cancellation legs should net to zero per account.
-    const allLegs = [...bookingLegs, ...cancellationLegs];
-    const nets = netPerAccount(allLegs);
-    for (const [, net] of nets.entries()) {
-      expect(net).toBe(0);
-    }
-  });
-
-  it("TradeCancelled with cumulative revaluations: net-zero GL across all accounts", () => {
-    // Booking legs.
-    const bookingLegs = fxTradeBookingJournals({
-      tradeId: "FX-CANCEL-REVAL-001",
-      side: "buy",
-      currencyPair: "ZAR/USD",
-      legs: [
-        {
-          legKind: "near" as const,
-          payCurrency: "ZAR",
-          receiveCurrency: "USD",
-          notional: { amountMinor: 200000, currency: "ZAR" as const },
-          counterNotional: { amountMinor: 10000, currency: "USD" as const },
-          rate: { currency: "USD" as const, amount: 0.05 },
-          settlementDate: "2026-05-22",
-        },
-      ],
-    });
-
-    // Simulate 3 days of revaluation with a net cumulative gain of 1500 ZAR.
-    // In the GL, the net effect of the revaluation postings is:
-    //   Dr RECEIVABLE_ZAR 1500 / Cr UNREALISED_PNL 1500
-    // (cumulativeUnrealisedPnlZarMinor = +1500 means net gain).
-    const cumulativePnl = 1500;
-
-    const cancellationLegs = fxCancellationJournals({
-      tradeId: "FX-CANCEL-REVAL-001",
-      cumulativeUnrealisedPnlZarMinor: cumulativePnl,
-      bookingLegs,
-    });
-
-    // The cancellation reverses booking + net revaluation.
-    // We need to also include the net revaluation posting to verify overall net-zero.
-    // Net revaluation posting (what was previously emitted for this gain):
-    const netRevalLegs: SubLedgerLeg[] = [
-      {
-        accountId: "ACC-2100-001", // RECEIVABLE_ZAR
-        debitCredit: "debit",
-        amountMinor: cumulativePnl,
-        currency: "ZAR",
-      },
-      {
-        accountId: "ACC-2100-005", // UNREALISED_PNL
-        debitCredit: "credit",
-        amountMinor: cumulativePnl,
-        currency: "ZAR",
-      },
-    ];
-
-    // All GL entries: booking + revaluation + cancellation = net zero.
-    const allLegs = [...bookingLegs, ...netRevalLegs, ...cancellationLegs];
-    const nets = netPerAccount(allLegs);
-    for (const [, net] of nets.entries()) {
-      expect(net).toBe(0);
-    }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Test 4: TradeAmended (rate change) — delta entries posted
-// ---------------------------------------------------------------------------
-
-describe("FX lifecycle — TradeAmended: delta GL entries", () => {
-  it("TradeAmended rate change: delta entries are posted and balanced", () => {
-    // Rate improved by 2000 ZAR minor equivalent (new notional > old notional).
-    const deltaZarMinor = 2000;
-    const legs = fxAmendmentJournals({
-      tradeId: "FX-AMD-TEST-001",
-      field: "rate",
-      deltaZarMinor,
-    });
-
-    // Should produce 2 balanced legs.
-    expect(legs).toHaveLength(2);
-
-    // Legs must balance.
-    const debit = legs
-      .filter((l) => l.debitCredit === "debit")
-      .reduce((s, l) => s + l.amountMinor, 0);
-    const credit = legs
-      .filter((l) => l.debitCredit === "credit")
-      .reduce((s, l) => s + l.amountMinor, 0);
-    expect(debit).toBe(credit);
-    expect(debit).toBe(2000);
-
-    // Direction: increase → Dr RECEIVABLE_ZAR / Cr UNREALISED_PNL.
-    const debitLeg = legs.find((l) => l.debitCredit === "debit");
-    const creditLeg = legs.find((l) => l.debitCredit === "credit");
-    expect(debitLeg?.accountId).toBe("ACC-2100-001"); // RECEIVABLE_ZAR
-    expect(creditLeg?.accountId).toBe("ACC-2100-005"); // UNREALISED_PNL
-  });
-
-  it("TradeAmended rate decrease: reversed delta direction", () => {
-    const deltaZarMinor = -1500;
-    const legs = fxAmendmentJournals({
-      tradeId: "FX-AMD-TEST-002",
-      field: "notional",
-      deltaZarMinor,
-    });
-
-    expect(legs).toHaveLength(2);
-    const debitLeg = legs.find((l) => l.debitCredit === "debit");
-    const creditLeg = legs.find((l) => l.debitCredit === "credit");
-
-    // Decrease → Dr UNREALISED_PNL / Cr RECEIVABLE_ZAR.
-    expect(debitLeg?.accountId).toBe("ACC-2100-005"); // UNREALISED_PNL
-    expect(creditLeg?.accountId).toBe("ACC-2100-001"); // RECEIVABLE_ZAR
-    expect(debitLeg?.amountMinor).toBe(1500);
-    expect(creditLeg?.amountMinor).toBe(1500);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Test 5: TradeAmended (settlement-date change) — no GL entries
-// ---------------------------------------------------------------------------
-
-describe("FX lifecycle — TradeAmended: non-economic amendments", () => {
-  it("TradeAmended settlement-date change: no GL entries emitted", () => {
-    const legs = fxAmendmentJournals({
-      tradeId: "FX-AMD-DATE-001",
-      field: "settlement-date",
-      deltaZarMinor: 0,
-    });
-    expect(legs).toHaveLength(0);
-  });
-
-  it("TradeAmended counterparty change: no GL entries emitted", () => {
-    const legs = fxAmendmentJournals({
-      tradeId: "FX-AMD-CP-001",
-      field: "counterparty",
-      deltaZarMinor: 0,
-    });
-    expect(legs).toHaveLength(0);
-  });
-
-  it("TradeAmended settlement-date: zero delta also produces no entries", () => {
-    // Even if someone passes a non-zero delta with a non-economic field,
-    // the engine returns empty (field check takes precedence).
-    const legs = fxAmendmentJournals({
-      tradeId: "FX-AMD-DATE-DELTA-001",
-      field: "settlement-date",
-      deltaZarMinor: 999,
-    });
-    expect(legs).toHaveLength(0);
-  });
-});
 
 // ===========================================================================
 // Manual-provenance FxTradeExecuted → GL posting
