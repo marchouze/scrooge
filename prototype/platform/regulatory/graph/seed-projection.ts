@@ -11,6 +11,7 @@ import { join, resolve } from "node:path";
 
 import { eventStore } from "../../composition";
 import { nowUtc } from "../../core/types";
+import type { ObligationEquivalenceClassifiedPayload } from "../../event-store/event-types/obligation-equivalence";
 import type { RegulatoryInstrumentRegisteredPayload } from "../../event-store/event-types/regulatory";
 import type {
   ExtractionProvenance,
@@ -35,7 +36,7 @@ import {
 } from "./db";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
-import type { DocumentApplicabilityStatus, GraphNode, GraphNodeMetadata } from "./types";
+import type { DocumentApplicabilityStatus, GraphEdge, GraphNode, GraphNodeMetadata } from "./types";
 
 // ---------------------------------------------------------------------------
 // Seed stats shape
@@ -197,6 +198,59 @@ const INSTRUMENT_ID_TO_SLUG: Record<string, string> = {
 let _edgeSeq = 0;
 function edgeId(prefix: string): string {
   return `${prefix}-${++_edgeSeq}`;
+}
+
+/**
+ * Graph edge type a same-outcome / divergent verdict projects to.
+ * `materially-divergent` → CONFLICTS_WITH; everything else → EQUIVALENT_TO.
+ * (WS-OBLIGATIONS-CLEANUP P5.)
+ */
+export function verdictEdgeType(
+  verdict: ObligationEquivalenceClassifiedPayload["verdict"],
+): "EQUIVALENT_TO" | "CONFLICTS_WITH" {
+  return verdict === "materially-divergent" ? "CONFLICTS_WITH" : "EQUIVALENT_TO";
+}
+
+/**
+ * Build the typed SA→BCBS bridge edge from one ObligationEquivalenceClassified
+ * payload. Pure (no DB / IO) so the proof fixture can assert it directly.
+ * The edge carries the verdict, classifier, rationale, the BCBS counterpart's
+ * source provision, and — for a gold-plate — `divergence='sa-stricter'` plus
+ * the `delta`.
+ */
+export function buildObligationEquivalenceEdge(
+  payload: ObligationEquivalenceClassifiedPayload,
+  saNode: GraphNode,
+  bcbsNode: GraphNode,
+  edgeIdValue: string,
+  extractedAt: string,
+): GraphEdge {
+  const metadata: GraphNodeMetadata = {
+    verdict: payload.verdict,
+    classifiedBy: payload.classifiedBy,
+    rationale: payload.rationale,
+  };
+  if (payload.verdict === "sa-stricter-gold-plates") {
+    metadata.divergence = "sa-stricter";
+  }
+  if (payload.delta !== undefined) {
+    metadata.delta = payload.delta;
+  }
+  return {
+    id: edgeIdValue,
+    // SA → BCBS direction: the bank-internal obligation bridges to the
+    // Basel-derived counterpart it is being measured against.
+    fromId: saNode.id,
+    toId: bcbsNode.id,
+    edgeType: verdictEdgeType(payload.verdict),
+    sourceProvision: bcbsNode.metadata.sourceProvision
+      ? String(bcbsNode.metadata.sourceProvision)
+      : undefined,
+    extractionMethod: "llm",
+    confidenceScore: payload.confidence,
+    extractedAt,
+    metadata,
+  };
 }
 
 const REPO_ROOT = resolve(import.meta.dir, "../../../..");
@@ -894,6 +948,32 @@ export async function runSeed(): Promise<SeedStats> {
         extractedAt: now,
       });
     }
+  }
+
+  // ── Step 6b: SA↔BCBS equivalence edges from ObligationEquivalenceClassified ─
+  //
+  // WS-OBLIGATIONS-CLEANUP (P5) — the SA↔BCBS same-outcome / divergent model.
+  // Modelled exactly on the ObligationConceptLinked → EXPRESSES fold above:
+  // each classification event projects to a typed Obl→Obl bridge edge
+  // (Principle 1 — the edge derives from the event, never hand-written):
+  //   - equivalent              → EQUIVALENT_TO
+  //   - sa-stricter-gold-plates → EQUIVALENT_TO + metadata.divergence='sa-stricter' + delta
+  //   - materially-divergent    → CONFLICTS_WITH
+  // Both edge types already exist in graph/types.ts (defined, never asserted) —
+  // this fold is their first assertion. Authority: D-OBLIGATIONS-REGISTER-CLEANUP.
+  for (const event of eventStore.replay({ type: "ObligationEquivalenceClassified" })) {
+    const p = event.payload as ObligationEquivalenceClassifiedPayload;
+    const saNode = obligationNodes.get(p.saObligationId);
+    const bcbsNode = obligationNodes.get(p.bcbsObligationId);
+    if (!saNode || !bcbsNode) continue; // skip pairs whose nodes are absent
+    const edge = buildObligationEquivalenceEdge(
+      p,
+      saNode,
+      bcbsNode,
+      edgeId(verdictEdgeType(p.verdict)),
+      now,
+    );
+    upsertEdge(edge);
   }
 
   // ── Step 7: Activity nodes ───────────────────────────────────────────────
