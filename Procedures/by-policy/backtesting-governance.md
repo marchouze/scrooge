@@ -228,7 +228,7 @@ On any `BacktestingZoneEntered` where `toZone` is more favourable than `fromZone
 
 - **Policy:** `Policies/market-risk-policy-v1.md` §4.3 (Back-Testing), §1.4 (Critical-zone breach), §4.2 (IMA Eligibility), §6.1 (Market Risk Committee), §6.2 (Reporting), §8.1 (Substrate dependencies).
 - **Regulation:** `ORG-PR-58`, `ORG-PR-56`; BCBS *Minimum capital requirements for market risk* (January 2019) — back-testing chapter `[citation: TBC]`; PA D/2025 `[citation: TBC]`.
-- **Related procedures:** `PROC-RISK-FRTB-SA-01` (`frtb-sa-capital-computation.md`) — SA capital applies on Red-zone entry; `PROC-RISK-PLA-01` (`pla-test-governance.md`) — RTPL divergence is a PLA test signal; `PROC-RISK-MRM-01` (`market-risk-monitoring.md`) — VaR estimate consumer; `PROC-RSK-MV-01` (`model-validation.md`) — Nadia's annual + ad-hoc validation; `PROC-FIN-BA-01` (`ba-return-generation.md`) — capital basis for BA-325 / BA-326 reflects the zone.
+- **Related procedures:** `PROC-RISK-FRTB-SA-01` (`frtb-sa-capital-computation.md`) — SA capital applies on Red-zone entry; `PROC-RISK-PLA-01` (`pla-test-governance.md`) — RTPL divergence is a PLA test signal; `PROC-RISK-MRM-01` (`market-risk-monitoring.md`) — VaR estimate consumer; `PROC-RSK-MV-01` (`model-validation.md`) — Nadia's annual + ad-hoc validation; `PROC-FIN-BA-01` (`ba-return-generation.md`) — capital basis for the BA 320 market-risk return reflects the zone.
 
 ---
 

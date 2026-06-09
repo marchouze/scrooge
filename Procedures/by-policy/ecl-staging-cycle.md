@@ -157,8 +157,8 @@ In the build phase, the procedure runs against synthetic positions. It activates
 
 - [`ecl-stage-projection-refresh.md`](ecl-stage-projection-refresh.md) (PROC-RSK-EC-01) — upstream continuous staging engine; PROC-RSK-ECL-02 is the governance + period-end wrapper for the projection that PROC-RSK-EC-01 maintains.
 - [`posting-rule-publication.md`](posting-rule-publication.md) — Bea's posting-rule engine converts ECL figures to `JournalEntryPosted` events.
-- [`capital-ratio-monitoring.md`](capital-ratio-monitoring.md) — Helena's ECL sign-off feeds capital projections (BA 100; CET1 deductions).
-- [`ba-return-generation.md`](ba-return-generation.md) (PROC-FIN-BA-01) — period-end ECL snapshot feeds BA 200 (credit RWA) and BA 100 (capital adequacy) via the BA return engine.
+- [`capital-ratio-monitoring.md`](capital-ratio-monitoring.md) — Helena's ECL sign-off feeds capital projections (BA 700; CET1 deductions).
+- [`ba-return-generation.md`](ba-return-generation.md) (PROC-FIN-BA-01) — period-end ECL snapshot feeds BA 200 (credit RWA) and BA 700 (capital adequacy) via the BA return engine.
 - [`balance-sheet-substantiation.md`](balance-sheet-substantiation.md) — impairment journal entries from this procedure feed the substantiated balance sheet.
 - [`model-validation.md`](model-validation.md) — `MOD-ECL-001` Tier-1 validation is a prerequisite for live use of this procedure's computed ECL figures.
 - [`ifrs10-consolidation-cycle.md`](ifrs10-consolidation-cycle.md) (PROC-ACC-IFRS10-01) — consolidated ECL figures are an input to the group consolidation cycle.

@@ -52,8 +52,8 @@ Regulation (Banks Act §§ 60–72; RRB Reg 26 — LCR + intraday + ILAAP;
 
 | Citation | Requirement |
 |---|---|
-| `ORG-PR-06` (BCBS D295 / BA 325 — LCR ≥ 100%) | Maintain LCR ≥ 100% at all times under stress assumptions; internal buffer per ILAAP-calibrated floor. |
-| `ORG-PR-07` (BCBS D335 / BA 326 — NSFR ≥ 100%) | Maintain NSFR ≥ 100% at all times. |
+| `ORG-PR-06` (BCBS D295 / BA 300 — LCR ≥ 100%) | Maintain LCR ≥ 100% at all times under stress assumptions; internal buffer per ILAAP-calibrated floor. |
+| `ORG-PR-07` (BCBS D335 / BA 300 series — NSFR ≥ 100%) | Maintain NSFR ≥ 100% at all times. |
 | `ORG-PR-08` (BCBS 248 — Intraday liquidity monitoring tools) | Seven intraday-monitoring metrics; intraday buffer adequate for peak net debit position. |
 | `ORG-PR-14` (Banks Act + PA ILAAP Directive) | Annual ILAAP submission attesting that limits, buffers, and CFP are adequate. |
 | `ORG-PR-15` (BCBS 144 — Contingency Funding Plan) | Annual CFP rehearsal; CFP trigger taxonomy aligned with breach severity. |
@@ -168,7 +168,7 @@ The block is a hard reject during tier-1 red: an `accepted` disposition is the o
 | Tomas (Operations & payments engineer, engineering) | Payment gateway block consumer; `checkLiquidityGate` caller on every payment-out |
 | Kai (Pre-deal-check engineer, engineering) | Trade-execution gateway block consumer; `checkLiquidityGate` caller alongside credit-limit and capital checks |
 | Vera (Internal audit engineer, engineering — reports to Thandiwe (Chief Audit Executive, governance)) | Third-line recons: `recon:liquidity-limit-breach-unescalated`; `recon:liquidity-limit-coverage` |
-| Mira (Compliance / RegTech engineer, engineering) | BA 325 / BA 326 return commentary attaches breach narratives; PA notification timing under Reg 26 |
+| Mira (Compliance / RegTech engineer, engineering) | BA 300 (LCR / NSFR) return commentary attaches breach narratives; PA notification timing under Reg 26 |
 | PA (Prudential Authority) | Receives notifications on tier-1 LCR / NSFR PA-minimum breaches per Reg 26 |
 
 ## 7. Escalation

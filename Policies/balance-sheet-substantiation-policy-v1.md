@@ -71,7 +71,7 @@ This policy does **not** govern risk, liquidity, or regulatory-capital projectio
 
 Every GL account with a non-zero balance at period-end must be substantiated before:
 
-- Any BA-return (BA 100, BA 300, BA 325, BA 326) is submitted to the SARB; and
+- Any BA-return (BA 100, BA 120, BA 300, BA 700) is submitted to the SARB; and
 - Any financial statements (monthly management accounts, quarterly management accounts, annual financial statements) are finalised or distributed.
 
 Substantiation is evidenced by the emission of a `BalanceSheetSubstantiationCompleted` event. No BA-return submission gate may open and no financial statements may be signed off without this event in the event store for the relevant period.
@@ -206,7 +206,7 @@ The `BalanceSheetSubstantiationCompleted` event feeds the dashboard finance tile
 
 ### Approval authority
 
-Camille (CFO, governance) is the sole approval authority for changes to the materiality threshold, exception-classification rules, account scope, and sign-off methodology. Changes affecting regulatory-return scope (BA 100 / BA 300 / BA 325 / BA 326) additionally require Board Audit Committee notification before the effective date.
+Camille (CFO, governance) is the sole approval authority for changes to the materiality threshold, exception-classification rules, account scope, and sign-off methodology. Changes affecting regulatory-return scope (BA 100 / BA 120 / BA 300 / BA 700) additionally require Board Audit Committee notification before the effective date.
 
 ### Change procedure
 
@@ -242,7 +242,7 @@ Camille (CFO, governance) is the sole approval authority for changes to the mate
 - IAS 1 §29–§31 — materiality; §36–§37 — reporting frequency.
 - IFRS 9 §5.7.1 / §4.1 — FVTPL and amortised-cost measurement basis.
 - IAS 21 §28 — monetary item retranslation at closing rate; nostro and FX accounts.
-- **ORG-AC-13** (Banks Act Regulations — BA returns) — period-end balances underpinning BA 100 / BA 300 / BA 325 / BA 326 must be substantiated.
+- **ORG-AC-13** (Banks Act Regulations — BA returns) — period-end balances underpinning BA 100 / BA 120 / BA 300 / BA 700 must be substantiated.
 
 **Internal canonical sources:**
 

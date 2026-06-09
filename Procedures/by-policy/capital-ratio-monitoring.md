@@ -27,8 +27,8 @@ RAS B2 (deferred — pending calibration; policy floors per RAS / RAF §B3).
 | `ORG-PR-02` (BCBS Basel III/IV) | Apply Pillar 2A add-ons. |
 | `ORG-PR-03` (BCBS) | Hold capital conservation buffer + countercyclical buffer where required. |
 | `ORG-PR-04` (RAS B2) | Maintain CET1 management buffer ≥ +1.5pp above PA minima + Pillar 2A + capital conservation buffer. |
-| `ORG-PR-06` (BCBS D295 / BA 325) | LCR ≥ 100% (PA min) with internal buffer. |
-| `ORG-PR-07` (BCBS D335 / BA 326) | NSFR ≥ 100% (PA min) with internal buffer. |
+| `ORG-PR-06` (BCBS D295 / BA 300 — LCR) | LCR ≥ 100% (PA min) with internal buffer. |
+| `ORG-PR-07` (BCBS D335 / BA 300 series — NSFR) | NSFR ≥ 100% (PA min) with internal buffer. |
 | `ORG-PR-08` (BCBS 248) | Monitor intraday liquidity. |
 
 ## 3. Purpose
@@ -53,7 +53,7 @@ Compute the bank's capital and liquidity ratios daily as projections over the ev
 | 7 | Soft threshold breach → notification to ALCO secretariat (Eitan) and BRC dashboard | `system` | `@domains/notification` (`PLANNED`) | Event: `LimitBreach { severity: 'Soft' }`. |
 | 8 | Hard threshold breach → mandatory action; escalate to ALCO + BRC chair | `system` + `human` | `@domains/notification` + ALCO workflow | Event: `LimitBreach { severity: 'Hard' }`. |
 | 9 | Critical threshold breach → CEO + CRO + Board (interim Risk Forum) immediate notification; recovery plan triggered | `system` + `human` | Multi-channel notification | Event: `LimitBreach { severity: 'Critical' }`. |
-| 10 | Generate BA 100 / BA 325 / BA 326 return content | `system` | `@domains/capital/ba-returns` + `@domains/liquidity/ba-returns` (`PLANNED`) | Generated per P6 — never assembled. Camille signs the generated content. |
+| 10 | Generate BA 700 (capital + leverage) / BA 300 (LCR + NSFR) return content | `system` | `@domains/capital/ba-returns` + `@domains/liquidity/ba-returns` (`PLANNED`) | Generated per P6 — never assembled. Camille signs the generated content. |
 | 11 | Persist daily snapshot to BRC daily pack | `system` | `@domains/reporting/brc-pack` (`PLANNED`) | Pack is a query, generated daily. |
 
 ## 6. Reconciliation
@@ -61,7 +61,7 @@ Compute the bank's capital and liquidity ratios daily as projections over the ev
 - **Events produced:**
   - `RatioComputed { ratio: 'CET1' | 'LCR' | 'NSFR' | ... , value, as_of, components }`.
   - `LimitBreach { ratio, threshold_value, observed_value, severity, owner, citation }` — when applicable.
-  - `BAReturnGenerated { return: 'BA-100' | 'BA-325' | 'BA-326', as_of, content_hash }`.
+  - `BAReturnGenerated { return: 'BA-700' | 'BA-300', as_of, content_hash }`.
 - **Reconciliation check:**
   - **CI gate:** GL trial balance ↔ event-derived balance ↔ sub-ledger projection reconcile to zero (per Accounting Policies). If recon fails, ratio computation aborts and Bea + Camille are paged.
   - Daily `RatioComputed` events for CET1, LCR, NSFR, leverage exist for every business day; gap detection alerts immediately.

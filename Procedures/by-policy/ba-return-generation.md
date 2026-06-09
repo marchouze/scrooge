@@ -16,7 +16,7 @@ system-capability: prototype/platform/reporting/ba-return-engine (PLANNED)
 **Procedure ID:** PROC-FIN-BA-01
 **Owner:** Camille (Chief Financial Officer, governance) · Bea (Accounting & financial reporting engineer, engineering)
 **Approval:** Audit Committee
-**Cadence:** Monthly (BA 100 / 200 / 300 / 600 / 700 / 900); Quarterly (BA 325 / 326 / Risk Return)
+**Cadence:** Monthly (BA 100 / 120 / 200 / 300 / 320 / 400 / 700); Quarterly (BA 210 / 325 / Risk Return)
 **Version:** v0.1 — 2026-05-13
 **Status:** POPULATED
 
@@ -25,7 +25,7 @@ system-capability: prototype/platform/reporting/ba-return-engine (PLANNED)
 ## 1. Source policy
 
 - `Policies/regulatory-reporting-policy-v1.md` — Regulatory Reporting Policy (primary)
-- `Policies/capital-management-policy-v1.md` — Capital Management Policy (co-source for BA 100 / 300 / 700)
+- `Policies/capital-management-policy-v1.md` — Capital Management Policy (co-source for BA 200 / 320 / 700)
 
 Both policies implement the prudential return obligations under the Regulations Relating to Banks and the PA's Directives. The obligation chain is:
 
@@ -42,7 +42,7 @@ Regulation (Banks Act / D2/2024 / D4/2022 / D3/2013)
 
 | ID | Requirement |
 |---|---|
-| `ORG-PR-29` | File BA returns (BA 100, 200, 300, 325, 326, 600, 700, 900) per Directive D2/2024 to the Prudential Authority on the PA-prescribed schedule. |
+| `ORG-PR-29` | File BA returns (BA 100, 120, 200, 210, 300, 320, 400, 700) per Directive D2/2024 to the Prudential Authority on the PA-prescribed schedule. |
 | `ORG-PR-41` | Submit the Risk Return per Directive D4/2022; covers operational risk loss events, market risk sensitivities, and credit risk large-exposure changes. |
 | `ORG-PR-51` | Monthly BA-series prudential return submission per Directive D3/2013; includes attestation by a duly authorised executive officer of the bank. |
 
@@ -63,11 +63,11 @@ Produce, review, attest, and submit the full suite of Prudential Authority (PA) 
 
 **Primary trigger — calendar (monthly):**
 - T+0: month-end close completes; `MonthEndCloseCompleted { period }` event emitted by the month-end-close procedure.
-- The BA return engine ingests this event and begins data extraction for the monthly returns (BA 100, 200, 300, 600, 700, 900).
+- The BA return engine ingests this event and begins data extraction for the monthly returns (BA 100, 120, 200, 300, 320, 400, 700).
 - Submission deadline: T+15 business days (PA-prescribed for monthly BA returns); the engine emits a deadline warning at T+10 if `BAReturnAttested` has not yet been received.
 
 **Quarterly trigger:**
-- Quarter-end `QuarterEndCloseCompleted { period }` event triggers the BA 325, BA 326, and Risk Return cycle in addition to the monthly suite.
+- Quarter-end `QuarterEndCloseCompleted { period }` event triggers the BA 210 (large exposures), BA 325 (selected trading & treasury risk), and Risk Return cycle in addition to the monthly suite.
 - Submission deadline: T+20 business days for quarterly returns.
 
 **Ad-hoc trigger — restatement:**
@@ -81,15 +81,15 @@ Produce, review, attest, and submit the full suite of Prudential Authority (PA) 
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
 | 1 | Month-end or quarter-end close completes; `MonthEndCloseCompleted` / `QuarterEndCloseCompleted` event emitted | `system` (month-end-close procedure) | `@platform/event-store` ✓ | Upstream dependency: `month-end-close.md` (PLANNED). |
-| 2 | BA return engine reads canonical event log and projects the data required for each form in scope for the period | `system` | `@platform/reporting/ba-return-engine` (`PLANNED`) | No manual data entry. Projection reads from: capital-ratio-monitoring projection (BA 100 / 700), credit-risk-rwa projection (BA 200), market-risk-capital projection (BA 300), ccr-sa-ccr projection (BA 325/326), large-exposure projection (BA 600), liquidity projection (BA 900). |
+| 2 | BA return engine reads canonical event log and projects the data required for each form in scope for the period | `system` | `@platform/reporting/ba-return-engine` (`PLANNED`) | No manual data entry. Projection reads from: capital + leverage projection → BA 700; balance-sheet / income projection → BA 100 / BA 120; credit-risk-RWA projection (incl. CCR sub-forms) → BA 200; market-risk-capital projection → BA 320; large-exposure projection → BA 210; op-risk projection → BA 400; liquidity projection → BA 300. |
 | 3 | Engine emits `BAReturnDraftGenerated { form, period, draft_uri }` for each form; draft available in the document store for review | `system` | `@platform/reporting/ba-return-engine` (`PLANNED`) + `@platform/document-store` ✓ | `draft_uri` is a content-addressed BLAKE3 reference to the immutable draft artefact. |
-| 4 | **BA 100 — Capital adequacy summary.** Derived from the capital-ratio-monitoring projection: CET1 ratio, T1 ratio, Total Capital ratio, RWA total, capital buffers. | `system` | `@platform/projections/capital-ratio-monitoring` ✓ | Threshold: CET1 ≥ 4.5%, T1 ≥ 6%, Total ≥ 8%; breaches escalate immediately to CFO + CRO per capital-ratio-monitoring.md. |
+| 4 | **BA 700 — Capital adequacy + leverage summary.** Derived from the capital-ratio-monitoring projection: CET1 ratio, T1 ratio, Total Capital ratio, RWA total, capital buffers, leverage ratio. | `system` | `@platform/projections/capital-ratio-monitoring` ✓ | Threshold: CET1 ≥ 4.5%, T1 ≥ 6%, Total ≥ 8%; breaches escalate immediately to CFO + CRO per capital-ratio-monitoring.md. |
 | 5 | **BA 200 — Credit risk RWA.** Counterparty exposures, LEX, SA credit-risk weights per standardised approach. | `system` | `@platform/projections/credit-risk-rwa` (`PLANNED`) | SA credit-risk weights per Basel III standardised approach as transposed by D2/2024. |
-| 6 | **BA 300 — Market risk capital.** FRTB SA charges by risk class (GIRR, FX, EQ, COMM, CSR). Activates when FRTB goes live (targeted Jul 2025). Until then: simplified market-risk charge. | `system` | `@platform/projections/market-risk-capital` (`PLANNED`) | Prior to FRTB activation, return filed with simplified IMA/SA charge per current rules. |
-| 7 | **BA 325 / 326 — Counterparty credit risk (SA-CCR).** Quarterly. Replacement cost + PFE for OTC derivatives and SFTs per SA-CCR methodology. | `system` | `@platform/projections/ccr-sa-ccr` (`PLANNED`) | Filed quarterly, not monthly. Scope expands as OTC derivatives trading commences. |
-| 8 | **BA 600 — Large exposures.** Single-name and connected-group exposures vs. 25% LE limit (10% for G-SIBs). | `system` | `@platform/projections/large-exposure` (`PLANNED`) | Any exposure approaching 20% of eligible capital triggers early-warning event to Helena + Camille. |
-| 9 | **BA 700 — Leverage ratio.** Tier 1 capital / total exposure measure; minimum 3%. | `system` | `@platform/projections/capital-ratio-monitoring` ✓ | Leverage ratio is derived from the same projection as BA 100; filed on monthly basis. |
-| 10 | **BA 900 — Liquidity.** LCR (high-quality liquid assets / 30-day net cash outflows ≥ 100%) + NSFR (available stable funding / required stable funding ≥ 100%). | `system` | `@platform/projections/liquidity` ✓ (partial) | LCR monitoring already live (capital-ratio-monitoring.md); NSFR projection is PLANNED. |
+| 6 | **BA 320 — Market risk capital.** FRTB SA charges by risk class (GIRR, FX, EQ, COMM, CSR). Activates when FRTB goes live (targeted Jul 2025). Until then: simplified market-risk charge. | `system` | `@platform/projections/market-risk-capital` (`PLANNED`) | Prior to FRTB activation, return filed with simplified IMA/SA charge per current rules. |
+| 7 | **BA 200 — Counterparty credit risk (SA-CCR) sub-forms.** Replacement cost + PFE for OTC derivatives and SFTs per SA-CCR methodology, reported within the BA 200 credit-risk return. | `system` | `@platform/projections/ccr-sa-ccr` (`PLANNED`) | Scope expands as OTC derivatives trading commences. |
+| 8 | **BA 210 — Large exposures / credit concentration.** Single-name and connected-group exposures vs. 25% LE limit (10% for G-SIBs). | `system` | `@platform/projections/large-exposure` (`PLANNED`) | Any exposure approaching 20% of eligible capital triggers early-warning event to Helena + Camille. |
+| 9 | **BA 400 — Operational risk.** Standardised-approach operational-risk capital; loss-event detail on the companion BA 410/420. | `system` | `@platform/projections/operational-risk` (`PLANNED`) | Loss data sourced from the op-risk loss-event register (PROC-RISK-RCSA-01 upstream). |
+| 10 | **BA 300 — Liquidity.** LCR (high-quality liquid assets / 30-day net cash outflows ≥ 100%) + NSFR (available stable funding / required stable funding ≥ 100%); companion BA 310 carries the minimum liquid-asset reserve / HQLA detail. | `system` | `@platform/projections/liquidity` ✓ (partial) | LCR monitoring already live (capital-ratio-monitoring.md); NSFR projection is PLANNED. |
 | 11 | **Risk Return (D4/2022).** Quarterly. Operational risk loss events (gross loss + recovery), market risk sensitivities (PV01, delta, vega by risk class), credit risk LE changes. | `system` | `@platform/reporting/risk-return-engine` (`PLANNED`) | Operational loss data sourced from the op-risk loss-event register (PROC-RISK-RCSA-01 upstream); market sensitivities from positions projection. |
 | 12 | Preparer (Bea) reviews all draft returns in the document store; raises any reconciliation breaks as issues in the tracking register | `human` (Bea) | `@platform/document-store` ✓ | Reconciliation break = any computed figure that cannot be traced to an upstream event. Bea must resolve all breaks before attesting. |
 | 13 | Bea emits `BAReturnReviewed { form, period, reviewer: bea, issues_resolved: true }` confirming the draft is ready for CFO attestation | `system` (on Bea action) | `@platform/event-store` ✓ | If issues remain unresolved, `BAReturnReviewed` cannot be emitted; the deadline-warning escalation fires at T+10. |
@@ -142,7 +142,7 @@ If the BA return engine cannot produce a draft (e.g. missing upstream data, proj
 
 The following steps involve human judgement and are not fully automated in the current substrate:
 
-- **Step 12 — Preparer review (Bea):** Bea must inspect each draft return for reconciliation breaks, rounding issues, and cross-form consistency (e.g. BA 100 RWA total should match the sum of BA 200 + BA 300 + operational RWA). This requires financial expertise and cannot be automated without model-risk implications.
+- **Step 12 — Preparer review (Bea):** Bea must inspect each draft return for reconciliation breaks, rounding issues, and cross-form consistency (e.g. BA 700 RWA total should match the sum of BA 200 + BA 320 + BA 400 operational RWA). This requires financial expertise and cannot be automated without model-risk implications.
 - **Step 14 — CFO attestation (Camille):** Camille is the statutory signatory. She must personally review and attest; delegation is not permitted without a formal substitution event (e.g. during leave: a designated alternate CFO must be named via a `DelegatedSignatoryAppointed` event).
 - **Step 17 — Restatement decision (Camille):** The materiality assessment for whether a post-submission error requires restatement involves professional judgement. Camille decides; Helena is consulted where the error relates to risk-weighted assets.
 
@@ -153,8 +153,8 @@ The following steps involve human judgement and are not fully automated in the c
 | Failure mode | Detection | Escalation |
 |---|---|---|
 | BA return engine fails to produce draft | `BAReturnDraftFailed` event; deadline monitor at T+10 | Bea → Devon (COO); PA notified if T+15 at risk |
-| Capital ratio below minimum at month-end | BA 100 draft shows breach | Immediate: Camille + Helena + CEO; capital-ratio-monitoring.md escalation path |
-| Large exposure exceeds 25% LE limit | BA 600 draft flags breach | Immediate: Camille + Helena; trading halt on affected counterparty |
+| Capital ratio below minimum at month-end | BA 700 draft shows breach | Immediate: Camille + Helena + CEO; capital-ratio-monitoring.md escalation path |
+| Large exposure exceeds 25% LE limit | BA 210 draft flags breach | Immediate: Camille + Helena; trading halt on affected counterparty |
 | CFO attestation not received by T+13 | Deadline-warning event at T+10 | Devon (COO) escalates to Camille; if unresolved by T+14, CEO notified |
 | PA portal submission fails | `BAReturnFiledFailed` event; retry x3 | Tomas (payments) + Bea; manual upload if portal unavailable; PA contacted |
 | Material error discovered post-submission | Internal review, Vera recon sample | `BAReturnRestatementTriggered`; Camille notifies PA within 24 hours; Audit Committee informed at next meeting |
@@ -165,7 +165,7 @@ The following steps involve human judgement and are not fully automated in the c
 ## 10. Related procedures
 
 - `month-end-close.md` (PLANNED) — upstream trigger; `MonthEndCloseCompleted` fires BA return generation.
-- [`capital-ratio-monitoring.md`](capital-ratio-monitoring.md) — source of BA 100 / BA 700 data; LCR / NSFR projection for BA 900.
+- [`capital-ratio-monitoring.md`](capital-ratio-monitoring.md) — source of BA 700 capital + leverage data; LCR / NSFR projection for BA 300.
 - [`balance-sheet-substantiation.md`](balance-sheet-substantiation.md) — balance sheet figures feed BA 200 credit exposures.
 - `credit-origination.md` (PLANNED) — credit events feed the credit-risk-rwa projection (BA 200).
 - `market-risk-monitoring.md` (PLANNED) — market risk figures feed BA 300 and the Risk Return.
@@ -185,6 +185,6 @@ The following steps involve human judgement and are not fully automated in the c
 ## 12. Audit / assurance
 
 - Vera nightly recon: `BAReturnFiled` events vs. PA submission schedule; any missing or late filing is a P1 finding.
-- Vera quarterly: cross-form consistency check (BA 100 RWA vs. BA 200 + BA 300 sum); deviations reported to Audit Committee.
+- Vera quarterly: cross-form consistency check (BA 700 RWA vs. BA 200 + BA 320 + BA 400 sum); deviations reported to Audit Committee.
 - Annual: Audit Committee reviews the completeness and accuracy of the BA return cycle as part of the regulatory reporting audit programme.
 - PA examination: PA may request source-event traces for any line in any BA return; the event log + document store support point-in-time reconstruction.
