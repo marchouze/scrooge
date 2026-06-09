@@ -1,6 +1,6 @@
 // platform/reporting/ba-300-lcr-xml-adapter.ts
 //
-// Thin adapter that maps a typed `Ba110Output` to the generic
+// Thin adapter that maps a typed `Ba300LcrOutput` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`.
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 — BA 110 (LCR) XML adapter.
@@ -9,8 +9,8 @@
 //
 // Architectural placement:
 //
-//   BA 110 PROJECTION    (pure typed Ba110Output)
-//      → ba110ToXmlPayload()   ← this module
+//   BA 110 PROJECTION    (pure typed Ba300LcrOutput)
+//      → ba300LcrToXmlPayload()   ← this module
 //      → SarbXmlReportPayload  ← consumed by renderSarbXml()
 //      → SARB portal XML
 //
@@ -28,13 +28,13 @@
 //   + Atlas (Core banking platform architect, engineering — render-layer
 //   infrastructure + simulator harness).
 
-import type { Ba110LineItem, Ba110Output } from "./ba-300-lcr";
+import type { Ba300LcrLineItem, Ba300LcrOutput } from "./ba-300-lcr";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
-export const BA_110_XSD_URI = "https://hoz.bank/xsd/ba-300/v0.1-rehearsal.xsd"; // [citation: TBC]
-export const BA_110_NAMESPACE = "https://hoz.bank/ns/ba-300/v0.1";
+export const BA_300_LCR_XSD_URI = "https://hoz.bank/xsd/ba-300/v0.1-rehearsal.xsd"; // [citation: TBC]
+export const BA_300_LCR_NAMESPACE = "https://hoz.bank/ns/ba-300/v0.1";
 
-function lineItem(it: Ba110LineItem): SarbXmlSection {
+function lineItem(it: Ba300LcrLineItem): SarbXmlSection {
   return {
     LineId: it.lineId,
     LineLabel: it.lineLabel,
@@ -46,7 +46,7 @@ function lineItem(it: Ba110LineItem): SarbXmlSection {
 }
 
 /**
- * Map a typed `Ba110Output` (LCR return) to a `SarbXmlReportPayload`
+ * Map a typed `Ba300LcrOutput` (LCR return) to a `SarbXmlReportPayload`
  * ready for `renderSarbXml()`.
  *
  * Field-mapping notes:
@@ -68,7 +68,7 @@ function lineItem(it: Ba110LineItem): SarbXmlSection {
  *   BCBS D295 (LCR);
  *   BCBS-LCR-2013.
  */
-export function ba110ToXmlPayload(report: Ba110Output): SarbXmlReportPayload {
+export function ba300LcrToXmlPayload(report: Ba300LcrOutput): SarbXmlReportPayload {
   const body: SarbXmlSection = {
     Meta: {
       Form: report.meta.form,
@@ -141,13 +141,13 @@ export function ba110ToXmlPayload(report: Ba110Output): SarbXmlReportPayload {
     // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL; _canonical-register.md.
     formId: "BA300",
     formVersion: report.meta.formVersion,
-    xsdUri: BA_110_XSD_URI,
-    namespaceUri: BA_110_NAMESPACE,
+    xsdUri: BA_300_LCR_XSD_URI,
+    namespaceUri: BA_300_LCR_NAMESPACE,
     body,
   };
 }
 
-export const BA_110_REQUIRED_ELEMENTS: readonly string[] = [
+export const BA_300_LCR_REQUIRED_ELEMENTS: readonly string[] = [
   "Meta",
   "Hqla",
   "CashFlows",

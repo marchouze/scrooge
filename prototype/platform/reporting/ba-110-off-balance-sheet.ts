@@ -78,7 +78,7 @@ export const BA_110_DERIVATIVE_BUILD_PHASE_CCF = 1.0;
  * (LE-ZA-HOZ-BANK) at v0 per `Regulations/_legal-entity-tree.md`.
  * Group-consolidated BA 110 deferred under `D-REGULATORY-PERIMETER`.
  */
-export const BA_110_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_300_LCR_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 export class Ba110OffBalanceSheetGeneratorError extends Error {
   constructor(message: string) {
@@ -88,9 +88,9 @@ export class Ba110OffBalanceSheetGeneratorError extends Error {
 }
 
 function assertBankEntity(entity: string): void {
-  if (!BA_110_BANK_ENTITIES.includes(entity)) {
+  if (!BA_300_LCR_BANK_ENTITIES.includes(entity)) {
     throw new Ba110OffBalanceSheetGeneratorError(
-      `BA 110 (Off-Balance-Sheet Activities) is bank-licence-bound; entity '${entity}' is not in BA_110_BANK_ENTITIES (${BA_110_BANK_ENTITIES.join(
+      `BA 110 (Off-Balance-Sheet Activities) is bank-licence-bound; entity '${entity}' is not in BA_300_LCR_BANK_ENTITIES (${BA_300_LCR_BANK_ENTITIES.join(
         ", ",
       )}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 110 deferred under D-REGULATORY-PERIMETER.`,
     );

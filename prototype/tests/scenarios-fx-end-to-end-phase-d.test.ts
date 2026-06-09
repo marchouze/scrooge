@@ -32,7 +32,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { type DocumentHash, LocalFsDocumentStore, hashContent } from "../platform/document-store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections";
-import type { Ba100Output, Ba110Output, Ba300Output, Ba310Output } from "../platform/reporting";
+import type { Ba100Output, Ba300LcrOutput, Ba300Output, Ba310Output } from "../platform/reporting";
 import {
   PHASE_D_FORMS,
   PHASE_D_SOURCE_LINEAGE,
@@ -190,7 +190,7 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     const byForm: Record<string, string> = {};
     for (const w of result.writeResults) byForm[w.form] = w.outputPath;
 
-    // BA 300 (LCR / liquidity) — Slice-3 typed render (`Ba110Render`).
+    // BA 300 (LCR / liquidity) — Slice-3 typed render (`Ba300LcrRender`).
     const ba110 = JSON.parse(readFileSync(byForm["ba-300"] as string, "utf8")) as Record<
       string,
       unknown
@@ -236,5 +236,5 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
 // generator API change, remove them then. Bun's typecheck flags unused
 // type-only imports under noUnusedLocals=false (project default), so they
 // remain harmless even if unused.
-const _typeKeepalive: Ba110Output | Ba100Output | Ba310Output | Ba300Output | undefined = undefined;
+const _typeKeepalive: Ba300LcrOutput | Ba100Output | Ba310Output | Ba300Output | undefined = undefined;
 void _typeKeepalive;

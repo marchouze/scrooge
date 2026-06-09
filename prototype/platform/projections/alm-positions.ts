@@ -222,7 +222,7 @@ function extractRawPosition(type: string, payload: Record<string, unknown>): Raw
 // The LCR / NSFR the dashboard tile renders is a *bank* ratio: Regulation 26
 // (LCR) and 26A (NSFR) are bank-licence-bound, and the BA 110 generator
 // already refuses any entity other than `LE-ZA-HOZ-BANK`
-// (`BA_110_BANK_ENTITIES`, ba-110-lcr.ts:518). The LCR-feeding folds below
+// (`BA_300_LCR_BANK_ENTITIES`, ba-110-lcr.ts:518). The LCR-feeding folds below
 // historically replayed the WHOLE store with no entity predicate, so a
 // non-fixture flow booked on a sibling legal entity (`LE-ZA-HOZ-SECURITIES`,
 // `LE-ZA-HOZ-GROUP`, or the legacy `LE-BANK-SA` identifier) would silently

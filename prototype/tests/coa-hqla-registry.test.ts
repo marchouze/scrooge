@@ -31,7 +31,7 @@ import {
 } from "../platform/accounting/coa-registry";
 import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
-import { generateBa110Lcr } from "../platform/reporting/ba-300-lcr";
+import { generateBa300Lcr } from "../platform/reporting/ba-300-lcr";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const PERIOD_START = "2026-05-01T00:00:00.000Z";
@@ -231,7 +231,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 110 dynamic COA scan", () => {
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 1_000_000 },
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -259,7 +259,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 110 dynamic COA scan", () => {
       { leafAccountId: "ACC-3100-002", currency: "ZAR", amountMinor: 300_000 },
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -285,7 +285,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 110 dynamic COA scan", () => {
     const baselineTrialBalance = [
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 },
     ];
-    const baselineOut = generateBa110Lcr({
+    const baselineOut = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -302,7 +302,7 @@ describe("D-HQLA-COA-CLASSIFICATION — BA 110 dynamic COA scan", () => {
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000 },
       { leafAccountId: "ACC-3100-002", currency: "ZAR", amountMinor: 300_000 },
     ];
-    const withBondsOut = generateBa110Lcr({
+    const withBondsOut = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -342,7 +342,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2A-SYNTH", currency: "ZAR", amountMinor: 100_000 },
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -389,7 +389,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2A-SYNTH", currency: "ZAR", amountMinor: 20_000 },
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -435,7 +435,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2B-SYNTH", currency: "ZAR", amountMinor: 100_000 },
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -479,7 +479,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
       { leafAccountId: "ACC-L2B-RMBS", currency: "ZAR", amountMinor: 40_000 },
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -511,7 +511,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
 
     // HQLA: 500k ZAR in level-1 banking-book bonds.
     // No settlement events → infinite LCR.
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -531,7 +531,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
     const store = makeStore();
     const classifications = coaToHqlaClassifications();
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -557,7 +557,7 @@ describe("D-HQLA-COA-CLASSIFICATION — LCR compliance via COA-derived classific
       { leafAccountId: "ACC-1100-004", currency: "ZAR", amountMinor: 100_000 }, // suspense
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: AS_OF,
       periodId: PERIOD_ID,

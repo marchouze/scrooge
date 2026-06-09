@@ -9,8 +9,9 @@
 // numbering artefact (BA 110 = "Off-Balance-Sheet Activities"). Re-numbered
 // forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09;
 // supersedes D-BA-RETURN-FORM-NUMBERING-RECON);
-// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba110*`
-// symbol names retained pending a separate symbol-rename pass.
+// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal symbols
+// renamed to the `Ba300Lcr*`/`BA_300_LCR_*` namespace
+// (WS-BA-RETURNS-FOLLOWON, D-BA-RETURN-NUMBERING-EXCEL-CANONICAL).
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), pack §6 Slice 3.
@@ -164,7 +165,7 @@ export type HqlaLevel = "level-1" | "level-2a" | "level-2b";
 /**
  * Per-leaf-account liquidity classification for the BA 110 generator.
  *
- * @deprecated Use `Ba110GeneratorInput.hqlaStock` (instrument-level from SecurityMaster ×
+ * @deprecated Use `Ba300LcrGeneratorInput.hqlaStock` (instrument-level from SecurityMaster ×
  * unified-position) instead. This account-level approach is a Phase-0 shortcut that applies
  * a single HQLA tier to the entire GL account balance, which is incorrect when an account
  * holds heterogeneous instruments (e.g. both Level-1 SAGBs and non-HQLA corporate bonds).
@@ -176,7 +177,7 @@ export type HqlaLevel = "level-1" | "level-2a" | "level-2b";
  * `TradeMatured` events folded directly from the event store.
  * Entries with only `outflowRunOffRate` or `inflowRate` set are silently
  * ignored by the generator (a deprecation warning is added to
- * `Ba110Output.placeholders`). Only `hqlaLevel` entries are processed.
+ * `Ba300LcrOutput.placeholders`). Only `hqlaLevel` entries are processed.
  *
  * The Level-2B `assetSpecificFactor` lets the call site pass a per-asset
  * factor (50% lower bound; 25% RMBS) per BCBS D295 §54. Unspecified
@@ -211,7 +212,7 @@ export interface AccountLiquidityClassification {
    * Optional ISIN of the security held in this GL account.
    *
    * When present AND when `opts.hqlaOverrides` is supplied to
-   * `generateBa110Lcr`, the instrument-level HQLA tier from the
+   * `generateBa300Lcr`, the instrument-level HQLA tier from the
    * SecurityMaster projection overrides the COA `hqlaLevel` tag.
    *
    * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -232,7 +233,7 @@ export interface AccountLiquidityClassification {
  * Citations: Principles/1-events-are-truth.md (updated 2026-05-12);
  *            D-MARKETS-SCHEMA-FOUNDATION.
  */
-export interface Ba110GeneratorInput {
+export interface Ba300LcrGeneratorInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). The generator throws on non-bank entities. */
   readonly entity: string;
   /** ISO 8601 — the period-end as-of date the LCR is reported at. Convention: `AccountingPeriodClosed.closedAt`. */
@@ -335,7 +336,7 @@ export interface Ba110GeneratorInput {
  * with placeholders), `[citation: TBC]` markers on `lineId` indicate the
  * line numbering is awaiting Mira's WS-INSTRUMENT-ANALYSES publication.
  */
-export interface Ba110LineItem {
+export interface Ba300LcrLineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
@@ -352,11 +353,11 @@ export interface Ba110LineItem {
  * The HQLA-numerator section. Each level reports its raw stock, the
  * post-haircut + post-cap contribution, and the per-account contributors.
  */
-export interface Ba110HqlaSection {
+export interface Ba300LcrHqlaSection {
   readonly level1: {
     readonly stockMinor: number;
     readonly contributionMinor: number;
-    readonly lineItems: readonly Ba110LineItem[];
+    readonly lineItems: readonly Ba300LcrLineItem[];
   };
   readonly level2A: {
     readonly stockMinor: number;
@@ -364,14 +365,14 @@ export interface Ba110HqlaSection {
     readonly preCapContributionMinor: number;
     readonly contributionMinor: number;
     readonly capBindingIndicator: boolean;
-    readonly lineItems: readonly Ba110LineItem[];
+    readonly lineItems: readonly Ba300LcrLineItem[];
   };
   readonly level2B: {
     readonly stockMinor: number;
     readonly preCapContributionMinor: number;
     readonly contributionMinor: number;
     readonly capBindingIndicator: boolean;
-    readonly lineItems: readonly Ba110LineItem[];
+    readonly lineItems: readonly Ba300LcrLineItem[];
   };
   /** Total stock of HQLA, post-haircut + post-cap. The LCR numerator. */
   readonly totalStockHqlaMinor: number;
@@ -384,17 +385,17 @@ export interface Ba110HqlaSection {
  *
  * Citation: Principles/1-events-are-truth.md (updated 2026-05-12).
  */
-export interface Ba110CashFlowSection {
+export interface Ba300LcrCashFlowSection {
   readonly outflows: {
     readonly grossMinor: number;
-    readonly lineItems: readonly Ba110LineItem[];
+    readonly lineItems: readonly Ba300LcrLineItem[];
   };
   readonly inflows: {
     readonly grossMinor: number;
     /** Capped at 75% of gross outflows per BCBS D295 §142 / Reg 26(11). */
     readonly cappedMinor: number;
     readonly capBindingIndicator: boolean;
-    readonly lineItems: readonly Ba110LineItem[];
+    readonly lineItems: readonly Ba300LcrLineItem[];
   };
   /** Net cash outflows (LCR denominator), with the 25%-of-gross-outflows floor applied. */
   readonly netCashOutflowsMinor: number;
@@ -457,7 +458,7 @@ export interface Ba110CashFlowSection {
  *   Regulations Relating to Banks Reg 26 (LCR);
  *   BCBS 238 (Principles for effective risk-data aggregation).
  */
-export interface Ba110InputCompleteness {
+export interface Ba300LcrInputCompleteness {
   readonly hqlaInputsFound: number;
   readonly outflowInputsFound: number;
   readonly inflowInputsFound: number;
@@ -478,7 +479,7 @@ export interface Ba110InputCompleteness {
  * deterministic-stringified map — for forensic reproducibility), and the
  * trial-balance snapshot event_id (when supplied).
  */
-export interface Ba110Output {
+export interface Ba300LcrOutput {
   readonly meta: {
     readonly form: "BA 300";
     readonly formVersion: "v0.1-rehearsal";
@@ -493,12 +494,12 @@ export interface Ba110Output {
     /**
      * G-3: input-completeness meta block. Distinguishes "no data" from
      * "no stress" in the divide-by-zero case and surfaces data-quality
-     * signal to downstream renderers. See `Ba110InputCompleteness`.
+     * signal to downstream renderers. See `Ba300LcrInputCompleteness`.
      */
-    readonly inputCompleteness: Ba110InputCompleteness;
+    readonly inputCompleteness: Ba300LcrInputCompleteness;
   };
-  readonly hqla: Ba110HqlaSection;
-  readonly cashFlows: Ba110CashFlowSection;
+  readonly hqla: Ba300LcrHqlaSection;
+  readonly cashFlows: Ba300LcrCashFlowSection;
   /** LCR = totalStockHqla / netCashOutflows. Dimensionless; 1.0 = 100%. */
   readonly lcrRatio: number;
   /** ≥ 1.0 per Reg 26(2). Convenience flag for downstream alerting. */
@@ -520,10 +521,10 @@ export interface Ba110Output {
 // Errors
 // ---------------------------------------------------------------------------
 
-export class Ba110GeneratorError extends Error {
+export class Ba300LcrGeneratorError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Ba110GeneratorError";
+    this.name = "Ba300LcrGeneratorError";
   }
 }
 
@@ -538,12 +539,12 @@ export class Ba110GeneratorError extends Error {
  * are out of scope — see `D-REGULATORY-PERIMETER` (CEO-approved
  * 2026-05-10).
  */
-export const BA_110_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_300_LCR_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_110_BANK_ENTITIES.includes(entity)) {
-    throw new Ba110GeneratorError(
-      `BA 110 (LCR) is bank-licence-bound; entity '${entity}' is not in BA_110_BANK_ENTITIES (${BA_110_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
+  if (!BA_300_LCR_BANK_ENTITIES.includes(entity)) {
+    throw new Ba300LcrGeneratorError(
+      `BA 110 (LCR) is bank-licence-bound; entity '${entity}' is not in BA_300_LCR_BANK_ENTITIES (${BA_300_LCR_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
     );
   }
 }
@@ -841,8 +842,8 @@ function foldProductMaturityOutflows(args: {
   readonly asOf: string;
   readonly provenanceFilter: ReturnType<typeof defaultProvenanceFilter>;
 }): {
-  readonly outflowLines: Ba110LineItem[];
-  readonly inflowLines: Ba110LineItem[];
+  readonly outflowLines: Ba300LcrLineItem[];
+  readonly inflowLines: Ba300LcrLineItem[];
   readonly openRepoIsins: Set<string>;
 } {
   const { eventStore, entity, asOf, provenanceFilter } = args;
@@ -890,8 +891,8 @@ function foldProductMaturityOutflows(args: {
   // Step 2: Fold live opening events into outflow/inflow lines.
   // -------------------------------------------------------------------------
 
-  const outflowLines: Ba110LineItem[] = [];
-  const inflowLines: Ba110LineItem[] = [];
+  const outflowLines: Ba300LcrLineItem[] = [];
+  const inflowLines: Ba300LcrLineItem[] = [];
   const openRepoIsins = new Set<string>();
 
   for (const event of eventStore.replay({ entity, asOf })) {
@@ -1025,14 +1026,14 @@ function foldProductMaturityOutflows(args: {
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10).
  */
 /**
- * Options for `generateBa110Lcr`. Introduced in D-FINANCIAL-INSTRUMENT-ENTITY
+ * Options for `generateBa300Lcr`. Introduced in D-FINANCIAL-INSTRUMENT-ENTITY
  * Slice 9 to support instrument-level HQLA classification from the SecurityMaster
  * projection as an override on top of COA-level hqlaLevel tags.
  *
  * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
  * Citations: BA-110-LCR; BCBS-LCR-2013.
  */
-export interface Ba110LcrOpts {
+export interface Ba300LcrOpts {
   /**
    * Instrument-level HQLA classification map built from the SecurityMaster
    * projection (use `buildHqlaOverridesFromSecurityMaster()` from
@@ -1058,12 +1059,12 @@ export interface Ba110LcrOpts {
 }
 
 // ---------------------------------------------------------------------------
-// Helper: map HqlaStockLine → Ba110LineItem (for the preferred hqlaStock path).
+// Helper: map HqlaStockLine → Ba300LcrLineItem (for the preferred hqlaStock path).
 // ---------------------------------------------------------------------------
 
 /**
  * Convert an `HqlaStockLine` (from `computeHqlaStockFromPositions`) to a
- * `Ba110LineItem` suitable for the HQLA section of the BA 110 output.
+ * `Ba300LcrLineItem` suitable for the HQLA section of the BA 110 output.
  *
  * - `lineId` uses the instrument-level convention: `hqla.<level>.<instrumentId>`.
  * - `contributingAccounts` is empty — instrument-level positions are not
@@ -1071,7 +1072,7 @@ export interface Ba110LcrOpts {
  * - `amountMinor` is the post-haircut `adjustedMinor` value.
  * - `note` carries the haircut percentage for auditability.
  */
-function hqlaStockLineToLineItem(line: HqlaStockLine, ccy: string): Ba110LineItem {
+function hqlaStockLineToLineItem(line: HqlaStockLine, ccy: string): Ba300LcrLineItem {
   return {
     lineId: `hqla.${line.hqlaLevel}.${line.instrumentId}`,
     lineLabel: line.instrumentName ?? line.isin ?? line.instrumentId,
@@ -1083,10 +1084,10 @@ function hqlaStockLineToLineItem(line: HqlaStockLine, ccy: string): Ba110LineIte
   };
 }
 
-export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts): Ba110Output {
+export function generateBa300Lcr(input: Ba300LcrGeneratorInput, opts?: Ba300LcrOpts): Ba300LcrOutput {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
-    throw new Ba110GeneratorError(
+    throw new Ba300LcrGeneratorError(
       `BA 110 generator: functionalCurrency must be ISO-4217 (3 chars), got '${input.functionalCurrency}'`,
     );
   }
@@ -1145,9 +1146,9 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
   // Citations: BCBS D295 §50–§54; Reg 26(7); Principles/1-events-are-truth.md.
   // -------------------------------------------------------------------------
 
-  const level1Lines: Ba110LineItem[] = [];
-  const level2ALines: Ba110LineItem[] = [];
-  const level2BLines: Ba110LineItem[] = [];
+  const level1Lines: Ba300LcrLineItem[] = [];
+  const level2ALines: Ba300LcrLineItem[] = [];
+  const level2BLines: Ba300LcrLineItem[] = [];
 
   let level1Stock = 0;
   let level2AStock = 0;
@@ -1158,7 +1159,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     // -----------------------------------------------------------------------
     // Preferred path: instrument-level HQLA stock.
     // computeHqlaStockFromPositions() has already applied BCBS D295 haircuts
-    // and filtered to functional currency. Map HqlaStockLine → Ba110LineItem.
+    // and filtered to functional currency. Map HqlaStockLine → Ba300LcrLineItem.
     // -----------------------------------------------------------------------
     const stockResult = computeHqlaStockFromPositions({
       ...input.hqlaStock,
@@ -1181,7 +1182,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     // so a future non-Level-1 custodian mapping lands in the correct bucket
     // rather than being silently miscounted.
     for (const line of input.cashHqlaLines ?? []) {
-      const lineItem: Ba110LineItem = {
+      const lineItem: Ba300LcrLineItem = {
         lineId: `hqla.${line.hqlaLevel}.cash.${line.instrumentId}`,
         lineLabel: line.instrumentName ?? line.instrumentId,
         amountMinor: line.adjustedMinor,
@@ -1245,7 +1246,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     for (const c of input.classifications) {
       if (!c.hqlaLevel) continue; // Skip deprecated outflow/inflow entries.
       if (classMap.has(c.leafAccountId)) {
-        throw new Ba110GeneratorError(
+        throw new Ba300LcrGeneratorError(
           `BA 110 generator: duplicate classification for account '${c.leafAccountId}'`,
         );
       }
@@ -1314,7 +1315,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
       const noteParts = [creditWarning, overrideNote].filter(Boolean);
       const note = noteParts.length > 0 ? noteParts.join("; ") : undefined;
 
-      const lineItem: Ba110LineItem = {
+      const lineItem: Ba300LcrLineItem = {
         lineId: `${effectiveHqlaLevel}.${row.leafAccountId}`,
         lineLabel: c.subCategory ?? `HQLA ${effectiveHqlaLevel} — ${row.leafAccountId}`,
         amountMinor: stockMinor,
@@ -1332,7 +1333,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
       } else {
         const factor = c.assetSpecificFactor ?? 0.5;
         if (factor < 0 || factor > 1) {
-          throw new Ba110GeneratorError(
+          throw new Ba300LcrGeneratorError(
             `BA 110 generator: assetSpecificFactor on '${row.leafAccountId}' must be in [0,1], got ${factor}`,
           );
         }
@@ -1357,8 +1358,8 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     ...(input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {}),
   });
 
-  const outflowLines: Ba110LineItem[] = [];
-  const inflowLines: Ba110LineItem[] = [];
+  const outflowLines: Ba300LcrLineItem[] = [];
+  const inflowLines: Ba300LcrLineItem[] = [];
   let grossOutflows = 0;
   let grossInflows = 0;
   let hasForeignCurrencyFlow = false;
@@ -1426,7 +1427,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     const lineLabel = `${firstFlow.eventType} — trade ${firstFlow.tradeId}`;
     const absAmount = Math.abs(totalMinor);
 
-    const lineItem: Ba110LineItem = {
+    const lineItem: Ba300LcrLineItem = {
       lineId,
       lineLabel,
       amountMinor: absAmount,
@@ -1511,7 +1512,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
   // Complete: every input category populated AND no exclusions.
   // Partial: at least one input category populated AND at least one
   //   candidate excluded by the fold.
-  let completenessClass: Ba110InputCompleteness["completenessClass"];
+  let completenessClass: Ba300LcrInputCompleteness["completenessClass"];
   if (hqlaInputsFound === 0 && outflowInputsFound === 0 && inflowInputsFound === 0) {
     completenessClass = "empty";
   } else if (
@@ -1536,7 +1537,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     completenessClass = "complete";
   }
 
-  const inputCompleteness: Ba110InputCompleteness = {
+  const inputCompleteness: Ba300LcrInputCompleteness = {
     hqlaInputsFound,
     outflowInputsFound,
     inflowInputsFound,
@@ -1664,25 +1665,25 @@ const PRIOR_LEVEL1_FRACTION = 0.9;
 const HQLA_DRIFT_THRESHOLD = 0.05;
 
 /**
- * Async wrapper around `generateBa110Lcr` that:
+ * Async wrapper around `generateBa300Lcr` that:
  *   1. Runs the pure generator.
  *   2. Emits `LCRRatioProjection` to the event store.
  *   3. Emits `HQLACompositionDrift` when the Level-1 share shifts >5pp vs
  *      the build-phase baseline ({@link PRIOR_LEVEL1_FRACTION}).
  *
  * The emitted events are the canonical ratio signals per Principle 1 — the
- * `Ba110Output` struct is a convenience projection for renderers and tests.
+ * `Ba300LcrOutput` struct is a convenience projection for renderers and tests.
  *
  * Citations:
  *   Principles/1-events-are-truth.md;
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
  *   REG-26-LCR; BCBS-D295; BA-110.
  */
-export async function generateBa110LcrWithEvents(
-  input: Ba110GeneratorInput,
-  opts?: Ba110LcrOpts,
-): Promise<Ba110Output> {
-  const output = generateBa110Lcr(input, opts);
+export async function generateBa300LcrWithEvents(
+  input: Ba300LcrGeneratorInput,
+  opts?: Ba300LcrOpts,
+): Promise<Ba300LcrOutput> {
+  const output = generateBa300Lcr(input, opts);
   const { eventStore, entity, periodEnd } = input;
 
   // Map lcrRatio (dimensionless) to pct (100-based) for the event payload.

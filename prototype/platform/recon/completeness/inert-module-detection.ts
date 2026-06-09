@@ -121,7 +121,7 @@ export const KNOWN_INERT_PENDING_WIRING: readonly AllowlistEntry[] = [
     module: "platform/returns/ba300/period-close-subscriber.ts",
     owner: "Mira + Bea",
     closing:
-      "WS-RETURNS-SUBMISSION-WIRING — NOT wired: unresolved formId. BA-110's generator is genuinely event-sourced (trial balance + positions + settlement flows + Party register), but the SARB submission formId cannot be cleanly set: GG 35950 lists BA 110 as the daily return (reg 29(3) FX-NOP) while ba-110-lcr.* treats it as LCR, and `ba110ToXmlPayload` currently emits the RETIRED formId 'BA325'. This is the open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON; wiring before it resolves would record a mis-formId'd submission. Blocked on that reconciliation.",
+      "WS-RETURNS-SUBMISSION-WIRING — NOT wired: unresolved formId. BA-110's generator is genuinely event-sourced (trial balance + positions + settlement flows + Party register), but the SARB submission formId cannot be cleanly set: GG 35950 lists BA 110 as the daily return (reg 29(3) FX-NOP) while ba-110-lcr.* treats it as LCR, and `ba300LcrToXmlPayload` currently emits the RETIRED formId 'BA325'. This is the open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON; wiring before it resolves would record a mis-formId'd submission. Blocked on that reconciliation.",
   },
   {
     module: "platform/returns/ba400/period-close-subscriber.ts",

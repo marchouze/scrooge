@@ -31,8 +31,8 @@ import { makeDepositTaken } from "../event-store/event-types/repo-mmd-ibl";
 import { EventStore } from "../event-store/store";
 import type { SecurityMasterState } from "../projections/markets/security-master";
 import { securityMasterInitial } from "../projections/markets/security-master";
-import { generateBa110Lcr, generateBa110LcrWithEvents } from "./ba-300-lcr";
-import type { AccountLiquidityClassification, Ba110GeneratorInput } from "./ba-300-lcr";
+import { generateBa300Lcr, generateBa300LcrWithEvents } from "./ba-300-lcr";
+import type { AccountLiquidityClassification, Ba300LcrGeneratorInput } from "./ba-300-lcr";
 import { buildHqlaOverridesFromSecurityMaster } from "./hqla-overrides";
 
 // ---------------------------------------------------------------------------
@@ -52,13 +52,13 @@ function makeEmptyStore(): EventStore {
 }
 
 /**
- * Build a minimal Ba110GeneratorInput with the given classifications and
+ * Build a minimal Ba300LcrGeneratorInput with the given classifications and
  * trial balance rows, and an empty event store (so cash flows = 0).
  */
 function makeInput(
   classifications: readonly AccountLiquidityClassification[],
   trialBalanceRows: Array<{ leafAccountId: string; currency: string; amountMinor: number }>,
-): Ba110GeneratorInput {
+): Ba300LcrGeneratorInput {
   return {
     entity: ENTITY,
     asOf: AS_OF,
@@ -76,7 +76,7 @@ function makeInput(
 // 1. No hqlaOverrides — COA-tag behaviour preserved (regression guard)
 // ---------------------------------------------------------------------------
 
-describe("generateBa110Lcr() without hqlaOverrides", () => {
+describe("generateBa300Lcr() without hqlaOverrides", () => {
   it("TC-1: uses COA hqlaLevel tag when no override provided", () => {
     const classifications: AccountLiquidityClassification[] = [
       {
@@ -89,7 +89,7 @@ describe("generateBa110Lcr() without hqlaOverrides", () => {
       { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000_00 },
     ];
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance));
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance));
 
     expect(output.hqla.level1.stockMinor).toBe(1_000_000_00);
     expect(output.hqla.level1.lineItems).toHaveLength(1);
@@ -105,7 +105,7 @@ describe("generateBa110Lcr() without hqlaOverrides", () => {
       { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 500_000_00 },
     ];
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance));
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance));
 
     expect(output.hqla.level2A.stockMinor).toBe(500_000_00);
     expect(output.hqla.level2A.lineItems).toHaveLength(1);
@@ -117,7 +117,7 @@ describe("generateBa110Lcr() without hqlaOverrides", () => {
 // 2. With hqlaOverrides — instrument-level tier overrides COA tag
 // ---------------------------------------------------------------------------
 
-describe("generateBa110Lcr() with hqlaOverrides — override tier replaces COA tag", () => {
+describe("generateBa300Lcr() with hqlaOverrides — override tier replaces COA tag", () => {
   it("TC-3: level-1 COA tag overridden to level-2a when ISIN matched", () => {
     // The COA tags the account as level-1, but the SecurityMaster says the
     // specific bond (by ISIN) is level-2a (e.g. a non-0%-RW sovereign).
@@ -135,7 +135,7 @@ describe("generateBa110Lcr() with hqlaOverrides — override tier replaces COA t
     ];
     const overrides = new Map([[isin, "level-2a" as const]]);
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance), {
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance), {
       hqlaOverrides: overrides,
     });
 
@@ -164,7 +164,7 @@ describe("generateBa110Lcr() with hqlaOverrides — override tier replaces COA t
     ];
     const overrides = new Map([[isin, "level-2b" as const]]);
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance), {
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance), {
       hqlaOverrides: overrides,
     });
 
@@ -180,7 +180,7 @@ describe("generateBa110Lcr() with hqlaOverrides — override tier replaces COA t
 // 3. COA fallback — accounts without ISIN not affected by override map
 // ---------------------------------------------------------------------------
 
-describe("generateBa110Lcr() with hqlaOverrides — COA fallback for accounts without ISIN", () => {
+describe("generateBa300Lcr() with hqlaOverrides — COA fallback for accounts without ISIN", () => {
   it("TC-5: account without isin uses COA tag regardless of override map content", () => {
     const classifications: AccountLiquidityClassification[] = [
       {
@@ -199,7 +199,7 @@ describe("generateBa110Lcr() with hqlaOverrides — COA fallback for accounts wi
       ["ZAE000111111", "non-hqla" as const],
     ]);
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance), {
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance), {
       hqlaOverrides: overrides,
     });
 
@@ -231,7 +231,7 @@ describe("generateBa110Lcr() with hqlaOverrides — COA fallback for accounts wi
     ];
     const overrides = new Map([[isin, "level-2a" as const]]);
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance), {
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance), {
       hqlaOverrides: overrides,
     });
 
@@ -252,7 +252,7 @@ describe("generateBa110Lcr() with hqlaOverrides — COA fallback for accounts wi
 // 4. "non-hqla" override — explicitly removes HQLA eligibility
 // ---------------------------------------------------------------------------
 
-describe("generateBa110Lcr() with hqlaOverrides — non-hqla override", () => {
+describe("generateBa300Lcr() with hqlaOverrides — non-hqla override", () => {
   it("TC-7: non-hqla override removes account from HQLA stock", () => {
     const isin = "ZAE000999999"; // Bond that lost 0%-RW status
     const classifications: AccountLiquidityClassification[] = [
@@ -267,7 +267,7 @@ describe("generateBa110Lcr() with hqlaOverrides — non-hqla override", () => {
     ];
     const overrides = new Map([[isin, "non-hqla" as const]]);
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance), {
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance), {
       hqlaOverrides: overrides,
     });
 
@@ -300,7 +300,7 @@ describe("generateBa110Lcr() with hqlaOverrides — non-hqla override", () => {
     ];
     const overrides = new Map([[isin, "non-hqla" as const]]);
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance), {
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance), {
       hqlaOverrides: overrides,
     });
 
@@ -315,7 +315,7 @@ describe("generateBa110Lcr() with hqlaOverrides — non-hqla override", () => {
 // 5. Override note appears in lineItem.note
 // ---------------------------------------------------------------------------
 
-describe("generateBa110Lcr() with hqlaOverrides — override note in lineItem", () => {
+describe("generateBa300Lcr() with hqlaOverrides — override note in lineItem", () => {
   it("TC-9: lineItem.note includes SecurityMaster override provenance", () => {
     const isin = "ZAG000030007";
     const classifications: AccountLiquidityClassification[] = [
@@ -330,7 +330,7 @@ describe("generateBa110Lcr() with hqlaOverrides — override note in lineItem", 
     ];
     const overrides = new Map([[isin, "level-2a" as const]]);
 
-    const output = generateBa110Lcr(makeInput(classifications, trialBalance), {
+    const output = generateBa300Lcr(makeInput(classifications, trialBalance), {
       hqlaOverrides: overrides,
     });
 
@@ -564,10 +564,10 @@ describe("buildHqlaOverridesFromSecurityMaster()", () => {
 // Citation gate — verify D-FINANCIAL-INSTRUMENT-ENTITY in output citations
 // ---------------------------------------------------------------------------
 
-describe("generateBa110Lcr() — citation coverage", () => {
+describe("generateBa300Lcr() — citation coverage", () => {
   it("TC-11: D-FINANCIAL-INSTRUMENT-ENTITY and BCBS-LCR-2013 present in output citations", () => {
     const input = makeInput([], []);
-    const output = generateBa110Lcr(input);
+    const output = generateBa300Lcr(input);
     expect(output.citations).toContain("D-FINANCIAL-INSTRUMENT-ENTITY");
     expect(output.citations).toContain("BCBS-LCR-2013");
   });
@@ -579,12 +579,12 @@ describe("generateBa110Lcr() — citation coverage", () => {
 
 describe("LCR product lifecycle outflows", () => {
   /**
-   * Builds a Ba110GeneratorInput where asOf = PERIOD_END (2026-05-31) and
+   * Builds a Ba300LcrGeneratorInput where asOf = PERIOD_END (2026-05-31) and
    * 30-day horizon = 2026-06-30. An event appended without a provenance tag
    * is treated as `simulated / pre-substrate-build-phase` by the soft-tagger
    * and passes the `operating-book` filter in build phase.
    */
-  function makeInputWithStore(store: EventStore): Ba110GeneratorInput {
+  function makeInputWithStore(store: EventStore): Ba300LcrGeneratorInput {
     return {
       entity: ENTITY,
       asOf: PERIOD_END,
@@ -620,7 +620,7 @@ describe("LCR product lifecycle outflows", () => {
     });
     store.append(depositEvent);
 
-    const output = await generateBa110LcrWithEvents(makeInputWithStore(store));
+    const output = await generateBa300LcrWithEvents(makeInputWithStore(store));
 
     // Expected outflow = 3% of 1_000_000_00 = 30_000_00 (3_000_000 cents = R30,000).
     const depositOutflowLine = output.cashFlows.outflows.lineItems.find((l) =>
@@ -633,7 +633,7 @@ describe("LCR product lifecycle outflows", () => {
   it("TC-P2: LCR ratio is lower with deposit outflow than without", async () => {
     // Without deposit — empty store, no outflows, ratio = Infinity.
     const storeEmpty = new EventStore(":memory:");
-    const outputEmpty = await generateBa110LcrWithEvents(makeInputWithStore(storeEmpty));
+    const outputEmpty = await generateBa300LcrWithEvents(makeInputWithStore(storeEmpty));
     expect(outputEmpty.cashFlows.outflows.grossMinor).toBe(0);
     expect(outputEmpty.lcrRatio).toBe(Number.POSITIVE_INFINITY);
 
@@ -657,7 +657,7 @@ describe("LCR product lifecycle outflows", () => {
     });
     storeWithDeposit.append(depositEvent);
 
-    const outputWithDeposit = await generateBa110LcrWithEvents(
+    const outputWithDeposit = await generateBa300LcrWithEvents(
       makeInputWithStore(storeWithDeposit),
     );
     // With outflow and zero HQLA, ratio should be 0 (stock=0, outflows>0).
