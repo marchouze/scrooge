@@ -20,10 +20,15 @@
 //          Atlas (Core banking platform architect, engineering)
 
 import {
+  RwaComputedPayloadSchema,
   SarbSubmissionAttemptedPayloadSchema,
   TradeReportSubmittedPayloadSchema,
 } from "../event-types/regulatory-reporting";
-import { type EventTypeMetadata, RETENTION_JSE_TRADE_7Y } from "./types";
+import {
+  type EventTypeMetadata,
+  RETENTION_ACCOUNTING_7Y,
+  RETENTION_JSE_TRADE_7Y,
+} from "./types";
 
 export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
@@ -67,5 +72,31 @@ export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "simulators/sarb-prudential.ts (build-phase simulator); SARB BankServ portal (post-licence)",
+  },
+  {
+    // D-RWA-ENGINE-W2-SLICE-3 — Pillar-1 RWA decomposition emitted at period
+    // close, feeding the BA 700 capital-adequacy denominator. Credit + market
+    // RWA are event-sourced (CRE20 over readDebtExposures; 12.5 × BA 320
+    // market-risk capital incl. Reg 28(3)(a) disallowances); operational RWA is
+    // an explicit gross-income-blocked placeholder until licence-day. The
+    // `source` field makes the partial-real composition legible.
+    type: "RwaComputed",
+    class: "governance",
+    payloadSchema: RwaComputedPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Mira", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-RWA-ENGINE-W2-SLICE-3",
+      "D-REGULATORY-READINESS-W2-SLICE-3",
+      "Banks Act 94 of 1990 §70",
+      "Regulations Relating to Banks Reg 23",
+      "Regulations Relating to Banks Reg 28",
+      "BCBS Basel III/IV (CRE20, MAR)",
+    ],
+    // Capital-adequacy basis records — 7-year accounting retention per Banks
+    // Act §73/§91 + IFRS audit-trail requirements.
+    retention: RETENTION_ACCOUNTING_7Y,
+    source: "platform/risk/rwa-computed-engine.ts (computeRwaComputedAtPeriodClose)",
   },
 ];
