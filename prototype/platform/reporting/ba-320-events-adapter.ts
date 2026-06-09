@@ -66,9 +66,14 @@ import type {
  *
  * P1-compliance status:
  *   - FX sub-charge: COMPLIANT — folds FxTradeExecuted events directly.
- *   - IR / equity / commodity: PLACEHOLDER — caller-supplied numbers until
- *     the corresponding event streams are implemented. Substrate gap surfaced
- *     in the output `placeholders` field.
+ *   - IR general-risk: COMPLIANT — folds BondTradeExecuted (bond ladder) and
+ *     IrdSwapPositionRevalued DV01 (IRS ladder) events directly. The combined
+ *     ladder is passed in via `irGeneralMaturityLadder`. Any live trading-book
+ *     swap with no populated `dv01ByTenorBucket` is surfaced as a substrate
+ *     gap via `extraPlaceholders` (WS-BA-RETURNS-P1-SOURCING Phase 3).
+ *   - equity / commodity: PLACEHOLDER — caller-supplied numbers until the
+ *     corresponding event streams are implemented. Substrate gap surfaced in
+ *     the output `placeholders` field.
  */
 export interface Ba310FromEventsInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). Throws on non-bank. */
@@ -95,8 +100,9 @@ export interface Ba310FromEventsInput {
    */
   readonly zarRates: ReadonlyMap<string, number>;
   /**
-   * Maturity-ladder rows for IR general-risk. Caller-supplied at v0 — no
-   * bond-position event stream yet.
+   * Maturity-ladder rows for IR general-risk. Events-first: the caller folds
+   * the bond ladder (ba-320-bond-events-adapter) and the IRS DV01 ladder
+   * (ba-320-irs-events-adapter) and passes the combined per-band nets here.
    */
   readonly irGeneralMaturityLadder: readonly IrMaturityBandRow[];
   /** Issuer rows for IR specific-risk. Caller-supplied at v0. */
@@ -115,6 +121,14 @@ export interface Ba310FromEventsInput {
    * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
    */
   readonly untilSequence?: number;
+  /**
+   * Extra substrate-gap / placeholder notes to append to the output
+   * `placeholders` field. Used by the period-close subscriber to surface live
+   * trading-book IRS swaps that have no populated `dv01ByTenorBucket` (so their
+   * IR general-risk contribution could not be folded — not dropped, not
+   * fabricated). Authority: WS-BA-RETURNS-P1-SOURCING Phase 3.
+   */
+  readonly extraPlaceholders?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -215,7 +229,7 @@ export function generateBa310MarketRiskFromEvents(
   const fxPositions = fxPositionsToBa310Input(positions, input.functionalCurrency);
 
   // ---- Step 5: delegate to the pure generator. ----------------------------
-  return generateBa310MarketRisk({
+  const generated = generateBa310MarketRisk({
     entity: input.entity,
     asOf: input.asOf,
     periodId: input.periodId,
@@ -232,6 +246,15 @@ export function generateBa310MarketRiskFromEvents(
     // The source event IDs are in tradeEventIds (provenance chain is
     // FxTradeExecuted → fxPositionCalculator → generateBa310MarketRisk).
   });
+
+  // ---- Step 6: append substrate-gap placeholders (events-first IR gaps). ---
+  if (input.extraPlaceholders !== undefined && input.extraPlaceholders.length > 0) {
+    return {
+      ...generated,
+      placeholders: [...generated.placeholders, ...input.extraPlaceholders],
+    };
+  }
+  return generated;
 }
 
 // Re-export for convenience at the call-sites that import from this module.

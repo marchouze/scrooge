@@ -16,8 +16,15 @@
 //      (P1-compliant path; see `ba-310-events-adapter.ts`).
 //   2. Folds `BondTradeExecuted`, `BondMatured`, and `BondSold` events to
 //      derive the IR general maturity-ladder and IR specific-risk rows
-//      (P1-compliant path; see `ba-310-bond-events-adapter.ts`).
-//      Banking-book bonds are excluded (BA-330 IRRBB, not BA-310).
+//      (P1-compliant path; see `ba-320-bond-events-adapter.ts`).
+//      Banking-book bonds are excluded (BA-330 IRRBB, not BA-320).
+//   2b. Folds `IrdSwapTradeExecuted` / `IrdSwapPositionRevalued` /
+//      `IrdSwapTerminated` to derive IRS DV01 contributions to the IR general
+//      maturity-ladder (WS-BA-RETURNS-P1-SOURCING Phase 3;
+//      see `ba-320-irs-events-adapter.ts`). Banking-book swaps are excluded
+//      (BA-330 IRRBB). The bond and IRS ladders are combined per-band.
+//      Live trading-book swaps with no per-bucket DV01 are surfaced as a
+//      substrate-gap placeholder (not dropped, not fabricated).
 //   3. Uses caller-supplied equity / commodity inputs (build-phase:
 //      placeholder zeros; post-trading-book milestone: event-derived).
 //   4. Calls `generateBa310MarketRiskFromEvents` with the composed input.
@@ -57,6 +64,10 @@ import {
   type Ba310Output,
   generateBa310MarketRiskFromEvents,
 } from "../../reporting/ba-320-events-adapter";
+import {
+  buildIrsIrGeneralLadder,
+  combineIrGeneralLadders,
+} from "../../reporting/ba-320-irs-events-adapter";
 import type {
   CommodityPositionRow,
   EquityRow,
@@ -208,10 +219,31 @@ export function ba310PeriodCloseSubscriber(
     ...(untilSequence !== undefined ? { untilSequence } : {}),
   };
 
+  // IR general-risk maturity ladder is folded events-first from BOTH the bond
+  // ladder (BondTradeExecuted) and the IRS DV01 ladder (IrdSwapPositionRevalued
+  // dv01ByTenorBucket). The two contributions are combined into one set of
+  // per-band nets before being passed to the generator.
+  //
+  // Live trading-book swaps with no populated dv01ByTenorBucket cannot be
+  // folded (Phase 1 left the bucketed-DV01 emitter as a TODO); their tradeIds
+  // are surfaced as substrate-gap placeholders rather than dropped or
+  // fabricated. Authority: WS-BA-RETURNS-P1-SOURCING Phase 3;
+  // D-BA-RETURNS-P1-SOURCING-WORKSTREAM; Reg 28(3)(a); BCBS d368 §21.
+  const irsLadderResult = buildIrsIrGeneralLadder(bondAdapterInput);
+
   const derivedIrGeneralMaturityLadder =
-    input.irGeneralMaturityLadder ?? buildBondIrGeneralLadder(bondAdapterInput);
+    input.irGeneralMaturityLadder ??
+    combineIrGeneralLadders(buildBondIrGeneralLadder(bondAdapterInput), irsLadderResult.rows);
   const derivedIrSpecificRisk =
     input.irSpecificRisk ?? buildBondIrSpecificRiskRows(bondAdapterInput);
+
+  // Substrate-gap placeholders: live trading-book swaps missing per-bucket DV01.
+  const extraPlaceholders: string[] =
+    input.irGeneralMaturityLadder === undefined && irsLadderResult.swapsMissingDv01.length > 0
+      ? [
+          `[substrate-gap: ${irsLadderResult.swapsMissingDv01.length} live trading-book IRS swap(s) had no dv01ByTenorBucket on their latest revaluation — IR general-risk contribution NOT folded (not fabricated, not dropped). Wire the bucketed-DV01 emitter on IrdSwapPositionRevalued (platform/markets/eod/irs-revaluation.ts emits the markets-CDM IrsPositionRevalued scalar-dv01 family today). Swaps: ${irsLadderResult.swapsMissingDv01.join(", ")}. Authority: WS-BA-RETURNS-P1-SOURCING Phase 3]`,
+        ]
+      : [];
 
   const fromEventsInput: Ba310FromEventsInput = {
     entity: input.entity,
@@ -232,6 +264,7 @@ export function ba310PeriodCloseSubscriber(
     // are bounded to the same event window as the bond adapter above.
     // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
     ...(untilSequence !== undefined ? { untilSequence } : {}),
+    ...(extraPlaceholders.length > 0 ? { extraPlaceholders } : {}),
   };
 
   const ba310Output = generateBa310MarketRiskFromEvents(input.eventStore, fromEventsInput);
