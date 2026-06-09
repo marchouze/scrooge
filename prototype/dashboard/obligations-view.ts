@@ -32,6 +32,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { clock } from "../platform/composition";
 import type { RiskTaxonomyCode } from "../platform/risk/taxonomy";
 import { classifyBinds, classifySources } from "./policy-register";
 
@@ -354,7 +355,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
   const productFamilyCounts: Record<string, number> = {};
   if (!existsSync(path)) {
     return {
-      asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
+      asOf: clock.now(), // composition clock — wall-clock abstraction boundary
       count: 0,
       byId: {},
       familyCounts,
@@ -452,7 +453,7 @@ export function getObligationsView(repoRoot: string): ObligationsView {
     }
   }
   return {
-    asOf: new Date().toISOString(), // wall-clock: dashboard view timestamp
+    asOf: clock.now(), // composition clock — wall-clock abstraction boundary
     count: Object.keys(out).length,
     byId: out,
     familyCounts,
