@@ -236,5 +236,6 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
 // generator API change, remove them then. Bun's typecheck flags unused
 // type-only imports under noUnusedLocals=false (project default), so they
 // remain harmless even if unused.
-const _typeKeepalive: Ba300LcrOutput | Ba100Output | Ba310Output | Ba300Output | undefined = undefined;
+const _typeKeepalive: Ba300LcrOutput | Ba100Output | Ba310Output | Ba300Output | undefined =
+  undefined;
 void _typeKeepalive;

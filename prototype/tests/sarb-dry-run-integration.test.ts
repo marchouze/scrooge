@@ -257,7 +257,10 @@ describe("SARB dry-run integration — IT-5: referenceNumber on success", () => 
 describe("SARB dry-run integration — IT-6: Invalid formId rejected", () => {
   it("non-BA formId returns ok = false with formId in error message", async () => {
     const store = makeStore();
-    const result = await submitToSarbPortal({ ...makeValidBa300LcrPayload(), formId: "XY999" }, store);
+    const result = await submitToSarbPortal(
+      { ...makeValidBa300LcrPayload(), formId: "XY999" },
+      store,
+    );
     expect(result.ok).toBe(false);
     const hasFormIdError = (result.errors ?? []).some(
       (e) => e.toLowerCase().includes("formid") || e.includes("XY999"),

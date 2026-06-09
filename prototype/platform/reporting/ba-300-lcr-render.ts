@@ -172,7 +172,10 @@ export interface RenderBa300LcrOptions {
  * `Ba300LcrRenderSchema`. Pure function; deterministic for fixed
  * `renderedAt`.
  */
-export function renderBa300LcrToJson(output: Ba300LcrOutput, opts: RenderBa300LcrOptions): Ba300LcrRender {
+export function renderBa300LcrToJson(
+  output: Ba300LcrOutput,
+  opts: RenderBa300LcrOptions,
+): Ba300LcrRender {
   // G-3: when the input set is empty (zero HQLA + zero cash-flow events of
   // any kind passed the fold), encode the ratio as `"no-data"` rather than
   // `"infinity"`. `"infinity"` retains its prior meaning — non-empty HQLA

@@ -1761,7 +1761,8 @@ async function runPhase6(): Promise<PhaseResult> {
     );
     r.assert(
       "Block A — BA-110 LCR ratio is compliant (ratio > 1)",
-      ba300LcrResult.ba300LcrOutput.lcrRatio > 1 && ba300LcrResult.ba300LcrOutput.lcrCompliant === true,
+      ba300LcrResult.ba300LcrOutput.lcrRatio > 1 &&
+        ba300LcrResult.ba300LcrOutput.lcrCompliant === true,
       `lcrRatio=${ba300LcrResult.ba300LcrOutput.lcrRatio}; lcrCompliant=${ba300LcrResult.ba300LcrOutput.lcrCompliant}`,
     );
     r.assert(

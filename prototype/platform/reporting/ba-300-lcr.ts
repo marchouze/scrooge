@@ -1084,7 +1084,10 @@ function hqlaStockLineToLineItem(line: HqlaStockLine, ccy: string): Ba300LcrLine
   };
 }
 
-export function generateBa300Lcr(input: Ba300LcrGeneratorInput, opts?: Ba300LcrOpts): Ba300LcrOutput {
+export function generateBa300Lcr(
+  input: Ba300LcrGeneratorInput,
+  opts?: Ba300LcrOpts,
+): Ba300LcrOutput {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
     throw new Ba300LcrGeneratorError(
