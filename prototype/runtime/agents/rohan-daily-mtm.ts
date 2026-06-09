@@ -791,13 +791,17 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // -------------------------------------------------------------------------
   // IRD MTM — EOD IRS mark-to-market revaluation on the daily cadence.
   //
-  // runEodIrsRevaluation marks the open IRS book (emits IrsPositionRevalued
-  // per swap) off the documented static JIBAR curve seed ([GAP-IRS-1]) — the
-  // build-phase analogue of a live curve ingest. Idempotent per valuationDate,
-  // so a re-run within the same day is a no-op. This keeps the CVA current-
-  // exposure leg (model:cva-exposure-epe-v1, which reads IrsPositionRevalued)
-  // fresh after each booking. Gated on !dryRun — the engine appends directly.
-  // Authority: D-MARKETS-SCHEMA-FOUNDATION; IFRS-9-§4.1; BCBS-D365-IRRBB.
+  // runEodIrsRevaluation marks the open IRS book (emits the accounting
+  // IrdSwapPositionRevalued per swap — the canonical GL + BA 320 revaluation
+  // fact, D-IRS-FAMILY-CONVERGE-ACCOUNTING) off the documented static JIBAR
+  // curve seed ([GAP-IRS-1]) — the build-phase analogue of a live curve ingest.
+  // Idempotent per valuationDate, so a re-run within the same day is a no-op.
+  // This lands the GL revaluation posting (PR-IRS-002) and keeps the CVA
+  // current-exposure leg (model:cva-exposure-epe-v1, which reads
+  // IrdSwapPositionRevalued) fresh after each booking. Gated on !dryRun — the
+  // engine appends directly.
+  // Authority: D-IRS-FAMILY-CONVERGE-ACCOUNTING; D-MARKETS-SCHEMA-FOUNDATION;
+  // IFRS-9-§4.1; BCBS-D365-IRRBB.
   if (!ctx.dryRun) {
     try {
       const irsReval = runEodIrsRevaluation(eventStore, dateStr);

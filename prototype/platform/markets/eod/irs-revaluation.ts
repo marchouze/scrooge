@@ -2,18 +2,35 @@
 //
 // EOD mark-to-market revaluation for OTC Interest Rate Swap positions.
 //
-// Mirrors the fx-forward-revaluation.ts structure exactly:
+// ─── CANONICAL EVENT FAMILY (D-IRS-FAMILY-CONVERGE-ACCOUNTING) ────────────────
+// This engine emits the ACCOUNTING `IrdSwapPositionRevalued` family — the single
+// canonical revaluation fact for GL posting (SLA interpreter PR-IRS-002, posting
+// type `ird-swap-revaluation`) AND BA 320 IR-general-risk reporting
+// (ba-320-irs-events-adapter.ts, which reads `dv01ByTenorBucket`). It previously
+// emitted the trade-domain `IrsPositionRevalued`, which nothing on the GL or
+// BA 320 path consumed — the live IRS book posted NOTHING and surfaced every live
+// swap as a BA 320 substrate gap. That mirror is retired here; CVA reads the
+// accounting family too (cva-engine.ts). Authority: D-IRS-FAMILY-CONVERGE-
+// ACCOUNTING (CEO-approved 2026-06-09); D-SLA-ENGINE-RULES-AS-DATA Batch 3.
+//
+// Mirrors the fx-forward-revaluation.ts structure:
 //   1. Replay IrsTradeBooked → collect open swaps.
 //   2. Replay IrsCouponSettlementConfirmed → track settled payment dates.
-//   3. Replay IrsPositionRevalued by (tradeId, valuationDate) → idempotency gate.
+//   3. Replay IrdSwapPositionRevalued → (a) idempotency gate by
+//      (tradeId, revalDate); (b) prior closing NPV per tradeId (the opening NPV
+//      / delta basis for the next reval).
 //   4. For each open un-revalued swap:
 //      a. Generate remaining coupon schedule (payment dates > valuationDate).
 //      b. Fixed leg PV: Σ (fixedCoupon_i × discountFactor_i).
 //      c. Floating leg PV: Σ (forwardJibar_i × notional × dcf_i × discountFactor_i).
-//      d. MTM = fixedLegPV − floatingLegPV  [if bankPays=fixed]
-//              floatingLegPV − fixedLegPV  [if bankPays=floating]
-//      e. DV01 ≈ Σ (0.0001 × notional × dcf_i × discountFactor_i).
-//      f. Emit IrsPositionRevalued.
+//      d. MTM (= closing NPV) = floatingLegPV − fixedLegPV [bankPays=fixed]
+//                               fixedLegPV − floatingLegPV [bankPays=floating]
+//      e. DV01 ≈ Σ (0.0001 × notional × dcf_i × df_i), bucketed: each period's
+//         contribution is assigned to the BaselMaturityBand containing its
+//         payment date (days from valuationDate). Scalar total kept too.
+//      f. Emit IrdSwapPositionRevalued (npvClosing = MTM, npvOpening = prior
+//         closing or 0, npvDelta = closing − opening, dv01ByTenorBucket,
+//         bookDesignation = "trading").
 //   5. Return EodIrsRevaluationResult.
 //
 // Substrate gaps (v0):
@@ -36,13 +53,16 @@
 
 import { clock } from "../../composition";
 import { newEventId } from "../../core/types";
-import type { EventStore } from "../../event-store/store";
 import {
-  type IrsCouponSettlementConfirmedPayload,
-  type IrsPositionRevaluedPayload,
-  type IrsTradeBookedPayload,
-  makeIrsPositionRevalued,
+  type IrdSwapPositionRevaluedPayload,
+  makeIrdSwapPositionRevalued,
+} from "../../event-store/event-types/ird-accounting";
+import type { EventStore } from "../../event-store/store";
+import type {
+  IrsCouponSettlementConfirmedPayload,
+  IrsTradeBookedPayload,
 } from "../../markets/cdm/ird";
+import { type BaselMaturityBand, daysToBaselMaturityBand } from "../../types/basel";
 import { dayCountFraction, generateCouponSchedule } from "../ird/coupon-schedule";
 import { type IrsRateSource, staticJibarRateSource } from "./jibar-curve-seed";
 
@@ -51,7 +71,7 @@ import { type IrsRateSource, staticJibarRateSource } from "./jibar-curve-seed";
 // ---------------------------------------------------------------------------
 
 export type EodIrsRevaluationResult = {
-  /** Number of swaps where IrsPositionRevalued was emitted. */
+  /** Number of swaps where IrdSwapPositionRevalued was emitted. */
   revalued: number;
   /** Number of swaps skipped (already revalued today or matured). */
   skipped: number;
@@ -139,13 +159,20 @@ export function runEodIrsRevaluation(
   }
 
   // -------------------------------------------------------------------------
-  // Step 3: Find positions already revalued today (idempotency gate).
+  // Step 3: Replay prior IrdSwapPositionRevalued to derive
+  //   (a) idempotency gate — positions already revalued for this valuationDate;
+  //   (b) the latest prior closing NPV per trade — the opening-NPV basis for the
+  //       delta on the next reval (replay yields ascending sequence → last write
+  //       per tradeId for a strictly-earlier revalDate wins).
   // -------------------------------------------------------------------------
   const alreadyRevaluedToday = new Set<string>();
-  for (const e of store.replay({ type: "IrsPositionRevalued" })) {
-    const p = e.payload as unknown as IrsPositionRevaluedPayload;
-    if (p.valuationDate === valuationDate) {
-      alreadyRevaluedToday.add(p.tradeId.value);
+  const priorClosingNpvMinor = new Map<string, number>();
+  for (const e of store.replay({ type: "IrdSwapPositionRevalued" })) {
+    const p = e.payload as unknown as IrdSwapPositionRevaluedPayload;
+    if (p.revalDate === valuationDate) {
+      alreadyRevaluedToday.add(p.tradeId);
+    } else if (p.revalDate < valuationDate) {
+      priorClosingNpvMinor.set(p.tradeId, p.npvClosingMinor);
     }
   }
 
@@ -192,6 +219,10 @@ export function runEodIrsRevaluation(
       let fixedLegPvMinor = 0;
       let floatingLegPvMinor = 0;
       let dv01Minor = 0;
+      // Per-period DV01 accumulated into the BCBS standardised tenor bucket that
+      // contains the period's payment date (days from valuationDate). Fractional
+      // minor-unit contributions accumulate here; rounded per band at emit time.
+      const dv01ByBandRaw: Partial<Record<BaselMaturityBand, number>> = {};
 
       for (const period of remainingPeriods) {
         // Days from valuation date to payment date.
@@ -216,7 +247,19 @@ export function runEodIrsRevaluation(
         floatingLegPvMinor += notionalMinor * forwardJibar * dcf * df;
 
         // DV01 contribution: 1bp × notional × dcf × discount factor.
-        dv01Minor += 0.0001 * notionalMinor * dcf * df;
+        const periodDv01 = 0.0001 * notionalMinor * dcf * df;
+        dv01Minor += periodDv01;
+
+        // Assign this period's DV01 to its payment-date tenor bucket.
+        const band = daysToBaselMaturityBand(payDays);
+        dv01ByBandRaw[band] = (dv01ByBandRaw[band] ?? 0) + periodDv01;
+      }
+
+      // Round per-band DV01 to integer minor units; drop zero-rounding bands.
+      const dv01ByTenorBucket: Partial<Record<BaselMaturityBand, number>> = {};
+      for (const [band, raw] of Object.entries(dv01ByBandRaw) as [BaselMaturityBand, number][]) {
+        const rounded = Math.round(raw);
+        if (rounded !== 0) dv01ByTenorBucket[band] = rounded;
       }
 
       // MTM from the bank's perspective.
@@ -233,20 +276,29 @@ export function runEodIrsRevaluation(
           ? floatingLegPvMinor - fixedLegPvMinor // payer benefits when rates rise
           : fixedLegPvMinor - floatingLegPvMinor; // receiver benefits when rates fall
 
-      const remainingTenorDays = calendarDaysRemaining(valuationDate, trade.maturityDate.iso);
+      void dv01Minor; // scalar total retained for diagnostics; bucketed grid is canonical
 
-      const payload: IrsPositionRevaluedPayload = {
-        tradeId: trade.tradeId,
-        valuationDate,
-        fixedLegPv: { currency, amountMinor: Math.round(fixedLegPvMinor) },
-        floatingLegPv: { currency, amountMinor: Math.round(floatingLegPvMinor) },
-        markToMarket: { currency, amountMinor: Math.round(mtmMinor) },
-        dv01: { currency, amountMinor: Math.round(dv01Minor) },
-        remainingTenorDays,
+      // Closing NPV = the mark-to-market from the bank's perspective (signed:
+      // positive = net asset, negative = net liability). Opening NPV = the prior
+      // reval's closing NPV (or 0 at first reval). Delta drives PR-IRS-002.
+      const npvClosingMinor = Math.round(mtmMinor);
+      const npvOpeningMinor = priorClosingNpvMinor.get(tradeId) ?? 0;
+      const npvDeltaMinor = npvClosingMinor - npvOpeningMinor;
+
+      const payload: IrdSwapPositionRevaluedPayload = {
+        tradeId,
+        npvDeltaMinor,
+        npvClosingMinor,
+        npvOpeningMinor,
+        revalDate: valuationDate,
+        currency,
+        // BA 320 IR-general-risk maturity-ladder feed (bucketed DV01). Only
+        // populated when at least one band rounded to a non-zero contribution.
+        ...(Object.keys(dv01ByTenorBucket).length > 0 ? { dv01ByTenorBucket } : {}),
       };
 
       store.append(
-        makeIrsPositionRevalued({
+        makeIrdSwapPositionRevalued({
           asOf: valuationDate,
           entity: BANK_ENTITY,
           actor: RECON_ACTOR,
@@ -257,7 +309,7 @@ export function runEodIrsRevaluation(
       );
 
       revalued++;
-      totalMtmZar += Math.round(mtmMinor);
+      totalMtmZar += npvClosingMinor;
     } catch (err) {
       errors.push(`${tradeId}: ${err instanceof Error ? err.message : String(err)}`);
     }

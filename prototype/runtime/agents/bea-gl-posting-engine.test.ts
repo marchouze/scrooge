@@ -197,11 +197,15 @@ import {
   makeFxPositionRevalued,
   makeFxTradeCancelled,
 } from "../../platform/event-store/event-types/fx-accounting";
+import { makeIrdSwapTradeExecuted } from "../../platform/event-store/event-types/ird-accounting";
 import {
   makeFxTradeExecuted,
   makePrincipalPayment,
   makeSettlementConfirmed,
 } from "../../platform/markets/cdm/fx";
+import { makeIrsTradeBooked } from "../../platform/markets/cdm/ird";
+import { runEodIrsRevaluation } from "../../platform/markets/eod/irs-revaluation";
+import { StaticJibarRateSource } from "../../platform/markets/eod/jibar-curve-seed";
 import type { AgentRunContext } from "../types";
 import { beaGlPostingEngine } from "./bea-gl-posting-engine";
 
@@ -857,5 +861,124 @@ describe("Regression — securities cutover: bond + equity post via the SLA inte
     // OCI reserve + retained earnings ARE touched.
     expect(legs.some((l) => l.accountId === "ACC-3200-004")).toBe(true);
     expect(legs.some((l) => l.accountId === "ACC-5000-002")).toBe(true);
+  });
+});
+
+// ===========================================================================
+// IRS family convergence (D-IRS-FAMILY-CONVERGE-ACCOUNTING) —
+// a booked IRS + an EOD revaluation post to the GL via the accounting
+// IrdSwap* family. Before the fix, the live IRS engine emitted the trade-domain
+// IrsPositionRevalued, which NOTHING on the GL path consumed → the IRS book
+// posted nothing. This test proves the converged path:
+//   - off-market IrdSwapTradeExecuted (npvMinor != 0) → `ird-swap-trade-booking`
+//   - runEodIrsRevaluation → IrdSwapPositionRevalued (non-zero delta)
+//                          → `ird-swap-revaluation`
+//
+// brief:mira:ws-ba-returns-irs-family-reconcile-converge-irs-:2026-06-09
+// ===========================================================================
+
+describe("IRS convergence — booked IRS + EOD reval → GL postings on IrdSwap* family", () => {
+  it("off-market IrdSwapTradeExecuted + runEodIrsRevaluation → ird-swap-trade-booking + ird-swap-revaluation postings", async () => {
+    const suffix = newEventId().slice(0, 8);
+    const tradeId = `IRS-CONV-${suffix}`;
+    const valuationDate = "2026-05-17";
+
+    // 1) Trade-domain booking — the CDM record the EOD reval engine replays for
+    //    the open IRS book (notional / legs / counterparty). No GL footprint of
+    //    its own (the markets family is not a GL subscriber).
+    const irsBooked = makeIrsTradeBooked({
+      asOf: `${valuationDate}T07:00:00.000Z`,
+      entity: REG_ENTITY,
+      actor: { type: "human", id: "eitan@bank.local" },
+      citations: ["D-MARKETS-SCHEMA-FOUNDATION"],
+      payload: {
+        tradeId: { scheme: "INTERNAL", value: tradeId },
+        counterparty: { partyId: "CP-IRS-CONV-001", name: "Conv Co", role: "counterparty" },
+        notional: { currency: "ZAR", amountMinor: 10_000_000_000 },
+        fixedRate: 0.085,
+        floatingIndex: "JIBAR-3M",
+        bankPays: "fixed",
+        tradeDate: { iso: valuationDate, calendar: "JIHCAL" },
+        effectiveDate: { iso: "2026-05-19", calendar: "JIHCAL" },
+        maturityDate: { iso: "2031-05-19", calendar: "JIHCAL" },
+        paymentFrequency: "quarterly",
+        dayCountConvention: "ACT/365",
+        bookId: "BOOK-IRD-RATES",
+        traderRef: "eitan@bank.local",
+      },
+    });
+    compositionEventStore.append(irsBooked);
+
+    // 2) Accounting booking — canonical GL trigger. Off-market (npvMinor > 0) so
+    //    PR-IRS-001 fires a real `ird-swap-trade-booking` posting (an at-market
+    //    zero-NPV inception correctly produces no posting).
+    const irdExecuted = makeIrdSwapTradeExecuted({
+      asOf: `${valuationDate}T07:00:00.000Z`,
+      entity: REG_ENTITY,
+      actor: { type: "human", id: "eitan@bank.local" },
+      citations: ["D-IRS-FAMILY-CONVERGE-ACCOUNTING", "IFRS-9-§4.1"],
+      payload: {
+        tradeId,
+        instrumentType: "irs",
+        role: "pay-fixed",
+        notionalMinor: 10_000_000_000,
+        npvMinor: 1_250_000, // off-market premium → Dr Swap Asset / Cr Unrealised P&L
+        fixedRatePercent: 0.085,
+        tradeDate: valuationDate,
+        startDate: "2026-05-19",
+        maturityDate: "2031-05-19",
+        counterpartyLei: "CP-IRS-CONV-001",
+        currency: "ZAR",
+        bookDesignation: "trading",
+      },
+    });
+    compositionEventStore.append(irdExecuted);
+
+    // 3) EOD revaluation — the converged engine emits IrdSwapPositionRevalued
+    //    (the GL + BA 320 canonical reval fact), NOT the trade-domain mirror.
+    const reval = runEodIrsRevaluation(
+      compositionEventStore,
+      valuationDate,
+      new StaticJibarRateSource(),
+    );
+    expect(reval.revalued).toBeGreaterThanOrEqual(1);
+
+    // 4) Run the GL posting engine over the converged events.
+    const result = await beaGlPostingEngine(buildRegressionCtx(`${valuationDate}T18:00:00.000Z`));
+    expect(result.ok).toBe(true);
+
+    // 5) The off-market booking produced an `ird-swap-trade-booking` posting.
+    const bookingPostings = postingsForSource(irdExecuted.event_id).filter((ev) => {
+      const p = ev.payload as { postingType?: string };
+      return p.postingType === "ird-swap-trade-booking";
+    });
+    expect(bookingPostings).toHaveLength(1);
+
+    // 6) The EOD revaluation produced an `ird-swap-revaluation` posting. The
+    //    reval event is identified by sourceEventId via its postingType.
+    const revalPostings = [...compositionEventStore.replay({ type: "SubLedgerPostingEmitted" })]
+      .filter((ev) => {
+        const p = ev.payload as { postingType?: string };
+        return p.postingType === "ird-swap-revaluation";
+      })
+      .filter((ev) => {
+        // Restrict to THIS trade's reval by checking the leg currency + that a
+        // matching IrdSwapPositionRevalued exists for this tradeId.
+        const p = ev.payload as { sourceEventId?: string };
+        return [...compositionEventStore.replay({ type: "IrdSwapPositionRevalued" })].some(
+          (r) =>
+            r.event_id === p.sourceEventId &&
+            (r.payload as { tradeId?: string }).tradeId === tradeId,
+        );
+      });
+    expect(revalPostings).toHaveLength(1);
+
+    // 7) Both postings balance (interpreter assert_zero).
+    for (const posting of [bookingPostings[0], revalPostings[0]]) {
+      const legs = (posting.payload as { legs: SubLedgerLeg[] }).legs;
+      let bal = 0;
+      for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+      expect(bal).toBe(0);
+    }
   });
 });

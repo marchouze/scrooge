@@ -27,6 +27,10 @@
 import { unlinkSync } from "node:fs";
 
 import { type Actor, BANK_ZA_001, newEventId } from "@platform/core/types";
+import {
+  makeIrdSwapCouponSettled,
+  makeIrdSwapTradeExecuted,
+} from "@platform/event-store/event-types/ird-accounting";
 import { type ProvenanceTag, simulatedTag } from "@platform/event-store/provenance";
 import { EventStore } from "@platform/event-store/store";
 import type { Event } from "@platform/event-store/types";
@@ -112,6 +116,45 @@ function buildIrsTradeBooked(asOf: string): Event {
       dayCountConvention: "ACT/365",
       bookId: "BOOK-IRD-RATES",
       traderRef: "eitan@bank.local",
+    },
+    eventId: newEventId(),
+  });
+  return { ...base, provenance: SCENARIO_PROVENANCE };
+}
+
+// ---------------------------------------------------------------------------
+// Accounting trade-executed (canonical GL/regulatory family) — T0
+//
+// D-IRS-FAMILY-CONVERGE-ACCOUNTING: the booking site emits BOTH the trade-domain
+// IrsTradeBooked (the CDM record read by unified-position / coupon-schedule /
+// CVA notional + counterparty / lifecycle registry) AND the accounting
+// IrdSwapTradeExecuted (the single canonical event the SLA interpreter PR-IRS-001
+// and BA 320 adapter key on). npvMinor = 0 at at-market inception → PR-IRS-001
+// non-zero-delta condition produces no day-1 posting (correct per IFRS 9 §4.1.4).
+// bookDesignation = "trading" (OTC IRD is FVTPL/trading book → BA 320).
+// ---------------------------------------------------------------------------
+
+function buildIrdSwapTradeExecuted(asOf: string): Event {
+  const base = makeIrdSwapTradeExecuted({
+    asOf,
+    entity: ENTITY,
+    actor: EITAN,
+    citations: ["D-IRS-FAMILY-CONVERGE-ACCOUNTING", "IFRS-9-§4.1", "ISDA-2002-MASTER", "ORG-PR-11"],
+    payload: {
+      tradeId: "TRD-IRS-M5-001",
+      instrumentType: "irs",
+      // bankPays=fixed → the bank is the payer of the fixed leg.
+      role: "pay-fixed",
+      notionalMinor: NOTIONAL_ZAR_MINOR,
+      // At-market inception: day-1 NPV is zero → no GL posting on PR-IRS-001.
+      npvMinor: 0,
+      fixedRatePercent: FIXED_RATE,
+      tradeDate: TRADE_DATE_ISO,
+      startDate: EFFECTIVE_DATE_ISO,
+      maturityDate: MATURITY_DATE_ISO,
+      counterpartyLei: COUNTERPARTY_ID,
+      currency: CURRENCY,
+      bookDesignation: "trading",
     },
     eventId: newEventId(),
   });
@@ -219,14 +262,59 @@ function buildFirstCouponSettlementConfirmed(asOf: string): Event {
 }
 
 // ---------------------------------------------------------------------------
+// Accounting coupon settled (canonical GL family) — T3
+//
+// D-IRS-FAMILY-CONVERGE-ACCOUNTING: the net coupon cash settlement posts to GL
+// via the accounting IrdSwapCouponSettled family (SLA interpreter PR-IRS-003,
+// posting type `ird-swap-coupon-settlement`). The trade-domain
+// IrsCouponSettlementConfirmed (above) is retained — the EOD reval engine reads
+// it to exclude settled coupon periods — but it carries NO GL footprint; the
+// accounting event is the canonical posting trigger.
+//
+// netCashMinor is SIGNED from the bank's cash perspective: bankPays=fixed → the
+// bank receives float and pays fixed, so net cash = floating − fixed.
+// ---------------------------------------------------------------------------
+
+function buildIrdSwapCouponSettled(asOf: string): Event {
+  const accrualDays = 90;
+  const dcf = accrualDays / 365;
+  const fixedCouponMinor = Math.round(NOTIONAL_ZAR_MINOR * FIXED_RATE * dcf);
+  const forwardJibar = staticJibarRateSource.getForwardJibar(2, 92);
+  const floatingCouponMinor = Math.round(NOTIONAL_ZAR_MINOR * forwardJibar * dcf);
+  // bankPays=fixed → net cash = floating − fixed (receive float, pay fixed).
+  const netCashMinor = floatingCouponMinor - fixedCouponMinor;
+
+  const base = makeIrdSwapCouponSettled({
+    asOf,
+    entity: ENTITY,
+    actor: TOMAS,
+    citations: ["D-IRS-FAMILY-CONVERGE-ACCOUNTING", "IFRS-9-§4.1", "ISDA-2002-MASTER"],
+    payload: {
+      tradeId: "TRD-IRS-M5-001",
+      netCashMinor,
+      fixedLegMinor: fixedCouponMinor,
+      floatingLegMinor: floatingCouponMinor,
+      settlementDate: FIRST_PAYMENT_DATE_ISO,
+      periodStartDate: EFFECTIVE_DATE_ISO,
+      periodEndDate: FIRST_PAYMENT_DATE_ISO,
+      currency: CURRENCY,
+    },
+    eventId: newEventId(),
+  });
+  return { ...base, provenance: SCENARIO_PROVENANCE };
+}
+
+// ---------------------------------------------------------------------------
 // Scenario builder
 // ---------------------------------------------------------------------------
 
 export interface IrsScenarioEvents {
   readonly tradeBooked: Event;
+  readonly tradeExecutedAccounting: Event;
   readonly couponSchedule: Event;
   readonly firstCouponInstructed: Event;
   readonly firstCouponConfirmed: Event;
+  readonly firstCouponSettledAccounting: Event;
   readonly all: ReadonlyArray<Event>;
 }
 
@@ -239,16 +327,27 @@ export function buildIrsScenarioEvents(): IrsScenarioEvents {
   void confirmTs;
 
   const tradeBooked = buildIrsTradeBooked(tradeTs);
+  const tradeExecutedAccounting = buildIrdSwapTradeExecuted(tradeTs);
   const couponSchedule = buildCouponScheduleGenerated(scheduleTs, tradeBooked);
   const firstCouponInstructed = buildFirstCouponPaymentInstructed(instructTs);
   const firstCouponConfirmed = buildFirstCouponSettlementConfirmed(FIRST_PAYMENT_DATE_ISO);
+  const firstCouponSettledAccounting = buildIrdSwapCouponSettled(FIRST_PAYMENT_DATE_ISO);
 
   return {
     tradeBooked,
+    tradeExecutedAccounting,
     couponSchedule,
     firstCouponInstructed,
     firstCouponConfirmed,
-    all: [tradeBooked, couponSchedule, firstCouponInstructed, firstCouponConfirmed],
+    firstCouponSettledAccounting,
+    all: [
+      tradeBooked,
+      tradeExecutedAccounting,
+      couponSchedule,
+      firstCouponInstructed,
+      firstCouponConfirmed,
+      firstCouponSettledAccounting,
+    ],
   };
 }
 

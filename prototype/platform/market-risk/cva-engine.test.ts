@@ -8,10 +8,11 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { makeIrdSwapPositionRevalued } from "../event-store/event-types/ird-accounting";
 import { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
 import { makeFxTradeExecuted } from "../markets/cdm/fx";
-import { makeIrsPositionRevalued, makeIrsTradeBooked } from "../markets/cdm/ird";
+import { makeIrsTradeBooked } from "../markets/cdm/ird";
 import {
   CVA_DISCOUNT_FACTOR,
   CVA_LGD_DEFAULT,
@@ -70,20 +71,21 @@ function seedIrs(
       },
     }),
   );
+  // CVA reads the accounting IrdSwapPositionRevalued family for current MTM
+  // (D-IRS-FAMILY-CONVERGE-ACCOUNTING); npvClosingMinor IS the signed MTM.
   store.append(
-    makeIrsPositionRevalued({
+    makeIrdSwapPositionRevalued({
       asOf: "2026-05-21T17:00:00.000Z",
       entity: ENTITY,
       actor: { type: "service", id: "risk:test" },
       citations: ["TEST"],
       payload: {
-        tradeId: { scheme: "INTERNAL", value: opts.tradeId },
-        valuationDate: "2026-05-21",
-        fixedLegPv: { currency: "ZAR", amountMinor: 0 },
-        floatingLegPv: { currency: "ZAR", amountMinor: 0 },
-        markToMarket: { currency: "ZAR", amountMinor: opts.mtmMinor },
-        dv01: { currency: "ZAR", amountMinor: 1000 },
-        remainingTenorDays: 365,
+        tradeId: opts.tradeId,
+        npvDeltaMinor: opts.mtmMinor,
+        npvClosingMinor: opts.mtmMinor,
+        npvOpeningMinor: 0,
+        revalDate: "2026-05-21",
+        currency: "ZAR",
       },
     }),
   );
