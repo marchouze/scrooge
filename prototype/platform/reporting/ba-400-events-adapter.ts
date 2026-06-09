@@ -34,9 +34,10 @@
 // Postings on P&L accounts that carry NO `baselBusinessLine` are NOT dropped or
 // re-attributed: they surface as an explicit "unattributed" line in the output
 // so the gap is visible (Principle 1: surface, do not fabricate). The
-// unattributed gross income is also fed into the BIA aggregate (BIA does not
-// decompose by business line) but is excluded from the TSA per-business-line
-// weighting (it has no β to apply), which is surfaced in `placeholders`.
+// unattributed gross income is NOT fed into either the BIA or TSA capital figure
+// (it has no β to apply and would distort the bank-aggregate); it is reported as
+// `unattributedGrossIncomeMinor` + an explicit `unattributed` folded line + a
+// `placeholders` entry so a consumer can see exactly what the capital excludes.
 //
 // Per-entity. Bank-licence-bound; only Hoz Bank LE-ZA-HOZ-BANK is in scope —
 // the per-entity guard is inherited from `generateBa300OpRisk`.
@@ -53,11 +54,11 @@ import { COA_BY_ID } from "../accounting/coa-registry";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import {
+  BUSINESS_LINE_BETA,
   type Ba300Output,
   type BaselBusinessLine,
-  BUSINESS_LINE_BETA,
-  generateBa300OpRisk,
   type OpRiskGrossIncomeRow,
+  generateBa300OpRisk,
 } from "./ba-400-op-risk";
 
 // ---------------------------------------------------------------------------
@@ -283,13 +284,7 @@ export function generateBa400OpRiskFromEvents(
   approach: "bia" | "tsa",
   opts?: { readonly periodId?: string; readonly untilSequence?: number },
 ): Ba400FromEventsOutput {
-  const folded = foldGrossIncome(
-    eventStore,
-    entity,
-    asOf,
-    functionalCurrency,
-    opts?.untilSequence,
-  );
+  const folded = foldGrossIncome(eventStore, entity, asOf, functionalCurrency, opts?.untilSequence);
 
   // Build the gross-income rows for the underlying generator. The generator's
   // `OpRiskGrossIncomeRow` requires a REAL `BaselBusinessLine`. The unattributed
