@@ -53,7 +53,7 @@ The procedure operationalises the SA computation governance defined in §4.1 of 
 |---|---|
 | `ORG-PR-19` | Measure trading-book market risk per FRTB; hold capital under SA or IMA. SA is the regulatory baseline; this procedure is the operational realisation of the SA limb. |
 | `ORG-PR-33` | Implement FRTB + revised CVA per PA D/2025 (1 July 2025 effective). The SA SBM, DRC, RRAO, and CVA-SA limbs are required from the first trade date. |
-| `ORG-PR-60` | SA/IMA capital reporting to PA via BA-325 (SA) / BA-326 (IMA, if approved). This procedure produces the canonical SA total that feeds BA-325. |
+| `ORG-PR-60` | SA/IMA capital reporting to PA via BA-325 (FRTB SA/IMA where approved). This procedure produces the canonical SA total that feeds BA-325. |
 | BCBS FRTB (January 2019) — Chapter "Standardised Approach": SBM (delta, vega, curvature), DRC, RRAO `[citation: TBC — precise paragraph indices; Imani (Legal-as-code engineer, engineering) + external counsel ratify at the licence-application gate]` | Sensitivity-based method risk classes (GIRR, FX, equity, CSR non-securitisation, CSR securitisation non-CTP, CSR securitisation CTP, commodity); SA aggregation rules; DRC bucket structure; RRAO scope. |
 | BCBS *Minimum capital requirements for CVA risk* (July 2020) | CVA-SA / CVA-BA methodology; counterparty-credit-spread buckets `[citation: TBC]`. |
 | PA Directive D/2025 | FRTB + revised CVA implementation timeline; SA fallback floor for IMA-revoked desks `[citation: TBC]`. |
@@ -299,7 +299,7 @@ For netting sets assigned `approach: BA`, the basic CVA capital is computed unde
 
 **Step 13.6 — Forward reference and separation from BA-325 input.**
 
-The daily `FrtbSaCapitalComputed` event includes a `cvaComponent` field aggregating SA-CVA + BA-CVA across all netting sets for internal risk-appetite monitoring against MR-4 (Market Risk Policy v1 §3). However, the canonical CVA capital figure that feeds BA-325 / BA-326 flows through a separate monthly computation cycle (Market Risk Policy v1 §6.2 reporting) — the daily figure here is a continuous-monitoring estimate; the monthly figure is the reportable capital number. The split prevents double-counting and respects the d507 + PA D/2025 reporting cadence. **A follow-on PROC-RISK-CVA-SA-01 may, at Helena's discretion, lift Steps 13.1–13.5 into a standalone procedure** once the CVA engine is sufficiently complex to merit a dedicated procedure file — this procedure cross-references rather than duplicates if that lift happens.
+The daily `FrtbSaCapitalComputed` event includes a `cvaComponent` field aggregating SA-CVA + BA-CVA across all netting sets for internal risk-appetite monitoring against MR-4 (Market Risk Policy v1 §3). However, the canonical CVA capital figure that feeds BA-325 flows through a separate monthly computation cycle (Market Risk Policy v1 §6.2 reporting) — the daily figure here is a continuous-monitoring estimate; the monthly figure is the reportable capital number. The split prevents double-counting and respects the d507 + PA D/2025 reporting cadence. **A follow-on PROC-RISK-CVA-SA-01 may, at Helena's discretion, lift Steps 13.1–13.5 into a standalone procedure** once the CVA engine is sufficiently complex to merit a dedicated procedure file — this procedure cross-references rather than duplicates if that lift happens.
 
 ### 5.6 Aggregation, validation, and event emission (Steps 14–17)
 
