@@ -1,8 +1,15 @@
 // platform/reporting/ba-700-capital.ts
 //
-// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 — BA 100 (Capital
-// Adequacy Return) projection. The second SARB return rendered end-to-end
-// after BA 110 (LCR, Slice 3).
+// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 — BA 700 (Capital Adequacy
+// and Leverage and TLAC) projection. The second SARB return rendered
+// end-to-end after BA 300 (LCR, Slice 3).
+//
+// Form-number authority: the SARB Excel form set — BA 700 = "Capital Adequacy
+// and Leverage and TLAC" (workbook tab A1). The prior "BA 100" label was a
+// fabricated numbering artefact: BA 100 is actually the Balance Sheet.
+// Re-numbered forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL
+// (CEO 2026-06-09); see Regulations/SARB-PA/ba-returns/_canonical-register.md.
+// Internal `Ba100*` symbol names retained pending a separate symbol-rename pass.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), pack §6 Slice 4.

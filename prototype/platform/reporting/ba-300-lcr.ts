@@ -1,7 +1,16 @@
 // platform/reporting/ba-300-lcr.ts
 //
-// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 3 — BA 110 (Liquidity
-// Coverage Ratio) projection. The first SARB return rendered end-to-end.
+// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 3 — BA 300 (Liquidity Risk,
+// including the Liquidity Coverage Ratio (LCR)) projection. The first SARB
+// return rendered end-to-end.
+//
+// Form-number authority: the SARB Excel form set — BA 300 = "Liquidity Risk"
+// (A1), which carries the LCR. The prior "BA 110" label was a fabricated
+// numbering artefact (BA 110 = "Off-Balance-Sheet Activities"). Re-numbered
+// forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09;
+// supersedes D-BA-RETURN-FORM-NUMBERING-RECON);
+// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba110*`
+// symbol names retained pending a separate symbol-rename pass.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), pack §6 Slice 3.

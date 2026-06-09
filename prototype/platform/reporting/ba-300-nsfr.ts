@@ -1,8 +1,8 @@
 // platform/reporting/ba-300-nsfr.ts
 //
-// Net Stable Funding Ratio (NSFR) engine — BA 120 / Regulation 26A.
+// Net Stable Funding Ratio (NSFR) engine — BA 300 series / Regulation 26A.
 //
-// Companion to `ba-110-lcr.ts` (LCR engine). The NSFR measures a bank's
+// Companion to `ba-300-lcr.ts` (LCR engine). The NSFR measures a bank's
 // ability to sustain its operations over a 1-year horizon using available
 // stable funding (ASF) to cover required stable funding (RSF).
 //
@@ -12,7 +12,13 @@
 // Regulatory basis:
 //   - BCBS "Basel III: the net stable funding ratio" (Oct 2014 / BCBS 295).
 //   - Regulations Relating to Banks Regulation 26A (NSFR implementation).
-//   - BA 120 (SARB return for NSFR; verified from Regulations relating to Banks form schedule, GG 35950, + SARB PA returns catalogue. The prior "BA 610" label was wrong — BA 610 is the *liquidity-risk* return (Reg 26). See D-BA-RETURN-FORM-NUMBERING-RECON.).
+//   - NSFR is reported within the SARB BA 300 liquidity-risk series (BA 300 =
+//     "Liquidity Risk"; the NSFR rides the same return family as the LCR). The
+//     prior "BA 120" / "BA 610" labels were fabricated numbering artefacts
+//     (BA 120 = Income Statement; BA 610 = Foreign Operations). Re-numbered
+//     forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09,
+//     supersedes D-BA-RETURN-FORM-NUMBERING-RECON); see
+//     Regulations/SARB-PA/ba-returns/_canonical-register.md.
 //
 // ## Computation
 //

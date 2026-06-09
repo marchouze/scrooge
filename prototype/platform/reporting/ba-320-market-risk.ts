@@ -1,14 +1,16 @@
 // platform/reporting/ba-320-market-risk.ts
 //
-// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) — BA 310
-// (market-risk return) projection.
+// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) — BA 320
+// (Market Risk return) projection.
 //
-// Form-number authority: Regulations relating to Banks (Government Gazette
-// 35950, 12 December 2012) form schedule, Reg 28: "Market risk (position
-// risk) — Form BA 310". This module was previously mislabelled `ba-350`;
-// BA 350 is the *Derivative instruments* return (Reg 32). Renumbered under
-// D-BA-RETURN-FORM-NUMBERING-RECON (CEO-approved 2026-06-07); see also
-// D-BA-330-REATTRIBUTION-IRRBB and Regulations/SARB-PA/large-exposures.md §7.
+// Form-number authority: the SARB Excel form set — BA 320 = "Market Risk"
+// (workbook tab A1). The prior "BA 310" label was a fabricated numbering
+// artefact: BA 310 is actually "Minimum Liquid Reserve Balance and Liquid
+// Assets (HQLA)". Re-numbered forward-only under
+// D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09), which supersedes
+// D-BA-RETURN-FORM-NUMBERING-RECON wholesale; see
+// Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba310*`
+// symbol names retained pending a separate symbol-rename pass.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-
 // approved 2026-05-10), pack §6 Slice 4 (the BA 310 sub-scope) consolidated

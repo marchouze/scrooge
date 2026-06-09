@@ -1,6 +1,13 @@
 // platform/reporting/ba-120-income-statement.ts
 //
-// WS-FINANCE-BA-RETURNS-QUINTET — BA 610 (Income Statement) projection.
+// WS-FINANCE-BA-RETURNS-QUINTET — BA 120 (Income Statement) projection.
+//
+// Form-number authority: the SARB Excel form set — BA 120 = "Income Statement"
+// (workbook tab A1). The prior "BA 610" label was a fabricated numbering
+// artefact: BA 610 is actually "Foreign Operations of South African Banks".
+// Re-numbered forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL
+// (CEO 2026-06-09); see Regulations/SARB-PA/ba-returns/_canonical-register.md.
+// Internal `Ba610*` symbol names retained pending a separate symbol-rename pass.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 to add the BA-returns

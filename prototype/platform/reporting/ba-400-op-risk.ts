@@ -1,17 +1,15 @@
 // platform/reporting/ba-400-op-risk.ts
 //
-// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) — BA 300
-// (operational-risk return) projection.
+// D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) — BA 400
+// (Operational Risk return) projection.
 //
-// Form-number authority: Regulations relating to Banks (Government Gazette
-// 35950, 12 December 2012) form schedule, Reg 33: "Operational risk —
-// Directives ... for completion of six-monthly return concerning operational
-// risk (Form BA 300)". This module was previously mislabelled `ba-600`;
-// BA 600 is the *counterparty credit risk* return. Renumbered under
-// D-BA-RETURN-FORM-NUMBERING-RECON (CEO-approved 2026-06-07).
-// (NB a later directive D5/2025 uses BA 300 for the leverage ratio — a
-// distinct, conflicting returns-schedule generation; the GG 35950 form
-// schedule is canonical for this module per the recon decision.)
+// Form-number authority: the SARB Excel form set — BA 400 = "Operational
+// Risk" (workbook tab A1). The prior "BA 300" label was a fabricated
+// numbering artefact: BA 300 is actually "Liquidity Risk" (the LCR return).
+// Re-numbered forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL
+// (CEO 2026-06-09), which supersedes D-BA-RETURN-FORM-NUMBERING-RECON
+// wholesale; see Regulations/SARB-PA/ba-returns/_canonical-register.md.
+// Internal `Ba300*` symbol names retained pending a separate symbol-rename pass.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-
 // approved 2026-05-10), pack §6 Slice 4 (BA 300 sub-scope) consolidated

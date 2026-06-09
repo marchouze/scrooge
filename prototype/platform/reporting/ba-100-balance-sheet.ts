@@ -1,9 +1,13 @@
 // platform/reporting/ba-100-balance-sheet.ts
 //
-// WS-FINANCE-BA-RETURNS-QUINTET — BA 600 (Balance Sheet) projection.
-// Eighth SARB BA-form return rendered end-to-end (after BA 110 / BA 310 /
-// BA 300 / BA 100; the BA-quintet batch adds BA 600 + off-balance-sheet + BA 610 +
-// BA 610 detail + BA 310).
+// WS-FINANCE-BA-RETURNS-QUINTET — BA 100 (Balance Sheet) projection.
+//
+// Form-number authority: the SARB Excel form set — BA 100 = "Balance Sheet"
+// (workbook tab A1). The prior "BA 600" label was a fabricated numbering
+// artefact: BA 600 is actually the Consolidated Return. Re-numbered
+// forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09);
+// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba600*`
+// symbol names retained pending a separate symbol-rename pass.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 to add the BA-returns
