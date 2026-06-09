@@ -82,11 +82,7 @@ const CLOSURES: readonly ClosureSpec[] = [
       "The public LCR disclosure basis was not reconciled to D1/2022 / Directive 1/2019. Remediated: added the §2.3 public-disclosure-basis provision specifying simple averages of daily observations over the previous quarter (~90 observations), published quarterly per D1/2022 §3.2 / §4.1.4 incorporating D1/2019; distinguished from the internal daily computation; added ORG-PR-LCR-002/009 to the §10 closure table.",
     evidenceRef:
       "Policies/liquidity-risk-management-policy-v1.md §2.3 (public-disclosure basis) + §10 (ORG-PR-LCR-002, ORG-PR-LCR-009)",
-    citations: [
-      "ORG-PR-LCR-002",
-      "ORG-PR-LCR-009",
-      "liquidity-risk-management-policy-v1",
-    ],
+    citations: ["ORG-PR-LCR-002", "ORG-PR-LCR-009", "liquidity-risk-management-policy-v1"],
   },
   {
     findingId: "F-HELENA-20260608-96I3",
