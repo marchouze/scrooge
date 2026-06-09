@@ -118,6 +118,67 @@ function calendarDaysRemaining(valuationDate: string, targetDate: string): numbe
 }
 
 // ---------------------------------------------------------------------------
+// DV01 per-tenor-bucket reconstruction (shared)
+// ---------------------------------------------------------------------------
+
+/**
+ * Reconstruct the per-tenor-bucket DV01 grid for an IRS from its booking terms,
+ * as at `valuationDate`. Each remaining coupon period contributes
+ * `0.0001 × notional × dcf × df` to the BCBS standardised maturity band that
+ * contains its payment date (days from `valuationDate`); per-band contributions
+ * are rounded to integer minor units and zero-rounding bands dropped.
+ *
+ * This is the SINGLE source of the DV01 bucketing rule: both `runEodIrsRevaluation`
+ * (forward MTM run) and `scripts/backfill-irs-historical-gl.ts` (historical
+ * `IrsPositionRevalued` → `IrdSwapPositionRevalued` backfill) call it, so the
+ * bucketing is byte-identical across the live path and the backfill path.
+ *
+ * Returns `{}` when no remaining period rounds to a non-zero contribution — the
+ * caller then omits the optional `dv01ByTenorBucket` field entirely (no
+ * fabrication of empty buckets).
+ *
+ * @param trade          The originating `IrsTradeBooked` payload.
+ * @param valuationDate  YYYY-MM-DD valuation date.
+ * @param rateSource     JIBAR rate source (defaults to staticJibarRateSource).
+ * @param settledDates   Payment dates already settled (excluded from the grid).
+ */
+export function computeIrsDv01ByTenorBucket(
+  trade: IrsTradeBookedPayload,
+  valuationDate: string,
+  rateSource: IrsRateSource = staticJibarRateSource,
+  settledDates: ReadonlySet<string> = new Set<string>(),
+): Partial<Record<BaselMaturityBand, number>> {
+  const schedule = generateCouponSchedule(trade, rateSource);
+  const notionalMinor = trade.notional.amountMinor;
+  const convention = trade.dayCountConvention;
+
+  // Per-band raw (fractional) accumulation; rounded per band at the end.
+  const dv01ByBandRaw: Partial<Record<BaselMaturityBand, number>> = {};
+
+  for (const period of schedule.periods) {
+    if (period.paymentDate <= valuationDate || settledDates.has(period.paymentDate)) continue;
+
+    const payDays = calendarDaysRemaining(valuationDate, period.paymentDate);
+    const df = rateSource.getDiscountFactor(payDays);
+    const dcf = dayCountFraction(period.periodStart, period.paymentDate, convention);
+
+    // DV01 contribution: 1bp × notional × dcf × discount factor.
+    const periodDv01 = 0.0001 * notionalMinor * dcf * df;
+
+    const band = daysToBaselMaturityBand(payDays);
+    dv01ByBandRaw[band] = (dv01ByBandRaw[band] ?? 0) + periodDv01;
+  }
+
+  // Round per-band DV01 to integer minor units; drop zero-rounding bands.
+  const dv01ByTenorBucket: Partial<Record<BaselMaturityBand, number>> = {};
+  for (const [band, raw] of Object.entries(dv01ByBandRaw) as [BaselMaturityBand, number][]) {
+    const rounded = Math.round(raw);
+    if (rounded !== 0) dv01ByTenorBucket[band] = rounded;
+  }
+  return dv01ByTenorBucket;
+}
+
+// ---------------------------------------------------------------------------
 // Main revaluation runner
 // ---------------------------------------------------------------------------
 
@@ -218,11 +279,6 @@ export function runEodIrsRevaluation(
 
       let fixedLegPvMinor = 0;
       let floatingLegPvMinor = 0;
-      let dv01Minor = 0;
-      // Per-period DV01 accumulated into the BCBS standardised tenor bucket that
-      // contains the period's payment date (days from valuationDate). Fractional
-      // minor-unit contributions accumulate here; rounded per band at emit time.
-      const dv01ByBandRaw: Partial<Record<BaselMaturityBand, number>> = {};
 
       for (const period of remainingPeriods) {
         // Days from valuation date to payment date.
@@ -245,22 +301,19 @@ export function runEodIrsRevaluation(
         }
 
         floatingLegPvMinor += notionalMinor * forwardJibar * dcf * df;
-
-        // DV01 contribution: 1bp × notional × dcf × discount factor.
-        const periodDv01 = 0.0001 * notionalMinor * dcf * df;
-        dv01Minor += periodDv01;
-
-        // Assign this period's DV01 to its payment-date tenor bucket.
-        const band = daysToBaselMaturityBand(payDays);
-        dv01ByBandRaw[band] = (dv01ByBandRaw[band] ?? 0) + periodDv01;
       }
 
-      // Round per-band DV01 to integer minor units; drop zero-rounding bands.
-      const dv01ByTenorBucket: Partial<Record<BaselMaturityBand, number>> = {};
-      for (const [band, raw] of Object.entries(dv01ByBandRaw) as [BaselMaturityBand, number][]) {
-        const rounded = Math.round(raw);
-        if (rounded !== 0) dv01ByTenorBucket[band] = rounded;
-      }
+      // Per-tenor-bucket DV01 grid — the SAME bucketing rule the historical-IRS
+      // GL backfill reuses (computeIrsDv01ByTenorBucket). Each remaining,
+      // unsettled coupon period contributes 1bp × notional × dcf × df to the
+      // BCBS band containing its payment date; rounded per band, zero bands
+      // dropped.
+      const dv01ByTenorBucket = computeIrsDv01ByTenorBucket(
+        trade,
+        valuationDate,
+        rateSource,
+        settledDates,
+      );
 
       // MTM from the bank's perspective.
       // bankPays=fixed → bank is short the fixed leg, long float.
@@ -275,8 +328,6 @@ export function runEodIrsRevaluation(
         trade.bankPays === "fixed"
           ? floatingLegPvMinor - fixedLegPvMinor // payer benefits when rates rise
           : fixedLegPvMinor - floatingLegPvMinor; // receiver benefits when rates fall
-
-      void dv01Minor; // scalar total retained for diagnostics; bucketed grid is canonical
 
       // Closing NPV = the mark-to-market from the bank's perspective (signed:
       // positive = net asset, negative = net liability). Opening NPV = the prior
