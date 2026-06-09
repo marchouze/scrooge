@@ -1162,7 +1162,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     // -----------------------------------------------------------------------
     const stockResult = computeHqlaStockFromPositions({
       ...input.hqlaStock,
-      encumberedIsins: openRepoIsins.size > 0 ? openRepoIsins : undefined,
+      ...(openRepoIsins.size > 0 ? { encumberedIsins: openRepoIsins } : {}),
     });
 
     // Map Level-1 lines.
