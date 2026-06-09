@@ -420,6 +420,36 @@ export {
   type RenderBa200Options,
 } from "./ba-200-render";
 
+// ---------------------------------------------------------------------------
+// WS-BA-RETURNS-FOLLOWON — BA 210 (Credit Concentration Risk / Large
+// Exposures, LEX). Events-first generator + JSON renderer.
+// Authority: D-BA-RETURNS-FOLLOWON-BATCH.
+// ---------------------------------------------------------------------------
+
+export {
+  type Ba210GeneratorInput,
+  type Ba210ObligorExposure,
+  type Ba210Output,
+  Ba210GeneratorError,
+  BA_210_BANK_ENTITIES,
+  LEX_LARGE_EXPOSURE_THRESHOLD_PCT,
+  LEX_HARD_LIMIT_PCT,
+  ba210ObligorExposureSchema,
+  generateBa210LargeExposures,
+  generateBa210LargeExposuresFromEvents,
+} from "./ba-210-large-exposures";
+
+export {
+  Ba210RenderSchema,
+  type Ba210Render,
+  BA_210_SCHEMA_URL,
+  BA_210_RENDERER_VERSION,
+  canonicaliseBa210,
+  renderBa210Canonical,
+  renderBa210ToJson,
+  type RenderBa210Options,
+} from "./ba-210-render";
+
 export {
   type IfrsAccountClass,
   type IfrsAccountClassification,
