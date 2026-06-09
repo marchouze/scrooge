@@ -1,0 +1,171 @@
+// prototype/scripts/assign-bcbs-obligation-owners.ts
+//
+// One-off owner-assignment pass for the graph-imported BCBS obligations
+// (D-OBLIGATIONS-REGISTER-CLEANUP · P3 follow-on, WS-OBLIGATIONS-CLEANUP).
+//
+// The BCBS obligations were brought into the event log by
+// `importBcbsObligationGraphs` (NOT via Regulations/_obligations.seed.json), so
+// they cannot be fixed through the seed-backfill path that PR #1139 used for the
+// 417 SA rows. Their `ObligationAdopted` events carry an empty `owner`. This
+// script corrects them at the EVENT level: replay `ObligationAdopted` from the
+// shared store, take latest-per-id, filter to the `^BCBS-` set with empty owner,
+// and emit one corrected later-dated `ObligationAdopted` per affected id that
+// preserves every other field and fills `owner` by Basel family.
+//
+// Owner is assigned with the SAME seat vocabulary PR #1139 used
+// (cco|cfo|cro|company-secretary|operational|head-of-global-markets|…). No new
+// seats are invented; a family that does not fit leaves owner empty and is
+// reported. The projection's replace-on-re-adopt semantics (later `as_of` wins,
+// `buildBankObligations` folds by `as_of`) carry the correction.
+//
+// Idempotent: an id whose latest payload already carries the correct owner is
+// skipped, so a second run is a no-op. The seed JSON and the 417 SA rows are NOT
+// touched (recon:obligations-seed-parity stays green) — this is owner-only and
+// leaves fulfilmentPolicy / requirement / urn / domain as-is.
+//
+// Run from prototype/ against the SHARED store:
+//   BANK_EVENT_DB=$HOME/.local/share/bank/event.db bun run scripts/assign-bcbs-obligation-owners.ts
+//   BANK_EVENT_DB=$HOME/.local/share/bank/event.db bun run scripts/assign-bcbs-obligation-owners.ts --write
+//
+// Default is a dry-run report; --write emits the corrected events.
+//
+// Author: Mira (Compliance / RegTech engineer, engineering).
+
+import { eventStore } from "../platform/composition";
+import { makeObligationAdopted } from "../platform/event-store/event-types/obligation-lifecycle";
+import type { ObligationAdoptedPayload } from "../platform/event-store/event-types/obligation-lifecycle";
+import type { Actor } from "../platform/event-store/types";
+
+const CORRECTION_AT = "2026-06-09T12:00:00Z"; // later than the import + the 2026-06-09 SA-correction stamp
+const ENTITY = "LE-ZA-HOZ-BANK";
+const ACTOR: Actor = { type: "service", id: "agent:mira:bcbs-obligation-owners" };
+const CITATIONS = [
+  "D-OBLIGATIONS-REGISTER-CLEANUP",
+  "WS-OBLIGATIONS-CLEANUP",
+  "P1-EVENTS-AS-TRUTH",
+  "P2-SINGLE-GRAPH-DISCIPLINE",
+];
+
+/**
+ * Basel family → accountable seat. Seats use the SAME vocabulary PR #1139
+ * applied to the SA rows (the ObligationReviewCompleted.reviewerSeat tokens). A
+ * family not present here is left unowned and reported — no seat is invented.
+ *
+ *   RBC / CAP / CRE / LEV / LEX → cro   (capital / credit / leverage / large-exp)
+ *   MAR                          → cro   (market risk)
+ *   LCR / NSF                    → cfo   (liquidity ratios)
+ *   DIS  (Pillar 3 disclosure)   → cfo
+ *   OPE  (operational risk)      → operational
+ *   BCP / SCO (governance / core principles) → company-secretary
+ */
+const FAMILY_TO_SEAT: Record<string, string> = {
+  RBC: "cro",
+  CAP: "cro",
+  CRE: "cro",
+  LEV: "cro",
+  LEX: "cro",
+  MAR: "cro",
+  LCR: "cfo",
+  NSF: "cfo",
+  DIS: "cfo",
+  OPE: "operational",
+  BCP: "company-secretary",
+  SCO: "company-secretary",
+};
+
+/** Extract the Basel family token from a BCBS obligation id, e.g. BCBS-CRE20 → CRE. */
+function familyOf(obligationId: string): string {
+  const m = obligationId.match(/^BCBS-([A-Za-z]+)/);
+  return m?.[1]?.toUpperCase() ?? "";
+}
+
+/** Is this a graph-imported BCBS obligation (id `^BCBS-` or urn containing bcbs)? */
+function isBcbsImport(p: ObligationAdoptedPayload): boolean {
+  return /^BCBS-/i.test(p.obligationId) || /bcbs/i.test(p.urn ?? "");
+}
+
+/**
+ * Latest adopted payload per obligation id, folded by `as_of` (ties keep replay
+ * order — the same fold `buildBankObligations` uses).
+ */
+function latestAdoptedById(): Map<string, ObligationAdoptedPayload> {
+  const events = [...eventStore.replay({ type: "ObligationAdopted" })].sort((a, b) =>
+    a.as_of < b.as_of ? -1 : a.as_of > b.as_of ? 1 : 0,
+  );
+  const byId = new Map<string, ObligationAdoptedPayload>();
+  for (const ev of events) {
+    const p = ev.payload as ObligationAdoptedPayload;
+    if (p.obligationId) byId.set(p.obligationId, p);
+  }
+  return byId;
+}
+
+function main(): void {
+  const write = process.argv.includes("--write");
+  const latest = latestAdoptedById();
+
+  const bcbs = [...latest.values()].filter(isBcbsImport);
+  const emptyOwner = bcbs.filter((p) => !(p.owner ?? "").trim());
+
+  let emitted = 0;
+  const unfit: Array<{ id: string; family: string }> = [];
+  const assigned: Array<{ id: string; family: string; seat: string }> = [];
+
+  for (const current of emptyOwner) {
+    const family = familyOf(current.obligationId);
+    const seat = FAMILY_TO_SEAT[family];
+    if (!seat) {
+      unfit.push({ id: current.obligationId, family: family || "(none)" });
+      continue;
+    }
+
+    // Idempotency: skip if the latest payload already carries the right owner.
+    // (The empty-owner filter already guarantees a change is needed, but this
+    //  keeps the guard explicit so a re-run after a partial write is a no-op.)
+    if ((current.owner ?? "").trim() === seat) continue;
+
+    const payload: ObligationAdoptedPayload = {
+      ...current,
+      owner: seat,
+      adoptedAt: CORRECTION_AT,
+    };
+
+    if (write) {
+      eventStore.append(
+        makeObligationAdopted({
+          asOf: CORRECTION_AT,
+          entity: ENTITY,
+          actor: ACTOR,
+          citations: CITATIONS,
+          payload,
+        }),
+      );
+    }
+    emitted++;
+    assigned.push({ id: current.obligationId, family, seat });
+  }
+
+  // Report.
+  console.log("assign-bcbs-obligation-owners —", write ? "WRITE" : "dry-run");
+  console.log(`  BCBS-imported ObligationAdopted ids: ${bcbs.length}`);
+  console.log(`  with empty owner (before): ${emptyOwner.length}`);
+  console.log(`  corrected ObligationAdopted ${write ? "emitted" : "would emit"}: ${emitted}`);
+  console.log(`  left unowned (no fitting seat): ${unfit.length}`);
+
+  const byFamily = new Map<string, { seat: string; count: number }>();
+  for (const a of assigned) {
+    const e = byFamily.get(a.family) ?? { seat: a.seat, count: 0 };
+    e.count++;
+    byFamily.set(a.family, e);
+  }
+  console.log("  --- family → seat assignments ---");
+  for (const [fam, e] of [...byFamily.entries()].sort()) {
+    console.log(`    ${fam} → ${e.seat}  (${e.count})`);
+  }
+  if (unfit.length > 0) {
+    console.log("  --- left unowned (report) ---");
+    for (const u of unfit) console.log(`    ${u.id} :: family=${u.family}`);
+  }
+}
+
+main();
