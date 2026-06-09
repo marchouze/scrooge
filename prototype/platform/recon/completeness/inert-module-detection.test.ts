@@ -25,9 +25,9 @@ import { describe, expect, test } from "bun:test";
 import { KNOWN_INERT_PENDING_WIRING, computeViolations, run } from "./inert-module-detection";
 
 const WATCHED = [
-  "platform/returns/ba100/period-close-subscriber.ts",
-  "platform/returns/ba110/period-close-subscriber.ts",
-  "platform/returns/ba310/period-close-subscriber.ts",
+  "platform/returns/ba700/period-close-subscriber.ts",
+  "platform/returns/ba300/period-close-subscriber.ts",
+  "platform/returns/ba320/period-close-subscriber.ts",
 ] as const;
 
 describe("inert-module-detection — computeViolations (pure)", () => {
@@ -38,14 +38,14 @@ describe("inert-module-detection — computeViolations (pure)", () => {
     );
     const fails = violations.filter((v) => v.severity === "fail");
     expect(fails.map((v) => v.subject)).toContain(
-      "platform/returns/ba100/period-close-subscriber.ts",
+      "platform/returns/ba700/period-close-subscriber.ts",
     );
   });
 
   test("allowlisted + inert module is tracked (no fail) and counted", () => {
     const allowlist = [
-      { module: "platform/returns/ba100/period-close-subscriber.ts", owner: "Mira", closing: "x" },
-      { module: "platform/returns/ba110/period-close-subscriber.ts", owner: "Mira", closing: "x" },
+      { module: "platform/returns/ba700/period-close-subscriber.ts", owner: "Mira", closing: "x" },
+      { module: "platform/returns/ba300/period-close-subscriber.ts", owner: "Mira", closing: "x" },
     ];
     // ba310 wired; ba100/ba110 inert but allowlisted.
     const { violations, inertCount } = computeViolations(WATCHED, allowlist, (m) =>
@@ -58,14 +58,14 @@ describe("inert-module-detection — computeViolations (pure)", () => {
   test("SELF-CLEANING — allowlisted-but-WIRED module FAILs as STALE", () => {
     // The exact stale-BA-310 shape: ba310 is on the allowlist AND wired.
     const allowlistWithStaleBa310 = [
-      { module: "platform/returns/ba310/period-close-subscriber.ts", owner: "Mira", closing: "x" },
+      { module: "platform/returns/ba320/period-close-subscriber.ts", owner: "Mira", closing: "x" },
     ];
     const { violations } = computeViolations(WATCHED, allowlistWithStaleBa310, (m) =>
       m.endsWith("ba310/period-close-subscriber.ts"),
     );
     const fails = violations.filter((v) => v.severity === "fail");
     const stale = fails.find(
-      (v) => v.subject === "platform/returns/ba310/period-close-subscriber.ts",
+      (v) => v.subject === "platform/returns/ba320/period-close-subscriber.ts",
     );
     expect(stale).toBeDefined();
     expect(stale?.message).toContain("STALE");

@@ -1,7 +1,7 @@
 // tests/ba-400-leverage-ratio.test.ts
 //
 // Unit tests for the Basel III leverage-ratio generator
-// (`platform/reporting/ba-400-leverage-ratio.ts`) and its
+// (`platform/reporting/ba-700-leverage-ratio.ts`) and its
 // measurement-projection consumer
 // (`platform/projections/leverage-ratio-metrics.ts`).
 //
@@ -40,15 +40,15 @@ import {
   THRESHOLD_LEVERAGE_RED,
   computeLeverageRatioMetrics,
 } from "../platform/projections/leverage-ratio-metrics";
-import { generateBa100Capital } from "../platform/reporting/ba-100-capital";
-import { renderBa100ToJson } from "../platform/reporting/ba-100-render";
+import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import { renderBa100ToJson } from "../platform/reporting/ba-700-render";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   BUILD_PHASE_LEVERAGE_BASELINE_TIER1_MINOR,
   LEVERAGE_RATIO_BANK_ENTITIES,
   LeverageRatioGeneratorError,
   generateLeverageRatio,
-} from "../platform/reporting/ba-400-leverage-ratio";
+} from "../platform/reporting/ba-700-leverage-ratio";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-05-21T09:00:00.000Z";

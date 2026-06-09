@@ -22,13 +22,13 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { Ba100GeneratorInput } from "../platform/reporting/ba-100-capital";
+import type { Ba100GeneratorInput } from "../platform/reporting/ba-700-capital";
 import {
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
   computeRequiredMinimums,
   generateBa100Capital,
-} from "../platform/reporting/ba-100-capital";
-import { ba100ToXmlPayload } from "../platform/reporting/ba-100-xml-adapter";
+} from "../platform/reporting/ba-700-capital";
+import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
 
 // ---------------------------------------------------------------------------
 // Shared fixtures

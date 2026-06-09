@@ -1,9 +1,9 @@
-// platform/reporting/ba-300-xml-adapter.ts
+// platform/reporting/ba-400-xml-adapter.ts
 //
 // Thin adapter that maps a typed `Ba300Output` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`. Slice 5.
 
-import type { Ba300LineItem, Ba300Output } from "./ba-300-op-risk";
+import type { Ba300LineItem, Ba300Output } from "./ba-400-op-risk";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
 export const BA_300_XSD_URI = "https://hoz.bank/xsd/ba-300/v0.1-rehearsal.xsd"; // [citation: TBC]

@@ -1,4 +1,4 @@
-// platform/reporting/ba-610-income-statement.ts
+// platform/reporting/ba-120-income-statement.ts
 //
 // WS-FINANCE-BA-RETURNS-QUINTET — BA 610 (Income Statement) projection.
 //
@@ -168,7 +168,7 @@ export interface Ba610ClassificationGap {
 
 export interface Ba610IncomeStatement {
   readonly meta: {
-    readonly form: "BA 610";
+    readonly form: "BA 120";
     readonly formVersion: "v0.1-rehearsal";
     readonly entity: string;
     readonly periodStart: string;
@@ -345,7 +345,7 @@ export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610I
 
   return {
     meta: {
-      form: "BA 610",
+      form: "BA 120",
       formVersion: "v0.1-rehearsal",
       entity: input.entity,
       periodStart: input.periodStart,

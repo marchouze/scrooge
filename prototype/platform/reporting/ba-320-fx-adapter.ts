@@ -1,4 +1,4 @@
-// platform/reporting/ba-310-fx-adapter.ts
+// platform/reporting/ba-320-fx-adapter.ts
 //
 // Adapter: FX position calculator output → BA 310 FX section input.
 //
@@ -21,7 +21,7 @@
 //   engineer, engineering)
 
 import type { FxPositionResult } from "../accounting/fx-calculators";
-import type { FxPositionRow } from "./ba-310-market-risk";
+import type { FxPositionRow } from "./ba-320-market-risk";
 
 /**
  * Convert fxPositionCalculator output to BA 310 FxPositionRow[] input.

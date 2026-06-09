@@ -1,4 +1,4 @@
-// platform/returns/ba300/period-close-subscriber.ts
+// platform/returns/ba400/period-close-subscriber.ts
 //
 // M3 Slice 5 — AccountingPeriodClosed subscriber that triggers BA 300
 // (operational risk) generation when an accounting period closes for a
@@ -50,7 +50,7 @@ import {
   type Ba300Output,
   type OpRiskGrossIncomeRow,
   generateBa300OpRisk,
-} from "../../reporting/ba-300-op-risk";
+} from "../../reporting/ba-400-op-risk";
 
 // ---------------------------------------------------------------------------
 // Per-entity scope guard

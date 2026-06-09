@@ -1,4 +1,4 @@
-// platform/reporting/ba-610-render.ts
+// platform/reporting/ba-120-render.ts
 //
 // WS-FINANCE-BA-RETURNS-QUINTET — JSON renderer for the BA 610 (Income
 // Statement) projection.
@@ -14,7 +14,7 @@
 
 import { z } from "zod";
 
-import type { Ba610IncomeStatement } from "./ba-610-income-statement";
+import type { Ba610IncomeStatement } from "./ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
@@ -53,7 +53,7 @@ const ba300ClassificationGapSchema = z.object({
 export const Ba610RenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-610/v0.1-rehearsal.json"),
   meta: z.object({
-    form: z.literal("BA 610"),
+    form: z.literal("BA 120"),
     formVersion: z.literal("v0.1-rehearsal"),
     entity: z.string().min(1),
     periodStart: z.string().min(1),

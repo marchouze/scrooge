@@ -1,4 +1,4 @@
-// platform/reporting/ba-100-events-adapter.ts
+// platform/reporting/ba-700-events-adapter.ts
 //
 // P1 fix (C-3) — BA 100 (Capital Adequacy Return) entry point that folds
 // primary trade events directly, without routing through the trial balance.
@@ -40,10 +40,10 @@ import type {
   AccountCapitalClassification,
   RegulatoryDeduction,
   RwaDecomposition,
-} from "./ba-100-capital";
-import { BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS, generateBa100Capital } from "./ba-100-capital";
-import type { Ba100Output, BufferRequirements } from "./ba-100-capital";
-import type { LeverageExposureDecomposition } from "./ba-400-leverage-ratio";
+} from "./ba-700-capital";
+import { BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS, generateBa100Capital } from "./ba-700-capital";
+import type { Ba100Output, BufferRequirements } from "./ba-700-capital";
+import type { LeverageExposureDecomposition } from "./ba-700-leverage-ratio";
 
 // ---------------------------------------------------------------------------
 // Input contract for the events-first entry point.

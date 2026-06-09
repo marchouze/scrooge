@@ -1,4 +1,4 @@
-// platform/reporting/ba-310-bond-events-adapter.ts
+// platform/reporting/ba-320-bond-events-adapter.ts
 //
 // Derives BA-310 IR general risk maturity-ladder from BondTradeExecuted events
 // (minus BondMatured / BondSold derecognitions). Fills the
@@ -42,7 +42,7 @@ import type {
 } from "../event-store/event-types/bond-accounting";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import type { IrMaturityBandRow, IrSpecificRiskRow } from "./ba-310-market-risk";
+import type { IrMaturityBandRow, IrSpecificRiskRow } from "./ba-320-market-risk";
 
 // ---------------------------------------------------------------------------
 // Reg 28(3)(a) maturity band definitions — standardised maturity method

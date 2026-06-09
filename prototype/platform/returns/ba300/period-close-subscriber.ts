@@ -1,4 +1,4 @@
-// platform/returns/ba110/period-close-subscriber.ts
+// platform/returns/ba300/period-close-subscriber.ts
 //
 // M2 Slice 3 — AccountingPeriodClosed subscriber that triggers BA 110 (LCR)
 // generation when an accounting period closes for a bank-licence entity.
@@ -75,7 +75,7 @@ import {
   BA_110_BANK_ENTITIES,
   type Ba110Output,
   generateBa110Lcr,
-} from "../../reporting/ba-110-lcr";
+} from "../../reporting/ba-300-lcr";
 import {
   type CashHqlaCustodianAccount,
   type HqlaStockInput,

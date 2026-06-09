@@ -1,4 +1,4 @@
-// platform/reporting/ba-610-income-detail.ts
+// platform/reporting/ba-120-income-detail.ts
 //
 // WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail (Selected Income-Statement
 // Information / Profitability Detail) projection. Monthly SARB return.
@@ -74,7 +74,7 @@
 //   + Ravi (Treasury & ALM engineer, engineering — FTP + ALM banding
 //   substrate consult).
 
-import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-610-income-statement";
+import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // Instrument classes
@@ -335,7 +335,7 @@ export interface Ba610DetailEfficiencySection {
  */
 export interface Ba610DetailIncomeDetail {
   readonly meta: {
-    readonly form: "BA 610 detail";
+    readonly form: "BA 120 detail";
     readonly formVersion: "v0.1-rehearsal";
     readonly entity: string;
     readonly periodStart: string;
@@ -803,7 +803,7 @@ export function generateBa610DetailIncomeDetail(
 
   return {
     meta: {
-      form: "BA 610 detail",
+      form: "BA 120 detail",
       formVersion: "v0.1-rehearsal",
       entity: ba300Output.meta.entity,
       periodStart: ba300Output.meta.periodStart,

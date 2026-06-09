@@ -1,4 +1,4 @@
-// platform/reporting/ba-100-capital.ts
+// platform/reporting/ba-700-capital.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 — BA 100 (Capital
 // Adequacy Return) projection. The second SARB return rendered end-to-end
@@ -85,7 +85,7 @@ import {
   type LeverageExposureDecomposition,
   type LeverageRatioOutput,
   generateLeverageRatio,
-} from "./ba-400-leverage-ratio";
+} from "./ba-700-leverage-ratio";
 
 // P1 fix note (C-3): the events-first entry point for BA 100 lives at
 // `ba-100-events-adapter.ts` → `generateBa100CapitalFromEvents()`. Callers
@@ -370,7 +370,7 @@ export interface Ba100RatiosSection {
  */
 export interface Ba100Output {
   readonly meta: {
-    readonly form: "BA 100";
+    readonly form: "BA 700";
     readonly formVersion: "v0.1-rehearsal";
     readonly entity: string;
     readonly asOf: string;
@@ -705,7 +705,7 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
 
   return {
     meta: {
-      form: "BA 100",
+      form: "BA 700",
       formVersion: "v0.1-rehearsal",
       entity: input.entity,
       asOf: input.asOf,

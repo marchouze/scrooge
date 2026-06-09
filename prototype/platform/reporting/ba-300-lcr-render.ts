@@ -1,4 +1,4 @@
-// platform/reporting/ba-110-render.ts
+// platform/reporting/ba-300-lcr-render.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 3 — JSON renderer for the
 // BA 110 (LCR) projection.
@@ -37,7 +37,7 @@
 
 import { z } from "zod";
 
-import type { Ba110Output } from "./ba-110-lcr";
+import type { Ba110Output } from "./ba-300-lcr";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
@@ -90,7 +90,7 @@ const ba110InputCompletenessSchema = z.object({
 export const Ba110RenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-110/v0.1-rehearsal.json"),
   meta: z.object({
-    form: z.literal("BA 110"),
+    form: z.literal("BA 300"),
     formVersion: z.literal("v0.1-rehearsal"),
     entity: z.string().min(1),
     asOf: z.string().min(1),

@@ -1,7 +1,7 @@
 // tests/ba310-bond-ir-adapter.test.ts
 //
 // Unit tests for the BA-310 bond IR general maturity-ladder and specific-risk
-// adapter (`platform/reporting/ba-310-bond-events-adapter.ts`).
+// adapter (`platform/reporting/ba-320-bond-events-adapter.ts`).
 //
 // Coverage (per dispatch brief BND-3):
 //   1. Live trading-book bond → correct maturity band row
@@ -33,8 +33,8 @@ import { setDefaultProvenanceModeOverride } from "../platform/projections/filter
 import {
   buildBondIrGeneralLadder,
   buildBondIrSpecificRiskRows,
-} from "../platform/reporting/ba-310-bond-events-adapter";
-import { ba310PeriodCloseSubscriber } from "../platform/returns/ba310/period-close-subscriber";
+} from "../platform/reporting/ba-320-bond-events-adapter";
+import { ba310PeriodCloseSubscriber } from "../platform/returns/ba320/period-close-subscriber";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:Mira" };

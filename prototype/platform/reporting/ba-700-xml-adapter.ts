@@ -1,4 +1,4 @@
-// platform/reporting/ba-100-xml-adapter.ts
+// platform/reporting/ba-700-xml-adapter.ts
 //
 // Thin adapter that maps a typed `Ba100Output` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`.
@@ -30,7 +30,7 @@
 //   + Atlas (Core banking platform architect, engineering — render-layer
 //   infrastructure + simulator harness).
 
-import type { Ba100LineItem, Ba100Output } from "./ba-100-capital";
+import type { Ba100LineItem, Ba100Output } from "./ba-700-capital";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
 export const BA_100_XSD_URI = "https://hoz.bank/xsd/ba-100/v0.1-rehearsal.xsd"; // [citation: TBC]

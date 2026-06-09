@@ -27,7 +27,7 @@ import {
   NsfrGeneratorError,
   generateNsfrProjection,
   zarFinCorpAsfFactor,
-} from "../platform/reporting/ba-120-nsfr";
+} from "../platform/reporting/ba-300-nsfr";
 
 const PERIOD_END = "2026-05-31T23:59:59.999Z";
 

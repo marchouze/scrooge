@@ -87,7 +87,7 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     expect(result.writeResults.length).toBe(4);
 
     const forms = result.writeResults.map((w) => w.form);
-    expect(forms).toEqual(["ba-110", "ba-100", "ba-310", "ba-300"]);
+    expect(forms).toEqual(["ba-300", "ba-700", "ba-320", "ba-400"]);
 
     for (const w of result.writeResults) {
       // Each output path is under the requested output dir, named <form>.json.
@@ -190,34 +190,34 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     const byForm: Record<string, string> = {};
     for (const w of result.writeResults) byForm[w.form] = w.outputPath;
 
-    // BA 110 — Slice-3 typed render (`Ba110Render`).
-    const ba110 = JSON.parse(readFileSync(byForm["ba-110"] as string, "utf8")) as Record<
+    // BA 300 (LCR / liquidity) — Slice-3 typed render (`Ba110Render`).
+    const ba110 = JSON.parse(readFileSync(byForm["ba-300"] as string, "utf8")) as Record<
       string,
       unknown
     >;
-    expect((ba110.meta as { form: string }).form).toBe("BA 110");
+    expect((ba110.meta as { form: string }).form).toBe("BA 300");
     expect((ba110.meta as { entity: string }).entity).toBe("LE-ZA-HOZ-BANK");
     expect((ba110.meta as { periodId: string }).periodId).toBe("2026-Q1-M01");
 
     // BA 100 — Slice-4 typed render (`Ba100Render`).
-    const ba100 = JSON.parse(readFileSync(byForm["ba-100"] as string, "utf8")) as Record<
+    const ba100 = JSON.parse(readFileSync(byForm["ba-700"] as string, "utf8")) as Record<
       string,
       unknown
     >;
-    expect((ba100.meta as { form: string }).form).toBe("BA 100");
+    expect((ba100.meta as { form: string }).form).toBe("BA 700");
     expect((ba100.capitalStack as { netTotalCapitalMinor: number }).netTotalCapitalMinor).toBe(
       30_000_000_000,
     );
 
     // BA 310 — Slice-5 generator output (no typed JSON renderer; emitted as
     // sorted-keys canonical JSON of `Ba310Output`).
-    const ba310 = JSON.parse(readFileSync(byForm["ba-310"] as string, "utf8")) as Ba310Output;
-    expect(ba310.meta.form).toBe("BA 310");
+    const ba310 = JSON.parse(readFileSync(byForm["ba-320"] as string, "utf8")) as Ba310Output;
+    expect(ba310.meta.form).toBe("BA 320");
     expect(ba310.totalMarketRiskCapitalMinor).toBe(738_000_000);
 
     // BA 300 — same shape pattern as BA 310.
-    const ba300 = JSON.parse(readFileSync(byForm["ba-300"] as string, "utf8")) as Ba300Output;
-    expect(ba300.meta.form).toBe("BA 300");
+    const ba300 = JSON.parse(readFileSync(byForm["ba-400"] as string, "utf8")) as Ba300Output;
+    expect(ba300.meta.form).toBe("BA 400");
     expect(ba300.opRiskCapitalMinor).toBe(150_000_000);
     expect(ba300.meta.approach).toBe("bia");
   });

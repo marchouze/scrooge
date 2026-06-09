@@ -1,4 +1,4 @@
-// platform/reporting/ba-600-balance-sheet.ts
+// platform/reporting/ba-100-balance-sheet.ts
 //
 // WS-FINANCE-BA-RETURNS-QUINTET — BA 600 (Balance Sheet) projection.
 // Eighth SARB BA-form return rendered end-to-end (after BA 110 / BA 310 /
@@ -205,7 +205,7 @@ export interface Ba600BalanceCheck {
 /** The full BA 600 generator output. */
 export interface Ba600BalanceSheet {
   readonly meta: {
-    readonly form: "BA 600";
+    readonly form: "BA 100";
     readonly formVersion: "v0.1-rehearsal";
     readonly entity: string;
     readonly asOf: string;
@@ -408,7 +408,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
 
   return {
     meta: {
-      form: "BA 600",
+      form: "BA 100",
       formVersion: "v0.1-rehearsal",
       entity: input.entity,
       asOf: input.asOf,

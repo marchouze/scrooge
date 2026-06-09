@@ -1,4 +1,4 @@
-// platform/returns/ba310/period-close-subscriber.ts
+// platform/returns/ba320/period-close-subscriber.ts
 //
 // M3 Slice 5 — AccountingPeriodClosed subscriber that triggers BA 310
 // (market risk) generation when an accounting period closes for a
@@ -51,18 +51,18 @@ import type { Actor } from "../../event-store/types";
 import {
   buildBondIrGeneralLadder,
   buildBondIrSpecificRiskRows,
-} from "../../reporting/ba-310-bond-events-adapter";
+} from "../../reporting/ba-320-bond-events-adapter";
 import {
   type Ba310FromEventsInput,
   type Ba310Output,
   generateBa310MarketRiskFromEvents,
-} from "../../reporting/ba-310-events-adapter";
+} from "../../reporting/ba-320-events-adapter";
 import type {
   CommodityPositionRow,
   EquityRow,
   IrMaturityBandRow,
   IrSpecificRiskRow,
-} from "../../reporting/ba-310-market-risk";
+} from "../../reporting/ba-320-market-risk";
 
 // ---------------------------------------------------------------------------
 // Per-entity scope guard

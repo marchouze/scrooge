@@ -1,4 +1,4 @@
-// platform/reporting/ba-310-events-adapter.ts
+// platform/reporting/ba-320-events-adapter.ts
 //
 // P1 fix (C-2) — BA 310 (market-risk return) entry point that folds
 // FxTradeExecuted primary trade events directly, without routing through the
@@ -41,15 +41,15 @@ import { fxPositionCalculator } from "../accounting/fx-calculators";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import { fxPositionsToBa310Input } from "./ba-310-fx-adapter";
-import { generateBa310MarketRisk } from "./ba-310-market-risk";
+import { fxPositionsToBa310Input } from "./ba-320-fx-adapter";
+import { generateBa310MarketRisk } from "./ba-320-market-risk";
 import type {
   Ba310Output,
   CommodityPositionRow,
   EquityRow,
   IrMaturityBandRow,
   IrSpecificRiskRow,
-} from "./ba-310-market-risk";
+} from "./ba-320-market-risk";
 
 // ---------------------------------------------------------------------------
 // Input contract for the events-first entry point.

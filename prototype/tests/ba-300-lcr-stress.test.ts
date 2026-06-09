@@ -1,9 +1,9 @@
 // tests/ba-110-stress.test.ts
 //
-// Stress-test coverage for the BA 110 (LCR) SARB return projection.
+// Stress-test coverage for the BA 300 (LCR) SARB return projection.
 // Closes pre-licence gate criterion G3.
 //
-// These tests exercise edge cases and boundary conditions in the BA 110
+// These tests exercise edge cases and boundary conditions in the BA 300
 // generator and XML adapter that are not covered by the nominal-path tests
 // in ba-110-xml-adapter.test.ts. Each test is an isolated pure-function call
 // (no file I/O, no external services, deterministic fixtures).
@@ -30,8 +30,8 @@ import {
   type Ba110GeneratorInput,
   applyHqlaCaps,
   generateBa110Lcr,
-} from "../platform/reporting/ba-110-lcr";
-import { ba110ToXmlPayload } from "../platform/reporting/ba-110-xml-adapter";
+} from "../platform/reporting/ba-300-lcr";
+import { ba110ToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -86,7 +86,7 @@ function baseInput(overrides?: Partial<Ba110GeneratorInput>): Ba110GeneratorInpu
 // ratio formula directly.
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-1: LCR = 0 scenario", () => {
+describe("BA 300 stress — ST-1: LCR = 0 scenario", () => {
   it("applyHqlaCaps() with all-zero stock returns zero total", () => {
     const result = applyHqlaCaps({
       level1Minor: 0,
@@ -124,7 +124,7 @@ describe("BA 110 stress — ST-1: LCR = 0 scenario", () => {
 // ST-2: LCR = Infinity — HQLA > 0, net outflows = 0 (denominator = 0)
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-2: LCR = Infinity (zero denominator)", () => {
+describe("BA 300 stress — ST-2: LCR = Infinity (zero denominator)", () => {
   it("positive HQLA stock + zero net outflows → lcrRatio = Infinity, lcrCompliant = true", () => {
     const output = generateBa110Lcr(
       baseInput({
@@ -153,7 +153,7 @@ describe("BA 110 stress — ST-2: LCR = Infinity (zero denominator)", () => {
 // HQLA 70 units, net outflows 100 units → ratio = 0.7, lcrCompliant = false
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-3: LCR < 80% (non-compliant)", () => {
+describe("BA 300 stress — ST-3: LCR < 80% (non-compliant)", () => {
   it("ratio 0.7 is < 1.0 and flagged non-compliant", () => {
     const hqla = 70;
     const netCashOutflows = 100;
@@ -183,7 +183,7 @@ describe("BA 110 stress — ST-3: LCR < 80% (non-compliant)", () => {
 // the cap binds and capBindingIndicator must be true.
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-4: Level-2A cap binding", () => {
+describe("BA 300 stress — ST-4: Level-2A cap binding", () => {
   it("Level-2A cap binds when post-haircut L2A exceeds 40% of total stock", () => {
     // To force L2A cap: L2A dominates the portfolio.
     // Set Level-1 = 100, Level-2A raw = 500 (post-haircut 0.85*500 = 425).
@@ -238,7 +238,7 @@ describe("BA 110 stress — ST-4: Level-2A cap binding", () => {
 // the L2B cap binds.
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-5: Level-2B cap binding", () => {
+describe("BA 300 stress — ST-5: Level-2B cap binding", () => {
   it("Level-2B cap binds when L2B-raw exceeds 15% of total stock", () => {
     // Level-1 = 100, no L2A, L2B raw = 500 (factor-weighted = 250 at 50%).
     // If no caps: total ≈ 350. L2B share = 250/350 ≈ 71% > 15%. L2B cap binds.
@@ -298,7 +298,7 @@ describe("BA 110 stress — ST-5: Level-2B cap binding", () => {
 // the generator's field semantics with a contrived input.
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-6: Inflow 75%-cap binding", () => {
+describe("BA 300 stress — ST-6: Inflow 75%-cap binding", () => {
   it("inflow cap arithmetic: capped amount < gross when inflows > 75% of outflows", () => {
     // Gross outflows = 1000, gross inflows = 900 (90% of outflows).
     // Cap = floor(0.75 * 1000) = 750. Capped = min(900, 750) = 750.
@@ -339,7 +339,7 @@ describe("BA 110 stress — ST-6: Inflow 75%-cap binding", () => {
 // (25% of gross outflows) is applied, and netCashOutflowFloorBindingIndicator = true.
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-7: Net-outflow floor binding", () => {
+describe("BA 300 stress — ST-7: Net-outflow floor binding", () => {
   it("floor arithmetic: floor binds when pre-floor net < 25% of gross outflows", () => {
     // Gross outflows = 1000, gross inflows = 800 (all counted, cap = 750).
     // Capped inflows = min(800, 750) = 750. Pre-floor net = 1000 - 750 = 250.
@@ -413,7 +413,7 @@ describe("BA 110 stress — ST-7: Net-outflow floor binding", () => {
 // ST-8: Zero trial balance — all amounts 0, lcrRatio = Infinity
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-8: Zero trial balance (empty arrays)", () => {
+describe("BA 300 stress — ST-8: Zero trial balance (empty arrays)", () => {
   it("empty trial balance and empty classifications → totalStockHqlaMinor = 0", () => {
     const output = generateBa110Lcr(baseInput());
     expect(output.hqla.totalStockHqlaMinor).toBe(0);
@@ -449,11 +449,11 @@ describe("BA 110 stress — ST-8: Zero trial balance (empty arrays)", () => {
 // ST-9: ba110ToXmlPayload() round-trip — structural key check
 // ---------------------------------------------------------------------------
 
-describe("BA 110 stress — ST-9: ba110ToXmlPayload() round-trip", () => {
-  it("formId = 'BA325'", () => {
+describe("BA 300 stress — ST-9: ba110ToXmlPayload() round-trip", () => {
+  it("formId = 'BA300'", () => {
     const output = generateBa110Lcr(baseInput());
     const payload = ba110ToXmlPayload(output);
-    expect(payload.formId).toBe("BA325");
+    expect(payload.formId).toBe("BA300");
   });
 
   it("body has required top-level keys: Meta, Hqla, CashFlows, LcrRatio, LcrCompliant", () => {

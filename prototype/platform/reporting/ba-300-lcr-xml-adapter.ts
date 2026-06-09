@@ -1,4 +1,4 @@
-// platform/reporting/ba-110-xml-adapter.ts
+// platform/reporting/ba-300-lcr-xml-adapter.ts
 //
 // Thin adapter that maps a typed `Ba110Output` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`.
@@ -28,11 +28,11 @@
 //   + Atlas (Core banking platform architect, engineering — render-layer
 //   infrastructure + simulator harness).
 
-import type { Ba110LineItem, Ba110Output } from "./ba-110-lcr";
+import type { Ba110LineItem, Ba110Output } from "./ba-300-lcr";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
-export const BA_110_XSD_URI = "https://hoz.bank/xsd/ba-110/v0.1-rehearsal.xsd"; // [citation: TBC]
-export const BA_110_NAMESPACE = "https://hoz.bank/ns/ba-110/v0.1";
+export const BA_110_XSD_URI = "https://hoz.bank/xsd/ba-300/v0.1-rehearsal.xsd"; // [citation: TBC]
+export const BA_110_NAMESPACE = "https://hoz.bank/ns/ba-300/v0.1";
 
 function lineItem(it: Ba110LineItem): SarbXmlSection {
   return {
@@ -132,7 +132,14 @@ export function ba110ToXmlPayload(report: Ba110Output): SarbXmlReportPayload {
   };
 
   return {
-    formId: "BA325",
+    // Form code is BA 300 (Liquidity Risk — includes the Liquidity Coverage
+    // Ratio (LCR); SARB Excel form, A1 = "Liquidity Risk"). The prior "BA325"
+    // label was a fabricated-numbering artefact (BA 325 = "Selected Risk
+    // Exposure Arising from Trading and Treasury Activities", not the LCR
+    // return). Forward-only re-number (Principle 1: prior persisted submission
+    // events carrying formId "BA325" are NOT rewritten). Authority:
+    // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL; _canonical-register.md.
+    formId: "BA300",
     formVersion: report.meta.formVersion,
     xsdUri: BA_110_XSD_URI,
     namespaceUri: BA_110_NAMESPACE,

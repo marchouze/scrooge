@@ -1,13 +1,13 @@
-// platform/reporting/ba-310-xml-adapter.ts
+// platform/reporting/ba-320-xml-adapter.ts
 //
 // Thin adapter that maps a typed `Ba310Output` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`. Slice 5.
 
-import type { Ba310LineItem, Ba310Output } from "./ba-310-market-risk";
+import type { Ba310LineItem, Ba310Output } from "./ba-320-market-risk";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
-export const BA_310_XSD_URI = "https://hoz.bank/xsd/ba-310/v0.1-rehearsal.xsd"; // [citation: TBC]
-export const BA_310_NAMESPACE = "https://hoz.bank/ns/ba-310/v0.1";
+export const BA_310_XSD_URI = "https://hoz.bank/xsd/ba-320/v0.1-rehearsal.xsd"; // [citation: TBC]
+export const BA_310_NAMESPACE = "https://hoz.bank/ns/ba-320/v0.1";
 
 function lineItem(it: Ba310LineItem): SarbXmlSection {
   return {
@@ -63,13 +63,16 @@ export function ba310ToXmlPayload(out: Ba310Output): SarbXmlReportPayload {
   };
 
   return {
-    // Form code is BA 310 (market / position risk — Regulations Relating to
-    // Banks Reg 28(5)). The prior "BA320" label was a numbering drift; FX NOP
-    // rides BA 310 (with the BA 110 daily-return NOP attestation), there is no
-    // BA 320. The `formId` flows through to the XML root element AND to the
+    // Form code is BA 320 (Market Risk — SARB Excel form, A1 = "Market Risk").
+    // The prior "BA310" label was a fabricated-numbering artefact (BA 310 is
+    // actually "Minimum Liquid Reserve Balance and Liquid Assets (HQLA)"). The
+    // `formId` flows through to the XML root element AND to the
     // `SarbSubmissionAttempted.formId` submission record, so it must be the
-    // canonical code. Authority: D-BA-RETURN-FORM-NUMBERING-RECON.
-    formId: "BA310",
+    // canonical code. Forward-only re-number (Principle 1: prior persisted
+    // submission events carrying formId "BA310" are NOT rewritten). Authority:
+    // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (supersedes D-BA-RETURN-FORM-NUMBERING-RECON);
+    // Regulations/SARB-PA/ba-returns/_canonical-register.md.
+    formId: "BA320",
     formVersion: out.meta.formVersion,
     xsdUri: BA_310_XSD_URI,
     namespaceUri: BA_310_NAMESPACE,

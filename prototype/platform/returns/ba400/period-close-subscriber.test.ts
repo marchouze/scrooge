@@ -1,4 +1,4 @@
-// platform/returns/ba300/period-close-subscriber.test.ts
+// platform/returns/ba400/period-close-subscriber.test.ts
 //
 // M3 Slice 5 — Unit tests for the AccountingPeriodClosed → BA 300
 // (operational risk) subscriber.
@@ -88,7 +88,7 @@ describe("BA400 period-close subscriber — zero gross-income baseline", () => {
 
     expect(result.skipped).toBe(false);
     expect(result.ba300Output).toBeDefined();
-    expect(result.ba300Output.meta.form).toBe("BA 300");
+    expect(result.ba300Output.meta.form).toBe("BA 400");
     expect(result.ba300Output.meta.entity).toBe(ENTITY_BANK);
     expect(result.ba300Output.opRiskCapitalMinor).toBe(0);
     expect(result.ba300Output.opRiskRwaMinor).toBe(0);

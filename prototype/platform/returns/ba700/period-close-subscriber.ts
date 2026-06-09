@@ -1,4 +1,4 @@
-// platform/returns/ba100/period-close-subscriber.ts
+// platform/returns/ba700/period-close-subscriber.ts
 //
 // BA 100 period-close subscriber — D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // Slice 4.

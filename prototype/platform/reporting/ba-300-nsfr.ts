@@ -1,4 +1,4 @@
-// platform/reporting/ba-120-nsfr.ts
+// platform/reporting/ba-300-nsfr.ts
 //
 // Net Stable Funding Ratio (NSFR) engine — BA 120 / Regulation 26A.
 //

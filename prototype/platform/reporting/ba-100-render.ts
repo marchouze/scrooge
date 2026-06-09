@@ -1,4 +1,4 @@
-// platform/reporting/ba-600-render.ts
+// platform/reporting/ba-100-render.ts
 //
 // WS-FINANCE-BA-RETURNS-QUINTET — JSON renderer for the BA 600 (Balance
 // Sheet) projection.
@@ -27,7 +27,7 @@
 
 import { z } from "zod";
 
-import type { Ba600BalanceSheet } from "./ba-600-balance-sheet";
+import type { Ba600BalanceSheet } from "./ba-100-balance-sheet";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
@@ -78,7 +78,7 @@ const ba100BalanceCheckSchema = z.object({
 export const Ba600RenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-600/v0.1-rehearsal.json"),
   meta: z.object({
-    form: z.literal("BA 600"),
+    form: z.literal("BA 100"),
     formVersion: z.literal("v0.1-rehearsal"),
     entity: z.string().min(1),
     asOf: z.string().min(1),

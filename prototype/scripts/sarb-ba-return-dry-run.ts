@@ -52,8 +52,8 @@ import {
   generateBa100CapitalFromEvents,
   generateBa110Lcr,
 } from "../platform/reporting";
-import { ba100ToXmlPayload } from "../platform/reporting/ba-100-xml-adapter";
-import { ba110ToXmlPayload } from "../platform/reporting/ba-110-xml-adapter";
+import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
+import { ba110ToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
 import { renderSarbXml } from "../platform/reporting/xml-render";
 import { submitToSarbPortal } from "../simulators/sarb-prudential";
 

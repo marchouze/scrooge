@@ -47,7 +47,7 @@ import {
   Ba610DetailRenderSchema,
   renderBa610DetailCanonical,
   renderBa610DetailToJson,
-} from "../platform/reporting/ba-610-detail-render";
+} from "../platform/reporting/ba-120-detail-render";
 import {
   BA_610_DETAIL_BANK_ENTITIES,
   type Ba610DetailBandingMap,
@@ -55,13 +55,13 @@ import {
   Ba610DetailGeneratorError,
   type Ba610DetailGeneratorInput,
   generateBa610DetailIncomeDetail,
-} from "../platform/reporting/ba-610-income-detail";
+} from "../platform/reporting/ba-120-income-detail";
 import type {
   Ba610ClassificationMap,
   Ba610GeneratorInput,
   Ba610IncomeStatement,
-} from "../platform/reporting/ba-610-income-statement";
-import { generateBa610IncomeStatement } from "../platform/reporting/ba-610-income-statement";
+} from "../platform/reporting/ba-120-income-statement";
+import { generateBa610IncomeStatement } from "../platform/reporting/ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -265,7 +265,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail per-entity isolation",
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail end-to-end", () => {
   it("generates a valid Ba610DetailIncomeDetail from fixture inputs", () => {
     const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
-    expect(output.meta.form).toBe("BA 610 detail");
+    expect(output.meta.form).toBe("BA 120 detail");
     expect(output.meta.entity).toBe(ENTITY_BANK);
     expect(output.meta.formVersion).toBe("v0.1-rehearsal");
     expect(output.entity).toBe(ENTITY_BANK);
@@ -277,7 +277,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail end-to-end", () => {
     const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
     const render = renderBa610DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
     expect(render.$schema).toBe(BA_610_DETAIL_SCHEMA_URL);
-    expect(render.meta.form).toBe("BA 610 detail");
+    expect(render.meta.form).toBe("BA 120 detail");
     expect(render.meta.rendererVersion).toBe("v0.1");
   });
 });

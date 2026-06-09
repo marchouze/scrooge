@@ -1,11 +1,11 @@
-// platform/returns/ba100/generator.ts
+// platform/returns/ba700/generator.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 — BA 100 (Capital
 // Adequacy Return) generator.  This module is the canonical entry point
-// for the `returns/ba100/` package, mirroring the `returns/ba110/` pattern.
+// for the `returns/ba700/` package, mirroring the `returns/ba300/` pattern.
 //
-// The generator itself lives in `platform/reporting/ba-100-capital.ts` and
-// `platform/reporting/ba-100-events-adapter.ts` (the P1-compliant
+// The generator itself lives in `platform/reporting/ba-700-capital.ts` and
+// `platform/reporting/ba-700-events-adapter.ts` (the P1-compliant
 // events-first entry point).  This file:
 //
 //   1. Re-exports the public generator API from the canonical reporting
@@ -79,15 +79,15 @@ import {
   Ba100GeneratorError,
   computeRequiredMinimums,
   generateBa100Capital,
-} from "../../reporting/ba-100-capital";
+} from "../../reporting/ba-700-capital";
 import type {
   AccountCapitalClassification,
   Ba100Output,
   BufferRequirements,
   RegulatoryDeduction,
   RwaDecomposition,
-} from "../../reporting/ba-100-capital";
-import { generateBa100CapitalFromEvents } from "../../reporting/ba-100-events-adapter";
+} from "../../reporting/ba-700-capital";
+import { generateBa100CapitalFromEvents } from "../../reporting/ba-700-events-adapter";
 
 // Re-export for consumers that import from this package.
 export {
@@ -130,7 +130,7 @@ export type {
  */
 export interface BA700Return {
   readonly meta: {
-    readonly form: "BA 100";
+    readonly form: "BA 700";
     readonly entity: string;
     readonly reportingDate: string;
     readonly periodId: string;
@@ -530,7 +530,7 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
 
   const ba100Return: BA700Return = {
     meta: {
-      form: "BA 100",
+      form: "BA 700",
       entity: input.entityId,
       reportingDate: input.reportingDate,
       periodId: input.periodId,

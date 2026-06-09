@@ -1,4 +1,4 @@
-// platform/reporting/ba-300-op-risk.ts
+// platform/reporting/ba-400-op-risk.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) — BA 300
 // (operational-risk return) projection.
@@ -139,7 +139,7 @@ export interface Ba300TsaSection {
 
 export interface Ba300Output {
   readonly meta: {
-    readonly form: "BA 300";
+    readonly form: "BA 400";
     readonly formVersion: "v0.1-rehearsal";
     readonly entity: string;
     readonly asOf: string;
@@ -285,7 +285,7 @@ export function generateBa300OpRisk(input: Ba300GeneratorInput): Ba300Output {
 
   return {
     meta: {
-      form: "BA 300",
+      form: "BA 400",
       formVersion: "v0.1-rehearsal",
       entity: input.entity,
       asOf: input.asOf,

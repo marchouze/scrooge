@@ -7,7 +7,7 @@
 //
 // The BA-310 FX-NOP return generator (`platform/reporting/ba-310-events-
 // adapter.ts → generateBa310MarketRiskFromEvents`) and the period-close
-// subscriber (`platform/returns/ba310/period-close-subscriber.ts →
+// subscriber (`platform/returns/ba320/period-close-subscriber.ts →
 // ba310PeriodCloseSubscriber`) are built + tested, but were NOT wired into the
 // runtime: zero non-test importers, no handler invoked them when a period
 // closed. The figure was computable but never GENERATED on the live event
@@ -73,8 +73,8 @@ import { deriveZarRatesFromMarketData } from "../../platform/market-risk/var-eng
 import {
   BA_310_SUBSCRIBER_ENTITIES,
   ba310PeriodCloseSubscriber,
-} from "../../platform/returns/ba310/period-close-subscriber";
-import { ba310ToXmlPayload } from "../../platform/returns/ba310/xml";
+} from "../../platform/returns/ba320/period-close-subscriber";
+import { ba310ToXmlPayload } from "../../platform/returns/ba320/xml";
 import { submitToSarbPortal } from "../../simulators/sarb-prudential";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -91,7 +91,15 @@ const FX_NOP_CURRENCIES = ["USD", "EUR", "GBP", "JPY", "AUD", "CHF", "CNY", "ZAR
 export function ba310SubmissionExists(store: EventStore, periodId: string): boolean {
   for (const e of store.replay({ type: "SarbSubmissionAttempted" })) {
     const p = e.payload as { formId?: string; reportingPeriod?: string };
-    if (p.formId === "BA310" && p.reportingPeriod === periodId) return true;
+    // Market-risk return formId is canonically "BA320" (SARB Excel form A1 =
+    // "Market Risk"; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL). The legacy
+    // fabricated id "BA310" is accepted here too so that a period already
+    // carrying a historical (pre-re-number) submission event is NOT
+    // re-submitted forward-only — Principle 1: historical events are immutable;
+    // idempotency must recognise the superseded id.
+    if ((p.formId === "BA320" || p.formId === "BA310") && p.reportingPeriod === periodId) {
+      return true;
+    }
   }
   return false;
 }

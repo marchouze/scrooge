@@ -22,14 +22,14 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { Ba100Output } from "../platform/reporting/ba-100-capital";
-import { generateBa100Capital } from "../platform/reporting/ba-100-capital";
+import type { Ba100Output } from "../platform/reporting/ba-700-capital";
+import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
 import {
   BA_100_NAMESPACE,
   BA_100_REQUIRED_ELEMENTS,
   BA_100_XSD_URI,
   ba100ToXmlPayload,
-} from "../platform/reporting/ba-100-xml-adapter";
+} from "../platform/reporting/ba-700-xml-adapter";
 import { renderSarbXml, validateSarbXmlStructural } from "../platform/reporting/xml-render";
 
 // ---------------------------------------------------------------------------

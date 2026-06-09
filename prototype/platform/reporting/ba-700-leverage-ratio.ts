@@ -1,4 +1,4 @@
-// platform/reporting/ba-400-leverage-ratio.ts
+// platform/reporting/ba-700-leverage-ratio.ts
 //
 // WS-CAPITAL-LEVERAGE-RATIO — Basel III Leverage Ratio module.
 //

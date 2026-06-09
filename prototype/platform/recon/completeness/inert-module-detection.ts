@@ -112,19 +112,19 @@ interface AllowlistEntry {
 // (D-RETURNS-SUBMISSION-WIRING-WORKSTREAM rationale).
 export const KNOWN_INERT_PENDING_WIRING: readonly AllowlistEntry[] = [
   {
-    module: "platform/returns/ba100/period-close-subscriber.ts",
+    module: "platform/returns/ba700/period-close-subscriber.ts",
     owner: "Mira (Compliance / RegTech engineer) + Bea (Accounting & financial reporting engineer)",
     closing:
       "WS-RETURNS-SUBMISSION-WIRING (D-RETURNS-SUBMISSION-WIRING-WORKSTREAM) — NOT wired: stub-fed generator. The BA-100 RWA decomposition is caller-supplied (generator.ts `rwa: RwaDecomposition` with `TODO: wire from RwaComputed event (W2 Slice 3 engine)`). Wiring it would submit a return whose core RWA figure is a placeholder. Blocked until the RwaComputed event stream lands.",
   },
   {
-    module: "platform/returns/ba110/period-close-subscriber.ts",
+    module: "platform/returns/ba300/period-close-subscriber.ts",
     owner: "Mira + Bea",
     closing:
       "WS-RETURNS-SUBMISSION-WIRING — NOT wired: unresolved formId. BA-110's generator is genuinely event-sourced (trial balance + positions + settlement flows + Party register), but the SARB submission formId cannot be cleanly set: GG 35950 lists BA 110 as the daily return (reg 29(3) FX-NOP) while ba-110-lcr.* treats it as LCR, and `ba110ToXmlPayload` currently emits the RETIRED formId 'BA325'. This is the open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON; wiring before it resolves would record a mis-formId'd submission. Blocked on that reconciliation.",
   },
   {
-    module: "platform/returns/ba300/period-close-subscriber.ts",
+    module: "platform/returns/ba400/period-close-subscriber.ts",
     owner: "Mira + Bea",
     closing:
       "WS-RETURNS-SUBMISSION-WIRING — NOT wired: stub-fed generator. BA-300 (operational risk, BIA) gross-income rows are caller-supplied and explicitly post-commencement-of-trading (subscriber: 'Live numbers populate after commencement-of-trading + 3 fiscal years of audited gross income'; default placeholder zeros). Blocked until the gross-income event feed (e.g. RevenueRecognitionEmitted) lands.",
@@ -192,10 +192,10 @@ function walkTs(dir: string): string[] {
  */
 function hasRuntimeImporter(prototypeDir: string, moduleRelPath: string): boolean {
   // Canonical suffix the import specifier must end with, e.g.
-  // "returns/ba310/period-close-subscriber".
+  // "returns/ba320/period-close-subscriber".
   const noExt = moduleRelPath.replace(/\.ts$/, "");
   const m = noExt.match(/platform\/(returns\/.+)$/);
-  const suffix = m?.[1] ?? noExt; // "returns/ba310/period-close-subscriber"
+  const suffix = m?.[1] ?? noExt; // "returns/ba320/period-close-subscriber"
 
   for (const dirName of RUNTIME_IMPORTER_DIRS) {
     const dir = join(prototypeDir, dirName);
@@ -208,7 +208,7 @@ function hasRuntimeImporter(prototypeDir: string, moduleRelPath: string): boolea
         continue;
       }
       // Match an import/from specifier ending in the canonical suffix.
-      // Covers `from "../../returns/ba310/period-close-subscriber"` and the
+      // Covers `from "../../returns/ba320/period-close-subscriber"` and the
       // `.ts`-suffixed / `/index` variants.
       const re = new RegExp(`["'\`][^"'\`]*${suffix.replace(/[/]/g, "\\/")}(?:\\.ts)?["'\`]`);
       if (re.test(src)) return true;

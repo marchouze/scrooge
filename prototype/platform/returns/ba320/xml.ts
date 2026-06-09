@@ -1,10 +1,10 @@
-// platform/returns/ba310/xml.ts
+// platform/returns/ba320/xml.ts
 //
 // M3 Slice 5 — BA 310 XML serialiser entry point.
 //
 // Re-exports the XML adapter and render utilities from the reporting package
 // as the canonical BA 310 XML surface. This thin wrapper keeps the
-// `returns/ba310/` API self-contained (callers can import from here rather
+// `returns/ba320/` API self-contained (callers can import from here rather
 // than reaching into `reporting/`).
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved
@@ -23,7 +23,7 @@ export {
   BA_310_REQUIRED_ELEMENTS,
   BA_310_XSD_URI,
   ba310ToXmlPayload,
-} from "../../reporting/ba-310-xml-adapter";
+} from "../../reporting/ba-320-xml-adapter";
 
 export {
   type RenderXmlOptions,
@@ -33,4 +33,4 @@ export {
   validateSarbXmlStructural,
 } from "../../reporting/xml-render";
 
-export type { Ba310Output } from "../../reporting/ba-310-market-risk";
+export type { Ba310Output } from "../../reporting/ba-320-market-risk";

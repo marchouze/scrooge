@@ -1,6 +1,6 @@
-// platform/returns/ba110/period-close-subscriber.test.ts
+// platform/returns/ba300/period-close-subscriber.test.ts
 //
-// M2 Slice 3 — Unit tests for the AccountingPeriodClosed → BA 110 subscriber.
+// M2 Slice 3 — Unit tests for the AccountingPeriodClosed → BA 300 subscriber.
 //
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10),
 //   pack §6 Slice 3; D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29).
@@ -13,7 +13,7 @@
 //      functional-currency rules still apply).
 //   2. Non-bank entity is silently skipped (LE-ZA-HOZ-SECURITIES).
 //   3. Subscriber reads trial-balance rows from TrialBalanceSnapshotted event.
-//   4. BA 110 output is compliant (lcr ≥ 1.0) with custodian-derived SARB cash.
+//   4. BA 300 output is compliant (lcr ≥ 1.0) with custodian-derived SARB cash.
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering) +
 //   Eitan (Treasury & liquidity engineer, engineering) +
@@ -211,7 +211,7 @@ function buildStoreWithPeriod(opts: { seedCentralBank: boolean }): {
 // 1. Custodian-derived cash HQLA — tier from the Party, not a COA tag
 // =====================================================================
 
-describe("BA325 period-close subscriber — custodian-derived cash HQLA", () => {
+describe("BA300 period-close subscriber — custodian-derived cash HQLA", () => {
   it("counts SARB cash as Level-1 HQLA when the custodian is classified central-bank", () => {
     const { store, closedPayload } = buildStoreWithPeriod({ seedCentralBank: true });
 
@@ -255,7 +255,7 @@ describe("BA325 period-close subscriber — custodian-derived cash HQLA", () => 
 // 2. Non-bank entity is skipped
 // =====================================================================
 
-describe("BA325 period-close subscriber — entity guard", () => {
+describe("BA300 period-close subscriber — entity guard", () => {
   it("skips LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
     const store = new EventStore(":memory:");
     const result = ba110PeriodCloseSubscriber({
@@ -276,11 +276,11 @@ describe("BA325 period-close subscriber — entity guard", () => {
 });
 
 // =====================================================================
-// 3. End-to-end: period close → subscriber → compliant BA 110
+// 3. End-to-end: period close → subscriber → compliant BA 300
 // =====================================================================
 
-describe("BA325 period-close subscriber — end-to-end", () => {
-  it("generates a compliant BA 110 for LE-ZA-HOZ-BANK on period close", () => {
+describe("BA300 period-close subscriber — end-to-end", () => {
+  it("generates a compliant BA 300 for LE-ZA-HOZ-BANK on period close", () => {
     const { store, closedPayload } = buildStoreWithPeriod({ seedCentralBank: true });
 
     const result = ba110PeriodCloseSubscriber({

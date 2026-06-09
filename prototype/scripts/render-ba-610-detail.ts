@@ -42,18 +42,18 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
-import { renderBa610DetailCanonical } from "../platform/reporting/ba-610-detail-render";
+import { renderBa610DetailCanonical } from "../platform/reporting/ba-120-detail-render";
 import type {
   Ba610DetailBandingMap,
   Ba610DetailFtpRates,
   Ba610DetailGeneratorInput,
-} from "../platform/reporting/ba-610-income-detail";
-import { generateBa610DetailIncomeDetail } from "../platform/reporting/ba-610-income-detail";
+} from "../platform/reporting/ba-120-income-detail";
+import { generateBa610DetailIncomeDetail } from "../platform/reporting/ba-120-income-detail";
 import type {
   Ba610ClassificationMap,
   Ba610GeneratorInput,
-} from "../platform/reporting/ba-610-income-statement";
-import { generateBa610IncomeStatement } from "../platform/reporting/ba-610-income-statement";
+} from "../platform/reporting/ba-120-income-statement";
+import { generateBa610IncomeStatement } from "../platform/reporting/ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // Build-phase default BA 610 classifications — synthetic fixtures covering

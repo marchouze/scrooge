@@ -1,7 +1,7 @@
 // tests/ba-310-market-risk.test.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 — exit-criterion tests
-// for BA 310 (market risk) generator + XML render.
+// for BA 320 (market risk) generator + XML render.
 //
 // Authors: Bea + Helena + Anya.
 
@@ -84,7 +84,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — market-risk semantic entries", () =
 // 2. Per-entity isolation.
 // =====================================================================
 
-describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 per-entity isolation", () => {
+describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 per-entity isolation", () => {
   it("BA_310_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
     expect(BA_310_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
@@ -122,7 +122,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 per-entity isolation", () =>
 // 3. Sub-charge arithmetic.
 // =====================================================================
 
-describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 sub-charge arithmetic", () => {
+describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () => {
   it("zero positions ⇒ zero capital + zero RWA", () => {
     const out = generateBa310MarketRisk({
       ...COMMON,
@@ -289,7 +289,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 sub-charge arithmetic", () =
 // 4. XML round-trip + structural validation.
 // =====================================================================
 
-describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 XML render round-trip", () => {
+describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 XML render round-trip", () => {
   it("renders well-formed XML with declared envelope", () => {
     const out = generateBa310MarketRisk({
       ...COMMON,
@@ -302,10 +302,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 XML render round-trip", () =
     const payload = ba310ToXmlPayload(out);
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
-    expect(xml.includes("<BA310")).toBe(true);
+    expect(xml.includes("<BA320")).toBe(true);
     expect(xml.includes(`xmlns="${BA_310_NAMESPACE}"`)).toBe(true);
     expect(xml.includes(`xsdUri="${BA_310_XSD_URI}"`)).toBe(true);
-    expect(xml.includes("</BA310>")).toBe(true);
+    expect(xml.includes("</BA320>")).toBe(true);
   });
 
   it("structural validator passes when all required elements present", () => {
@@ -321,7 +321,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 310 XML render round-trip", () =
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     const result = validateSarbXmlStructural({
       xml,
-      formId: "BA310",
+      formId: "BA320",
       namespaceUri: BA_310_NAMESPACE,
       requiredElements: [...BA_310_REQUIRED_ELEMENTS],
     });

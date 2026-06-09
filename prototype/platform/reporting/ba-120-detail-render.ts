@@ -1,4 +1,4 @@
-// platform/reporting/ba-610-detail-render.ts
+// platform/reporting/ba-120-detail-render.ts
 //
 // WS-FINANCE-BA-RETURNS-QUINTET — JSON renderer for the BA 610 detail (Selected
 // Income-Statement Information / Profitability Detail) projection.
@@ -36,7 +36,7 @@
 
 import { z } from "zod";
 
-import type { Ba610DetailIncomeDetail } from "./ba-610-income-detail";
+import type { Ba610DetailIncomeDetail } from "./ba-120-income-detail";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
@@ -129,7 +129,7 @@ const ba310EfficiencySectionSchema = z.object({
 export const Ba610DetailRenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-610-detail/v0.1-rehearsal.json"),
   meta: z.object({
-    form: z.literal("BA 610 detail"),
+    form: z.literal("BA 120 detail"),
     formVersion: z.literal("v0.1-rehearsal"),
     entity: z.string().min(1),
     periodStart: z.string().min(1),

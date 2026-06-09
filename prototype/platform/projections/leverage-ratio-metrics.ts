@@ -45,8 +45,8 @@ import type { EventStore } from "../event-store/store";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   type LeverageExposureDecomposition,
-} from "../reporting/ba-400-leverage-ratio";
-import { generateLeverageRatio } from "../reporting/ba-400-leverage-ratio";
+} from "../reporting/ba-700-leverage-ratio";
+import { generateLeverageRatio } from "../reporting/ba-700-leverage-ratio";
 import { BUILD_PHASE_TOTAL_CAPITAL_MINOR, computeCapitalMetrics } from "./capital-metrics";
 
 // ---------------------------------------------------------------------------

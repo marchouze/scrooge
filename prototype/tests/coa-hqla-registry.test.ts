@@ -31,7 +31,7 @@ import {
 } from "../platform/accounting/coa-registry";
 import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
-import { generateBa110Lcr } from "../platform/reporting/ba-110-lcr";
+import { generateBa110Lcr } from "../platform/reporting/ba-300-lcr";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const PERIOD_START = "2026-05-01T00:00:00.000Z";

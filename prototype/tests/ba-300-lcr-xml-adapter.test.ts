@@ -1,16 +1,16 @@
 // tests/ba-110-xml-adapter.test.ts
 //
-// Unit tests for the BA 110 (LCR) XML adapter.
+// Unit tests for the BA 300 (LCR) XML adapter.
 //
 // Tests:
-//   1. ba110ToXmlPayload() — produces a SarbXmlReportPayload with formId "BA325".
+//   1. ba110ToXmlPayload() — produces a SarbXmlReportPayload with formId "BA300".
 //   2. ba110ToXmlPayload() — body.Meta contains Form, Entity, PeriodId, etc.
 //   3. ba110ToXmlPayload() — body.Hqla contains TotalStockHqlaMinor.
 //   4. ba110ToXmlPayload() — body.CashFlows contains NetCashOutflowsMinor.
 //   5. ba110ToXmlPayload() — LcrRatio is mapped (finite + Infinity cases).
 //   6. ba110ToXmlPayload() — LcrCompliant is mapped correctly.
-//   7. renderSarbXml() round-trip — output is valid XML with BA325 root element.
-//   8. validateSarbXmlStructural() — passes for well-formed BA 110 XML.
+//   7. renderSarbXml() round-trip — output is valid XML with BA300 root element.
+//   8. validateSarbXmlStructural() — passes for well-formed BA 300 XML.
 //   9. validateSarbXmlStructural() — catches missing required elements.
 //  10. ba110ToXmlPayload() — optional trialBalanceSnapshotEventId is forwarded.
 //
@@ -21,14 +21,14 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import type { Ba110Output } from "../platform/reporting/ba-110-lcr";
-import { generateBa110Lcr } from "../platform/reporting/ba-110-lcr";
+import type { Ba110Output } from "../platform/reporting/ba-300-lcr";
+import { generateBa110Lcr } from "../platform/reporting/ba-300-lcr";
 import {
   BA_110_NAMESPACE,
   BA_110_REQUIRED_ELEMENTS,
   BA_110_XSD_URI,
   ba110ToXmlPayload,
-} from "../platform/reporting/ba-110-xml-adapter";
+} from "../platform/reporting/ba-300-lcr-xml-adapter";
 import { renderSarbXml, validateSarbXmlStructural } from "../platform/reporting/xml-render";
 
 // ---------------------------------------------------------------------------
@@ -71,10 +71,10 @@ function makeMinimalBa110Output(): Ba110Output {
 // ---------------------------------------------------------------------------
 
 describe("ba110ToXmlPayload()", () => {
-  it("TC-1: formId is BA325", () => {
+  it("TC-1: formId is BA300", () => {
     const output = makeMinimalBa110Output();
     const payload = ba110ToXmlPayload(output);
-    expect(payload.formId).toBe("BA325");
+    expect(payload.formId).toBe("BA300");
   });
 
   it("TC-2: formVersion, xsdUri, namespaceUri are set correctly", () => {
@@ -90,7 +90,7 @@ describe("ba110ToXmlPayload()", () => {
     const payload = ba110ToXmlPayload(output);
     const meta = payload.body.Meta as Record<string, unknown>;
     expect(meta).toBeDefined();
-    expect(meta.Form).toBe("BA 110");
+    expect(meta.Form).toBe("BA 300");
     expect(meta.Entity).toBe(ENTITY);
     expect(meta.PeriodId).toBe(PERIOD_ID);
     expect(meta.FunctionalCurrency).toBe(FUNCTIONAL_CURRENCY);
@@ -167,23 +167,23 @@ describe("ba110ToXmlPayload()", () => {
 });
 
 describe("ba110ToXmlPayload() → renderSarbXml() round-trip", () => {
-  it("TC-11: produces well-formed XML with BA325 root element", () => {
+  it("TC-11: produces well-formed XML with BA300 root element", () => {
     const output = makeMinimalBa110Output();
     const payload = ba110ToXmlPayload(output);
     const xml = renderSarbXml(payload, { renderedAt: AS_OF });
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
-    expect(xml).toContain("<BA325");
-    expect(xml).toContain("</BA325>");
+    expect(xml).toContain("<BA300");
+    expect(xml).toContain("</BA300>");
     expect(xml).toContain(`xmlns="${BA_110_NAMESPACE}"`);
   });
 
-  it("TC-12: validateSarbXmlStructural() passes for well-formed BA 110 XML", () => {
+  it("TC-12: validateSarbXmlStructural() passes for well-formed BA 300 XML", () => {
     const output = makeMinimalBa110Output();
     const payload = ba110ToXmlPayload(output);
     const xml = renderSarbXml(payload, { renderedAt: AS_OF });
     const result = validateSarbXmlStructural({
       xml,
-      formId: "BA325",
+      formId: "BA300",
       namespaceUri: BA_110_NAMESPACE,
       requiredElements: BA_110_REQUIRED_ELEMENTS,
     });
@@ -198,7 +198,7 @@ describe("ba110ToXmlPayload() → renderSarbXml() round-trip", () => {
     const xml = renderSarbXml(payload, { renderedAt: AS_OF });
     const result = validateSarbXmlStructural({
       xml,
-      formId: "BA325",
+      formId: "BA300",
       namespaceUri: BA_110_NAMESPACE,
       requiredElements: [...BA_110_REQUIRED_ELEMENTS, "NonExistentSection"],
     });

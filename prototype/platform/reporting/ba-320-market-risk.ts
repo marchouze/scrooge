@@ -1,4 +1,4 @@
-// platform/reporting/ba-310-market-risk.ts
+// platform/reporting/ba-320-market-risk.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 (this dispatch) — BA 310
 // (market-risk return) projection.
@@ -197,7 +197,7 @@ export interface Ba310CommoditySection {
 
 export interface Ba310Output {
   readonly meta: {
-    readonly form: "BA 310";
+    readonly form: "BA 320";
     readonly formVersion: "v0.1-rehearsal";
     readonly entity: string;
     readonly asOf: string;
@@ -375,7 +375,7 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
 
   return {
     meta: {
-      form: "BA 310",
+      form: "BA 320",
       formVersion: "v0.1-rehearsal",
       entity: input.entity,
       asOf: input.asOf,

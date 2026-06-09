@@ -1,4 +1,4 @@
-// platform/reporting/ba-110-lcr.ts
+// platform/reporting/ba-300-lcr.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 3 — BA 110 (Liquidity
 // Coverage Ratio) projection. The first SARB return rendered end-to-end.
@@ -457,7 +457,7 @@ export interface Ba110InputCompleteness {
  */
 export interface Ba110Output {
   readonly meta: {
-    readonly form: "BA 110";
+    readonly form: "BA 300";
     readonly formVersion: "v0.1-rehearsal";
     readonly entity: string;
     readonly asOf: string;
@@ -1335,7 +1335,7 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
 
   return {
     meta: {
-      form: "BA 110",
+      form: "BA 300",
       formVersion: "v0.1-rehearsal",
       entity: input.entity,
       asOf: input.asOf,

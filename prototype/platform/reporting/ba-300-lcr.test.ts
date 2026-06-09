@@ -1,4 +1,4 @@
-// platform/reporting/ba-110-lcr.test.ts
+// platform/reporting/ba-300-lcr.test.ts
 //
 // Author: Anya (Data / analytics engineer, engineering)
 //   per D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 (CEO-approved 2026-05-22).
@@ -30,8 +30,8 @@ import { describe, expect, it } from "bun:test";
 import { EventStore } from "../event-store/store";
 import type { SecurityMasterState } from "../projections/markets/security-master";
 import { securityMasterInitial } from "../projections/markets/security-master";
-import { generateBa110Lcr } from "./ba-110-lcr";
-import type { AccountLiquidityClassification, Ba110GeneratorInput } from "./ba-110-lcr";
+import { generateBa110Lcr } from "./ba-300-lcr";
+import type { AccountLiquidityClassification, Ba110GeneratorInput } from "./ba-300-lcr";
 import { buildHqlaOverridesFromSecurityMaster } from "./hqla-overrides";
 
 // ---------------------------------------------------------------------------

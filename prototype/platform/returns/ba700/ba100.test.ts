@@ -1,9 +1,9 @@
-// platform/returns/ba100/ba100.test.ts
+// platform/returns/ba700/ba100.test.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 — scenario test for the
 // BA 100 Capital Adequacy Return generator and period-close subscriber.
 //
-// This test file exercises the `returns/ba100/` package — the thin
+// This test file exercises the `returns/ba700/` package — the thin
 // mission-spec overlay on top of the canonical `platform/reporting/`
 // generator.  The canonical generator's own tests live at
 // `tests/ba-100-capital.test.ts`.
@@ -32,7 +32,7 @@ import { closePeriod, openPeriod } from "../../accounting/period-close";
 import { newEventId } from "../../core/types";
 import { EventStore } from "../../event-store/store";
 import { setDefaultProvenanceModeOverride } from "../../projections/filter";
-import type { RwaDecomposition } from "../../reporting/ba-100-capital";
+import type { RwaDecomposition } from "../../reporting/ba-700-capital";
 import { generateBA700Return } from "./generator";
 import {
   BA_100_SUBSCRIBER_ENTITIES,
@@ -178,7 +178,7 @@ function setupPeriod(): {
 // 1. generateBA700Return — all sections present + non-NaN
 // ---------------------------------------------------------------------------
 
-describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — generateBA700Return", () => {
+describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba700 — generateBA700Return", () => {
   it("produces a BA700Return with all required sections present and non-NaN", () => {
     const { store, periodId, closedAt, periodStart, periodEnd } = setupPeriod();
 
@@ -207,7 +207,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — generateBA700Return",
     });
 
     // Meta
-    expect(result.meta.form).toBe("BA 100");
+    expect(result.meta.form).toBe("BA 700");
     expect(result.meta.entity).toBe(ENTITY_BANK);
     expect(result.meta.reportingDate).toBe(closedAt);
     expect(result.meta.periodId).toBe(periodId);
@@ -280,7 +280,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — generateBA700Return",
       rwa: FIXTURE_RWA,
     });
     expect(rawOutput).toBeDefined();
-    expect(rawOutput.meta.form).toBe("BA 100");
+    expect(rawOutput.meta.form).toBe("BA 700");
     // carRatio should equal rawOutput.ratios.totalRatio
     expect(ba100Return.capitalAdequacy.carRatio).toBe(rawOutput.ratios.totalRatio);
   });
@@ -290,7 +290,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — generateBA700Return",
 // 2. status derivation
 // ---------------------------------------------------------------------------
 
-describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — status", () => {
+describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba700 — status", () => {
   it("status is 'insufficient-data' when RWA source is fixture-rehearsal and balance-sheet placeholder zeros", () => {
     const store = new EventStore(":memory:");
     const { return: result } = generateBA700Return({
@@ -313,7 +313,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — status", () => {
 // 3. Period-close subscriber
 // ---------------------------------------------------------------------------
 
-describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — onAccountingPeriodClosed", () => {
+describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba700 — onAccountingPeriodClosed", () => {
   it("BA_100_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
     expect(BA_100_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
@@ -335,7 +335,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — onAccountingPeriodClo
 
     expect(result.processed).toBe(true);
     expect(result.ba100Return).toBeDefined();
-    expect(result.ba100Return?.meta.form).toBe("BA 100");
+    expect(result.ba100Return?.meta.form).toBe("BA 700");
     expect(result.ba100Return?.meta.entity).toBe(ENTITY_BANK);
     expect(result.substrateGap).toContain("substrate-gap");
   });
@@ -362,7 +362,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — onAccountingPeriodClo
 // 4. replayAndGenerate
 // ---------------------------------------------------------------------------
 
-describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — replayAndGenerate", () => {
+describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba700 — replayAndGenerate", () => {
   it("returns one result per closed period", () => {
     const { store } = setupPeriod();
 
@@ -379,7 +379,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba100 — replayAndGenerate", (
     // One closed period in the store.
     expect(results.length).toBe(1);
     expect(results[0]?.processed).toBe(true);
-    expect(results[0]?.ba100Return?.meta.form).toBe("BA 100");
+    expect(results[0]?.ba100Return?.meta.form).toBe("BA 700");
   });
 
   it("returns empty array for non-bank entity", () => {

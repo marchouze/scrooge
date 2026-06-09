@@ -21,10 +21,10 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { generateBa100Capital } from "../platform/reporting/ba-100-capital";
-import { ba100ToXmlPayload } from "../platform/reporting/ba-100-xml-adapter";
-import { generateBa110Lcr } from "../platform/reporting/ba-110-lcr";
-import { ba110ToXmlPayload } from "../platform/reporting/ba-110-xml-adapter";
+import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
+import { generateBa110Lcr } from "../platform/reporting/ba-300-lcr";
+import { ba110ToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
 import type { SarbXmlReportPayload } from "../platform/reporting/xml-render";
 import { submitToSarbPortal } from "../simulators/sarb-prudential";
 

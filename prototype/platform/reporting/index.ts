@@ -25,7 +25,7 @@ export {
   generateBa110Lcr,
   generateBa110LcrWithEvents,
   type HqlaLevel,
-} from "./ba-110-lcr";
+} from "./ba-300-lcr";
 
 // D-FINANCIAL-INSTRUMENT-ENTITY Slice 9 — SecurityMaster HQLA override utility.
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
@@ -40,7 +40,7 @@ export {
   type NsfrComponents,
   NsfrGeneratorError,
   generateNsfrProjection,
-} from "./ba-120-nsfr";
+} from "./ba-300-nsfr";
 
 export {
   Ba110RenderSchema,
@@ -51,7 +51,7 @@ export {
   renderBa110Canonical,
   renderBa110ToJson,
   type RenderBa110Options,
-} from "./ba-110-render";
+} from "./ba-300-lcr-render";
 
 // ---------------------------------------------------------------------------
 // WS-FINANCE-BA-RETURNS-QUINTET — BA 600 (Balance Sheet) + BA 610 (Income
@@ -74,7 +74,7 @@ export {
   type Ba600Section_Output,
   BA_600_BANK_ENTITIES,
   generateBa600BalanceSheet,
-} from "./ba-600-balance-sheet";
+} from "./ba-100-balance-sheet";
 
 export {
   Ba600RenderSchema,
@@ -85,7 +85,7 @@ export {
   renderBa600Canonical,
   renderBa600ToJson,
   type RenderBa600Options,
-} from "./ba-600-render";
+} from "./ba-100-render";
 
 export {
   type Ba610ClassificationGap,
@@ -99,7 +99,7 @@ export {
   type Ba610LineItem,
   BA_610_BANK_ENTITIES,
   generateBa610IncomeStatement,
-} from "./ba-610-income-statement";
+} from "./ba-120-income-statement";
 
 export {
   Ba610RenderSchema,
@@ -110,7 +110,7 @@ export {
   renderBa610Canonical,
   renderBa610ToJson,
   type RenderBa610Options,
-} from "./ba-610-render";
+} from "./ba-120-render";
 
 export {
   type Ba610DetailAlmBandingSection,
@@ -132,7 +132,7 @@ export {
   type Ba610DetailNonInterestSection,
   BA_610_DETAIL_BANK_ENTITIES,
   generateBa610DetailIncomeDetail,
-} from "./ba-610-income-detail";
+} from "./ba-120-income-detail";
 
 export {
   Ba610DetailRenderSchema,
@@ -143,7 +143,7 @@ export {
   renderBa610DetailCanonical,
   renderBa610DetailToJson,
   type RenderBa610DetailOptions,
-} from "./ba-610-detail-render";
+} from "./ba-120-detail-render";
 
 // ---------------------------------------------------------------------------
 // Slice 4 — BA 100 Capital Adequacy Return
@@ -167,7 +167,7 @@ export {
   generateBa100Capital,
   type RegulatoryDeduction,
   type RwaDecomposition,
-} from "./ba-100-capital";
+} from "./ba-700-capital";
 
 export {
   Ba100RenderSchema,
@@ -178,7 +178,7 @@ export {
   renderBa100Canonical,
   renderBa100ToJson,
   type RenderBa100Options,
-} from "./ba-100-render";
+} from "./ba-700-render";
 
 // Basel III leverage ratio (BCBS §147–§165) — separate primitive composed
 // into BA 100 when the caller supplies an exposure-measure decomposition.
@@ -193,7 +193,7 @@ export {
   LeverageRatioGeneratorError,
   type LeverageRatioOutput,
   generateLeverageRatio,
-} from "./ba-400-leverage-ratio";
+} from "./ba-700-leverage-ratio";
 
 // ---------------------------------------------------------------------------
 // Slice 5 — BA 310 (market risk), BA 300 (operational risk), XML render
@@ -217,7 +217,7 @@ export {
   type CommodityPositionRow,
   BA_310_BANK_ENTITIES,
   generateBa310MarketRisk,
-} from "./ba-310-market-risk";
+} from "./ba-320-market-risk";
 
 export {
   type Ba300GeneratorInput,
@@ -231,7 +231,7 @@ export {
   BA_300_BANK_ENTITIES,
   BUSINESS_LINE_BETA,
   generateBa300OpRisk,
-} from "./ba-300-op-risk";
+} from "./ba-400-op-risk";
 
 export {
   type RenderXmlOptions,
@@ -248,7 +248,7 @@ export {
   BA_310_REQUIRED_ELEMENTS,
   BA_310_XSD_URI,
   ba310ToXmlPayload,
-} from "./ba-310-xml-adapter";
+} from "./ba-320-xml-adapter";
 
 // ---------------------------------------------------------------------------
 // FX adapter — bridges fxPositionCalculator output to BA 310 FxPositionRow[]
@@ -257,7 +257,7 @@ export {
 export {
   fxPositionsToBa310Input,
   fxPositionSummaryNote,
-} from "./ba-310-fx-adapter";
+} from "./ba-320-fx-adapter";
 
 // ---------------------------------------------------------------------------
 // P1-compliant events-first entry points (C-2 / C-3 fixes).
@@ -271,33 +271,33 @@ export {
 export {
   type Ba310FromEventsInput,
   generateBa310MarketRiskFromEvents,
-} from "./ba-310-events-adapter";
+} from "./ba-320-events-adapter";
 
 export {
   type Ba100FromEventsInput,
   generateBa100CapitalFromEvents,
-} from "./ba-100-events-adapter";
+} from "./ba-700-events-adapter";
 
 export {
   BA_300_NAMESPACE,
   BA_300_REQUIRED_ELEMENTS,
   BA_300_XSD_URI,
   ba300ToXmlPayload,
-} from "./ba-300-xml-adapter";
+} from "./ba-400-xml-adapter";
 
 export {
   BA_110_NAMESPACE,
   BA_110_REQUIRED_ELEMENTS,
   BA_110_XSD_URI,
   ba110ToXmlPayload,
-} from "./ba-110-xml-adapter";
+} from "./ba-300-lcr-xml-adapter";
 
 export {
   BA_100_NAMESPACE,
   BA_100_REQUIRED_ELEMENTS,
   BA_100_XSD_URI,
   ba100ToXmlPayload,
-} from "./ba-100-xml-adapter";
+} from "./ba-700-xml-adapter";
 
 // ---------------------------------------------------------------------------
 // Slice 9 — off-balance-sheet (Off-Balance-Sheet Activities) monthly return

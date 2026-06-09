@@ -1,4 +1,4 @@
-// platform/reporting/ba-100-render.ts
+// platform/reporting/ba-700-render.ts
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 — JSON renderer for the
 // BA 100 (Capital Adequacy Return) projection.
@@ -37,7 +37,7 @@
 
 import { z } from "zod";
 
-import type { Ba100Output } from "./ba-100-capital";
+import type { Ba100Output } from "./ba-700-capital";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
@@ -80,7 +80,7 @@ const ba100BufferRequirementsSchema = z.object({
 export const Ba100RenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-100/v0.1-rehearsal.json"),
   meta: z.object({
-    form: z.literal("BA 100"),
+    form: z.literal("BA 700"),
     formVersion: z.literal("v0.1-rehearsal"),
     entity: z.string().min(1),
     asOf: z.string().min(1),
