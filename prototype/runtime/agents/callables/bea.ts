@@ -11,6 +11,7 @@ import beaGoalLoop from "../bea-goal-loop";
 import beaM1IfrsClassificationRules from "../bea-m1-ifrs-classification-rules";
 import beaPeriodClose from "../bea-period-close";
 import beaProductControlDaily from "../bea-product-control-daily";
+import beaRwaPeriodClose from "../bea-rwa-period-close";
 
 export const BEA_CALLABLES: Record<string, AgentRunHandler> = {
   "bea:goal-loop": beaGoalLoop,
@@ -20,5 +21,6 @@ export const BEA_CALLABLES: Record<string, AgentRunHandler> = {
   "bea:event-triage": beaEventTriage,
   "bea:period-close": beaPeriodClose,
   "bea:ba310-period-close": beaBa310PeriodClose,
+  "bea:rwa-period-close": beaRwaPeriodClose,
   "bea:product-control-daily": beaProductControlDaily,
 };

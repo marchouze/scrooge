@@ -51,8 +51,14 @@
 //   + SubLedgerPostingEmitted (CET1 accounts ACC-5000-001 Share Capital,
 //   ACC-5000-002 Retained Earnings) via the same path.
 //
+// RWA wiring (D-RWA-ENGINE-W2-SLICE-3):
+//   capitalAdequacy.rwa is fed from the `RwaComputed` event of record when one
+//   exists for the period — credit + market RWA event-sourced (CRE20 over
+//   readDebtExposures; 12.5 × BA 320 capital incl. Reg 28(3)(a) disallowances),
+//   operational RWA an explicit gross-income-blocked placeholder. The
+//   rwaComputationEventId threads through for chain-of-custody (Principle 1).
+//
 // Remaining substrate gaps (deferred per brief scope):
-//   feed capitalAdequacy.rwa from RwaComputed (W2 Slice 3 RWA engine).
 //   feed balanceSheet.totalAssets / totalLiabilities / equity from
 //     TrialBalanceSnapshotted rows (Balance semantic entry, GL accounts).
 //   feed incomeStatement rows from TrialBalanceSnapshotted P&L accounts
@@ -162,7 +168,11 @@ export interface BA700Return {
      * Total Risk-Weighted Assets — credit + market + operational.
      * Semantic ref: `RiskWeightedAssets`.
      *
-     * TODO: feed from RwaComputed event (W2 Slice 3 engine).
+     * Fed from the `RwaComputed` event of record when present
+     * (D-RWA-ENGINE-W2-SLICE-3): credit RWA event-sourced via CRE20 over
+     * readDebtExposures; market RWA = 12.5 × BA 320 capital (incl. Reg 28(3)(a)
+     * disallowances); operational RWA an explicit gross-income-blocked
+     * placeholder. Falls back to the computeRwaFromPositions projection.
      */
     readonly rwa: number;
     /**
@@ -263,6 +273,52 @@ export interface BA700Return {
 }
 
 // ---------------------------------------------------------------------------
+// readRwaComputedForPeriod — read the emitted RwaComputed event of record
+// ---------------------------------------------------------------------------
+
+/**
+ * Read the `RwaComputed` event for `(entity, periodId)` and project it onto the
+ * BA 700 `RwaDecomposition` shape, threading `rwaComputationEventId` for
+ * chain-of-custody (Principle 1).  Returns `undefined` when no `RwaComputed`
+ * event exists for the period — the caller then falls back to the in-memory
+ * `computeRwaFromPositions` projection.
+ *
+ * Authority: D-RWA-ENGINE-W2-SLICE-3.
+ */
+function readRwaComputedForPeriod(
+  eventStore: EventStore,
+  entity: string,
+  periodId: string,
+  asOf: string,
+  provenanceFilter: ReturnType<typeof defaultProvenanceFilter>,
+  frozenCursorOpts: { untilSequence?: number },
+): RwaDecomposition | undefined {
+  let latest: { eventId: string; payload: Record<string, unknown> } | undefined;
+  for (const ev of eventStore.replay({
+    entity,
+    type: "RwaComputed",
+    asOf,
+    ...frozenCursorOpts,
+  })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as Record<string, unknown>;
+    if (p.periodId !== periodId) continue;
+    // Replay is sequence-ordered; the last matching event wins (re-computations
+    // supersede earlier ones for the same period).
+    latest = { eventId: ev.event_id, payload: p };
+  }
+  if (latest === undefined) return undefined;
+  const p = latest.payload;
+  return {
+    creditRwaMinor: Number(p.creditRwaMinor ?? 0),
+    marketRwaMinor: Number(p.marketRwaMinor ?? 0),
+    operationalRwaMinor: Number(p.operationalRwaMinor ?? 0),
+    rwaComputationEventId: latest.eventId,
+    source: typeof p.source === "string" ? p.source : "rwa-computed-event",
+  };
+}
+
+// ---------------------------------------------------------------------------
 // generateBA700Return
 // ---------------------------------------------------------------------------
 
@@ -357,8 +413,10 @@ export interface GenerateBA700ReturnInput {
  * Principle 1 compliance:
  *   - Capital stock: folded from SubLedgerPostingEmitted +
  *     CapitalContributionRecorded events (via events-adapter).
- *   - RWA denominator: placeholder at v0 (caller-supplied fixture);
- *     events-first once RwaComputed lands.
+ *   - RWA denominator: events-first when a RwaComputed event exists for the
+ *     period (D-RWA-ENGINE-W2-SLICE-3) — credit + market RWA are event-sourced,
+ *     operational RWA is an explicit gross-income-blocked placeholder. Falls
+ *     back to the computeRwaFromPositions projection / fixture otherwise.
  *   - Balance sheet / income statement / off-balance-sheet: placeholder
  *     zeros with TODO citations per mission-spec rehearsal-grade default.
  *
@@ -424,13 +482,35 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
 
   // -------------------------------------------------------------------------
   // Step 3a: resolve RWA decomposition.
-  // When the caller does not supply an explicit `rwa`, derive it from booked
-  // positions via `computeRwaFromPositions()` (D-RWA-LIVE-POSITIONS-PROJECTION-V1).
-  // Falls back to BUILD_PHASE_TOTAL_RWA_MINOR when no trades are in the store.
+  //
+  // Resolution precedence (most to least authoritative):
+  //   1. Caller-supplied explicit `rwa` override (scenarios / tests / backcalc).
+  //   2. An emitted `RwaComputed` event for (entity, periodId) — the W2 Slice 3
+  //      RWA-engine event of record (D-RWA-ENGINE-W2-SLICE-3). When present, its
+  //      decomposition is threaded with `rwaComputationEventId` for chain-of-
+  //      custody under Principle 1.  Credit + market RWA are event-sourced;
+  //      operational RWA is an explicit gross-income-blocked placeholder.
+  //   3. The in-memory `computeRwaFromPositions()` projection
+  //      (D-RWA-LIVE-POSITIONS-PROJECTION-V1) — retained fallback for callers /
+  //      periods with no emitted RwaComputed event.
+  //   4. BUILD_PHASE_TOTAL_RWA_MINOR when no trades are in the store.
   // -------------------------------------------------------------------------
   let resolvedRwa: RwaDecomposition;
+  const rwaComputed =
+    input.rwa === undefined
+      ? readRwaComputedForPeriod(
+          input.eventStore,
+          input.entityId,
+          input.periodId,
+          input.reportingDate,
+          provenanceFilter,
+          frozenCursorOpts,
+        )
+      : undefined;
   if (input.rwa !== undefined) {
     resolvedRwa = input.rwa;
+  } else if (rwaComputed !== undefined) {
+    resolvedRwa = rwaComputed;
   } else {
     const rwaResult = computeRwaFromPositions(input.eventStore, input.reportingDate);
     if (rwaResult.buildPhaseFallback) {

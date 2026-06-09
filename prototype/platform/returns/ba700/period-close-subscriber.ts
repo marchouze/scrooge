@@ -94,8 +94,10 @@ export interface PeriodCloseSubscriberInput {
    */
   readonly deductions?: readonly RegulatoryDeduction[];
   /**
-   * RWA decomposition.  Caller-supplied at v0.
-   * TODO: wire from RwaComputed event (W2 Slice 3 engine).
+   * RWA decomposition.  Caller-supplied here; for the events-first path the
+   * `RwaComputed` event of record is read by `generateBA700Return` directly
+   * (D-RWA-ENGINE-W2-SLICE-3) — credit + market RWA event-sourced, operational
+   * RWA an explicit gross-income-blocked placeholder.
    */
   readonly rwa: RwaDecomposition;
   /** Buffer requirements; defaults to build-phase BCBS minimums + 2.5% CCB. */

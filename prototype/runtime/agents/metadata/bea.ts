@@ -77,6 +77,17 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Bea", "ba310-period-close", "event-driven", {
     subscribesTo: ["AccountingPeriodClosed"],
   }),
+  // RWA-computed period-close — event-driven on AccountingPeriodClosed. Emits a
+  // RwaComputed event of record (Pillar-1 RWA decomposition) feeding the BA 700
+  // capital-adequacy denominator: credit RWA event-sourced via CRE20 over
+  // readDebtExposures (Reg 23); market RWA = 12.5 × BA 320 capital incl. Reg
+  // 28(3)(a) disallowances; operational RWA an explicit gross-income-blocked
+  // placeholder (licence-day). BA 700 threads rwaComputationEventId.
+  // Authority: D-RWA-ENGINE-W2-SLICE-3.
+  // Brief: brief:bea:rwacomputed-engine-w2-slice-3-credit-market-rwa-:2026-06-09.
+  entry("Bea", "rwa-period-close", "event-driven", {
+    subscribesTo: ["AccountingPeriodClosed"],
+  }),
   // Daily product-control run — wires the three product-control engines
   // (daily P&L, P&L attribution; valuation-adjustment via Rohan's MTM) into a
   // live daily cadence. Cron: 19:00 UTC weekdays = after Rohan's 18:00 UTC MTM
