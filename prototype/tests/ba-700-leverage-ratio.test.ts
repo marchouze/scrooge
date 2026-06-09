@@ -41,7 +41,6 @@ import {
   computeLeverageRatioMetrics,
 } from "../platform/projections/leverage-ratio-metrics";
 import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
-import { renderBa100ToJson } from "../platform/reporting/ba-700-render";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   BUILD_PHASE_LEVERAGE_BASELINE_TIER1_MINOR,
@@ -49,6 +48,7 @@ import {
   LeverageRatioGeneratorError,
   generateLeverageRatio,
 } from "../platform/reporting/ba-700-leverage-ratio";
+import { renderBa100ToJson } from "../platform/reporting/ba-700-render";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-05-21T09:00:00.000Z";

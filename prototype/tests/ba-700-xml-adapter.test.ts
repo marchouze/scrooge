@@ -96,7 +96,7 @@ describe("ba100ToXmlPayload()", () => {
     const payload = ba100ToXmlPayload(output);
     const meta = payload.body.Meta as Record<string, unknown>;
     expect(meta).toBeDefined();
-    expect(meta.Form).toBe("BA 100");
+    expect(meta.Form).toBe("BA 700");
     expect(meta.Entity).toBe(ENTITY);
     expect(meta.PeriodId).toBe(PERIOD_ID);
     expect(meta.FunctionalCurrency).toBe(FUNCTIONAL_CURRENCY);

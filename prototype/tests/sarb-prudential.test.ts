@@ -21,10 +21,10 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
-import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
 import { generateBa110Lcr } from "../platform/reporting/ba-300-lcr";
 import { ba110ToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
+import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
 import type { SarbXmlReportPayload } from "../platform/reporting/xml-render";
 import { submitToSarbPortal } from "../simulators/sarb-prudential";
 
@@ -119,7 +119,7 @@ describe("submitToSarbPortal() — valid payloads", () => {
     if (evt) {
       const p = evt.payload as Record<string, unknown>;
       expect(p.accepted).toBe(true);
-      expect(p.formId).toBe("BA325");
+      expect(p.formId).toBe("BA300");
     }
   });
 
@@ -156,10 +156,10 @@ describe("submitToSarbPortal() — invalid payloads", () => {
   it("TC-5: rejects a payload with malformed PeriodId", async () => {
     const store = makeStore();
     const payload: SarbXmlReportPayload = {
-      formId: "BA325",
+      formId: "BA300",
       formVersion: "v0.1-rehearsal",
-      xsdUri: "https://hoz.bank/xsd/ba-110.xsd",
-      namespaceUri: "https://hoz.bank/ns/ba-110",
+      xsdUri: "https://hoz.bank/xsd/ba-300.xsd",
+      namespaceUri: "https://hoz.bank/ns/ba-300",
       body: {
         Meta: {
           Entity: ENTITY,
@@ -175,10 +175,10 @@ describe("submitToSarbPortal() — invalid payloads", () => {
   it("TC-6: rejects a payload with missing Meta", async () => {
     const store = makeStore();
     const payload: SarbXmlReportPayload = {
-      formId: "BA325",
+      formId: "BA300",
       formVersion: "v0.1-rehearsal",
-      xsdUri: "https://hoz.bank/xsd/ba-110.xsd",
-      namespaceUri: "https://hoz.bank/ns/ba-110",
+      xsdUri: "https://hoz.bank/xsd/ba-300.xsd",
+      namespaceUri: "https://hoz.bank/ns/ba-300",
       body: {
         // Deliberately no Meta.
         SomeOtherSection: { foo: "bar" },
@@ -226,9 +226,9 @@ describe("submitToSarbPortal() — invalid payloads", () => {
   it("TC-10: rejects payload with empty namespaceUri", async () => {
     const store = makeStore();
     const payload: SarbXmlReportPayload = {
-      formId: "BA325",
+      formId: "BA300",
       formVersion: "v0.1-rehearsal",
-      xsdUri: "https://hoz.bank/xsd/ba-110.xsd",
+      xsdUri: "https://hoz.bank/xsd/ba-300.xsd",
       namespaceUri: "", // empty
       body: {
         Meta: {
