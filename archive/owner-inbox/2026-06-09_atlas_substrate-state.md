@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-09T18:00:14.113Z
+asOf: 2026-06-09T19:00:21.999Z
 decision-required: false
 ---
 
@@ -9,56 +9,57 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 89863 events across 158 types; 31/31 personas have operating specs; 132 runtime handlers registered; 696 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 90905 events across 159 types; 31/31 personas have operating specs; 132 runtime handlers registered; 697 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 89863
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 90905
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `SubstrateAgentRunStarted` | 13685 | 2026-05-25 | 2026-06-09 |
-| `SubstrateAgentRunCompleted` | 13512 | 2026-05-25 | 2026-06-09 |
-| `BusDispatched` | 12174 | 2026-05-25 | 2026-06-09 |
+| `SubstrateAgentRunStarted` | 13725 | 2026-05-25 | 2026-06-09 |
+| `SubstrateAgentRunCompleted` | 13552 | 2026-05-25 | 2026-06-09 |
+| `BusDispatched` | 12214 | 2026-05-25 | 2026-06-09 |
 | `ProvenanceReclassified` | 11478 | 2026-05-27 | 2026-05-29 |
-| `LegacyFanoutShadowed` | 8631 | 2026-05-25 | 2026-06-09 |
+| `LegacyFanoutShadowed` | 8667 | 2026-05-25 | 2026-06-09 |
 | `Decision` | 2714 | 2026-04-30 | 2026-06-09 |
-| `DashboardProjectionRefreshed` | 2593 | 2026-05-25 | 2026-06-09 |
-| `WorkstreamRegistered` | 2588 | 2026-05-07 | 2026-06-09 |
+| `DashboardProjectionRefreshed` | 2602 | 2026-05-25 | 2026-06-09 |
+| `WorkstreamRegistered` | 2596 | 2026-05-07 | 2026-06-09 |
 | `RiskRaised` | 2448 | 2025-12-01 | 2026-06-02 |
-| `RecordFiled` | 1843 | 2026-05-05 | 2026-06-09 |
-| `CalculationPerformed` | 1518 | 2026-06-01 | 2026-06-08 |
-| `SubstrateAlert` | 1247 | 2025-01-01 | 2026-06-09 |
-| `ScheduledTrigger` | 1134 | 2026-05-25 | 2026-06-09 |
-| `ObligationAdopted` | 941 | 2026-06-04 | 2026-06-09 |
-| `AgentGoalEvaluated` | 905 | 2026-05-25 | 2026-06-09 |
+| `RecordFiled` | 1845 | 2026-05-05 | 2026-06-09 |
+| `CalculationPerformed` | 1527 | 2026-06-01 | 2026-06-09 |
+| `SubstrateAlert` | 1250 | 2025-01-01 | 2026-06-09 |
+| `ObligationAdopted` | 1151 | 2026-06-04 | 2026-06-09 |
+| `ScheduledTrigger` | 1137 | 2026-05-25 | 2026-06-09 |
+| `AgentGoalEvaluated` | 906 | 2026-05-25 | 2026-06-09 |
 | `ReconResult` | 855 | 2026-05-07 | 2026-06-09 |
+| `SubLedgerPostingEmitted` | 843 | 2026-06-01 | 2026-06-09 |
 | `BacktestRequested` | 786 | 2026-01-10 | 2026-01-10 |
 | `BacktestRun` | 740 | 2026-05-09 | 2026-05-09 |
-| `SubLedgerPostingEmitted` | 575 | 2026-06-01 | 2026-06-09 |
 | `MarketsProjectionRefreshed` | 555 | 2026-05-09 | 2026-05-09 |
-| `OfficialMarkAdopted` | 538 | 2026-05-28 | 2026-06-08 |
+| `OfficialMarkAdopted` | 549 | 2026-05-28 | 2026-06-09 |
 | `AgentGoalDeferred` | 516 | 2026-05-25 | 2026-06-09 |
 | `IdentityKeyRotated` | 516 | 2026-05-27 | 2026-06-02 |
 | `AgentPerformanceEvaluated` | 432 | 2026-05-25 | 2026-06-09 |
 | `AgentFeedbackIssued` | 432 | 2026-05-25 | 2026-06-09 |
-| `AgentGoalSelected` | 389 | 2026-05-25 | 2026-06-09 |
-| `AgentRunCompleted` | 387 | 2026-05-10 | 2026-06-09 |
-| `AgentBriefIssued` | 376 | 2026-05-10 | 2026-06-09 |
-| `AgentRunStarted` | 374 | 2026-05-10 | 2026-06-09 |
-| `SubstrateStateSnapshot` | 323 | 2026-05-07 | 2026-06-09 |
+| `AgentGoalSelected` | 390 | 2026-05-25 | 2026-06-09 |
+| `AgentRunCompleted` | 389 | 2026-05-10 | 2026-06-09 |
+| `AgentBriefIssued` | 377 | 2026-05-10 | 2026-06-09 |
+| `AgentRunStarted` | 376 | 2026-05-10 | 2026-06-09 |
+| `SubstrateStateSnapshot` | 324 | 2026-05-07 | 2026-06-09 |
 | `PermissionPolicyPublished` | 317 | 2026-05-26 | 2026-06-01 |
+| `BondPositionRevalued` | 260 | 2026-06-08 | 2026-06-09 |
 | `AuditFindingClosed` | 236 | 2026-06-02 | 2026-06-09 |
 | `AuditFinding` | 226 | 2026-05-07 | 2026-06-08 |
+| `ObligationReviewCompleted` | 210 | 2026-06-09 | 2026-06-09 |
 | `M1CitationTrancheRegistered` | 176 | 2026-05-09 | 2026-05-09 |
 | `BondTradeExecuted` | 172 | 2026-06-01 | 2026-06-08 |
 | `ProductDimensionAttested` | 170 | 2026-05-26 | 2026-05-28 |
 | `BondSettlementInstructed` | 170 | 2026-06-07 | 2026-06-08 |
 | `BondCustodianSettlementConfirmed` | 170 | 2026-06-07 | 2026-06-08 |
 | `SubstrateAgentRunFailed` | 168 | 2026-05-26 | 2026-06-09 |
-| `DailyPnLReportGenerated` | 143 | 2026-06-01 | 2026-06-08 |
+| `DailyPnLReportGenerated` | 144 | 2026-06-01 | 2026-06-09 |
 | `DecisionRequested` | 132 | 2026-05-10 | 2026-05-10 |
-| `BondPositionRevalued` | 130 | 2026-06-08 | 2026-06-08 |
 | `CdmBindingsRegenerated` | 115 | 2026-05-09 | 2026-06-08 |
 | `LiquidityLimitBreached` | 88 | 2026-05-21 | 2026-05-23 |
 | `LiquidityLimitBreachDisposed` | 88 | 2026-05-22 | 2026-05-24 |
@@ -78,16 +79,16 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 89863
 | `SlaRuleApproved` | 51 | 2026-01-01 | 2026-06-06 |
 | `BriefSuperseded` | 48 | 2026-05-10 | 2026-05-31 |
 | `ClientCandidateRegistered` | 48 | 2026-06-01 | 2026-06-01 |
+| `ValuationAdjustmentComputed` | 48 | 2026-06-01 | 2026-06-09 |
 | `PaNotificationSubmitted` | 44 | 2026-05-11 | 2026-05-11 |
 | `ObligationsRegisterSnapshot` | 42 | 2026-05-07 | 2026-06-03 |
 | `SecuritySubstrateSnapshot` | 42 | 2026-05-07 | 2026-06-04 |
-| `ValuationAdjustmentComputed` | 42 | 2026-06-01 | 2026-06-08 |
 | `GovernanceCyclePrep` | 41 | 2026-05-07 | 2026-06-09 |
 | `FxTradeExecuted` | 40 | 2026-06-01 | 2026-06-08 |
 | `PartyRelationshipAsserted` | 36 | 2026-06-01 | 2026-06-01 |
 | `PrincipalPayment` | 36 | 2026-06-02 | 2026-06-09 |
+| `FxPositionRevalued` | 33 | 2026-06-02 | 2026-06-09 |
 | `RiskAppetiteSnapshot` | 30 | 2026-05-27 | 2026-06-09 |
-| `FxPositionRevalued` | 30 | 2026-06-02 | 2026-06-08 |
 | `AccountingReadinessSnapshot` | 27 | 2026-05-26 | 2026-06-09 |
 | `FtpCurvePublished` | 26 | 2026-05-26 | 2026-06-09 |
 | `ModelValidationApproved` | 26 | 2026-05-27 | 2026-05-29 |
@@ -116,37 +117,37 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 89863
 | `NSFRComputed` | 12 | 2026-06-02 | 2026-06-09 |
 | `InboundMessageReceived` | 11 | 2026-06-01 | 2026-06-02 |
 | `MessageCorrelated` | 10 | 2026-06-01 | 2026-06-02 |
+| `MtmRunCompleted` | 9 | 2026-06-01 | 2026-06-09 |
 | `FinancialInstrumentClassified` | 9 | 2026-06-02 | 2026-06-02 |
+| `RealisedPnlRecognised` | 9 | 2026-06-03 | 2026-06-09 |
 | `ProductProposalRegistered` | 8 | 2026-05-26 | 2026-05-28 |
 | `ProductConceptualised` | 8 | 2026-05-26 | 2026-05-28 |
 | `ProductDueDiligenceCompleted` | 8 | 2026-05-26 | 2026-05-28 |
 | `ProductApproved` | 8 | 2026-05-26 | 2026-05-28 |
-| `MtmRunCompleted` | 8 | 2026-06-01 | 2026-06-08 |
+| `PrudentValuationAvaAggregated` | 8 | 2026-06-01 | 2026-06-09 |
 | `PnLAttributionGenerated` | 8 | 2026-06-01 | 2026-06-08 |
 | `ALMRunCompleted` | 8 | 2026-06-02 | 2026-06-09 |
 | `CollateralInventorySnapshotted` | 8 | 2026-06-02 | 2026-06-09 |
-| `RealisedPnlRecognised` | 8 | 2026-06-03 | 2026-06-08 |
 | `WorkstreamCompleted` | 7 | 2026-05-28 | 2026-05-28 |
-| `PrudentValuationAvaAggregated` | 7 | 2026-06-01 | 2026-06-08 |
 | `RiskResolved` | 7 | 2026-06-02 | 2026-06-02 |
 | `PnLSignedOff` | 6 | 2026-06-01 | 2026-06-08 |
 | `DecisionComment` | 6 | 2026-06-05 | 2026-06-06 |
+| `IrdSwapPositionRevalued` | 6 | 2026-06-09 | 2026-06-09 |
 | `AgentDecision` | 5 | 2026-05-28 | 2026-06-05 |
 | `IrsPositionRevalued` | 5 | 2026-06-02 | 2026-06-08 |
 | `PnLFlashRecorded` | 5 | 2026-06-03 | 2026-06-08 |
 | `PnLFlashActualReconciled` | 5 | 2026-06-03 | 2026-06-08 |
 | `ObligationLifecycleTransitioned` | 5 | 2026-06-04 | 2026-06-08 |
-| `IrdSwapPositionRevalued` | 5 | 2026-06-09 | 2026-06-09 |
 | `MLROAttestation` | 4 | 2026-05-26 | 2026-06-08 |
 | `AgentOpsReadinessSnapshot` | 4 | 2026-05-26 | 2026-06-05 |
 | `ThreatModelDimensionRegistered` | 4 | 2026-05-08 | 2026-05-08 |
 | `ValidationMethodologyPublished` | 4 | 2026-05-27 | 2026-05-27 |
+| `MarketRiskMeasureComputed` | 4 | 2026-06-03 | 2026-06-09 |
 | `MarketsProjectionRegistered` | 3 | 2026-05-09 | 2026-05-09 |
 | `ModelRegistered` | 3 | 2026-05-27 | 2026-05-27 |
 | `OperationalResilienceSnapshot` | 3 | 2026-05-29 | 2026-06-08 |
 | `AuditCommitteePackPrepped` | 3 | 2026-05-29 | 2026-06-09 |
 | `MarketsReadinessSnapshot` | 3 | 2026-05-29 | 2026-06-08 |
-| `MarketRiskMeasureComputed` | 3 | 2026-06-03 | 2026-06-08 |
 | `RoleResearchQueueSnapshot` | 2 | 2026-05-29 | 2026-06-05 |
 | `LegalReadinessSnapshot` | 2 | 2026-05-29 | 2026-06-05 |
 | `CyberResilienceSnapshot` | 2 | 2026-05-29 | 2026-06-04 |
@@ -333,7 +334,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cbt84Pq2G6Qx6TZpmFY1V"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbtCeY2YvkQEts7rsV7Qh"})._
 
 ## Provenance
 
