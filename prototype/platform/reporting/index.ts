@@ -237,6 +237,14 @@ export {
 } from "./ba-400-op-risk";
 
 export {
+  type Ba400AttributionKey,
+  type Ba400FoldedGrossIncomeLine,
+  type Ba400FromEventsOutput,
+  generateBa400OpRiskFromEvents,
+  UNATTRIBUTED_BUSINESS_LINE,
+} from "./ba-400-events-adapter";
+
+export {
   type RenderXmlOptions,
   type SarbXmlReportPayload,
   type SarbXmlSection,
