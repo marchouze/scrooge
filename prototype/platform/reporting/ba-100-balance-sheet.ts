@@ -70,6 +70,11 @@
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration; JSON-schema co-design).
 
+import {
+  type CounterpartySector,
+  COUNTERPARTY_SECTORS,
+  sectorForAccountId,
+} from "../accounting/coa-registry";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 
 // ---------------------------------------------------------------------------
@@ -195,6 +200,61 @@ export interface Ba600ClassificationGap {
 }
 
 /**
+ * Per-sector amount split for a single BA 100 line. The five sector buckets
+ * (`bank | corporate | sovereign | retail | other`) sum to the line's
+ * `amountMinor`. Unmappable accounts land in `other` — surfaced, never hidden.
+ *
+ * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100 (per-line
+ * counterparty-sector decomposition); Banks Act 94 of 1990 §75; Reg 32.
+ */
+export interface Ba600SectorSplit {
+  readonly bank: number;
+  readonly corporate: number;
+  readonly sovereign: number;
+  readonly retail: number;
+  readonly other: number;
+}
+
+/**
+ * Counterparty-sector decomposition entry for one BA 100 line. The split is
+ * derived at query time from the COA registry (account id → sector); accounts
+ * with no clean sector mapping accrue to `other`.
+ *
+ * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100.
+ */
+export interface Ba600LineSectorBreakdown {
+  readonly lineId: string;
+  readonly lineLabel: string;
+  readonly section: Ba600Section;
+  /** Total magnitude of the line (== the matching `Ba600LineItem.amountMinor`). */
+  readonly amountMinor: number;
+  /** Per-sector split; sums to `amountMinor`. */
+  readonly bySector: Ba600SectorSplit;
+}
+
+/**
+ * Section-level + form-level counterparty-sector roll-up. `sectionTotals[s]`
+ * sums the section's line-level splits; `formTotal` sums all sections. Each
+ * level reconciles to the corresponding section / form magnitude.
+ *
+ * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100.
+ */
+export interface Ba600SectorBreakdown {
+  /** Per-line sector splits, in the same stable order as the section line items. */
+  readonly lines: readonly Ba600LineSectorBreakdown[];
+  /** Per-section sector roll-up (assets / liabilities / equity). */
+  readonly sectionTotals: Readonly<Record<Ba600Section, Ba600SectorSplit>>;
+  /** Form-level sector roll-up across all sections. */
+  readonly formTotal: Ba600SectorSplit;
+  /**
+   * Reconciliation guard: `true` iff every section's per-sector split sums to
+   * that section's `totalMinor`. Always `true` by construction; surfaced for
+   * forensic transparency and asserted in tests.
+   */
+  readonly reconciled: boolean;
+}
+
+/**
  * Balance-sheet invariant check — recorded on every output for forensic
  * transparency. `balanced` is `true` iff `|difference| ≤ tolerance`.
  */
@@ -222,6 +282,13 @@ export interface Ba600BalanceSheet {
   readonly assets: Ba600Section_Output;
   readonly liabilities: Ba600Section_Output;
   readonly equity: Ba600Section_Output;
+  /**
+   * Counterparty-sector decomposition (bank / corporate / sovereign / retail /
+   * other) per BA 100 line, with section + form roll-ups. Derived at query time
+   * from the COA registry; reconciles to the section / line magnitudes.
+   * Authority: D-BA-RETURNS-FOLLOWON-BATCH; SARB BA 100.
+   */
+  readonly sectorBreakdown: Ba600SectorBreakdown;
   readonly perCurrencyTotals: readonly Ba600PerCurrencyTotal[];
   readonly balanceCheck: Ba600BalanceCheck;
   readonly classificationGaps: readonly Ba600ClassificationGap[];
@@ -410,6 +477,13 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
 
   const classificationsFingerprint = fingerprintClassifications(input.classifications);
 
+  // Counterparty-sector decomposition (SARB BA 100 per-line requirement).
+  // Derived at query time from the COA registry; reconciles to line totals.
+  const sectorBreakdown = computeSectorBreakdown(
+    { assets: assetLines, liabilities: liabilityLines, equity: equityLines },
+    { assets: assetsTotal, liabilities: liabilitiesTotal, equity: equityTotal },
+  );
+
   return {
     meta: {
       form: "BA 100",
@@ -439,6 +513,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
       totalMinor: equityTotal,
       lineItems: equityLines,
     },
+    sectorBreakdown,
     perCurrencyTotals,
     balanceCheck: {
       assetsMinor: assetsTotal,
@@ -473,6 +548,139 @@ function signWarningForSection(amountMinor: number, section: Ba600Section): stri
     return `warning: ${section} account has a debit balance — sign convention violated`;
   }
   return undefined;
+}
+
+/** Zero-initialised sector split. */
+function emptySectorSplit(): Ba600SectorSplit {
+  return { bank: 0, corporate: 0, sovereign: 0, retail: 0, other: 0 };
+}
+
+/** Sum two sector splits component-wise (returns a fresh object). */
+function addSectorSplit(a: Ba600SectorSplit, b: Ba600SectorSplit): Ba600SectorSplit {
+  return {
+    bank: a.bank + b.bank,
+    corporate: a.corporate + b.corporate,
+    sovereign: a.sovereign + b.sovereign,
+    retail: a.retail + b.retail,
+    other: a.other + b.other,
+  };
+}
+
+/** Total magnitude across a sector split (used for the reconciliation guard). */
+function sumSectorSplit(s: Ba600SectorSplit): number {
+  return COUNTERPARTY_SECTORS.reduce((acc, k) => acc + s[k], 0);
+}
+
+/**
+ * Split one BA 100 line's magnitude across counterparty sectors.
+ *
+ * The line magnitude (`Math.abs(amountMinor)`) is distributed over its
+ * contributing accounts by each account's COA-derived sector. In the current
+ * build the BA 100 generator emits exactly one contributing account per line, so
+ * the whole line lands in that account's sector; the multi-account path is
+ * handled for forward-compatibility (it distributes the magnitude evenly across
+ * contributing accounts when more than one is present). Accounts with no clean
+ * COA sector mapping fall to `other`.
+ */
+function splitLineBySector(line: Ba600LineItem): Ba600SectorSplit {
+  const split: Record<CounterpartySector, number> = {
+    bank: 0,
+    corporate: 0,
+    sovereign: 0,
+    retail: 0,
+    other: 0,
+  };
+  const accounts = line.contributingAccounts;
+  if (accounts.length === 0) {
+    // No contributing account → attribute the whole line to `other` (surfaced).
+    split.other += line.amountMinor;
+    return split;
+  }
+  // Single contributing account (the common case): whole magnitude → its sector.
+  if (accounts.length === 1) {
+    const account = accounts[0];
+    if (account === undefined) {
+      split.other += line.amountMinor;
+      return split;
+    }
+    split[sectorForAccountId(account)] += line.amountMinor;
+    return split;
+  }
+  // Multi-account line: distribute the magnitude integer-evenly across the
+  // contributing accounts, routing the rounding residual to the first account so
+  // the per-sector split still reconciles exactly to the line magnitude.
+  const per = Math.trunc(line.amountMinor / accounts.length);
+  let allocated = 0;
+  accounts.forEach((account, idx) => {
+    const share = idx === 0 ? line.amountMinor - per * (accounts.length - 1) : per;
+    allocated += share;
+    split[sectorForAccountId(account)] += share;
+  });
+  // Defensive: any residual (should be 0) routes to `other`.
+  const residual = line.amountMinor - allocated;
+  if (residual !== 0) split.other += residual;
+  return split;
+}
+
+/**
+ * Compute the full counterparty-sector decomposition from the section line
+ * items. Per-line splits roll up into per-section totals and a form total; a
+ * reconciliation guard asserts every section's split sums to its section total.
+ *
+ * Authority: D-BA-RETURNS-FOLLOWON-BATCH; SARB BA 100.
+ */
+function computeSectorBreakdown(
+  sections: {
+    assets: readonly Ba600LineItem[];
+    liabilities: readonly Ba600LineItem[];
+    equity: readonly Ba600LineItem[];
+  },
+  sectionTotalsMinor: Readonly<Record<Ba600Section, number>>,
+): Ba600SectorBreakdown {
+  const lines: Ba600LineSectorBreakdown[] = [];
+  const sectionSplits: Record<Ba600Section, Ba600SectorSplit> = {
+    assets: emptySectorSplit(),
+    liabilities: emptySectorSplit(),
+    equity: emptySectorSplit(),
+  };
+
+  const sectionEntries: ReadonlyArray<[Ba600Section, readonly Ba600LineItem[]]> = [
+    ["assets", sections.assets],
+    ["liabilities", sections.liabilities],
+    ["equity", sections.equity],
+  ];
+
+  for (const [section, items] of sectionEntries) {
+    for (const item of items) {
+      const bySector = splitLineBySector(item);
+      lines.push({
+        lineId: item.lineId,
+        lineLabel: item.lineLabel,
+        section,
+        amountMinor: item.amountMinor,
+        bySector,
+      });
+      sectionSplits[section] = addSectorSplit(sectionSplits[section], bySector);
+    }
+  }
+
+  const formTotal = addSectorSplit(
+    addSectorSplit(sectionSplits.assets, sectionSplits.liabilities),
+    sectionSplits.equity,
+  );
+
+  // Reconciliation: each section's per-sector split must sum to its section total.
+  const reconciled =
+    sumSectorSplit(sectionSplits.assets) === sectionTotalsMinor.assets &&
+    sumSectorSplit(sectionSplits.liabilities) === sectionTotalsMinor.liabilities &&
+    sumSectorSplit(sectionSplits.equity) === sectionTotalsMinor.equity;
+
+  return {
+    lines,
+    sectionTotals: sectionSplits,
+    formTotal,
+    reconciled,
+  };
 }
 
 function computePerCurrencyTotals(

@@ -1312,6 +1312,128 @@ export function coaToCapitalClassifications(): readonly AccountCapitalClassifica
   }));
 }
 
+// ---------------------------------------------------------------------------
+// Counterparty-sector decomposition (SARB BA 100 per-line requirement)
+// ---------------------------------------------------------------------------
+
+/**
+ * Counterparty sector for SARB BA 100 per-line decomposition.
+ *
+ * SARB BA 100 (Balance Sheet) requires each material balance-sheet line to be
+ * disaggregated by the sector of the counterparty the exposure / obligation is
+ * against (bank, corporate, sovereign, retail). Unmappable accounts fall to
+ * `other` — surfaced, never hidden.
+ *
+ *   - "bank"       → exposures to / from other banks (interbank placements,
+ *                    correspondent nostros, deposits from banks).
+ *   - "corporate"  → exposures to / from corporate / wholesale non-bank
+ *                    counterparties (wholesale deposits, customer payables).
+ *   - "sovereign"  → exposures to / from the sovereign / central bank
+ *                    (central-bank reserves, government securities).
+ *   - "retail"     → exposures to / from retail customers (retail deposits).
+ *   - "other"      → no clean counterparty-sector mapping (suspense, own-book
+ *                    trading positions, P&L, equity capital, derivatives whose
+ *                    counterparty sector is not encoded at the GL-account level).
+ *
+ * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100 (Balance Sheet);
+ * Banks Act 94 of 1990 §75; Regulations Relating to Banks Reg 32.
+ */
+export type CounterpartySector = "bank" | "corporate" | "sovereign" | "retail" | "other";
+
+/** All counterparty sectors, in canonical render order. */
+export const COUNTERPARTY_SECTORS: readonly CounterpartySector[] = [
+  "bank",
+  "corporate",
+  "sovereign",
+  "retail",
+  "other",
+];
+
+/**
+ * Derive the counterparty sector for a single COA account.
+ *
+ * The mapping is driven entirely by the COA registry (account id range +
+ * `category` + `custodianPartyId` + `name`) — no posting-event read and no
+ * schema change. Where the COA does not unambiguously encode the counterparty
+ * sector (own-book trading positions, suspense, P&L, capital, derivatives), the
+ * account maps to `other` so the residual is surfaced rather than mis-attributed.
+ *
+ * Mapping rationale (account-id ranges from `COA_ACCOUNTS`):
+ *   - 7100 "Due from Banks" (interbank placements) ............... bank
+ *   - 1200 / deprecated 1100-002/003 correspondent nostros ....... bank
+ *   - 6100-003/004 "Wholesale" deposits .......................... corporate
+ *   - 2200 "Customer Payables" (wholesale/corporate clients) ..... corporate
+ *   - 6100-001/002 "Retail" deposits ............................. retail
+ *   - central-bank-custodied cash (custodian = central-bank) ..... sovereign
+ *   - 3100-001/002 government bond assets (level-1 sovereign) .... sovereign
+ *   - everything else ............................................ other
+ *
+ * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100.
+ */
+export function sectorForAccount(account: CoaAccountEntry): CounterpartySector {
+  const id = account.id;
+
+  // --- bank: interbank placements + correspondent nostros ---
+  // 7100-* "Due from Banks" / IBL interest are interbank exposures.
+  if (id.startsWith("ACC-7100-")) return "bank";
+  // 1200-* correspondent nostros are balances held at other (commercial) banks.
+  // The deprecated 1100-002 / 1100-003 nostros (merged into 1200) are too.
+  if (id.startsWith("ACC-1200-")) return "bank";
+  if (id === "ACC-1100-002" || id === "ACC-1100-003") return "bank";
+
+  // --- sovereign: central-bank cash + government securities ---
+  // Central-bank-custodied cash (the SARB reserve account) is a sovereign /
+  // central-bank exposure. Derive from the custodian, never the name.
+  if (
+    account.category === "asset-cash" &&
+    account.custodianPartyId !== undefined &&
+    account.custodianPartyId.includes("sarb")
+  ) {
+    return "sovereign";
+  }
+  // Government bond assets (banking + trading book) — build-phase assumption is
+  // SA-government 0%-RW paper (see coa-registry header / hqlaSubCategory
+  // "level-1.government-securities").
+  if (id === "ACC-3100-001" || id === "ACC-3100-002") return "sovereign";
+
+  // --- retail: retail deposit liabilities ---
+  if (id === "ACC-6100-001" || id === "ACC-6100-002") return "retail";
+
+  // --- corporate / wholesale non-bank ---
+  // Wholesale (operational + non-operational) deposit liabilities.
+  if (id === "ACC-6100-003" || id === "ACC-6100-004") return "corporate";
+  // Customer payables — non-bank corporate / wholesale client obligations.
+  if (id.startsWith("ACC-2200-")) return "corporate";
+
+  // --- other: no clean counterparty-sector mapping ---
+  // FX trading positions, suspense, settlement, derivatives, equity capital,
+  // P&L, repo, bond accruals etc. are own-book or sector-ambiguous at the GL
+  // level. Surfaced as `other`, not mis-attributed.
+  return "other";
+}
+
+/**
+ * Sector lookup by account id, derived from `COA_ACCOUNTS`.
+ *
+ * Accounts NOT in the COA registry (synthetic test stubs, accounts only present
+ * in the trial balance) are absent from this map; callers should treat a missing
+ * entry as `other`. Authority: D-BA-RETURNS-FOLLOWON-BATCH; SARB BA 100.
+ */
+export const COA_SECTOR_BY_ID: ReadonlyMap<string, CounterpartySector> = new Map(
+  COA_ACCOUNTS.map((a) => [a.id, sectorForAccount(a)]),
+);
+
+/**
+ * Resolve the counterparty sector for an account id, defaulting unknown ids to
+ * `other`. The single resolver consumed by the BA 100 sector decomposition so
+ * the default-to-`other` rule lives in exactly one place.
+ *
+ * Authority: D-BA-RETURNS-FOLLOWON-BATCH; SARB BA 100.
+ */
+export function sectorForAccountId(accountId: string): CounterpartySector {
+  return COA_SECTOR_BY_ID.get(accountId) ?? "other";
+}
+
 /**
  * Derive a `AccountLiquidityClassification[]` from the COA registry.
  *

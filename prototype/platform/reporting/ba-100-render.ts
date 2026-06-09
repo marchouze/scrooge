@@ -62,6 +62,33 @@ const ba100ClassificationGapSchema = z.object({
   amountMinor: z.number().int(),
 });
 
+const ba100SectorSplitSchema = z.object({
+  bank: z.number().int(),
+  corporate: z.number().int(),
+  sovereign: z.number().int(),
+  retail: z.number().int(),
+  other: z.number().int(),
+});
+
+const ba100LineSectorBreakdownSchema = z.object({
+  lineId: z.string().min(1),
+  lineLabel: z.string().min(1),
+  section: z.enum(["assets", "liabilities", "equity"]),
+  amountMinor: z.number().int().nonnegative(),
+  bySector: ba100SectorSplitSchema,
+});
+
+const ba100SectorBreakdownSchema = z.object({
+  lines: z.array(ba100LineSectorBreakdownSchema),
+  sectionTotals: z.object({
+    assets: ba100SectorSplitSchema,
+    liabilities: ba100SectorSplitSchema,
+    equity: ba100SectorSplitSchema,
+  }),
+  formTotal: ba100SectorSplitSchema,
+  reconciled: z.boolean(),
+});
+
 const ba100BalanceCheckSchema = z.object({
   assetsMinor: z.number().int().nonnegative(),
   liabilitiesPlusEquityMinor: z.number().int().nonnegative(),
@@ -93,6 +120,7 @@ export const Ba600RenderSchema = z.object({
   assets: ba100SectionSchema,
   liabilities: ba100SectionSchema,
   equity: ba100SectionSchema,
+  sectorBreakdown: ba100SectorBreakdownSchema,
   perCurrencyTotals: z.array(ba100PerCurrencyTotalSchema),
   balanceCheck: ba100BalanceCheckSchema,
   classificationGaps: z.array(ba100ClassificationGapSchema),
@@ -145,6 +173,7 @@ export function renderBa600ToJson(
     assets: output.assets,
     liabilities: output.liabilities,
     equity: output.equity,
+    sectorBreakdown: output.sectorBreakdown,
     perCurrencyTotals: [...output.perCurrencyTotals],
     balanceCheck: output.balanceCheck,
     classificationGaps: [...output.classificationGaps],

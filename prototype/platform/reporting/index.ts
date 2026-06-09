@@ -72,6 +72,9 @@ export {
   type Ba600PerCurrencyTotal,
   type Ba600Section,
   type Ba600Section_Output,
+  type Ba600SectorSplit,
+  type Ba600LineSectorBreakdown,
+  type Ba600SectorBreakdown,
   BA_600_BANK_ENTITIES,
   generateBa600BalanceSheet,
 } from "./ba-100-balance-sheet";
