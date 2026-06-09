@@ -127,3 +127,226 @@ export function assignMaturityBand(years: number): MaturityBandDef | undefined {
   // Safety: should never reach here (last band is +∞).
   return MATURITY_BANDS[MATURITY_BANDS.length - 1];
 }
+
+// ---------------------------------------------------------------------------
+// Reg 28(3)(a) maturity-method DISALLOWANCE algebra
+// ---------------------------------------------------------------------------
+//
+// Under the standardised maturity method (Reg 28(3)(a); BCBS D352 §718(iv)–(x))
+// the IR general-market-risk charge is NOT just the sum of the weighted-net per
+// band. Offsetting long and short positions in the same band — and across bands
+// — is only PARTIALLY allowed; the disallowed fraction is added back as a capital
+// charge. Three layers:
+//
+//   1. VERTICAL disallowance — within each band, 10% of the MATCHED weighted
+//      position (the smaller of weighted-long, weighted-short in that band).
+//      Captures basis / coupon-curve risk between offsetting positions of
+//      slightly different tenor inside one band. [Reg 28(3)(a); BCBS D352 §718(v)]
+//
+//   2. HORIZONTAL disallowance WITHIN each zone — the weighted NET positions of
+//      the bands in a zone are matched against each other; the matched amount
+//      carries a zone-specific charge: zone 1 = 40%, zone 2 = 30%, zone 3 = 30%.
+//      [Reg 28(3)(a) Table; BCBS D352 §718(viii)]
+//
+//   3. HORIZONTAL disallowance BETWEEN zones — the residual net of each zone is
+//      matched against adjacent zones (zone 1↔2 and zone 2↔3 at 40%), then the
+//      residual of zone 1 against zone 3 at 100%. [BCBS D352 §718(viii) Table]
+//
+// These offset percentages are the STANDARD Basel / Reg 28(3)(a) figures — a
+// fixed regulatory calibration, NOT a bank policy choice, so no fresh CRO
+// ratification gate applies. They are tracked under D-IRS-DV01-BUCKETING-
+// CALIBRATION (G2/G4/G5).
+//
+// Single-curve only: the matched/residual algebra runs on the single weighted-
+// nominal ladder. Multi-curve / basis decomposition (B-IRS-MULTICURVE / G2) is
+// explicitly OUT OF SCOPE here.
+//
+// Authority:
+//   - Regulations Relating to Banks Reg 28(3)(a) (standardised maturity method;
+//     vertical + horizontal disallowances)
+//   - BCBS D352 §718(iv)–(x) (general market risk — maturity method; matching)
+//   - D-IRS-DV01-BUCKETING-CALIBRATION (G2/G4/G5 tracking)
+
+/** The three Reg 28(3)(a) maturity zones. */
+export type MaturityZone = "zone1" | "zone2" | "zone3";
+
+/**
+ * Standard Basel / Reg 28(3)(a) band → zone map.
+ *   zone 1: ≤ 12 months   (0-1m, 1-3m, 3-6m, 6-12m)
+ *   zone 2: 1y – 4y        (1-2y, 2-3y, 3-4y)
+ *   zone 3: 4y +           (4-5y, 5-7y, 7-10y, 10-15y, 15-20y, >20y)
+ */
+export const BAND_ZONE: Readonly<Record<BaselMaturityBand, MaturityZone>> = {
+  "0-1m": "zone1",
+  "1-3m": "zone1",
+  "3-6m": "zone1",
+  "6-12m": "zone1",
+  "1-2y": "zone2",
+  "2-3y": "zone2",
+  "3-4y": "zone2",
+  "4-5y": "zone3",
+  "5-7y": "zone3",
+  "7-10y": "zone3",
+  "10-15y": "zone3",
+  "15-20y": "zone3",
+  ">20y": "zone3",
+} as const;
+
+/** Vertical disallowance rate — 10% of the matched weighted position per band. */
+export const VERTICAL_DISALLOWANCE_RATE = 0.1;
+
+/** Horizontal disallowance rates within each zone (Reg 28(3)(a) Table). */
+export const WITHIN_ZONE_DISALLOWANCE: Readonly<Record<MaturityZone, number>> = {
+  zone1: 0.4,
+  zone2: 0.3,
+  zone3: 0.3,
+} as const;
+
+/** Adjacent-zone horizontal disallowance rate (zone 1↔2 and zone 2↔3). */
+export const ADJACENT_ZONE_DISALLOWANCE = 0.4;
+
+/** Non-adjacent zone (zone 1↔3) horizontal disallowance rate. */
+export const ZONE_1_3_DISALLOWANCE = 1.0;
+
+/**
+ * One band's signed weighted positions, as fed to the disallowance algebra.
+ * `weightedLong` / `weightedShort` are both non-negative (the sign is carried by
+ * which field is populated), in money-minor units, already on the
+ * `notionalMinor × bandRiskWeight` weighted-nominal basis.
+ */
+export interface WeightedBandPosition {
+  readonly band: BaselMaturityBand;
+  readonly weightedLongMinor: number;
+  readonly weightedShortMinor: number;
+}
+
+/** Breakdown of the disallowance charge for transparency / recon assertions. */
+export interface IrGeneralDisallowanceBreakdown {
+  /** Sum of vertical (within-band) disallowances. */
+  readonly verticalMinor: number;
+  /** Sum of within-zone horizontal disallowances. */
+  readonly horizontalWithinZoneMinor: number;
+  /** Sum of adjacent-zone (1↔2, 2↔3) horizontal disallowances. */
+  readonly horizontalAdjacentZoneMinor: number;
+  /** Zone 1↔3 horizontal disallowance. */
+  readonly horizontalZone1And3Minor: number;
+  /** Total = vertical + all horizontal. The value fed to the IR-general charge. */
+  readonly totalMinor: number;
+}
+
+/** Match two opposite-sign magnitudes; returns the matched amount + signed residual. */
+function matchAndResidual(
+  longMinor: number,
+  shortMinor: number,
+): { matched: number; residual: number } {
+  const matched = Math.min(longMinor, shortMinor);
+  // Residual carries the sign of the dominant side: long-positive, short-negative.
+  const residual = longMinor - shortMinor;
+  return { matched, residual };
+}
+
+/**
+ * Compute the Reg 28(3)(a) maturity-method vertical + horizontal disallowance
+ * charge from a per-band signed weighted-position ladder. Deterministic, pure.
+ *
+ * The input rows are the SAME weighted-nominal rows the bond + IRS adapters
+ * emit (long AND short per band). The matched-position charges are derived
+ * here — never supplied as a caller-zero.
+ *
+ * Citations: Regulations Relating to Banks Reg 28(3)(a); BCBS D352 §718(iv)–(x);
+ *   D-IRS-DV01-BUCKETING-CALIBRATION.
+ */
+export function computeIrGeneralDisallowances(
+  ladder: readonly WeightedBandPosition[],
+): IrGeneralDisallowanceBreakdown {
+  // ---- 1. Vertical (within-band) disallowance: 10% of matched per band. ----
+  let verticalMinor = 0;
+  // Per-zone accumulation of weighted longs/shorts (for the within-zone step)
+  // and the signed net per band (the within-zone match operates on band nets).
+  const zoneBandNets: Record<MaturityZone, number[]> = { zone1: [], zone2: [], zone3: [] };
+
+  for (const row of ladder) {
+    const long = Math.max(0, row.weightedLongMinor);
+    const short = Math.max(0, row.weightedShortMinor);
+    const { matched } = matchAndResidual(long, short);
+    verticalMinor += Math.round(VERTICAL_DISALLOWANCE_RATE * matched);
+    // The band's WEIGHTED NET (signed) is what flows into the horizontal steps.
+    const zone = BAND_ZONE[row.band];
+    zoneBandNets[zone].push(long - short);
+  }
+
+  // ---- 2. Horizontal disallowance WITHIN each zone. ----
+  // Within a zone, sum the positive band-nets and the negative band-nets; the
+  // matched amount (min of the two magnitudes) carries the zone rate. The signed
+  // residual per zone flows into the between-zone step.
+  let horizontalWithinZoneMinor = 0;
+  const zoneResiduals: Record<MaturityZone, number> = { zone1: 0, zone2: 0, zone3: 0 };
+
+  for (const zone of ["zone1", "zone2", "zone3"] as const) {
+    let zoneLong = 0;
+    let zoneShort = 0;
+    for (const net of zoneBandNets[zone]) {
+      if (net > 0) zoneLong += net;
+      else zoneShort += -net;
+    }
+    const { matched } = matchAndResidual(zoneLong, zoneShort);
+    horizontalWithinZoneMinor += Math.round(WITHIN_ZONE_DISALLOWANCE[zone] * matched);
+    zoneResiduals[zone] = zoneLong - zoneShort; // signed residual of the zone
+  }
+
+  // ---- 3. Horizontal disallowance BETWEEN zones. ----
+  // Adjacent first (1↔2, then 2↔3) at 40%, then zone 1↔3 at 100%. Each match
+  // consumes the matched magnitude from both zones' residuals before the next.
+  let horizontalAdjacentZoneMinor = 0;
+  let horizontalZone1And3Minor = 0;
+
+  const r = { ...zoneResiduals };
+
+  // 1↔2
+  {
+    const matched = matchOpposite(r.zone1, r.zone2);
+    horizontalAdjacentZoneMinor += Math.round(ADJACENT_ZONE_DISALLOWANCE * matched);
+    [r.zone1, r.zone2] = consumeMatch(r.zone1, r.zone2, matched);
+  }
+  // 2↔3
+  {
+    const matched = matchOpposite(r.zone2, r.zone3);
+    horizontalAdjacentZoneMinor += Math.round(ADJACENT_ZONE_DISALLOWANCE * matched);
+    [r.zone2, r.zone3] = consumeMatch(r.zone2, r.zone3, matched);
+  }
+  // 1↔3 (residuals)
+  {
+    const matched = matchOpposite(r.zone1, r.zone3);
+    horizontalZone1And3Minor += Math.round(ZONE_1_3_DISALLOWANCE * matched);
+    [r.zone1, r.zone3] = consumeMatch(r.zone1, r.zone3, matched);
+  }
+
+  const totalMinor =
+    verticalMinor +
+    horizontalWithinZoneMinor +
+    horizontalAdjacentZoneMinor +
+    horizontalZone1And3Minor;
+
+  return {
+    verticalMinor,
+    horizontalWithinZoneMinor,
+    horizontalAdjacentZoneMinor,
+    horizontalZone1And3Minor,
+    totalMinor,
+  };
+}
+
+/** Matched magnitude between two SIGNED residuals only if they are opposite-sign. */
+function matchOpposite(a: number, b: number): number {
+  if (a === 0 || b === 0) return 0;
+  if (Math.sign(a) === Math.sign(b)) return 0; // same direction → nothing to offset
+  return Math.min(Math.abs(a), Math.abs(b));
+}
+
+/** Reduce two opposite-sign residuals by the matched magnitude, preserving sign. */
+function consumeMatch(a: number, b: number, matched: number): [number, number] {
+  if (matched === 0) return [a, b];
+  const newA = a - Math.sign(a) * matched;
+  const newB = b - Math.sign(b) * matched;
+  return [newA, newB];
+}

@@ -26,6 +26,11 @@
 // (standardised approach):
 //
 //   IR general risk        = sum(maturityBand.weightedNet) + disallowances
+//                            where disallowances = vertical (10% matched/band)
+//                            + horizontal within-zone (40/30/30%)
+//                            + adjacent-zone (40%) + zone-1↔3 (100%),
+//                            computed in closed form over the signed ladder
+//                            (see computeIrGeneralDisallowances; Reg 28(3)(a)).
 //   IR specific risk       = sum(grossPosition × specificRiskWeight) per issuer
 //   Equity position risk   = 8% × |netPosition| + 8% × grossPosition
 //   FX risk                = 8% × max(sum(longs), sum(shorts))     [shorthand]
@@ -56,6 +61,13 @@
 // positions directly from FxTradeExecuted events rather than from the trial
 // balance. Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
 
+import type { BaselMaturityBand } from "../types/basel";
+import {
+  BAND_ZONE,
+  type IrGeneralDisallowanceBreakdown,
+  computeIrGeneralDisallowances,
+} from "./ba-320-ir-maturity-bands";
+
 // ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
@@ -65,7 +77,14 @@
  * Per Reg 28(3)(a) Annex — 13 time bands; weighted-net by band.
  */
 export interface IrMaturityBandRow {
-  /** Band identifier (e.g. "0-1m", "1-3m", "3-6m"). Free-form for v0; Mira will pin to SARB. */
+  /**
+   * Band identifier. Canonically a Reg 28(3)(a) `BaselMaturityBand`
+   * (e.g. "0-1m", "1-3m", "5-7y") — the bond + IRS adapters always emit these.
+   * Typed `string` only for back-compat with caller-supplied test/override
+   * ladders; a row whose band is not a canonical band is excluded from the
+   * vertical/horizontal disallowance algebra (and surfaced as a placeholder)
+   * rather than silently mis-zoned.
+   */
   readonly band: string;
   /** Sum of weighted long positions in the band (post weight). */
   readonly weightedLongMinor: number;
@@ -154,10 +173,14 @@ export interface Ba310GeneratorInput {
   /** Commodity positions. Empty array OK (build-phase default). */
   readonly commodity: readonly CommodityPositionRow[];
   /**
-   * Vertical/horizontal disallowances per Reg 28(3)(a) — pre-computed by
-   * the call site (the disallowance algebra requires within-band /
-   * cross-zone offsets which depend on a finer maturity decomposition than
-   * v0 carries; supply directly).
+   * Optional OVERRIDE for the vertical/horizontal disallowances per
+   * Reg 28(3)(a). When ABSENT (the normal path) the disallowance charge is
+   * computed in closed form from the signed weighted-nominal maturity ladder
+   * (`computeIrGeneralDisallowances` — vertical 10% of matched-per-band,
+   * horizontal within-zone 40/30/30%, adjacent-zone 40%, zone 1↔3 100%). Supply
+   * a value only to override the algebra (e.g. a fixture with a pre-computed
+   * figure). Authority: Reg 28(3)(a); BCBS D352 §718(iv)–(x);
+   * D-IRS-DV01-BUCKETING-CALIBRATION (G2/G4/G5).
    */
   readonly irGeneralDisallowancesMinor?: number;
   /**
@@ -299,7 +322,38 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
     });
     irGeneralWeightedSum += weightedNet;
   }
-  const disallowances = Math.max(0, input.irGeneralDisallowancesMinor ?? 0);
+  // Vertical + horizontal disallowances per Reg 28(3)(a) maturity method.
+  // Computed from the SAME signed weighted-nominal ladder by default — NOT a
+  // caller-supplied zero. A caller MAY still override (e.g. a pre-computed
+  // figure for a fixture), but the default is the closed-form algebra over the
+  // long/short band positions. Authority: Reg 28(3)(a); BCBS D352 §718(iv)–(x);
+  // D-IRS-DV01-BUCKETING-CALIBRATION (G2/G4/G5).
+  //
+  // Only rows whose `band` is a canonical Reg 28(3)(a) band can be slotted into
+  // a zone for the horizontal steps. The bond + IRS adapters always emit
+  // canonical bands; a free-form caller-supplied band (back-compat) that is not
+  // recognised is excluded from the algebra and surfaced as a placeholder rather
+  // than silently mis-zoned.
+  const unrecognisedBands: string[] = [];
+  const disallowanceLadder = input.irGeneralMaturityLadder.flatMap((row) => {
+    if (!(row.band in BAND_ZONE)) {
+      unrecognisedBands.push(row.band);
+      return [];
+    }
+    return [
+      {
+        band: row.band as BaselMaturityBand,
+        weightedLongMinor: row.weightedLongMinor,
+        weightedShortMinor: row.weightedShortMinor,
+      },
+    ];
+  });
+  const disallowanceBreakdown: IrGeneralDisallowanceBreakdown =
+    computeIrGeneralDisallowances(disallowanceLadder);
+  const disallowances =
+    input.irGeneralDisallowancesMinor !== undefined
+      ? Math.max(0, input.irGeneralDisallowancesMinor)
+      : disallowanceBreakdown.totalMinor;
   const irGeneralCapital = irGeneralWeightedSum + disallowances;
 
   // ---- IR specific risk --------------------------------------------------
@@ -383,11 +437,16 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
   const totalRwa = Math.round(12.5 * totalCapital);
 
   const placeholders: string[] = [
-    "[citation: TBC — exact SARB BA 310 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
+    "[citation: TBC — exact SARB BA 320 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
   ];
-  if (input.irGeneralDisallowancesMinor === undefined) {
+  // IR-general vertical/horizontal disallowances are now computed in closed form
+  // from the signed weighted-nominal ladder (Reg 28(3)(a); BCBS D352 §718(iv)–(x);
+  // D-IRS-DV01-BUCKETING-CALIBRATION) — no longer a caller-supplied zero. Single-
+  // curve only; multi-curve / basis (B-IRS-MULTICURVE / G2) remains out of scope.
+  if (unrecognisedBands.length > 0) {
+    const distinct = [...new Set(unrecognisedBands)].join(", ");
     placeholders.push(
-      "[citation: TBC — IR-general vertical/horizontal disallowances supplied as zero (caller did not provide); finer maturity-decomposition required for closed-form algebra]",
+      `[citation: Reg 28(3)(a) — ${unrecognisedBands.length} maturity-ladder row(s) carried a non-canonical band (${distinct}) and were excluded from the vertical/horizontal disallowance algebra; canonical bands are emitted by the bond + IRS adapters.]`,
     );
   }
 
