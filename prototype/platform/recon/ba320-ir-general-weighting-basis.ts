@@ -35,19 +35,31 @@
 //       and not the canonical constant. This is the last-line defence if a
 //       future row source bypasses the static checks.
 //
+//   (4) DISALLOWANCES COMPUTED, NOT ZEROED (B-IRS-DISALLOWANCES). The BA 320
+//       generator (`ba-320-market-risk.ts`) must call
+//       `computeIrGeneralDisallowances` to derive the Reg 28(3)(a) vertical /
+//       horizontal disallowance charge from the signed weighted-nominal ladder,
+//       and must NOT zero-coalesce it (`irGeneralDisallowancesMinor ?? 0`) when
+//       the caller omits the optional override. The prior defect silently
+//       supplied 0, understating the general-market-risk capital charge.
+//
 // A reintroduced raw-DV01 row would fail (1) (no canonical basis stamp / a
 // foreign basis), fail (2) (a `dv01` write into the accumulator), and be
-// rejected at runtime by (3). The co-located test reconstructs each of these
-// and asserts the gate FAILS.
+// rejected at runtime by (3). A reverted disallowance feed (caller-supplied
+// zero) fails (4). The co-located test reconstructs each of these and asserts
+// the gate FAILS.
 //
 // ─── SOURCE OF TRUTH ────────────────────────────────────────────────────────
 // Static source-text scan of the two adapter modules + the combiner. No runtime
 // boot; reads files only (P6 upward chain).
 //
 // Authority:
-//   - Regulations Relating to Banks Reg 28(3)(a) Table A (maturity method)
-//   - BCBS D352 §718(b) (general market risk — maturity method)
-//   - D-IRS-DV01-BUCKETING-CALIBRATION (G1 weighting-basis unification)
+//   - Regulations Relating to Banks Reg 28(3)(a) Table A (maturity method;
+//     vertical + horizontal disallowances)
+//   - BCBS D352 §718(b), §718(iv)–(x) (general market risk — maturity method;
+//     matching / disallowances)
+//   - D-IRS-DV01-BUCKETING-CALIBRATION (G1 weighting-basis unification;
+//     G2/G4/G5 disallowance calibration)
 //   - D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO-approved 2026-06-09)
 //
 // Author: Mira (Regulatory reporting engineer, engineering).
@@ -81,6 +93,7 @@ const REPORTING_DIR = resolve(REPO_ROOT, "prototype/platform/reporting");
 
 const BOND_ADAPTER = resolve(REPORTING_DIR, "ba-320-bond-events-adapter.ts");
 const IRS_ADAPTER = resolve(REPORTING_DIR, "ba-320-irs-events-adapter.ts");
+const MARKET_RISK_GENERATOR = resolve(REPORTING_DIR, "ba-320-market-risk.ts");
 
 // ---------------------------------------------------------------------------
 // Inputs (overridable for tests)
@@ -91,6 +104,8 @@ export interface RunOpts {
   bondAdapterSource?: string;
   /** Override the IRS-adapter source text (for tests; this file also holds the combiner). */
   irsAdapterSource?: string;
+  /** Override the market-risk generator source text (for tests). */
+  marketRiskGeneratorSource?: string;
 }
 
 function readOrEmpty(path: string): string {
@@ -154,6 +169,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   const bondSource = opts.bondAdapterSource ?? readOrEmpty(BOND_ADAPTER);
   const irsSource = opts.irsAdapterSource ?? readOrEmpty(IRS_ADAPTER);
+  const generatorSource = opts.marketRiskGeneratorSource ?? readOrEmpty(MARKET_RISK_GENERATOR);
 
   if (bondSource.length === 0) {
     violations.push({
@@ -255,6 +271,47 @@ export function run(opts: RunOpts = {}): ReconResult {
           `It MUST throw when a row's weightingBasis is non-empty and !== ${CANONICAL_BASIS_CONST},`,
           "so a row source bypassing the static checks (e.g. a reintroduced raw-DV01 feed)",
           "cannot silently produce a mixed-unit ladder (G1).",
+        ].join(" "),
+        severity: "fail",
+      });
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Check (4): the BA 320 generator COMPUTES IR-general disallowances from the
+  // ladder — it does NOT default them to a caller-supplied zero (B-IRS-
+  // DISALLOWANCES). The prior defect was `irGeneralDisallowancesMinor ?? 0`,
+  // which silently zeroed the vertical/horizontal disallowance charge and
+  // understated the general-market-risk capital. The generator must (a) call
+  // `computeIrGeneralDisallowances` and (b) NOT zero-coalesce the disallowance
+  // away when the caller omits the optional override.
+  // -----------------------------------------------------------------------
+  if (generatorSource.length > 0) {
+    result.asserted++;
+    const callsAlgebra = generatorSource.includes("computeIrGeneralDisallowances(");
+    // The legacy understatement: `const disallowances = Math.max(0,
+    // input.irGeneralDisallowancesMinor ?? 0);` — disallowances default to 0.
+    const zeroCoalesces = /irGeneralDisallowancesMinor\s*\?\?\s*0/.test(generatorSource);
+    if (!callsAlgebra) {
+      violations.push({
+        subject: "ba-320-market-risk.ts",
+        message: [
+          "The BA 320 generator does NOT call computeIrGeneralDisallowances — the Reg 28(3)(a)",
+          "vertical/horizontal disallowance charge is not derived from the maturity ladder.",
+          "It must compute the matched-position charge from the signed long/short band positions,",
+          "not accept a caller-supplied zero (B-IRS-DISALLOWANCES; Reg 28(3)(a); BCBS D352 §718).",
+        ].join(" "),
+        severity: "fail",
+      });
+    }
+    if (zeroCoalesces) {
+      violations.push({
+        subject: "ba-320-market-risk.ts",
+        message: [
+          "The BA 320 generator zero-coalesces IR-general disallowances",
+          "(`irGeneralDisallowancesMinor ?? 0`) — the legacy understatement defect. When the",
+          "caller omits the optional override the disallowance MUST be the computed algebra value,",
+          "not 0 (B-IRS-DISALLOWANCES; Reg 28(3)(a)).",
         ].join(" "),
         severity: "fail",
       });

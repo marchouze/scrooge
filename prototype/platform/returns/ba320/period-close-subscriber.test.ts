@@ -149,9 +149,12 @@ describe("BA320 period-close subscriber — caller-supplied inputs", () => {
       irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 400 }],
     });
 
-    // |1000-400| = 600
-    expect(result.ba310Output.interestRateGeneral.capitalMinor).toBe(600);
-    expect(result.ba310Output.totalMarketRiskCapitalMinor).toBe(600);
+    // Weighted-net |1000-400| = 600, plus the Reg 28(3)(a) vertical disallowance
+    // of 10% × matched (min(1000,400)=400) = 40 → IR-general capital = 640.
+    // (Pre-B-IRS-DISALLOWANCES this was 600 with disallowances silently zero.)
+    expect(result.ba310Output.interestRateGeneral.disallowancesMinor).toBe(40);
+    expect(result.ba310Output.interestRateGeneral.capitalMinor).toBe(640);
+    expect(result.ba310Output.totalMarketRiskCapitalMinor).toBe(640);
   });
 
   it("equity rows flow into output (8% net + 4% gross for liquid/diversified)", () => {
@@ -277,8 +280,9 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
     const payload = ba310ToXmlPayload(result.ba310Output);
     const xml = renderSarbXml(payload, { renderedAt: "2026-06-01T00:00:00.000Z" });
 
-    // |2000-1000| = 1000
-    expect(xml.includes("<TotalMarketRiskCapitalMinor>1000</TotalMarketRiskCapitalMinor>")).toBe(
+    // Weighted-net |2000-1000| = 1000, plus the Reg 28(3)(a) vertical disallowance
+    // of 10% × matched (min(2000,1000)=1000) = 100 → total = 1100.
+    expect(xml.includes("<TotalMarketRiskCapitalMinor>1100</TotalMarketRiskCapitalMinor>")).toBe(
       true,
     );
   });

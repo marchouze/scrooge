@@ -50,12 +50,68 @@ function build() {
 }
 `;
 
+// A minimal "good" generator source: computes disallowances from the ladder and
+// only uses the caller override when explicitly supplied (no zero-coalesce).
+const GOOD_GENERATOR_SOURCE = `
+import { computeIrGeneralDisallowances } from "./ba-320-ir-maturity-bands";
+function gen(input) {
+  const breakdown = computeIrGeneralDisallowances(input.irGeneralMaturityLadder);
+  const disallowances =
+    input.irGeneralDisallowancesMinor !== undefined
+      ? Math.max(0, input.irGeneralDisallowancesMinor)
+      : breakdown.totalMinor;
+}
+`;
+
 describe("ba320-ir-general-weighting-basis recon — real sources", () => {
   it("passes on the actual (fixed) adapter + combiner sources", () => {
     const r = run();
     expect(r.ok).toBe(true);
     expect(r.violations).toEqual([]);
     expect(r.asserted).toBeGreaterThan(0);
+  });
+});
+
+describe("ba320-ir-general-weighting-basis recon — disallowances computed (B-IRS-DISALLOWANCES)", () => {
+  it("passes when the generator computes disallowances from the ladder", () => {
+    const r = run({
+      bondAdapterSource: GOOD_BOND_SOURCE,
+      irsAdapterSource: GOOD_IRS_SOURCE,
+      marketRiskGeneratorSource: GOOD_GENERATOR_SOURCE,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations).toEqual([]);
+  });
+
+  it("(e) FAILS when the generator does NOT call computeIrGeneralDisallowances", () => {
+    const noAlgebra = GOOD_GENERATOR_SOURCE.replace(
+      "const breakdown = computeIrGeneralDisallowances(input.irGeneralMaturityLadder);",
+      "const breakdown = { totalMinor: 0 };",
+    ).replace('import { computeIrGeneralDisallowances } from "./ba-320-ir-maturity-bands";', "");
+    const r = run({
+      bondAdapterSource: GOOD_BOND_SOURCE,
+      irsAdapterSource: GOOD_IRS_SOURCE,
+      marketRiskGeneratorSource: noAlgebra,
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some((v) => v.message.includes("does NOT call computeIrGeneralDisallowances")),
+    ).toBe(true);
+  });
+
+  it("(f) FAILS when the generator zero-coalesces disallowances (the legacy understatement)", () => {
+    // Reconstruct the original defect: disallowances default to a caller-supplied 0.
+    const zeroCoalesce = GOOD_GENERATOR_SOURCE.replace(
+      /const disallowances =[\s\S]*?: breakdown\.totalMinor;/,
+      "const disallowances = Math.max(0, input.irGeneralDisallowancesMinor ?? 0);",
+    );
+    const r = run({
+      bondAdapterSource: GOOD_BOND_SOURCE,
+      irsAdapterSource: GOOD_IRS_SOURCE,
+      marketRiskGeneratorSource: zeroCoalesce,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((v) => v.message.includes("zero-coalesces"))).toBe(true);
   });
 });
 
