@@ -52,6 +52,7 @@
     .od-footnote { display:grid; grid-template-columns:1.6em 1fr; gap:var(--space-2); align-items:start; font-size:0.85em; color:var(--color-text-secondary); line-height:1.6; }
     .od-fn-marker { font-family:var(--font-mono); font-weight:600; color:var(--color-accent); }
     .od-fn-text { word-break:break-word; }
+    .od-image-only { color:var(--color-text-secondary); font-style:italic; border-style:dashed; }
   </style>
 </head>
 <body>
@@ -169,6 +170,11 @@
             ${derives.length?mi("Derives from", derives.map(x=>`<span class="od-derives">${SC.esc(x)}</span>`).join(" ")):""}
           </div>
           <div class="od-section"><h3>Requirement</h3><div class="od-req">${SC.esc(requirement)}</div></div>
+          ${(d.sourceTextStatus === "image-only" && !(d.headingGroups && d.headingGroups.length)) ? `
+          <div class="od-section">
+            <h3>Text</h3>
+            <div class="od-req od-image-only">Source text not extracted (image-only instrument). The regulatory provision exists in the graph but its text has not been machine-extracted — typically a scanned / image-only PDF (e.g. SARB Directive D1/2015, D5/2025). Refer to the citation above for the authoritative source.</div>
+          </div>` : ''}
           ${(d.headingGroups && d.headingGroups.length) ? `
           <div class="od-section">
             <h3>Text</h3>

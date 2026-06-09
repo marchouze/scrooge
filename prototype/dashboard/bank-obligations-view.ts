@@ -14,6 +14,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import type { Database } from "bun:sqlite";
+
 import type { EventStore } from "../platform/event-store/store";
 import {
   findKnowledgeBaseObligation,
@@ -21,6 +23,7 @@ import {
 } from "../platform/obligations/knowledge-base";
 import { type BankObligation, loadBankObligations } from "../platform/obligations/projection";
 import { getDb } from "../platform/regulatory/graph/db";
+import { extractSectionIdsFromCitation } from "../platform/regulatory/obligation-linker";
 
 /** A reference row from the committed obligations seed (the authored origin). */
 export interface ObligationSeedRow {
@@ -38,6 +41,10 @@ export interface ObligationSeedRow {
   riskTaxonomy?: string;
   reviewStatus?: string;
   section?: string;
+  /** Optional explicit pointers to graph Provision node ids that carry this
+   * obligation's source text. Used as resolution precedence (2) when no
+   * EXPRESSES edge resolves; absent on virtually all current rows. */
+  sourceProvisions?: string[];
 }
 
 export function loadObligationSeed(repoRoot: string): ObligationSeedRow[] {
@@ -203,6 +210,14 @@ export interface ChapterHeadingGroup {
   paragraphs: ChapterParagraph[];
 }
 
+/** Whether the drill-down resolved any rendered source text for the obligation:
+ *   - `extracted`   — ≥1 text-bearing provision resolved (full source renders).
+ *   - `image-only`  — provision(s) resolve but carry no extractable text
+ *                     (image-only PDFs e.g. D1/2015, D5/2025; citation stubs).
+ *   - `missing`     — no provision resolves at all.
+ * The UI renders an explicit notice for `image-only` rather than a blank panel. */
+export type SourceTextStatus = "extracted" | "image-only" | "missing";
+
 export interface ObligationDetail {
   id: string;
   adopted: boolean;
@@ -210,6 +225,7 @@ export interface ObligationDetail {
   projection: BankObligation | null;
   history: Array<{ kind: string; at: string; detail?: string; status?: string }>;
   headingGroups: ChapterHeadingGroup[];
+  sourceTextStatus: SourceTextStatus;
 }
 
 interface BcbsChapterRow {
@@ -283,6 +299,187 @@ function loadBcbsChapters(repoRoot: string): BcbsChaptersDoc["chapters"] {
   return _bcbsChapters;
 }
 
+/** A paragraph minor number ("MAR11.5" → 5; "s60" → 0) for stable ordering. */
+function minorOf(para: string): number {
+  return Number(para.split(".")[1] ?? 0);
+}
+
+/** True when a provision body carries real, renderable source text (not an
+ * empty/near-empty stub left behind by an image-only PDF or a citation stub). */
+function isTextBearing(text: string): boolean {
+  return text.trim().length > 0;
+}
+
+/** Read-only handle on a graph Provision node, abstracted over the two metadata
+ * shapes in play: BCBS chapter provisions (chapter/paragraph/section/heading +
+ * text) and SA register provisions (sectionId/instrumentId, optionally text/
+ * heading/section once extracted). */
+interface ProvisionNodeRow {
+  id: string;
+  metadata: string | null;
+}
+
+/**
+ * Resolve the regulatory source text for one obligation as section-grouped
+ * paragraphs, plus a status describing whether that text is `extracted`,
+ * `image-only`, or `missing`. Read-side only — no events, no schema change.
+ *
+ * Generalises the former inline BCBS-only fallback so SA (`ORG-*`) obligations
+ * reach the same drill-down parity as BCBS:
+ *   - **BCBS ids** (`BCBS-<chapter>`): clean PDF text (chapter-text.json) is
+ *     primary; graph `Provision` nodes for that chapter are the fallback —
+ *     behaviour unchanged from before this helper existed.
+ *   - **Non-BCBS ids**: resolve `Provision` nodes via the `EXPRESSES` edge into
+ *     `OBL-<id>`. Resolution precedence: (1) `EXPRESSES` edge → (2) explicit
+ *     `seed.sourceProvisions[]` pointers → (3) read-time citation parse via the
+ *     shared `extractSectionIdsFromCitation`. Groups carry no heading off-PDF
+ *     unless the provision metadata provides one.
+ *
+ * @param db injectable graph handle (defaults to the shared `getDb()` singleton)
+ *   so the helper is unit-testable against an in-memory graph.
+ *
+ * Author: Atlas (Core banking platform architect, engineering).
+ */
+export function provisionGroupsForObligation(
+  id: string,
+  repoRoot: string,
+  seed: ObligationSeedRow | null,
+  db: Database = getDb(),
+): { groups: ChapterHeadingGroup[]; status: SourceTextStatus } {
+  const groups: ChapterHeadingGroup[] = [];
+  const pushParagraph = (heading: string | null, p: ChapterParagraph) => {
+    let group = groups[groups.length - 1];
+    if (!group || group.heading !== heading) {
+      group = { heading, fromPara: p.paragraph, toPara: p.paragraph, paragraphs: [] };
+      groups.push(group);
+    }
+    group.paragraphs.push(p);
+    group.toPara = p.paragraph;
+  };
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+
+  // ── BCBS path: clean PDF text primary, graph Provision fallback ──────────
+  const chapterCode = id.startsWith("BCBS-") ? id.slice(5) : null;
+  if (chapterCode) {
+    const rows = loadBcbsChapters(repoRoot)[chapterCode];
+    if (rows && rows.length > 0) {
+      const sorted = [...rows].sort((a, b) => minorOf(a.paragraph) - minorOf(b.paragraph));
+      for (const row of sorted) {
+        const nodeId = `urn:reg:bcbs:${chapterCode.replace(/^([A-Z]+)(\d+)$/, (_, s, n) => `${s.toLowerCase()}:${n}`)}.${row.paragraph.split(".")[1]}`;
+        // Separate footnotes from the body (D-OBLIGATION-FOOTNOTE-REPRESENTATION):
+        // the inline superscript marker stays in `text`; footnote bodies render
+        // as distinct elements beneath the paragraph.
+        const { body, footnotes } = parseFootnotes(row.text);
+        pushParagraph(row.heading, {
+          id: nodeId,
+          paragraph: row.paragraph,
+          text: body,
+          ...(footnotes.length ? { footnotes } : {}),
+        });
+      }
+      return { groups, status: "extracted" };
+    }
+    // Fallback: graph-DB Provision nodes for the chapter (no headings off-PDF).
+    const provRows = db
+      .prepare(
+        `SELECT id, metadata FROM graph_nodes
+         WHERE node_type = 'Provision'
+           AND json_extract(metadata, '$.chapter') = ?
+           AND json_extract(metadata, '$.paragraph') IS NOT NULL`,
+      )
+      .all(chapterCode) as ProvisionNodeRow[];
+    const parsed = provRows
+      .map((r) => ({ r, m: (r.metadata ? JSON.parse(r.metadata) : {}) as Record<string, unknown> }))
+      .sort((a, b) => minorOf(str(a.m.paragraph)) - minorOf(str(b.m.paragraph)));
+    let anyText = false;
+    for (const { r, m } of parsed) {
+      const text = str(m.text);
+      if (isTextBearing(text)) anyText = true;
+      pushParagraph(null, { id: r.id, paragraph: str(m.paragraph), text });
+    }
+    if (parsed.length === 0) return { groups, status: "missing" };
+    return { groups, status: anyText ? "extracted" : "image-only" };
+  }
+
+  // ── Non-BCBS (SA `ORG-*`) path: resolve Provision nodes for this obligation
+  // by precedence — EXPRESSES edge, then explicit sourceProvisions[], then a
+  // read-time citation parse — taking the first that yields any provision. ──
+  const fetchById = (ids: string[]): ProvisionNodeRow[] => {
+    if (ids.length === 0) return [];
+    const placeholders = ids.map(() => "?").join(",");
+    return db
+      .prepare(
+        `SELECT id, metadata FROM graph_nodes
+         WHERE node_type = 'Provision' AND id IN (${placeholders})`,
+      )
+      .all(...ids) as ProvisionNodeRow[];
+  };
+
+  // (1) EXPRESSES edge → OBL-<id>
+  let provRows = db
+    .prepare(
+      `SELECT n.id, n.metadata FROM graph_nodes n
+       JOIN graph_edges e ON e.from_id = n.id
+       WHERE e.to_id = ? AND e.edge_type = 'EXPRESSES' AND n.node_type = 'Provision'`,
+    )
+    .all(`OBL-${id}`) as ProvisionNodeRow[];
+
+  // (2) explicit sourceProvisions[] pointer on the obligation, if present
+  if (provRows.length === 0 && seed?.sourceProvisions?.length) {
+    provRows = fetchById(seed.sourceProvisions);
+  }
+
+  // (3) read-time citation parse → section ids → Provision nodes (matched by
+  //     metadata.sectionId, the slug-keyed id the seed projection assigns).
+  if (provRows.length === 0 && seed?.citation) {
+    const sectionIds = extractSectionIdsFromCitation(seed.citation);
+    if (sectionIds.length > 0) {
+      const placeholders = sectionIds.map(() => "?").join(",");
+      provRows = db
+        .prepare(
+          `SELECT id, metadata FROM graph_nodes
+           WHERE node_type = 'Provision'
+             AND json_extract(metadata, '$.sectionId') IN (${placeholders})`,
+        )
+        .all(...sectionIds) as ProvisionNodeRow[];
+    }
+  }
+
+  if (provRows.length === 0) return { groups, status: "missing" };
+
+  // Build heading groups from metadata.text (+ heading/section). Order by the
+  // section then paragraph minor where present, else by node id for stability.
+  const parsed = provRows
+    .map((r) => ({ r, m: (r.metadata ? JSON.parse(r.metadata) : {}) as Record<string, unknown> }))
+    .sort((a, b) => {
+      const sa = str(a.m.section);
+      const sb = str(b.m.section);
+      if (sa !== sb) return sa < sb ? -1 : 1;
+      const pa = minorOf(str(a.m.paragraph));
+      const pb = minorOf(str(b.m.paragraph));
+      if (pa !== pb) return pa - pb;
+      return a.r.id < b.r.id ? -1 : a.r.id > b.r.id ? 1 : 0;
+    });
+
+  let anyText = false;
+  for (const { r, m } of parsed) {
+    const heading = str(m.heading) || str(m.section) || null;
+    const rawText = str(m.text);
+    const { body, footnotes } = rawText ? parseFootnotes(rawText) : { body: "", footnotes: [] };
+    if (isTextBearing(body)) anyText = true;
+    // paragraph label: prefer explicit paragraph, else the sectionId tail (s60),
+    // else the node id — gives the UI a stable left-column label.
+    const paragraph = str(m.paragraph) || str(m.sectionId) || r.id;
+    pushParagraph(heading, {
+      id: r.id,
+      paragraph,
+      text: body,
+      ...(footnotes.length ? { footnotes } : {}),
+    });
+  }
+  return { groups, status: anyText ? "extracted" : "image-only" };
+}
+
 /** Full detail for one obligation: reference (seed) + projection state + lifecycle history. */
 export function getObligationDetail(
   store: EventStore,
@@ -332,63 +529,23 @@ export function getObligationDetail(
   }
   history.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 
-  // For BCBS chapter obligations, render the chapter's paragraph bodies grouped
-  // under their section headings. Primary source is the clean PDF-extracted text
-  // (chapter-text.json); fall back to the graph-DB Provision nodes for any
-  // chapter the sidecar doesn't cover.
-  const headingGroups: ChapterHeadingGroup[] = [];
-  const chapterCode = id.startsWith("BCBS-") ? id.slice(5) : null;
-  if (chapterCode) {
-    const minorOf = (para: string) => Number(para.split(".")[1] ?? 0);
-    const pushParagraph = (heading: string | null, p: ChapterParagraph) => {
-      let group = headingGroups[headingGroups.length - 1];
-      if (!group || group.heading !== heading) {
-        group = { heading, fromPara: p.paragraph, toPara: p.paragraph, paragraphs: [] };
-        headingGroups.push(group);
-      }
-      group.paragraphs.push(p);
-      group.toPara = p.paragraph;
-    };
+  // Render the obligation's regulatory source text as section-grouped paragraphs.
+  // BCBS chapters resolve from the clean PDF text (chapter-text.json) with a
+  // graph-Provision fallback; SA (`ORG-*`) and other obligations resolve from
+  // graph Provision nodes via the EXPRESSES edge — see provisionGroupsForObligation.
+  const { groups: headingGroups, status: sourceTextStatus } = provisionGroupsForObligation(
+    id,
+    repoRoot,
+    seed,
+  );
 
-    const rows = loadBcbsChapters(repoRoot)[chapterCode];
-    if (rows && rows.length > 0) {
-      const sorted = [...rows].sort((a, b) => minorOf(a.paragraph) - minorOf(b.paragraph));
-      for (const row of sorted) {
-        const nodeId = `urn:reg:bcbs:${chapterCode.replace(/^([A-Z]+)(\d+)$/, (_, s, n) => `${s.toLowerCase()}:${n}`)}.${row.paragraph.split(".")[1]}`;
-        // Separate footnotes from the body (D-OBLIGATION-FOOTNOTE-REPRESENTATION):
-        // the inline superscript marker stays in `text`; footnote bodies render
-        // as distinct elements beneath the paragraph.
-        const { body, footnotes } = parseFootnotes(row.text);
-        pushParagraph(row.heading, {
-          id: nodeId,
-          paragraph: row.paragraph,
-          text: body,
-          ...(footnotes.length ? { footnotes } : {}),
-        });
-      }
-    } else {
-      // Fallback: graph-DB Provision nodes (no headings available off-PDF).
-      const str = (v: unknown) => (typeof v === "string" ? v : "");
-      type NodeRow = { id: string; metadata: string | null };
-      const provRows = getDb()
-        .prepare(
-          `SELECT id, metadata FROM graph_nodes
-           WHERE node_type = 'Provision'
-             AND json_extract(metadata, '$.chapter') = ?
-             AND json_extract(metadata, '$.paragraph') IS NOT NULL`,
-        )
-        .all(chapterCode) as NodeRow[];
-      const parsed = provRows
-        .map((r) => ({
-          r,
-          m: (r.metadata ? JSON.parse(r.metadata) : {}) as Record<string, unknown>,
-        }))
-        .sort((a, b) => minorOf(str(a.m.paragraph)) - minorOf(str(b.m.paragraph)));
-      for (const { r, m } of parsed) {
-        pushParagraph(null, { id: r.id, paragraph: str(m.paragraph), text: str(m.text) });
-      }
-    }
-  }
-
-  return { id, adopted: projection?.adopted ?? false, seed, projection, history, headingGroups };
+  return {
+    id,
+    adopted: projection?.adopted ?? false,
+    seed,
+    projection,
+    history,
+    headingGroups,
+    sourceTextStatus,
+  };
 }
