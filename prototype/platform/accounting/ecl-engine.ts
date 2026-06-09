@@ -116,6 +116,16 @@ export interface DebtExposure {
   readonly productFamily: string;
   /** BA 200 obligor exposure class (sovereign / bank / corporate / retail). */
   readonly exposureClass: ExposureClass;
+  /**
+   * Obligor / issuer party identifier — the credit-concentration grain for the
+   * BA 210 (large-exposures / LEX) projection. Bonds carry the **issuer** key
+   * (all SA-government ISINs collapse to the single sovereign issuer); interbank
+   * placements carry the borrowing counterparty's LEI. Optional so existing
+   * `DebtExposure` constructors (tests, the BA 200 fold) remain valid; when
+   * absent the LEX projection falls back to `instrumentId` (per-instrument
+   * grain — never silently nets unrelated obligors together).
+   */
+  readonly obligorPartyId?: string;
   /** Exposure at default in minor currency units (gross market value). */
   readonly eadMinor: number;
   readonly currency: string;
@@ -166,6 +176,20 @@ export interface EclResult {
 function bucketForIsin(isin: string): string {
   if (isin.startsWith("ZAG") || isin.startsWith("ZAR")) return "sovereign-bond";
   return "debt-other";
+}
+
+/**
+ * Derive a bond's **issuer** party id from its ISIN — the credit-concentration
+ * grain for the BA 210 (large-exposures / LEX) projection. All SA-government
+ * ISINs (ZAG / ZAR prefix) collapse to the single RSA sovereign issuer so the
+ * LEX fold aggregates them as one connected exposure (which Reg 24(8)(a) then
+ * exempts). Any other ISIN keys to itself, pending a SecurityMaster issuer
+ * source. This is the issuer obligor, NOT the trading counterparty (`counterpartyLei`):
+ * credit concentration is to the entity that owes repayment.
+ */
+function bondIssuerPartyId(isin: string): string {
+  if (isin.startsWith("ZAG") || isin.startsWith("ZAR")) return "issuer:sovereign:RSA";
+  return `issuer:isin:${isin}`;
 }
 
 /** Valid BA 200 exposure-class values (for narrowing event-payload reads). */
@@ -265,6 +289,7 @@ export function readDebtExposures(
       riskBucket: bucketForIsin(pos.isin),
       productFamily: "bond",
       exposureClass: pos.exposureClass ?? defaultBondExposureClass(pos.isin),
+      obligorPartyId: bondIssuerPartyId(pos.isin),
       eadMinor,
       currency: pos.currency,
     });
@@ -280,6 +305,8 @@ interface LivePlacement {
   principalMinor: number;
   currency: string;
   exposureClass: ExposureClass;
+  /** Borrowing counterparty LEI — the LEX obligor grain for the placement. */
+  counterpartyLei?: string;
 }
 
 /**
@@ -300,11 +327,13 @@ function readInterbankExposures(
     const placementId = typeof p.placementId === "string" ? p.placementId : null;
     const principalMinor = typeof p.principalZar === "number" ? p.principalZar : null;
     if (!placementId || principalMinor === null || principalMinor <= 0) continue;
+    const counterpartyLei = typeof p.counterpartyLei === "string" ? p.counterpartyLei : undefined;
     live.set(placementId, {
       placementId,
       principalMinor,
       currency: "ZAR",
       exposureClass: readExposureClass(p.exposureClass) ?? "bank",
+      ...(counterpartyLei ? { counterpartyLei } : {}),
     });
   }
 
@@ -325,6 +354,7 @@ function readInterbankExposures(
       riskBucket: "interbank-placement",
       productFamily: "interbank",
       exposureClass: pos.exposureClass,
+      ...(pos.counterpartyLei ? { obligorPartyId: `lei:${pos.counterpartyLei}` } : {}),
       eadMinor: pos.principalMinor,
       currency: pos.currency,
     });
