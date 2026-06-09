@@ -28,6 +28,10 @@ import {
   readDebtExposures,
 } from "../platform/accounting/ecl-engine";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import {
+  makeInterbankLoanMatured,
+  makeInterbankLoanPlaced,
+} from "../platform/event-store/event-types/repo-mmd-ibl";
 import { EventStore } from "../platform/event-store/store";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -99,7 +103,10 @@ describe("ECL engine — computeStage1Ecl", () => {
   it("TC-3: per-exposure ECL = round(EAD × pd × lgd / 1e8)", () => {
     const exposure = {
       instrumentId: "fi:bond:ZAG000030108",
+      tradeId: "TRD-BOND-001",
       riskBucket: "sovereign-bond",
+      productFamily: "bond",
+      exposureClass: "sovereign" as const,
       eadMinor: 1_000_000_000,
       currency: "ZAR",
     };
@@ -146,4 +153,75 @@ describe("ECL engine — computeStage1Ecl", () => {
     expect(exposure?.riskBucket).toBe("debt-other");
     expect(exposure?.pdBps).toBe(80);
   });
+
+  it("TC-7: live interbank placement is now included in readDebtExposures", () => {
+    const store = freshStore();
+    placeInterbankLoan(store, { placementId: "IBL-001", principalZar: 25_000_000 });
+    const exposures = readDebtExposures(store);
+    expect(exposures.length).toBe(1);
+    const ibl = exposures[0];
+    expect(ibl?.instrumentId).toBe("fi:ibl:IBL-001");
+    expect(ibl?.tradeId).toBe("IBL-001");
+    expect(ibl?.riskBucket).toBe("interbank-placement");
+    expect(ibl?.productFamily).toBe("interbank");
+    expect(ibl?.exposureClass).toBe("bank");
+    expect(ibl?.eadMinor).toBe(25_000_000);
+    // It also flows through the aggregate ECL run with a positive ECL.
+    const result = computeStage1Ecl(store);
+    expect(result.status).toBe("ok");
+    expect(result.eclMinor).toBeGreaterThan(0);
+  });
+
+  it("TC-8: matured interbank placement is derecognised (excluded)", () => {
+    const store = freshStore();
+    placeInterbankLoan(store, { placementId: "IBL-002", principalZar: 10_000_000 });
+    store.append(
+      makeInterbankLoanMatured({
+        asOf: "2026-05-30T10:00:00.000Z",
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          placementId: "IBL-002",
+          principalZar: 10_000_000,
+          interestReceivedZar: 50_000,
+        },
+      }),
+    );
+    const exposures = readDebtExposures(store);
+    expect(exposures.length).toBe(0);
+  });
+
+  it("TC-9: bonds and interbank placements coexist in the exposure base", () => {
+    const store = freshStore();
+    bookBond(store, { tradeId: "B1", bondIsin: "ZAG000030108" });
+    placeInterbankLoan(store, { placementId: "IBL-003", principalZar: 7_000_000 });
+    const exposures = readDebtExposures(store);
+    expect(exposures.length).toBe(2);
+    expect(exposures.some((e) => e.productFamily === "bond")).toBe(true);
+    expect(exposures.some((e) => e.productFamily === "interbank")).toBe(true);
+  });
 });
+
+function placeInterbankLoan(store: EventStore, overrides: Record<string, unknown> = {}): void {
+  store.append(
+    makeInterbankLoanPlaced({
+      asOf: "2026-05-22T10:00:00.000Z",
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        placementId: "IBL-001",
+        counterpartyLei: "BANK-LEI-001",
+        principalZar: 25_000_000,
+        rateDecimal: 0.0825,
+        startDate: "2026-05-22",
+        maturityDate: "2026-06-22",
+        placementType: "fixed-term",
+        bookId: "treasury",
+        instrumentRef: "IBL-FT-ZAR-001",
+        ...overrides,
+      } as never,
+    }),
+  );
+}

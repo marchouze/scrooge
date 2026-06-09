@@ -44,6 +44,7 @@
 //   validated by Nadia (Independent-validation engineer).
 
 import type { EventStore } from "../event-store/store";
+import { type ProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import { requireWeight } from "../types/financial-input";
 import { assessIfrs9Stage } from "./ifrs9-staging";
 
@@ -216,10 +217,14 @@ function defaultBondExposureClass(isin: string): ExposureClass {
  * the event log — no bank assumption, so not itself a registered model (the EAD
  * *methodology* is model:ecl-ead-ifrs9-v1; this read is its implementation).
  */
-export function readDebtExposures(store: EventStore): DebtExposure[] {
+export function readDebtExposures(
+  store: EventStore,
+  provenanceFilter?: ProvenanceFilter,
+): DebtExposure[] {
   const byIsin = new Map<string, NetBondPosition>();
 
   for (const ev of store.replay({ type: "BondTradeExecuted" })) {
+    if (provenanceFilter && !eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as Record<string, unknown>;
     const isin = typeof p.bondIsin === "string" ? p.bondIsin : null;
     const tradeId = typeof p.tradeId === "string" ? p.tradeId : null;
@@ -265,7 +270,7 @@ export function readDebtExposures(store: EventStore): DebtExposure[] {
     });
   }
 
-  out.push(...readInterbankExposures(store));
+  out.push(...readInterbankExposures(store, provenanceFilter));
   return out;
 }
 
@@ -283,10 +288,14 @@ interface LivePlacement {
  * EAD is the placed principal (`principalZar`, in minor units). IBL principal is
  * carried in ZAR minor units by schema, so the currency is ZAR.
  */
-function readInterbankExposures(store: EventStore): DebtExposure[] {
+function readInterbankExposures(
+  store: EventStore,
+  provenanceFilter?: ProvenanceFilter,
+): DebtExposure[] {
   const live = new Map<string, LivePlacement>();
 
   for (const ev of store.replay({ type: "InterbankLoanPlaced" })) {
+    if (provenanceFilter && !eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as Record<string, unknown>;
     const placementId = typeof p.placementId === "string" ? p.placementId : null;
     const principalMinor = typeof p.principalZar === "number" ? p.principalZar : null;
