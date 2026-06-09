@@ -92,6 +92,8 @@ export type IrdInterpretOutcome =
       readonly representation: Representation;
       readonly ruleId: string;
       readonly ruleVersion: number;
+      /** Basel III business-line (BCBS d188); forwarded to SubLedgerPostingEmitted. */
+      readonly baselBusinessLine?: string;
     }
   | { readonly kind: "no-gl"; readonly detail: string }
   | { readonly kind: "reject"; readonly detail: string };
@@ -163,5 +165,6 @@ export function interpretIrdEvent(event: Event, asOf: string): IrdInterpretOutco
     representation: "IFRS",
     ruleId: r.ruleId,
     ruleVersion: r.ruleVersion,
+    ...(r.baselBusinessLine !== undefined ? { baselBusinessLine: r.baselBusinessLine } : {}),
   };
 }

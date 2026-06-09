@@ -250,6 +250,15 @@ export const subLedgerPostingEmittedPayloadSchema = z
     ruleId: z.string().min(1).optional(),
     /** The exact rule version in force at the event's effective date (spec §6). */
     ruleVersion: z.number().int().min(1).optional(),
+    /**
+     * Basel III business-line classification for this posting.
+     * Maps to the BCBS Operational Risk business-line taxonomy (d188) and is
+     * used to classify GL postings for the BA 400 Op-Risk return.
+     * Populated by the SLA interpreter's product-to-business-line map;
+     * absent for legacy postings pre-WS-BA-RETURNS-P1-SOURCING.
+     * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL; BCBS d188 §§652-654.
+     */
+    baselBusinessLine: z.string().optional(),
   })
   .passthrough()
   .superRefine((p, ctx) => {

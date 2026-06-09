@@ -39,6 +39,7 @@ import {
   depositRolledOverPayloadSchema,
   depositTakenPayloadSchema,
   depositWithdrawnEarlyPayloadSchema,
+  fundingLineCommitmentRecordedPayloadSchema,
   fundingLineDrawnPayloadSchema,
   fundingLineRepaidPayloadSchema,
   interbankLoanInterestAccruedPayloadSchema,
@@ -276,6 +277,25 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     payloadSchema: interbankLoanRecalledEarlyPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-2-3"],
+    source: SOURCE,
+  },
+
+  // ── BA 110 off-balance-sheet — undrawn committed funding facilities ────────
+
+  {
+    type: "FundingLineCommitmentRecorded",
+    class: "markets",
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Helena", "Mira", "Atlas"],
+    replay: "cumulative-fold",
+    retention: RETENTION_JSE_TRADE_7Y,
+    payloadSchema: fundingLineCommitmentRecordedPayloadSchema,
+    citationsHint: [
+      "D-BA-RETURN-NUMBERING-EXCEL-CANONICAL",
+      "D-MARKETS-SCHEMA-FOUNDATION",
+      "BA110",
+      "Reg23-contingent-liabilities",
+    ],
     source: SOURCE,
   },
 ];

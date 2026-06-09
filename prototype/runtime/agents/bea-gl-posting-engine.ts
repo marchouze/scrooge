@@ -536,6 +536,12 @@ async function processFxViaInterpreter(
           representation: outcome.representation,
           ruleId: outcome.ruleId,
           ruleVersion: outcome.ruleVersion,
+          // Basel III business-line sourcing (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL,
+          // WS-BA-RETURNS-P1-SOURCING Phase 1). Derived from the product context by
+          // the SLA interpreter. Absent for legacy postings.
+          ...(outcome.baselBusinessLine !== undefined
+            ? { baselBusinessLine: outcome.baselBusinessLine }
+            : {}),
         },
         eventId: newEventId(),
       });
