@@ -116,6 +116,20 @@
 import { newEventId } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import type {} from "../event-store/event-types/fx-accounting";
+import type { IrdSwapCouponSettledPayload } from "../event-store/event-types/ird-accounting";
+import type {
+  DepositMaturedPayload,
+  DepositTakenPayload,
+  DepositWithdrawnEarlyPayload,
+  FundingLineDrawnPayload,
+  FundingLineRepaidPayload,
+  InterbankLoanMaturedPayload,
+  InterbankLoanPlacedPayload,
+  InterbankLoanRecalledEarlyPayload,
+  RepoEndLegSettledPayload,
+  RepoTradeOpenedPayload,
+  RepoTradeTerminatedEarlyPayload,
+} from "../event-store/event-types/repo-mmd-ibl";
 import {
   makeHQLACompositionDrift,
   makeLCRRatioProjection,
@@ -799,6 +813,179 @@ function foldSettlementCashFlows(args: {
 }
 
 // ---------------------------------------------------------------------------
+// LCR run-off rate table (BCBS D295 §31 / Reg 26 Table 1)
+// ---------------------------------------------------------------------------
+
+const DEPOSIT_RUNOFF_RATES: Record<DepositTakenPayload["depositCategory"], number> = {
+  "retail-stable": 0.03,
+  "retail-less-stable": 0.10,
+  "wholesale-operational": 0.25,
+  "wholesale-non-operational": 1.00,
+};
+
+/**
+ * Product-maturity outflows/inflows for the 30-day LCR horizon.
+ *
+ * Folds product lifecycle events (DepositTaken, FundingLineDrawn,
+ * RepoTradeOpened, IrdSwapCouponSettled, InterbankLoanPlaced) into
+ * cash-flow lines for the LCR denominator. Only live positions
+ * (opening event not yet closed) are included.
+ *
+ * Principle 1: all cash flows fold from typed events, never from the GL.
+ * Citations: BCBS D295 §31 / Reg 26 Table 1 (run-off rates);
+ *            D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (BA 300 = LCR).
+ */
+function foldProductMaturityOutflows(args: {
+  readonly eventStore: EventStore;
+  readonly entity: string;
+  readonly asOf: string;
+  readonly provenanceFilter: ReturnType<typeof defaultProvenanceFilter>;
+}): {
+  readonly outflowLines: Ba110LineItem[];
+  readonly inflowLines: Ba110LineItem[];
+  readonly openRepoIsins: Set<string>;
+} {
+  const { eventStore, entity, asOf, provenanceFilter } = args;
+
+  // Compute horizon: asOf + 30 days.
+  const horizonDate = new Date(asOf);
+  horizonDate.setUTCDate(horizonDate.getUTCDate() + 30);
+  const horizon = horizonDate.toISOString().slice(0, 10); // date part only
+
+  // Helper: date string (YYYY-MM-DD prefix) in [asOf, asOf+30d].
+  function inHorizon(dateStr: string): boolean {
+    const d = dateStr.slice(0, 10);
+    return d >= asOf.slice(0, 10) && d <= horizon;
+  }
+
+  // -------------------------------------------------------------------------
+  // Step 1: Collect closed-position IDs so we can filter live-only.
+  // -------------------------------------------------------------------------
+
+  const closedDepositIds = new Set<string>();
+  const closedFundingLineIds = new Set<string>();
+  const closedRepoTradeIds = new Set<string>();
+  const closedIblPlacementIds = new Set<string>();
+
+  for (const event of eventStore.replay({ entity, asOf })) {
+    if (!eventMatchesProvenanceFilter(event, provenanceFilter)) continue;
+    if (event.type === "DepositMatured") {
+      closedDepositIds.add((event.payload as DepositMaturedPayload).depositId);
+    } else if (event.type === "DepositWithdrawnEarly") {
+      closedDepositIds.add((event.payload as DepositWithdrawnEarlyPayload).depositId);
+    } else if (event.type === "FundingLineRepaid") {
+      closedFundingLineIds.add((event.payload as FundingLineRepaidPayload).fundingLineId);
+    } else if (event.type === "RepoEndLegSettled") {
+      closedRepoTradeIds.add((event.payload as RepoEndLegSettledPayload).tradeId);
+    } else if (event.type === "RepoTradeTerminatedEarly") {
+      closedRepoTradeIds.add((event.payload as RepoTradeTerminatedEarlyPayload).tradeId);
+    } else if (event.type === "InterbankLoanMatured") {
+      closedIblPlacementIds.add((event.payload as InterbankLoanMaturedPayload).placementId);
+    } else if (event.type === "InterbankLoanRecalledEarly") {
+      closedIblPlacementIds.add((event.payload as InterbankLoanRecalledEarlyPayload).placementId);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Step 2: Fold live opening events into outflow/inflow lines.
+  // -------------------------------------------------------------------------
+
+  const outflowLines: Ba110LineItem[] = [];
+  const inflowLines: Ba110LineItem[] = [];
+  const openRepoIsins = new Set<string>();
+
+  for (const event of eventStore.replay({ entity, asOf })) {
+    if (!eventMatchesProvenanceFilter(event, provenanceFilter)) continue;
+
+    if (event.type === "DepositTaken") {
+      const p = event.payload as DepositTakenPayload;
+      if (closedDepositIds.has(p.depositId)) continue;
+      if (!inHorizon(p.maturityDate)) continue;
+      const rate = DEPOSIT_RUNOFF_RATES[p.depositCategory];
+      const outflowMinor = Math.round(p.principalZar * rate);
+      if (outflowMinor === 0) continue;
+      outflowLines.push({
+        lineId: `product-maturity.deposit.${p.depositId}`,
+        lineLabel: `DepositTaken run-off (${p.depositCategory}) — ${p.depositId}`,
+        amountMinor: outflowMinor,
+        currency: "ZAR",
+        contributingAccounts: [event.event_id],
+        note: `source=event; category=${p.depositCategory}; runOffRate=${rate * 100}%; principal=${p.principalZar}`,
+      });
+    } else if (event.type === "FundingLineDrawn") {
+      const p = event.payload as FundingLineDrawnPayload;
+      if (closedFundingLineIds.has(p.fundingLineId)) continue;
+      if (!inHorizon(p.maturityDate)) continue;
+      const outflowMinor = p.drawnAmountZar; // 100% run-off
+      if (outflowMinor === 0) continue;
+      outflowLines.push({
+        lineId: `product-maturity.funding.${p.fundingLineId}`,
+        lineLabel: `FundingLineDrawn — ${p.fundingLineId}`,
+        amountMinor: outflowMinor,
+        currency: "ZAR",
+        contributingAccounts: [event.event_id],
+        note: `source=event; runOffRate=100%; drawn=${p.drawnAmountZar}`,
+      });
+    } else if (event.type === "RepoTradeOpened") {
+      const p = event.payload as RepoTradeOpenedPayload;
+      // Track all open repo collateral ISINs for HQLA encumbrance.
+      if (!closedRepoTradeIds.has(p.tradeId) && p.collateralIsin) {
+        openRepoIsins.add(p.collateralIsin);
+      }
+      if (closedRepoTradeIds.has(p.tradeId)) continue;
+      if (!inHorizon(p.endLegSettlementDate)) continue;
+      // Repo run-off: 15% if HQLA govt bond collateral (ZAG prefix), else 100%.
+      // BCBS D295 §163 / Reg 26 Table 2: secured funding backed by Level-1 HQLA.
+      const rate = p.collateralIsin?.startsWith("ZAG") ? 0.15 : 1.0;
+      const outflowMinor = Math.round(p.repurchasePriceZar * rate);
+      if (outflowMinor === 0) continue;
+      outflowLines.push({
+        lineId: `product-maturity.repo.${p.tradeId}`,
+        lineLabel: `RepoTradeOpened end-leg run-off — ${p.tradeId}`,
+        amountMinor: outflowMinor,
+        currency: "ZAR",
+        contributingAccounts: [event.event_id],
+        note: `source=event; collateral=${p.collateralIsin ?? "unknown"}; runOffRate=${rate * 100}%; repurchasePrice=${p.repurchasePriceZar}`,
+      });
+    } else if (event.type === "IrdSwapCouponSettled") {
+      // IRS coupon outflows: bank pays (netCashMinor < 0) with settlementDate in horizon.
+      // Not an open/close lifecycle — each coupon event is independent.
+      const p = event.payload as IrdSwapCouponSettledPayload;
+      if (p.netCashMinor >= 0) continue;
+      if (!inHorizon(p.settlementDate)) continue;
+      const outflowMinor = Math.abs(p.netCashMinor);
+      if (outflowMinor === 0) continue;
+      outflowLines.push({
+        lineId: `product-maturity.irs-coupon.${event.event_id}`,
+        lineLabel: `IrdSwapCouponSettled outflow — trade ${p.tradeId}`,
+        amountMinor: outflowMinor,
+        currency: "ZAR",
+        contributingAccounts: [event.event_id],
+        note: `source=event; tradeId=${p.tradeId}; netCash=${p.netCashMinor}; settlementDate=${p.settlementDate}`,
+      });
+    } else if (event.type === "InterbankLoanPlaced") {
+      // IBL inflows: bank placed cash, expects return. Only fixed-term (non-null maturityDate).
+      const p = event.payload as InterbankLoanPlacedPayload;
+      if (closedIblPlacementIds.has(p.placementId)) continue;
+      if (p.maturityDate === null) continue; // call placements excluded (no fixed horizon)
+      if (!inHorizon(p.maturityDate)) continue;
+      const inflowMinor = p.principalZar; // 100% inflow per BCBS D295 §133
+      if (inflowMinor === 0) continue;
+      inflowLines.push({
+        lineId: `product-maturity.ibl.${p.placementId}`,
+        lineLabel: `InterbankLoanPlaced maturity inflow — ${p.placementId}`,
+        amountMinor: inflowMinor,
+        currency: "ZAR",
+        contributingAccounts: [event.event_id],
+        note: `source=event; maturityDate=${p.maturityDate}; principal=${p.principalZar}`,
+      });
+    }
+  }
+
+  return { outflowLines, inflowLines, openRepoIsins };
+}
+
+// ---------------------------------------------------------------------------
 // Generator
 // ---------------------------------------------------------------------------
 
@@ -922,6 +1109,23 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
   }
 
   // -------------------------------------------------------------------------
+  // Product-maturity outflows/inflows — fold early so openRepoIsins is
+  // available before the HQLA encumbrance check below.
+  // Phase 2 — WS-BA-RETURNS-P1-SOURCING.
+  // -------------------------------------------------------------------------
+  const provenanceFilter = defaultProvenanceFilter();
+  const {
+    outflowLines: productOutflowLines,
+    inflowLines: productInflowLines,
+    openRepoIsins,
+  } = foldProductMaturityOutflows({
+    eventStore: input.eventStore,
+    entity: input.entity,
+    asOf: input.asOf,
+    provenanceFilter,
+  });
+
+  // -------------------------------------------------------------------------
   // HQLA stock — preferred path: instrument-level positions × SecurityMaster.
   // Fallback path: trial balance + AccountLiquidityClassification (deprecated).
   //
@@ -956,7 +1160,10 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
     // computeHqlaStockFromPositions() has already applied BCBS D295 haircuts
     // and filtered to functional currency. Map HqlaStockLine → Ba110LineItem.
     // -----------------------------------------------------------------------
-    const stockResult = computeHqlaStockFromPositions(input.hqlaStock);
+    const stockResult = computeHqlaStockFromPositions({
+      ...input.hqlaStock,
+      encumberedIsins: openRepoIsins.size > 0 ? openRepoIsins : undefined,
+    });
 
     // Map Level-1 lines.
     for (const line of stockResult.level1Lines) {
@@ -1247,6 +1454,24 @@ export function generateBa110Lcr(input: Ba110GeneratorInput, opts?: Ba110LcrOpts
         "rate-enrichment step (Slice-6+); only ZAR-denominated legs counted. " +
         "Per Reg 26(13) per-currency LCR; build-phase scope is consolidated functional-currency LCR.]",
     );
+  }
+
+  // -------------------------------------------------------------------------
+  // Merge product-maturity outflows/inflows (Phase 2 — WS-BA-RETURNS-P1-SOURCING).
+  // -------------------------------------------------------------------------
+  for (const line of productOutflowLines) {
+    if (line.currency === ccy) {
+      outflowLines.push(line);
+      grossOutflows += line.amountMinor;
+      for (const id of line.contributingAccounts) outflowEventIds.add(id);
+    }
+  }
+  for (const line of productInflowLines) {
+    if (line.currency === ccy) {
+      inflowLines.push(line);
+      grossInflows += line.amountMinor;
+      for (const id of line.contributingAccounts) inflowEventIds.add(id);
+    }
   }
 
   // -------------------------------------------------------------------------
