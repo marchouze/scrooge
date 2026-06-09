@@ -421,7 +421,8 @@ export const MODELS: ReadonlyArray<CalcModelDef> = [
       "uncollateralised OTC derivative book (IRS + FX forward/swap; spot excluded) to a " +
       "per-counterparty netted positive Exposure At Default: EAD_cp = max(0, Σ current MTM) + " +
       "Σ PFE add-on, a single netting set per counterparty. IRS current exposure is the positive " +
-      "mark-to-market from the latest IrsPositionRevalued; the PFE add-on is a documented " +
+      "mark-to-market from the latest IrdSwapPositionRevalued.npvClosingMinor " +
+      "(D-IRS-FAMILY-CONVERGE-ACCOUNTING); the PFE add-on is a documented " +
       "notional fraction (proxy for the SA-CCR supervisory factor, which is a prescribed input " +
       "out of model scope). FX forward/swap exposure is the PFE add-on on the |net ZAR notional| " +
       "of the open term legs. This is the common exposure base the CVA engine consumes.",

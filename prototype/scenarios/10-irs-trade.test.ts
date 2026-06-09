@@ -176,7 +176,7 @@ describe("IRS EOD revaluation — MTM and DV01", () => {
     expect(dv01Zar).toBeLessThan(80_000);
   });
 
-  it("revaluation engine emits IrsPositionRevalued", () => {
+  it("revaluation engine emits IrdSwapPositionRevalued with bucketed DV01", () => {
     const db = tmpDb("revaluation");
     cleanDb(db);
 
@@ -198,6 +198,31 @@ describe("IRS EOD revaluation — MTM and DV01", () => {
       expect(result.revalued).toBe(1);
       expect(result.skipped).toBe(0);
       expect(result.errors).toHaveLength(0);
+
+      // D-IRS-FAMILY-CONVERGE-ACCOUNTING: the engine emits the accounting family
+      // (the GL + BA 320 canonical revaluation fact), NOT the trade-domain mirror.
+      const accounting = [...store.replay({ type: "IrdSwapPositionRevalued" })];
+      expect(accounting).toHaveLength(1);
+      const noMirror = [...store.replay({ type: "IrsPositionRevalued" })];
+      expect(noMirror).toHaveLength(0);
+
+      // The bucketed DV01 grid is populated (BA 320 IR-general-risk ladder feed),
+      // with every band a valid BaselMaturityBand and a non-zero contribution.
+      const payload = accounting[0]?.payload as {
+        dv01ByTenorBucket?: Record<string, number>;
+        npvClosingMinor: number;
+        npvOpeningMinor: number;
+        npvDeltaMinor: number;
+      };
+      const buckets = payload.dv01ByTenorBucket ?? {};
+      expect(Object.keys(buckets).length).toBeGreaterThan(0);
+      for (const v of Object.values(buckets)) {
+        expect(Number.isInteger(v)).toBe(true);
+        expect(v).not.toBe(0);
+      }
+      // First reval: opening NPV is 0, so delta == closing.
+      expect(payload.npvOpeningMinor).toBe(0);
+      expect(payload.npvDeltaMinor).toBe(payload.npvClosingMinor);
 
       store.close();
     } finally {
@@ -277,18 +302,22 @@ describe("IRS EOD revaluation — MTM and DV01", () => {
 // ---------------------------------------------------------------------------
 
 describe("scenario 10 — IRS trade lifecycle", () => {
-  it("builds 4 scenario events", () => {
+  it("builds 6 scenario events (incl. accounting IrdSwap* family)", () => {
     const events = buildIrsScenarioEvents();
-    expect(events.all.length).toBe(4);
+    expect(events.all.length).toBe(6);
   });
 
-  it("event types are correct", () => {
+  it("event types are correct (trade-domain + accounting family)", () => {
     const events = buildIrsScenarioEvents();
     const types = events.all.map((e) => e.type);
     expect(types).toContain("IrsTradeBooked");
     expect(types).toContain("IrsCouponScheduleGenerated");
     expect(types).toContain("IrsCouponPaymentInstructed");
     expect(types).toContain("IrsCouponSettlementConfirmed");
+    // D-IRS-FAMILY-CONVERGE-ACCOUNTING: canonical GL/regulatory family is emitted
+    // at the booking + settlement sites alongside the trade-domain CDM events.
+    expect(types).toContain("IrdSwapTradeExecuted");
+    expect(types).toContain("IrdSwapCouponSettled");
   });
 
   it("runScenario succeeds (ok=true)", () => {

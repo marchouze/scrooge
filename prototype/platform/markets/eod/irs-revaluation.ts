@@ -71,7 +71,7 @@ import { type IrsRateSource, staticJibarRateSource } from "./jibar-curve-seed";
 // ---------------------------------------------------------------------------
 
 export type EodIrsRevaluationResult = {
-  /** Number of swaps where IrsPositionRevalued was emitted. */
+  /** Number of swaps where IrdSwapPositionRevalued was emitted. */
   revalued: number;
   /** Number of swaps skipped (already revalued today or matured). */
   skipped: number;

@@ -41,7 +41,8 @@ import {
   makeCreditLimitLoaded,
 } from "../platform/event-store/event-types/credit-limit";
 import { makeFxPositionRevalued } from "../platform/event-store/event-types/fx-accounting";
-import { makeIrsPositionRevalued, makeIrsTradeBooked } from "../platform/markets/cdm/ird";
+import { makeIrdSwapPositionRevalued } from "../platform/event-store/event-types/ird-accounting";
+import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { checkHeadroom } from "../platform/risk/credit-limit-engine";
 import {
   ALPHA_SA_CCR,
@@ -805,57 +806,56 @@ describe("SA-CCR v1 — resolveMtm (reads IrsPositionRevalued + FxPositionRevalu
       }),
     );
 
-    // Emit two revaluations — last-write-wins per tradeId.
+    // Emit two revaluations — last-write-wins per tradeId. SA-CCR reads the
+    // accounting IrdSwapPositionRevalued family (D-IRS-FAMILY-CONVERGE-ACCOUNTING);
+    // npvClosingMinor IS the signed MTM.
     eventStore.append(
-      makeIrsPositionRevalued({
+      makeIrdSwapPositionRevalued({
         asOf: "2026-05-19T16:00:00.000Z",
         entity: ENTITY,
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
-          tradeId: { scheme: "internal", value: tradeIdA },
-          valuationDate: "2026-05-19",
-          fixedLegPv: { currency: "ZAR", amountMinor: 50_000_000_00 },
-          floatingLegPv: { currency: "ZAR", amountMinor: 47_000_000_00 },
-          markToMarket: { currency: "ZAR", amountMinor: 3_000_000_00 },
-          dv01: { currency: "ZAR", amountMinor: 50_000_00 },
-          remainingTenorDays: 1800,
+          tradeId: tradeIdA,
+          revalDate: "2026-05-19",
+          npvOpeningMinor: 0,
+          npvClosingMinor: 3_000_000_00,
+          npvDeltaMinor: 3_000_000_00,
+          currency: "ZAR",
         },
         eventId: newEventId(),
       }),
     );
     eventStore.append(
-      makeIrsPositionRevalued({
+      makeIrdSwapPositionRevalued({
         asOf,
         entity: ENTITY,
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
-          tradeId: { scheme: "internal", value: tradeIdA },
-          valuationDate: "2026-05-20",
-          fixedLegPv: { currency: "ZAR", amountMinor: 50_500_000_00 },
-          floatingLegPv: { currency: "ZAR", amountMinor: 46_500_000_00 },
-          markToMarket: { currency: "ZAR", amountMinor: 4_000_000_00 }, // latest
-          dv01: { currency: "ZAR", amountMinor: 50_000_00 },
-          remainingTenorDays: 1799,
+          tradeId: tradeIdA,
+          revalDate: "2026-05-20",
+          npvOpeningMinor: 3_000_000_00,
+          npvClosingMinor: 4_000_000_00, // latest
+          npvDeltaMinor: 1_000_000_00,
+          currency: "ZAR",
         },
         eventId: newEventId(),
       }),
     );
     eventStore.append(
-      makeIrsPositionRevalued({
+      makeIrdSwapPositionRevalued({
         asOf,
         entity: ENTITY,
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
-          tradeId: { scheme: "internal", value: tradeIdB },
-          valuationDate: "2026-05-20",
-          fixedLegPv: { currency: "ZAR", amountMinor: 23_000_000_00 },
-          floatingLegPv: { currency: "ZAR", amountMinor: 25_000_000_00 },
-          markToMarket: { currency: "ZAR", amountMinor: 2_000_000_00 },
-          dv01: { currency: "ZAR", amountMinor: 25_000_00 },
-          remainingTenorDays: 1000,
+          tradeId: tradeIdB,
+          revalDate: "2026-05-20",
+          npvOpeningMinor: 0,
+          npvClosingMinor: 2_000_000_00,
+          npvDeltaMinor: 2_000_000_00,
+          currency: "ZAR",
         },
         eventId: newEventId(),
       }),
@@ -963,19 +963,18 @@ describe("SA-CCR v1 — computeAndEmit auto-resolution", () => {
       }),
     );
     eventStore.append(
-      makeIrsPositionRevalued({
+      makeIrdSwapPositionRevalued({
         asOf,
         entity: ENTITY,
         actor: ACTOR,
         citations: CITATIONS,
         payload: {
-          tradeId: { scheme: "internal", value: tradeId },
-          valuationDate: "2026-05-20",
-          fixedLegPv: { currency: "ZAR", amountMinor: 52_000_000_00 },
-          floatingLegPv: { currency: "ZAR", amountMinor: 50_000_000_00 },
-          markToMarket: { currency: "ZAR", amountMinor: 2_500_000_00 },
-          dv01: { currency: "ZAR", amountMinor: 50_000_00 },
-          remainingTenorDays: 1800,
+          tradeId,
+          revalDate: "2026-05-20",
+          npvOpeningMinor: 0,
+          npvClosingMinor: 2_500_000_00,
+          npvDeltaMinor: 2_500_000_00,
+          currency: "ZAR",
         },
         eventId: newEventId(),
       }),

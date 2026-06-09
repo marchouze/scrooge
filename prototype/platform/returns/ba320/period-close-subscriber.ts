@@ -241,7 +241,7 @@ export function ba310PeriodCloseSubscriber(
   const extraPlaceholders: string[] =
     input.irGeneralMaturityLadder === undefined && irsLadderResult.swapsMissingDv01.length > 0
       ? [
-          `[substrate-gap: ${irsLadderResult.swapsMissingDv01.length} live trading-book IRS swap(s) had no dv01ByTenorBucket on their latest revaluation — IR general-risk contribution NOT folded (not fabricated, not dropped). Wire the bucketed-DV01 emitter on IrdSwapPositionRevalued (platform/markets/eod/irs-revaluation.ts emits the markets-CDM IrsPositionRevalued scalar-dv01 family today). Swaps: ${irsLadderResult.swapsMissingDv01.join(", ")}. Authority: WS-BA-RETURNS-P1-SOURCING Phase 3]`,
+          `[substrate-gap: ${irsLadderResult.swapsMissingDv01.length} live trading-book IRS swap(s) had no dv01ByTenorBucket on their latest revaluation — IR general-risk contribution NOT folded (not fabricated, not dropped). The EOD reval engine (platform/markets/eod/irs-revaluation.ts) now emits IrdSwapPositionRevalued with a populated dv01ByTenorBucket (D-IRS-FAMILY-CONVERGE-ACCOUNTING); a swap surfaces here only if it has not yet been revalued on the converged engine. Swaps: ${irsLadderResult.swapsMissingDv01.join(", ")}. Authority: WS-BA-RETURNS-P1-SOURCING Phase 3; D-IRS-FAMILY-CONVERGE-ACCOUNTING]`,
         ]
       : [];
 

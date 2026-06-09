@@ -15,12 +15,14 @@
 // caller-threaded parameters:
 //   - `resolveMtm(nettingSetId, asOf)` walks `IrsTradeBooked` /
 //     `FxTradeExecuted` events for the netting set's counterparty, finds
-//     the latest `IrsPositionRevalued` / `FxPositionRevalued` per trade
+//     the latest `IrdSwapPositionRevalued` / `FxPositionRevalued` per trade
 //     as-of `asOf`, and sums them in the netting-set currency. The MTM
 //     event-type shape comes from Bea's MTM engine slice — the contract
-//     decision (`IrsPositionRevalued.markToMarket`, `FxPositionRevalued
+//     decision (`IrdSwapPositionRevalued.npvClosingMinor`, `FxPositionRevalued
 //     .unrealisedPnlZarMinor`) is attributed to **Bea (Accounting and
-//     financial reporting engineer, engineering)**.
+//     financial reporting engineer, engineering)**. IRS MTM was repointed from
+//     the trade-domain `IrsPositionRevalued.markToMarket` to the accounting
+//     family per D-IRS-FAMILY-CONVERGE-ACCOUNTING.
 //   - `resolveCollateral(nettingSetId, asOf)` queries
 //     `getCollateralInventory()` (Atlas's projection) and sums the
 //     haircut-adjusted ZAR values. v1 does not yet associate inventory
@@ -44,7 +46,7 @@
 //
 // Author: Rohan (Market risk quantitative engineer, engineering).
 // MTM event-type contract: Bea (Accounting and financial reporting
-// engineer, engineering) — see `IrsPositionRevalued` / `FxPositionRevalued`
+// engineer, engineering) — see `IrdSwapPositionRevalued` / `FxPositionRevalued`
 // schemas.
 
 import { getCollateralInventory } from "../../collateral/inventory";
@@ -71,14 +73,14 @@ const DEFAULT_CITATIONS = ["D-CREDIT-LIMIT-ENGINE-BUILD", "Policies/credit-risk-
 
 // ---------------------------------------------------------------------------
 // resolveMtm — auto-resolve the netting set's net MTM by summing the
-// latest IrsPositionRevalued + FxPositionRevalued per trade owned by the
+// latest IrdSwapPositionRevalued + FxPositionRevalued per trade owned by the
 // netting set's counterparty.
 //
 // **MTM event-type contract owned by Bea.** This helper reads from those
-// events; Bea owns the schema, so any change to the markToMarket shape
-// (e.g. signed/unsigned, minor-unit currency tag) must be coordinated
-// via Bea. v1 reads:
-//   - `IrsPositionRevalued.markToMarket` ({ currency, amountMinor })
+// events; Bea owns the schema, so any change to the MTM shape (e.g.
+// signed/unsigned, minor-unit currency tag) must be coordinated via Bea.
+// v1 reads:
+//   - `IrdSwapPositionRevalued.npvClosingMinor` (signed minor units) + `.currency`
 //   - `FxPositionRevalued.unrealisedPnlZarMinor` (ZAR minor units, signed)
 //
 // Caller passes the netting-set currency. Cross-currency trades within
@@ -126,20 +128,22 @@ export function resolveMtm(inputs: NettingSetMtmInputs): Money {
   // Strategy: streaming replay in sequence order; last-write-wins per
   // tradeId. (replay is sequence-ordered which monotonically tracks
   // as_of for revaluations.)
+  // IRS MTM is sourced from the accounting IrdSwapPositionRevalued family — the
+  // single canonical revaluation fact post D-IRS-FAMILY-CONVERGE-ACCOUNTING.
+  // npvClosingMinor is the signed mark-to-market (positive = net asset to bank).
   const latestIrsMtmMinor = new Map<string, bigint>();
-  for (const ev of eventStore.replay({ type: "IrsPositionRevalued", asOf })) {
+  for (const ev of eventStore.replay({ type: "IrdSwapPositionRevalued", asOf })) {
     const payload = ev.payload as {
-      tradeId?: { value?: string } | string;
-      markToMarket?: { currency?: string; amountMinor?: number };
+      tradeId?: string;
+      npvClosingMinor?: number;
+      currency?: string;
     };
-    const tid =
-      typeof payload.tradeId === "string" ? payload.tradeId : (payload.tradeId?.value ?? undefined);
+    const tid = typeof payload.tradeId === "string" ? payload.tradeId : undefined;
     if (!tid || !tradeIds.has(tid)) continue;
-    const mtm = payload.markToMarket;
-    if (!mtm || typeof mtm.amountMinor !== "number") continue;
+    if (typeof payload.npvClosingMinor !== "number") continue;
     // Skip cross-currency trades — netting set is single-currency.
-    if (mtm.currency !== currency) continue;
-    latestIrsMtmMinor.set(tid, BigInt(Math.round(mtm.amountMinor)));
+    if (payload.currency !== currency) continue;
+    latestIrsMtmMinor.set(tid, BigInt(Math.round(payload.npvClosingMinor)));
   }
 
   const latestFxMtmMinor = new Map<string, bigint>();
