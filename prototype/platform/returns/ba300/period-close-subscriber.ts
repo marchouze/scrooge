@@ -19,15 +19,15 @@
 //      held with a `central-bank`-classified custodian (the SARB) is Level-1
 //      (Reg 26(7)(a)(i); BCBS D295 §50(a)). The tier is a query over the
 //      event-sourced Party register, never an authored COA tag.
-//   4. Calls `generateBa110Lcr` with the event store, trial balance, the
+//   4. Calls `generateBa300Lcr` with the event store, trial balance, the
 //      instrument-level `hqlaStock`, and the custodian-derived `cashHqlaLines`.
-//   5. Returns the typed `Ba110Output` for the caller to render / store.
+//   5. Returns the typed `Ba300LcrOutput` for the caller to render / store.
 //
 // ## Principle 1 compliance
 //
 // Cash flows (LCR denominator) are folded directly from
 // `FxSettlementInstructed` and `TradeMatured` events inside
-// `generateBa110Lcr` — not from GL account balances. HQLA stock (numerator)
+// `generateBa300Lcr` — not from GL account balances. HQLA stock (numerator)
 // is instrument-level (SecurityMaster × unified-position) plus the
 // custodian-derived cash residual — both queries over the event log, not
 // stored classification state. This is the Principle 1 compliant architecture
@@ -72,9 +72,9 @@ import {
 } from "../../projections/markets";
 import {
   type AccountLiquidityClassification,
-  BA_110_BANK_ENTITIES,
-  type Ba110Output,
-  generateBa110Lcr,
+  BA_300_LCR_BANK_ENTITIES,
+  type Ba300LcrOutput,
+  generateBa300Lcr,
 } from "../../reporting/ba-300-lcr";
 import {
   type CashHqlaCustodianAccount,
@@ -123,10 +123,10 @@ const CASH_CUSTODIAN_ACCOUNTS: readonly CashHqlaCustodianAccount[] = COA_ACCOUNT
 /**
  * Input to the `AccountingPeriodClosed` → BA 110 subscriber.
  */
-export interface Ba110PeriodCloseSubscriberInput {
+export interface Ba300LcrPeriodCloseSubscriberInput {
   /** The `AccountingPeriodClosed` event payload that triggered the subscriber. */
   readonly closedPayload: AccountingPeriodClosedPayload;
-  /** The entity the period was closed for. Must be in `BA_110_BANK_ENTITIES`. */
+  /** The entity the period was closed for. Must be in `BA_300_LCR_BANK_ENTITIES`. */
   readonly entity: string;
   /**
    * Event store — provides access to:
@@ -157,9 +157,9 @@ export interface Ba110PeriodCloseSubscriberInput {
 /**
  * Result of the `AccountingPeriodClosed` → BA 110 subscriber.
  */
-export interface Ba110PeriodCloseSubscriberResult {
+export interface Ba300LcrPeriodCloseSubscriberResult {
   /** The generated BA 110 projection. Caller renders + stores this. */
-  readonly ba110Output: Ba110Output;
+  readonly ba300LcrOutput: Ba300LcrOutput;
   /** The trial-balance rows used as the cash HQLA base. */
   readonly trialBalanceRows: readonly {
     leafAccountId: string;
@@ -167,7 +167,7 @@ export interface Ba110PeriodCloseSubscriberResult {
     amountMinor: number;
   }[];
   /**
-   * True if the entity was not in `BA_110_BANK_ENTITIES` and the subscriber
+   * True if the entity was not in `BA_300_LCR_BANK_ENTITIES` and the subscriber
    * skipped generation. The caller can route non-bank-entity closes to other
    * subscribers without raising an error.
    */
@@ -216,7 +216,7 @@ function foldPositionProjections(
  *
  * **Principle 1 compliance**: this subscriber does NOT derive cash flows
  * from the trial balance. Cash flows (LCR denominator) are folded directly
- * from settlement events inside `generateBa110Lcr`.
+ * from settlement events inside `generateBa300Lcr`.
  *
  * **HQLA stock**: instrument-level (SecurityMaster × unified-position) plus an
  * additive custodian-derived cash residual. Each cash account's tier is a
@@ -234,16 +234,16 @@ function foldPositionProjections(
  *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 26;
  *   BCBS D295.
  */
-export function ba110PeriodCloseSubscriber(
-  input: Ba110PeriodCloseSubscriberInput,
-): Ba110PeriodCloseSubscriberResult {
+export function ba300LcrPeriodCloseSubscriber(
+  input: Ba300LcrPeriodCloseSubscriberInput,
+): Ba300LcrPeriodCloseSubscriberResult {
   // Guard: only bank-licence entities generate BA 110.
-  if (!BA_110_BANK_ENTITIES.includes(input.entity)) {
+  if (!BA_300_LCR_BANK_ENTITIES.includes(input.entity)) {
     return {
-      ba110Output: null as unknown as Ba110Output,
+      ba300LcrOutput: null as unknown as Ba300LcrOutput,
       trialBalanceRows: [],
       skipped: true,
-      skipReason: `entity '${input.entity}' is not in BA_110_BANK_ENTITIES (${BA_110_BANK_ENTITIES.join(", ")}); BA 110 not generated`,
+      skipReason: `entity '${input.entity}' is not in BA_300_LCR_BANK_ENTITIES (${BA_300_LCR_BANK_ENTITIES.join(", ")}); BA 110 not generated`,
     };
   }
 
@@ -306,7 +306,7 @@ export function ba110PeriodCloseSubscriber(
     functionalCurrency: FUNCTIONAL_CURRENCY,
   });
 
-  const ba110Output = generateBa110Lcr({
+  const ba300LcrOutput = generateBa300Lcr({
     entity: input.entity,
     asOf: periodEnd,
     periodId: input.closedPayload.periodId,
@@ -327,7 +327,7 @@ export function ba110PeriodCloseSubscriber(
   });
 
   return {
-    ba110Output,
+    ba300LcrOutput,
     trialBalanceRows,
     skipped: false,
   };

@@ -1440,12 +1440,12 @@ export function sectorForAccountId(accountId: string): CounterpartySector {
  *
  * Scans all accounts in `COA_ACCOUNTS` for those with an `hqlaLevel` set,
  * and maps them to `AccountLiquidityClassification` entries suitable for
- * passing directly to `generateBa110Lcr` as the `classifications` input.
+ * passing directly to `generateBa300Lcr` as the `classifications` input.
  *
  * This replaces the hard-coded `BUILD_PHASE_DEFAULT_CLASSIFICATIONS` in the
  * render script and makes the BA 110 generator dynamically driven by COA data.
  *
- * Basel III haircut application is handled inside `generateBa110Lcr`; this
+ * Basel III haircut application is handled inside `generateBa300Lcr`; this
  * function only constructs the typed mapping.
  *
  * Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).

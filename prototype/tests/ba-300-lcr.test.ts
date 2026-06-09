@@ -17,9 +17,9 @@
 //   4. Inflow-cap binding — FxSettlementInstructed inflows > 75% of outflows.
 //   5. Net-outflow floor binding — net < 25% of outflows.
 //   6. Provenance passthrough — TrialBalanceSnapshotted.event_id flows
-//      into Ba110Output.meta.trialBalanceSnapshotEventId.
+//      into Ba300LcrOutput.meta.trialBalanceSnapshotEventId.
 //   7. Determinism — same generator output ⇒ byte-identical canonical JSON.
-//   8. Schema validation — rendered output validates against Ba110RenderSchema.
+//   8. Schema validation — rendered output validates against Ba300LcrRenderSchema.
 //   9. Divide-by-zero — zero outflows ⇒ lcrRatio = Infinity, render encodes "infinity".
 //  10. Liquidity-classification semantic entries register with the SemanticRegistry.
 //  11. Deprecated outflow/inflow account entries produce a placeholder warning.
@@ -45,16 +45,16 @@ import { makeFxSettlementInstructed } from "../platform/markets/cdm/fx";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   type AccountLiquidityClassification,
-  BA_110_BANK_ENTITIES,
-  BA_110_SCHEMA_URL,
-  Ba110GeneratorError,
-  Ba110RenderSchema,
+  BA_300_LCR_BANK_ENTITIES,
+  BA_300_LCR_SCHEMA_URL,
+  Ba300LcrGeneratorError,
+  Ba300LcrRenderSchema,
   applyHqlaCaps,
-  canonicaliseBa110,
-  generateBa110Lcr,
-  generateBa110LcrWithEvents,
-  renderBa110Canonical,
-  renderBa110ToJson,
+  canonicaliseBa300Lcr,
+  generateBa300Lcr,
+  generateBa300LcrWithEvents,
+  renderBa300LcrCanonical,
+  renderBa300LcrToJson,
 } from "../platform/reporting";
 import {
   SLICE_1_ENTRIES,
@@ -273,14 +273,14 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — semantic entries register", () => {
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-3 — per-entity isolation", () => {
-  it("BA_110_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_110_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_300_LCR_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_300_LCR_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
     const store = makeStore();
     expect(() =>
-      generateBa110Lcr({
+      generateBa300Lcr({
         entity: ENTITY_SECURITIES,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -291,13 +291,13 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — per-entity isolation", () => {
         trialBalance: [],
         classifications: [],
       }),
-    ).toThrow(Ba110GeneratorError);
+    ).toThrow(Ba300LcrGeneratorError);
   });
 
   it("rejects an invalid functional currency", () => {
     const store = makeStore();
     expect(() =>
-      generateBa110Lcr({
+      generateBa300Lcr({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -492,7 +492,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
       },
     ];
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -534,9 +534,9 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
     expect(out.citations).toContain("Principles/1-events-are-truth.md");
   });
 
-  it("renders to canonical JSON validating against Ba110RenderSchema", () => {
+  it("renders to canonical JSON validating against Ba300LcrRenderSchema", () => {
     const { store, trialBalanceSnapshotEventId, rows } = setupStore();
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -555,11 +555,11 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
       trialBalanceSnapshotEventId,
     });
     const renderedAt = "2026-05-10T15:00:00.000Z";
-    const render = renderBa110ToJson(out, { renderedAt });
+    const render = renderBa300LcrToJson(out, { renderedAt });
 
     // Schema validation passes.
-    expect(() => Ba110RenderSchema.parse(render)).not.toThrow();
-    expect(render.$schema).toBe(BA_110_SCHEMA_URL);
+    expect(() => Ba300LcrRenderSchema.parse(render)).not.toThrow();
+    expect(render.$schema).toBe(BA_300_LCR_SCHEMA_URL);
     expect(render.meta.rendererVersion).toBe("v0.1");
     expect(render.meta.renderedAt).toBe(renderedAt);
   });
@@ -578,10 +578,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
       classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" as const }],
       trialBalanceSnapshotEventId,
     };
-    const a = renderBa110Canonical(generateBa110Lcr(input), {
+    const a = renderBa300LcrCanonical(generateBa300Lcr(input), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
-    const b = renderBa110Canonical(generateBa110Lcr(input), {
+    const b = renderBa300LcrCanonical(generateBa300Lcr(input), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
     expect(a.canonicalJson).toBe(b.canonicalJson);
@@ -590,7 +590,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
 
   it("placeholders array is populated per Q1 (rehearsal-grade)", () => {
     const { store, rows } = setupStore();
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -661,7 +661,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
       outflowMinor: 100_000,
       inflowMinor: 90_000,
     });
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -685,7 +685,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
       outflowMinor: 100_000,
       inflowMinor: 50_000,
     });
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -709,7 +709,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
       outflowMinor: 100_000,
       inflowMinor: 200_000,
     });
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -728,7 +728,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
 
   it("zero outflows ⇒ infinite LCR; render encodes 'infinity'", () => {
     const store = makeStore();
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -741,7 +741,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
     });
     expect(out.lcrRatio).toBe(Number.POSITIVE_INFINITY);
     expect(out.lcrCompliant).toBe(true);
-    const r = renderBa110ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
+    const r = renderBa300LcrToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(r.lcrRatio).toBe("infinity");
     expect(r.lcrPercent).toBe("infinity");
   });
@@ -772,7 +772,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
       }),
     );
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -798,7 +798,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
 describe("D-REPORTING-CAPABILITY-SLICE-3 — canonicaliser determinism", () => {
   it("sorts object keys lexically; identical inputs ⇒ identical bytes", () => {
     const store = makeStore();
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -809,9 +809,9 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — canonicaliser determinism", () => {
       trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 1_000_000 }],
       classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
     });
-    const r1 = renderBa110ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
-    const c1 = canonicaliseBa110(r1);
-    const c2 = canonicaliseBa110(r1);
+    const r1 = renderBa300LcrToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
+    const c1 = canonicaliseBa300Lcr(r1);
+    const c2 = canonicaliseBa300Lcr(r1);
     expect(c1).toBe(c2);
 
     // Top-level keys are sorted ($schema first since `$` < letter codepoints).
@@ -829,7 +829,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — generator boundary errors", () => {
   it("rejects duplicate HQLA classifications for the same account", () => {
     const store = makeStore();
     expect(() =>
-      generateBa110Lcr({
+      generateBa300Lcr({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -849,7 +849,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — generator boundary errors", () => {
   it("rejects out-of-range Level-2B asset-specific factor", () => {
     const store = makeStore();
     expect(() =>
-      generateBa110Lcr({
+      generateBa300Lcr({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -869,7 +869,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — generator boundary errors", () => {
     // Outflow/inflow account entries are now deprecated per P1 fix.
     // Generator should not throw but should surface a placeholder.
     const store = makeStore();
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -979,7 +979,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — equity settlement cash flows", () =
       tradeId: "EQ-OUT-001",
     });
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1007,7 +1007,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — equity settlement cash flows", () =
       tradeId: "FX-ONLY-001",
     });
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1039,7 +1039,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — equity settlement cash flows", () =
       tradeId: "EQ-IN-001",
     });
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1068,7 +1068,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — equity settlement cash flows", () =
       tradeId: "EQ-BREACH-001",
     });
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1098,7 +1098,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)",
   it("completenessClass='empty' — zero HQLA + zero cash-flow events ⇒ lcrRatio renders as 'no-data'", () => {
     // Pre-G1 state: no trial-balance HQLA rows, no settlement events.
     const store = makeStore();
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1118,7 +1118,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)",
     expect(ic.completenessClass).toBe("empty");
 
     // Render: lcrRatio is "no-data", NOT "infinity".
-    const r = renderBa110ToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
+    const r = renderBa300LcrToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
     expect(r.lcrRatio).toBe("no-data");
     expect(r.lcrPercent).toBe("no-data");
     expect(r.dataQualityWarning).toBeUndefined();
@@ -1142,7 +1142,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)",
       tradeId: "TRADE-G3-COMPLETE-IN",
     });
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1163,7 +1163,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)",
     expect(ic.completenessClass).toBe("complete");
 
     // Render: ratio rendered numerically; no dataQualityWarning.
-    const r = renderBa110ToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
+    const r = renderBa300LcrToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
     expect(r.lcrRatio).not.toBe("no-data");
     expect(r.lcrRatio).not.toBe("infinity");
     expect(r.dataQualityWarning).toBeUndefined();
@@ -1188,7 +1188,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)",
       tradeId: "TRADE-G3-PARTIAL-PRIOR",
     });
 
-    const out = generateBa110Lcr({
+    const out = generateBa300Lcr({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1209,7 +1209,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)",
     expect(ic.completenessClass).toBe("partial");
 
     // Render: ratio rendered numerically AND dataQualityWarning set.
-    const r = renderBa110ToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
+    const r = renderBa300LcrToJson(out, { renderedAt: "2026-05-22T15:00:00.000Z" });
     expect(r.lcrRatio).not.toBe("no-data");
     expect(r.lcrRatio).not.toBe("infinity");
     expect(r.dataQualityWarning).toBe(true);
@@ -1219,7 +1219,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — inputCompleteness meta flag (G-3)",
 });
 
 // =====================================================================
-// 10. LCR event emission via generateBa110LcrWithEvents.
+// 10. LCR event emission via generateBa300LcrWithEvents.
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-3 — LCRRatioProjection + HQLACompositionDrift event emission", () => {
@@ -1232,7 +1232,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — LCRRatioProjection + HQLACompositio
       tradeId: "TRADE-EVENT-001",
     });
 
-    const out = await generateBa110LcrWithEvents({
+    const out = await generateBa300LcrWithEvents({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1268,7 +1268,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — LCRRatioProjection + HQLACompositio
       tradeId: "TRADE-BREACH-001",
     });
 
-    const out = await generateBa110LcrWithEvents({
+    const out = await generateBa300LcrWithEvents({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1297,7 +1297,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — LCRRatioProjection + HQLACompositio
     // Post-cap total ≈ 95.5k. Level-1 share ≈ 73% → |73% - 90%| = 17pp > 5pp → drift alert.
     const store = makeStore();
 
-    const out = await generateBa110LcrWithEvents({
+    const out = await generateBa300LcrWithEvents({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",
@@ -1340,7 +1340,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — LCRRatioProjection + HQLACompositio
     // Total ≈ 98.05k; Level-1 share ≈ 88.7% → |88.7% - 90%| = 1.3pp < 5pp → no drift.
     const store = makeStore();
 
-    await generateBa110LcrWithEvents({
+    await generateBa300LcrWithEvents({
       entity: ENTITY_BANK,
       asOf: PERIOD_END,
       periodId: "x",

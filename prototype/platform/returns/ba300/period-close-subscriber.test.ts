@@ -27,7 +27,7 @@ import { newEventId } from "../../core/types";
 import { EventStore } from "../../event-store/store";
 import { makeFxSettlementInstructed } from "../../markets/cdm/fx";
 import { setDefaultProvenanceModeOverride } from "../../projections/filter";
-import { ba110PeriodCloseSubscriber } from "./period-close-subscriber";
+import { ba300LcrPeriodCloseSubscriber } from "./period-close-subscriber";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const ENTITY_SECURITIES = "LE-ZA-HOZ-SECURITIES";
@@ -215,7 +215,7 @@ describe("BA300 period-close subscriber — custodian-derived cash HQLA", () => 
   it("counts SARB cash as Level-1 HQLA when the custodian is classified central-bank", () => {
     const { store, closedPayload } = buildStoreWithPeriod({ seedCentralBank: true });
 
-    const result = ba110PeriodCloseSubscriber({
+    const result = ba300LcrPeriodCloseSubscriber({
       closedPayload,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -225,7 +225,7 @@ describe("BA300 period-close subscriber — custodian-derived cash HQLA", () => 
 
     expect(result.skipped).toBe(false);
     // ACC-1100-001 balance (5,000,000 ZAR), tier derived from the central-bank custodian.
-    expect(result.ba110Output.hqla.level1.stockMinor).toBe(5_000_000);
+    expect(result.ba300LcrOutput.hqla.level1.stockMinor).toBe(5_000_000);
   });
 
   it("drops the cash line when the custodian confers no HQLA status (derived, not authored)", () => {
@@ -234,7 +234,7 @@ describe("BA300 period-close subscriber — custodian-derived cash HQLA", () => 
     // exactly the authored-tag failure mode the custodian derivation removes.
     const { store, closedPayload } = buildStoreWithPeriod({ seedCentralBank: false });
 
-    const result = ba110PeriodCloseSubscriber({
+    const result = ba300LcrPeriodCloseSubscriber({
       closedPayload,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -244,10 +244,10 @@ describe("BA300 period-close subscriber — custodian-derived cash HQLA", () => 
 
     expect(result.skipped).toBe(false);
     // No securities + custodian confers nothing → zero HQLA stock.
-    expect(result.ba110Output.hqla.level1.stockMinor).toBe(0);
-    expect(result.ba110Output.hqla.totalStockHqlaMinor).toBe(0);
+    expect(result.ba300LcrOutput.hqla.level1.stockMinor).toBe(0);
+    expect(result.ba300LcrOutput.hqla.totalStockHqlaMinor).toBe(0);
     // 0 HQLA against a 50,000 outflow → not LCR-compliant.
-    expect(result.ba110Output.lcrCompliant).toBe(false);
+    expect(result.ba300LcrOutput.lcrCompliant).toBe(false);
   });
 });
 
@@ -258,7 +258,7 @@ describe("BA300 period-close subscriber — custodian-derived cash HQLA", () => 
 describe("BA300 period-close subscriber — entity guard", () => {
   it("skips LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
     const store = new EventStore(":memory:");
-    const result = ba110PeriodCloseSubscriber({
+    const result = ba300LcrPeriodCloseSubscriber({
       closedPayload: {
         periodId: "period:hoz-sec:month:2026-05",
         closedAt: "2026-06-01T00:00:00.000Z",
@@ -271,7 +271,7 @@ describe("BA300 period-close subscriber — entity guard", () => {
       periodStart: "2026-05-01T00:00:00.000Z",
     });
     expect(result.skipped).toBe(true);
-    expect(result.skipReason).toContain("not in BA_110_BANK_ENTITIES");
+    expect(result.skipReason).toContain("not in BA_300_LCR_BANK_ENTITIES");
   });
 });
 
@@ -283,7 +283,7 @@ describe("BA300 period-close subscriber — end-to-end", () => {
   it("generates a compliant BA 300 for LE-ZA-HOZ-BANK on period close", () => {
     const { store, closedPayload } = buildStoreWithPeriod({ seedCentralBank: true });
 
-    const result = ba110PeriodCloseSubscriber({
+    const result = ba300LcrPeriodCloseSubscriber({
       closedPayload,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -292,34 +292,34 @@ describe("BA300 period-close subscriber — end-to-end", () => {
     });
 
     expect(result.skipped).toBe(false);
-    expect(result.ba110Output).toBeDefined();
+    expect(result.ba300LcrOutput).toBeDefined();
 
     // Custodian-derived Level-1 cash stock from ACC-1100-001 (5,000,000 ZAR).
-    expect(result.ba110Output.hqla.level1.stockMinor).toBe(5_000_000);
-    expect(result.ba110Output.hqla.totalStockHqlaMinor).toBeGreaterThan(0);
+    expect(result.ba300LcrOutput.hqla.level1.stockMinor).toBe(5_000_000);
+    expect(result.ba300LcrOutput.hqla.totalStockHqlaMinor).toBeGreaterThan(0);
 
     // Cash outflows from FxSettlementInstructed (50,000 ZAR).
-    expect(result.ba110Output.cashFlows.outflows.grossMinor).toBe(50_000);
+    expect(result.ba300LcrOutput.cashFlows.outflows.grossMinor).toBe(50_000);
 
     // LCR = 5,000,000 / 50,000 = 100 → compliant.
-    expect(result.ba110Output.lcrRatio).toBeGreaterThan(1);
-    expect(result.ba110Output.lcrCompliant).toBe(true);
+    expect(result.ba300LcrOutput.lcrRatio).toBeGreaterThan(1);
+    expect(result.ba300LcrOutput.lcrCompliant).toBe(true);
 
     // Provenance chain: trialBalanceSnapshotEventId flows into meta.
-    expect(result.ba110Output.meta.trialBalanceSnapshotEventId).toBe(
+    expect(result.ba300LcrOutput.meta.trialBalanceSnapshotEventId).toBe(
       closedPayload.trialBalanceSnapshotEventId,
     );
 
     // Required cells present and non-NaN.
-    expect(Number.isNaN(result.ba110Output.lcrRatio)).toBe(false);
-    expect(Number.isNaN(result.ba110Output.hqla.totalStockHqlaMinor)).toBe(false);
-    expect(Number.isNaN(result.ba110Output.cashFlows.netCashOutflowsMinor)).toBe(false);
+    expect(Number.isNaN(result.ba300LcrOutput.lcrRatio)).toBe(false);
+    expect(Number.isNaN(result.ba300LcrOutput.hqla.totalStockHqlaMinor)).toBe(false);
+    expect(Number.isNaN(result.ba300LcrOutput.cashFlows.netCashOutflowsMinor)).toBe(false);
   });
 
   it("reads trial-balance rows from TrialBalanceSnapshotted event", () => {
     const { store, closedPayload } = buildStoreWithPeriod({ seedCentralBank: true });
 
-    const result = ba110PeriodCloseSubscriber({
+    const result = ba300LcrPeriodCloseSubscriber({
       closedPayload,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -339,7 +339,7 @@ describe("BA300 period-close subscriber — end-to-end", () => {
   it("placeholders are populated (rehearsal-grade marker)", () => {
     const { store, closedPayload } = buildStoreWithPeriod({ seedCentralBank: true });
 
-    const result = ba110PeriodCloseSubscriber({
+    const result = ba300LcrPeriodCloseSubscriber({
       closedPayload,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -347,7 +347,7 @@ describe("BA300 period-close subscriber — end-to-end", () => {
       periodStart: PERIOD_OPEN.periodStart,
     });
 
-    expect(result.ba110Output.placeholders.length).toBeGreaterThanOrEqual(1);
-    expect(result.ba110Output.placeholders.some((p) => p.includes("[citation: TBC"))).toBe(true);
+    expect(result.ba300LcrOutput.placeholders.length).toBeGreaterThanOrEqual(1);
+    expect(result.ba300LcrOutput.placeholders.some((p) => p.includes("[citation: TBC"))).toBe(true);
   });
 });

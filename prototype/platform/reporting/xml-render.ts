@@ -8,7 +8,7 @@
 //
 // Architectural placement:
 //
-//   PROJECTION                    (pure typed payload — Ba110Output / Ba310Output / Ba300Output)
+//   PROJECTION                    (pure typed payload — Ba300LcrOutput / Ba310Output / Ba300Output)
 //      → JSON RENDER             ── ba-110-render.ts (canonical JSON, hash-store-friendly)
 //      → XML RENDER              ── this module     (canonical XML, XSD-validatable)
 //      → REPORTGENERATED EVENT   (cites both hashes)

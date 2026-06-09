@@ -7,9 +7,9 @@
 // (CEO-approved 2026-05-10), pack §6 Slice 3, Marc's Q5 default
 // (JSON-first; PDF / HTML are a downstream rendering slice).
 //
-// The render layer takes the typed `Ba110Output` from `ba-110-lcr.ts` and
+// The render layer takes the typed `Ba300LcrOutput` from `ba-110-lcr.ts` and
 // produces a JSON document that:
-//   - validates against the declared `Ba110RenderSchema` (Zod);
+//   - validates against the declared `Ba300LcrRenderSchema` (Zod);
 //   - is deterministic (same input → byte-identical bytes);
 //   - is hash-store-friendly (BLAKE3 over the bytes is the
 //     `ReportGenerated` event's `documentHash` per Slice 5);
@@ -18,7 +18,7 @@
 //
 // Architectural placement:
 //
-//   BA 110 PROJECTION (typed Ba110Output)
+//   BA 110 PROJECTION (typed Ba300LcrOutput)
 //      → THIS RENDERER  → Uint8Array of canonical JSON bytes
 //      → RMS DOC STORE (BLAKE3-hashed; PR #142 substrate)
 //      → REPORTGENERATED EVENT (Slice 5; cites the hash + the schema id)
@@ -37,13 +37,13 @@
 
 import { z } from "zod";
 
-import type { Ba110Output } from "./ba-300-lcr";
+import type { Ba300LcrOutput } from "./ba-300-lcr";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
 // ---------------------------------------------------------------------------
 
-const ba110LineItemSchema = z.object({
+const ba300LcrLineItemSchema = z.object({
   lineId: z.string().min(1),
   lineLabel: z.string().min(1),
   amountMinor: z.number().int(),
@@ -53,27 +53,27 @@ const ba110LineItemSchema = z.object({
   note: z.string().optional(),
 });
 
-const ba110HqlaLevelSchema = z.object({
+const ba300LcrHqlaLevelSchema = z.object({
   stockMinor: z.number().int().nonnegative(),
   preCapContributionMinor: z.number().int().nonnegative(),
   contributionMinor: z.number().int().nonnegative(),
   capBindingIndicator: z.boolean(),
-  lineItems: z.array(ba110LineItemSchema),
+  lineItems: z.array(ba300LcrLineItemSchema),
 });
 
-const ba110HqlaLevel1Schema = z.object({
+const ba300LcrHqlaLevel1Schema = z.object({
   stockMinor: z.number().int().nonnegative(),
   contributionMinor: z.number().int().nonnegative(),
-  lineItems: z.array(ba110LineItemSchema),
+  lineItems: z.array(ba300LcrLineItemSchema),
 });
 
 /**
- * G-3 input-completeness meta block (mirrors `Ba110InputCompleteness` from
+ * G-3 input-completeness meta block (mirrors `Ba300LcrInputCompleteness` from
  * the projection layer). Surfaced in the rendered output so downstream
  * consumers (regulator-portal slice, PDF renderer, dashboard, recon) can
  * distinguish "no-data" from "no-stress" and warn on partial-data renders.
  */
-const ba110InputCompletenessSchema = z.object({
+const ba300LcrInputCompletenessSchema = z.object({
   hqlaInputsFound: z.number().int().nonnegative(),
   outflowInputsFound: z.number().int().nonnegative(),
   inflowInputsFound: z.number().int().nonnegative(),
@@ -87,7 +87,7 @@ const ba110InputCompletenessSchema = z.object({
  * (regulator-portal slice, PDF renderer, dashboard pixel-perfect view)
  * validate inputs against this shape.
  */
-export const Ba110RenderSchema = z.object({
+export const Ba300LcrRenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-110/v0.1-rehearsal.json"),
   meta: z.object({
     form: z.literal("BA 300"),
@@ -100,25 +100,25 @@ export const Ba110RenderSchema = z.object({
     rendererVersion: z.literal("v0.1"),
     trialBalanceSnapshotEventId: z.string().min(1).optional(),
     classificationsFingerprint: z.string().min(1),
-    inputCompleteness: ba110InputCompletenessSchema,
+    inputCompleteness: ba300LcrInputCompletenessSchema,
     renderedAt: z.string().min(1),
   }),
   hqla: z.object({
-    level1: ba110HqlaLevel1Schema,
-    level2A: ba110HqlaLevelSchema,
-    level2B: ba110HqlaLevelSchema,
+    level1: ba300LcrHqlaLevel1Schema,
+    level2A: ba300LcrHqlaLevelSchema,
+    level2B: ba300LcrHqlaLevelSchema,
     totalStockHqlaMinor: z.number().int().nonnegative(),
   }),
   cashFlows: z.object({
     outflows: z.object({
       grossMinor: z.number().int().nonnegative(),
-      lineItems: z.array(ba110LineItemSchema),
+      lineItems: z.array(ba300LcrLineItemSchema),
     }),
     inflows: z.object({
       grossMinor: z.number().int().nonnegative(),
       cappedMinor: z.number().int().nonnegative(),
       capBindingIndicator: z.boolean(),
-      lineItems: z.array(ba110LineItemSchema),
+      lineItems: z.array(ba300LcrLineItemSchema),
     }),
     netCashOutflowsMinor: z.number().int().nonnegative(),
     netCashOutflowFloorBindingIndicator: z.boolean(),
@@ -146,16 +146,16 @@ export const Ba110RenderSchema = z.object({
   placeholders: z.array(z.string().min(1)),
 });
 
-export type Ba110Render = z.infer<typeof Ba110RenderSchema>;
+export type Ba300LcrRender = z.infer<typeof Ba300LcrRenderSchema>;
 
-export const BA_110_SCHEMA_URL = "https://hoz.bank/schemas/ba-110/v0.1-rehearsal.json";
-export const BA_110_RENDERER_VERSION = "v0.1" as const;
+export const BA_300_LCR_SCHEMA_URL = "https://hoz.bank/schemas/ba-110/v0.1-rehearsal.json";
+export const BA_300_LCR_RENDERER_VERSION = "v0.1" as const;
 
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
-export interface RenderBa110Options {
+export interface RenderBa300LcrOptions {
   /**
    * ISO-8601 timestamp the render was produced at. Optional — when
    * omitted, the canonical-bytes form omits the field entirely so two
@@ -169,10 +169,13 @@ export interface RenderBa110Options {
 
 /**
  * Render the BA 110 projection to a typed JSON object validated against
- * `Ba110RenderSchema`. Pure function; deterministic for fixed
+ * `Ba300LcrRenderSchema`. Pure function; deterministic for fixed
  * `renderedAt`.
  */
-export function renderBa110ToJson(output: Ba110Output, opts: RenderBa110Options): Ba110Render {
+export function renderBa300LcrToJson(
+  output: Ba300LcrOutput,
+  opts: RenderBa300LcrOptions,
+): Ba300LcrRender {
   // G-3: when the input set is empty (zero HQLA + zero cash-flow events of
   // any kind passed the fold), encode the ratio as `"no-data"` rather than
   // `"infinity"`. `"infinity"` retains its prior meaning — non-empty HQLA
@@ -191,7 +194,7 @@ export function renderBa110ToJson(output: Ba110Output, opts: RenderBa110Options)
     lcrPercent = "infinity";
   }
 
-  const meta: Ba110Render["meta"] = {
+  const meta: Ba300LcrRender["meta"] = {
     form: output.meta.form,
     formVersion: output.meta.formVersion,
     entity: output.meta.entity,
@@ -199,7 +202,7 @@ export function renderBa110ToJson(output: Ba110Output, opts: RenderBa110Options)
     periodId: output.meta.periodId,
     functionalCurrency: output.meta.functionalCurrency,
     generatorVersion: output.meta.generatorVersion,
-    rendererVersion: BA_110_RENDERER_VERSION,
+    rendererVersion: BA_300_LCR_RENDERER_VERSION,
     ...(output.meta.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
       : {}),
@@ -216,7 +219,7 @@ export function renderBa110ToJson(output: Ba110Output, opts: RenderBa110Options)
   };
 
   const candidate = {
-    $schema: BA_110_SCHEMA_URL,
+    $schema: BA_300_LCR_SCHEMA_URL,
     meta,
     hqla: output.hqla,
     cashFlows: output.cashFlows,
@@ -229,7 +232,7 @@ export function renderBa110ToJson(output: Ba110Output, opts: RenderBa110Options)
   };
 
   // Validate at boundary — render contract is the typed, immutable shape.
-  return Ba110RenderSchema.parse(candidate);
+  return Ba300LcrRenderSchema.parse(candidate);
 }
 
 /**
@@ -242,7 +245,7 @@ export function renderBa110ToJson(output: Ba110Output, opts: RenderBa110Options)
  * forensic record; pretty-printed JSON makes diffs reviewable. The doc-
  * store hash is over these bytes.
  */
-export function canonicaliseBa110(render: Ba110Render): string {
+export function canonicaliseBa300Lcr(render: Ba300LcrRender): string {
   return JSON.stringify(sortKeys(render), null, 2);
 }
 
@@ -264,16 +267,16 @@ function sortKeys(value: unknown): unknown {
  * One-shot helper: render + canonicalise. Returns the canonical JSON
  * string (UTF-8 bytes by `new TextEncoder().encode(...)`).
  */
-export function renderBa110Canonical(
-  output: Ba110Output,
-  opts: RenderBa110Options,
+export function renderBa300LcrCanonical(
+  output: Ba300LcrOutput,
+  opts: RenderBa300LcrOptions,
 ): {
-  readonly render: Ba110Render;
+  readonly render: Ba300LcrRender;
   readonly canonicalJson: string;
   readonly canonicalBytes: Uint8Array;
 } {
-  const render = renderBa110ToJson(output, opts);
-  const canonicalJson = canonicaliseBa110(render);
+  const render = renderBa300LcrToJson(output, opts);
+  const canonicalJson = canonicaliseBa300Lcr(render);
   const canonicalBytes = new TextEncoder().encode(canonicalJson);
   return { render, canonicalJson, canonicalBytes };
 }

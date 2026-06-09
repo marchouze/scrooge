@@ -120,7 +120,7 @@ const result = recordDecision(
         note:
           "BA-110's submission cannot be cleanly formId'd: GG 35950 lists BA 110 " +
           "as the daily return (reg 29(3) FX-NOP attestation) while ba-110-lcr.* " +
-          "treats it as LCR, and ba110ToXmlPayload currently emits the retired " +
+          "treats it as LCR, and ba300LcrToXmlPayload currently emits the retired " +
           "formId 'BA325'. This is the open follow-on of " +
           "D-BA-RETURN-FORM-NUMBERING-RECON; BA-110 stays allowlisted until it " +
           "resolves (correct LCR form likely BA 610 family or BA 110 under " +

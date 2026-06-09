@@ -21,8 +21,8 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { generateBa110Lcr } from "../platform/reporting/ba-300-lcr";
-import { ba110ToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
+import { generateBa300Lcr } from "../platform/reporting/ba-300-lcr";
+import { ba300LcrToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
 import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
 import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
 import type { SarbXmlReportPayload } from "../platform/reporting/xml-render";
@@ -43,9 +43,9 @@ function makeStore(): EventStore {
   return new EventStore(":memory:");
 }
 
-function makeValidBa110Payload(): SarbXmlReportPayload {
+function makeValidBa300LcrPayload(): SarbXmlReportPayload {
   const store = makeStore();
-  const output = generateBa110Lcr({
+  const output = generateBa300Lcr({
     entity: ENTITY,
     asOf: AS_OF,
     periodId: PERIOD_ID,
@@ -62,7 +62,7 @@ function makeValidBa110Payload(): SarbXmlReportPayload {
       },
     ],
   });
-  return ba110ToXmlPayload(output);
+  return ba300LcrToXmlPayload(output);
 }
 
 function makeValidBa100Payload(): SarbXmlReportPayload {
@@ -93,14 +93,14 @@ function makeValidBa100Payload(): SarbXmlReportPayload {
 describe("submitToSarbPortal() — valid payloads", () => {
   it("TC-1: returns ok:true for a valid BA 110 payload", async () => {
     const store = makeStore();
-    const payload = makeValidBa110Payload();
+    const payload = makeValidBa300LcrPayload();
     const result = await submitToSarbPortal(payload, store);
     expect(result.ok).toBe(true);
   });
 
   it("TC-2: generates a referenceNumber on success", async () => {
     const store = makeStore();
-    const payload = makeValidBa110Payload();
+    const payload = makeValidBa300LcrPayload();
     const result = await submitToSarbPortal(payload, store);
     expect(result.ok).toBe(true);
     expect(typeof result.referenceNumber).toBe("string");
@@ -109,7 +109,7 @@ describe("submitToSarbPortal() — valid payloads", () => {
 
   it("TC-3: emits a SarbSubmissionAttempted event (success) to the store", async () => {
     const store = makeStore();
-    const payload = makeValidBa110Payload();
+    const payload = makeValidBa300LcrPayload();
     await submitToSarbPortal(payload, store);
 
     const events = [...store.replay({ type: "SarbSubmissionAttempted" })];
@@ -212,7 +212,7 @@ describe("submitToSarbPortal() — invalid payloads", () => {
 
   it("TC-8: mode field in emitted event is 'simulator'", async () => {
     const store = makeStore();
-    const payload = makeValidBa110Payload();
+    const payload = makeValidBa300LcrPayload();
     await submitToSarbPortal(payload, store);
 
     const events = [...store.replay({ type: "SarbSubmissionAttempted" })];

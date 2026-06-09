@@ -144,7 +144,7 @@ import { run as runNoPropAttributionRecon } from "../platform/recon/no-prop-attr
 import { run as runPersonaAttributionCoherenceRecon } from "../platform/recon/persona-attribution-coherence";
 import { run as runPositionRevaluedRecon } from "../platform/recon/position-revalued-cites-mark";
 import type { ReconResult } from "../platform/recon/types";
-import { ba110PeriodCloseSubscriber } from "../platform/returns/ba300/period-close-subscriber";
+import { ba300LcrPeriodCloseSubscriber } from "../platform/returns/ba300/period-close-subscriber";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -160,7 +160,7 @@ const ENTITY = "LE-ZA-HOZ-BANK";
 
 // Entity-identity unified per Atlas + Imani PR (D-PARTY-REGISTER,
 // CEO-approved 2026-05-11; canonical short-id `LE-ZA-HOZ-BANK` maps to
-// `urn:party:legal-entity:hoz-bank`). BA_110_BANK_ENTITIES, fx-revaluation,
+// `urn:party:legal-entity:hoz-bank`). BA_300_LCR_BANK_ENTITIES, fx-revaluation,
 // daily-pnl, and SA-CCR now all reference the same canonical short-id —
 // the trading entity IS the bank-licence entity. Block A below seeds
 // HQLA capital + a settlement outflow to give BA-110 a non-trivial LCR
@@ -1571,7 +1571,7 @@ async function runPhase6(): Promise<PhaseResult> {
   // Block A — BA-110 LCR period-close from synthetic trade
   // -------------------------------------------------------------------------
   //
-  // The ba110PeriodCloseSubscriber (Bea PR #652) accepts the
+  // The ba300LcrPeriodCloseSubscriber (Bea PR #652) accepts the
   // bank-licence entity `LE-ZA-HOZ-BANK`. With the entity-identity
   // unification (Atlas + Imani PR following D-PARTY-REGISTER) the
   // scenario's trading entity IS `LE-ZA-HOZ-BANK` — fx-revaluation,
@@ -1713,7 +1713,7 @@ async function runPhase6(): Promise<PhaseResult> {
     );
 
     // Run the BA-110 subscriber.
-    const ba110Result = ba110PeriodCloseSubscriber({
+    const ba300LcrResult = ba300LcrPeriodCloseSubscriber({
       closedPayload: {
         periodId,
         closedAt: periodClosedAt,
@@ -1730,8 +1730,8 @@ async function runPhase6(): Promise<PhaseResult> {
 
     r.assert(
       "Block A — BA-110 subscriber (Bea PR #652) ran for LE-ZA-HOZ-BANK without skip",
-      ba110Result.skipped === false,
-      `skipped=${ba110Result.skipped}; reason=${ba110Result.skipReason ?? "n/a"}`,
+      ba300LcrResult.skipped === false,
+      `skipped=${ba300LcrResult.skipped}; reason=${ba300LcrResult.skipReason ?? "n/a"}`,
     );
     // HQLA Level-1 stock = initial SARB-cash capital (ZAR 100m) net of
     // the trade-settlement ZAR outflow (~ZAR 9.262m, USD_500K_MINOR ×
@@ -1744,31 +1744,32 @@ async function runPhase6(): Promise<PhaseResult> {
       100_000_000_00 - Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR);
     r.assert(
       `Block A — BA-110 HQLA Level-1 stock = ZAR ${(expectedLevel1StockMinor / 100).toLocaleString("en-ZA")} (initial SARB-cash capital net of trade-settlement outflow)`,
-      ba110Result.ba110Output.hqla.level1.stockMinor === expectedLevel1StockMinor,
-      `level1.stockMinor=${ba110Result.ba110Output.hqla.level1.stockMinor}; expected=${expectedLevel1StockMinor}`,
+      ba300LcrResult.ba300LcrOutput.hqla.level1.stockMinor === expectedLevel1StockMinor,
+      `level1.stockMinor=${ba300LcrResult.ba300LcrOutput.hqla.level1.stockMinor}; expected=${expectedLevel1StockMinor}`,
     );
     r.assert(
       "Block A — BA-110 total HQLA stock > 0",
-      ba110Result.ba110Output.hqla.totalStockHqlaMinor > 0,
-      `totalStockHqlaMinor=${ba110Result.ba110Output.hqla.totalStockHqlaMinor}`,
+      ba300LcrResult.ba300LcrOutput.hqla.totalStockHqlaMinor > 0,
+      `totalStockHqlaMinor=${ba300LcrResult.ba300LcrOutput.hqla.totalStockHqlaMinor}`,
     );
     r.assert(
       "Block A — BA-110 cash outflows include the mirrored ZAR settlement leg",
-      ba110Result.ba110Output.cashFlows.outflows.grossMinor >=
+      ba300LcrResult.ba300LcrOutput.cashFlows.outflows.grossMinor >=
         Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR),
-      `outflows.grossMinor=${ba110Result.ba110Output.cashFlows.outflows.grossMinor}; ` +
+      `outflows.grossMinor=${ba300LcrResult.ba300LcrOutput.cashFlows.outflows.grossMinor}; ` +
         `expected≥${Math.round(USD_500K_MINOR * SPOT_RATE_USD_ZAR)}`,
     );
     r.assert(
       "Block A — BA-110 LCR ratio is compliant (ratio > 1)",
-      ba110Result.ba110Output.lcrRatio > 1 && ba110Result.ba110Output.lcrCompliant === true,
-      `lcrRatio=${ba110Result.ba110Output.lcrRatio}; lcrCompliant=${ba110Result.ba110Output.lcrCompliant}`,
+      ba300LcrResult.ba300LcrOutput.lcrRatio > 1 &&
+        ba300LcrResult.ba300LcrOutput.lcrCompliant === true,
+      `lcrRatio=${ba300LcrResult.ba300LcrOutput.lcrRatio}; lcrCompliant=${ba300LcrResult.ba300LcrOutput.lcrCompliant}`,
     );
     r.assert(
       "Block A — BA-110 trialBalanceSnapshotEventId chains to TB snapshot",
-      ba110Result.ba110Output.meta.trialBalanceSnapshotEventId ===
+      ba300LcrResult.ba300LcrOutput.meta.trialBalanceSnapshotEventId ===
         closeResult.trialBalanceSnapshotEvent.event_id,
-      `meta.tbId=${ba110Result.ba110Output.meta.trialBalanceSnapshotEventId} vs close.tbId=${closeResult.trialBalanceSnapshotEvent.event_id}`,
+      `meta.tbId=${ba300LcrResult.ba300LcrOutput.meta.trialBalanceSnapshotEventId} vs close.tbId=${closeResult.trialBalanceSnapshotEvent.event_id}`,
     );
   } catch (err) {
     r.assert("Block A — BA-110 LCR period-close evaluated", false, String(err));

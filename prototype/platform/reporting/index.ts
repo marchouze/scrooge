@@ -13,17 +13,17 @@
 
 export {
   type AccountLiquidityClassification,
-  type Ba110CashFlowSection,
-  type Ba110GeneratorInput,
-  Ba110GeneratorError,
-  type Ba110HqlaSection,
-  type Ba110LineItem,
-  type Ba110LcrOpts,
-  type Ba110Output,
-  BA_110_BANK_ENTITIES,
+  type Ba300LcrCashFlowSection,
+  type Ba300LcrGeneratorInput,
+  Ba300LcrGeneratorError,
+  type Ba300LcrHqlaSection,
+  type Ba300LcrLineItem,
+  type Ba300LcrOpts,
+  type Ba300LcrOutput,
+  BA_300_LCR_BANK_ENTITIES,
   applyHqlaCaps,
-  generateBa110Lcr,
-  generateBa110LcrWithEvents,
+  generateBa300Lcr,
+  generateBa300LcrWithEvents,
   type HqlaLevel,
 } from "./ba-300-lcr";
 
@@ -43,14 +43,14 @@ export {
 } from "./ba-300-nsfr";
 
 export {
-  Ba110RenderSchema,
-  type Ba110Render,
-  BA_110_SCHEMA_URL,
-  BA_110_RENDERER_VERSION,
-  canonicaliseBa110,
-  renderBa110Canonical,
-  renderBa110ToJson,
-  type RenderBa110Options,
+  Ba300LcrRenderSchema,
+  type Ba300LcrRender,
+  BA_300_LCR_SCHEMA_URL,
+  BA_300_LCR_RENDERER_VERSION,
+  canonicaliseBa300Lcr,
+  renderBa300LcrCanonical,
+  renderBa300LcrToJson,
+  type RenderBa300LcrOptions,
 } from "./ba-300-lcr-render";
 
 // ---------------------------------------------------------------------------
@@ -298,10 +298,10 @@ export {
 } from "./ba-400-xml-adapter";
 
 export {
-  BA_110_NAMESPACE,
-  BA_110_REQUIRED_ELEMENTS,
-  BA_110_XSD_URI,
-  ba110ToXmlPayload,
+  BA_300_LCR_NAMESPACE,
+  BA_300_LCR_REQUIRED_ELEMENTS,
+  BA_300_LCR_XSD_URI,
+  ba300LcrToXmlPayload,
 } from "./ba-300-lcr-xml-adapter";
 
 export {

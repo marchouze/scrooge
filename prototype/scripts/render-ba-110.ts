@@ -65,9 +65,9 @@ import {
 } from "../platform/projections/markets";
 import {
   type AccountLiquidityClassification,
-  type Ba110GeneratorInput,
-  generateBa110Lcr,
-  renderBa110Canonical,
+  type Ba300LcrGeneratorInput,
+  generateBa300Lcr,
+  renderBa300LcrCanonical,
 } from "../platform/reporting";
 import {
   type CashHqlaCustodianAccount,
@@ -91,7 +91,7 @@ import {
 //   - ACC-3100-002: Bond Asset — Trading Book (FVTPL) → level-1
 //
 // Basel III haircuts (level-2a: 85%, level-2b: 75%) are applied inside
-// generateBa110Lcr; this mapping simply identifies which accounts are HQLA.
+// generateBa300Lcr; this mapping simply identifies which accounts are HQLA.
 // ---------------------------------------------------------------------------
 
 const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly AccountLiquidityClassification[] =
@@ -161,7 +161,7 @@ function loadClassifications(path: string): readonly AccountLiquidityClassificat
 // ---------------------------------------------------------------------------
 
 interface TrialBalanceResolution {
-  readonly rows: Ba110GeneratorInput["trialBalance"];
+  readonly rows: Ba300LcrGeneratorInput["trialBalance"];
   readonly trialBalanceSnapshotEventId?: string;
 }
 
@@ -175,7 +175,7 @@ function resolveTrialBalance(args: CliArgs): TrialBalanceResolution {
   for (let i = chain.length - 1; i >= 0; i--) {
     const e = chain[i];
     if (e && e.type === "TrialBalanceSnapshotted") {
-      const p = e.payload as { rows: Ba110GeneratorInput["trialBalance"] };
+      const p = e.payload as { rows: Ba300LcrGeneratorInput["trialBalance"] };
       return { rows: p.rows, trialBalanceSnapshotEventId: e.event_id };
     }
   }
@@ -273,7 +273,7 @@ function main(argv: readonly string[]): number {
 
   // P1-compliant: pass the event store + period window so cash flows are
   // folded from FxSettlementInstructed / TradeMatured events.
-  const output = generateBa110Lcr({
+  const output = generateBa300Lcr({
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,
@@ -291,7 +291,7 @@ function main(argv: readonly string[]): number {
       ? { trialBalanceSnapshotEventId: tb.trialBalanceSnapshotEventId }
       : {}),
   });
-  const { canonicalJson } = renderBa110Canonical(output, {
+  const { canonicalJson } = renderBa300LcrCanonical(output, {
     renderedAt: new Date().toISOString(),
   });
   if (args.outPath) {

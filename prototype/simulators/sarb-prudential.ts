@@ -158,7 +158,7 @@ function validatePayload(
  * Principle 1: every submission attempt (success or failure) is recorded as
  * a typed event in the shared event store.
  *
- * @param payload - The typed XML report payload from `ba110ToXmlPayload()` /
+ * @param payload - The typed XML report payload from `ba300LcrToXmlPayload()` /
  *   `ba100ToXmlPayload()` (or any other adapter).
  * @param store - The shared event store (receives the `SarbSubmissionAttempted` event).
  * @returns A `SarbSubmissionResult` with `ok`, optional `referenceNumber` /

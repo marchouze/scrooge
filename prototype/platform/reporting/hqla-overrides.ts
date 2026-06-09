@@ -25,7 +25,7 @@
 //       hold no identifiable instrument (e.g. cash / SARB operational balances).
 //
 //   This module provides the utility function that builds the override map.
-//   The caller (generateBa110Lcr) receives the map via `opts.hqlaOverrides`
+//   The caller (generateBa300Lcr) receives the map via `opts.hqlaOverrides`
 //   and resolves the per-account tier at computation time.
 //
 //   The COA fallback is explicitly preserved: accounts with no ISIN or whose

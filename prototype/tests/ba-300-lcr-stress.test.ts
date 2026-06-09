@@ -17,7 +17,7 @@
 //   ST-6:  Inflow 75%-cap binding
 //   ST-7:  Net-outflow floor binding (negative net outflows clamped to floor)
 //   ST-8:  Zero trial balance (empty arrays) — all amounts 0, lcrRatio = Infinity
-//   ST-9:  ba110ToXmlPayload() round-trip — structural key check
+//   ST-9:  ba300LcrToXmlPayload() round-trip — structural key check
 //
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10).
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
@@ -27,11 +27,11 @@ import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
 import {
-  type Ba110GeneratorInput,
+  type Ba300LcrGeneratorInput,
   applyHqlaCaps,
-  generateBa110Lcr,
+  generateBa300Lcr,
 } from "../platform/reporting/ba-300-lcr";
-import { ba110ToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
+import { ba300LcrToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -49,7 +49,7 @@ function makeEmptyStore(): EventStore {
 }
 
 /** Minimal valid generator input with no HQLA accounts and an empty event store. */
-function baseInput(overrides?: Partial<Ba110GeneratorInput>): Ba110GeneratorInput {
+function baseInput(overrides?: Partial<Ba300LcrGeneratorInput>): Ba300LcrGeneratorInput {
   return {
     entity: ENTITY,
     asOf: AS_OF,
@@ -79,7 +79,7 @@ function baseInput(overrides?: Partial<Ba110GeneratorInput>): Ba110GeneratorInpu
 // lcrRatio that comes out of the generator.  When no outflows exist the
 // generator returns Infinity.  The true LCR = 0 scenario requires the
 // numerator to be 0 AND the denominator to be > 0.  We can directly
-// verify via the Ba110Output interface: set totalStockHqlaMinor = 0 via
+// verify via the Ba300LcrOutput interface: set totalStockHqlaMinor = 0 via
 // an empty trial balance and verify ratio + compliance. Because no
 // settlement events are in the store, netCashOutflows = 0 as well, so
 // LCR = Infinity. To test LCR = 0 we verify via the pure cap helper +
@@ -111,7 +111,7 @@ describe("BA 300 stress — ST-1: LCR = 0 scenario", () => {
   it("generator with empty HQLA + empty event store yields lcrRatio = Infinity (no outflows)", () => {
     // Documents that with zero HQLA AND zero outflows the generator yields
     // Infinity per BCBS D295 §22 (no stress to cover).
-    const output = generateBa110Lcr(baseInput());
+    const output = generateBa300Lcr(baseInput());
     expect(output.hqla.totalStockHqlaMinor).toBe(0);
     expect(output.cashFlows.netCashOutflowsMinor).toBe(0);
     expect(output.lcrRatio).toBe(Number.POSITIVE_INFINITY);
@@ -126,7 +126,7 @@ describe("BA 300 stress — ST-1: LCR = 0 scenario", () => {
 
 describe("BA 300 stress — ST-2: LCR = Infinity (zero denominator)", () => {
   it("positive HQLA stock + zero net outflows → lcrRatio = Infinity, lcrCompliant = true", () => {
-    const output = generateBa110Lcr(
+    const output = generateBa300Lcr(
       baseInput({
         trialBalance: [
           { leafAccountId: "ACC-L1-HQLA", currency: "ZAR", amountMinor: 50_000_000_00 },
@@ -201,7 +201,7 @@ describe("BA 300 stress — ST-4: Level-2A cap binding", () => {
 
   it("generator: Level-2A cap binding flag appears in hqla section", () => {
     // Build a trial balance where L2A dominates (level-1 is tiny).
-    const output = generateBa110Lcr(
+    const output = generateBa300Lcr(
       baseInput({
         trialBalance: [
           { leafAccountId: "ACC-L1", currency: "ZAR", amountMinor: 100_00 }, // tiny Level-1
@@ -257,7 +257,7 @@ describe("BA 300 stress — ST-5: Level-2B cap binding", () => {
 
   it("generator: Level-2B cap binding flag appears in hqla section", () => {
     // Build a fixture where L2B dominates (with small L1, no L2A).
-    const output = generateBa110Lcr(
+    const output = generateBa300Lcr(
       baseInput({
         trialBalance: [
           { leafAccountId: "ACC-L1", currency: "ZAR", amountMinor: 100_00 }, // tiny Level-1
@@ -326,7 +326,7 @@ describe("BA 300 stress — ST-6: Inflow 75%-cap binding", () => {
 
   it("generator cashFlows section exposes capBindingIndicator and cappedMinor", () => {
     // With empty event store, gross inflows and outflows are 0 — cap is not binding.
-    const output = generateBa110Lcr(baseInput());
+    const output = generateBa300Lcr(baseInput());
     expect(output.cashFlows.inflows.capBindingIndicator).toBe(false);
     expect(output.cashFlows.inflows.cappedMinor).toBe(0);
     expect(output.cashFlows.inflows.grossMinor).toBe(0);
@@ -385,7 +385,7 @@ describe("BA 300 stress — ST-7: Net-outflow floor binding", () => {
     // capped inflows > 75 (not possible per min logic). Actually impossible in practice.
     // The floor-binding path is exercised by the generator's own Math.max logic;
     // we verify the indicator field exists and is boolean.
-    const output = generateBa110Lcr(baseInput());
+    const output = generateBa300Lcr(baseInput());
     expect(typeof output.cashFlows.netCashOutflowFloorBindingIndicator).toBe("boolean");
   });
 
@@ -415,7 +415,7 @@ describe("BA 300 stress — ST-7: Net-outflow floor binding", () => {
 
 describe("BA 300 stress — ST-8: Zero trial balance (empty arrays)", () => {
   it("empty trial balance and empty classifications → totalStockHqlaMinor = 0", () => {
-    const output = generateBa110Lcr(baseInput());
+    const output = generateBa300Lcr(baseInput());
     expect(output.hqla.totalStockHqlaMinor).toBe(0);
     expect(output.hqla.level1.stockMinor).toBe(0);
     expect(output.hqla.level2A.stockMinor).toBe(0);
@@ -423,7 +423,7 @@ describe("BA 300 stress — ST-8: Zero trial balance (empty arrays)", () => {
   });
 
   it("empty trial balance → all cash-flow amounts 0", () => {
-    const output = generateBa110Lcr(baseInput());
+    const output = generateBa300Lcr(baseInput());
     expect(output.cashFlows.outflows.grossMinor).toBe(0);
     expect(output.cashFlows.inflows.grossMinor).toBe(0);
     expect(output.cashFlows.netCashOutflowsMinor).toBe(0);
@@ -431,13 +431,13 @@ describe("BA 300 stress — ST-8: Zero trial balance (empty arrays)", () => {
 
   it("empty trial balance + empty event store → lcrRatio = Infinity", () => {
     // Per BCBS D295 §22: no outflows = no stress. Infinite ratio is compliant.
-    const output = generateBa110Lcr(baseInput());
+    const output = generateBa300Lcr(baseInput());
     expect(output.lcrRatio).toBe(Number.POSITIVE_INFINITY);
     expect(output.lcrCompliant).toBe(true);
   });
 
   it("empty trial balance → inputCompleteness.completenessClass = 'empty'", () => {
-    const output = generateBa110Lcr(baseInput());
+    const output = generateBa300Lcr(baseInput());
     expect(output.meta.inputCompleteness.completenessClass).toBe("empty");
     expect(output.meta.inputCompleteness.hqlaInputsFound).toBe(0);
     expect(output.meta.inputCompleteness.outflowInputsFound).toBe(0);
@@ -446,19 +446,19 @@ describe("BA 300 stress — ST-8: Zero trial balance (empty arrays)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// ST-9: ba110ToXmlPayload() round-trip — structural key check
+// ST-9: ba300LcrToXmlPayload() round-trip — structural key check
 // ---------------------------------------------------------------------------
 
-describe("BA 300 stress — ST-9: ba110ToXmlPayload() round-trip", () => {
+describe("BA 300 stress — ST-9: ba300LcrToXmlPayload() round-trip", () => {
   it("formId = 'BA300'", () => {
-    const output = generateBa110Lcr(baseInput());
-    const payload = ba110ToXmlPayload(output);
+    const output = generateBa300Lcr(baseInput());
+    const payload = ba300LcrToXmlPayload(output);
     expect(payload.formId).toBe("BA300");
   });
 
   it("body has required top-level keys: Meta, Hqla, CashFlows, LcrRatio, LcrCompliant", () => {
-    const output = generateBa110Lcr(baseInput());
-    const payload = ba110ToXmlPayload(output);
+    const output = generateBa300Lcr(baseInput());
+    const payload = ba300LcrToXmlPayload(output);
     expect(payload.body).toBeDefined();
     const body = payload.body as Record<string, unknown>;
     expect("Meta" in body).toBe(true);
@@ -469,28 +469,28 @@ describe("BA 300 stress — ST-9: ba110ToXmlPayload() round-trip", () => {
   });
 
   it("LcrRatio = 'Infinity' when lcrRatio is Infinity (zero outflows)", () => {
-    const output = generateBa110Lcr(baseInput());
-    const payload = ba110ToXmlPayload(output);
+    const output = generateBa300Lcr(baseInput());
+    const payload = ba300LcrToXmlPayload(output);
     // Empty input → lcrRatio = Infinity → XML maps to the string "Infinity".
     expect(payload.body.LcrRatio).toBe("Infinity");
   });
 
   it("LcrCompliant = true when lcrRatio = Infinity", () => {
-    const output = generateBa110Lcr(baseInput());
-    const payload = ba110ToXmlPayload(output);
+    const output = generateBa300Lcr(baseInput());
+    const payload = ba300LcrToXmlPayload(output);
     expect(payload.body.LcrCompliant).toBe(true);
   });
 
   it("body.Meta.Entity echoes the entity from the generator input", () => {
-    const output = generateBa110Lcr(baseInput());
-    const payload = ba110ToXmlPayload(output);
+    const output = generateBa300Lcr(baseInput());
+    const payload = ba300LcrToXmlPayload(output);
     const meta = payload.body.Meta as Record<string, unknown>;
     expect(meta.Entity).toBe(ENTITY);
   });
 
   it("body.Hqla.TotalStockHqlaMinor = 0 for empty trial balance", () => {
-    const output = generateBa110Lcr(baseInput());
-    const payload = ba110ToXmlPayload(output);
+    const output = generateBa300Lcr(baseInput());
+    const payload = ba300LcrToXmlPayload(output);
     const hqla = payload.body.Hqla as Record<string, unknown>;
     expect(hqla.TotalStockHqlaMinor).toBe(0);
   });

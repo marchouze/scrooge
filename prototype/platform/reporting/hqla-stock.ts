@@ -91,8 +91,8 @@ export interface HqlaStockLine {
  * Input to `computeHqlaStockFromPositions()`.
  *
  * Pass the folded state of the unified-position and security-master projections.
- * This interface is also the type consumed by `generateBa110Lcr()` as
- * `Ba110GeneratorInput.hqlaStock`.
+ * This interface is also the type consumed by `generateBa300Lcr()` as
+ * `Ba300LcrGeneratorInput.hqlaStock`.
  *
  * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D295; Reg 26(7).
  */
@@ -133,7 +133,7 @@ export interface HqlaStockInput {
  * The computed HQLA stock broken down by tier.
  *
  * Note: caps (BCBS D295 §47 — 40% Level-2A cap, 15% Level-2B cap) are NOT
- * applied here. The caps are applied inside `generateBa110Lcr()` via the
+ * applied here. The caps are applied inside `generateBa300Lcr()` via the
  * existing `applyHqlaCaps()` function, which operates on the pre-cap tier
  * totals. This separation keeps the instrument-level computation and the
  * regulatory cap arithmetic independently testable.

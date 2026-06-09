@@ -69,7 +69,7 @@ import {
   type AccountCapitalClassification,
   type AccountLiquidityClassification,
   type Ba100Output,
-  type Ba110Output,
+  type Ba300LcrOutput,
   type Ba300Output,
   type Ba310Output,
   type OpRiskGrossIncomeRow,
@@ -79,11 +79,11 @@ import {
   ba310ToXmlPayload,
   generateBa100Capital,
   generateBa100CapitalFromEvents,
-  generateBa110Lcr,
+  generateBa300Lcr,
   generateBa300OpRisk,
   generateBa310MarketRisk,
   renderBa100Canonical,
-  renderBa110Canonical,
+  renderBa300LcrCanonical,
   renderSarbXml,
 } from "@platform/reporting";
 
@@ -166,7 +166,7 @@ export interface PhaseDInputs {
 //   outflows.
 // ---------------------------------------------------------------------------
 
-export const BA_110_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassification[] = [
+export const BA_300_LCR_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassification[] = [
   // USD nostro (asset side) — fixture HQLA Level-1 (real classification:
   // correspondent-bank deposit, not Level-1; rehearsal placeholder).
   {
@@ -289,7 +289,7 @@ export const BA_300_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
 // ---------------------------------------------------------------------------
 
 export interface PhaseDGenerated {
-  readonly ba110: Ba110Output;
+  readonly ba110: Ba300LcrOutput;
   readonly ba100: Ba100Output;
   readonly ba310: Ba310Output;
   readonly ba300: Ba300Output;
@@ -299,7 +299,7 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
   // P1-compliant: cash flows folded from FxSettlement events in the event
   // store; trial balance used for HQLA stock only.
   // Citation: Principles/1-events-are-truth.md (updated 2026-05-12).
-  const ba110 = generateBa110Lcr({
+  const ba110 = generateBa300Lcr({
     entity: inputs.entity,
     asOf: inputs.asOf,
     periodId: inputs.periodId,
@@ -308,7 +308,7 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
     periodStart: inputs.periodStart,
     periodEnd: inputs.periodEnd,
     trialBalance: inputs.trialBalance,
-    classifications: BA_110_FIXTURE_CLASSIFICATIONS,
+    classifications: BA_300_LCR_FIXTURE_CLASSIFICATIONS,
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
       : {}),
@@ -388,7 +388,7 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
 // ---------------------------------------------------------------------------
 
 export interface PhaseDRendered {
-  readonly ba110Json: string;
+  readonly ba300LcrJson: string;
   readonly ba100Json: string;
   readonly ba310Json: string;
   readonly ba310Xml: string;
@@ -398,7 +398,7 @@ export interface PhaseDRendered {
 
 export function renderPhaseDReports(generated: PhaseDGenerated): PhaseDRendered {
   // BA 110 + BA 100 have typed canonical-JSON renderers (Slice 3+4).
-  const ba110 = renderBa110Canonical(generated.ba110, { renderedAt: PHASE_D_RENDERED_AT });
+  const ba110 = renderBa300LcrCanonical(generated.ba110, { renderedAt: PHASE_D_RENDERED_AT });
   const ba100 = renderBa100Canonical(generated.ba100, { renderedAt: PHASE_D_RENDERED_AT });
 
   // BA 310 + BA 300 ship XML adapters (Slice 5). For JSON we serialise the
@@ -413,7 +413,7 @@ export function renderPhaseDReports(generated: PhaseDGenerated): PhaseDRendered 
   const ba300Xml = renderSarbXml(ba300XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
 
   return {
-    ba110Json: ba110.canonicalJson,
+    ba300LcrJson: ba110.canonicalJson,
     ba100Json: ba100.canonicalJson,
     ba310Json,
     ba310Xml,
@@ -558,7 +558,7 @@ export function runPhaseD(args: {
 function canonicalForForm(form: PhaseDForm, rendered: PhaseDRendered): string {
   switch (form) {
     case "ba-300":
-      return rendered.ba110Json; // LCR (canonical BA 300)
+      return rendered.ba300LcrJson; // LCR (canonical BA 300)
     case "ba-700":
       return rendered.ba100Json; // capital adequacy (canonical BA 700)
     case "ba-320":
