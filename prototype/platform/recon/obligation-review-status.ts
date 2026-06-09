@@ -32,6 +32,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { eventStore as defaultEventStore } from "../composition";
+import type { ObligationAdoptedPayload } from "../event-store/event-types/obligation-lifecycle";
+import type { ObligationReviewCompletedPayload } from "../event-store/event-types/obligation-review";
+import type { EventStore } from "../event-store/store";
+import { reviewUrnForObligation } from "../obligations/review-urn";
 import { logger } from "../observability/logger";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -181,8 +186,29 @@ export interface ReviewQueueSummary {
   }>;
 }
 
+/**
+ * Per-domain "summary authored?" coverage, folded from `ObligationReviewCompleted`
+ * events against the adopted obligation set (D-OBLIGATIONS-REGISTER-CLEANUP P4).
+ * An obligation counts as summary-authored when a review event with status
+ * `reviewed-confirmed` / `reviewed-modified` (or `reviewed-retired`) exists for
+ * its review-urn. Mira authors summaries batched by domain; this tile shows the
+ * batch landing (Domain A first, in the pilot).
+ */
+export interface DomainSummaryCoverage {
+  readonly domain: string;
+  readonly adopted: number;
+  readonly reviewed: number;
+  readonly confirmed: number;
+  readonly modified: number;
+  readonly retired: number;
+  /** reviewed / adopted as a 0..1 fraction (1 = full coverage). */
+  readonly coverage: number;
+}
+
 export interface ObligationReviewStatusResult extends ReconResult {
   readonly summary: ReviewQueueSummary;
+  /** Per-domain authored-summary coverage, A..J first then any extras. */
+  readonly summaryCoverage: ReadonlyArray<DomainSummaryCoverage>;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +219,113 @@ export interface ObligationReviewStatusRunOpts {
   readonly obligationsOverride?: string;
   /** Wall-clock override for testing. */
   readonly asOfOverride?: Date;
+  /** Injectable event store (defaults to the shared composition store). */
+  readonly eventStore?: EventStore;
+}
+
+// ---------------------------------------------------------------------------
+// Authored-summary coverage (D-OBLIGATIONS-REGISTER-CLEANUP P4) — folds
+// ObligationReviewCompleted against the adopted obligation set, per domain.
+// ---------------------------------------------------------------------------
+
+const REVIEWED_REVIEW_STATUSES = new Set<string>([
+  "reviewed-confirmed",
+  "reviewed-modified",
+  "reviewed-retired",
+]);
+
+/** Map an adopted obligation to its coverage domain. The canonical
+ *  `ObligationAdopted.domain` is authoritative; the graph-imported BCBS
+ *  prudential chapters carry a long-form prudential domain ("Credit Risk",
+ *  "Liquidity", …) and are mapped into Domain "A" to match the P4 authoring
+ *  scope (Prudential). Single-letter domains pass through unchanged. */
+const BCBS_PRUDENTIAL_RE = /^BCBS-(CRE|DIS|LEX|LEV|LCR|NSF|MAR)/;
+function coverageDomainOf(p: ObligationAdoptedPayload): string {
+  if (BCBS_PRUDENTIAL_RE.test(p.obligationId)) return "A";
+  const d = (p.domain ?? "").trim();
+  return d.length > 0 ? d : "Z";
+}
+
+/** Latest ObligationAdopted payload per id, folded by as_of (ties: replay order). */
+function latestAdoptedById(store: EventStore): Map<string, ObligationAdoptedPayload> {
+  const events = [...store.replay({ type: "ObligationAdopted" })].sort((a, b) =>
+    a.as_of < b.as_of ? -1 : a.as_of > b.as_of ? 1 : 0,
+  );
+  const byId = new Map<string, ObligationAdoptedPayload>();
+  for (const ev of events) {
+    const p = ev.payload as ObligationAdoptedPayload;
+    if (p.obligationId) byId.set(p.obligationId, p);
+  }
+  return byId;
+}
+
+/** Latest ObligationReviewCompleted status per review-urn, folded by as_of. */
+function latestReviewStatusByUrn(store: EventStore): Map<string, string> {
+  const events = [...store.replay({ type: "ObligationReviewCompleted" })].sort((a, b) =>
+    a.as_of < b.as_of ? -1 : a.as_of > b.as_of ? 1 : 0,
+  );
+  const byUrn = new Map<string, string>();
+  for (const ev of events) {
+    const p = ev.payload as ObligationReviewCompletedPayload;
+    if (p.obligationUrn) byUrn.set(p.obligationUrn, p.newStatus);
+  }
+  return byUrn;
+}
+
+const DOMAIN_ORDER = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+
+/** Per-domain authored-summary coverage from the event store. */
+export function computeSummaryCoverage(store: EventStore): DomainSummaryCoverage[] {
+  const adopted = latestAdoptedById(store);
+  const reviewStatusByUrn = latestReviewStatusByUrn(store);
+
+  interface Acc {
+    adopted: number;
+    reviewed: number;
+    confirmed: number;
+    modified: number;
+    retired: number;
+  }
+  const byDomain = new Map<string, Acc>();
+  const acc = (d: string): Acc => {
+    let a = byDomain.get(d);
+    if (!a) {
+      a = { adopted: 0, reviewed: 0, confirmed: 0, modified: 0, retired: 0 };
+      byDomain.set(d, a);
+    }
+    return a;
+  };
+
+  for (const p of adopted.values()) {
+    const domain = coverageDomainOf(p);
+    const a = acc(domain);
+    a.adopted++;
+    const urn = reviewUrnForObligation(p.obligationId, p.urn);
+    const status = reviewStatusByUrn.get(urn);
+    if (status && REVIEWED_REVIEW_STATUSES.has(status)) {
+      a.reviewed++;
+      if (status === "reviewed-confirmed") a.confirmed++;
+      else if (status === "reviewed-modified") a.modified++;
+      else a.retired++;
+    }
+  }
+
+  const rows: DomainSummaryCoverage[] = [...byDomain.entries()].map(([domain, a]) => ({
+    domain,
+    adopted: a.adopted,
+    reviewed: a.reviewed,
+    confirmed: a.confirmed,
+    modified: a.modified,
+    retired: a.retired,
+    coverage: a.adopted > 0 ? a.reviewed / a.adopted : 1,
+  }));
+  rows.sort((x, y) => {
+    const ix = DOMAIN_ORDER.indexOf(x.domain);
+    const iy = DOMAIN_ORDER.indexOf(y.domain);
+    if (ix !== iy) return (ix < 0 ? 99 : ix) - (iy < 0 ? 99 : iy);
+    return x.domain < y.domain ? -1 : 1;
+  });
+  return rows;
 }
 
 export function runObligationReviewStatusRecon(
@@ -207,6 +340,10 @@ export function runObligationReviewStatusRecon(
   const content =
     opts.obligationsOverride ??
     (existsSync(obligationsPath) ? readFileSync(obligationsPath, "utf8") : null);
+
+  // Authored-summary coverage is event-sourced (independent of the markdown
+  // register), so compute it regardless of whether the render is present.
+  const summaryCoverage = computeSummaryCoverage(opts.eventStore ?? defaultEventStore);
 
   const emptySummary: ReviewQueueSummary = {
     totalDepth: 0,
@@ -224,7 +361,7 @@ export function runObligationReviewStatusRecon(
 
   if (!content) {
     logger.warn({ pipeline: PIPELINE, msg: "Obligations register not found — skipping" });
-    return { ...base, summary: emptySummary };
+    return { ...base, summary: emptySummary, summaryCoverage };
   }
 
   const asOf = opts.asOfOverride ?? new Date();
@@ -323,6 +460,8 @@ export function runObligationReviewStatusRecon(
     topUrgent,
   };
 
+  const domainAcoverage = summaryCoverage.find((c) => c.domain === "A");
+
   logger.info({
     pipeline: PIPELINE,
     asserted,
@@ -331,11 +470,18 @@ export function runObligationReviewStatusRecon(
     byDomain,
     byAgeBucket: ageBuckets,
     topUrgent: topUrgent.length,
+    summaryCoverage: summaryCoverage.map((c) => ({
+      domain: c.domain,
+      reviewed: c.reviewed,
+      adopted: c.adopted,
+      coveragePct: Math.round(c.coverage * 1000) / 10,
+    })),
+    domainACoveragePct: domainAcoverage ? Math.round(domainAcoverage.coverage * 1000) / 10 : null,
     citations: CITATIONS,
-    msg: `${PIPELINE} (advisory): queue depth ${totalDepth} unreviewed obligations across ${Object.keys(byDomain).length} domain(s)`,
+    msg: `${PIPELINE} (advisory): queue depth ${totalDepth} unreviewed obligations across ${Object.keys(byDomain).length} domain(s); Domain A authored-summary coverage ${domainAcoverage ? `${domainAcoverage.reviewed}/${domainAcoverage.adopted}` : "n/a"}`,
   });
 
-  return { ...base, summary };
+  return { ...base, summary, summaryCoverage };
 }
 
 // ---------------------------------------------------------------------------
@@ -354,6 +500,7 @@ if (import.meta.main) {
       ok: result.ok,
       mode: "advisory",
       summary: result.summary,
+      summaryCoverage: result.summaryCoverage,
     }),
   );
   process.exit(0);
