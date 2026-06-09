@@ -246,6 +246,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // obligation-lifecycle fold, not a production access path. T-01 carve-out.
   // Citation: D-REGULATORY-ARCHITECTURE-TWO-PLANE, P4-SECURITY-DESIGNED-IN.
   "platform/obligations/projection.test.ts",
+  // Obligation-review-status authored-summary coverage unit test — co-located
+  // per-module test convention. Raw EventStore is a build-phase test fixture
+  // for the per-domain coverage fold, not a production access path. T-01
+  // carve-out. Citation: D-OBLIGATIONS-REGISTER-CLEANUP, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/obligation-review-status.test.ts",
   // Goal-loop helper unit tests — co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for event-reactive
   // candidate assertion, not a production access path. T-01 carve-out.

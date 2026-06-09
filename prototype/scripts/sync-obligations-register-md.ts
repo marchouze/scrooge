@@ -29,6 +29,21 @@ interface SeedRow {
   id: string;
   urn?: string;
   owner?: string;
+  domain?: string;
+  requirement?: string;
+  reviewStatus?: string;
+  reviewAuthor?: string;
+  reviewDate?: string;
+  reviewEventId?: string;
+}
+
+/** A markdown table cell must not carry a literal pipe or newline. */
+function assertCellSafe(id: string, field: string, value: string): void {
+  if (value.includes("|") || /[\r\n]/.test(value)) {
+    throw new Error(
+      `unsafe markdown cell for ${id}.${field}: contains a pipe or newline — would corrupt the register table`,
+    );
+  }
 }
 
 function main(): number {
@@ -39,9 +54,27 @@ function main(): number {
   const md = readFileSync(MD_PATH, "utf8");
   const lines = md.split("\n");
 
+  // The canonical 17-column schema renders as 19 pipe-split segments
+  // (leading "" + 17 cells + trailing ""). A handful of legacy rows carry
+  // extra pipe-delimited cells (unescaped pipes leaked into productScope /
+  // activityScope) and therefore have MORE segments — addressing the
+  // review columns by fixed index on those rows would clobber the wrong cell
+  // (e.g. riskTaxonomy). We patch the review columns only on schema-shaped
+  // rows; the Requirement / URN / Owner columns sit before the corruption
+  // region and are safe on every row. Derive the expected count from the
+  // header so this stays correct if the schema grows.
+  const headerLine = lines.find((l) => /^\|\s*ID\s*\|\s*URN\s*\|/.test(l)) ?? "";
+  const CANONICAL_SEGS = headerLine ? headerLine.split("|").length : 19;
+  // Review columns (1-indexed cell → segs index): review-status 14,
+  // review-author 15, review-date 16, review-event-id 17.
+  const REVIEW_COL_INDEX = { status: 14, author: 15, date: 16, eventId: 17 } as const;
+
   let urnPatched = 0;
   let ownerPatched = 0;
+  let requirementPatched = 0;
+  let reviewPatched = 0;
   let rowsSeen = 0;
+  const reviewSkippedMalformed: string[] = [];
   const missingInSeed: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
@@ -77,6 +110,47 @@ function main(): number {
       ownerPatched++;
     }
 
+    // Domain-A review pass (D-OBLIGATIONS-REGISTER-CLEANUP P4): for the
+    // Prudential rows only, patch the Requirement column (segs[4]) where the
+    // seed rewrote it, plus the four review columns so the markdown render
+    // reflects Mira's reviewed summaries in lockstep with the seed.
+    // Non-Domain-A rows are left untouched (no other domains in scope).
+    if (row.domain === "A") {
+      // Requirement (segs[4]) sits before the variable-column region, so it is
+      // safe to patch on every Domain-A row regardless of column count.
+      const desiredRequirement = row.requirement ?? "";
+      assertCellSafe(idCell, "requirement", desiredRequirement);
+      const curRequirement = (segs[4] ?? "").trim();
+      if (curRequirement !== desiredRequirement) {
+        segs[4] = ` ${desiredRequirement} `;
+        requirementPatched++;
+      }
+
+      // Review columns sit AFTER the variable-column region. A few legacy rows
+      // carry extra pipe-delimited cells (unescaped pipes in product/activity
+      // scope), so their review columns are not at the canonical index —
+      // patching by fixed index would clobber riskTaxonomy. Patch only on
+      // schema-shaped rows; malformed rows keep their existing review cells
+      // (the event-sourced coverage recon does not depend on the markdown).
+      if (segs.length === CANONICAL_SEGS) {
+        const reviewCols: Array<[number, string]> = [
+          [REVIEW_COL_INDEX.status, row.reviewStatus ?? ""],
+          [REVIEW_COL_INDEX.author, row.reviewAuthor ?? ""],
+          [REVIEW_COL_INDEX.date, row.reviewDate ?? ""],
+          [REVIEW_COL_INDEX.eventId, row.reviewEventId ?? ""],
+        ];
+        for (const [idx, desired] of reviewCols) {
+          assertCellSafe(idCell, `col${idx}`, desired);
+          if ((segs[idx] ?? "").trim() !== desired) {
+            segs[idx] = ` ${desired} `;
+            reviewPatched++;
+          }
+        }
+      } else {
+        reviewSkippedMalformed.push(idCell);
+      }
+    }
+
     lines[i] = segs.join("|");
   }
 
@@ -84,6 +158,14 @@ function main(): number {
   console.log(`  ORG- rows in register: ${rowsSeen}`);
   console.log(`  URN cells patched: ${urnPatched}`);
   console.log(`  owner cells patched: ${ownerPatched}`);
+  console.log(`  Domain-A requirement cells patched: ${requirementPatched}`);
+  console.log(`  Domain-A review cells patched: ${reviewPatched}`);
+  if (reviewSkippedMalformed.length > 0) {
+    console.log(
+      `  NOTE — review cells skipped on ${reviewSkippedMalformed.length} malformed (non-canonical-column) Domain-A row(s); event-sourced coverage is unaffected:`,
+    );
+    for (const id of reviewSkippedMalformed) console.log(`    ${id}`);
+  }
   if (missingInSeed.length > 0) {
     console.log(`  WARNING — register rows missing from seed (${missingInSeed.length}):`);
     for (const id of missingInSeed) console.log(`    ${id}`);
