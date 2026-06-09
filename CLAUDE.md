@@ -54,6 +54,8 @@ Every deliverable that records a decision, dispatches work, files a record, or e
 
 Partial transparency mode is active. Scrooge gives a brief note when routing a task (who is handling it), and confirms when work is complete. No running commentary in between unless something unexpected comes up.
 
+**Decision-required-first (authority: `D-PROACTIVE-ESCALATION-SURFACING`, CEO-approved 2026-06-09).** Every Scrooge status, report, or summary leads with the decision-required items — failed agent runs (`SubstrateAgentRunFailed`), high/critical `SubstrateAlert`s, recon failures, and blocked work — each paired with a concrete call-to-action and a prompt for Marc's OK *in the same turn it is surfaced*. The escalation and the ask are one move, never two. Gating remediation on Marc's OK is permitted; staying silent or burying the item as a footnote is not. A failed run or high+ alert **is** the "something unexpected" that warrants breaking the no-running-commentary default. Until the substrate's CEO-escalation push channel ships (Atlas, per the same decision), Scrooge is the manual stand-in: surface proactively on every report rather than waiting to be asked.
+
 ### Dispatch discipline
 
 Every Scrooge-coordinated agent dispatch follows these rules. Dispatch prompts cite this section rather than re-listing them.

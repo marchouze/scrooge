@@ -174,8 +174,20 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   D-BEA-GOAL-LOOP-SINGLE-FLIGHT (the unrelated callsite is a follow-on
 //   cleanup item under D-PROVENANCE-FILTER-ENFORCEMENT).
 //   Author: Atlas (Core banking platform architect, engineering), 2026-05-31.
+//
+// 2026-06-09 — Lowered 65 → 63 (D-PROACTIVE-ESCALATION-SURFACING):
+//   dashboard/obligations-view.ts had two `new Date().toISOString()` dashboard
+//   view-timestamp callsites (early-return + main return of getObligationsView).
+//   Both routed through the composition `clock.now()` boundary; two genuine
+//   wall-clock callsites removed, locking the lower floor per the convention
+//   above. Surfaced while investigating the wall-clock fail on PR #1138's CI: a
+//   stale-base PR over-counted to 66 because the local `&&` recon chain
+//   short-circuits at the pre-existing home-store archive-partition gap before
+//   reaching this ratchet, masking the count until clean-store GitHub CI.
+//   Authority: D-PROACTIVE-ESCALATION-SURFACING (CEO-approved 2026-06-09).
+//   Author: Scrooge (Chief of Staff, orchestration), 2026-06-09.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 65;
+const KNOWN_VIOLATIONS_SNAPSHOT = 63;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
