@@ -446,6 +446,160 @@ describe("BA 600 — boundary errors", () => {
 });
 
 // ---------------------------------------------------------------------------
+// 8. Counterparty-sector decomposition (SARB BA 100 per-line requirement).
+// ---------------------------------------------------------------------------
+
+describe("BA 600 — counterparty-sector decomposition", () => {
+  // Synthetic balance sheet spanning all four mappable sectors plus `other`:
+  //   - ACC-7100-001 "Due from Banks" (IBL placement) ............. bank
+  //   - ACC-3100-001 government bond asset ........................ sovereign
+  //   - ACC-1100-001 SARB reserve (central-bank custodian) ........ sovereign
+  //   - ACC-6100-001 retail deposit liability ..................... retail
+  //   - ACC-6100-003 wholesale deposit liability .................. corporate
+  //   - ACC-2100-001 FX trading receivable (own-book) ............. other
+  //   - ACC-equity-position-stub equity capital .................... other (not in COA)
+  const ENTITY = ENTITY_BANK;
+  const COMMON = {
+    entity: ENTITY,
+    asOf: "2026-05-31T23:59:59.999Z",
+    periodId: "x",
+    functionalCurrency: "ZAR",
+  } as const;
+
+  function sectorInput() {
+    return {
+      ...COMMON,
+      trialBalance: [
+        // Assets
+        { leafAccountId: "ACC-7100-001", currency: "ZAR", amountMinor: 100_000 }, // bank
+        { leafAccountId: "ACC-3100-001", currency: "ZAR", amountMinor: 60_000 }, // sovereign
+        { leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 40_000 }, // sovereign
+        { leafAccountId: "ACC-2100-001", currency: "ZAR", amountMinor: 30_000 }, // other (own-book FX)
+        // Liabilities (credit balances → negative)
+        { leafAccountId: "ACC-6100-001", currency: "ZAR", amountMinor: -120_000 }, // retail
+        { leafAccountId: "ACC-6100-003", currency: "ZAR", amountMinor: -80_000 }, // corporate
+        // Equity (credit balance → negative)
+        { leafAccountId: "ACC-equity-position-stub", currency: "ZAR", amountMinor: -30_000 }, // other
+      ],
+      classifications: [
+        {
+          leafAccountId: "ACC-7100-001",
+          section: "assets" as const,
+          lineLabel: "assets.due-from-banks",
+        },
+        {
+          leafAccountId: "ACC-3100-001",
+          section: "assets" as const,
+          lineLabel: "assets.investment-securities",
+        },
+        {
+          leafAccountId: "ACC-1100-001",
+          section: "assets" as const,
+          lineLabel: "assets.cash-and-balances-at-sarb",
+        },
+        {
+          leafAccountId: "ACC-2100-001",
+          section: "assets" as const,
+          lineLabel: "assets.trading-assets",
+        },
+        {
+          leafAccountId: "ACC-6100-001",
+          section: "liabilities" as const,
+          lineLabel: "liabilities.deposits",
+        },
+        {
+          leafAccountId: "ACC-6100-003",
+          section: "liabilities" as const,
+          lineLabel: "liabilities.deposits",
+        },
+        {
+          leafAccountId: "ACC-equity-position-stub",
+          section: "equity" as const,
+          lineLabel: "equity.share-capital",
+        },
+      ],
+    };
+  }
+
+  it("decomposes each line by counterparty sector (IBL=bank, bond/SARB=sovereign, deposits=retail/corporate)", () => {
+    const out = generateBa600BalanceSheet(sectorInput());
+    const byLine = new Map(out.sectorBreakdown.lines.map((l) => [l.lineId, l.bySector]));
+
+    expect(byLine.get("assets.ACC-7100-001")?.bank).toBe(100_000);
+    expect(byLine.get("assets.ACC-3100-001")?.sovereign).toBe(60_000);
+    expect(byLine.get("assets.ACC-1100-001")?.sovereign).toBe(40_000);
+    expect(byLine.get("assets.ACC-2100-001")?.other).toBe(30_000);
+    expect(byLine.get("liabilities.ACC-6100-001")?.retail).toBe(120_000);
+    expect(byLine.get("liabilities.ACC-6100-003")?.corporate).toBe(80_000);
+    expect(byLine.get("equity.ACC-equity-position-stub")?.other).toBe(30_000);
+  });
+
+  it("section sector splits reconcile exactly to section totals", () => {
+    const out = generateBa600BalanceSheet(sectorInput());
+    const { sectionTotals } = out.sectorBreakdown;
+
+    const sumSplit = (s: {
+      bank: number;
+      corporate: number;
+      sovereign: number;
+      retail: number;
+      other: number;
+    }) => s.bank + s.corporate + s.sovereign + s.retail + s.other;
+
+    expect(sumSplit(sectionTotals.assets)).toBe(out.assets.totalMinor);
+    expect(sumSplit(sectionTotals.liabilities)).toBe(out.liabilities.totalMinor);
+    expect(sumSplit(sectionTotals.equity)).toBe(out.equity.totalMinor);
+    expect(out.sectorBreakdown.reconciled).toBe(true);
+
+    // Assets: bank 100k + sovereign 100k + other 30k = 230k.
+    expect(sectionTotals.assets.bank).toBe(100_000);
+    expect(sectionTotals.assets.sovereign).toBe(100_000);
+    expect(sectionTotals.assets.other).toBe(30_000);
+    // Liabilities: retail 120k + corporate 80k = 200k.
+    expect(sectionTotals.liabilities.retail).toBe(120_000);
+    expect(sectionTotals.liabilities.corporate).toBe(80_000);
+  });
+
+  it("form total reconciles to assets + liabilities + equity magnitudes", () => {
+    const out = generateBa600BalanceSheet(sectorInput());
+    const ft = out.sectorBreakdown.formTotal;
+    const total = ft.bank + ft.corporate + ft.sovereign + ft.retail + ft.other;
+    expect(total).toBe(out.assets.totalMinor + out.liabilities.totalMinor + out.equity.totalMinor);
+  });
+
+  it("unmappable accounts surface in `other`, never hidden", () => {
+    const out = generateBa600BalanceSheet({
+      ...COMMON,
+      trialBalance: [
+        { leafAccountId: "ACC-unknown-account", currency: "ZAR", amountMinor: 100 },
+        { leafAccountId: "ACC-eq", currency: "ZAR", amountMinor: -100 },
+      ],
+      classifications: [
+        {
+          leafAccountId: "ACC-unknown-account",
+          section: "assets" as const,
+          lineLabel: "assets.cash",
+        },
+        { leafAccountId: "ACC-eq", section: "equity" as const, lineLabel: "equity.share-capital" },
+      ],
+    });
+    const unknownLine = out.sectorBreakdown.lines.find(
+      (l) => l.lineId === "assets.ACC-unknown-account",
+    );
+    expect(unknownLine?.bySector.other).toBe(100);
+    expect(out.sectorBreakdown.sectionTotals.assets.other).toBe(100);
+  });
+
+  it("sectorBreakdown carries through the canonical render + schema", () => {
+    const out = generateBa600BalanceSheet(sectorInput());
+    const render = renderBa600ToJson(out, { renderedAt: "2026-05-31T15:00:00.000Z" });
+    expect(() => Ba600RenderSchema.parse(render)).not.toThrow();
+    expect(render.sectorBreakdown.reconciled).toBe(true);
+    expect(render.sectorBreakdown.sectionTotals.assets.bank).toBe(100_000);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 7. Per-currency totals.
 // ---------------------------------------------------------------------------
 
