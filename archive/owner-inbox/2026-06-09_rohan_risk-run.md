@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: risk-run
-asOf: 2026-06-09T05:51:50.802Z
+asOf: 2026-06-09T06:17:52.243Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Fifth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Closes the engineer-side of Helena's measurement-substrate gap.
 
-**Headline:** 16 appetite lines tracked · measurement readiness 1 ready / 3 drafting / 6 specified / 3 not-yet-specified · 0 position events (last 7d) · 49 RiskRaised events.
+**Headline:** 16 appetite lines tracked · measurement readiness 1 ready / 3 drafting / 6 specified / 3 not-yet-specified · 0 position events (last 7d) · 42 RiskRaised events.
 
 ## Helena's latest snapshot
 
@@ -47,8 +47,8 @@ _Build-phase posture: zero position events. Kai's M1 CDM TypeScript bindings (in
 
 | Severity | Count |
 |---|---|
-| medium | 35 |
-| high | 14 |
+| medium | 30 |
+| high | 12 |
 
 ## Substrate gaps surfaced this run
 
@@ -60,7 +60,7 @@ _Build-phase posture: zero position events. Kai's M1 CDM TypeScript bindings (in
 
 ## Rohan's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbsAVvZtMRsyXRru7Xx5m"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbsCW4KShhk2HhzUuaVgD"})._
 
 ## Provenance
 
