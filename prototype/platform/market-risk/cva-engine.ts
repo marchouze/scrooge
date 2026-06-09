@@ -83,10 +83,11 @@
 //   validated by Nadia (Independent-validation engineer), with counterparty
 //   credit-spread inputs supplied by Ravi (market-data infrastructure engineer).
 
+import type { IrdSwapPositionRevaluedPayload } from "../event-store/event-types/ird-accounting";
 import type { EventStore } from "../event-store/store";
 import type { MarketDataStore } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
-import type { IrsPositionRevaluedPayload, IrsTradeBookedPayload } from "../markets/cdm/ird";
+import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
 import { type FinancialInput, absent, present, requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
@@ -322,11 +323,14 @@ export function deriveCounterpartyExposures(args: {
     const p = ev.payload as unknown as IrsTradeBookedPayload;
     irsByTradeId.set(p.tradeId.value, p);
   }
+  // Current MTM is sourced from the accounting IrdSwapPositionRevalued family —
+  // the single canonical revaluation fact post D-IRS-FAMILY-CONVERGE-ACCOUNTING.
+  // npvClosingMinor is the signed mark-to-market (positive = net asset to bank).
   const irsLatestMtm = new Map<string, number>();
-  for (const ev of eventStore.replay({ type: "IrsPositionRevalued", asOf })) {
-    const p = ev.payload as unknown as IrsPositionRevaluedPayload;
+  for (const ev of eventStore.replay({ type: "IrdSwapPositionRevalued", asOf })) {
+    const p = ev.payload as unknown as IrdSwapPositionRevaluedPayload;
     // Append-order replay → last write wins for the latest MTM.
-    irsLatestMtm.set(p.tradeId.value, p.markToMarket.amountMinor);
+    irsLatestMtm.set(p.tradeId, p.npvClosingMinor);
   }
   for (const [tradeId, irs] of irsByTradeId) {
     if (closedTradeIds.has(tradeId)) continue;
@@ -452,7 +456,7 @@ export function computeCva(args: {
     const reason =
       "OTC derivative book carries no uncollateralised positive exposure — no open IRS / FX-forward / FX-swap positions, or every position is net-negative MTM to the bank";
     const exp =
-      "live OTC book (deriveCounterpartyExposures over IrsTradeBooked / IrsPositionRevalued / FxTradeExecuted, spot excluded)";
+      "live OTC book (deriveCounterpartyExposures over IrsTradeBooked / IrdSwapPositionRevalued / FxTradeExecuted, spot excluded)";
     return {
       asOf,
       currency: "ZAR",

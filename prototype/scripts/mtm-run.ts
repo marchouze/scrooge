@@ -399,15 +399,17 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
   // IRD MTM — EOD IRS mark-to-market revaluation.
   //
-  // Drives runEodIrsRevaluation over the open IRS book, emitting
-  // IrsPositionRevalued per swap. The valuation uses the documented static
+  // Drives runEodIrsRevaluation over the open IRS book, emitting the accounting
+  // IrdSwapPositionRevalued per swap (canonical GL + BA 320 revaluation fact per
+  // D-IRS-FAMILY-CONVERGE-ACCOUNTING). The valuation uses the documented static
   // JIBAR curve seed ([GAP-IRS-1] in jibar-curve-seed.ts) — the build-phase
   // analogue of a live curve ingest. The engine is idempotent per
   // valuationDate (a swap already revalued today is skipped), so re-running
   // intraday after an EOD run is a no-op. Wiring this into the daily cycle
   // keeps the CVA current-exposure leg (model:cva-exposure-epe-v1, which reads
-  // IrsPositionRevalued) fresh after each booking, rather than relying on a
-  // manual reval. Authority: D-MARKETS-SCHEMA-FOUNDATION; IFRS-9-§4.1.
+  // IrdSwapPositionRevalued) fresh after each booking, and lands the GL
+  // revaluation posting (PR-IRS-002), rather than relying on a manual reval.
+  // Authority: D-IRS-FAMILY-CONVERGE-ACCOUNTING; D-MARKETS-SCHEMA-FOUNDATION; IFRS-9-§4.1.
   const irsReval = runEodIrsRevaluation(store, asOf);
   positionsValued += irsReval.revalued;
   positionsSkipped += irsReval.skipped;

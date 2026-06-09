@@ -405,7 +405,7 @@ export const CALC_BINDINGS: Readonly<Record<string, CalcBinding>> = {
         required: false,
         unit: "ZAR",
         expectedFrom:
-          "CVA exposure / EPE model (model:cva-exposure-epe-v1): per-counterparty netted positive EAD = max(0, Σ current MTM) + Σ PFE add-on over the live uncollateralised OTC book (IRS IrsPositionRevalued + FX forward/swap FxTradeExecuted, spot excluded)",
+          "CVA exposure / EPE model (model:cva-exposure-epe-v1): per-counterparty netted positive EAD = max(0, Σ current MTM) + Σ PFE add-on over the live uncollateralised OTC book (IRS IrdSwapPositionRevalued + FX forward/swap FxTradeExecuted, spot excluded)",
       },
       {
         // Optional: a counterparty with neither a live credit spread nor a
