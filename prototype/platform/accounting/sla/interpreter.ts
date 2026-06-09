@@ -51,7 +51,14 @@ const PRODUCT_TO_BUSINESS_LINE: Record<string, string> = {
   REPO: "trading-and-sales",
   BOND: "trading-and-sales",
   IRD: "trading-and-sales",
-  FX: "trading-and-sales",
+  // FX is keyed by the CDM `productTaxonomy` discriminator
+  // (`fxProductTaxonomySchema`), NOT a bare "FX": fxTradeExecutedContextBuilder
+  // stamps `instrument_type = payload.productTaxonomy` and the flat FX builder
+  // fixes it to "FX-spot". There is no `instrument_type === "FX"` anywhere.
+  "FX-spot": "trading-and-sales",
+  "FX-forward": "trading-and-sales",
+  "FX-swap": "trading-and-sales",
+  NDF: "trading-and-sales",
   EQUITY: "trading-and-sales",
   PAY: "payment-and-settlement",
 };
