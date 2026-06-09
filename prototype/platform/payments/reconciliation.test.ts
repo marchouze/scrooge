@@ -9,6 +9,9 @@
 //   - TC-6: DailyReconciliationReport emitted with correct counts
 //   - TC-7: Dry-run: no events emitted even on breaks
 //   - TC-8: Multiple trade IDs — mixed results
+//   - TC-10: Full ISO timestamp asOf normalised to YYYY-MM-DD at boundary
+//            (regression for the 2026-06-09 autonomous-tick failure;
+//             D-PROACTIVE-ESCALATION-SURFACING)
 //
 // Authority: PROC-PAY-RBH-01, NPS-ACT-78-1998, BANKS-ACT-94-1990
 // Authors: Tomas (Operations & payments engineer, engineering),
@@ -435,5 +438,93 @@ describe("TC-9: empty event store", () => {
     expect(result.matchedCount).toBe(0);
     expect(result.breakCount).toBe(0);
     expect(result.breaks).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TC-10: Full ISO timestamp asOf — boundary normalisation regression
+//
+// The scheduler hands the handler a full ISO 8601 timestamp as ctx.asOf
+// (e.g. 2026-06-09T05:51:52.026Z). That raw timestamp reached the
+// DailyReconciliationReport payload, whose schema requires YYYY-MM-DD, and the
+// zod regex threw "asOf must be ISO 8601 date YYYY-MM-DD" — taking the
+// autonomous tomas:daily-reconciliation tick down on 2026-06-09.
+//
+// runThreeWayReconciliation now normalises asOf to YYYY-MM-DD at its public
+// boundary. This test drives the function with the exact failing timestamp and
+// asserts (a) no validation throws, (b) the returned result carries YYYY-MM-DD,
+// (c) the emitted DailyReconciliationReport payload.asOf is YYYY-MM-DD, and
+// (d) every emitted ReconciliationBreak event carries a YYYY-MM-DD as_of.
+//
+// Pre-fix (raw asOf passed straight through), the makeDailyReconciliationReport
+// call throws on the payload regex — so this test reproduces today's failure.
+// Authority: D-PROACTIVE-ESCALATION-SURFACING.
+// ---------------------------------------------------------------------------
+
+describe("TC-10: full ISO timestamp asOf normalised to YYYY-MM-DD at boundary", () => {
+  // The literal timestamp the scheduler passed when the tick failed on 2026-06-09.
+  const FULL_TIMESTAMP = "2026-06-09T05:51:52.026Z";
+  const EXPECTED_DATE = "2026-06-09";
+  const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+  function seedOneAmountBreak(store: EventStore): void {
+    // settlementDate must be <= the normalised asOf date so the reader picks it up.
+    appendSettlementInstruction(store, "TRADE-TS-1", 100000, EXPECTED_DATE);
+    appendPaymentSettled(store, "TRADE-TS-1", 99000, within4h(EXPECTED_DATE)); // amount mismatch
+    appendJournalEntry(store, "TRADE-TS-1", 99000);
+  }
+
+  it("does not throw when asOf is a full ISO timestamp and emits events", () => {
+    const store = makeStore();
+    seedOneAmountBreak(store);
+
+    // Pre-fix this call throws on the DailyReconciliationReport payload regex.
+    expect(() => runThreeWayReconciliation(FULL_TIMESTAMP, false, store)).not.toThrow();
+  });
+
+  it("returns a YYYY-MM-DD asOf in the result", () => {
+    const store = makeStore();
+    seedOneAmountBreak(store);
+
+    const result = runThreeWayReconciliation(FULL_TIMESTAMP, true, store);
+
+    expect(result.asOf).toBe(EXPECTED_DATE);
+    expect(result.asOf).toMatch(DATE_RE);
+  });
+
+  it("emits DailyReconciliationReport with payload.asOf normalised to YYYY-MM-DD", () => {
+    const store = makeStore();
+    seedOneAmountBreak(store);
+
+    runThreeWayReconciliation(FULL_TIMESTAMP, false, store);
+
+    let reportCount = 0;
+    let payloadAsOf: string | undefined;
+    let eventAsOf: string | undefined;
+    for (const e of store.replay({ type: "DailyReconciliationReport" })) {
+      reportCount++;
+      payloadAsOf = (e.payload as { asOf?: string }).asOf;
+      eventAsOf = e.as_of;
+    }
+    expect(reportCount).toBe(1);
+    expect(payloadAsOf).toBe(EXPECTED_DATE);
+    expect(payloadAsOf).toMatch(DATE_RE);
+    expect(eventAsOf).toBe(EXPECTED_DATE);
+    expect(eventAsOf).toMatch(DATE_RE);
+  });
+
+  it("emits every ReconciliationBreak with a YYYY-MM-DD as_of", () => {
+    const store = makeStore();
+    seedOneAmountBreak(store);
+
+    runThreeWayReconciliation(FULL_TIMESTAMP, false, store);
+
+    let breakCount = 0;
+    for (const e of store.replay({ type: "ReconciliationBreak" })) {
+      breakCount++;
+      expect(e.as_of).toBe(EXPECTED_DATE);
+      expect(e.as_of).toMatch(DATE_RE);
+    }
+    expect(breakCount).toBeGreaterThanOrEqual(1);
   });
 });

@@ -51,6 +51,24 @@ export type { ReconciliationBreakKind, ReconciliationBreakSummary };
 /** Four-hour tolerance window in milliseconds. */
 const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
 
+/**
+ * Normalise an `asOf` value to a calendar date `YYYY-MM-DD`.
+ *
+ * The scheduler hands handlers a full ISO 8601 timestamp (e.g.
+ * `2026-06-09T05:51:52.026Z`) as `ctx.asOf`. The `DailyReconciliationReport`
+ * payload schema requires a strict `YYYY-MM-DD` date and a raw timestamp fails
+ * its zod regex — the failure that took the autonomous `tomas:daily-reconciliation`
+ * tick down on 2026-06-09 (D-PROACTIVE-ESCALATION-SURFACING). Normalising at the
+ * single public boundary of this module (the entry of `runThreeWayReconciliation`)
+ * guarantees every emitted event and the returned result carry a schema-valid
+ * `asOf`, and callers cannot reintroduce the bug by passing a timestamp.
+ *
+ * A `YYYY-MM-DD` input is returned unchanged (idempotent).
+ */
+function toCalendarDate(asOf: string): string {
+  return asOf.slice(0, 10);
+}
+
 /** Citations required by Principle 2 for reconciliation events. */
 const RECON_CITATIONS = ["PROC-PAY-RBH-01", "NPS-ACT-78-1998", "BANKS-ACT-94-1990"];
 
@@ -185,16 +203,22 @@ function isSettlementDateTodayOrFuture(settlementDate: string, nowStr: string): 
  * - Emits a `DailyReconciliationReport` summarising the run.
  * - Returns the result for the caller.
  *
- * @param asOf      ISO 8601 date string (YYYY-MM-DD) for the run.
+ * @param asOfInput ISO 8601 date (YYYY-MM-DD) or full timestamp for the run.
+ *                  Normalised to YYYY-MM-DD at the boundary (toCalendarDate)
+ *                  so emitted events always satisfy their payload schemas.
  * @param dryRun    If true, reads event store but does NOT emit events.
  * @param store     EventStore to use (defaults to composition singleton).
  *                  Pass an in-memory store in tests.
  */
 export function runThreeWayReconciliation(
-  asOf: string,
+  asOfInput: string,
   dryRun = false,
   store: EventStore = compositionEventStore,
 ): ReconciliationResult {
+  // Single normalisation point: collapse any ISO timestamp to YYYY-MM-DD so
+  // every downstream reader, emitted event, and the returned result carry a
+  // schema-valid calendar date. See toCalendarDate for the failure this guards.
+  const asOf = toCalendarDate(asOfInput);
   const detectedAt = new Date().toISOString();
 
   const tradeLegs = readTradeLegs(store, asOf);
