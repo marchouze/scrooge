@@ -50,6 +50,7 @@ import {
   generateBa100CapitalFromEvents,
   renderBa100Canonical,
 } from "../platform/reporting";
+import { readRwaDecompositionOfRecord } from "../platform/risk/rwa-computed-engine";
 
 // ---------------------------------------------------------------------------
 // Build-phase default classifications — fallback when --classifications
@@ -70,12 +71,14 @@ const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly AccountCapitalClassification
 const BUILD_PHASE_DEFAULT_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
 
 /**
- * Build-phase default RWA. R30,000,000 in minor units (3,000,000,000
- * cents) split notionally across credit / market / operational. Stand-in
- * until W2 Slice 3 RWA engine lands; the source label "fixture-rehearsal"
- * makes the placeholder origin obvious in the rendered output.
+ * Build-phase fallback RWA. R30,000,000 in minor units (3,000,000,000
+ * cents) split notionally across credit / market / operational. This is the
+ * fallback ONLY — used when neither an explicit `--rwa` file nor a
+ * `RwaComputed` event of record exists for the period. The source label
+ * "fixture-rehearsal" makes the placeholder origin obvious in the rendered
+ * output (and is the only path that fires the BA 700 fixture placeholder note).
  */
-const BUILD_PHASE_DEFAULT_RWA: RwaDecomposition = {
+const BUILD_PHASE_FALLBACK_RWA: RwaDecomposition = {
   creditRwaMinor: 1_500_000_000,
   marketRwaMinor: 1_000_000_000,
   operationalRwaMinor: 500_000_000,
@@ -154,9 +157,23 @@ function main(argv: readonly string[]): number {
   const deductions = args.deductionsPath
     ? loadJson<readonly RegulatoryDeduction[]>(args.deductionsPath, "deductions")
     : BUILD_PHASE_DEFAULT_DEDUCTIONS;
-  const rwa = args.rwaPath
-    ? loadJson<RwaDecomposition>(args.rwaPath, "rwa")
-    : BUILD_PHASE_DEFAULT_RWA;
+  // RWA resolution precedence (most → least authoritative), per
+  // D-RWA-ENGINE-W2-SLICE-3:
+  //   1. An explicit `--rwa` JSON file (scenarios / tests / backcalc override).
+  //   2. The `RwaComputed` event of record for (entity, periodId) — credit +
+  //      market RWA event-sourced, operational RWA a flagged gross-income-blocked
+  //      placeholder; threads `rwaComputationEventId` for chain-of-custody.
+  //   3. The build-phase fixture fallback (source="fixture-rehearsal") — the
+  //      only path that fires the BA 700 fixture-grade placeholder note.
+  let rwa: RwaDecomposition;
+  if (args.rwaPath) {
+    rwa = loadJson<RwaDecomposition>(args.rwaPath, "rwa");
+  } else {
+    const ofRecord = readRwaDecompositionOfRecord(eventStore, args.entity, args.periodId, {
+      asOf: args.asOf,
+    });
+    rwa = ofRecord ?? BUILD_PHASE_FALLBACK_RWA;
+  }
 
   // P1-compliant: fold SubLedgerPostingEmitted + CapitalContributionRecorded
   // events directly — no trial-balance routing.

@@ -58,8 +58,13 @@ import { type DebtExposure, type ExposureClass, readDebtExposures } from "../acc
 import { makeRwaComputed } from "../event-store/event-types/regulatory-reporting";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event } from "../event-store/types";
-import { type ProvenanceFilter, defaultProvenanceFilter } from "../projections/filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../projections/filter";
 import type { Ba310Output } from "../reporting/ba-320-market-risk";
+import type { RwaDecomposition } from "../reporting/ba-700-capital";
 import {
   type CounterpartyType,
   type CreditExposure,
@@ -309,6 +314,68 @@ export function rwaComputedExists(store: EventStore, entity: string, periodId: s
     if (p.periodId === periodId) return true;
   }
   return false;
+}
+
+/**
+ * Read the latest `RwaComputed` event of record for `(entity, periodId)` and
+ * project it onto the BA 700 `RwaDecomposition` shape, threading the source
+ * event_id through `rwaComputationEventId` for chain-of-custody (Principle 1).
+ *
+ * This is the single canonical reader the BA 700 generator + the CLI consume —
+ * it reuses the engine's own `replay({entity, type:"RwaComputed"})` plumbing
+ * (the same path `rwaComputedExists` / `emitRwaComputed` use); it does NOT
+ * recompute RWA or open a parallel read path.
+ *
+ * Resolution: replay is sequence-ordered, so the *last* matching event for the
+ * period wins (a re-computation supersedes earlier ones). Simulated/test events
+ * are admitted or excluded per the supplied `provenanceFilter` (defaults to the
+ * standard production filter — which keeps production + simulated, drops
+ * build-phase fixtures).
+ *
+ * The `source` label is taken from the event payload (the engine writes
+ * `RWA_COMPUTED_BUILD_PHASE_SOURCE` — a non-fixture, event-sourced discriminator),
+ * so a decomposition returned by this reader is never `"fixture-rehearsal"`.
+ *
+ * Returns `null` when no `RwaComputed` event exists for the period — the caller
+ * then falls back to the clearly-labelled fixture / positions projection.
+ *
+ * Authority: D-RWA-ENGINE-W2-SLICE-3.
+ */
+export function readRwaDecompositionOfRecord(
+  store: EventStore,
+  entity: string,
+  periodId: string,
+  opts?: {
+    /** ISO 8601 upper bound on the replay `asOf` window. */
+    readonly asOf?: string;
+    /** Inclusive upper bound on the event `sequence` column (frozen cursor). */
+    readonly untilSequence?: number;
+    /** Provenance filter — defaults to the standard production filter. */
+    readonly provenanceFilter?: ProvenanceFilter;
+  },
+): RwaDecomposition | null {
+  const provenanceFilter = opts?.provenanceFilter ?? defaultProvenanceFilter();
+  let latest: { eventId: string; payload: Record<string, unknown> } | undefined;
+  for (const ev of store.replay({
+    entity,
+    type: "RwaComputed",
+    ...(opts?.asOf !== undefined ? { asOf: opts.asOf } : {}),
+    ...(opts?.untilSequence !== undefined ? { untilSequence: opts.untilSequence } : {}),
+  })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as Record<string, unknown>;
+    if (p.periodId !== periodId) continue;
+    latest = { eventId: ev.event_id, payload: p };
+  }
+  if (latest === undefined) return null;
+  const p = latest.payload;
+  return {
+    creditRwaMinor: Number(p.creditRwaMinor ?? 0),
+    marketRwaMinor: Number(p.marketRwaMinor ?? 0),
+    operationalRwaMinor: Number(p.operationalRwaMinor ?? 0),
+    rwaComputationEventId: latest.eventId,
+    source: typeof p.source === "string" ? p.source : RWA_COMPUTED_BUILD_PHASE_SOURCE,
+  };
 }
 
 export interface EmitRwaComputedResult {
