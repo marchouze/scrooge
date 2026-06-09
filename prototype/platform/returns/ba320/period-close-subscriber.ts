@@ -60,14 +60,14 @@ import {
   buildBondIrSpecificRiskRows,
 } from "../../reporting/ba-320-bond-events-adapter";
 import {
-  buildIrsIrGeneralLadder,
-  combineIrGeneralLadders,
-} from "../../reporting/ba-320-irs-events-adapter";
-import {
   type Ba310FromEventsInput,
   type Ba310Output,
   generateBa310MarketRiskFromEvents,
 } from "../../reporting/ba-320-events-adapter";
+import {
+  buildIrsIrGeneralLadder,
+  combineIrGeneralLadders,
+} from "../../reporting/ba-320-irs-events-adapter";
 import type {
   CommodityPositionRow,
   EquityRow,
