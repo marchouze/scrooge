@@ -168,7 +168,115 @@ export function makeSarbSubmissionAttempted(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// RwaComputed
+//
+// Emitted at period close by the RWA-computed engine (W2 Slice 3 —
+// platform/risk/rwa-computed-engine.ts). Carries the Pillar-1 RWA
+// decomposition (credit + market + operational) that feeds the BA 700
+// capital-adequacy return's RWA denominator under Principle 1.
+//
+// Provenance (Principle 1 + 2):
+//   - creditRwaMinor    is event-sourced — Σ EAD × CRE20 standardised
+//                        risk-weight over `readDebtExposures()` (the same
+//                        events-first debt-exposure base BA 200 uses:
+//                        BondTradeExecuted + InterbankLoanPlaced).
+//   - marketRwaMinor    is event-sourced — 12.5 × BA 320 market-risk capital
+//                        (the Reg 28(3)(a) maturity-ladder + disallowance
+//                        algebra; folded from FxTradeExecuted / bond + IRS
+//                        ladders by the BA 320 events adapter). No double-count:
+//                        the engine takes the BA 320 `totalMarketRiskRwaMinor`
+//                        directly (already × 12.5).
+//   - operationalRwaMinor is an EXPLICIT placeholder — operational RWA via the
+//                        BIA needs three years of audited gross income, which
+//                        is gross-income-blocked until licence-day (no
+//                        RevenueRecognitionEmitted feed pre-licence). Zero,
+//                        flagged via `source`.
+//
+// The `source` discriminator makes the partial-real nature legible, e.g.
+// "credit+market-event-sourced;op-placeholder-gross-income-blocked".
+//
+// Regulatory chain:
+//   Banks Act 94/1990 §70 → Regulations Relating to Banks Reg 23 (credit) +
+//   Reg 28 (market) + Reg 33 (operational) → BCBS CRE20 / MAR / OPE25 →
+//   RwaComputed → BA 700 capital-adequacy denominator.
+//
+// Authority: D-RWA-ENGINE-W2-SLICE-3 (CEO session-delegation 2026-06-09);
+//   D-REGULATORY-READINESS-W2-SLICE-3; D-REGULATORY-READINESS-GATE-PLAN.
+// Authors: Bea (Accounting & financial reporting engineer, engineering —
+//   reports to Camille CFO; BA-form line-mapping owner)
+//   + Camille (Chief Financial Officer, governance — RWA-engine accountable).
+// ---------------------------------------------------------------------------
+
+export const RwaComputedPayloadSchema = z.object({
+  /** Legal-entity short-id (`LE-ZA-HOZ-BANK`). Bank-licence-bound. */
+  entityId: z.string().min(1),
+  /** ISO 8601 — the as-of date the RWA is reported at (= period-end). */
+  asOf: z.string().min(1),
+  /** Period identifier (`period:hoz-bank:month:2026-05`). */
+  periodId: z.string().min(1),
+  /** ISO 4217 functional currency. */
+  functionalCurrency: z.string().length(3),
+  /** Credit RWA in minor units — Σ EAD × CRE20 weight (event-sourced). */
+  creditRwaMinor: z.number().int().nonnegative(),
+  /** Market RWA in minor units — 12.5 × BA 320 market-risk capital (event-sourced). */
+  marketRwaMinor: z.number().int().nonnegative(),
+  /** Operational RWA in minor units — explicit placeholder (gross-income-blocked). */
+  operationalRwaMinor: z.number().int().nonnegative(),
+  /** Total RWA = credit + market + operational. */
+  totalRwaMinor: z.number().int().nonnegative(),
+  /**
+   * Source discriminator — makes the partial-real composition legible.
+   * Canonical build-phase value:
+   *   "credit+market-event-sourced;op-placeholder-gross-income-blocked"
+   */
+  source: z.string().min(1),
+  /**
+   * True iff `operationalRwaMinor` is a placeholder (zero / fixture) rather
+   * than a real BIA gross-income computation. Build-phase: always true.
+   */
+  operationalRwaIsPlaceholder: z.boolean(),
+  /**
+   * Contributing source event_ids (BondTradeExecuted / InterbankLoanPlaced /
+   * FxTradeExecuted / IRS / bond ladder events) for the chain-of-custody.
+   */
+  sourceEventIds: z.array(z.string()),
+  /** Count of credit exposures folded into creditRwaMinor. */
+  creditExposureCount: z.number().int().nonnegative(),
+  /**
+   * Principle 2 citations — at least one regulatory or policy URN required.
+   */
+  citations: z.array(z.string()).min(1),
+});
+
+export type RwaComputedPayload = z.infer<typeof RwaComputedPayloadSchema>;
+
+export function makeRwaComputed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RwaComputedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "RwaComputed requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RwaComputed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: RwaComputedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const REGULATORY_REPORTING_TYPED_EVENT_TYPES = [
   "TradeReportSubmitted",
   "SarbSubmissionAttempted",
+  "RwaComputed",
 ] as const;
