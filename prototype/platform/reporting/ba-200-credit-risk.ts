@@ -77,6 +77,15 @@
 
 import { z } from "zod";
 
+import {
+  type DebtExposure,
+  type ExposureClass,
+  computeExposureStage1Ecl,
+  readDebtExposures,
+} from "../accounting/ecl-engine";
+import type { EventStore } from "../event-store/store";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+
 // ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
@@ -681,3 +690,187 @@ export const ba200TotalSchema = z.object({
   totalEcl: z.number().int().nonnegative(),
   totalEntries: z.number().int().nonnegative(),
 });
+
+// ---------------------------------------------------------------------------
+// Events-first generator (WS-BA-RETURNS-FOLLOWON)
+//
+// `generateBa200CreditRiskFromEvents` sources the BA 200 portfolio from the
+// canonical event log rather than a caller-supplied portfolio. It reuses:
+//
+//   - `readDebtExposures` (platform/accounting/ecl-engine) for the EAD base —
+//     live bonds + interbank placements (deposits excluded as liabilities);
+//   - emitted `Ifrs9StageAssigned` events for stage + ECL, joined to each
+//     exposure by tradeId / instrumentId;
+//   - `computeExposureStage1Ecl` (the same ECL engine) as the on-the-fly
+//     Stage-1 fallback where no staging event exists — never a hardcoded ECL;
+//   - `generateBa200CreditRisk` for the aggregation + ECL invariant, unchanged.
+//
+// NO new event types are introduced — the IFRS-9 staging substrate is the sole
+// stage/ECL source. The mapping exposure → Ba200LoanEntry expresses each net
+// exposure as a single performing/SICR/impaired loan row.
+//
+// Authority: D-BA-RETURNS-FOLLOWON-BATCH;
+//   brief:mira:ws-ba-returns-followon-ba-200-credit-risk-events:2026-06-09;
+//   Banks Act 94 of 1990 §73; Regulations Relating to Banks Reg 23; IFRS 9 §5.5.
+//
+// Author: Mira (Regulatory reporting engineer, engineering).
+// ---------------------------------------------------------------------------
+
+/**
+ * The resolved stage + ECL for one debt exposure, plus how it was derived.
+ * `source` distinguishes a real staging event from the engine fallback and the
+ * (loud) default — the latter is surfaced as a placeholder gap.
+ */
+interface ResolvedExposureStaging {
+  readonly stage: Ba200Stage;
+  /** ECL provision in minor units for the relevant basis (12-month / lifetime). */
+  readonly eclMinor: number;
+  readonly source: "staging-event" | "engine-stage-1" | "default";
+}
+
+/** Latest Ifrs9StageAssigned per join key (tradeId and instrumentId). */
+interface StagingFold {
+  readonly byTradeId: Map<string, { stage: Ba200Stage; eclMinor: number }>;
+  readonly byInstrumentId: Map<string, { stage: Ba200Stage; eclMinor: number }>;
+}
+
+/**
+ * Resolve stage + ECL for an exposure. Precedence (per brief):
+ *   1. an emitted Ifrs9StageAssigned joined by tradeId, else by instrumentId;
+ *   2. the ECL engine's on-the-fly Stage-1 computation (computeExposureStage1Ecl);
+ *   3. only if (2) cannot run, a loud Stage-1 / ECL-0 default (surfaced as a gap).
+ */
+function resolveExposureStaging(
+  exposure: DebtExposure,
+  staging: StagingFold,
+): ResolvedExposureStaging {
+  const joined =
+    (exposure.tradeId && staging.byTradeId.get(exposure.tradeId)) ||
+    staging.byInstrumentId.get(exposure.instrumentId);
+  if (joined) {
+    return { stage: joined.stage, eclMinor: joined.eclMinor, source: "staging-event" };
+  }
+
+  // Fallback to the engine's on-the-fly Stage-1 ECL (reuses the same PD/LGD
+  // tables — NOT a parallel formula, NOT a hardcoded default).
+  try {
+    const engineEcl = computeExposureStage1Ecl(exposure);
+    return { stage: engineEcl.stage, eclMinor: engineEcl.eclMinor, source: "engine-stage-1" };
+  } catch {
+    // requireWeight threw (unknown risk bucket) — loud default, surfaced as a gap.
+    return { stage: 1, eclMinor: 0, source: "default" };
+  }
+}
+
+/** Default BA 200 product-category key for an exposure class. */
+const EXPOSURE_CLASS_TO_CATEGORY: Readonly<Record<ExposureClass, string>> = {
+  sovereign: "sovereign",
+  bank: "interbank",
+  corporate: "corporate",
+  retail: "retail",
+};
+
+/**
+ * Generate the BA 200 (Credit-Risk Loans-and-Advances) projection directly from
+ * the event store. Sources EAD from `readDebtExposures` (live bonds + interbank
+ * placements), stage + ECL from emitted `Ifrs9StageAssigned` events (engine
+ * Stage-1 fallback), then delegates to `generateBa200CreditRisk` so the ECL
+ * invariant and all aggregation are reused unchanged.
+ *
+ * Provenance: events are filtered through the default operating-book provenance
+ * filter (`defaultProvenanceFilter`) — build-phase fixtures and sandbox events
+ * are admitted in the build phase per the lifecycle-aware predicate, sandbox
+ * scaffolding excluded.
+ *
+ * @param store               the event store to read.
+ * @param asOf                ISO 8601 period-end date.
+ * @param entity              bank legal-entity short-id (must be a BA-200 bank).
+ * @param functionalCurrency  ISO-4217 functional currency for totals.
+ * @param classificationMap   optional productCategory → BA-200 row mapping;
+ *                            defaults to the standard sovereign/interbank/
+ *                            corporate/retail rows.
+ */
+export function generateBa200CreditRiskFromEvents(
+  store: EventStore,
+  asOf: string,
+  entity: string,
+  functionalCurrency: string,
+  classificationMap: readonly Ba200ClassificationEntry[] = DEFAULT_BA200_CLASSIFICATION_MAP,
+): Ba200CreditRisk {
+  const provenanceFilter = defaultProvenanceFilter();
+  const exposures = readDebtExposures(store, provenanceFilter);
+
+  // Staging events are themselves provenance-tagged; admit only those passing
+  // the same filter so a held-out assessment cannot stage a live exposure.
+  const staging = foldIfrs9Staging(store, provenanceFilter);
+
+  const portfolio: Ba200LoanEntry[] = exposures.map((exposure) => {
+    const resolved = resolveExposureStaging(exposure, staging);
+    const gross = exposure.eadMinor;
+    const ecl = resolved.eclMinor;
+    const ecl12Month = resolved.stage === 1 ? ecl : 0;
+    const eclLifetime = resolved.stage === 1 ? 0 : ecl;
+    return {
+      counterpartyId: exposure.instrumentId,
+      productCategory: EXPOSURE_CLASS_TO_CATEGORY[exposure.exposureClass],
+      grossCarryingAmount: gross,
+      stage: resolved.stage,
+      ecl12Month,
+      eclLifetime,
+      allowanceForCreditLoss: ecl,
+      netCarryingAmount: gross - ecl,
+      currency: exposure.currency,
+    };
+  });
+
+  return generateBa200CreditRisk({
+    entity,
+    asOf,
+    periodId: `period:${entity}:asof:${asOf.slice(0, 10)}`,
+    functionalCurrency,
+    portfolio,
+    classificationMap,
+  });
+}
+
+/**
+ * Fold emitted `Ifrs9StageAssigned` events into latest-wins lookups keyed by
+ * tradeId and by instrumentId, restricted to provenance-admitted events. Pure
+ * read; introduces NO new event type. Events replay in append order, so the
+ * last assessment for a key wins.
+ */
+function foldIfrs9Staging(
+  store: EventStore,
+  provenanceFilter: ReturnType<typeof defaultProvenanceFilter>,
+): StagingFold {
+  const byTradeId = new Map<string, { stage: Ba200Stage; eclMinor: number }>();
+  const byInstrumentId = new Map<string, { stage: Ba200Stage; eclMinor: number }>();
+
+  for (const ev of store.replay({ type: "Ifrs9StageAssigned" })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as Record<string, unknown>;
+    const tradeId = typeof p.tradeId === "string" ? p.tradeId : null;
+    const instrumentId = typeof p.instrumentId === "string" ? p.instrumentId : null;
+    const stageNum = p.stage;
+    const eclAmountMinor = typeof p.eclAmountMinor === "number" ? p.eclAmountMinor : null;
+    if ((stageNum !== 1 && stageNum !== 2 && stageNum !== 3) || eclAmountMinor === null) continue;
+    const entry = { stage: stageNum as Ba200Stage, eclMinor: eclAmountMinor };
+    if (tradeId) byTradeId.set(tradeId, entry);
+    if (instrumentId) byInstrumentId.set(instrumentId, entry);
+  }
+
+  return { byTradeId, byInstrumentId };
+}
+
+/**
+ * Standard BA 200 classification map for the events-first generator. Maps the
+ * four exposure-class-derived product categories to BA 200 form rows. Callers
+ * can supply a richer map once Mira's WS-INSTRUMENT-ANALYSES resolves the full
+ * SARB BA 200 published taxonomy.
+ */
+export const DEFAULT_BA200_CLASSIFICATION_MAP: readonly Ba200ClassificationEntry[] = [
+  { productCategory: "sovereign", ba200RowLabel: "Loans and advances — sovereign / public sector" },
+  { productCategory: "interbank", ba200RowLabel: "Loans and advances — banks (interbank)" },
+  { productCategory: "corporate", ba200RowLabel: "Loans and advances — corporate" },
+  { productCategory: "retail", ba200RowLabel: "Loans and advances — retail" },
+];

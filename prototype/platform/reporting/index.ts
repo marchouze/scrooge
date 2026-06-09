@@ -405,6 +405,8 @@ export {
   ba200StageSectionSchema,
   ba200TotalSchema,
   generateBa200CreditRisk,
+  generateBa200CreditRiskFromEvents,
+  DEFAULT_BA200_CLASSIFICATION_MAP,
 } from "./ba-200-credit-risk";
 
 export {
