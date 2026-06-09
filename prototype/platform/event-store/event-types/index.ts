@@ -157,6 +157,10 @@ export * from "./bond-accounting";
 //   EquityDividendAccrued, EquitySold.
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
 export * from "./equity-accounting";
+// WS-BA-RETURNS-FOLLOWON — exposure-level IFRS 9 impairment staging + ECL.
+// ImpairmentStageAssigned, EclComputed (feed events-first BA 200 credit risk).
+// Authority: D-BA-RETURNS-FOLLOWON-BATCH; D-IFRS9-STAGING-V1; IFRS 9 §5.5.
+export * from "./ecl-staging";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
 // IrdSwapTradeExecuted, IrdSwapPositionRevalued,
 //   IrdSwapCouponSettled, IrdSwapTerminated.

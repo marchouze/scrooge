@@ -405,6 +405,9 @@ export {
   ba200StageSectionSchema,
   ba200TotalSchema,
   generateBa200CreditRisk,
+  generateBa200CreditRiskFromEvents,
+  type Ba200ExposureClass,
+  BA_200_EXPOSURE_CLASS_ROWS,
 } from "./ba-200-credit-risk";
 
 export {

@@ -77,6 +77,23 @@
 
 import { z } from "zod";
 
+import type {
+  BondMaturedPayload,
+  BondSoldPayload,
+  BondTradeExecutedPayload,
+} from "../event-store/event-types/bond-accounting";
+import type {
+  EclComputedPayload,
+  ImpairmentStageAssignedPayload,
+} from "../event-store/event-types/ecl-staging";
+import type {
+  InterbankLoanMaturedPayload,
+  InterbankLoanPlacedPayload,
+  InterbankLoanRecalledEarlyPayload,
+} from "../event-store/event-types/repo-mmd-ibl";
+import type { EventStore } from "../event-store/store";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+
 // ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
@@ -681,3 +698,259 @@ export const ba200TotalSchema = z.object({
   totalEcl: z.number().int().nonnegative(),
   totalEntries: z.number().int().nonnegative(),
 });
+
+// ===========================================================================
+// Events-first generator (Principle 1 — events are the only source of truth)
+// ===========================================================================
+//
+// WS-BA-RETURNS-FOLLOWON — `generateBa200CreditRisk` (above) is a pure
+// projection over a CALLER-SUPPLIED portfolio. This events-first variant
+// folds the bank's LIVE credit-exposure book directly from the event log:
+//
+//   InterbankLoanPlaced  (minus InterbankLoanMatured / InterbankLoanRecalledEarly)
+//   BondTradeExecuted     (minus BondMatured / BondSold), net long positions only
+//     → join latest ImpairmentStageAssigned per exposure (default Stage 1)
+//     → join latest EclComputed per exposure (default ECL 0)
+//     → build the same Ba200LoanEntry[] portfolio
+//     → reuse generateBa200CreditRisk (identical aggregation + ECL invariant)
+//
+// DepositTaken is a LIABILITY (the bank owes the depositor) — not a credit
+// exposure of the bank — so it is excluded. Bond short positions (net sell)
+// are not loan-and-advance credit exposures either, so net-short / flat ISINs
+// are excluded.
+//
+// In the build phase the credit book is high-quality (SA sovereign bonds,
+// interbank placements) and no ECL events are emitted, so every exposure folds
+// to Stage 1 with ECL 0. The ECL invariant (sum relevant ECL == sum ACL) then
+// holds trivially (0 == 0); the PATH is fully Principle-1 for licence-day when
+// real PD/LGD/EAD model outputs land as EclComputed events.
+//
+// Authority: D-BA-RETURNS-FOLLOWON-BATCH; Principles/1-events-are-truth.md;
+//   Regulations Relating to Banks Reg 23 (Form BA 200); IFRS 9 §5.5.
+
+/** Basel / BA 200 credit-risk exposure class. */
+export type Ba200ExposureClass = "sovereign" | "bank" | "corporate" | "retail";
+
+/**
+ * Default exposure class by product when the originating event omits the
+ * optional `exposureClass` field. IBL → bank; bond → sovereign (the build-
+ * phase bond book is SA government bonds).
+ */
+const DEFAULT_EXPOSURE_CLASS_IBL: Ba200ExposureClass = "bank";
+const DEFAULT_EXPOSURE_CLASS_BOND: Ba200ExposureClass = "sovereign";
+
+/** Internal accumulator for one live credit exposure folded from the log. */
+interface ExposureAccum {
+  readonly exposureId: string;
+  readonly counterpartyId: string;
+  /** Product family the exposure folds from. */
+  readonly product: "interbank" | "bond";
+  exposureClass: Ba200ExposureClass;
+  /** Gross carrying amount in minor units (positive). */
+  grossCarryingAmount: number;
+  currency: string;
+}
+
+/**
+ * Generate the BA 200 (Credit-Risk Loans-and-Advances) projection directly
+ * from the event store (Principle 1). Pure read over the log; no writes.
+ *
+ * Folds live interbank-loan placements and net-long bond positions into
+ * exposures, joins the latest per-exposure IFRS 9 stage + ECL events, then
+ * delegates to `generateBa200CreditRisk` for the identical aggregation and
+ * the hard ECL-invariant assertion.
+ *
+ * Provenance filtering (build-phase-fixture events excluded) matches the
+ * sibling events-first adapters (e.g. ba-320-bond-events-adapter).
+ */
+export function generateBa200CreditRiskFromEvents(
+  store: EventStore,
+  asOf: string,
+  entity: string,
+  functionalCurrency: string,
+): Ba200CreditRisk {
+  assertBankEntity(entity);
+
+  const provenanceFilter = defaultProvenanceFilter();
+  const match = (ev: { payload: unknown; [k: string]: unknown }): boolean =>
+    eventMatchesProvenanceFilter(ev as never, provenanceFilter);
+
+  // -----------------------------------------------------------------------
+  // 1. Collect derecognised lifecycle terminals (exclude matured / closed).
+  // -----------------------------------------------------------------------
+
+  const maturedPlacements = new Set<string>();
+  for (const ev of store.replay({ type: "InterbankLoanMatured", asOf, entity })) {
+    if (!match(ev)) continue;
+    maturedPlacements.add((ev.payload as InterbankLoanMaturedPayload).placementId);
+  }
+  for (const ev of store.replay({ type: "InterbankLoanRecalledEarly", asOf, entity })) {
+    if (!match(ev)) continue;
+    maturedPlacements.add((ev.payload as InterbankLoanRecalledEarlyPayload).placementId);
+  }
+
+  const derecognisedTrades = new Set<string>();
+  for (const ev of store.replay({ type: "BondMatured", asOf, entity })) {
+    if (!match(ev)) continue;
+    derecognisedTrades.add((ev.payload as BondMaturedPayload).tradeId);
+  }
+  for (const ev of store.replay({ type: "BondSold", asOf, entity })) {
+    if (!match(ev)) continue;
+    derecognisedTrades.add((ev.payload as BondSoldPayload).tradeId);
+  }
+
+  // -----------------------------------------------------------------------
+  // 2. Fold live interbank-loan exposures (asset side; bank is the lender).
+  // -----------------------------------------------------------------------
+
+  const exposures = new Map<string, ExposureAccum>();
+
+  for (const ev of store.replay({ type: "InterbankLoanPlaced", asOf, entity })) {
+    if (!match(ev)) continue;
+    const p = ev.payload as InterbankLoanPlacedPayload;
+    if (maturedPlacements.has(p.placementId)) continue;
+    if (p.principalZar <= 0) continue;
+    const exposureId = `exposure:ibl:${p.placementId}`;
+    exposures.set(exposureId, {
+      exposureId,
+      counterpartyId: p.counterpartyLei,
+      product: "interbank",
+      exposureClass: p.exposureClass ?? DEFAULT_EXPOSURE_CLASS_IBL,
+      grossCarryingAmount: p.principalZar,
+      currency: "ZAR",
+    });
+  }
+
+  // -----------------------------------------------------------------------
+  // 3. Fold live bond exposures per ISIN (net long only — a credit exposure
+  //    is an amount owed *to* the bank; net-short / flat positions excluded).
+  // -----------------------------------------------------------------------
+
+  interface BondNet {
+    netNominalMinor: number;
+    lastCleanPricePercent: number;
+    currency: string;
+    counterpartyId: string;
+    exposureClass: Ba200ExposureClass;
+  }
+  const bondByIsin = new Map<string, BondNet>();
+
+  for (const ev of store.replay({ type: "BondTradeExecuted", asOf, entity })) {
+    if (!match(ev)) continue;
+    const p = ev.payload as BondTradeExecutedPayload;
+    if (derecognisedTrades.has(p.tradeId)) continue;
+    const signed = p.side === "buy" ? p.nominalMinor : -p.nominalMinor;
+    const existing = bondByIsin.get(p.bondIsin);
+    if (existing) {
+      existing.netNominalMinor += signed;
+      existing.lastCleanPricePercent = p.cleanPricePercent; // latest trade wins
+      existing.counterpartyId = p.counterpartyLei;
+      if (p.exposureClass) existing.exposureClass = p.exposureClass;
+    } else {
+      bondByIsin.set(p.bondIsin, {
+        netNominalMinor: signed,
+        lastCleanPricePercent: p.cleanPricePercent,
+        currency: p.currency,
+        counterpartyId: p.counterpartyLei,
+        exposureClass: p.exposureClass ?? DEFAULT_EXPOSURE_CLASS_BOND,
+      });
+    }
+  }
+
+  for (const [isin, pos] of bondByIsin) {
+    if (pos.netNominalMinor <= 0) continue; // net-short / flat: not a credit exposure
+    const grossCarryingAmount = Math.round((pos.netNominalMinor * pos.lastCleanPricePercent) / 100);
+    if (grossCarryingAmount <= 0) continue;
+    const exposureId = `exposure:bond:${isin}`;
+    exposures.set(exposureId, {
+      exposureId,
+      counterpartyId: pos.counterpartyId,
+      product: "bond",
+      exposureClass: pos.exposureClass,
+      grossCarryingAmount,
+      currency: pos.currency,
+    });
+  }
+
+  // -----------------------------------------------------------------------
+  // 4. Join latest per-exposure IFRS 9 stage (default Stage 1) + ECL (default 0).
+  // -----------------------------------------------------------------------
+
+  const stageByExposure = new Map<string, Ba200Stage>();
+  for (const ev of store.replay({ type: "ImpairmentStageAssigned", asOf, entity })) {
+    if (!match(ev)) continue;
+    const p = ev.payload as ImpairmentStageAssignedPayload;
+    stageByExposure.set(p.exposureId, p.stage); // replay is in sequence order — latest wins
+  }
+
+  const eclByExposure = new Map<string, number>();
+  for (const ev of store.replay({ type: "EclComputed", asOf, entity })) {
+    if (!match(ev)) continue;
+    const p = ev.payload as EclComputedPayload;
+    eclByExposure.set(p.exposureId, p.eclMinor); // latest wins
+  }
+
+  // -----------------------------------------------------------------------
+  // 5. Build the Ba200LoanEntry[] portfolio + classification map.
+  // -----------------------------------------------------------------------
+
+  const portfolio: Ba200LoanEntry[] = [];
+  const presentClasses = new Set<Ba200ExposureClass>();
+
+  for (const acc of exposures.values()) {
+    const stage = stageByExposure.get(acc.exposureId) ?? 1;
+    const ecl = eclByExposure.get(acc.exposureId) ?? 0;
+    // ECL cannot exceed the gross carrying amount (allowance is bounded).
+    const allowanceForCreditLoss = Math.min(ecl, acc.grossCarryingAmount);
+    presentClasses.add(acc.exposureClass);
+    portfolio.push({
+      counterpartyId: acc.counterpartyId,
+      productCategory: acc.exposureClass,
+      grossCarryingAmount: acc.grossCarryingAmount,
+      stage,
+      ecl12Month: stage === 1 ? allowanceForCreditLoss : 0,
+      eclLifetime: stage === 1 ? 0 : allowanceForCreditLoss,
+      allowanceForCreditLoss,
+      netCarryingAmount: acc.grossCarryingAmount - allowanceForCreditLoss,
+      currency: acc.currency,
+    });
+  }
+
+  // Deterministic portfolio ordering (counterparty, category) — keeps the
+  // fingerprint stable across replays with identical event sets.
+  portfolio.sort((a, b) => {
+    if (a.productCategory !== b.productCategory)
+      return a.productCategory < b.productCategory ? -1 : 1;
+    if (a.counterpartyId !== b.counterpartyId) return a.counterpartyId < b.counterpartyId ? -1 : 1;
+    return 0;
+  });
+
+  const classificationMap: Ba200ClassificationEntry[] = BA_200_EXPOSURE_CLASS_ROWS.filter((c) =>
+    presentClasses.has(c.productCategory as Ba200ExposureClass),
+  );
+
+  // -----------------------------------------------------------------------
+  // 6. Delegate to the pure generator — identical aggregation + ECL invariant.
+  // -----------------------------------------------------------------------
+
+  return generateBa200CreditRisk({
+    entity,
+    asOf,
+    periodId: `period:${entity.toLowerCase()}:asof:${asOf}`,
+    functionalCurrency,
+    portfolio,
+    classificationMap,
+  });
+}
+
+/**
+ * BA 200 classification rows by Basel credit-risk exposure class. Used by the
+ * events-first generator to map the folded exposure classes to BA 200 form
+ * row labels. Authority: Regulations Relating to Banks Reg 23 (Form BA 200).
+ */
+export const BA_200_EXPOSURE_CLASS_ROWS: readonly Ba200ClassificationEntry[] = [
+  { productCategory: "sovereign", ba200RowLabel: "Loans and advances — sovereign" },
+  { productCategory: "bank", ba200RowLabel: "Loans and advances — banks" },
+  { productCategory: "corporate", ba200RowLabel: "Loans and advances — corporate" },
+  { productCategory: "retail", ba200RowLabel: "Loans and advances — retail" },
+];

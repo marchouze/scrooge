@@ -567,6 +567,17 @@ export const interbankLoanPlacedPayloadSchema = z.object({
   bookId: z.string(),
   /** Reference to the FinancialInstrumentDefined instrumentId. */
   instrumentRef: z.string(),
+  /**
+   * Basel / BA 200 credit-risk exposure class for the counterparty.
+   *   sovereign — government / central-bank counterparty.
+   *   bank       — bank / financial-institution counterparty (typical for IBL).
+   *   corporate — corporate counterparty.
+   *   retail     — retail counterparty.
+   * Optional additive field; absent for legacy events. The events-first BA 200
+   * generator defaults interbank-loan exposures to "bank" when absent.
+   * Authority: D-BA-RETURNS-FOLLOWON-BATCH; Regulations Relating to Banks Reg 23.
+   */
+  exposureClass: z.enum(["sovereign", "bank", "corporate", "retail"]).optional(),
 });
 
 export type InterbankLoanPlacedPayload = z.infer<typeof interbankLoanPlacedPayloadSchema>;

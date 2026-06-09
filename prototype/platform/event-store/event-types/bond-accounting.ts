@@ -73,6 +73,17 @@ export const bondTradeExecutedPayloadSchema = z.object({
    * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
    */
   bookDesignation: z.enum(["trading", "banking"]).optional(),
+  /**
+   * Basel / BA 200 credit-risk exposure class for the issuer.
+   *   sovereign — government / central-bank issuer (e.g. SAGB, ISIN ZAG…).
+   *   bank       — bank / financial-institution issuer.
+   *   corporate — corporate issuer.
+   *   retail     — retail issuer (not typical for bonds; included for symmetry).
+   * Optional additive field; absent for legacy events. The events-first BA 200
+   * generator defaults bond exposures to "sovereign" when absent.
+   * Authority: D-BA-RETURNS-FOLLOWON-BATCH; Regulations Relating to Banks Reg 23.
+   */
+  exposureClass: z.enum(["sovereign", "bank", "corporate", "retail"]).optional(),
 });
 
 export type BondTradeExecutedPayload = z.infer<typeof bondTradeExecutedPayloadSchema>;

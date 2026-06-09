@@ -152,6 +152,10 @@ export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
 //   IFRS 9 §5.5; Regulations Relating to Banks Reg 23.
 export { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
+// WS-BA-RETURNS-FOLLOWON — exposure-level IFRS 9 impairment staging + ECL events.
+// ImpairmentStageAssigned, EclComputed.
+// Authority: D-BA-RETURNS-FOLLOWON-BATCH; D-IFRS9-STAGING-V1; IFRS 9 §5.5; RRB Reg 23.
+export { ECL_STAGING_EVENT_TYPES_REGISTRY } from "./ecl-staging";
 // D-CAE-QUARTERLY-RUN-G5 — CAE quarterly autonomous run event types.
 // AuditPlanUpdated, AuditIssueTrackerReviewed, QaipAttestationFiled,
 // ThirdLineOpinionFiled, GovernanceSeatRunCompleted.
@@ -229,6 +233,7 @@ import {
 } from "./governance";
 import { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-runs";
 import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
+import { ECL_STAGING_EVENT_TYPES_REGISTRY } from "./ecl-staging";
 import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
@@ -413,6 +418,13 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
   //   IFRS 9 §5.5; Regulations Relating to Banks Reg 23.
   ...IFRS9_STAGING_EVENT_TYPES_REGISTRY,
+  // WS-BA-RETURNS-FOLLOWON — exposure-level IFRS 9 impairment staging + ECL.
+  // ImpairmentStageAssigned, EclComputed feed the events-first BA 200 credit-
+  // risk return (generateBa200CreditRiskFromEvents). Placed last so typed
+  // schema rows override any placeholder rows.
+  // Authority: D-BA-RETURNS-FOLLOWON-BATCH; D-IFRS9-STAGING-V1; IFRS 9 §5.5;
+  //   Regulations Relating to Banks Reg 23 (Form BA 200).
+  ...ECL_STAGING_EVENT_TYPES_REGISTRY,
   // D-CAE-QUARTERLY-RUN-G5 — CAE quarterly autonomous run event types.
   // AuditPlanUpdated, AuditIssueTrackerReviewed, QaipAttestationFiled,
   // ThirdLineOpinionFiled, GovernanceSeatRunCompleted.
