@@ -16,7 +16,17 @@
 // (cco|cfo|cro|company-secretary|operational|head-of-global-markets|…). No new
 // seats are invented; a family that does not fit leaves owner empty and is
 // reported. The projection's replace-on-re-adopt semantics (later `as_of` wins,
-// `buildBankObligations` folds by `as_of`) carry the correction.
+// `buildBankObligations` folds by `as_of`, ties keep replay order) carry the
+// correction.
+//
+// Fold-race safety: the BCBS set is also re-emitted with an empty owner by the
+// live graph-import path (`importBcbsObligationGraphs`), which stamps events at
+// wall-clock-now. A fixed correction stamp could therefore lose the `as_of`
+// fold to a later re-import. So each correction is stamped strictly LATER than
+// the latest existing `as_of` for that id (max + 1s), which deterministically
+// wins the fold and keeps the result stable against further re-imports up to
+// that instant. Re-running after a fresh re-import simply re-stamps above the
+// new max — still idempotent in the "owner already correct" sense.
 //
 // Idempotent: an id whose latest payload already carries the correct owner is
 // skipped, so a second run is a no-op. The seed JSON and the 417 SA rows are NOT
@@ -36,7 +46,6 @@ import { makeObligationAdopted } from "../platform/event-store/event-types/oblig
 import type { ObligationAdoptedPayload } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { Actor } from "../platform/event-store/types";
 
-const CORRECTION_AT = "2026-06-09T12:00:00Z"; // later than the import + the 2026-06-09 SA-correction stamp
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR: Actor = { type: "service", id: "agent:mira:bcbs-obligation-owners" };
 const CITATIONS = [
@@ -84,34 +93,50 @@ function isBcbsImport(p: ObligationAdoptedPayload): boolean {
   return /^BCBS-/i.test(p.obligationId) || /bcbs/i.test(p.urn ?? "");
 }
 
+interface LatestAdopted {
+  /** The in-force payload (last by `as_of`, ties by replay order). */
+  payload: ObligationAdoptedPayload;
+  /** Max `as_of` seen for this id, across every event (used to win the fold). */
+  maxAsOf: string;
+}
+
 /**
- * Latest adopted payload per obligation id, folded by `as_of` (ties keep replay
- * order — the same fold `buildBankObligations` uses).
+ * Latest adopted payload + max `as_of` per obligation id, folded by `as_of`
+ * (ties keep replay order — the same fold `buildBankObligations` uses).
  */
-function latestAdoptedById(): Map<string, ObligationAdoptedPayload> {
+function latestAdoptedById(): Map<string, LatestAdopted> {
   const events = [...eventStore.replay({ type: "ObligationAdopted" })].sort((a, b) =>
     a.as_of < b.as_of ? -1 : a.as_of > b.as_of ? 1 : 0,
   );
-  const byId = new Map<string, ObligationAdoptedPayload>();
+  const byId = new Map<string, LatestAdopted>();
   for (const ev of events) {
     const p = ev.payload as ObligationAdoptedPayload;
-    if (p.obligationId) byId.set(p.obligationId, p);
+    if (!p.obligationId) continue;
+    const prev = byId.get(p.obligationId);
+    const maxAsOf = prev && prev.maxAsOf > ev.as_of ? prev.maxAsOf : ev.as_of;
+    // Ascending sort means each later iteration carries the in-force payload.
+    byId.set(p.obligationId, { payload: p, maxAsOf });
   }
   return byId;
+}
+
+/** ISO timestamp one second later than `iso` — strictly wins the `as_of` fold. */
+function oneSecondAfter(iso: string): string {
+  return new Date(new Date(iso).getTime() + 1000).toISOString();
 }
 
 function main(): void {
   const write = process.argv.includes("--write");
   const latest = latestAdoptedById();
 
-  const bcbs = [...latest.values()].filter(isBcbsImport);
-  const emptyOwner = bcbs.filter((p) => !(p.owner ?? "").trim());
+  const bcbs = [...latest.values()].filter((l) => isBcbsImport(l.payload));
+  const emptyOwner = bcbs.filter((l) => !(l.payload.owner ?? "").trim());
 
   let emitted = 0;
   const unfit: Array<{ id: string; family: string }> = [];
   const assigned: Array<{ id: string; family: string; seat: string }> = [];
 
-  for (const current of emptyOwner) {
+  for (const { payload: current, maxAsOf } of emptyOwner) {
     const family = familyOf(current.obligationId);
     const seat = FAMILY_TO_SEAT[family];
     if (!seat) {
@@ -119,21 +144,25 @@ function main(): void {
       continue;
     }
 
-    // Idempotency: skip if the latest payload already carries the right owner.
+    // Idempotency: skip if the in-force payload already carries the right owner.
     // (The empty-owner filter already guarantees a change is needed, but this
     //  keeps the guard explicit so a re-run after a partial write is a no-op.)
     if ((current.owner ?? "").trim() === seat) continue;
 
+    // Stamp strictly later than the latest existing event for this id so the
+    // correction deterministically wins the `as_of` fold even if the live BCBS
+    // graph-import re-emitted an empty-owner row after us.
+    const correctionAt = oneSecondAfter(maxAsOf);
     const payload: ObligationAdoptedPayload = {
       ...current,
       owner: seat,
-      adoptedAt: CORRECTION_AT,
+      adoptedAt: correctionAt,
     };
 
     if (write) {
       eventStore.append(
         makeObligationAdopted({
-          asOf: CORRECTION_AT,
+          asOf: correctionAt,
           entity: ENTITY,
           actor: ACTOR,
           citations: CITATIONS,
