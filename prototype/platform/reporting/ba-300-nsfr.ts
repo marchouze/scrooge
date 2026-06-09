@@ -472,7 +472,7 @@ export async function generateNsfrFromEvents(
   store: EventStore,
   asOf: string,
   entity: string,
-  functionalCurrency: string,
+  _functionalCurrency: string,
 ): Promise<NsfrProjection> {
   const provenanceFilter = defaultProvenanceFilter();
 

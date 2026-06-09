@@ -818,9 +818,9 @@ function foldSettlementCashFlows(args: {
 
 const DEPOSIT_RUNOFF_RATES: Record<DepositTakenPayload["depositCategory"], number> = {
   "retail-stable": 0.03,
-  "retail-less-stable": 0.10,
+  "retail-less-stable": 0.1,
   "wholesale-operational": 0.25,
-  "wholesale-non-operational": 1.00,
+  "wholesale-non-operational": 1.0,
 };
 
 /**
