@@ -224,6 +224,13 @@ export const subLedgerPostingEmittedPayloadSchema = z
       // legs silently mis-booked to the USD slot (legacy default→USD fallback)
       // into their per-currency home account (ACC-2100-010..024). Append-only.
       "sla-rebook-simulated-misbooking",
+      // D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE (CEO-approved): re-books FX-spot
+      // legs stranded in the unresolved-currency suspense (ACC-2100-007) for a
+      // currency that now has a dedicated per-currency home account (e.g. a
+      // pre-provisioning runtime run that posted GBP/JPY nostro legs to
+      // suspense). Reverses out of suspense and re-books into the home account.
+      // Append-only. Authority: D-PROACTIVE-ESCALATION-SURFACING.
+      "sla-rebook-unresolved-currency-suspense",
       // Observed in production DB but missing from schema (pre-existing postings
       // that landed before this enum was formalised).
       "cancellation-reversal",
