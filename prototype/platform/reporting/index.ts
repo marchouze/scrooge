@@ -275,6 +275,7 @@ export {
 
 export {
   type Ba100FromEventsInput,
+  buildLeverageExposureWithBa110,
   generateBa100CapitalFromEvents,
 } from "./ba-700-events-adapter";
 
@@ -342,6 +343,33 @@ export {
   renderOffBalanceSheetToJson,
   type RenderOffBalanceSheetOptions,
 } from "./off-balance-sheet-render";
+
+// ---------------------------------------------------------------------------
+// WS-BA-RETURNS-P1-SOURCING Phase 4 — BA 110 (Off-Balance-Sheet Activities),
+// events-first. Canonical numbering per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
+// ---------------------------------------------------------------------------
+
+export {
+  type Ba110OffBalanceSheet,
+  type Ba110ObsLineItem,
+  type Ba110ObsSection,
+  Ba110OffBalanceSheetGeneratorError,
+  BA_110_BANK_ENTITIES as BA_110_OBS_BANK_ENTITIES,
+  BA_110_DERIVATIVE_BUILD_PHASE_CCF,
+  ba110ToLeverageOffBalanceSheetExposure,
+  generateBa110OffBalanceSheetFromEvents,
+} from "./ba-110-off-balance-sheet";
+
+export {
+  Ba110ObsRenderSchema,
+  type Ba110ObsRender,
+  BA_110_OBS_SCHEMA_URL,
+  BA_110_OBS_RENDERER_VERSION,
+  canonicaliseBa110Obs,
+  renderBa110ObsCanonical,
+  renderBa110ObsToJson,
+  type RenderBa110ObsOptions,
+} from "./ba-110-render";
 
 // ---------------------------------------------------------------------------
 // Slice 6 — IFRS statement renderer (BS / IS / CF / Equity / Notes skeleton)

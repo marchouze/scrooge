@@ -290,6 +290,15 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-110-LCR; P4-SECURITY-DESIGNED-IN.
   "platform/reporting/ba-300-lcr.test.ts",
+  // BA 110 off-balance-sheet generator + BA 700 leverage wiring unit tests
+  // (WS-BA-RETURNS-P1-SOURCING Phase 4). Co-located per-module test convention.
+  // Raw EventStore(":memory:") is a build-phase fixture for folding primary
+  // trade events (IrdSwapTradeExecuted / RepoTradeOpened /
+  // FundingLineCommitmentRecorded) into the BA 110 sections + leverage
+  // exposure, not a production access path. T-01 carve-out.
+  // Citation: D-BA-RETURNS-P1-SOURCING-WORKSTREAM; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL;
+  //   P4-SECURITY-DESIGNED-IN.
+  "platform/reporting/ba-110-off-balance-sheet.test.ts",
   // pricing-model-definitions — platform module containing seedValidationMethodologies,
   // seedModelValidations, seedModelRegisteredEvents, and seedModelRegistry. Called from
   // standalone scripts (scripts/run-model-*.ts) which receive the raw store; the retired

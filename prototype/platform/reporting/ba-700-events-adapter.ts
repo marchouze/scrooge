@@ -36,6 +36,7 @@
 
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+import { generateBa110OffBalanceSheetFromEvents } from "./ba-110-off-balance-sheet";
 import type {
   AccountCapitalClassification,
   RegulatoryDeduction,
@@ -100,9 +101,21 @@ export interface Ba100FromEventsInput {
   readonly bufferRequirements?: BufferRequirements;
   /**
    * Optional Basel III leverage-ratio exposure-measure decomposition
-   * (per BCBS §147–§165). Forwarded to the pure generator unchanged.
+   * (per BCBS §147–§165). When `foldBa110OffBalanceSheet` is true the
+   * off-balance-sheet slot is overlaid from the BA 110 events-fold; the
+   * caller's other components (on-balance-sheet, derivative EAD, SFT) are
+   * preserved.
    */
   readonly leverageExposureMeasure?: LeverageExposureDecomposition;
+  /**
+   * When true (default false), fold the BA 110 (Off-Balance-Sheet Activities)
+   * generator from primary trade events and feed its CCF-weighted total into
+   * the leverage exposure measure's `offBalanceSheetExposurePostCcfMinor`
+   * slot (BCBS §165). If `leverageExposureMeasure` is also supplied, the
+   * BA 110 OBS overlays its OBS slot; otherwise a fresh decomposition is built
+   * with only the OBS slot populated. WS-BA-RETURNS-P1-SOURCING Phase 4.
+   */
+  readonly foldBa110OffBalanceSheet?: boolean;
   /**
    * Upper bound (inclusive) on the event `sequence` column.
    * Sourced from `AccountingPeriodClosed.eventSequence` (frozen cursor).
@@ -229,6 +242,57 @@ function foldCapitalAccountBalances(
 }
 
 // ---------------------------------------------------------------------------
+// Leverage off-balance-sheet exposure — folded from BA 110 (events-first).
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a leverage-ratio exposure-measure decomposition whose
+ * `offBalanceSheetExposurePostCcfMinor` slot is sourced from the BA 110
+ * (Off-Balance-Sheet Activities) generator's CCF-weighted total — folded
+ * directly from primary trade events (IrdSwapTradeExecuted, RepoTradeOpened,
+ * FundingLineCommitmentRecorded less FundingLineDrawn).
+ *
+ * The other three components default to zero unless supplied via `base`;
+ * callers that have an SA-CCR EAD value or an SFT exposure can pass them in
+ * `base` and this helper overlays the OBS slot. The on-balance-sheet slot is
+ * typically the BA 100 asset stock (BCBS §149).
+ *
+ * BCBS §165: off-balance-sheet items enter the leverage exposure measure
+ * post credit-conversion factor — which is exactly what BA 110's
+ * `ccfWeightedTotalMinor` carries.
+ *
+ * Authority: WS-BA-RETURNS-P1-SOURCING Phase 4; D-BA-RETURNS-P1-SOURCING-WORKSTREAM.
+ */
+export function buildLeverageExposureWithBa110(
+  eventStore: EventStore,
+  args: {
+    readonly entity: string;
+    readonly asOf: string;
+    readonly functionalCurrency: string;
+    readonly untilSequence?: number;
+    /** Optional pre-composed components (on-balance-sheet, derivative EAD, SFT). */
+    readonly base?: Partial<LeverageExposureDecomposition>;
+  },
+): LeverageExposureDecomposition {
+  const obs = generateBa110OffBalanceSheetFromEvents(
+    eventStore,
+    args.asOf,
+    args.entity,
+    args.functionalCurrency,
+    args.untilSequence,
+  );
+  return {
+    onBalanceSheetExposureMinor: args.base?.onBalanceSheetExposureMinor ?? 0,
+    derivativeExposureMinor: args.base?.derivativeExposureMinor ?? 0,
+    sftExposureMinor: args.base?.sftExposureMinor ?? 0,
+    // BCBS §165 — OBS items enter post-CCF; BA 110 carries the CCF-weighted total.
+    offBalanceSheetExposurePostCcfMinor: obs.ccfWeightedTotalMinor,
+    ...(args.base?.saccrEventId ? { saccrEventId: args.base.saccrEventId } : {}),
+    source: args.base?.source ?? "ba-110-events-fold",
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Generator — folds events, then delegates to the pure generator.
 // ---------------------------------------------------------------------------
 
@@ -260,6 +324,20 @@ export function generateBa100CapitalFromEvents(
     input.untilSequence,
   );
 
+  // Optionally fold BA 110 (Off-Balance-Sheet Activities) into the leverage
+  // exposure measure's OBS slot from primary trade events (BCBS §165).
+  // WS-BA-RETURNS-P1-SOURCING Phase 4.
+  let leverageExposureMeasure = input.leverageExposureMeasure;
+  if (input.foldBa110OffBalanceSheet) {
+    leverageExposureMeasure = buildLeverageExposureWithBa110(eventStore, {
+      entity: input.entity,
+      asOf: input.asOf,
+      functionalCurrency: input.functionalCurrency,
+      ...(input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {}),
+      ...(input.leverageExposureMeasure ? { base: input.leverageExposureMeasure } : {}),
+    });
+  }
+
   // Delegate to the pure generator with the folded rows in lieu of the
   // trial-balance snapshot. The `trialBalance` field of Ba100GeneratorInput
   // accepts the same row shape — we pass the directly-folded rows.
@@ -273,9 +351,7 @@ export function generateBa100CapitalFromEvents(
     deductions: input.deductions,
     rwa: input.rwa,
     bufferRequirements: input.bufferRequirements ?? BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
-    ...(input.leverageExposureMeasure
-      ? { leverageExposureMeasure: input.leverageExposureMeasure }
-      : {}),
+    ...(leverageExposureMeasure ? { leverageExposureMeasure } : {}),
     // No trialBalanceSnapshotEventId — capital stock came from primary events.
     // Provenance chain: SubLedgerPostingEmitted / CapitalContributionRecorded
     //   → foldCapitalAccountBalances → generateBa100Capital.
