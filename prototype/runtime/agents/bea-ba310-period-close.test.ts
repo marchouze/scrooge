@@ -5,11 +5,11 @@
 //
 // Asserts:
 //   1. A closed bank period generates the BA-310 return and records a
-//      SarbSubmissionAttempted{formId:"BA310"} submission (mode "simulator").
+//      SarbSubmissionAttempted{formId:"BA320"} submission (mode "simulator").
 //   2. Idempotency — re-running the same closed period does NOT emit a second
 //      BA-310 submission (one BA-310 record per period).
 //   3. A non-bank entity is silently skipped (no submission).
-//   4. The submission record carries the canonical form code BA310 (not BA320)
+//   4. The submission record carries the canonical form code BA320 (not the fabricated BA310)
 //      per D-BA-RETURN-FORM-NUMBERING-RECON.
 //
 // Raw EventStore(":memory:") + MarketDataStore(":memory:") are build-phase test
@@ -61,7 +61,7 @@ function countBa310Submissions(store: EventStore): number {
   let n = 0;
   for (const ev of store.replay({ type: "SarbSubmissionAttempted" })) {
     const p = ev.payload as { formId?: string };
-    if (p.formId === "BA310") n += 1;
+    if (p.formId === "BA320") n += 1;
   }
   return n;
 }
@@ -86,7 +86,7 @@ describe("bea:ba310-period-close — generation + submission", () => {
     expect(ba310SubmissionExists(store, PERIOD_ID)).toBe(true);
   });
 
-  it("records the submission with the canonical form code BA310 (not BA320)", async () => {
+  it("records the submission with the canonical form code BA320 (not the fabricated BA310)", async () => {
     const store = new EventStore(":memory:");
     const md = makeMarketData();
 
@@ -104,7 +104,7 @@ describe("bea:ba310-period-close — generation + submission", () => {
       reportingPeriod: string;
       mode: string;
     };
-    expect(payload.formId).toBe("BA310");
+    expect(payload.formId).toBe("BA320");
     expect(payload.reportingPeriod).toBe(PERIOD_ID);
     // Build-phase: generation is wired; the live SARB transport is licence-day.
     expect(payload.mode).toBe("simulator");

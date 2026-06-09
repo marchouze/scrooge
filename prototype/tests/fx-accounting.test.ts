@@ -52,9 +52,9 @@ import {
   unrealisedPnlCalculator,
 } from "../platform/accounting/fx-calculators";
 
-import { fxPositionsToBa310Input } from "../platform/reporting/ba-310-fx-adapter";
+import { fxPositionsToBa310Input } from "../platform/reporting/ba-320-fx-adapter";
 
-import { generateBa310MarketRisk } from "../platform/reporting/ba-310-market-risk";
+import { generateBa310MarketRisk } from "../platform/reporting/ba-320-market-risk";
 
 // ---------------------------------------------------------------------------
 // Test fixtures

@@ -1,108 +1,206 @@
 // platform/returns/ba300/period-close-subscriber.ts
 //
-// M3 Slice 5 — AccountingPeriodClosed subscriber that triggers BA 300
-// (operational risk) generation when an accounting period closes for a
-// bank-licence entity.
+// M2 Slice 3 — AccountingPeriodClosed subscriber that triggers BA 110 (LCR)
+// generation when an accounting period closes for a bank-licence entity.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved
-// 2026-05-10), pack §6 Slice 5.
+// 2026-05-10), pack §6 Slice 3.
 //
 // ## Design
 //
-// The subscriber wires the BA 300 generator to the period-close event stream.
+// The subscriber wires the BA 110 generator to the period-close event stream.
 // When `AccountingPeriodClosed` fires for `LE-ZA-HOZ-BANK`, the subscriber:
-//   1. Uses caller-supplied annual gross-income rows per business line.
-//   2. Calls `generateBa300OpRisk` with the basic indicator approach (BIA)
-//      at 15% of 3-year average positive gross income.
-//   3. Returns the typed `Ba300Output` for the caller to render / store.
-//
-// ## Build-phase posture
-//
-// Gross-income rows are caller-supplied (rehearsal-grade; placeholder zeros
-// accepted). Live numbers populate after commencement-of-trading + 3 fiscal
-// years of audited gross income. The substrate gap is surfaced in the output
-// `placeholders` field.
+//   1. Reads the trial-balance rows from the event payload's referenced
+//      `TrialBalanceSnapshotted` event_id (persisted in the event store).
+//   2. Folds the unified-position and security-master projections to compute
+//      instrument-level HQLA stock (`computeHqlaStockFromPositions`).
+//   3. Derives the additive cash HQLA contribution from each cash account's
+//      custodian Party classification (`computeCashHqlaFromCustodian`): cash
+//      held with a `central-bank`-classified custodian (the SARB) is Level-1
+//      (Reg 26(7)(a)(i); BCBS D295 §50(a)). The tier is a query over the
+//      event-sourced Party register, never an authored COA tag.
+//   4. Calls `generateBa110Lcr` with the event store, trial balance, the
+//      instrument-level `hqlaStock`, and the custodian-derived `cashHqlaLines`.
+//   5. Returns the typed `Ba110Output` for the caller to render / store.
 //
 // ## Principle 1 compliance
 //
-// The BA 300 BIA uses annual gross income — an accounting aggregate that
-// is typically derived from the income statement rather than directly from
-// primary events. The correct P1-compliant path folds gross-income from
-// `RevenueRecognitionEmitted` events (or equivalent); that event stream is
-// a substrate gap (roadmap: post-commencement-of-trading). Until it lands,
-// the caller supplies gross-income rows from the period's trial-balance
-// summary. The subscriber does NOT compute gross income from the trial
-// balance directly — that computation belongs to the caller.
+// Cash flows (LCR denominator) are folded directly from
+// `FxSettlementInstructed` and `TradeMatured` events inside
+// `generateBa110Lcr` — not from GL account balances. HQLA stock (numerator)
+// is instrument-level (SecurityMaster × unified-position) plus the
+// custodian-derived cash residual — both queries over the event log, not
+// stored classification state. This is the Principle 1 compliant architecture
+// per `Principles/1-events-are-truth.md` (updated 2026-05-12).
 //
-// Citation: Principles/1-events-are-truth.md; D-REPORTING-CAPABILITY-M2-M3-
-//   BUILD-PLAN; Banks Act 94 of 1990 §70; Regulations Relating to Banks
-//   Reg 33; BCBS D196.
+// ## Custodian-derived cash HQLA
+//
+// Cash has no ISIN, so it cannot be classified per-security. Its HQLA
+// eligibility flows from *who holds it*: the cash account's custodian Party.
+// The COA registry records each cash account's `custodianPartyId`
+// (e.g. ACC-1100-001 → `urn:party:legal-entity:sarb`); the Party register
+// records the custodian's classification (`central-bank`). The tier is
+// derived from the two — never from a hand-typed `hqlaLevel` tag on the
+// account. This removes the prior authored-tag failure mode (the tier was
+// stored state, not a query over a source fact).
+//
+// Citation: Principles/1-events-are-truth.md; D-MARKETS-SCHEMA-FOUNDATION;
+//           D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
+//           D-FINANCIAL-INSTRUMENT-ENTITY;
+//           D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
+//           BCBS D295 §50; Reg 26(7)(a)(i).
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line mapping + subscriber owner)
-//   + Helena (Chief Risk Officer, governance — reports to CEO; op-risk
-//   methodology owner — citation).
+//   + Eitan (Treasury & liquidity engineer, engineering — LCR methodology
+//   owner)
+//   + Anya (Projection Engineer, engineering — semantic-layer integration).
 
-import type { AccountingPeriodClosedPayload } from "../../event-store/event-types";
+import { COA_ACCOUNTS, coaToHqlaClassifications } from "../../accounting/coa-registry";
+import type {
+  AccountingPeriodClosedPayload,
+  TrialBalanceSnapshottedPayload,
+} from "../../event-store/event-types";
+import type { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
+import { buildPartyProjection } from "../../identity/party-projection";
 import {
-  type Ba300GeneratorInput,
-  type Ba300Output,
-  type OpRiskGrossIncomeRow,
-  generateBa300OpRisk,
-} from "../../reporting/ba-300-op-risk";
+  securityMasterInitial,
+  securityMasterProjection,
+  unifiedPositionInitial,
+  unifiedPositionProjection,
+} from "../../projections/markets";
+import {
+  type AccountLiquidityClassification,
+  BA_110_BANK_ENTITIES,
+  type Ba110Output,
+  generateBa110Lcr,
+} from "../../reporting/ba-300-lcr";
+import {
+  type CashHqlaCustodianAccount,
+  type HqlaStockInput,
+  computeCashHqlaFromCustodian,
+} from "../../reporting/hqla-stock";
 
 // ---------------------------------------------------------------------------
-// Per-entity scope guard
+// Functional currency (build-phase scope)
 // ---------------------------------------------------------------------------
 
-export const BA_300_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+// TODO: read from AccountingPeriodOpened.functionalCurrency (Slice 6+). Until
+// then the bank's single licensed entity reports in ZAR (Principle 5: FX
+// positions are excluded from the functional-currency LCR until conversion
+// lands).
+const FUNCTIONAL_CURRENCY = "ZAR";
+
+// ---------------------------------------------------------------------------
+// Cash-nature accounts with a custodian (HQLA tier derived from the custodian)
+// ---------------------------------------------------------------------------
+
+/**
+ * Cash-nature GL accounts that carry a custodian Party. The HQLA tier of each
+ * balance is *derived* from the custodian's Party classification at report
+ * time (`central-bank` → Level-1), never from an authored COA tag. Securities
+ * accounts MUST NOT appear here — the instrument-level path
+ * (`computeHqlaStockFromPositions`) owns those.
+ *
+ * Sourced from the COA registry (`category === "asset-cash"` with a
+ * `custodianPartyId`). This is the same derivation the rehearsal CLI
+ * (`scripts/render-ba-110.ts`) uses, kept in lock-step so the two BA 110
+ * code paths agree.
+ *
+ * Authority: D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
+ * BCBS D295 §50; Reg 26(7)(a)(i).
+ */
+const CASH_CUSTODIAN_ACCOUNTS: readonly CashHqlaCustodianAccount[] = COA_ACCOUNTS.filter(
+  (a): a is typeof a & { custodianPartyId: string } =>
+    a.category === "asset-cash" && a.custodianPartyId !== undefined,
+).map((a) => ({ leafAccountId: a.id, custodianPartyId: a.custodianPartyId }));
 
 // ---------------------------------------------------------------------------
 // Subscriber input / output
 // ---------------------------------------------------------------------------
 
 /**
- * Input to the `AccountingPeriodClosed` → BA 300 subscriber.
+ * Input to the `AccountingPeriodClosed` → BA 110 subscriber.
  */
-export interface Ba300PeriodCloseSubscriberInput {
+export interface Ba110PeriodCloseSubscriberInput {
   /** The `AccountingPeriodClosed` event payload that triggered the subscriber. */
   readonly closedPayload: AccountingPeriodClosedPayload;
-  /** The entity the period was closed for. Must be in `BA_300_SUBSCRIBER_ENTITIES`. */
+  /** The entity the period was closed for. Must be in `BA_110_BANK_ENTITIES`. */
   readonly entity: string;
+  /**
+   * Event store — provides access to:
+   *   (a) `TrialBalanceSnapshotted` event rows (cash HQLA base);
+   *   (b) unified-position / security-master projections (instrument HQLA);
+   *   (c) the Party register (custodian → classification lookup);
+   *   (d) `FxSettlementInstructed` / `TradeMatured` events (cash flows).
+   */
+  readonly eventStore: EventStore;
   /** Actor running the subscriber (typically the Bea agent). */
   readonly actor: Actor;
-  /** ISO 4217 functional currency (default "ZAR"). */
-  readonly functionalCurrency?: string;
   /**
-   * Per-business-line annual gross-income rows for up to 3 fiscal years.
-   * Build-phase: caller supplies rehearsal-grade values; can be empty (⇒ zero
-   * capital). Post-commencement: derived from `RevenueRecognitionEmitted`
-   * events (substrate gap).
-   *
-   * // TODO: derive from RevenueRecognitionEmitted event stream (substrate gap).
+   * Optional override liquidity classifications. Defaults to the COA-registry
+   * derived securities classifications (`coaToHqlaClassifications()`). With the
+   * instrument-level `hqlaStock` path active (always, here) this feeds only the
+   * generator's `classificationsFingerprint` metadata — HQLA stock is computed
+   * instrument-level + custodian-derived-cash, not from these account tags.
    */
-  readonly grossIncome: readonly OpRiskGrossIncomeRow[];
+  readonly classifications?: readonly AccountLiquidityClassification[];
   /**
-   * Which approach the bank reports under. Build-phase: "bia" (Basic Indicator
-   * Approach). "tsa" (Standardised Approach) available when business-line
-   * revenue tracking is live.
+   * ISO 8601 — start of the 30-day stress window for cash-flow folding.
+   * Per BCBS D295 §31 the window is the 30 calendar days from the
+   * reporting date. Convention: `AccountingPeriodOpened.periodStart`.
    */
-  readonly approach?: "bia" | "tsa";
+  readonly periodStart: string;
 }
 
 /**
- * Result of the `AccountingPeriodClosed` → BA 300 subscriber.
+ * Result of the `AccountingPeriodClosed` → BA 110 subscriber.
  */
-export interface Ba300PeriodCloseSubscriberResult {
-  /** The generated BA 300 projection. Caller renders + stores this. */
-  readonly ba300Output: Ba300Output;
+export interface Ba110PeriodCloseSubscriberResult {
+  /** The generated BA 110 projection. Caller renders + stores this. */
+  readonly ba110Output: Ba110Output;
+  /** The trial-balance rows used as the cash HQLA base. */
+  readonly trialBalanceRows: readonly {
+    leafAccountId: string;
+    currency: string;
+    amountMinor: number;
+  }[];
   /**
-   * True if the entity was not in `BA_300_SUBSCRIBER_ENTITIES` and the
-   * subscriber skipped generation.
+   * True if the entity was not in `BA_110_BANK_ENTITIES` and the subscriber
+   * skipped generation. The caller can route non-bank-entity closes to other
+   * subscribers without raising an error.
    */
   readonly skipped: boolean;
   readonly skipReason?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Projection fold — unified-position + security-master for instrument HQLA
+// ---------------------------------------------------------------------------
+
+function foldPositionProjections(
+  eventStore: EventStore,
+  entity: string,
+  untilSequence: number | undefined,
+): { positions: typeof unifiedPositionInitial; securityMaster: typeof securityMasterInitial } {
+  let positions = unifiedPositionInitial;
+  let securityMaster = securityMasterInitial;
+  // Bound the fold by the AccountingPeriodClosed frozen cursor (if present) so
+  // it cannot diverge from concurrent appends — matches the trial-balance and
+  // cash-flow folds. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+  for (const event of eventStore.replay({
+    entity,
+    ...(untilSequence !== undefined ? { untilSequence } : {}),
+  })) {
+    if (unifiedPositionProjection.accepts(event)) {
+      positions = unifiedPositionProjection.reduce(positions, event);
+    }
+    if (securityMasterProjection.accepts(event)) {
+      securityMaster = securityMasterProjection.reduce(securityMaster, event);
+    }
+  }
+  return { positions, securityMaster };
 }
 
 // ---------------------------------------------------------------------------
@@ -110,53 +208,127 @@ export interface Ba300PeriodCloseSubscriberResult {
 // ---------------------------------------------------------------------------
 
 /**
- * `AccountingPeriodClosed` subscriber for BA 300 (operational risk)
- * generation.
+ * `AccountingPeriodClosed` subscriber for BA 110 (LCR) generation.
  *
  * Triggered by `AccountingPeriodClosed` events for bank-licence entities.
  * Non-bank entities (e.g. `LE-ZA-HOZ-SECURITIES`, `LE-ZA-HOZ-GROUP`) are
  * silently skipped (`result.skipped = true`).
  *
- * **Build-phase posture**: gross-income rows are caller-supplied (rehearsal-
- * grade). Live values populate post-commencement-of-trading. The generator
- * is deterministic and produces a compliant BA 300 shape regardless of
- * whether the income rows are live or synthetic.
+ * **Principle 1 compliance**: this subscriber does NOT derive cash flows
+ * from the trial balance. Cash flows (LCR denominator) are folded directly
+ * from settlement events inside `generateBa110Lcr`.
+ *
+ * **HQLA stock**: instrument-level (SecurityMaster × unified-position) plus an
+ * additive custodian-derived cash residual. Each cash account's tier is a
+ * query over the event-sourced Party register (`central-bank` → Level-1), not
+ * an authored COA tag — Principle 1 (events as truth) and Principle 2
+ * (single-graph discipline: regulation → policy → custodian classification →
+ * account → BA 110 cell).
  *
  * Citations:
- *   Principles/1-events-are-truth.md;
+ *   Principles/1-events-are-truth.md (updated 2026-05-12);
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10);
- *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 33;
- *   BCBS D196 §645–§654.
+ *   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
+ *   D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
+ *   D-MARKETS-SCHEMA-FOUNDATION;
+ *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 26;
+ *   BCBS D295.
  */
-export function ba300PeriodCloseSubscriber(
-  input: Ba300PeriodCloseSubscriberInput,
-): Ba300PeriodCloseSubscriberResult {
-  // Guard: only bank-licence entities generate BA 300.
-  if (!BA_300_SUBSCRIBER_ENTITIES.includes(input.entity)) {
+export function ba110PeriodCloseSubscriber(
+  input: Ba110PeriodCloseSubscriberInput,
+): Ba110PeriodCloseSubscriberResult {
+  // Guard: only bank-licence entities generate BA 110.
+  if (!BA_110_BANK_ENTITIES.includes(input.entity)) {
     return {
-      ba300Output: null as unknown as Ba300Output,
+      ba110Output: null as unknown as Ba110Output,
+      trialBalanceRows: [],
       skipped: true,
-      skipReason: `entity '${input.entity}' is not in BA_300_SUBSCRIBER_ENTITIES (${BA_300_SUBSCRIBER_ENTITIES.join(", ")}); BA 300 not generated`,
+      skipReason: `entity '${input.entity}' is not in BA_110_BANK_ENTITIES (${BA_110_BANK_ENTITIES.join(", ")}); BA 110 not generated`,
     };
   }
 
-  const ccy = input.functionalCurrency ?? "ZAR";
-  const periodEnd = input.closedPayload.closedAt;
-  const approach = input.approach ?? "bia";
+  // Resolve trial-balance rows from the TrialBalanceSnapshotted event.
+  const tbEventId = input.closedPayload.trialBalanceSnapshotEventId;
+  let trialBalanceRows: readonly {
+    leafAccountId: string;
+    currency: string;
+    amountMinor: number;
+  }[] = [];
 
-  const generatorInput: Ba300GeneratorInput = {
+  if (tbEventId) {
+    // Replay all events for the entity and find the TrialBalanceSnapshotted event
+    // with this event_id. The trial-balance rows are carried in the event payload.
+    // Use the frozen cursor from the AccountingPeriodClosed event (if present) to
+    // prevent divergence when new events append concurrently.
+    // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+    const untilSequence = input.closedPayload.eventSequence;
+    for (const event of input.eventStore.replay({
+      entity: input.entity,
+      ...(untilSequence !== undefined ? { untilSequence } : {}),
+    })) {
+      if (event.event_id === tbEventId && event.type === "TrialBalanceSnapshotted") {
+        const payload = event.payload as TrialBalanceSnapshottedPayload;
+        trialBalanceRows = payload.rows;
+        break;
+      }
+    }
+  }
+
+  const classifications = input.classifications ?? coaToHqlaClassifications();
+  const periodEnd = input.closedPayload.closedAt;
+  const untilSequence = input.closedPayload.eventSequence;
+
+  // Instrument-level HQLA stock (SecurityMaster × unified-position).
+  const { positions, securityMaster } = foldPositionProjections(
+    input.eventStore,
+    input.entity,
+    untilSequence,
+  );
+  const hqlaStock: HqlaStockInput = {
+    positions,
+    securityMaster,
+    functionalCurrency: FUNCTIONAL_CURRENCY,
+  };
+
+  // Additive cash HQLA — tier DERIVED from the custodian Party classification.
+  // Fold the Party register so the custodian → classification lookup is a query
+  // over events (Principle 1), not a hard-coded tag. positive-balance and
+  // functional-currency rules live inside computeCashHqlaFromCustodian.
+  const partyProjection = buildPartyProjection(input.eventStore, periodEnd);
+  const custodianClassifications = (custodianPartyId: string): ReadonlySet<string> => {
+    const party = partyProjection.parties.get(custodianPartyId as never);
+    return new Set(party?.classifications ?? []);
+  };
+  const cashHqlaLines = computeCashHqlaFromCustodian({
+    trialBalance: trialBalanceRows,
+    cashAccounts: CASH_CUSTODIAN_ACCOUNTS,
+    custodianClassifications,
+    functionalCurrency: FUNCTIONAL_CURRENCY,
+  });
+
+  const ba110Output = generateBa110Lcr({
     entity: input.entity,
     asOf: periodEnd,
     periodId: input.closedPayload.periodId,
-    functionalCurrency: ccy,
-    grossIncome: input.grossIncome,
-    approach,
-  };
-
-  const ba300Output = generateBa300OpRisk(generatorInput);
+    functionalCurrency: FUNCTIONAL_CURRENCY,
+    eventStore: input.eventStore,
+    periodStart: input.periodStart,
+    periodEnd,
+    trialBalance: trialBalanceRows,
+    classifications,
+    // Preferred path: instrument-level HQLA stock from SecurityMaster × position.
+    hqlaStock,
+    // Additive cash HQLA — tier derived from the custodian Party classification.
+    cashHqlaLines,
+    trialBalanceSnapshotEventId: tbEventId,
+    // Thread the frozen cursor so the settlement cash-flow fold is bounded.
+    // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+    ...(untilSequence !== undefined ? { untilSequence } : {}),
+  });
 
   return {
-    ba300Output,
+    ba110Output,
+    trialBalanceRows,
     skipped: false,
   };
 }

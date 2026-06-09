@@ -30,8 +30,8 @@ import { EventStore } from "@platform/event-store/store";
 import { makeEquitySettlementInstructed } from "@platform/markets/cdm/equity";
 import { makeFxSettlementInstructed } from "@platform/markets/cdm/fx";
 import { logger } from "@platform/observability/logger";
-import { type Ba110Output, generateBa110LcrWithEvents } from "@platform/reporting/ba-110-lcr";
-import { generateNsfrProjection } from "@platform/reporting/ba-120-nsfr";
+import { type Ba110Output, generateBa110LcrWithEvents } from "@platform/reporting/ba-300-lcr";
+import { generateNsfrProjection } from "@platform/reporting/ba-300-nsfr";
 
 // ---------------------------------------------------------------------------
 // Scenario constants

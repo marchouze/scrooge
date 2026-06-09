@@ -208,10 +208,10 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // a build-phase fixture, not a production access path. T-01 carve-out.
   "platform/accounting/period-close-handler.test.ts",
   // M3 Slice 4 — BA 100 period-close return scenario test. Co-located in the
-  // returns/ba100/ package per the per-module test convention. Raw
+  // returns/ba700/ package per the per-module test convention. Raw
   // EventStore(":memory:") is a build-phase fixture, not a production access
   // path. T-01 carve-out.
-  "platform/returns/ba100/ba100.test.ts",
+  "platform/returns/ba700/ba100.test.ts",
   // Backfill CLI entry point — emits CeoDecision events synthesised from
   // on-disk Owner Inbox records at boot / CI. Acts as a composition root in
   // the same way platform/composition.ts does: the raw store is constructed
@@ -289,7 +289,7 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // HQLA override logic (D-FINANCIAL-INSTRUMENT-ENTITY Slice 9); not a
   // production access path. T-01 carve-out.
   // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-110-LCR; P4-SECURITY-DESIGNED-IN.
-  "platform/reporting/ba-110-lcr.test.ts",
+  "platform/reporting/ba-300-lcr.test.ts",
   // pricing-model-definitions — platform module containing seedValidationMethodologies,
   // seedModelValidations, seedModelRegisteredEvents, and seedModelRegistry. Called from
   // standalone scripts (scripts/run-model-*.ts) which receive the raw store; the retired
@@ -387,10 +387,10 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // M2 Slice 3 BA 110 subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
-  "platform/returns/ba110/",
+  "platform/returns/ba300/",
   // M3 Slice 5 BA 310 (market-risk) subscriber — per-module fixture test; same rationale.
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
-  "platform/returns/ba310/",
+  "platform/returns/ba320/",
   // M3 Slice 8 CMS subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for conduct scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.

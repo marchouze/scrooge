@@ -41,8 +41,8 @@
 //   - ba-600-op-risk.* (operational-risk return) -> ba-300-op-risk.*
 //       (Reg 33 "Operational risk ... six-monthly return ... (Form BA 300)")
 //   - ba-600-xml-adapter.* -> ba-300-xml-adapter.*
-//   - platform/returns/ba350/ -> platform/returns/ba310/ (period-close subs)
-//   - platform/returns/ba600/ -> platform/returns/ba300/
+//   - platform/returns/ba350/ -> platform/returns/ba320/ (period-close subs)
+//   - platform/returns/ba600/ -> platform/returns/ba400/
 //   - scripts/render-ba-310.ts -> render-ba-200.ts; render-ba-350.ts ->
 //       render-ba-310.ts; render-ba-600.ts -> render-ba-300.ts
 //   - embedded symbols (Ba310*->Ba200*, Ba350*->Ba310*, Ba600*->Ba300*),

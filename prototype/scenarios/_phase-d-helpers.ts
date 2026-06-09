@@ -91,7 +91,11 @@ import {
 // Constants — the four BA forms Phase D produces.
 // ---------------------------------------------------------------------------
 
-export const PHASE_D_FORMS = ["ba-110", "ba-100", "ba-310", "ba-300"] as const;
+// Canonical SARB Excel form numbers (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL):
+// LCR → BA 300, capital adequacy → BA 700, market risk → BA 320,
+// operational risk → BA 400. The prior keys (ba-110/ba-100/ba-310/ba-300)
+// were the fabricated scheme.
+export const PHASE_D_FORMS = ["ba-300", "ba-700", "ba-320", "ba-400"] as const;
 export type PhaseDForm = (typeof PHASE_D_FORMS)[number];
 
 // Matches the registered `scenario-runner:<name>` pattern in
@@ -553,14 +557,14 @@ export function runPhaseD(args: {
 
 function canonicalForForm(form: PhaseDForm, rendered: PhaseDRendered): string {
   switch (form) {
-    case "ba-110":
-      return rendered.ba110Json;
-    case "ba-100":
-      return rendered.ba100Json;
-    case "ba-310":
-      return rendered.ba310Json;
     case "ba-300":
-      return rendered.ba300Json;
+      return rendered.ba110Json; // LCR (canonical BA 300)
+    case "ba-700":
+      return rendered.ba100Json; // capital adequacy (canonical BA 700)
+    case "ba-320":
+      return rendered.ba310Json; // market risk (canonical BA 320)
+    case "ba-400":
+      return rendered.ba300Json; // operational risk (canonical BA 400)
   }
 }
 

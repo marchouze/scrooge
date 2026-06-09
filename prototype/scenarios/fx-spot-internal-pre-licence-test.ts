@@ -144,7 +144,7 @@ import { run as runNoPropAttributionRecon } from "../platform/recon/no-prop-attr
 import { run as runPersonaAttributionCoherenceRecon } from "../platform/recon/persona-attribution-coherence";
 import { run as runPositionRevaluedRecon } from "../platform/recon/position-revalued-cites-mark";
 import type { ReconResult } from "../platform/recon/types";
-import { ba110PeriodCloseSubscriber } from "../platform/returns/ba110/period-close-subscriber";
+import { ba110PeriodCloseSubscriber } from "../platform/returns/ba300/period-close-subscriber";
 
 // ---------------------------------------------------------------------------
 // Constants

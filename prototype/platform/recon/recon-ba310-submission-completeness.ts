@@ -40,7 +40,7 @@
 
 import { eventStore } from "../composition";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import { BA_310_SUBSCRIBER_ENTITIES } from "../returns/ba310/period-close-subscriber";
+import { BA_310_SUBSCRIBER_ENTITIES } from "../returns/ba320/period-close-subscriber";
 
 const provenanceFilter = defaultProvenanceFilter();
 
@@ -48,7 +48,9 @@ const provenanceFilter = defaultProvenanceFilter();
 const ba310Periods = new Set<string>();
 for (const ev of eventStore.replay({ type: "SarbSubmissionAttempted" })) {
   const p = ev.payload as { formId?: string; reportingPeriod?: string };
-  if (p.formId === "BA310" && typeof p.reportingPeriod === "string") {
+  // Market-risk return formId is canonically "BA320" (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL);
+  // legacy "BA310" submissions are still counted (historical events immutable).
+  if ((p.formId === "BA320" || p.formId === "BA310") && typeof p.reportingPeriod === "string") {
     ba310Periods.add(p.reportingPeriod);
   }
 }
