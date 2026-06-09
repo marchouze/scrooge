@@ -79,6 +79,7 @@ import type { EventStore } from "../../event-store/store";
 import { BUILD_PHASE_TOTAL_RWA_MINOR } from "../../projections/capital-metrics";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
 import { computeRwaFromPositions, toRwaDecomposition } from "../../projections/rwa-from-positions";
+import { readRwaDecompositionOfRecord } from "../../risk/rwa-computed-engine";
 import {
   BA_100_BANK_ENTITIES,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
@@ -273,52 +274,6 @@ export interface BA700Return {
 }
 
 // ---------------------------------------------------------------------------
-// readRwaComputedForPeriod — read the emitted RwaComputed event of record
-// ---------------------------------------------------------------------------
-
-/**
- * Read the `RwaComputed` event for `(entity, periodId)` and project it onto the
- * BA 700 `RwaDecomposition` shape, threading `rwaComputationEventId` for
- * chain-of-custody (Principle 1).  Returns `undefined` when no `RwaComputed`
- * event exists for the period — the caller then falls back to the in-memory
- * `computeRwaFromPositions` projection.
- *
- * Authority: D-RWA-ENGINE-W2-SLICE-3.
- */
-function readRwaComputedForPeriod(
-  eventStore: EventStore,
-  entity: string,
-  periodId: string,
-  asOf: string,
-  provenanceFilter: ReturnType<typeof defaultProvenanceFilter>,
-  frozenCursorOpts: { untilSequence?: number },
-): RwaDecomposition | undefined {
-  let latest: { eventId: string; payload: Record<string, unknown> } | undefined;
-  for (const ev of eventStore.replay({
-    entity,
-    type: "RwaComputed",
-    asOf,
-    ...frozenCursorOpts,
-  })) {
-    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    const p = ev.payload as Record<string, unknown>;
-    if (p.periodId !== periodId) continue;
-    // Replay is sequence-ordered; the last matching event wins (re-computations
-    // supersede earlier ones for the same period).
-    latest = { eventId: ev.event_id, payload: p };
-  }
-  if (latest === undefined) return undefined;
-  const p = latest.payload;
-  return {
-    creditRwaMinor: Number(p.creditRwaMinor ?? 0),
-    marketRwaMinor: Number(p.marketRwaMinor ?? 0),
-    operationalRwaMinor: Number(p.operationalRwaMinor ?? 0),
-    rwaComputationEventId: latest.eventId,
-    source: typeof p.source === "string" ? p.source : "rwa-computed-event",
-  };
-}
-
-// ---------------------------------------------------------------------------
 // generateBA700Return
 // ---------------------------------------------------------------------------
 
@@ -498,18 +453,15 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
   let resolvedRwa: RwaDecomposition;
   const rwaComputed =
     input.rwa === undefined
-      ? readRwaComputedForPeriod(
-          input.eventStore,
-          input.entityId,
-          input.periodId,
-          input.reportingDate,
+      ? readRwaDecompositionOfRecord(input.eventStore, input.entityId, input.periodId, {
+          asOf: input.reportingDate,
           provenanceFilter,
-          frozenCursorOpts,
-        )
-      : undefined;
+          ...frozenCursorOpts,
+        })
+      : null;
   if (input.rwa !== undefined) {
     resolvedRwa = input.rwa;
-  } else if (rwaComputed !== undefined) {
+  } else if (rwaComputed !== null) {
     resolvedRwa = rwaComputed;
   } else {
     const rwaResult = computeRwaFromPositions(input.eventStore, input.reportingDate);

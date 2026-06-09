@@ -113,6 +113,16 @@ for (const ev of eventStore.replay({ type: "RwaComputed" })) {
       );
       findings++;
     }
+    // 5. The rendered BA 700 must NOT fall back to the fixture source while a
+    //    RwaComputed event of record exists for the period. A "fixture-rehearsal"
+    //    render in that case means the event-of-record reader was bypassed —
+    //    the BA 700 denominator silently understates / mis-sources RWA.
+    if (rawOutput.rwa.source === "fixture-rehearsal") {
+      console.error(
+        `FINDING: BA 700 return for period ${periodId} rendered with rwa.source='fixture-rehearsal' while a RwaComputed event of record (${ev.event_id}) exists for (${ev.entity}, ${periodId}) — the event-of-record RWA reader was bypassed; the fixture must only be a fallback when no RwaComputed event exists.`,
+      );
+      findings++;
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(
