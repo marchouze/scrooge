@@ -114,9 +114,9 @@ The LCR measures the bank's ability to survive a 30-calendar-day severe liquidit
 
 **Internal floor (policy target):** LCR ≥ 120% under normal conditions (PA minimum + 20pp internal management buffer). The +20pp management buffer is the bank's Risk Appetite Statement (RAS) B3 liquidity-floor pending full ILAAP-calibrated recalibration (see §2.5). Per Eitan's Funding Strategy v1 ([Owner Inbox/2026-05-07_eitan_funding-strategy-v1.md](2026-05-07_eitan_funding-strategy-v1.md) §1), the build-phase planning floor is PA-min + 20pp; this is superseded by the ILAAP-calibrated value when the W2 Slice 5 substrate lands.
 
-**Activated obligation status:** `ORG-PR-06` (BCBS D295 / BA 325) — **IN FORCE** from commencement of trading.
+**Activated obligation status:** `ORG-PR-06` (BCBS D295 / BA 300 — Liquidity Risk, incl. LCR) — **IN FORCE** from commencement of trading.
 
-**Consolidated obligation:** `ORG-BNK-ILAAP-CONS` (consolidated ILAAP submission) — the bank entity submits a consolidated ILAAP to PA that aggregates liquidity across `Hoz Bank Limited` + `Hoz Securities Limited`. Both the solo and consolidated LCR are produced by the BA 325 projection substrate.
+**Consolidated obligation:** `ORG-BNK-ILAAP-CONS` (consolidated ILAAP submission) — the bank entity submits a consolidated ILAAP to PA that aggregates liquidity across `Hoz Bank Limited` + `Hoz Securities Limited`. Both the solo and consolidated LCR are produced by the BA 300 liquidity-risk projection substrate.
 
 ### 2.2 HQLA eligibility and composition
 
@@ -128,7 +128,7 @@ The bank maintains its HQLA stock in accordance with the three-tier classificati
 | Level 2A | 20% risk-weight sovereign / PSE / MDB securities; AA-/higher rated corporate bonds and covered bonds; non-0%-RW SAGB eligible under Reg 26(7)(b) | 15% haircut (factor applied: 85%) | 40% of total HQLA stock post-cap |
 | Level 2B | A+/A/A-/BBB- rated eligible corporate bonds; qualifying equities; qualifying RMBS | 25–50% haircut (asset-specific) | 15% of total HQLA stock post-cap |
 
-HQLA eligibility is assessed on the basis of the BCBS D295 §§ 49–66 criteria `[citation: TBC — precise paragraph indices]` and Reg 26(7) `[citation: TBC]`. The BA 325 LCR substrate at `prototype/platform/reporting/ba-325-lcr.ts` implements the closed-form cap arithmetic per BCBS D295 § 47.
+HQLA eligibility is assessed on the basis of the BCBS D295 §§ 49–66 criteria `[citation: TBC — precise paragraph indices]` and Reg 26(7) `[citation: TBC]`. The BA 300 LCR projection substrate (under `prototype/platform/reporting/`; Bea's Reporting Capability Slice 3 — the module filename is re-numbered to the canonical BA 300 under the reporting-code track of `D-BA-RETURN-NUMBERING-EXCEL-CANONICAL`) implements the closed-form cap arithmetic per BCBS D295 § 47.
 
 **HQLA operational requirements.** The bank holds its HQLA stock:
 
@@ -155,15 +155,15 @@ Concentration-limit breaches are High-severity liquidity events per §9.2 of thi
 | Monthly | LCR reported to BRC as part of the standard risk pack | LCR trend + HQLA composition + net cash outflow components |
 | Quarterly | LCR projection over the next 3 months under base and adverse scenarios | ALCO forward-looking liquidity review |
 | Annual (ILAAP cycle) | Full LCR narrative + 12-month projection under four scenarios | PA ILAAP submission (§6) |
-| BA-return cadence | BA 325 submitted to PA per the SARB BA-return schedule (`ORG-PR-29` D2/2024) | Via the BA 325 LCR projection substrate; per [Owner Inbox/2026-05-10_bea-eitan-anya_d-reporting-capability-slice-3-ba-325-lcr.md](2026-05-10_bea-eitan-anya_d-reporting-capability-slice-3-ba-325-lcr.md) |
+| BA-return cadence | BA 300 (liquidity risk, incl. LCR) submitted to PA per the SARB BA-return schedule (`ORG-PR-29` D2/2024) | Via the BA 300 liquidity-risk projection substrate; per Bea's Reporting Capability Slice 3 spec (`archive/owner-inbox/`, 2026-05-10) |
 
-The BA 325 computation is implemented in `prototype/platform/reporting/ba-325-lcr.ts` (Bea's Reporting Capability Slice 3 substrate). The computation is a pure function over the event-derived trial balance; no parallel manual spreadsheet is maintained. LCR is a **projection** (a query over the event log), not a stored number — per Principle 1 (events are the only source of truth).
+The BA 300 LCR computation is implemented in Bea's Reporting Capability Slice 3 substrate (under `prototype/platform/reporting/`; the module filename is re-numbered to the canonical BA 300 under the reporting-code track of `D-BA-RETURN-NUMBERING-EXCEL-CANONICAL`). The computation is a pure function over the event-derived trial balance; no parallel manual spreadsheet is maintained. LCR is a **projection** (a query over the event log), not a stored number — per Principle 1 (events are the only source of truth).
 
 ### 2.4 Significant-currency LCR monitoring
 
 Per BCBS 144 Principle 6 `[citation: TBC — precise paragraph]`, the bank monitors liquidity positions in each significant currency (a currency in which the bank has aggregate liabilities ≥ 5% of total liabilities). For `Hoz Bank Limited`:
 
-- **ZAR** — the primary and functional currency; the main BA 325 LCR is ZAR-denominated.
+- **ZAR** — the primary and functional currency; the main BA 300 LCR is ZAR-denominated.
 - **USD and EUR** — may become significant currencies at M2 (repo book) and as FX-Authorised-Dealer trading commences under `D-FX-AD-STATUS`. Eitan determines the significant-currency threshold quarterly; a separate FX-tenor LCR monitoring report is produced for each currency crossing the 5% threshold.
 - FX mismatches between HQLA currency and liability currency are resolved via FX swaps executed within the Treasury mandate; the hedging cost and residual basis risk are reported to ALCO monthly.
 
@@ -191,7 +191,7 @@ The NSFR measures the structural stability of the bank's funding profile over a 
 
 **Internal floor (policy target):** NSFR ≥ 115% under normal conditions (PA minimum + 15pp internal management buffer). Same calibration posture as LCR: build-phase planning floor, superseded by ILAAP-calibrated value at W2 Slice 5.
 
-**Activated obligation status:** `ORG-PR-07` (BCBS D335 / BA 326) and `ORG-PR-43` (PA D1/2023) — **IN FORCE** from commencement of trading.
+**Activated obligation status:** `ORG-PR-07` (BCBS D335 / BA 300 series — NSFR) and `ORG-PR-43` (PA D1/2023) — **IN FORCE** from commencement of trading.
 
 ### 3.2 ASF and RSF factor framework
 
@@ -248,7 +248,7 @@ The substitution plan is a standing ALCO agenda item until the bank's NSFR profi
 |---|---|---|
 | Quarterly | NSFR computed as-of quarter-end | ALCO review; `NsfrComputed { ratio, asfAmount, rsfAmount, asOf }` event |
 | Annual (ILAAP cycle) | Full NSFR narrative + 12-month projection under four scenarios | PA ILAAP submission (§6) |
-| BA-return cadence | BA 326 submitted to PA per the SARB BA-return schedule | Via the NSFR projection substrate (W2 Slice 5) |
+| BA-return cadence | BA 300 series (NSFR) submitted to PA per the SARB BA-return schedule | Via the NSFR projection substrate (W2 Slice 5) |
 
 Under stressed conditions or when the NSFR approaches the internal floor, the computation frequency escalates to monthly.
 
@@ -560,7 +560,7 @@ Stress-test results that indicate a breach of the regulatory minimum under the a
 - Funding-profile dashboard and ALCO pack data feeds.
 
 **Bea (Accounting & financial reporting engineer, engineering — reports to Camille)** — BA-return computation. Responsible for:
-- BA 325 (LCR) and BA 326 (NSFR) projection and submission via the reporting substrate.
+- BA 300 (liquidity risk, incl. LCR) and the BA 300 series (NSFR) projection and submission via the reporting substrate.
 - Reconciliation between the event-log-derived trial balance and the BA-return computations.
 
 ### 8.2 Second line — Risk and Compliance functions
@@ -602,7 +602,7 @@ Every ALCO decision is an `ALCODecision { decisionType, decisionId, asOf }` even
 
 **Nadia (Independent-validation engineer, engineering — reports to Helena; peer-in-second-line)** validates the liquidity-risk models per the Model Risk Policy (`ORG-PR-21` / `D-MODEL-RISK-POLICY-APPROVED`):
 
-- **LCR computation model (Bea's BA 325 substrate)** — Tier 1 model. Pre-deployment validation + annual revalidation. Validation covers: HQLA cap arithmetic correctness; outflow/inflow rate schedule completeness; 75% inflow cap + 25% floor application; per-entity isolation; schema conformance.
+- **LCR computation model (Bea's BA 300 substrate)** — Tier 1 model. Pre-deployment validation + annual revalidation. Validation covers: HQLA cap arithmetic correctness; outflow/inflow rate schedule completeness; 75% inflow cap + 25% floor application; per-entity isolation; schema conformance.
 - **NSFR computation model** — Tier 1 model. Same validation standard.
 - **Intraday liquidity monitoring tools** — Tier 2 model. Pre-deployment validation + biennial revalidation.
 - **Stress-projection engine (liquidity-side scenarios)** — Tier 1 model. Validated in conjunction with the ICAAP stress-projection validation (shared engine; one validation report covers both).
@@ -665,8 +665,8 @@ This policy discharges the following obligations from the register at `Regulatio
 
 | Obligation ID | Citation | Obligation description | Discharge mechanism in this policy |
 |---|---|---|---|
-| `ORG-PR-06` | BCBS D295 / BA 325 | Maintain LCR ≥ 100% (PA minimum); buffer to internal floor (B2 / B3 calibration) | Section 2 — LCR governance framework; internal floor §2.1 and §2.5; computation §2.3; BA 325 projection substrate |
-| `ORG-PR-07` | BCBS D335 / BA 326 | Maintain NSFR ≥ 100% (PA minimum); buffer to internal floor | Section 3 — NSFR governance framework; internal floor §3.1; computation §3.4; PA D1/2023 phase-out tracking §3.3 |
+| `ORG-PR-06` | BCBS D295 / BA 300 (Liquidity Risk, incl. LCR) | Maintain LCR ≥ 100% (PA minimum); buffer to internal floor (B2 / B3 calibration) | Section 2 — LCR governance framework; internal floor §2.1 and §2.5; computation §2.3; BA 300 projection substrate |
+| `ORG-PR-07` | BCBS D335 / BA 300 series (NSFR) | Maintain NSFR ≥ 100% (PA minimum); buffer to internal floor | Section 3 — NSFR governance framework; internal floor §3.1; computation §3.4; PA D1/2023 phase-out tracking §3.3 |
 | `ORG-PR-08` | BCBS 248 | Monitor intraday liquidity per BCBS 248 metrics; report to PA | Section 4 — full intraday liquidity section; seven BCBS 248 tools §4.2; intraday buffer §4.3; end-of-day §4.4; stress response §4.5 |
 | `ORG-PR-14` | Banks Act + PA | Submit annual ILAAP to PA | Section 6 — ILAAP governance; annual cycle §6.3; PA submission §6.5; material-change re-run §6.4 |
 | `ORG-PR-15` | BCBS 144 | Maintain Contingency Funding Plan; rehearsed annually | Section 5 — full CFP section; annual rehearsal §5.4; evidence standard §5.4 |
@@ -704,7 +704,7 @@ This policy discharges the following obligations from the register at `Regulatio
 - ICAAP / ILAAP / Recovery framework spec — [Owner Inbox/2026-05-10_helena-camille_icaap-ilaap-recovery-framework.md](2026-05-10_helena-camille_icaap-ilaap-recovery-framework.md).
 - Funding Strategy v1 — [Owner Inbox/2026-05-07_eitan_funding-strategy-v1.md](2026-05-07_eitan_funding-strategy-v1.md).
 - Capital Plan v1 — [Owner Inbox/2026-05-07_camille_capital-plan-v1.md](2026-05-07_camille_capital-plan-v1.md).
-- BA 325 LCR substrate spec — [Owner Inbox/2026-05-10_bea-eitan-anya_d-reporting-capability-slice-3-ba-325-lcr.md](2026-05-10_bea-eitan-anya_d-reporting-capability-slice-3-ba-325-lcr.md).
+- BA 300 LCR substrate spec — Bea's Reporting Capability Slice 3 spec (`archive/owner-inbox/`, 2026-05-10).
 - `D-REGULATORY-PERIMETER` decision record — [Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md](2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md).
 - `D-REGULATORY-READINESS-GATE-PLAN` decision record — [Owner Inbox/2026-05-10_scrooge_ceo-decision-record_d-regulatory-readiness-gate-plan.md](2026-05-10_scrooge_ceo-decision-record_d-regulatory-readiness-gate-plan.md).
 - `D-SAMOS-NON-CLEARING` decision record — [Owner Inbox/2026-05-07_ceo-decision_samos-non-clearing.md](2026-05-07_ceo-decision_samos-non-clearing.md).
@@ -727,4 +727,5 @@ This policy discharges the following obligations from the register at `Regulatio
 
 | Version | Date | Author | Change |
 |---|---|---|---|
-| v1.0 | 2026-05-11 | Camille (Chief Financial Officer, governance) + Eitan (Treasurer, governance) + Helena (Chief Risk Officer, governance) | Initial policy authored under W2 Slice 5 of `D-REGULATORY-READINESS-GATE-PLAN`. Full standalone policy covering: §1 scope + regulatory hierarchy (Banks Act + Reg 26 + BCBS 144 + BCBS D295 + BCBS D335 + BCBS 248 + PA D6/2015 + PA D4/2021 + PA D1/2023); §2 LCR governance (PA-min ≥ 100%, internal floor ≥ 120%, HQLA eligibility + concentration limits, daily computation, BA 325 substrate cross-reference, significant-currency monitoring, floor calibration methodology); §3 NSFR governance (PA-min ≥ 100%, internal floor ≥ 115%, ASF + RSF factor framework, PA D1/2023 phase-out schedule for ZAR financial-corporate ASF, quarterly computation, funding-profile monitoring); §4 intraday liquidity (BCBS 248 seven monitoring tools, intraday buffer sizing, end-of-day position management, intraday stress response protocol, build-phase substrate gaps); §5 CFP (three activation tiers with typed trigger event patterns, funding-source hierarchy Tiers 1–3, annual rehearsal cadence + evidence standard, PA D4/2021 externally-facilitated simulation participation); §6 ILAAP governance (annual cycle governance sequence with seven typed events, material-change trigger, twelve-section ILAAP section-set, board attestation + PA submission pathway); §7 stress-testing integration (four-scenario taxonomy coherent with ICAAP, liquidity-side output set per scenario, PA-facilitated simulation integration, ALCO governance of outputs); §8 roles and governance bodies (first line Eitan + Ravi + Bea; second line Helena + Rohan + Zara; ALCO composition + standing agenda; Nadia independent validation; Vera third-line assurance); §9 escalation + breach taxonomy (Critical / High / Medium / Low; typed event patterns; restoration + remediation; post-mortem requirement); §10 eight obligations discharged (ORG-PR-06 through ORG-PR-08, ORG-PR-14, ORG-PR-15, ORG-PR-36, ORG-PR-38, ORG-PR-43); §11 citation surface + companion document map + change log. All unresolved sub-clause indices carry `[citation: TBC]` per Principle 2 (no invented citations). Substrate gaps flagged explicitly as build-phase items; none prevents commencement of trading if manual compensating controls are documented. |
+| v1.0 | 2026-05-11 | Camille (Chief Financial Officer, governance) + Eitan (Treasurer, governance) + Helena (Chief Risk Officer, governance) | Initial policy authored under W2 Slice 5 of `D-REGULATORY-READINESS-GATE-PLAN`. Full standalone policy covering: §1 scope + regulatory hierarchy (Banks Act + Reg 26 + BCBS 144 + BCBS D295 + BCBS D335 + BCBS 248 + PA D6/2015 + PA D4/2021 + PA D1/2023); §2 LCR governance (PA-min ≥ 100%, internal floor ≥ 120%, HQLA eligibility + concentration limits, daily computation, BA 300 substrate cross-reference, significant-currency monitoring, floor calibration methodology); §3 NSFR governance (PA-min ≥ 100%, internal floor ≥ 115%, ASF + RSF factor framework, PA D1/2023 phase-out schedule for ZAR financial-corporate ASF, quarterly computation, funding-profile monitoring); §4 intraday liquidity (BCBS 248 seven monitoring tools, intraday buffer sizing, end-of-day position management, intraday stress response protocol, build-phase substrate gaps); §5 CFP (three activation tiers with typed trigger event patterns, funding-source hierarchy Tiers 1–3, annual rehearsal cadence + evidence standard, PA D4/2021 externally-facilitated simulation participation); §6 ILAAP governance (annual cycle governance sequence with seven typed events, material-change trigger, twelve-section ILAAP section-set, board attestation + PA submission pathway); §7 stress-testing integration (four-scenario taxonomy coherent with ICAAP, liquidity-side output set per scenario, PA-facilitated simulation integration, ALCO governance of outputs); §8 roles and governance bodies (first line Eitan + Ravi + Bea; second line Helena + Rohan + Zara; ALCO composition + standing agenda; Nadia independent validation; Vera third-line assurance); §9 escalation + breach taxonomy (Critical / High / Medium / Low; typed event patterns; restoration + remediation; post-mortem requirement); §10 eight obligations discharged (ORG-PR-06 through ORG-PR-08, ORG-PR-14, ORG-PR-15, ORG-PR-36, ORG-PR-38, ORG-PR-43); §11 citation surface + companion document map + change log. All unresolved sub-clause indices carry `[citation: TBC]` per Principle 2 (no invented citations). Substrate gaps flagged explicitly as build-phase items; none prevents commencement of trading if manual compensating controls are documented. |
+| v1.1 | 2026-06-09 | Mira (Compliance / RegTech engineer, compliance) under Zara (Chief Compliance Officer, governance) | BA-return form-number remediation only (no substantive policy change). Corrected the fabricated SARB BA-return numbering to the Excel-canonical schedule per `_canonical-register.md` and `D-BA-RETURN-NUMBERING-EXCEL-CANONICAL`: LCR re-numbered to **BA 300** (Liquidity Risk, incl. LCR) from the previously-cited trading-and-treasury form; NSFR re-numbered to the **BA 300 series** from a previously-cited non-existent form. Substrate/code-file references generalised to the reporting-code track pending the replay-safe module re-number (Bea/Atlas). |

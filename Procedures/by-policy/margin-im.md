@@ -163,8 +163,8 @@ The following steps require human action or professional judgement in the curren
 - [`portfolio-reconciliation.md`](portfolio-reconciliation.md) — PROC-MK-ODP-05; netting-set MTM underlying SIMM sensitivities must reconcile with counterparty portfolio values.
 - `otc-dispute-resolution.md` — invoked at Step 6 when IM disputes exceed the 5-BD window.
 - [`counterparty-onboarding-markets.md`](counterparty-onboarding-markets.md) — SCSA / ISDA Credit Support Documentation and custodian arrangements are established at counterparty onboarding as a pre-condition for IM exchange.
-- [`capital-ratio-monitoring.md`](capital-ratio-monitoring.md) — IM posted reduces HQLA; LCR monitoring tracks the liquidity impact. IM received is a regulatory capital deduction item under SA-CCR (BA 325/326).
-- [`ba-return-generation.md`](ba-return-generation.md) — IM amounts feed the BA 325 / BA 326 CCR capital calculation.
+- [`capital-ratio-monitoring.md`](capital-ratio-monitoring.md) — IM posted reduces HQLA; LCR monitoring tracks the liquidity impact. IM received is a regulatory capital deduction item under SA-CCR (BA 200 — credit risk, incl. counterparty credit risk sub-forms).
+- [`ba-return-generation.md`](ba-return-generation.md) — IM amounts feed the BA 200 (credit risk, incl. counterparty credit risk) capital calculation.
 
 ---
 

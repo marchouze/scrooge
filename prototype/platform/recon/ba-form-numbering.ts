@@ -124,31 +124,13 @@ const FORBIDDEN: readonly ForbiddenPair[] = [
 
 const PENDING_REMEDIATION = new Set<string>([
   // Seeded 2026-06-09 from the bank-wide scan (87 conflicts / 21 files) under
-  // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL. These files — plus the reporting code
-  // (ba-110-lcr.ts etc.) and the obligations register ORG-PR-RETURNS-* — are numbered
-  // against the FABRICATED scheme and need a replay-safe re-number to the canonical
-  // forms. Tracked follow-on workstream; remove each path as remediated. End state: empty.
-  "Policies/balance-sheet-substantiation-policy-v1.md",
-  "Policies/capital-management-policy-v1.md",
-  "Policies/liquidity-risk-management-policy-v1.md",
-  "Policies/market-risk-policy-v1.md",
-  "Policies/new-product-approval-policy-v2.md",
-  "Policies/operational-resilience-policy-v1.md",
-  "Policies/pillar-3-disclosure-policy-v1.md",
-  "Policies/regulatory-reporting-policy-v1.md",
-  "Procedures/by-policy/ba-return-generation.md",
-  "Procedures/by-policy/backtesting-governance.md",
-  "Procedures/by-policy/balance-sheet-substantiation.md",
-  "Procedures/by-policy/capital-ratio-monitoring.md",
-  "Procedures/by-policy/ecl-staging-cycle.md",
-  "Procedures/by-policy/frtb-sa-capital-computation.md",
-  "Procedures/by-policy/intraday-liquidity-funding.md",
-  "Procedures/by-policy/liquidity-limit-management.md",
-  "Procedures/by-policy/margin-im.md",
-  "Procedures/by-policy/npa-gate.md",
-  "Procedures/by-policy/odp-authorisation-application.md",
-  "Procedures/by-policy/pillar-3-disclosure-cycle.md",
-  "Procedures/by-policy/pla-test-governance.md",
+  // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL. All 21 policy/procedure files were
+  // re-numbered to the canonical Excel forms by Mira (Compliance / RegTech engineer)
+  // under WS-BA-NUMBERING-REMEDIATION and removed from this allowlist (2026-06-09).
+  // The set is now EMPTY: the policy/procedure corpus is clean. The reporting code
+  // (ba-110-lcr.ts etc.) and the obligations register ORG-PR-RETURNS-* are NOT scanned
+  // by this gate (it walks Policies/ + Procedures/ only); their replay-safe re-number is
+  // a separate track owned by Bea/Atlas under the same authority. End state reached: empty.
 ]);
 
 function findRepoRoot(start: string): string {

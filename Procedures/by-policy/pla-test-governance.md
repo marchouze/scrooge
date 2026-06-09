@@ -221,7 +221,7 @@ If the same (desk, risk class) is in Red zone for two consecutive quarterly cycl
 
 - **Policy:** `Policies/market-risk-policy-v1.md` §4.4 (PLA Test), §4.2 (IMA Eligibility and Desk Approval), §6.1 (Market Risk Committee — monthly PLA results), §6.2 (Reporting), §8.1 (Substrate dependencies — PLA test infrastructure).
 - **Regulation:** `ORG-PR-57`, `ORG-PR-56`; BCBS *Minimum capital requirements for market risk* (January 2019) — PLA chapter `[citation: TBC]`; PA D/2025 `[citation: TBC]`.
-- **Related procedures:** `PROC-RISK-FRTB-SA-01` (`frtb-sa-capital-computation.md`) — SA capital applies for any (desk, risk class) failing PLA; `PROC-RISK-BACKTEST-01` (`backtesting-governance.md`) — back-testing detects model failure via exception count; PLA detects model incompleteness via RTPL/HPL divergence — both required for IMA; `PROC-RISK-MRM-01` (`market-risk-monitoring.md`) — VaR and ES feed; `PROC-RSK-MV-01` (`model-validation.md`) — Nadia's annual + consecutive-failure validation; `PROC-FIN-BA-01` (`ba-return-generation.md`) — capital basis for BA-325 / BA-326 reflects PLA outcome per risk class.
+- **Related procedures:** `PROC-RISK-FRTB-SA-01` (`frtb-sa-capital-computation.md`) — SA capital applies for any (desk, risk class) failing PLA; `PROC-RISK-BACKTEST-01` (`backtesting-governance.md`) — back-testing detects model failure via exception count; PLA detects model incompleteness via RTPL/HPL divergence — both required for IMA; `PROC-RISK-MRM-01` (`market-risk-monitoring.md`) — VaR and ES feed; `PROC-RSK-MV-01` (`model-validation.md`) — Nadia's annual + consecutive-failure validation; `PROC-FIN-BA-01` (`ba-return-generation.md`) — capital basis for the BA 320 market-risk return reflects PLA outcome per risk class.
 
 ---
 
