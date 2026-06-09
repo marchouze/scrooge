@@ -100,7 +100,9 @@ const REVAL_CITATIONS = [
 // bankPays → IFRS swap role mapping (mirrors the merged engine).
 // ---------------------------------------------------------------------------
 
-function bankPaysToRole(bankPays: IrsTradeBookedPayload["bankPays"]): "pay-fixed" | "receive-fixed" {
+function bankPaysToRole(
+  bankPays: IrsTradeBookedPayload["bankPays"],
+): "pay-fixed" | "receive-fixed" {
   return bankPays === "fixed" ? "pay-fixed" : "receive-fixed";
 }
 
