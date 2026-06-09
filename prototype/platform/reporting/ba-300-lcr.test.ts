@@ -27,10 +27,11 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { makeDepositTaken } from "../event-store/event-types/repo-mmd-ibl";
 import { EventStore } from "../event-store/store";
 import type { SecurityMasterState } from "../projections/markets/security-master";
 import { securityMasterInitial } from "../projections/markets/security-master";
-import { generateBa110Lcr } from "./ba-300-lcr";
+import { generateBa110Lcr, generateBa110LcrWithEvents } from "./ba-300-lcr";
 import type { AccountLiquidityClassification, Ba110GeneratorInput } from "./ba-300-lcr";
 import { buildHqlaOverridesFromSecurityMaster } from "./hqla-overrides";
 
@@ -569,5 +570,99 @@ describe("generateBa110Lcr() — citation coverage", () => {
     const output = generateBa110Lcr(input);
     expect(output.citations).toContain("D-FINANCIAL-INSTRUMENT-ENTITY");
     expect(output.citations).toContain("BCBS-LCR-2013");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LCR product lifecycle outflows (Phase 2 — WS-BA-RETURNS-P1-SOURCING)
+// ---------------------------------------------------------------------------
+
+describe("LCR product lifecycle outflows", () => {
+  /**
+   * Builds a Ba110GeneratorInput where asOf = PERIOD_END (2026-05-31) and
+   * 30-day horizon = 2026-06-30. An event appended without a provenance tag
+   * is treated as `simulated / pre-substrate-build-phase` by the soft-tagger
+   * and passes the `operating-book` filter in build phase.
+   */
+  function makeInputWithStore(store: EventStore): Ba110GeneratorInput {
+    return {
+      entity: ENTITY,
+      asOf: PERIOD_END,
+      periodId: PERIOD_ID,
+      functionalCurrency: FUNCTIONAL_CURRENCY,
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      trialBalance: [],
+      classifications: [],
+    };
+  }
+
+  it("TC-P1: retail-stable deposit maturing in horizon produces 3% run-off outflow", async () => {
+    const store = new EventStore(":memory:");
+    // Deposit principal = 1_000_000_00 (R1,000,000.00 in ZAR cents).
+    // maturityDate = 15 days after asOf (within 30-day horizon).
+    const depositEvent = makeDepositTaken({
+      asOf: "2026-05-01T00:00:00.000Z",
+      entity: ENTITY,
+      actor: { type: "service", id: "agent:test" },
+      citations: ["D-BA-RETURN-NUMBERING-EXCEL-CANONICAL"],
+      payload: {
+        depositId: "DEP-TEST-001",
+        counterpartyLei: "SBZAZAJJXXX",
+        principalZar: 1_000_000_00,
+        interestRateDecimal: 0.075,
+        maturityDate: "2026-06-15", // 15 days past asOf 2026-05-31
+        depositCategory: "retail-stable",
+        bookId: "RETAIL",
+        instrumentRef: "MMD-ZAR-001",
+      },
+    });
+    store.append(depositEvent);
+
+    const output = await generateBa110LcrWithEvents(makeInputWithStore(store));
+
+    // Expected outflow = 3% of 1_000_000_00 = 30_000_00 (3_000_000 cents = R30,000).
+    const depositOutflowLine = output.cashFlows.outflows.lineItems.find((l) =>
+      l.lineId.includes("DEP-TEST-001"),
+    );
+    expect(depositOutflowLine).toBeDefined();
+    expect(depositOutflowLine?.amountMinor).toBe(3_000_000);
+  });
+
+  it("TC-P2: LCR ratio is lower with deposit outflow than without", async () => {
+    // Without deposit — empty store, no outflows, ratio = Infinity.
+    const storeEmpty = new EventStore(":memory:");
+    const outputEmpty = await generateBa110LcrWithEvents(makeInputWithStore(storeEmpty));
+    expect(outputEmpty.cashFlows.outflows.grossMinor).toBe(0);
+    expect(outputEmpty.lcrRatio).toBe(Number.POSITIVE_INFINITY);
+
+    // With deposit — outflows > 0, LCR denominator > 0.
+    const storeWithDeposit = new EventStore(":memory:");
+    const depositEvent = makeDepositTaken({
+      asOf: "2026-05-01T00:00:00.000Z",
+      entity: ENTITY,
+      actor: { type: "service", id: "agent:test" },
+      citations: ["D-BA-RETURN-NUMBERING-EXCEL-CANONICAL"],
+      payload: {
+        depositId: "DEP-TEST-002",
+        counterpartyLei: "SBZAZAJJXXX",
+        principalZar: 5_000_000_00,
+        interestRateDecimal: 0.075,
+        maturityDate: "2026-06-20",
+        depositCategory: "retail-stable",
+        bookId: "RETAIL",
+        instrumentRef: "MMD-ZAR-001",
+      },
+    });
+    storeWithDeposit.append(depositEvent);
+
+    const outputWithDeposit = await generateBa110LcrWithEvents(
+      makeInputWithStore(storeWithDeposit),
+    );
+    // With outflow and zero HQLA, ratio should be 0 (stock=0, outflows>0).
+    expect(outputWithDeposit.cashFlows.outflows.grossMinor).toBeGreaterThan(0);
+    // The deposit outflow increases denominator → ratio is lower than Infinity.
+    expect(outputWithDeposit.lcrRatio).toBeLessThan(outputEmpty.lcrRatio);
   });
 });

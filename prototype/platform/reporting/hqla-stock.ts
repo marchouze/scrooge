@@ -117,6 +117,16 @@ export interface HqlaStockInput {
    * Authority: BCBS D295 §54; Reg 26(7)(c).
    */
   readonly level2bHaircutOverrides?: ReadonlyMap<string, number>;
+  /**
+   * ISINs of securities pledged as repo collateral (encumbered).
+   * Encumbered bonds are excluded from the HQLA stock: they are not
+   * freely available to be monetised under stress (BCBS D295 §30).
+   *
+   * Build: pass the set of `collateralIsin` values from open
+   * `RepoTradeOpened` events. Authority: BCBS D295 §30;
+   * D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
+   */
+  readonly encumberedIsins?: ReadonlySet<string>;
 }
 
 /**
@@ -185,7 +195,13 @@ const HAIRCUT: Record<"level-1" | "level-2a" | "level-2b", number> = {
  *   Principles/1-events-are-truth.md; Principles/5-multi-currency-entity-country.md.
  */
 export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockResult {
-  const { positions, securityMaster, functionalCurrency, level2bHaircutOverrides } = input;
+  const {
+    positions,
+    securityMaster,
+    functionalCurrency,
+    level2bHaircutOverrides,
+    encumberedIsins,
+  } = input;
 
   const level1Lines: HqlaStockLine[] = [];
   const level2aLines: HqlaStockLine[] = [];
@@ -211,6 +227,11 @@ export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockR
     // Step 2: Filter by hqlaLevel.
     const rawHqlaLevel = smRow.hqlaLevel;
     if (!rawHqlaLevel || rawHqlaLevel === "non-hqla") continue;
+
+    // Step 2b: Encumbrance check — bonds pledged as repo collateral are not
+    // freely available under stress (BCBS D295 §30). Skip if ISIN is in
+    // the encumbered set.
+    if (smRow.isin && encumberedIsins?.has(smRow.isin)) continue;
 
     // Narrow to eligible tiers.
     const hqlaLevel = rawHqlaLevel as "level-1" | "level-2a" | "level-2b";
