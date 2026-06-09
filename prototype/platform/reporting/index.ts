@@ -365,7 +365,7 @@ export {
   type Ba110ObsLineItem,
   type Ba110ObsSection,
   Ba110OffBalanceSheetGeneratorError,
-  BA_300_LCR_BANK_ENTITIES as BA_110_OBS_BANK_ENTITIES,
+  BA_110_BANK_ENTITIES as BA_110_OBS_BANK_ENTITIES,
   BA_110_DERIVATIVE_BUILD_PHASE_CCF,
   ba110ToLeverageOffBalanceSheetExposure,
   generateBa110OffBalanceSheetFromEvents,
