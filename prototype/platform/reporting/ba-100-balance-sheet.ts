@@ -71,8 +71,8 @@
 //   semantic-layer integration; JSON-schema co-design).
 
 import {
-  type CounterpartySector,
   COUNTERPARTY_SECTORS,
+  type CounterpartySector,
   sectorForAccountId,
 } from "../accounting/coa-registry";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
