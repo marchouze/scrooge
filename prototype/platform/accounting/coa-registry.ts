@@ -1168,12 +1168,13 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   {
     id: "ACC-6100-006",
     name: "Deposit Interest Expense",
-    category: "expense-impairment",
+    category: "expense-interest",
     currency: "ZAR",
     side: "debit",
-    // Interest-expense P&L for deposit liabilities (the only "expense-*" category
-    // available in the COA vocabulary). Not an impairment despite the category
-    // label — the label is the generic expense bucket.
+    // Interest-expense P&L for deposit liabilities. Categorised `expense-interest`
+    // so the BA 400 gross-income fold nets it INTO net interest income
+    // (interest income − interest expense) per BCBS D196 §650, while genuine
+    // provisions (`expense-impairment`) remain excluded from gross income.
   },
 
   // ------------------------------------------------------------------

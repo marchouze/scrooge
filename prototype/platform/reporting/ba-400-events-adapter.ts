@@ -26,9 +26,11 @@
 // We approximate this from the GL by folding every posting leg that lands on a
 // P&L (income / interest-expense) chart-of-accounts leaf, signing each leg so
 // that credits to income accounts are positive and debits (interest expense,
-// trading losses) reduce gross income. Provision / impairment accounts
-// (`category` prefix `expense-impairment`) are EXCLUDED — they are not deducted
-// from gross income (§650).
+// trading losses) reduce gross income. Interest-expense accounts
+// (`category === "expense-interest"`) net INTO net interest income (interest
+// income − interest expense). Provision / impairment accounts (`expense-
+// impairment`) and other operating expenses are EXCLUDED — they are not
+// deducted from gross income (§650).
 //
 // Business-line attribution comes from the posting's `baselBusinessLine`.
 // Postings on P&L accounts that carry NO `baselBusinessLine` are NOT dropped or
@@ -105,12 +107,17 @@ function grossIncomeCreditSign(accountId: string): 1 | undefined {
   const acct = COA_BY_ID.get(accountId);
   if (!acct) return undefined;
   // Income accounts (interest / trading / fee / other) — credit is positive.
-  // This naturally captures net interest income (interest expense lands as a
-  // debit to an income-interest account, reducing the net) and net trading
-  // income (a trading loss lands as a debit).
+  // This naturally captures net trading income (a trading loss lands as a
+  // debit) and the income side of net interest income.
   if (acct.category.startsWith("income-")) return 1;
-  // expense-impairment (provisions) and any other expense category are NOT
-  // deducted from gross income per §650 — skip.
+  // Interest-expense accounts (`expense-interest`) net INTO net interest income
+  // per BCBS D196 §650 (gross income = net interest income + …). Interest
+  // expense is a DEBIT to a debit-natural `expense-interest` account; with
+  // creditSign = +1 a debit contributes −amount, reducing gross income — i.e.
+  // gross income = interest income − interest expense.
+  if (acct.category === "expense-interest") return 1;
+  // expense-impairment (provisions), expense-operating, expense-tax and any
+  // other expense category are NOT deducted from gross income per §650 — skip.
   return undefined;
 }
 

@@ -39,13 +39,15 @@ const CITATIONS = ["D-BA-RETURNS-FOLLOWON-BATCH", "BCBS D196"];
 //   ACC-4101-001 — Interest Income (EIR) — Bonds        (income-interest, credit)
 //   ACC-2100-005 — FX trading realised P&L              (income-trading,  credit)
 //   ACC-3200-006 — Dividend Income                      (income-other,    credit)
-//   ACC-6100-006 — Deposit Interest Expense             (expense-impairment → excluded)
+//   ACC-6100-006 — Deposit Interest Expense             (expense-interest → nets into NII)
+//   ACC-2300-004 — Credit Loss Expense — FX Settlement  (expense-impairment → excluded)
 // Balancing (non-P&L) leg:
 //   ACC-1100-001 — Central Bank Reserve Account         (asset-cash)
 const ACC_INTEREST_INCOME = "ACC-4101-001";
 const ACC_TRADING_PNL = "ACC-2100-005";
 const ACC_OTHER_INCOME = "ACC-3200-006";
-const ACC_IMPAIRMENT = "ACC-6100-006";
+const ACC_INTEREST_EXPENSE = "ACC-6100-006";
+const ACC_IMPAIRMENT = "ACC-2300-004";
 const ACC_CASH = "ACC-1100-001";
 
 /**
@@ -303,6 +305,43 @@ describe("BA 400 events-first — gross-income definition", () => {
     );
     expect(line?.grossIncomeMinor).toBe(10_000_000);
     expect(out.bia?.sumPositiveYearsMinor).toBe(10_000_000);
+  });
+
+  it("nets deposit interest expense (expense-interest) INTO net interest income", () => {
+    // Net interest income = interest income − interest expense (BCBS D196 §650).
+    // Interest income 10m, deposit interest expense 3m → gross income 7m, lower
+    // than the 10m a book with no interest-expense netting would report.
+    const store = new EventStore(":memory:");
+    appendIncomePosting(store, {
+      asOf: "2024-06-30T00:00:00.000Z",
+      pnlAccount: ACC_INTEREST_INCOME,
+      amountMinor: 10_000_000,
+      baselBusinessLine: "trading-and-sales",
+    });
+    // Deposit interest expense: a DEBIT to the debit-natural expense-interest
+    // account — must REDUCE gross income (net it into NII).
+    appendIncomePosting(store, {
+      asOf: "2024-07-31T00:00:00.000Z",
+      pnlAccount: ACC_INTEREST_EXPENSE,
+      amountMinor: 3_000_000,
+      baselBusinessLine: "trading-and-sales",
+      pnlDebit: true,
+    });
+
+    const out = generateBa400OpRiskFromEvents(
+      store,
+      "2024-12-31T23:59:59.999Z",
+      ENTITY_BANK,
+      "ZAR",
+      "bia",
+    );
+
+    const line = out.foldedGrossIncome.find(
+      (l) => l.businessLine === "trading-and-sales" && l.fiscalYear === "2024",
+    );
+    // 10m income − 3m interest expense = 7m net interest income.
+    expect(line?.grossIncomeMinor).toBe(7_000_000);
+    expect(out.bia?.sumPositiveYearsMinor).toBe(7_000_000);
   });
 
   it("nets a trading loss (debit to income-trading) against gross income", () => {
