@@ -23,7 +23,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { eventStore } from "../composition";
+import { clock, eventStore } from "../composition";
 import {
   DEFAULT_RECON_OWNER,
   HIGH_OR_ABOVE,
@@ -90,7 +90,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
   const events = loadEvents(opts.events);
-  const now = opts.now ?? new Date();
+  const now = opts.now ?? new Date(clock.now()); // composition clock — wall-clock abstraction boundary
 
   const idx = buildIndex(events);
 
