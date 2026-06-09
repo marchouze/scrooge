@@ -95,13 +95,40 @@ export interface ObligationChain {
   riskCategories: GraphNode[];
   /** Activities this obligation applies to (to-side of APPLIES_TO_ACTIVITY edge). */
   activities: GraphNode[];
+  /**
+   * Cross-plane SA↔BCBS counterpart obligations reached by following the
+   * EQUIVALENT_TO / CONFLICTS_WITH bridge edges (either direction). Populated
+   * ONLY when `traceObligationChain` is called with `includeCrossPlane: true`;
+   * otherwise an empty array. The bridge is the P5 same-outcome / divergent
+   * model (D-OBLIGATIONS-REGISTER-CLEANUP); it lets a chain rooted on an SA
+   * `ORG-*` obligation reach its Basel-derived `BCBS-*` counterpart (and
+   * vice-versa) without changing single-plane default behaviour.
+   */
+  crossPlaneCounterparts: GraphNode[];
+}
+
+/** Opt-in options for {@link traceObligationChain}. */
+export interface TraceObligationChainOptions {
+  /**
+   * Also follow EQUIVALENT_TO / CONFLICTS_WITH bridge edges to reach the
+   * SA↔BCBS counterpart obligation(s). Default false — single-plane.
+   */
+  includeCrossPlane?: boolean;
 }
 
 /**
  * Trace the full obligation chain for a given ORG-* ID.
  * Returns null if the obligation node does not exist in the graph.
+ *
+ * The optional `opts.includeCrossPlane` adds the P5 SA↔BCBS bridge hop
+ * (EQUIVALENT_TO / CONFLICTS_WITH); the default single-plane behaviour is
+ * unchanged.
  */
-export function traceObligationChain(obligationId: string, asOf?: string): ObligationChain | null {
+export function traceObligationChain(
+  obligationId: string,
+  asOf?: string,
+  opts: TraceObligationChainOptions = {},
+): ObligationChain | null {
   const db = getDb();
   const nodeId = `OBL-${obligationId}`;
 
@@ -189,6 +216,36 @@ export function traceObligationChain(obligationId: string, asOf?: string): Oblig
       .all(nodeId) as NodeRow[]
   ).map(rowToNode);
 
+  // Cross-plane SA↔BCBS counterparts — opt-in P5 bridge hop. Follow the
+  // EQUIVALENT_TO / CONFLICTS_WITH bridge edges in BOTH directions: an SA
+  // ORG-* obligation reaches the BCBS counterpart it bridges to (from-side),
+  // and a BCBS obligation reaches the SA obligation(s) bridging into it
+  // (to-side). Default behaviour (no opts) leaves this empty — single-plane.
+  const crossPlaneCounterparts: GraphNode[] = [];
+  if (opts.includeCrossPlane) {
+    const counterpartMap = new Map<string, GraphNode>();
+    const outward = (
+      db
+        .prepare(
+          `SELECT n.* FROM graph_nodes n
+           JOIN graph_edges e ON e.to_id = n.id
+           WHERE e.from_id = ? AND e.edge_type IN ('EQUIVALENT_TO', 'CONFLICTS_WITH') ${temporalFilter}`,
+        )
+        .all(nodeId) as NodeRow[]
+    ).map(rowToNode);
+    const inward = (
+      db
+        .prepare(
+          `SELECT n.* FROM graph_nodes n
+           JOIN graph_edges e ON e.from_id = n.id
+           WHERE e.to_id = ? AND e.edge_type IN ('EQUIVALENT_TO', 'CONFLICTS_WITH') ${temporalFilter}`,
+        )
+        .all(nodeId) as NodeRow[]
+    ).map(rowToNode);
+    for (const n of [...outward, ...inward]) counterpartMap.set(n.id, n);
+    crossPlaneCounterparts.push(...counterpartMap.values());
+  }
+
   return {
     obligation,
     provisions,
@@ -197,6 +254,7 @@ export function traceObligationChain(obligationId: string, asOf?: string): Oblig
     capabilities,
     riskCategories,
     activities,
+    crossPlaneCounterparts,
   };
 }
 
