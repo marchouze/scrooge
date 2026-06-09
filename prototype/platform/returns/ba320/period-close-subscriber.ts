@@ -18,13 +18,16 @@
 //      derive the IR general maturity-ladder and IR specific-risk rows
 //      (P1-compliant path; see `ba-320-bond-events-adapter.ts`).
 //      Banking-book bonds are excluded (BA-330 IRRBB, not BA-320).
-//   2b. Folds `IrdSwapTradeExecuted` / `IrdSwapPositionRevalued` /
-//      `IrdSwapTerminated` to derive IRS DV01 contributions to the IR general
-//      maturity-ladder (WS-BA-RETURNS-P1-SOURCING Phase 3;
-//      see `ba-320-irs-events-adapter.ts`). Banking-book swaps are excluded
-//      (BA-330 IRRBB). The bond and IRS ladders are combined per-band.
-//      Live trading-book swaps with no per-bucket DV01 are surfaced as a
-//      substrate-gap placeholder (not dropped, not fabricated).
+//   2b. Folds `IrdSwapTradeExecuted` / `IrdSwapTerminated` to derive IRS
+//      maturity-method notional-leg contributions to the IR general
+//      maturity-ladder (WS-BA-RETURNS-FOLLOWON G1;
+//      see `ba-320-irs-events-adapter.ts`). Each vanilla swap is decomposed
+//      into a fixed-bond leg (residual maturity) + an FRN leg (time-to-next-
+//      reset), each `notionalMinor × bandRiskWeight` — the SAME unit as the
+//      bond ladder. Banking-book swaps are excluded (BA-330 IRRBB). The bond
+//      and IRS ladders are combined per-band. Live trading-book swaps that
+//      cannot be decomposed (non-vanilla role, or missing next-reset terms)
+//      are surfaced as a substrate-gap placeholder (not dropped, not fabricated).
 //   3. Uses caller-supplied equity / commodity inputs (build-phase:
 //      placeholder zeros; post-trading-book milestone: event-derived).
 //   4. Calls `generateBa310MarketRiskFromEvents` with the composed input.
@@ -220,15 +223,18 @@ export function ba310PeriodCloseSubscriber(
   };
 
   // IR general-risk maturity ladder is folded events-first from BOTH the bond
-  // ladder (BondTradeExecuted) and the IRS DV01 ladder (IrdSwapPositionRevalued
-  // dv01ByTenorBucket). The two contributions are combined into one set of
-  // per-band nets before being passed to the generator.
+  // ladder (BondTradeExecuted) and the IRS maturity-method notional ladder
+  // (IrdSwapTradeExecuted decomposed into fixed-bond + FRN notional legs). Both
+  // contributions are on the SAME unit (`notionalMinor × bandRiskWeight`) and
+  // are combined into one set of per-band nets before being passed to the
+  // generator. The combiner refuses any row on a foreign weighting basis (e.g.
+  // a reintroduced raw-DV01 row), which is the G1 guard.
   //
-  // Live trading-book swaps with no populated dv01ByTenorBucket cannot be
-  // folded (Phase 1 left the bucketed-DV01 emitter as a TODO); their tradeIds
-  // are surfaced as substrate-gap placeholders rather than dropped or
-  // fabricated. Authority: WS-BA-RETURNS-P1-SOURCING Phase 3;
-  // D-BA-RETURNS-P1-SOURCING-WORKSTREAM; Reg 28(3)(a); BCBS d368 §21.
+  // Live trading-book swaps that cannot be maturity-method-decomposed — a
+  // non-vanilla role (basis swap, G2) or missing next-reset terms — are
+  // surfaced as substrate-gap placeholders rather than dropped or fabricated.
+  // Authority: WS-BA-RETURNS-FOLLOWON G1; D-IRS-DV01-BUCKETING-CALIBRATION;
+  // D-BA-RETURNS-P1-SOURCING-WORKSTREAM; Reg 28(3)(a) Table A; BCBS D352 §718(b).
   const irsLadderResult = buildIrsIrGeneralLadder(bondAdapterInput);
 
   const derivedIrGeneralMaturityLadder =
@@ -237,11 +243,12 @@ export function ba310PeriodCloseSubscriber(
   const derivedIrSpecificRisk =
     input.irSpecificRisk ?? buildBondIrSpecificRiskRows(bondAdapterInput);
 
-  // Substrate-gap placeholders: live trading-book swaps missing per-bucket DV01.
+  // Substrate-gap placeholders: live trading-book swaps that cannot be
+  // maturity-method-decomposed (non-vanilla role, or missing next-reset terms).
   const extraPlaceholders: string[] =
-    input.irGeneralMaturityLadder === undefined && irsLadderResult.swapsMissingDv01.length > 0
+    input.irGeneralMaturityLadder === undefined && irsLadderResult.swapsMissingTerms.length > 0
       ? [
-          `[substrate-gap: ${irsLadderResult.swapsMissingDv01.length} live trading-book IRS swap(s) had no dv01ByTenorBucket on their latest revaluation — IR general-risk contribution NOT folded (not fabricated, not dropped). The EOD reval engine (platform/markets/eod/irs-revaluation.ts) now emits IrdSwapPositionRevalued with a populated dv01ByTenorBucket (D-IRS-FAMILY-CONVERGE-ACCOUNTING); a swap surfaces here only if it has not yet been revalued on the converged engine. Swaps: ${irsLadderResult.swapsMissingDv01.join(", ")}. Authority: WS-BA-RETURNS-P1-SOURCING Phase 3; D-IRS-FAMILY-CONVERGE-ACCOUNTING]`,
+          `[substrate-gap: ${irsLadderResult.swapsMissingTerms.length} live trading-book IRS swap(s) could not be maturity-method-decomposed for the BA 320 IR general-risk ladder — contribution NOT folded (not fabricated, not dropped). Causes: a non-vanilla role (pay-float/receive-float basis swap → G2, separate brief) or missing next-reset terms (nextResetDate / resetFrequencyMonths) required for the FRN leg's repricing band. Swaps: ${irsLadderResult.swapsMissingTerms.join(", ")}. Authority: WS-BA-RETURNS-FOLLOWON G1; D-IRS-DV01-BUCKETING-CALIBRATION; Reg 28(3)(a) Table A; BCBS D352 §718(b)]`,
         ]
       : [];
 

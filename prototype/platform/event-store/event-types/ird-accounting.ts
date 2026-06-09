@@ -101,6 +101,32 @@ export const irdSwapTradeExecutedPayloadSchema = z.object({
    * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
    */
   bookDesignation: z.enum(["trading", "banking"]).optional(),
+  /**
+   * ISO 8601 date of the next floating-leg interest reset (repricing) after the
+   * reporting date. Required for the BA 320 IR general-risk MATURITY-METHOD
+   * decomposition (WS-BA-RETURNS-FOLLOWON G1): a vanilla swap decomposes into a
+   * fixed-rate-bond leg (slotted at residual maturity) and a floating-rate-note
+   * leg (slotted at time-to-next-reset). When this is absent, the FRN leg's
+   * repricing band cannot be derived from the accounting event alone, and the
+   * swap is surfaced as a substrate gap (NOT fabricated) by the BA 320 IRS
+   * adapter. Optional + additive; absent for legacy events.
+   *
+   * `resetFrequencyMonths` is an alternative source: when `nextResetDate` is
+   * absent but the reset frequency is known, the adapter derives the next reset
+   * as `startDate + n × resetFrequencyMonths` rolled forward past the reporting
+   * date. Either field suffices; both absent ⇒ substrate gap.
+   *
+   * Authority: Reg 28(3)(a) Table A (maturity method); BCBS D352 §718(b);
+   *   D-IRS-DV01-BUCKETING-CALIBRATION.
+   */
+  nextResetDate: z.string().min(1).optional(),
+  /**
+   * Floating-leg reset frequency in whole months (e.g. 3 for 3M-JIBAR
+   * quarterly). Alternative source for deriving the next reset date when
+   * `nextResetDate` is not carried directly. Optional + additive.
+   * Authority: D-IRS-DV01-BUCKETING-CALIBRATION.
+   */
+  resetFrequencyMonths: z.number().int().positive().optional(),
 });
 
 export type IrdSwapTradeExecutedPayload = z.infer<typeof irdSwapTradeExecutedPayloadSchema>;

@@ -1,94 +1,78 @@
 // platform/reporting/ba-320-irs-events-adapter.ts
 //
 // Derives BA 320 interest-rate general-risk maturity-ladder contributions from
-// OTC IRS DV01 sensitivities, events-first (WS-BA-RETURNS-P1-SOURCING Phase 3).
+// vanilla OTC IRS positions using the BCBS / Reg 28(3)(a) MATURITY-METHOD
+// notional decomposition, events-first (WS-BA-RETURNS-FOLLOWON G1).
 //
-// Previously the IRS interest-rate general-risk sub-charge was a
-// PLACEHOLDER / caller-supplied input on the BA 320 events adapter. This module
-// replaces that with an events-first fold that mirrors
-// `ba-320-bond-events-adapter.ts`:
+// ─── THE DEFECT THIS FIXES (G1) ─────────────────────────────────────────────
+// Previously this adapter fed `Math.abs(dv01Raw)` (raw DV01, rand-per-bp) into
+// the SAME per-band accumulators that the bond adapter fills with
+// `nominalMinor × bandRiskWeight` (weighted nominal). The two units are
+// INCOMMENSURABLE — `combineIrGeneralLadders` summed them, producing a
+// meaningless mixed-unit ladder in which the IRS contribution was ~3 orders of
+// magnitude too small (a R100m 5y swap has a DV01 of ~R45k, vs a weighted
+// nominal of ~R3.25m at the 5-7y 3.25% band). Confirmed at code level and by
+// Helena (Chief Risk Officer, governance) review.
 //
-//   IrdSwapTradeExecuted (bookDesignation === "trading", OR absent ⇒ trading
-//     per Phase 1 default — OTC IRD is FVTPL/trading book per IFRS 9 §4.1.4)
-//     → derecognise via IrdSwapTerminated
-//     → for each live swap, take the latest IrdSwapPositionRevalued
-//     → read dv01ByTenorBucket (Partial<Record<BaselMaturityBand, number>>)
-//     → map each BaselMaturityBand → BA 320 IR general-risk maturity band
-//     → sum DV01 across swaps per band (sign → long/short)
-//     → IrMaturityBandRow[]
+// ─── THE FIX: MATURITY-METHOD NOTIONAL DECOMPOSITION ────────────────────────
+// Under the Reg 28(3)(a) / BCBS D352 §718(b) maturity method, an interest-rate
+// swap is decomposed into two notional legs of opposite sign:
+//   - a FIXED-RATE-BOND leg, slotted at the swap's RESIDUAL MATURITY band;
+//   - a FLOATING-RATE-NOTE (FRN) leg, slotted at the TIME-TO-NEXT-RESET band.
+// Each leg contributes `notionalMinor × bandRiskWeight` — the SAME unit the
+// bond adapter produces — so the combined ladder is dimensionally coherent.
 //
-// DV01 IS the weighted (risk-sensitivity) position for an interest-rate
-// instrument: it is the rand change in value for a 1bp parallel shift. The BA
-// 320 IR general-risk ladder nets weighted long / short per band, so the DV01
-// per tenor bucket feeds the ladder directly (no further risk-weighting — the
-// duration sensitivity is the weight). A positive DV01 (value rises when rates
-// fall — i.e. long-duration / receiver-of-fixed exposure) is a long position;
-// a negative DV01 is a short position.
+// Leg signs by the bank's role:
+//   pay-fixed     → pays fixed, receives float  → SHORT fixed-bond, LONG FRN
+//   receive-fixed → receives fixed, pays float  → LONG  fixed-bond, SHORT FRN
+// (A receiver-of-fixed is long duration on the fixed leg, exactly as a
+// long fixed-rate-bond holder is.)
 //
-// Banking-book swaps (bookDesignation === "banking") are EXCLUDED — they are
-// IRRBB (BA 330), not BA 320 trading-book market risk.
+// Only the FIXED leg carries meaningful general-market-risk weight at longer
+// tenors; the FRN leg sits in a short repricing band (small weight) — but both
+// are emitted so vertical/horizontal offsetting against bond positions in the
+// same band is correct.
 //
-// Substrate gap (Phase 1 carry-over): the IRS revaluation engine
-// (platform/markets/eod/irs-revaluation.ts) currently emits the markets-CDM
-// `IrsPositionRevalued` family with a single scalar `dv01`, NOT the accounting
-// `IrdSwapPositionRevalued` family with `dv01ByTenorBucket`. Until a bucketed-
-// DV01 emitter lands on the accounting family, any live trading-book swap with
-// no populated `dv01ByTenorBucket` is surfaced as a substrate gap (its tradeId
-// is returned) — it is NOT silently dropped and a DV01 is NOT fabricated.
+// ─── SUBSTRATE GAPS (NOT FABRICATED) ────────────────────────────────────────
+// The accounting `IrdSwapTradeExecuted` event carries notional, role,
+// startDate, and maturityDate directly. The next-reset date — required for the
+// FRN leg's band — is taken from `nextResetDate` (or derived from
+// `resetFrequencyMonths` rolled forward from `startDate`). When NEITHER is
+// present, the FRN leg cannot be slotted without fabricating a reset frequency,
+// so the swap's tradeId is surfaced in `swapsMissingTerms` (NOT dropped, NOT
+// fabricated). Non-vanilla roles (`pay-float` / `receive-float`, i.e. basis
+// swaps with no fixed leg) likewise cannot be maturity-method-decomposed and
+// are surfaced as gaps — G2 (multi-curve / basis) is a separate brief.
 //
-// Helena (Chief Risk Officer, governance) calibration sign-off of the DV01 →
-// maturity-band mapping methodology is pending (advisory; does not block the
-// events-first wiring).
+// `dv01ByTenorBucket` REMAINS on `IrdSwapPositionRevalued` as a valid internal
+// interest-rate-sensitivity view (used by IRRBB / risk dashboards). It NO
+// LONGER feeds the BA 320 maturity ladder — that feed is now the maturity-
+// method notional decomposition above.
 //
 // Authority:
 //   - Regulations Relating to Banks Reg 28(3)(a) (IR general-risk maturity ladder)
 //   - Reg 28(5)(b) (standardised maturity bands)
-//   - BCBS d368 §21 (IRRBB standardised tenor bands)
+//   - BCBS D352 §718(b) (general market risk — maturity method; swap decomposition)
 //   - D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO-approved 2026-06-09)
+//   - D-IRS-DV01-BUCKETING-CALIBRATION (G1 weighting-basis unification)
 //   - D-BA-RETURNS-P1-SOURCING-WORKSTREAM
 //   - Principles/1-events-are-truth.md
 //
 // Author: Mira (Regulatory reporting engineer, engineering)
 
 import type {
-  IrdSwapPositionRevaluedPayload,
   IrdSwapTerminatedPayload,
   IrdSwapTradeExecutedPayload,
 } from "../event-store/event-types/ird-accounting";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import type { BaselMaturityBand } from "../types/basel";
+import {
+  BA320_BAND_ORDER,
+  MATURITY_METHOD_WEIGHTED_NOMINAL,
+  assignMaturityBand,
+  residualYears,
+} from "./ba-320-ir-maturity-bands";
 import type { IrMaturityBandRow } from "./ba-320-market-risk";
-
-// ---------------------------------------------------------------------------
-// BaselMaturityBand → BA 320 maturity-band identity map.
-//
-// The BaselMaturityBand union values are byte-identical to the BA 320 IR
-// general-risk band identifiers used by ba-320-bond-events-adapter.ts
-// (MATURITY_BANDS.band) and consumed by generateBa310MarketRisk. The mapping
-// is therefore the identity — but we declare it explicitly and exhaustively so
-// that any future divergence between the two band vocabularies is a compile
-// error, not a silent mis-bucketing.
-// ---------------------------------------------------------------------------
-
-const BASEL_BAND_TO_BA320_BAND: Record<BaselMaturityBand, string> = {
-  "0-1m": "0-1m",
-  "1-3m": "1-3m",
-  "3-6m": "3-6m",
-  "6-12m": "6-12m",
-  "1-2y": "1-2y",
-  "2-3y": "2-3y",
-  "3-4y": "3-4y",
-  "4-5y": "4-5y",
-  "5-7y": "5-7y",
-  "7-10y": "7-10y",
-  "10-15y": "10-15y",
-  "15-20y": "15-20y",
-  ">20y": ">20y",
-};
-
-/** Stable band order for emitting rows (shortest → longest). */
-const BA320_BAND_ORDER: readonly string[] = Object.values(BASEL_BAND_TO_BA320_BAND);
 
 // ---------------------------------------------------------------------------
 // Frozen-cursor replay option type (mirrors ba-320-bond-events-adapter.ts)
@@ -110,7 +94,7 @@ export interface IrsIrAdapterInput {
   readonly entity: string;
   /** Period-end ISO 8601 date-time. Bounds the event replay (asOf). */
   readonly periodEnd: string;
-  /** Event store — provides IrdSwapTradeExecuted / -Revalued / -Terminated. */
+  /** Event store — provides IrdSwapTradeExecuted / -Terminated. */
   readonly eventStore: EventStore;
   /**
    * Upper bound (inclusive) on the event `sequence` column.
@@ -124,14 +108,112 @@ export interface IrsIrAdapterInput {
  * Result of `buildIrsIrGeneralLadder`.
  */
 export interface IrsIrGeneralLadderResult {
-  /** IR general-risk maturity-ladder rows derived from IRS DV01. */
+  /**
+   * IR general-risk maturity-ladder rows from the IRS maturity-method notional
+   * decomposition (`notionalMinor × bandRiskWeight`), commensurate with the
+   * bond adapter's rows.
+   */
   readonly rows: readonly IrMaturityBandRow[];
   /**
-   * Trade IDs of live trading-book swaps that have NO populated
-   * `dv01ByTenorBucket` on their latest revaluation (or no revaluation at all).
-   * These are surfaced as substrate gaps — NOT dropped, NOT fabricated.
+   * Trade IDs of live trading-book swaps that CANNOT be maturity-method-
+   * decomposed: either a non-vanilla role (no fixed leg → basis swap, G2) or
+   * missing the next-reset terms required for the FRN leg. Surfaced as
+   * substrate gaps — NOT dropped, NOT fabricated.
    */
-  readonly swapsMissingDv01: readonly string[];
+  readonly swapsMissingTerms: readonly string[];
+}
+
+// ---------------------------------------------------------------------------
+// Next-reset derivation
+// ---------------------------------------------------------------------------
+
+const MONTHS_PER_RESET_ROLL_CAP = 2_400; // 200y — defensive roll-forward cap
+
+/**
+ * Derive the next floating-leg reset date strictly after `periodEnd`.
+ *
+ * Precedence:
+ *   1. `nextResetDate` if present and after periodEnd (carried directly).
+ *   2. `resetFrequencyMonths` rolled forward from `startDate` past periodEnd.
+ *   3. undefined → caller surfaces the swap as a substrate gap.
+ *
+ * The reset date is capped at the swap's `maturityDate`: a floating leg never
+ * reprices beyond final maturity, so a next-reset computed past maturity is
+ * clamped to maturity (the residual floating exposure is to maturity).
+ */
+function deriveNextResetDate(
+  p: IrdSwapTradeExecutedPayload,
+  periodEnd: string,
+): string | undefined {
+  const periodEndDay = periodEnd.slice(0, 10);
+  const maturityDay = p.maturityDate.slice(0, 10);
+
+  // 1. Directly carried next-reset date.
+  if (p.nextResetDate !== undefined) {
+    const resetDay = p.nextResetDate.slice(0, 10);
+    if (resetDay > periodEndDay) {
+      return resetDay < maturityDay ? resetDay : maturityDay;
+    }
+    // A stale next-reset on/before periodEnd is not usable; fall through to the
+    // frequency derivation if available rather than fabricating.
+  }
+
+  // 2. Roll the reset frequency forward from startDate past periodEnd.
+  if (p.resetFrequencyMonths !== undefined && p.resetFrequencyMonths > 0) {
+    const start = new Date(`${p.startDate.slice(0, 10)}T00:00:00Z`);
+    const periodEndMs = Date.parse(`${periodEndDay}T00:00:00Z`);
+    const maturityMs = Date.parse(`${maturityDay}T00:00:00Z`);
+    for (let k = 1; k <= MONTHS_PER_RESET_ROLL_CAP; k++) {
+      const candidate = new Date(start.getTime());
+      candidate.setUTCMonth(start.getUTCMonth() + k * p.resetFrequencyMonths);
+      const candMs = candidate.getTime();
+      if (candMs > periodEndMs) {
+        const clamped = candMs < maturityMs ? candMs : maturityMs;
+        return new Date(clamped).toISOString().slice(0, 10);
+      }
+      if (candMs >= maturityMs) {
+        return maturityDay; // never reprices past maturity
+      }
+    }
+  }
+
+  // 3. No usable terms.
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Per-band accumulator + leg slotting
+// ---------------------------------------------------------------------------
+
+type BandAccumulator = Map<string, { weightedLong: number; weightedShort: number }>;
+
+/**
+ * Slot one notional leg (`notionalMinor`) into its band at
+ * `notionalMinor × bandRiskWeight`, on the given side. The 0-1m band carries a
+ * 0% risk weight, so short-reset FRN legs there contribute zero weighted
+ * amount (still correct — they net out trivially).
+ */
+function slotLeg(
+  acc: BandAccumulator,
+  years: number,
+  notionalMinor: number,
+  side: "long" | "short",
+): void {
+  const bandDef = assignMaturityBand(years);
+  if (!bandDef) return; // already matured / reset (residual ≤ 0)
+  const weightedAmount = Math.round(notionalMinor * bandDef.riskWeight);
+  const current = acc.get(bandDef.band) ?? { weightedLong: 0, weightedShort: 0 };
+  if (side === "long") {
+    acc.set(bandDef.band, {
+      weightedLong: current.weightedLong + weightedAmount,
+      weightedShort: current.weightedShort,
+    });
+  } else {
+    acc.set(bandDef.band, {
+      weightedLong: current.weightedLong,
+      weightedShort: current.weightedShort + weightedAmount,
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -139,27 +221,31 @@ export interface IrsIrGeneralLadderResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Derive the BA 320 IR general-risk maturity-ladder contributions from IRS
- * DV01 sensitivities, events-first.
+ * Derive the BA 320 IR general-risk maturity-ladder contributions from vanilla
+ * IRS positions via the Reg 28(3)(a) maturity-method notional decomposition,
+ * events-first.
  *
  * Logic:
  *   1. Replay IrdSwapTerminated up to periodEnd → derecognised trade IDs.
- *   2. Replay IrdSwapTradeExecuted up to periodEnd → live trading-book swaps.
+ *   2. Replay IrdSwapTradeExecuted up to periodEnd → live swaps.
  *      - bookDesignation === "banking" → excluded (IRRBB / BA 330).
  *      - bookDesignation === "trading" OR absent → included (Phase 1 default).
- *   3. Replay IrdSwapPositionRevalued up to periodEnd → latest reval per trade
- *      (by revalDate; sequence as tie-break).
- *   4. For each live trading-book swap:
- *      - if no latest reval, or its dv01ByTenorBucket is absent/empty →
- *        surface tradeId as a substrate gap.
- *      - else sum DV01 per band: DV01 > 0 → weightedLong; < 0 → weightedShort
- *        (absolute value, since the ladder takes signed-by-side magnitudes).
- *   5. Emit one IrMaturityBandRow per band with a non-zero contribution, in
- *      stable band order.
+ *   3. For each live trading-book swap:
+ *      - role must be pay-fixed or receive-fixed (vanilla). pay-float /
+ *        receive-float (basis) → substrate gap (G2).
+ *      - derive next-reset date (nextResetDate or resetFrequencyMonths). None →
+ *        substrate gap.
+ *      - FIXED leg → residual-maturity band; FRN leg → time-to-next-reset band.
+ *      - pay-fixed: short fixed-bond, long FRN. receive-fixed: long fixed-bond,
+ *        short FRN.
+ *      - slot each leg as `notionalMinor × bandRiskWeight`.
+ *   4. Emit one IrMaturityBandRow per non-empty band in stable band order,
+ *      stamped with the maturity-method-weighted-nominal basis.
  *
  * Citations: Regulations Relating to Banks Reg 28(3)(a), Reg 28(5)(b);
- *   BCBS d368 §21; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL;
- *   D-BA-RETURNS-P1-SOURCING-WORKSTREAM; Principles/1-events-are-truth.md.
+ *   BCBS D352 §718(b); D-IRS-DV01-BUCKETING-CALIBRATION;
+ *   D-BA-RETURN-NUMBERING-EXCEL-CANONICAL; D-BA-RETURNS-P1-SOURCING-WORKSTREAM;
+ *   Principles/1-events-are-truth.md.
  */
 export function buildIrsIrGeneralLadder(input: IrsIrAdapterInput): IrsIrGeneralLadderResult {
   const { eventStore, entity, periodEnd, untilSequence } = input;
@@ -179,10 +265,13 @@ export function buildIrsIrGeneralLadder(input: IrsIrAdapterInput): IrsIrGeneralL
     if (p.tradeId) terminatedTradeIds.add(p.tradeId);
   }
 
-  // ---- Step 2: collect live trading-book swaps ----
-  // bookDesignation === "banking" excluded (IRRBB / BA 330).
-  // absent ⇒ trading per Phase 1 default (OTC IRD is FVTPL/trading book).
-  const liveTradingSwaps = new Set<string>();
+  // ---- Step 2 + 3: fold live trading-book swaps into the maturity ladder ----
+  const bandAccumulator: BandAccumulator = new Map();
+  const swapsMissingTerms: string[] = [];
+  // Latest executed terms per tradeId (a tradeId should execute once; on the
+  // off chance of a correcting re-emit, the later-seen wins).
+  const seenTradeIds = new Set<string>();
+
   for (const ev of eventStore.replay({
     entity,
     type: "IrdSwapTradeExecuted",
@@ -194,72 +283,38 @@ export function buildIrsIrGeneralLadder(input: IrsIrAdapterInput): IrsIrGeneralL
     if (!p.tradeId) continue;
     if (terminatedTradeIds.has(p.tradeId)) continue;
     if (p.bookDesignation === "banking") continue; // IRRBB → BA 330
-    liveTradingSwaps.add(p.tradeId);
-  }
+    if (seenTradeIds.has(p.tradeId)) continue;
+    seenTradeIds.add(p.tradeId);
 
-  // ---- Step 3: latest revaluation per trade ----
-  // replay() yields events in ascending `sequence` order, so iterating and
-  // keeping the row with the greatest revalDate — and, on equal revalDate, the
-  // later-seen row (highest sequence) — gives the most recent revaluation.
-  const latestReval = new Map<
-    string,
-    { payload: IrdSwapPositionRevaluedPayload; revalDate: string }
-  >();
-  for (const ev of eventStore.replay({
-    entity,
-    type: "IrdSwapPositionRevalued",
-    asOf: periodEnd,
-    ...frozenCursorOpts,
-  })) {
-    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    const p = ev.payload as IrdSwapPositionRevaluedPayload;
-    if (!p.tradeId) continue;
-    if (!liveTradingSwaps.has(p.tradeId)) continue;
-    const prev = latestReval.get(p.tradeId);
-    // >= on equal revalDate: later iteration (higher sequence) wins the tie.
-    if (prev === undefined || p.revalDate >= prev.revalDate) {
-      latestReval.set(p.tradeId, { payload: p, revalDate: p.revalDate });
-    }
-  }
-
-  // ---- Step 4: accumulate DV01 per band; collect missing-DV01 swaps ----
-  // band → { weightedLong, weightedShort } (minor units, absolute by side)
-  const bandAccumulator = new Map<string, { weightedLong: number; weightedShort: number }>();
-  const swapsMissingDv01: string[] = [];
-
-  for (const tradeId of liveTradingSwaps) {
-    const reval = latestReval.get(tradeId);
-    const dv01Buckets = reval?.payload.dv01ByTenorBucket;
-    if (dv01Buckets === undefined || Object.keys(dv01Buckets).length === 0) {
-      // No populated per-bucket DV01 → substrate gap. Do NOT fabricate; do NOT drop.
-      swapsMissingDv01.push(tradeId);
+    // Vanilla fixed-vs-float only. Basis swaps (pay-float / receive-float) have
+    // no fixed leg to slot at residual maturity → G2, surfaced as a gap.
+    if (p.role !== "pay-fixed" && p.role !== "receive-fixed") {
+      swapsMissingTerms.push(p.tradeId);
       continue;
     }
 
-    for (const [baselBand, dv01Raw] of Object.entries(dv01Buckets) as [
-      BaselMaturityBand,
-      number | undefined,
-    ][]) {
-      if (dv01Raw === undefined || dv01Raw === 0) continue;
-      const ba320Band = BASEL_BAND_TO_BA320_BAND[baselBand];
-      if (ba320Band === undefined) continue; // unknown band key — ignore defensively
-      const current = bandAccumulator.get(ba320Band) ?? { weightedLong: 0, weightedShort: 0 };
-      const magnitude = Math.round(Math.abs(dv01Raw));
-      if (dv01Raw > 0) {
-        bandAccumulator.set(ba320Band, {
-          weightedLong: current.weightedLong + magnitude,
-          weightedShort: current.weightedShort,
-        });
-      } else {
-        bandAccumulator.set(ba320Band, {
-          weightedLong: current.weightedLong,
-          weightedShort: current.weightedShort + magnitude,
-        });
-      }
+    const nextResetDate = deriveNextResetDate(p, periodEnd);
+    if (nextResetDate === undefined) {
+      // FRN leg cannot be slotted without fabricating a reset → substrate gap.
+      swapsMissingTerms.push(p.tradeId);
+      continue;
     }
+
+    const maturityYears = residualYears(periodEnd, p.maturityDate);
+    if (maturityYears <= 0) continue; // already matured by periodEnd
+    const resetYears = residualYears(periodEnd, nextResetDate);
+
+    // Leg signs by role:
+    //   pay-fixed     → SHORT fixed-bond, LONG FRN
+    //   receive-fixed → LONG  fixed-bond, SHORT FRN
+    const fixedSide: "long" | "short" = p.role === "receive-fixed" ? "long" : "short";
+    const frnSide: "long" | "short" = fixedSide === "long" ? "short" : "long";
+
+    slotLeg(bandAccumulator, maturityYears, p.notionalMinor, fixedSide);
+    slotLeg(bandAccumulator, resetYears, p.notionalMinor, frnSide);
   }
 
-  // ---- Step 5: emit IrMaturityBandRow[] in stable band order ----
+  // ---- Step 4: emit IrMaturityBandRow[] in stable band order ----
   const rows: IrMaturityBandRow[] = [];
   for (const band of BA320_BAND_ORDER) {
     const acc = bandAccumulator.get(band);
@@ -269,16 +324,27 @@ export function buildIrsIrGeneralLadder(input: IrsIrAdapterInput): IrsIrGeneralL
       band,
       weightedLongMinor: acc.weightedLong,
       weightedShortMinor: acc.weightedShort,
+      weightingBasis: MATURITY_METHOD_WEIGHTED_NOMINAL,
     });
   }
 
-  return { rows, swapsMissingDv01 };
+  return { rows, swapsMissingTerms };
 }
 
 /**
- * Combine two IR general-risk maturity ladders (e.g. bond + IRS) into a single
- * set of per-band nets. Rows for the same band have their weighted long / short
- * summed. Output is in stable band order.
+ * Combine two or more IR general-risk maturity ladders (e.g. bond + IRS) into a
+ * single set of per-band nets. Rows for the same band have their weighted long
+ * / short summed. Output is in stable band order, stamped with the canonical
+ * maturity-method-weighted-nominal basis.
+ *
+ * WEIGHTING-BASIS GUARD (WS-BA-RETURNS-FOLLOWON G1): every input row MUST be on
+ * the `maturity-method-weighted-nominal` basis (`notionalMinor × bandRiskWeight`)
+ * or carry no basis at all (back-compat for caller-supplied test/override
+ * ladders, which are weighted-nominal by contract). A row carrying ANY OTHER
+ * non-empty basis — e.g. a reintroduced raw-DV01 row (rand-per-bp) — is
+ * dimensionally incommensurate and throws, so the G1 defect cannot silently
+ * recur. The static `recon:ba320-ir-general-weighting-basis` guard enforces the
+ * same invariant at the source-code level.
  *
  * Used by the BA 320 period-close subscriber to feed both bond and IRS
  * contributions into the same `generateBa310MarketRisk` IR general-risk ladder.
@@ -289,6 +355,21 @@ export function combineIrGeneralLadders(
   const merged = new Map<string, { weightedLong: number; weightedShort: number }>();
   for (const ladder of ladders) {
     for (const row of ladder) {
+      if (
+        row.weightingBasis !== undefined &&
+        row.weightingBasis !== MATURITY_METHOD_WEIGHTED_NOMINAL
+      ) {
+        throw new Error(
+          [
+            `combineIrGeneralLadders: row for band "${row.band}" carries a foreign weighting basis`,
+            `"${row.weightingBasis}" — only "${MATURITY_METHOD_WEIGHTED_NOMINAL}"`,
+            "(notional × bandRiskWeight) rows may feed the IR general-risk ladder. A raw-DV01",
+            "(rand-per-bp) row is dimensionally incommensurate with weighted nominal and would",
+            "produce a meaningless mixed-unit charge (WS-BA-RETURNS-FOLLOWON G1;",
+            "D-IRS-DV01-BUCKETING-CALIBRATION).",
+          ].join(" "),
+        );
+      }
       const current = merged.get(row.band) ?? { weightedLong: 0, weightedShort: 0 };
       merged.set(row.band, {
         weightedLong: current.weightedLong + row.weightedLongMinor,
@@ -310,6 +391,7 @@ export function combineIrGeneralLadders(
       band,
       weightedLongMinor: acc.weightedLong,
       weightedShortMinor: acc.weightedShort,
+      weightingBasis: MATURITY_METHOD_WEIGHTED_NOMINAL,
     });
   }
   for (const [band, acc] of merged) {
@@ -319,6 +401,7 @@ export function combineIrGeneralLadders(
       band,
       weightedLongMinor: acc.weightedLong,
       weightedShortMinor: acc.weightedShort,
+      weightingBasis: MATURITY_METHOD_WEIGHTED_NOMINAL,
     });
   }
   return rows;

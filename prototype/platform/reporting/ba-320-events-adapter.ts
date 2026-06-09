@@ -67,10 +67,12 @@ import type {
  * P1-compliance status:
  *   - FX sub-charge: COMPLIANT — folds FxTradeExecuted events directly.
  *   - IR general-risk: COMPLIANT — folds BondTradeExecuted (bond ladder) and
- *     IrdSwapPositionRevalued DV01 (IRS ladder) events directly. The combined
- *     ladder is passed in via `irGeneralMaturityLadder`. Any live trading-book
- *     swap with no populated `dv01ByTenorBucket` is surfaced as a substrate
- *     gap via `extraPlaceholders` (WS-BA-RETURNS-P1-SOURCING Phase 3).
+ *     IrdSwapTradeExecuted (IRS maturity-method notional-leg ladder) events
+ *     directly, both on the SAME weighted-nominal basis. The combined ladder is
+ *     passed in via `irGeneralMaturityLadder`. Any live trading-book swap that
+ *     cannot be maturity-method-decomposed (non-vanilla role, or missing
+ *     next-reset terms) is surfaced as a substrate gap via `extraPlaceholders`
+ *     (WS-BA-RETURNS-FOLLOWON G1; D-IRS-DV01-BUCKETING-CALIBRATION).
  *   - equity / commodity: PLACEHOLDER — caller-supplied numbers until the
  *     corresponding event streams are implemented. Substrate gap surfaced in
  *     the output `placeholders` field.
@@ -101,8 +103,9 @@ export interface Ba310FromEventsInput {
   readonly zarRates: ReadonlyMap<string, number>;
   /**
    * Maturity-ladder rows for IR general-risk. Events-first: the caller folds
-   * the bond ladder (ba-320-bond-events-adapter) and the IRS DV01 ladder
-   * (ba-320-irs-events-adapter) and passes the combined per-band nets here.
+   * the bond ladder (ba-320-bond-events-adapter) and the IRS maturity-method
+   * notional-leg ladder (ba-320-irs-events-adapter) — both on the
+   * weighted-nominal basis — and passes the combined per-band nets here.
    */
   readonly irGeneralMaturityLadder: readonly IrMaturityBandRow[];
   /** Issuer rows for IR specific-risk. Caller-supplied at v0. */
@@ -124,9 +127,10 @@ export interface Ba310FromEventsInput {
   /**
    * Extra substrate-gap / placeholder notes to append to the output
    * `placeholders` field. Used by the period-close subscriber to surface live
-   * trading-book IRS swaps that have no populated `dv01ByTenorBucket` (so their
-   * IR general-risk contribution could not be folded — not dropped, not
-   * fabricated). Authority: WS-BA-RETURNS-P1-SOURCING Phase 3.
+   * trading-book IRS swaps that could not be maturity-method-decomposed (a
+   * non-vanilla role, or missing next-reset terms — so their IR general-risk
+   * contribution could not be folded — not dropped, not fabricated).
+   * Authority: WS-BA-RETURNS-FOLLOWON G1; D-IRS-DV01-BUCKETING-CALIBRATION.
    */
   readonly extraPlaceholders?: readonly string[];
 }
