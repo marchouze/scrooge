@@ -51,7 +51,7 @@ interface SeedRow {
  * Grouped by reason for auditability.
  */
 const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
-  // ── Accounting standards — framework names, no section grammar the extractor reads ──
+  // AC family (16)
   "ORG-AC-01",
   "ORG-AC-02",
   "ORG-AC-03",
@@ -68,7 +68,7 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-AC-14",
   "ORG-AC-15",
   "ORG-AC-16",
-  // ── Conduct — instrument named without an enumerable section, or multi-instrument ──
+  // CD family (10)
   "ORG-CD-01",
   "ORG-CD-02",
   "ORG-CD-03",
@@ -79,10 +79,13 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-CD-08",
   "ORG-CD-09",
   "ORG-CD-10",
+  // CS1 family (1)
   "ORG-CS1-001",
+  // CS2 family (1)
   "ORG-CS2-001",
+  // CS3 family (1)
   "ORG-CS3-001",
-  // ── Cyber — Joint Standard / Directive named without a section the extractor parses ──
+  // CY family (15)
   "ORG-CY-01",
   "ORG-CY-02",
   "ORG-CY-02-RECON-CRO-INDEPENDENCE",
@@ -98,12 +101,13 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-CY-12",
   "ORG-CY-13",
   "ORG-CY-14",
-  // ── E-law / Excon manual — no enumerable instrument+section ──
+  // EL family (3)
   "ORG-EL-01",
   "ORG-EL-02",
   "ORG-EL-03",
+  // EXCON family (1)
   "ORG-EXCON-ODP-001",
-  // ── Financial crime — multi-instrument / FATF / GN citations ──
+  // FC family (23)
   "ORG-FC-02",
   "ORG-FC-03",
   "ORG-FC-04",
@@ -127,10 +131,10 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-FC-21",
   "ORG-FC-22",
   "ORG-FC-MLRO-ALTERNATE",
-  // ── Financial Markets Act — section grammar not parsed (Regulations GN, "s.109" w/o instrument map) ──
+  // FMA family (2)
   "ORG-FMA-002",
   "ORG-FMA-003",
-  // ── Governance — Companies Act ranges / King IV / multi-instrument ──
+  // GV family (24)
   "ORG-GV-02",
   "ORG-GV-03",
   "ORG-GV-04",
@@ -155,7 +159,7 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-GV-CFO-INDEPENDENCE",
   "ORG-GV-CRO-INDEPENDENCE",
   "ORG-GV-DIRECTORS-MINIMUM",
-  // ── HR — instrument names without enumerable sections ──
+  // HR family (11)
   "ORG-HR-01",
   "ORG-HR-02",
   "ORG-HR-03",
@@ -167,9 +171,12 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-HR-09",
   "ORG-HR-10",
   "ORG-HR-11",
-  // ── Joint Notice / Standard — section grammar not parsed ──
+  // JN2 family (1)
   "ORG-JN2-2024",
-  // ── Markets — multi-instrument / internal RAS / market-practice guides ──
+  // JS2 family (2)
+  "ORG-JS2-001",
+  "ORG-JS2-003",
+  // MK family (11)
   "ORG-MK-01",
   "ORG-MK-02",
   "ORG-MK-03",
@@ -181,7 +188,7 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-MK-RPT-001",
   "ORG-MK-RPT-002",
   "ORG-MK-RPT-003",
-  // ── ODP — CS reporting annexures / multi-clause "+"-joined citations ──
+  // ODP family (22)
   "ORG-ODP-AUTH-001",
   "ORG-ODP-AUTH-002",
   "ORG-ODP-AUTH-003",
@@ -204,10 +211,10 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-ODP-RPT-003",
   "ORG-ODP-RPT-004",
   "ORG-ODP-RPT-005",
-  // ── PAIA — section grammar not in instrument map ──
+  // PR(IV) family (2)
   "ORG-PR(IV)-16",
   "ORG-PR(IV)-17",
-  // ── Prudential — BCBS lineage prose / Reg-name / internal-RAS / multi-instrument ──
+  // PR family (26)
   "ORG-PR-01",
   "ORG-PR-02",
   "ORG-PR-03",
@@ -234,7 +241,7 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-PR-24",
   "ORG-PR-25",
   "ORG-PR-26",
-  // ── Tax — instrument names without enumerable sections / multi-instrument ──
+  // TX family (9)
   "ORG-TX-01",
   "ORG-TX-02",
   "ORG-TX-03",
@@ -244,7 +251,7 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-TX-07",
   "ORG-TX-08",
   "ORG-TX-09",
-  // ── Whistleblowing — multi-instrument / King IV ──
+  // WB family (4)
   "ORG-WB-01",
   "ORG-WB-02",
   "ORG-WB-03",
@@ -278,7 +285,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   const seedPath = resolve(repoRoot, "Regulations/_obligations.seed.json");
   if (!existsSync(seedPath)) {
-    result.ok = ADVISORY ? true : false;
+    result.ok = ADVISORY; // advisory: never block on a missing seed
     result.violations = [
       {
         subject: "Regulations/_obligations.seed.json",
@@ -310,7 +317,8 @@ export function run(opts: RunOpts = {}): ReconResult {
   const populated = seed.length - residualTbd - allowlisted;
 
   // Advisory: ok regardless, so the backlog can drain without blocking CI.
-  result.ok = ADVISORY ? true : residualTbd === 0;
+  // When ADVISORY is flipped to false, a non-empty residual fails the gate.
+  result.ok = ADVISORY || residualTbd === 0;
   result.violations = violations;
 
   // Stash the summary on the result via console at CLI time (below).
