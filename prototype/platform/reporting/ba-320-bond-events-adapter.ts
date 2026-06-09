@@ -43,9 +43,9 @@ import type {
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import {
-  assignMaturityBand,
   MATURITY_BANDS,
   MATURITY_METHOD_WEIGHTED_NOMINAL,
+  assignMaturityBand,
   residualYears,
 } from "./ba-320-ir-maturity-bands";
 import type { IrMaturityBandRow, IrSpecificRiskRow } from "./ba-320-market-risk";

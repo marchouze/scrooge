@@ -67,9 +67,9 @@ import type {
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import {
-  assignMaturityBand,
   BA320_BAND_ORDER,
   MATURITY_METHOD_WEIGHTED_NOMINAL,
+  assignMaturityBand,
   residualYears,
 } from "./ba-320-ir-maturity-bands";
 import type { IrMaturityBandRow } from "./ba-320-market-risk";
@@ -360,12 +360,14 @@ export function combineIrGeneralLadders(
         row.weightingBasis !== MATURITY_METHOD_WEIGHTED_NOMINAL
       ) {
         throw new Error(
-          `combineIrGeneralLadders: row for band "${row.band}" carries a foreign weighting basis ` +
-            `"${row.weightingBasis}" — only "${MATURITY_METHOD_WEIGHTED_NOMINAL}" ` +
-            `(notional × bandRiskWeight) rows may feed the IR general-risk ladder. A raw-DV01 ` +
-            `(rand-per-bp) row is dimensionally incommensurate with weighted nominal and would ` +
-            `produce a meaningless mixed-unit charge (WS-BA-RETURNS-FOLLOWON G1; ` +
-            `D-IRS-DV01-BUCKETING-CALIBRATION).`,
+          [
+            `combineIrGeneralLadders: row for band "${row.band}" carries a foreign weighting basis`,
+            `"${row.weightingBasis}" — only "${MATURITY_METHOD_WEIGHTED_NOMINAL}"`,
+            "(notional × bandRiskWeight) rows may feed the IR general-risk ladder. A raw-DV01",
+            "(rand-per-bp) row is dimensionally incommensurate with weighted nominal and would",
+            "produce a meaningless mixed-unit charge (WS-BA-RETURNS-FOLLOWON G1;",
+            "D-IRS-DV01-BUCKETING-CALIBRATION).",
+          ].join(" "),
         );
       }
       const current = merged.get(row.band) ?? { weightedLong: 0, weightedShort: 0 };
