@@ -10,7 +10,9 @@ import type { Event } from "../platform/event-store/types";
 import {
   alreadyRebookedKeysFrom,
   buildCorrectionEvent,
+  buildSupersedeReversalEvent,
   discoverStrandedLegsFrom,
+  existingCorrectionsFrom,
   resolveTargetAccount,
 } from "./rebook-unresolved-currency-suspense";
 
@@ -172,5 +174,55 @@ describe("rebook-unresolved-currency-suspense", () => {
     const keys = alreadyRebookedKeysFrom(events);
     expect(keys.has("e1:0")).toBe(true);
     expect(keys.has("e1:1")).toBe(false);
+  });
+
+  it("indexes existing corrections with their postedAt for supersede detection", () => {
+    const events = [
+      posting(
+        "c1",
+        "sla-rebook-unresolved-currency-suspense",
+        [
+          { accountId: SUSPENSE, debitCredit: "credit", amountMinor: 1, currency: "GBP" },
+          { accountId: "ACC-1200-004", debitCredit: "debit", amountMinor: 1, currency: "GBP" },
+        ],
+        { correctsEventId: "e1", legIndex: 0 },
+      ),
+    ];
+    const map = existingCorrectionsFrom(events);
+    const c = map.get("e1:0");
+    expect(c?.eventId).toBe("c1");
+    expect(c?.postedAt).toBe("2026-06-09T00:00:00.000Z");
+    expect(c?.legs).toHaveLength(2);
+  });
+
+  it("supersede reversal mirrors the stale legs and keeps the stale (future) postedAt", () => {
+    const stale = {
+      eventId: "c1",
+      correctsEventId: "e1",
+      legIndex: 0,
+      postedAt: "2026-06-09T16:57:00.000Z", // future-dated (the bug)
+      legs: [
+        { accountId: SUSPENSE, debitCredit: "credit" as const, amountMinor: 100, currency: "GBP" },
+        {
+          accountId: "ACC-1200-004",
+          debitCredit: "debit" as const,
+          amountMinor: 100,
+          currency: "GBP",
+        },
+      ],
+      provenance: { kind: "simulated" },
+    };
+    const ev = buildSupersedeReversalEvent(stale, { kind: "simulated" });
+    const p = ev.payload as {
+      postedAt: string;
+      legs: Array<{ accountId: string; debitCredit: string; amountMinor: number }>;
+    };
+    // reversal stamped with the STALE timestamp → stays paired/excluded together.
+    expect(p.postedAt).toBe("2026-06-09T16:57:00.000Z");
+    // legs mirrored: suspense flips credit→debit, nostro flips debit→credit.
+    const suspenseLeg = p.legs.find((l) => l.accountId === SUSPENSE);
+    const nostroLeg = p.legs.find((l) => l.accountId === "ACC-1200-004");
+    expect(suspenseLeg?.debitCredit).toBe("debit");
+    expect(nostroLeg?.debitCredit).toBe("credit");
   });
 });

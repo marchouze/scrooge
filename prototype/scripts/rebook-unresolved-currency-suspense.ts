@@ -42,8 +42,20 @@
 // the permanent last-resort safety net for unsupported currencies.
 //
 // ─── IDEMPOTENCY ────────────────────────────────────────────────────────────
-// Keyed on `${correctsEventId}:${legIndex}`. A re-run skips any leg already
-// corrected. Safe to run repeatedly; a second run emits 0.
+// Keyed on `${correctsEventId}:${legIndex}`. A re-run skips any leg whose
+// correction already exists AND is aligned to the source posting's timestamp.
+// Safe to run repeatedly; a second run emits 0.
+//
+// ─── TIMESTAMP ALIGNMENT + SUPERSEDE ────────────────────────────────────────
+// The GL view drops legs whose `postedAt` is later than the live book's latest
+// `as_of` (the `postedAt > asOf` cut-off). A correction stamped with wall-clock-
+// now therefore never clears the GL-view suspense. The correction is instead
+// stamped with the CORRECTED posting's own `postedAt` (`sourcePostedAt`) so it
+// lands inside the window. A legacy correction emitted with a wall-clock (future)
+// timestamp is detected as STALE and SUPERSEDED: the runner reverses it (carrying
+// the SAME future timestamp, so the stale + reversal pair nets to zero in every
+// view) and emits one source-aligned re-book that clears the GL-view suspense.
+// Append-only throughout (Principle 1).
 //
 // ─── HOW SCROOGE RUNS IT (post-merge, live home store) ──────────────────────
 //   BANK_EVENT_DB=$HOME/.local/share/bank/event.db \
@@ -121,6 +133,14 @@ export interface StrandedLeg {
   readonly leg: SubLedgerLeg;
   /** The provenance tag to inherit. */
   readonly provenance: unknown;
+  /**
+   * The corrected posting's own timestamp (postedAt, falling back to as_of).
+   * The correction is stamped with this value — NOT wall-clock-now — so it lands
+   * in the same temporal window as the leg it corrects and is never future-dated
+   * relative to the live book (a future `postedAt` is dropped by the GL view's
+   * `postedAt > asOf` cut-off, which would leave the suspense balance uncleared).
+   */
+  readonly sourcePostedAt: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -135,10 +155,13 @@ export function discoverStrandedLegsFrom(events: Iterable<Event>): StrandedLeg[]
     const payload = e.payload as {
       postingType?: string;
       legs?: SubLedgerLeg[];
+      postedAt?: string;
     };
     // Never re-correct a correction (idempotency safety + avoids loops).
     if (payload.postingType === REBOOK_POSTING_TYPE) continue;
     if (!Array.isArray(payload.legs)) continue;
+
+    const sourcePostedAt = typeof payload.postedAt === "string" ? payload.postedAt : e.as_of;
 
     payload.legs.forEach((leg, legIndex) => {
       if (leg.accountId !== FX_UNRESOLVED_CURRENCY_SUSPENSE) return;
@@ -147,6 +170,7 @@ export function discoverStrandedLegsFrom(events: Iterable<Event>): StrandedLeg[]
         legIndex,
         leg,
         provenance: e.provenance,
+        sourcePostedAt,
       });
     });
   }
@@ -168,6 +192,47 @@ export function alreadyRebookedKeysFrom(events: Iterable<Event>): Set<string> {
     }
   }
   return keys;
+}
+
+/** A previously-emitted correction posting, indexed for supersede detection. */
+export interface ExistingCorrection {
+  readonly eventId: string;
+  readonly correctsEventId: string;
+  readonly legIndex: number;
+  /** The correction's own postedAt (used to detect future-dating). */
+  readonly postedAt: string;
+  readonly legs: readonly SubLedgerLeg[];
+  readonly provenance: unknown;
+}
+
+/**
+ * Index existing correction postings by `${correctsEventId}:${legIndex}`. A
+ * stranded leg may have at most one correction per key in the steady state; the
+ * map holds whichever exist so the runner can decide skip vs. supersede.
+ */
+export function existingCorrectionsFrom(events: Iterable<Event>): Map<string, ExistingCorrection> {
+  const out = new Map<string, ExistingCorrection>();
+  for (const e of events) {
+    if (e.type !== "SubLedgerPostingEmitted") continue;
+    const p = e.payload as {
+      postingType?: string;
+      correctsEventId?: string;
+      legIndex?: number;
+      postedAt?: string;
+      legs?: SubLedgerLeg[];
+    };
+    if (p.postingType !== REBOOK_POSTING_TYPE) continue;
+    if (typeof p.correctsEventId !== "string" || typeof p.legIndex !== "number") continue;
+    out.set(`${p.correctsEventId}:${p.legIndex}`, {
+      eventId: e.event_id,
+      correctsEventId: p.correctsEventId,
+      legIndex: p.legIndex,
+      postedAt: typeof p.postedAt === "string" ? p.postedAt : e.as_of,
+      legs: Array.isArray(p.legs) ? p.legs : [],
+      provenance: e.provenance,
+    });
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -225,8 +290,12 @@ function buildCorrectionLegs(m: StrandedLeg, target: string): SubLedgerLeg[] {
 
 export function buildCorrectionEvent(m: StrandedLeg, target: string): Event {
   const legs = buildCorrectionLegs(m, target);
+  // Stamp the correction with the corrected posting's own timestamp so it lands
+  // in the same temporal window — never future-dated past the live book's
+  // latest as_of (which the GL view's `postedAt > asOf` cut-off would drop,
+  // leaving the suspense balance uncleared).
   const event = makeSubLedgerPostingEmitted({
-    asOf: new Date().toISOString().slice(0, 10),
+    asOf: m.sourcePostedAt,
     entity: ENTITY,
     actor: ACTOR,
     citations: CITATIONS,
@@ -235,13 +304,51 @@ export function buildCorrectionEvent(m: StrandedLeg, target: string): Event {
       correctsEventId: m.correctsEventId,
       legIndex: m.legIndex,
       legs,
-      postedAt: new Date().toISOString(),
+      postedAt: m.sourcePostedAt,
       representation: REPRESENTATION,
       memo: `Re-books an FX-spot leg stranded in the unresolved-currency suspense (D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE): the ${m.leg.currency} ${SUSPENSE_LOGICAL} leg ${m.legIndex} of posting ${m.correctsEventId} was routed to suspense ${FX_UNRESOLVED_CURRENCY_SUSPENSE} by a resolver build that pre-dated the ${m.leg.currency} per-currency provisioning. Reversed out of ${FX_UNRESOLVED_CURRENCY_SUSPENSE} and re-booked into the dedicated home account ${target} (${SUSPENSE_LOGICAL}, ${m.leg.currency}).`,
     } as Parameters<typeof makeSubLedgerPostingEmitted>[0]["payload"],
   });
   // Inherit the original posting's provenance tag (same plane).
   return { ...event, provenance: m.provenance } as Event;
+}
+
+/**
+ * Build a reversal that neutralises a STALE (future-dated) correction. The
+ * stale correction's legs are mirrored (each side flipped) and stamped with the
+ * STALE correction's own (future) postedAt, so the reversal stays paired with
+ * the stale posting in EVERY view: both fall outside the live-book temporal
+ * window (GL view postedAt>asOf cut-off) and net to zero together, while the
+ * separately-emitted, source-aligned re-book (which IS inside the window) is the
+ * one that clears suspense in the GL view. Raw + GL-view both reconcile.
+ *
+ * Used only to supersede the legacy wall-clock-dated corrections (see
+ * `sourcePostedAt`); a fresh run never produces a stale correction, so this path
+ * is empty in steady state.
+ */
+export function buildSupersedeReversalEvent(stale: ExistingCorrection, provenance: unknown): Event {
+  const legs = stale.legs.map((l) => ({
+    accountId: l.accountId,
+    debitCredit: (l.debitCredit === "debit" ? "credit" : "debit") as "debit" | "credit",
+    amountMinor: l.amountMinor,
+    currency: l.currency,
+  }));
+  const event = makeSubLedgerPostingEmitted({
+    asOf: stale.postedAt,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITATIONS,
+    payload: {
+      postingType: REBOOK_POSTING_TYPE,
+      correctsEventId: stale.eventId,
+      legIndex: 0,
+      legs,
+      postedAt: stale.postedAt,
+      representation: REPRESENTATION,
+      memo: `Supersedes a future-dated unresolved-currency suspense re-book (${stale.eventId}, postedAt ${stale.postedAt}) whose timestamp fell outside the live book window (GL view postedAt>asOf cut-off, so it never cleared the GL-view suspense). Reverses the stale posting (same future timestamp → the pair nets to zero in every view); the source-aligned re-book that follows clears the GL-view suspense. Append-only (Principle 1).`,
+    } as Parameters<typeof makeSubLedgerPostingEmitted>[0]["payload"],
+  });
+  return { ...event, provenance } as Event;
 }
 
 // ---------------------------------------------------------------------------
@@ -252,6 +359,7 @@ export interface RebookResult {
   readonly discovered: number;
   readonly emitted: number;
   readonly skipped: number;
+  readonly superseded: number;
   readonly outOfScope: number;
 }
 
@@ -262,18 +370,24 @@ export interface RebookResult {
 export function runRebook(opts: { apply: boolean }): RebookResult {
   const all = [...eventStore.replay({ type: "SubLedgerPostingEmitted" })];
   const stranded = discoverStrandedLegsFrom(all);
-  const done = alreadyRebookedKeysFrom(all);
+  const corrections = existingCorrectionsFrom(all);
 
   let emitted = 0;
   let skipped = 0;
+  let superseded = 0;
   let outOfScope = 0;
 
   for (const m of stranded) {
     const key = `${m.correctsEventId}:${m.legIndex}`;
-    if (done.has(key)) {
+    const existing = corrections.get(key);
+
+    // A correction already exists AND is aligned to the source posting's
+    // timestamp → effective in the GL view → nothing to do.
+    if (existing && existing.postedAt === m.sourcePostedAt) {
       skipped += 1;
       continue;
     }
+
     const target = resolveTargetAccount(m.leg.currency);
     if (!target) {
       // Still no dedicated account (genuinely unsupported currency) — out of
@@ -284,6 +398,26 @@ export function runRebook(opts: { apply: boolean }): RebookResult {
         "rebook-unresolved-currency-suspense: no dedicated account for currency — out of scope (would route back to suspense)",
       );
       continue;
+    }
+
+    // A STALE (future-dated) correction exists from an earlier wall-clock run:
+    // reverse it first so the corrected, source-aligned re-book is not a
+    // double-move. Append-only (Principle 1).
+    if (existing) {
+      const reversal = buildSupersedeReversalEvent(existing, m.provenance);
+      if (opts.apply) eventStore.append(reversal);
+      superseded += 1;
+      logger.info(
+        {
+          apply: opts.apply,
+          supersedes: existing.eventId,
+          stalePostedAt: existing.postedAt,
+          alignedPostedAt: m.sourcePostedAt,
+        },
+        opts.apply
+          ? "rebook-unresolved-currency-suspense: superseded stale future-dated correction"
+          : "rebook-unresolved-currency-suspense: DRY-RUN (would supersede stale correction)",
+      );
     }
 
     const event = buildCorrectionEvent(m, target);
@@ -308,10 +442,10 @@ export function runRebook(opts: { apply: boolean }): RebookResult {
   }
 
   logger.info(
-    { discovered: stranded.length, emitted, skipped, outOfScope, apply: opts.apply },
+    { discovered: stranded.length, emitted, skipped, superseded, outOfScope, apply: opts.apply },
     "rebook-unresolved-currency-suspense: done",
   );
-  return { discovered: stranded.length, emitted, skipped, outOfScope };
+  return { discovered: stranded.length, emitted, skipped, superseded, outOfScope };
 }
 
 // Entry point — `--apply` mutates; default is a dry-run.
