@@ -31,6 +31,37 @@
 
 import { makeSubstrateAlert } from "../../event-store/event-types/platform";
 import type { Actor, Event } from "../../event-store/types";
+
+// ---------------------------------------------------------------------------
+// Product-to-Basel-business-line map (BCBS d188 §§652-654 / BA 400 Op-Risk)
+//
+// Maps the interpreter's `instrument_type` context dimension (= the product
+// string supplied to `makeFlatProductContextBuilder`) to the BCBS Op-Risk
+// business-line taxonomy. Used to stamp `baselBusinessLine` on every
+// ProposedPosting so the GL posting engine can forward it to the
+// SubLedgerPostingEmitted event for BA 400 sourcing.
+//
+// Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO-approved 2026-06-09);
+//            BCBS d188 §§652-654 (Basel II Op-Risk business lines).
+// ---------------------------------------------------------------------------
+const PRODUCT_TO_BUSINESS_LINE: Record<string, string> = {
+  MMD: "commercial-banking",
+  IBL: "commercial-banking",
+  FUNDING: "commercial-banking",
+  REPO: "trading-and-sales",
+  BOND: "trading-and-sales",
+  IRD: "trading-and-sales",
+  // FX is keyed by the CDM `productTaxonomy` discriminator
+  // (`fxProductTaxonomySchema`), NOT a bare "FX": fxTradeExecutedContextBuilder
+  // stamps `instrument_type = payload.productTaxonomy` and the flat FX builder
+  // fixes it to "FX-spot". There is no `instrument_type === "FX"` anywhere.
+  "FX-spot": "trading-and-sales",
+  "FX-forward": "trading-and-sales",
+  "FX-swap": "trading-and-sales",
+  NDF: "trading-and-sales",
+  EQUITY: "trading-and-sales",
+  PAY: "payment-and-settlement",
+};
 import {
   type EvalScope,
   evaluateAmount,
@@ -172,6 +203,15 @@ export interface ProposedPosting {
    * balances; the unresolved item is glaringly flagged), never a silent skip.
    */
   readonly urgentCorrections: readonly UrgentCorrection[];
+  /**
+   * Basel III business-line classification for this posting (BCBS d188 §§652-654).
+   * Derived from the event's `instrument_type` context dimension via
+   * `PRODUCT_TO_BUSINESS_LINE`. Absent when the product has no mapped business
+   * line (e.g. unknown or future product types). Forwarded to the
+   * SubLedgerPostingEmitted event payload for BA 400 Op-Risk sourcing.
+   * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
+   */
+  readonly baselBusinessLine?: string;
 }
 
 export type InterpretResult =
@@ -744,6 +784,9 @@ function applyRule(
     };
   }
 
+  const baselBusinessLine = ctx.instrument_type
+    ? PRODUCT_TO_BUSINESS_LINE[ctx.instrument_type]
+    : undefined;
   return {
     outcome: "post",
     representation,
@@ -753,6 +796,7 @@ function applyRule(
     resolverDecisions,
     cites: rule.cites,
     urgentCorrections,
+    ...(baselBusinessLine !== undefined ? { baselBusinessLine } : {}),
   };
 }
 

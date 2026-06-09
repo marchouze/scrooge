@@ -691,6 +691,66 @@ export function makeInterbankLoanRecalledEarly(args: {
 }
 
 // ---------------------------------------------------------------------------
+// FundingLineCommitmentRecorded — new BA 110 off-balance-sheet event
+//
+// Emitted when the bank records a committed (undrawn) funding facility from
+// a counterparty. These undrawn commitments must be reported on the SARB
+// BA 110 off-balance-sheet return with the appropriate credit conversion
+// factor (CCF) per Banks Act 94 Reg 23 / Basel III SA framework.
+//
+// A drawn-down on this commitment subsequently emits FundingLineDrawn.
+//
+// Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO-approved 2026-06-09);
+//            BA 110 — Off-Balance-Sheet items;
+//            Basel III SA §2.5 — CCF for undrawn commitments;
+//            Regulations Relating to Banks, Reg 23 (contingent liabilities).
+// ---------------------------------------------------------------------------
+
+export const fundingLineCommitmentRecordedPayloadSchema = z.object({
+  /** Internal facility identifier — links to any subsequent FundingLineDrawn. */
+  facilityId: z.string(),
+  /** Legal Entity Identifier of the facility counterparty (provider). */
+  counterpartyId: z.string(),
+  /**
+   * Total committed amount in minor currency units (the facility ceiling, not
+   * the drawn amount — the undrawn portion is the BA 110 exposure).
+   */
+  committedAmountMinor: z.number().int(),
+  /** ISO 4217 currency of the commitment. */
+  currency: z.string().length(3),
+  /** ISO 8601 scheduled maturity date of the commitment. */
+  maturityDate: z.string(),
+  /**
+   * Facility type determines LCR outflow classification and CCF treatment:
+   *   revolving — can be drawn, repaid, and re-drawn (highest CCF risk).
+   *   term       — single draw to maturity; CCF applied to undrawn portion.
+   *   standby    — contingent facility, standby letter of credit / backstop.
+   */
+  facilityType: z.enum(["revolving", "term", "standby"]),
+  /**
+   * Credit conversion factor (CCF) per Basel III SA / Reg 23 Reg 23 Table B:
+   *   0.10 — unconditionally cancellable (SA CCF for retail undrawn lines)
+   *   0.20 — short-term self-liquidating trade-related contingencies
+   *   0.50 — revolving / standby committed >1 year
+   *   1.00 — direct credit substitutes (e.g. financial guarantees)
+   * Range [0, 1]. Use the applicable CCF at facility origination; amendments
+   * emit a new FundingLineCommitmentRecorded with the updated CCF.
+   */
+  creditConversionFactor: z.number().min(0).max(1),
+});
+
+export type FundingLineCommitmentRecordedPayload = z.infer<
+  typeof fundingLineCommitmentRecordedPayloadSchema
+>;
+
+export function makeFundingLineCommitmentRecorded(payload: FundingLineCommitmentRecordedPayload): {
+  type: "FundingLineCommitmentRecorded";
+  payload: FundingLineCommitmentRecordedPayload;
+} {
+  return { type: "FundingLineCommitmentRecorded" as const, payload };
+}
+
+// ---------------------------------------------------------------------------
 // Typed event type registry for this module
 // ---------------------------------------------------------------------------
 
@@ -716,6 +776,8 @@ export const REPO_MMD_IBL_TYPED_EVENT_TYPES = [
   "InterbankLoanInterestAccrued",
   "InterbankLoanMatured",
   "InterbankLoanRecalledEarly",
+  // BA 110 off-balance-sheet (WS-BA-RETURNS-P1-SOURCING Phase 1)
+  "FundingLineCommitmentRecorded",
 ] as const;
 
 export type RepoMmdIblEventType = (typeof REPO_MMD_IBL_TYPED_EVENT_TYPES)[number];

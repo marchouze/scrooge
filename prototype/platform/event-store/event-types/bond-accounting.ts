@@ -65,6 +65,14 @@ export const bondTradeExecutedPayloadSchema = z.object({
   counterpartyLei: z.string().min(1),
   /** ISO 8601 timestamp of trade execution. */
   executedAt: z.string().min(1),
+  /**
+   * Prudential book designation — trading book or banking book.
+   * Determines capital treatment: trading book → market-risk capital (BA 320);
+   * banking book → IRRBB / credit-risk capital (BA 330 / BA 200).
+   * Optional additive field; absent for legacy events pre-WS-BA-RETURNS-P1-SOURCING.
+   * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
+   */
+  bookDesignation: z.enum(["trading", "banking"]).optional(),
 });
 
 export type BondTradeExecutedPayload = z.infer<typeof bondTradeExecutedPayloadSchema>;
@@ -176,6 +184,15 @@ export const bondPositionRevaluedPayloadSchema = z.object({
     .string()
     .length(3)
     .regex(/^[A-Z]{3}$/),
+  /**
+   * Modified duration at the revaluation date (years).
+   * Used to populate the BA 320 / IRRBB duration-bucket grid. Nonnegative —
+   * typically in range [0, 30] for investment-grade SA government bonds.
+   * Optional additive field; absent for legacy events and when the revaluation
+   * engine has not yet computed duration. Emitter updated separately.
+   * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL; BCBS d368 §21.
+   */
+  modifiedDuration: z.number().nonnegative().optional(),
 });
 
 export type BondPositionRevaluedPayload = z.infer<typeof bondPositionRevaluedPayloadSchema>;

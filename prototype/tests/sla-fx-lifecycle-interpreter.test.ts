@@ -706,6 +706,45 @@ describe("Memo rules — intentional-no-impact", () => {
 });
 
 // ---------------------------------------------------------------------------
+// baselBusinessLine attribution (BCBS d188 §§652-654 / BA 400 Op-Risk).
+//
+// Regression guard for the PRODUCT_TO_BUSINESS_LINE map bug: FX events key the
+// `instrument_type` context dimension off the CDM `productTaxonomy` discriminator
+// ("FX-spot" / "FX-forward" / "FX-swap" / "NDF"), NOT a bare "FX". A map keyed on
+// "FX" stamps `baselBusinessLine = undefined` on every FX posting — the bank's
+// most-traded product — silently breaking BA 400 op-risk business-line sourcing.
+// ---------------------------------------------------------------------------
+
+describe("baselBusinessLine — FX postings attribute to trading-and-sales (BA 400)", () => {
+  it("FxTradeExecuted (productTaxonomy=FX-spot) stamps baselBusinessLine=trading-and-sales", () => {
+    const payload = buildExecuted({
+      side: "buy",
+      base: "USD",
+      quote: "ZAR",
+      payCurrency: "ZAR",
+      receiveCurrency: "USD",
+      payMinor: 1_900_000_000,
+      receiveMinor: 100_000_000,
+    });
+    const post = postOf(runOne("FxTradeExecuted", payload));
+    expect(post.baselBusinessLine).toBe("trading-and-sales");
+  });
+
+  it("FxPositionRevalued (flat FX-spot builder) stamps baselBusinessLine=trading-and-sales", () => {
+    const post = postOf(runOne("FxPositionRevalued", revalPayload(5_000_000)));
+    expect(post.baselBusinessLine).toBe("trading-and-sales");
+  });
+
+  it("never leaves baselBusinessLine undefined on an FX posting", () => {
+    // The regression: with the old map keyed on "FX", every FX posting silently
+    // received `baselBusinessLine = undefined`.
+    const post = postOf(runOne("PrincipalPayment", prinPayload("receive", "USD", 100_000_000)));
+    expect(post.baselBusinessLine).toBeDefined();
+    expect(post.baselBusinessLine).toBe("trading-and-sales");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Schema conformance — every ported FX rule satisfies the contract.
 // ---------------------------------------------------------------------------
 

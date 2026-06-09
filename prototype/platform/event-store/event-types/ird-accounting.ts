@@ -40,6 +40,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
+import type { BaselMaturityBand } from "../../types/basel";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -91,6 +92,15 @@ export const irdSwapTradeExecutedPayloadSchema = z.object({
     .string()
     .length(3)
     .regex(/^[A-Z]{3}$/),
+  /**
+   * Prudential book designation — trading book or banking book.
+   * OTC IRD swaps are typically FVTPL (trading book) per IFRS 9 §4.1.4,
+   * but some hedging instruments may be designated banking book.
+   * Determines BA 320 (trading) vs BA 330/IRRBB (banking) capital treatment.
+   * Optional additive field; absent for legacy events pre-WS-BA-RETURNS-P1-SOURCING.
+   * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
+   */
+  bookDesignation: z.enum(["trading", "banking"]).optional(),
 });
 
 export type IrdSwapTradeExecutedPayload = z.infer<typeof irdSwapTradeExecutedPayloadSchema>;
@@ -161,9 +171,27 @@ export const irdSwapPositionRevaluedPayloadSchema = z.object({
     .string()
     .length(3)
     .regex(/^[A-Z]{3}$/),
+  /**
+   * DV01 (dollar value of 1bp) allocated to each BCBS standardised tenor bucket
+   * at this revaluation date. Used to populate the BA 320 / BA 330 IRRBB
+   * duration-bucket sensitivity grid. Zod uses z.record(z.string()) because
+   * Zod v3 cannot use a union-type enum as a record key directly; the TypeScript
+   * type below is the strongly-typed form.
+   *
+   * Optional additive field; absent for legacy events and when the IRS
+   * revaluation engine has not yet computed per-bucket DV01s. Emitter
+   * updated separately.
+   * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL; BCBS d368 §21.
+   */
+  dv01ByTenorBucket: z.record(z.string(), z.number()).optional(),
 });
 
-export type IrdSwapPositionRevaluedPayload = z.infer<typeof irdSwapPositionRevaluedPayloadSchema>;
+export type IrdSwapPositionRevaluedPayload = Omit<
+  z.infer<typeof irdSwapPositionRevaluedPayloadSchema>,
+  "dv01ByTenorBucket"
+> & {
+  dv01ByTenorBucket?: Partial<Record<BaselMaturityBand, number>>;
+};
 
 export function makeIrdSwapPositionRevalued(args: {
   asOf: string;
