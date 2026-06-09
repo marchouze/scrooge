@@ -79,7 +79,6 @@ import type { EventStore } from "../../event-store/store";
 import { BUILD_PHASE_TOTAL_RWA_MINOR } from "../../projections/capital-metrics";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
 import { computeRwaFromPositions, toRwaDecomposition } from "../../projections/rwa-from-positions";
-import { readRwaDecompositionOfRecord } from "../../risk/rwa-computed-engine";
 import {
   BA_100_BANK_ENTITIES,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
@@ -95,6 +94,7 @@ import type {
   RwaDecomposition,
 } from "../../reporting/ba-700-capital";
 import { generateBa100CapitalFromEvents } from "../../reporting/ba-700-events-adapter";
+import { readRwaDecompositionOfRecord } from "../../risk/rwa-computed-engine";
 
 // Re-export for consumers that import from this package.
 export {
