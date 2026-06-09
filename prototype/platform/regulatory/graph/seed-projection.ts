@@ -177,6 +177,37 @@ const FRAMEWORK_APPLICABILITY: Record<string, DocumentApplicabilityStatus> = {
 /** Normalise a section reference: lowercase + dots stripped. */
 const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
 
+/** A section (or subsection) in an SA `*-structured.json` source doc. Some
+ * instruments (e.g. the RRB) carry their text in nested `subsections[].text`
+ * rather than a populated top-level `text`. */
+interface StructuredSection {
+  number?: string;
+  sectionNumber?: string;
+  id: string;
+  heading?: string;
+  title?: string;
+  text?: string;
+  subsections?: StructuredSection[];
+}
+
+/**
+ * Flatten the full body text of a structured-JSON section: the top-level
+ * `text`, followed by each subsection's text (recursively). Returns a single
+ * collapsed string. Empty when the section is image-only (no extractable
+ * text — e.g. an image-only PDF), which the drill-down then renders as the
+ * by-design `image-only` notice. (WS-OBLIGATIONS-CLEANUP P5 — Part B.)
+ */
+function sectionBodyText(section: StructuredSection): string {
+  const parts: string[] = [];
+  const top = (section.text ?? "").trim();
+  if (top) parts.push(top);
+  for (const sub of section.subsections ?? []) {
+    const subBody = sectionBodyText(sub);
+    if (subBody) parts.push(subBody);
+  }
+  return parts.join("\n\n").trim();
+}
+
 /** Maps canonical instrument IDs to the slug used in Provision node IDs. */
 const INSTRUMENT_ID_TO_SLUG: Record<string, string> = {
   "BANKS-ACT-94-1990": "banks-act",
@@ -760,13 +791,7 @@ export async function runSeed(): Promise<SeedStats> {
       regulator?: string;
       year?: number;
       chapters: Array<{
-        sections: Array<{
-          number?: string;
-          sectionNumber?: string;
-          id: string;
-          heading?: string;
-          title?: string;
-        }>;
+        sections: StructuredSection[];
       }>;
     };
     try {
@@ -802,11 +827,27 @@ export async function runSeed(): Promise<SeedStats> {
         if (!normSect) continue;
 
         const provisionId = `PROV-${slugUpper}-s${normSect}`;
+        const heading = section.heading ?? section.title ?? `${slug} §${numPart}`;
+        // Source text — the regulatory paragraph body the obligation drill-down
+        // renders. RRB and similar carry their text in nested subsections, so
+        // fold them in. Empty for image-only PDFs (D1/2015, D5/2025) — those
+        // stay `image-only` by design. (WS-OBLIGATIONS-CLEANUP P5 — Part B.)
+        const bodyText = sectionBodyText(section);
         const provNode: GraphNode = {
           id: provisionId,
           nodeType: "Provision",
-          label: section.heading ?? section.title ?? `${slug} §${numPart}`,
-          metadata: { slug, sectionRef: numPart },
+          label: heading,
+          metadata: {
+            slug,
+            sectionRef: numPart,
+            // Keys the obligation drill-down reads (bank-obligations-view.ts):
+            //   text → rendered body; section → grouping/sort key;
+            //   sectionId → citation-parse path-3 match; heading → group label.
+            sectionId: `${slug}:s${normSect}`,
+            section: numPart,
+            heading,
+            ...(bodyText ? { text: bodyText } : {}),
+          },
         };
         upsertNode(provNode);
         provisionNodes.set(`${slug}:s${normSect}`, provNode); // slug-keyed for EXPRESSES lookup
@@ -910,13 +951,22 @@ export async function runSeed(): Promise<SeedStats> {
     const sectionIds = extractSectionIdsFromCitation(row.citation);
     for (const sectionId of sectionIds) {
       if (linkedPairs.has(`${sectionId}::${row.id}`)) continue; // already linked
-      let provisionNode = provisionNodes.get(sectionId);
+      // `sectionId` is instrument-keyed (`<INSTRUMENT-ID>:s<num>`); the Step-5b
+      // Provision nodes are slug-keyed (`<slug>:s<normSect>`). Resolve via the
+      // slug form FIRST so a citation lands on the existing text-bearing node
+      // (carrying metadata.text) rather than minting a textless stub that would
+      // overwrite it and force the obligation to `image-only`. Only fall back to
+      // a stub for instruments with no extracted structured text (e.g.
+      // image-only PDFs). (WS-OBLIGATIONS-CLEANUP P5 — Part B.)
+      const [rawInstr2, rawSect2] = sectionId.split(":");
+      const sectNum2 = (rawSect2 ?? "").replace(/^s/i, "");
+      const provSlug2 = INSTRUMENT_ID_TO_SLUG[rawInstr2 ?? ""] ?? (rawInstr2 ?? "").toLowerCase();
+      const normSect2 = normSectionRef(sectNum2);
+      let provisionNode =
+        provisionNodes.get(sectionId) ?? provisionNodes.get(`${provSlug2}:s${normSect2}`);
       if (!provisionNode) {
         // Create a stub provision node for the citation
-        const [rawInstr2, rawSect2] = sectionId.split(":");
-        const sectNum2 = (rawSect2 ?? "").replace(/^s/i, "");
-        const provSlug2 = INSTRUMENT_ID_TO_SLUG[rawInstr2 ?? ""] ?? (rawInstr2 ?? "").toLowerCase();
-        const nodeId = `PROV-${provSlug2.toUpperCase()}-s${normSectionRef(sectNum2)}`;
+        const nodeId = `PROV-${provSlug2.toUpperCase()}-s${normSect2}`;
         const instrumentId = rawInstr2 ?? sectionId;
         provisionNode = {
           id: nodeId,
@@ -950,31 +1000,9 @@ export async function runSeed(): Promise<SeedStats> {
     }
   }
 
-  // ── Step 6b: SA↔BCBS equivalence edges from ObligationEquivalenceClassified ─
-  //
-  // WS-OBLIGATIONS-CLEANUP (P5) — the SA↔BCBS same-outcome / divergent model.
-  // Modelled exactly on the ObligationConceptLinked → EXPRESSES fold above:
-  // each classification event projects to a typed Obl→Obl bridge edge
-  // (Principle 1 — the edge derives from the event, never hand-written):
-  //   - equivalent              → EQUIVALENT_TO
-  //   - sa-stricter-gold-plates → EQUIVALENT_TO + metadata.divergence='sa-stricter' + delta
-  //   - materially-divergent    → CONFLICTS_WITH
-  // Both edge types already exist in graph/types.ts (defined, never asserted) —
-  // this fold is their first assertion. Authority: D-OBLIGATIONS-REGISTER-CLEANUP.
-  for (const event of eventStore.replay({ type: "ObligationEquivalenceClassified" })) {
-    const p = event.payload as ObligationEquivalenceClassifiedPayload;
-    const saNode = obligationNodes.get(p.saObligationId);
-    const bcbsNode = obligationNodes.get(p.bcbsObligationId);
-    if (!saNode || !bcbsNode) continue; // skip pairs whose nodes are absent
-    const edge = buildObligationEquivalenceEdge(
-      p,
-      saNode,
-      bcbsNode,
-      edgeId(verdictEdgeType(p.verdict)),
-      now,
-    );
-    upsertEdge(edge);
-  }
+  // (SA↔BCBS equivalence edges are folded AFTER importBcbsObligationGraphs(now)
+  // below — the BCBS counterpart nodes do not exist at this point in the seed.
+  // See the "SA↔BCBS equivalence bridge" block following the DERIVES_FROM fold.)
 
   // ── Step 7: Activity nodes ───────────────────────────────────────────────
 
@@ -1595,6 +1623,56 @@ export async function runSeed(): Promise<SeedStats> {
         sourceProvision: target,
       });
     }
+  }
+
+  // ── SA↔BCBS equivalence bridge (P5) ───────────────────────────────────────
+  // WS-OBLIGATIONS-CLEANUP (P5) — the SA↔BCBS same-outcome / divergent model.
+  // Each ObligationEquivalenceClassified event projects to a typed Obl→Obl
+  // bridge edge (Principle 1 — the edge derives from the event, never
+  // hand-written):
+  //   - equivalent              → EQUIVALENT_TO
+  //   - sa-stricter-gold-plates → EQUIVALENT_TO + metadata.divergence='sa-stricter' + delta
+  //   - materially-divergent    → CONFLICTS_WITH
+  // Both endpoints are `OBL-`-prefixed obligation nodes. The SA node (OBL-ORG-*)
+  // is created in Step 6; the BCBS counterpart (OBL-BCBS-*) is created by
+  // importBcbsObligationGraphs(now) and written straight to the DB — never into
+  // the in-memory `obligationNodes` map. So this fold MUST run after the import
+  // and resolve both endpoints via a DB node-existence lookup (mirroring the
+  // DERIVES_FROM bridge above), not via `obligationNodes.get`. Folding it earlier
+  // (the original Step 6b) left `bcbsNode` always undefined → zero bridge edges.
+  // Guard: skip a verdict whose OBL-<saId> or OBL-<bcbsId> node does not exist.
+  // Authority: D-OBLIGATIONS-REGISTER-CLEANUP.
+  const nodeRow = getDb().prepare(
+    "SELECT id, node_type, label, metadata FROM graph_nodes WHERE id = ? LIMIT 1",
+  );
+  for (const event of eventStore.replay({ type: "ObligationEquivalenceClassified" })) {
+    const p = event.payload as ObligationEquivalenceClassifiedPayload;
+    const saRow = nodeRow.get(`OBL-${p.saObligationId}`) as
+      | { id: string; node_type: string; label: string; metadata: string | null }
+      | undefined;
+    const bcbsRow = nodeRow.get(`OBL-${p.bcbsObligationId}`) as
+      | { id: string; node_type: string; label: string; metadata: string | null }
+      | undefined;
+    if (!saRow || !bcbsRow) continue; // skip pairs whose nodes are absent
+    const toGraphNode = (r: {
+      id: string;
+      node_type: string;
+      label: string;
+      metadata: string | null;
+    }): GraphNode => ({
+      id: r.id,
+      nodeType: r.node_type as GraphNode["nodeType"],
+      label: r.label,
+      metadata: (r.metadata ? JSON.parse(r.metadata) : {}) as GraphNodeMetadata,
+    });
+    const edge = buildObligationEquivalenceEdge(
+      p,
+      toGraphNode(saRow),
+      toGraphNode(bcbsRow),
+      edgeId(verdictEdgeType(p.verdict)),
+      now,
+    );
+    upsertEdge(edge);
   }
 
   // ── Final stats ──────────────────────────────────────────────────────────
