@@ -73,6 +73,14 @@ export const bondTradeExecutedPayloadSchema = z.object({
    * Authority: D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
    */
   bookDesignation: z.enum(["trading", "banking"]).optional(),
+  /**
+   * BA 200 credit-risk exposure class for the issuer/obligor of this bond.
+   * Drives the by-category fold of the events-first BA 200 (credit-risk
+   * loans-and-advances) projection. Optional additive field; when absent the
+   * BA 200 adapter defaults a bond to "sovereign" (the build-phase SA-government
+   * bond book). Authority: D-BA-RETURNS-FOLLOWON-BATCH; Reg 23.
+   */
+  exposureClass: z.enum(["sovereign", "bank", "corporate", "retail"]).optional(),
 });
 
 export type BondTradeExecutedPayload = z.infer<typeof bondTradeExecutedPayloadSchema>;

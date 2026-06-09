@@ -567,6 +567,15 @@ export const interbankLoanPlacedPayloadSchema = z.object({
   bookId: z.string(),
   /** Reference to the FinancialInstrumentDefined instrumentId. */
   instrumentRef: z.string(),
+  /**
+   * BA 200 credit-risk exposure class for the borrowing counterparty.
+   * Drives the by-category fold of the events-first BA 200 (credit-risk
+   * loans-and-advances) projection. Optional additive field; when absent the
+   * BA 200 adapter defaults an interbank placement to "bank" (the borrowing
+   * counterparty is a financial institution). Authority:
+   * D-BA-RETURNS-FOLLOWON-BATCH; Reg 23.
+   */
+  exposureClass: z.enum(["sovereign", "bank", "corporate", "retail"]).optional(),
 });
 
 export type InterbankLoanPlacedPayload = z.infer<typeof interbankLoanPlacedPayloadSchema>;
