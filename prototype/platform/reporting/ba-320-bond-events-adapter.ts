@@ -42,69 +42,20 @@ import type {
 } from "../event-store/event-types/bond-accounting";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+import {
+  assignMaturityBand,
+  MATURITY_BANDS,
+  MATURITY_METHOD_WEIGHTED_NOMINAL,
+  residualYears,
+} from "./ba-320-ir-maturity-bands";
 import type { IrMaturityBandRow, IrSpecificRiskRow } from "./ba-320-market-risk";
 
-// ---------------------------------------------------------------------------
-// Reg 28(3)(a) maturity band definitions — standardised maturity method
-// ---------------------------------------------------------------------------
-
-/**
- * Single maturity band entry for Reg 28(3)(a) Table A.
- * Residual years from periodEnd to bond maturityDate determines the band.
- * Risk weight for coupon >= 3% bonds.
- */
-interface MaturityBandDef {
-  /** Band identifier used in IrMaturityBandRow.band */
-  readonly band: string;
-  /** Upper bound in years (inclusive) */
-  readonly upperYears: number;
-  /** Risk weight (fraction, e.g. 0.002 = 0.20%) */
-  readonly riskWeight: number;
-}
-
-/**
- * Reg 28(3)(a) Table A — 13 maturity bands, coupon ≥ 3%.
- * Ordered shortest to longest. Match is first band where residualYears ≤ upperYears.
- */
-const MATURITY_BANDS: readonly MaturityBandDef[] = [
-  { band: "0-1m", upperYears: 1 / 12, riskWeight: 0.0 },
-  { band: "1-3m", upperYears: 3 / 12, riskWeight: 0.002 },
-  { band: "3-6m", upperYears: 6 / 12, riskWeight: 0.004 },
-  { band: "6-12m", upperYears: 12 / 12, riskWeight: 0.007 },
-  { band: "1-2y", upperYears: 2, riskWeight: 0.0125 },
-  { band: "2-3y", upperYears: 3, riskWeight: 0.0175 },
-  { band: "3-4y", upperYears: 4, riskWeight: 0.0225 },
-  { band: "4-5y", upperYears: 5, riskWeight: 0.0275 },
-  { band: "5-7y", upperYears: 7, riskWeight: 0.0325 },
-  { band: "7-10y", upperYears: 10, riskWeight: 0.0375 },
-  { band: "10-15y", upperYears: 15, riskWeight: 0.045 },
-  { band: "15-20y", upperYears: 20, riskWeight: 0.0525 },
-  { band: ">20y", upperYears: Number.POSITIVE_INFINITY, riskWeight: 0.06 },
-] as const;
-
-const MS_PER_DAY = 86_400_000;
-const DAYS_PER_YEAR = 365;
-
-function residualYears(periodEnd: string, maturityDate: string): number {
-  const endMs = Date.parse(`${periodEnd.slice(0, 10)}T00:00:00Z`);
-  const matMs = Date.parse(`${maturityDate.slice(0, 10)}T00:00:00Z`);
-  const diffMs = matMs - endMs;
-  if (diffMs <= 0) return 0; // already matured
-  return diffMs / (MS_PER_DAY * DAYS_PER_YEAR);
-}
-
-/**
- * Find the Reg 28(3)(a) maturity band for a bond with the given residual term.
- * Returns undefined if the bond has already matured (residualYears = 0).
- */
-function assignMaturityBand(years: number): MaturityBandDef | undefined {
-  if (years <= 0) return undefined;
-  for (const band of MATURITY_BANDS) {
-    if (years <= band.upperYears) return band;
-  }
-  // Safety: should never reach here (last band is +∞)
-  return MATURITY_BANDS[MATURITY_BANDS.length - 1];
-}
+// Reg 28(3)(a) maturity band definitions (Table A — standardised maturity
+// method), the residual-term helper, and the band-slotting function are shared
+// with the IRS adapter via `ba-320-ir-maturity-bands.ts` so both adapters slot
+// positions into the SAME bands at the SAME risk weights in the SAME unit
+// (`notionalMinor × bandRiskWeight`). Authority: WS-BA-RETURNS-FOLLOWON G1;
+// D-IRS-DV01-BUCKETING-CALIBRATION; Reg 28(3)(a) Table A.
 
 // ---------------------------------------------------------------------------
 // SA government bond detection
@@ -258,6 +209,8 @@ export function buildBondIrGeneralLadder(input: BondIrAdapterInput): IrMaturityB
       band: bandDef.band,
       weightedLongMinor: acc.weightedLong,
       weightedShortMinor: acc.weightedShort,
+      // notional × bandRiskWeight — the shared maturity-method basis (G1).
+      weightingBasis: MATURITY_METHOD_WEIGHTED_NOMINAL,
     });
   }
 

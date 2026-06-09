@@ -71,6 +71,22 @@ export interface IrMaturityBandRow {
   readonly weightedLongMinor: number;
   /** Sum of weighted short positions in the band (post weight). */
   readonly weightedShortMinor: number;
+  /**
+   * Weighting basis discriminator (WS-BA-RETURNS-FOLLOWON G1). Every row
+   * feeding the IR general-risk maturity ladder MUST be on a single basis —
+   * `notionalMinor × bandRiskWeight` ("maturity-method-weighted-nominal") — so
+   * bond and IRS contributions are dimensionally commensurate. Rows produced by
+   * the bond and IRS adapters stamp this field; `combineIrGeneralLadders`
+   * refuses to merge a row carrying a foreign / absent basis (e.g. a
+   * reintroduced raw-DV01 row, which is rand-per-bp, not weighted nominal).
+   *
+   * Optional only for back-compat with caller-supplied test/override ladders;
+   * the combiner treats absent as the canonical basis but rejects any non-empty
+   * value other than the canonical one.
+   *
+   * Authority: D-IRS-DV01-BUCKETING-CALIBRATION; Reg 28(3)(a) Table A.
+   */
+  readonly weightingBasis?: string;
 }
 
 /**
