@@ -54,11 +54,7 @@
 //   reports to Camille CFO; BA-form line-mapping owner)
 //   + Camille (Chief Financial Officer, governance — RWA-engine accountable).
 
-import {
-  type DebtExposure,
-  type ExposureClass,
-  readDebtExposures,
-} from "../accounting/ecl-engine";
+import { type DebtExposure, type ExposureClass, readDebtExposures } from "../accounting/ecl-engine";
 import { makeRwaComputed } from "../event-store/event-types/regulatory-reporting";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event } from "../event-store/types";
@@ -369,4 +365,7 @@ export function emitRwaComputed(
   return { emitted: true, eventId: event.event_id, result };
 }
 
-export { ENTITY_ID as RWA_COMPUTED_ENTITY_ID, FUNCTIONAL_CURRENCY as RWA_COMPUTED_FUNCTIONAL_CURRENCY };
+export {
+  ENTITY_ID as RWA_COMPUTED_ENTITY_ID,
+  FUNCTIONAL_CURRENCY as RWA_COMPUTED_FUNCTIONAL_CURRENCY,
+};

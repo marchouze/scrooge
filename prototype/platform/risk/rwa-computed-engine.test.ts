@@ -312,7 +312,10 @@ describe("rwa-computed-engine — emit", () => {
 
     const events = [...store.replay({ entity: ENTITY, type: "RwaComputed" })];
     expect(events.length).toBe(1);
-    const payload = events[0]?.payload as { source?: string; operationalRwaIsPlaceholder?: boolean };
+    const payload = events[0]?.payload as {
+      source?: string;
+      operationalRwaIsPlaceholder?: boolean;
+    };
     expect(payload.source).toBe(RWA_COMPUTED_BUILD_PHASE_SOURCE);
     expect(payload.operationalRwaIsPlaceholder).toBe(true);
   });

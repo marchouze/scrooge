@@ -380,6 +380,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: brief:bea:per-currency-zar-mtm-bycurrency-aggregation-full:2026-05-31,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/fx-pair-canonical-aggregation.test.ts",
+  // RwaComputed engine unit tests (D-RWA-ENGINE-W2-SLICE-3) — co-located
+  // per-module test convention. Raw EventStore() is a build-phase fixture for
+  // the credit-RWA worked example, market-fold, op-placeholder, emit-idempotency
+  // and BA 700 threading assertions, not a production access path. T-01 carve-out.
+  // Citation: D-RWA-ENGINE-W2-SLICE-3, P4-SECURITY-DESIGNED-IN.
+  "platform/risk/rwa-computed-engine.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,

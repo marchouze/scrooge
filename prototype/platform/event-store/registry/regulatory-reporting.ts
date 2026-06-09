@@ -24,11 +24,7 @@ import {
   SarbSubmissionAttemptedPayloadSchema,
   TradeReportSubmittedPayloadSchema,
 } from "../event-types/regulatory-reporting";
-import {
-  type EventTypeMetadata,
-  RETENTION_ACCOUNTING_7Y,
-  RETENTION_JSE_TRADE_7Y,
-} from "./types";
+import { type EventTypeMetadata, RETENTION_ACCOUNTING_7Y, RETENTION_JSE_TRADE_7Y } from "./types";
 
 export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
@@ -97,6 +93,7 @@ export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Capital-adequacy basis records — 7-year accounting retention per Banks
     // Act §73/§91 + IFRS audit-trail requirements.
     retention: RETENTION_ACCOUNTING_7Y,
-    source: "platform/risk/rwa-computed-engine.ts (computeRwaComputedAtPeriodClose)",
+    source:
+      "platform/risk/rwa-computed-engine.ts (emitRwaComputed); runtime/agents/bea-rwa-period-close.ts (period-close emitter)",
   },
 ];
