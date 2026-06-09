@@ -28,7 +28,7 @@ Section references:
 
 | Citation | Instrument | Requirement |
 |---|---|---|
-| `ORG-AC-13` | Banks Act Regulations — BA returns | Period-end balances underpinning BA 100 / BA 300 / BA 325 / BA 326 submissions must be substantiated. |
+| `ORG-AC-13` | Banks Act Regulations — BA returns | Period-end balances underpinning BA 100 / BA 120 / BA 300 / BA 700 submissions must be substantiated. |
 | IAS 1 §29–§31 | IAS 1 — Presentation of Financial Statements | Materiality; omission or misstatement of items is material if it could influence economic decisions. Going-concern assessment. |
 | IAS 1 §36–§37 | IAS 1 | Reporting frequency — at least annually; interim periods use same materiality principles. |
 | Companies Act 71 of 2008 §§28–30 | Companies Act | Annual financial statements must fairly present; directors (or equivalent responsible officers) must sign. |
@@ -155,7 +155,7 @@ The dashboard tile is a derived view (Principle 1 — never the canonical record
 
 ### 9.1 Approval authority
 
-Camille (Chief Financial Officer) is the sole approval authority for changes to the substantiation methodology, materiality thresholds, exception-classification rules, and the set of accounts in scope. Changes that affect regulatory submissions (BA 100 / BA 300 / BA 325 / BA 326 scope) additionally require Board AC notification (via Owen's secretariat) before the effective date.
+Camille (Chief Financial Officer) is the sole approval authority for changes to the substantiation methodology, materiality thresholds, exception-classification rules, and the set of accounts in scope. Changes that affect regulatory submissions (BA 100 / BA 120 / BA 300 / BA 700 scope) additionally require Board AC notification (via Owen's secretariat) before the effective date.
 
 ### 9.2 Change procedure
 
