@@ -178,9 +178,6 @@ export function makeEclComputed(args: {
 // Typed event type registry for this module
 // ---------------------------------------------------------------------------
 
-export const ECL_STAGING_TYPED_EVENT_TYPES = [
-  "ImpairmentStageAssigned",
-  "EclComputed",
-] as const;
+export const ECL_STAGING_TYPED_EVENT_TYPES = ["ImpairmentStageAssigned", "EclComputed"] as const;
 
 export type EclStagingEventType = (typeof ECL_STAGING_TYPED_EVENT_TYPES)[number];
