@@ -119,9 +119,9 @@ export const KNOWN_INERT_PENDING_WIRING: readonly AllowlistEntry[] = [
   },
   {
     module: "platform/returns/ba300/period-close-subscriber.ts",
-    owner: "Mira + Bea",
+    owner: "Mira (Compliance / RegTech engineer) + Bea (Accounting & financial reporting engineer)",
     closing:
-      "WS-RETURNS-SUBMISSION-WIRING — NOT wired: unresolved formId. BA-110's generator is genuinely event-sourced (trial balance + positions + settlement flows + Party register), but the SARB submission formId cannot be cleanly set: GG 35950 lists BA 110 as the daily return (reg 29(3) FX-NOP) while ba-110-lcr.* treats it as LCR, and `ba300LcrToXmlPayload` currently emits the RETIRED formId 'BA325'. This is the open follow-on of D-BA-RETURN-FORM-NUMBERING-RECON; wiring before it resolves would record a mis-formId'd submission. Blocked on that reconciliation.",
+      "WS-RETURNS-SUBMISSION-WIRING — NOT wired: rehearsal-grade LCR data (the formId blocker is RESOLVED). The LCR return is BA 300 (SARB Excel form A1 = 'Liquidity Risk') per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09), which SUPERSEDES D-BA-RETURN-FORM-NUMBERING-RECON; `ba300LcrToXmlPayload` already emits formId 'BA300' (the prior 'BA325' claim is stale — verified at code level). The generator is genuinely event-sourced (cash flows from FxSettlementInstructed / TradeMatured / product-maturity events; HQLA from SecurityMaster × unified-position + custodian-derived cash over the Party register). What remains NOT production-ready is the LCR figure itself: formVersion is 'v0.1-rehearsal'; foreign-currency settlement legs are EXCLUDED from the denominator pending the Slice-6 FX-rate-enrichment step (consolidated ZAR-only, surfaced as a placeholder); and per-currency LCR (Reg 26(13)) is not yet built. Wiring now would record a SARB LCR submission whose denominator omits all non-ZAR flows — a wired-but-hollow return. Blocked until the FX-rate enrichment lands and the form is promoted past v0.1-rehearsal.",
   },
   {
     module: "platform/returns/ba400/period-close-subscriber.ts",
