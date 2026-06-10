@@ -20,24 +20,22 @@
 //
 // Author: Owen (Company Secretary, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";
+import { readRootRenderBody } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-21_owen_d-oprisk-engineer-role-licence-day_decision-card.md",
-);
 const DECISION_ID = "D-OPRISK-ENGINEER-ROLE-LICENCE-DAY";
 
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderBody({
+  scriptTag: "record-d-oprisk-engineer-role-licence-day",
+  docName: "2026-05-21_owen_d-oprisk-engineer-role-licence-day_decision-card.md",
+  recordId: "record:decisions:owen:d-oprisk-engineer-role-licence-day-decision-card:2026-05-21",
+  documentHash: "blake3:edd04ad25d97920dd097111a75ca271ef97b86e4eff3cfa1894134033a68ecac",
+});
 const asOf = clock.now();
 
 // 1. Idempotency check on the Decision event.

@@ -7,17 +7,18 @@
 // Authority: D-RMS-PHASE-3 (active); D-ROADMAP-WS-C-RECONCILE.
 // Author: Scrooge (Chief of Staff / orchestrator)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-06-07_scrooge_roadmap-ws-c-reconciliation.md");
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-scrooge-roadmap-ws-c-reconciliation",
+  docName: "2026-06-07_scrooge_roadmap-ws-c-reconciliation.md",
+  recordId: "record:documents:scrooge:roadmap-ws-c-reconciliation:2026-06-07",
+  documentHash: "blake3:7b8a5f837e863f41560c3ae927c3e5cf09afcd1bd933b7e550a671d7df16b53c",
+});
 
 const result = recordFiled(
   {

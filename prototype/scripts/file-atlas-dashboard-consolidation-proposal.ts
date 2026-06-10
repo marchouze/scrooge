@@ -8,12 +8,11 @@
 // Authority: D-RMS-PHASE-3 (active).
 // Author: Atlas (Platform Engineering Lead, engineering)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
 const RECORD_ID = "record:documents:atlas:dashboard-consolidation-proposal:2026-06-10";
 
@@ -26,10 +25,13 @@ if (alreadyFiled) {
   process.exit(0);
 }
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
 const DOC_NAME = "2026-06-10_atlas_dashboard-consolidation-and-domain-alignment-proposal.md";
-const DOC_PATH = resolve(WORKTREE_ROOT, DOC_NAME);
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-atlas-dashboard-consolidation-proposal",
+  docName: DOC_NAME,
+  recordId: "record:documents:atlas:dashboard-consolidation-proposal:2026-06-10",
+  documentHash: "blake3:010a59da2487f17b5a07d35d507aecad6d28ca019a08e38aaef3f44fdb99e5a8",
+});
 
 const result = recordFiled(
   {

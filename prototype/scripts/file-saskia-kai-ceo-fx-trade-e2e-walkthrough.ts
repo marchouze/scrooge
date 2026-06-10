@@ -13,17 +13,18 @@
 //
 // Classification: ceo-only — Marc (CEO) is the addressee of this document.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-05-21_saskia-kai_fx-trade-end-to-end-walkthrough.md");
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-saskia-kai-ceo-fx-trade-e2e-walkthrough",
+  docName: "2026-05-21_saskia-kai_fx-trade-end-to-end-walkthrough.md",
+  recordId: "record:documents:saskia-kai:fx-trade-end-to-end-walkthrough:2026-05-21",
+  documentHash: "blake3:20e4f4d13254c07ca826551546ae7e2210fbcda9d8b2afacb934395de4e687b3",
+});
 
 const result = recordFiled(
   {

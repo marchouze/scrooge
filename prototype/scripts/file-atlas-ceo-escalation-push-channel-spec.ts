@@ -10,12 +10,11 @@
 //            D-RMS-PHASE-3 (active).
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
 const RECORD_ID = "record:documents:atlas:ceo-escalation-push-channel-spec:2026-06-09";
 
@@ -28,10 +27,13 @@ if (alreadyFiled) {
   process.exit(0);
 }
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
 const DOC_NAME = "2026-06-09_atlas_ceo-escalation-push-channel-spec.md";
-const DOC_PATH = resolve(WORKTREE_ROOT, DOC_NAME);
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-atlas-ceo-escalation-push-channel-spec",
+  docName: DOC_NAME,
+  recordId: "record:documents:atlas:ceo-escalation-push-channel-spec:2026-06-09",
+  documentHash: "blake3:8b235887691d3482ef7762e09e24f9ab84a427168579da12d4d530dad913df54",
+});
 
 const result = recordFiled(
   {

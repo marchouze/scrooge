@@ -7,20 +7,18 @@
 // Authority: D-RMS-PHASE-3 (active); D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE
 // Author: Scrooge (Chief of Staff / Orchestrator), recording on behalf of Marc (CEO).
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-06-03_scrooge_data-quality-provenance-architecture-review.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-scrooge-data-quality-provenance-review",
+  docName: "2026-06-03_scrooge_data-quality-provenance-architecture-review.md",
+  recordId: "record:documents:scrooge:data-quality-provenance-architecture-review:2026-06-03",
+  documentHash: "blake3:cd89c4518173402a3e4b67e59d6706887379a8d5c241b9afe8ccbc180a3f60c2",
+});
 
 const result = recordFiled(
   {

@@ -10,20 +10,18 @@
 // Authority: D-RMS-PHASE-3 (active); D-FX-OTC-NPA-SCOPE-EXPANSION (2026-06-10).
 // Author: Scrooge-coordinated session for marc@tgv.co.za.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-06-10_scrooge_fx-otc-npa-attestation-completion-roadmap.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-fx-otc-npa-completion-roadmap",
+  docName: "2026-06-10_scrooge_fx-otc-npa-attestation-completion-roadmap.md",
+  recordId: "record:documents:scrooge:fx-otc-npa-attestation-completion-roadmap:2026-06-10",
+  documentHash: "blake3:da580e2385545770706af36f59335baecfe9e1c34a152f6cc435c5377d42fd53",
+});
 
 const result = recordFiled(
   {

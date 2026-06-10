@@ -7,20 +7,18 @@
 // Authority: D-RMS-PHASE-3 (active); WS-MARKET-RISK-PROCEDURES
 // Author: Helena (Chief Risk Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-20_helena_fx-spot-only-market-risk-scope-review.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-helena-fx-spot-scope-review",
+  docName: "2026-05-20_helena_fx-spot-only-market-risk-scope-review.md",
+  recordId: "record:documents:helena:fx-spot-only-market-risk-scope-review:2026-05-20",
+  documentHash: "blake3:5872f761fa6de5402763f089882ef8ed33c5ce7db868d9f8cc4024d20e86121f",
+});
 
 const result = recordFiled(
   {

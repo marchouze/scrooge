@@ -7,17 +7,18 @@
 // Authority: D-RMS-PHASE-3 (active); D-RAS; D-MARKETS-CAPITAL-TIME-SHAPE
 // Author: Helena (Chief Risk Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-05-18_helena_ras-governance-schedule-v1.md");
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-ras-governance-schedule-v1",
+  docName: "2026-05-18_helena_ras-governance-schedule-v1.md",
+  recordId: "record:documents:helena:ras-governance-schedule-v1:2026-05-18",
+  documentHash: "blake3:0c633d0b113a5dd8e378a0cae7672dc8746ff03fdabcd5dc4b41b021ddabf935",
+});
 
 const result = recordFiled(
   {

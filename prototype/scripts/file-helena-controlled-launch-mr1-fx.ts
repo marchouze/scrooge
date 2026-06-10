@@ -7,20 +7,18 @@
 // Authority: D-RMS-PHASE-3 (active); WS-MARKET-RISK-PROCEDURES
 // Author: Helena (Chief Risk Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-20_helena_controlled-launch-mr1-fx-limit-proposal.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-helena-controlled-launch-mr1-fx",
+  docName: "2026-05-20_helena_controlled-launch-mr1-fx-limit-proposal.md",
+  recordId: "record:documents:helena:controlled-launch-mr1-fx-limit-proposal:2026-05-20",
+  documentHash: "blake3:6ece09ff7e796e03e793d50c5160af3deef793cd019515d822d524d86a29609c",
+});
 
 const result = recordFiled(
   {

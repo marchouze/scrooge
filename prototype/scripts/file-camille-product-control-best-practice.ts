@@ -8,18 +8,20 @@
 // Authority: D-RMS-PHASE-3 (active); WS-PRODUCT-CONTROL
 // Author: Camille (Chief Financial Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
 const FILENAME = "2026-05-31_camille_product-control-best-practice-recommendations.md";
-const DOC_PATH = resolve(WORKTREE_ROOT, FILENAME);
 
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-camille-product-control-best-practice",
+  docName: FILENAME,
+  recordId: "record:documents:camille:product-control-best-practice-recommendations:2026-05-31",
+  documentHash: "blake3:8c1935216aff12e70af27c17d64bb90a46fc377df1a6d72dec3963b8dfa103a1",
+});
 
 const result = recordFiled(
   {

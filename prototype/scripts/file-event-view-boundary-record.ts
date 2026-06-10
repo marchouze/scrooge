@@ -10,22 +10,19 @@
 //            Principle 1 — events are the only source of truth.
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { makeWorkstreamRegistered } from "../platform/event-store/event-types/platform";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-20_atlas_event-view-boundary-and-mark-period-events.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-event-view-boundary-record",
+  docName: "2026-05-20_atlas_event-view-boundary-and-mark-period-events.md",
+  recordId: "record:documents:atlas:event-view-boundary-and-mark-period-events:2026-05-20",
+  documentHash: "blake3:22596bb0605f3ff2bd794a6535e26b9620ee5d2aad1ac4cecbd252932d89d62a",
+});
 
 const asOf = clock.now();
 

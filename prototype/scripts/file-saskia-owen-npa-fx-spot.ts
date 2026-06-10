@@ -19,9 +19,6 @@
 // Co-author: Owen (Company Secretary, governance) — PROC-NPA-GATE-01
 //            procedure owner.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
@@ -29,17 +26,22 @@ import { HOZ_BANK_ENTITY } from "../platform/core/types";
 import { recordFiled } from "../platform/records";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const WALK_PATH = resolve(WORKTREE_ROOT, "2026-05-21_saskia-owen_proc-npa-gate-01-fx-spot-walk.md");
-const DECISION_CARD_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-21_saskia-owen_d-npa-fx-spot-internal-test_decision-card.md",
-);
 const DECISION_ID = "D-NPA-FX-SPOT-INTERNAL-TEST";
 
-const walkBody = readFileSync(WALK_PATH, "utf8");
-const decisionCardBody = readFileSync(DECISION_CARD_PATH, "utf8");
+const walkBody = readRootRenderOrExit({
+  scriptTag: "file-saskia-owen-npa-fx-spot",
+  docName: "2026-05-21_saskia-owen_proc-npa-gate-01-fx-spot-walk.md",
+  recordId: "record:documents:saskia-owen:proc-npa-gate-01-fx-spot-walk:2026-05-21",
+  documentHash: "blake3:9077910195cfb6c1f595407a5fabca53907f2653d9e4b362e2906b8d42049ff7",
+});
+const decisionCardBody = readRootRenderOrExit({
+  scriptTag: "file-saskia-owen-npa-fx-spot",
+  docName: "2026-05-21_saskia-owen_d-npa-fx-spot-internal-test_decision-card.md",
+  recordId: "record:documents:saskia-owen:d-npa-fx-spot-internal-test-decision-card:2026-05-21",
+  documentHash: "blake3:ec526c2dd1a457fe009b06b5e95c46a36deb3fa6ebf6d1aed0949f35b619a4a9",
+});
 const asOf = clock.now();
 
 // ─────────────────────────────────────────────────────────────────────────────

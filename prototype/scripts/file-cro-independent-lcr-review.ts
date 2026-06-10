@@ -9,20 +9,18 @@
 //   D-LCR-TILE-PROVENANCE
 // Author: Office of the Chief Risk Officer (governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-06-02_cro_independent-risk-review-canonical-lcr-engine.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-cro-independent-lcr-review",
+  docName: "2026-06-02_cro_independent-risk-review-canonical-lcr-engine.md",
+  recordId: "record:documents:cro:independent-risk-review-canonical-lcr-engine:2026-06-02",
+  documentHash: "blake3:f5154ab8f8ebe1fecd8312259cbd116ada1b36bf1be721ef614274e32ca8dd1a",
+});
 
 const result = recordFiled(
   {
