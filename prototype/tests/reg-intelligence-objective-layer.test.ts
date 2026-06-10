@@ -9,9 +9,12 @@
 //   - traceObjective() returns mandate lineage + regulator + serving obligations
 //     + aligned policies.
 //   - traceObligationChain() now carries the objectives + alignedPolicies axis.
-//   - findObjectiveCoverageGaps() reports the un-aligned objectives.
-//   - the three advisory recon gates are GREEN (ok:true) for SARB-PA and emit
-//     advisory findings for the not-yet-backfilled regulators/obligations.
+//   - findObjectiveCoverageGaps() reports the un-aligned objectives, with the
+//     mandate-level REFINES roll-up (2026-06-10 tail-fill).
+//   - the recon gates: regulator-mandate-coverage is ENFORCING (all six
+//     in-scope regulators covered); requirement-objective-linkage and
+//     objective-policy-alignment remain advisory with their documented
+//     residuals.
 //
 // The gates seed a FRESH graph into an isolated tmp DB, so this test binds the
 // graph DB to a tmp path BEFORE importing the db-backed modules.
@@ -116,11 +119,12 @@ describe("objective layer — graph ingestion", () => {
     // data-protection, PAIA manual/request → access-to-information, breach/IO/
     // prior-auth → monitoring-enforcement) obligations serve their objective.
     expect(count("SERVES")).toBeGreaterThanOrEqual(9 + 30 + 19 + 1921 + 15 + 20);
-    // PA capital + liquidity policies (≥2) + FSCA conduct/markets policies (8) +
-    // FIC AML/sanctions policies (6) + BCBS prudential policies (12) +
-    // IASB accounting/disclosure/tax policies (6) + INFOREG privacy/infosec/PAIA
-    // policies (3).
-    expect(count("ALIGNS_TO")).toBeGreaterThanOrEqual(2 + 8 + 6 + 12 + 6 + 3);
+    // PA capital + liquidity + RRP + payments policies (≥4) + FSCA conduct/markets
+    // policies (8) + FIC AML/sanctions policies (7) + BCBS prudential policies (12)
+    // + IASB accounting/disclosure/tax/audit policies (8) + INFOREG privacy/infosec/
+    // PAIA/incident-response policies (5) — incl. the 7 tail-fill edges of
+    // 2026-06-10 (WS-REG-INTELLIGENCE-OBJECTIVE-LAYER).
+    expect(count("ALIGNS_TO")).toBeGreaterThanOrEqual(4 + 8 + 7 + 12 + 8 + 5);
   });
 
   test("every objective-layer edge resolves to existing endpoint nodes (no orphans)", () => {
@@ -161,22 +165,79 @@ describe("objective layer — queries", () => {
     expect(chain?.alignedPolicies.length ?? 0).toBeGreaterThanOrEqual(1);
   });
 
-  test("findObjectiveCoverageGaps reports the un-aligned objectives", () => {
+  test("findObjectiveCoverageGaps reports only the genuine residual gaps after the tail-fill", () => {
     const gaps = findObjectiveCoverageGaps().map((g) => g.id);
-    // safety-soundness + financial-stability ARE aligned (not gaps);
-    // mandate + MI-soundness + customer-protection are not.
-    expect(gaps).toContain("OBJ-SARB-PA-MANDATE");
-    expect(gaps).toContain("OBJ-SARB-PA-MI-SOUNDNESS");
-    expect(gaps).toContain("OBJ-SARB-PA-CUSTOMER-PROTECTION");
+    // Tail-filled 2026-06-10: MI-soundness (payments-settlement policy) and
+    // customer-protection (recovery-resolution-planning policy) are now aligned;
+    // every mandate-level objective is covered transitively via the REFINES
+    // roll-up (each has at least one aligned refining objective).
+    expect(gaps).not.toContain("OBJ-SARB-PA-MANDATE");
+    expect(gaps).not.toContain("OBJ-SARB-PA-MI-SOUNDNESS");
+    expect(gaps).not.toContain("OBJ-SARB-PA-CUSTOMER-PROTECTION");
     expect(gaps).not.toContain("OBJ-SARB-PA-SAFETY-SOUNDNESS");
     expect(gaps).not.toContain("OBJ-SARB-PA-FINANCIAL-STABILITY");
+    expect(gaps).not.toContain("OBJ-BCBS-MANDATE");
+    expect(gaps).not.toContain("OBJ-FIC-MANDATE");
+    expect(gaps).not.toContain("OBJ-FIC-FINANCIAL-INTELLIGENCE");
+    expect(gaps).not.toContain("OBJ-IASB-MANDATE");
+    expect(gaps).not.toContain("OBJ-IASB-ACCOUNTABILITY");
+    expect(gaps).not.toContain("OBJ-INFOREG-MANDATE");
+    expect(gaps).not.toContain("OBJ-INFOREG-MONITORING-ENFORCEMENT");
+    expect(gaps).not.toContain("OBJ-FSCA-MANDATE");
+    // The two genuine residuals: FSCA-directed statutory functions (FSR Act
+    // s.57(a)) no build-phase bank policy serves — no customers/products until
+    // licence-day; a fabricated edge would be worse than the visible gap.
+    expect(gaps).toContain("OBJ-FSCA-FINANCIAL-INCLUSION");
+    expect(gaps).toContain("OBJ-FSCA-FINANCIAL-EDUCATION");
+    expect(gaps.length).toBe(2);
+  });
+
+  test("mandate roll-up: a mandate with NO aligned refining objective is still a gap (synthetic)", () => {
+    const db = getDb();
+    const now = "2026-06-10T00:00:00Z";
+    const insNode = db.prepare(
+      `INSERT INTO graph_nodes (id, node_type, label, metadata) VALUES (?, 'RegulatoryObjective', ?, ?)`,
+    );
+    const insEdge = db.prepare(
+      `INSERT INTO graph_edges (id, from_id, to_id, edge_type, extraction_method, confidence_score, extracted_at)
+       VALUES (?, ?, ?, 'REFINES', 'rule-based', 1.0, ?)`,
+    );
+    try {
+      // Synthetic mandate whose only refining objective is itself un-aligned:
+      // BOTH must surface as gaps (the roll-up never hides a missing leaf).
+      insNode.run("OBJ-TEST-MANDATE", "Synthetic mandate", '{"objectiveLevel":"mandate"}');
+      insNode.run("OBJ-TEST-CHILD", "Synthetic child", '{"objectiveLevel":"objective"}');
+      insEdge.run("E-TEST-REFINES", "OBJ-TEST-CHILD", "OBJ-TEST-MANDATE", now);
+      const gaps = findObjectiveCoverageGaps().map((g) => g.id);
+      expect(gaps).toContain("OBJ-TEST-MANDATE");
+      expect(gaps).toContain("OBJ-TEST-CHILD");
+      // Align the child to an existing Policy node → the child leaves the gap
+      // set AND the mandate is covered transitively.
+      db.prepare(
+        `INSERT INTO graph_edges (id, from_id, to_id, edge_type, extraction_method, confidence_score, extracted_at)
+         VALUES ('E-TEST-ALIGNS', 'POL-capital-management-policy', 'OBJ-TEST-CHILD', 'ALIGNS_TO', 'rule-based', 1.0, ?)`,
+      ).run(now);
+      const gapsAfter = findObjectiveCoverageGaps().map((g) => g.id);
+      expect(gapsAfter).not.toContain("OBJ-TEST-CHILD");
+      expect(gapsAfter).not.toContain("OBJ-TEST-MANDATE");
+      // A non-mandate objective never rolls up: the synthetic child being
+      // aligned says nothing about OTHER un-aligned plain objectives.
+      expect(gapsAfter).toContain("OBJ-FSCA-FINANCIAL-INCLUSION");
+    } finally {
+      // Clean up the synthetic rows so later tests (incl. the re-seeding recon
+      // gates) see the production graph only.
+      db.prepare("DELETE FROM graph_edges WHERE id IN ('E-TEST-REFINES','E-TEST-ALIGNS')").run();
+      db.prepare("DELETE FROM graph_nodes WHERE id IN ('OBJ-TEST-MANDATE','OBJ-TEST-CHILD')").run();
+    }
   });
 });
 
-describe("objective layer — advisory recon gates", () => {
-  test("regulator-mandate-coverage: ok=true, all in-scope regulators covered (INFOREG completes the set)", async () => {
+describe("objective layer — recon gates", () => {
+  test("regulator-mandate-coverage (ENFORCING): ok=true, all six in-scope regulators covered", async () => {
     const { run } = await import("../platform/recon/regulator-mandate-coverage");
     const result = await run();
+    // Promoted to enforcing on the 2026-06-10 tail-fill: ok is now derived
+    // from the violation count, so any uncovered in-scope regulator blocks CI.
     expect(result.ok).toBe(true);
     expect(result.asserted).toBeGreaterThanOrEqual(1);
     // SARB-PA is covered → it must NOT appear in the violations.
@@ -184,10 +245,8 @@ describe("objective layer — advisory recon gates", () => {
     // The Information Regulator was the sixth and last regulator to be backfilled
     // (D-INFOREG-REGULATORY-INTELLIGENCE-INGESTION) → it must NOT appear either.
     expect(result.violations.map((v) => v.subject)).not.toContain("REG-INFO-REG");
-    // With all six in-scope regulators now mandate-covered, there are no
-    // remaining advisory findings.
+    // With all six in-scope regulators mandate-covered there are no findings.
     expect(result.violations.length).toBe(0);
-    expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
   });
 
   test("requirement-objective-linkage: ok=true, PA obligations covered, rest advisory", async () => {
@@ -233,8 +292,29 @@ describe("objective layer — advisory recon gates", () => {
     // INFOREG objectives carrying ALIGNS_TO from privacy/infosec/PAIA policies are aligned.
     expect(subjects).not.toContain("OBJ-INFOREG-DATA-PROTECTION");
     expect(subjects).not.toContain("OBJ-INFOREG-ACCESS-TO-INFORMATION");
-    // The un-aligned objectives ARE flagged (advisory).
-    expect(subjects).toContain("OBJ-SARB-PA-MANDATE");
+    // Tail-fill 2026-06-10: the previously-gapped objectives are now aligned
+    // (FIC financial-intelligence via aml-cft-policy; IASB accountability via
+    // financial-reporting + external-audit policies; INFOREG monitoring-
+    // enforcement via popia-privacy + incident-response policies; SARB-PA
+    // customer-protection via RRP policy and MI-soundness via payments-
+    // settlement policy), and every mandate is covered transitively via the
+    // REFINES roll-up.
+    expect(subjects).not.toContain("OBJ-FIC-FINANCIAL-INTELLIGENCE");
+    expect(subjects).not.toContain("OBJ-IASB-ACCOUNTABILITY");
+    expect(subjects).not.toContain("OBJ-INFOREG-MONITORING-ENFORCEMENT");
+    expect(subjects).not.toContain("OBJ-SARB-PA-CUSTOMER-PROTECTION");
+    expect(subjects).not.toContain("OBJ-SARB-PA-MI-SOUNDNESS");
+    expect(subjects).not.toContain("OBJ-SARB-PA-MANDATE");
+    expect(subjects).not.toContain("OBJ-BCBS-MANDATE");
+    expect(subjects).not.toContain("OBJ-FIC-MANDATE");
+    expect(subjects).not.toContain("OBJ-FSCA-MANDATE");
+    expect(subjects).not.toContain("OBJ-IASB-MANDATE");
+    expect(subjects).not.toContain("OBJ-INFOREG-MANDATE");
+    // The two genuine residuals stay flagged (advisory): FSCA-directed
+    // statutory functions no build-phase bank policy serves.
+    expect(subjects).toContain("OBJ-FSCA-FINANCIAL-INCLUSION");
+    expect(subjects).toContain("OBJ-FSCA-FINANCIAL-EDUCATION");
+    expect(result.violations.length).toBe(2);
     expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
   });
 });

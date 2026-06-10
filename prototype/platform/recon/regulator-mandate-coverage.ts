@@ -1,6 +1,6 @@
 // platform/recon/regulator-mandate-coverage.ts
 //
-// Vera recon: regulator-mandate-coverage (ADVISORY).
+// Vera recon: regulator-mandate-coverage (ENFORCING).
 //
 // The regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-
 // OBJECTIVE-LAYER) records, for each regulator, the mandate/objective it
@@ -14,10 +14,13 @@
 // the bank, directly or via a transposed standard). The seed wires ISSUED_BY
 // from both Document and Framework nodes, so both count.
 //
-// Mode: ADVISORY (ok:true regardless). The SARB-PA pilot is GREEN; the other
-// in-scope regulators (FSCA, FIC, …) carry no objective backfill yet and surface
-// as `warn` findings — that visible gap is the point of the feature, the targeting
-// list for the next backfill run. The gate never blocks CI.
+// Mode: ENFORCING (ok:false on any violation). All six in-scope regulators
+// (SARB-PA, FSCA, FIC, BCBS, IASB, INFOREG) are mandate-covered as of
+// 2026-06-10, so the gate was promoted from advisory to enforcing on the
+// WS-REG-INTELLIGENCE-OBJECTIVE-LAYER tail-fill: a NEW in-scope regulator
+// (one issuing a direct/transposed instrument) now blocks CI until its
+// objective/mandate layer is authored — exactly the regression the advisory
+// phase existed to catch.
 //
 // The gate seeds a FRESH graph into an isolated tmp DB (runSeed is a truncate-
 // and-rebuild projection, Principle 1), so it is deterministic on a clean CI
@@ -91,13 +94,13 @@ export async function run(): Promise<ReconResult> {
     }
     violations.push({
       subject: r.id,
-      message: `in-scope regulator "${r.label}" has no PURSUES edge to a level:mandate objective — objective layer not yet backfilled`,
-      severity: "warn",
+      message: `in-scope regulator "${r.label}" has no PURSUES edge to a level:mandate objective — author its objective/mandate layer (Regulations/**/<reg>-objective-graph.json)`,
+      severity: "fail",
     });
   }
 
   result.violations = violations;
-  result.ok = true; // advisory
+  result.ok = violations.length === 0; // enforcing
   result.asOf = `in-scope=${inScope.length} mandate-covered=${covered}`;
   return result;
 }
@@ -108,6 +111,7 @@ if (import.meta.main) {
     console.log(`  ${v.severity.toUpperCase()}  [${v.subject}] ${v.message}`);
   }
   console.log(
-    `\nrecon:${PIPELINE} OK (advisory) — ${result.asOf}; ${result.violations.length} uncovered regulator(s)`,
+    `\nrecon:${PIPELINE} ${result.ok ? "OK" : "FAIL"} (enforcing) — ${result.asOf}; ${result.violations.length} uncovered regulator(s)`,
   );
+  if (!result.ok) process.exit(1);
 }
