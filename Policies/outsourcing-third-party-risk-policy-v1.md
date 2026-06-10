@@ -24,6 +24,9 @@ riskTaxonomy:
 obligations-closed:
   - ORG-CY-06
   - ORG-CY-07
+obligations:
+  - ORG-CY-06
+  - ORG-CY-07
 applies-at: LICENCE-BIND
 ---
 

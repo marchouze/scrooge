@@ -29,6 +29,8 @@ riskTaxonomy:
   - RT-CD.CC
   - RT-LR.CT
   - RT-FC
+obligations:
+  - ORG-CS3-005
 ---
 
 # Counterparty Onboarding Policy

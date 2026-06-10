@@ -12,6 +12,7 @@ citations:
   - Regulations Relating to Banks 2012 (as amended) reg.39 (internal controls)
   - PA/FSCA Joint Standard 2 of 2024 (data governance for banks and insurers)
   - EDM Council DCAM (Data Management Capability Assessment Model — normative alignment per D-DCAM-TAXONOMY)
+  - "SARB PA Directive D2/2015 + BCBS 239 (risk data aggregation and risk reporting)"
   - Principle 1 (events are the only source of truth)
 author: Devon (Chief Operating Officer, governance) + Anya (Data/analytics engineer, engineering) + Atlas (Core banking platform architect, engineering)
 date: 2026-05-22
@@ -42,6 +43,8 @@ obligations:
   - ORG-PR-64
   - ORG-PR-65
   - ORG-PR-66
+  - ORG-RM-RDARR-002
+  - ORG-RM-RDARR-008
 ---
 
 # Data Management Policy v1
@@ -177,6 +180,23 @@ All regulatory reporting data flows must have documented data lineage: the chain
 
 The event-sourcing architecture provides inherent lineage: every projection output is a deterministic function of the event log. Anya's lineage tooling codifies this by: (a) mapping each regulatory return cell to the event type(s) and projection(s) that produce it; (b) testing that re-running the projection against the event log reproduces the reported value; (c) maintaining a lineage register in the intranet.
 
+### 6.1 Risk Data Aggregation and Risk Reporting — BCBS 239 / PA Directive D2/2015
+
+**Citation:** SARB PA Directive D2/2015 §§1.2, 2.1–2.2 (BCBS 239 adoption for SA banks); BCBS 239 Principles 1–14; register obligations `ORG-RM-RDARR-002` (accuracy and integrity — Principle 3) and `ORG-RM-RDARR-008` (full-framework compliance and supervisory-review readiness — Principles 12–14).
+
+**Accuracy and integrity (BCBS 239 Principle 3 — `ORG-RM-RDARR-002`).** The Bank generates accurate and reliable risk data sufficient for normal and stress/crisis reporting:
+
+- **Single authoritative source per risk type.** The event log is the single authoritative source for every risk type (Principle 1); every risk measure — market, credit, liquidity, operational — is a projection over typed events, never an independently maintained store. This satisfies the single-authoritative-source requirement structurally, not procedurally.
+- **Largely automated aggregation.** Risk data aggregation is fully automated: projections, recon pipelines, and risk engines compute from the event log without manual transcription. Manual adjustments, where unavoidable, are themselves typed events with named authorisers.
+- **Accuracy controls.** The §4 data quality dimensions and thresholds apply to all risk data sets; the recon pipeline suite cross-checks projections against independent derivations; `DataQualityBreachDetected` events surface threshold breaches to Devon (Chief Operating Officer, governance) and Helena (Chief Risk Officer, governance).
+
+**Framework compliance and supervisory-review readiness (BCBS 239 Principles 1–14 — `ORG-RM-RDARR-008`).** Per D2/2015 §2.2, the Bank ensures compliance with all BCBS 239 principles and maintains readiness for PA supervisory review under Principles 12–14:
+
+1. **Documented framework.** The documented risk data aggregation and reporting framework is the combination of this policy (governance + quality + lineage), the Risk Management and Compliance Policy (risk reporting cadence and ownership), and the lineage register (§6) — sufficient to support a PA supervisory evaluation of RDARR capability without ad-hoc assembly.
+2. **Self-assessment cadence.** Anya (Data/analytics engineer, engineering) runs a BCBS 239 principle-by-principle self-assessment as part of the DCAM maturity assessment (§8), with results tabled to Devon and Helena; gaps become named substrate items, not silent debt.
+3. **Remediation.** Deficiencies identified by supervisory review (or by the self-assessment) are remediated on a committed timeline owned by Devon, tracked as register findings with Vera (internal audit engineer, engineering — third-line) verifying closure.
+4. **Home/host cooperation readiness.** The Bank is single-jurisdiction in the build phase; should cross-border operations arise (Principle 5 — multi-country from day one at the type level), the lineage register and event-log architecture make supervisory information shareable per the home/host cooperation principle without restructuring.
+
 ---
 
 ## 7. Typed Events
@@ -204,3 +224,4 @@ This policy generates and consumes the following typed events (Principle 1):
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v1 | 2026-05-22 | Devon (Chief Operating Officer, governance) + Anya (Data/analytics engineer, engineering) + Atlas (Core banking platform architect, engineering) | Initial policy authored. Seven operative sections: (1) Overarching — DCAM three-layer architecture, event-sourcing canonical model, single register per domain, POPIA safeguards, SA residency; (2) DCAM Architecture Alignment; (3) Data Classification — Public/Internal/Confidential/Restricted; (4) Data Quality — five dimensions with thresholds, DataQualityBreachDetected event; (5) Master Data Domains — Party/Instrument/Account/Legal Entity; (6) Data Lineage — regulatory reporting lineage requirement; (7) Typed events. |
+| v1.1 | 2026-06-10 | Zara (Chief Compliance Officer, governance) | Obligation-policy coverage gap triage (WS-OBLIGATION-POLICY-MAPPING, brief `brief:zara:triage-close-30-obligation-policy-coverage-gaps-:2026-06-10`). New §6.1 Risk Data Aggregation and Risk Reporting — BCBS 239 / PA Directive D2/2015: single-authoritative-source-per-risk-type (event log, Principle 1), automated aggregation, accuracy controls (closes `ORG-RM-RDARR-002`); documented-framework + BCBS 239 self-assessment cadence + remediation ownership + home/host readiness (closes `ORG-RM-RDARR-008`). Added D2/2015 + BCBS 239 frontmatter citation; extended `obligations:` frontmatter so the graph IMPLEMENTED_BY fold derives the edges. |

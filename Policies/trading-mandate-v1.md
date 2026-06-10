@@ -9,6 +9,7 @@ next-review: "2027-05-11"
 citations:
   - Banks Act 94 of 1990
   - Financial Markets Act 19 of 2012
+  - "Financial Markets Act 19 of 2012: s.6A (ODP authorisation)"
   - BCBS Market Risk (FRTB — D352, D457)
   - D-POLICY-DOCUMENT-HOME
 author: Kai (Structured rates trader, markets) + Helena (Chief Risk Officer, governance) + Devon (COO, governance)
@@ -22,6 +23,7 @@ riskTaxonomy:
   - RT-OP.PA
 obligations:
   - ORG-JSE-IRC-01
+  - ORG-FMA-001
 ---
 
 # Trading Mandate v1
@@ -403,6 +405,17 @@ Completion of the NPA gate is necessary but not sufficient. For the new instrume
 
 The amendment is a typed `PolicyAmendment` event citing the NPA gate completion event and the amended product fixture in `prototype/platform/markets/products/fixtures.ts`.
 
+### 7.4 ODP authorisation gate — FMA s.6A
+
+**Citation:** Financial Markets Act 19 of 2012 s.6A + FSCA ODP licensing framework (Board Notice 90 of 2018 framework); register obligation `ORG-FMA-001`.
+
+The OTC IRD Desk (§2.4) and the FX Desk's OTC forward activity (§2.5) constitute OTC derivative *provider* activity under FMA s.6A once conducted as principal with clients. The following gate applies:
+
+1. **No live ODP business before authorisation.** No OTC derivative transaction may be executed as principal with any client or external counterparty until the FSCA has granted the Bank authorisation as an OTC Derivative Provider under FMA s.6A. This is a hard gate alongside the banking licence itself: the §2 positive-enumeration list is *conditionally* enumerated for OTC instruments, with the condition being the ODP authorisation in force.
+2. **Build-phase posture.** All build-phase OTC activity is internal rehearsal (simulated counterparties, no external clients) and therefore outside s.6A's scope. The pre-licence go-live readiness gate (Saskia (Head of Global Markets, governance), co-owned with Rashida (Chief Information Security Officer, governance) and Devon (Chief Operating Officer, governance)) includes confirmation that the ODP authorisation application has been lodged and granted before any external OTC dealing commences.
+3. **Authorisation conditions maintenance.** Once granted, the authorisation conditions are maintained as register obligations (the `ORG-ODP-AUTH-*` series); any material change to the Bank's ODP business is notified to the FSCA per the authorisation conditions. Zara (Chief Compliance Officer, governance) owns the notification trigger; Owen (Company Secretary, governance) files the correspondence.
+4. **Mandate linkage.** Any NPA approval (§7.1) for a new OTC derivative instrument re-checks the ODP authorisation scope: if the new instrument falls outside the granted authorisation categories, the FSCA variation precedes first trade.
+
 ---
 
 ## 8. Obligations Closed by This Mandate
@@ -415,6 +428,7 @@ The amendment is a typed `PolicyAmendment` event citing the NPA gate completion 
 | `ORG-MK-04` | RAS B5 (deferred) — client-driven and franchise market-making | §3.2 (franchise market-making); §3.3 (proprietary prohibition) |
 | `ORG-PR-48` | SARB PA GN 5/2013 — FX settlement risk discipline | §6 (entire FX settlement risk section) |
 | `ORG-MK-09` | JSE Equities Rules — trading-member obligations | §2.2 (JSE Equity Desk instrument list); §1.1 (authority chain) |
+| `ORG-FMA-001` | FMA 19/2012 s.6A — FSCA ODP authorisation before any live OTC-derivative principal-side activity | §7.4 (ODP authorisation gate) |
 
 ---
 
