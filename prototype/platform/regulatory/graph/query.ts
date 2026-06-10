@@ -818,6 +818,60 @@ export function findObjectiveCoverageGaps(): GraphNode[] {
 }
 
 // ---------------------------------------------------------------------------
+// Obligation → Policy implementation coverage (WS-OBLIGATION-POLICY-MAPPING)
+// ---------------------------------------------------------------------------
+
+/**
+ * Return all ADOPTED obligations (register-sourced `OBL-ORG-*` nodes — not the
+ * BCBS knowledge-base plane) with NO outgoing IMPLEMENTED_BY edge to a Policy —
+ * i.e. an adopted obligation the bank's policy estate does not implement.
+ * The implementation-coverage analogue of `findObjectiveCoverageGaps()`.
+ * Authority: D-OBLIGATIONS-REGISTER-CLEANUP (named next step).
+ */
+export function findObligationPolicyCoverageGaps(): GraphNode[] {
+  const db = getDb();
+  return (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         WHERE n.node_type = 'Obligation'
+           AND n.id LIKE 'OBL-ORG-%'
+           AND NOT EXISTS (
+             SELECT 1 FROM graph_edges e
+             JOIN graph_nodes p ON p.id = e.to_id AND p.node_type = 'Policy'
+             WHERE e.from_id = n.id AND e.edge_type = 'IMPLEMENTED_BY'
+           )
+         ORDER BY n.id`,
+      )
+      .all() as NodeRow[]
+  ).map(rowToNode);
+}
+
+export interface ObligationPolicyCoverage {
+  /** Count of adopted obligations (OBL-ORG-* nodes). */
+  totalAdopted: number;
+  /** Adopted obligations with at least one IMPLEMENTED_BY policy. */
+  covered: number;
+  /** Adopted obligations with no implementing policy. */
+  gaps: GraphNode[];
+}
+
+/** Coverage summary: adopted obligations vs those with an implementing policy. */
+export function getObligationPolicyCoverage(): ObligationPolicyCoverage {
+  const db = getDb();
+  const totalAdopted = (
+    db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM graph_nodes
+         WHERE node_type = 'Obligation' AND id LIKE 'OBL-ORG-%'`,
+      )
+      .get() as { n: number }
+  ).n;
+  const gaps = findObligationPolicyCoverageGaps();
+  return { totalAdopted, covered: totalAdopted - gaps.length, gaps };
+}
+
+// ---------------------------------------------------------------------------
 // getObligationCountForDocument
 // ---------------------------------------------------------------------------
 

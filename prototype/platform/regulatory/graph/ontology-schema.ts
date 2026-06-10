@@ -75,6 +75,8 @@ const GRAPH_EDGE_TYPES = [
   "IMPLEMENTS",
   "CLOSES",
   "GOVERNS",
+  // Obligation → Policy implementation mapping (WS-OBLIGATION-POLICY-MAPPING).
+  "IMPLEMENTED_BY",
   // Capability layer (D-PRINCIPLE-2-CAPABILITY-LAYER): Procedure → Capability.
   "REALISES",
   "REALISED_BY",
@@ -413,6 +415,7 @@ EDGE TYPES (27 total — format: FROM → TO):
 
   BANK-INTERNAL (Principle 2 implementation chain):
     IMPLEMENTS         Policy → Obligation       (policy implements obligation)
+    IMPLEMENTED_BY     Obligation → Policy       (adopted obligation is implemented by a bank policy — inverse of IMPLEMENTS)
     CLOSES             Control → Obligation      (control closes an obligation gap)
     GOVERNS            Policy → Activity         (policy governs an activity)
     REALISES           Procedure → Capability    (procedure realised by a code capability)

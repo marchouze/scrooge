@@ -28,6 +28,11 @@ import {
 import { INFRA_CAPABILITY_SLUGS, isOrphanAllowlisted } from "./capability-infra";
 import { parseSystemCapabilityValue } from "./capability-parser";
 import {
+  type PolicyObligationCitations,
+  buildImplementedByEdge,
+  deriveObligationPolicyPairs,
+} from "./obligation-policy-fold";
+import {
   getDb,
   getEdgeCount,
   getNodeCount,
@@ -89,6 +94,19 @@ export interface SeedStats {
   equivalenceBackfill?: {
     created: string[];
     missingText: string[];
+  };
+  /**
+   * Obligation → Policy IMPLEMENTED_BY edges folded from policy frontmatter +
+   * the obligations-register Fulfilment-policy column (WS-OBLIGATION-POLICY-
+   * MAPPING). All derived (Plane-A reference derivation; zero hand-authored).
+   * `skippedMissingNode` counts derived pairs whose obligation or policy node
+   * was absent from the graph (guard, mirrors the equivalence-fold discipline).
+   */
+  obligationPolicyEdges?: {
+    derived: number;
+    handAuthored: number;
+    bySource: Record<string, number>;
+    skippedMissingNode: number;
   };
 }
 
@@ -1777,6 +1795,9 @@ export async function runSeed(): Promise<SeedStats> {
   const policiesDir = repoPath("Policies");
   const policyNodes = new Map<string, GraphNode>();
   const policyMdFiles = walkMd(policiesDir);
+  // Per-policy obligation citations, harvested for the IMPLEMENTED_BY fold that
+  // runs AFTER all node imports (WS-OBLIGATION-POLICY-MAPPING).
+  const policyObligationCitations: PolicyObligationCitations[] = [];
 
   for (const filePath of policyMdFiles) {
     const fm = parsePolicyFile(filePath);
@@ -1801,6 +1822,11 @@ export async function runSeed(): Promise<SeedStats> {
     // Also index by normalised title for fuzzy procedure→policy matching
     policyNodes.set(normalisePolicyTitle(fm.title), node);
     policyNodes.set(normalisePolicyTitle(fm.policyId), node);
+    policyObligationCitations.push({
+      policyNodeId: nodeId,
+      obligationsImplemented: fm.obligationsImplemented,
+      obligationsClosed: fm.obligationsClosed,
+    });
 
     // IMPLEMENTS edges (Policy → Document) via citations
     for (const citation of fm.citations) {
@@ -2249,6 +2275,45 @@ export async function runSeed(): Promise<SeedStats> {
   // Authority: D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.
   const objectiveArtefacts = importObjectiveArtefacts(now);
 
+  // ── Obligation → Policy implementation mapping (IMPLEMENTED_BY) ───────────
+  // Folds the derived Obligation → Policy pairs into IMPLEMENTED_BY edges —
+  // the Principle-2 hop between adopted obligations and the policy layer.
+  // Runs AFTER every node import (register Step 6, policies Step 9, BCBS
+  // import, instrument artefacts, objective artefacts) — the #1142 edge-fold-
+  // before-import defect class — and guards every pair with a DB node-existence
+  // check, mirroring the equivalence-fold discipline above. Pure derivation,
+  // zero hand-authored pairs (D-REGULATORY-ARCHITECTURE-TWO-PLANE Plane A).
+  // Authority: D-OBLIGATIONS-REGISTER-CLEANUP (named next step);
+  // workstream WS-OBLIGATION-POLICY-MAPPING.
+  const obligationPolicyPairs = deriveObligationPolicyPairs({
+    policies: policyObligationCitations,
+    registerRows: obligationRows.map((row) => ({
+      obligationId: row.id,
+      fulfilmentPolicy: row.fulfilmentPolicy,
+    })),
+    resolvePolicyNodeId: (name) => resolvePolicyNode(name, policyNodes)?.id,
+  });
+  const obligationPolicyBySource: Record<string, number> = {};
+  let obligationPolicyDerived = 0;
+  let obligationPolicySkipped = 0;
+  for (const pair of obligationPolicyPairs) {
+    const obligationExists = nodeRow.get(`OBL-${pair.obligationId}`);
+    const policyExists = nodeRow.get(pair.policyNodeId);
+    if (!obligationExists || !policyExists) {
+      obligationPolicySkipped++;
+      continue;
+    }
+    upsertEdge(buildImplementedByEdge(pair, edgeId("IMPLEMENTED_BY"), now));
+    obligationPolicyDerived++;
+    obligationPolicyBySource[pair.source] = (obligationPolicyBySource[pair.source] ?? 0) + 1;
+  }
+  const obligationPolicyEdges: NonNullable<SeedStats["obligationPolicyEdges"]> = {
+    derived: obligationPolicyDerived,
+    handAuthored: 0,
+    bySource: obligationPolicyBySource,
+    skippedMissingNode: obligationPolicySkipped,
+  };
+
   // ── Final stats ──────────────────────────────────────────────────────────
 
   const totalNodes = getNodeCount();
@@ -2270,6 +2335,7 @@ export async function runSeed(): Promise<SeedStats> {
     objectiveArtefacts,
     instrumentArtefacts,
     equivalenceBackfill,
+    obligationPolicyEdges,
   };
 }
 
