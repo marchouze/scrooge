@@ -304,7 +304,7 @@ This split enables:
 | `SUPERSEDES` | Document | Document | The new document supersedes the old | Version transitions; amendment that replaces a prior act |
 | `AMENDS` | Document | Document | The instrument amends (modifies) another instrument | Amendment notices that patch specific sections |
 | `EFFECTIVE_DURING` | Obligation | EffectivePeriod | The obligation is only effective during this period | Transitional arrangements, phase-in windows |
-| `TRANSPOSES` | Document | Framework | An SA instrument transposes an international standard | PA D5/2021 TRANSPOSES FRMWK-BASEL-III |
+| `TRANSPOSES` | Document | Framework \| Document | An SA instrument transposes an international standard — either the whole framework or a specific standard Document | PA D5/2021 TRANSPOSES FRMWK-BASEL-III; SARB PA Directive D2/2015 TRANSPOSES the BCBS 239 Document |
 | `EQUIVALENT_TO` | Obligation | Obligation | Cross-jurisdictional equivalence (same obligation, different regime) | For EU/UK equivalence mapping (reference only) |
 
 #### Adoption semantics (Basel baseline → jurisdiction)

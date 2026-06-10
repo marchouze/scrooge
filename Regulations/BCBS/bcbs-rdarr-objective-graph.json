@@ -1,0 +1,49 @@
+{
+  "instrumentId": "BCBS-239-OBJECTIVES",
+  "standardName": "BCBS 239 RDARR — objective-layer SERVES wiring (the 'why' behind each principle)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge — RegulatoryObjective layer)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:bcbs-239-objective-graph",
+    "confidenceScore": 1,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "Objective-layer SERVES wiring for the BCBS 239 RDARR principle obligations. Authority: D-BCBS-239-RDARR-INGESTION (CEO session-delegation 2026-06-10). Author: Mira (Compliance / RegTech engineer, regulatory). Accountable risk-data seat: Helena (Chief Risk Officer, governance).",
+  "comment": "Companion to Regulations/BCBS/bcbs-239-instruments-graph.json. The 14 OBL-BCBS-239-P* obligation nodes are created by the instruments-graph import (importInstrumentArtefacts, runSeed ~line 2149); the two OBJ-BCBS-* RegulatoryObjective targets are RE-DECLARED below (idempotent upsertNode) so this file's SERVES edges resolve regardless of objective-graph file processing order — the canonical OBJ-BCBS-RISK-CAPTURE / OBJ-BCBS-SUPERVISORY-REVIEW definitions live in Regulations/BCBS/bcbs-objective-graph.json (the existing BCBS objective layer); re-stating them here is order-safe, not a redefinition. This file is ingested by importObjectiveArtefacts (walkBySuffix '-objective-graph.json'), which runs LAST in runSeed (~line 2250) — AFTER the OBL-BCBS-239-P* obligation nodes exist — so every SERVES edge resolves with 0 skipped. SERVES partition per the dispatch brief: P1 (governance) + P12/P13/P14 (supervisory review, remedial measures, home/host cooperation) -> OBJ-BCBS-SUPERVISORY-REVIEW; P2-P11 (data architecture, accuracy, completeness, timeliness, adaptability, and the risk-reporting principles) -> OBJ-BCBS-RISK-CAPTURE. This keeps the BCBS 239 principles on the same two existing Basel objectives the 14 ingested standards already SERVE, with no new objective nodes.",
+  "nodes": [
+    {
+      "id": "OBJ-BCBS-RISK-CAPTURE",
+      "nodeType": "RegulatoryObjective",
+      "label": "Comprehensive risk capture",
+      "objectiveText": "Ensure the regulatory framework comprehensively captures and measures credit, market, operational, counterparty-credit (margin) and large-exposure / concentration risks in banks' risk-weighted assets.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:bcbs:charter"
+    },
+    {
+      "id": "OBJ-BCBS-SUPERVISORY-REVIEW",
+      "nodeType": "RegulatoryObjective",
+      "label": "Effective supervisory review and sound practices",
+      "objectiveText": "Promote effective supervisory review of banks' capital adequacy and internal processes, and consistent cross-jurisdictional application through the scope, core-principles and supervisory-review standards.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:bcbs:charter"
+    }
+  ],
+  "edges": [
+    { "id": "OBJ-BCBS-239-SERVES-P01-SR", "fromId": "OBL-BCBS-239-P01", "toId": "OBJ-BCBS-SUPERVISORY-REVIEW", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p1" },
+    { "id": "OBJ-BCBS-239-SERVES-P02-RC", "fromId": "OBL-BCBS-239-P02", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p2" },
+    { "id": "OBJ-BCBS-239-SERVES-P03-RC", "fromId": "OBL-BCBS-239-P03", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p3" },
+    { "id": "OBJ-BCBS-239-SERVES-P04-RC", "fromId": "OBL-BCBS-239-P04", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p4" },
+    { "id": "OBJ-BCBS-239-SERVES-P05-RC", "fromId": "OBL-BCBS-239-P05", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p5" },
+    { "id": "OBJ-BCBS-239-SERVES-P06-RC", "fromId": "OBL-BCBS-239-P06", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p6" },
+    { "id": "OBJ-BCBS-239-SERVES-P07-RC", "fromId": "OBL-BCBS-239-P07", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p7" },
+    { "id": "OBJ-BCBS-239-SERVES-P08-RC", "fromId": "OBL-BCBS-239-P08", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p8" },
+    { "id": "OBJ-BCBS-239-SERVES-P09-RC", "fromId": "OBL-BCBS-239-P09", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p9" },
+    { "id": "OBJ-BCBS-239-SERVES-P10-RC", "fromId": "OBL-BCBS-239-P10", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p10" },
+    { "id": "OBJ-BCBS-239-SERVES-P11-RC", "fromId": "OBL-BCBS-239-P11", "toId": "OBJ-BCBS-RISK-CAPTURE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p11" },
+    { "id": "OBJ-BCBS-239-SERVES-P12-SR", "fromId": "OBL-BCBS-239-P12", "toId": "OBJ-BCBS-SUPERVISORY-REVIEW", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p12" },
+    { "id": "OBJ-BCBS-239-SERVES-P13-SR", "fromId": "OBL-BCBS-239-P13", "toId": "OBJ-BCBS-SUPERVISORY-REVIEW", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p13" },
+    { "id": "OBJ-BCBS-239-SERVES-P14-SR", "fromId": "OBL-BCBS-239-P14", "toId": "OBJ-BCBS-SUPERVISORY-REVIEW", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p14" }
+  ]
+}

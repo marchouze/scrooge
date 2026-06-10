@@ -403,7 +403,7 @@ EDGE TYPES (27 total — format: FROM → TO):
     SUPERSEDES         Document → Document       (new version supersedes old)
     AMENDS             Document → Document       (instrument amends another)
     EFFECTIVE_DURING   Obligation → EffectivePeriod (obligation effective in period)
-    TRANSPOSES         Document → Framework      (SA instrument transposes intl standard)
+    TRANSPOSES         Document → Framework|Document (SA instrument transposes an intl standard — the whole framework, or a specific standard Document, e.g. SARB PA Directive D2/2015 → BCBS 239)
     EQUIVALENT_TO      Obligation → Obligation   (cross-jurisdictional equivalence)
 
   CROSS-REFERENCE:
