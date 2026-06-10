@@ -179,6 +179,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:odp-repo-recon-dispute-staleness",
     "recon:coa-name-no-currency",
     "recon:fx-supported-currency-no-suspense",
+    "recon:account-designated-currency",
     "recon:valuation-adjustment-additive",
     "recon:orphan-open-runs",
     "recon:orphan-run-deliverable-state",
