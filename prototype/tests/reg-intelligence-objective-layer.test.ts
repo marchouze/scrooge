@@ -41,7 +41,7 @@ beforeAll(async () => {
 });
 
 describe("objective layer — graph ingestion", () => {
-  test("seeds the SARB-PA pilot + FSCA RegulatoryObjective nodes with correct levels", () => {
+  test("seeds the SARB-PA pilot + FSCA + FIC RegulatoryObjective nodes with correct levels", () => {
     const db = getDb();
     const rows = db
       .prepare(
@@ -49,9 +49,9 @@ describe("objective layer — graph ingestion", () => {
            FROM graph_nodes WHERE node_type = 'RegulatoryObjective' ORDER BY id`,
       )
       .all() as Array<{ id: string; lvl: string }>;
-    // SARB-PA pilot (5) + FSCA stack (5) = 10 objective nodes
-    // (D-FSCA-REGULATORY-INTELLIGENCE-INGESTION).
-    expect(rows.length).toBe(10);
+    // SARB-PA pilot (5) + FSCA stack (5) + FIC stack (5) = 15 objective nodes
+    // (D-FSCA-REGULATORY-INTELLIGENCE-INGESTION; D-FIC-REGULATORY-INTELLIGENCE-INGESTION).
+    expect(rows.length).toBe(15);
     const byId = new Map(rows.map((r) => [r.id, r.lvl]));
     // SARB-PA pilot
     expect(byId.get("OBJ-SARB-PA-MANDATE")).toBe("mandate");
@@ -65,6 +65,12 @@ describe("objective layer — graph ingestion", () => {
     expect(byId.get("OBJ-FSCA-MARKET-INTEGRITY")).toBe("objective");
     expect(byId.get("OBJ-FSCA-FINANCIAL-INCLUSION")).toBe("objective");
     expect(byId.get("OBJ-FSCA-FINANCIAL-EDUCATION")).toBe("objective");
+    // FIC stack (combat ML/TF/PF — D-FIC-REGULATORY-INTELLIGENCE-INGESTION)
+    expect(byId.get("OBJ-FIC-MANDATE")).toBe("mandate");
+    expect(byId.get("OBJ-FIC-FINANCIAL-INTELLIGENCE")).toBe("objective");
+    expect(byId.get("OBJ-FIC-CDD-INTEGRITY")).toBe("objective");
+    expect(byId.get("OBJ-FIC-TARGETED-SANCTIONS")).toBe("objective");
+    expect(byId.get("OBJ-FIC-AML-SUPERVISION")).toBe("objective");
   });
 
   test("seeds PURSUES / REFINES / SERVES / ALIGNS_TO edges", () => {
@@ -75,14 +81,14 @@ describe("objective layer — graph ingestion", () => {
           n: number;
         }
       ).n;
-    // 5 (REG-SARB-PA) + 5 (REG-FSCA) objectives pursued.
-    expect(count("PURSUES")).toBe(10);
-    // 4 (PA) + 4 (FSCA) objectives refine their mandate.
-    expect(count("REFINES")).toBe(8);
-    // PA prudential (≥9) + FSCA conduct/markets (30) obligations serve their objective.
-    expect(count("SERVES")).toBeGreaterThanOrEqual(9 + 30);
-    // PA capital + liquidity policies (≥2) + FSCA conduct/markets policies (8).
-    expect(count("ALIGNS_TO")).toBeGreaterThanOrEqual(2 + 8);
+    // 5 (REG-SARB-PA) + 5 (REG-FSCA) + 5 (REG-FIC) objectives pursued.
+    expect(count("PURSUES")).toBe(15);
+    // 4 (PA) + 4 (FSCA) + 4 (FIC) objectives refine their mandate.
+    expect(count("REFINES")).toBe(12);
+    // PA prudential (≥9) + FSCA conduct/markets (30) + FIC AML/CFT (19) obligations serve their objective.
+    expect(count("SERVES")).toBeGreaterThanOrEqual(9 + 30 + 19);
+    // PA capital + liquidity policies (≥2) + FSCA conduct/markets policies (8) + FIC AML/sanctions policies (6).
+    expect(count("ALIGNS_TO")).toBeGreaterThanOrEqual(2 + 8 + 6);
   });
 
   test("every objective-layer edge resolves to existing endpoint nodes (no orphans)", () => {
@@ -165,8 +171,8 @@ describe("objective layer — advisory recon gates", () => {
     const { run } = await import("../platform/recon/objective-policy-alignment");
     const result = await run();
     expect(result.ok).toBe(true);
-    // 5 SARB-PA pilot objectives + 5 FSCA objectives asserted.
-    expect(result.asserted).toBe(10);
+    // 5 SARB-PA pilot + 5 FSCA + 5 FIC objectives asserted.
+    expect(result.asserted).toBe(15);
     const subjects = result.violations.map((v) => v.subject);
     // The aligned objectives are NOT flagged.
     expect(subjects).not.toContain("OBJ-SARB-PA-SAFETY-SOUNDNESS");
@@ -174,6 +180,10 @@ describe("objective layer — advisory recon gates", () => {
     // FSCA fair-treatment + market-integrity are aligned (conduct + markets policies).
     expect(subjects).not.toContain("OBJ-FSCA-FAIR-TREATMENT");
     expect(subjects).not.toContain("OBJ-FSCA-MARKET-INTEGRITY");
+    // FIC cdd-integrity + targeted-sanctions + aml-supervision are aligned (AML/sanctions policies).
+    expect(subjects).not.toContain("OBJ-FIC-CDD-INTEGRITY");
+    expect(subjects).not.toContain("OBJ-FIC-TARGETED-SANCTIONS");
+    expect(subjects).not.toContain("OBJ-FIC-AML-SUPERVISION");
     // The un-aligned objectives ARE flagged (advisory).
     expect(subjects).toContain("OBJ-SARB-PA-MANDATE");
     expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
