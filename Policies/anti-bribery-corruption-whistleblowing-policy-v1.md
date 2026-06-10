@@ -12,6 +12,7 @@ citations:
   - "PDA: Protected Disclosures Act 26/2000 (as amended)"
   - "PFMA: Public Finance Management Act 1/1999 (completeness reference)"
   - "FCPA: US Foreign Corrupt Practices Act (where US nexus applies)"
+  - "UK Bribery Act 2010: s7 (failure to prevent bribery) + s9 adequate-procedures guidance (where UK nexus applies)"
 author: Zara (Chief Compliance Officer, governance)
 date: 2026-05-13
 summary: Establishes the bank's zero-tolerance anti-bribery and corruption framework and whistleblowing channel, ensuring PRECCA compliance and protected disclosure protections for all reporters.
@@ -20,6 +21,13 @@ riskTaxonomy:
   - "COND-001"
   - "GOV-001"
   - "FC-001"
+obligations:
+  - ORG-FC-20
+  - ORG-FC-22
+  - ORG-WB-01
+  - ORG-WB-02
+  - ORG-WB-03
+  - ORG-WB-04
 ---
 
 > **Policy** | ABC-WB-01 v1.0 | Owner: Zara (Chief Compliance Officer, governance) | Status: DRAFT | Effective: 2026-05-13
@@ -154,6 +162,21 @@ The Bank does not make political contributions — direct or indirect, monetary 
 
 In practice, the Bank does not anticipate making political contributions in the build phase or at licence-day. Any approach from a political party or affiliated entity requesting support is reported to Zara and the CEO immediately.
 
+### 3.6 Extra-Territorial Anti-Bribery Statutes — UK Bribery Act 2010 (and FCPA)
+
+**Citation:** UK Bribery Act 2010 ss.1, 6, 7 + Ministry of Justice adequate-procedures guidance (2011); US FCPA 1977; register obligation `ORG-FC-22`.
+
+Where the Bank has UK touch-points that bring it within the extra-territorial reach of the UK Bribery Act 2010 — UK-incorporated counterparties, business conducted in the UK, GBP clearing or correspondent arrangements, or persons performing services for the Bank in the UK — the Act's offences apply, including the s.7 corporate offence of failing to prevent bribery by an associated person. The Bank's defence to the s.7 offence is the statutory "adequate procedures" defence, which this policy operationalises:
+
+1. **Proportionate procedures** — the zero-tolerance prohibition (§3.1), gifts and hospitality pre-approval framework (§3.2), and political-contributions bar (§3.5) apply to all activity with a UK nexus without dilution.
+2. **Top-level commitment** — CEO and board accountability per §2 (Governance); the zero-tolerance posture is set at the top of the house.
+3. **Risk assessment** — the third-party risk-tiering in §3.4 treats UK-nexus intermediaries and agents on the same risk-tiered due-diligence basis as all others; jurisdictional bribery risk is an explicit tiering input.
+4. **Due diligence** — third-party anti-corruption due diligence per §3.4, including contractual anti-corruption covenants for high-risk engagements.
+5. **Communication and training** — ABC training per §4.4 covers the UK Bribery Act's s.6 foreign-public-official offence and the s.7 corporate offence for all agents and statutory humans whose mandates touch UK-nexus activity.
+6. **Monitoring and review** — surveillance and register reviews per §4.5; Vera (internal audit engineer, engineering — third-line) tests UK-nexus coverage in the annual ABC audit.
+
+The same global-standard approach applies to the US FCPA (§8 citations): the Bank adopts the strictest applicable standard globally rather than maintaining jurisdiction-specific lower standards. **Build-phase note:** the Bank currently has no UK establishment and no UK-nexus intermediaries; the controls above bind from the moment any UK touch-point arises, and the risk assessment at counterparty onboarding (Counterparty Onboarding Policy) is the detection gate.
+
 ---
 
 ## 4. Controls and Monitoring
@@ -266,7 +289,7 @@ Where a conduct breach under this policy constitutes a criminal offence under PR
 | Obligation | Description | Status | Closed by section |
 |---|---|---|---|
 | `ORG-FC-20` | Anti-bribery and corruption framework — zero-tolerance policy, governance, prohibitions | **DRAFT** (CORPORATE-BIND) — closed | §3.1 (zero-tolerance prohibition); §3.2 (gifts and hospitality — public-official rule); §3.5 (political contributions) |
-| `ORG-FC-22` | PRECCA s34 mandatory-reporting procedure — process for reporting corruption offences to SAPS / Hawks | **DRAFT** (CORPORATE-BIND) — closed | §3.3 (PRECCA s34 mandatory reporting); §4.3 (investigation process) |
+| `ORG-FC-22` | UK Bribery Act 2010 controls where the Bank has UK touch-points — s.7 failure-to-prevent offence and the adequate-procedures defence (register description; the PRECCA s34 mandatory-reporting procedure remains closed by §3.3) | **DRAFT** (CORPORATE-BIND) — closed | §3.6 (UK Bribery Act adequate procedures); §3.1–§3.5 (underlying controls); §4.4 (training) |
 | `ORG-WB-01` | Whistleblowing channel establishment — anonymous, custodian-routed, 24/7 reporting mechanism | **DRAFT** (CORPORATE-BIND) — closed | §4.1 (whistleblowing channel); §4.3 (investigation process) |
 | `ORG-WB-02` | Protected-disclosure protections for reporters — PDA and Companies Act s159 safe-harbour application | **DRAFT** (CORPORATE-BIND) — closed | §4.2 (protected disclosures and non-retaliation) |
 | `ORG-WB-03` | Non-retaliation policy — bar on adverse action against good-faith reporters | **DRAFT** (CORPORATE-BIND) — closed | §4.2 (protected disclosures and non-retaliation); §6.2 (escalation — retaliation as escalation trigger) |
@@ -305,6 +328,7 @@ All six obligations are CORPORATE-BIND and operative from the date of the Bank's
 | Version | Date | Author | Note |
 |---|---|---|---|
 | v1.0 | 2026-05-13 | Zara (Chief Compliance Officer, governance) | Initial Anti-Bribery, Corruption, and Whistleblowing Policy. Six sections of substantive content: Purpose; Principles (six, including zero tolerance, PRECCA mandatory reporting, protected disclosures, proportionate response, third-party integrity, political neutrality); (1) Scope — CORPORATE-BIND; (2) Governance — Zara as policy owner, CEO PRECCA s34 co-signatory, Owen board-notification interface, Helena risk-taxonomy linkage, Vera annual audit; (3) Standards — zero-tolerance prohibition with no de minimis threshold; gifts/hospitality with public-official prohibition; PRECCA s34 mandatory reporting process; third-party due diligence by risk tier; political contributions framework; (4) Controls — whistleblowing channel (24/7, anonymous, Zara custodian + Owen / Helena alternate where Zara implicated); protected disclosures and non-retaliation (PDA + Companies Act s.159); investigation process (5-step); training and awareness; monitoring and surveillance; (5) Reporting — six report types; (6) Exceptions and escalation — no exceptions to core prohibitions; Code of Conduct cross-reference. Closes obligations ORG-FC-20, ORG-FC-22, ORG-WB-01, ORG-WB-02, ORG-WB-03, ORG-WB-04. CORPORATE-BIND. |
+| v1.2 | 2026-06-10 | Zara (Chief Compliance Officer, governance) | Added §3.6 (Extra-territorial anti-bribery statutes — UK Bribery Act 2010 adequate-procedures mapping + FCPA global-standard posture); corrected the §7 closure row for `ORG-FC-22` to the register description (UK Bribery Act controls — the prior row described PRECCA s34, which §3.3 closes); added UK Bribery Act 2010 frontmatter citation; added explicit `obligations:` frontmatter list (ORG-FC-20, ORG-FC-22, ORG-WB-01–04) so the graph IMPLEMENTED_BY fold derives the obligation→policy edges (WS-OBLIGATION-POLICY-MAPPING gap triage, brief `brief:zara:triage-close-30-obligation-policy-coverage-gaps-:2026-06-10`). |
 | v1.1 | 2026-05-21 | Owen (Company Secretary, governance) on behalf of Zara (Chief Compliance Officer, governance) | Added §7 (Obligations closed — formal table with section-level closure mapping for all six CORPORATE-BIND obligations); §8 (Citations — statutory instruments PRECCA / PDA / Companies Act s.159 / PFMA / FCPA + internal canonical sources); §9 (Change log). Edits authored under Owen's CoSec authority during the 2026-05-21 top-5 policy-gap completion sweep (brief: `brief:owen:complete-top-5-policy-gaps-from-2026-05-21-audit:2026-05-21`); substantive content unchanged — only structural completion to match the IN-FORCE policy template (e.g. `aml-cft-policy-v1.md` §§10–12). No status change. |
 
 ---
