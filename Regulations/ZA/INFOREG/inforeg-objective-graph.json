@@ -1,0 +1,86 @@
+{
+  "instrumentId": "ZA-INFOREG-OBJECTIVES",
+  "standardName": "Information Regulator objective/mandate layer (POPIA 4 of 2013 s.39; PAIA 2 of 2000)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge — RegulatoryObjective layer)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:inforeg-objective-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "Protection of Personal Information Act 4 of 2013, s.39 (Establishment of Information Regulator) read with ss.40-41 (powers, duties and functions) and the Promotion of Access to Information Act 2 of 2000 (the Regulator's PAIA mandate). Authority: D-INFOREG-REGULATORY-INTELLIGENCE-INGESTION.",
+  "comment": "Regulatory-intelligence objective/mandate layer — Information Regulator. Mirrors the FIC objective artefact (Regulations/ZA/FIC/fic-objective-graph.json). The objective nodes (the 'why' a POPIA/PAIA requirement exists) are Plane-A reference data, re-derivable from the Regulator's own statutory mandate (POPIA s.39 read with its powers/duties/functions and the PAIA enforcement mandate), NOT events (D-REGULATORY-ARCHITECTURE-TWO-PLANE). PURSUES/REFINES/SERVES/ALIGNS_TO edges target EXISTING graph nodes: Regulator REG-INFO-REG (seed-projection.ts Step 1); the POPIA/PAIA Document nodes (DOC-POPIA from popia-structured.json Step 5b, DOC-PAIA-ACT-2-2000 event-sourced Step 4 — ISSUED_BY for both is wired by the sibling inforeg-instruments-graph.json, which importInstrumentArtefacts runs before importObjectiveArtefacts); Obligation nodes OBL-ORG-PR(IV)-* / OBL-ORG-EL-03 / OBL-ORG-RM-04 (Step 6, keyed OBL-<ORG-id>, from Regulations/_obligations.seed.json); Policy nodes POL-<policy-id> (Step 9, from Policies/*.md frontmatter policy-id). SERVES wiring rationale: POPIA s.39 establishes the Regulator to protect personal information and to promote access to information, and to monitor and enforce both Acts. Three sub-objectives refine the mandate: (1) data-protection is served by the POPIA processing-condition obligations — lawful processing, purpose/retention limitation, data-subject rights, security safeguards, special/children's information and cross-border transfer (PR(IV)-01..06, 08..12, 15) plus the electronic-record-integrity (EL-03) and retention-limitation (RM-04) overlays; (2) access-to-information is served by the PAIA manual and request-handling obligations (PR(IV)-16/17); (3) monitoring-enforcement is served by the obligations that route directly to the Regulator — breach notification (PR(IV)-07), Information-Officer / deputy-IO designation and registration (PR(IV)-13, PR(IV)-13-GLOSS-DEPUTY-IO) and prior authorisation (PR(IV)-14). ALIGNS_TO wiring: POL-popia-privacy-policy and POL-information-security-it-governance-policy align to data-protection; POL-PAIA-MANUAL-V1 aligns to access-to-information. Every SERVES/ALIGNS_TO target id was confirmed present in the seeded graph (OBL-ORG-* from the seed; POL-* from Policies/*.md frontmatter); a 0 skipped count proves no dangling id.",
+  "nodes": [
+    {
+      "id": "OBJ-INFOREG-MANDATE",
+      "nodeType": "RegulatoryObjective",
+      "label": "Mandate of the Information Regulator",
+      "objectiveText": "The Information Regulator, established under POPIA s.39, is an independent juristic body that exercises its powers, and performs its duties and functions, without fear, favour or prejudice. Its mandate is to protect the right to privacy by safeguarding the processing of personal information under POPIA, to promote and give effect to the constitutional right of access to information held by public and private bodies under PAIA, and to monitor, educate, handle complaints, conduct assessments and enforce compliance with both Acts.",
+      "objectiveLevel": "mandate",
+      "sourceCitation": "urn:reg:za:popia:s39"
+    },
+    {
+      "id": "OBJ-INFOREG-DATA-PROTECTION",
+      "nodeType": "RegulatoryObjective",
+      "label": "Protection of personal information and the right to privacy",
+      "objectiveText": "Ensure responsible parties process personal information lawfully and within the eight POPIA processing conditions — accountability, processing limitation, purpose specification, further-processing limitation, information quality, openness, security safeguards and data-subject participation — so that the right to privacy is protected, special and children's information is afforded heightened protection, electronic records retain their integrity and authenticity, retention is limited to what is necessary, and personal information is transferred across the Republic's borders only on a permitted POPIA s.72 ground.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:popia:s39"
+    },
+    {
+      "id": "OBJ-INFOREG-ACCESS-TO-INFORMATION",
+      "nodeType": "RegulatoryObjective",
+      "label": "Promotion of the right of access to information",
+      "objectiveText": "Give effect to the constitutional right of access to information by ensuring bodies compile and maintain a PAIA manual describing the records they hold and how to request access, and respond to access requests within the statutory timeframes — granting or refusing access on the grounds PAIA permits and advising requesters of their internal-appeal and review rights.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:paia-2-2000:s51"
+    },
+    {
+      "id": "OBJ-INFOREG-MONITORING-ENFORCEMENT",
+      "nodeType": "RegulatoryObjective",
+      "label": "Monitoring, complaints handling and enforcement",
+      "objectiveText": "Monitor and enforce compliance with POPIA and PAIA — receiving breach (security-compromise) notifications, registering Information-Officer and deputy-Information-Officer designations, granting prior authorisation for higher-risk processing, handling complaints, conducting assessments, issuing enforcement notices and imposing administrative fines — so that responsible parties are held accountable and data subjects have an effective remedy.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:popia:s39"
+    }
+  ],
+  "edges": [
+    { "id": "OBJ-INFOREG-PURSUES-MANDATE", "fromId": "REG-INFO-REG", "toId": "OBJ-INFOREG-MANDATE", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s39" },
+    { "id": "OBJ-INFOREG-PURSUES-DATAPROT", "fromId": "REG-INFO-REG", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s39" },
+    { "id": "OBJ-INFOREG-PURSUES-ATI", "fromId": "REG-INFO-REG", "toId": "OBJ-INFOREG-ACCESS-TO-INFORMATION", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:paia-2-2000:s51" },
+    { "id": "OBJ-INFOREG-PURSUES-MONENF", "fromId": "REG-INFO-REG", "toId": "OBJ-INFOREG-MONITORING-ENFORCEMENT", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s39" },
+
+    { "id": "OBJ-INFOREG-REFINES-DATAPROT", "fromId": "OBJ-INFOREG-DATA-PROTECTION", "toId": "OBJ-INFOREG-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s39" },
+    { "id": "OBJ-INFOREG-REFINES-ATI", "fromId": "OBJ-INFOREG-ACCESS-TO-INFORMATION", "toId": "OBJ-INFOREG-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s39" },
+    { "id": "OBJ-INFOREG-REFINES-MONENF", "fromId": "OBJ-INFOREG-MONITORING-ENFORCEMENT", "toId": "OBJ-INFOREG-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s39" },
+
+    { "id": "OBJ-INFOREG-SERVES-PRIV01-DP", "fromId": "OBL-ORG-PR(IV)-01", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s11" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV02-DP", "fromId": "OBL-ORG-PR(IV)-02", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s13" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV03-DP", "fromId": "OBL-ORG-PR(IV)-03", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s14" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV04-DP", "fromId": "OBL-ORG-PR(IV)-04", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s15" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV05-DP", "fromId": "OBL-ORG-PR(IV)-05", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s18" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV06-DP", "fromId": "OBL-ORG-PR(IV)-06", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s19" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV08-DP", "fromId": "OBL-ORG-PR(IV)-08", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s23" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV09-DP", "fromId": "OBL-ORG-PR(IV)-09", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s24" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV10-DP", "fromId": "OBL-ORG-PR(IV)-10", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s71" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV11-DP", "fromId": "OBL-ORG-PR(IV)-11", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s26" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV12-DP", "fromId": "OBL-ORG-PR(IV)-12", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s34" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV15-DP", "fromId": "OBL-ORG-PR(IV)-15", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s72" },
+    { "id": "OBJ-INFOREG-SERVES-EL03-DP", "fromId": "OBL-ORG-EL-03", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s17" },
+    { "id": "OBJ-INFOREG-SERVES-RM04-DP", "fromId": "OBL-ORG-RM-04", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s14" },
+
+    { "id": "OBJ-INFOREG-SERVES-PRIV16-ATI", "fromId": "OBL-ORG-PR(IV)-16", "toId": "OBJ-INFOREG-ACCESS-TO-INFORMATION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:paia-2-2000:s51" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV17-ATI", "fromId": "OBL-ORG-PR(IV)-17", "toId": "OBJ-INFOREG-ACCESS-TO-INFORMATION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:paia-2-2000:s25" },
+
+    { "id": "OBJ-INFOREG-SERVES-PRIV07-ME", "fromId": "OBL-ORG-PR(IV)-07", "toId": "OBJ-INFOREG-MONITORING-ENFORCEMENT", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s22" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV13-ME", "fromId": "OBL-ORG-PR(IV)-13", "toId": "OBJ-INFOREG-MONITORING-ENFORCEMENT", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s55" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV13GLOSS-ME", "fromId": "OBL-ORG-PR(IV)-13-GLOSS-DEPUTY-IO", "toId": "OBJ-INFOREG-MONITORING-ENFORCEMENT", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s56" },
+    { "id": "OBJ-INFOREG-SERVES-PRIV14-ME", "fromId": "OBL-ORG-PR(IV)-14", "toId": "OBJ-INFOREG-MONITORING-ENFORCEMENT", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s57" },
+
+    { "id": "OBJ-INFOREG-ALIGNS_TO-PRIVACY-DP", "fromId": "POL-popia-privacy-policy", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s39" },
+    { "id": "OBJ-INFOREG-ALIGNS_TO-INFOSEC-DP", "fromId": "POL-information-security-it-governance-policy", "toId": "OBJ-INFOREG-DATA-PROTECTION", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s19" },
+    { "id": "OBJ-INFOREG-ALIGNS_TO-PAIA-ATI", "fromId": "POL-PAIA-MANUAL-V1", "toId": "OBJ-INFOREG-ACCESS-TO-INFORMATION", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:paia-2-2000:s51" }
+  ]
+}
