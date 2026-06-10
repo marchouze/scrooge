@@ -46,9 +46,7 @@ const DOC_PATH = resolve(WORKTREE_ROOT, DOC_NAME);
 // the tree and must read the document store instead.
 if (!existsSync(DOC_PATH)) {
   console.error(
-    `[file-bea-irs-tail-closure] ${DOC_NAME} is not in the tree (removed post-filing; ` +
-      "canonical copy = document store blob blake3:8cb3a86e717c01a47e39c2205143c06b2951e368cb7878ba4fd1bcb798d976e6 " +
-      `referenced by ${RECORD_ID}). Nothing to re-file.`,
+    `[file-bea-irs-tail-closure] ${DOC_NAME} is not in the tree (removed post-filing; canonical copy = document store blob blake3:8cb3a86e717c01a47e39c2205143c06b2951e368cb7878ba4fd1bcb798d976e6 referenced by ${RECORD_ID}). Nothing to re-file.`,
   );
   process.exit(1);
 }
