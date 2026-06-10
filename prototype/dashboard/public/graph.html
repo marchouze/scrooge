@@ -348,11 +348,35 @@
             </div>
           </div>
 
-          <!-- Panel 3: Obligation trace -->
+          <!-- Panel 3: Regulatory objectives (the "why" layer) -->
+          <div class="graph-panel graph-panel--full">
+            <div class="graph-panel-head">
+              Regulatory objectives — the "why" behind requirements
+              <span class="sub">Regulator → mandate → objective, each with serving requirements + aligned policies (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER)</span>
+            </div>
+            <div class="graph-panel-body">
+              <div id="objectivesSummary" style="margin-bottom:10px;font-size:12.5px;color:var(--text-secondary);"></div>
+              <div id="objectivesList"></div>
+            </div>
+          </div>
+
+          <!-- Panel 4: Objective coverage gaps -->
+          <div class="graph-panel">
+            <div class="graph-panel-head">
+              Objective coverage gaps
+              <span class="sub">objectives no bank policy ALIGNS_TO</span>
+            </div>
+            <div class="graph-panel-body">
+              <div id="objectiveGapSummary" style="margin-bottom:10px;font-size:12.5px;color:var(--text-secondary);"></div>
+              <div class="graph-gap-list" id="objectiveGapList"></div>
+            </div>
+          </div>
+
+          <!-- Panel 5: Obligation trace -->
           <div class="graph-panel graph-panel--full">
             <div class="graph-panel-head">
               Obligation chain trace
-              <span class="sub">enter an ORG-* ID to trace its full Reg → Policy → Procedure chain</span>
+              <span class="sub">enter an ORG-* ID to trace its full Reg → Policy → Procedure chain + the objectives it serves</span>
             </div>
             <div class="graph-panel-body">
               <div class="graph-trace-bar">

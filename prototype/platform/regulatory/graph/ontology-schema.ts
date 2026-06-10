@@ -531,7 +531,10 @@ export function validateExtractionResponse(data: unknown): { valid: boolean; err
 // permitted node types for each edge direction.
 
 export const OBJECTIVE_EDGE_ENDPOINT_TYPES: Readonly<
-  Record<"PURSUES" | "REFINES" | "SERVES" | "ALIGNS_TO", { from: GraphNodeTypeName; to: GraphNodeTypeName }>
+  Record<
+    "PURSUES" | "REFINES" | "SERVES" | "ALIGNS_TO",
+    { from: GraphNodeTypeName; to: GraphNodeTypeName }
+  >
 > = {
   PURSUES: { from: "Regulator", to: "RegulatoryObjective" },
   REFINES: { from: "RegulatoryObjective", to: "RegulatoryObjective" },

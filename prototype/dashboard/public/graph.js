@@ -202,11 +202,93 @@
       .join("");
   }
 
+  // ---------------------------------------------------------------------------
+  // Regulatory objectives (the "why" layer)
+  // ---------------------------------------------------------------------------
+
+  async function loadObjectives() {
+    const list = document.getElementById("objectivesList");
+    const summary = document.getElementById("objectivesSummary");
+    const gapList = document.getElementById("objectiveGapList");
+    const gapSummary = document.getElementById("objectiveGapSummary");
+    if (!list) return;
+    list.innerHTML = '<div class="graph-trace-empty" style="padding:10px 0;">Loading…</div>';
+    try {
+      const data = await apiFetch("/api/graph/objectives");
+      renderObjectives(data.objectives || [], summary, list);
+      renderObjectiveGaps(data.coverageGaps || [], gapSummary, gapList);
+    } catch (e) {
+      list.innerHTML = `<div class="graph-trace-empty" style="padding:10px 0;color:#c0392b;">${escHtml(e.message || String(e))}</div>`;
+    }
+  }
+
+  function renderObjectives(objectives, summary, list) {
+    if (!objectives.length) {
+      if (summary) summary.innerHTML = "";
+      list.innerHTML =
+        '<div class="graph-trace-empty" style="padding:10px 0;">No regulatory objectives seeded yet.</div>';
+      return;
+    }
+    if (summary) {
+      summary.innerHTML = `<strong>${objectives.length}</strong> regulatory objective${objectives.length === 1 ? "" : "s"} — the purpose a requirement serves (SARB-PA pilot; other regulators pending backfill).`;
+    }
+    list.innerHTML = objectives
+      .map((o) => {
+        const md = o.objective.metadata || {};
+        const level = md.objectiveLevel || "objective";
+        const regs = (o.regulators || []).map((r) => escHtml(r.label || r.id)).join(", ") || "—";
+        const pols = renderNodeList(o.alignedPolicies, "No aligned policy — coverage gap.");
+        return `
+        <div class="graph-trace-section" style="margin-bottom:14px;">
+          <h5>${escHtml(o.objective.label)} <span style="font-weight:400;color:var(--text-secondary);">(${escHtml(level)})</span></h5>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">${escHtml(md.objectiveText || "")}</div>
+          <div style="font-size:12px;margin-bottom:4px;"><strong>Pursued by:</strong> ${regs}</div>
+          <div style="font-size:12px;margin-bottom:4px;"><strong>Serving requirements (SERVES):</strong> ${o.servingObligationCount}</div>
+          <div style="font-size:12px;"><strong>Aligned policies (ALIGNS_TO):</strong></div>
+          ${pols}
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">source: ${escHtml(md.sourceCitation || "—")}</div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  function renderObjectiveGaps(gaps, summary, list) {
+    if (!list) return;
+    if (!gaps.length) {
+      if (summary)
+        summary.innerHTML =
+          '<strong style="color:#27ae60">No gaps</strong> — every objective has an aligned policy.';
+      list.innerHTML = "";
+      return;
+    }
+    if (summary) {
+      summary.innerHTML = `<strong style="color:#c0392b">${gaps.length} objective${gaps.length === 1 ? "" : "s"}</strong> with no aligned policy (ALIGNS_TO edge missing).`;
+    }
+    list.innerHTML = gaps
+      .map(
+        (g) => `
+        <div class="graph-trace-node">
+          <span class="graph-trace-node-id">${escHtml(g.id)}</span>
+          <span class="graph-trace-node-label">${escHtml(g.label || "")}</span>
+        </div>`,
+      )
+      .join("");
+  }
+
   function renderTrace(chain) {
     const el = document.getElementById("traceResult");
     if (!el) return;
 
-    const { obligation, provisions, policies, procedures, riskCategories, activities } = chain;
+    const {
+      obligation,
+      provisions,
+      policies,
+      procedures,
+      riskCategories,
+      activities,
+      objectives,
+      alignedPolicies,
+    } = chain;
 
     // Strip OBL- prefix for readable display
     const oblId = obligation.id.replace(/^OBL-/, "");
@@ -249,6 +331,16 @@
         <div class="graph-trace-section">
           <h5>Activities (APPLIES_TO_ACTIVITY)</h5>
           ${renderNodeList(activities, "No activities linked.")}
+        </div>
+
+        <div class="graph-trace-section" style="margin-top:14px;">
+          <h5>Objectives served (SERVES) — the "why"</h5>
+          ${renderNodeList(objectives, "No objective linked — the requirement's purpose is not yet recorded.")}
+        </div>
+
+        <div class="graph-trace-section">
+          <h5>Policies aligned to those objectives (ALIGNS_TO)</h5>
+          ${renderNodeList(alignedPolicies, "No policy aligned to the served objectives.")}
         </div>
 
       </div>
@@ -336,6 +428,9 @@
 
       // Fetch unimplemented obligations for gap panel (default: direct+transposed)
       await loadGaps(currentGapFilter);
+
+      // Fetch the regulatory-objective layer (the "why") + coverage gaps
+      await loadObjectives();
 
       // Update last-updated header
       const lu = document.getElementById("lastUpdated");
