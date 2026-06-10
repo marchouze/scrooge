@@ -397,3 +397,42 @@ describe("FX Slice 4 — idempotency guard", () => {
     expect(result?.rejectionReason).toBe("counterparty not in eligibility-passing set");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Sanctions check — wired to the blocked-list screen (D-FX-OTC-NPA-SCOPE-EXPANSION).
+// A sanctioned counterparty is rejected even when otherwise eligible; the
+// blocked-list hit surfaces as rejectingCheck "sanctions". A clean counterparty
+// passes the sanctions check.
+// ---------------------------------------------------------------------------
+
+describe("FX gateway — sanctions screening enforcement", () => {
+  // "CPSANCTIONED00100000" is on sanctions-list-stub.json blockedCounterpartyIds;
+  // toSyntheticLei leaves a 20-char alnum id unchanged, so the LEI matches too.
+  const SANCTIONED_RFQ = { ...VALID_RFQ, counterpartyId: "CPSANCTIONED00100000" };
+
+  it("rejects a sanctioned counterparty at the sanctions check (even if eligible)", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, SANCTIONED_RFQ.counterpartyId); // isolate: only sanctions can reject
+    const quote = quoteRfq(SANCTIONED_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: SANCTIONED_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("sanctions");
+    expect(replayToArray(store, "OrderRejectedAtGateway")).toHaveLength(1);
+    const sanctionsCheck = result.checks.find((c) => c.checkKind === "sanctions");
+    expect(sanctionsCheck?.outcome).toBe("reject");
+    expect(sanctionsCheck?.rejectionReason).toContain("sanctions blocked list");
+    store.close();
+  });
+
+  it("passes the sanctions check for a clean counterparty", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("approved");
+    expect(result.checks.find((c) => c.checkKind === "sanctions")?.outcome).toBe("approve");
+    store.close();
+  });
+});
