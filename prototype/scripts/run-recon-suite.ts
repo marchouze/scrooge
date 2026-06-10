@@ -58,6 +58,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:rms-event-projection-parity",
     "recon:rms-briefs-parity",
     "recon:rms-documents-parity",
+    "recon:rms-document-blob-integrity",
     "recon:cron-map-drift",
     "recon:agent-spec",
     "recon:agent-spec-cross-link",

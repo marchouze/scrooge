@@ -16,9 +16,21 @@
 // `../../platform/event-store/resolve-event-db.ts` for the underlying
 // shared resolver.
 //
-// Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21).
+// 2026-06-10 extension: the dispatch CLIs now also resolve the shared
+// document store here (`--document-store` flag > `BANK_DOCUMENT_STORE` >
+// `BANK_DOCUMENT_STORE_PATH` legacy alias > `BANK_HOME_DOCUMENT_STORE` >
+// `$HOME/.local/share/bank/documents`), so the brief-body / deliverable
+// blobs land in the SAME shared store the `AgentBriefIssued` /
+// `RecordFiled` events go to. Event store and document store travel
+// together — splitting them is the dangling-record gap Vera (Internal
+// audit engineer, third line) surfaced in PR #1194.
+//
+// Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC (2026-05-21);
+//            brief:atlas:extend-cross-worktree-sync-to-document-store-blo:2026-06-10.
 // Author: Atlas (Core banking platform architect, engineering)
 
+import { applyDispatchDocumentStoreResolution } from "./resolve-document-store";
 import { applyDispatchEventDbResolution } from "./resolve-event-db";
 
 applyDispatchEventDbResolution();
+applyDispatchDocumentStoreResolution();

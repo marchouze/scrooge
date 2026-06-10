@@ -12,6 +12,15 @@ export { hashContent, parseHash } from "./hash";
 export { LocalFsDocumentStore, defaultDocumentStore } from "./local-fs";
 export type { LocalFsDocumentStoreOptions } from "./local-fs";
 export {
+  applySharedDocumentStoreResolution,
+  inRepoDocumentStoreRoot,
+  resolveDocumentStoreRoot,
+} from "./resolve-document-store";
+export type {
+  ResolveDocumentStoreInputs,
+  ResolvedDocumentStore,
+} from "./resolve-document-store";
+export {
   type DocumentHash,
   DocumentIntegrityError,
   type DocumentMetadata,
