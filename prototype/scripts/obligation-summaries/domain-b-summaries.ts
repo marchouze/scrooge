@@ -15,7 +15,8 @@
 
 import type { SummaryModule } from "./summary-types";
 
-const MISSING = "FIC Act / AML source text missing in the drill-down (statute not graph-extracted as a Provision); summary authored from the citation + existing requirement prose.";
+const MISSING =
+  "FIC Act / AML source text missing in the drill-down (statute not graph-extracted as a Provision); summary authored from the citation + existing requirement prose.";
 
 export const DOMAIN_B: SummaryModule = {
   "ORG-FC-01": {

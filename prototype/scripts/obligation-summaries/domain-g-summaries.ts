@@ -13,7 +13,8 @@
 
 import type { SummaryModule } from "./summary-types";
 
-const SA_MISSING = "SA source text missing in the drill-down (no extractable graph Provision text for the SA tax statute); summary authored from the citation + existing requirement prose.";
+const SA_MISSING =
+  "SA source text missing in the drill-down (no extractable graph Provision text for the SA tax statute); summary authored from the citation + existing requirement prose.";
 
 export const DOMAIN_G: SummaryModule = {
   "ORG-TX-01": {

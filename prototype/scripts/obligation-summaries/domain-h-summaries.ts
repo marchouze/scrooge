@@ -15,7 +15,8 @@
 
 import type { SummaryModule } from "./summary-types";
 
-const MISSING = "Source text missing in the drill-down (IFRS/IAS/SA standard not graph-extracted as a Provision); summary authored from the standard cited + existing requirement prose.";
+const MISSING =
+  "Source text missing in the drill-down (IFRS/IAS/SA standard not graph-extracted as a Provision); summary authored from the standard cited + existing requirement prose.";
 
 export const DOMAIN_H: SummaryModule = {
   "ORG-AC-01": {

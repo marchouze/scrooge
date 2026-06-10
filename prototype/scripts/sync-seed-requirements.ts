@@ -50,7 +50,9 @@ function main(): number {
   const args = process.argv.slice(2).filter((a) => a !== "--write");
   const write = process.argv.includes("--write");
   const requested =
-    args.length === 0 || args.includes("all") ? [...NON_A_DOMAINS] : args.map((a) => a.toUpperCase());
+    args.length === 0 || args.includes("all")
+      ? [...NON_A_DOMAINS]
+      : args.map((a) => a.toUpperCase());
   const selected = requested.filter((d) => NON_A_DOMAINS.includes(d));
 
   const seed = JSON.parse(readFileSync(SEED_PATH, "utf8")) as SeedRow[];
@@ -98,7 +100,9 @@ function main(): number {
 
   console.log("sync-seed-requirements —", write ? "WRITE" : "report");
   console.log(`  Domains: ${selected.join(", ")}`);
-  console.log(`  reviewed-modified rows: ${modified} (${requirementPatched} requirement(s) changed)`);
+  console.log(
+    `  reviewed-modified rows: ${modified} (${requirementPatched} requirement(s) changed)`,
+  );
   console.log(`  reviewed-confirmed rows: ${confirmed}`);
   console.log(`  review-metadata cells stamped: ${metadataPatched}`);
   if (missingFromSeed.length > 0) {

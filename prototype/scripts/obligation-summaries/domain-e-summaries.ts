@@ -18,7 +18,8 @@
 
 import type { SummaryModule } from "./summary-types";
 
-const MISSING = "Source text missing in the drill-down (Joint Standard / SARB Directive / reference framework not graph-extracted as a Provision); summary authored from the citation + existing requirement prose.";
+const MISSING =
+  "Source text missing in the drill-down (Joint Standard / SARB Directive / reference framework not graph-extracted as a Provision); summary authored from the citation + existing requirement prose.";
 
 export const DOMAIN_E: SummaryModule = {
   "ORG-CY-01": {

@@ -16,7 +16,10 @@
 
 import type { SummaryModule } from "./summary-types";
 
-function confirm(seat: string, what: string): {
+function confirm(
+  seat: string,
+  what: string,
+): {
   reviewerSeat: string;
   verdict: "reviewed-confirmed";
   summary: undefined;
