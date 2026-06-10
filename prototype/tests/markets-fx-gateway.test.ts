@@ -49,6 +49,7 @@ import {
   makeCounterpartyEligibilityScreened,
   makeOrderApprovedAtGateway,
   makeOrderRejectedAtGateway,
+  makeRwaComputed,
 } from "../platform/event-store/event-types";
 import {
   makeCreditLimitApproved,
@@ -524,6 +525,118 @@ describe("FX gateway — credit-limit FAIL-CLOSED enforcement (D-FX-GATEWAY-CRED
 
     expect(result.status).toBe("approved");
     expect(result.checks.find((c) => c.checkKind === "credit-limit")?.outcome).toBe("approve");
+    store.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Capital-impact + funding enforcement (D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS)
+// ---------------------------------------------------------------------------
+//
+// The CRO-ratified threshold schedule (Helena, Chief Risk Officer, governance;
+// funding leg co-owned by Ravi, Treasury / ALM engineer, engineering):
+//   - capital-impact: pro-forma RWA ceiling = (R300m envelope − R100m RAS
+//     amber headroom floor) / 12.0% operating minimum ratio ≈ R1.667bn;
+//     FX-spot weight 0.2; current RWA = RwaComputed event-of-record, else
+//     ICAAP v1 baseline R73.75m.
+//   - funding: post-trade LCR floor 110% (RAS §B3 red boundary); build-phase
+//     current-LCR baseline 150%; 0.5pp outflow per R1m notional.
+
+describe("FX gateway — capital-impact + funding enforcement (D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS)", () => {
+  it("rejects at capital-impact when pro-forma RWA breaches the ratified ceiling", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+
+    // 2bn USD: at any plausible USD/ZAR rate (>R10) the ZAR notional exceeds
+    // R20bn → proposed RWA > R4bn at weight 0.2, far above the R1.667bn
+    // ceiling. The R1tn seeded credit limit still has headroom, so the
+    // rejection is attributable to capital-impact, not credit.
+    const hugeRfq = { ...VALID_RFQ, notional: 2_000_000_000 };
+    const quote = quoteRfq(hugeRfq);
+    const result = routeOrderToGateway({ store, rfqInput: hugeRfq, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("capital-impact");
+    const capitalCheck = result.checks.find((c) => c.checkKind === "capital-impact");
+    expect(capitalCheck?.outcome).toBe("reject");
+    expect(capitalCheck?.rejectionReason).toContain("Capital RWA ceiling breached");
+    store.close();
+  });
+
+  it("rejects at funding when estimated post-trade LCR falls below the RAS 110% floor", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+
+    // 10m USD: ZAR notional R100m–R300m at plausible rates → 50–150pp LCR
+    // outflow → post-trade LCR well below the 110% floor, while proposed RWA
+    // (≤ R60m at weight 0.2) stays far inside the capital ceiling.
+    const fundingBreachRfq = { ...VALID_RFQ, notional: 10_000_000 };
+    const quote = quoteRfq(fundingBreachRfq);
+    const result = routeOrderToGateway({ store, rfqInput: fundingBreachRfq, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("funding");
+    expect(result.checks.find((c) => c.checkKind === "capital-impact")?.outcome).toBe("approve");
+    const fundingCheck = result.checks.find((c) => c.checkKind === "funding");
+    expect(fundingCheck?.outcome).toBe("reject");
+    expect(fundingCheck?.rejectionReason).toContain("LCR headroom insufficient");
+    store.close();
+  });
+
+  it("passes both checks for an ordinary order (enforcement, not reject-always)", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("approved");
+    expect(result.checks.find((c) => c.checkKind === "capital-impact")?.outcome).toBe("approve");
+    expect(result.checks.find((c) => c.checkKind === "funding")?.outcome).toBe("approve");
+    store.close();
+  });
+
+  it("prefers the RwaComputed event-of-record over the ICAAP baseline for current RWA", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+
+    // Seed a live RWA event-of-record AT the ceiling: even VALID_RFQ's small
+    // order must now reject at capital-impact (proves the event-of-record
+    // read, not the baseline, drives the check).
+    const ceilingMinor = 166_666_666_666;
+    store.append(
+      makeRwaComputed({
+        asOf: T_2026,
+        entity: ENTITY,
+        actor: { type: "service", id: "test:bea:rwa-engine" },
+        citations: ["D-RWA-ENGINE-W2-SLICE-3"],
+        payload: {
+          entityId: ENTITY,
+          asOf: "2026-05-09",
+          periodId: "period:hoz-bank:month:2026-05",
+          functionalCurrency: "ZAR",
+          creditRwaMinor: ceilingMinor,
+          marketRwaMinor: 0,
+          operationalRwaMinor: 0,
+          totalRwaMinor: ceilingMinor,
+          source: "test:event-of-record-at-ceiling",
+          operationalRwaIsPlaceholder: true,
+          sourceEventIds: [],
+          creditExposureCount: 1,
+          citations: ["D-RWA-ENGINE-W2-SLICE-3"],
+        },
+      }),
+    );
+
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("capital-impact");
     store.close();
   });
 });
