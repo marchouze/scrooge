@@ -13,12 +13,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  RECON_SUITES,
-  formatReport,
-  resolveTargets,
-  runReconSuite,
-} from "./run-recon-suite";
+import { RECON_SUITES, formatReport, resolveTargets, runReconSuite } from "./run-recon-suite";
 
 // A stub runner factory: maps target name → exit status, so we can drive the
 // aggregator deterministically without spawning subprocesses.
@@ -64,10 +59,7 @@ describe("runReconSuite — run-all-then-aggregate", () => {
 
   it("exits zero (ok) when ALL targets pass", () => {
     const targets = ["recon:a", "recon:b", "recon:c"];
-    const report = runReconSuite(
-      targets,
-      stubRunner({ "recon:a": 0, "recon:b": 0, "recon:c": 0 }),
-    );
+    const report = runReconSuite(targets, stubRunner({ "recon:a": 0, "recon:b": 0, "recon:c": 0 }));
     expect(report.ok).toBe(true);
     expect(report.failedCount).toBe(0);
     expect(report.passedCount).toBe(3);

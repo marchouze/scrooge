@@ -221,18 +221,19 @@ function runTarget(
 }
 
 function defaultRunner(target: string): { status: number | null; tail: string } {
+  // stdout streams straight through (inherit) so per-pipeline detail is
+  // preserved in CI logs WITHOUT buffering it in memory — some pipelines
+  // emit >1MB of diagnostics, and buffering all of that across a 100-step
+  // suite triggered OOM/SIGTERM reaps locally. Only stderr is captured,
+  // and only its tail is used for the one-line failure summary.
   const proc = spawnSync("bun", ["run", target], {
     encoding: "utf8",
-    stdio: ["inherit", "pipe", "pipe"],
+    stdio: ["inherit", "inherit", "pipe"],
   });
-  const stdout = proc.stdout ?? "";
   const stderr = proc.stderr ?? "";
-  // Stream captured output through so per-pipeline detail is not lost.
-  if (stdout) process.stdout.write(stdout);
   if (stderr) process.stderr.write(stderr);
-  const combined = `${stdout}\n${stderr}`;
   const lastLine =
-    combined
+    stderr
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l.length > 0)
