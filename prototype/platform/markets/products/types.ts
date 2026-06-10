@@ -251,6 +251,37 @@ export const policyAttestationEntrySchema = z.object({
 export type PolicyAttestationEntry = z.infer<typeof policyAttestationEntrySchema>;
 
 // ---------------------------------------------------------------------------
+// Product scope — typed, queryable scope axes (D-FX-OTC-NPA-SCOPE-EXPANSION).
+//
+// Replaces the prior practice of burying instrument set / currency-pair breadth
+// / counterparty eligibility / execution venue in the description narrative.
+// Optional on the Product (the 8 pre-existing seeded products predate it); FX
+// umbrella products carry it. Mirrored as `productScopeForEventSchema` on the
+// ProductProposalRegistered / ProductApproved payloads in
+// `platform/event-store/event-types/product.ts` — keep the two in sync.
+// ---------------------------------------------------------------------------
+
+/** OTC FX instrument variants the umbrella product spans (option = M5 increment). */
+export const fxInstrumentVariantSchema = z.enum(["spot", "forward", "swap", "option"]);
+export type FxInstrumentVariant = z.infer<typeof fxInstrumentVariantSchema>;
+
+export const productScopeSchema = z.object({
+  /** OTC vs exchange-traded execution venue. FX OTC products = "otc". */
+  executionVenue: z.enum(["otc", "exchange"]),
+  /** FX instrument variants in the approved scope. */
+  fxInstrumentVariants: z.array(fxInstrumentVariantSchema).min(1),
+  /** Currency-pair breadth: the literal "any" (pair-agnostic) or an explicit list. */
+  currencyPairs: z.union([z.literal("any"), z.array(z.string().min(1)).min(1)]),
+  /** Counterparty eligibility: a coarse class or an explicit list of types. */
+  counterpartyEligibility: z.union([
+    z.enum(["all", "institutional", "bank-only"]),
+    z.array(z.string().min(1)).min(1),
+  ]),
+});
+
+export type ProductScope = z.infer<typeof productScopeSchema>;
+
+// ---------------------------------------------------------------------------
 // Product — single canonical type, family-discriminated.
 //
 // Twelve required fields per §2 of the source brief. Multi-X discipline
@@ -327,6 +358,14 @@ export const productSchema = z.object({
 
   /** Run-level policy-attestation summaries. Empty array at conceptualisation. */
   policyAttestations: z.array(policyAttestationEntrySchema),
+
+  /**
+   * Typed product scope (D-FX-OTC-NPA-SCOPE-EXPANSION). Optional: pre-existing
+   * single-instrument products carry it implicitly via their narrative. Umbrella
+   * products (e.g. OTC vanilla FX) declare instrument set / pair breadth /
+   * counterparty eligibility / venue here so the scope is queryable.
+   */
+  scope: productScopeSchema.optional(),
 
   /**
    * Current lifecycle stage. Per Principle 1, this is a *projection* over

@@ -21,12 +21,16 @@
 //
 // Author: Scrooge-coordinated session for marc@tgv.co.za.
 
-import { PRODUCT_TYPED_EVENT_TYPES } from "../platform/event-store/event-types/product";
+import {
+  PRODUCT_TYPED_EVENT_TYPES,
+  type ProductScopeForEvent,
+} from "../platform/event-store/event-types/product";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
+  M4_FX_OTC_VANILLA_FIXTURE,
   M4_FX_SPOT_FIXTURE,
   M5_REPO_FIXTURE,
   M6_MMD_DEPOSIT_FIXTURE,
@@ -83,6 +87,8 @@ export interface ProductListEntry {
     withheldAt?: string;
     withheldReason?: string;
   };
+  /** Typed product scope (D-FX-OTC-NPA-SCOPE-EXPANSION), if declared. */
+  scope?: ProductScopeForEvent;
   /** Per-dimension latest status — one row per NPA dimension. */
   dimensions: Record<NpaDimension, DimensionStatus>;
   /** NPA gate summary derived from the product-register projection. */
@@ -108,6 +114,7 @@ export interface ProductListView {
 const BASELINE_FIXTURES: readonly Product[] = [
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
+  M4_FX_OTC_VANILLA_FIXTURE,
   M4_FX_SPOT_FIXTURE,
   M5_REPO_FIXTURE,
   M6_MMD_DEPOSIT_FIXTURE,
@@ -269,14 +276,19 @@ function buildEntryFromFixture(
 ): ProductListEntry {
   const approval = approvals.get(fx.productId);
   const dimensions = applyDimensionFold(fx.productId, emptyDimensionMap(), dimensionFolds);
+  const regRow = productRegister.get(fx.productId);
+  const scope = (fx.scope ?? regRow?.scope) as ProductScopeForEvent | undefined;
+  // A ProductRetired event in the register supersedes the fixture's static stage.
+  const lifecycle = regRow?.lifecycleStage === "retired" ? "retired" : fx.lifecycle;
   return {
     productId: fx.productId,
     name: fx.name,
     family: fx.family,
     description: fx.description,
-    lifecycle: fx.lifecycle,
+    lifecycle,
     currency: fx.currency,
     jurisdiction: fx.jurisdiction,
+    ...(scope ? { scope } : {}),
     approval: approval
       ? {
           status: approval.status,
@@ -303,14 +315,23 @@ function buildEntryFromProposal(
 ): ProductListEntry {
   const approval = approvals.get(proposal.productId);
   const dimensions = applyDimensionFold(proposal.productId, emptyDimensionMap(), dimensionFolds);
+  const regRow = productRegister.get(proposal.productId);
+  const scope = regRow?.scope;
+  const lifecycle =
+    regRow?.lifecycleStage === "retired"
+      ? "retired"
+      : approval?.status === "approved"
+        ? "approved-conditional"
+        : "proposed";
   return {
     productId: proposal.productId,
     name: proposal.name,
     family: proposal.family,
     description: proposal.description,
-    lifecycle: approval?.status === "approved" ? "approved-conditional" : "proposed",
+    lifecycle,
     currency: proposal.currency,
     jurisdiction: proposal.jurisdiction,
+    ...(scope ? { scope } : {}),
     approval: approval
       ? {
           status: approval.status,

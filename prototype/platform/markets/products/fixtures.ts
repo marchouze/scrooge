@@ -450,6 +450,147 @@ export const M4_FX_SPOT_FIXTURE: Product = {
 };
 
 /**
+ * M4 — OTC Vanilla FX (umbrella). One product spanning the OTC FX instrument
+ * set — Spot, Forward, Swap (Option deferred to the M5 pricing increment) — on
+ * any currency pair, for all counterparty types, OTC only. Supersedes the
+ * narrow single-instrument single-pair FX products.
+ *
+ * Scope is declared in the typed `scope` field (D-FX-OTC-NPA-SCOPE-EXPANSION),
+ * not buried in the narrative. v1.0 approved instrument set is
+ * [spot, forward, swap]; `option` joins at v1.1 once Garman-Kohlhagen /
+ * vol-surface pricing lands.
+ *
+ * Attestation honesty: spot is fully implemented; forward/swap revalue on a
+ * static forward curve with flat-discount approximation and lack forward-points
+ * accrual accounting; "any pair" exceeds the seven wired ZAR pairs; "all
+ * counterparty types" exceeds the onboarded set. Most NPA dimensions therefore
+ * attest at design level pending the Part-D completion work — see
+ * `scripts/run-npa-gate-fx-otc-vanilla.ts`.
+ *
+ * Authority: D-FX-OTC-NPA-SCOPE-EXPANSION · D-PRODUCT-CONSTRUCTION-SUBSTRATE ·
+ *            D-NEW-PRODUCT-APPROVAL-POLICY · D-MARKETS-SCHEMA-FOUNDATION ·
+ *            D-FX-BOOK-BOUNDARY · D-FX-CLS-MEMBERSHIP · D-FX-AD-STATUS ·
+ *            ORG-EXCON-ODP-001 · ORG-MK-08
+ *
+ * Authors: Scrooge-coordinated session for marc@tgv.co.za; Saskia (Head of
+ *          Global Markets, governance) proposer.
+ */
+export const M4_FX_OTC_VANILLA_FIXTURE: Product = {
+  productId: "prd:bank:fx:otc-vanilla",
+  family: "fx",
+  version: "1.0.0",
+  name: "OTC Vanilla FX (Spot, Forward, Swap; Option at M5)",
+  description:
+    "Umbrella OTC vanilla FX product covering Spot, Forward and FX Swap on any currency pair, for all counterparty types, OTC only (no exchange-traded). The bank intermediates deliverable and non-deliverable FX against ZAR and cross, settling via its CLS-member correspondent (PvP per D-FX-CLS-MEMBERSHIP) where physical, and cash-settling NDFs. Every cross-border ZAR flow is FinSurv-reportable under full Authorised Dealer status (D-FX-AD-STATUS); the SARB ZAR Fixing Rate (ORG-MK-08) anchors mark-to-market. FX Option is named in the product's target scope but is not attested at v1.0 — it joins at v1.1 once the M5 option-pricing substrate (Garman-Kohlhagen / vol surface) lands. Scope axes (instruments, pair breadth, counterparty eligibility, execution venue) are carried in the typed `scope` field rather than this narrative.",
+  franchiseScope: "institutional",
+  legalEntityId: "LE-BANK-SA",
+  currency: "ZAR",
+  jurisdiction: "ZA",
+  scope: {
+    executionVenue: "otc",
+    fxInstrumentVariants: ["spot", "forward", "swap"],
+    currencyPairs: "any",
+    counterpartyEligibility: "all",
+  },
+  cdmComposition: {
+    primitives: [
+      {
+        module: "@platform/markets/cdm/fx",
+        symbol: "fxTradeExecutedPayloadSchema",
+        role: "Asset primitive: any currency pair — the traded instrument at the type level. One composition spans spot/forward/swap via the FX productTaxonomy discriminator (Principle 5: currency pair multi-currency at the type level).",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "moneySchema",
+        role: "Cashflow primitive: per-leg notional in each currency of the pair (1 leg for spot/forward; 2 for swap near+far).",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "cdmDateSchema",
+        role: "Schedule primitive: T+2 (spot) to T+N (forward/swap far leg) using the joint holiday-calendar intersection.",
+      },
+      {
+        module: "@platform/markets/cdm/fx",
+        symbol: "fxSettlementInstructedPayloadSchema",
+        role: "Settlement primitive: physical PvP via CLS-member correspondent (deliverable) or cash settlement (NDF).",
+      },
+      {
+        module: "@platform/markets/cdm/primitives",
+        symbol: "partySchema",
+        role: "Identification primitive: counterparty LEI, bank legal entity (LE-BANK-SA), ZA jurisdiction, FinSurv category per ORG-EXCON-ODP-001.",
+      },
+    ],
+    extensions: [
+      {
+        name: "SA FinSurv category (Excon AD rules)",
+        module: "@platform/markets/cdm/fx",
+        citationUrn: "ORG-EXCON-ODP-001",
+      },
+      {
+        name: "SARB ZAR Fixing Rate observable",
+        module: "@platform/markets/cdm/fx",
+        citationUrn: "ORG-MK-08",
+      },
+    ],
+    compositionRule:
+      "Asset(any currency pair) + Cashflow×{1 (spot/forward) | 2 (swap)} + Schedule(T+2 to T+N) + Settlement(physical PvP per D-FX-CLS-MEMBERSHIP, or cash for NDF) + Identification(counterparty LEI + bank entity LE-BANK-SA + ZA jurisdiction + FinSurv category ORG-EXCON-ODP-001). Instrument variant parametrised by FxTradeExecuted.productTaxonomy ∈ {FX-spot, FX-forward, FX-swap}; FX-option added at v1.1. Lifecycle: FxTradeExecuted → (FxPositionRevalued)* → PrincipalPayment×legs → FxSettlementInstructed×legs → SettlementConfirmed×legs → TradeReportSubmitted{regulator:'SARB-FinSurv'} → TradeMatured.",
+  },
+  lifecycleEventFamily: [
+    "FxTradeExecuted",
+    "FxPositionRevalued",
+    "PrincipalPayment",
+    "FxSettlementInstructed",
+    "SettlementConfirmed",
+    "TradeReportSubmitted",
+    "TradeMatured",
+  ],
+  riskProfile: {
+    // Spot = delta only; forward/swap add curve (forward-points) risk.
+    marketRiskDimensions: ["delta", "curve"],
+    creditRiskShape: "principal-on-settlement",
+    liquidityClassification: "non-hqla",
+    fundingProfile: "cash-funded",
+    // Forward/swap valuation runs on a static forward curve with flat-discount
+    // approximation — not yet a Tier-1 live-quoted instrument across the set.
+    modelRiskTier: "tier-2",
+  },
+  accountingClassification: {
+    ifrs9Family: "fvtpl",
+    ifrs13FairValueHierarchy: "level-2",
+    ias21FxTreatment: "monetary",
+    baReturnLineMapping: ["BA310.line.fx-open-position", "BA100.line.rwa-fx"],
+  },
+  legalDocumentation: {
+    masterAgreement: "isda-2002",
+    ectaExecutionPath: "electronic-default",
+    jurisdictionMatrix: ["ZA"],
+  },
+  operationalReadiness: {
+    settlementPath: "correspondent-bank T+2..T+N (PvP per D-FX-CLS-MEMBERSHIP); cash for NDF",
+    reconciliationCadence: "daily",
+    substrateCompletenessGate: "M4-exit",
+  },
+  securityProfile: {
+    threatModelRef: "ORG-CY-01",
+    hsmCustodyRequired: false,
+    zeroTrustPosture: "default",
+  },
+  policyAttestations: [],
+  lifecycle: "approved-conditional",
+  citations: [
+    "D-FX-OTC-NPA-SCOPE-EXPANSION",
+    "D-PRODUCT-CONSTRUCTION-SUBSTRATE",
+    "D-NEW-PRODUCT-APPROVAL-POLICY",
+    "D-MARKETS-SCHEMA-FOUNDATION",
+    "D-FX-BOOK-BOUNDARY",
+    "D-FX-CLS-MEMBERSHIP",
+    "D-FX-AD-STATUS",
+    "ORG-EXCON-ODP-001",
+    "ORG-MK-08",
+  ],
+};
+
+/**
  * M3 — Vanilla Interest Rate Swap (ZAR).
  * Plain-vanilla OTC IRS: bank receives fixed and pays JIBAR floating (or
  * vice versa), ZAR-denominated, under ISDA 2002 master agreement.

@@ -1,22 +1,24 @@
 // tests/markets-fx-npa.test.ts
 //
-// Slice 7 — NPA attestation badge projection tests.
+// Slice 7 — NPA attestation badge projection tests, re-pointed onto the
+// umbrella OTC vanilla FX product (D-FX-OTC-NPA-SCOPE-EXPANSION).
 //
 // Scope (8 cases):
-//   1. Empty store → all 4 products pending
-//   2. ProductApproved for "FX-spot" → "FX-spot" is approved
-//   3. ProductWithheld for "FX-forward" → "FX-forward" is withheld
-//   4. ProductApproved after ProductWithheld for same product → "approved" (latest wins)
-//   5. Mixed: 2 approved, 1 withheld, 1 pending → correct
-//   6. Always returns exactly 4 attestation rows
-//   7. approvedAt populated from event as_of on approved product
+//   1. Empty store → all 4 variants pending
+//   2. Umbrella approved (scope spot/forward/swap) → those approved; option pending+outOfScope
+//   3. Umbrella withheld → in-scope variants withheld with reason
+//   4. Umbrella approved after withheld (latest wins) → approved
+//   5. Umbrella approval with no typed scope → falls back to spot/forward/swap approved
+//   6. Always returns exactly 4 attestation rows (one per variant)
+//   7. approvedAt populated from event as_of on approved variants
 //   8. GET /api/markets/fx/products/attestation returns 200 with correct shape
 //
-// Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10) Slice 7;
+// Authority: D-FX-OTC-NPA-SCOPE-EXPANSION (CEO session-delegation 2026-06-10);
+//            D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10) Slice 7;
 //            D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2.
 //
-// Author: Kai (Trading systems engineer, engineering — reports to Saskia,
-//         Head of Global Markets) · Saskia (Head of Global Markets, governance).
+// Author: Scrooge-coordinated session for marc@tgv.co.za · Saskia (Head of
+//         Global Markets, governance).
 
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -25,8 +27,13 @@ import { type Subprocess, spawn } from "bun";
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
-import { FX_PRODUCT_CODES, buildNpaView } from "../dashboard/markets-fx-npa";
 import {
+  FX_PRODUCT_CODES,
+  UMBRELLA_FX_PRODUCT_ID,
+  buildNpaView,
+} from "../dashboard/markets-fx-npa";
+import {
+  type ProductScopeForEvent,
   makeProductApproved,
   makeProductWithheld,
 } from "../platform/event-store/event-types/product";
@@ -62,7 +69,18 @@ function freshStore(): EventStore {
   return new EventStore(path);
 }
 
-function approveProduct(store: EventStore, productId: string, asOf: string): void {
+const V1_SCOPE: ProductScopeForEvent = {
+  executionVenue: "otc",
+  fxInstrumentVariants: ["spot", "forward", "swap"],
+  currencyPairs: "any",
+  counterpartyEligibility: "all",
+};
+
+function approveUmbrella(
+  store: EventStore,
+  asOf: string,
+  scope: ProductScopeForEvent | undefined = V1_SCOPE,
+): void {
   store.append(
     makeProductApproved({
       asOf,
@@ -70,18 +88,18 @@ function approveProduct(store: EventStore, productId: string, asOf: string): voi
       actor: NPA_ACTOR,
       citations: CITATIONS,
       payload: {
-        productId,
+        productId: UMBRELLA_FX_PRODUCT_ID,
         version: "v1",
         conditions: [],
         approvedBy: "helena:npa-committee",
+        ...(scope ? { scope } : {}),
       },
     }),
   );
 }
 
-function withholdProduct(
+function withholdUmbrella(
   store: EventStore,
-  productId: string,
   asOf: string,
   reason = "pending further review",
 ): void {
@@ -92,7 +110,7 @@ function withholdProduct(
       actor: NPA_ACTOR,
       citations: CITATIONS,
       payload: {
-        productId,
+        productId: UMBRELLA_FX_PRODUCT_ID,
         version: "v1",
         reason,
       },
@@ -104,8 +122,8 @@ function withholdProduct(
 // Test suite
 // ---------------------------------------------------------------------------
 
-describe("FX Slice 7 — NPA attestation projection (buildNpaView)", () => {
-  it("1. Empty store → all 4 products pending", () => {
+describe("FX Slice 7 — NPA attestation projection (buildNpaView, umbrella-driven)", () => {
+  it("1. Empty store → all 4 variants pending", () => {
     const store = freshStore();
     const view = buildNpaView(store, T_NOW);
     expect(view.attestations).toHaveLength(4);
@@ -115,60 +133,55 @@ describe("FX Slice 7 — NPA attestation projection (buildNpaView)", () => {
     store.close();
   });
 
-  it("2. ProductApproved for 'FX-spot' → 'FX-spot' is approved", () => {
+  it("2. Umbrella approved (scope spot/forward/swap) → those approved; option pending+outOfScope", () => {
     const store = freshStore();
-    approveProduct(store, "FX-spot", T1);
+    approveUmbrella(store, T1);
     const view = buildNpaView(store, T_NOW);
-    const spot = view.attestations.find((a) => a.productCode === "FX-spot");
-    expect(spot?.status).toBe("approved");
-    // Other 3 remain pending.
-    const others = view.attestations.filter((a) => a.productCode !== "FX-spot");
-    for (const a of others) expect(a.status).toBe("pending");
+    for (const code of ["FX-spot", "FX-forward", "FX-swap"]) {
+      expect(view.attestations.find((a) => a.productCode === code)?.status).toBe("approved");
+    }
+    const option = view.attestations.find((a) => a.productCode === "FX-option");
+    expect(option?.status).toBe("pending");
+    expect(option?.outOfScope).toBe(true);
     store.close();
   });
 
-  it("3. ProductWithheld for 'FX-forward' → 'FX-forward' is withheld", () => {
+  it("3. Umbrella withheld → in-scope variants withheld with reason", () => {
     const store = freshStore();
-    withholdProduct(store, "FX-forward", T1, "insufficient risk controls");
+    withholdUmbrella(store, T1, "insufficient risk controls");
     const view = buildNpaView(store, T_NOW);
     const fwd = view.attestations.find((a) => a.productCode === "FX-forward");
     expect(fwd?.status).toBe("withheld");
     expect(fwd?.withheldReason).toBe("insufficient risk controls");
+    // option is out of scope → pending, not withheld.
+    expect(view.attestations.find((a) => a.productCode === "FX-option")?.status).toBe("pending");
     store.close();
   });
 
-  it("4. ProductApproved after ProductWithheld for same product → 'approved' (latest wins)", () => {
+  it("4. Umbrella approved after withheld (latest wins) → approved", () => {
     const store = freshStore();
-    withholdProduct(store, "FX-swap", T1);
-    approveProduct(store, "FX-swap", T2); // T2 > T1 so approved wins
+    withholdUmbrella(store, T1);
+    approveUmbrella(store, T2); // T2 > T1 so approved wins
     const view = buildNpaView(store, T_NOW);
-    const swap = view.attestations.find((a) => a.productCode === "FX-swap");
-    expect(swap?.status).toBe("approved");
+    expect(view.attestations.find((a) => a.productCode === "FX-swap")?.status).toBe("approved");
     store.close();
   });
 
-  it("5. Mixed: 2 approved, 1 withheld, 1 pending → correct", () => {
+  it("5. Umbrella approval with no typed scope → falls back to spot/forward/swap approved", () => {
     const store = freshStore();
-    approveProduct(store, "FX-spot", T1);
-    approveProduct(store, "FX-forward", T1);
-    withholdProduct(store, "FX-swap", T1);
-    // FX-NDF left with no event → pending
+    approveUmbrella(store, T1, undefined); // no scope on the event
     const view = buildNpaView(store, T_NOW);
     expect(view.attestations.find((a) => a.productCode === "FX-spot")?.status).toBe("approved");
-    expect(view.attestations.find((a) => a.productCode === "FX-forward")?.status).toBe("approved");
-    expect(view.attestations.find((a) => a.productCode === "FX-swap")?.status).toBe("withheld");
-    expect(view.attestations.find((a) => a.productCode === "FX-NDF")?.status).toBe("pending");
+    expect(view.attestations.find((a) => a.productCode === "FX-swap")?.status).toBe("approved");
+    expect(view.attestations.find((a) => a.productCode === "FX-option")?.status).toBe("pending");
     store.close();
   });
 
   it("6. Always returns exactly 4 attestation rows", () => {
     const store = freshStore();
-    // Even if we add events for non-FX products the view stays at 4 rows.
-    approveProduct(store, "FX-spot", T1);
-    approveProduct(store, "some-other-product", T1); // ignored
+    approveUmbrella(store, T1);
     const view = buildNpaView(store, T_NOW);
     expect(view.attestations).toHaveLength(4);
-    // And each row's productCode is one of the canonical FX codes.
     const codes = view.attestations.map((a) => a.productCode);
     for (const code of FX_PRODUCT_CODES) {
       expect(codes).toContain(code);
@@ -176,16 +189,16 @@ describe("FX Slice 7 — NPA attestation projection (buildNpaView)", () => {
     store.close();
   });
 
-  it("7. approvedAt populated from event as_of on approved product", () => {
+  it("7. approvedAt populated from event as_of on approved variants", () => {
     const store = freshStore();
-    approveProduct(store, "FX-NDF", T2);
+    approveUmbrella(store, T2);
     const view = buildNpaView(store, T_NOW);
-    const ndf = view.attestations.find((a) => a.productCode === "FX-NDF");
-    expect(ndf?.status).toBe("approved");
-    expect(ndf?.approvedAt).toBe(T2);
-    // approvedAt absent when pending or withheld.
-    const spotAtt = view.attestations.find((a) => a.productCode === "FX-spot");
-    expect(spotAtt?.approvedAt).toBeUndefined();
+    const spot = view.attestations.find((a) => a.productCode === "FX-spot");
+    expect(spot?.status).toBe("approved");
+    expect(spot?.approvedAt).toBe(T2);
+    // approvedAt absent on the out-of-scope (pending) option row.
+    const option = view.attestations.find((a) => a.productCode === "FX-option");
+    expect(option?.approvedAt).toBeUndefined();
     store.close();
   });
 });

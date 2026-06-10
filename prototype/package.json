@@ -43,6 +43,7 @@
     "recon:regulator-mandate-coverage": "bun run platform/recon/regulator-mandate-coverage.ts",
     "recon:requirement-objective-linkage": "bun run platform/recon/requirement-objective-linkage.ts",
     "recon:objective-policy-alignment": "bun run platform/recon/objective-policy-alignment.ts",
+    "recon:npa-coverage": "bun run platform/recon/npa-coverage.ts",
     "recon:calc-no-silent-zero": "bun run platform/recon/calc-no-silent-zero.ts",
     "recon:pnl-attribution-reconciles": "bun run platform/recon/pnl-attribution-reconciles.ts",
     "recon:pnl-signoff-coverage": "bun run platform/recon/pnl-signoff-coverage.ts",

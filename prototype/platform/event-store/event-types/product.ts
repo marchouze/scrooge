@@ -22,6 +22,22 @@ const productFamilyForEventSchema = z.enum([
   "structured",
 ]);
 
+/** Typed product scope — mirror of `productScopeSchema` in
+ *  `../../markets/products/types.ts`, re-declared here to avoid a runtime cycle
+ *  between event-store and markets (same pattern as `productFamilyForEventSchema`).
+ *  Keep the two in sync. Authority: D-FX-OTC-NPA-SCOPE-EXPANSION. */
+const productScopeForEventSchema = z.object({
+  executionVenue: z.enum(["otc", "exchange"]),
+  fxInstrumentVariants: z.array(z.enum(["spot", "forward", "swap", "option"])).min(1),
+  currencyPairs: z.union([z.literal("any"), z.array(z.string().min(1)).min(1)]),
+  counterpartyEligibility: z.union([
+    z.enum(["all", "institutional", "bank-only"]),
+    z.array(z.string().min(1)).min(1),
+  ]),
+});
+
+export type ProductScopeForEvent = z.infer<typeof productScopeForEventSchema>;
+
 // ---------------------------------------------------------------------------
 // 1. ProductProposalRegistered
 // ---------------------------------------------------------------------------
@@ -31,6 +47,9 @@ export const productProposalRegisteredPayloadSchema = z.object({
   family: productFamilyForEventSchema,
   proposedBy: z.string().min(1),
   asOf: z.string().min(1),
+  /** Typed product scope (D-FX-OTC-NPA-SCOPE-EXPANSION). Optional for back-compat
+   *  with the 8 pre-existing seeded proposals. */
+  scope: productScopeForEventSchema.optional(),
 });
 
 export type ProductProposalRegisteredPayload = z.infer<
@@ -203,6 +222,9 @@ export const productApprovedPayloadSchema = z.object({
   version: z.string().min(1),
   conditions: z.array(z.string().min(1)),
   approvedBy: z.string().min(1),
+  /** Approved scope of record (D-FX-OTC-NPA-SCOPE-EXPANSION). Optional for
+   *  back-compat with pre-existing approvals. */
+  scope: productScopeForEventSchema.optional(),
 });
 
 export type ProductApprovedPayload = z.infer<typeof productApprovedPayloadSchema>;

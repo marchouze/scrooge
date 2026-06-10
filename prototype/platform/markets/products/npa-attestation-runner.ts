@@ -14,6 +14,7 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import {
+  type ProductScopeForEvent,
   makeProductApproved,
   makeProductConceptualised,
   makeProductDimensionAttested,
@@ -63,6 +64,9 @@ export interface ProductNpaDef {
   version: string;
   dimensions: Record<DimensionKey, DimensionAssessment>;
   proposedBy: string;
+  /** Typed product scope (D-FX-OTC-NPA-SCOPE-EXPANSION). When set it is emitted
+   *  on the ProductProposalRegistered and (if approved) ProductApproved events. */
+  scope?: ProductScopeForEvent;
 }
 
 export interface NpaRunResult {
@@ -178,7 +182,7 @@ export function runNpaAttestation(
   def: ProductNpaDef,
   asOf: string,
 ): NpaRunResult {
-  const { productId, family, name, version, dimensions, proposedBy } = def;
+  const { productId, family, name, version, dimensions, proposedBy, scope } = def;
   const eventsEmitted: string[] = [];
 
   // Step 0: Idempotency guard.
@@ -205,6 +209,7 @@ export function runNpaAttestation(
           family,
           proposedBy,
           asOf,
+          ...(scope ? { scope } : {}),
         },
       }),
       provenance,
@@ -303,6 +308,7 @@ export function runNpaAttestation(
           version,
           conditions: [],
           approvedBy: "agent:atlas:npa-attestation-runner",
+          ...(scope ? { scope } : {}),
         },
       }),
       provenance,
