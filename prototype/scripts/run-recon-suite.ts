@@ -157,6 +157,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:regulator-mandate-coverage",
     "recon:requirement-objective-linkage",
     "recon:objective-policy-alignment",
+    "recon:obligation-policy-coverage",
     "recon:npa-coverage",
     "recon:npa-deferred-gap-tracking",
     "recon:counterparty-basel-classification-coverage",
