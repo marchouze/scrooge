@@ -158,6 +158,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:requirement-objective-linkage",
     "recon:objective-policy-alignment",
     "recon:npa-coverage",
+    "recon:npa-deferred-gap-tracking",
     "recon:calc-no-silent-zero",
     "recon:pnl-attribution-reconciles",
     "recon:pnl-signoff-coverage",

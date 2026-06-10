@@ -23,6 +23,7 @@
 
 import {
   PRODUCT_TYPED_EVENT_TYPES,
+  type ProductDeferredGap,
   type ProductScopeForEvent,
 } from "../platform/event-store/event-types/product";
 import type { EventStore } from "../platform/event-store/store";
@@ -91,6 +92,9 @@ export interface ProductListEntry {
   scope?: ProductScopeForEvent;
   /** Per-dimension latest status — one row per NPA dimension. */
   dimensions: Record<NpaDimension, DimensionStatus>;
+  /** Tracked deferred gaps across all dimensions (D-FX-OTC-NPA-SCOPE-EXPANSION) —
+   *  "approved with tracked deferred gaps". Each carries its dimension. */
+  deferredGaps: (ProductDeferredGap & { dimension: string })[];
   /** NPA gate summary derived from the product-register projection. */
   npaGateStatus: {
     ready: boolean;
@@ -147,7 +151,10 @@ export function buildProductListView(
   >();
   const dimensionFolds = new Map<
     string,
-    Map<NpaDimension, { status: DimensionStatus; asOf: string }>
+    Map<
+      NpaDimension,
+      { status: DimensionStatus; asOf: string; deferredGaps?: ProductDeferredGap[] }
+    >
   >();
 
   // Build the product-register projection for NPA gate status.
@@ -204,7 +211,14 @@ export function buildProductListView(
       }
       const prev = perProduct.get(dimension);
       if (prev && prev.asOf >= ev.as_of) continue;
-      perProduct.set(dimension, { status: result, asOf: ev.as_of });
+      const deferredGaps = Array.isArray(p.deferredGaps)
+        ? (p.deferredGaps as ProductDeferredGap[])
+        : undefined;
+      perProduct.set(dimension, {
+        status: result,
+        asOf: ev.as_of,
+        ...(deferredGaps && deferredGaps.length > 0 ? { deferredGaps } : {}),
+      });
     }
   }
 
@@ -234,15 +248,35 @@ function emptyDimensionMap(): Record<NpaDimension, DimensionStatus> {
   return out;
 }
 
+type DimensionFold = Map<
+  NpaDimension,
+  { status: DimensionStatus; asOf: string; deferredGaps?: ProductDeferredGap[] }
+>;
+
 function applyDimensionFold(
   productId: string,
   base: Record<NpaDimension, DimensionStatus>,
-  dimensionFolds: Map<string, Map<NpaDimension, { status: DimensionStatus; asOf: string }>>,
+  dimensionFolds: Map<string, DimensionFold>,
 ): Record<NpaDimension, DimensionStatus> {
   const fold = dimensionFolds.get(productId);
   if (!fold) return base;
   for (const [dim, value] of fold) base[dim] = value.status;
   return base;
+}
+
+/** Flatten the tracked deferred gaps across all dimensions of a product, each
+ *  tagged with the dimension it sits under (D-FX-OTC-NPA-SCOPE-EXPANSION). */
+function collectDeferredGaps(
+  productId: string,
+  dimensionFolds: Map<string, DimensionFold>,
+): (ProductDeferredGap & { dimension: string })[] {
+  const fold = dimensionFolds.get(productId);
+  if (!fold) return [];
+  const out: (ProductDeferredGap & { dimension: string })[] = [];
+  for (const [dim, value] of fold) {
+    for (const gap of value.deferredGaps ?? []) out.push({ ...gap, dimension: dim });
+  }
+  return out;
 }
 
 function buildNpaGateStatus(
@@ -271,7 +305,7 @@ function buildNpaGateStatus(
 function buildEntryFromFixture(
   fx: Product,
   approvals: Map<string, { status: ProductApprovalStatus; asOf: string; reason?: string }>,
-  dimensionFolds: Map<string, Map<NpaDimension, { status: DimensionStatus; asOf: string }>>,
+  dimensionFolds: Map<string, DimensionFold>,
   productRegister: ReturnType<typeof buildProductRegisterView>,
 ): ProductListEntry {
   const approval = approvals.get(fx.productId);
@@ -302,6 +336,7 @@ function buildEntryFromFixture(
         }
       : { status: "pending" },
     dimensions,
+    deferredGaps: collectDeferredGaps(fx.productId, dimensionFolds),
     npaGateStatus: buildNpaGateStatus(fx.productId, productRegister),
     origin: "fixture",
   };
@@ -310,7 +345,7 @@ function buildEntryFromFixture(
 function buildEntryFromProposal(
   proposal: ProposalRecord,
   approvals: Map<string, { status: ProductApprovalStatus; asOf: string; reason?: string }>,
-  dimensionFolds: Map<string, Map<NpaDimension, { status: DimensionStatus; asOf: string }>>,
+  dimensionFolds: Map<string, DimensionFold>,
   productRegister: ReturnType<typeof buildProductRegisterView>,
 ): ProductListEntry {
   const approval = approvals.get(proposal.productId);
@@ -345,6 +380,7 @@ function buildEntryFromProposal(
         }
       : { status: "pending" },
     dimensions,
+    deferredGaps: collectDeferredGaps(proposal.productId, dimensionFolds),
     npaGateStatus: buildNpaGateStatus(proposal.productId, productRegister),
     origin: "proposal",
   };
