@@ -8,24 +8,24 @@
     "which is wired ONCE into `migrate:decisions-backfill` in package.json.",
     "",
     "When a new RecordFiled(documents) event needs to survive a fresh-runner",
-    "replay, add an entry here — DO NOT write a new one-shot script + a new",
+    "replay, add an entry here \u2014 DO NOT write a new one-shot script + a new",
     "package.json line. That triple-line authoring pattern is what this",
     "manifest retires (D-RMS-RECORDFILED-MANIFEST).",
     "",
     "Schema:",
-    "  recordId       — deterministic; replay is idempotent on this key.",
-    "  sourcePath     — repo-relative path; body is read from disk at replay time.",
-    "  asOf           — ISO timestamp; deterministic so event hash is stable.",
-    "  registerKey    — RecordFiled register key (documents | briefs | ...).",
-    "  classification — RecordFiled classification.",
-    "  retention      — retention envelope { citationRef, minimumYears, archivalTier }.",
-    "  actor          — { type, id }.",
-    "  entity         — entity ID (defaults LE-ZA-HOZ-BANK if omitted).",
-    "  metadata       — { title, path, category, author, date }; `path` is the",
+    "  recordId       \u2014 deterministic; replay is idempotent on this key.",
+    "  sourcePath     \u2014 repo-relative path; body is read from disk at replay time.",
+    "  asOf           \u2014 ISO timestamp; deterministic so event hash is stable.",
+    "  registerKey    \u2014 RecordFiled register key (documents | briefs | ...).",
+    "  classification \u2014 RecordFiled classification.",
+    "  retention      \u2014 retention envelope { citationRef, minimumYears, archivalTier }.",
+    "  actor          \u2014 { type, id }.",
+    "  entity         \u2014 entity ID (defaults LE-ZA-HOZ-BANK if omitted).",
+    "  metadata       \u2014 { title, path, category, author, date }; `path` is the",
     "                   logical Owner Inbox path used by recon (NOT sourcePath).",
-    "  citations      — non-empty list of upstream urns / decision IDs.",
-    "  supersedes     — optional prior recordId.",
-    "  notes          — free-text; ignored at replay time."
+    "  citations      \u2014 non-empty list of upstream urns / decision IDs.",
+    "  supersedes     \u2014 optional prior recordId.",
+    "  notes          \u2014 free-text; ignored at replay time."
   ],
   "entries": [
     {
@@ -39,12 +39,15 @@
         "minimumYears": 5,
         "archivalTier": "cool"
       },
-      "actor": { "type": "service", "id": "agent:mira:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:mira:engineering"
+      },
       "metadata": {
-        "title": "Obligations register v1.30 — Activity scope column corrections",
+        "title": "Obligations register v1.30 \u2014 Activity scope column corrections",
         "path": "Owner Inbox/2026-05-17_mira_obligations-register-v1.30-activity-scope-review.md",
         "category": "compliance-engineer-review",
-        "author": "Mira (Compliance / RegTech engineer, engineering — reports to Zara, Chief Compliance Officer, governance)",
+        "author": "Mira (Compliance / RegTech engineer, engineering \u2014 reports to Zara, Chief Compliance Officer, governance)",
         "date": "2026-05-17"
       },
       "citations": [
@@ -64,9 +67,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:owen:governance" },
+      "actor": {
+        "type": "service",
+        "id": "agent:owen:governance"
+      },
       "metadata": {
-        "title": "RMS Phase 2 — Mandatory AgentBriefIssued Dispatch",
+        "title": "RMS Phase 2 \u2014 Mandatory AgentBriefIssued Dispatch",
         "path": "Owner Inbox/2026-05-17_owen-atlas_rms-phase-2-spec.md",
         "category": "rms-phase-spec",
         "author": "Owen (Company Secretary, governance) + Atlas (Core banking platform architect, engineering)",
@@ -89,9 +95,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:owen:governance" },
+      "actor": {
+        "type": "service",
+        "id": "agent:owen:governance"
+      },
       "metadata": {
-        "title": "RMS Phase 3 — Mandatory RecordFiled Deliverable",
+        "title": "RMS Phase 3 \u2014 Mandatory RecordFiled Deliverable",
         "path": "Owner Inbox/2026-05-17_owen-atlas_rms-phase-3-spec.md",
         "category": "rms-phase-spec",
         "author": "Owen (Company Secretary, governance) + Atlas (Core banking platform architect, engineering)",
@@ -113,9 +122,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:owen:governance" },
+      "actor": {
+        "type": "service",
+        "id": "agent:owen:governance"
+      },
       "metadata": {
-        "title": "RMS Phase 4 — Archive Cutover (Legacy Inboxes → archive/)",
+        "title": "RMS Phase 4 \u2014 Archive Cutover (Legacy Inboxes \u2192 archive/)",
         "path": "Owner Inbox/2026-05-17_owen-atlas_rms-phase-4-spec.md",
         "category": "rms-phase-spec",
         "author": "Owen (Company Secretary, governance) + Atlas (Core banking platform architect, engineering)",
@@ -138,9 +150,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:owen:governance" },
+      "actor": {
+        "type": "service",
+        "id": "agent:owen:governance"
+      },
       "metadata": {
-        "title": "Authority gap brief — CFO / COO / CISO / CAE / CCO decision authority scoping",
+        "title": "Authority gap brief \u2014 CFO / COO / CISO / CAE / CCO decision authority scoping",
         "path": "Owner Inbox/2026-05-17_owen_authority-gap-five-seats.md",
         "category": "governance-seat-scoping",
         "author": "Owen (Company Secretary, governance)",
@@ -162,9 +177,12 @@
         "minimumYears": 5,
         "archivalTier": "cool"
       },
-      "actor": { "type": "service", "id": "agent:sade:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:sade:engineering"
+      },
       "metadata": {
-        "title": "Agent Performance Evaluation — 2026-05-16/17 period",
+        "title": "Agent Performance Evaluation \u2014 2026-05-16/17 period",
         "path": "Owner Inbox/2026-05-17_sade_agent-performance-evaluation-2026-05-16-17.md",
         "category": "agent-performance-evaluation",
         "author": "Sade (AgentOps & Token Efficiency Engineer, engineering)",
@@ -187,9 +205,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:senna:governance" },
+      "actor": {
+        "type": "service",
+        "id": "agent:senna:governance"
+      },
       "metadata": {
-        "title": "T-12 — Per-sub-agent PermissionPolicy design specification",
+        "title": "T-12 \u2014 Per-sub-agent PermissionPolicy design specification",
         "path": "Owner Inbox/2026-05-17_senna_t12-sub-agent-permission-policy-design-spec.md",
         "category": "ciso-design-spec",
         "author": "Senna (Chief Information Security Officer, governance)",
@@ -212,9 +233,12 @@
         "minimumYears": 5,
         "archivalTier": "cool"
       },
-      "actor": { "type": "service", "id": "agent:bea:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:bea:engineering"
+      },
       "metadata": {
-        "title": "FX lifecycle posting rules — design note",
+        "title": "FX lifecycle posting rules \u2014 design note",
         "path": "Owner Inbox/2026-05-20_bea_fx-lifecycle-posting-rules-design-note.md",
         "category": "accounting-design-note",
         "author": "Bea (Accounting & financial reporting engineer, engineering)",
@@ -238,7 +262,10 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:owen:governance" },
+      "actor": {
+        "type": "service",
+        "id": "agent:owen:governance"
+      },
       "metadata": {
         "title": "Team Inbox stale-files investigation",
         "path": "Owner Inbox/2026-05-21_owen_team-inbox-stale-files-investigation.md",
@@ -265,9 +292,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:bea:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:bea:engineering"
+      },
       "metadata": {
-        "title": "Peer review — IFRS quantitative thresholds (§3.2.2 SICR, §3.5.2 Materiality)",
+        "title": "Peer review \u2014 IFRS quantitative thresholds (\u00a73.2.2 SICR, \u00a73.5.2 Materiality)",
         "path": "Owner Inbox/2026-05-21_bea_ifrs-thresholds-peer-review.md",
         "category": "governance",
         "author": "Bea (Accounting & financial reporting engineer, engineering)",
@@ -284,7 +314,7 @@
     },
     {
       "recordId": "record:documents:atlas:policy-frontmatter-next-review-convention-extension:2026-05-21",
-      "sourcePath": "2026-05-21_atlas_policy-frontmatter-next-review-convention-extension.md",
+      "sourcePath": "archive/root-renders/2026-05-21_atlas_policy-frontmatter-next-review-convention-extension.md",
       "asOf": "2026-05-21T00:00:00.000Z",
       "registerKey": "documents",
       "classification": "governance-seat",
@@ -293,9 +323,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:atlas:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:atlas:engineering"
+      },
       "metadata": {
-        "title": "Policies/ frontmatter convention extension — mandatory `next-review` field + recon:policy-next-review CI gate",
+        "title": "Policies/ frontmatter convention extension \u2014 mandatory `next-review` field + recon:policy-next-review CI gate",
         "path": "2026-05-21_atlas_policy-frontmatter-next-review-convention-extension.md",
         "category": "governance-convention-extension",
         "author": "Atlas (Core banking platform architect, engineering)",
@@ -320,7 +353,10 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:atlas:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:atlas:engineering"
+      },
       "metadata": {
         "title": "RecordFiled manifest replay convention",
         "path": "prototype/platform/records/CONVENTION.md",
@@ -346,9 +382,12 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:rohan:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:rohan:engineering"
+      },
       "metadata": {
-        "title": "Daily MTM cadence — handler wired; substrate gap surfaced",
+        "title": "Daily MTM cadence \u2014 handler wired; substrate gap surfaced",
         "path": "archive/owner-inbox/2026-05-21_rohan_daily-mtm-cadence.md",
         "category": "engineering-substrate-readiness",
         "author": "Rohan (Market risk engineer, engineering)",
@@ -358,8 +397,8 @@
         "D-MARKETS-SCHEMA-FOUNDATION",
         "D-FX-SALES-TRADING-FRONTEND",
         "D-EVENT-VIEW-BOUNDARY-WIRE",
-        "IFRS-9-§5.7.1",
-        "IAS-21-§28",
+        "IFRS-9-\u00a75.7.1",
+        "IAS-21-\u00a728",
         "brief:rohan:wire-daily-mtm-cadence-fix-reversal-without-reva:2026-05-21"
       ]
     },
@@ -374,18 +413,21 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:bea:engineering" },
+      "actor": {
+        "type": "service",
+        "id": "agent:bea:engineering"
+      },
       "metadata": {
-        "title": "GL posting engine — FxTradeCancelled handling + idempotent backfill of PR-FX-PRIN / PR-FX-LIFECYCLE-CLOSE",
+        "title": "GL posting engine \u2014 FxTradeCancelled handling + idempotent backfill of PR-FX-PRIN / PR-FX-LIFECYCLE-CLOSE",
         "path": "archive/owner-inbox/2026-05-21_bea_gl-posting-bug-fixes.md",
         "category": "engineering-bug-fix",
         "author": "Bea (Accounting platform engineer, engineering)",
         "date": "2026-05-21"
       },
       "citations": [
-        "IFRS-9-§3.2.3",
-        "IFRS-9-§5.7.1",
-        "IAS-21-§28",
+        "IFRS-9-\u00a73.2.3",
+        "IFRS-9-\u00a75.7.1",
+        "IAS-21-\u00a728",
         "D-MARKETS-SCHEMA-FOUNDATION",
         "D-FX-SALES-TRADING-FRONTEND",
         "brief:bea:fix-fxtradecancelled-event-name-backfill-princip:2026-05-21"
@@ -402,7 +444,10 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:rohan:market-risk-engineer" },
+      "actor": {
+        "type": "service",
+        "id": "agent:rohan:market-risk-engineer"
+      },
       "metadata": {
         "title": "MTM inverse-pair lookup fix + valuation policy activation",
         "path": "Owner Inbox/2026-05-21_rohan_mtm-inverse-pair-fix.md",
@@ -420,8 +465,8 @@
         "D-MARKETS-SCHEMA-FOUNDATION",
         "D-FX-SALES-TRADING-FRONTEND",
         "D-EVENT-VIEW-BOUNDARY-WIRE",
-        "IFRS-9-§5.7.1",
-        "IAS-21-§28",
+        "IFRS-9-\u00a75.7.1",
+        "IAS-21-\u00a728",
         "brief:rohan:fix-mtm-pair-direction-lookup-activate-valuation:2026-05-21"
       ]
     },
@@ -436,13 +481,16 @@
         "minimumYears": 7,
         "archivalTier": "hot"
       },
-      "actor": { "type": "service", "id": "agent:mira:multi-instrument-horizon-scan" },
+      "actor": {
+        "type": "service",
+        "id": "agent:mira:multi-instrument-horizon-scan"
+      },
       "metadata": {
-        "title": "Ontology Phase 1 — outcome card (BLOCKED on Anthropic credits)",
+        "title": "Ontology Phase 1 \u2014 outcome card (BLOCKED on Anthropic credits)",
         "path": "Owner Inbox/2026-05-22_mira-owen_ontology-phase-1-outcome.md",
         "category": "decision-card",
         "author": "Mira (Compliance / RegTech engineer, engineering)",
-        "co-author": "Owen (Company Secretary, governance) — reviewer",
+        "co-author": "Owen (Company Secretary, governance) \u2014 reviewer",
         "date": "2026-05-22",
         "decisionId": "D-ONTOLOGY-PHASE-1-COMPLETION",
         "brief": "brief:mira:operationalise-regulatory-concept-extraction-acr:2026-05-22"
@@ -459,7 +507,7 @@
     },
     {
       "recordId": "record:documents:atlas:s7-substrate-completeness-brief:2026-05-28",
-      "sourcePath": "2026-05-28_atlas_s7-substrate-completeness-brief.md",
+      "sourcePath": "archive/root-renders/2026-05-28_atlas_s7-substrate-completeness-brief.md",
       "asOf": "2026-05-28T06:20:00.000Z",
       "registerKey": "documents",
       "classification": "engineering-seat",
@@ -473,7 +521,7 @@
         "id": "agent:atlas:engineering"
       },
       "metadata": {
-        "title": "S7 Substrate-Completeness Brief — Sessions to Pre-Licence Readiness Gate",
+        "title": "S7 Substrate-Completeness Brief \u2014 Sessions to Pre-Licence Readiness Gate",
         "path": "2026-05-28_atlas_s7-substrate-completeness-brief.md",
         "category": "substrate-completeness-brief",
         "author": "Atlas (Core banking platform architect, engineering)",
