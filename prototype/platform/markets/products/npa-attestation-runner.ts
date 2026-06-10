@@ -14,6 +14,7 @@
 // Author: Atlas (Core banking platform architect, engineering)
 
 import {
+  type ProductDeferredGap,
   type ProductScopeForEvent,
   makeProductApproved,
   makeProductConceptualised,
@@ -55,6 +56,10 @@ export interface DimensionAssessment {
   /** At least one citation entry required (Principle 2). */
   citationChain: string[];
   notes?: string;
+  /** Tracked deferred gaps (D-FX-OTC-NPA-SCOPE-EXPANSION). When present on an
+   *  implementation-attested result, these sub-items are explicitly deferred and
+   *  tracked (non-blocking). Emitted onto the ProductDimensionAttested event. */
+  deferredGaps?: ProductDeferredGap[];
 }
 
 export interface ProductNpaDef {
@@ -258,6 +263,9 @@ export function runNpaAttestation(
             dimension: dimensionKey,
             result: assessment.result,
             citationChain: [...assessment.citationChain],
+            ...(assessment.deferredGaps && assessment.deferredGaps.length > 0
+              ? { deferredGaps: assessment.deferredGaps }
+              : {}),
           },
         }),
         provenance,

@@ -185,11 +185,42 @@ export const productDimensionAttestedResultSchema = z.enum([
 
 export type ProductDimensionAttestedResult = z.infer<typeof productDimensionAttestedResultSchema>;
 
+/**
+ * A tracked, deferred gap on a dimension attestation (D-FX-OTC-NPA-SCOPE-EXPANSION
+ * deferred-gap tracking). Lets a dimension be `implementation-attested` for the
+ * substrate that is built while a specific sub-item is explicitly deferred and
+ * tracked rather than hidden — the NPA equivalent of "approved subject to tracked
+ * conditions". Every field is mandatory so a deferral can never be silently empty:
+ * the recon gate `recon:npa-deferred-gap-tracking` enforces owner + trigger +
+ * citation on every gap.
+ */
+export const productDeferredGapSchema = z.object({
+  /** Stable slug, unique per (productId, dimension). e.g. "fx-forward-points-accrual". */
+  gapId: z.string().min(1),
+  /** One-line description of the deferred sub-item. */
+  title: z.string().min(1),
+  /** Accountable agent — name + position on first mention (identity discipline). */
+  owner: z.string().min(1),
+  /** When/condition the gap closes — e.g. "forward/swap go-live" or an ISO date. */
+  targetTrigger: z.string().min(1),
+  /** Principle-2 citation chain anchoring the deferral. */
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type ProductDeferredGap = z.infer<typeof productDeferredGapSchema>;
+
 export const productDimensionAttestedPayloadSchema = z.object({
   productId: z.string().min(1),
   dimension: z.string().min(1),
   result: productDimensionAttestedResultSchema,
   citationChain: z.array(z.string().min(1)).min(1),
+  /**
+   * Tracked deferred gaps (D-FX-OTC-NPA-SCOPE-EXPANSION). Optional. When present
+   * on an `implementation-attested` result, the dimension is approved for its
+   * built substrate while these sub-items remain explicitly tracked, non-blocking
+   * deferrals. Absent = no deferrals.
+   */
+  deferredGaps: z.array(productDeferredGapSchema).optional(),
 });
 
 export type ProductDimensionAttestedPayload = z.infer<typeof productDimensionAttestedPayloadSchema>;

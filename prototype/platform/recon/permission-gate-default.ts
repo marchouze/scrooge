@@ -165,6 +165,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // attestation coverage. Gate is a no-op on replay. Citation:
   // D-NEW-PRODUCT-APPROVAL-POLICY §5, P4-SECURITY-DESIGNED-IN.
   "platform/recon/npa-gate-integrity.ts",
+  // NPA deferred-gap tracking recon (D-FX-OTC-NPA-SCOPE-EXPANSION) — read-only
+  // replay of ProductDimensionAttested events to inventory tracked deferred gaps
+  // ("approved with tracked deferred gaps"). Gate is a no-op on replay. Citation:
+  // D-FX-OTC-NPA-SCOPE-EXPANSION, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/npa-deferred-gap-tracking.ts",
   // ProductApproved attestation-integrity recon (D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8)
   // — backward-looking read-only replay of ProductApproved + ProductDimensionAttested events
   // to assert governance integrity before approval. Gate is a no-op on replay.
