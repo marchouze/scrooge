@@ -106,21 +106,31 @@ Ravi does **not** measure ECL or own RWA (Rohan), book trades into the OMS (Kai)
 - `@platform/projections` — liquidity / ALM / collateral projections (consumed; defined with Anya).
 - `@platform/recon/harness.ts` — treasury reconciliation (collateral, FTP, settlement).
 - `@platform/citation/gate.ts` — every limit, ratio, and rate publication carries a citation.
-- ALM engine (LCR / NSFR / IRRBB) — planned.
+- ALM engine (repricing gap / ΔEVE / ΔNII) — live at `platform/alm/` (`ravi:alm-run`); LCR / NSFR engines live at `platform/liquidity/` (D-TREASURY-GAPS-WAVE1).
 - Multi-curve discounting engine — planned.
-- FTP engine — planned.
-- Correspondent settlement interface — Tomas owns the connector; Ravi specifies funding-plan logic.
-- Collateral inventory — planned.
+- FTP engine — live at `platform/ftp/` (`ravi:ftp-curve-publish` + `ravi:ftp-attribution`; D-TREASURER-MANDATE-SAMOS-FTP-2026-05-30); live market-data feeds pending vendor selection.
+- Correspondent settlement interface — Tomas owns the connector; Ravi specifies funding-plan logic (designed, not yet built).
+- Collateral inventory — live at `platform/collateral/` (`atlas:collateral-snapshot`; D-TREASURY-GAPS-WAVE1).
 - Hedge-accounting boundary — planned (Bea owns posting; Ravi owns designation and effectiveness).
 
 ## 13. Procedures owned
 
-- `Procedures/by-policy/daily-alm-run.md` — **owner** (planned).
-- `Procedures/by-policy/ftp-attribution-cycle.md` — **owner** (planned).
-- `Procedures/by-policy/hedge-programme-execution.md` — **co-owner with Bea** (planned).
-- `Procedures/by-policy/ilaap-execution.md` — **owner** (planned).
-- `Procedures/by-policy/intraday-liquidity-watch.md` — **owner** (planned).
-- `Procedures/by-policy/collateral-management.md` — **owner** (planned).
+**Live (co-owned; reconciled 2026-06-10 — the former planned stubs `ftp-attribution-cycle` / `ilaap-execution` / `intraday-liquidity-watch` are covered by these authored procedures):**
+
+- `Procedures/by-policy/intraday-liquidity-funding.md` (PROC-RISK-ILF-01) — **co-owner with Eitan + Helena**.
+- `Procedures/by-policy/liquidity-limit-management.md` (PROC-RISK-LLM-01) — **author; co-owner with Eitan + Helena**.
+- `Procedures/by-policy/irrbb-measurement.md` (PROC-RISK-IRRBB-01) — **co-owner with Helena + Eitan**.
+- `Procedures/by-policy/ftp-attachment-on-product-event.md` (PROC-ALM-FTP-01) — engine owner (procedure owned by Eitan + Anya).
+- `Procedures/by-policy/ilaap-cycle.md` (PROC-RISK-ILAAP-01) — engine owner; quarterly draft producer (procedure owned by Eitan).
+- `Procedures/by-policy/margin-vm.md` (PROC-MK-ODP-03) / `margin-im.md` (PROC-MK-ODP-04) — **co-owner** (collateral side).
+
+**Planned (unauthored pipeline per `docs/2026-06-10_eitan_treasurer-role-definition-and-substrate-plan.md` Part C):**
+
+- `Procedures/by-policy/ftp-curve-calibration.md` (proposed PROC-ALM-FTC-01) — **owner** (cited by in-force FTP policy; Wave 1).
+- `Procedures/by-policy/alm-limit-monitoring.md` (proposed PROC-ALM-LIM-01) — **co-owner with Helena** (cited by in-force ALM policy; Wave 1).
+- `Procedures/by-policy/daily-alm-run.md` (proposed PROC-ALM-DAR-01) — **owner** (Wave 1).
+- `Procedures/by-policy/collateral-management.md` (proposed PROC-ALM-COL-01) — **co-owner with Tomas** (Wave 2).
+- `Procedures/by-policy/hedge-programme-execution.md` (proposed PROC-ALM-HPE-01) — **co-owner with Bea** (Wave 3; gated on first hedge designation).
 
 ## 14. Data contracts
 
@@ -137,18 +147,18 @@ Ravi pairs with Tomas on correspondent settlement: Tomas owns the correspondent 
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-25.
+> Reviewed 2026-06-10 (WS-TREASURER-ROLE-DEFINITION; open-gap set consolidated in `docs/2026-06-10_eitan_treasurer-role-definition-and-substrate-plan.md` Part D — adds CFP trigger substrate + intraday BCBS 248 metrics/RAS line to the items below).
 
 - **No real liquidity to manage yet.** Per CLAUDE.md "build phase vs licence-day": no real capital, no real customers, no real funding. Build-phase work runs against synthetic positions to validate the substrate end-to-end. Real ALM begins at licence-day.
-- **ALM engine** — ✅ closed 2026-05-19. Repricing gap (BCBS 319), ΔEVE (6 BCBS d365 shocks), and ΔNII (4 parallel shocks, 12-month horizon) engines live in `platform/alm/`; `ravi:alm-run` handler registered; `ALMRunCompleted` + `IRRBBChecked` events emitted daily. LCR / NSFR engines live at `platform/liquidity/`; `anya:liquidity-projection` handler uses `runLiquidityProjection` (event-store-backed, all five horizons). Authority: D-TREASURY-GAPS-WAVE1.
-- **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier (BA 325 Annex 1 L1/L2a/L2b), inventory projection, and `atlas:collateral-snapshot` handler live (`platform/collateral/`). Authority: D-TREASURY-GAPS-WAVE1.
+- **ALM engine** — ✅ closed 2026-05-19. Repricing gap (BCBS 319), ΔEVE (6 BCBS d365 shocks), and ΔNII (4 parallel shocks, 12-month horizon) engines live in `platform/alm/`; `ravi:alm-run` handler registered; `ALMRunCompleted` + `IRRBBChecked` events emitted daily. LCR / NSFR engines (BA 300 return family per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL) live at `platform/liquidity/`; `anya:liquidity-projection` handler uses `runLiquidityProjection` (event-store-backed, all five horizons). Authority: D-TREASURY-GAPS-WAVE1.
+- **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier (LCR HQLA levels L1/L2a/L2b; LCR return = BA 300 per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL), inventory projection, and `atlas:collateral-snapshot` handler live (`platform/collateral/`). Authority: D-TREASURY-GAPS-WAVE1.
 - **ILAAP** — ✅ closed 2026-05-19. Four stress scenarios (idiosyncratic, market-wide, combined, reverse-stress); `ILAAPScenarioRun` + `ILAAPSummaryCompleted` events; `atlas:ilaap-run` handler registered. Authority: D-TREASURY-GAPS-WAVE1.
-- **Settlement outflows (BA 325 §23)** — partially closed 2026-05-25. `buildSettlementOutflows` in `platform/projections/alm-positions.ts` now folds `TradeBooked` buy-side events with explicit `settlementDate` into the LCR denominator. Remaining gap: trades without `settlementDate` in payload are skipped; `SettlementInstructionIssued` event class is still a deferred gap for non-trade contractual outflows. Owner: Ravi + Atlas. Target: pre-licence.
+- **Settlement outflows (LCR — BA 300 per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL)** — partially closed 2026-05-25. `buildSettlementOutflows` in `platform/projections/alm-positions.ts` now folds `TradeBooked` buy-side events with explicit `settlementDate` into the LCR denominator. Remaining gap: trades without `settlementDate` in payload are skipped; `SettlementInstructionIssued` event class is still a deferred gap for non-trade contractual outflows. Owner: Ravi + Atlas. Target: pre-licence.
 - **FTP engine** — live (indicative rates). `ravi:ftp-curve-publish` handler builds a ZAR tenor grid from SARB repo rate + typical spreads; `FtpCurvePublished` event emitted daily. `ravi:ftp-attribution` wired to trade events. Remaining gap: live ZARONIA / JIBAR / SAGB market-data feed deferred to vendor-selection phase. Owner: Ravi + Atlas. Target: pre-licence.
 - **FTP curve sources** — not yet wired. Market-rate feed integrations (ZARONIA, JIBAR, OIS, FX) deferred to vendor-selection phase. Owner: Ravi + Atlas. Target: pre-licence.
 - **Correspondent settlement interface** — designed; not yet built. Tomas owns the connector; Ravi specifies the funding-plan logic. Owner: Tomas + Ravi. Target: pre-licence (mandatory for licence-day).
 - **Hedge-accounting integration** — designed; partial. Effectiveness testing prototyped; Bea's posting boundary not yet wired. Owner: Ravi + Bea. Target: post-licence; gated on first hedge designation.
-- **BalanceSheetProjected (BA 326 full scope)** — partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced. Full BA 326 NSFR scope pending `BalanceSheetProjected` event (Bea + Ravi substrate). Owner: Ravi + Bea. Target: pre-licence.
+- **BalanceSheetProjected (NSFR full scope — BA 300 return family per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL)** — partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced. Full NSFR scope pending `BalanceSheetProjected` event (Bea + Ravi substrate). Owner: Ravi + Bea. Target: pre-licence.
 
 ## 17. Change log
 
@@ -158,3 +168,4 @@ Ravi pairs with Tomas on correspondent settlement: Tomas owns the correspondent 
 | v1.0 | 2026-05-07 | Ravi (via Scrooge) | Upgraded to canonical agent-spec form per CEO directive 2026-05-07. Sections 1–5 retained from v0.1; Sections 6–17 added. Reports-to corrected to Eitan (Treasurer) per top-of-house structure. |
 | v1.1 | 2026-05-14 | Ravi (via Scrooge) | Mandate review sweep — substrate gaps updated with "Reviewed 2026-05-14" note. |
 | v1.2 | 2026-05-25 | Ravi (via Scrooge) | §16 updated: ALM engine + collateral inventory + ILAAP gaps closed per D-TREASURY-GAPS-WAVE1 (2026-05-19). `SettlementInstructionIssued` gap partially closed — buy-side trades with explicit `settlementDate` now folded into LCR outflow via `buildSettlementOutflows` in `platform/projections/alm-positions.ts`. FTP engine noted as live-with-indicative-rates. `runLiquidityProjection` now defaults to event-store-backed provider. |
+| v1.3 | 2026-06-10 | Ravi (via Scrooge) | Role-definition review (WS-TREASURER-ROLE-DEFINITION, D-TREASURER-ROLE-DEFINITION-REVIEW). §12 stale "planned" markers corrected (ALM / FTP / collateral-inventory live with code paths). §13 reconciled to real procedure files — live set named with ids; former planned stubs `ftp-attribution-cycle` / `ilaap-execution` / `intraday-liquidity-watch` folded into live PROC-ALM-FTP-01 / PROC-RISK-ILAAP-01 / PROC-RISK-ILF-01; unauthored pipeline restated with proposed ids (PROC-ALM-FTC-01 / -LIM-01 / -DAR-01 / -COL-01 / -HPE-01). §16 restamped 2026-06-10; superseded BA 325/326 numbering re-anchored to BA 300 per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL. Consolidated record: `docs/2026-06-10_eitan_treasurer-role-definition-and-substrate-plan.md`. |
