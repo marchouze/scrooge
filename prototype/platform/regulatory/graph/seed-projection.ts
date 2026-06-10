@@ -66,6 +66,16 @@ export interface SeedStats {
     edges: number;
     skipped: number;
   };
+  /**
+   * BCBS obligation nodes created to cover equivalence verdicts whose endpoint
+   * was missing from the pre-built graphs (gap-driven, idempotent). `created`
+   * are the BCBS obligation ids backfilled; `missingText` are those whose
+   * paragraph text was absent from chapter-text.json (anchored to citation only).
+   */
+  equivalenceBackfill?: {
+    created: string[];
+    missingText: string[];
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -644,6 +654,232 @@ function importObjectiveArtefacts(now: string): NonNullable<SeedStats["objective
     result.artefacts++;
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Gap-driven backfill of BCBS obligation nodes referenced by equivalence
+// verdicts but absent from the pre-built obligation graphs
+// ---------------------------------------------------------------------------
+
+/** A `{paragraph, heading, text}` entry as stored per chapter in chapter-text.json. */
+interface BcbsParagraph {
+  paragraph: string;
+  heading?: string;
+  text?: string;
+}
+
+/**
+ * Lazily load and index Regulations/BCBS/chapter-text.json by chapter token
+ * (e.g. `RBC30`) → paragraph number (e.g. `30.2`) → paragraph record. Returns
+ * an empty index if the file is absent (graph still seeds — the missing nodes
+ * are then anchored to their citation with empty text).
+ */
+function loadBcbsChapterTextIndex(): Map<string, Map<string, BcbsParagraph>> {
+  const index = new Map<string, Map<string, BcbsParagraph>>();
+  const path = repoPath("Regulations", "BCBS", "chapter-text.json");
+  if (!existsSync(path)) return index;
+  let doc: { chapters?: Record<string, Record<string, BcbsParagraph>> };
+  try {
+    doc = JSON.parse(readFileSync(path, "utf-8")) as typeof doc;
+  } catch {
+    return index;
+  }
+  const chapters = doc.chapters ?? {};
+  for (const [chapter, paras] of Object.entries(chapters)) {
+    const byPara = new Map<string, BcbsParagraph>();
+    for (const p of Object.values(paras)) {
+      if (p?.paragraph) byPara.set(p.paragraph, p);
+    }
+    index.set(chapter, byPara);
+  }
+  return index;
+}
+
+/**
+ * Replicate `build_obligation_graph.py`'s normative-language classifier so a
+ * backfilled node's `obligationType` is consistent with the natively-extracted
+ * `OBL-BCBS-*` nodes. Paragraphs that are descriptive rather than normative
+ * (the python emits no node for them — which is exactly why these are missing)
+ * fall through to `descriptive` with low confidence. We never fabricate a
+ * stronger modality than the text supports.
+ */
+function classifyBcbsObligation(text: string): { obligationType: string; confidence: number } {
+  if (
+    /\b(must not|shall not|may not|must never|is prohibited|are prohibited|is not permitted|may in no case)\b/i.test(
+      text,
+    )
+  ) {
+    return { obligationType: "must-not", confidence: 0.9 };
+  }
+  if (
+    /\b(must|shall|is required to|are required to|is obliged to|are obliged to|will be required to|has to|have to)\b/i.test(
+      text,
+    )
+  ) {
+    return { obligationType: "must", confidence: 0.9 };
+  }
+  if (/\b(should|is expected to|are expected to)\b/i.test(text)) {
+    return { obligationType: "recommended", confidence: 0.6 };
+  }
+  if (
+    /\b(banks?|supervisors?|institutions?|firms?|the Committee|the Authority)\b[^.;]{0,40}?\b(may|is permitted to|are permitted to|is allowed to|are allowed to|can elect to)\b/i.test(
+      text,
+    )
+  ) {
+    return { obligationType: "may", confidence: 0.55 };
+  }
+  return { obligationType: "descriptive", confidence: 0.3 };
+}
+
+/** Mirror `action_summary`: the first sentence carrying the matched modality, else a clipped lead. */
+function bcbsActionSummary(text: string, obligationType: string): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  const modalRe: Record<string, RegExp | undefined> = {
+    "must-not":
+      /\b(must not|shall not|may not|must never|is prohibited|are prohibited|is not permitted|may in no case)\b/i,
+    must: /\b(must|shall|is required to|are required to|is obliged to|are obliged to|will be required to|has to|have to)\b/i,
+    recommended: /\b(should|is expected to|are expected to)\b/i,
+    may: /\b(may|is permitted to|are permitted to|is allowed to|are allowed to|can elect to)\b/i,
+  };
+  const rx = modalRe[obligationType];
+  if (rx) {
+    for (const s of flat.split(/(?<=[.;])\s+(?=[A-Z(])/)) {
+      if (rx.test(s)) return s.slice(0, 300);
+    }
+  }
+  return flat.slice(0, 300);
+}
+
+/** Mirror `detect_actor`: most-specific actor noun first, default `bank`. */
+function bcbsActor(text: string): string {
+  if (/\bnational supervisors?\b/i.test(text)) return "national supervisor";
+  if (/\bthe supervisor\b|\bsupervisory authorit/i.test(text)) return "supervisor";
+  if (/\bthe Committee\b/i.test(text)) return "Basel Committee";
+  return "bank";
+}
+
+/**
+ * Decompose a BCBS obligation id (`BCBS-RBC-s30.2`) into its standard, chapter,
+ * paragraph, and citation URN. The chapter is the standard token concatenated
+ * with the paragraph's leading segment (`RBC` + `30` → `RBC30`), matching the
+ * natively-extracted `OBL-BCBS-*` nodes and `chapter-text.json`. Returns
+ * undefined for a malformed id.
+ */
+function decomposeBcbsObligationId(
+  bcbsObligationId: string,
+): { standard: string; paragraph: string; chapter: string; citation: string } | undefined {
+  const m = bcbsObligationId.match(/^BCBS-([A-Z]+)-s(.+)$/);
+  const standard = m?.[1];
+  const paragraph = m?.[2];
+  if (!standard || !paragraph) return undefined;
+  const chapterNum = paragraph.split(".")[0];
+  return {
+    standard,
+    paragraph,
+    chapter: `${standard}${chapterNum}`,
+    citation: `urn:reg:bcbs:${standard.toLowerCase()}:${paragraph}`,
+  };
+}
+
+/**
+ * Self-healing coverage backfill (D-OBLIGATIONS-REGISTER-CLEANUP, WS-OBLIGATIONS-CLEANUP P5).
+ *
+ * The SA↔BCBS equivalence fold (below, in runSeed) projects each
+ * `ObligationEquivalenceClassified` verdict to a typed `EQUIVALENT_TO` /
+ * `CONFLICTS_WITH` Obl→Obl edge, but guards on both endpoint nodes existing.
+ * The SA endpoint (`OBL-ORG-*`) is always present; the BCBS endpoint
+ * (`OBL-BCBS-<STD>-s<para>`) is created only by `importBcbsObligationGraphs`
+ * from the rule-based analysis — which omits paragraphs its classifier deems
+ * non-normative (e.g. definitional prose). Any verdict pointing at such a
+ * paragraph was silently skipped, so verdicts > materialised edges.
+ *
+ * This closes the gap at its root: for every BCBS obligation id referenced by a
+ * verdict that lacks a node, create the node — sourcing identity (text, heading,
+ * modality) from `chapter-text.json` and anchoring it to the
+ * `urn:reg:bcbs:<std>:<para>` citation. Gap-driven (not a hardcoded list), so it
+ * self-heals for any future verdict pair. Idempotent: only ids without an
+ * existing node are created. A paragraph absent from chapter-text.json is still
+ * created (anchored to its citation, empty text, `obligationType:"image-only"`)
+ * and surfaced in the return — never fabricated.
+ *
+ * @returns ids created, and ids whose paragraph text was absent from chapter-text.json.
+ */
+function backfillEquivalenceBcbsNodes(now: string): { created: string[]; missingText: string[] } {
+  const created: string[] = [];
+  const missingText: string[] = [];
+
+  // Distinct BCBS obligation ids referenced by any equivalence verdict.
+  const referenced = new Set<string>();
+  for (const event of eventStore.replay({ type: "ObligationEquivalenceClassified" })) {
+    const p = event.payload as ObligationEquivalenceClassifiedPayload;
+    if (p.bcbsObligationId) referenced.add(p.bcbsObligationId);
+  }
+  if (referenced.size === 0) return { created, missingText };
+
+  const db = getDb();
+  const nodeExists = db.prepare("SELECT 1 FROM graph_nodes WHERE id = ? LIMIT 1");
+  const chapterIndex = loadBcbsChapterTextIndex();
+
+  for (const bcbsObligationId of [...referenced].sort()) {
+    const nodeId = `OBL-${bcbsObligationId}`;
+    if (nodeExists.get(nodeId)) continue; // already created by the import — idempotent
+
+    const decomposed = decomposeBcbsObligationId(bcbsObligationId);
+    if (!decomposed) continue; // malformed id — cannot anchor
+    const { standard, paragraph, chapter, citation } = decomposed;
+
+    const para = chapterIndex.get(chapter)?.get(paragraph);
+    const text = typeof para?.text === "string" ? para.text : "";
+    const heading = typeof para?.heading === "string" ? para.heading : null;
+
+    let obligationType: string;
+    let actionSummary: string;
+    let actor: string;
+    let classificationConfidence: number;
+    if (text.length > 0) {
+      const c = classifyBcbsObligation(text);
+      obligationType = c.obligationType;
+      classificationConfidence = c.confidence;
+      actionSummary = bcbsActionSummary(text, obligationType);
+      actor = bcbsActor(text);
+    } else {
+      // Paragraph not in chapter-text.json — anchor to citation, do NOT fabricate.
+      missingText.push(bcbsObligationId);
+      obligationType = "image-only";
+      classificationConfidence = 0;
+      actionSummary = "";
+      actor = "bank";
+    }
+
+    const metadata: GraphNodeMetadata = {
+      sourceProvision: citation,
+      chapter,
+      paragraph,
+      standard,
+      classificationConfidence,
+      section: heading,
+      actionSummary,
+      obligationType,
+      actor,
+      // Provenance — this node is derived at seed time from chapter-text.json
+      // (or anchored to its citation when text is absent), not from the
+      // rule-based obligation-graph extraction.
+      provenanceMethod: "rule-based",
+      provenanceExtractorId: "seed:backfill-equivalence-bcbs-nodes",
+      provenanceConfidence: 1,
+      provenanceExtractedAt: now,
+    };
+
+    upsertNode({
+      id: nodeId,
+      nodeType: "Obligation",
+      label: `${chapter} ${paragraph} — ${obligationType}`,
+      metadata,
+    });
+    created.push(bcbsObligationId);
+  }
+
+  return { created, missingText };
 }
 
 export async function runSeed(): Promise<SeedStats> {
@@ -1753,6 +1989,17 @@ export async function runSeed(): Promise<SeedStats> {
   // ontology. Imported as part of the projection so it survives re-seeds.
   const obligationGraphs = importBcbsObligationGraphs(now);
 
+  // ── BCBS equivalence-endpoint coverage backfill ──────────────────────────
+  // The pre-built obligation graphs omit paragraphs their rule-based classifier
+  // deems non-normative, but SA↔BCBS equivalence verdicts may still reference
+  // them — leaving the BCBS endpoint node absent so the equivalence fold below
+  // silently skips the verdict. Create any referenced-but-missing BCBS node
+  // here (sourced from chapter-text.json, anchored to its urn:reg:bcbs
+  // citation), so every verdict materialises. Gap-driven + idempotent; runs
+  // after the import (so genuinely-extracted nodes win) and before the fold.
+  // D-OBLIGATIONS-REGISTER-CLEANUP · WS-OBLIGATIONS-CLEANUP P5.
+  const equivalenceBackfill = backfillEquivalenceBcbsNodes(now);
+
   // ── DERIVES_FROM bridge (Plane B → Plane A) ──────────────────────────────
   // Fold the bank's ObligationAdopted decisions (Plane B, the source of truth)
   // into a re-derivable graph edge: the adopted obligation DERIVES_FROM the
@@ -1862,6 +2109,7 @@ export async function runSeed(): Promise<SeedStats> {
     durationMs,
     obligationGraphs,
     objectiveArtefacts,
+    equivalenceBackfill,
   };
 }
 
