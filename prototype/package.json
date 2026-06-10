@@ -57,6 +57,7 @@
     "recon:fx-supported-currency-no-suspense": "bun run platform/recon/fx-supported-currency-no-suspense.ts",
     "recon:valuation-adjustment-additive": "bun run platform/recon/valuation-adjustment-additive.ts",
     "recon:orphan-open-runs": "bun run platform/recon/orphan-run-detector.ts",
+    "recon:orphan-run-deliverable-state": "bun run platform/recon/orphan-run-deliverable-state.ts",
     "recon:odp-portfolio-recon-dispute-staleness": "bun run platform/recon/odp-portfolio-recon-dispute-staleness.ts",
     "recon:odp-collateral-segregation-breach-staleness": "bun run platform/recon/odp-collateral-segregation-breach-staleness.ts",
     "recon:odp-repo-recon-dispute-staleness": "bun run platform/recon/odp-repo-recon-dispute-staleness.ts",

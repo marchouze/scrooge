@@ -174,6 +174,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:fx-supported-currency-no-suspense",
     "recon:valuation-adjustment-additive",
     "recon:orphan-open-runs",
+    "recon:orphan-run-deliverable-state",
     "recon:sla-codegen-drift",
     "recon:sla-rule-versioning",
     "recon:sla-approval-workflow",
