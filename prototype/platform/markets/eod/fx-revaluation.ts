@@ -259,6 +259,9 @@ export function runEodFxRevaluation(
       unrealisedPnlZarMinor,
       revaluedAt,
       rateSource: "static-seed",
+      // Spot revaluation engine handles FX-spot only (forward/swap/NDF →
+      // fx-forward-revaluation.ts). Stamp for instrument-level attribution.
+      productTaxonomy: "FX-spot",
     };
 
     store.append(

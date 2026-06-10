@@ -76,6 +76,16 @@ export const fxPositionRevaluedPayloadSchema = z.object({
    */
   instrumentId: z.string().min(1).optional(),
   /**
+   * FX product taxonomy of the revalued position ("FX-spot" | "FX-forward" |
+   * "FX-swap" | "NDF") — mirrors the originating FxTradeExecuted.productTaxonomy.
+   * The SLA interpreter's flat-FX context builder derives `instrument_type` from
+   * this for correct instrument-level attribution (P&L by instrument, BA-return
+   * instrument splits). Optional + falls back to "FX-spot" for legacy events
+   * emitted before this field landed (no posting impact — FX accounts resolve
+   * per-currency, not per-instrument). Authority: D-FX-OTC-NPA-SCOPE-EXPANSION.
+   */
+  productTaxonomy: z.string().min(1).optional(),
+  /**
    * The CCY/ZAR rate used to value the **base** currency leg against ZAR.
    * Per IAS-21-§28 + IAS-9-§5.7.1: each currency leg is independently
    * translated at the closing CCY/ZAR rate rather than via a cross rate.
