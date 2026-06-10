@@ -53,6 +53,11 @@ import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
 import type { AgentRunContext, AgentRunOutput } from "../types";
+import {
+  type GoalLoopBriefDispatchConfig,
+  dispatchBriefBoundRun,
+  openBriefsListForAgent,
+} from "./goal-loop-brief-dispatch";
 // Import Zara's underlying handler directly to avoid circular dependency
 // (handler-callables.ts → this file → handler-callables.ts).
 import zaraMlroSupervision from "./zara-mlro-supervision";
@@ -470,6 +475,19 @@ export const zaraGoalDeriver: GoalDeriver = async (
 };
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Brief-bound run-lifecycle dispatch config (shared helper — see
+// goal-loop-brief-dispatch.ts). Authority:
+// D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION (PR #1182); extended to all
+// goal-loops per D-QUEUE-CLOSEOUT-2026-06-10.
+// ---------------------------------------------------------------------------
+const ZARA_BRIEF_DISPATCH: GoalLoopBriefDispatchConfig = {
+  agentSlug: "zara",
+  // Shadow-mode cohort: no runHandler — the dispatch never invokes the
+  // underlying handler; every brief-bound run closes blocked with the
+  // substrate gap surfaced (run-feed visibility without live side-effects).
+};
+
 // Lazy singletons — avoid re-constructing per handler call.
 // ---------------------------------------------------------------------------
 
@@ -545,6 +563,34 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     },
     "zara:goal-loop — goal-loop iteration complete",
   );
+
+  // Brief-bound dispatch path (D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION,
+  // extended per D-QUEUE-CLOSEOUT-2026-06-10): bind a run to the oldest open
+  // brief so the iteration is visible in the autonomy run-feed. The shadow
+  // constraint holds: the dispatch config has no runHandler, so the underlying
+  // handler is never invoked live — every brief-bound run closes blocked with
+  // the substrate gap surfaced. Skipped under --dry-run.
+  const selectedDecision = goalOutcome !== null && goalOutcome.kind === "decision";
+  const openBriefs = selectedDecision && !ctx.dryRun ? openBriefsListForAgent("zara") : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(
+      ctx,
+      brief,
+      iterationId,
+      openBriefs.length - 1,
+      ZARA_BRIEF_DISPATCH,
+    );
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "zara:goal-loop — run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
 
   // Shadow mode (cohort-3): always dry-run the underlying handler so we
   // observe the trace without side-effects, regardless of goal outcome.

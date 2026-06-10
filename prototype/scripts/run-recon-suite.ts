@@ -100,6 +100,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:decision-required-event-pairing",
     "recon:agent-snapshot-staleness",
     "recon:goal-loop-capability",
+    "recon:goal-loop-run-lifecycle",
     "recon:risk-taxonomy-coverage",
     "recon:decision-record-event-symmetry",
     "recon:document-registration",
