@@ -68,6 +68,7 @@
 
 import { rwaInstrumentClassWeights } from "../config/financial-constants";
 import type { BondTradeExecutedPayload } from "../event-store/event-types/bond-accounting";
+import type { CcrEadComputedPayload } from "../event-store/event-types/counterparty-credit-risk";
 import type {
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
@@ -315,6 +316,54 @@ export function computeRwaFromPositions(
       note: `InterbankLoanPlaced placementId=${p.placementId} type=${p.placementType}`,
     });
     sourceEventIds.push(ev.event_id);
+  }
+
+  // -------------------------------------------------------------------------
+  // 3b. CcrEadComputed → CreditExposure (FX/IRS derivative counterparty default
+  //     risk). SA-CCR EAD is correctly counterparty-class-AGNOSTIC (BCBS CRE52);
+  //     the counterparty class is applied HERE at the risk-weight step
+  //     (CreditRWA = EAD × RW). Pending an authoritative counterparty Basel-
+  //     classification, this uses the most-punitive standard performing class
+  //     (corporate-non-ig, unrated → 100% RW) as a PRUDENT interim — it OVER-
+  //     states capital and refines DOWN as classification lands. Latest EAD per
+  //     netting set wins (SA-CCR re-emits at each close).
+  //
+  //     UPSTREAM DEPENDENCY (this path is READY but currently INERT): SA-CCR has
+  //     no production emitter yet (`computeAndEmitFor` is unwired), so there are
+  //     no CcrEadComputed events to consume today and this contributes 0 to
+  //     CreditRWA until SA-CCR is invoked to emit (Rohan). Currency: the RWA
+  //     engine sums eadMinor in functional currency without FX conversion, so
+  //     only ZAR-denominated netting sets are consumed (FX/IRS netting sets are
+  //     ZAR today: FX MTM = unrealisedPnlZarMinor; ZARONIA IRS = ZAR). Non-ZAR
+  //     EAD is skipped pending a conversion step (follow-up), never mis-summed.
+  //
+  //     Authority: D-FX-CCR-INTERIM-CONSERVATIVE-RWA (CEO 2026-06-10);
+  //     D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL; BCBS-SA-CCR-CRE52.
+  // -------------------------------------------------------------------------
+
+  const latestEadByNettingSet = new Map<string, { p: CcrEadComputedPayload; eventId: string }>();
+  for (const ev of eventStore.replay({ type: "CcrEadComputed", asOf })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as unknown as CcrEadComputedPayload;
+    if (!p.nettingSetId) continue;
+    const prev = latestEadByNettingSet.get(p.nettingSetId);
+    if (prev && prev.p.computationDate >= p.computationDate) continue;
+    latestEadByNettingSet.set(p.nettingSetId, { p, eventId: ev.event_id });
+  }
+  for (const { p, eventId } of latestEadByNettingSet.values()) {
+    if (p.ead <= 0) continue;
+    // ZAR netting sets only — see currency note above.
+    if (p.currency !== FUNCTIONAL_CURRENCY) continue;
+    creditExposures.push({
+      counterpartyId: p.counterpartyId,
+      counterpartyType: "corporate-non-ig",
+      eadMinor: p.ead,
+      currency: FUNCTIONAL_CURRENCY,
+      ratingBucket: "unrated",
+      residualMaturity: "long-term",
+      note: `SA-CCR EAD nettingSet=${p.nettingSetId} — interim conservative class (corporate-non-ig, 100%) pending authoritative counterparty classification (D-FX-CCR-INTERIM-CONSERVATIVE-RWA)`,
+    });
+    sourceEventIds.push(eventId);
   }
 
   // -------------------------------------------------------------------------
