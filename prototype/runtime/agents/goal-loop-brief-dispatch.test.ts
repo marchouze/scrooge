@@ -116,7 +116,11 @@ function runLifecycleForBrief(briefId: string): {
 
 describe("isSelfExecutableBrief", () => {
   test("no pattern → never self-executable (shadow-mode posture)", () => {
-    const brief = makeBriefPayload("brief:anya:x", "Projection drift sweep", "deliverable-document");
+    const brief = makeBriefPayload(
+      "brief:anya:x",
+      "Projection drift sweep",
+      "deliverable-document",
+    );
     expect(isSelfExecutableBrief(brief, undefined)).toBe(false);
   });
 
@@ -256,10 +260,15 @@ describe("dispatchBriefBoundRun — run-feed instrumentation", () => {
 
   test("shadow-mode config (no runHandler) → blocked even for an attestation-titled brief", async () => {
     const briefId = "brief:owen:shadow:dispatch";
-    const brief = makeBriefPayload(briefId, "Governance-cycle readiness attestation", "deliverable-document", {
-      name: "Owen",
-      position: "Company Secretary",
-    });
+    const brief = makeBriefPayload(
+      briefId,
+      "Governance-cycle readiness attestation",
+      "deliverable-document",
+      {
+        name: "Owen",
+        position: "Company Secretary",
+      },
+    );
 
     await dispatchBriefBoundRun(makeCtx("2026-06-10T13:00:00.000Z"), brief, "iter:shadow", 0, {
       agentSlug: "owen",
