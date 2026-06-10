@@ -29,7 +29,12 @@ export type GraphNodeType =
   | "RegulatoryTheme"
   // Capability layer (Principle 2 lower-half — D-PRINCIPLE-2-CAPABILITY-LAYER):
   // a system capability (code module) that realises a Procedure.
-  | "Capability";
+  | "Capability"
+  // Regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER):
+  // the mandate / objective a regulator pursues and that a requirement serves —
+  // the "why" behind an Obligation. Plane-A reference data (re-derivable from the
+  // regulator's own statements), NOT an event.
+  | "RegulatoryObjective";
 
 export type GraphEdgeType =
   // Structural
@@ -70,7 +75,16 @@ export type GraphEdgeType =
   | "REALISED_BY"
   // Two-plane bridge (D-REGULATORY-ARCHITECTURE-TWO-PLANE): a bank obligation
   // the bank adopted derives from the source provision/obligation it implements.
-  | "DERIVES_FROM";
+  | "DERIVES_FROM"
+  // Regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER):
+  //   PURSUES   Regulator → RegulatoryObjective       (a regulator pursues a mandate/objective)
+  //   REFINES   RegulatoryObjective → RegulatoryObjective (a sub-objective refines a parent)
+  //   SERVES    Obligation → RegulatoryObjective       (why a requirement exists — the keystone)
+  //   ALIGNS_TO Policy → RegulatoryObjective           (a bank policy aligns to a regulator objective)
+  | "PURSUES"
+  | "REFINES"
+  | "SERVES"
+  | "ALIGNS_TO";
 
 /**
  * Applicability status for Document and Framework nodes.
@@ -85,6 +99,25 @@ export type DocumentApplicabilityStatus = "direct" | "transposed" | "reference" 
 
 export interface DocumentNodeMetadata extends GraphNodeMetadata {
   applicabilityStatus?: DocumentApplicabilityStatus;
+}
+
+/**
+ * The level of a RegulatoryObjective in the mandate → objective → sub-objective
+ * refinement tree. (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.)
+ */
+export type RegulatoryObjectiveLevel = "mandate" | "objective" | "sub-objective";
+
+export interface RegulatoryObjectiveNodeMetadata extends GraphNodeMetadata {
+  /** The regulator's own statement of the objective (verbatim or close paraphrase). */
+  objectiveText?: string;
+  /**
+   * Position in the mandate → objective → sub-objective refinement tree.
+   * Carried on the schema/metadata as `objectiveLevel` to avoid colliding with
+   * the Provision-node `level` enum (part/chapter/section/clause).
+   */
+  objectiveLevel?: RegulatoryObjectiveLevel;
+  /** A `urn:reg:` provision URN sourcing the objective (re-derivability). */
+  sourceCitation?: string;
 }
 
 export interface GraphNodeMetadata {

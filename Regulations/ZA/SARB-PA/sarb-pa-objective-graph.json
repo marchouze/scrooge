@@ -1,0 +1,313 @@
+{
+  "instrumentId": "ZA-SARB-PA-OBJECTIVES",
+  "standardName": "Prudential Authority objective/mandate layer (FSR Act 9 of 2017 s33)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge — RegulatoryObjective layer)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:sarb-pa-objective-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "Financial Sector Regulation Act 9 of 2017, s33 (Objective of the Prudential Authority). Authority: D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.",
+  "comment": "Regulatory-intelligence objective/mandate layer — SARB-PA pilot. The objective nodes (the 'why' a requirement exists) are Plane-A reference data, re-derivable from the regulator's own statements (FSR Act 9 of 2017 s33), NOT events (D-REGULATORY-ARCHITECTURE-TWO-PLANE). The PURSUES/SERVES/ALIGNS_TO edges target EXISTING graph nodes: Regulator REG-SARB-PA (seed-projection.ts Step 1); Obligation nodes OBL-ORG-PR-* (seeded from Regulations/_obligations-register.md, keyed OBL-<ORG-id>); Policy nodes POL-capital-management-policy and POL-liquidity-risk-management-policy (seeded from Policies/*.md frontmatter policy-id, keyed POL-<policy-id>). The FSR Act 9 of 2017 Document node DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017 is seeded by importObjectiveArtefacts() (it is in the applicability map but had no RegulatoryInstrumentRegistered event, so this artefact carries a stub Document node + ISSUED_BY edge). SERVES wiring rationale: capital adequacy (ORG-PR-01, ORG-PR-37) + leverage (ORG-PR-05) + large exposures (ORG-PR-09, ORG-PR-40) serve safety-and-soundness; LCR/NSFR liquidity (ORG-PR-06, ORG-PR-07, ORG-PR-36, ORG-PR-43) serve safety-and-soundness AND financial stability (systemic liquidity). No closest-real-id substitutions were required — every SERVES/ALIGNS_TO target was confirmed present in the seeded graph.",
+  "nodes": [
+    {
+      "id": "DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017",
+      "nodeType": "Document",
+      "label": "Financial Sector Regulation Act 9 of 2017",
+      "metadata": {
+        "instrumentId": "FINANCIAL-SECTOR-REGULATION-ACT-9-2017",
+        "jurisdiction": "ZA",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "OBJ-SARB-PA-MANDATE",
+      "nodeType": "RegulatoryObjective",
+      "label": "Objective of the Prudential Authority",
+      "objectiveText": "The objective of the Prudential Authority is to (a) promote and enhance the safety and soundness of financial institutions that provide financial products and securities services; (b) promote and enhance the safety and soundness of market infrastructures; (c) protect financial customers against the risk that those financial institutions may fail to meet their obligations; and (d) assist in maintaining financial stability.",
+      "objectiveLevel": "mandate",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.33"
+    },
+    {
+      "id": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "nodeType": "RegulatoryObjective",
+      "label": "Safety and soundness of financial institutions",
+      "objectiveText": "Promote and enhance the safety and soundness of financial institutions that provide financial products and securities services.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SARB-PA-MI-SOUNDNESS",
+      "nodeType": "RegulatoryObjective",
+      "label": "Safety and soundness of market infrastructures",
+      "objectiveText": "Promote and enhance the safety and soundness of market infrastructures.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.33(b)"
+    },
+    {
+      "id": "OBJ-SARB-PA-CUSTOMER-PROTECTION",
+      "nodeType": "RegulatoryObjective",
+      "label": "Protection of financial customers against institutional failure",
+      "objectiveText": "Protect financial customers against the risk that those financial institutions may fail to meet their obligations.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.33(c)"
+    },
+    {
+      "id": "OBJ-SARB-PA-FINANCIAL-STABILITY",
+      "nodeType": "RegulatoryObjective",
+      "label": "Assist in maintaining financial stability",
+      "objectiveText": "Assist in maintaining financial stability.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.33(d)"
+    }
+  ],
+  "edges": [
+    {
+      "id": "OBJ-ISSUED_BY-FSR-PA",
+      "fromId": "DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017",
+      "toId": "REG-SARB-PA",
+      "edgeType": "ISSUED_BY",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33"
+    },
+
+    {
+      "id": "OBJ-PURSUES-MANDATE",
+      "fromId": "REG-SARB-PA",
+      "toId": "OBJ-SARB-PA-MANDATE",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33"
+    },
+    {
+      "id": "OBJ-PURSUES-SAFETY-SOUNDNESS",
+      "fromId": "REG-SARB-PA",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-PURSUES-MI-SOUNDNESS",
+      "fromId": "REG-SARB-PA",
+      "toId": "OBJ-SARB-PA-MI-SOUNDNESS",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(b)"
+    },
+    {
+      "id": "OBJ-PURSUES-CUSTOMER-PROTECTION",
+      "fromId": "REG-SARB-PA",
+      "toId": "OBJ-SARB-PA-CUSTOMER-PROTECTION",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(c)"
+    },
+    {
+      "id": "OBJ-PURSUES-FINANCIAL-STABILITY",
+      "fromId": "REG-SARB-PA",
+      "toId": "OBJ-SARB-PA-FINANCIAL-STABILITY",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(d)"
+    },
+
+    {
+      "id": "OBJ-REFINES-SAFETY-SOUNDNESS",
+      "fromId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "toId": "OBJ-SARB-PA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-REFINES-MI-SOUNDNESS",
+      "fromId": "OBJ-SARB-PA-MI-SOUNDNESS",
+      "toId": "OBJ-SARB-PA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(b)"
+    },
+    {
+      "id": "OBJ-REFINES-CUSTOMER-PROTECTION",
+      "fromId": "OBJ-SARB-PA-CUSTOMER-PROTECTION",
+      "toId": "OBJ-SARB-PA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(c)"
+    },
+    {
+      "id": "OBJ-REFINES-FINANCIAL-STABILITY",
+      "fromId": "OBJ-SARB-PA-FINANCIAL-STABILITY",
+      "toId": "OBJ-SARB-PA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(d)"
+    },
+
+    {
+      "id": "OBJ-SERVES-ORG-PR-01-SS",
+      "fromId": "OBL-ORG-PR-01",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-37-SS",
+      "fromId": "OBL-ORG-PR-37",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-05-SS",
+      "fromId": "OBL-ORG-PR-05",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-09-SS",
+      "fromId": "OBL-ORG-PR-09",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-40-SS",
+      "fromId": "OBL-ORG-PR-40",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-06-SS",
+      "fromId": "OBL-ORG-PR-06",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-06-FS",
+      "fromId": "OBL-ORG-PR-06",
+      "toId": "OBJ-SARB-PA-FINANCIAL-STABILITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(d)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-07-SS",
+      "fromId": "OBL-ORG-PR-07",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-07-FS",
+      "fromId": "OBL-ORG-PR-07",
+      "toId": "OBJ-SARB-PA-FINANCIAL-STABILITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(d)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-36-SS",
+      "fromId": "OBL-ORG-PR-36",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-SERVES-ORG-PR-43-SS",
+      "fromId": "OBL-ORG-PR-43",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+
+    {
+      "id": "OBJ-ALIGNS_TO-CAPITAL-SS",
+      "fromId": "POL-capital-management-policy",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-ALIGNS_TO-LIQUIDITY-SS",
+      "fromId": "POL-liquidity-risk-management-policy",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)"
+    },
+    {
+      "id": "OBJ-ALIGNS_TO-LIQUIDITY-FS",
+      "fromId": "POL-liquidity-risk-management-policy",
+      "toId": "OBJ-SARB-PA-FINANCIAL-STABILITY",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(d)"
+    }
+  ]
+}
