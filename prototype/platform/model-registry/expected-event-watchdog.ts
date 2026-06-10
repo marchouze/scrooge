@@ -72,6 +72,35 @@ export interface ExpectedEvent {
    * present once ≥1 event exists.
    */
   readonly maxAgeBusinessDays?: number;
+  /**
+   * Optional, dated build-phase deferral. When set, an ABSENT expectation is
+   * NOT a silent-red gap: it is a *tracked, dated* deferral — the event's
+   * trigger does not yet exist on the live event flow (e.g. no accounting
+   * period has closed, or there is no live regulator endpoint until licence-
+   * day), so the absence is honest and expected, not a fault. The watchdog
+   * still SURFACES it (kind `"deferred"`), so the disposition is visible rather
+   * than hidden, but it is counted + rendered distinctly from a genuine
+   * absence and raises no `SubstrateAlert{severity:high}`.
+   *
+   * This is the option-(b) disposition of the Trusted-Figures expected-event
+   * surface: where faking the event would be a fabricated record, the watchdog
+   * reflects reality ("deferred to <trigger>"), never silent red.
+   *
+   * A deferral self-clears: once a matching event lands (the trigger fires),
+   * the expectation is `present` and the deferral is moot — no code change
+   * needed. Reviewed at `reviewBy`; a stale deferral past its review date is a
+   * Vera recon finding, not a permanent exemption.
+   */
+  readonly deferral?: {
+    /** ISO date the deferral was recorded. */
+    readonly since: string;
+    /** When the deferral should be re-reviewed / is expected to clear. */
+    readonly reviewBy: string;
+    /** What real-world trigger must occur for the event to start landing. */
+    readonly clearsWhen: string;
+    /** Why deferring is honest rather than a hidden gap. */
+    readonly rationale: string;
+  };
 }
 
 /**
@@ -172,6 +201,30 @@ const STANDALONE_EXPECTATIONS: readonly ExpectedEvent[] = [
     rationale:
       "no SarbSubmissionAttempted{formId:BA310} exists — the BA-310 (market / position risk, FX-NOP) generation/submission path (bea:ba310-period-close) has never fired, so there is no automated SARB FX-NOP submission record on the live event flow",
     citation: "D-BA-RETURN-FORM-NUMBERING-RECON",
+    // OPTION (b) — honest build-phase deferral, NOT a faked event. The
+    // bea:ba310-period-close handler is correctly event-driven on
+    // AccountingPeriodClosed, but the canonical store has ZERO closed accounting
+    // periods (no AccountingPeriodClosed event exists), so the handler has never
+    // had a trigger to fire on. Beyond that, the handler's comment is explicit:
+    // the actual SARB e-filing TRANSPORT (mutual-TLS POST to the BankServ
+    // prudential portal) is a licence-day capability — today there is only the
+    // local simulator (submitToSarbPortal, mode "simulator"), "There is NO live
+    // SARB filing channel today". Emitting a SarbSubmissionAttempted now would
+    // fabricate a submission record for a period that was never closed and a
+    // portal that does not exist — exactly the fake the no-silent-zero
+    // discipline forbids. So the watchdog reflects reality: the expectation is
+    // a tracked, dated deferral that self-clears the moment the first
+    // AccountingPeriodClosed for LE-ZA-HOZ-BANK lands and the handler runs.
+    // Authority: D-BA-RETURN-FORM-NUMBERING-RECON; D-REPORTING-CAPABILITY-M2-M3-
+    // BUILD-PLAN; Principle 3 (cloud-native, licence-day transport swap).
+    deferral: {
+      since: "2026-06-10",
+      reviewBy: "2026-09-10",
+      clearsWhen:
+        "the first AccountingPeriodClosed for LE-ZA-HOZ-BANK lands (the bea:ba310-period-close handler then generates + records the BA-310 FX-NOP submission via the SARB simulator); the live SARB e-filing transport itself activates at licence-day (M8 cloud migration, Principle 3)",
+      rationale:
+        "no accounting period has been closed on the canonical store (zero AccountingPeriodClosed events), so the event-driven handler has had no trigger; and the real SARB filing channel is a licence-day capability (build phase uses the local simulator only). Faking the submission event would fabricate a record for a never-closed period against a non-existent portal.",
+    },
   },
 ];
 
@@ -189,14 +242,19 @@ export interface ExpectedEventGap {
   readonly rationale: string;
   readonly citation: string;
   /**
-   * Why the expectation is a gap. `"absent"` — no matching event exists at all.
-   * `"stale"` — a matching event exists but its `as_of` is older than the
-   * expectation's `maxAgeBusinessDays` window (only possible when the caller
-   * supplied an `asOf`).
+   * Why the expectation is a gap. `"absent"` — no matching event exists at all
+   * and the absence is a genuine fault. `"deferred"` — no matching event exists
+   * but the expectation carries a dated `deferral`, so the absence is honest +
+   * expected (the trigger does not yet exist on the live event flow), surfaced
+   * distinctly and NOT as silent red. `"stale"` — a matching event exists but
+   * its `as_of` is older than the expectation's `maxAgeBusinessDays` window
+   * (only possible when the caller supplied an `asOf`).
    */
-  readonly kind: "absent" | "stale";
+  readonly kind: "absent" | "deferred" | "stale";
   /** For `kind: "stale"`, the `as_of` of the freshest matching event. */
   readonly latestAsOf?: string;
+  /** For `kind: "deferred"`, the dated deferral disposition. */
+  readonly deferral?: ExpectedEvent["deferral"];
 }
 
 /**
@@ -223,15 +281,20 @@ export function checkExpectedEvents(store: EventStore, asOf?: string): ExpectedE
     }
 
     if (latestAsOf === null) {
-      // Absent — no matching event at all.
+      // No matching event. A dated deferral makes this an honest, tracked
+      // "deferred" disposition (the trigger does not yet exist) rather than a
+      // genuine "absent" fault — surfaced distinctly, never silent red.
       gaps.push({
         id: exp.id,
         eventType: exp.eventType,
         label: exp.label,
         owningRole: exp.owningRole,
-        rationale: exp.rationale,
+        rationale: exp.deferral
+          ? `${exp.rationale} — DEFERRED (since ${exp.deferral.since}, review by ${exp.deferral.reviewBy}): ${exp.deferral.rationale} Clears when: ${exp.deferral.clearsWhen}`
+          : exp.rationale,
         citation: exp.citation,
-        kind: "absent",
+        kind: exp.deferral ? "deferred" : "absent",
+        ...(exp.deferral ? { deferral: exp.deferral } : {}),
       });
       continue;
     }
@@ -297,6 +360,16 @@ export function emitExpectedEventGapAlerts(
   }
 
   for (const gap of checkExpectedEvents(store, asOf)) {
+    // A DEFERRED gap is an honest, tracked disposition — not a fault. It is
+    // surfaced on the data-failure banner with kind "deferred" (so the
+    // disposition is visible), but it raises NO severity:high integrity alert:
+    // a loud red alert for an expected, dated build-phase deferral would be
+    // exactly the false-positive the deferral mechanism exists to prevent. The
+    // deferral self-clears when its trigger lands.
+    if (gap.kind === "deferred") {
+      skipped.push(gap.id);
+      continue;
+    }
     const alertId = gap.kind === "stale" ? staleGapAlertId(gap.id, asOf) : gapAlertId(gap.id);
     if (existingAlertIds.has(alertId)) {
       skipped.push(gap.id);

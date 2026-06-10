@@ -108,6 +108,7 @@ import { ingestSarbRepoPrimeFixtureFromFile } from "../platform/market-data/sarb
 import { ingestZaroniaFixtureFromFile } from "../platform/market-data/sarb-zaronia-ingester";
 import { MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
+import { seedCalcModels } from "../platform/model-registry/calc-model-definitions";
 import { emitAllCalculationProvenance } from "../platform/model-registry/calculation-provenance";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
 import {
@@ -973,6 +974,38 @@ function bootDerive(): DashboardState {
  * Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
  */
 function emitCalculationProvenance(): void {
+  // Register + approve the regulatory-metric calc models BEFORE emitting any
+  // provenance. emitAllCalculationProvenance does a loud skip (no
+  // CalculationPerformed) for any figure whose bound model is not `approved` in
+  // the registry — so the models must be seeded on the SAME store this boot
+  // emits against. Idempotent: models already submitted/approved are skipped.
+  //
+  // This restores the boot-seed step retired in commit 1aaff5c5 ("retire
+  // calc-models boot seed"), which moved seedCalcModels to a standalone script
+  // and dropped the call from server boot. The retirement was silent on any
+  // store that did not have the script run against it: on the canonical home
+  // store the current-id models (model:lcr-ba110-v1 / model:nsfr-ba110-v1 /
+  // model:capital-cet1-ba100-v1) were never registered, so every boot loud-
+  // skipped LCR/NSFR/CET1 → no CalculationPerformed → three expected-event gaps
+  // (calc-lcr / calc-nsfr / calc-capital-cet1) on /api/data-failures. The other
+  // figures (RWA/ECL/IRRBB/market-risk/CVA) emitted fine because their model
+  // ids never churned and were already approved in the store. Seeding on boot
+  // makes model approval a structural invariant of the emit path again rather
+  // than a manual prerequisite that drifts. Authority: D-TRUSTED-FIGURES-
+  // PROGRAM-V1.
+  const seedResult = seedCalcModels(eventStore);
+  if (seedResult.submitted.length > 0 || seedResult.approved.length > 0) {
+    logger.info(
+      {
+        submitted: seedResult.submitted.length,
+        tierClassified: seedResult.tierClassified.length,
+        approved: seedResult.approved.length,
+        skipped: seedResult.skipped.length,
+      },
+      "calc-provenance: regulatory-metric calc models registered + approved (boot seed)",
+    );
+  }
+
   // Delegates to the extracted, unit-testable emission suite. RWA is now a
   // first-class emitted figure (model:rwa-sa-v1) alongside the LCR/NSFR/CET1/
   // ECL/IRRBB/market-risk/CVA figures — closing the gap where `rwa` had a
@@ -2945,6 +2978,15 @@ const server = Bun.serve({
       // have been emitted but wasn't (no degraded calc to show; figure reads
       // from stale/absent state). Surfaced in the same banner.
       const expectedEventGaps = checkExpectedEvents(eventStore);
+      // A `deferred` gap is an honest, tracked build-phase deferral (the event's
+      // trigger does not yet exist on the live event flow), NOT a silent-red
+      // fault. It is still surfaced (so the disposition is visible) but counted
+      // distinctly from genuine absent/stale gaps. `expectedEventGaps` keeps its
+      // historical meaning — genuine (non-deferred) gaps — so existing callers
+      // and the banner threshold do not regress; `expectedEventDeferrals`
+      // surfaces the deferred count alongside it.
+      const genuineGaps = expectedEventGaps.filter((g) => g.kind !== "deferred");
+      const deferrals = expectedEventGaps.filter((g) => g.kind === "deferred");
       return jsonResponse({
         failures,
         expectedEventGaps,
@@ -2952,7 +2994,8 @@ const server = Bun.serve({
           total: failures.length,
           failed: failures.filter((f) => f.status === "failed").length,
           degraded: failures.filter((f) => f.status === "degraded").length,
-          expectedEventGaps: expectedEventGaps.length,
+          expectedEventGaps: genuineGaps.length,
+          expectedEventDeferrals: deferrals.length,
         },
         pageProvenance: eventDerivedPageProvenance(),
       });

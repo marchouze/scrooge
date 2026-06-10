@@ -186,11 +186,72 @@ describe("expected-event watchdog", () => {
     expect(ids.has("daily-pnl")).toBe(true);
     expect(ids.has("balance-sheet")).toBe(true);
     expect(ids.has("mr-1-fx-var-measure")).toBe(true);
-    // Every gap on an empty store is "absent" (no asOf → no freshness grading).
-    expect(gaps.every((g) => g.kind === "absent")).toBe(true);
+    // On an empty store (no asOf → no freshness grading) every gap is "absent"
+    // EXCEPT the BA-310 FX-NOP expectation, which carries a dated deferral and
+    // surfaces as "deferred" (honest, tracked — not a silent-red fault).
+    for (const g of gaps) {
+      if (g.id === "ba310-fx-nop-submission") {
+        expect(g.kind).toBe("deferred");
+        expect(g.deferral).toBeDefined();
+      } else {
+        expect(g.kind).toBe("absent");
+      }
+    }
     for (const b of Object.values(CALC_BINDINGS)) {
       expect(ids.has(`calc-${b.calcKey}`)).toBe(true);
     }
+  });
+
+  it("surfaces the BA-310 FX-NOP expectation as a dated deferral, not a silent-red gap", () => {
+    const store = new EventStore();
+    const gaps = checkExpectedEvents(store);
+    const ba310 = gaps.find((g) => g.id === "ba310-fx-nop-submission");
+    expect(ba310).toBeDefined();
+    expect(ba310?.kind).toBe("deferred");
+    expect(ba310?.deferral?.since).toBe("2026-06-10");
+    expect(ba310?.deferral?.reviewBy).toBeTruthy();
+    expect(ba310?.deferral?.clearsWhen).toContain("AccountingPeriodClosed");
+    // The rationale carries the DEFERRED disposition inline so the surface
+    // reads as a tracked deferral, never an unexplained absence.
+    expect(ba310?.rationale).toContain("DEFERRED");
+  });
+
+  it("does NOT raise a high-severity integrity alert for a deferred expectation", () => {
+    const store = new EventStore();
+    const { emitted, skipped } = emitExpectedEventGapAlerts(store, AS_OF);
+    // The BA-310 deferral is skipped (no loud alert); every other absent gap
+    // still alerts.
+    expect(skipped).toContain("ba310-fx-nop-submission");
+    expect(emitted).not.toContain("ba310-fx-nop-submission");
+    const alertIds = [...store.replay({ type: "SubstrateAlert" })].map(
+      (e) => (e.payload as { alertId: string }).alertId,
+    );
+    expect(alertIds).not.toContain(gapAlertId("ba310-fx-nop-submission"));
+  });
+
+  it("clears the BA-310 deferral once a BA-310 submission lands", () => {
+    const store = new EventStore();
+    expect(checkExpectedEvents(store).some((g) => g.id === "ba310-fx-nop-submission")).toBe(true);
+    store.append(
+      makeSarbSubmissionAttempted({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: ["D-BA-RETURN-FORM-NUMBERING-RECON"],
+        payload: {
+          formId: "BA310",
+          formVersion: "v0.1-rehearsal",
+          institutionId: ENTITY,
+          reportingPeriod: "period:hoz-bank:month:2026-05",
+          submittedAt: AS_OF,
+          accepted: true,
+          referenceNumber: "SARB-TEST-1",
+          mode: "simulator",
+        },
+      }),
+    );
+    // Once the trigger lands the expectation is present — the deferral is moot.
+    expect(checkExpectedEvents(store).some((g) => g.id === "ba310-fx-nop-submission")).toBe(false);
   });
 
   it("reports no gaps when every expected event is present", () => {
@@ -229,25 +290,35 @@ describe("expected-event watchdog", () => {
     }
   });
 
-  it("emits one SubstrateAlert per gap and is idempotent", () => {
+  it("emits one SubstrateAlert per non-deferred gap and is idempotent", () => {
     const store = new EventStore();
+    // Deferred expectations (BA-310 FX-NOP) raise no loud alert — they are
+    // skipped, surfaced only as a tracked deferral. Genuine gaps still alert.
+    const deferredCount = expectedEvents().filter((e) => e.deferral).length;
+    const alertableCount = expectedEvents().length - deferredCount;
+
     const first = emitExpectedEventGapAlerts(store, AS_OF);
-    expect(first.emitted.length).toBe(expectedEvents().length);
-    expect(first.skipped).toEqual([]);
+    expect(first.emitted.length).toBe(alertableCount);
+    expect(first.skipped.length).toBe(deferredCount);
 
     const alertIds = [...store.replay({ type: "SubstrateAlert" })].map(
       (e) => (e.payload as { alertId: string }).alertId,
     );
-    expect(alertIds.length).toBe(expectedEvents().length);
+    expect(alertIds.length).toBe(alertableCount);
     for (const exp of expectedEvents()) {
-      expect(alertIds).toContain(gapAlertId(exp.id));
+      if (exp.deferral) {
+        expect(alertIds).not.toContain(gapAlertId(exp.id));
+      } else {
+        expect(alertIds).toContain(gapAlertId(exp.id));
+      }
     }
 
-    // Second call: every gap already alerted → all skipped, none re-emitted.
+    // Second call: every genuine gap already alerted → all skipped, none
+    // re-emitted (deferrals stay skipped too).
     const second = emitExpectedEventGapAlerts(store, AS_OF);
     expect(second.emitted).toEqual([]);
     expect(second.skipped.length).toBe(expectedEvents().length);
-    expect([...store.replay({ type: "SubstrateAlert" })].length).toBe(expectedEvents().length);
+    expect([...store.replay({ type: "SubstrateAlert" })].length).toBe(alertableCount);
   });
 
   it("stops alerting a gap once its expected event lands", () => {
