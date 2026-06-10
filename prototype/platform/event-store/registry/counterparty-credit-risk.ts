@@ -29,6 +29,7 @@
 import {
   ccrEadComputedPayloadSchema,
   ccrReplacementCostComputedPayloadSchema,
+  counterpartyBaselClassAssignedPayloadSchema,
   lexExceptionApprovedPayloadSchema,
   lexUtilisationComputedPayloadSchema,
   sicrTriggeredPayloadSchema,
@@ -124,5 +125,23 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
       "POLICY:credit-risk-policy-v1-S4",
       "POLICY:ifrs9-ecl-provisioning-policy-v1-S51",
     ],
+  },
+  {
+    // Authoritative Basel counterparty-class assignment (CRE20 taxonomy).
+    // Set by the credit-risk authority (CRC / CRO); the RWA projection resolves
+    // the latest-effective assignment per counterparty to apply the standardised
+    // risk weight. An unclassified counterparty falls back to the prudent
+    // `corporate-non-ig` (100%) interim and is surfaced by
+    // recon:counterparty-basel-classification-coverage.
+    // Authority: D-FX-COUNTERPARTY-BASEL-CLASSIFICATION; BCBS CRE20.
+    type: "CounterpartyBaselClassAssigned",
+    class: "audit",
+    issuer: "Helena",
+    subscribers: ["Helena", "Rohan", "Mira", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: counterpartyBaselClassAssignedPayloadSchema,
+    source: "platform/event-store/event-types/counterparty-credit-risk.ts",
+    citationsHint: ["BCBS-CRE20", "RRB-REG-38", "POLICY:credit-risk-policy-v1-S3"],
   },
 ];

@@ -170,6 +170,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // ("approved with tracked deferred gaps"). Gate is a no-op on replay. Citation:
   // D-FX-OTC-NPA-SCOPE-EXPANSION, P4-SECURITY-DESIGNED-IN.
   "platform/recon/npa-deferred-gap-tracking.ts",
+  // Counterparty Basel-classification coverage recon (D-FX-COUNTERPARTY-BASEL-
+  // CLASSIFICATION) — read-only replay of CcrEadComputed + CounterpartyBaselClassAssigned
+  // to inventory which SA-CCR-exposed counterparties are authoritatively classified vs
+  // riding the prudent fallback. Gate is a no-op on replay. Citation:
+  // D-FX-COUNTERPARTY-BASEL-CLASSIFICATION, BCBS CRE20, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/counterparty-basel-classification-coverage.ts",
   // ProductApproved attestation-integrity recon (D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8)
   // — backward-looking read-only replay of ProductApproved + ProductDimensionAttested events
   // to assert governance integrity before approval. Gate is a no-op on replay.
