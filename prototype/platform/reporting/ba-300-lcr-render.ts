@@ -91,7 +91,7 @@ export const Ba300LcrRenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-110/v0.1-rehearsal.json"),
   meta: z.object({
     form: z.literal("BA 300"),
-    formVersion: z.literal("v0.1-rehearsal"),
+    formVersion: z.literal("v0.2-fx-enriched"),
     entity: z.string().min(1),
     asOf: z.string().min(1),
     periodId: z.string().min(1),

@@ -77,6 +77,15 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Bea", "ba310-period-close", "event-driven", {
     subscribesTo: ["AccountingPeriodClosed"],
   }),
+  // BA 300 (LCR) period-close return — event-driven on AccountingPeriodClosed.
+  // Generates the consolidated functional-currency LCR (foreign-currency legs
+  // FX-enriched into the denominator per D-BA300-LCR-FX-ENRICHMENT) and records
+  // a SarbSubmissionAttempted{formId:"BA300"} via the SARB simulator.
+  // Authority: D-RETURNS-SUBMISSION-WIRING-WORKSTREAM; D-BA300-LCR-FX-ENRICHMENT;
+  //            D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (LCR = BA 300).
+  entry("Bea", "ba300-lcr-period-close", "event-driven", {
+    subscribesTo: ["AccountingPeriodClosed"],
+  }),
   // RWA-computed period-close — event-driven on AccountingPeriodClosed. Emits a
   // RwaComputed event of record (Pillar-1 RWA decomposition) feeding the BA 700
   // capital-adequacy denominator: credit RWA event-sourced via CRE20 over

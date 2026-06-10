@@ -246,6 +246,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // carve-out.
   // Citation: D-BA-RETURN-FORM-NUMBERING-RECON, P4-SECURITY-DESIGNED-IN.
   "runtime/agents/bea-ba310-period-close.test.ts",
+  // BA-300 LCR period-close handler unit test — co-located per-module test
+  // convention. Raw EventStore(":memory:") is a build-phase fixture for the
+  // generation/idempotency regression, not a production access path. T-01
+  // carve-out. Citation: D-RETURNS-SUBMISSION-WIRING-WORKSTREAM, P4-SECURITY-DESIGNED-IN.
+  "runtime/agents/bea-ba300-lcr-period-close.test.ts",
   // Helena risk-appetite-watch substrate-gap derivation unit test — co-located
   // per-module test convention. Raw EventStore(":memory:") is a build-phase
   // fixture for the gap-section store-probe regression, not a production
