@@ -275,6 +275,41 @@
       .join("");
   }
 
+  // ---------------------------------------------------------------------------
+  // Obligation → policy implementation coverage (WS-OBLIGATION-POLICY-MAPPING)
+  // ---------------------------------------------------------------------------
+
+  async function loadObligationPolicyCoverage() {
+    const list = document.getElementById("obligationPolicyGapList");
+    const summary = document.getElementById("obligationPolicyGapSummary");
+    if (!list) return;
+    try {
+      const data = await apiFetch("/api/graph/obligation-policy-coverage");
+      const gaps = data.gaps || [];
+      if (!gaps.length) {
+        if (summary)
+          summary.innerHTML = `<strong style="color:#27ae60">No gaps</strong> — all ${data.totalAdopted} adopted obligations have an implementing policy.`;
+        list.innerHTML = "";
+        return;
+      }
+      if (summary) {
+        summary.innerHTML = `<strong style="color:#c0392b">${data.gapCount}</strong> of <strong>${data.totalAdopted}</strong> adopted obligations have no implementing policy (IMPLEMENTED_BY edge missing); ${data.covered} covered.`;
+      }
+      list.innerHTML = gaps
+        .map((g) => {
+          const md = g.metadata || {};
+          return `
+        <div class="graph-trace-node">
+          <span class="graph-trace-node-id">${escHtml(md.obligationId || g.id)}</span>
+          <span class="graph-trace-node-label">${escHtml(g.label || "")}</span>
+        </div>`;
+        })
+        .join("");
+    } catch (e) {
+      list.innerHTML = `<div class="graph-trace-empty" style="padding:10px 0;color:#c0392b;">${escHtml(e.message || String(e))}</div>`;
+    }
+  }
+
   function renderTrace(chain) {
     const el = document.getElementById("traceResult");
     if (!el) return;
@@ -431,6 +466,9 @@
 
       // Fetch the regulatory-objective layer (the "why") + coverage gaps
       await loadObjectives();
+
+      // Fetch the obligation → policy implementation coverage gaps
+      await loadObligationPolicyCoverage();
 
       // Update last-updated header
       const lu = document.getElementById("lastUpdated");

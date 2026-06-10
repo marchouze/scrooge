@@ -14,6 +14,8 @@
 //                                                   with its regulator(s), serving-requirement
 //                                                   count, aligned policies + coverage gaps.
 //   GET /api/graph/trace-objective/:objectiveId   — full lineage for one objective.
+//   GET /api/graph/obligation-policy-coverage     — adopted obligations (OBL-ORG-*)
+//                                                   vs IMPLEMENTED_BY policies + gap list.
 //
 // The graph DB may be empty if the seed hasn't been run yet (bun run graph:seed).
 // All endpoints handle empty-state gracefully — the UI is responsible for
@@ -28,6 +30,7 @@ import {
   findOrphanProcedures,
   findUnimplementedObligations,
   getGraphStats,
+  getObligationPolicyCoverage,
   traceObjective,
   traceObligationChain,
 } from "../platform/regulatory/graph/query";
@@ -149,6 +152,28 @@ function handleGraphObjectives(): Response {
   }
 }
 
+// --- Obligation → Policy implementation coverage (WS-OBLIGATION-POLICY-MAPPING) ---
+
+/**
+ * Coverage of adopted obligations (OBL-ORG-*) by implementing policies via
+ * IMPLEMENTED_BY edges: totals + the gap list (adopted obligations no policy
+ * implements). The implementation-coverage analogue of /api/graph/objectives'
+ * coverageGaps.
+ */
+function handleGraphObligationPolicyCoverage(): Response {
+  try {
+    const coverage = getObligationPolicyCoverage();
+    return jsonResponse({
+      totalAdopted: coverage.totalAdopted,
+      covered: coverage.covered,
+      gapCount: coverage.gaps.length,
+      gaps: coverage.gaps,
+    });
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 500);
+  }
+}
+
 function handleGraphTraceObjective(objectiveId: string): Response {
   try {
     const trace = traceObjective(objectiveId);
@@ -188,6 +213,10 @@ export function registerGraphRoutes(
 
   if (pathname === "/api/graph/objectives") {
     return handleGraphObjectives();
+  }
+
+  if (pathname === "/api/graph/obligation-policy-coverage") {
+    return handleGraphObligationPolicyCoverage();
   }
 
   const traceObjMatch = pathname.match(/^\/api\/graph\/trace-objective\/(.+)$/);

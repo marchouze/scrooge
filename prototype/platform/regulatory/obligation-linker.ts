@@ -373,10 +373,10 @@ function lexicalOverlap(a: string, b: string): number {
 }
 
 /** Derive a domain letter (A..J) from a register row's ID prefix. */
-function deriveDomainLetter(id: string): ObligationReviewDomain {
+export function deriveDomainLetter(id: string): ObligationReviewDomain {
   const prefix = id.replace(/^ORG-/, "").split("-")[0] ?? "";
-  // Best-effort mapping aligned with deriveDomain() in
-  // obligation-policy-coverage.ts.
+  // Best-effort mapping; also consumed by recon/obligation-policy-coverage.ts
+  // (v2) for per-domain coverage grouping.
   switch (prefix) {
     case "PR":
       return "A";

@@ -334,6 +334,7 @@ The typed "register" form lives at `platform/regulatory/basel-adoption.ts` (`ADO
 | Edge | From | To | Meaning | When to assert |
 |------|------|----|---------|----------------|
 | `IMPLEMENTS` | Policy | Obligation | A bank policy implements a regulatory obligation | When a policy exists that directly addresses this obligation |
+| `IMPLEMENTED_BY` | Obligation | Policy | An adopted obligation (OBL-ORG-*) is implemented by a bank policy (inverse of `IMPLEMENTS`) | Derived at seed time from policy frontmatter (`obligations:` list, summary "closes ORG-*") and the obligations-register Fulfilment-policy column (WS-OBLIGATION-POLICY-MAPPING; D-REGULATORY-ARCHITECTURE-TWO-PLANE Plane-A derivation) |
 | `CLOSES` | Control | Obligation | A control closes the gap left by an obligation | For control-mapping in the obligations register |
 | `GOVERNS` | Policy | Activity | A bank policy governs a regulated activity | When the policy scope matches the activity |
 

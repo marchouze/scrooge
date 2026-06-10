@@ -69,6 +69,15 @@ export type GraphEdgeType =
   | "CLOSES"
   | "GOVERNS"
   | "ADDRESSES_THEME"
+  // Obligation → Policy implementation mapping (WS-OBLIGATION-POLICY-MAPPING):
+  // an adopted obligation (OBL-ORG-*) is implemented by a bank Policy. Inverse
+  // direction of the registry's documented IMPLEMENTS (Policy → Obligation) —
+  // named as an inverse pair (REALISES/REALISED_BY precedent) because the
+  // existing IMPLEMENTS edges in the seed are Policy → Document citations.
+  // Derived from policy frontmatter (obligations: list, summary "closes ORG-*")
+  // and the obligations-register Fulfilment-policy column — Plane-A reference
+  // derivation, no events (D-REGULATORY-ARCHITECTURE-TWO-PLANE).
+  | "IMPLEMENTED_BY"
   // Capability layer (D-PRINCIPLE-2-CAPABILITY-LAYER): Procedure realises a
   // system Capability (code); REALISED_BY is its inverse.
   | "REALISES"

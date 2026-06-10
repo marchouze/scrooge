@@ -60,6 +60,11 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 // the circular dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
 import camilleFinancialPositionSnapshot from "./camille-financial-position-snapshot";
+import {
+  type GoalLoopBriefDispatchConfig,
+  dispatchBriefBoundRun,
+  openBriefsListForAgent,
+} from "./goal-loop-brief-dispatch";
 
 // ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Camille
@@ -388,6 +393,19 @@ export const camilleGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound run-lifecycle dispatch config (shared helper — see
+// goal-loop-brief-dispatch.ts). Authority:
+// D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION (PR #1182); extended to all
+// goal-loops per D-QUEUE-CLOSEOUT-2026-06-10.
+// ---------------------------------------------------------------------------
+const CAMILLE_BRIEF_DISPATCH: GoalLoopBriefDispatchConfig = {
+  agentSlug: "camille",
+  selfExecutablePattern: /financial[\s-]?position|position[\s-]?snapshot/i,
+  deliveredClassLabel: "financial-position snapshot attestation",
+  runHandler: camilleFinancialPositionSnapshot,
+};
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -466,6 +484,33 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   // If escalation or deferred — run handler in dry-run mode (shadow trace).
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
+
+  // Brief-bound dispatch path (D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION,
+  // extended per D-QUEUE-CLOSEOUT-2026-06-10): when the loop selected a
+  // decision and an open brief is addressed to this agent, bind a run to the
+  // oldest brief and emit AgentRunStarted{agent-runtime} → AgentRunCompleted
+  // so the iteration is visible in the autonomy run-feed and the brief stops
+  // being re-selected every tick. Skipped under --dry-run.
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForAgent("camille") : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(
+      ctx,
+      brief,
+      iterationId,
+      openBriefs.length - 1,
+      CAMILLE_BRIEF_DISPATCH,
+    );
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "camille:goal-loop — run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
 
   const handlerCtx: AgentRunContext = {
     ...ctx,
