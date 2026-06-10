@@ -48,7 +48,7 @@
 
 import { execSync } from "node:child_process";
 import { type FSWatcher, existsSync, watch as fsWatch, mkdirSync, readFileSync } from "node:fs";
-import { dirname, extname, join, normalize, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 // Must precede any import of platform/composition — sets BANK_EVENT_DB to the
 // shared canonical store (config file → ~/.local/share/bank/event.db).
@@ -261,6 +261,7 @@ import {
 import { registerSimHubRoutes } from "./sim-hub-view";
 import { registerSlaApprovalRoutes } from "./sla-approval-view";
 import { registerSlaRepresentationRoutes } from "./sla-representation-view";
+import { serveStaticFile } from "./static-assets";
 import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
@@ -1101,34 +1102,10 @@ function refresh(reason: string): void {
   }
 }
 
-function contentTypeFor(path: string): string {
-  const ext = extname(path).toLowerCase();
-  switch (ext) {
-    case ".html":
-      return "text/html; charset=utf-8";
-    case ".css":
-      return "text/css; charset=utf-8";
-    case ".js":
-      return "application/javascript; charset=utf-8";
-    case ".json":
-      return "application/json; charset=utf-8";
-    case ".svg":
-      return "image/svg+xml";
-    default:
-      return "application/octet-stream";
-  }
-}
-
-function serveStatic(pathname: string): Response {
-  const requested = pathname === "/" ? "/home.html" : pathname;
-  const safe = normalize(requested).replace(/^\/+/, "");
-  const filePath = join(PUBLIC_DIR, safe);
-  if (!filePath.startsWith(PUBLIC_DIR) || !existsSync(filePath)) {
-    return new Response("Not found", { status: 404 });
-  }
-  return new Response(readFileSync(filePath), {
-    headers: { "Content-Type": contentTypeFor(filePath) },
-  });
+// Static serving lives in static-assets.ts (cache-validation headers + 304
+// revalidation; WS-DASHBOARD-STATIC-CACHING). `req` carries If-None-Match.
+function serveStatic(pathname: string, req?: Request): Response {
+  return serveStaticFile(PUBLIC_DIR, pathname, req);
 }
 
 function jsonResponse(data: unknown, status = 200): Response {
@@ -4320,20 +4297,20 @@ const server = Bun.serve({
     // Decisions register page (all authorities, filterable).
     // Must be checked before the /decisions/:id drill-down route.
     if (req.method === "GET" && url.pathname === "/decisions") {
-      return serveStatic("/decisions.html");
+      return serveStatic("/decisions.html", req);
     }
     // New Product Approval & Review console.
     // D-NEW-PRODUCT-APPROVAL-POLICY (CEO-approved 2026-05-10).
     if (req.method === "GET" && (url.pathname === "/products" || url.pathname === "/products/")) {
-      return serveStatic("/products.html");
+      return serveStatic("/products.html", req);
     }
     // Pretty-URL routes for drill-down — Bun serves the static HTML and the
     // page reads the decisionId from `window.location.pathname`.
     if (req.method === "GET" && url.pathname.startsWith("/decisions/")) {
-      return serveStatic("/decision.html");
+      return serveStatic("/decision.html", req);
     }
     if (req.method === "GET" && url.pathname === "/escalations") {
-      return serveStatic("/escalations.html");
+      return serveStatic("/escalations.html", req);
     }
     // Bank UI v0 — `/` lands on the home shell. The legacy operations
     // dashboard remains at `/index.html` for backwards reference and
@@ -4348,16 +4325,16 @@ const server = Bun.serve({
     // KYC onboarding queue + subpages.
     // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
     if (req.method === "GET" && url.pathname === "/kyc-onboarding") {
-      return serveStatic("/kyc-onboarding.html");
+      return serveStatic("/kyc-onboarding.html", req);
     }
     if (req.method === "GET" && url.pathname === "/kyc-onboarding/new") {
-      return serveStatic("/kyc-onboarding-new.html");
+      return serveStatic("/kyc-onboarding-new.html", req);
     }
     if (req.method === "GET" && url.pathname === "/kyc-onboarding/simulate") {
-      return serveStatic("/kyc-simulate.html");
+      return serveStatic("/kyc-simulate.html", req);
     }
     if (req.method === "GET" && url.pathname.startsWith("/kyc-onboarding/")) {
-      return serveStatic("/kyc-candidate.html");
+      return serveStatic("/kyc-candidate.html", req);
     }
     // KYC accepted clients register.
     // D-KYC-ONBOARDING-BUILD; AML-CFT-POLICY-V1; FIC-ACT-38-2001.
@@ -4365,17 +4342,17 @@ const server = Bun.serve({
       req.method === "GET" &&
       (url.pathname === "/kyc-clients" || url.pathname === "/kyc-clients/")
     ) {
-      return serveStatic("/kyc-clients.html");
+      return serveStatic("/kyc-clients.html", req);
     }
     if (req.method === "GET" && url.pathname.startsWith("/kyc-clients/")) {
-      return serveStatic("/kyc-client-detail.html");
+      return serveStatic("/kyc-client-detail.html", req);
     }
     if (req.method === "GET" && url.pathname === "/fleet") {
-      return serveStatic("/fleet.html");
+      return serveStatic("/fleet.html", req);
     }
     // RMS register hub + per-register page (Slice 4).
     if (req.method === "GET" && (url.pathname === "/rms" || url.pathname === "/rms/")) {
-      return serveStatic("/rms.html");
+      return serveStatic("/rms.html", req);
     }
     // Briefs / dispatches register page — RMS Phase 2 Block A (events-first
     // dispatch). Dedicated route with filters + drawer; the underlying
@@ -4385,7 +4362,7 @@ const server = Bun.serve({
     // (e.g. POST /api/briefs/supersede), validate the request body with a
     // Zod schema rather than an `as` cast.
     if (req.method === "GET" && (url.pathname === "/briefs" || url.pathname === "/briefs/")) {
-      return serveStatic("/briefs.html");
+      return serveStatic("/briefs.html", req);
     }
     // Brief drill-down — pretty URL `/briefs/<briefId>`. Mirrors the
     // /decisions/:id pattern: Bun serves the static detail page and brief.js
@@ -4393,7 +4370,7 @@ const server = Bun.serve({
     // the exact `/briefs` route above.
     // Authority: D-RMS-PHASE-1; D-RMS-PHASE-2-4-AUTHORSHIP.
     if (req.method === "GET" && url.pathname.startsWith("/briefs/")) {
-      return serveStatic("/brief.html");
+      return serveStatic("/brief.html", req);
     }
     // Document register page — RMS Phase 2 Block B (RecordFiled wiring).
     // Mirrors the /briefs pattern: dedicated route with classification +
@@ -4406,7 +4383,7 @@ const server = Bun.serve({
     // validate the request body with a Zod schema rather than an `as`
     // cast.
     if (req.method === "GET" && (url.pathname === "/documents" || url.pathname === "/documents/")) {
-      return serveStatic("/documents.html");
+      return serveStatic("/documents.html", req);
     }
     // ── General Ledger endpoints — /api/gl/* ──────────────────────────────
     // Authority: General-ledger substrate (Devon COO, engineering);
@@ -4433,7 +4410,7 @@ const server = Bun.serve({
       if (graphResponse) return graphResponse;
     }
     if (req.method === "GET" && url.pathname === "/gl") {
-      return serveStatic("/gl.html");
+      return serveStatic("/gl.html", req);
     }
     // ── SLA parallel-representation preview (read-only / dry-run) ──────────
     // Phase-0 spec §9.2: side-by-side IFRS book entry + SARB-BA-RETURN NOP
@@ -4450,7 +4427,7 @@ const server = Bun.serve({
       if (slaResponse) return slaResponse;
     }
     if (req.method === "GET" && url.pathname === "/sla-representations") {
-      return serveStatic("/sla-representations.html");
+      return serveStatic("/sla-representations.html", req);
     }
     // SLA rule approval workflow surface (Phase 4c).
     // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4c); D-SLA-APPROVAL-WORKFLOW-SEGREGATION.
@@ -4459,18 +4436,18 @@ const server = Bun.serve({
       if (approvalResponse) return approvalResponse;
     }
     if (req.method === "GET" && url.pathname === "/sla-approvals") {
-      return serveStatic("/sla-approvals.html");
+      return serveStatic("/sla-approvals.html", req);
     }
     // Financial-instrument register pages.
     // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22).
     if (req.method === "GET" && url.pathname === "/instruments/new") {
-      return serveStatic("/instruments-new.html");
+      return serveStatic("/instruments-new.html", req);
     }
     if (
       req.method === "GET" &&
       (url.pathname === "/instruments" || url.pathname === "/instruments/")
     ) {
-      return serveStatic("/instruments.html");
+      return serveStatic("/instruments.html", req);
     }
     // Manual FX trade booking route.
     // Authority: D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19).
@@ -4538,7 +4515,7 @@ const server = Bun.serve({
     }
 
     if (req.method === "GET" && url.pathname === "/sim-hub") {
-      return serveStatic("/sim-hub.html");
+      return serveStatic("/sim-hub.html", req);
     }
     // Market data — reference/time-series ticks (MarketDataStore).
     // Authority: D-MARKETS-SCHEMA-FOUNDATION.
@@ -4552,10 +4529,10 @@ const server = Bun.serve({
       if (mdResponse) return mdResponse;
     }
     if (req.method === "GET" && url.pathname === "/market-data") {
-      return serveStatic("/market-data.html");
+      return serveStatic("/market-data.html", req);
     }
     if (req.method === "GET") {
-      return serveStatic(url.pathname);
+      return serveStatic(url.pathname, req);
     }
     return new Response("Method not allowed", { status: 405 });
   },
