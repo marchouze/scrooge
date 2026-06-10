@@ -186,7 +186,8 @@
     }
   }
 
-  // null ⇒ no stored preference ⇒ all groups expanded by default.
+  // null ⇒ no stored preference ⇒ all groups collapsed by default (compressed
+  // nav; CEO directive 2026-06-10). The active page's group still auto-opens.
   function getExpandedGroups() {
     const raw = lsGet(LS_NAV_EXPANDED);
     if (!raw) return null;
@@ -197,7 +198,7 @@
     }
   }
   function isGroupExpanded(group, expandedSet) {
-    if (!expandedSet) return true;
+    if (!expandedSet) return false;
     return expandedSet.has(group);
   }
 
@@ -236,8 +237,8 @@
         if (!groupEl) return;
         const nowCollapsed = groupEl.classList.toggle("collapsed");
         header.setAttribute("aria-expanded", String(!nowCollapsed));
-        // Persist the full current expanded set (start from defaults = all).
-        const set = getExpandedGroups() || new Set(NAV.map((n) => n.group));
+        // Persist the full current expanded set (start from defaults = none).
+        const set = getExpandedGroups() || new Set();
         const name = groupEl.dataset.group;
         if (nowCollapsed) set.delete(name);
         else set.add(name);
