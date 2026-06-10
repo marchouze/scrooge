@@ -1,0 +1,553 @@
+{
+  "instrumentId": "ZA-FSCA-OBJECTIVES",
+  "standardName": "Financial Sector Conduct Authority objective/mandate layer (FSR Act 9 of 2017 s57)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge — RegulatoryObjective layer)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:fsca-objective-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "Financial Sector Regulation Act 9 of 2017, s57 (Objective of the Financial Sector Conduct Authority). Authority: D-FSCA-REGULATORY-INTELLIGENCE-INGESTION.",
+  "comment": "Regulatory-intelligence objective/mandate layer — FSCA. Mirrors the SARB-PA pilot (sarb-pa-objective-graph.json). The objective nodes (the 'why' a conduct requirement exists) are Plane-A reference data, re-derivable from the regulator's own statement of objectives (FSR Act 9 of 2017 s57), NOT events (D-REGULATORY-ARCHITECTURE-TWO-PLANE). PURSUES/SERVES/ALIGNS_TO edges target EXISTING graph nodes: Regulator REG-FSCA (seed-projection.ts Step 1); Obligation nodes OBL-ORG-* (Step 6, keyed OBL-<ORG-id>, from Regulations/_obligations.seed.json); Policy nodes POL-<policy-id> (Step 9, from Policies/*.md frontmatter policy-id). The FSR Act 9 of 2017 Document stub node DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017 is also seeded by the SARB-PA objective artefact (importObjectiveArtefacts is idempotent — INSERT OR REPLACE), so this artefact only carries the ISSUED_BY edge to REG-FSCA (the same FSR Act establishes both authorities; PA per s33, FSCA per s57). SERVES wiring rationale: FSCA s57 names four sub-objectives. Fair-customer-treatment (TCF) is served by the FAIS / General-Code conduct obligations (ORG-CD-*, ORG-FAIS-*, ORG-FAIS-RK-*) and the OTC-derivative-provider conduct-toward-counterparty obligations (ORG-ODP-COND-*, ORG-CS2-001). Market-integrity (efficient & fair markets, market-abuse) is served by the FMA market-abuse / market-conduct obligations (ORG-MK-01..05, ORG-FMA-*), the ODP authorisation obligations that keep the OTC market orderly (ORG-CS1-*, ORG-ODP-AUTH-*), and the trade-reporting obligations that deliver market transparency (ORG-CS3-*, ORG-ODP-RPT-*, ORG-MK-RPT-*). financial-inclusion and financial-education are FSCA statutory objectives with no bank-adopted obligation that currently serves them in the build phase — the objective nodes are recorded (PURSUES + REFINES) but carry no SERVES edge yet, mirroring the PA pilot's treatment of objectives nothing yet serves. ALIGNS_TO wiring: the conduct-bundle policies align to fair-treatment; the markets-bundle policies align to market-integrity. Every SERVES/ALIGNS_TO target id was confirmed present in the seeded graph (OBL-ORG-* from the seed; POL-* from Policies/*.md frontmatter).",
+  "nodes": [
+    {
+      "id": "DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017",
+      "nodeType": "Document",
+      "label": "Financial Sector Regulation Act 9 of 2017",
+      "metadata": {
+        "instrumentId": "FINANCIAL-SECTOR-REGULATION-ACT-9-2017",
+        "jurisdiction": "ZA",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "OBJ-FSCA-MANDATE",
+      "nodeType": "RegulatoryObjective",
+      "label": "Objective of the Financial Sector Conduct Authority",
+      "objectiveText": "The objective of the Financial Sector Conduct Authority is to (a) protect financial customers by promoting the fair treatment of financial customers by financial institutions, and by providing financial customers and potential financial customers with financial education programmes and otherwise promoting financial literacy and the ability of financial customers and potential financial customers to make sound financial decisions; (b) enhance and support the efficiency and integrity of the financial system; and to (c) assist in maintaining financial stability.",
+      "objectiveLevel": "mandate",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.57"
+    },
+    {
+      "id": "OBJ-FSCA-FAIR-TREATMENT",
+      "nodeType": "RegulatoryObjective",
+      "label": "Fair treatment of financial customers (TCF)",
+      "objectiveText": "Protect financial customers by promoting the fair treatment of financial customers by financial institutions — the Treating Customers Fairly (TCF) outcomes embedded across the product and service lifecycle.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-MARKET-INTEGRITY",
+      "nodeType": "RegulatoryObjective",
+      "label": "Efficiency and integrity of the financial system",
+      "objectiveText": "Enhance and support the efficiency and integrity of the financial system, including fair and orderly financial markets and the prevention of market abuse.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-FINANCIAL-INCLUSION",
+      "nodeType": "RegulatoryObjective",
+      "label": "Financial inclusion",
+      "objectiveText": "Promote financial inclusion — supporting access to appropriate financial products and services for financial customers and potential financial customers.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-FINANCIAL-EDUCATION",
+      "nodeType": "RegulatoryObjective",
+      "label": "Financial education and literacy",
+      "objectiveText": "Provide financial customers and potential financial customers with financial education programmes and otherwise promote financial literacy and the ability to make sound financial decisions.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    }
+  ],
+  "edges": [
+    {
+      "id": "OBJ-FSCA-ISSUED_BY-FSR-FSCA",
+      "fromId": "DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017",
+      "toId": "REG-FSCA",
+      "edgeType": "ISSUED_BY",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57"
+    },
+
+    {
+      "id": "OBJ-FSCA-PURSUES-MANDATE",
+      "fromId": "REG-FSCA",
+      "toId": "OBJ-FSCA-MANDATE",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57"
+    },
+    {
+      "id": "OBJ-FSCA-PURSUES-FAIR-TREATMENT",
+      "fromId": "REG-FSCA",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-PURSUES-MARKET-INTEGRITY",
+      "fromId": "REG-FSCA",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-PURSUES-FINANCIAL-INCLUSION",
+      "fromId": "REG-FSCA",
+      "toId": "OBJ-FSCA-FINANCIAL-INCLUSION",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-PURSUES-FINANCIAL-EDUCATION",
+      "fromId": "REG-FSCA",
+      "toId": "OBJ-FSCA-FINANCIAL-EDUCATION",
+      "edgeType": "PURSUES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+
+    {
+      "id": "OBJ-FSCA-REFINES-FAIR-TREATMENT",
+      "fromId": "OBJ-FSCA-FAIR-TREATMENT",
+      "toId": "OBJ-FSCA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-REFINES-MARKET-INTEGRITY",
+      "fromId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "toId": "OBJ-FSCA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-REFINES-FINANCIAL-INCLUSION",
+      "fromId": "OBJ-FSCA-FINANCIAL-INCLUSION",
+      "toId": "OBJ-FSCA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-REFINES-FINANCIAL-EDUCATION",
+      "fromId": "OBJ-FSCA-FINANCIAL-EDUCATION",
+      "toId": "OBJ-FSCA-MANDATE",
+      "edgeType": "REFINES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-01-FT",
+      "fromId": "OBL-ORG-CD-01",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-02-FT",
+      "fromId": "OBL-ORG-CD-02",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-03-FT",
+      "fromId": "OBL-ORG-CD-03",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-04-FT",
+      "fromId": "OBL-ORG-CD-04",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-05-FT",
+      "fromId": "OBL-ORG-CD-05",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-06-FT",
+      "fromId": "OBL-ORG-CD-06",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-07-FT",
+      "fromId": "OBL-ORG-CD-07",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-08-FT",
+      "fromId": "OBL-ORG-CD-08",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-09-FT",
+      "fromId": "OBL-ORG-CD-09",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CD-10-FT",
+      "fromId": "OBL-ORG-CD-10",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FAIS-KI-FT",
+      "fromId": "OBL-ORG-FAIS-KI",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FAIS-RK-ADVICE-FT",
+      "fromId": "OBL-ORG-FAIS-RK-ADVICE",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FAIS-RK-SUITABILITY-FT",
+      "fromId": "OBL-ORG-FAIS-RK-SUITABILITY",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FAIS-RK-FEE-DISCLOSURE-FT",
+      "fromId": "OBL-ORG-FAIS-RK-FEE-DISCLOSURE",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FAIS-RK-COMPLAINT-HANDLING-FT",
+      "fromId": "OBL-ORG-FAIS-RK-COMPLAINT-HANDLING",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FAIS-RK-GENERAL-CODE-FT",
+      "fromId": "OBL-ORG-FAIS-RK-GENERAL-CODE",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CS2-001-FT",
+      "fromId": "OBL-ORG-CS2-001",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-ODP-COND-001-FT",
+      "fromId": "OBL-ORG-ODP-COND-001",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-MK-01-MI",
+      "fromId": "OBL-ORG-MK-01",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-MK-02-MI",
+      "fromId": "OBL-ORG-MK-02",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-MK-03-MI",
+      "fromId": "OBL-ORG-MK-03",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-MK-05-MI",
+      "fromId": "OBL-ORG-MK-05",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FMA-001-MI",
+      "fromId": "OBL-ORG-FMA-001",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FMA-002-MI",
+      "fromId": "OBL-ORG-FMA-002",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-FMA-003-MI",
+      "fromId": "OBL-ORG-FMA-003",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CS1-001-MI",
+      "fromId": "OBL-ORG-CS1-001",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-ODP-AUTH-001-MI",
+      "fromId": "OBL-ORG-ODP-AUTH-001",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-CS3-001-MI",
+      "fromId": "OBL-ORG-CS3-001",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-ODP-RPT-001-MI",
+      "fromId": "OBL-ORG-ODP-RPT-001",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-SERVES-ORG-MK-RPT-001-MI",
+      "fromId": "OBL-ORG-MK-RPT-001",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-FAIS-COMPLIANCE-FT",
+      "fromId": "POL-fais-compliance-policy",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-COND-TCF-FT",
+      "fromId": "POL-COND-TCF-01",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-COMPLAINTS-FT",
+      "fromId": "POL-complaints-handling-policy",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-COI-FT",
+      "fromId": "POL-COI-POL-01",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-CONDUCT-RISK-FT",
+      "fromId": "POL-conduct-risk-policy",
+      "toId": "OBJ-FSCA-FAIR-TREATMENT",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(a)"
+    },
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-INSIDER-TRADING-MI",
+      "fromId": "POL-insider-trading-pa-dealing-policy",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-TRADE-REPORTING-MI",
+      "fromId": "POL-trade-reporting-policy",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    },
+    {
+      "id": "OBJ-FSCA-ALIGNS_TO-TRADE-CONFIRMATION-MI",
+      "fromId": "POL-trade-confirmation-affirmation-policy",
+      "toId": "OBJ-FSCA-MARKET-INTEGRITY",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1.0,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.57(b)"
+    }
+  ]
+}
