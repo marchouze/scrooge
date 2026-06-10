@@ -8,7 +8,11 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 (() => {
+  // Money formatting routes through the shared, config-driven formatter
+  // (SC.fmtMoney). The inline branch is a fallback for the brief window before
+  // _format.js has loaded.
   function zarFmt(minor) {
+    if (window.SC?.fmtMoney) return window.SC.fmtMoney(minor, "ZAR");
     const zar = minor / 100;
     const abs = Math.abs(zar).toLocaleString("en-ZA", {
       minimumFractionDigits: 2,
@@ -18,6 +22,7 @@
   }
 
   function numFmt(minor, ccy) {
+    if (window.SC?.fmtMoney) return window.SC.fmtMoney(minor, ccy);
     const amount = minor / 100;
     const abs = Math.abs(amount).toLocaleString("en-ZA", {
       minimumFractionDigits: 2,
@@ -72,6 +77,8 @@
     "Realised P&L (ZAR)",
     "Mark",
   ];
+  // Column alignment: numeric columns right-align (honours display setting).
+  const INSTRUMENT_ALIGN = ["left", "left", "left", "left", "right", "right", "right", "left"];
 
   // One By-Instrument table row ({cells, data}) — shared by the main filtered
   // table and the By-Book drill-down modal.
@@ -165,6 +172,7 @@
     "Realised P&L (ZAR)",
     "Status",
   ];
+  const TRADE_ALIGN = ["left", "left", "left", "right", "right", "right", "right", "left"];
 
   // Build a single trade-detail table row ({cells, data}) — shared by the full
   // list and the live-only filtered view.
@@ -318,6 +326,7 @@
           "Realised P&L (ZAR)",
           "Total (ZAR)",
         ],
+        align: ["left", "left", "right", "right", "right", "right", "right"],
         rows: crossAsset.books.map((b) => {
           const total = (b.markable ? b.unrealisedZarMinor : 0) + b.realisedZarMinor;
           return {
@@ -339,6 +348,7 @@
           SC.renderTable({
             container: wrap,
             headers: INSTRUMENT_HEADERS,
+            align: INSTRUMENT_ALIGN,
             rows: inBook.map(instrumentRow),
             emptyMessage: "No instruments in this book",
           });
@@ -387,6 +397,7 @@
         SC.renderTable({
           container: tableWrap,
           headers: INSTRUMENT_HEADERS,
+          align: INSTRUMENT_ALIGN,
           rows: shown.map(instrumentRow),
           onRowClick: (r) =>
             SC.openModal({
@@ -437,6 +448,7 @@
             "Unrealised P&L (ZAR)",
             "Realised P&L (ZAR)",
           ],
+          align: ["left", "left", "left", "right", "right", "right", "right", "right", "right"],
           rows: positions.map((p) => ({
             cells: [
               `<code style="font:12px var(--font-mono)">${SC.esc(p.instrumentId)}</code>`,
@@ -491,6 +503,7 @@
         SC.renderTable({
           container: tableWrap,
           headers: TRADE_HEADERS,
+          align: TRADE_ALIGN,
           rows: shown.map(tradeRow),
           onRowClick: (t) =>
             SC.openModal({
@@ -528,6 +541,7 @@
       SC.renderTable({
         container: tableWrap,
         headers: ["Report ID", "Date", "Total P&L (ZAR)", "Positions", "Generated At"],
+        align: ["left", "left", "right", "right", "left"],
         rows: closingReports.map((r) => ({
           cells: [
             `<code style="font:12px var(--font-mono)">${SC.esc(r.reportId)}</code>`,

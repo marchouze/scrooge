@@ -119,6 +119,68 @@
       color: var(--color-text-secondary);
       font-style: italic;
     }
+    /* Display preferences form */
+    .display-form {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: var(--space-3) var(--space-4);
+      align-items: center;
+      max-width: 640px;
+      margin-bottom: var(--space-5);
+    }
+    .display-form label.field-label {
+      font: var(--text-body);
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+    .display-form .field-control {
+      display: flex;
+      gap: var(--space-4);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .display-form .field-control label {
+      font: var(--text-body);
+      color: var(--color-text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      cursor: pointer;
+    }
+    .display-form input[type="number"],
+    .display-form input[type="text"] {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      padding: 4px 8px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      width: 120px;
+    }
+    .display-preview {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      max-width: 640px;
+    }
+    .display-preview .preview-label {
+      font: var(--text-caption);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-2);
+    }
+    .display-preview .preview-row {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      padding: 2px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    #display-status {
+      font: var(--text-caption);
+      margin-left: var(--space-3);
+    }
   </style>
 </head>
 <body>

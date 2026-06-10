@@ -157,9 +157,12 @@
         return s;
       }
 
+      // Percentages route through the shared, config-driven formatter. zarFmt
+      // below keeps its k/m/bn executive scaling by design (a Treasury-tile
+      // summarisation, distinct from the row-level house style).
       function ratioFmt(v) {
         if (v == null) return "N/A";
-        return `${parseFloat(v).toFixed(1)}%`;
+        return window.SC?.fmtPercent ? window.SC.fmtPercent(parseFloat(v)) : `${parseFloat(v).toFixed(1)}%`;
       }
 
       function statusToTileStatus(s) {
@@ -277,12 +280,12 @@
           const isWorst = Math.abs(s.deltaEveZar) === worstAbs && worstAbs > 0;
           return `<tr${isWorst ? ' class="worst-case"' : ""}>
             <td>${SC.esc(s.description)}</td>
-            <td style="text-align:right">${zarFmt(s.deltaEveZar)}</td>
-            <td style="text-align:right">${s.deltaEvePctTier1 != null ? `${(s.deltaEvePctTier1 * 100).toFixed(2)}%` : "—"}</td>
+            <td class="num">${zarFmt(s.deltaEveZar)}</td>
+            <td class="num">${s.deltaEvePctTier1 != null ? `${(s.deltaEvePctTier1 * 100).toFixed(2)}%` : "—"}</td>
           </tr>`;
         }).join("");
         eveEl.innerHTML += `<table class="irrbb-table">
-          <thead><tr><th>Shock Scenario</th><th style="text-align:right">ΔEVE ZAR</th><th style="text-align:right">ΔEVE % Tier 1</th></tr></thead>
+          <thead><tr><th>Shock Scenario</th><th class="num">ΔEVE ZAR</th><th class="num">ΔEVE % Tier 1</th></tr></thead>
           <tbody>${tableRows}</tbody>
         </table>`;
       }
@@ -300,11 +303,11 @@
           const isWorst = Math.abs(s.deltaNiiZar) === worstAbs && worstAbs > 0;
           return `<tr${isWorst ? ' class="worst-case"' : ""}>
             <td>${SC.esc(s.description)}</td>
-            <td style="text-align:right">${zarFmt(s.deltaNiiZar)}</td>
+            <td class="num">${zarFmt(s.deltaNiiZar)}</td>
           </tr>`;
         }).join("");
         niiEl.innerHTML += `<table class="irrbb-table">
-          <thead><tr><th>Shock Scenario</th><th style="text-align:right">ΔNII ZAR</th></tr></thead>
+          <thead><tr><th>Shock Scenario</th><th class="num">ΔNII ZAR</th></tr></thead>
           <tbody>${tableRows}</tbody>
         </table>`;
       }

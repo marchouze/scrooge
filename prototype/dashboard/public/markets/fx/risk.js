@@ -25,14 +25,16 @@
     );
   }
 
+  // Route through the shared, config-driven formatter (fmtPct receives a ratio,
+  // so scale to percent units first). Fallbacks cover pre-_format.js load.
   function fmtPct(n) {
     if (typeof n !== "number" || !Number.isFinite(n)) return "—";
-    return `${(n * 100).toFixed(1)}%`;
+    return window.SC?.fmtPercent ? window.SC.fmtPercent(n * 100) : `${(n * 100).toFixed(1)}%`;
   }
 
   function fmtNum(n) {
     if (typeof n !== "number" || !Number.isFinite(n)) return "—";
-    return n.toLocaleString();
+    return window.SC?.fmtNumber ? window.SC.fmtNumber(n) : n.toLocaleString();
   }
 
   // ---------------------------------------------------------------------------

@@ -43,13 +43,30 @@ body {
   z-index: 100;
 }
 
+.sidebar-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition: background 120ms, color 120ms;
+}
+
+.sidebar-toggle:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+}
+
 .topbar-brand {
   font: var(--text-h2);
   color: var(--color-accent);
   text-decoration: none;
   white-space: nowrap;
   flex-shrink: 0;
-  min-width: calc(var(--sidebar-width) - var(--space-6));
 }
 
 .topbar-title {
@@ -112,14 +129,57 @@ body {
   border-top: 1px solid var(--color-border);
 }
 
-.sidebar-group-label {
-  display: block;
+/* Clickable group header (collapse/expand). Resets native button styling. */
+.sidebar-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   padding: var(--space-1) var(--space-4) var(--space-2);
+}
+
+.sidebar-group-header:hover {
+  background: var(--color-surface-raised);
+}
+
+.sidebar-group-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   font: var(--text-caption);
   font-weight: 700;
   color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: .08em;
+}
+
+/* Owning governance seat (domain alignment, part D). */
+.sidebar-group-owner {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sidebar-group-chevron {
+  color: var(--color-text-disabled);
+  font-size: 11px;
+  transition: transform 160ms;
+  flex-shrink: 0;
+}
+
+/* Default state is expanded → chevron points down. Collapsed → points right. */
+.sidebar-group:not(.collapsed) .sidebar-group-chevron {
+  transform: rotate(90deg);
+}
+
+.sidebar-group.collapsed .sidebar-group-links {
+  display: none;
 }
 
 .sidebar-link {
@@ -153,6 +213,29 @@ body {
   margin-top: var(--topbar-height);
   padding: var(--space-6);
   min-height: calc(100vh - var(--topbar-height));
+  transition: margin-left 160ms;
+}
+
+/* ── Collapsed sidebar ───────────────────────────────────────── */
+/* Full-hide: the toggle reclaims the full width for content. */
+body.sidebar-collapsed .sidebar {
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
+  border-right: none;
+}
+
+body.sidebar-collapsed .main-content {
+  margin-left: 0;
+}
+
+/* ── Page domain / owner badge (part D) ──────────────────────── */
+.page-domain-badge {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
 }
 
 .page-header {
@@ -351,6 +434,19 @@ tbody tr[data-clickable]:hover {
   text-align: center;
   font: var(--text-body);
   color: var(--color-text-secondary);
+}
+
+/* ── Numeric cells ───────────────────────────────────────────── */
+/* Applied via SC.numClass() when display.rightAlignNumbers is on.
+   Tabular figures keep digits aligned column-to-column. Works on th + td. */
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Negative amount under the "minus-red" display convention. */
+.num-negative {
+  color: var(--color-danger);
 }
 
 /* ── Badges ──────────────────────────────────────────────────── */

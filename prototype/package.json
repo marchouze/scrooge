@@ -12,6 +12,7 @@
     "recon:fx-subledger-reconciliation": "bun run platform/recon/fx-subledger-reconciliation.ts",
     "recon:escalation-surface-parity": "bun run platform/recon/escalation-surface-parity.ts",
     "file:atlas-ceo-escalation-push-channel-spec": "bun run scripts/file-atlas-ceo-escalation-push-channel-spec.ts",
+    "file:atlas-dashboard-consolidation-proposal": "bun run scripts/file-atlas-dashboard-consolidation-proposal.ts",
     "recon:sla-codegen-drift": "bun run platform/recon/sla-codegen-drift.ts",
     "recon:sla-rule-versioning": "bun run platform/recon/sla-rule-versioning.ts",
     "recon:sla-approval-workflow": "bun run platform/recon/sla-approval-workflow.ts",

@@ -410,7 +410,14 @@
   // ---- utilities ----
   const esc = (s) => String(s ?? "")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const fmt = (minor) => (minor / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Debit/credit magnitudes route through the shared, config-driven formatter
+  // (SC.fmtNumber — no currency affix; the GL has a separate currency column).
+  // Ledger columns keep their inline right-alignment (accounting convention),
+  // independent of the dashboard-wide right-align toggle. Fallback for pre-load.
+  const fmt = (minor) =>
+    window.SC?.fmtNumber
+      ? window.SC.fmtNumber(minor / 100)
+      : (minor / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtDate = (iso) => iso ? iso.slice(0, 10) : "–";
 
   // ---- as-of picker ----
