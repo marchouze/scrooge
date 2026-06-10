@@ -260,11 +260,15 @@ describe("TC-FWD-1: FX-forward sunny-day", () => {
     expect(result.errors).toHaveLength(0);
 
     let count = 0;
+    let taxonomy: string | undefined;
     for (const e of store.replay({ type: "FxPositionRevalued" })) {
-      void e;
+      taxonomy = (e.payload as { productTaxonomy?: string }).productTaxonomy;
       count++;
     }
     expect(count).toBe(1);
+    // Instrument-attribution: the emitted reval carries its real productTaxonomy
+    // (D-FX-OTC-NPA-SCOPE-EXPANSION) — not mislabelled "FX-spot".
+    expect(taxonomy).toBe("FX-forward");
   });
 
   it("P&L direction: rate up → positive pnlDelta (forward gain)", () => {

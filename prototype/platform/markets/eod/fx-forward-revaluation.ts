@@ -388,6 +388,9 @@ export function runEodFxForwardRevaluation(
           unrealisedPnlZarMinor: pnlDeltaMinor,
           revaluedAt,
           rateSource: "static-forward-seed",
+          // Instrument-level attribution: this branch's trade.productTaxonomy is
+          // FX-forward / FX-swap / NDF (D-FX-OTC-NPA-SCOPE-EXPANSION).
+          productTaxonomy: trade.productTaxonomy,
         };
 
         store.append(
@@ -443,6 +446,9 @@ export function runEodFxForwardRevaluation(
           unrealisedPnlZarMinor: ndfPnlMinor,
           revaluedAt,
           rateSource: "static-forward-seed",
+          // Instrument-level attribution: this branch's trade.productTaxonomy is
+          // FX-forward / FX-swap / NDF (D-FX-OTC-NPA-SCOPE-EXPANSION).
+          productTaxonomy: trade.productTaxonomy,
         };
 
         store.append(
@@ -490,6 +496,9 @@ export function runEodFxForwardRevaluation(
           unrealisedPnlZarMinor: pnlDeltaMinor,
           revaluedAt,
           rateSource: "static-forward-seed",
+          // Instrument-level attribution: this branch's trade.productTaxonomy is
+          // FX-forward / FX-swap / NDF (D-FX-OTC-NPA-SCOPE-EXPANSION).
+          productTaxonomy: trade.productTaxonomy,
         };
 
         store.append(

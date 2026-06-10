@@ -292,8 +292,19 @@ export const fxTradeExecutedContextBuilder: ContextBuilder = (event) => {
  * TradeReportSubmitted. The raw payload is exposed directly as the `event`
  * scope (so a rule reads e.g. `event.unrealisedPnlZarMinor`, `event.netCash`),
  * augmented with `event.enrichment.*` for the rules that need prior-event
- * context (PR-FX-005, PR-FX-CANCEL). `instrument_type` is fixed to "FX-spot":
- * these are all FX-spot lifecycle events.
+ * context (PR-FX-005, PR-FX-CANCEL). `instrument_type` is fixed to "FX-spot" for
+ * ALL FX lifecycle events ON PURPOSE: it is the SLA *dispatch + resolution* axis,
+ * and FX posting rules (PR-FX-002 etc.) + the resolver's account rows are
+ * per-CURRENCY, instrument-agnostic (an FX-forward revaluation books to the same
+ * ZAR receivable / unrealised-P&L accounts as spot). Driving instrument-level
+ * values (FX-forward/FX-swap/NDF) through this axis would force every FX rule to
+ * be widened AND every resolver row to be duplicated per instrument, for no
+ * accounting difference — verified to break dispatch (no-eligible-rule) and
+ * resolution (resolver-miss). Instrument-LEVEL attribution for split reporting
+ * (P&L by instrument, BA-return instrument splits) is carried instead on the
+ * event payload's `productTaxonomy` field (FxPositionRevalued.productTaxonomy,
+ * stamped by the revaluation engines), which projections/reports read directly —
+ * NOT this dispatch axis. Authority: D-FX-OTC-NPA-SCOPE-EXPANSION.
  */
 function makeFlatFxContextBuilder(): ContextBuilder {
   return (event) => ({
