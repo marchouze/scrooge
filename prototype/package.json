@@ -165,6 +165,7 @@
     "recon:dcam-taxonomy-coverage": "bun run platform/recon/dcam-taxonomy-coverage.ts",
     "recon:semantic-registry-coverage": "bun run platform/recon/semantic-registry-coverage.ts",
     "recon:goal-loop-capability": "bun run platform/recon/goal-loop-capability-runner.ts",
+    "recon:goal-loop-run-lifecycle": "bun run platform/recon/goal-loop-run-lifecycle-runner.ts",
     "recon:risk-taxonomy-coverage": "bun run platform/recon/risk-taxonomy-coverage.ts",
     "recon:decision-record-event-symmetry": "bun run platform/recon/decision-record-event-symmetry.ts",
     "recon:decisions-events-only": "bun run platform/recon/decisions-events-only.ts",
