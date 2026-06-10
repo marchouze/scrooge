@@ -12,11 +12,19 @@
 // are the SARB-PA pilot's five — once other regulators' objective graphs land,
 // their objectives join the scope automatically.)
 //
-// Mode: ADVISORY (ok:true regardless). In the SARB-PA pilot, the safety-and-
-// soundness + financial-stability objectives are aligned (capital + liquidity
-// policies); the mandate, market-infrastructure-soundness, and customer-
-// protection objectives carry no aligned policy yet and surface as `warn`
-// findings — the purpose-coverage gaps the bank has not yet written policy to.
+// Coverage rule (single source: findObjectiveCoverageGaps in
+// platform/regulatory/graph/query.ts): an objective is covered by a direct
+// Policy ALIGNS_TO edge, or — for `mandate`-level objectives — transitively
+// when at least one refining objective is aligned (the mandate is the umbrella
+// its sub-objectives decompose; an un-aligned refining objective still surfaces
+// as its own gap, so the roll-up never hides a missing leaf).
+//
+// Mode: ADVISORY (ok:true regardless). After the 2026-06-10 tail-fill the
+// remaining gaps are the two FSCA objectives no bank policy genuinely serves
+// in the build phase (financial-inclusion + financial-education — FSCA-directed
+// statutory functions under FSR Act s.57(a); the bank has no retail
+// customers/products until licence-day). A residual gap with a reason beats a
+// fake edge, so the gate stays advisory until that policy estate exists.
 // The gate never blocks CI.
 //
 // Self-contained: seeds a FRESH graph into an isolated tmp DB (truncate-and-
@@ -46,6 +54,7 @@ interface ObjectiveRow {
 export async function run(): Promise<ReconResult> {
   const { runSeed } = await import("../regulatory/graph/seed-projection");
   const { getDb } = await import("../regulatory/graph/db");
+  const { findObjectiveCoverageGaps } = await import("../regulatory/graph/query");
   await runSeed();
   const db = getDb();
 
@@ -63,21 +72,19 @@ export async function run(): Promise<ReconResult> {
 
   result.asserted = objectives.length;
 
-  const hasAlignedPolicy = db.prepare(
-    `SELECT 1 FROM graph_edges e
-       JOIN graph_nodes p ON p.id = e.from_id AND p.node_type = 'Policy'
-      WHERE e.to_id = ? AND e.edge_type = 'ALIGNS_TO' LIMIT 1`,
-  );
+  // Single source of the coverage rule (direct ALIGNS_TO, or mandate-level
+  // transitive roll-up via REFINES) — platform/regulatory/graph/query.ts.
+  const gapIds = new Set(findObjectiveCoverageGaps().map((n) => n.id));
 
   let covered = 0;
   for (const o of objectives) {
-    if (hasAlignedPolicy.get(o.id)) {
+    if (!gapIds.has(o.id)) {
       covered++;
       continue;
     }
     violations.push({
       subject: o.id,
-      message: `objective "${o.label}" (${o.level ?? "?"}) has no ALIGNS_TO policy — purpose-coverage gap`,
+      message: `objective "${o.label}" (${o.level ?? "?"}) has no ALIGNS_TO policy (direct or via mandate roll-up) — purpose-coverage gap`,
       severity: "warn",
     });
   }

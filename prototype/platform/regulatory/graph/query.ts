@@ -796,10 +796,20 @@ export function traceObjective(objectiveId: string, asOf?: string): ObjectiveTra
 }
 
 /**
- * Return all RegulatoryObjective nodes that have NO incoming ALIGNS_TO edge —
- * i.e. an objective no bank policy aligns to. These are purpose-coverage gaps:
- * a regulator objective the bank's policy estate does not yet speak to.
- * D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.
+ * Return all RegulatoryObjective nodes the bank's policy estate does not speak
+ * to — the purpose-coverage gaps. An objective is COVERED when either:
+ *
+ *   (a) it has a direct incoming ALIGNS_TO edge from a Policy node, or
+ *   (b) it is a `mandate`-level objective and at least one of the objectives
+ *       that REFINES it carries an aligned policy (transitive roll-up — a
+ *       mandate is the umbrella statement its sub-objectives decompose; the
+ *       policy estate speaks to the mandate THROUGH the refinement, and a
+ *       direct mandate edge would only duplicate that citation). An un-aligned
+ *       refining objective still surfaces as its own gap, so the roll-up never
+ *       hides a missing leaf.
+ *
+ * D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER (mandate roll-up added on the
+ * WS-REG-INTELLIGENCE-OBJECTIVE-LAYER tail-fill, 2026-06-10).
  */
 export function findObjectiveCoverageGaps(): GraphNode[] {
   const db = getDb();
@@ -810,7 +820,17 @@ export function findObjectiveCoverageGaps(): GraphNode[] {
          WHERE n.node_type = 'RegulatoryObjective'
            AND NOT EXISTS (
              SELECT 1 FROM graph_edges e
+             JOIN graph_nodes p ON p.id = e.from_id AND p.node_type = 'Policy'
              WHERE e.to_id = n.id AND e.edge_type = 'ALIGNS_TO'
+           )
+           AND NOT (
+             json_extract(n.metadata, '$.objectiveLevel') = 'mandate'
+             AND EXISTS (
+               SELECT 1 FROM graph_edges r
+               JOIN graph_edges a ON a.to_id = r.from_id AND a.edge_type = 'ALIGNS_TO'
+               JOIN graph_nodes p ON p.id = a.from_id AND p.node_type = 'Policy'
+               WHERE r.edge_type = 'REFINES' AND r.to_id = n.id
+             )
            )`,
       )
       .all() as NodeRow[]

@@ -11,7 +11,7 @@
   },
   "generatedAt": "2026-06-10T00:00:00Z",
   "source": "Financial Sector Regulation Act 9 of 2017, s33 (Objective of the Prudential Authority). Authority: D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.",
-  "comment": "Regulatory-intelligence objective/mandate layer — SARB-PA pilot. The objective nodes (the 'why' a requirement exists) are Plane-A reference data, re-derivable from the regulator's own statements (FSR Act 9 of 2017 s33), NOT events (D-REGULATORY-ARCHITECTURE-TWO-PLANE). The PURSUES/SERVES/ALIGNS_TO edges target EXISTING graph nodes: Regulator REG-SARB-PA (seed-projection.ts Step 1); Obligation nodes OBL-ORG-PR-* (seeded from Regulations/_obligations-register.md, keyed OBL-<ORG-id>); Policy nodes POL-capital-management-policy and POL-liquidity-risk-management-policy (seeded from Policies/*.md frontmatter policy-id, keyed POL-<policy-id>). The FSR Act 9 of 2017 Document node DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017 is seeded by importObjectiveArtefacts() (it is in the applicability map but had no RegulatoryInstrumentRegistered event, so this artefact carries a stub Document node + ISSUED_BY edge). SERVES wiring rationale: capital adequacy (ORG-PR-01, ORG-PR-37) + leverage (ORG-PR-05) + large exposures (ORG-PR-09, ORG-PR-40) serve safety-and-soundness; LCR/NSFR liquidity (ORG-PR-06, ORG-PR-07, ORG-PR-36, ORG-PR-43) serve safety-and-soundness AND financial stability (systemic liquidity). No closest-real-id substitutions were required — every SERVES/ALIGNS_TO target was confirmed present in the seeded graph.",
+  "comment": "Regulatory-intelligence objective/mandate layer — SARB-PA pilot. The objective nodes (the 'why' a requirement exists) are Plane-A reference data, re-derivable from the regulator's own statements (FSR Act 9 of 2017 s33), NOT events (D-REGULATORY-ARCHITECTURE-TWO-PLANE). The PURSUES/SERVES/ALIGNS_TO edges target EXISTING graph nodes: Regulator REG-SARB-PA (seed-projection.ts Step 1); Obligation nodes OBL-ORG-PR-* (seeded from Regulations/_obligations-register.md, keyed OBL-<ORG-id>); Policy nodes POL-capital-management-policy and POL-liquidity-risk-management-policy (seeded from Policies/*.md frontmatter policy-id, keyed POL-<policy-id>). The FSR Act 9 of 2017 Document node DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017 is seeded by importObjectiveArtefacts() (it is in the applicability map but had no RegulatoryInstrumentRegistered event, so this artefact carries a stub Document node + ISSUED_BY edge). SERVES wiring rationale: capital adequacy (ORG-PR-01, ORG-PR-37) + leverage (ORG-PR-05) + large exposures (ORG-PR-09, ORG-PR-40) serve safety-and-soundness; LCR/NSFR liquidity (ORG-PR-06, ORG-PR-07, ORG-PR-36, ORG-PR-43) serve safety-and-soundness AND financial stability (systemic liquidity). No closest-real-id substitutions were required — every SERVES/ALIGNS_TO target was confirmed present in the seeded graph. Tail-fill 2026-06-10 (WS-REG-INTELLIGENCE-OBJECTIVE-LAYER): recovery-resolution-planning-policy aligns to customer-protection — harvested from its own citations (PA D1/2015 Recovery and Resolution Plans; FSB Key Attributes): recovery/resolution planning is the mechanism that protects financial customers against the risk the bank fails to meet its obligations (s.33(c)); payments-settlement-policy aligns to MI-soundness — harvested from its own citations (National Payment System Act 78/1998; SARB NPS Framework; STRATE settlement rules): the bank's safe participation in payment/settlement market infrastructures (s.33(b)); confidence 0.9 (strongly implied, not verbatim). The mandate-level objective carries no direct ALIGNS_TO by design — mandate coverage is transitive via the REFINES roll-up in recon:objective-policy-alignment.",
   "nodes": [
     {
       "id": "DOC-FINANCIAL-SECTOR-REGULATION-ACT-9-2017",
@@ -308,6 +308,26 @@
       "confidenceScore": 1.0,
       "extractedAt": "2026-06-10T00:00:00Z",
       "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(d)"
+    },
+    {
+      "id": "OBJ-ALIGNS_TO-RRP-CP",
+      "fromId": "POL-recovery-resolution-planning-policy",
+      "toId": "OBJ-SARB-PA-CUSTOMER-PROTECTION",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(c)"
+    },
+    {
+      "id": "OBJ-ALIGNS_TO-PAYSET-MI",
+      "fromId": "POL-payments-settlement-policy",
+      "toId": "OBJ-SARB-PA-MI-SOUNDNESS",
+      "edgeType": "ALIGNS_TO",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.9,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(b)"
     }
   ]
 }
