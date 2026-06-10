@@ -41,7 +41,9 @@ import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
+import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
+import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying substrate-state handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
@@ -74,6 +76,12 @@ const SUBSTRATE_STATE_GOAL = "Approve substrate-config changes (non-invariant-af
 const ATLAS_PR_GOAL = "Approve / reject a platform-design PR" as const;
 const ATLAS_SCHEMA_GOAL = "Approve a new event schema" as const;
 
+// Authority cited on the brief-bound run-lifecycle events this loop emits.
+// Atlas's goal-loop run-feed instrumentation closes the asymmetry whereby
+// rohan/helena/eitan/bea/ravi emit AgentRunStarted/Completed but Atlas did not,
+// leaving its hourly select invisible to the autonomy run-feed.
+const AUTONOMY_RUN_LIFECYCLE_AUTHORITY = "D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION" as const;
+
 // ---------------------------------------------------------------------------
 // Goal-derivation rule engine
 // ---------------------------------------------------------------------------
@@ -92,28 +100,54 @@ export function openBriefsAddressedToAtlas(
   store: EventStore = eventStore,
   minAgeMs = 30 * 60 * 1000,
 ): number {
+  return openBriefsListForAtlas(store, minAgeMs).length;
+}
+
+/**
+ * Returns the open (not yet started/completed) briefs addressed to Atlas,
+ * older than `minAgeMs` (default 30 min), oldest-first. Mirrors Rohan's
+ * `openBriefsListForRohan`: a brief is "handled" once any AgentRunStarted or
+ * AgentRunCompleted carries its briefId. This is what makes Atlas's loop react
+ * to its real backlog instead of re-selecting "48 pending briefs" every tick:
+ * once a run binds to a briefId, that briefId drops out of the open list.
+ *
+ * De-duplication note: open briefs are keyed by briefId, so the 44 RMS-Phase-2
+ * test envelopes (all sharing `brief:atlas:rms-slice-2-second-event`) collapse
+ * to a single open entry, and one withdrawn run against that briefId clears the
+ * whole batch. Authority: D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION.
+ */
+export function openBriefsListForAtlas(
+  store: EventStore = eventStore,
+  minAgeMs = 30 * 60 * 1000,
+): AgentBriefIssuedPayload[] {
   const handledBriefIds = new Set<string>();
   for (const e of store.replay({ type: "AgentRunCompleted" })) {
-    const p = e.payload as Record<string, unknown>;
-    const id = String(p.briefId ?? "");
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
     if (id) handledBriefIds.add(id);
   }
   for (const e of store.replay({ type: "AgentRunStarted" })) {
-    const p = e.payload as Record<string, unknown>;
-    const id = String(p.briefId ?? "");
+    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
     if (id) handledBriefIds.add(id);
   }
-  let count = 0;
+  const open: Array<{ asOfMs: number; briefId: string; payload: AgentBriefIssuedPayload }> = [];
+  const seenBriefIds = new Set<string>();
   for (const e of store.replay({ type: "AgentBriefIssued" })) {
-    const p = e.payload as Record<string, unknown>;
+    const p = e.payload as AgentBriefIssuedPayload;
     const briefId = String(p.briefId ?? e.event_id);
-    const toName = String((p.issuedTo as Record<string, unknown>)?.name ?? "");
+    const toName = String((p.issuedTo as { name?: string })?.name ?? "");
     if (!toName.toLowerCase().includes("atlas")) continue;
     if (handledBriefIds.has(briefId)) continue;
+    // Collapse duplicate envelopes sharing a briefId to a single open entry —
+    // one run-lifecycle pair against that briefId clears them all.
+    if (seenBriefIds.has(briefId)) continue;
     const t = new Date(e.as_of).getTime();
-    if (!Number.isNaN(t) && Date.now() - t > minAgeMs) count++;
+    if (Number.isNaN(t) || Date.now() - t <= minAgeMs) continue;
+    seenBriefIds.add(briefId);
+    open.push({ asOfMs: t, briefId, payload: p });
   }
-  return count;
+  // Oldest first — FIFO drain.
+  open.sort((a, b) => a.asOfMs - b.asOfMs);
+  return open.map((o) => o.payload);
 }
 
 /**
@@ -428,6 +462,152 @@ export const atlasGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound dispatch (run-feed instrumentation)
+//
+// When candidate-0a fires (open briefs addressed to Atlas), the loop binds a
+// run to the specific oldest brief and emits the run lifecycle so (a) the brief
+// is no longer re-picked every tick and (b) the iteration becomes visible in
+// the autonomy run-feed (which reads only AgentRunStarted{substrate:agent-runtime}).
+// The rule engine NEVER fakes delivery:
+//
+//   - Self-executable (substrate-state attestation class, no code-PR output):
+//     runs the atlas:substrate-state handler live and closes outcome="delivered".
+//   - Everything else (code-PR / judgement work the rule engine cannot perform):
+//     closes outcome="blocked" and surfaces the substrate gap. The blocked run
+//     is the honest, terminal autonomous state — it makes "selected-but-blocked-
+//     on-LLM-execution" visible in the run-feed (outcome:"blocked") instead of
+//     leaving the feed empty.
+//
+// Self-loop guard: unlike Bea/Rohan (whose blocked code-PR routes flow through
+// the brief-router → Atlas), Atlas does NOT auto-route blocked code-PR briefs.
+// The brief-router maps code-pr → Atlas, so routing here would re-issue the
+// brief straight back to Atlas and loop forever (this is exactly how the
+// `brief:atlas:route-*` envelopes were created). Atlas's blocked run + surfaced
+// gap is the terminal record; a Scrooge-coordinated / LLM-backed dispatched run
+// (like the one delivering this very change) is the executor that picks it up.
+//
+// Authority: D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION (CEO-approved 2026-06-10).
+// ---------------------------------------------------------------------------
+
+// Emit run-lifecycle events under Atlas's parent agent identity (matches the
+// dispatch CLI's `agent:atlas` actor). agent:atlas has a published permission
+// policy (runtime/agents/atlas-permission-policy-refresh.ts), so the
+// non-privileged AgentRunStarted/Completed types take the allow-by-default path
+// with NO legacy bypass.
+const ATLAS_GOAL_LOOP_ACTOR = { type: "service", id: "agent:atlas" } as const;
+
+/**
+ * A brief is self-executable by Atlas's wired rule-engine capability only if it
+ * asks for a substrate-state / readiness attestation AND requires no code-PR
+ * output. Deliberately narrow: the only deterministic deliverable Atlas's
+ * goal-loop owns today is the SubstrateStateSnapshot. Code-PR / schema / design
+ * work is judgement work outside the rule engine and is therefore blocked.
+ */
+export function isSelfExecutableByAtlas(brief: AgentBriefIssuedPayload): boolean {
+  const needsCode = brief.expectedOutputs.some((o) => o.kind === "code-pr");
+  if (needsCode) return false;
+  return /substrate[\s-]?state|readiness|substrate[\s-]?snapshot/i.test(brief.title);
+}
+
+/**
+ * Bind a run to one open brief and emit AgentRunStarted → AgentRunCompleted.
+ * Returns the number of run-lifecycle events emitted plus a summary fragment.
+ * The `runHandler` callback runs the live atlas:substrate-state handler for the
+ * self-executable path; it is injected so tests can assert lifecycle emission
+ * without driving the full substrate-state handler.
+ */
+export async function dispatchBriefBoundRun(
+  ctx: AgentRunContext,
+  brief: AgentBriefIssuedPayload,
+  iterationId: string,
+  remainingOpen: number,
+  runHandler: (c: AgentRunContext) => Promise<AgentRunOutput>,
+): Promise<{ eventsEmitted: number; summary: string }> {
+  const runId = `run:atlas:goal-loop:${iterationId}`;
+  const agent = brief.issuedTo; // issuedTo IS Atlas — keep the ref consistent.
+
+  recordAgentRunStarted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      startedAt: ctx.asOf,
+      substrate: "agent-runtime",
+      citations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+      actor: ATLAS_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+
+  let eventsEmitted = 1;
+
+  if (isSelfExecutableByAtlas(brief)) {
+    // Genuinely completable — run the substrate-state handler live and deliver.
+    const handlerOutput = await runHandler({ ...ctx, dryRun: false });
+    eventsEmitted += handlerOutput.eventsEmitted;
+    recordAgentRunCompleted(
+      {
+        runId,
+        briefId: brief.briefId,
+        agent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `Atlas goal-loop delivered the substrate-state attestation for brief ${brief.briefId} ("${brief.title}"). ${handlerOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+        followOnRoutes: [],
+        citations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+        actor: ATLAS_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    eventsEmitted += 1;
+    logger.info(
+      { briefId: brief.briefId, runId, remainingOpen },
+      "atlas:goal-loop — brief delivered (substrate-state attestation class)",
+    );
+    return {
+      eventsEmitted,
+      summary: `brief ${brief.briefId} delivered (substrate-state); ${remainingOpen} open brief(s) remain`,
+    };
+  }
+
+  // Not executable by the rule engine — bind the run, close it blocked, and
+  // surface the substrate gap. NEVER faked as delivered, and NEVER routed back
+  // to Atlas (the code-pr→Atlas router would loop). The blocked run is the
+  // honest terminal autonomous record; an LLM-backed dispatched run executes it.
+  const gap = `Atlas goal-loop (rule-engine) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work (code-PR / schema / design) outside the rule-engine capability. This is the goal-loop→LLM-backed-dispatched-run substrate gap: Atlas's autonomous substrate cannot author a code-PR; a Scrooge-coordinated or future LLM-backed run picks it up. Not auto-routed (the code-pr→Atlas brief-router would re-issue it to Atlas and loop).`;
+  recordAgentRunCompleted(
+    {
+      runId,
+      briefId: brief.briefId,
+      agent,
+      completedAt: ctx.asOf,
+      outcome: "blocked",
+      deliverableBodies: [],
+      substrateGapsSurfaced: [gap],
+      deliverableCitations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+      followOnRoutes: [],
+      citations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+      actor: ATLAS_GOAL_LOOP_ACTOR,
+    },
+    ctx.asOf,
+  );
+  eventsEmitted += 1;
+
+  logger.info(
+    { briefId: brief.briefId, runId, remainingOpen },
+    "atlas:goal-loop — brief triaged + blocked-on-LLM (gap surfaced, not routed to avoid self-loop)",
+  );
+  return {
+    eventsEmitted,
+    summary: `brief ${brief.briefId} blocked-on-LLM (gap surfaced); ${remainingOpen} open brief(s) remain`,
+  };
+}
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -506,6 +686,34 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // If escalation or deferred — run handler in dry-run mode (shadow trace).
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
 
+  // Brief-bound dispatch path: when the loop selected a decision and there is
+  // an open brief addressed to Atlas, bind a run to the oldest brief and emit
+  // its run lifecycle (AgentRunStarted{agent-runtime} → AgentRunCompleted) so
+  // the iteration is visible in the autonomy run-feed and the brief stops being
+  // re-selected every tick. Skipped under --dry-run (no real side-effects).
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForAtlas() : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(
+      ctx,
+      brief,
+      iterationId,
+      openBriefs.length - 1,
+      atlasSubstrateState,
+    );
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "atlas:goal-loop — dogfood run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop dogfood: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
+
+  // Cadence path: no open brief — run the substrate-state handler (live when the
+  // loop selected a decision; dry-run when it deferred or --dry-run was set).
   const handlerCtx: AgentRunContext = {
     ...ctx,
     // In shadow mode (first cohort ticks), always dry-run the handler
