@@ -52,7 +52,7 @@ import {
   evaluateFundingImpact,
   fxGatewayThresholdSchedule,
 } from "../risk/fx-gateway-thresholds";
-import type { ReconResult, ReconViolation } from "./types";
+import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "fx-gateway-threshold-enforcement";
 
@@ -289,13 +289,11 @@ export function run(opts: { sources?: SourceFiles } = {}): ReconResult {
     });
   }
 
-  return {
-    pipeline: PIPELINE,
-    ok: violations.every((v) => v.severity !== "fail"),
-    asserted,
-    violations,
-    asOf: new Date().toISOString(), // wall-clock: recon pipeline infrastructure timestamp
-  };
+  const result = emptyResult(PIPELINE);
+  result.asserted = asserted;
+  result.violations = violations;
+  result.ok = violations.every((v) => v.severity !== "fail");
+  return result;
 }
 
 // ---------------------------------------------------------------------------
