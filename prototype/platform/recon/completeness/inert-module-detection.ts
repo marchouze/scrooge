@@ -77,25 +77,64 @@ const WATCHED_SUFFIX_RE = /platform\/returns\/[a-z0-9-]+\/period-close-subscribe
 const RUNTIME_IMPORTER_DIRS = ["runtime", "dashboard"] as const;
 
 // ---------------------------------------------------------------------------
-// Allowlist of known-inert modules pending wiring. Each is a TRACKED finding:
-// the returns-submission layer is wholesale inert on `main` (verified — none of
-// the period-close-subscribers is imported by bea-period-close.ts or any other
-// runtime path). They are listed here — not silently dropped — so the gate is
-// green on `main` while the COUNT of known-inert modules stays visible. Closing
-// work: WS-COMPLETENESS-AUDIT backlog B2 (wire BA-310 into AccountingPeriodClosed),
-// with the rest following the same period-close-wiring pattern.
+// Allowlist of known-inert modules pending wiring. Each is a TRACKED finding
+// in the NAMED tracked-deferred-gap shape (WS-RETURNS-SUBMISSION-WIRING
+// Wave B, mirroring the ProductDeferredGap pattern of
+// D-FX-OTC-NPA-SCOPE-EXPANSION): gapId + owner + targetTrigger + citations.
+// They are listed here — not silently dropped — so the gate is green on
+// `main` while the COUNT and the gap names stay visible. Wired so far:
+// ba320 (#1105), ba300 LCR (Wave A #1180), ba700 capital adequacy (Wave B).
 //
 // De-allowlisting any entry makes the gate FAIL on that module — demonstrating
-// it actively asserts the T1 property and is not a trivial pass.
+// it actively asserts the T1 property and is not a trivial pass. A hollow
+// deferral (empty gapId / targetTrigger / citations) also FAILs (step 4).
 // ---------------------------------------------------------------------------
 
-interface AllowlistEntry {
+export interface AllowlistEntry {
   /** Repo-relative module path (POSIX). */
   readonly module: string;
   /** Owning seat(s) for the wiring work. */
   readonly owner: string;
   /** The tracked closing item. */
   readonly closing: string;
+  /**
+   * Named tracked-deferred-gap identifier (WS-RETURNS-SUBMISSION-WIRING Wave B,
+   * following the ProductDeferredGap pattern of D-FX-OTC-NPA-SCOPE-EXPANSION):
+   * every allowlisted deferral is a NAMED gap, not prose-only. Non-empty.
+   */
+  readonly gapId: string;
+  /**
+   * The concrete trigger at which the deferral re-opens and the wiring becomes
+   * due (e.g. "commencement-of-trading gross-income feed lands"). Non-empty —
+   * a deferral with no target trigger is a hollow deferral.
+   */
+  readonly targetTrigger: string;
+  /** Principle 2 citations for the deferral (at least one). */
+  readonly citations: readonly string[];
+}
+
+/**
+ * A named deferred COMPONENT on a return that IS wired (runtime importer
+ * exists, submissions flow) but carries one explicitly-disclosed deferred
+ * sub-component. Mirrors the "approved with tracked deferred gaps" NPA
+ * pattern (D-FX-OTC-NPA-SCOPE-EXPANSION): the return is live for its built
+ * substrate while the named sub-item stays a tracked, non-blocking deferral.
+ */
+export interface WiredComponentDeferral {
+  /** Named gap identifier. */
+  readonly gapId: string;
+  /** SARB form the wired return submits as (Excel-canonical numbering). */
+  readonly formId: string;
+  /** The wired module carrying the deferral. */
+  readonly module: string;
+  /** What is deferred. */
+  readonly title: string;
+  /** Owning seat(s). */
+  readonly owner: string;
+  /** The concrete trigger at which the deferral re-opens. */
+  readonly targetTrigger: string;
+  /** Principle 2 citations (at least one). */
+  readonly citations: readonly string[];
 }
 
 // NOTE — ba310 is NOT on this list: it was WIRED in #1105
@@ -103,43 +142,102 @@ interface AllowlistEntry {
 // WS-RETURNS-SUBMISSION-WIRING (D-RETURNS-SUBMISSION-WIRING-WORKSTREAM). Re-adding
 // it would now trip the self-cleaning STALE check below (`run()` step 3), because
 // a module with a runtime importer must not appear here.
+// NOTE — ba300 (LCR) was WIRED in Wave A (#1180,
+// `runtime/agents/bea-ba300-lcr-period-close.ts`) and de-allowlisted likewise.
+// NOTE — ba700 (Capital Adequacy) was WIRED in Wave B
+// (`runtime/agents/bea-ba700-period-close.ts`) and de-allowlisted; its
+// operational-RWA component remains a NAMED tracked deferral — see
+// `WIRED_RETURN_COMPONENT_DEFERRALS` below.
 //
-// The six entries below survived the WS-RETURNS-SUBMISSION-WIRING readiness
-// review with a CORRECTED, accurate blocker reason. Each was assessed and found
-// NOT genuinely production-ready: wiring it would generate from placeholder
-// inputs / under an unresolved formId — a wired-but-hollow return, which the
-// workstream judged worse than an honest allowlist entry
-// (D-RETURNS-SUBMISSION-WIRING-WORKSTREAM rationale).
+// The four entries below are GENUINELY BLOCKED returns (WS-RETURNS-SUBMISSION-
+// WIRING Wave B readiness re-review, 2026-06-10): wiring any of them today
+// would generate from placeholder inputs / rehearsal status / with no defined
+// submission channel — a wired-but-hollow return, which the workstream judged
+// worse than an honest, NAMED deferral. Each entry is a tracked deferred gap
+// in the ProductDeferredGap shape (gapId + owner + targetTrigger + citations;
+// D-FX-OTC-NPA-SCOPE-EXPANSION pattern); the gate FAILs on any hollow
+// deferral (empty gapId / targetTrigger / citations).
 export const KNOWN_INERT_PENDING_WIRING: readonly AllowlistEntry[] = [
   {
-    module: "platform/returns/ba700/period-close-subscriber.ts",
-    owner: "Mira (Compliance / RegTech engineer) + Bea (Accounting & financial reporting engineer)",
-    closing:
-      "WS-RETURNS-SUBMISSION-WIRING (D-RETURNS-SUBMISSION-WIRING-WORKSTREAM) — NOT wired: total RWA carries a placeholder op-risk component. The RwaComputed event stream NOW lands (D-RWA-ENGINE-W2-SLICE-3): credit RWA is event-sourced (CRE20 risk-weights over readDebtExposures — BondTradeExecuted + InterbankLoanPlaced, Reg 23), and market RWA is event-sourced (12.5 × BA 320 market-risk capital, incl. the Reg 28(3)(a) IR-general disallowances). BA 700 reads the RwaComputed event of record and threads rwaComputationEventId for chain-of-custody. What remains NOT production-ready is OPERATIONAL RWA: the BIA (OPE25) needs three years of audited gross income, which is gross-income-blocked until licence-day (no RevenueRecognitionEmitted feed pre-licence), so operationalRwaMinor is held at zero — an explicit flagged placeholder. Total RWA is therefore understated, which inflates (flatters) the CET1/T1/Total capital ratios. Submitting BA 700 now would record a SARB capital-adequacy return whose required-capital denominator omits operational risk — a wired-but-hollow return. Blocked until the gross-income feed lands and operational RWA is real (or until op-RWA is demonstrably immaterial with the numbers shown).",
-  },
-  {
     module: "platform/returns/ba400/period-close-subscriber.ts",
-    owner: "Mira + Bea",
+    owner:
+      "Mira (Compliance / RegTech engineer) + Bea (Accounting & financial reporting engineer)",
+    gapId: "GAP-RETURNS-BA400-GROSS-INCOME",
+    targetTrigger:
+      "Commencement-of-trading gross-income event feed lands (e.g. RevenueRecognitionEmitted) — BIA needs audited gross income, accruing only post-licence-day; first real BA 400 is computable after the first audited fiscal year.",
+    citations: [
+      "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
+      "D-BA-RETURN-NUMBERING-EXCEL-CANONICAL",
+      "[citation: TBC — Regulations Relating to Banks Reg 33 (operational risk); BCBS OPE25 (BIA)]",
+    ],
     closing:
-      "WS-RETURNS-SUBMISSION-WIRING — NOT wired: stub-fed generator. BA-300 (operational risk, BIA) gross-income rows are caller-supplied and explicitly post-commencement-of-trading (subscriber: 'Live numbers populate after commencement-of-trading + 3 fiscal years of audited gross income'; default placeholder zeros). Blocked until the gross-income event feed (e.g. RevenueRecognitionEmitted) lands.",
+      "WS-RETURNS-SUBMISSION-WIRING — NOT wired: stub-fed generator. BA 400 (operational risk, BIA) gross-income rows are caller-supplied and explicitly post-commencement-of-trading (subscriber: 'Live numbers populate after commencement-of-trading + 3 fiscal years of audited gross income'; default placeholder zeros). Unlike BA 700 (where op-risk is one component of an otherwise event-sourced return), the gross-income rows ARE the substance of BA 400 — wiring it pre-licence would submit a fully-empty return.",
   },
   {
     module: "platform/returns/conduct/period-close-subscriber.ts",
-    owner: "Mira",
+    owner: "Mira (Compliance / RegTech engineer)",
+    gapId: "GAP-RETURNS-CONDUCT-CHANNEL-AND-FEEDS",
+    targetTrigger:
+      "Conduct events gain a production emitter + Helena (Chief Risk Officer, governance)/Devon RAS conduct tolerances configured + an FSCA submission channel is defined (this is an FSCA conduct disclosure, not a SARB BA form — the SARB simulator is the wrong channel).",
+    citations: [
+      "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
+      "[citation: TBC — FSCA conduct-of-business returns taxonomy; Mira WS-INSTRUMENT-ANALYSES]",
+    ],
     closing:
       "WS-RETURNS-SUBMISSION-WIRING — NOT wired: rehearsal-status disclosure + no SARB envelope. `generateConductDisclosure` returns hardcoded `status: 'rehearsal'` (TODO: promote once Helena/Devon RAS tolerances configured), the conduct events have no production emitter, and there is no SARB XML adapter — this is an FSCA conduct disclosure, not a SARB BA-form prudential return submittable via the SARB simulator. Blocked until promoted to a real submission status with a defined channel.",
   },
   {
     module: "platform/returns/cms/period-close-subscriber.ts",
-    owner: "Mira",
+    owner: "Mira (Compliance / RegTech engineer)",
+    gapId: "GAP-RETURNS-CMS-FEEDS-AND-CHANNEL",
+    targetTrigger:
+      "Real TCF metric feeds replace the AlertOpened/ConflictDeclared placeholder-zero proxies + an FSCA submission channel is defined.",
+    citations: [
+      "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
+      "[citation: TBC — FSCA TCF/CMS disclosure taxonomy; Mira WS-INSTRUMENT-ANALYSES]",
+    ],
     closing:
       "WS-RETURNS-SUBMISSION-WIRING — NOT wired: rehearsal scaffolding. `generateCmsDisclosure` produces `status: 'rehearsal'` with placeholder-zero TCF metrics over AlertOpened/ConflictDeclared proxies (generator header: 'placeholder zeros; status: rehearsal'), and there is no SARB XML submission envelope. Earliest-stage of the three FSCA/TCF disclosures. Blocked until real feeds + a defined channel land.",
   },
   {
     module: "platform/returns/climate/period-close-subscriber.ts",
-    owner: "Mira",
+    owner: "Mira (Compliance / RegTech engineer)",
+    gapId: "GAP-RETURNS-CLIMATE-DATA-PROVIDER",
+    targetTrigger:
+      "Climate-data provider feed lands (real transition/physical scores + Pillar-2 add-on inputs) + a disclosure channel is defined (TCFD/SARB-GN5 Pillar-2 disclosure, not a SARB BA form).",
+    citations: [
+      "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
+      "[citation: TBC — SARB Guidance Note 5 climate-risk disclosure; TCFD recommendations]",
+    ],
     closing:
       "WS-RETURNS-SUBMISSION-WIRING — NOT wired: rehearsal-status disclosure + no SARB envelope. `generateClimateRiskDisclosure` assigns placeholder transition/physical scores (0) and a placeholder Pillar-2 add-on (0), returning `status: 'rehearsal'` (TODO: climate-data-provider). This is a TCFD/SARB-GN5 Pillar-2 disclosure, not a SARB BA-form prudential return. Blocked until the climate-data feed + a defined channel land.",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Named tracked deferrals on WIRED returns. These modules ARE wired (the gate
+// asserts they have runtime importers — they must NOT appear on the allowlist
+// above) but each carries an explicitly-disclosed deferred component. Listed
+// here so de-allowlisting a wired return never silently drops the residual
+// gap. Surfaced as an info-level note on every run (no silent caps, spec §5).
+// ---------------------------------------------------------------------------
+
+export const WIRED_RETURN_COMPONENT_DEFERRALS: readonly WiredComponentDeferral[] = [
+  {
+    gapId: "GAP-RETURNS-BA700-OPERATIONAL-RWA",
+    formId: "BA700",
+    module: "platform/returns/ba700/period-close-subscriber.ts",
+    title:
+      "Operational RWA (BIA, OPE25) held at zero — gross-income-blocked pre-licence. The RwaComputed event of record carries operationalRwaMinor: 0 with operationalRwaIsPlaceholder: true, and the submitted XML discloses the component + source label. NOT an understatement today: with zero gross income since incorporation, alpha × avg(positive annual gross income, 3y) = 0 is the correct BIA value for a pre-commencement bank.",
+    owner:
+      "Bea (Accounting & financial reporting engineer) + Mira (Compliance / RegTech engineer)",
+    targetTrigger:
+      "Commencement-of-trading gross-income event feed lands (RevenueRecognitionEmitted) — first non-zero audited gross-income year makes the zero a real understatement; the BIA computation must be live by then.",
+    citations: [
+      "D-RWA-ENGINE-W2-SLICE-3",
+      "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
+      "[citation: TBC — BCBS OPE25 (Basic Indicator Approach); Regulations Relating to Banks Reg 33]",
+    ],
   },
 ];
 
@@ -220,11 +318,13 @@ function hasRuntimeImporter(prototypeDir: string, moduleRelPath: string): boolea
  * @param watched     repo-relative paths of the watched period-close subscribers.
  * @param allowlist   the KNOWN_INERT_PENDING_WIRING set (or a test fixture).
  * @param isWired     true iff a runtime/dashboard importer exists for the module.
+ * @param componentDeferrals  named deferrals on WIRED returns (or a test fixture).
  */
 export function computeViolations(
   watched: readonly string[],
   allowlist: readonly AllowlistEntry[],
   isWired: (moduleRelPath: string) => boolean,
+  componentDeferrals: readonly WiredComponentDeferral[] = [],
 ): { violations: ReconViolation[]; inertCount: number } {
   const allowlisted = new Set(allowlist.map((e) => e.module));
   const violations: ReconViolation[] = [];
@@ -261,12 +361,75 @@ export function computeViolations(
     });
   }
 
+  // 4. NAMED-DEFERRAL WELL-FORMEDNESS (WS-RETURNS-SUBMISSION-WIRING Wave B,
+  //    ProductDeferredGap pattern): every allowlist entry must be a NAMED
+  //    tracked deferral — non-empty gapId, targetTrigger, and at least one
+  //    citation. A hollow deferral (prose with no name / trigger / citation)
+  //    is exactly the silent-suppression shape this gate exists to prevent.
+  for (const entry of allowlist) {
+    const hollow: string[] = [];
+    if (entry.gapId.trim() === "") hollow.push("gapId");
+    if (entry.targetTrigger.trim() === "") hollow.push("targetTrigger");
+    if (entry.citations.length === 0 || entry.citations.some((c) => c.trim() === "")) {
+      hollow.push("citations");
+    }
+    if (hollow.length > 0) {
+      violations.push({
+        subject: entry.module,
+        message: `Allowlist entry for "${entry.module}" is a HOLLOW deferral — missing/empty: ${hollow.join(", ")}. Every KNOWN_INERT_PENDING_WIRING entry must be a NAMED tracked deferred gap (gapId + targetTrigger + citations; ProductDeferredGap pattern per D-FX-OTC-NPA-SCOPE-EXPANSION, applied to returns by WS-RETURNS-SUBMISSION-WIRING Wave B).`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // 5. WIRED-COMPONENT DEFERRALS: each must reference a module that IS wired
+  //    (a component deferral on an unwired module belongs on the allowlist
+  //    instead), must be well-formed, and must not duplicate an allowlist
+  //    module (a module is either inert-deferred or wired-with-component-
+  //    deferral, never both).
+  for (const gap of componentDeferrals) {
+    const hollow: string[] = [];
+    if (gap.gapId.trim() === "") hollow.push("gapId");
+    if (gap.targetTrigger.trim() === "") hollow.push("targetTrigger");
+    if (gap.citations.length === 0 || gap.citations.some((c) => c.trim() === "")) {
+      hollow.push("citations");
+    }
+    if (hollow.length > 0) {
+      violations.push({
+        subject: gap.gapId === "" ? gap.module : gap.gapId,
+        message: `WIRED_RETURN_COMPONENT_DEFERRALS entry for "${gap.module}" is a HOLLOW deferral — missing/empty: ${hollow.join(", ")}.`,
+        severity: "fail",
+      });
+    }
+    if (allowlisted.has(gap.module)) {
+      violations.push({
+        subject: gap.gapId,
+        message: `"${gap.module}" appears BOTH on KNOWN_INERT_PENDING_WIRING and in WIRED_RETURN_COMPONENT_DEFERRALS — a module is either inert-deferred (unwired) or wired-with-component-deferral, never both. Remove one.`,
+        severity: "fail",
+      });
+    } else if (!isWired(gap.module)) {
+      violations.push({
+        subject: gap.gapId,
+        message: `WIRED_RETURN_COMPONENT_DEFERRALS entry "${gap.gapId}" references "${gap.module}" which has NO runtime/dashboard importer — a component deferral only makes sense on a WIRED return. If the module is inert, track it on KNOWN_INERT_PENDING_WIRING instead.`,
+        severity: "fail",
+      });
+    } else {
+      // Visible, never silent: each live component deferral is surfaced.
+      violations.push({
+        subject: gap.gapId,
+        message: `Named tracked component deferral on WIRED return ${gap.formId} ("${gap.module}"): ${gap.title} Owner: ${gap.owner}. Re-opens at: ${gap.targetTrigger}`,
+        severity: "info",
+      });
+    }
+  }
+
   // No silent caps (spec §5): surface the count of known-inert (allowlisted)
   // modules as an info-level note so the suppression is visible, never hidden.
   if (inertCount > 0) {
+    const gapIds = allowlist.map((e) => e.gapId).join(", ");
     violations.push({
       subject: "known-inert-pending-wiring",
-      message: `${inertCount} watched module(s) are inert (built + tested, no runtime/dashboard importer); ${allowlist.length} are tracked on KNOWN_INERT_PENDING_WIRING with an owner + closing workstream item. These are the returns-submission layer's unwired period-close subscribers (D-COMPLETENESS-AUDIT-WORKSTREAM; remaining six per D-RETURNS-SUBMISSION-WIRING-WORKSTREAM, each kept allowlisted with an accurate not-production-ready blocker). The count is logged so the suppression is never silent.`,
+      message: `${inertCount} watched module(s) are inert (built + tested, no runtime/dashboard importer); ${allowlist.length} are tracked on KNOWN_INERT_PENDING_WIRING as NAMED deferred gaps [${gapIds}], each with an owner + target trigger + citations (D-COMPLETENESS-AUDIT-WORKSTREAM; D-RETURNS-SUBMISSION-WIRING-WORKSTREAM Wave B — remaining deferrals are genuinely blocked, with an accurate not-production-ready blocker). The count is logged so the suppression is never silent.`,
       severity: "info",
     });
   }
@@ -289,9 +452,13 @@ export function run(): ReconResult {
   watched.sort();
   result.asserted = watched.length;
 
-  // 2 + 3 + count — delegate to the pure builder with the filesystem predicate.
-  const { violations } = computeViolations(watched, KNOWN_INERT_PENDING_WIRING, (mod) =>
-    hasRuntimeImporter(prototypeDir, mod),
+  // 2 + 3 + 4 + 5 + count — delegate to the pure builder with the filesystem
+  // predicate.
+  const { violations } = computeViolations(
+    watched,
+    KNOWN_INERT_PENDING_WIRING,
+    (mod) => hasRuntimeImporter(prototypeDir, mod),
+    WIRED_RETURN_COMPONENT_DEFERRALS,
   );
 
   result.violations = violations;
@@ -309,7 +476,10 @@ if (import.meta.main) {
   if (fails.length === 0) {
     console.log(
       `recon:${PIPELINE} OK — ${r.asserted} watched module(s) checked; ` +
-        `${knownInert} known-inert pending-wiring (tracked, allowlisted), 0 untracked inert.`,
+        `${knownInert} known-inert pending-wiring (named tracked deferrals: ` +
+        `${KNOWN_INERT_PENDING_WIRING.map((e) => e.gapId).join(", ")}), 0 untracked inert; ` +
+        `${WIRED_RETURN_COMPONENT_DEFERRALS.length} named component deferral(s) on wired returns ` +
+        `(${WIRED_RETURN_COMPONENT_DEFERRALS.map((g) => g.gapId).join(", ")}).`,
     );
     process.exit(0);
   }
