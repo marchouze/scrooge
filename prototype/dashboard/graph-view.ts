@@ -10,6 +10,10 @@
 //   GET /api/graph/unimplemented?applicability=X  — filtered by applicability status (comma-sep).
 //                                                   Defaults to "direct,transposed".
 //   GET /api/graph/trace/:obligationId            — full chain for one ORG-* obligation.
+//   GET /api/graph/objectives                     — objective layer: each RegulatoryObjective
+//                                                   with its regulator(s), serving-requirement
+//                                                   count, aligned policies + coverage gaps.
+//   GET /api/graph/trace-objective/:objectiveId   — full lineage for one objective.
 //
 // The graph DB may be empty if the seed hasn't been run yet (bun run graph:seed).
 // All endpoints handle empty-state gracefully — the UI is responsible for
@@ -17,14 +21,17 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
+import { getDb } from "../platform/regulatory/graph/db";
 import {
+  findObjectiveCoverageGaps,
   findObligationsByApplicability,
   findOrphanProcedures,
   findUnimplementedObligations,
   getGraphStats,
+  traceObjective,
   traceObligationChain,
 } from "../platform/regulatory/graph/query";
-import type { DocumentApplicabilityStatus } from "../platform/regulatory/graph/types";
+import type { DocumentApplicabilityStatus, GraphNode } from "../platform/regulatory/graph/types";
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -102,6 +109,58 @@ function handleGraphTrace(obligationId: string): Response {
   }
 }
 
+// --- Regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER) ---
+
+interface ObjectiveOverviewRow {
+  objective: GraphNode;
+  regulators: GraphNode[];
+  servingObligationCount: number;
+  alignedPolicies: GraphNode[];
+}
+
+/**
+ * Build the objectives overview: every RegulatoryObjective with the regulator(s)
+ * that PURSUES it, the count of obligations that SERVES it, and the policies that
+ * ALIGNS_TO it — grouped under each regulator/mandate. Reuses traceObjective.
+ */
+function handleGraphObjectives(): Response {
+  try {
+    const db = getDb();
+    const rows = db
+      .prepare(`SELECT id FROM graph_nodes WHERE node_type = 'RegulatoryObjective' ORDER BY id`)
+      .all() as Array<{ id: string }>;
+
+    const objectives: ObjectiveOverviewRow[] = [];
+    for (const r of rows) {
+      const t = traceObjective(r.id);
+      if (!t) continue;
+      objectives.push({
+        objective: t.objective,
+        regulators: t.regulators,
+        servingObligationCount: t.servingObligations.length,
+        alignedPolicies: t.alignedPolicies,
+      });
+    }
+
+    const coverageGaps = findObjectiveCoverageGaps();
+    return jsonResponse({ objectives, coverageGaps });
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 500);
+  }
+}
+
+function handleGraphTraceObjective(objectiveId: string): Response {
+  try {
+    const trace = traceObjective(objectiveId);
+    if (!trace) {
+      return jsonResponse({ error: `Objective not found in graph: ${objectiveId}` }, 404);
+    }
+    return jsonResponse(trace);
+  } catch (e) {
+    return jsonResponse({ error: (e as Error).message }, 500);
+  }
+}
+
 /**
  * Register graph API routes.
  *
@@ -125,6 +184,16 @@ export function registerGraphRoutes(
 
   if (pathname === "/api/graph/obligations-by-applicability") {
     return handleGraphObligationsByApplicability(searchParams);
+  }
+
+  if (pathname === "/api/graph/objectives") {
+    return handleGraphObjectives();
+  }
+
+  const traceObjMatch = pathname.match(/^\/api\/graph\/trace-objective\/(.+)$/);
+  if (traceObjMatch?.[1]) {
+    const objectiveId = decodeURIComponent(traceObjMatch[1]);
+    return handleGraphTraceObjective(objectiveId);
   }
 
   const traceMatch = pathname.match(/^\/api\/graph\/trace\/(.+)$/);

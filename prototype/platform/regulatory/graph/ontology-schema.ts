@@ -39,6 +39,8 @@ const GRAPH_NODE_TYPES = [
   "ProductInstrument",
   // Capability layer (Principle 2 lower-half — D-PRINCIPLE-2-CAPABILITY-LAYER).
   "Capability",
+  // Regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER).
+  "RegulatoryObjective",
 ] as const;
 
 const GRAPH_EDGE_TYPES = [
@@ -78,6 +80,13 @@ const GRAPH_EDGE_TYPES = [
   "REALISED_BY",
   // Two-plane bridge (D-REGULATORY-ARCHITECTURE-TWO-PLANE)
   "DERIVES_FROM",
+  // Regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER):
+  // Regulator → RegulatoryObjective; RegulatoryObjective → RegulatoryObjective;
+  // Obligation → RegulatoryObjective; Policy → RegulatoryObjective.
+  "PURSUES",
+  "REFINES",
+  "SERVES",
+  "ALIGNS_TO",
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -173,6 +182,23 @@ export const GRAPH_NODE_SCHEMA = {
       enum: [">=", "<=", "=", ">", "<"],
       description: "Comparison operator (Threshold nodes only).",
     },
+    // ── RegulatoryObjective-specific ─────────────────────────────────────
+    objectiveText: {
+      type: "string",
+      description:
+        "The regulator's own statement of the objective (RegulatoryObjective nodes only).",
+    },
+    objectiveLevel: {
+      type: "string",
+      enum: ["mandate", "objective", "sub-objective"],
+      description:
+        "Position in the mandate → objective → sub-objective tree (RegulatoryObjective nodes only).",
+    },
+    sourceCitation: {
+      type: "string",
+      description:
+        "A urn:reg: provision URN sourcing the objective (RegulatoryObjective nodes only).",
+    },
   },
   additionalProperties: false,
 } as const;
@@ -262,6 +288,10 @@ const _nodeProperties = {
   value: { type: "number" },
   unit: { type: "string" },
   operator: { type: "string", enum: [">=", "<=", "=", ">", "<"] },
+  // RegulatoryObjective-specific (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER)
+  objectiveText: { type: "string" },
+  objectiveLevel: { type: "string", enum: ["mandate", "objective", "sub-objective"] },
+  sourceCitation: { type: "string" },
 };
 
 const _edgeProperties = {
@@ -325,7 +355,7 @@ export const ONTOLOGY_DESCRIPTION = `
 REGULATORY KNOWLEDGE GRAPH ONTOLOGY v1
 =======================================
 
-NODE TYPES (16 total):
+NODE TYPES (19 total):
   Regulator         — The regulatory authority (SARB, FSCA, PA, etc.)
   Jurisdiction      — Legal jurisdiction (e.g. "South Africa", "EU")
   Framework         — Overarching regulatory framework (Basel III, FATF, etc.)
@@ -343,8 +373,13 @@ NODE TYPES (16 total):
   Policy            — A bank-internal policy that implements an Obligation
   Procedure         — A bank-internal procedure that operationalises a Policy
   Capability        — A system capability (code module) that realises a Procedure
+  RegulatoryObjective — The mandate/objective a regulator pursues and a requirement
+                        serves (the "why" behind an Obligation). Reference data,
+                        re-derivable from the regulator's own statements; NOT an event.
+                        Metadata: objectiveText, objectiveLevel (mandate|objective|
+                        sub-objective), sourceCitation (a urn:reg: provision URN).
 
-EDGE TYPES (23 total — format: FROM → TO):
+EDGE TYPES (27 total — format: FROM → TO):
   STRUCTURAL:
     ISSUED_BY          Document → Regulator      (instrument issued by authority)
     OPERATES_IN        Regulator → Jurisdiction  (authority operates in jurisdiction)
@@ -383,6 +418,12 @@ EDGE TYPES (23 total — format: FROM → TO):
     REALISES           Procedure → Capability    (procedure realised by a code capability)
     REALISED_BY        Capability → Procedure    (inverse of REALISES)
 
+  REGULATORY-INTELLIGENCE OBJECTIVE LAYER (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER):
+    PURSUES            Regulator → RegulatoryObjective          (regulator pursues a mandate/objective)
+    REFINES            RegulatoryObjective → RegulatoryObjective (sub-objective refines a parent)
+    SERVES             Obligation → RegulatoryObjective          (why a requirement exists — the keystone)
+    ALIGNS_TO          Policy → RegulatoryObjective              (bank policy aligns to a regulator objective)
+
 ID NAMING CONVENTIONS:
   Provision:  "{instrumentId}:s{section}"          e.g. "FAIS-ACT-37-2002:s7"
   Obligation: "OBL-{instrumentId}-s{section}-{n}"  e.g. "OBL-FAIS-ACT-37-2002-s7-1"
@@ -393,6 +434,7 @@ ID NAMING CONVENTIONS:
   Policy:     same as policy code                   e.g. "POL-FAIS-001"
   Procedure:  same as procedure code                e.g. "PROC-FAIS-001"
   Capability: "CAP-{canonical-path-slug}"           e.g. "CAP-platform/markets/cdm/fx"
+  RegulatoryObjective: "OBJ-{REGULATOR}-{slug}"      e.g. "OBJ-SARB-PA-SAFETY-SOUNDNESS"
 
 CONFIDENCE SCORE RUBRIC (for edges):
   1.0   — Explicitly stated in the provision text
@@ -436,6 +478,10 @@ const graphNodeSchema = z.object({
   value: z.number().optional(),
   unit: z.string().optional(),
   operator: z.enum([">=", "<=", "=", ">", "<"]).optional(),
+  // RegulatoryObjective-specific (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER)
+  objectiveText: z.string().optional(),
+  objectiveLevel: z.enum(["mandate", "objective", "sub-objective"]).optional(),
+  sourceCitation: z.string().optional(),
 });
 
 const graphEdgeSchema = z.object({
@@ -471,3 +517,29 @@ export function validateExtractionResponse(data: unknown): { valid: boolean; err
   const errors = result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`);
   return { valid: false, errors };
 }
+
+// ---------------------------------------------------------------------------
+// F. EDGE ENDPOINT-TYPE CONSTRAINTS (objective layer)
+// ---------------------------------------------------------------------------
+//
+// Machine-readable from/to node-type constraints for the regulatory-intelligence
+// objective-layer edges (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER). The graph
+// validator does not historically enforce endpoint types (the ontology graph
+// admits stub nodes whose type is unknown at extraction time), so this map is a
+// documentation-grade constraint the recon gates + tests assert against the
+// SARB-PA pilot — never a hard block on extraction. `from`/`to` are the
+// permitted node types for each edge direction.
+
+export const OBJECTIVE_EDGE_ENDPOINT_TYPES: Readonly<
+  Record<
+    "PURSUES" | "REFINES" | "SERVES" | "ALIGNS_TO",
+    { from: GraphNodeTypeName; to: GraphNodeTypeName }
+  >
+> = {
+  PURSUES: { from: "Regulator", to: "RegulatoryObjective" },
+  REFINES: { from: "RegulatoryObjective", to: "RegulatoryObjective" },
+  SERVES: { from: "Obligation", to: "RegulatoryObjective" },
+  ALIGNS_TO: { from: "Policy", to: "RegulatoryObjective" },
+} as const;
+
+type GraphNodeTypeName = (typeof GRAPH_NODE_TYPES)[number];

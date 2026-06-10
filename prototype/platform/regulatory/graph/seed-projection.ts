@@ -13,11 +13,12 @@ import { eventStore } from "../../composition";
 import { nowUtc } from "../../core/types";
 import type { ObligationEquivalenceClassifiedPayload } from "../../event-store/event-types/obligation-equivalence";
 import type { RegulatoryInstrumentRegisteredPayload } from "../../event-store/event-types/regulatory";
-import type {
-  ExtractionProvenance,
-  ProvenancedEdge,
-  ProvenancedNode,
-  RegulatoryExtractionArtefact,
+import {
+  type ExtractionProvenance,
+  type ProvenancedEdge,
+  type ProvenancedNode,
+  type RegulatoryExtractionArtefact,
+  validateExtractionArtefact,
 } from "../extraction-contract";
 import {
   extractSectionIdsFromCitation,
@@ -51,6 +52,16 @@ export interface SeedStats {
   /** Pre-built BCBS obligation graphs imported (Regulations/BCBS/obligation-graphs/). */
   obligationGraphs?: {
     standards: number;
+    nodes: number;
+    edges: number;
+    skipped: number;
+  };
+  /**
+   * Regulatory-intelligence objective artefacts imported
+   * (Regulations/**\/*-objective-graph.json). D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.
+   */
+  objectiveArtefacts?: {
+    artefacts: number;
     nodes: number;
     edges: number;
     skipped: number;
@@ -485,6 +496,152 @@ function importBcbsObligationGraphs(now: string): NonNullable<SeedStats["obligat
       throw err;
     }
     result.standards++;
+  }
+  return result;
+}
+
+/** Recursively walk a directory and return all paths matching a suffix. */
+function walkBySuffix(dir: string, suffix: string): string[] {
+  const results: string[] = [];
+  let entries: string[];
+  try {
+    entries = readdirSync(dir, { encoding: "utf-8" });
+  } catch {
+    return results;
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry);
+    let isDir = false;
+    try {
+      isDir = statSync(full).isDirectory();
+    } catch {
+      continue;
+    }
+    if (isDir) {
+      results.push(...walkBySuffix(full, suffix));
+    } else if (entry.endsWith(suffix)) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+/**
+ * Import the regulatory-intelligence objective artefacts
+ * (Regulations/ ** /*-objective-graph.json) into the graph DB. Each file is a
+ * `RegulatoryExtractionArtefact` carrying RegulatoryObjective nodes plus the
+ * objective-layer edges (PURSUES / REFINES / SERVES / ALIGNS_TO). The objective
+ * nodes are Plane-A reference data — the "why" a requirement exists, re-derivable
+ * from the regulator's own statements (NOT events; D-REGULATORY-ARCHITECTURE-TWO-PLANE).
+ *
+ * Reuses the same node-then-edge FK ordering, per-phase transactions, and
+ * idempotency (INSERT OR REPLACE / ON CONFLICT) as importBcbsObligationGraphs.
+ * Ingestion goes through the shared `validateExtractionArtefact` contract so a
+ * malformed artefact is rejected wholesale instead of silently polluting the graph.
+ *
+ * MUST be called AFTER obligation AND policy nodes are seeded so the SERVES
+ * (Obligation → Objective) and ALIGNS_TO (Policy → Objective) endpoints resolve.
+ *
+ * Authority: D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER (CEO session-delegation 2026-06-10).
+ * Author: Mira (Regulatory-Reporting / Obligations Engineer, regulatory).
+ */
+function importObjectiveArtefacts(now: string): NonNullable<SeedStats["objectiveArtefacts"]> {
+  const root = repoPath("Regulations");
+  const result = { artefacts: 0, nodes: 0, edges: 0, skipped: 0 };
+  if (!existsSync(root)) return result;
+
+  const files = walkBySuffix(root, "-objective-graph.json").sort();
+  const db = getDb();
+
+  for (const file of files) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(readFileSync(file, "utf-8"));
+    } catch {
+      result.skipped++;
+      continue;
+    }
+
+    // Plane-A ingestion contract: reject a malformed artefact wholesale rather
+    // than letting non-ontology nodes/edges silently pollute the reference graph.
+    const validation = validateExtractionArtefact(raw);
+    if (!validation.valid) {
+      result.skipped++;
+      continue;
+    }
+    const doc = raw as RegulatoryExtractionArtefact;
+
+    const fileProvenance: ExtractionProvenance = {
+      extractionMethod: doc.extractionMethod,
+      extractorId: doc.provenance?.extractorId ?? `objective-graph:${doc.instrumentId}`,
+      confidenceScore: doc.provenance?.confidenceScore ?? 1,
+      extractedAt: doc.generatedAt ?? now,
+    };
+
+    const nodes = doc.nodes as ProvenancedNode[];
+    const edges = (Array.isArray(doc.edges) ? doc.edges : []) as ProvenancedEdge[];
+
+    // Nodes first — graph_edges has an FK to graph_nodes.
+    db.exec("BEGIN");
+    try {
+      for (const n of nodes) {
+        if (!n?.id || !n.nodeType || !n.label) {
+          result.skipped++;
+          continue;
+        }
+        const provenance = n.provenance ?? fileProvenance;
+        // Fold descriptive top-level fields into metadata — upsertNode only
+        // persists id/label/metadata, so top-level fields are otherwise lost.
+        // RegulatoryObjective nodes: objectiveText, objectiveLevel, sourceCitation.
+        // Document stub nodes: applicabilityStatus (via metadata already).
+        const rawNode = n as unknown as Record<string, unknown>;
+        const descriptive: GraphNodeMetadata = {};
+        for (const k of ["objectiveText", "objectiveLevel", "sourceCitation"]) {
+          if (typeof rawNode[k] === "string") descriptive[k] = rawNode[k] as string;
+        }
+        upsertNode({
+          ...n,
+          metadata: { ...(n.metadata ?? {}), ...descriptive, ...provenanceMeta(provenance) },
+        });
+        result.nodes++;
+      }
+      db.exec("COMMIT");
+    } catch (e) {
+      db.exec("ROLLBACK");
+      throw e;
+    }
+
+    // Edges — endpoints must resolve to a node (FK). Guarded: an edge whose
+    // from/to node is absent in the graph is skipped (e.g. an obligation/policy
+    // id that did not seed) rather than aborting the whole import.
+    const nodeExists = db.prepare("SELECT 1 FROM graph_nodes WHERE id = ? LIMIT 1");
+    db.exec("BEGIN");
+    try {
+      for (const e of edges) {
+        if (!e?.id || !e.fromId || !e.toId || !e.edgeType) {
+          result.skipped++;
+          continue;
+        }
+        if (!nodeExists.get(e.fromId) || !nodeExists.get(e.toId)) {
+          result.skipped++;
+          continue;
+        }
+        const provenance = e.provenance ?? fileProvenance;
+        upsertEdge({
+          ...e,
+          extractionMethod: e.extractionMethod ?? fileProvenance.extractionMethod,
+          confidenceScore: typeof e.confidenceScore === "number" ? e.confidenceScore : 1,
+          extractedAt: e.extractedAt ?? now,
+          metadata: { ...(e.metadata ?? {}), ...provenanceMeta(provenance) },
+        });
+        result.edges++;
+      }
+      db.exec("COMMIT");
+    } catch (err) {
+      db.exec("ROLLBACK");
+      throw err;
+    }
+    result.artefacts++;
   }
   return result;
 }
@@ -1675,6 +1832,17 @@ export async function runSeed(): Promise<SeedStats> {
     upsertEdge(edge);
   }
 
+  // ── Regulatory-intelligence objective layer ───────────────────────────────
+  // Import the objective/mandate artefacts (Regulations/ ** /*-objective-graph.json).
+  // The RegulatoryObjective nodes are the "why" behind a requirement — Plane-A
+  // reference data, re-derivable from the regulator's own statements (NOT events;
+  // D-REGULATORY-ARCHITECTURE-TWO-PLANE). Runs LAST, AFTER every obligation source
+  // (register + BCBS import) AND the policy nodes (Step 9), so the SERVES
+  // (Obligation → Objective) and ALIGNS_TO (Policy → Objective) endpoints resolve
+  // against existing nodes — same ordering discipline as the equivalence fold above.
+  // Authority: D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.
+  const objectiveArtefacts = importObjectiveArtefacts(now);
+
   // ── Final stats ──────────────────────────────────────────────────────────
 
   const totalNodes = getNodeCount();
@@ -1686,7 +1854,15 @@ export async function runSeed(): Promise<SeedStats> {
 
   const durationMs = Math.round(performance.now() - startMs);
 
-  return { nodesByType, edgesByType, totalNodes, totalEdges, durationMs, obligationGraphs };
+  return {
+    nodesByType,
+    edgesByType,
+    totalNodes,
+    totalEdges,
+    durationMs,
+    obligationGraphs,
+    objectiveArtefacts,
+  };
 }
 
 // ---------------------------------------------------------------------------

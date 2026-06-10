@@ -105,6 +105,16 @@ export interface ObligationChain {
    * vice-versa) without changing single-plane default behaviour.
    */
   crossPlaneCounterparts: GraphNode[];
+  /**
+   * Regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER):
+   * the RegulatoryObjective(s) this obligation SERVES (the "why" it exists), plus
+   * the bank policies that ALIGNS_TO any of those objectives. Always populated
+   * (empty arrays when the obligation has no SERVES edge). This is the purpose
+   * axis alongside the rule axis already carried by `policies`/`procedures`.
+   */
+  objectives: GraphNode[];
+  /** Policies that ALIGNS_TO any objective this obligation SERVES. */
+  alignedPolicies: GraphNode[];
 }
 
 /** Opt-in options for {@link traceObligationChain}. */
@@ -246,6 +256,36 @@ export function traceObligationChain(
     crossPlaneCounterparts.push(...counterpartMap.values());
   }
 
+  // Objective layer — RegulatoryObjective(s) this obligation SERVES (the "why"),
+  // plus the policies that ALIGNS_TO those objectives. The purpose axis alongside
+  // the rule axis. D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.
+  const objectives = (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.to_id = n.id
+         WHERE e.from_id = ? AND e.edge_type = 'SERVES'
+           AND n.node_type = 'RegulatoryObjective' ${temporalFilter}`,
+      )
+      .all(nodeId) as NodeRow[]
+  ).map(rowToNode);
+
+  const alignedPoliciesMap = new Map<string, GraphNode>();
+  for (const objective of objectives) {
+    const pols = (
+      db
+        .prepare(
+          `SELECT n.* FROM graph_nodes n
+           JOIN graph_edges e ON e.from_id = n.id
+           WHERE e.to_id = ? AND e.edge_type = 'ALIGNS_TO'
+             AND n.node_type = 'Policy' ${temporalFilter}`,
+        )
+        .all(objective.id) as NodeRow[]
+    ).map(rowToNode);
+    for (const pol of pols) alignedPoliciesMap.set(pol.id, pol);
+  }
+  const alignedPolicies = [...alignedPoliciesMap.values()];
+
   return {
     obligation,
     provisions,
@@ -255,6 +295,8 @@ export function traceObligationChain(
     riskCategories,
     activities,
     crossPlaneCounterparts,
+    objectives,
+    alignedPolicies,
   };
 }
 
@@ -631,6 +673,147 @@ export function getProvisionsByTheme(themeId: string): GraphNode[] {
            AND n.node_type = 'Provision'`,
       )
       .all(themeId) as NodeRow[]
+  ).map(rowToNode);
+}
+
+// ---------------------------------------------------------------------------
+// Regulatory-intelligence objective layer (D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER)
+// ---------------------------------------------------------------------------
+
+export interface ObjectiveTrace {
+  /** The RegulatoryObjective node itself. */
+  objective: GraphNode;
+  /**
+   * The mandate lineage reached by following REFINES upward (parent objectives),
+   * ordered nearest-first. Empty for a top-level mandate.
+   */
+  refinesInto: GraphNode[];
+  /** Sub-objectives that REFINES this objective (incoming REFINES). */
+  refinedBy: GraphNode[];
+  /** Regulator(s) that PURSUES this objective (the authority behind the "why"). */
+  regulators: GraphNode[];
+  /** Obligations that SERVES this objective (the requirements realising the "why"). */
+  servingObligations: GraphNode[];
+  /** Policies that ALIGNS_TO this objective (bank purpose-alignment). */
+  alignedPolicies: GraphNode[];
+}
+
+/**
+ * Trace the full lineage of one RegulatoryObjective: its mandate lineage (via
+ * REFINES upward) + sub-objectives (REFINES downward), the regulator(s) that
+ * PURSUES it, the requirements that SERVES it, and the policies that ALIGNS_TO
+ * it. Returns null if the objective node does not exist.
+ *
+ * `objectiveId` is the full node id (e.g. "OBJ-SARB-PA-SAFETY-SOUNDNESS").
+ * D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.
+ */
+export function traceObjective(objectiveId: string, asOf?: string): ObjectiveTrace | null {
+  const db = getDb();
+  const objectiveRow = db
+    .prepare("SELECT * FROM graph_nodes WHERE id = ? AND node_type = 'RegulatoryObjective'")
+    .get(objectiveId) as NodeRow | null;
+  if (!objectiveRow) return null;
+  const objective = rowToNode(objectiveRow);
+
+  const temporalFilter = asOf ? `AND ${temporalClause("n", asOf)}` : "";
+
+  // Mandate lineage upward — walk REFINES (this → parent) breadth-first.
+  const refinesInto: GraphNode[] = [];
+  const seenParents = new Set<string>([objectiveId]);
+  let frontier = [objectiveId];
+  while (frontier.length > 0) {
+    const next: string[] = [];
+    for (const fromId of frontier) {
+      const parents = (
+        db
+          .prepare(
+            `SELECT n.* FROM graph_nodes n
+             JOIN graph_edges e ON e.to_id = n.id
+             WHERE e.from_id = ? AND e.edge_type = 'REFINES'
+               AND n.node_type = 'RegulatoryObjective' ${temporalFilter}`,
+          )
+          .all(fromId) as NodeRow[]
+      ).map(rowToNode);
+      for (const p of parents) {
+        if (seenParents.has(p.id)) continue;
+        seenParents.add(p.id);
+        refinesInto.push(p);
+        next.push(p.id);
+      }
+    }
+    frontier = next;
+  }
+
+  // Sub-objectives — incoming REFINES.
+  const refinedBy = (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.from_id = n.id
+         WHERE e.to_id = ? AND e.edge_type = 'REFINES'
+           AND n.node_type = 'RegulatoryObjective' ${temporalFilter}`,
+      )
+      .all(objectiveId) as NodeRow[]
+  ).map(rowToNode);
+
+  // Regulator(s) that PURSUES this objective.
+  const regulators = (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.from_id = n.id
+         WHERE e.to_id = ? AND e.edge_type = 'PURSUES'
+           AND n.node_type = 'Regulator' ${temporalFilter}`,
+      )
+      .all(objectiveId) as NodeRow[]
+  ).map(rowToNode);
+
+  // Obligations that SERVES this objective.
+  const servingObligations = (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.from_id = n.id
+         WHERE e.to_id = ? AND e.edge_type = 'SERVES'
+           AND n.node_type = 'Obligation' ${temporalFilter}`,
+      )
+      .all(objectiveId) as NodeRow[]
+  ).map(rowToNode);
+
+  // Policies that ALIGNS_TO this objective.
+  const alignedPolicies = (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.from_id = n.id
+         WHERE e.to_id = ? AND e.edge_type = 'ALIGNS_TO'
+           AND n.node_type = 'Policy' ${temporalFilter}`,
+      )
+      .all(objectiveId) as NodeRow[]
+  ).map(rowToNode);
+
+  return { objective, refinesInto, refinedBy, regulators, servingObligations, alignedPolicies };
+}
+
+/**
+ * Return all RegulatoryObjective nodes that have NO incoming ALIGNS_TO edge —
+ * i.e. an objective no bank policy aligns to. These are purpose-coverage gaps:
+ * a regulator objective the bank's policy estate does not yet speak to.
+ * D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER.
+ */
+export function findObjectiveCoverageGaps(): GraphNode[] {
+  const db = getDb();
+  return (
+    db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         WHERE n.node_type = 'RegulatoryObjective'
+           AND NOT EXISTS (
+             SELECT 1 FROM graph_edges e
+             WHERE e.to_id = n.id AND e.edge_type = 'ALIGNS_TO'
+           )`,
+      )
+      .all() as NodeRow[]
   ).map(rowToNode);
 }
 
