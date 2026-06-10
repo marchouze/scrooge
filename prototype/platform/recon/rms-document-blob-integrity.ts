@@ -95,9 +95,8 @@ export interface BlobIntegrityDeps {
 function defaultStores(): { resolved: LocalFsDocumentStore; legacy: LocalFsDocumentStore | null } {
   const resolved = new LocalFsDocumentStore();
   const legacyRoot = inRepoDocumentStoreRoot();
-  const legacy = resolved.rootPath() === legacyRoot
-    ? null
-    : new LocalFsDocumentStore({ root: legacyRoot });
+  const legacy =
+    resolved.rootPath() === legacyRoot ? null : new LocalFsDocumentStore({ root: legacyRoot });
   return { resolved, legacy };
 }
 

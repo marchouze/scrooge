@@ -43,7 +43,16 @@
 // Brief: brief:atlas:extend-cross-worktree-sync-to-document-store-blo:2026-06-10.
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 import { hashContent } from "../../platform/document-store/hash";
