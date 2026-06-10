@@ -1,0 +1,402 @@
+{
+  "instrumentId": "BCBS-239",
+  "standardName": "BCBS 239 — Principles for effective risk data aggregation and risk reporting (RDARR), and its SA transposition SARB PA Directive D2/2015",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:bcbs-239-instruments-graph",
+    "confidenceScore": 1,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "BCBS 239 (January 2013) — Principles for effective risk data aggregation and risk reporting (https://www.bis.org/publ/bcbs239.htm). SA transposition: SARB Prudential Authority Directive D2/2015 (enabling authority Banks Act 94/1990 s.6(6)(a); Reg 39 — corporate governance and risk management). Authority: D-BCBS-239-RDARR-INGESTION (CEO session-delegation 2026-06-10). Author: Mira (Compliance / RegTech engineer, regulatory). Accountable risk-data seat: Helena (Chief Risk Officer, governance).",
+  "comment": "Closes the catalogue gap surfaced by the IASB instrument work (Regulations/INTL/IASB/iasb-instruments-graph.json): ORG-AC-15 cites 'BCBS 239' but no BCBS-239 Document node existed (the 14 ingested BCBS obligation-graphs hold OBL-BCBS-<STD>-* nodes only; 239/RDARR is not one of those 14 standard families). This artefact is Plane-A reference data (D-REGULATORY-ARCHITECTURE-TWO-PLANE), ingested by importInstrumentArtefacts (walkBySuffix '-instruments-graph.json' over Regulations/, so the BCBS/ subtree is discovered identically to ZA/ and INTL/). Models REG-BCBS <- ISSUED_BY <- Document(BCBS 239) -> CONTAINS -> Provision(P1..P14) -> EXPRESSES -> Obligation(OBL-BCBS-239-P01..P14), the 14 RDARR principles. It ALSO models the SA transposition: REG-SARB-PA <- ISSUED_BY <- Document(SARB PA Directive D2/2015) -> CONTAINS -> Provision(§1.1, §1.2, §2.1, §2.2) -> EXPRESSES -> the bank's adopted OBL-ORG-RM-RDARR-001..008 obligations, and a TRANSPOSES edge D2/2015 Document -> BCBS 239 Document demonstrating the cross-jurisdiction chain. ORG-AC-15 (cites BCBS 239 directly) is bridged via EXPRESSES from the BCBS 239 P1 (governance) provision. URN scheme urn:reg:bcbs:bcbs-239[:p<n>] — pre-registered in Regulations/_urn-vocabulary.md, same shape the 14 BCBS standards use with the 'bcbs' issuer token; URN-shaped Document/Provision ids never collide with the DOC-BCBS-<STD> ids the obligation-graphs mint or the PROV-* stubs the citation parser would otherwise create. EXPRESSES targets are keyed OBL-<ORG-id> (Step 6 prepends OBL-), matching importBcbsObligationGraphs/FSCA/FIC/IASB convention. The FK-guarded edge import skips any OBL-ORG-* target that did not seed. SERVES edges (Obligation -> RegulatoryObjective, the 'why') live in the companion bcbs-239-objective-graph.json so they import AFTER both these obligations and the OBJ-BCBS-* objective nodes exist (importObjectiveArtefacts runs last in runSeed). TRANSPOSES endpoint: the documented Document->Framework constraint was widened to Document->Framework|Document (ONTOLOGY_DESCRIPTION + ontology.md) so D2/2015 can transpose the specific BCBS 239 Document, not the whole Basel framework — a doc-only change; the validator never enforced TRANSPOSES endpoint types. applicabilityStatus: BCBS 239 = transposed (implemented in SA via D2/2015); D2/2015 = direct.",
+  "nodes": [
+    {
+      "id": "urn:reg:bcbs:bcbs-239",
+      "nodeType": "Document",
+      "label": "BCBS 239 — Principles for effective risk data aggregation and risk reporting (RDARR, January 2013)",
+      "metadata": {
+        "instrumentId": "BCBS-239",
+        "jurisdiction": "INTL",
+        "issuingBody": "BCBS",
+        "applicabilityStatus": "transposed",
+        "source": "https://www.bis.org/publ/bcbs239.htm"
+      }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p1",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 1 — Governance",
+      "level": "section",
+      "text": "Principle 1 (Governance): A bank's risk data aggregation capabilities and risk reporting practices should be subject to strong governance arrangements consistent with other principles and guidance established by the Basel Committee. The board and senior management should approve and review the risk data aggregation and reporting framework; senior management is accountable for its implementation; written policies and procedures and data quality controls underpin it. This is the general 'comply with BCBS 239' governance umbrella over the eleven RDARR principles and the supervisory-review expectations (Principles 12-14).",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P1", "principle": "1" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p2",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 2 — Data architecture and IT infrastructure",
+      "level": "section",
+      "text": "Principle 2 (Data architecture and IT infrastructure): A bank should design, build and maintain data architecture and IT infrastructure which fully supports its risk data aggregation capabilities and risk reporting practices not only in normal times but also during times of stress or crisis, while still meeting the other principles.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P2", "principle": "2" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p3",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 3 — Accuracy and integrity",
+      "level": "section",
+      "text": "Principle 3 (Accuracy and integrity): A bank should be able to generate accurate and reliable risk data to meet normal and stress/crisis reporting accuracy requirements. Data should be aggregated on a largely automated basis so as to minimise the probability of errors. A single authoritative source of risk data should exist for each type of risk.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P3", "principle": "3" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p4",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 4 — Completeness",
+      "level": "section",
+      "text": "Principle 4 (Completeness): A bank should be able to capture and aggregate all material risk data across the banking group. Data should be available by business line, legal entity, asset type, industry, region and other groupings as relevant for the risk in question, that permit identifying and reporting risk exposures, concentrations and emerging risks.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P4", "principle": "4" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p5",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 5 — Timeliness",
+      "level": "section",
+      "text": "Principle 5 (Timeliness): A bank should be able to generate aggregate and up-to-date risk data in a timely manner while also meeting the principles relating to accuracy and integrity, completeness and adaptability. The precise timing will depend upon the nature and potential volatility of the risk being measured as well as its criticality to the overall risk profile of the bank.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P5", "principle": "5" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p6",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 6 — Adaptability",
+      "level": "section",
+      "text": "Principle 6 (Adaptability): A bank should be able to generate aggregate risk data to meet a broad range of on-demand, ad hoc risk management reporting requests, including requests during stress/crisis situations, requests due to changing internal needs and requests to meet supervisory queries; and should be able to generate aggregate risk data for new risk types or business areas, and produce sub-consolidated or individual-entity risk data.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P6", "principle": "6" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p7",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 7 — Accuracy (risk reporting)",
+      "level": "section",
+      "text": "Principle 7 (Accuracy): Risk management reports should accurately and precisely convey aggregated risk data and reflect risk in an exact manner. Reports should be reconciled and validated. Significant data gaps should be identified and explained, and any manual intervention in the reporting process should be clearly documented.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P7", "principle": "7" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p8",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 8 — Comprehensiveness",
+      "level": "section",
+      "text": "Principle 8 (Comprehensiveness): Risk management reports should cover all material risk areas within the organisation. The depth and scope of these reports should be consistent with the size and complexity of the bank's operations and risk profile, and the requirements of the recipients. Forward-looking assessments of risk should be provided.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P8", "principle": "8" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p9",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 9 — Clarity and usefulness",
+      "level": "section",
+      "text": "Principle 9 (Clarity and usefulness): Risk management reports should communicate information in a clear and concise manner. Reports should be easy to understand yet comprehensive enough to facilitate informed decision-making. Reports should include an appropriate balance between risk data, analysis and interpretation, and qualitative explanations, covering both absolute and relative levels of risk.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P9", "principle": "9" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p10",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 10 — Frequency",
+      "level": "section",
+      "text": "Principle 10 (Frequency): The board and senior management (or other recipients as appropriate) should set the frequency of risk management report production and distribution. Frequency requirements should reflect the needs of the recipients, the nature of the risk reported, and the speed at which the risk can change, and should be increased during times of stress/crisis.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P10", "principle": "10" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p11",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 11 — Distribution",
+      "level": "section",
+      "text": "Principle 11 (Distribution): Risk management reports should be distributed to the relevant parties while ensuring confidentiality is maintained. Procedures should be in place to allow for rapid collection and analysis of risk data and timely dissemination of reports to all appropriate recipients, balanced against confidentiality requirements.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P11", "principle": "11" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p12",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 12 — Review (supervisory)",
+      "level": "section",
+      "text": "Principle 12 (Review): Supervisors should periodically review and evaluate a bank's compliance with the eleven principles above. Supervisors should test a bank's compliance with the principles and make use of multiple evaluative techniques, using a range of supervisory tools, to conduct such evaluations.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P12", "principle": "12" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p13",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 13 — Remedial actions and supervisory measures",
+      "level": "section",
+      "text": "Principle 13 (Remedial actions and supervisory measures): Supervisors should have and use the appropriate tools and resources to require effective and timely remedial action by a bank to address deficiencies in its risk data aggregation capabilities and risk reporting practices. Supervisors should have the ability to use a range of tools, including Pillar 2.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P13", "principle": "13" }
+    },
+    {
+      "id": "urn:reg:bcbs:bcbs-239:p14",
+      "nodeType": "Provision",
+      "label": "BCBS 239 Principle 14 — Home/host cooperation",
+      "level": "section",
+      "text": "Principle 14 (Home/host cooperation): Supervisors should cooperate with relevant supervisors in other jurisdictions regarding the supervision and review of the principles, and the implementation of any remedial action if necessary. Supervisors should discuss bank-specific findings with relevant home and host supervisors where appropriate.",
+      "metadata": { "instrumentId": "BCBS-239", "section": "P14", "principle": "14" }
+    },
+
+    {
+      "id": "OBL-BCBS-239-P01",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P1 — Governance of risk data aggregation and reporting",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Establish strong governance arrangements over risk data aggregation capabilities and risk reporting practices, with board/senior-management approval of the RDARR framework, senior-management accountability for implementation, written policies and procedures, and data-quality controls.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "1", "sourceProvision": "urn:reg:bcbs:bcbs-239:p1" }
+    },
+    {
+      "id": "OBL-BCBS-239-P02",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P2 — Data architecture and IT infrastructure",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Design, build and maintain data architecture and IT infrastructure that fully supports risk data aggregation capabilities and risk reporting practices in both normal and stressed/crisis conditions.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "2", "sourceProvision": "urn:reg:bcbs:bcbs-239:p2" }
+    },
+    {
+      "id": "OBL-BCBS-239-P03",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P3 — Accuracy and integrity",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Generate accurate and reliable risk data, aggregated on a largely automated basis to minimise errors, with a single authoritative source of risk data for each risk type, meeting normal and stress accuracy requirements.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "3", "sourceProvision": "urn:reg:bcbs:bcbs-239:p3" }
+    },
+    {
+      "id": "OBL-BCBS-239-P04",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P4 — Completeness",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Capture and aggregate all material risk data across the banking group, available by business line, legal entity, asset type, industry, region and other relevant groupings to identify exposures, concentrations and emerging risks.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "4", "sourceProvision": "urn:reg:bcbs:bcbs-239:p4" }
+    },
+    {
+      "id": "OBL-BCBS-239-P05",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P5 — Timeliness",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Generate aggregate, up-to-date risk data in a timely manner, with timing calibrated to the nature, volatility and criticality of each risk type, while meeting the accuracy, completeness and adaptability principles.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "5", "sourceProvision": "urn:reg:bcbs:bcbs-239:p5" }
+    },
+    {
+      "id": "OBL-BCBS-239-P06",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P6 — Adaptability",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Generate aggregate risk data on demand and ad hoc — including under stress/crisis, for supervisory queries, for new risk types or business areas, and at sub-consolidated or individual-entity level.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "6", "sourceProvision": "urn:reg:bcbs:bcbs-239:p6" }
+    },
+    {
+      "id": "OBL-BCBS-239-P07",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P7 — Accuracy (risk reporting)",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Produce risk management reports that accurately and precisely convey aggregated risk data, are reconciled and validated, identify and explain significant data gaps, and document any manual intervention.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "7", "sourceProvision": "urn:reg:bcbs:bcbs-239:p7" }
+    },
+    {
+      "id": "OBL-BCBS-239-P08",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P8 — Comprehensiveness",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Produce risk management reports covering all material risk areas, with depth and scope calibrated to the bank's size, complexity, risk profile and recipients' requirements, including forward-looking assessments.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "8", "sourceProvision": "urn:reg:bcbs:bcbs-239:p8" }
+    },
+    {
+      "id": "OBL-BCBS-239-P09",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P9 — Clarity and usefulness",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Communicate risk reporting clearly and concisely, easy to understand yet comprehensive enough for informed decision-making, balancing data, analysis and qualitative explanation, covering absolute and relative risk levels.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "9", "sourceProvision": "urn:reg:bcbs:bcbs-239:p9" }
+    },
+    {
+      "id": "OBL-BCBS-239-P10",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P10 — Frequency",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Set the frequency of risk management report production and distribution to reflect recipients' needs, the nature of the risk and the speed at which it can change, increasing frequency during stress/crisis.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "10", "sourceProvision": "urn:reg:bcbs:bcbs-239:p10" }
+    },
+    {
+      "id": "OBL-BCBS-239-P11",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P11 — Distribution",
+      "obligationType": "recommended",
+      "actor": "bank",
+      "actionSummary": "Distribute risk management reports to relevant parties while maintaining confidentiality, with procedures for rapid collection, analysis and timely dissemination to all appropriate recipients.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "11", "sourceProvision": "urn:reg:bcbs:bcbs-239:p11" }
+    },
+    {
+      "id": "OBL-BCBS-239-P12",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P12 — Review (supervisory)",
+      "obligationType": "recommended",
+      "actor": "supervisor",
+      "actionSummary": "Supervisors periodically review and evaluate the bank's compliance with the eleven RDARR principles, using multiple evaluative techniques and a range of supervisory tools.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "12", "sourceProvision": "urn:reg:bcbs:bcbs-239:p12" }
+    },
+    {
+      "id": "OBL-BCBS-239-P13",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P13 — Remedial actions and supervisory measures",
+      "obligationType": "recommended",
+      "actor": "supervisor",
+      "actionSummary": "Supervisors require effective and timely remedial action to address deficiencies in risk data aggregation and reporting, using appropriate tools including Pillar 2 measures.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "13", "sourceProvision": "urn:reg:bcbs:bcbs-239:p13" }
+    },
+    {
+      "id": "OBL-BCBS-239-P14",
+      "nodeType": "Obligation",
+      "label": "BCBS 239 P14 — Home/host cooperation",
+      "obligationType": "recommended",
+      "actor": "supervisor",
+      "actionSummary": "Supervisors cooperate with relevant home/host supervisors on the supervision, review and remedial implementation of the RDARR principles for cross-border banks.",
+      "metadata": { "instrumentId": "BCBS-239", "principle": "14", "sourceProvision": "urn:reg:bcbs:bcbs-239:p14" }
+    },
+
+    {
+      "id": "urn:reg:za:pa-directive-d2-2015",
+      "nodeType": "Document",
+      "label": "SARB Prudential Authority Directive D2/2015 — Effective risk data aggregation and risk reporting (SA transposition of BCBS 239)",
+      "metadata": {
+        "instrumentId": "PA-DIRECTIVE-D2-2015",
+        "jurisdiction": "ZA",
+        "issuingBody": "SARB-PA",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:banks-act-94-1990:s.6",
+        "transposes": "urn:reg:bcbs:bcbs-239"
+      }
+    },
+    {
+      "id": "urn:reg:za:pa-directive-d2-2015:s.1.1",
+      "nodeType": "Provision",
+      "label": "D2/2015 §1.1 — Introduction and purpose",
+      "level": "section",
+      "text": "Section 1.1 of Directive D2/2015 introduces the directive's purpose: to give effect, for banks and controlling companies registered in South Africa, to the Basel Committee's Principles for effective risk data aggregation and risk reporting (BCBS 239). It frames the governance-and-infrastructure overarch (BCBS 239 Principles 1-2) the directive transposes.",
+      "metadata": { "instrumentId": "PA-DIRECTIVE-D2-2015", "section": "1.1" }
+    },
+    {
+      "id": "urn:reg:za:pa-directive-d2-2015:s.1.2",
+      "nodeType": "Provision",
+      "label": "D2/2015 §1.2 — Effective risk data aggregation and risk reporting (substantive RDARR requirements)",
+      "level": "section",
+      "text": "Section 1.2 of Directive D2/2015 sets the substantive requirement that institutions implement effective risk data aggregation and risk reporting in line with the BCBS 239 principles — governance, data architecture and IT infrastructure, accuracy and integrity, completeness, timeliness, adaptability, and the risk-reporting principles on accuracy, comprehensiveness, clarity, frequency and distribution (BCBS 239 Principles 1-11).",
+      "metadata": { "instrumentId": "PA-DIRECTIVE-D2-2015", "section": "1.2" }
+    },
+    {
+      "id": "urn:reg:za:pa-directive-d2-2015:s.2.1",
+      "nodeType": "Provision",
+      "label": "D2/2015 §2.1 — Application scope and supervisory review",
+      "level": "section",
+      "text": "Section 2.1 of Directive D2/2015 sets the application scope of the directive and the Prudential Authority's supervisory-review expectations: institutions must maintain documented RDARR frameworks sufficient to support PA supervisory evaluation, and the PA reviews compliance and may require remedial action (BCBS 239 Principles 12-14).",
+      "metadata": { "instrumentId": "PA-DIRECTIVE-D2-2015", "section": "2.1" }
+    },
+    {
+      "id": "urn:reg:za:pa-directive-d2-2015:s.2.2",
+      "nodeType": "Provision",
+      "label": "D2/2015 §2.2 — Compliance obligation",
+      "level": "section",
+      "text": "Section 2.2 of Directive D2/2015 imposes the compliance obligation: institutions are required to ensure compliance with the requirements set out in the directive, i.e. with the transposed BCBS 239 risk data aggregation and risk reporting principles.",
+      "metadata": { "instrumentId": "PA-DIRECTIVE-D2-2015", "section": "2.2" }
+    }
+  ],
+  "edges": [
+    {
+      "id": "BCBS239-ISSUED_BY-DOC",
+      "fromId": "urn:reg:bcbs:bcbs-239",
+      "toId": "REG-BCBS",
+      "edgeType": "ISSUED_BY",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1,
+      "extractedAt": "2026-06-10T00:00:00Z"
+    },
+
+    { "id": "BCBS239-CONTAINS-P1", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p1", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P2", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p2", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P3", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P4", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p4", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P5", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p5", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P6", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p6", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P7", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p7", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P8", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p8", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P9", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p9", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P10", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p10", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P11", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p11", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P12", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p12", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P13", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p13", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "BCBS239-CONTAINS-P14", "fromId": "urn:reg:bcbs:bcbs-239", "toId": "urn:reg:bcbs:bcbs-239:p14", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "BCBS239-EXPRESSES-P1", "fromId": "urn:reg:bcbs:bcbs-239:p1", "toId": "OBL-BCBS-239-P01", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p1" },
+    { "id": "BCBS239-EXPRESSES-P2", "fromId": "urn:reg:bcbs:bcbs-239:p2", "toId": "OBL-BCBS-239-P02", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p2" },
+    { "id": "BCBS239-EXPRESSES-P3", "fromId": "urn:reg:bcbs:bcbs-239:p3", "toId": "OBL-BCBS-239-P03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p3" },
+    { "id": "BCBS239-EXPRESSES-P4", "fromId": "urn:reg:bcbs:bcbs-239:p4", "toId": "OBL-BCBS-239-P04", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p4" },
+    { "id": "BCBS239-EXPRESSES-P5", "fromId": "urn:reg:bcbs:bcbs-239:p5", "toId": "OBL-BCBS-239-P05", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p5" },
+    { "id": "BCBS239-EXPRESSES-P6", "fromId": "urn:reg:bcbs:bcbs-239:p6", "toId": "OBL-BCBS-239-P06", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p6" },
+    { "id": "BCBS239-EXPRESSES-P7", "fromId": "urn:reg:bcbs:bcbs-239:p7", "toId": "OBL-BCBS-239-P07", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p7" },
+    { "id": "BCBS239-EXPRESSES-P8", "fromId": "urn:reg:bcbs:bcbs-239:p8", "toId": "OBL-BCBS-239-P08", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p8" },
+    { "id": "BCBS239-EXPRESSES-P9", "fromId": "urn:reg:bcbs:bcbs-239:p9", "toId": "OBL-BCBS-239-P09", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p9" },
+    { "id": "BCBS239-EXPRESSES-P10", "fromId": "urn:reg:bcbs:bcbs-239:p10", "toId": "OBL-BCBS-239-P10", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p10" },
+    { "id": "BCBS239-EXPRESSES-P11", "fromId": "urn:reg:bcbs:bcbs-239:p11", "toId": "OBL-BCBS-239-P11", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p11" },
+    { "id": "BCBS239-EXPRESSES-P12", "fromId": "urn:reg:bcbs:bcbs-239:p12", "toId": "OBL-BCBS-239-P12", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p12" },
+    { "id": "BCBS239-EXPRESSES-P13", "fromId": "urn:reg:bcbs:bcbs-239:p13", "toId": "OBL-BCBS-239-P13", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p13" },
+    { "id": "BCBS239-EXPRESSES-P14", "fromId": "urn:reg:bcbs:bcbs-239:p14", "toId": "OBL-BCBS-239-P14", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:bcbs:bcbs-239:p14" },
+
+    {
+      "id": "BCBS239-EXPRESSES-AC15",
+      "fromId": "urn:reg:bcbs:bcbs-239:p1",
+      "toId": "OBL-ORG-AC-15",
+      "edgeType": "EXPRESSES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:bcbs:bcbs-239:p1",
+      "metadata": { "bridgeNote": "ORG-AC-15 cites 'BCBS 239' directly (the whole-standard 'apply the BCBS 239 principles' obligation); bridged from the P1 governance/umbrella provision. Closes the IASB PR #1158 unbridged status." }
+    },
+
+    {
+      "id": "D2-2015-ISSUED_BY",
+      "fromId": "urn:reg:za:pa-directive-d2-2015",
+      "toId": "REG-SARB-PA",
+      "edgeType": "ISSUED_BY",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1,
+      "extractedAt": "2026-06-10T00:00:00Z"
+    },
+    { "id": "D2-2015-CONTAINS-s1.1", "fromId": "urn:reg:za:pa-directive-d2-2015", "toId": "urn:reg:za:pa-directive-d2-2015:s.1.1", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "D2-2015-CONTAINS-s1.2", "fromId": "urn:reg:za:pa-directive-d2-2015", "toId": "urn:reg:za:pa-directive-d2-2015:s.1.2", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "D2-2015-CONTAINS-s2.1", "fromId": "urn:reg:za:pa-directive-d2-2015", "toId": "urn:reg:za:pa-directive-d2-2015:s.2.1", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "D2-2015-CONTAINS-s2.2", "fromId": "urn:reg:za:pa-directive-d2-2015", "toId": "urn:reg:za:pa-directive-d2-2015:s.2.2", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    {
+      "id": "D2-2015-TRANSPOSES-BCBS239",
+      "fromId": "urn:reg:za:pa-directive-d2-2015",
+      "toId": "urn:reg:bcbs:bcbs-239",
+      "edgeType": "TRANSPOSES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 1,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.1",
+      "metadata": { "transposeNote": "SARB PA Directive D2/2015 transposes the BCBS 239 RDARR standard into SA prudential law. Document->Document TRANSPOSES (a specific standard Document, not the whole Basel framework) — the ONTOLOGY_DESCRIPTION/ontology.md endpoint was widened from Document->Framework to Document->Framework|Document for this." }
+    },
+
+    { "id": "D2-2015-EXPRESSES-RDARR-001", "fromId": "urn:reg:za:pa-directive-d2-2015:s.1.1", "toId": "OBL-ORG-RM-RDARR-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.1", "metadata": { "bridgeNote": "RDARR-001 (governance + infrastructure, BCBS 239 P1-2) cites D2/2015 §1.1-§1.2 + §2.1-§2.2; bridged from §1.1 (governance/infrastructure overarch)." } },
+    { "id": "D2-2015-EXPRESSES-RDARR-002", "fromId": "urn:reg:za:pa-directive-d2-2015:s.1.2", "toId": "OBL-ORG-RM-RDARR-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.2", "metadata": { "bridgeNote": "RDARR-002 (accuracy/integrity, BCBS 239 P3) cites D2/2015 §1.2 + §2.2; bridged from §1.2 (substantive RDARR requirements)." } },
+    { "id": "D2-2015-EXPRESSES-RDARR-003", "fromId": "urn:reg:za:pa-directive-d2-2015:s.1.2", "toId": "OBL-ORG-RM-RDARR-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.2", "metadata": { "bridgeNote": "RDARR-003 (completeness/timeliness, BCBS 239 P4-5) cites D2/2015 §1.2 + §2.2; bridged from §1.2." } },
+    { "id": "D2-2015-EXPRESSES-RDARR-004", "fromId": "urn:reg:za:pa-directive-d2-2015:s.1.2", "toId": "OBL-ORG-RM-RDARR-004", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.2", "metadata": { "bridgeNote": "RDARR-004 (adaptability, BCBS 239 P6) cites D2/2015 §1.2 + §2.2; bridged from §1.2." } },
+    { "id": "D2-2015-EXPRESSES-RDARR-005", "fromId": "urn:reg:za:pa-directive-d2-2015:s.1.2", "toId": "OBL-ORG-RM-RDARR-005", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.2", "metadata": { "bridgeNote": "RDARR-005 (risk-reporting accuracy, BCBS 239 P7) cites D2/2015 §1.2 + §2.2; bridged from §1.2." } },
+    { "id": "D2-2015-EXPRESSES-RDARR-006", "fromId": "urn:reg:za:pa-directive-d2-2015:s.1.2", "toId": "OBL-ORG-RM-RDARR-006", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.2", "metadata": { "bridgeNote": "RDARR-006 (reporting comprehensiveness/clarity, BCBS 239 P8-9) cites D2/2015 §1.2 + §2.2; bridged from §1.2." } },
+    { "id": "D2-2015-EXPRESSES-RDARR-007", "fromId": "urn:reg:za:pa-directive-d2-2015:s.1.2", "toId": "OBL-ORG-RM-RDARR-007", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.1.2", "metadata": { "bridgeNote": "RDARR-007 (reporting frequency/distribution, BCBS 239 P10-11) cites D2/2015 §1.2 + §2.2; bridged from §1.2." } },
+    { "id": "D2-2015-EXPRESSES-RDARR-008", "fromId": "urn:reg:za:pa-directive-d2-2015:s.2.1", "toId": "OBL-ORG-RM-RDARR-008", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:pa-directive-d2-2015:s.2.1", "metadata": { "bridgeNote": "RDARR-008 (supervisory review + comply-with-all-principles, BCBS 239 P12-14) cites D2/2015 §2.1 (application scope) + §2.2 (compliance obligation); bridged from §2.1." } }
+  ]
+}
