@@ -1,0 +1,293 @@
+{
+  "instrumentId": "INTL-IASB-INSTRUMENTS",
+  "standardName": "IASB / IFRS Accounting Standards instrument stack (IFRS 9/7/13/15/16/10, IAS 1/12/21/24, IFRIC 23)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:iasb-instruments-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "International Accounting Standards Board (IASB) / IFRS Accounting Standards instrument stack for the bank. Authority: D-IASB-REGULATORY-INTELLIGENCE-INGESTION. Models REG-IASB <- ISSUED_BY <- Document -> CONTAINS -> Provision -> EXPRESSES -> Obligation, bridging the bank's adopted OBL-ORG-AC-* / OBL-ORG-GRP-FINREP accounting obligations to their IFRS source provisions. The accountable seat for IFRS/financial-reporting domain content is Camille (Chief Financial Officer, governance).",
+  "comment": "IASB / IFRS instrument stack as Plane-A reference data (D-REGULATORY-ARCHITECTURE-TWO-PLANE). Mirrors the FIC instrument artefact (Regulations/ZA/FIC/fic-instruments-graph.json) exactly. IASB is an international standard-setter; placed under Regulations/INTL/IASB/ — importInstrumentArtefacts walk root is Regulations/ (walkBySuffix recurses any subdir), so an INTL/ subtree is discovered identically to ZA/ and BCBS/. REG-IASB and its JUR-INTL link already exist (seed-projection.ts Step 1); the ISSUED_BY edges declared here resolve against it. Provision nodes carry the source provision text/heading at the granularity the bank's adopted ORG-AC obligations cite; the EXPRESSES edges bridge each Provision to the already-seeded OBL-ORG-AC-* / OBL-ORG-GRP-FINREP obligation node (Step 6, keyed OBL-<ORG-id>) — the same explicit Provision->Obligation EXPRESSES convention the FIC, FSCA and BCBS obligation graphs use, chosen because the free-text IFRS citations ('IFRS 9', 'IAS 21') do not parse through extractSectionIdsFromCitation. URN scheme: urn:reg:ifrs:<standard-slug>[:<provision-slug>] — the urn.ts reg pattern (^urn:reg:[a-z0-9-]+:[a-z0-9./_-]+(?::[a-z0-9./_-]+)*$) accepts 'ifrs' as the jurisdiction/issuer token (same shape BCBS uses with 'bcbs'); parens are not in the reg slug charset, so IAS 21 §28 is slugged s.28 (canonical '§28' retained in label/sourceProvision text). BRIDGE SCOPE: the 11 IASB-sourced accounting obligations are bridged to IFRS/IAS/IFRIC provisions — IFRS 9 -> AC-01/02/03; IFRS 7 -> AC-04; IFRS 13 -> AC-05; IFRS 15 -> AC-06; IFRS 16 -> AC-07; IAS 1 -> AC-08; IAS 12 -> AC-09; IAS 21 -> AC-10; IAS 24 -> AC-11; IFRIC 23 -> AC-12; IFRS 10 -> ORG-GRP-FINREP. The 4 non-IASB-sourced Domain-G obligations are left HONESTLY UNBRIDGED because no source Document node exists in the graph for their instrument and/or the instrument is not IASB-issued: AC-13 (Banks Act + Regulations Relating to Banks — SARB-PA, not IASB), AC-14 (Companies Act + Banks Act — not IASB), AC-15 (BCBS 239 — no BCBS-239 Document node exists; the BCBS graphs hold OBL-BCBS-<STD>-* nodes only, and '239'/RDARR is not one of the 14 ingested standard families), AC-16 (IRBA + Companies Act — not IASB). Forcing IASB attribution onto a non-IASB instrument would be a false citation. applicabilityStatus: IFRS Accounting Standards adopted as the bank's GAAP under the Companies Act / Banks Act = direct.",
+  "nodes": [
+    {
+      "id": "urn:reg:ifrs:ifrs-9",
+      "nodeType": "Document",
+      "label": "IFRS 9 — Financial Instruments",
+      "metadata": {
+        "instrumentId": "IFRS-9",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-9:s.4-classification",
+      "nodeType": "Provision",
+      "label": "IFRS 9 §4 — Classification of financial assets and liabilities (business model + SPPI)",
+      "level": "section",
+      "text": "IFRS 9 Section 4 classifies financial assets at initial recognition into amortised cost, fair value through other comprehensive income (FVOCI), or fair value through profit or loss (FVTPL), determined by the entity's business model for managing the financial assets and the contractual cash-flow characteristics — whether the cash flows are solely payments of principal and interest on the principal outstanding (the SPPI test). Financial liabilities are classified at amortised cost or FVTPL. The business-model and SPPI assessments supporting each classification must be documented.",
+      "metadata": { "instrumentId": "IFRS-9", "section": "4" }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-9:s.5.5-ecl",
+      "nodeType": "Provision",
+      "label": "IFRS 9 §5.5 — Impairment: expected-credit-loss (ECL) three-stage model",
+      "level": "section",
+      "text": "IFRS 9 Section 5.5 requires recognition of expected credit losses (ECL) on financial assets measured at amortised cost and FVOCI, and on loan commitments and financial guarantee contracts, under a three-stage model: 12-month ECL at Stage 1; lifetime ECL on a significant increase in credit risk since initial recognition at Stage 2; and lifetime ECL with interest revenue on the net carrying amount once the asset is credit-impaired at Stage 3. ECL is estimated on an unbiased, probability-weighted, forward-looking basis incorporating reasonable and supportable information including macroeconomic scenarios.",
+      "metadata": { "instrumentId": "IFRS-9", "section": "5.5" }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-9:s.6-hedge-accounting",
+      "nodeType": "Provision",
+      "label": "IFRS 9 §6 — Hedge accounting (qualifying relationships, effectiveness)",
+      "level": "section",
+      "text": "IFRS 9 Section 6 governs hedge accounting for fair-value, cash-flow and net-investment hedges. A qualifying hedging relationship must be formally designated and documented, must comprise eligible hedging instruments and hedged items, and must meet the effectiveness requirements: an economic relationship between hedged item and hedging instrument, credit risk not dominating the value changes, and a hedge ratio consistent with the entity's risk-management objective. Hedge ineffectiveness is measured and recognised each reporting period. (The IAS 39 hedge-accounting carryover option is available but is not elected by the bank, per CEO election F1.)",
+      "metadata": { "instrumentId": "IFRS-9", "section": "6" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ifrs-7",
+      "nodeType": "Document",
+      "label": "IFRS 7 — Financial Instruments: Disclosures",
+      "metadata": {
+        "instrumentId": "IFRS-7",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-7:s.risk-disclosures",
+      "nodeType": "Provision",
+      "label": "IFRS 7 §31–42 — Nature and extent of risks arising from financial instruments",
+      "level": "section",
+      "text": "IFRS 7 paragraphs 31–42 require disclosure of the nature and extent of risks arising from financial instruments — credit risk, liquidity risk and market risk — together with the entity's objectives, policies and processes for managing those risks. The disclosures are both qualitative (exposure to each risk and how it arises, the risk-management objectives, policies and processes) and quantitative (summary data on exposure, credit-quality and concentration, a maturity analysis for liquidity risk, and a market-risk sensitivity analysis), provided in the annual financial statements.",
+      "metadata": { "instrumentId": "IFRS-7", "section": "31-42" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ifrs-13",
+      "nodeType": "Document",
+      "label": "IFRS 13 — Fair Value Measurement",
+      "metadata": {
+        "instrumentId": "IFRS-13",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-13:s.fair-value-hierarchy",
+      "nodeType": "Provision",
+      "label": "IFRS 13 §72–90 — Fair-value definition and the three-level fair-value hierarchy",
+      "level": "section",
+      "text": "IFRS 13 defines fair value as the price that would be received to sell an asset or paid to transfer a liability in an orderly transaction between market participants at the measurement date (an exit price), and requires valuation techniques that maximise the use of relevant observable inputs and minimise unobservable inputs. Paragraphs 72–90 establish the fair-value hierarchy that categorises the inputs into three levels: Level 1 (quoted prices in active markets for identical assets/liabilities), Level 2 (other observable inputs), and Level 3 (unobservable inputs). The standard prescribes the related valuation-technique, hierarchy-level and Level-3 reconciliation disclosures.",
+      "metadata": { "instrumentId": "IFRS-13", "section": "72-90" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ifrs-15",
+      "nodeType": "Document",
+      "label": "IFRS 15 — Revenue from Contracts with Customers",
+      "metadata": {
+        "instrumentId": "IFRS-15",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-15:s.five-step-model",
+      "nodeType": "Provision",
+      "label": "IFRS 15 §9–90 — Five-step revenue-recognition model",
+      "level": "section",
+      "text": "IFRS 15 recognises revenue from contracts with customers using a five-step model: (1) identify the contract with a customer; (2) identify the performance obligations in the contract; (3) determine the transaction price; (4) allocate the transaction price to the performance obligations; and (5) recognise revenue when (or as) each performance obligation is satisfied. For a bank this governs fee- and commission-based income; interest income on financial instruments is recognised under the IFRS 9 effective-interest method and falls outside IFRS 15.",
+      "metadata": { "instrumentId": "IFRS-15", "section": "9-90" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ifrs-16",
+      "nodeType": "Document",
+      "label": "IFRS 16 — Leases",
+      "metadata": {
+        "instrumentId": "IFRS-16",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-16:s.lessee-lessor",
+      "nodeType": "Provision",
+      "label": "IFRS 16 §22–60 — Lessee right-of-use model and lessor classification",
+      "level": "section",
+      "text": "IFRS 16 requires a lessee to recognise, for most leases, a right-of-use asset and a corresponding lease liability at the commencement date (subject to the short-term and low-value-asset recognition exemptions), to depreciate the right-of-use asset, and to unwind interest on the lease liability over the lease term. A lessor classifies each lease as a finance lease or an operating lease and accounts for it accordingly. The standard prescribes the related measurement, remeasurement and disclosure requirements.",
+      "metadata": { "instrumentId": "IFRS-16", "section": "22-60" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ifrs-10",
+      "nodeType": "Document",
+      "label": "IFRS 10 — Consolidated Financial Statements",
+      "metadata": {
+        "instrumentId": "IFRS-10",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ifrs-10:s.control-consolidation",
+      "nodeType": "Provision",
+      "label": "IFRS 10 §5–26 — Control principle and consolidation requirement",
+      "level": "section",
+      "text": "IFRS 10 establishes a single control-based consolidation model: an investor controls an investee when it is exposed, or has rights, to variable returns from its involvement with the investee and has the ability to affect those returns through its power over the investee. A parent that controls one or more entities must present consolidated financial statements, consolidating the assets, liabilities, equity, income, expenses and cash flows of the parent and its subsidiaries as those of a single economic entity (read with the IFRS 12 disclosures on interests in other entities).",
+      "metadata": { "instrumentId": "IFRS-10", "section": "5-26" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ias-1",
+      "nodeType": "Document",
+      "label": "IAS 1 — Presentation of Financial Statements",
+      "metadata": {
+        "instrumentId": "IAS-1",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ias-1:s.complete-set-going-concern",
+      "nodeType": "Provision",
+      "label": "IAS 1 §10–138 — Complete set of financial statements; going concern; accrual basis",
+      "level": "section",
+      "text": "IAS 1 prescribes the basis for presentation of general-purpose financial statements: a complete set comprises a statement of financial position, a statement of profit or loss and other comprehensive income, a statement of changes in equity, a statement of cash flows, and notes (including material accounting-policy information). Statements are prepared on a going-concern and accrual basis, with consistent classification, offsetting only where permitted, comparative information, and the going-concern and material-accounting-policy disclosures the standard requires.",
+      "metadata": { "instrumentId": "IAS-1", "section": "10-138" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ias-12",
+      "nodeType": "Document",
+      "label": "IAS 12 — Income Taxes",
+      "metadata": {
+        "instrumentId": "IAS-12",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ias-12:s.current-deferred-tax",
+      "nodeType": "Provision",
+      "label": "IAS 12 §5–88 — Current and deferred income-tax recognition and measurement",
+      "level": "section",
+      "text": "IAS 12 requires recognition of current tax for the taxable profit (or loss) of the period and prior periods, and deferred tax on temporary differences between the carrying amounts of assets and liabilities and their tax bases, measured at the tax rates expected to apply to the period when the asset is realised or the liability settled, based on enacted or substantively enacted rates. A deferred-tax asset is recognised only to the extent that it is probable that future taxable profit will be available against which the deductible temporary difference can be utilised.",
+      "metadata": { "instrumentId": "IAS-12", "section": "5-88" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ias-21",
+      "nodeType": "Document",
+      "label": "IAS 21 — The Effects of Changes in Foreign Exchange Rates",
+      "metadata": {
+        "instrumentId": "IAS-21",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ias-21:s.28",
+      "nodeType": "Provision",
+      "label": "IAS 21 §28 — Retranslation of monetary items; exchange differences in profit or loss",
+      "level": "section",
+      "text": "IAS 21 paragraph 28 requires that exchange differences arising on the settlement of monetary items, or on translating monetary items at rates different from those at which they were translated on initial recognition during the period or in previous financial statements, be recognised in profit or loss in the period in which they arise. Read with the wider standard, each entity measures and records transactions in its functional currency (determined from the primary economic environment in which it operates), translates foreign-currency monetary items at the closing rate, and translates results and financial position into the group's presentation currency for consolidation.",
+      "metadata": { "instrumentId": "IAS-21", "section": "28" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ias-24",
+      "nodeType": "Document",
+      "label": "IAS 24 — Related Party Disclosures",
+      "metadata": {
+        "instrumentId": "IAS-24",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ias-24:s.related-party-disclosure",
+      "nodeType": "Provision",
+      "label": "IAS 24 §13–24 — Related-party relationships, transactions and key-management compensation",
+      "level": "section",
+      "text": "IAS 24 requires disclosure of related-party relationships, transactions and outstanding balances (including commitments) necessary for users to understand the potential effect of the relationship on the financial statements. Required disclosures include parent–subsidiary relationships irrespective of whether there have been transactions, key-management-personnel compensation in total and by category, and, for related-party transactions, the amount, outstanding balances, terms and conditions, and any provisions for doubtful debts — irrespective of whether a price was charged. The entity maintains a related-party register sufficient to support the disclosure.",
+      "metadata": { "instrumentId": "IAS-24", "section": "13-24" }
+    },
+
+    {
+      "id": "urn:reg:ifrs:ifric-23",
+      "nodeType": "Document",
+      "label": "IFRIC 23 — Uncertainty over Income Tax Treatments",
+      "metadata": {
+        "instrumentId": "IFRIC-23",
+        "jurisdiction": "INTL",
+        "issuingBody": "IASB",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:ifrs:ifric-23:s.uncertain-tax-treatment",
+      "nodeType": "Provision",
+      "label": "IFRIC 23 §9–14 — Accounting for uncertainty over income-tax treatments",
+      "level": "section",
+      "text": "IFRIC 23 clarifies the application of the IAS 12 recognition and measurement requirements where there is uncertainty over income-tax treatments. An entity assumes that a taxation authority will examine amounts it has a right to examine and will have full knowledge of all related information. It determines whether to consider each uncertain tax treatment separately or together, and reflects the effect of uncertainty using either the most-likely-amount or the expected-value method, whichever better predicts the resolution. Judgements and estimates are re-assessed when facts and circumstances change.",
+      "metadata": { "instrumentId": "IFRIC-23", "section": "9-14" }
+    }
+  ],
+  "edges": [
+    { "id": "IASB-ISSUED_BY-IFRS9", "fromId": "urn:reg:ifrs:ifrs-9", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IFRS7", "fromId": "urn:reg:ifrs:ifrs-7", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IFRS13", "fromId": "urn:reg:ifrs:ifrs-13", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IFRS15", "fromId": "urn:reg:ifrs:ifrs-15", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IFRS16", "fromId": "urn:reg:ifrs:ifrs-16", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IFRS10", "fromId": "urn:reg:ifrs:ifrs-10", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IAS1", "fromId": "urn:reg:ifrs:ias-1", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IAS12", "fromId": "urn:reg:ifrs:ias-12", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IAS21", "fromId": "urn:reg:ifrs:ias-21", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IAS24", "fromId": "urn:reg:ifrs:ias-24", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-ISSUED_BY-IFRIC23", "fromId": "urn:reg:ifrs:ifric-23", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "IASB-CONTAINS-IFRS9-cls", "fromId": "urn:reg:ifrs:ifrs-9", "toId": "urn:reg:ifrs:ifrs-9:s.4-classification", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRS9-ecl", "fromId": "urn:reg:ifrs:ifrs-9", "toId": "urn:reg:ifrs:ifrs-9:s.5.5-ecl", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRS9-hedge", "fromId": "urn:reg:ifrs:ifrs-9", "toId": "urn:reg:ifrs:ifrs-9:s.6-hedge-accounting", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRS7-risk", "fromId": "urn:reg:ifrs:ifrs-7", "toId": "urn:reg:ifrs:ifrs-7:s.risk-disclosures", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRS13-fvh", "fromId": "urn:reg:ifrs:ifrs-13", "toId": "urn:reg:ifrs:ifrs-13:s.fair-value-hierarchy", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRS15-5step", "fromId": "urn:reg:ifrs:ifrs-15", "toId": "urn:reg:ifrs:ifrs-15:s.five-step-model", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRS16-leases", "fromId": "urn:reg:ifrs:ifrs-16", "toId": "urn:reg:ifrs:ifrs-16:s.lessee-lessor", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRS10-ctrl", "fromId": "urn:reg:ifrs:ifrs-10", "toId": "urn:reg:ifrs:ifrs-10:s.control-consolidation", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IAS1-cset", "fromId": "urn:reg:ifrs:ias-1", "toId": "urn:reg:ifrs:ias-1:s.complete-set-going-concern", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IAS12-tax", "fromId": "urn:reg:ifrs:ias-12", "toId": "urn:reg:ifrs:ias-12:s.current-deferred-tax", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IAS21-s28", "fromId": "urn:reg:ifrs:ias-21", "toId": "urn:reg:ifrs:ias-21:s.28", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IAS24-rpd", "fromId": "urn:reg:ifrs:ias-24", "toId": "urn:reg:ifrs:ias-24:s.related-party-disclosure", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "IASB-CONTAINS-IFRIC23-utt", "fromId": "urn:reg:ifrs:ifric-23", "toId": "urn:reg:ifrs:ifric-23:s.uncertain-tax-treatment", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "IASB-EXPRESSES-ifrs9cls-AC01", "fromId": "urn:reg:ifrs:ifrs-9:s.4-classification", "toId": "OBL-ORG-AC-01", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.4" },
+    { "id": "IASB-EXPRESSES-ifrs9ecl-AC02", "fromId": "urn:reg:ifrs:ifrs-9:s.5.5-ecl", "toId": "OBL-ORG-AC-02", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.5.5" },
+    { "id": "IASB-EXPRESSES-ifrs9hedge-AC03", "fromId": "urn:reg:ifrs:ifrs-9:s.6-hedge-accounting", "toId": "OBL-ORG-AC-03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.6" },
+    { "id": "IASB-EXPRESSES-ifrs7-AC04", "fromId": "urn:reg:ifrs:ifrs-7:s.risk-disclosures", "toId": "OBL-ORG-AC-04", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-7:s.31-42" },
+    { "id": "IASB-EXPRESSES-ifrs13-AC05", "fromId": "urn:reg:ifrs:ifrs-13:s.fair-value-hierarchy", "toId": "OBL-ORG-AC-05", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-13:s.72-90" },
+    { "id": "IASB-EXPRESSES-ifrs15-AC06", "fromId": "urn:reg:ifrs:ifrs-15:s.five-step-model", "toId": "OBL-ORG-AC-06", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-15:s.9-90" },
+    { "id": "IASB-EXPRESSES-ifrs16-AC07", "fromId": "urn:reg:ifrs:ifrs-16:s.lessee-lessor", "toId": "OBL-ORG-AC-07", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-16:s.22-60" },
+    { "id": "IASB-EXPRESSES-ias1-AC08", "fromId": "urn:reg:ifrs:ias-1:s.complete-set-going-concern", "toId": "OBL-ORG-AC-08", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-1:s.10-138" },
+    { "id": "IASB-EXPRESSES-ias12-AC09", "fromId": "urn:reg:ifrs:ias-12:s.current-deferred-tax", "toId": "OBL-ORG-AC-09", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-12:s.5-88" },
+    { "id": "IASB-EXPRESSES-ias21-AC10", "fromId": "urn:reg:ifrs:ias-21:s.28", "toId": "OBL-ORG-AC-10", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-21:s.28" },
+    { "id": "IASB-EXPRESSES-ias24-AC11", "fromId": "urn:reg:ifrs:ias-24:s.related-party-disclosure", "toId": "OBL-ORG-AC-11", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-24:s.13-24" },
+    { "id": "IASB-EXPRESSES-ifric23-AC12", "fromId": "urn:reg:ifrs:ifric-23:s.uncertain-tax-treatment", "toId": "OBL-ORG-AC-12", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifric-23:s.9-14" },
+    { "id": "IASB-EXPRESSES-ifrs10-GRPFINREP", "fromId": "urn:reg:ifrs:ifrs-10:s.control-consolidation", "toId": "OBL-ORG-GRP-FINREP", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-10:s.5-26" }
+  ]
+}
