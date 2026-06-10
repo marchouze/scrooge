@@ -174,9 +174,7 @@ describe("inert-module-detection — computeViolations (pure)", () => {
       },
     ];
     const { violations } = computeViolations(WATCHED, allowlist, () => false, componentDeferrals);
-    const fail = violations.find(
-      (v) => v.severity === "fail" && v.message.includes("BOTH"),
-    );
+    const fail = violations.find((v) => v.severity === "fail" && v.message.includes("BOTH"));
     expect(fail).toBeDefined();
   });
 

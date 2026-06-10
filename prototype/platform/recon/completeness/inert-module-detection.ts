@@ -160,8 +160,7 @@ export interface WiredComponentDeferral {
 export const KNOWN_INERT_PENDING_WIRING: readonly AllowlistEntry[] = [
   {
     module: "platform/returns/ba400/period-close-subscriber.ts",
-    owner:
-      "Mira (Compliance / RegTech engineer) + Bea (Accounting & financial reporting engineer)",
+    owner: "Mira (Compliance / RegTech engineer) + Bea (Accounting & financial reporting engineer)",
     gapId: "GAP-RETURNS-BA400-GROSS-INCOME",
     targetTrigger:
       "Commencement-of-trading gross-income event feed lands (e.g. RevenueRecognitionEmitted) — BIA needs audited gross income, accruing only post-licence-day; first real BA 400 is computable after the first audited fiscal year.",
@@ -229,8 +228,7 @@ export const WIRED_RETURN_COMPONENT_DEFERRALS: readonly WiredComponentDeferral[]
     module: "platform/returns/ba700/period-close-subscriber.ts",
     title:
       "Operational RWA (BIA, OPE25) held at zero — gross-income-blocked pre-licence. The RwaComputed event of record carries operationalRwaMinor: 0 with operationalRwaIsPlaceholder: true, and the submitted XML discloses the component + source label. NOT an understatement today: with zero gross income since incorporation, alpha × avg(positive annual gross income, 3y) = 0 is the correct BIA value for a pre-commencement bank.",
-    owner:
-      "Bea (Accounting & financial reporting engineer) + Mira (Compliance / RegTech engineer)",
+    owner: "Bea (Accounting & financial reporting engineer) + Mira (Compliance / RegTech engineer)",
     targetTrigger:
       "Commencement-of-trading gross-income event feed lands (RevenueRecognitionEmitted) — first non-zero audited gross-income year makes the zero a real understatement; the BIA computation must be live by then.",
     citations: [
