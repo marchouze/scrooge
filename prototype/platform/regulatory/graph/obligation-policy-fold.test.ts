@@ -25,10 +25,9 @@ describe("splitFulfilmentPolicyCell", () => {
   });
 
   test("unwraps markdown links to their display text", () => {
-    expect(splitFulfilmentPolicyCell("[AML/CFT Policy](../Policies/aml-cft-policy-v1.md); PEP Policy")).toEqual([
-      "AML/CFT Policy",
-      "PEP Policy",
-    ]);
+    expect(
+      splitFulfilmentPolicyCell("[AML/CFT Policy](../Policies/aml-cft-policy-v1.md); PEP Policy"),
+    ).toEqual(["AML/CFT Policy", "PEP Policy"]);
   });
 
   test("skips backtick-quoted and Procedures/ path entries (procedures are not policies)", () => {
@@ -119,7 +118,10 @@ describe("deriveObligationPolicyPairs", () => {
     const pairs = deriveObligationPolicyPairs({
       policies: [],
       registerRows: [
-        { obligationId: "ORG-FC-13", fulfilmentPolicy: "RMCP; [AML/CFT Policy](../Policies/aml-cft-policy-v1.md)" },
+        {
+          obligationId: "ORG-FC-13",
+          fulfilmentPolicy: "RMCP; [AML/CFT Policy](../Policies/aml-cft-policy-v1.md)",
+        },
       ],
       resolvePolicyNodeId: resolver,
     });

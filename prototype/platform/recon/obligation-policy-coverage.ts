@@ -79,7 +79,9 @@ interface AdoptedObligationRow {
  * seeds a fresh hermetic store first. `_repoRoot` is retained for call-site
  * compatibility (the v1 register-walking implementation needed it).
  */
-export function runObligationPolicyCoverageRecon(_repoRoot?: string): ObligationPolicyCoverageResult {
+export function runObligationPolicyCoverageRecon(
+  _repoRoot?: string,
+): ObligationPolicyCoverageResult {
   // Lazy import keeps graph-DB initialisation out of module load (the env-var
   // binding in the CLI entry must run first on a hermetic runner).
   const { getDb } = require("../regulatory/graph/db") as typeof import("../regulatory/graph/db");
@@ -126,16 +128,18 @@ export function runObligationPolicyCoverageRecon(_repoRoot?: string): Obligation
     });
   }
 
-  const coverageByDomain: DomainCoverage[] = [...applicablePerDomain.keys()].sort().map((domain) => {
-    const applicable = applicablePerDomain.get(domain) ?? 0;
-    const covered = coveredPerDomain.get(domain) ?? 0;
-    return {
-      domain,
-      applicable,
-      covered,
-      coveragePct: applicable === 0 ? 0 : Math.round((covered / applicable) * 1000) / 10,
-    };
-  });
+  const coverageByDomain: DomainCoverage[] = [...applicablePerDomain.keys()]
+    .sort()
+    .map((domain) => {
+      const applicable = applicablePerDomain.get(domain) ?? 0;
+      const covered = coveredPerDomain.get(domain) ?? 0;
+      return {
+        domain,
+        applicable,
+        covered,
+        coveragePct: applicable === 0 ? 0 : Math.round((covered / applicable) * 1000) / 10,
+      };
+    });
 
   const overallCoveragePct =
     rows.length === 0 ? 0 : Math.round((totalCovered / rows.length) * 1000) / 10;
