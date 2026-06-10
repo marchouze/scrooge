@@ -233,6 +233,39 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     citation: "D-TREASURY-GAPS-WAVE1",
   },
 
+  // ── FX pre-trade gateway funding (LCR) calibration — CRO, Treasury/ALM co-own ─
+  // Funding leg of D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS (CRO-approved
+  // 2026-06-10): co-owned by Ravi (Treasury / ALM engineer, engineering) →
+  // Eitan (Treasurer) for ALCO/Treasury. The post-trade LCR FLOOR itself is
+  // NOT a constant here — it is sourced live from the RAS appetite register
+  // (appetite:liquidity:lcr amber lower bound = 110%, the RAS red boundary).
+  {
+    key: "lcr.gateway.build-phase-baseline-pct",
+    value: 150,
+    unit: "percentage-points",
+    category: "lcr-threshold",
+    label: "FX gateway — build-phase current-LCR baseline",
+    description:
+      "Build-phase current-LCR baseline (pct) the pre-trade funding check projects from until " +
+      "the live LCR observation chain (BA 300 wiring) lands. Replaces the retired " +
+      "capital-funding-stub.json currentLcrPct.",
+    owningRole: "Chief Risk Officer",
+    citation: "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS",
+  },
+  {
+    key: "lcr.gateway.outflow-impact-pct-per-million-notional",
+    value: 0.5,
+    unit: "percentage-points",
+    category: "lcr-threshold",
+    label: "FX gateway — LCR outflow impact per R1m notional",
+    description:
+      "Estimated LCR impact in percentage-points per R1,000,000 of ZAR-equivalent order notional " +
+      "(Treasury/ALM 30-day stressed-outflow approximation for the pre-trade funding check). " +
+      "Replaces the retired capital-funding-stub.json outflowPerMillionNotionalZAR.",
+    owningRole: "Chief Risk Officer",
+    citation: "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS",
+  },
+
   // ── NSFR ASF weights (BA 120) — CFO ───────────────────────────────────────
   {
     key: "nsfr.asf.tier1-capital",
@@ -491,6 +524,20 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     description: "Headroom below R50,000,000 (ZAR cents) trips red / Board notification.",
     owningRole: "Chief Risk Officer",
     citation: "D-RAS",
+  },
+  {
+    key: "capital.gateway.operating-minimum-total-capital-ratio",
+    value: 0.12,
+    unit: "ratio",
+    category: "capital-threshold",
+    label: "FX gateway — operating minimum total capital ratio",
+    description:
+      "12.0% operating minimum total capital ratio the pre-trade capital-impact check converts " +
+      "RWA into required capital with: 8.0% Banks Act Reg 38 Pillar-1 base + 2.5% CCB + 0.0% " +
+      "Pillar-2A (build-phase) + 1.5pp RAS §B3 operating buffer. Pro-forma RWA ceiling = " +
+      "(capital envelope − RAS amber headroom floor) / this ratio.",
+    owningRole: "Chief Risk Officer",
+    citation: "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS",
   },
 
   // ── Leverage-ratio appetite bands (RAS) — CRO ─────────────────────────────

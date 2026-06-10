@@ -51,6 +51,11 @@ import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
 import { eventStore, logger } from "../../platform/composition";
 import type { AgentRunContext, AgentRunOutput } from "../types";
+import {
+  type GoalLoopBriefDispatchConfig,
+  dispatchBriefBoundRun,
+  openBriefsListForAgent,
+} from "./goal-loop-brief-dispatch";
 // Import the underlying payments-readiness handler directly to avoid the
 // circular dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
@@ -420,6 +425,19 @@ export const tomasGoalDeriver: GoalDeriver = async (
   return null;
 };
 
+// ---------------------------------------------------------------------------
+// Brief-bound run-lifecycle dispatch config (shared helper — see
+// goal-loop-brief-dispatch.ts). Authority:
+// D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION (PR #1182); extended to all
+// goal-loops per D-QUEUE-CLOSEOUT-2026-06-10.
+// ---------------------------------------------------------------------------
+const TOMAS_BRIEF_DISPATCH: GoalLoopBriefDispatchConfig = {
+  agentSlug: "tomas",
+  selfExecutablePattern: /payments[\s-]?readiness/i,
+  deliveredClassLabel: "payments-readiness attestation",
+  runHandler: tomasPaymentsReadiness,
+};
+
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
 let _worldStateReader: LocalAgentWorldStateReader | undefined;
@@ -498,6 +516,33 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   // If escalation or deferred — run handler in dry-run mode (shadow trace).
   const shouldRunHandler = goalOutcome !== null && goalOutcome.kind === "decision";
+
+  // Brief-bound dispatch path (D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION,
+  // extended per D-QUEUE-CLOSEOUT-2026-06-10): when the loop selected a
+  // decision and an open brief is addressed to this agent, bind a run to the
+  // oldest brief and emit AgentRunStarted{agent-runtime} → AgentRunCompleted
+  // so the iteration is visible in the autonomy run-feed and the brief stops
+  // being re-selected every tick. Skipped under --dry-run.
+  const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForAgent("tomas") : [];
+  const [brief] = openBriefs;
+  if (brief) {
+    const dispatch = await dispatchBriefBoundRun(
+      ctx,
+      brief,
+      iterationId,
+      openBriefs.length - 1,
+      TOMAS_BRIEF_DISPATCH,
+    );
+    logger.info(
+      { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
+      "tomas:goal-loop — run complete (brief-bound dispatch)",
+    );
+    return {
+      eventsEmitted: dispatch.eventsEmitted + goalEventsEmitted,
+      ok: true,
+      summary: `goal-loop: iteration=${iterationId} outcome=decision dispatch=${dispatch.summary}`,
+    };
+  }
 
   const handlerCtx: AgentRunContext = {
     ...ctx,
