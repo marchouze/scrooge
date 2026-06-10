@@ -1,0 +1,101 @@
+{
+  "instrumentId": "ZA-FIC-OBJECTIVES",
+  "standardName": "Financial Intelligence Centre objective/mandate layer (FIC Act 38 of 2001 s.3)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge — RegulatoryObjective layer)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:fic-objective-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "Financial Intelligence Centre Act 38 of 2001, s.3 (Objectives of the Centre). Authority: D-FIC-REGULATORY-INTELLIGENCE-INGESTION.",
+  "comment": "Regulatory-intelligence objective/mandate layer — FIC. Mirrors the FSCA objective artefact (Regulations/ZA/FSCA/fsca-objective-graph.json). The objective nodes (the 'why' an AML/CFT/CPF requirement exists) are Plane-A reference data, re-derivable from the regulator's own statement of objectives (FIC Act 38/2001 s.3), NOT events (D-REGULATORY-ARCHITECTURE-TWO-PLANE). PURSUES/REFINES/SERVES/ALIGNS_TO edges target EXISTING graph nodes: Regulator REG-FIC (seed-projection.ts Step 1); the FIC Act Document node urn:reg:za:fic-act-38-2001 (seeded by fic-instruments-graph.json — importInstrumentArtefacts runs before importObjectiveArtefacts; ISSUED_BY re-declared here is idempotent); Obligation nodes OBL-ORG-FC-* (Step 6, keyed OBL-<ORG-id>, from Regulations/_obligations.seed.json); Policy nodes POL-<policy-id> (Step 9, from Policies/*.md frontmatter policy-id). SERVES wiring rationale: FIC Act s.3 sets the mandate to combat ML/TF/PF. Four sub-objectives refine it: (1) financial-intelligence is served by the reporting obligations that feed the Centre — CTR/TPR/STR (FC-07/08/09); (2) cdd-integrity is served by the customer-due-diligence, beneficial-ownership, record-keeping and risk-based-approach obligations (FC-02/03/04/05/06/18/19); (3) targeted-sanctions is served by the sanctions / targeted-financial-sanctions screening and freezing obligations (FC-13/14/23/SANCTIONS-SCREENING); (4) aml-supervision is served by the RMCP, MLRO-governance and training obligations (FC-01/11/11-GLOSS-CEO-MLRO-BAR/12/MLRO-ALTERNATE). ALIGNS_TO wiring: the AML/CFT-bundle policies (aml-cft-policy, RMCP-V1, COUNTERPARTY-ONBOARDING-V1, fit-and-proper-policy, ABC-WB-01) align to the cdd-integrity/aml-supervision objectives; the sanctions policy aligns to targeted-sanctions. Every SERVES/ALIGNS_TO target id was confirmed present in the seeded graph (OBL-ORG-FC-* from the seed; POL-* from Policies/*.md frontmatter).",
+  "nodes": [
+    {
+      "id": "OBJ-FIC-MANDATE",
+      "nodeType": "RegulatoryObjective",
+      "label": "Objectives of the Financial Intelligence Centre",
+      "objectiveText": "The principal objective of the Financial Intelligence Centre is to assist in the identification of the proceeds of unlawful activities and the combating of money laundering activities, the financing of terrorist and related activities (terrorist financing) and proliferation financing; to make information collected by it available to investigating authorities, supervisory bodies, the South African Revenue Service, the intelligence services and the National Prosecuting Authority to facilitate the administration and enforcement of the laws of the Republic; to exchange information with similar bodies in other countries; and to supervise and enforce compliance with the Act.",
+      "objectiveLevel": "mandate",
+      "sourceCitation": "urn:reg:za:fic-act-38-2001:s.3"
+    },
+    {
+      "id": "OBJ-FIC-FINANCIAL-INTELLIGENCE",
+      "nodeType": "RegulatoryObjective",
+      "label": "Generation of financial intelligence for investigating authorities",
+      "objectiveText": "Collect, analyse and disseminate financial intelligence — the cash-threshold, terrorist-property and suspicious-and-unusual-transaction reports submitted by accountable institutions — to investigating authorities, supervisory bodies and prosecuting authorities to identify the proceeds of unlawful activity and disrupt money laundering, terrorist financing and proliferation financing.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fic-act-38-2001:s.3"
+    },
+    {
+      "id": "OBJ-FIC-CDD-INTEGRITY",
+      "nodeType": "RegulatoryObjective",
+      "label": "Customer due diligence and identity integrity",
+      "objectiveText": "Ensure accountable institutions know who their clients and beneficial owners are through risk-based customer due diligence, enhanced due diligence for higher-risk clients, beneficial-ownership transparency, record-keeping and ongoing monitoring — preventing the financial system from being used to launder the proceeds of crime or finance terrorism.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fic-act-38-2001:s.3"
+    },
+    {
+      "id": "OBJ-FIC-TARGETED-SANCTIONS",
+      "nodeType": "RegulatoryObjective",
+      "label": "Implementation of targeted financial sanctions",
+      "objectiveText": "Ensure accountable institutions implement targeted financial sanctions without delay — screening clients and transactions against the UN Security Council and s.26A targeted-financial-sanctions lists, freezing the property of designated persons and entities, and reporting terrorist property to the Centre — to combat terrorist financing and proliferation financing.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fic-act-38-2001:s.3"
+    },
+    {
+      "id": "OBJ-FIC-AML-SUPERVISION",
+      "nodeType": "RegulatoryObjective",
+      "label": "AML/CFT supervision, governance and compliance culture",
+      "objectiveText": "Ensure accountable institutions maintain an approved Risk Management and Compliance Programme, appoint a compliance officer / Money Laundering Reporting Officer with sufficient seniority and independence, hold the board and senior management accountable for AML/CFT compliance, and train staff — supervised and enforced by the Centre and the designated supervisory bodies.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:za:fic-act-38-2001:s.3"
+    }
+  ],
+  "edges": [
+    { "id": "OBJ-FIC-ISSUED_BY-ACT", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+
+    { "id": "OBJ-FIC-PURSUES-MANDATE", "fromId": "REG-FIC", "toId": "OBJ-FIC-MANDATE", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-PURSUES-FININTEL", "fromId": "REG-FIC", "toId": "OBJ-FIC-FINANCIAL-INTELLIGENCE", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-PURSUES-CDD", "fromId": "REG-FIC", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-PURSUES-SANCTIONS", "fromId": "REG-FIC", "toId": "OBJ-FIC-TARGETED-SANCTIONS", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-PURSUES-SUPERVISION", "fromId": "REG-FIC", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+
+    { "id": "OBJ-FIC-REFINES-FININTEL", "fromId": "OBJ-FIC-FINANCIAL-INTELLIGENCE", "toId": "OBJ-FIC-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-REFINES-CDD", "fromId": "OBJ-FIC-CDD-INTEGRITY", "toId": "OBJ-FIC-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-REFINES-SANCTIONS", "fromId": "OBJ-FIC-TARGETED-SANCTIONS", "toId": "OBJ-FIC-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-REFINES-SUPERVISION", "fromId": "OBJ-FIC-AML-SUPERVISION", "toId": "OBJ-FIC-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+
+    { "id": "OBJ-FIC-SERVES-FC07-FI", "fromId": "OBL-ORG-FC-07", "toId": "OBJ-FIC-FINANCIAL-INTELLIGENCE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.28" },
+    { "id": "OBJ-FIC-SERVES-FC08-FI", "fromId": "OBL-ORG-FC-08", "toId": "OBJ-FIC-FINANCIAL-INTELLIGENCE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.28A" },
+    { "id": "OBJ-FIC-SERVES-FC09-FI", "fromId": "OBL-ORG-FC-09", "toId": "OBJ-FIC-FINANCIAL-INTELLIGENCE", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.29" },
+
+    { "id": "OBJ-FIC-SERVES-FC02-CDD", "fromId": "OBL-ORG-FC-02", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:ss.21-21H" },
+    { "id": "OBJ-FIC-SERVES-FC03-CDD", "fromId": "OBL-ORG-FC-03", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.21A" },
+    { "id": "OBJ-FIC-SERVES-FC04-CDD", "fromId": "OBL-ORG-FC-04", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.21B" },
+    { "id": "OBJ-FIC-SERVES-FC05-CDD", "fromId": "OBL-ORG-FC-05", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.22" },
+    { "id": "OBJ-FIC-SERVES-FC06-CDD", "fromId": "OBL-ORG-FC-06", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-7" },
+    { "id": "OBJ-FIC-SERVES-FC18-CDD", "fromId": "OBL-ORG-FC-18", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-7" },
+    { "id": "OBJ-FIC-SERVES-FC19-CDD", "fromId": "OBL-ORG-FC-19", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-7" },
+
+    { "id": "OBJ-FIC-SERVES-FC13-TFS", "fromId": "OBL-ORG-FC-13", "toId": "OBJ-FIC-TARGETED-SANCTIONS", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-pcc-23" },
+    { "id": "OBJ-FIC-SERVES-FC14-TFS", "fromId": "OBL-ORG-FC-14", "toId": "OBJ-FIC-TARGETED-SANCTIONS", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-pcc-23" },
+    { "id": "OBJ-FIC-SERVES-FC23-TFS", "fromId": "OBL-ORG-FC-23", "toId": "OBJ-FIC-TARGETED-SANCTIONS", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-SERVES-SANCT-TFS", "fromId": "OBL-ORG-FC-SANCTIONS-SCREENING", "toId": "OBJ-FIC-TARGETED-SANCTIONS", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-pcc-23" },
+
+    { "id": "OBJ-FIC-SERVES-FC01-SUP", "fromId": "OBL-ORG-FC-01", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.42" },
+    { "id": "OBJ-FIC-SERVES-FC11-SUP", "fromId": "OBL-ORG-FC-11", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43A" },
+    { "id": "OBJ-FIC-SERVES-FC11-GLOSS-SUP", "fromId": "OBL-ORG-FC-11-GLOSS-CEO-MLRO-BAR", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43A" },
+    { "id": "OBJ-FIC-SERVES-FC-MLRO-ALT-SUP", "fromId": "OBL-ORG-FC-MLRO-ALTERNATE", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43A" },
+    { "id": "OBJ-FIC-SERVES-FC12-SUP", "fromId": "OBL-ORG-FC-12", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43" },
+
+    { "id": "OBJ-FIC-ALIGNS_TO-AMLCFT-CDD", "fromId": "POL-aml-cft-policy", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-ALIGNS_TO-ONBOARDING-CDD", "fromId": "POL-COUNTERPARTY-ONBOARDING-V1", "toId": "OBJ-FIC-CDD-INTEGRITY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-ALIGNS_TO-RMCP-SUP", "fromId": "POL-RMCP-V1", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.42" },
+    { "id": "OBJ-FIC-ALIGNS_TO-FITPROPER-SUP", "fromId": "POL-fit-and-proper-policy", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43A" },
+    { "id": "OBJ-FIC-ALIGNS_TO-ABC-SUP", "fromId": "POL-ABC-WB-01", "toId": "OBJ-FIC-AML-SUPERVISION", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.3" },
+    { "id": "OBJ-FIC-ALIGNS_TO-SANCTIONS-TFS", "fromId": "POL-sanctions-policy", "toId": "OBJ-FIC-TARGETED-SANCTIONS", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-pcc-23" }
+  ]
+}

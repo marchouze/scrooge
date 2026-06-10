@@ -1,0 +1,357 @@
+{
+  "instrumentId": "ZA-FIC-INSTRUMENTS",
+  "standardName": "FIC AML/CFT/CPF instrument stack (FIC Act 38 of 2001, MLTFC Regulations 2002, amendment Acts, schedules, FIC Guidance Notes, PCCs)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:fic-instruments-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "FIC (Financial Intelligence Centre) / AML-CFT-CPF instrument stack for the bank. Authority: D-FIC-REGULATORY-INTELLIGENCE-INGESTION. Models REG-FIC -> ISSUED_BY <- Document -> CONTAINS -> Provision -> EXPRESSES -> Obligation, bridging the bank's adopted OBL-ORG-FC-* AML/CFT/sanctions obligations to their FIC source provisions. The accountable seat for FIC/AML-CFT domain content is Zara (Chief Compliance Officer, governance).",
+  "comment": "FIC instrument stack as Plane-A reference data (D-REGULATORY-ARCHITECTURE-TWO-PLANE). Mirrors the FSCA instrument artefact (Regulations/ZA/FSCA/fsca-instruments-graph.json) exactly. Provision nodes carry the source provision text/heading at the granularity the bank's adopted ORG-FC-* obligations cite; the EXPRESSES edges bridge each Provision to the already-seeded OBL-ORG-FC-* obligation node (Step 6) — the same explicit Provision->Obligation EXPRESSES convention the FSCA and BCBS obligation graphs use, chosen because the free-text FIC citations do not parse through extractSectionIdsFromCitation. Document/Provision ids are URN-shaped (urn:reg:za:<instrument-slug>[:<provision-slug>]) and paren-free (urn.ts reg pattern allows only [a-z0-9./_-]; s.29(3) is therefore slugged s.29-3 in node ids, with the canonical 's.29(3)' retained in sourceProvision/label text). BRIDGE SCOPE: the 19 FIC-sourced ORG-FC obligations are bridged to FIC Act/GN/PCC/MLTFC-regulation provisions. The 8 non-FIC-sourced ORG-FC obligations are left HONESTLY UNBRIDGED because no source Document node exists in the graph for their instrument: FC-15 (FATCA IGA + Tax Admin Act), FC-16 (CRS + Tax Admin Act), FC-17 (FATF Rec.16 — wire-transfer rule, supranational), FC-20 (PRECCA 12/2004), FC-21 (FATF SA Mutual Evaluation Reports), FC-22 (UK Bribery Act 2010), FC-23 (SARB PA AML/CFT/CPF Communication 1 of 2025), FC-24 (SARB PA Directive 4 of 2022). Forcing FIC attribution onto a non-FIC instrument would be a false citation. applicabilityStatus: FIC Act / MLTFC Regulations / amendment Acts / schedules / Guidance Notes / PCCs = direct.",
+  "nodes": [
+    {
+      "id": "urn:reg:za:fic-act-38-2001",
+      "nodeType": "Document",
+      "label": "Financial Intelligence Centre Act 38 of 2001 (FIC Act)",
+      "metadata": {
+        "instrumentId": "FIC-ACT-38-2001",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.3",
+      "nodeType": "Provision",
+      "label": "FIC Act s.3 — Objectives of the Centre (combat ML/TF/PF; financial intelligence)",
+      "level": "section",
+      "text": "Section 3 of the FIC Act sets the objectives of the Financial Intelligence Centre: to assist in the identification of the proceeds of unlawful activities and the combating of money laundering activities, the financing of terrorist and related activities, and proliferation financing; to make information collected by it available to investigating authorities, supervisory bodies, the SARS, intelligence services and the NPA to facilitate the administration and enforcement of the laws of the Republic; and to exchange information with bodies with similar objectives in other countries. It is the statutory mandate source for the bank's AML/CFT/CPF programme.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "3" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.21",
+      "nodeType": "Provision",
+      "label": "FIC Act ss.21–21H — Customer due diligence (identification & verification, ongoing due diligence)",
+      "level": "section",
+      "text": "Sections 21 to 21H of the FIC Act prescribe the customer-due-diligence (CDD) regime that an accountable institution must apply: establish and verify the identity of a client (s.21, s.21A read with the RMCP), understand and obtain information on the nature and purpose of the business relationship (s.21B-context), conduct ongoing due diligence and scrutinise transactions throughout the relationship (s.21C), apply the additional due-diligence measures for legal persons, trusts and partnerships (s.21B), and the doing-business / inability-to-conduct-CDD consequences (s.21E). CDD must be risk-based and is the foundational control of the accountable institution's AML/CFT programme.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "21" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.21a",
+      "nodeType": "Provision",
+      "label": "FIC Act s.21A — Enhanced due diligence (higher-risk clients, PEPs)",
+      "level": "section",
+      "text": "Section 21A of the FIC Act (read with the additional-due-diligence provisions) requires an accountable institution to conduct enhanced due diligence where the ML/TF/PF risk is higher — including for prominent influential persons (domestic PEPs), foreign prominent public officials, and other higher-risk clients, products, channels or jurisdictions — obtaining senior-management approval to establish or continue the relationship, establishing the source of funds and source of wealth, and applying enhanced ongoing monitoring, as determined in the institution's Risk Management and Compliance Programme.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "21A" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.21b",
+      "nodeType": "Provision",
+      "label": "FIC Act s.21B — Additional due diligence: beneficial ownership of legal persons, trusts, partnerships",
+      "level": "section",
+      "text": "Section 21B of the FIC Act requires an accountable institution, in respect of a client that is a legal person, trust or partnership, to establish the nature of the client's business and ownership and control structure and to determine and verify the identity of the beneficial owner(s) — the natural person(s) who ultimately own or exercise effective control of the client — taking reasonable steps where ownership is layered or opaque. This implements the FATF beneficial-ownership transparency standard (FATF Rec.10/24/25) read with the Companies Act and the Trust Property Control Act.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "21B" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.22",
+      "nodeType": "Provision",
+      "label": "FIC Act s.22 — Record-keeping (CDD and transaction records)",
+      "level": "section",
+      "text": "Section 22 (read with s.22A and s.23-24) of the FIC Act requires an accountable institution to keep records of the information obtained to establish and verify a client's identity, and records of every transaction concluded in the course of the business relationship or single transaction, in a manner that enables reconstruction, for at least five years from the termination of the business relationship or the conclusion of the transaction, and to make those records available to the Centre and supervisory bodies on request.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "22" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.28",
+      "nodeType": "Provision",
+      "label": "FIC Act s.28 — Cash threshold reporting (CTR)",
+      "level": "section",
+      "text": "Section 28 of the FIC Act requires an accountable institution to report to the Centre, within the prescribed period, any cash transaction (or aggregation of cash transactions) above the prescribed threshold (the cash-threshold report, CTR) that is paid to or received by the institution.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "28" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.28a",
+      "nodeType": "Provision",
+      "label": "FIC Act s.28A — Terrorist property reporting (TPR)",
+      "level": "section",
+      "text": "Section 28A of the FIC Act requires an accountable institution that has in its possession or under its control property owned or controlled by, or on behalf of, a person who has committed or is involved in a terrorist or related activity, or an entity identified under a sanctions/targeted-financial-sanctions list, to report that property to the Centre (the terrorist-property report, TPR).",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "28A" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.29",
+      "nodeType": "Provision",
+      "label": "FIC Act s.29 — Suspicious and unusual transaction reporting (STR/SAR)",
+      "level": "section",
+      "text": "Section 29 of the FIC Act requires any person who carries on a business or is in charge of, manages or is employed by a business, and who knows or ought reasonably to have known or suspected that a transaction or series of transactions involves the proceeds of unlawful activities, money laundering, terrorist financing or an attempt to avoid a reporting duty, to report the suspicious or unusual transaction (STR/SAR) to the Centre within the prescribed period.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "29" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.29-3",
+      "nodeType": "Provision",
+      "label": "FIC Act s.29(3) — Prohibition on tipping-off",
+      "level": "section",
+      "text": "Section 29(3) of the FIC Act prohibits tipping-off: no person who knows or suspects that a suspicious-transaction report has been or is to be made may disclose that fact, or any information from which that fact could be inferred, to any other person (including the client) otherwise than as permitted by the Act. It protects the integrity of the financial-intelligence reporting channel.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "29(3)" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.42",
+      "nodeType": "Provision",
+      "label": "FIC Act s.42 — Risk Management and Compliance Programme (RMCP)",
+      "level": "section",
+      "text": "Section 42 of the FIC Act requires an accountable institution to develop, document, maintain and implement a Risk Management and Compliance Programme (RMCP) that sets out the manner in which, and the processes by which, the institution complies with its CDD, record-keeping, reporting and other AML/CFT/CPF obligations, identifies and assesses the ML/TF/PF risks it faces, and applies a risk-based approach. The RMCP must be approved by the board (or equivalent) and reviewed regularly.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "42" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.43",
+      "nodeType": "Provision",
+      "label": "FIC Act s.43 — Training and awareness",
+      "level": "section",
+      "text": "Section 43 of the FIC Act requires an accountable institution to provide ongoing training to its employees to enable them to comply with the provisions of the Act and the institution's RMCP, and to make employees aware of the AML/CFT/CPF laws and the institution's obligations.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "43" }
+    },
+    {
+      "id": "urn:reg:za:fic-act-38-2001:s.43a",
+      "nodeType": "Provision",
+      "label": "FIC Act s.43A — Governance: board/senior-management AML/CFT responsibility; compliance officer (MLRO) appointment",
+      "level": "section",
+      "text": "Section 43A of the FIC Act places ultimate responsibility for compliance with the Act on the board of directors / senior management of an accountable institution, and requires the appointment of a person with sufficient seniority and authority (the AML compliance officer / Money Laundering Reporting Officer) to ensure compliance with the Act and the RMCP. Read with FIC RMCP guidance and supervisory expectations, the compliance-officer / MLRO function is held independent of, and is not concentrated in, the same person as the chief executive officer (the CEO≠MLRO bar), and an alternate is designated for continuity.",
+      "metadata": { "instrumentId": "FIC-ACT-38-2001", "section": "43A" }
+    },
+
+    {
+      "id": "urn:reg:za:mltfc-regulations-2002",
+      "nodeType": "Document",
+      "label": "Money Laundering and Terrorist Financing Control Regulations, 2002 (GN R.1595, as amended)",
+      "metadata": {
+        "instrumentId": "MLTFC-REGULATIONS-2002",
+        "jurisdiction": "ZA",
+        "issuingBody": "National Treasury",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:fic-act-38-2001"
+      }
+    },
+    {
+      "id": "urn:reg:za:mltfc-regulations-2002:reg.cdd-reporting",
+      "nodeType": "Provision",
+      "label": "MLTFC Regulations 2002 — prescribed CDD particulars, reporting periods, cash threshold and report formats",
+      "level": "section",
+      "text": "The Money Laundering and Terrorist Financing Control Regulations, 2002 prescribe the operational detail underpinning the FIC Act CDD, record-keeping and reporting duties: the particulars to be obtained and verified for natural and legal persons, the prescribed cash threshold for s.28 cash-threshold reports, the periods within which s.28/28A/29 reports must be sent to the Centre, and the manner and form of reporting.",
+      "metadata": { "instrumentId": "MLTFC-REGULATIONS-2002", "section": "cdd-reporting" }
+    },
+
+    {
+      "id": "urn:reg:za:fic-amendment-act-1-2017",
+      "nodeType": "Document",
+      "label": "Financial Intelligence Centre Amendment Act 1 of 2017",
+      "metadata": {
+        "instrumentId": "FIC-AMENDMENT-ACT-1-2017",
+        "jurisdiction": "ZA",
+        "issuingBody": "Parliament",
+        "applicabilityStatus": "direct",
+        "amends": "urn:reg:za:fic-act-38-2001"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-amendment-act-1-2017:p.rba",
+      "nodeType": "Provision",
+      "label": "FIC Amendment Act 1/2017 — risk-based approach, RMCP, beneficial ownership, PEPs",
+      "level": "section",
+      "text": "The Financial Intelligence Centre Amendment Act 1 of 2017 introduced the risk-based approach into the FIC Act: it replaced the rules-based 'know-your-customer' provisions with risk-based customer due diligence (ss.21-21H), introduced the Risk Management and Compliance Programme (s.42), the prominent-influential-person (PEP) regime, beneficial-ownership obligations, and freezing/administrative-sanction powers — aligning the South African framework with the FATF Recommendations.",
+      "metadata": { "instrumentId": "FIC-AMENDMENT-ACT-1-2017", "section": "rba" }
+    },
+
+    {
+      "id": "urn:reg:za:general-laws-aml-cft-amendment-act-22-2022",
+      "nodeType": "Document",
+      "label": "General Laws (Anti-Money Laundering and Combating Terrorism Financing) Amendment Act 22 of 2022",
+      "metadata": {
+        "instrumentId": "GENERAL-LAWS-AML-CFT-AMENDMENT-ACT-22-2022",
+        "jurisdiction": "ZA",
+        "issuingBody": "Parliament",
+        "applicabilityStatus": "direct",
+        "amends": "urn:reg:za:fic-act-38-2001"
+      }
+    },
+    {
+      "id": "urn:reg:za:general-laws-aml-cft-amendment-act-22-2022:p.bo-tfs",
+      "nodeType": "Provision",
+      "label": "General Laws (AML/CFT) Amendment Act 22/2022 — beneficial-ownership transparency and targeted financial sanctions strengthening",
+      "level": "section",
+      "text": "The General Laws (AML/CFT) Amendment Act 22 of 2022 amended the FIC Act, the Companies Act, the Trust Property Control Act and other laws to strengthen beneficial-ownership transparency (beneficial-ownership registers for companies and trusts), targeted financial sanctions implementation, and supervisory powers — South Africa's principal legislative response to the FATF Mutual Evaluation deficiencies that preceded the country's greylisting.",
+      "metadata": { "instrumentId": "GENERAL-LAWS-AML-CFT-AMENDMENT-ACT-22-2022", "section": "bo-tfs" }
+    },
+
+    {
+      "id": "urn:reg:za:fic-schedule-1",
+      "nodeType": "Document",
+      "label": "FIC Act Schedule 1 — Accountable institutions",
+      "metadata": {
+        "instrumentId": "FIC-SCHEDULE-1",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct",
+        "partOf": "urn:reg:za:fic-act-38-2001"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-schedule-2",
+      "nodeType": "Document",
+      "label": "FIC Act Schedule 2 — Supervisory bodies (incl. the Prudential Authority for banks)",
+      "metadata": {
+        "instrumentId": "FIC-SCHEDULE-2",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct",
+        "partOf": "urn:reg:za:fic-act-38-2001"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-schedule-3",
+      "nodeType": "Document",
+      "label": "FIC Act Schedule 3 — Reporting institutions",
+      "metadata": {
+        "instrumentId": "FIC-SCHEDULE-3",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct",
+        "partOf": "urn:reg:za:fic-act-38-2001"
+      }
+    },
+
+    {
+      "id": "urn:reg:za:fic-gn-7",
+      "nodeType": "Document",
+      "label": "FIC Guidance Note 7 — Implementation of various aspects of the FIC Act (RMCP and risk-based approach)",
+      "metadata": {
+        "instrumentId": "FIC-GN-7",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct",
+        "guidanceFor": "urn:reg:za:fic-act-38-2001:s.42"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-gn-7:p.rba-rmcp",
+      "nodeType": "Provision",
+      "label": "GN 7 — Risk-based approach, RMCP content, and review periodicity",
+      "level": "section",
+      "text": "FIC Guidance Note 7 guides accountable institutions on implementing the risk-based approach and constructing the Risk Management and Compliance Programme: identifying and rating ML/TF/PF risk across client, product, channel, transaction and geographic dimensions; the minimum RMCP content; the periodicity of risk reassessment and RMCP review; and the application of simplified or enhanced due diligence proportionate to assessed risk.",
+      "metadata": { "instrumentId": "FIC-GN-7", "section": "rba-rmcp" }
+    },
+    {
+      "id": "urn:reg:za:fic-gn-4a",
+      "nodeType": "Document",
+      "label": "FIC Guidance Note 4A — Suspicious and unusual transaction reporting (STR)",
+      "metadata": {
+        "instrumentId": "FIC-GN-4A",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct",
+        "guidanceFor": "urn:reg:za:fic-act-38-2001:s.29"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-gn-5",
+      "nodeType": "Document",
+      "label": "FIC Guidance Note 5 — Cash threshold reporting (CTR)",
+      "metadata": {
+        "instrumentId": "FIC-GN-5",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct",
+        "guidanceFor": "urn:reg:za:fic-act-38-2001:s.28"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-gn-6",
+      "nodeType": "Document",
+      "label": "FIC Guidance Note 6 — Terrorist property reporting (TPR)",
+      "metadata": {
+        "instrumentId": "FIC-GN-6",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct",
+        "guidanceFor": "urn:reg:za:fic-act-38-2001:s.28a"
+      }
+    },
+
+    {
+      "id": "urn:reg:za:fic-pcc-23",
+      "nodeType": "Document",
+      "label": "FIC Public Compliance Communication 23 — Targeted financial sanctions and the s.26A/28A obligations",
+      "metadata": {
+        "instrumentId": "FIC-PCC-23",
+        "jurisdiction": "ZA",
+        "issuingBody": "FIC",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:za:fic-pcc-23:p.tfs-screening",
+      "nodeType": "Provision",
+      "label": "PCC 23 — Targeted financial sanctions: list screening, freezing without delay, TPR",
+      "level": "section",
+      "text": "FIC Public Compliance Communication 23 guides accountable institutions on implementing targeted financial sanctions under the FIC Act read with the Protection of Constitutional Democracy against Terrorist and Related Activities Act (POCDATARA) and the UN Security Council sanctions framework: screening clients and transactions against the UNSC consolidated and the s.26A targeted financial sanctions lists, freezing property without delay where a match is identified, and submitting the terrorist-property report (TPR) to the Centre. Zero risk appetite applies to a true-positive sanctions match (RAS B4).",
+      "metadata": { "instrumentId": "FIC-PCC-23", "section": "tfs-screening" }
+    }
+  ],
+  "edges": [
+    { "id": "FIC-ISSUED_BY-ACT", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-MLTFC", "fromId": "urn:reg:za:mltfc-regulations-2002", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-AMEND-2017", "fromId": "urn:reg:za:fic-amendment-act-1-2017", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-GLAA-2022", "fromId": "urn:reg:za:general-laws-aml-cft-amendment-act-22-2022", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-SCH1", "fromId": "urn:reg:za:fic-schedule-1", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-SCH2", "fromId": "urn:reg:za:fic-schedule-2", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-SCH3", "fromId": "urn:reg:za:fic-schedule-3", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-GN7", "fromId": "urn:reg:za:fic-gn-7", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-GN4A", "fromId": "urn:reg:za:fic-gn-4a", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-GN5", "fromId": "urn:reg:za:fic-gn-5", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-GN6", "fromId": "urn:reg:za:fic-gn-6", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-ISSUED_BY-PCC23", "fromId": "urn:reg:za:fic-pcc-23", "toId": "REG-FIC", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "FIC-CONTAINS-ACT-s3", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s21", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.21", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s21a", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.21a", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s21b", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.21b", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s22", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.22", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s28", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.28", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s28a", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.28a", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s29", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.29", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s29-3", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.29-3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s42", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.42", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s43", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.43", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-ACT-s43a", "fromId": "urn:reg:za:fic-act-38-2001", "toId": "urn:reg:za:fic-act-38-2001:s.43a", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-MLTFC-reg", "fromId": "urn:reg:za:mltfc-regulations-2002", "toId": "urn:reg:za:mltfc-regulations-2002:reg.cdd-reporting", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-AMEND-2017-rba", "fromId": "urn:reg:za:fic-amendment-act-1-2017", "toId": "urn:reg:za:fic-amendment-act-1-2017:p.rba", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-GLAA-2022-bo", "fromId": "urn:reg:za:general-laws-aml-cft-amendment-act-22-2022", "toId": "urn:reg:za:general-laws-aml-cft-amendment-act-22-2022:p.bo-tfs", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-GN7-rba", "fromId": "urn:reg:za:fic-gn-7", "toId": "urn:reg:za:fic-gn-7:p.rba-rmcp", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FIC-CONTAINS-PCC23-tfs", "fromId": "urn:reg:za:fic-pcc-23", "toId": "urn:reg:za:fic-pcc-23:p.tfs-screening", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "FIC-EXPRESSES-s42-FC01", "fromId": "urn:reg:za:fic-act-38-2001:s.42", "toId": "OBL-ORG-FC-01", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.42" },
+    { "id": "FIC-EXPRESSES-s21-FC02", "fromId": "urn:reg:za:fic-act-38-2001:s.21", "toId": "OBL-ORG-FC-02", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:ss.21-21H" },
+    { "id": "FIC-EXPRESSES-s21a-FC03", "fromId": "urn:reg:za:fic-act-38-2001:s.21a", "toId": "OBL-ORG-FC-03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.21A" },
+    { "id": "FIC-EXPRESSES-gn7-FC03", "fromId": "urn:reg:za:fic-gn-7:p.rba-rmcp", "toId": "OBL-ORG-FC-03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-7" },
+    { "id": "FIC-EXPRESSES-s21b-FC04", "fromId": "urn:reg:za:fic-act-38-2001:s.21b", "toId": "OBL-ORG-FC-04", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.21B" },
+    { "id": "FIC-EXPRESSES-s22-FC05", "fromId": "urn:reg:za:fic-act-38-2001:s.22", "toId": "OBL-ORG-FC-05", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.22" },
+    { "id": "FIC-EXPRESSES-gn7-FC06", "fromId": "urn:reg:za:fic-gn-7:p.rba-rmcp", "toId": "OBL-ORG-FC-06", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-7" },
+    { "id": "FIC-EXPRESSES-s28-FC07", "fromId": "urn:reg:za:fic-act-38-2001:s.28", "toId": "OBL-ORG-FC-07", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.28" },
+    { "id": "FIC-EXPRESSES-gn5-FC07", "fromId": "urn:reg:za:fic-gn-5", "toId": "OBL-ORG-FC-07", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-5" },
+    { "id": "FIC-EXPRESSES-s28a-FC08", "fromId": "urn:reg:za:fic-act-38-2001:s.28a", "toId": "OBL-ORG-FC-08", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.28A" },
+    { "id": "FIC-EXPRESSES-gn6-FC08", "fromId": "urn:reg:za:fic-gn-6", "toId": "OBL-ORG-FC-08", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-6" },
+    { "id": "FIC-EXPRESSES-s29-FC09", "fromId": "urn:reg:za:fic-act-38-2001:s.29", "toId": "OBL-ORG-FC-09", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.29" },
+    { "id": "FIC-EXPRESSES-gn4a-FC09", "fromId": "urn:reg:za:fic-gn-4a", "toId": "OBL-ORG-FC-09", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-4a" },
+    { "id": "FIC-EXPRESSES-s29-3-FC10", "fromId": "urn:reg:za:fic-act-38-2001:s.29-3", "toId": "OBL-ORG-FC-10", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.29(3)" },
+    { "id": "FIC-EXPRESSES-s43a-FC11", "fromId": "urn:reg:za:fic-act-38-2001:s.43a", "toId": "OBL-ORG-FC-11", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43A" },
+    { "id": "FIC-EXPRESSES-s43a-FC11-GLOSS", "fromId": "urn:reg:za:fic-act-38-2001:s.43a", "toId": "OBL-ORG-FC-11-GLOSS-CEO-MLRO-BAR", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43A" },
+    { "id": "FIC-EXPRESSES-s43a-FC-MLRO-ALT", "fromId": "urn:reg:za:fic-act-38-2001:s.43a", "toId": "OBL-ORG-FC-MLRO-ALTERNATE", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43A" },
+    { "id": "FIC-EXPRESSES-s43-FC12", "fromId": "urn:reg:za:fic-act-38-2001:s.43", "toId": "OBL-ORG-FC-12", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-act-38-2001:s.43" },
+    { "id": "FIC-EXPRESSES-pcc23-FC13", "fromId": "urn:reg:za:fic-pcc-23:p.tfs-screening", "toId": "OBL-ORG-FC-13", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-pcc-23" },
+    { "id": "FIC-EXPRESSES-pcc23-FC14", "fromId": "urn:reg:za:fic-pcc-23:p.tfs-screening", "toId": "OBL-ORG-FC-14", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-pcc-23" },
+    { "id": "FIC-EXPRESSES-pcc23-FC-SANCT", "fromId": "urn:reg:za:fic-pcc-23:p.tfs-screening", "toId": "OBL-ORG-FC-SANCTIONS-SCREENING", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-pcc-23" },
+    { "id": "FIC-EXPRESSES-gn7-FC18", "fromId": "urn:reg:za:fic-gn-7:p.rba-rmcp", "toId": "OBL-ORG-FC-18", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-7" },
+    { "id": "FIC-EXPRESSES-gn7-FC19", "fromId": "urn:reg:za:fic-gn-7:p.rba-rmcp", "toId": "OBL-ORG-FC-19", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fic-gn-7" }
+  ]
+}
