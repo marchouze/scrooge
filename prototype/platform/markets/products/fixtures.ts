@@ -481,7 +481,7 @@ export const M4_FX_OTC_VANILLA_FIXTURE: Product = {
   version: "1.0.0",
   name: "OTC Vanilla FX (Spot, Forward, Swap; Option at M5)",
   description:
-    "Umbrella OTC vanilla FX product covering Spot, Forward and FX Swap on any currency pair, for all counterparty types, OTC only (no exchange-traded). The bank intermediates deliverable and non-deliverable FX against ZAR and cross, settling via its CLS-member correspondent (PvP per D-FX-CLS-MEMBERSHIP) where physical, and cash-settling NDFs. Every cross-border ZAR flow is FinSurv-reportable under full Authorised Dealer status (D-FX-AD-STATUS); the SARB ZAR Fixing Rate (ORG-MK-08) anchors mark-to-market. FX Option is named in the product's target scope but is not attested at v1.0 — it joins at v1.1 once the M5 option-pricing substrate (Garman-Kohlhagen / vol surface) lands. Scope axes (instruments, pair breadth, counterparty eligibility, execution venue) are carried in the typed `scope` field rather than this narrative.",
+    "Umbrella OTC vanilla FX product covering Spot, Forward and FX Swap on any currency pair, for institutional/professional counterparties only, OTC only (no exchange-traded). Retail/non-professional counterparties are OUT of scope (D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL) — consistent with the institutional franchise; no FAIS retail-appropriateness regime applies. The bank intermediates deliverable and non-deliverable FX against ZAR and cross, settling via its CLS-member correspondent (PvP per D-FX-CLS-MEMBERSHIP) where physical, and cash-settling NDFs. Every cross-border ZAR flow is FinSurv-reportable under full Authorised Dealer status (D-FX-AD-STATUS); the SARB ZAR Fixing Rate (ORG-MK-08) anchors mark-to-market. FX Option is named in the product's target scope but is not attested at v1.0 — it joins at v1.1 once the M5 option-pricing substrate (Garman-Kohlhagen / vol surface) lands. Scope axes (instruments, pair breadth, counterparty eligibility, execution venue) are carried in the typed `scope` field rather than this narrative.",
   franchiseScope: "institutional",
   legalEntityId: "LE-BANK-SA",
   currency: "ZAR",
@@ -490,7 +490,10 @@ export const M4_FX_OTC_VANILLA_FIXTURE: Product = {
     executionVenue: "otc",
     fxInstrumentVariants: ["spot", "forward", "swap"],
     currencyPairs: "any",
-    counterpartyEligibility: "all",
+    // Institutional/professional counterparty classes (bank/corporate/PSE/fund/
+    // sovereign); retail/non-professional excluded. Aligns with franchiseScope.
+    // D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL.
+    counterpartyEligibility: "institutional",
   },
   cdmComposition: {
     primitives: [
