@@ -97,6 +97,23 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Bea", "rwa-period-close", "event-driven", {
     subscribesTo: ["AccountingPeriodClosed"],
   }),
+  // BA 700 (Capital Adequacy) period-close return — event-driven on
+  // AccountingPeriodClosed. Generates the BA 700 return from the live event
+  // flow (capital stack from SubLedgerPostingEmitted + CapitalContribution-
+  // Recorded; RWA from the RwaComputed event of record, rwaComputationEventId
+  // threaded for chain-of-custody) and records a
+  // SarbSubmissionAttempted{formId:"BA700"} via the SARB simulator.
+  // Operational RWA is a named tracked deferred gap
+  // (GAP-RETURNS-BA700-OPERATIONAL-RWA — gross-income-blocked pre-licence; the
+  // zero is the correct BIA value for a pre-commencement bank, so the
+  // submitted denominator is not understated today).
+  // Authority: D-RETURNS-SUBMISSION-WIRING-WORKSTREAM (Wave B);
+  //            D-RWA-ENGINE-W2-SLICE-3;
+  //            D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (capital = BA 700).
+  // Brief: brief:mira:returns-submission-wiring-wave-b-wire-remaining-:2026-06-10.
+  entry("Bea", "ba700-period-close", "event-driven", {
+    subscribesTo: ["AccountingPeriodClosed"],
+  }),
   // Daily product-control run — wires the three product-control engines
   // (daily P&L, P&L attribution; valuation-adjustment via Rohan's MTM) into a
   // live daily cadence. Cron: 19:00 UTC weekdays = after Rohan's 18:00 UTC MTM

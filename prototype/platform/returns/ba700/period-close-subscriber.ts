@@ -45,6 +45,7 @@ import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../pro
 import type {
   AccountCapitalClassification,
   BA700Return,
+  Ba100Output,
   BufferRequirements,
   RegulatoryDeduction,
   RwaDecomposition,
@@ -94,12 +95,15 @@ export interface PeriodCloseSubscriberInput {
    */
   readonly deductions?: readonly RegulatoryDeduction[];
   /**
-   * RWA decomposition.  Caller-supplied here; for the events-first path the
-   * `RwaComputed` event of record is read by `generateBA700Return` directly
-   * (D-RWA-ENGINE-W2-SLICE-3) — credit + market RWA event-sourced, operational
-   * RWA an explicit gross-income-blocked placeholder.
+   * RWA decomposition.  Optional (WS-RETURNS-SUBMISSION-WIRING Wave B): when
+   * omitted, `generateBA700Return` reads the `RwaComputed` event of record for
+   * the period directly (D-RWA-ENGINE-W2-SLICE-3) — credit + market RWA
+   * event-sourced, operational RWA an explicit gross-income-blocked
+   * placeholder (named gap GAP-RETURNS-BA700-OPERATIONAL-RWA) — falling back
+   * to the live-positions projection. Callers may still override for
+   * scenarios / tests / backcalculation.
    */
-  readonly rwa: RwaDecomposition;
+  readonly rwa?: RwaDecomposition;
   /** Buffer requirements; defaults to build-phase BCBS minimums + 2.5% CCB. */
   readonly bufferRequirements?: BufferRequirements;
   /**
@@ -121,6 +125,14 @@ export interface PeriodCloseSubscriberResult {
    * Undefined when the entity is not in scope for BA 100 (non-bank entity).
    */
   readonly ba100Return?: BA700Return;
+  /**
+   * The full generator output (`Ba100Output`) — the audit/forensic shape and
+   * the input to the SARB XML adapter (`ba100ToXmlPayload`). Present when
+   * `processed` is true. Added for the runtime wiring (WS-RETURNS-SUBMISSION-
+   * WIRING Wave B) so the period-close handler can render + submit without
+   * re-generating.
+   */
+  readonly rawOutput?: Ba100Output;
   /**
    * Substrate gap note — the event-bus trigger wiring is not yet built.
    * This string surfaces in the subscriber result for the recon pipeline
@@ -185,7 +197,7 @@ export function onAccountingPeriodClosed(
   // Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
   const resolvedClassifications = input.classifications ?? coaToCapitalClassifications();
 
-  const { return: ba100Return } = generateBA700Return({
+  const { return: ba100Return, rawOutput } = generateBA700Return({
     entityId: input.entity,
     reportingDate: input.closedAt,
     periodId: input.periodId,
@@ -195,7 +207,10 @@ export function onAccountingPeriodClosed(
     periodEnd: input.periodEnd,
     classifications: resolvedClassifications,
     deductions: input.deductions ?? [],
-    rwa: input.rwa,
+    // When omitted, the generator's resolution precedence engages: the
+    // RwaComputed event of record for the period (D-RWA-ENGINE-W2-SLICE-3),
+    // then the live-positions projection, then the build-phase constant.
+    ...(input.rwa !== undefined ? { rwa: input.rwa } : {}),
     ...(input.bufferRequirements !== undefined
       ? { bufferRequirements: input.bufferRequirements }
       : {}),
@@ -204,7 +219,7 @@ export function onAccountingPeriodClosed(
     ...(input.untilSequence !== undefined ? { untilSequence: input.untilSequence } : {}),
   });
 
-  return { processed: true, ba100Return, substrateGap: SUBSTRATE_GAP };
+  return { processed: true, ba100Return, rawOutput, substrateGap: SUBSTRATE_GAP };
 }
 
 // ---------------------------------------------------------------------------

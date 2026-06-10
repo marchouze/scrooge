@@ -30,6 +30,12 @@ import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import { screenCounterpartySanctions } from "../platform/markets/regulatory/sanctions-screen";
 import { checkHeadroom } from "../platform/risk/credit-limit-engine";
+import {
+  evaluateCapitalImpact,
+  evaluateFundingImpact,
+  fxGatewayThresholdSchedule,
+  latestRwaComputedTotalMinor,
+} from "../platform/risk/fx-gateway-thresholds";
 import type { RfqInput, SyntheticQuote } from "./markets-fx-trade";
 import { isCounterpartyEligible } from "./markets-fx-trade";
 
@@ -270,16 +276,63 @@ export function routeOrderToGateway(args: {
       }
     }
 
+    // capital-impact + funding — enforced against the CRO-ratified threshold
+    // schedule (D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS, approved 2026-06-10;
+    // funding leg co-owned by Ravi (Treasury / ALM engineer, engineering)).
+    // FAIL-CLOSED: a non-ZAR quote currency cannot be ZAR-projected pre-trade
+    // and is rejected rather than waved through. Sell orders reduce exposure
+    // and are admitted without evaluation (matches the async handler's
+    // standing semantics in kai-credit-capital-funding-check).
+    if (checkKind === "capital-impact" || checkKind === "funding") {
+      const quoteCcy = rfqInput.currencyPair?.split("/")?.[1] ?? "ZAR";
+      if (rfqInput.side !== "sell") {
+        if (quoteCcy !== "ZAR") {
+          outcome = "reject";
+          checkRejectionReason = [
+            `${checkKind} check is FAIL-CLOSED: quote currency '${quoteCcy}' cannot be`,
+            "ZAR-projected for capital/LCR impact pre-trade (D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS).",
+          ].join(" ");
+        } else {
+          const notionalZarMinor = Math.max(
+            0,
+            Math.round(rfqInput.notional * quote.rateUsed * 100),
+          );
+          const schedule = fxGatewayThresholdSchedule();
+          const evaluation =
+            checkKind === "capital-impact"
+              ? evaluateCapitalImpact({
+                  instrumentClass: "FX-spot",
+                  notionalMinor: notionalZarMinor,
+                  currentRwaMinor: latestRwaComputedTotalMinor(store),
+                  schedule,
+                })
+              : evaluateFundingImpact({
+                  notionalMinor: notionalZarMinor,
+                  currentLcrPct: null,
+                  schedule,
+                });
+          if (evaluation.outcome === "reject") {
+            outcome = "reject";
+            checkRejectionReason = evaluation.rejectionReason;
+          }
+        }
+      }
+    }
+
     // Synthetic latency: 10–99ms
     const latencyMs = 10 + Math.floor(Math.random() * 90);
     const completedAt = asOf;
 
-    // Emit GatewayCheckCompleted
+    // Emit GatewayCheckCompleted. capital-impact + funding completions also
+    // cite the CRO threshold-ratification decision they enforce.
     const checkCompletedEvent = makeGatewayCheckCompleted({
       asOf,
       entity: GATEWAY_ENTITY,
       actor: GATEWAY_ACTOR,
-      citations: [...GATEWAY_CITATIONS],
+      citations:
+        checkKind === "capital-impact" || checkKind === "funding"
+          ? [...GATEWAY_CITATIONS, "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS"]
+          : [...GATEWAY_CITATIONS],
       payload: {
         orderId,
         checkKind,

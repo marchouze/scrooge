@@ -32,19 +32,35 @@
 //        CreditLimitExhausted, LimitExpired, AnnualReviewStale).
 //
 //   On GatewayCheckRequested[capital-impact]:
-//     1. Compute proposed RWA = notional × RWA weight for instrument class.
-//     2. Check current RWA + proposed RWA vs BA 100 RWA limit.
+//     1. Compute proposed RWA = notional × CRO-owned Reg38-CRE20 instrument-
+//        class weight (rwa.instrument-weight registry; unknown class REJECTS —
+//        fail-closed, never a silent default weight).
+//     2. Check current RWA (latest RwaComputed event-of-record, else ICAAP v1
+//        baseline) + proposed RWA vs the ratified pro-forma RWA ceiling
+//        (D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS: (R300m capital envelope −
+//        R100m RAS amber headroom floor) / 12.0% operating minimum ratio).
 //     3. Emit GatewayCheckCompleted[capital-impact] approve or reject.
 //
 //   On GatewayCheckRequested[funding]:
-//     1. Estimate LCR outflow impact from proposed notional.
-//     2. Check estimated LCR post-trade vs minimum 100%.
+//     1. Estimate LCR outflow impact from proposed notional (Treasury/ALM-
+//        calibrated lcr.gateway.outflow-impact-pct-per-million-notional).
+//     2. Check estimated post-trade LCR vs the RAS §B3 red boundary (110% —
+//        the management-action trigger, NOT the bare BCBS 238 100% minimum),
+//        sourced live from the RAS appetite register.
 //     3. Emit GatewayCheckCompleted[funding] approve or reject.
 //
+// Threshold authority: D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS (CRO-approved
+// 2026-06-10; Helena, Chief Risk Officer, governance — primary; funding leg
+// co-owned by Ravi, Treasury / ALM engineer, engineering). The former
+// capital-funding-stub.json is RETIRED — both checks evaluate via the shared
+// @platform/risk/fx-gateway-thresholds register (same evaluators the sync
+// gateway path in dashboard/markets-fx-gateway.ts calls), guarded by
+// recon:fx-gateway-threshold-enforcement.
+//
 // Build-phase limitations:
-//   - Capital RWA weights and LCR parameters are read from capital-funding-stub.json.
-//     Production: derive from live BA 100 projection (Anya) and Eitan's LCR
-//     projection (LCR ratio event, not yet built).
+//   - current LCR projects from a cited build-phase baseline constant until
+//     the live LCR observation chain (BA 300 wiring) lands; current RWA reads
+//     the RwaComputed event-of-record when present.
 //   - SA-CCR add-on / RC fallback uses supervisory factors only; pivot to
 //     Rohan's @platform/risk/sa-ccr once merged.
 //
@@ -56,9 +72,6 @@
 //          Saskia (Derivatives trading desk, engineering) — credit-limit-engine wiring
 //            under D-CREDIT-LIMIT-ENGINE-BUILD Phase 4
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { eventStore, logger } from "../../platform/composition";
 import { minor } from "../../platform/core/money";
 import type { Currency } from "../../platform/core/types";
@@ -69,6 +82,12 @@ import {
 import type { GatewayCreditBlockReason } from "../../platform/event-store/event-types/trading";
 import type { Event } from "../../platform/event-store/types";
 import { type HeadroomCheckResult, checkHeadroom } from "../../platform/risk/credit-limit-engine";
+import {
+  evaluateCapitalImpact,
+  evaluateFundingImpact,
+  fxGatewayThresholdSchedule,
+  latestRwaComputedTotalMinor,
+} from "../../platform/risk/fx-gateway-thresholds";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const HANDLER_ACTOR = {
@@ -77,8 +96,15 @@ const HANDLER_ACTOR = {
 };
 
 const CREDIT_CITATIONS: readonly string[] = ["RAS-B3", "ORG-PR-01"];
-const CAPITAL_CITATIONS: readonly string[] = ["ORG-PR-01", "RAS-B1"];
-const FUNDING_CITATIONS: readonly string[] = ["ORG-PR-01"];
+const CAPITAL_CITATIONS: readonly string[] = [
+  "ORG-PR-01",
+  "RAS-B1",
+  "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS",
+];
+const FUNDING_CITATIONS: readonly string[] = [
+  "ORG-PR-01",
+  "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS",
+];
 
 // ---------------------------------------------------------------------------
 // SA-CCR supervisory factors — build-phase fallback used when
@@ -97,36 +123,6 @@ const SA_CCR_SUPERVISORY_FACTOR: Record<string, number> = {
   "FX-fwd": 0.04, // FX forwards / swaps
   "FX-swap": 0.04,
 };
-
-// ---------------------------------------------------------------------------
-// Stub types — credit-limit branch now consumes the engine; this stub is
-// retained only for the capital + funding branches (still pre-Anya / pre-Eitan).
-// ---------------------------------------------------------------------------
-
-interface CapitalFundingStub {
-  rwa: {
-    totalRwaLimitZAR: number;
-    currentRwaZAR: number;
-    rwaWeightByInstrumentClass: Record<string, number>;
-  };
-  lcr: {
-    minimumLcrPct: number;
-    currentLcrPct: number;
-    outflowPerMillionNotionalZAR: number;
-  };
-}
-
-function loadCapitalFundingStub(repoRoot: string): CapitalFundingStub {
-  const stubPath = join(
-    repoRoot,
-    "prototype",
-    "platform",
-    "markets",
-    "regulatory",
-    "capital-funding-stub.json",
-  );
-  return JSON.parse(readFileSync(stubPath, "utf-8")) as CapitalFundingStub;
-}
 
 // ---------------------------------------------------------------------------
 // Pre-deal exposure helpers
@@ -153,17 +149,6 @@ function proposedCreditExposureMinor(instrument: string, quantity: number, price
   // statement when notional × factor produces a fractional minor unit.
   const minorUnits = Math.round(exposure * 100);
   return BigInt(Math.max(0, minorUnits));
-}
-
-/**
- * Compute total RWA currently on the books (approximate — from
- * EquityTradeBooked notional × 35% default equity weight).
- * Production: use Anya's BA 100 projection directly.
- */
-function computeCurrentRwaZAR(stub: CapitalFundingStub): number {
-  // In the build phase, defer to the stub's currentRwaZAR baseline.
-  // Production: read from the most recent BA325RwaProjectionPublished event.
-  return stub.rwa.currentRwaZAR;
 }
 
 /**
@@ -280,8 +265,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
-  // Load stubs once.
-  const capitalFundingStub = loadCapitalFundingStub(ctx.repoRoot);
+  // Resolve the ratified threshold schedule once per run
+  // (D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS — replaces capital-funding-stub.json).
+  const thresholdSchedule = fxGatewayThresholdSchedule();
 
   let eventsEmitted = 0;
   let totalPassed = 0;
@@ -428,10 +414,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   // ---------------------------------------------------------------------------
-  // Capital-impact checks
+  // Capital-impact checks — enforced against the CRO-ratified pro-forma RWA
+  // ceiling (D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS). Current RWA prefers the
+  // RwaComputed event-of-record (D-RWA-ENGINE-W2-SLICE-3); the evaluator falls
+  // back to the ICAAP v1 baseline constant when no event exists yet.
   // ---------------------------------------------------------------------------
 
-  const currentRwaZAR = computeCurrentRwaZAR(capitalFundingStub);
+  const currentRwaMinor = latestRwaComputedTotalMinor(eventStore);
 
   for (const e of capitalRequests) {
     const p = e.payload as {
@@ -475,25 +464,19 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     if (!order.instrument || order.quantity === null || order.price === null) {
       outcome = "reject";
       rejectionReason =
-        "Could not resolve instrument/quantity/price from OrderProposed; capital-impact check cannot proceed";
+        "Could not resolve instrument/quantity/price from OrderProposed; capital-impact check cannot proceed (fail-closed per D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS)";
       citationToRule = "ORG-PR-01";
     } else if (order.side !== "sell") {
-      const proposedNotionalZAR = order.price * order.quantity;
-      const instClass = instrumentClass(order.instrument);
-      const rwaWeightByClass = capitalFundingStub.rwa.rwaWeightByInstrumentClass;
-      const rwaWeight = rwaWeightByClass[instClass] ?? rwaWeightByClass.default ?? 0.35;
-
-      const proposedRwaZAR = proposedNotionalZAR * rwaWeight;
-      const proFormaRwaZAR = currentRwaZAR + proposedRwaZAR;
-
-      if (proFormaRwaZAR > capitalFundingStub.rwa.totalRwaLimitZAR) {
+      const evaluation = evaluateCapitalImpact({
+        instrumentClass: instrumentClass(order.instrument),
+        notionalMinor: Math.round(order.price * order.quantity * 100),
+        currentRwaMinor,
+        schedule: thresholdSchedule,
+      });
+      if (evaluation.outcome === "reject") {
         outcome = "reject";
-        rejectionReason =
-          `Capital RWA limit breached: pro-forma RWA ZAR ${proFormaRwaZAR.toFixed(0)} ` +
-          `exceeds BA 100 limit ZAR ${capitalFundingStub.rwa.totalRwaLimitZAR.toFixed(0)} ` +
-          `(current RWA ZAR ${currentRwaZAR.toFixed(0)}, ` +
-          `proposed add ZAR ${proposedRwaZAR.toFixed(0)} at RWA weight ${rwaWeight} for ${instClass}).`;
-        citationToRule = "ORG-PR-01";
+        rejectionReason = evaluation.rejectionReason;
+        citationToRule = evaluation.citationToRule;
       }
     }
 
@@ -582,24 +565,18 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     if (order.quantity === null || order.price === null) {
       outcome = "reject";
       rejectionReason =
-        "Could not resolve quantity/price from OrderProposed; funding check cannot proceed";
+        "Could not resolve quantity/price from OrderProposed; funding check cannot proceed (fail-closed per D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS)";
       citationToRule = "ORG-PR-01";
     } else if (order.side !== "sell") {
-      const proposedNotionalZAR = order.price * order.quantity;
-      // Estimate LCR outflow: outflowPerMillionNotionalZAR per million of notional.
-      const lcrOutflowPct =
-        (proposedNotionalZAR / 1_000_000) * capitalFundingStub.lcr.outflowPerMillionNotionalZAR;
-      const postTradeLcrPct = capitalFundingStub.lcr.currentLcrPct - lcrOutflowPct;
-
-      if (postTradeLcrPct < capitalFundingStub.lcr.minimumLcrPct) {
+      const evaluation = evaluateFundingImpact({
+        notionalMinor: Math.round(order.price * order.quantity * 100),
+        currentLcrPct: null,
+        schedule: thresholdSchedule,
+      });
+      if (evaluation.outcome === "reject") {
         outcome = "reject";
-        rejectionReason =
-          `LCR headroom insufficient: estimated post-trade LCR ${postTradeLcrPct.toFixed(1)}% ` +
-          `falls below minimum ${capitalFundingStub.lcr.minimumLcrPct}% ` +
-          `(current LCR ${capitalFundingStub.lcr.currentLcrPct}%, ` +
-          `estimated outflow impact ${lcrOutflowPct.toFixed(2)}% for ` +
-          `notional ZAR ${proposedNotionalZAR.toFixed(0)}).`;
-        citationToRule = "ORG-PR-01";
+        rejectionReason = evaluation.rejectionReason;
+        citationToRule = evaluation.citationToRule;
       }
     }
 
