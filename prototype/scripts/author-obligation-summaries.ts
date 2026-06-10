@@ -145,6 +145,20 @@ function main(): void {
       missingFromModule: [],
     };
 
+    // Collapse obligations that share a review-urn (a handful of SA rows cite the
+    // same regulatory provision — e.g. ORG-PR(IV)-13 and its deputy-IO gloss both
+    // carry urn:reg:za:popia:s55). The ObligationReviewCompleted audit event keys
+    // by review-urn, so emitting one per obligation would have two events fight
+    // over the same key on every run (a non-idempotent churn). Pick one
+    // deterministic winner per urn — prefer `reviewed-modified` (the authored
+    // summary is the more informative review record), then lowest id — and emit
+    // once. The per-id corrected `requirement` still flows through the seed by id,
+    // so every obligation's projected requirement is unaffected; only the shared
+    // review-event key is de-duplicated.
+    const winnerByUrn = new Map<
+      string,
+      { current: ObligationAdoptedPayload; authored: ObligationSummary }
+    >();
     for (const current of obligations) {
       const id = current.obligationId;
       const authored = module[id];
@@ -152,7 +166,27 @@ function main(): void {
         counts.missingFromModule.push(id);
         continue;
       }
+      const urn = reviewUrnForObligation(id, current.urn);
+      const existing = winnerByUrn.get(urn);
+      if (!existing) {
+        winnerByUrn.set(urn, { current, authored });
+        continue;
+      }
+      const existingPreferred =
+        existing.authored.verdict === "reviewed-modified" &&
+        authored.verdict !== "reviewed-modified";
+      const candidatePreferred =
+        authored.verdict === "reviewed-modified" &&
+        existing.authored.verdict !== "reviewed-modified";
+      if (candidatePreferred && !existingPreferred) {
+        winnerByUrn.set(urn, { current, authored });
+      }
+      // Otherwise keep the existing winner (lower id wins on a verdict tie,
+      // since obligations are iterated in id-sorted order).
+    }
 
+    for (const { current, authored } of winnerByUrn.values()) {
+      const id = current.obligationId;
       const reviewUrn = reviewUrnForObligation(id, current.urn);
       const verdict = authored.verdict;
       const reviewerSeat = authored.reviewerSeat || current.owner || "cco";
