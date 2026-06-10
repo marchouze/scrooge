@@ -48,6 +48,7 @@ import type {
   CreditLimitLoadedPayload,
   CreditLimitWithdrawnPayload,
 } from "../../event-store/event-types/credit-limit";
+import type { EventStore } from "../../event-store/store";
 import type { Event } from "../../event-store/types";
 import { utcNow } from "../../types/time";
 import type { CreditLimit, CreditLimitStatus } from "./types";
@@ -217,10 +218,11 @@ function applyEvent(acc: FoldAcc, event: Event): FoldAcc {
 // store, returning a map keyed by counterpartyId.
 // ---------------------------------------------------------------------------
 
-function foldAll(asOf?: string): Map<string, FoldAcc> {
+function foldAll(asOf?: string, store?: Pick<EventStore, "replay">): Map<string, FoldAcc> {
+  const es = store ?? eventStore;
   const byCounterparty = new Map<string, FoldAcc>();
   for (const type of CREDIT_LIMIT_LIFECYCLE_TYPES) {
-    for (const event of eventStore.replay(asOf !== undefined ? { type, asOf } : { type })) {
+    for (const event of es.replay(asOf !== undefined ? { type, asOf } : { type })) {
       const p = event.payload as { counterpartyId?: string };
       const cpId = p.counterpartyId;
       if (!cpId) continue;
@@ -243,8 +245,12 @@ function foldAll(asOf?: string): Map<string, FoldAcc> {
  * controls both the event-store cut-off and the expiry comparison (defaults
  * to current wall time).
  */
-export function getCreditLimit(counterpartyId: string, asOf?: string): CreditLimit | null {
-  const all = foldAll(asOf);
+export function getCreditLimit(
+  counterpartyId: string,
+  asOf?: string,
+  store?: Pick<EventStore, "replay">,
+): CreditLimit | null {
+  const all = foldAll(asOf, store);
   const acc = all.get(counterpartyId);
   if (!acc) return null;
   const limit = materialise(acc);
