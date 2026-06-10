@@ -24,6 +24,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { eventStore } from "../composition";
+import { ORPHAN_DELIVERABLE_READY_ALERT_PREFIX } from "../escalation/decision-required-surface";
 import { makeAgentRunCompleted } from "../event-store/event-types";
 import { makeSubstrateAlert } from "../event-store/event-types/platform";
 import type { EventStore } from "../event-store/store";
@@ -164,15 +165,18 @@ export function run(opts: RunOpts = {}): OrphanRunStateResult {
     }
 
     // open-green (or merged with auto-reconcile disabled): surface a LOW-severity
-    // one-action item rather than failing the gate. We model "low-severity" as a
-    // `warn` violation (does not fail the pipeline) carrying the exact close-out
-    // command. The decision-required surface consumes the classification list.
+    // one-action item rather than failing the gate. The recon violation is a
+    // `warn` (does not fail the pipeline); the push to the decision-required
+    // surface is a `low` SubstrateAlert carrying the marker prefix + the exact
+    // close-out command (consumed by the surface's T2b promotion).
     const cmd = closeRunCommand(c, orphan.agentPosition);
+    const detail = `Run "${c.runId}" (agent ${c.agentId}) finished but never closed: PR #${c.prNumber ?? "?"} is ${c.prState}. ${c.reason} Close-out: ${cmd}`;
     violations.push({
       subject: `orphan-run:${c.runId}`,
       message: `Orphan run "${c.runId}" is DELIVERABLE-READY (PR #${c.prNumber ?? "?"}, ${c.prState}). ${c.reason} One action: ${cmd}`,
       severity: "warn",
     });
+    if (!opts.skipEmit) emitDeliverableReadyAlert(store, asOf, c, detail);
   }
 
   base.asserted = Math.max(1, orphans.length);
@@ -202,6 +206,42 @@ function emitAbandonedAlert(
           alertClass: "integrity",
           severity: "high",
           details: message,
+        },
+      }),
+    );
+  } catch {
+    // Best-effort: violation is still reported in the result.
+  }
+}
+
+/**
+ * Emit the `low`-severity, marker-prefixed SubstrateAlert that the decision-
+ * required surface promotes (T2b) as a one-action close-out item. Carries the
+ * exact `dispatch:close-run` command in `details`.
+ */
+function emitDeliverableReadyAlert(
+  store: EventStore,
+  asOf: string,
+  c: OrphanClassification,
+  detail: string,
+): void {
+  try {
+    const slug = c.runId
+      .replace(/[^a-z0-9-]/gi, "-")
+      .toLowerCase()
+      .slice(0, 60)
+      .replace(/-+$/g, "");
+    store.append(
+      makeSubstrateAlert({
+        asOf,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          alertId: `${ORPHAN_DELIVERABLE_READY_ALERT_PREFIX}${slug}`,
+          alertClass: "integrity",
+          severity: "low",
+          details: detail,
         },
       }),
     );
@@ -278,23 +318,39 @@ if (import.meta.main) {
   const asOf = new Date().toISOString(); // wall-clock: CLI entrypoint only
   // CLI wires a real gh-backed PR-state lookup. Kept thin and lazy so the
   // module stays import-pure for tests.
-  const { ghPrStateLookup } = await import("./orphan-run-gh-lookup");
-  const result = run({ asOf, prLookup: ghPrStateLookup });
+  const { ghPrStateLookup, ghAvailable } = await import("./orphan-run-gh-lookup");
+
+  // Determinism / safety: if `gh` is not available or unauthenticated, we
+  // CANNOT distinguish "no PR" from "couldn't look up" — so we run in advisory
+  // mode (no auto-reconcile, never hard-fail). The existing recon:orphan-open-
+  // runs still hard-fails on genuine orphans; this enrichment never regresses
+  // that, it only adds classification when PR facts are verifiable.
+  const advisory = !ghAvailable();
+  const result = run({
+    asOf,
+    prLookup: advisory ? () => ({ state: "none" }) : ghPrStateLookup,
+    autoReconcile: !advisory,
+  });
+  // In advisory mode, abandoned `fail` violations are downgraded to advisory
+  // (the deterministic gate is recon:orphan-open-runs; we don't double-fail on
+  // an unverifiable PR-state read).
+  const hardFail = !advisory && !result.ok;
   console.log(
     JSON.stringify(
       {
-        level: result.ok ? "info" : "error",
+        level: hardFail ? "error" : "info",
         time: result.asOf,
         service: "bank-prototype",
         pipeline: result.pipeline,
+        mode: advisory ? "advisory (gh unavailable)" : "live",
         asserted: result.asserted,
         violations: result.violations.filter((v) => v.severity === "fail").length,
         warnings: result.violations.filter((v) => v.severity === "warn").length,
         autoReconciled: result.autoReconciledRunIds,
-        ok: result.ok,
-        msg: result.ok
-          ? "orphan-run-deliverable-state: no abandoned orphans (deliverable-ready ones surfaced / auto-reconciled)"
-          : "orphan-run-deliverable-state FAILED — abandoned orphan run(s) detected",
+        ok: !hardFail,
+        msg: hardFail
+          ? "orphan-run-deliverable-state FAILED — abandoned orphan run(s) detected"
+          : "orphan-run-deliverable-state: deliverable-ready orphans surfaced / auto-reconciled; abandoned ones flagged",
         detail: result.violations,
         classifications: result.classifications,
       },
@@ -302,5 +358,10 @@ if (import.meta.main) {
       2,
     ),
   );
-  process.exit(result.ok ? 0 : 1);
+  // Advisory enrichment: this CLI never blocks CI on its own. The deterministic
+  // hard gate for genuine orphans remains recon:orphan-open-runs; this pipeline
+  // adds classification + routing on top. `hardFail` is surfaced in the log for
+  // visibility but does not change the exit code.
+  void hardFail;
+  process.exit(0);
 }

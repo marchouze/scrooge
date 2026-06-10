@@ -29,8 +29,14 @@ import type { Event } from "../event-store/types";
 
 export type DecisionRequiredSource = "run-failed" | "alert" | "recon" | "escalation";
 
-/** Surface tiers. `critical` reserved for blocking escalations / future schema (spec §1.1). */
-export type SurfaceSeverity = "critical" | "high";
+/**
+ * Surface tiers. `critical` reserved for blocking escalations / future schema
+ * (spec §1.1). `low` is the one-action "finished-but-didn't-return" tier added
+ * for orphan-run deliverable-ready items (a green/merged-but-unclosed run is a
+ * trivial close-out, not a high-severity loss) — D-PROACTIVE-ESCALATION-
+ * SURFACING + the orphan-run classifier.
+ */
+export type SurfaceSeverity = "critical" | "high" | "low";
 
 /**
  * SubstrateAlert severities (and any future tier) that promote to the surface.
@@ -38,6 +44,14 @@ export type SurfaceSeverity = "critical" | "high";
  * here, asserted by recon:escalation-surface-parity (spec §4.3).
  */
 export const HIGH_OR_ABOVE: ReadonlySet<string> = new Set(["high", "critical"]);
+
+/**
+ * `alertId` prefix that marks a `low`-severity SubstrateAlert as a one-action
+ * orphan-run deliverable-ready item. Only `low` integrity alerts carrying this
+ * marker promote to the surface — every other `low` alert stays below the line,
+ * so the surface is not flooded by routine low-severity noise.
+ */
+export const ORPHAN_DELIVERABLE_READY_ALERT_PREFIX = "alert:integrity:orphan-deliverable-ready-";
 
 /** AgentEscalation severities that promote. `blocking` maps to `critical`. */
 export const ESCALATION_PROMOTING: ReadonlySet<string> = new Set(["high", "blocking"]);
@@ -118,9 +132,31 @@ export function isDecisionRequired(event: Event): PromotedItem | null {
     // T2 — high (or above) integrity/capacity/etc. substrate alert.
     case "SubstrateAlert": {
       const severity = str(p, "severity");
-      if (!HIGH_OR_ABOVE.has(severity)) return null;
       const alertId = str(p, "alertId");
       const agentUrn = str(p, "agentUrn");
+
+      // T2b — `low`-severity orphan-run deliverable-ready item. A run whose PR
+      // is merged/green but whose close-run never fired: a one-action close-out,
+      // not a high-severity loss. Only this marked `low` alert promotes; all
+      // other low alerts stay below the line.
+      if (severity === "low") {
+        if (!alertId.startsWith(ORPHAN_DELIVERABLE_READY_ALERT_PREFIX)) return null;
+        return {
+          itemId: `decision-required:alert:${alertId}`,
+          source: "alert",
+          sourceEventId: event.event_id,
+          severity: "low",
+          raisedAt: event.as_of,
+          owningAgent: agentUrn || DEFAULT_RECON_OWNER,
+          title: `Run delivered but never closed out: ${str(p, "details").slice(0, 200)}`,
+          recommendedAction:
+            "Close out the finished run (the exact close-run command is in the alert detail).",
+          citations: event.citations,
+          alertId,
+        };
+      }
+
+      if (!HIGH_OR_ABOVE.has(severity)) return null;
       return {
         itemId: `decision-required:alert:${alertId}`,
         source: "alert",
@@ -203,7 +239,7 @@ export interface DecisionRequiredItem extends PromotedItem {
 export interface DecisionRequiredSurface {
   readonly asOf: string;
   readonly openCount: number;
-  readonly bySeverity: { readonly critical: number; readonly high: number };
+  readonly bySeverity: { readonly critical: number; readonly high: number; readonly low: number };
   readonly items: readonly DecisionRequiredItem[];
 }
 
@@ -275,7 +311,7 @@ function ackOf(item: PromotedItem, idx: LifecycleIndex): string | undefined {
   );
 }
 
-const SEVERITY_RANK: Record<SurfaceSeverity, number> = { critical: 2, high: 1 };
+const SEVERITY_RANK: Record<SurfaceSeverity, number> = { critical: 3, high: 2, low: 1 };
 
 /**
  * THE single projection (spec §2.1). Walk the store once, promote qualifying
@@ -314,10 +350,11 @@ export function buildDecisionRequiredSurface(
   });
 
   const critical = items.filter((i) => i.severity === "critical").length;
+  const low = items.filter((i) => i.severity === "low").length;
   return {
     asOf: now.toISOString(),
     openCount: items.length,
-    bySeverity: { critical, high: items.length - critical },
+    bySeverity: { critical, high: items.length - critical - low, low },
     items,
   };
 }
@@ -344,9 +381,9 @@ export function renderDecisionRequiredDigest(surface: DecisionRequiredSurface): 
   if (surface.openCount === 0) {
     return "## Decision-required (0 open) ✅";
   }
-  const head = `## Decision-required (${surface.openCount} open — ${surface.bySeverity.critical} critical, ${surface.bySeverity.high} high)`;
+  const head = `## Decision-required (${surface.openCount} open — ${surface.bySeverity.critical} critical, ${surface.bySeverity.high} high, ${surface.bySeverity.low} low)`;
   const rows = surface.items.map((i) => {
-    const dot = i.severity === "critical" ? "🔴" : "🟠";
+    const dot = i.severity === "critical" ? "🔴" : i.severity === "high" ? "🟠" : "🟡";
     const ack = i.status === "acknowledged" ? ` _(ack: ${i.ackBy})_` : "";
     return `- ${dot} [${i.severity}] ${i.title} (${ageLabel(i.ageSeconds)}) — ${i.recommendedAction}${ack}`;
   });

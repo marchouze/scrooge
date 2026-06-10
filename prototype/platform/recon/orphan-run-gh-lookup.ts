@@ -32,6 +32,18 @@ function gh(args: string[]): string | null {
   return r.stdout;
 }
 
+/**
+ * Is `gh` available AND authenticated in this environment? The classifier must
+ * NOT treat "gh unavailable" as "no PR" (that would mis-classify a finished run
+ * as abandoned). When this returns false the CLI runs in advisory mode: it
+ * surfaces orphans but never auto-reconciles or hard-fails on PR state. Mirrors
+ * the determinism boundary — the only network probe lives in this adapter.
+ */
+export function ghAvailable(): boolean {
+  const r = spawnSync("gh", ["auth", "status"], { encoding: "utf8" });
+  return r.status === 0;
+}
+
 /** All check rollups green (or none, which we treat as green for merge-readiness). */
 function checksGreen(pr: GhPr): boolean {
   const rollup = pr.statusCheckRollup ?? [];
@@ -90,12 +102,10 @@ export function ghPrStateLookup(key: OrphanCorrelationKey): PrFact {
       "20",
     ]);
     const prs = parse(out);
-    if (prs.length > 0) {
-      // Prefer a merged PR (the strongest deliverable-ready signal), else the
-      // first.
-      const merged = prs.find((p) => p.state === "MERGED" || p.mergedAt);
-      return toFact(merged ?? prs[0]);
-    }
+    // Prefer a merged PR (the strongest deliverable-ready signal), else the
+    // first candidate.
+    const chosen = prs.find((p) => p.state === "MERGED" || p.mergedAt) ?? prs[0];
+    if (chosen) return toFact(chosen);
   }
 
   return { state: "none" };

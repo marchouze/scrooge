@@ -128,9 +128,7 @@ export function buildCorrelationKey(
     workstreamId = typeof p.workstreamId === "string" ? p.workstreamId : undefined;
     title = typeof p.title === "string" ? p.title : undefined;
     const outputs = Array.isArray(p.expectedOutputs) ? p.expectedOutputs : [];
-    expectsPr = outputs.some(
-      (o) => (o as Record<string, unknown>)?.kind === "code-pr",
-    );
+    expectsPr = outputs.some((o) => (o as Record<string, unknown>)?.kind === "code-pr");
     break;
   }
   return {
