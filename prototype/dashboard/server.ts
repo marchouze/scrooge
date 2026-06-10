@@ -65,7 +65,12 @@ import { getCollateralInventory } from "../platform/collateral/inventory";
 import { eventStore, logger } from "../platform/composition";
 import { FINANCIAL_CONSTANTS } from "../platform/config/financial-constants";
 import { updateConfigFile } from "../platform/config/loader";
-import type { BankConfigPaths, BankConfigServer } from "../platform/config/schema";
+import type {
+  BankConfigDisplay,
+  BankConfigPaths,
+  BankConfigServer,
+} from "../platform/config/schema";
+import { CURRENCY_POSITIONS, NEGATIVE_STYLES } from "../platform/config/schema";
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
@@ -3827,8 +3832,18 @@ const server = Bun.serve({
         "repoRoot",
       ];
       const KNOWN_SERVER_KEYS: (keyof BankConfigServer)[] = ["port", "refreshMs"];
+      const KNOWN_DISPLAY_KEYS: (keyof BankConfigDisplay)[] = [
+        "decimals",
+        "thousandsSeparator",
+        "negativeStyle",
+        "rightAlignNumbers",
+        "currencyPosition",
+        "locale",
+      ];
       // Validate — reject unknown top-level keys
-      const unknownKeys = Object.keys(patch).filter((k) => k !== "paths" && k !== "server");
+      const unknownKeys = Object.keys(patch).filter(
+        (k) => k !== "paths" && k !== "server" && k !== "display",
+      );
       if (unknownKeys.length > 0) {
         return new Response(JSON.stringify({ error: `Unknown keys: ${unknownKeys.join(", ")}` }), {
           status: 400,
@@ -3871,9 +3886,60 @@ const server = Bun.serve({
           );
         }
       }
+      // Validate display sub-keys (typed: enums + scalar types)
+      if (patch.display !== undefined) {
+        if (typeof patch.display !== "object" || patch.display === null) {
+          return new Response(JSON.stringify({ error: "display must be an object" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const d = patch.display as Record<string, unknown>;
+        const unknownDisplayKeys = Object.keys(d).filter(
+          (k) => !KNOWN_DISPLAY_KEYS.includes(k as keyof BankConfigDisplay),
+        );
+        if (unknownDisplayKeys.length > 0) {
+          return new Response(
+            JSON.stringify({ error: `Unknown display keys: ${unknownDisplayKeys.join(", ")}` }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        const displayError = ((): string | null => {
+          if (d.decimals !== undefined) {
+            if (
+              typeof d.decimals !== "number" ||
+              !Number.isInteger(d.decimals) ||
+              d.decimals < 0 ||
+              d.decimals > 8
+            )
+              return "display.decimals must be an integer 0–8";
+          }
+          if (d.thousandsSeparator !== undefined && typeof d.thousandsSeparator !== "boolean")
+            return "display.thousandsSeparator must be a boolean";
+          if (d.rightAlignNumbers !== undefined && typeof d.rightAlignNumbers !== "boolean")
+            return "display.rightAlignNumbers must be a boolean";
+          if (d.negativeStyle !== undefined && !NEGATIVE_STYLES.includes(d.negativeStyle as never))
+            return `display.negativeStyle must be one of: ${NEGATIVE_STYLES.join(", ")}`;
+          if (
+            d.currencyPosition !== undefined &&
+            !CURRENCY_POSITIONS.includes(d.currencyPosition as never)
+          )
+            return `display.currencyPosition must be one of: ${CURRENCY_POSITIONS.join(", ")}`;
+          if (d.locale !== undefined && (typeof d.locale !== "string" || d.locale.trim() === ""))
+            return "display.locale must be a non-empty string";
+          return null;
+        })();
+        if (displayError) {
+          return new Response(JSON.stringify({ error: displayError }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
       updateConfigFile({
         paths: patch.paths as Partial<BankConfigPaths> | undefined,
         server: patch.server as Partial<BankConfigServer> | undefined,
+        display: patch.display as Partial<BankConfigDisplay> | undefined,
       });
       return jsonResponse({ ok: true, config: buildConfigView() });
     }

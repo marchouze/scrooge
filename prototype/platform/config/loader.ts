@@ -21,7 +21,13 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import type { BankConfigFile, BankConfigPaths, BankConfigServer, ResolvedConfig } from "./schema";
+import type {
+  BankConfigDisplay,
+  BankConfigFile,
+  BankConfigPaths,
+  BankConfigServer,
+  ResolvedConfig,
+} from "./schema";
 
 // ── Config file path ────────────────────────────────────────────────────────
 
@@ -50,6 +56,22 @@ function buildDefaults(): BankConfigFile {
       port: 3010,
       refreshMs: 30000,
     },
+    display: buildDisplayDefaults(),
+  };
+}
+
+// ── Display defaults ──────────────────────────────────────────────────────────
+// The "house style" for numbers/currency across the dashboard. SA bank → en-ZA,
+// 2 decimals, grouped thousands, minus-sign negatives, right-aligned, ISO code prefix.
+
+function buildDisplayDefaults(): BankConfigDisplay {
+  return {
+    decimals: 2,
+    thousandsSeparator: true,
+    negativeStyle: "minus",
+    rightAlignNumbers: true,
+    currencyPosition: "prefix",
+    locale: "en-ZA",
   };
 }
 
@@ -99,9 +121,16 @@ function resolveNum(
   return { value: defaultVal, source: "default" };
 }
 
+/** Display fields resolve file → default (no env layer); source tagged for the UI. */
+function resolveVal<T>(fileVal: T | undefined, defaultVal: T): { value: T; source: Source } {
+  if (fileVal !== undefined) return { value: fileVal, source: "file" };
+  return { value: defaultVal, source: "default" };
+}
+
 // ── In-process cache ────────────────────────────────────────────────────────
 
-let _cache: (BankConfigPaths & { server: BankConfigServer }) | null = null;
+let _cache: (BankConfigPaths & { server: BankConfigServer; display: BankConfigDisplay }) | null =
+  null;
 
 function buildResolved(): ResolvedConfig {
   const configFilePath = getConfigFilePath();
@@ -120,8 +149,10 @@ function buildResolved(): ResolvedConfig {
 
   const fp = fileConfig?.paths;
   const fs = fileConfig?.server;
+  const fd = fileConfig?.display;
   const dp = defaults.paths;
   const ds = defaults.server;
+  const dd = defaults.display;
 
   return {
     version: 1,
@@ -141,6 +172,14 @@ function buildResolved(): ResolvedConfig {
       port: resolveNum(process.env.BANK_DASHBOARD_PORT, fs?.port, ds.port),
       refreshMs: resolveNum(process.env.BANK_DASHBOARD_REFRESH_MS, fs?.refreshMs, ds.refreshMs),
     },
+    display: {
+      decimals: resolveVal(fd?.decimals, dd.decimals),
+      thousandsSeparator: resolveVal(fd?.thousandsSeparator, dd.thousandsSeparator),
+      negativeStyle: resolveVal(fd?.negativeStyle, dd.negativeStyle),
+      rightAlignNumbers: resolveVal(fd?.rightAlignNumbers, dd.rightAlignNumbers),
+      currencyPosition: resolveVal(fd?.currencyPosition, dd.currencyPosition),
+      locale: resolveVal(fd?.locale, dd.locale),
+    },
     configFilePath,
     configFileExists,
   };
@@ -154,7 +193,10 @@ function buildResolved(): ResolvedConfig {
  *
  * Use this for reading DB paths in production code.
  */
-export function getBankConfig(): BankConfigPaths & { server: BankConfigServer } {
+export function getBankConfig(): BankConfigPaths & {
+  server: BankConfigServer;
+  display: BankConfigDisplay;
+} {
   if (_cache) return _cache;
   const resolved = buildResolved();
   _cache = {
@@ -167,6 +209,14 @@ export function getBankConfig(): BankConfigPaths & { server: BankConfigServer } 
     server: {
       port: resolved.server.port.value,
       refreshMs: resolved.server.refreshMs.value,
+    },
+    display: {
+      decimals: resolved.display.decimals.value,
+      thousandsSeparator: resolved.display.thousandsSeparator.value,
+      negativeStyle: resolved.display.negativeStyle.value,
+      rightAlignNumbers: resolved.display.rightAlignNumbers.value,
+      currencyPosition: resolved.display.currencyPosition.value,
+      locale: resolved.display.locale.value,
     },
   };
   return _cache;
@@ -185,7 +235,11 @@ export function getResolvedConfig(): ResolvedConfig {
  * subsequent getBankConfig() calls pick up the new values.
  */
 export function updateConfigFile(
-  patch: Partial<{ paths: Partial<BankConfigPaths>; server: Partial<BankConfigServer> }>,
+  patch: Partial<{
+    paths: Partial<BankConfigPaths>;
+    server: Partial<BankConfigServer>;
+    display: Partial<BankConfigDisplay>;
+  }>,
 ): void {
   const configFilePath = getConfigFilePath();
   const existing = readConfigFile(configFilePath);
@@ -202,6 +256,11 @@ export function updateConfigFile(
       ...defaults.server,
       ...(existing?.server ?? {}),
       ...(patch.server ?? {}),
+    },
+    display: {
+      ...defaults.display,
+      ...(existing?.display ?? {}),
+      ...(patch.display ?? {}),
     },
   };
 

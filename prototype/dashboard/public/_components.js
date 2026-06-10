@@ -126,13 +126,23 @@
   // rows: Array<{cells: string[], data: any}>
   // onRowClick: (data) => void
   // emptyMessage: string
-  function renderTable({ container, headers, rows, onRowClick, emptyMessage } = {}) {
+  // align: optional ("left"|"right")[] per column. "right" tags that column's
+  // th + td with the shared .num class (right-aligned, tabular figures) when the
+  // platform display convention has right-align on. Backward compatible — omit
+  // for all-left tables.
+  function renderTable({ container, headers, rows, onRowClick, emptyMessage, align } = {}) {
     if (!container) return;
 
     if (!rows || rows.length === 0) {
       container.innerHTML = `<div class="table-wrap"><div class="table-empty">${esc(emptyMessage || "No data")}</div></div>`;
       return;
     }
+
+    // Resolve the numeric-column class once (honours rightAlignNumbers setting).
+    const numCls =
+      window.SC && typeof window.SC.numClass === "function" ? window.SC.numClass() : "num";
+    const colClass = (i) =>
+      Array.isArray(align) && align[i] === "right" && numCls ? ` ${numCls}` : "";
 
     let sortCol = -1;
     let sortDir = "asc";
@@ -157,7 +167,12 @@
       const sorted = sortedRows();
       const trs = sorted
         .map((row) => {
-          const tds = row.cells.map((c) => `<td>${c}</td>`).join("");
+          const tds = row.cells
+            .map((c, i) => {
+              const cc = colClass(i);
+              return cc ? `<td class="${cc.trim()}">${c}</td>` : `<td>${c}</td>`;
+            })
+            .join("");
           return `<tr${clickable ? ' data-clickable="1"' : ""}>${tds}</tr>`;
         })
         .join("");
@@ -169,7 +184,12 @@
       }
     }
 
-    const ths = headers.map((h, i) => `<th data-col="${i}" data-sortable>${esc(h)}</th>`).join("");
+    const ths = headers
+      .map((h, i) => {
+        const cc = colClass(i);
+        return `<th data-col="${i}" data-sortable${cc ? ` class="${cc.trim()}"` : ""}>${esc(h)}</th>`;
+      })
+      .join("");
 
     container.innerHTML = `<div class="table-wrap"><table>
       <thead><tr>${ths}</tr></thead>
@@ -390,7 +410,9 @@
   }
 
   // ── Export as window.SC ────────────────────────────────────────
-  window.SC = {
+  // Merge (not replace) so _format.js / other modules sharing SC survive
+  // regardless of script load order.
+  window.SC = Object.assign(window.SC || {}, {
     renderBadge,
     renderTile,
     openModal,
@@ -402,5 +424,5 @@
     renderMarkdown,
     esc,
     fmt,
-  };
+  });
 })();

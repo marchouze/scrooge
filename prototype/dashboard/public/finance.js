@@ -23,12 +23,20 @@
     source: "CEO directive 2026-05-12 (capital-time-shape approval)",
   };
 
+  // Plain (un-scaled) figures route through the shared, config-driven formatter
+  // (SC.fmtNumber / SC.fmtPercent); the bn/m executive scaling stays local since
+  // it is a finance-tile summarisation, not a house-style concern. Fallbacks
+  // cover the brief window before _format.js has loaded.
+  function num(v) {
+    return window.SC?.fmtNumber ? window.SC.fmtNumber(v) : v.toLocaleString();
+  }
+
   function fmt(v, suffix) {
     if (v === null || v === undefined || v === "") return "–";
     if (typeof v === "number") {
       if (Math.abs(v) >= 1e9) return `${(v / 1e9).toFixed(2)}bn${suffix || ""}`;
       if (Math.abs(v) >= 1e6) return `${(v / 1e6).toFixed(2)}m${suffix || ""}`;
-      return v.toLocaleString() + (suffix || "");
+      return num(v) + (suffix || "");
     }
     return String(v) + (suffix || "");
   }
@@ -36,14 +44,14 @@
   function fmtR(v) {
     if (v === null || v === undefined) return "–";
     if (Math.abs(v) >= 1e6) return `R${(v / 1e6).toFixed(0)}m`;
-    return `R${v.toLocaleString()}`;
+    return `R${num(v)}`;
   }
 
   function pct(v) {
     if (v === null || v === undefined || v === "") return "–";
     const n = typeof v === "number" ? v : Number.parseFloat(v);
     if (Number.isNaN(n)) return String(v);
-    return `${n.toFixed(1)}%`;
+    return window.SC?.fmtPercent ? window.SC.fmtPercent(n) : `${n.toFixed(1)}%`;
   }
 
   function tone(v, minGreen, minAmber) {

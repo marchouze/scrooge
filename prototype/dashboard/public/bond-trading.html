@@ -447,15 +447,20 @@ document.getElementById("bt-form").addEventListener("submit", async function(e) 
 });
 
 // ── Formatting helpers ────────────────────────────────────────────────────
+// Money routes through the shared, config-driven formatter (SC.fmtMoney); clean
+// prices keep 3-dp precision (a bond-pricing concern, not house style). The
+// inline branches are fallbacks for before _format.js has loaded.
 function fmtZar(minor) {
   if (minor == null) return "—";
+  if (window.SC?.fmtMoney) return window.SC.fmtMoney(minor, "ZAR");
   const val = minor / 100;
   const sign = val < 0 ? "-" : "";
   return sign + "R " + Math.abs(val).toLocaleString("en-ZA", { maximumFractionDigits: 0 });
 }
 
 function fmtPct(v) {
-  return v != null ? v.toFixed(3) + "%" : "—";
+  if (v == null) return "—";
+  return window.SC?.fmtPercent ? window.SC.fmtPercent(v, { decimals: 3 }) : v.toFixed(3) + "%";
 }
 
 function fmtDate(iso) {
@@ -510,8 +515,8 @@ async function refreshTrades() {
         <td><code style="font-size:0.75rem">${t.tradeId}</code></td>
         <td>${t.isin}</td>
         <td>${sideBadge(t.side)}</td>
-        <td style="text-align:right">${fmtZar(t.nominalMinor)}</td>
-        <td style="text-align:right">${fmtPct(t.cleanPricePercent)}</td>
+        <td class="num">${fmtZar(t.nominalMinor)}</td>
+        <td class="num">${fmtPct(t.cleanPricePercent)}</td>
         <td>${t.portfolio}</td>
         <td style="white-space:nowrap">${fmtTime(t.executedAt)}</td>
         <td>${fmtDate(t.settlementDate)}</td>
@@ -547,9 +552,9 @@ async function refreshPositions() {
           <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
               title="${p.description}">${p.description}</td>
           <td>${p.portfolio}</td>
-          <td style="text-align:right">${fmtZar(p.nominalMinor)}</td>
-          <td style="text-align:right">${fmtPct(p.lastCleanPricePct)}</td>
-          <td style="text-align:right">${fmtZar(p.markToMarketMinor)}</td>
+          <td class="num">${fmtZar(p.nominalMinor)}</td>
+          <td class="num">${fmtPct(p.lastCleanPricePct)}</td>
+          <td class="num">${fmtZar(p.markToMarketMinor)}</td>
           <td style="text-align:right;${pnlStyle}">${fmtZar(p.unrealisedPnlMinor)}</td>
           <td>${hqlaBadge(p.hqlaLevel)}</td>
         </tr>

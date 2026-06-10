@@ -433,9 +433,14 @@
   // Slice 3 — Headroom panel
   // ============================================================
 
+  // Notional exposures are whole-number major units; route the number through
+  // the shared formatter (grouping/negative-style/locale) but keep 0 decimals.
   function fmtExposure(n, currency) {
     if (typeof n !== "number" || !Number.isFinite(n)) return "—";
-    return `${currency ?? ""} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`.trim();
+    const num = window.SC?.fmtNumber
+      ? window.SC.fmtNumber(n, { decimals: 0 })
+      : n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    return `${currency ?? ""} ${num}`.trim();
   }
 
   function renderHeadroomEmpty(message) {
