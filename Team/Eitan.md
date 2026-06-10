@@ -107,11 +107,11 @@ Eitan does **not** measure risk or set appetite (Helena), report financials or o
 - `@platform/citation/gate` — every ALCO decision and ratio sign-off passes citation gate to RAS / obligations register.
 - `@platform/recon/decision-event-recon` — read-only; checks Eitan's decisions are emitted as typed events.
 - `@platform/projections` — Anya's liquidity / capital / IRRBB projections.
-- Liquidity-projection engine (Anya's substrate, planned).
-- ALM engine (Ravi's substrate, planned).
-- Collateral inventory (planned).
-- Correspondent settlement interface (Tomas's substrate, planned).
-- ALCO-pack generator (planned).
+- Liquidity-projection engine — live at `platform/liquidity/` (`anya:liquidity-projection`; D-TREASURY-GAPS-WAVE1).
+- ALM engine — live at `platform/alm/` (`ravi:alm-run`; D-TREASURY-GAPS-WAVE1).
+- Collateral inventory — live at `platform/collateral/` (`atlas:collateral-snapshot`; D-TREASURY-GAPS-WAVE1).
+- Correspondent settlement interface (Tomas's substrate, planned — pre-licence, mandatory for licence-day).
+- ALCO-pack generator — live at `platform/alco/` (`atlas:alco-pack`; D-TREASURY-GAPS-WAVE1).
 
 ## 13. Procedures owned
 
@@ -148,13 +148,21 @@ Eitan is the first-line executive for treasury / ALM; Helena (Chief Risk Officer
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-17.
+> Reviewed 2026-06-10 (WS-TREASURER-ROLE-DEFINITION role-definition review; open-gap set consolidated in `docs/2026-06-10_eitan_treasurer-role-definition-and-substrate-plan.md` Part D).
+
+**Open:**
+
+- **CFP trigger substrate + EWI monitor** — the typed trigger events named in `Policies/liquidity-risk-management-policy-v1.md` §5.2 (`IntradayStressDetected`, `LcrRatioBreach`, `NsfrRatioBreach`, `FundingConcentrationAlertTriggered`, `RecoveryEarlyWarningTriggered`, `CriticalSettlementObligationAtRisk`, `ExternalCreditEventDetected`) are not in the event-type registry; no CFP tier can fire. Owner: Ravi. Target: build-phase (Wave 1). The CFP plan-instance register, rehearsal harness (LRM §5.4 W2 Slice 5), and PROC-RISK-CFP-01 follow pre-licence (Wave 2).
+- **Intraday BCBS 248 metrics + RAS appetite line** — `platform/alm/intraday-stress.ts` is live, but the seven BCBS 248 monitoring metrics are not computed as register-bound measures and `platform/risk/ras-appetite-register.ts` has no intraday-liquidity appetite line. Owner: Ravi + Helena (calibration). Target: build-phase (Wave 1).
+- **Treasury returns submission wiring** — BA 300 / BA 330 / BA 700 generators live; submission layer tracked under the returns-submission workstream (`docs/2026-06-10_scrooge_returns-submission-wiring-workstream-scoping.md`). Owner: Mira + Bea. Target: pre-licence (Wave 2).
+
+**Closed:**
 
 - **Auto-generated ALCO pack** — ✅ closed 2026-05-19. ALCO pack generator live at `platform/alco/`; `atlas:alco-pack` handler assembles all 8 pack sections from live projection events; `ALCOPackGenerated` event type registered. All Wave 1/2 treasury substrates integrated. Authority: D-TREASURY-GAPS-WAVE1.
 - **Intraday liquidity watch (live)** — ✅ closed 2026-05-19. Intraday HQLA-stress projection live in `platform/alm/intraday-stress.ts`; `ravi:intraday-stress` handler runs BAU + stress scenarios across 4 NPS settlement windows; `IntradayHQLAStressProjection` events emitted per window/scenario. Authority: D-TREASURY-GAPS-WAVE1.
 - **ALM engine** — ✅ closed 2026-05-19. Repricing gap (BCBS 319), ΔEVE (6 BCBS d365 shocks), and ΔNII (4 parallel shocks, 12-month horizon) engines live in `platform/alm/`. Daily handler `ravi:alm-run` emits `ALMRunCompleted` + `IRRBBChecked` events. Zero-position posture in build phase; wired to produce live outputs when trades land. Authority: D-TREASURY-GAPS-WAVE1. Owner: Ravi.
-- **Liquidity projection engine** — ✅ closed 2026-05-19. LCR (BA 325) and NSFR (BA 326) computation engines live at `platform/liquidity/`; `anya:liquidity-projection` handler registered; `LCRComputed` and `NSFRComputed` event types in registry. Build-phase baseline emits `no-positions`; positions will populate once collateral inventory (Atlas) and ALM position substrate (Ravi) land. Owner: Anya.
-- **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier (BA 325 Annex 1 L1/L2a/L2b), inventory projection, `CollateralInventorySnapshot` + `CollateralUpdated` event types, and `atlas:collateral-snapshot` handler live (`platform/collateral/`). Build-phase: zero positions (expected); buffer populates at licence-day. Owner: Tomas + Atlas.
+- **Liquidity projection engine** — ✅ closed 2026-05-19. LCR and NSFR computation engines (BA 300 return family per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL) live at `platform/liquidity/`; `anya:liquidity-projection` handler registered; `LCRComputed` and `NSFRComputed` event types in registry. Build-phase baseline emits `no-positions`; positions will populate once collateral inventory (Atlas) and ALM position substrate (Ravi) land. Owner: Anya.
+- **Collateral inventory substrate** — ✅ closed 2026-05-19. HQLA classifier (LCR HQLA levels L1/L2a/L2b; LCR return = BA 300 per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL), inventory projection, `CollateralInventorySnapshot` + `CollateralUpdated` event types, and `atlas:collateral-snapshot` handler live (`platform/collateral/`). Build-phase: zero positions (expected); buffer populates at licence-day. Owner: Tomas + Atlas.
 - **FTP curve generator** — ✅ closed 2026-05-30. Substrate live at `platform/ftp/` (`curve.ts`, `attribution.ts`, `projection.ts` + tests); `FtpCurvePublished` + `FtpAttributionRecorded` event types registered in `platform/event-store/event-types/ftp.ts`; handlers `ravi:ftp-curve-publish` (scheduled, daily matched-maturity ZAR curve) + `ravi:ftp-attribution` (event-driven on trade/loan booking) registered in `runtime/agents/metadata/ravi.ts` + `callables/ravi.ts`. **15 `FtpCurvePublished` events emitted, latest 2026-05-30** (daily cadence confirmed running); `FtpAttributionRecorded` is wired and awaits the first booked trade (build-phase zero-position posture). Governing procedure: PROC-ALM-FTP-01 (`ftp-attachment-on-product-event.md`). Authority: D-TREASURER-MANDATE-SAMOS-FTP-2026-05-30. **Residual:** PROC-ALM-FTP-01's body still cites the design-era capability path (`@platform/alm/ftp-engine`, PLANNED) and design-era event names (`FTPRateAttached` / `FTPRateAmended`) rather than the implemented `platform/ftp/` + `FtpCurvePublished` / `FtpAttributionRecorded` shape — a procedure↔substrate naming reconciliation tracked as a follow-on (owner: Ravi + Anya). Owner: Ravi + Anya.
 - **ILAAP engine** — ✅ closed 2026-05-19. ILAAP engine live at `platform/ilaap/`; four stress scenarios (idiosyncratic, market-wide, combined, reverse-stress); `ILAAPScenarioRun` + `ILAAPSummaryCompleted` events; `atlas:ilaap-run` handler registered. Authority: D-TREASURY-GAPS-WAVE1.
 - **Agent-runtime substrate** — Atlas's runtime is live; daily and intraday triggers operate. Eitan's autonomous cadence is substrate-supported; remaining gaps are domain-specific engines.
@@ -174,3 +182,4 @@ Eitan is the first-line executive for treasury / ALM; Helena (Chief Risk Officer
 | v1.7 | 2026-05-19 | Atlas (via Scrooge) | §16 updated: ILAAP engine gap closed — four stress scenarios + survival horizon + summary handler. Authority: D-TREASURY-GAPS-WAVE1. |
 | v1.8 | 2026-05-19 | Atlas (via Scrooge) | §16 updated: ALCO pack generator gap closed — all Wave 1/2 substrates integrated; pack generated from live events. Authority: D-TREASURY-GAPS-WAVE1. |
 | v1.9 | 2026-05-30 | Eitan (via Scrooge) | (1) Mandate reframed to reflect indirect NPS participant posture — "SAMOS funding" language replaced throughout with correspondent settlement-account (nostro) funding (§2, §3, §4, §6, §7, §8, §9, §11, §12). (2) §16 FTP curve-generator gap closed — substrate live at `platform/ftp/`, 15 `FtpCurvePublished` events emitted (latest 2026-05-30), handlers registered; procedure-↔-substrate naming reconciliation flagged as residual. (3) §13 reconciled to real procedure files (the planned `nostro-funding-plan` / `ftp-refresh-cycle` / `hedge-programme-approval` / `irrbb-measurement` stubs map to live `intraday-liquidity-funding` / `ftp-attachment-on-product-event` / `hedge-designation-test` / `irrbb-measurement`; `liquidity-limit-management`, `collateral-valuation-daily`, `capital-instrument-issuance` added). Authority: D-TREASURER-MANDATE-SAMOS-FTP-2026-05-30 (CEO session-delegation). |
+| v2.0 | 2026-06-10 | Eitan (via Scrooge) | Role-definition review (WS-TREASURER-ROLE-DEFINITION, D-TREASURER-ROLE-DEFINITION-REVIEW). §12 stale "planned" markers corrected — liquidity-projection / ALM / collateral-inventory / ALCO-pack capabilities marked live with code paths. §16 restamped 2026-06-10 with explicit Open set (CFP trigger substrate + EWI; intraday BCBS 248 metrics + RAS line; treasury returns submission wiring); superseded BA 325/326 numbering re-anchored to BA 300 per D-BA-RETURN-NUMBERING-EXCEL-CANONICAL. Consolidated record: `docs/2026-06-10_eitan_treasurer-role-definition-and-substrate-plan.md`. |
