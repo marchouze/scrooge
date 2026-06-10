@@ -22,7 +22,7 @@
 // Author: Mira (Regulatory-Reporting / Obligations Engineer, regulatory).
 
 import { beforeAll, describe, expect, test } from "bun:test";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -316,5 +316,68 @@ describe("objective layer — recon gates", () => {
     expect(subjects).toContain("OBJ-FSCA-FINANCIAL-EDUCATION");
     expect(result.violations.length).toBe(2);
     expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
+  });
+});
+
+describe("objective layer — adopted SERVES backfill (rule-based, 2026-06-10)", () => {
+  const artefactPath = join(
+    import.meta.dir,
+    "..",
+    "..",
+    "Regulations",
+    "_adopted-serves-backfill-objective-graph.json",
+  );
+
+  const countBackfill = (): number =>
+    (
+      getDb()
+        .prepare(
+          "SELECT COUNT(*) AS n FROM graph_edges WHERE edge_type = 'SERVES' AND id LIKE 'OBJ-SERVES-BF-%'",
+        )
+        .get() as { n: number }
+    ).n;
+
+  test("every committed backfill edge LANDS in the seeded graph — no silent FK-skips (#1142 defect class)", () => {
+    const artefact = JSON.parse(readFileSync(artefactPath, "utf-8")) as {
+      edges: Array<{ id: string; fromId: string; toId: string }>;
+    };
+    expect(artefact.edges.length).toBeGreaterThan(0);
+    // Exact count parity: a single typo'd OBL-ORG-*/OBJ-* endpoint would be
+    // FK-skipped at fold time and break this.
+    expect(countBackfill()).toBe(artefact.edges.length);
+  });
+
+  test("backfill edges respect the SERVES endpoint-type contract (Obligation → RegulatoryObjective)", () => {
+    const bad = getDb()
+      .prepare(
+        `SELECT e.id FROM graph_edges e
+           JOIN graph_nodes f ON f.id = e.from_id
+           JOIN graph_nodes t ON t.id = e.to_id
+          WHERE e.id LIKE 'OBJ-SERVES-BF-%'
+            AND NOT (f.node_type = 'Obligation' AND t.node_type = 'RegulatoryObjective')`,
+      )
+      .all() as Array<{ id: string }>;
+    expect(bad.length).toBe(0);
+  });
+
+  test("re-fold is idempotent — re-running the seed neither duplicates nor drops backfill edges", async () => {
+    const before = countBackfill();
+    await runSeed();
+    expect(countBackfill()).toBe(before);
+  });
+
+  test("requirement-objective-linkage advisory residual shrinks to the documented unmappable set", async () => {
+    const { run } = await import("../platform/recon/requirement-objective-linkage");
+    const result = await run();
+    expect(result.ok).toBe(true);
+    const artefact = JSON.parse(readFileSync(artefactPath, "utf-8")) as {
+      residuals: Array<{ obligationId: string }>;
+    };
+    // The remaining advisory findings are EXACTLY the artefact's residuals —
+    // obligations whose source has no objective graph yet (FinSurv, SARS,
+    // DoEL, CIPC/King IV, JSE, …) or is an internal/contractual handle.
+    const expected = new Set(artefact.residuals.map((r) => r.obligationId));
+    const flagged = new Set(result.violations.map((v) => v.subject));
+    expect(flagged).toEqual(expected);
   });
 });

@@ -12,11 +12,17 @@
 // imported BCBS `OBL-BCBS-*` corpus is reference data, not the bank's adopted
 // set, so it is out of scope here.)
 //
-// Mode: ADVISORY (ok:true regardless). The SARB-PA pilot wired SERVES onto the
-// PA prudential obligations (capital, leverage, large-exposures, LCR/NSFR); the
-// remaining adopted obligations (FIC, FSCA, conduct, …) carry no SERVES edge yet
-// and surface as `warn` findings — the targeting list for the next backfill run.
-// The gate never blocks CI.
+// Mode: ADVISORY (ok:true regardless). The per-regulator ingestion arcs
+// (#1150–#1164) hand-authored 91 SERVES edges; the 2026-06-10 rule-based
+// backfill (Regulations/_adopted-serves-backfill-objective-graph.json, derived
+// by platform/regulatory/graph/serves-backfill-derivation.ts) covers the
+// obligations whose source citation resolves to one of the six graphed
+// regulators. The remaining `warn` findings are EXACTLY the artefact's
+// documented residuals — sources with no objective graph yet (SARB FinSurv,
+// SARS, DoEL, CIPC/King IV, JSE, DoJ&CD, FATF, IRBA), standards-body /
+// market-standard references, and internal policy handles. The gate stays
+// advisory until those sources gain objective graphs (or the residual classes
+// are explicitly allowlisted); it never blocks CI.
 //
 // Self-contained: seeds a FRESH graph into an isolated tmp DB (truncate-and-
 // rebuild projection, Principle 1) so it is deterministic on a clean CI runner.
