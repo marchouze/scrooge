@@ -11,7 +11,8 @@
 //   BANK_EVENT_DB              → paths.eventDb
 //   BANK_MARKET_DATA_DB        → paths.marketDataDb
 //   BANK_GRAPH_DB              → paths.graphDb
-//   BANK_DOCUMENT_STORE_PATH   → paths.documentStoreRoot
+//   BANK_DOCUMENT_STORE        → paths.documentStoreRoot (primary; mirrors BANK_EVENT_DB)
+//   BANK_DOCUMENT_STORE_PATH   → paths.documentStoreRoot (legacy alias)
 //   BANK_REPO_ROOT             → paths.repoRoot
 //   BANK_DASHBOARD_PORT        → server.port
 //   BANK_DASHBOARD_REFRESH_MS  → server.refreshMs
@@ -161,7 +162,11 @@ function buildResolved(): ResolvedConfig {
       marketDataDb: resolveStr(process.env.BANK_MARKET_DATA_DB, fp?.marketDataDb, dp.marketDataDb),
       graphDb: resolveStr(process.env.BANK_GRAPH_DB, fp?.graphDb, dp.graphDb),
       documentStoreRoot: resolveStr(
-        process.env.BANK_DOCUMENT_STORE_PATH,
+        // Primary env (mirrors BANK_EVENT_DB naming) wins over the legacy
+        // alias — same ordering as resolve-document-store.ts.
+        process.env.BANK_DOCUMENT_STORE?.trim()
+          ? process.env.BANK_DOCUMENT_STORE
+          : process.env.BANK_DOCUMENT_STORE_PATH,
         fp?.documentStoreRoot,
         dp.documentStoreRoot,
       ),

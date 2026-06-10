@@ -13,19 +13,25 @@
 // shard, a flat 10k-document store hits filesystem inode-listing pain on
 // most platforms; a flat 100k store is unworkable.
 //
-// Env var:
-//   BANK_DOCUMENT_STORE_PATH — absolute or relative root for the store.
-//   Defaults to `<repo-root>/prototype/data/documents/`. The default is
-//   resolved from a stable anchor (this module's own location, walked up
-//   to the repo's `CLAUDE.md`) — *not* `process.cwd()` — to avoid the
-//   double-`prototype/prototype/` leak when a caller runs from inside
+// Root resolution (D-CROSS-WORKTREE-EVENT-STORE-SYNC, extended to blob
+// roots 2026-06-10 — see `resolve-document-store.ts` for the full ladder):
+//   `opts.root` → `BANK_DOCUMENT_STORE` → `BANK_DOCUMENT_STORE_PATH`
+//   (legacy alias) → `BANK_HOME_DOCUMENT_STORE` →
+//   `<repo-root>/prototype/data/documents/` (per-worktree fallback).
+//   The default constructor resolves with `excludeHomeDefault: true` —
+//   the shared HOME store is opt-in via the boot shim
+//   (`resolve-document-store-boot.ts`), exactly like the composition
+//   root's event-store posture. The fallback is resolved from a stable
+//   anchor (repo `CLAUDE.md` walk-up) — *not* `process.cwd()` — to avoid
+//   the double-`prototype/prototype/` leak when a caller runs from inside
 //   `prototype/` (e.g. `bun test`, `bun run scheduler:tick`).
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, join, resolve } from "node:path";
+import { dirname, join } from "node:path";
 import { hashContent, parseHash } from "./hash";
+import { resolveDocumentStoreRoot } from "./resolve-document-store";
 import {
   type DocumentHash,
   DocumentIntegrityError,
@@ -37,38 +43,12 @@ import {
   type PutResult,
 } from "./types";
 
-/**
- * Walk up from `start` looking for the repo-root marker (`CLAUDE.md`).
- * Mirrors the helper in `platform/recon/runtime-handler-sync.ts` and
- * peers — the same anchor every other module uses. Bounded walk so a
- * malformed deployment fails fast rather than chewing the filesystem.
- */
-function findRepoRoot(start: string): string {
-  let dir = start;
-  for (let i = 0; i < 8; i++) {
-    if (existsSync(resolve(dir, "CLAUDE.md"))) return dir;
-    const parent = resolve(dir, "..");
-    if (parent === dir) break;
-    dir = parent;
-  }
-  throw new Error(
-    "LocalFsDocumentStore: cannot locate repo root (CLAUDE.md not found by walking up)",
-  );
-}
-
-/**
- * Default document-store root, anchored on the repo root rather than
- * `process.cwd()`. Resolved once at module-load time.
- */
-function defaultRoot(): string {
-  const repoRoot = findRepoRoot(import.meta.dir);
-  return resolve(repoRoot, "prototype/data/documents");
-}
-
 export interface LocalFsDocumentStoreOptions {
   /**
-   * Root directory. Defaults to `BANK_DOCUMENT_STORE_PATH` env var, then
-   * `<repo-root>/prototype/data/documents/`.
+   * Root directory. When omitted, resolution follows the shared ladder in
+   * `resolve-document-store.ts` with the home-default tier excluded:
+   * `BANK_DOCUMENT_STORE` → `BANK_DOCUMENT_STORE_PATH` (legacy alias) →
+   * `BANK_HOME_DOCUMENT_STORE` → `<repo-root>/prototype/data/documents/`.
    */
   readonly root?: string;
   /**
@@ -87,18 +67,21 @@ export class LocalFsDocumentStore implements DocumentStore {
   private readonly verifyOnRead: boolean;
 
   constructor(opts: LocalFsDocumentStoreOptions = {}) {
-    const envRoot = process.env.BANK_DOCUMENT_STORE_PATH;
-    // Precedence: explicit opts.root → env var → repo-root-anchored default.
-    // Only the env var / opts paths may be relative; in that case they
-    // resolve against `process.cwd()` (caller-controlled). The default
-    // path is *always* absolute via `findRepoRoot`, so it never collides
-    // with cwd-shaped doubling like `prototype/prototype/...`.
-    const rootRaw = opts.root ?? envRoot;
-    if (rootRaw === undefined) {
-      this.root = defaultRoot();
-    } else {
-      this.root = isAbsolute(rootRaw) ? rootRaw : resolve(process.cwd(), rootRaw);
-    }
+    // Shared resolution ladder (D-CROSS-WORKTREE-EVENT-STORE-SYNC, blob
+    // extension): explicit opts.root → BANK_DOCUMENT_STORE →
+    // BANK_DOCUMENT_STORE_PATH (legacy alias) → BANK_HOME_DOCUMENT_STORE →
+    // repo-root-anchored in-repo fallback. `excludeHomeDefault: true`
+    // mirrors the composition root's event-store posture: the singleton
+    // must not silently adopt the shared HOME store — surfaces opt in via
+    // the boot shim, which sets `BANK_DOCUMENT_STORE` ahead of this
+    // module's load. Relative opts/env paths resolve against
+    // `process.cwd()` (caller-controlled); the fallback is always
+    // absolute via the repo-root walk, so it never collides with
+    // cwd-shaped doubling like `prototype/prototype/...`.
+    this.root = resolveDocumentStoreRoot({
+      explicit: opts.root,
+      excludeHomeDefault: true,
+    }).root;
     this.verifyOnRead = opts.verifyOnRead ?? true;
   }
 
