@@ -1,223 +1,57 @@
 // platform/recon/obligation-policy-coverage.ts
 //
-// Advisory recon pipeline: obligation-policy-coverage.
+// Vera recon: obligation-policy-coverage (ADVISORY).
 //
-// Walks `Regulations/_obligations-register.md` and reports how many
-// reviewed (review-status in [`reviewed-confirmed`, `reviewed-modified`])
-// bank-applicable (applicabilityScore ≥ 0.4) obligations have at least
-// one fulfilment policy in `Policies/` with a frontmatter `closes:` entry
-// pointing back to the obligation URN. Coverage % is grouped by domain
-// (A..J) and uncovered obligations are listed as advisory findings.
+// Asserts that every ADOPTED obligation (register-sourced OBL-ORG-* node in
+// the regulatory knowledge graph — not the BCBS knowledge-base plane) has at
+// least one implementing bank policy via an IMPLEMENTED_BY edge (Obligation →
+// Policy) — the Principle-2 chain hop between the adopted-obligation layer and
+// the policy layer. Each uncovered obligation surfaces as a `warn` finding;
+// coverage % is grouped by register domain.
 //
-// Coupling model — **asymmetric, measure-only**:
-//   - Policies *opt in* to claiming obligation closure via frontmatter
-//     `closes: [<obligation-urn>, ...]`. No obligation row claims its
-//     fulfilment policy back. The recon walks the policies, not the
-//     register.
-//   - Special-case: obligation rows annotated `coverage: persisting-no-
-//     policy` in their frontmatter-style cell suffix are excluded from
-//     the gap list — these are explicitly informational obligations that
-//     do not need a fulfilment policy.
+// v2 (WS-OBLIGATION-POLICY-MAPPING) re-sources this gate from the graph's
+// IMPLEMENTED_BY fold. The v1 mechanism (policy `closes:` frontmatter arrays +
+// inline `review-status:` register markers) had gone vacuous — zero policies
+// carry `closes:` frontmatter and the register's review-status column never
+// matched the inline-marker regex, so applicable=0 and the gate asserted
+// nothing. The IMPLEMENTED_BY edges are derived at seed time from policy
+// frontmatter (`obligations:` list, summary "closes ORG-*") and the register's
+// Fulfilment-policy column (see graph/obligation-policy-fold.ts), so this gate
+// now measures the real mapping.
 //
-// Mode: advisory (v1) — `ok: true` regardless of findings. The recon
-// surfaces gaps; closure is a governance-seat workstream (Owen / Zara),
-// not a CI gate. The recon graduates to enforcing once the LLM-pipeline
-// closure of the review backlog stabilises.
+// Mode: ADVISORY (ok:true regardless) on first landing — the gate never blocks
+// CI; closure of the surfaced gaps is a governance-seat workstream (Zara /
+// Owen), not a CI gate.
 //
-// Authority:
-//   - D-OBLIGATION-REVIEW-SUBSTRATE (CEO-approved 2026-05-21 via session
-//     delegation).
-//   - D-KG-GRAPHITI-ADOPT (CEO-approved 2026-05-21).
-//   - P2-SINGLE-GRAPH-DISCIPLINE (Principle 2 — Policy → Obligation
-//     closure is the policy-axis facet of the bidirectional graph).
+// Contexts:
+//   - CLI / CI (`bun run recon:obligation-policy-coverage`): seeds a FRESH
+//     graph into an isolated tmp DB (truncate-and-rebuild projection,
+//     Principle 1) so it is deterministic on a clean runner — same harness as
+//     recon:objective-policy-alignment.
+//   - Dashboard server (`runObligationPolicyCoverageRecon`): reads the
+//     server's live graph DB (the same store the /api/graph endpoints serve);
+//     an unseeded graph reports zero coverage with zero findings.
+//
+// Authority: D-OBLIGATIONS-REGISTER-CLEANUP (named next step); workstream
+// WS-OBLIGATION-POLICY-MAPPING; D-REGULATORY-ARCHITECTURE-TWO-PLANE (Plane-A
+// derivation); P2-SINGLE-GRAPH-DISCIPLINE. v1 authority retained for lineage:
+// D-OBLIGATION-REVIEW-SUBSTRATE; D-KG-GRAPHITI-ADOPT.
 //
 // Authors:
-//   - Atlas (Core banking platform architect, engineering)
-//   - Vera (Internal audit engineer, engineering — third-line)
+//   - Mira (Compliance / RegTech engineer, engineering) — v2 graph sourcing
+//   - Atlas (Core banking platform architect, engineering) — v1
+//   - Vera (Internal audit engineer, engineering — third-line) — v1
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
-
-import { logger } from "../observability/logger";
+import { deriveDomainLetter } from "../regulatory/obligation-linker";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "obligation-policy-coverage";
 
-const APPLICABILITY_FLOOR = 0.4;
-
 const CITATIONS = [
-  "D-OBLIGATION-REVIEW-SUBSTRATE",
-  "D-KG-GRAPHITI-ADOPT",
+  "D-OBLIGATIONS-REGISTER-CLEANUP",
+  "D-REGULATORY-ARCHITECTURE-TWO-PLANE",
   "P2-SINGLE-GRAPH-DISCIPLINE",
-  "P1-EVENTS-AS-TRUTH",
 ];
-
-function findRepoRoot(start: string): string {
-  let dir = start;
-  for (let i = 0; i < 8; i++) {
-    if (existsSync(resolve(dir, "CLAUDE.md"))) return dir;
-    dir = resolve(dir, "..");
-  }
-  throw new Error("Cannot locate repo root (CLAUDE.md not found by walking up)");
-}
-
-const REPO_ROOT = findRepoRoot(import.meta.dir);
-
-// ---------------------------------------------------------------------------
-// Obligation parsing
-// ---------------------------------------------------------------------------
-
-interface ObligationRow {
-  readonly id: string;
-  readonly urn: string;
-  readonly domain: string;
-  readonly applicabilityScore: number | null;
-  readonly reviewStatus: string;
-  readonly coverageHint: string | null;
-  readonly lineNumber: number;
-}
-
-/** Single-letter domain code derived from the obligation ID. */
-function deriveDomain(id: string): string {
-  // ORG-PR-* → A (Prudential), ORG-FC-* → B (FIC/AML), ORG-EXCON-* → C,
-  // ORG-CY-* → E (Cyber), ORG-GV-* → F (Governance), ORG-MK-* / ORG-JSE-* → J,
-  // ORG-RM-* → RM, ORG-FAIS-* / ORG-FAIS-RK-* → D / P (Conduct).
-  const prefix = id.replace(/^ORG-/, "").split("-")[0] ?? "";
-  switch (prefix) {
-    case "PR":
-      return "A";
-    case "FC":
-      return "B";
-    case "EXCON":
-    case "FX":
-      return "C";
-    case "CY":
-      return "E";
-    case "GV":
-      return "F";
-    case "MK":
-    case "JSE":
-      return "J";
-    case "FAIS":
-      return "D";
-    case "RM":
-      return "RM";
-    case "BNK":
-    case "GRP":
-      return "Q";
-    default:
-      return "Z";
-  }
-}
-
-/** Parse `applicabilityScore: 0.6` style suffix from any cell. */
-function parseApplicability(line: string): number | null {
-  const m = line.match(/applicabilityScore:\s*([0-9]*\.?[0-9]+)/);
-  if (!m) return null;
-  const n = Number.parseFloat(m[1] ?? "");
-  return Number.isFinite(n) ? n : null;
-}
-
-/** Parse `review-status: reviewed-confirmed` style suffix from any cell. */
-function parseReviewStatus(line: string): string {
-  const m = line.match(/review-status:\s*([a-z-]+)/i);
-  return (m?.[1] ?? "").toLowerCase().trim();
-}
-
-/** Parse `coverage: persisting-no-policy` opt-out marker. */
-function parseCoverageHint(line: string): string | null {
-  const m = line.match(/coverage:\s*([a-z-]+)/i);
-  return m?.[1] ? m[1].toLowerCase().trim() : null;
-}
-
-/** Parse the URN cell (column 2). Falls back to "[TBD]" when missing. */
-function parseRow(line: string, lineNumber: number): ObligationRow | null {
-  if (!/^\|\s*ORG-/.test(line)) return null;
-  const cells = line.split("|").map((c) => c.trim());
-  const id = cells[1] ?? "";
-  const urn = cells[2] ?? "";
-  if (!id.startsWith("ORG-")) return null;
-
-  return {
-    id,
-    urn: urn === "[TBD]" || urn === "" ? `urn:obligation:bank:${id.toLowerCase()}` : urn,
-    domain: deriveDomain(id),
-    applicabilityScore: parseApplicability(line),
-    reviewStatus: parseReviewStatus(line),
-    coverageHint: parseCoverageHint(line),
-    lineNumber,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Policy `closes:` frontmatter parsing
-// ---------------------------------------------------------------------------
-
-/** Build a set of obligation URNs referenced from policy `closes:` arrays. */
-function buildClosesIndex(policiesDir: string): Set<string> {
-  const closed = new Set<string>();
-  if (!existsSync(policiesDir)) return closed;
-
-  let files: string[];
-  try {
-    files = readdirSync(policiesDir).filter((f) => f.endsWith(".md") && !f.startsWith("README"));
-  } catch {
-    return closed;
-  }
-
-  for (const file of files) {
-    const path = resolve(policiesDir, file);
-    let content: string;
-    try {
-      content = readFileSync(path, "utf8");
-    } catch {
-      continue;
-    }
-    // Frontmatter is the leading `---...---` block; only parse if present.
-    const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-    if (!fmMatch) continue;
-    const fm = fmMatch[1] ?? "";
-
-    // YAML-ish parse: look for `closes:` followed by inline list or block list.
-    const inlineMatch = fm.match(/^closes:\s*\[([^\]]*)\]/m);
-    if (inlineMatch) {
-      const items = inlineMatch[1] ?? "";
-      for (const raw of items.split(",")) {
-        const v = raw.trim().replace(/^["']|["']$/g, "");
-        if (v) closed.add(v);
-      }
-      continue;
-    }
-
-    // Block-list form:
-    //   closes:
-    //     - urn:obligation:...
-    const blockMatch = fm.match(/^closes:\s*\n((?:\s+-\s+\S.*\n?)+)/m);
-    if (blockMatch) {
-      const block = blockMatch[1] ?? "";
-      for (const line of block.split(/\r?\n/)) {
-        const v = line
-          .replace(/^\s*-\s+/, "")
-          .trim()
-          .replace(/^["']|["']$/g, "");
-        if (v) closed.add(v);
-      }
-    }
-  }
-
-  return closed;
-}
-
-// ---------------------------------------------------------------------------
-// Main scan
-// ---------------------------------------------------------------------------
-
-export interface ObligationPolicyCoverageRunOpts {
-  /** Test override: feed synthetic obligations register. */
-  readonly obligationsOverride?: string;
-  /** Test override: feed synthetic `closes:` URNs. */
-  readonly closesOverride?: Set<string>;
-}
 
 export interface DomainCoverage {
   readonly domain: string;
@@ -231,71 +65,67 @@ export interface ObligationPolicyCoverageResult extends ReconResult {
   readonly overallCoveragePct: number;
 }
 
+interface AdoptedObligationRow {
+  id: string;
+  label: string;
+  obligationId: string | null;
+  domain: string | null;
+  covered: number;
+}
+
+/**
+ * Run the coverage scan against the CURRENT graph DB (no reseed). The
+ * dashboard server calls this against its live store; the CLI entry below
+ * seeds a fresh hermetic store first. `_repoRoot` is retained for call-site
+ * compatibility (the v1 register-walking implementation needed it).
+ */
 export function runObligationPolicyCoverageRecon(
-  repoRoot: string,
-  opts: ObligationPolicyCoverageRunOpts = {},
+  _repoRoot?: string,
 ): ObligationPolicyCoverageResult {
+  // Lazy import keeps graph-DB initialisation out of module load (the env-var
+  // binding in the CLI entry must run first on a hermetic runner).
+  const { getDb } = require("../regulatory/graph/db") as typeof import("../regulatory/graph/db");
+  const db = getDb();
+
   const base = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
 
-  const obligationsPath = resolve(repoRoot, "Regulations/_obligations-register.md");
-  const policiesDir = resolve(repoRoot, "Policies");
+  const rows = db
+    .prepare(
+      `SELECT n.id, n.label,
+              json_extract(n.metadata, '$.obligationId') AS obligationId,
+              json_extract(n.metadata, '$.domain') AS domain,
+              EXISTS (
+                SELECT 1 FROM graph_edges e
+                JOIN graph_nodes p ON p.id = e.to_id AND p.node_type = 'Policy'
+                WHERE e.from_id = n.id AND e.edge_type = 'IMPLEMENTED_BY'
+              ) AS covered
+         FROM graph_nodes n
+        WHERE n.node_type = 'Obligation' AND n.id LIKE 'OBL-ORG-%'
+        ORDER BY n.id`,
+    )
+    .all() as AdoptedObligationRow[];
 
-  const content =
-    opts.obligationsOverride ??
-    (existsSync(obligationsPath) ? readFileSync(obligationsPath, "utf8") : null);
-
-  if (!content) {
-    logger.warn({ pipeline: PIPELINE, msg: "Obligations register not found — skipping" });
-    return { ...base, coverageByDomain: [], overallCoveragePct: 0 };
-  }
-
-  const closesIndex = opts.closesOverride ?? buildClosesIndex(policiesDir);
-
-  // Group counters per domain.
   const applicablePerDomain = new Map<string, number>();
   const coveredPerDomain = new Map<string, number>();
-
-  let asserted = 0;
-  let totalApplicable = 0;
   let totalCovered = 0;
 
-  const lines = content.split(/\r?\n/);
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i] ?? "";
-    const row = parseRow(line, i + 1);
-    if (!row) continue;
-    asserted++;
-
-    // Filter: review-status must be reviewed-confirmed or reviewed-modified.
-    if (row.reviewStatus !== "reviewed-confirmed" && row.reviewStatus !== "reviewed-modified") {
-      continue;
-    }
-
-    // Filter: applicability-score must be ≥ 0.4 (when known).
-    if (row.applicabilityScore !== null && row.applicabilityScore < APPLICABILITY_FLOOR) {
-      continue;
-    }
-
-    // Filter: opt-out marker (`coverage: persisting-no-policy`).
-    if (row.coverageHint === "persisting-no-policy") {
-      continue;
-    }
-
-    totalApplicable++;
-    applicablePerDomain.set(row.domain, (applicablePerDomain.get(row.domain) ?? 0) + 1);
-
-    const covered = closesIndex.has(row.urn) || closesIndex.has(row.id);
-    if (covered) {
+  for (const row of rows) {
+    // Register rows carry no Domain column (domain lives in section headings);
+    // fall back to the ID-prefix derivation shared with the review-substrate.
+    const domain =
+      row.domain?.trim() || deriveDomainLetter(row.obligationId ?? row.id.replace(/^OBL-/, ""));
+    applicablePerDomain.set(domain, (applicablePerDomain.get(domain) ?? 0) + 1);
+    if (row.covered) {
       totalCovered++;
-      coveredPerDomain.set(row.domain, (coveredPerDomain.get(row.domain) ?? 0) + 1);
-    } else {
-      violations.push({
-        subject: `Regulations/_obligations-register.md:line-${row.lineNumber}:${row.id}`,
-        message: `Obligation ${row.id} (${row.urn}) is reviewed-${row.reviewStatus} and bank-applicable, but no Policy in Policies/ closes it (no closes: frontmatter entry).`,
-        severity: "warn",
-      });
+      coveredPerDomain.set(domain, (coveredPerDomain.get(domain) ?? 0) + 1);
+      continue;
     }
+    violations.push({
+      subject: row.obligationId ?? row.id,
+      message: `adopted obligation "${row.label}" has no IMPLEMENTED_BY policy — implementation-coverage gap`,
+      severity: "warn",
+    });
   }
 
   const coverageByDomain: DomainCoverage[] = [...applicablePerDomain.keys()]
@@ -312,47 +142,39 @@ export function runObligationPolicyCoverageRecon(
     });
 
   const overallCoveragePct =
-    totalApplicable === 0 ? 0 : Math.round((totalCovered / totalApplicable) * 1000) / 10;
+    rows.length === 0 ? 0 : Math.round((totalCovered / rows.length) * 1000) / 10;
 
-  // Advisory — ok always true.
-  base.asserted = asserted;
+  base.asserted = rows.length;
   base.violations = violations;
-  base.ok = true;
-
-  logger.info({
-    pipeline: PIPELINE,
-    asserted,
-    applicable: totalApplicable,
-    covered: totalCovered,
-    coveragePct: overallCoveragePct,
-    byDomain: coverageByDomain,
-    citations: CITATIONS,
-    msg: `${PIPELINE} (advisory): ${totalCovered}/${totalApplicable} reviewed bank-applicable obligations have a closing Policy (${overallCoveragePct}%)`,
-  });
+  base.ok = true; // advisory
+  base.asOf = `adopted=${rows.length} covered=${totalCovered} gaps=${violations.length}`;
 
   return { ...base, coverageByDomain, overallCoveragePct };
 }
 
 // ---------------------------------------------------------------------------
-// CLI entry point
+// CLI entry point — hermetic fresh-seed harness (CI determinism)
 // ---------------------------------------------------------------------------
 
 if (import.meta.main) {
-  const result = runObligationPolicyCoverageRecon(REPO_ROOT);
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  if (!process.env.BANK_GRAPH_DB) {
+    process.env.BANK_GRAPH_DB = join(mkdtempSync(join(tmpdir(), "recon-obl-pol-")), "graph.db");
+  }
+  const { runSeed } = await import("../regulatory/graph/seed-projection");
+  await runSeed();
+
+  const result = runObligationPolicyCoverageRecon();
+  for (const v of result.violations) {
+    console.log(`  ${v.severity.toUpperCase()}  [${v.subject}] ${v.message}`);
+  }
+  const byDomain = result.coverageByDomain
+    .map((d) => `${d.domain}=${d.covered}/${d.applicable}`)
+    .join(" ");
   console.log(
-    JSON.stringify({
-      level: "info",
-      time: result.asOf,
-      service: "bank-prototype",
-      pipeline: result.pipeline,
-      asserted: result.asserted,
-      violations: result.violations.length,
-      ok: result.ok,
-      mode: "advisory",
-      coveragePct: result.overallCoveragePct,
-      byDomain: result.coverageByDomain,
-      detail: result.violations.slice(0, 40),
-    }),
+    `\nrecon:${PIPELINE} OK (advisory) — ${result.asOf} (${result.overallCoveragePct}% covered; ${byDomain}); citations: ${CITATIONS.join(", ")}`,
   );
   process.exit(0);
 }

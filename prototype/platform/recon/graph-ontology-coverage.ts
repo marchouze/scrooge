@@ -90,15 +90,23 @@ async function collectSeedNodeTypes(): Promise<Set<string>> {
 }
 
 async function collectSeedEdgeTypes(): Promise<Set<string>> {
-  const seedPath = join(REPO_ROOT, "prototype/platform/regulatory/graph/seed-projection.ts");
-  if (!existsSync(seedPath)) return new Set();
-
-  const text = await Bun.file(seedPath).text();
-  // Extract edgeType: "..." strings
-  const edgeTypeMatches = text.matchAll(/edgeType:\s*["']([A-Z_]+)["']/g);
+  // The seed projection plus the pure fold modules it delegates edge-building
+  // to (the IMPLEMENTED_BY fold lives in obligation-policy-fold.ts —
+  // WS-OBLIGATION-POLICY-MAPPING).
+  const seedSources = [
+    "prototype/platform/regulatory/graph/seed-projection.ts",
+    "prototype/platform/regulatory/graph/obligation-policy-fold.ts",
+  ];
   const found = new Set<string>();
-  for (const m of edgeTypeMatches) {
-    if (m[1]) found.add(m[1]);
+  for (const rel of seedSources) {
+    const path = join(REPO_ROOT, rel);
+    if (!existsSync(path)) continue;
+    const text = await Bun.file(path).text();
+    // Extract edgeType: "..." strings
+    const edgeTypeMatches = text.matchAll(/edgeType:\s*["']([A-Z_]+)["']/g);
+    for (const m of edgeTypeMatches) {
+      if (m[1]) found.add(m[1]);
+    }
   }
   return found;
 }

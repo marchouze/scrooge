@@ -16,6 +16,12 @@ export interface PolicyFrontmatter {
   citations: string[];
   /** ORG-* IDs extracted from the summary "closes ORG-XXX, ORG-YYY" pattern. */
   obligationsClosed: string[];
+  /**
+   * ORG-* IDs declared in the explicit `obligations:` frontmatter list — the
+   * policy's own statement of which adopted obligations it implements
+   * (WS-OBLIGATION-POLICY-MAPPING).
+   */
+  obligationsImplemented: string[];
   riskTaxonomy: string[];
 }
 
@@ -63,6 +69,14 @@ export function parsePolicyFile(filePath: string): PolicyFrontmatter | null {
   const summary = String(scalarOf(fm.summary) ?? "");
   const obligationsClosed = extractObligationIds(summary);
 
+  // Explicit `obligations:` frontmatter list (ORG-* ids the policy implements)
+  const obligationsRaw = fm.obligations;
+  const obligationsImplemented: string[] = (
+    Array.isArray(obligationsRaw) ? obligationsRaw : obligationsRaw ? [String(obligationsRaw)] : []
+  )
+    .map((o) => o.trim())
+    .filter((o) => /^ORG-/.test(o));
+
   const result: PolicyFrontmatter = {
     policyId,
     title,
@@ -71,6 +85,7 @@ export function parsePolicyFile(filePath: string): PolicyFrontmatter | null {
     version,
     citations,
     obligationsClosed,
+    obligationsImplemented,
     riskTaxonomy,
   };
   if (effectiveFromRaw) result.effectiveFrom = effectiveFromRaw;
