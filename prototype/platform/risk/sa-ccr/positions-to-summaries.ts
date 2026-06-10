@@ -14,7 +14,12 @@
 // FX netting sets are ZAR-denominated (the FX MTM is ZAR — FxPositionRevalued.
 // unrealisedPnlZarMinor), so the emitted EAD is ZAR and flows into CreditRWA via
 // rwa-from-positions (D-FX-CCR-INTERIM-CONSERVATIVE-RWA). FX pairs without a ZAR
-// leg (crosses, e.g. EUR/USD) are skipped pending an EAD FX-conversion step.
+// leg (crosses, e.g. EUR/USD) are still skipped HERE — not because the consumer
+// can't handle non-ZAR EAD (rwa-from-positions now converts any non-ZAR EAD to
+// ZAR via buildRateMap/convertMinor, D-FX-EAD-FX-CONVERSION) but because forming
+// a non-ZAR netting set requires a registered ISDA/CSA in that currency
+// (computeAndEmitFor returns null otherwise). Cross-pair netting-set formation
+// lands once non-ZAR sim netting sets are registered (follow-up).
 //
 // Authority: D-FX-OTC-NPA-SCOPE-EXPANSION; D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL;
 //            BCBS-SA-CCR-CRE52; D-CREDIT-LIMIT-ENGINE-BUILD Phase 5.

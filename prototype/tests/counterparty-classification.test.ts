@@ -12,6 +12,7 @@ import {
   makeCounterpartyBaselClassAssigned,
 } from "../platform/event-store/event-types/counterparty-credit-risk";
 import { EventStore } from "../platform/event-store/store";
+import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import { computeRwaFromPositions } from "../platform/projections/rwa-from-positions";
 import {
@@ -144,6 +145,77 @@ describe("rwa-from-positions uses the authoritative class over the fallback", ()
     expect(output.credit.totalMinor).toBe(1_680_000);
     const labels = output.credit.lines.map((l) => l.label).join(" ");
     expect(labels).toContain("corporate-non-ig");
+    store.close();
+  });
+
+  it("converts a non-ZAR EAD to ZAR before it enters CreditRWA (D-FX-EAD-FX-CONVERSION)", () => {
+    const store = new EventStore(":memory:");
+    // An FxTradeExecuted gives the USD/ZAR rate (18 ZAR per 1 USD) to the rate map.
+    store.append(
+      makeFxTradeExecuted({
+        asOf: "2026-06-11T10:00:00.000Z",
+        entity: ENTITY,
+        actor: { type: "service", id: "agent:test" },
+        citations: CITES,
+        payload: {
+          tradeId: { scheme: "INTERNAL", value: "RATE-1" },
+          productTaxonomy: "FX-spot",
+          currencyPair: { base: "USD", quote: "ZAR" },
+          side: "buy",
+          legs: [
+            {
+              legKind: "near",
+              payCurrency: "ZAR",
+              receiveCurrency: "USD",
+              notional: { currency: "ZAR", amountMinor: 18_000_000 },
+              counterNotional: { currency: "USD", amountMinor: 1_000_000 },
+              rate: { currency: "ZAR", amount: 18 },
+              settlementDate: { iso: "2026-06-13", calendar: "JIHCAL" },
+            },
+          ],
+          tradeDate: { iso: "2026-06-11", calendar: "JIHCAL" },
+          counterparty: {
+            partyId: "CP-RATE",
+            name: "CP-RATE",
+            role: "counterparty",
+            jurisdiction: "ZA",
+          },
+          venue: "OTC",
+          trader: "trader:test",
+          bookId: "FX-BOOK",
+          bookType: "trading",
+          settlementForm: "physical",
+          settlementPath: "correspondent",
+          clientFlowRef: "cf:RATE-1",
+        },
+      }),
+    );
+    // A USD-denominated SA-CCR EAD of USD 100,000 (10,000,000 minor).
+    store.append(
+      makeCcrEadComputed({
+        asOf: "2026-06-11T17:00:00.000Z",
+        entity: ENTITY,
+        actor: { type: "service", id: "agent:rohan" },
+        citations: ["BCBS-279"],
+        payload: {
+          nettingSetId: "NS-CP-USD-USD",
+          counterpartyId: "CP-USD",
+          rc: 6_000_000,
+          pfe: 1_142_857,
+          alpha: 1.4,
+          ead: 10_000_000, // USD 100,000.00
+          currency: "USD",
+          computationDate: "2026-06-11",
+          methodology: "sa-ccr",
+          sourceEvents: { rcEventId: "rc-usd", pfeComponents: 1 },
+        },
+      }),
+    );
+    const { output } = computeRwaFromPositions(store, "2026-06-11T18:00:00.000Z");
+    // USD 10,000,000 minor × 18 = ZAR 180,000,000 minor at 100% (corporate-non-ig) RW.
+    expect(output.credit.totalMinor).toBe(180_000_000);
+    const note = output.credit.lines.map((l) => l.label).join(" ");
+    expect(note).toContain("corporate-non-ig");
     store.close();
   });
 
