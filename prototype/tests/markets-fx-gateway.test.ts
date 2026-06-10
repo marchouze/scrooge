@@ -50,6 +50,10 @@ import {
   makeOrderApprovedAtGateway,
   makeOrderRejectedAtGateway,
 } from "../platform/event-store/event-types";
+import {
+  makeCreditLimitApproved,
+  makeCreditLimitLoaded,
+} from "../platform/event-store/event-types/credit-limit";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 
@@ -118,6 +122,53 @@ function seedEligibleCounterparty(store: EventStore, counterpartyId: string): vo
   );
 }
 
+/**
+ * Seed a loaded, in-good-standing credit limit so the FAIL-CLOSED credit-limit
+ * gateway check (D-FX-GATEWAY-CREDIT-LIMIT-FAIL-CLOSED) admits the order. The
+ * limit is large (1 trillion ZAR) so headroom is never the binding constraint
+ * in the happy-path tests. Approved + Loaded suffices — foldAll seeds the acc
+ * on first sighting.
+ */
+function seedLoadedCreditLimit(store: EventStore, counterpartyId: string): void {
+  const limitMinor = 1_000_000_000_000_00; // 1 trillion ZAR (minor units)
+  store.append(
+    makeCreditLimitApproved({
+      asOf: T_2026,
+      entity: ENTITY,
+      actor: { type: "service", id: "test:helena" },
+      citations: ["D-CREDIT-LIMIT-ENGINE-BUILD"],
+      payload: {
+        applicationId: `CL-APP-${counterpartyId}`,
+        counterpartyId,
+        limit: limitMinor,
+        currency: "ZAR",
+        tenor: "364D",
+        approvedBy: "test:helena",
+        approvalAuthority: "CRC",
+        approvedAt: T_2026,
+        conditions: [],
+        expiryDate: "2099-12-31",
+      },
+    }),
+  );
+  store.append(
+    makeCreditLimitLoaded({
+      asOf: T_2026,
+      entity: ENTITY,
+      actor: { type: "service", id: "test:ops" },
+      citations: ["D-CREDIT-LIMIT-ENGINE-BUILD"],
+      payload: {
+        counterpartyId,
+        limit: limitMinor,
+        currency: "ZAR",
+        loadedAt: T_2026,
+        effectiveFrom: T_2026,
+        loadedBy: "test:ops",
+      },
+    }),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -126,6 +177,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 1: approved order emits OrderProposed + 14 check events + OrderApprovedAtGateway", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -146,6 +198,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 2: result has 7 checks all with outcome 'approve'", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -160,6 +213,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 3: all check latencyMs values are non-negative numbers", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -173,6 +227,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 4: OrderProposed payload is well-formed", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -201,6 +256,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 5: GatewayCheckRequested payloads carry correct orderId and checkKind", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -232,6 +288,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 6: GatewayCheckCompleted payloads carry outcome and durationMs >= 0", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -251,6 +308,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 7: OrderApprovedAtGateway payload has orderId + passedAt + approvalCitations", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -269,6 +327,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
   it("case 12: approved result.checks has exactly 7 entries", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -428,11 +487,43 @@ describe("FX gateway — sanctions screening enforcement", () => {
   it("passes the sanctions check for a clean counterparty", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
     expect(result.status).toBe("approved");
     expect(result.checks.find((c) => c.checkKind === "sanctions")?.outcome).toBe("approve");
+    store.close();
+  });
+});
+
+describe("FX gateway — credit-limit FAIL-CLOSED enforcement (D-FX-GATEWAY-CREDIT-LIMIT-FAIL-CLOSED)", () => {
+  it("rejects an eligible, clean-sanctions counterparty that has NO loaded credit limit", () => {
+    const store = freshStore();
+    // Eligible + clean sanctions, but NO loaded credit limit → fail-closed at
+    // the credit-limit check (a bank must not trade without an approved limit).
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("credit-limit");
+    const creditCheck = result.checks.find((c) => c.checkKind === "credit-limit");
+    expect(creditCheck?.outcome).toBe("reject");
+    expect(creditCheck?.rejectionReason).toContain("CounterpartyNotApproved");
+    expect(replayToArray(store, "OrderApprovedAtGateway")).toHaveLength(0);
+    store.close();
+  });
+
+  it("approves once a loaded, in-good-standing limit exists with headroom", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("approved");
+    expect(result.checks.find((c) => c.checkKind === "credit-limit")?.outcome).toBe("approve");
     store.close();
   });
 });

@@ -17,7 +17,8 @@
 // Author: Kai (Trading systems engineer, engineering — reports to
 //         Saskia, Head of Global Markets)
 
-import { newEventId } from "../platform/core/types";
+import { minor } from "../platform/core/money";
+import { type Currency, newEventId } from "../platform/core/types";
 import {
   makeGatewayCheckCompleted,
   makeGatewayCheckRequested,
@@ -28,6 +29,7 @@ import {
 import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import { screenCounterpartySanctions } from "../platform/markets/regulatory/sanctions-screen";
+import { checkHeadroom } from "../platform/risk/credit-limit-engine";
 import type { RfqInput, SyntheticQuote } from "./markets-fx-trade";
 import { isCounterpartyEligible } from "./markets-fx-trade";
 
@@ -246,6 +248,25 @@ export function routeOrderToGateway(args: {
       if (screen.blocked) {
         outcome = "reject";
         checkRejectionReason = screen.reason ?? "counterparty on sanctions blocked list";
+      }
+    }
+
+    // credit-limit — FAIL-CLOSED pre-deal headroom gate (D-FX-GATEWAY-CREDIT-
+    // LIMIT-FAIL-CLOSED, CEO-approved). A bank must NOT trade with a counterparty
+    // that has no loaded, in-good-standing credit limit, or whose limit is
+    // exhausted/expired/stale (Credit Risk Policy §1.3; Banks Act Reg 23). The
+    // proposed exposure is the order's quote-currency notional value; checkHeadroom
+    // returns ok=false + a canonical blockReason in every block case (incl. no
+    // loaded limit → CounterpartyNotApproved). Reads the SAME store the gateway
+    // writes to (threaded), not the composition global.
+    if (checkKind === "credit-limit") {
+      const quoteCcy = (rfqInput.currencyPair?.split("/")?.[1] ?? "ZAR") as Currency;
+      const proposedMinor = Math.max(0, Math.round(rfqInput.notional * quote.rateUsed * 100));
+      const proposedExposure = minor(BigInt(proposedMinor), quoteCcy);
+      const headroom = checkHeadroom(rfqInput.counterpartyId, proposedExposure, asOf, store);
+      if (!headroom.ok) {
+        outcome = "reject";
+        checkRejectionReason = `credit-limit: ${headroom.blockReason ?? "no headroom"} (utilisation ${headroom.utilisationPct}%)`;
       }
     }
 

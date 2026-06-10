@@ -99,14 +99,20 @@ export type HeadroomCheckResult = CreditLimitHeadroom & {
 // D-CREDIT-LIMIT-ENGINE-BUILD Phase 5 (Credit Risk Policy §3 line 131).
 // ---------------------------------------------------------------------------
 
-export function getCurrentExposure(counterpartyId: string, currency: string, asOf?: string): Money {
+export function getCurrentExposure(
+  counterpartyId: string,
+  currency: string,
+  asOf?: string,
+  store?: Pick<typeof eventStore, "replay">,
+): Money {
+  const es = store ?? eventStore;
   // Tier 1: latest CcrEadComputed per netting set.
   const latestEadPerNettingSet = new Map<string, CcrEadComputedPayload>();
   const eadReplayOpts =
     asOf !== undefined
       ? ({ type: "CcrEadComputed", asOf } as const)
       : ({ type: "CcrEadComputed" } as const);
-  for (const event of eventStore.replay(eadReplayOpts)) {
+  for (const event of es.replay(eadReplayOpts)) {
     const p = event.payload as CcrEadComputedPayload;
     if (p.counterpartyId !== counterpartyId) continue;
     const prev = latestEadPerNettingSet.get(p.nettingSetId);
@@ -122,7 +128,7 @@ export function getCurrentExposure(counterpartyId: string, currency: string, asO
     asOf !== undefined
       ? ({ type: "CcrReplacementCostComputed", asOf } as const)
       : ({ type: "CcrReplacementCostComputed" } as const);
-  for (const event of eventStore.replay(rcReplayOpts)) {
+  for (const event of es.replay(rcReplayOpts)) {
     const p = event.payload as CcrReplacementCostComputedPayload;
     if (p.counterpartyId !== counterpartyId) continue;
     const prev = latestRcPerNettingSet.get(p.nettingSetId);
@@ -216,9 +222,10 @@ export function checkHeadroom(
   counterpartyId: string,
   proposedExposure: Money,
   asOf?: string,
+  store?: Pick<typeof eventStore, "replay">,
 ): HeadroomCheckResult {
   const nowIso = asOf ?? utcNow();
-  const limit = getCreditLimit(counterpartyId, nowIso);
+  const limit = getCreditLimit(counterpartyId, nowIso, store);
 
   if (!limit) {
     const zero = minor(0n, proposedExposure.currency);
@@ -263,7 +270,7 @@ export function checkHeadroom(
     );
   }
 
-  const currentExposure = getCurrentExposure(counterpartyId, limit.currency, nowIso);
+  const currentExposure = getCurrentExposure(counterpartyId, limit.currency, nowIso, store);
   // Proposed exposure must match limit currency — caller is responsible for
   // any FX conversion before calling. Mismatched currency → treat proposed
   // as zero (and the resulting headroom remains the live cap less existing
