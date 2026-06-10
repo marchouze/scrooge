@@ -27,6 +27,7 @@ import {
 } from "../platform/event-store/event-types/trading";
 import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
+import { screenCounterpartySanctions } from "../platform/markets/regulatory/sanctions-screen";
 import type { RfqInput, SyntheticQuote } from "./markets-fx-trade";
 import { isCounterpartyEligible } from "./markets-fx-trade";
 
@@ -233,6 +234,18 @@ export function routeOrderToGateway(args: {
       if (!isCounterpartyEligible(store, rfqInput.counterpartyId)) {
         outcome = "reject";
         checkRejectionReason = "counterparty not in eligibility-passing set";
+      }
+    }
+
+    // sanctions — synchronous screen against the blocked list (D-FX-OTC-NPA-
+    // SCOPE-EXPANSION gateway enforcement; ORG-FC-13). Screens both the raw
+    // counterparty id and its synthetic LEI. A bank must not trade with a
+    // sanctioned counterparty; this is fail-on-hit (clear list → approve).
+    if (checkKind === "sanctions") {
+      const screen = screenCounterpartySanctions([counterpartyLei, rfqInput.counterpartyId]);
+      if (screen.blocked) {
+        outcome = "reject";
+        checkRejectionReason = screen.reason ?? "counterparty on sanctions blocked list";
       }
     }
 
