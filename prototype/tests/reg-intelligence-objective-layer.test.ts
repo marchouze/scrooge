@@ -49,10 +49,11 @@ describe("objective layer — graph ingestion", () => {
            FROM graph_nodes WHERE node_type = 'RegulatoryObjective' ORDER BY id`,
       )
       .all() as Array<{ id: string; lvl: string }>;
-    // SARB-PA pilot (5) + FSCA stack (5) + FIC stack (5) + BCBS stack (6) = 21
-    // objective nodes (D-FSCA-REGULATORY-INTELLIGENCE-INGESTION;
-    // D-FIC-REGULATORY-INTELLIGENCE-INGESTION; D-BCBS-OBJECTIVE-LAYER-INGESTION).
-    expect(rows.length).toBe(21);
+    // SARB-PA pilot (5) + FSCA stack (5) + FIC stack (5) + BCBS stack (6) +
+    // IASB stack (4) = 25 objective nodes (D-FSCA-REGULATORY-INTELLIGENCE-INGESTION;
+    // D-FIC-REGULATORY-INTELLIGENCE-INGESTION; D-BCBS-OBJECTIVE-LAYER-INGESTION;
+    // D-IASB-REGULATORY-INTELLIGENCE-INGESTION).
+    expect(rows.length).toBe(25);
     const byId = new Map(rows.map((r) => [r.id, r.lvl]));
     // SARB-PA pilot
     expect(byId.get("OBJ-SARB-PA-MANDATE")).toBe("mandate");
@@ -79,6 +80,11 @@ describe("objective layer — graph ingestion", () => {
     expect(byId.get("OBJ-BCBS-RISK-CAPTURE")).toBe("objective");
     expect(byId.get("OBJ-BCBS-MARKET-DISCIPLINE")).toBe("objective");
     expect(byId.get("OBJ-BCBS-SUPERVISORY-REVIEW")).toBe("objective");
+    // IASB stack (IFRS Foundation Constitution mandate — D-IASB-REGULATORY-INTELLIGENCE-INGESTION)
+    expect(byId.get("OBJ-IASB-MANDATE")).toBe("mandate");
+    expect(byId.get("OBJ-IASB-TRANSPARENCY")).toBe("objective");
+    expect(byId.get("OBJ-IASB-ACCOUNTABILITY")).toBe("objective");
+    expect(byId.get("OBJ-IASB-MARKET-EFFICIENCY")).toBe("objective");
   });
 
   test("seeds PURSUES / REFINES / SERVES / ALIGNS_TO edges", () => {
@@ -89,17 +95,21 @@ describe("objective layer — graph ingestion", () => {
           n: number;
         }
       ).n;
-    // 5 (REG-SARB-PA) + 5 (REG-FSCA) + 5 (REG-FIC) + 6 (REG-BCBS, mandate+5) objectives pursued.
-    expect(count("PURSUES")).toBe(21);
-    // 4 (PA) + 4 (FSCA) + 4 (FIC) + 5 (BCBS) objectives refine their mandate.
-    expect(count("REFINES")).toBe(17);
+    // 5 (REG-SARB-PA) + 5 (REG-FSCA) + 5 (REG-FIC) + 6 (REG-BCBS, mandate+5) +
+    // 4 (REG-IASB, mandate+3) objectives pursued.
+    expect(count("PURSUES")).toBe(25);
+    // 4 (PA) + 4 (FSCA) + 4 (FIC) + 5 (BCBS) + 3 (IASB) objectives refine their mandate.
+    expect(count("REFINES")).toBe(20);
     // PA prudential (≥9) + FSCA conduct/markets (30) + FIC AML/CFT (19) +
     // BCBS (1,921 in a clean seed — one SERVES per existing OBL-BCBS-* obligation
-    // from the 14 obligation-graph JSONs) obligations serve their objective.
-    expect(count("SERVES")).toBeGreaterThanOrEqual(9 + 30 + 19 + 1921);
+    // from the 14 obligation-graph JSONs) + IASB accounting (15 — 12 AC obligations
+    // to transparency/accountability + IFRS 10 to accountability + IFRS 13/IFRS 7 to
+    // market-efficiency) obligations serve their objective.
+    expect(count("SERVES")).toBeGreaterThanOrEqual(9 + 30 + 19 + 1921 + 15);
     // PA capital + liquidity policies (≥2) + FSCA conduct/markets policies (8) +
-    // FIC AML/sanctions policies (6) + BCBS prudential policies (12).
-    expect(count("ALIGNS_TO")).toBeGreaterThanOrEqual(2 + 8 + 6 + 12);
+    // FIC AML/sanctions policies (6) + BCBS prudential policies (12) +
+    // IASB accounting/disclosure/tax policies (6).
+    expect(count("ALIGNS_TO")).toBeGreaterThanOrEqual(2 + 8 + 6 + 12 + 6);
   });
 
   test("every objective-layer edge resolves to existing endpoint nodes (no orphans)", () => {
@@ -182,8 +192,8 @@ describe("objective layer — advisory recon gates", () => {
     const { run } = await import("../platform/recon/objective-policy-alignment");
     const result = await run();
     expect(result.ok).toBe(true);
-    // 5 SARB-PA pilot + 5 FSCA + 5 FIC + 6 BCBS objectives asserted.
-    expect(result.asserted).toBe(21);
+    // 5 SARB-PA pilot + 5 FSCA + 5 FIC + 6 BCBS + 4 IASB objectives asserted.
+    expect(result.asserted).toBe(25);
     const subjects = result.violations.map((v) => v.subject);
     // The aligned objectives are NOT flagged.
     expect(subjects).not.toContain("OBJ-SARB-PA-SAFETY-SOUNDNESS");
@@ -201,6 +211,9 @@ describe("objective layer — advisory recon gates", () => {
     expect(subjects).not.toContain("OBJ-BCBS-RISK-CAPTURE");
     expect(subjects).not.toContain("OBJ-BCBS-MARKET-DISCIPLINE");
     expect(subjects).not.toContain("OBJ-BCBS-SUPERVISORY-REVIEW");
+    // IASB objectives carrying ALIGNS_TO from IFRS accounting/disclosure/tax policies are aligned.
+    expect(subjects).not.toContain("OBJ-IASB-TRANSPARENCY");
+    expect(subjects).not.toContain("OBJ-IASB-MARKET-EFFICIENCY");
     // The un-aligned objectives ARE flagged (advisory).
     expect(subjects).toContain("OBJ-SARB-PA-MANDATE");
     expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
