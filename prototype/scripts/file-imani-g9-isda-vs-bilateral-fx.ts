@@ -10,20 +10,18 @@
 // Author:    Imani (Chief Legal Counsel, governance / legal-entity &
 //            clause-library agent)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-20_imani_g9-isda-vs-bilateral-fx-master-for-spot.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-imani-g9-isda-vs-bilateral-fx",
+  docName: "2026-05-20_imani_g9-isda-vs-bilateral-fx-master-for-spot.md",
+  recordId: "record:documents:imani:g9-isda-vs-bilateral-fx-master-for-spot:2026-05-20",
+  documentHash: "blake3:af4495fb6c24cf04e68e486340d5c521c7fecc2036c06462e6c5e065125e1682",
+});
 
 const result = recordFiled(
   {

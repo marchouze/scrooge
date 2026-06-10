@@ -27,20 +27,21 @@
 //
 // Author: Helena (Chief Risk Officer, governance) — via Scrooge dispatch
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
 import { buildDecisionsRegister, decisionsSourceFromStore } from "../projections/decisions";
 import { recordDecision } from "../runtime/decisions/record";
+import { readRootRenderBody } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-05-21_helena_mr-1-fx-ipv-tolerance-recalibration.md");
 const DECISION_ID = "D-MR-1-FX-IPV-TOLERANCE-RECAL-2026-05-21";
 const RECORD_ID = "record:documents:helena:mr-1-fx-ipv-tolerance-recalibration:2026-05-21";
 
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderBody({
+  scriptTag: "record-d-mr-1-fx-ipv-tolerance-recal",
+  docName: "2026-05-21_helena_mr-1-fx-ipv-tolerance-recalibration.md",
+  recordId: "record:documents:helena:mr-1-fx-ipv-tolerance-recalibration:2026-05-21",
+  documentHash: "blake3:aefbda6792c30638b0a081b030da8a6a87794b80d5e3b280fb76a747ec45e22f",
+});
 const asOf = clock.now();
 
 // ---------------------------------------------------------------------------

@@ -8,17 +8,18 @@
 //   D-LCR-TILE-PROVENANCE
 // Author: Ravi (Treasury / ALM engineer, engineering)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-06-02_ravi_lcr-engine-reconciliation.md");
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-ravi-lcr-engine-reconciliation",
+  docName: "2026-06-02_ravi_lcr-engine-reconciliation.md",
+  recordId: "record:documents:ravi:lcr-engine-reconciliation:2026-06-02",
+  documentHash: "blake3:d40f9958f777b2f139d01327533b80feaa16394e30efe3b0f2c4fc7b14b4fe5e",
+});
 
 const result = recordFiled(
   {

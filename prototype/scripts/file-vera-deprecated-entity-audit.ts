@@ -11,17 +11,18 @@
 // Author: Vera (Internal audit engineer, governance — functional reporting
 //   to Thandiwe (Chief Audit Executive, governance)).
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-05-21_vera_deprecated-entity-audit.md");
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-vera-deprecated-entity-audit",
+  docName: "2026-05-21_vera_deprecated-entity-audit.md",
+  recordId: "record:documents:vera:deprecated-entity-audit:2026-05-21",
+  documentHash: "blake3:7b35a5bb7d65a5b99def656e378e482e0402c86eabaacd3261d3d08fd5c67568",
+});
 
 const result = recordFiled(
   {

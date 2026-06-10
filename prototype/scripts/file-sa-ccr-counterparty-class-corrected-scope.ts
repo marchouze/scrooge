@@ -10,21 +10,22 @@
 // Authority: D-RMS-PHASE-3; D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL.
 // Author: Scrooge-coordinated session for marc@tgv.co.za.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const DOC = resolve(
-  import.meta.dir,
-  "../../2026-06-10_scrooge_sa-ccr-counterparty-class-corrected-scope.md",
-);
+const body = readRootRenderOrExit({
+  scriptTag: "file-sa-ccr-counterparty-class-corrected-scope",
+  docName: "2026-06-10_scrooge_sa-ccr-counterparty-class-corrected-scope.md",
+  recordId: "record:documents:scrooge:sa-ccr-counterparty-class-corrected-scope:2026-06-10",
+  documentHash: "blake3:3f4007b0369b243f104d7a47d3adacc0de6590956b4b10d9587e811127a03ba5",
+});
 const result = recordFiled(
   {
     recordId: "record:documents:scrooge:sa-ccr-counterparty-class-corrected-scope:2026-06-10",
     registerKey: "documents",
-    body: readFileSync(DOC, "utf8"),
+    body,
     classification: "governance-seat",
     retention: {
       citationRef: "urn:obligation:bank:org:gv:director-decision-retention:v1",

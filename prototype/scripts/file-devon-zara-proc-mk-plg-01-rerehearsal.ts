@@ -11,20 +11,18 @@
 // Author: Devon (Chief Operating Officer, governance) · co-author Zara
 //         (Chief Compliance Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-21_devon-zara_proc-mk-plg-01-rerehearsal-fx-spot-internal.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-devon-zara-proc-mk-plg-01-rerehearsal",
+  docName: "2026-05-21_devon-zara_proc-mk-plg-01-rerehearsal-fx-spot-internal.md",
+  recordId: "record:documents:devon-zara:proc-mk-plg-01-rerehearsal-fx-spot-internal:2026-05-21",
+  documentHash: "blake3:ae78942bc07374a0d5e7441cdea83fa5da371b1e576c953682db4d6382319a53",
+});
 
 const result = recordFiled(
   {

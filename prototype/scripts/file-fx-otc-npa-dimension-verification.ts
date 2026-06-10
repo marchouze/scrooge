@@ -11,17 +11,18 @@
 // Authority: D-RMS-PHASE-3 (active); D-FX-OTC-NPA-SCOPE-EXPANSION.
 // Author: Scrooge-coordinated session for marc@tgv.co.za.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-06-10_scrooge_fx-otc-npa-dimension-verification.md");
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-fx-otc-npa-dimension-verification",
+  docName: "2026-06-10_scrooge_fx-otc-npa-dimension-verification.md",
+  recordId: "record:documents:scrooge:fx-otc-npa-dimension-verification:2026-06-10",
+  documentHash: "blake3:b5a5394b6d56554190248a2c7de8d155bbeeb069da6a53a3818262413b192980",
+});
 
 const result = recordFiled(
   {

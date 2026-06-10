@@ -7,12 +7,11 @@
 // Authority: D-RMS-PHASE-3 (active); WS-MARKET-RISK-PROCEDURES
 // Author: Helena (Chief Risk Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
 const RECORD_ID = "record:decisions:helena:b3-measure-calibration-decisions:2026-06-03";
 
@@ -24,9 +23,12 @@ if (alreadyFiled) {
   process.exit(0);
 }
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-06-03_helena_b3-measure-calibration-decisions.md");
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-helena-b3-measure-decisions",
+  docName: "2026-06-03_helena_b3-measure-calibration-decisions.md",
+  recordId: "record:decisions:helena:b3-measure-calibration-decisions:2026-06-03",
+  documentHash: "blake3:a4f3db5407fd1c67330afee874929ad24e7a40d1cd33abc4f3dff744fe279347",
+});
 
 const result = recordFiled(
   {

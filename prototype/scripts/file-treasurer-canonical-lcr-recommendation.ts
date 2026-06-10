@@ -8,20 +8,18 @@
 //   D-LCR-TILE-PROVENANCE
 // Author: Office of the Treasurer (governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-06-02_treasurer_canonical-lcr-engine-recommendation.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-treasurer-canonical-lcr-recommendation",
+  docName: "2026-06-02_treasurer_canonical-lcr-engine-recommendation.md",
+  recordId: "record:documents:treasurer:canonical-lcr-engine-recommendation:2026-06-02",
+  documentHash: "blake3:88ce44ac03765d2c9831523b06893128279201a919ced52f46717dd6f564a32e",
+});
 
 const result = recordFiled(
   {

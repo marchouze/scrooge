@@ -8,12 +8,11 @@
 //
 // Authority: D-RETURNS-SUBMISSION-WIRING-WORKSTREAM; D-RMS-PHASE-3.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
 const RECORD_ID =
   "record:documents:scrooge:returns-submission-wiring-workstream-scoping:2026-06-10";
@@ -27,10 +26,13 @@ if (alreadyFiled) {
   process.exit(0);
 }
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
 const DOC_NAME = "2026-06-10_scrooge_returns-submission-wiring-workstream-scoping.md";
-const DOC_PATH = resolve(WORKTREE_ROOT, DOC_NAME);
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-returns-submission-wiring-scoping",
+  docName: DOC_NAME,
+  recordId: "record:documents:scrooge:returns-submission-wiring-workstream-scoping:2026-06-10",
+  documentHash: "blake3:4c246e84b020a8782e109f9c9b0d83a90867946b0f4316d84fe33c3a89ea045e",
+});
 
 const result = recordFiled(
   {

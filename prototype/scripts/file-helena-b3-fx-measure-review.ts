@@ -9,12 +9,11 @@
 // Authority: D-RMS-PHASE-3 (active); WS-MARKET-RISK-PROCEDURES
 // Author: Helena (Chief Risk Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
 const RECORD_ID = "record:documents:helena:b3-fx-market-risk-measure-review:2026-06-03";
 
@@ -27,9 +26,12 @@ if (alreadyFiled) {
   process.exit(0);
 }
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(WORKTREE_ROOT, "2026-06-03_helena_b3-fx-market-risk-measure-review.md");
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-helena-b3-fx-measure-review",
+  docName: "2026-06-03_helena_b3-fx-market-risk-measure-review.md",
+  recordId: "record:documents:helena:b3-fx-market-risk-measure-review:v2:2026-06-10",
+  documentHash: "blake3:fbd91b55fcd58f585606289fc21816e7d837f9a9f0ef9be04c5652e915a8597d",
+});
 
 const result = recordFiled(
   {

@@ -9,20 +9,19 @@
 // Author:    Rashida (Chief Compliance Officer, governance)
 // Co-author: Owen (Company Secretary, governance) for regulatory-chain sequencing
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-05-20_rashida_finsurv-excon-assessment-for-fx-spot-internal-pre-licence-test.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-rashida-finsurv-excon-assessment",
+  docName: "2026-05-20_rashida_finsurv-excon-assessment-for-fx-spot-internal-pre-licence-test.md",
+  recordId:
+    "record:documents:rashida:finsurv-excon-assessment-for-fx-spot-internal-pre-licence-test:2026-05-20",
+  documentHash: "blake3:99495d08a4984ce5b4e810786b9220b3ae2c431b4d91b7f7e87027e50fad94f4",
+});
 
 const result = recordFiled(
   {

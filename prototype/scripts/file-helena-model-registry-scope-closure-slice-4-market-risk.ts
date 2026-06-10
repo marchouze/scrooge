@@ -11,18 +11,20 @@
 //   - D-RMS-PHASE-3 (active)
 // Author: Helena (Chief Risk Officer, governance)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
 const DOC_FILENAME = "2026-05-29_helena_model-registry-scope-closure-slice-4-market-risk.md";
-const DOC_PATH = resolve(WORKTREE_ROOT, DOC_FILENAME);
 
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-helena-model-registry-scope-closure-slice-4-market-risk",
+  docName: DOC_FILENAME,
+  recordId: "record:documents:helena:model-registry-scope-closure-slice-4-market-risk:2026-05-29",
+  documentHash: "blake3:4ede6c606879575b3d5eec9c066403291058f0d0e3d04c336cda828f876b6e65",
+});
 
 const result = recordFiled(
   {

@@ -10,22 +10,19 @@
 // Authority: D-BEA-GOAL-LOOP-SINGLE-FLIGHT; D-PROACTIVE-ESCALATION-SURFACING.
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import { makeWorkstreamRegistered } from "../platform/event-store/event-types/platform";
 import { recordFiled } from "../platform/records";
+import { readRootRenderOrExit } from "./lib/root-render-filing-guard";
 
-const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "2026-06-10_atlas_orphan-run-deliverable-state-classification-spec.md",
-);
-
-const body = readFileSync(DOC_PATH, "utf8");
+const body = readRootRenderOrExit({
+  scriptTag: "file-orphan-run-deliverable-state-spec",
+  docName: "2026-06-10_atlas_orphan-run-deliverable-state-classification-spec.md",
+  recordId: "record:documents:atlas:orphan-run-deliverable-state-classification-spec:2026-06-10",
+  documentHash: "blake3:c63eb38dc53cb4f2f97f54f1d14326c5e6e03b1af016701825cc4c33de4a09eb",
+});
 const asOf = clock.now();
 
 // 1. Register the workstream (citable handle for the spec + follow-on slices).
