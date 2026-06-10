@@ -1,7 +1,7 @@
 ---
 agent: Ravi
 trigger: alm-readiness
-asOf: 2026-06-10T05:37:25.769Z
+asOf: 2026-06-10T06:23:38.640Z
 decision-required: false
 ---
 
@@ -9,7 +9,7 @@ decision-required: false
 
 Autonomous run of Ravi's daily ALM-readiness attestation per `Team/Ravi.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Seventeenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Engineer-side counterpart to Eitan's `LiquiditySnapshot` — Eitan reports counts of liquidity / treasury events the ALCO chair would consume; Ravi reports the substrate-readiness state for each ALM pipeline (LCR, NSFR, IRRBB, FX position, FTP, collateral, SAMOS funding) the engineer would build to make those events real.
 
-**Headline:** 9 ALM pipelines tracked · readiness 0 ready / 2 drafting / 7 specified / 0 not-yet-specified · 7 Ravi-owned obligations indexed (0 PARTIAL / drafting) · 94 ALM-domain events (last 7d).
+**Headline:** 9 ALM pipelines tracked · readiness 0 ready / 2 drafting / 7 specified / 0 not-yet-specified · 7 Ravi-owned obligations indexed (0 PARTIAL / drafting) · 90 ALM-domain events (last 7d).
 
 ## Eitan's latest snapshot
 
@@ -58,8 +58,8 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 | Event | Count |
 |---|---|
 | `HQLAObserved` | 0 |
-| `LCRComputed` | 12 |
-| `NSFRComputed` | 12 |
+| `LCRComputed` | 10 |
+| `NSFRComputed` | 10 |
 | `IRRBBChecked` | 70 |
 | `FXPositionReported` | 0 |
 | `CollateralUpdated` | 0 |
@@ -78,7 +78,7 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 
 ## Ravi's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cbu3D5nywaHdBe6FCiYA6"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cbu6kZ7G7xLvbYGDGneiH"})._
 
 ## Provenance
 
