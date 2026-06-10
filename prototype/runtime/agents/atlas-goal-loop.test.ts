@@ -25,6 +25,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { newEventId } from "../../platform/core/types";
+import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import {
   makeAgentBriefIssued,
   makeAgentRunCompleted,
@@ -33,7 +34,15 @@ import {
 import { makeAuditFinding } from "../../platform/event-store/event-types/audit";
 import { EventStore } from "../../platform/event-store/store";
 import type { Event } from "../../platform/event-store/types";
-import { openBriefsAddressedToAtlas, openFindingsOwnedByAtlas } from "./atlas-goal-loop";
+import {
+  isSelfExecutableByAtlas,
+  openBriefsAddressedToAtlas,
+  openBriefsListForAtlas,
+  openFindingsOwnedByAtlas,
+} from "./atlas-goal-loop";
+
+const ATLAS_REF = { name: "Atlas", position: "Core banking platform architect" } as const;
+const SCROOGE_REF = { name: "Scrooge", position: "Chief of Staff / Orchestrator" } as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -368,5 +377,141 @@ describe("openFindingsOwnedByAtlas", () => {
       }),
     );
     expect(openFindingsOwnedByAtlas(store)).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// openBriefsListForAtlas — oldest-first list + duplicate-envelope collapse.
+//
+// The phantom-open-brief case: 44 RMS-Phase-2 test envelopes all share the
+// briefId `brief:atlas:rms-slice-2-second-event`. The list must collapse them
+// to ONE open entry so a single run-lifecycle pair against that briefId clears
+// the whole batch (not 44 separate runs).
+// ---------------------------------------------------------------------------
+
+describe("openBriefsListForAtlas", () => {
+  function appendBrief(store: EventStore, briefId: string, hoursAgo: number, title = "T"): void {
+    store.append(
+      makeAgentBriefIssued({
+        asOf: hoursAgoIso(hoursAgo),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          briefId,
+          issuedTo: ATLAS_REF,
+          issuedBy: SCROOGE_REF,
+          title,
+          directiveDocumentHash: BRIEF_DOC_HASH,
+          priority: "now",
+          expectedOutputs: [{ kind: "code-pr", description: "d" }],
+        },
+      }),
+    );
+  }
+
+  it("returns empty for an empty store", () => {
+    expect(openBriefsListForAtlas(makeStore())).toEqual([]);
+  });
+
+  it("collapses 44 envelopes sharing one briefId to a single open entry", () => {
+    const store = makeStore();
+    for (let i = 0; i < 44; i++) {
+      appendBrief(
+        store,
+        "brief:atlas:rms-slice-2-second-event",
+        3,
+        "Same body, different envelope",
+      );
+    }
+    const open = openBriefsListForAtlas(store);
+    expect(open).toHaveLength(1);
+    expect(open[0]?.briefId).toBe("brief:atlas:rms-slice-2-second-event");
+    // The count helper agrees.
+    expect(openBriefsAddressedToAtlas(store)).toBe(1);
+  });
+
+  it("a single AgentRunStarted on the shared briefId clears the whole batch", () => {
+    const store = makeStore();
+    for (let i = 0; i < 44; i++) {
+      appendBrief(store, "brief:atlas:rms-slice-2-second-event", 3);
+    }
+    store.append(
+      makeAgentRunStarted({
+        asOf: hoursAgoIso(1),
+        entity: BASE_ENTITY,
+        actor: BASE_ACTOR,
+        citations: BASE_CITATIONS,
+        payload: {
+          runId: newEventId(),
+          briefId: "brief:atlas:rms-slice-2-second-event",
+          agent: ATLAS_REF,
+          startedAt: hoursAgoIso(1),
+          substrate: "agent-runtime",
+        },
+      }),
+    );
+    expect(openBriefsListForAtlas(store)).toHaveLength(0);
+  });
+
+  it("orders distinct open briefs oldest-first (FIFO drain)", () => {
+    const store = makeStore();
+    appendBrief(store, "brief:atlas:newer", 2, "newer");
+    appendBrief(store, "brief:atlas:older", 6, "older");
+    const open = openBriefsListForAtlas(store);
+    expect(open.map((b) => b.briefId)).toEqual(["brief:atlas:older", "brief:atlas:newer"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isSelfExecutableByAtlas — triage classifier.
+//
+// Atlas's rule engine owns exactly one deterministic deliverable: the
+// SubstrateStateSnapshot. Code-PR / schema / design work is judgement work and
+// must classify as NOT self-executable so the dispatcher emits
+// AgentRunCompleted{outcome:"blocked"} (selected-but-blocked-on-LLM) rather than
+// a fabricated delivery.
+// ---------------------------------------------------------------------------
+
+describe("isSelfExecutableByAtlas", () => {
+  const brief = (
+    title: string,
+    kind: "code-pr" | "deliverable-document" | "register-row" | "decision-card",
+  ): AgentBriefIssuedPayload => ({
+    briefId: "b",
+    issuedTo: ATLAS_REF,
+    issuedBy: SCROOGE_REF,
+    title,
+    directiveDocumentHash: BRIEF_DOC_HASH,
+    priority: "next-tick",
+    expectedOutputs: [{ kind, description: "d" }],
+  });
+
+  it("is NOT self-executable when the brief requires a code-pr output", () => {
+    expect(isSelfExecutableByAtlas(brief("Refresh the substrate-state snapshot", "code-pr"))).toBe(
+      false,
+    );
+  });
+
+  it("is self-executable for a substrate-state attestation with no code output", () => {
+    expect(
+      isSelfExecutableByAtlas(
+        brief("Substrate-state readiness attestation", "deliverable-document"),
+      ),
+    ).toBe(true);
+  });
+
+  it("is NOT self-executable for a platform-design code-PR brief", () => {
+    expect(
+      isSelfExecutableByAtlas(
+        brief("Route explicit-provenance emitters through the category policy", "code-pr"),
+      ),
+    ).toBe(false);
+  });
+
+  it("is NOT self-executable for a non-substrate-state brief with no code output", () => {
+    expect(isSelfExecutableByAtlas(brief("Approve a new event schema", "register-row"))).toBe(
+      false,
+    );
   });
 });
