@@ -14,7 +14,7 @@ citations:
   - PA Directive 3 of 2013 (D3/2013 — Regulatory reporting baseline directive)
 author: Camille (Chief Financial Officer, governance) + Mira (Regulatory intelligence engineer, compliance)
 date: "2026-05-13"
-summary: Regulatory Reporting Policy establishing the governance framework for all prudential regulatory returns submitted to the Prudential Authority — the full BA-return suite (BA 100, 120, 200, 210, 300, 320, 400, 700) and the Risk Return — including CFO-attestation standards, data-lineage requirements, timeliness controls, and resubmission governance. Closes obligations ORG-PR-29, ORG-PR-41, ORG-PR-51. LICENCE-BIND.
+summary: Regulatory Reporting Policy establishing the governance framework for all prudential regulatory returns submitted to the Prudential Authority — the full BA-return suite (BA 100, 120, 200, 210, 300, 320, 400, 700) and the Risk Return — including CFO-attestation standards, data-lineage requirements, timeliness controls, and resubmission governance. Closes obligations ORG-PR-29, ORG-FC-24, ORG-PR-51. LICENCE-BIND.
 decision-required: false
 riskTaxonomy:
   - RT-RR
@@ -27,7 +27,7 @@ obligations:
 
 > **Authors.** Camille (Chief Financial Officer, governance) — lead; Mira (Regulatory intelligence engineer, compliance) — co-author.
 > **Standing authority.** `D-REGULATORY-READINESS-GATE-PLAN` (CEO-approved 2026-05-10). Implements the prudential-reporting obligations identified in the FSCA reg-to-policy coverage recon (`8a53901`) and the FAIS Act analysis (`3e2ce06`) per the no-pause rule — CLAUDE.md "Operating procedures".
-> **Obligations closed.** `ORG-PR-29` (file BA returns per the form, frequency, and content prescribed by D2/2024); `ORG-PR-41` (submit the Risk Return per D4/2022); `ORG-PR-51` (monthly BA-series prudential return submission per D3/2013 regulatory reporting directive).
+> **Obligations closed.** `ORG-PR-29` (file BA returns per the form, frequency, and content prescribed by D2/2024); `ORG-FC-24` (submit the ML/TF/PF risk return per D4/2022 under FIC Act s.43A(3) — reclassified from `ORG-PR-41` per obligations-register v1.28); `ORG-PR-51` (monthly BA-series prudential return submission per D3/2013 regulatory reporting directive).
 > **Status.** LICENCE-BIND. Binding from the first prudential reporting period after PA licence grant. Submission obligations attach as a condition of the licence; the first BA-return cycle runs from the end of the first full calendar month of licensed operation. The reporting substrate (BA-form generator, event-to-return data pipeline) is under construction per the regulatory-readiness gate plan. Build-phase operationalisation is preparation for compliance, not compliance itself (per `project_rules_bind_at_commencement.md` memory, 2026-05-07).
 > **Identity discipline.** CLAUDE.md "Dispatch discipline" — every agent reference pairs name + position on first mention; subsequent same-artefact references may use the bare name.
 
@@ -35,7 +35,7 @@ obligations:
 
 ## 1. Regulatory Reporting Policy — Overarching
 
-**Owner:** Camille (Chief Financial Officer, governance) · **Approval:** Board (CEO interim per `D-THIN-HUMAN-LAYER-MINIMUM`) · **Cadence:** Annual policy review; triggered on PA directive amendment or material change to the return suite · **Citation:** Banks Act 94 of 1990 s.72 (statutory reporting obligation; failure to report is an offence) + Regulations Relating to Banks 2012 (as amended) Reg 46 (BA-return statutory basis; prescribes forms, frequency, and content) + PA Directive 2 of 2024 (D2/2024 — current directive governing BA returns under Reg 46; `ORG-PR-29`) + PA Directive 4 of 2022 (D4/2022 — Risk Return submission obligation; `ORG-PR-41`) + PA Directive 3 of 2013 (D3/2013 — Regulatory reporting baseline directive; `ORG-PR-51`)
+**Owner:** Camille (Chief Financial Officer, governance) · **Approval:** Board (CEO interim per `D-THIN-HUMAN-LAYER-MINIMUM`) · **Cadence:** Annual policy review; triggered on PA directive amendment or material change to the return suite · **Citation:** Banks Act 94 of 1990 s.72 (statutory reporting obligation; failure to report is an offence) + Regulations Relating to Banks 2012 (as amended) Reg 46 (BA-return statutory basis; prescribes forms, frequency, and content) + PA Directive 2 of 2024 (D2/2024 — current directive governing BA returns under Reg 46; `ORG-PR-29`) + PA Directive 4 of 2022 (D4/2022 — ML/TF/PF risk-return submission obligation under FIC Act s.43A(3); `ORG-FC-24`) + PA Directive 3 of 2013 (D3/2013 — Regulatory reporting baseline directive; `ORG-PR-51`)
 
 ### Purpose
 
@@ -131,7 +131,7 @@ Every manual adjustment requires: (i) Camille's written approval as a `ManualAdj
 
 ## 3. Risk Return (D4/2022)
 
-**Owner:** Camille (Chief Financial Officer, governance) with Helena (Chief Risk Officer, governance) on risk-type inputs · **Approval:** CFO attestation per submission; Board (CEO interim) informed quarterly · **Cadence:** Quarterly submission · **Citation:** D4/2022 (`ORG-PR-41` — Risk Return submission obligation) + `ORG-PR-29` (cross-reference from BA-return suite directive) + Banks Act 94 of 1990 s.72 (general reporting obligation)
+**Owner:** Camille (Chief Financial Officer, governance) with Helena (Chief Risk Officer, governance) on risk-type inputs · **Approval:** CFO attestation per submission; Board (CEO interim) informed quarterly · **Cadence:** Quarterly submission · **Citation:** D4/2022 (`ORG-FC-24` — ML/TF/PF risk-return submission obligation) + `ORG-PR-29` (cross-reference from BA-return suite directive) + Banks Act 94 of 1990 s.72 (general reporting obligation)
 
 ### Purpose
 
@@ -159,7 +159,7 @@ The Risk Return's quarterly cadence creates a three-to-one asymmetry with the mo
 
 ## 4. Accuracy and Completeness Standards
 
-**Owner:** Camille (Chief Financial Officer, governance) · **Approval:** Board (CEO interim) for the standards framework; Camille attests per return · **Cadence:** Applied on every return cycle; reviewed annually · **Citation:** D2/2024 (`ORG-PR-29`) + D4/2022 (`ORG-PR-41`) + D3/2013 (`ORG-PR-51`) + Banks Act 94 of 1990 s.72 (offence for false or misleading returns)
+**Owner:** Camille (Chief Financial Officer, governance) · **Approval:** Board (CEO interim) for the standards framework; Camille attests per return · **Cadence:** Applied on every return cycle; reviewed annually · **Citation:** D2/2024 (`ORG-PR-29`) + D4/2022 (`ORG-FC-24`) + D3/2013 (`ORG-PR-51`) + Banks Act 94 of 1990 s.72 (offence for false or misleading returns)
 
 ### Purpose
 
@@ -274,7 +274,7 @@ All escalations are typed events. No verbal-only escalation is sufficient; a `Re
 | Obligation | Description | Status | Closed by section |
 |---|---|---|---|
 | `ORG-PR-29` | File BA returns per the form, frequency, and content prescribed by D2/2024 | **IN FORCE** — closed | §2 (BA-Return Suite — full section), §4 (Accuracy and Completeness Standards), §5 (Resubmission Governance) |
-| `ORG-PR-41` | Submit the Risk Return per D4/2022 | **IN FORCE** — closed | §3 (Risk Return — full section), §4 (Accuracy and Completeness Standards), §5 (Resubmission Governance) |
+| `ORG-FC-24` | Submit the ML/TF/PF risk return per D4/2022 under FIC Act s.43A(3) (reclassified from `ORG-PR-41` per obligations-register v1.28) | **IN FORCE** — closed | §3 (Risk Return — full section), §4 (Accuracy and Completeness Standards), §5 (Resubmission Governance) |
 | `ORG-PR-51` | Monthly BA-series prudential return submission per D3/2013 regulatory reporting directive | **IN FORCE** — closed | §2.2 (Submission Calendar and Timeliness Controls), §1 (Overarching Policy — statutory obligation principle) |
 
 ---
