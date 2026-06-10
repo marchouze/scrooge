@@ -12,6 +12,7 @@ citations:
   - Auditing Profession Act 26 of 2005
   - IRBA Code of Professional Conduct
   - Banks Act 94 of 1990 Regulation 39(13)
+  - "SARB PA Directive D12/2025 §3.1 (auditor copy + CEO/auditor acknowledgement of receipt)"
   - D-POLICY-DOCUMENT-HOME
 author: Thandiwe (Chief Audit Executive, governance)
 date: 2026-05-27
@@ -19,6 +20,8 @@ summary: External Audit Engagement Policy for Hoz Bank Limited — governs exter
 decision-required: false
 riskTaxonomy:
   - RT-LR.RC
+obligations:
+  - ORG-PR-BCIII-002
 ---
 
 # External Audit Engagement Policy v1
@@ -79,6 +82,17 @@ The external audit engagement covers, at minimum:
 ## 5. Communication protocol
 
 The external auditor communicates directly with the Audit Committee Chair. The CAE (Thandiwe) facilitates information access. Management responses to audit findings are tabled at the Audit Committee.
+
+### 5.1 Regulatory directives — auditor copy and acknowledgement
+
+**Citation:** SARB Prudential Authority Directive D12/2025 §3.1; register obligation `ORG-PR-BCIII-002`.
+
+Where a Prudential Authority directive requires that a copy be made available to the Bank's external auditors (D12/2025 §3.1 is the standing instance — the Basel III capital-framework directive), the protocol is:
+
+1. **Receipt and routing.** Owen (Company Secretary, governance) registers the directive in the Correspondence register on receipt and routes a copy to the external auditors without delay.
+2. **Acknowledgement of receipt.** The directive's acknowledgement of receipt is completed and signed by **both** the Chief Executive Officer and the external auditors, and returned to the Prudential Authority at the earliest convenience of the signatories. Owen tracks the acknowledgement to completion; the signed acknowledgement is filed as a `RecordFiled` event and the outbound return as Correspondence.
+3. **Standing scope.** This protocol applies to every PA directive carrying an auditor-copy or acknowledgement requirement, not only D12/2025.
+4. **Build-phase posture.** No external auditor is appointed yet (§6); directives received in the build phase are registered and queued for auditor transmittal at appointment, and the acknowledgement obligation is discharged immediately after the appointment takes effect. The queue is a Correspondence-register projection, not a side list.
 
 ---
 
