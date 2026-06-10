@@ -501,6 +501,113 @@ export function makeSicrTriggered(args: {
 }
 
 // ---------------------------------------------------------------------------
+// CounterpartyBaselClassAssigned — authoritative Basel counterparty class
+//
+// The standardised-approach risk-weight a credit exposure attracts depends on
+// the counterparty's Basel class (sovereign / bank / corporate-ig / corporate-
+// non-ig / retail / …) per BCBS CRE20. That class is a CRO credit judgement,
+// NOT something the RWA mapping code may invent. Before this event existed,
+// `rwa-from-positions` hard-coded `corporate-non-ig` (100%) for every SA-CCR
+// derivative exposure — a prudent floor, but the class lived in mapping code,
+// decoupled from any authoritative register and invisible to the CRO.
+//
+// This event is the canonical, event-of-record assignment of a counterparty's
+// Basel class, set by the credit-risk authority (CRC / CRO). The RWA projection
+// resolves the latest-effective assignment per counterparty and applies the
+// corresponding risk weight; a counterparty with NO assignment falls back to
+// the prudent `corporate-non-ig` interim (over-states capital, refines down as
+// classification lands) and is surfaced by `recon:counterparty-basel-
+// classification-coverage` so the residual is visible, never silent.
+//
+// `baselClass` mirrors the `CounterpartyType` taxonomy in
+// `platform/risk/rwa-engine.ts` (CRE20). The two are kept in lock-step by a
+// compile-time assertion in `platform/risk/counterparty-classification.ts`
+// (the reader) — this module does not import from the risk layer to keep the
+// event-store layer dependency-free.
+//
+// Authority: D-FX-COUNTERPARTY-BASEL-CLASSIFICATION (CEO session-delegation);
+//   BCBS CRE20 (standardised credit risk — counterparty taxonomy);
+//   RRB Regulation 38; Policies/credit-risk-policy-v1.md §3.
+// ---------------------------------------------------------------------------
+
+export const baselCounterpartyClassSchema = z.enum([
+  "sovereign-domestic-currency",
+  "sovereign-foreign-currency",
+  "mdb-zero-weight",
+  "bank",
+  "pse",
+  "corporate-ig",
+  "corporate-non-ig",
+  "retail",
+  "residential-mortgage",
+  "commercial-real-estate",
+  "past-due",
+  "equity",
+  "other",
+]);
+export type BaselCounterpartyClass = z.infer<typeof baselCounterpartyClassSchema>;
+
+export const counterpartyBaselClassAssignedPayloadSchema = z.object({
+  /** Party register ID of the counterparty being classified. */
+  counterpartyId: z.string().min(1),
+
+  /** Assigned Basel standardised-approach class (CRE20 taxonomy). */
+  baselClass: baselCounterpartyClassSchema,
+
+  /** External-rating bucket where assessed (CRE20 lookup). Optional. */
+  ratingBucket: z.enum(["aaa-aa", "a", "bbb", "bb", "below-bb", "unrated"]).optional(),
+
+  /** Residual-maturity bucket — relevant for `bank` exposures. Optional. */
+  residualMaturity: z.enum(["short-term", "long-term"]).optional(),
+
+  /** Seat / Party ID of the assigning authority (CRO / CRC). */
+  assignedBy: z.string().min(1),
+
+  /** Authority level. CRC = Credit Risk Committee; CRO = Chief Risk Officer. */
+  approverAuthority: z.enum(["CRC", "CRO"]),
+
+  /** Credit-assessment basis (prose) — why this class was assigned. */
+  rationale: z.string().min(1),
+
+  /** Pointer to the underlying credit-assessment / rating evidence. */
+  evidenceRef: z.string().min(1),
+
+  /** ISO 8601 — when this classification takes effect. */
+  effectiveFrom: z.string().min(1),
+
+  /** ISO 8601 — when the assignment was recorded. */
+  assignedAt: z.string().min(1),
+});
+
+export type CounterpartyBaselClassAssignedPayload = z.infer<
+  typeof counterpartyBaselClassAssignedPayloadSchema
+>;
+
+export function makeCounterpartyBaselClassAssigned(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CounterpartyBaselClassAssignedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "CounterpartyBaselClassAssigned requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CounterpartyBaselClassAssigned",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: counterpartyBaselClassAssignedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES — registry of event types
 // in this module.
 //
@@ -517,6 +624,7 @@ export const COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES = [
   "LexUtilisationComputed",
   "LexExceptionApproved",
   "SicrTriggered",
+  "CounterpartyBaselClassAssigned",
 ] as const;
 
 export type CounterpartyCreditRiskEventType =

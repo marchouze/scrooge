@@ -45,6 +45,7 @@
     "recon:objective-policy-alignment": "bun run platform/recon/objective-policy-alignment.ts",
     "recon:npa-coverage": "bun run platform/recon/npa-coverage.ts",
     "recon:npa-deferred-gap-tracking": "bun run platform/recon/npa-deferred-gap-tracking.ts",
+    "recon:counterparty-basel-classification-coverage": "bun run platform/recon/counterparty-basel-classification-coverage.ts",
     "recon:calc-no-silent-zero": "bun run platform/recon/calc-no-silent-zero.ts",
     "recon:pnl-attribution-reconciles": "bun run platform/recon/pnl-attribution-reconciles.ts",
     "recon:pnl-signoff-coverage": "bun run platform/recon/pnl-signoff-coverage.ts",

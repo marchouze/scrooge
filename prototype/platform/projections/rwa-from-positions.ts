@@ -77,6 +77,7 @@ import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
+import { resolveAllCounterpartyClasses } from "../risk/counterparty-classification";
 import {
   type CreditExposure,
   RWA_BANK_ENTITIES,
@@ -341,6 +342,13 @@ export function computeRwaFromPositions(
   //     D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL; BCBS-SA-CCR-CRE52.
   // -------------------------------------------------------------------------
 
+  // Authoritative counterparty Basel-class register (D-FX-COUNTERPARTY-BASEL-
+  // CLASSIFICATION). A classified counterparty applies its CRO-assigned class;
+  // an UNclassified counterparty falls back to the prudent interim
+  // (corporate-non-ig, unrated, 100% RW) and is surfaced by
+  // recon:counterparty-basel-classification-coverage so the residual is visible.
+  const classByCounterparty = resolveAllCounterpartyClasses(eventStore, asOf);
+
   const latestEadByNettingSet = new Map<string, { p: CcrEadComputedPayload; eventId: string }>();
   for (const ev of eventStore.replay({ type: "CcrEadComputed", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
@@ -354,14 +362,18 @@ export function computeRwaFromPositions(
     if (p.ead <= 0) continue;
     // ZAR netting sets only — see currency note above.
     if (p.currency !== FUNCTIONAL_CURRENCY) continue;
+    const assigned = classByCounterparty.get(p.counterpartyId);
+    const note = assigned
+      ? `SA-CCR EAD nettingSet=${p.nettingSetId} — authoritative class ${assigned.baselClass} (CRO-assigned ${assigned.sourceEventId}; D-FX-COUNTERPARTY-BASEL-CLASSIFICATION)`
+      : `SA-CCR EAD nettingSet=${p.nettingSetId} — interim conservative class (corporate-non-ig, 100%) pending authoritative counterparty classification (D-FX-CCR-INTERIM-CONSERVATIVE-RWA)`;
     creditExposures.push({
       counterpartyId: p.counterpartyId,
-      counterpartyType: "corporate-non-ig",
+      counterpartyType: assigned?.baselClass ?? "corporate-non-ig",
       eadMinor: p.ead,
       currency: FUNCTIONAL_CURRENCY,
-      ratingBucket: "unrated",
-      residualMaturity: "long-term",
-      note: `SA-CCR EAD nettingSet=${p.nettingSetId} — interim conservative class (corporate-non-ig, 100%) pending authoritative counterparty classification (D-FX-CCR-INTERIM-CONSERVATIVE-RWA)`,
+      ratingBucket: assigned?.ratingBucket ?? "unrated",
+      residualMaturity: assigned?.residualMaturity ?? "long-term",
+      note,
     });
     sourceEventIds.push(eventId);
   }
