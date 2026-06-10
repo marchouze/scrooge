@@ -94,6 +94,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:liquidity-appetite-snapshot-coverage",
     "recon:ras-b6-cyber-severity-coverage",
     "recon:ras-register-parity",
+    "recon:fx-gateway-threshold-enforcement",
     "recon:permission-gate-default",
     "recon:permission-policy-coverage",
     "recon:decision-required-event-pairing",
