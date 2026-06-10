@@ -19,9 +19,6 @@ import {
   nsfrRsfWeights,
   rwaInstrumentClassWeights,
 } from "../platform/config/financial-constants";
-import capitalFundingStub from "../platform/markets/regulatory/capital-funding-stub.json" with {
-  type: "json",
-};
 import { run as runCoverage } from "../platform/recon/financial-constants-coverage";
 
 describe("FINANCIAL_CONSTANTS registry", () => {
@@ -82,24 +79,21 @@ describe("rate-table builders", () => {
 });
 
 describe("RWA instrument-class weights — registry is the single source", () => {
-  // The legacy capital-funding stub JSON still carries the same table for the
-  // build-phase capital-funding-check agent (which reads other fields too).
-  // This parity test guards against the two drifting: the registry is canonical.
-  const stub = capitalFundingStub.rwa.rwaWeightByInstrumentClass as Record<string, number>;
-
-  it("every registry instrument-class weight matches the stub", () => {
+  // capital-funding-stub.json is RETIRED (D-FX-GATEWAY-CAPITAL-FUNDING-
+  // THRESHOLDS, CRO-approved 2026-06-10): both gateway paths now evaluate via
+  // platform/risk/fx-gateway-thresholds.ts, which reads this registry. The
+  // registry is the sole owner of the instrument-class weight table; there is
+  // deliberately NO "default" sentinel — an unknown class fails closed.
+  it("carries exactly the five owned instrument classes (no default sentinel)", () => {
     const registry = rwaInstrumentClassWeights();
-    for (const [cls, weight] of Object.entries(registry)) {
-      expect(stub[cls]).toBe(weight);
-    }
-  });
-
-  it("every stub instrument class (except the 'default' sentinel) is in the registry", () => {
-    const registry = rwaInstrumentClassWeights();
-    for (const cls of Object.keys(stub)) {
-      if (cls === "default") continue;
-      expect(registry[cls]).toBe(stub[cls]);
-    }
+    expect(Object.keys(registry).sort()).toEqual([
+      "FX-forward",
+      "FX-spot",
+      "JSE-EQUITY",
+      "OTC-IRD",
+      "ZA-GOV-BOND",
+    ]);
+    expect(registry.default).toBeUndefined();
   });
 });
 
