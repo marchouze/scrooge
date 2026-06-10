@@ -28,11 +28,6 @@ import {
 import { INFRA_CAPABILITY_SLUGS, isOrphanAllowlisted } from "./capability-infra";
 import { parseSystemCapabilityValue } from "./capability-parser";
 import {
-  type PolicyObligationCitations,
-  buildImplementedByEdge,
-  deriveObligationPolicyPairs,
-} from "./obligation-policy-fold";
-import {
   getDb,
   getEdgeCount,
   getNodeCount,
@@ -40,6 +35,11 @@ import {
   upsertEdge,
   upsertNode,
 } from "./db";
+import {
+  type PolicyObligationCitations,
+  buildImplementedByEdge,
+  deriveObligationPolicyPairs,
+} from "./obligation-policy-fold";
 import { parsePolicyFile } from "./policy-parser";
 import { parseProcedureFile } from "./procedure-parser";
 import type { DocumentApplicabilityStatus, GraphEdge, GraphNode, GraphNodeMetadata } from "./types";
