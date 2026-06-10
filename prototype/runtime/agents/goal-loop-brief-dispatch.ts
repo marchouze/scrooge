@@ -175,7 +175,41 @@ export async function dispatchBriefBoundRun(
 
   if (config.runHandler && isSelfExecutableBrief(brief, config.selfExecutablePattern)) {
     // Genuinely completable — run the deterministic handler live and deliver.
-    const handlerOutput = await config.runHandler({ ...ctx, dryRun: false });
+    // Failure coverage: a thrown handler MUST still close the run. An
+    // unclosed AgentRunStarted permanently marks the brief "handled" in
+    // openBriefsListForAgent (started counts as handled) with no completion —
+    // a silent brief-drop. On throw, close blocked with the failure surfaced.
+    let handlerOutput: AgentRunOutput;
+    try {
+      handlerOutput = await config.runHandler({ ...ctx, dryRun: false });
+    } catch (err) {
+      const failureGap = `${agent.name} goal-loop bound run ${runId} to brief ${brief.briefId} ("${brief.title}") but the deterministic handler threw: ${err instanceof Error ? err.message : String(err)}. Run closed blocked so the brief is not silently dropped (an unclosed AgentRunStarted would mark it handled forever).`;
+      recordAgentRunCompleted(
+        {
+          runId,
+          briefId: brief.briefId,
+          agent,
+          completedAt: ctx.asOf,
+          outcome: "blocked",
+          deliverableBodies: [],
+          substrateGapsSurfaced: [failureGap],
+          deliverableCitations: citations,
+          followOnRoutes: [],
+          citations,
+          actor,
+        },
+        ctx.asOf,
+      );
+      eventsEmitted += 1;
+      logger.error(
+        { agentSlug, briefId: brief.briefId, runId, err: String(err) },
+        `${agentSlug}:goal-loop — handler threw during brief-bound run; closed blocked (failure surfaced)`,
+      );
+      return {
+        eventsEmitted,
+        summary: `brief ${brief.briefId} handler-failed → blocked (failure surfaced); ${remainingOpen} open brief(s) remain`,
+      };
+    }
     eventsEmitted += handlerOutput.eventsEmitted;
     const classLabel = config.deliveredClassLabel ?? "deterministic attestation";
     recordAgentRunCompleted(

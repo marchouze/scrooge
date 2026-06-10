@@ -281,6 +281,37 @@ describe("dispatchBriefBoundRun — run-feed instrumentation", () => {
     expect(lc.completed[0]?.outcome).toBe("blocked");
   });
 
+  test("handler throw on the delivered path → run closed blocked with failure surfaced (no dangling AgentRunStarted)", async () => {
+    const briefId = "brief:anya:handler-throw:dispatch";
+    const brief = makeBriefPayload(briefId, "Projection-drift attestation", "deliverable-document");
+
+    const result = await dispatchBriefBoundRun(
+      makeCtx("2026-06-10T14:00:00.000Z"),
+      brief,
+      "iter:throw",
+      0,
+      {
+        agentSlug: "anya",
+        selfExecutablePattern: /projection[\s-]?drift/i,
+        deliveredClassLabel: "projection-drift attestation",
+        runHandler: async () => {
+          throw new Error("simulated handler failure");
+        },
+      },
+    );
+
+    expect(result.eventsEmitted).toBe(2); // started + blocked completion
+    expect(result.summary).toContain("handler-failed");
+
+    const lc = runLifecycleForBrief(briefId);
+    expect(lc.started).toHaveLength(1);
+    // The started run is paired — never a dangling AgentRunStarted that
+    // would silently drop the brief from the open list forever.
+    expect(lc.completed).toHaveLength(1);
+    expect(lc.completed[0]?.outcome).toBe("blocked");
+    expect(lc.completed[0]?.gaps[0]).toContain("simulated handler failure");
+  });
+
   test("no new AgentBriefIssued envelopes are emitted by any dispatch path", () => {
     let routeBriefs = 0;
     for (const e of eventStore.replay({ type: "AgentBriefIssued" })) {
