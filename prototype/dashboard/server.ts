@@ -117,7 +117,6 @@ import {
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { findKnowledgeBaseObligation } from "../platform/obligations/knowledge-base";
 import { buildCrossAssetBreakdown } from "../platform/product-control/cross-asset-positions";
-import { seatForBcbsObligationId } from "../platform/regulatory/basel-family-seat";
 import {
   classifyUnmarkable,
   computeDailyPnL,
@@ -145,6 +144,7 @@ import {
 } from "../platform/projections/markets";
 import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-policy-coverage";
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
+import { seatForBcbsObligationId } from "../platform/regulatory/basel-family-seat";
 import { getActiveBondCounterparties } from "../platform/simulation/bond-counterparty-registry";
 import { BondSimEngine } from "../platform/simulation/bond-sim-engine";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";

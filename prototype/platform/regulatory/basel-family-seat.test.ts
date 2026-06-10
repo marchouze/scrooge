@@ -7,11 +7,7 @@
 // can never drift. D-OBLIGATIONS-REGISTER-CLEANUP · WS-OBLIGATIONS-CLEANUP.
 
 import { describe, expect, it } from "bun:test";
-import {
-  BASEL_FAMILY_TO_SEAT,
-  baselFamilyOf,
-  seatForBcbsObligationId,
-} from "./basel-family-seat";
+import { BASEL_FAMILY_TO_SEAT, baselFamilyOf, seatForBcbsObligationId } from "./basel-family-seat";
 
 describe("baselFamilyOf", () => {
   it("extracts the family token from a BCBS obligation id", () => {

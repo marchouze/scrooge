@@ -3,14 +3,24 @@
 // One-off owner-assignment pass for the graph-imported BCBS obligations
 // (D-OBLIGATIONS-REGISTER-CLEANUP · P3 follow-on, WS-OBLIGATIONS-CLEANUP).
 //
-// The BCBS obligations were brought into the event log by
-// `importBcbsObligationGraphs` (NOT via Regulations/_obligations.seed.json), so
-// they cannot be fixed through the seed-backfill path that PR #1139 used for the
-// 417 SA rows. Their `ObligationAdopted` events carry an empty `owner`. This
-// script corrects them at the EVENT level: replay `ObligationAdopted` from the
-// shared store, take latest-per-id, filter to the `^BCBS-` set with empty owner,
-// and emit one corrected later-dated `ObligationAdopted` per affected id that
-// preserves every other field and fills `owner` by Basel family.
+// The BCBS obligations are NOT in `Regulations/_obligations.seed.json` (they are
+// adopted from the knowledge base, derived from the imported BCBS obligation
+// graphs), so they cannot be fixed through the seed-backfill path PR #1139 used
+// for the 417 SA rows. Originally their `ObligationAdopted` events carried an
+// empty `owner`, and this script corrected them at the EVENT level: replay
+// `ObligationAdopted` from the shared store, take latest-per-id, filter to the
+// `^BCBS-` set with empty owner, and emit one corrected later-dated
+// `ObligationAdopted` per affected id that preserves every other field and fills
+// `owner` by Basel family.
+//
+// ROOT-CAUSE FIX (Atlas, follow-on to this script's PR #1143): the empty `owner`
+// was stamped by the LIVE adopt path — the `/api/obligations/adopt` knowledge-
+// base branch in `dashboard/server.ts` — which set `owner: ""` at wall-clock-now.
+// Because that wins the `as_of` fold, every fresh adopt silently reverted this
+// script's backfill. The emit path now stamps `owner` at emit time from the SAME
+// shared map this script consumes (`platform/regulatory/basel-family-seat.ts`),
+// so the two can never drift and THIS SCRIPT IS NOW A PERMANENT NO-OP. It is
+// retained for one-off repair of any historical empty-owner rows.
 //
 // Owner is assigned with the SAME seat vocabulary PR #1139 used
 // (cco|cfo|cro|company-secretary|operational|head-of-global-markets|…). No new
@@ -19,14 +29,10 @@
 // `buildBankObligations` folds by `as_of`, ties keep replay order) carry the
 // correction.
 //
-// Fold-race safety: the BCBS set is also re-emitted with an empty owner by the
-// live graph-import path (`importBcbsObligationGraphs`), which stamps events at
-// wall-clock-now. A fixed correction stamp could therefore lose the `as_of`
-// fold to a later re-import. So each correction is stamped strictly LATER than
-// the latest existing `as_of` for that id (max + 1s), which deterministically
-// wins the fold and keeps the result stable against further re-imports up to
-// that instant. Re-running after a fresh re-import simply re-stamps above the
-// new max — still idempotent in the "owner already correct" sense.
+// Fold-race safety: each correction is stamped strictly LATER than the latest
+// existing `as_of` for that id (max + 1s), which deterministically wins the
+// `as_of` fold. With the emit path now owner-aware there is no further empty-
+// owner re-emit to race; the stamping is retained for robustness.
 //
 // Idempotent: an id whose latest payload already carries the correct owner is
 // skipped, so a second run is a no-op. The seed JSON and the 417 SA rows are NOT
@@ -39,16 +45,14 @@
 //
 // Default is a dry-run report; --write emits the corrected events.
 //
-// Author: Mira (Compliance / RegTech engineer, engineering).
+// Author: Mira (Compliance / RegTech engineer, engineering);
+//   root-cause fix by Atlas (Core banking platform architect, engineering).
 
 import { eventStore } from "../platform/composition";
 import { makeObligationAdopted } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { ObligationAdoptedPayload } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { Actor } from "../platform/event-store/types";
-import {
-  baselFamilyOf,
-  seatForBcbsObligationId,
-} from "../platform/regulatory/basel-family-seat";
+import { baselFamilyOf, seatForBcbsObligationId } from "../platform/regulatory/basel-family-seat";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR: Actor = { type: "service", id: "agent:mira:bcbs-obligation-owners" };
