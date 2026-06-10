@@ -696,7 +696,15 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     id: "ACC-2105-001",
     name: "FX Sub-Ledger Build-Phase Write-Off",
     category: "income-trading",
-    currency: "ZAR",
+    // No `currency` — genuinely multi-currency BY DESIGN: the residue is
+    // written off in the currency in which it was stranded (the
+    // FXWRITEOFF-SUSPENSE-20260607 journal carries CHF/GBP/JPY/USD/ZAR legs),
+    // with ZAR as presentation only. The earlier `currency: "ZAR"` designation
+    // contradicted the account's own documented behaviour above and would
+    // falsely trip recon:account-designated-currency on the CFO write-off
+    // legs; removed under D-ACCOUNT-DESIGNATED-CURRENCY-REBOOK (CEO
+    // 2026-06-10) — the registry field IS the exemption mechanism (never a
+    // hardcoded id allowlist).
     side: "debit",
   },
 

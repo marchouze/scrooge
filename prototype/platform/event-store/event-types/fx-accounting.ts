@@ -241,6 +241,13 @@ export const subLedgerPostingEmittedPayloadSchema = z
       // suspense). Reverses out of suspense and re-books into the home account.
       // Append-only. Authority: D-PROACTIVE-ESCALATION-SURFACING.
       "sla-rebook-unresolved-currency-suspense",
+      // D-ACCOUNT-DESIGNATED-CURRENCY-REBOOK (CEO-approved 2026-06-10): re-books
+      // a foreign-currency residual stranded INSIDE a designated-currency account
+      // (the default-to-USD defect, live 2026-06-01..06, parked GBP/JPY/CHF/EUR/AUD
+      // legs in the USD-designated ACC-1200-002 / ACC-2100-002 / ACC-2100-004)
+      // into the matching per-currency account. Reverses the residual out of the
+      // contaminated account and books it into the per-currency home. Append-only.
+      "designated-currency-rebook",
       // Observed in production DB but missing from schema (pre-existing postings
       // that landed before this enum was formalised).
       "cancellation-reversal",
