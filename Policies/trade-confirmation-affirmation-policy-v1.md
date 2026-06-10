@@ -12,6 +12,8 @@ citations:
   - ISDA OTC derivatives confirmation protocols (2002 ISDA Master Agreement)
   - Exchange Control Regulations reg.10(1)(c) (reporting of OTC derivatives to SARB)
   - Regulations Relating to Banks 2012 (as amended) reg.32 (CCR — confirmation as netting agreement prerequisite)
+  - "FSCA Conduct Standard 3 of 2018: §5 (portfolio reconciliation), §6 (dispute resolution)"
+  - "FSCA Conduct Standard 2 of 2018 (ODP): §9 (portfolio reconciliation — written agreement, frequencies, deemed disputes), §11 (portfolio compression)"
 author: Tomas (Operations & payments engineer, engineering) + Kai (Trading systems engineer, engineering)
 date: 2026-05-22
 summary: Trade Confirmation and Affirmation Policy establishing confirmation timelines for FX spot/forward (T+1) and IRS/CDS (T+2), electronic confirmation platform requirements, escalation for unsigned/unconfirmed trades, daily portfolio reconciliation for active OTC counterparties, dispute definition and resolution, long-form confirmation for structured products, and settlement gate. Typed events TradeConfirmed, TradeDisputeOpened, TradeDisputeResolved. COMMENCEMENT-BIND.
@@ -19,6 +21,11 @@ decision-required: false
 riskTaxonomy:
   - RT-OR
   - RT-CR
+obligations:
+  - ORG-CS3-003
+  - ORG-CS3-004
+  - ORG-ODP-COND-007
+  - ORG-ODP-COND-009
 ---
 
 # Trade Confirmation and Affirmation Policy v1
@@ -114,6 +121,29 @@ Portfolio reconciliation is the process of comparing the Bank's record of outsta
 
 Any position discrepancy identified during portfolio reconciliation that exceeds the materiality threshold (ZAR 100,000 notional equivalent for any single trade) is classified as a reconciliation break and escalated per the Reconciliation and Break Management Policy. Position discrepancies below the materiality threshold are investigated and resolved by Tomas within T+1; if unresolved, they are escalated to Devon.
 
+The reconciliation compares **material terms and valuations** (CS 3/2018 §5): both term discrepancies (notional, dates, rates, direction) and valuation discrepancies (mark-to-market differences beyond the agreed tolerance) are in scope.
+
+### 3.3 ODP Portfolio-Reconciliation Conditions — CS 2/2018 §9
+
+**Citation:** FSCA Conduct Standard 2 of 2018 §9(1)–(5); register obligation `ORG-ODP-COND-007`; FSCA Conduct Standard 3 of 2018 §5; register obligation `ORG-CS3-003`.
+
+Once the Bank conducts OTC-derivative business as an authorised OTC Derivative Provider, the following CS 2/2018 §9 conditions apply on top of §§3.1–3.2:
+
+1. **Written agreement before first trade.** The Bank agrees **in writing** with each counterparty and client on the portfolio-reconciliation arrangements (frequency, method, data set, dispute deeming) **before** entering into any OTC derivative contract with that party. The agreement forms part of the onboarding documentation pack under the Counterparty Onboarding Policy (ISDA Schedule or bilateral side letter); onboarding is not complete without it.
+2. **Prescribed minimum frequencies.** The Bank's daily/weekly schedule (§3.1) exceeds the CS 2/2018 §9 prescribed minima, which remain the regulatory floor: counterparties — daily at ≥ 500 outstanding trades, weekly at 51–499, quarterly at 1–50; clients — quarterly at ≥ 101 outstanding trades, annually at 1–100. Any future relaxation of §3.1 may not breach these floors.
+3. **Resolution clocks.** Material-term discrepancies are resolved within **three business days** of identification; valuation discrepancies within **five business days** (mirrored in the §4.2 dispute-resolution timelines).
+4. **Deemed disputes.** A discrepancy not resolved within its clock is **deemed a dispute**: Tomas emits `TradeDisputeOpened` automatically at clock expiry, and §4 applies.
+5. **Written policies and procedures.** This section, with §§3.1–3.2 and `Procedures/by-policy/otc-dispute-resolution.md`, constitutes the written portfolio-reconciliation policies and procedures CS 2/2018 §9 requires.
+
+### 3.4 Portfolio Compression — CS 2/2018 §11
+
+**Citation:** FSCA Conduct Standard 2 of 2018 §11(1)–(3); register obligation `ORG-ODP-COND-009`.
+
+1. **Twice-yearly compression analysis.** Where the Bank has **500 or more** non-centrally-cleared OTC derivative transactions outstanding with other providers, Tomas analyses — at least **twice a year** — the possibility of conducting bilateral or multilateral portfolio compression, and tables the analysis to Devon. Fully offsetting transactions identified by the analysis are terminated.
+2. **Records.** A complete and accurate record of each bilateral offset and each bilateral or multilateral compression exercise is kept as typed events (`TradeCancelled` / compression-batch reference) in the event store, retained per the Records Management Policy.
+3. **FSCA explanation.** Where a compression exercise is assessed as not appropriate (e.g. portfolio heterogeneity, residual-risk distortion, counterparty unwillingness), the analysis records a reasonable and valid explanation, available to the FSCA on request.
+4. **Build-phase posture.** The Bank's OTC portfolio is far below the 500-trade threshold; the analysis obligation is dormant until the threshold is reached, but the monitoring of the trade count against the threshold is live in the position projections from commencement of ODP business.
+
 ---
 
 ## 4. Dispute Definition and Resolution
@@ -182,3 +212,4 @@ This policy generates and consumes the following typed events (Principle 1):
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v1 | 2026-05-22 | Tomas (Operations & payments engineer, engineering) + Kai (Trading systems engineer, engineering) | Initial policy authored. Five operative sections: (1) Overarching — confirmation completeness gate, electronic platform standard, ISDA netting recognition, events-first accounting; (2) Confirmation Timelines — T+1 FX, T+2 IRS/CDS, T+3 complex, exchange-confirmed; (3) Portfolio Reconciliation — daily active, weekly dormant; (4) Dispute Definition and Resolution — three dispute types, resolution timelines, typed events; (5) Long-form Confirmations. |
+| v1.1 | 2026-06-10 | Zara (Chief Compliance Officer, governance) | Obligation-policy coverage gap triage (WS-OBLIGATION-POLICY-MAPPING, brief `brief:zara:triage-close-30-obligation-policy-coverage-gaps-:2026-06-10`). §3.2 extended to state material-terms + valuation scope (CS 3/2018 §5 — closes `ORG-CS3-003`; §4 dispute framework closes `ORG-CS3-004` per CS 3/2018 §6). New §3.3 ODP portfolio-reconciliation conditions (CS 2/2018 §9 — written agreement before first trade, prescribed frequency floors, 3/5-day resolution clocks, deemed disputes — closes `ORG-ODP-COND-007`). New §3.4 portfolio compression (CS 2/2018 §11 — twice-yearly analysis at ≥500 trades, offset termination, records, FSCA explanation — closes `ORG-ODP-COND-009`). Added CS 3/2018 + CS 2/2018 frontmatter citations and `obligations:` frontmatter list so the graph IMPLEMENTED_BY fold derives the edges. |

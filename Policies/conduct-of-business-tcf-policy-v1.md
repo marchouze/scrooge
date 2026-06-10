@@ -12,6 +12,7 @@ citations:
   - "FSCA TCF Framework: Treating Customers Fairly outcomes (2011, updated 2018)"
   - "Conduct Standard for Banks CS1/2020: §3-4 (conduct of business)"
   - "FAIS General Code of Conduct: r.8 (suitability)"
+  - "FSCA Conduct Standard 2 of 2018 (ODP): §5 (appropriateness), §6 (client disclosure), §§13-17 (intermediaries, communications, senior-management approval, confidentiality, waivers)"
 author: Zara (Chief Compliance Officer, governance)
 date: 2026-05-13
 summary: Establishes the bank's conduct of business standards and Treating Customers Fairly framework, covering fair dealing, client suitability, pricing transparency, and conduct governance for an institutional-only client base.
@@ -28,6 +29,14 @@ obligations-closed:
   - ORG-CD-08
 obligations:
   - ORG-CS3-008
+  - ORG-CD-01
+  - ORG-CD-04
+  - ORG-CD-06
+  - ORG-CD-08
+  - ORG-ODP-COND-003
+  - ORG-ODP-COND-004
+  - ORG-ODP-COND-011
+  - ORG-ODP-COND-012
   - ORG-GV-02
 ---
 
@@ -146,6 +155,8 @@ A `AppropriatenessAssessmentCompleted { clientId, productType, outcome: "appropr
 
 **FAIS s16 Know-Your-Client (KYC).** The Bank complies with FAIS s16 KYC requirements. For institutional clients, the KYC scope includes: financial situation (balance sheet capacity, leverage); investment objectives (hedging, asset/liability management, proprietary risk); risk appetite (rate risk tolerance, credit risk limits); product knowledge and experience. KYC is conducted at onboarding and reviewed annually. A `KycRecordUpdated { clientId, date, keyChanges[] }` event marks each KYC refresh cycle.
 
+**ODP appropriateness — FSCA Conduct Standard 2 of 2018 §5.** Once the Bank conducts OTC-derivative business with clients as an authorised OTC Derivative Provider, the appropriateness assessment above is performed before executing any OTC derivative transaction with a client, against the CS 2/2018 §5 information set: the client's financial situation, objectives, and knowledge and experience in OTC derivatives. Two written-notice rules apply in addition to the warning-acknowledgement flow above: (i) if the assessment concludes the product type is **not appropriate** for the client, the Bank notifies the client of that conclusion **in writing** before any transaction; (ii) if the client does **not provide sufficient information** for the assessment, the Bank warns the client **in writing** that appropriateness cannot be determined. Both notices are filed as `AppropriatenessAssessmentCompleted` events with outcome `"inappropriate"` or `"warning"` and the written notice attached as the canonical document. This section, together with the assessment process above, constitutes the written policies and procedures for appropriateness assessment that CS 2/2018 §5(6) requires. Closes `ORG-ODP-COND-003`.
+
 ### 3.4 Pricing Transparency
 
 **Pre-trade price disclosure.** Before executing any OTC transaction, the Bank provides the client with a price indication (bid or offer, or mid plus bid-offer spread) in a form that allows the client to make an informed decision to trade. For voice-executed transactions, the price indication is captured in the call recording (which is a `CallRecordingMade { transactionRef, clientId, date }` event reference). For electronically-executed transactions, the price indication is logged in the electronic trading system.
@@ -201,6 +212,51 @@ The following training is mandatory:
 | New product conduct training | Before first trade in new product | Relevant desk heads | `ConductNpaTrainingCompleted { productType, date }` |
 
 Sade (AgentOps, engineering) administers training records and produces completion MI for Zara's quarterly ExCo report. Incomplete training within 30 days of the due date is a conduct finding; Zara escalates to the relevant desk head and to Helena (Chief Risk Officer) for risk-consequence assessment.
+
+### 3.9 Client Disclosure Standards — FSCA Conduct Standard 2 of 2018 §6
+
+**Citation:** FSCA Conduct Standard 2 of 2018 §6(1)–(4); register obligation `ORG-ODP-COND-004`.
+
+All representations and information provided to clients in connection with OTC derivative transactions or services must be:
+
+1. **Factually correct** — no materially false or misleading content (the §3.5 no-misrepresentation standard applies in full).
+2. **In plain language** — adequate and appropriate for the transaction or service, calibrated to an institutional audience but never relying on sophistication to excuse obscurity.
+3. **Timely** — provided in good time before execution, so the client can make an informed decision; material or significant changes to previously provided information are communicated **without delay**.
+4. **Clear and readable** where written — term sheets, risk disclosures, and confirmations in a clear and readable format.
+5. **In specific monetary terms** — all monetary amounts (fees, margin amounts, settlement amounts, structuring fees) stated as specific amounts, not formulas alone, wherever a specific amount is determinable.
+6. **Accompanied by a general explanation** of the nature, material terms and conditions, restrictions, and risks of each OTC derivative transaction type, sufficient for an informed client decision — delivered via the pre-trade term sheet and risk disclosure pack (§3.4 pre-trade disclosure flow).
+
+The pre-trade disclosure events in §3.4 (`ClientFeeArrangementConfirmed`, price-indication capture) are the canonical records; the disclosure pack for each product type is reviewed in the NPA conduct sign-off (§3.6). Closes `ORG-ODP-COND-004`.
+
+### 3.10 Intermediary Distribution, Communications, Senior-Management Approval, and Waivers — CS 2/2018 §§13–17
+
+**Citation:** FSCA Conduct Standard 2 of 2018 §13(a)–(d) (intermediaries), §14 (advertising and communications), §16 (senior-management approval), §17 (no waiver of rights); register obligation `ORG-ODP-COND-011`.
+
+**No intermediary distribution (current posture).** The Bank does not appoint intermediaries to market or sell OTC derivatives to clients on its behalf. Distribution is direct and institutional-only (§3.1). This posture is a standing condition; any proposal to introduce intermediary distribution is a new-product/new-channel event requiring NPA review (§3.6) and CEO approval.
+
+**Intermediary gate (if ever appointed).** Should the Bank ever appoint an intermediary, all of the following CS 2/2018 §13 conditions are preconditions to the arrangement going live:
+- The intermediary is an FSP licensed under FAIS 37/2002 with the relevant product-category authorisation.
+- The arrangement and any fees payable are disclosed **in writing** to clients.
+- The intermediary performs the §6 disclosure obligations (§3.9) and the §5 appropriateness assessment (§3.3) on the Bank's behalf, under a written agreement that preserves the Bank's responsibility for compliance.
+
+**Fair, clear, not misleading communications.** All statements, advertisements, and communications relating to the Bank's OTC derivative business must be fair, clear, correct, and not misleading or contrary to the public interest (CS 2/2018 §14). Zara reviews any external marketing or advertising material relating to OTC derivative business before publication; in the build phase the Bank publishes none.
+
+**Senior-management approval of conduct policies.** All policies and procedures required by CS 2/2018 — this policy's §§3.3, 3.9–3.11, the Trade Confirmation and Affirmation Policy's portfolio-reconciliation and compression provisions, and the Counterparty Onboarding Policy's categorisation provisions — must be approved in writing by senior management (CS 2/2018 §16). The approval is recorded as a `Decision(approved)` event by the accountable governance seat (Zara for conduct; Devon (Chief Operating Officer, governance) for post-trade operations), with the CEO as escalation authority.
+
+**No waiver of rights.** The Bank does not induce any client or counterparty to waive any right or obligation conferred by CS 2/2018; any such waiver is void (CS 2/2018 §17). Client agreements and ISDA Schedule negotiation positions are reviewed by Imani (Legal-as-code engineer, engineering) against this bar. Closes `ORG-ODP-COND-011`.
+
+### 3.11 Client and Counterparty Information Confidentiality — CS 2/2018 §15
+
+**Citation:** FSCA Conduct Standard 2 of 2018 §15(a)–(d); register obligation `ORG-ODP-COND-012`; POPIA 4/2013 (personal-information overlay — `Policies/popia-privacy-policy-v1.md`).
+
+The Bank does not disclose any information acquired or obtained from a counterparty or client in the course of OTC derivative business, except where:
+
+- (a) the person concerned has **consented** to the disclosure;
+- (b) disclosure is **required or permitted under law** or a court order;
+- (c) disclosure is **necessary to carry out functions or duties under any law** (including trade reporting to a licensed trade repository, regulatory returns, and FIC Act reporting); or
+- (d) disclosure is **required for legal proceedings**.
+
+This confidentiality bar covers all client and counterparty information — trading positions, financial information provided for appropriateness assessments (§3.3), pricing and valuation data — not only personal information (which POPIA additionally governs). Operationally: client data is classified Confidential or Restricted under the Data Management Policy taxonomy; access is least-privilege (Principle 4); any disclosure under exceptions (b)–(d) is recorded as a `ConductEventRecorded { type: "client-information-disclosure" }` event with the legal basis cited. A disclosure outside (a)–(d) is a conduct incident under §4.1 and a potential POPIA breach under the POPIA Privacy Policy breach workflow. Closes `ORG-ODP-COND-012`.
 
 ---
 
@@ -275,6 +331,10 @@ Any deviation from this policy (e.g., executing a transaction without a complete
 | `ORG-CD-04` | Client suitability — FAIS s16 KYC; appropriateness for complex OTC | **DRAFT** (COMMENCEMENT-BIND) — closed | §3.3 (suitability and appropriateness) |
 | `ORG-CD-06` | Pricing transparency — pre-trade price disclosure; no hidden fees | **DRAFT** (COMMENCEMENT-BIND) — closed | §3.4 (pricing transparency) |
 | `ORG-CD-08` | Conduct monitoring and quarterly conduct MI to ExCo | **DRAFT** (COMMENCEMENT-BIND) — closed | §4.1 (trade surveillance), §5 (reporting) |
+| `ORG-ODP-COND-003` | CS 2/2018 §5 — pre-trade appropriateness assessment, written inappropriate/insufficient-information notices, written policies and procedures | **DRAFT** (ODP-commencement-bind) — closed | §3.3 (suitability and appropriateness, incl. CS 2/2018 §5 paragraph) |
+| `ORG-ODP-COND-004` | CS 2/2018 §6 — representations factually correct, plain language, timely, specific monetary terms, general risk explanation | **DRAFT** (ODP-commencement-bind) — closed | §3.9 (client disclosure standards); §3.4 (pricing transparency) |
+| `ORG-ODP-COND-011` | CS 2/2018 §§13–17 — intermediary conditions, fair/clear/not-misleading communications, senior-management written approval, no waiver of rights | **DRAFT** (ODP-commencement-bind) — closed | §3.10 (intermediary distribution, communications, approval, waivers) |
+| `ORG-ODP-COND-012` | CS 2/2018 §15 — non-disclosure of counterparty/client information except consent, law, legal duty, or legal proceedings | **DRAFT** (ODP-commencement-bind) — closed | §3.11 (client and counterparty information confidentiality) |
 
 ---
 
@@ -340,4 +400,5 @@ Per Principle 2, no sub-clause indices are invented. The following are `[citatio
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v1.0 | 2026-05-13 | Zara (Chief Compliance Officer, governance) | Initial policy. Nine sections: Purpose; Principles (six, including no front-running, no misrepresentation, best execution, events-first); (1) Scope — institutional clients only, OTC + JSE; (2) Governance — Conduct Oversight Forum, FSCA liaison, Zara as owner, Sade training records; (3) Standards — client categorisation (professional only), TCF six outcomes mapped to institutional context, suitability/appropriateness (complex OTC appropriateness assessment + FAIS s16 KYC), pricing transparency (pre-trade disclosure, bid-offer spreads, no hidden fees, MtM transparency), fair dealing (no front-running, no misrepresentation, best execution, market abuse), product governance (NPA gate conduct sign-off), conflicts of interest link (COI-POL-01 placeholder), training table; (4) Controls — trade surveillance (weekly review, alert disposition), complaint handling, annual TCF self-assessment, regulatory monitoring; (5) Reporting — six report types with canonical events; (6) Exceptions and escalation; (7) Obligations closure: ORG-CD-01/04/06/08; (8) Substrate and citation gaps. COMMENCEMENT-BIND. |
+| v1.2 | 2026-06-10 | Zara (Chief Compliance Officer, governance) | Obligation-policy coverage gap triage (WS-OBLIGATION-POLICY-MAPPING, brief `brief:zara:triage-close-30-obligation-policy-coverage-gaps-:2026-06-10`). Added §3.3 ODP-appropriateness paragraph (CS 2/2018 §5 written-notice rules — closes `ORG-ODP-COND-003`); new §3.9 client disclosure standards (CS 2/2018 §6 — closes `ORG-ODP-COND-004`); new §3.10 intermediary distribution, communications, senior-management approval, waivers (CS 2/2018 §§13–17 — closes `ORG-ODP-COND-011`); new §3.11 client and counterparty information confidentiality (CS 2/2018 §15 — closes `ORG-ODP-COND-012`). Added CS 2/2018 frontmatter citation; extended `obligations:` frontmatter so the graph IMPLEMENTED_BY fold derives the edges (incl. the four ORG-CD-* ids previously only in the non-harvested `obligations-closed:` key); extended §7 closure table. |
 | v1.1 | 2026-05-21 | Owen (Company Secretary, governance) | Added §8.4 — explicit seven-condition path-to-IN-FORCE promotion gate, with closure signals per condition. Resolved the DRAFT→IN-FORCE decision raised in the 2026-05-21 top-5 policy-gap audit: this policy remains `DRAFT` because it is **COMMENCEMENT-BIND** and the operative referent (clients) does not yet exist; promotion is gated by the commencement of trading, not by drafting completeness. No interim promotion. Renumbered legacy §8.4 (citation gaps) to §8.5. Authority: brief `brief:owen:complete-top-5-policy-gaps-from-2026-05-21-audit:2026-05-21`; CoSec authority per CLAUDE.md decision-authority routing (governance / procedure register). |

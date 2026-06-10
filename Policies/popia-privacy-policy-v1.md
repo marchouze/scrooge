@@ -18,6 +18,23 @@ decision-required: false
 riskTaxonomy: RT-LR.DP
 obligations:
   - ORG-EL-03
+  - ORG-PR(IV)-01
+  - ORG-PR(IV)-02
+  - ORG-PR(IV)-03
+  - ORG-PR(IV)-04
+  - ORG-PR(IV)-05
+  - ORG-PR(IV)-06
+  - ORG-PR(IV)-07
+  - ORG-PR(IV)-08
+  - ORG-PR(IV)-09
+  - ORG-PR(IV)-10
+  - ORG-PR(IV)-11
+  - ORG-PR(IV)-12
+  - ORG-PR(IV)-13
+  - ORG-PR(IV)-14
+  - ORG-PR(IV)-15
+  - ORG-PR(IV)-16
+  - ORG-PR(IV)-17
 ---
 
 # POPIA Privacy Policy v1

@@ -19,6 +19,8 @@ summary: >
   forward-looking overlays, and governance of model approval and provisioning entries.
 decision-required: false
 riskTaxonomy: RT-CR
+obligations:
+  - ORG-AC-02
 ---
 
 # IFRS 9 Expected Credit Loss (ECL) Provisioning Policy v1.0.0
