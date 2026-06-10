@@ -18,6 +18,7 @@
 //
 // Author: Atlas (substrate authority)
 
+import type { ProductScopeForEvent } from "../../event-store/event-types/product";
 import type { Event } from "../../event-store/types";
 import { PRODUCT_DIMENSION_VALUES } from "../../markets/products/semantic";
 import type { ProductFamily, ProductLifecycleStage } from "../../markets/products/types";
@@ -40,6 +41,8 @@ export interface ProductRegisterRow {
   pendingDimensions: string[];
   /** Latest citations from the most-recent lifecycle event for this product. */
   citations: string[];
+  /** Typed product scope, if the proposal/approval carried one (D-FX-OTC-NPA-SCOPE-EXPANSION). */
+  scope?: ProductScopeForEvent;
   /** ISO 8601 as_of of the last event that modified this row. */
   updatedAt: string;
 }
@@ -96,6 +99,9 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
         if (typeof p.family === "string") {
           r.family = p.family as ProductFamily;
         }
+        if (p.scope && typeof p.scope === "object") {
+          r.scope = p.scope as ProductScopeForEvent;
+        }
         r.lifecycleStage = "proposed";
         r.citations = ev.citations;
         r.updatedAt = ev.as_of;
@@ -130,6 +136,9 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
       case "ProductApproved": {
         const r = row();
         if (typeof p.version === "string") r.version = p.version;
+        if (p.scope && typeof p.scope === "object") {
+          r.scope = p.scope as ProductScopeForEvent;
+        }
         r.lifecycleStage = "approved-conditional";
         r.citations = ev.citations;
         r.updatedAt = ev.as_of;
