@@ -41,7 +41,7 @@ import { newEventId } from "../platform/core/types";
 import { makeTradeMatured } from "../platform/event-store/event-types/trade-matured";
 import { EventStore } from "../platform/event-store/store";
 import { makeEquitySettlementInstructed } from "../platform/markets/cdm/equity";
-import { makeFxSettlementInstructed } from "../platform/markets/cdm/fx";
+import { makeFxSettlementInstructed, makeFxTradeExecuted } from "../platform/markets/cdm/fx";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   type AccountLiquidityClassification,
@@ -788,6 +788,91 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
     expect(out.cashFlows.inflows.grossMinor).toBe(50_000);
     expect(out.cashFlows.outflows.grossMinor).toBe(0); // USD not counted
     expect(out.placeholders.some((p) => p.includes("foreign-currency"))).toBe(true);
+  });
+
+  it("FX-enriches a foreign-currency leg into the LCR denominator when a rate exists (D-BA300-LCR-FX-ENRICHMENT)", () => {
+    // Same shape as the prior test, but now an FxTradeExecuted provides the
+    // USD/ZAR rate (18 ZAR per 1 USD) — so the USD outflow leg is converted to
+    // ZAR and COUNTED, not excluded.
+    const store = makeStore();
+    store.append(
+      makeFxTradeExecuted({
+        asOf: "2026-05-09T08:00:00.000Z",
+        entity: ENTITY_BANK,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          tradeId: { scheme: "INTERNAL", value: "RATE-LCR-1" },
+          productTaxonomy: "FX-spot",
+          currencyPair: { base: "USD", quote: "ZAR" },
+          side: "buy",
+          legs: [
+            {
+              legKind: "near",
+              payCurrency: "ZAR",
+              receiveCurrency: "USD",
+              notional: { currency: "ZAR", amountMinor: 18_000_000 },
+              counterNotional: { currency: "USD", amountMinor: 1_000_000 },
+              rate: { currency: "ZAR", amount: 18 },
+              settlementDate: { iso: "2026-05-11", calendar: "JIHCAL" },
+            },
+          ],
+          tradeDate: { iso: "2026-05-09", calendar: "JIHCAL" },
+          counterparty: {
+            partyId: "CP-LCR",
+            name: "CP-LCR",
+            role: "counterparty",
+            jurisdiction: "ZA",
+          },
+          venue: "OTC",
+          trader: "trader:test",
+          bookId: "FX-BOOK",
+          bookType: "trading",
+          settlementForm: "physical",
+          settlementPath: "correspondent",
+          clientFlowRef: "cf:RATE-LCR-1",
+        },
+      }),
+    );
+    store.append(
+      makeTradeMatured({
+        asOf: "2026-05-10T12:00:00.000Z",
+        entity: ENTITY_BANK,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          productKind: "fx-spot",
+          tradeId: "TRADE-CONF-002",
+          currencyPair: "ZAR/USD",
+          legKind: "near",
+          settledBaseCurrencyMinor: 50_000, // ZAR inflow
+          settledQuoteCurrencyMinor: -2_778, // USD outflow → 2,778 × 18 = 50,004 ZAR
+          settledAt: "2026-05-10T12:00:00.000Z",
+          nostroAccountBase: "ACC-1100-001",
+          nostroAccountQuote: "ACC-1200-001",
+          realisedPnlZarMinor: 0,
+        },
+      }),
+    );
+
+    const out = generateBa300Lcr({
+      entity: ENTITY_BANK,
+      asOf: "2026-05-31T23:59:59.999Z",
+      periodId: "x",
+      functionalCurrency: "ZAR",
+      eventStore: store,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      trialBalance: [{ leafAccountId: "ACC-1100-001", currency: "ZAR", amountMinor: 100_000 }],
+      classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
+    });
+
+    // USD outflow now FX-converted (2,778 × 18 = 50,004 ZAR) and counted.
+    expect(out.cashFlows.inflows.grossMinor).toBe(50_000);
+    expect(out.cashFlows.outflows.grossMinor).toBe(50_004);
+    // No unconvertible-currency placeholder — USD had a rate path.
+    expect(out.placeholders.some((p) => p.includes("foreign-currency"))).toBe(false);
+    expect(out.meta.formVersion).toBe("v0.2-fx-enriched");
   });
 });
 

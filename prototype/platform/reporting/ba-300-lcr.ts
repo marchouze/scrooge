@@ -114,6 +114,7 @@
 //   semantic-layer integration)
 //   + Atlas (Core banking platform architect, engineering — P1 fix).
 
+import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { newEventId } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import type {} from "../event-store/event-types/fx-accounting";
@@ -482,7 +483,7 @@ export interface Ba300LcrInputCompleteness {
 export interface Ba300LcrOutput {
   readonly meta: {
     readonly form: "BA 300";
-    readonly formVersion: "v0.1-rehearsal";
+    readonly formVersion: "v0.2-fx-enriched";
     readonly entity: string;
     readonly asOf: string;
     readonly periodId: string;
@@ -1365,50 +1366,51 @@ export function generateBa300Lcr(
   const inflowLines: Ba300LcrLineItem[] = [];
   let grossOutflows = 0;
   let grossInflows = 0;
-  let hasForeignCurrencyFlow = false;
 
-  // Track per-event leg currency presence to detect "all legs foreign"
-  // events (G-3 foreign-currency-leg exclusion). Events with at least one
-  // functional-currency leg are NOT excluded; their foreign legs are
-  // silently dropped here and surfaced via the existing placeholder. Events
-  // whose every leg is foreign are tallied as `foreign-currency-leg`.
-  const eventLegCurrencyPresence = new Map<
-    string,
-    { hasFunctional: boolean; hasForeign: boolean }
-  >();
-  for (const flow of rawFlows) {
-    const e = eventLegCurrencyPresence.get(flow.eventId) ?? {
-      hasFunctional: false,
-      hasForeign: false,
-    };
-    if (flow.currency === ccy) e.hasFunctional = true;
-    else e.hasForeign = true;
-    eventLegCurrencyPresence.set(flow.eventId, e);
-  }
+  // FX-rate enrichment (WS-RETURNS-SUBMISSION-WIRING / D-BA300-LCR-FX-ENRICHMENT).
+  // Foreign-currency settlement legs are converted into the functional currency
+  // (ZAR) via the canonical event-sourced rate map (buildRateMap/convertMinor,
+  // P1 — rates from FxTradeExecuted) and counted in the consolidated LCR
+  // denominator. Previously every non-ZAR leg was dropped, understating the
+  // denominator. A leg whose currency has NO rate path to ZAR remains excluded
+  // and is flagged (observable, not silent). Per-currency LCR (Reg 26(13)) is a
+  // separate schedule and stays a licence-day item — build-phase scope is the
+  // consolidated functional-currency LCR.
+  const fxRates = buildRateMap([...input.eventStore.replay({ type: "FxTradeExecuted" })]);
+  const unconvertibleCurrencies = new Set<string>();
 
-  // Group flows by (tradeId, eventType) for cleaner line items.
+  // Group flows by (eventType, tradeId, source-currency) for cleaner line items;
+  // amounts are accumulated in functional currency (foreign legs converted).
   const flowByKey = new Map<string, { flows: SettlementCashFlow[]; totalMinor: number }>();
+  const allEventIds = new Set<string>();
+  const countedEventIds = new Set<string>();
   for (const flow of rawFlows) {
-    // Only count functional-currency legs in the numerics; others flagged.
+    allEventIds.add(flow.eventId);
+    let amountMinor = flow.amountMinor;
     if (flow.currency !== ccy) {
-      hasForeignCurrencyFlow = true;
-      continue;
+      const converted = convertMinor(flow.amountMinor, flow.currency, ccy, fxRates);
+      if (converted === null) {
+        // No rate path source→ZAR — leg excluded, currency flagged.
+        unconvertibleCurrencies.add(flow.currency);
+        continue;
+      }
+      amountMinor = converted;
     }
     const key = `${flow.eventType}:${flow.tradeId}:${flow.currency}`;
     const entry = flowByKey.get(key) ?? { flows: [], totalMinor: 0 };
     entry.flows.push(flow);
-    entry.totalMinor += flow.amountMinor;
+    entry.totalMinor += amountMinor;
     flowByKey.set(key, entry);
+    countedEventIds.add(flow.eventId);
   }
 
-  // Tally events whose every leg is foreign-currency as a fold-time
-  // exclusion reason. These events passed the provenance + window gates
-  // but their legs all dropped at the currency filter, so they made no
-  // contribution to outflows or inflows — semantically equivalent to a
-  // filtered-out event for the G-3 completeness block.
+  // An event is a `foreign-currency-leg` fold-time exclusion only when it
+  // contributed NO counted leg at all — i.e. every leg was foreign AND
+  // unconvertible. Events with a functional leg (or a converted foreign leg)
+  // are not excluded.
   const excludedReasons: Record<string, number> = { ...foldExcludedReasons };
-  for (const presence of eventLegCurrencyPresence.values()) {
-    if (presence.hasForeign && !presence.hasFunctional) {
+  for (const id of allEventIds) {
+    if (!countedEventIds.has(id)) {
       excludedReasons["foreign-currency-leg"] = (excludedReasons["foreign-currency-leg"] ?? 0) + 1;
     }
   }
@@ -1452,11 +1454,12 @@ export function generateBa300Lcr(
     }
   }
 
-  if (hasForeignCurrencyFlow) {
+  if (unconvertibleCurrencies.size > 0) {
+    // Residual: legs in a currency with no event-sourced rate path to ZAR
+    // remain excluded. Flagged (observable), not silently dropped.
+    const unconvertibleList = [...unconvertibleCurrencies].sort().join(", ");
     placeholders.push(
-      "[citation: TBC — foreign-currency settlement legs excluded from LCR denominator pending " +
-        "rate-enrichment step (Slice-6+); only ZAR-denominated legs counted. " +
-        "Per Reg 26(13) per-currency LCR; build-phase scope is consolidated functional-currency LCR.]",
+      `[citation: TBC — foreign-currency settlement legs in ${unconvertibleList} excluded from the LCR denominator: no event-sourced FX rate path to ${ccy}. All other foreign legs are FX-enriched into the consolidated denominator. Per-currency LCR (Reg 26(13)) is a separate schedule (licence-day).]`,
     );
   }
 
@@ -1574,7 +1577,11 @@ export function generateBa300Lcr(
   return {
     meta: {
       form: "BA 300",
-      formVersion: "v0.1-rehearsal",
+      // v0.2-fx-enriched: foreign-currency settlement legs are now FX-converted
+      // into the consolidated functional-currency LCR denominator (was v0.1-
+      // rehearsal, which excluded them). Per-currency LCR (Reg 26(13)) remains a
+      // licence-day schedule. Authority: D-BA300-LCR-FX-ENRICHMENT.
+      formVersion: "v0.2-fx-enriched",
       entity: input.entity,
       asOf: input.asOf,
       periodId: input.periodId,
