@@ -45,6 +45,10 @@ import { eventStore } from "../platform/composition";
 import { makeObligationAdopted } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { ObligationAdoptedPayload } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { Actor } from "../platform/event-store/types";
+import {
+  baselFamilyOf,
+  seatForBcbsObligationId,
+} from "../platform/regulatory/basel-family-seat";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR: Actor = { type: "service", id: "agent:mira:bcbs-obligation-owners" };
@@ -55,38 +59,12 @@ const CITATIONS = [
   "P2-SINGLE-GRAPH-DISCIPLINE",
 ];
 
-/**
- * Basel family → accountable seat. Seats use the SAME vocabulary PR #1139
- * applied to the SA rows (the ObligationReviewCompleted.reviewerSeat tokens). A
- * family not present here is left unowned and reported — no seat is invented.
- *
- *   RBC / CAP / CRE / LEV / LEX → cro   (capital / credit / leverage / large-exp)
- *   MAR                          → cro   (market risk)
- *   LCR / NSF                    → cfo   (liquidity ratios)
- *   DIS  (Pillar 3 disclosure)   → cfo
- *   OPE  (operational risk)      → operational
- *   BCP / SCO (governance / core principles) → company-secretary
- */
-const FAMILY_TO_SEAT: Record<string, string> = {
-  RBC: "cro",
-  CAP: "cro",
-  CRE: "cro",
-  LEV: "cro",
-  LEX: "cro",
-  MAR: "cro",
-  LCR: "cfo",
-  NSF: "cfo",
-  DIS: "cfo",
-  OPE: "operational",
-  BCP: "company-secretary",
-  SCO: "company-secretary",
-};
-
-/** Extract the Basel family token from a BCBS obligation id, e.g. BCBS-CRE20 → CRE. */
-function familyOf(obligationId: string): string {
-  const m = obligationId.match(/^BCBS-([A-Za-z]+)/);
-  return m?.[1]?.toUpperCase() ?? "";
-}
+// The Basel family → accountable-seat map and the id→family extractor now live
+// in the shared single-source-of-truth module
+// `platform/regulatory/basel-family-seat.ts`, consumed BOTH here and by the live
+// emit path (dashboard /api/obligations/adopt). Keeping them in one place is the
+// root-cause fix: the emit path stamps owner from this same map, so this script
+// is now a permanent no-op rather than a recurring backfill of empty-owner rows.
 
 /** Is this a graph-imported BCBS obligation (id `^BCBS-` or urn containing bcbs)? */
 function isBcbsImport(p: ObligationAdoptedPayload): boolean {
@@ -137,8 +115,8 @@ function main(): void {
   const assigned: Array<{ id: string; family: string; seat: string }> = [];
 
   for (const { payload: current, maxAsOf } of emptyOwner) {
-    const family = familyOf(current.obligationId);
-    const seat = FAMILY_TO_SEAT[family];
+    const family = baselFamilyOf(current.obligationId);
+    const seat = seatForBcbsObligationId(current.obligationId);
     if (!seat) {
       unfit.push({ id: current.obligationId, family: family || "(none)" });
       continue;

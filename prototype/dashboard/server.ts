@@ -117,6 +117,7 @@ import {
 import { buildCalcModelsView } from "../platform/model-registry/models-view";
 import { findKnowledgeBaseObligation } from "../platform/obligations/knowledge-base";
 import { buildCrossAssetBreakdown } from "../platform/product-control/cross-asset-positions";
+import { seatForBcbsObligationId } from "../platform/regulatory/basel-family-seat";
 import {
   classifyUnmarkable,
   computeDailyPnL,
@@ -1858,7 +1859,12 @@ async function handleObligationAdopt(req: Request): Promise<Response> {
       citation: kb.citation,
       requirement: kb.requirement,
       fulfilmentPolicy: "",
-      owner: "",
+      // Populate owner AT EMIT TIME from the shared Basel-family → seat map so
+      // adopting a graph-imported BCBS obligation never re-introduces an
+      // empty-owner row that silently reverts the #1143 backfill. A family with
+      // no mapping (or a non-BCBS knowledge-base id) yields "" — left empty, not
+      // guessed. D-OBLIGATIONS-REGISTER-CLEANUP · WS-OBLIGATIONS-CLEANUP.
+      owner: seatForBcbsObligationId(kb.key),
       status: "adopted",
       derivesFrom: kb.sourceProvision ? [kb.sourceProvision] : [],
       adoptedAt: now,
