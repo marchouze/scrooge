@@ -1,0 +1,68 @@
+{
+  "instrumentId": "ZA-INFOREG-INSTRUMENTS",
+  "standardName": "Information Regulator instrument stack (POPIA 4 of 2013; PAIA 2 of 2000)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:inforeg-instruments-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "Information Regulator instrument stack for the bank — Protection of Personal Information Act 4 of 2013 (POPIA) and the Promotion of Access to Information Act 2 of 2000 (PAIA). Authority: D-INFOREG-REGULATORY-INTELLIGENCE-INGESTION. Models REG-INFO-REG <- ISSUED_BY <- Document -> CONTAINS -> Provision -> EXPRESSES -> Obligation, attaching the two source-of-law Documents to their regulator and bridging the bank's adopted POPIA/PAIA obligations to their source provisions.",
+  "comment": "POPIA/PAIA are already largely modelled (DOC-POPIA + 41 PROV-POPIA-s* from popia-structured.json Step 5b; DOC-PAIA-ACT-2-2000 event-sourced Step 4; 16 OBL-ORG-PR(IV)-01..15 already EXPRESSES-bridged). This artefact is WIRING-ONLY, not from-scratch ingestion: (1) it re-declares DOC-POPIA and DOC-PAIA-ACT-2-2000 by their EXACT existing ids/nodeType/label (idempotent INSERT OR REPLACE — DOC-POPIA's metadata is re-supplied verbatim from the Step-5b projection so the upsert does not clobber slug/regulator/year/applicabilityStatus) solely to attach the missing ISSUED_BY edges to REG-INFO-REG; (2) it fills the four unbridged obligations (OBL-ORG-PR(IV)-16 → PAIA s.51 manual; OBL-ORG-PR(IV)-17 → PAIA s.25 decision-on-request; OBL-ORG-EL-03 → POPIA s.17 documentation; OBL-ORG-RM-04 → POPIA s.14 retention). PR(IV)-16/17 cite PAIA sections that have no Provision node yet (DOC-PAIA-ACT-2-2000 carried no CONTAINS provisions), so two new Provision nodes are minted under it — urn:reg:za:paia-2-2000:s51 and :s25 — and CONTAINS-linked to the PAIA Document; EL-03 and RM-04 reuse the existing PROV-POPIA-s17 / PROV-POPIA-s14 nodes. The already-bridged PR(IV)-01..15 obligations are NOT re-bridged (the from/to/type upsert dedups, but the absence keeps the artefact minimal). Plane-A reference data (D-REGULATORY-ARCHITECTURE-TWO-PLANE). DOC-POPIA applicabilityStatus stays 'reference' (the binding instrument that makes REG-INFO-REG in-scope for recon:regulator-mandate-coverage is the existing FW-POPIA Framework, applicabilityStatus 'direct'); both POPIA Document and FW-POPIA Framework now ISSUED_BY REG-INFO-REG.",
+  "nodes": [
+    {
+      "id": "DOC-POPIA",
+      "nodeType": "Document",
+      "label": "Protection of Personal Information Act 4 of 2013",
+      "metadata": {
+        "slug": "popia",
+        "regulator": "Information Regulator",
+        "year": 2013,
+        "applicabilityStatus": "reference"
+      }
+    },
+    {
+      "id": "DOC-PAIA-ACT-2-2000",
+      "nodeType": "Document",
+      "label": "PAIA Act 2 of 2000",
+      "metadata": {
+        "instrumentId": "PAIA-ACT-2-2000",
+        "jurisdiction": "ZA",
+        "issuingBody": "Information Regulator",
+        "applicabilityStatus": "reference"
+      }
+    },
+    {
+      "id": "urn:reg:za:paia-2-2000:s51",
+      "nodeType": "Provision",
+      "label": "PAIA s.51 — Manual of a private body",
+      "level": "section",
+      "text": "Section 51 of the Promotion of Access to Information Act 2 of 2000 requires the head of a private body to compile, and make available, a manual that describes the records held by the body, the categories of records available without a formal request, the procedure to request access, and the contact details of the information officer — and to keep the manual current. The PAIA Manual is the public-facing index of the body's record-holdings and the access-request route.",
+      "metadata": { "instrumentId": "PAIA-ACT-2-2000", "section": "51" }
+    },
+    {
+      "id": "urn:reg:za:paia-2-2000:s25",
+      "nodeType": "Provision",
+      "label": "PAIA s.25 — Decision on request and notice thereof",
+      "level": "section",
+      "text": "Section 25 of the Promotion of Access to Information Act 2 of 2000 requires the information officer of a private body, as soon as reasonably possible but in any event within 30 days after a request for access is received, to decide whether to grant or refuse the request and to notify the requester of the decision, the form of access, fees payable, and the requester's rights to lodge an internal appeal or apply to court. It is the operative request-response, decision and notification obligation that the body's PAIA request-handling workflow must satisfy.",
+      "metadata": { "instrumentId": "PAIA-ACT-2-2000", "section": "25" }
+    }
+  ],
+  "edges": [
+    { "id": "INFOREG-ISSUED_BY-POPIA", "fromId": "DOC-POPIA", "toId": "REG-INFO-REG", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "INFOREG-ISSUED_BY-PAIA", "fromId": "DOC-PAIA-ACT-2-2000", "toId": "REG-INFO-REG", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "INFOREG-CONTAINS-PAIA-s51", "fromId": "DOC-PAIA-ACT-2-2000", "toId": "urn:reg:za:paia-2-2000:s51", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "INFOREG-CONTAINS-PAIA-s25", "fromId": "DOC-PAIA-ACT-2-2000", "toId": "urn:reg:za:paia-2-2000:s25", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "INFOREG-EXPRESSES-PAIA-s51-PRIV16", "fromId": "urn:reg:za:paia-2-2000:s51", "toId": "OBL-ORG-PR(IV)-16", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:paia-2-2000:s51" },
+    { "id": "INFOREG-EXPRESSES-PAIA-s25-PRIV17", "fromId": "urn:reg:za:paia-2-2000:s25", "toId": "OBL-ORG-PR(IV)-17", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:paia-2-2000:s25" },
+
+    { "id": "INFOREG-EXPRESSES-POPIA-s17-EL03", "fromId": "PROV-POPIA-s17", "toId": "OBL-ORG-EL-03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s17" },
+    { "id": "INFOREG-EXPRESSES-POPIA-s14-RM04", "fromId": "PROV-POPIA-s14", "toId": "OBL-ORG-RM-04", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:popia:s14" }
+  ]
+}
