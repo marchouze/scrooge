@@ -1,0 +1,610 @@
+{
+  "instrumentId": "ZA-FSCA-INSTRUMENTS",
+  "standardName": "FSCA conduct instrument stack (FAIS Act, General Code, Conduct Standards 1/2/3-2018, Financial Markets Act, Joint Standards, COFI Bill)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:fsca-instruments-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "FSCA / conduct instrument stack for the bank. Authority: D-FSCA-REGULATORY-INTELLIGENCE-INGESTION. Models REG-FSCA -> ISSUED_BY <- Document -> CONTAINS -> Provision -> EXPRESSES -> Obligation, bridging the bank's adopted OBL-ORG-* conduct/markets obligations to their source provisions. Joint Standards are co-issued by the Prudential Authority and the FSCA, so their Document nodes carry ISSUED_BY edges to BOTH REG-FSCA and REG-SARB-PA.",
+  "comment": "FSCA instrument stack as Plane-A reference data (D-REGULATORY-ARCHITECTURE-TWO-PLANE). Provision nodes carry the source provision text/heading at the granularity the bank's adopted obligations cite; the EXPRESSES edges bridge each Provision to the already-seeded OBL-ORG-* obligation node (Step 6) — the same explicit Provision->Obligation EXPRESSES convention the BCBS obligation graphs use, chosen because the free-text conduct citations do not parse through extractSectionIdsFromCitation. Document/Provision ids are URN-shaped (urn:reg:za:<instrument-slug>[:<provision-slug>]) so they are stable, citable, and never collide with the event-sourced DOC-<INSTRUMENT-ID> nodes (Step 4) or the PROV-<SLUG>-s<n> stubs the citation parser would otherwise mint. applicabilityStatus: FAIS Act / General Code / Conduct Standards / Financial Markets Act / Joint Standards = direct; COFI Bill = monitored (still in Parliament). Out of scope per the dispatch brief: JSE/ISDA/GMRA/STT/Excon-cited markets obligations (ORG-MK-06..16 except the FMA/FSCA-CS dimensions) stay as-is.",
+  "nodes": [
+    {
+      "id": "urn:reg:za:fais-act-37-2002",
+      "nodeType": "Document",
+      "label": "Financial Advisory and Intermediary Services Act 37 of 2002 (FAIS Act)",
+      "metadata": {
+        "instrumentId": "FAIS-ACT-37-2002",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:za:fais-act-37-2002:s.8",
+      "nodeType": "Provision",
+      "label": "FAIS Act s.8 — Fit and proper requirements; licensing; record-keeping standard",
+      "level": "section",
+      "text": "Section 8 of the FAIS Act governs the authorisation (licensing) of financial services providers and the fit-and-proper requirements applicable to FSPs, their key individuals and representatives, together with the operational record-keeping standard an authorised FSP must maintain. An FSP must hold a licence and operate within the product categories the licence authorises; key individuals responsible for managing or overseeing the financial-services activities must meet the fit-and-proper requirements.",
+      "metadata": { "instrumentId": "FAIS-ACT-37-2002", "section": "8" }
+    },
+    {
+      "id": "urn:reg:za:fais-act-37-2002:s.13",
+      "nodeType": "Provision",
+      "label": "FAIS Act s.13 — Representatives; supervision; representative register",
+      "level": "section",
+      "text": "Section 13 of the FAIS Act governs the appointment and supervision of representatives rendering financial services on behalf of an authorised FSP, and the maintenance of the register of representatives and the supervision arrangements the Act requires.",
+      "metadata": { "instrumentId": "FAIS-ACT-37-2002", "section": "13" }
+    },
+    {
+      "id": "urn:reg:za:fais-act-37-2002:s.15",
+      "nodeType": "Provision",
+      "label": "FAIS Act s.15 — Codes of conduct (enabling provision for the General Code)",
+      "level": "section",
+      "text": "Section 15 of the FAIS Act empowers the Authority to publish codes of conduct for authorised FSPs and their representatives. The General Code of Conduct (Board Notice 80 of 2003) is made under this enabling provision.",
+      "metadata": { "instrumentId": "FAIS-ACT-37-2002", "section": "15" }
+    },
+    {
+      "id": "urn:reg:za:fais-act-37-2002:s.18",
+      "nodeType": "Provision",
+      "label": "FAIS Act s.18 — Maintenance of records (incl. complaints records)",
+      "level": "section",
+      "text": "Section 18 of the FAIS Act requires an authorised FSP to maintain records, including records of complaints, for the prescribed retention period (five years), and to make them available for inspection by the registrar.",
+      "metadata": { "instrumentId": "FAIS-ACT-37-2002", "section": "18" }
+    },
+
+    {
+      "id": "urn:reg:za:fais-gcc",
+      "nodeType": "Document",
+      "label": "FAIS General Code of Conduct for Authorised FSPs and Representatives (BN 80/2003, as amended BN 43/2008)",
+      "metadata": {
+        "instrumentId": "FAIS-GCC",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:fais-act-37-2002:s.15"
+      }
+    },
+    {
+      "id": "urn:reg:za:fais-gcc:s.3",
+      "nodeType": "Provision",
+      "label": "General Code s.3 — Specific duties; five-year record-keeping; client confidentiality",
+      "level": "section",
+      "text": "Section 3 of the General Code sets out specific duties of an FSP, including factual accuracy, conflict disclosure, no front-running, the obligation to reflect all amounts/fees/remuneration in specific monetary terms (s.3(1)(a)(vii)), the five-year record-keeping standard (s.3(2)) and client confidentiality (s.3(3)).",
+      "metadata": { "instrumentId": "FAIS-GCC", "section": "3" }
+    },
+    {
+      "id": "urn:reg:za:fais-gcc:s.7",
+      "nodeType": "Provision",
+      "label": "General Code s.7 — Information about financial service: full and frank disclosure",
+      "level": "section",
+      "text": "Section 7 of the General Code requires full and frank disclosure of material contractual information, including (s.7(1)(c)(vi)) the nature, extent and frequency of any incentive, remuneration, commission, fee or other valuable consideration payable to the provider, and the identity of the product supplier or other person providing it.",
+      "metadata": { "instrumentId": "FAIS-GCC", "section": "7" }
+    },
+    {
+      "id": "urn:reg:za:fais-gcc:s.8",
+      "nodeType": "Provision",
+      "label": "General Code s.8 — Suitability of advice",
+      "level": "section",
+      "text": "Section 8 of the General Code sets the suitability process: take reasonable steps to obtain client information (financial situation, product experience, objectives); conduct analysis based on that information; identify a product appropriate to the client's risk profile and financial needs (s.8(1)(a)-(c)); and take reasonable steps to ensure the client understands the advice (s.8(2)).",
+      "metadata": { "instrumentId": "FAIS-GCC", "section": "8" }
+    },
+    {
+      "id": "urn:reg:za:fais-gcc:s.9",
+      "nodeType": "Provision",
+      "label": "General Code s.9 — Record of advice",
+      "level": "section",
+      "text": "Section 9 of the General Code requires a record of advice capturing: the information/material on which the advice was based; the products considered; the recommended product(s) and rationale; and a replacement-product comparison where applicable (s.9(1)(a)-(d)).",
+      "metadata": { "instrumentId": "FAIS-GCC", "section": "9" }
+    },
+    {
+      "id": "urn:reg:za:fais-gcc:s.16",
+      "nodeType": "Provision",
+      "label": "General Code ss.16-19 — Complaints management system",
+      "level": "section",
+      "text": "Sections 16 to 19 of the General Code require a written complaints-management policy and an internal complaint-resolution system: receive complaints in writing; retain complaint records at least five years; handle complaints timeously and fairly; inform clients of the FAIS Ombud referral path and the six-month window if a complaint is unresolved or resolved unfavourably.",
+      "metadata": { "instrumentId": "FAIS-GCC", "section": "16" }
+    },
+
+    {
+      "id": "urn:reg:za:fais-fit-and-proper-determination-2017",
+      "nodeType": "Document",
+      "label": "Determination of Fit and Proper Requirements for FSPs, 2017 (BN 194/2017)",
+      "metadata": {
+        "instrumentId": "FAIS-FIT-AND-PROPER-2017",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:fais-act-37-2002:s.8"
+      }
+    },
+    {
+      "id": "urn:reg:za:fais-fit-and-proper-determination-2017:p.ki",
+      "nodeType": "Provision",
+      "label": "Fit & Proper Determination — Key-individual competency and integrity requirements",
+      "level": "section",
+      "text": "The Determination of Fit and Proper Requirements (2017) prescribes the honesty-and-integrity, competence (qualifications, experience, regulatory examinations), operational ability and financial-soundness requirements that key individuals and representatives of an authorised FSP must meet and maintain.",
+      "metadata": { "instrumentId": "FAIS-FIT-AND-PROPER-2017", "section": "fit-and-proper-ki" }
+    },
+
+    {
+      "id": "urn:reg:za:fais-coi-code",
+      "nodeType": "Document",
+      "label": "FAIS Conflict of Interest Management requirements (General Code Part on Conflict of Interest, BN 58/2010 amendment)",
+      "metadata": {
+        "instrumentId": "FAIS-COI-CODE",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:fais-act-37-2002:s.15"
+      }
+    },
+    {
+      "id": "urn:reg:za:fais-coi-code:p.coi",
+      "nodeType": "Provision",
+      "label": "Conflict of Interest Management — adopt and maintain a conflict-of-interest management policy",
+      "level": "section",
+      "text": "The conflict-of-interest management requirements under the FAIS General Code require an authorised FSP to adopt, maintain and publish a conflict-of-interest management policy that identifies conflicts, sets measures to avoid or mitigate them, discloses any unavoidable conflict to the client, and governs financial-interest and third-party-relationship arrangements.",
+      "metadata": { "instrumentId": "FAIS-COI-CODE", "section": "conflict-of-interest" }
+    },
+
+    {
+      "id": "urn:reg:za:fsca-cs-1-2018",
+      "nodeType": "Document",
+      "label": "FSCA Conduct Standard 1 of 2018 — Authorisation of OTC Derivative Providers (issued under the FMA)",
+      "metadata": {
+        "instrumentId": "CS-1-2018",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:financial-markets-act-19-2012"
+      }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-1-2018:s.3",
+      "nodeType": "Provision",
+      "label": "CS 1/2018 s.3 — Application and interpretation",
+      "level": "section",
+      "text": "Section 3 of Conduct Standard 1 of 2018 sets the application of the standard to persons providing OTC derivative transactions and the interpretation of defined terms for the authorisation regime.",
+      "metadata": { "instrumentId": "CS-1-2018", "section": "3" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-1-2018:s.4",
+      "nodeType": "Provision",
+      "label": "CS 1/2018 s.4 — ODP authorisation: application, criteria and conditions",
+      "level": "section",
+      "text": "Section 4 of Conduct Standard 1 of 2018 sets out the OTC-derivative-provider authorisation requirements: the application requirements (s.4.1), the authorisation criteria (governance, fitness and propriety, financial resources, operational capability — s.4.2.1-4.2.5), and the conditions, variation and reporting obligations attaching to an ODP authorisation (s.4.3-4.6).",
+      "metadata": { "instrumentId": "CS-1-2018", "section": "4" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-1-2018:s.5",
+      "nodeType": "Provision",
+      "label": "CS 1/2018 s.5 — Ongoing authorisation obligations",
+      "level": "section",
+      "text": "Section 5 of Conduct Standard 1 of 2018 sets the ongoing obligations of an authorised ODP, including continued compliance with the authorisation criteria and notification of material changes.",
+      "metadata": { "instrumentId": "CS-1-2018", "section": "5" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-1-2018:s.6",
+      "nodeType": "Provision",
+      "label": "CS 1/2018 s.6 — Withdrawal and lapsing of authorisation",
+      "level": "section",
+      "text": "Section 6 of Conduct Standard 1 of 2018 governs the withdrawal, suspension and lapsing of an ODP authorisation and the consequences for outstanding transactions.",
+      "metadata": { "instrumentId": "CS-1-2018", "section": "6" }
+    },
+
+    {
+      "id": "urn:reg:za:fsca-cs-2-2018",
+      "nodeType": "Document",
+      "label": "FSCA Conduct Standard 2 of 2018 — Conduct requirements for OTC Derivative Providers (issued under the FMA)",
+      "metadata": {
+        "instrumentId": "CS-2-2018",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:financial-markets-act-19-2012"
+      }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-2-2018:s.3",
+      "nodeType": "Provision",
+      "label": "CS 2/2018 s.3 — General conduct duties of an ODP",
+      "level": "section",
+      "text": "Section 3 of Conduct Standard 2 of 2018 sets the general conduct duties of an OTC derivative provider toward its counterparties (s.3(a)-(g)), including acting honestly, fairly and with due skill, care and diligence in the interests of counterparties and the integrity of the market.",
+      "metadata": { "instrumentId": "CS-2-2018", "section": "3" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-2-2018:s.4",
+      "nodeType": "Provision",
+      "label": "CS 2/2018 ss.4-17 — Operational conduct requirements (trading relationship, confirmation, reconciliation, valuation, dispute resolution, conflicts)",
+      "level": "section",
+      "text": "Sections 4 to 17 of Conduct Standard 2 of 2018 prescribe the operational conduct requirements for an ODP: written trading-relationship documentation, timely confirmation of material terms, portfolio reconciliation and compression, daily valuation methodology, dispute-resolution procedures, counterparty categorisation and due diligence, record-keeping, and conflicts-of-interest management across the OTC-derivative lifecycle.",
+      "metadata": { "instrumentId": "CS-2-2018", "section": "4" }
+    },
+
+    {
+      "id": "urn:reg:za:fsca-cs-3-2018",
+      "nodeType": "Document",
+      "label": "FSCA Conduct Standard 3 of 2018 — Reporting obligations for OTC Derivative Providers (trade reporting; issued under the FMA)",
+      "metadata": {
+        "instrumentId": "CS-3-2018",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:financial-markets-act-19-2012"
+      }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-3-2018:s.3",
+      "nodeType": "Provision",
+      "label": "CS 3/2018 s.3 — Reporting obligation and scope",
+      "level": "section",
+      "text": "Section 3 of Conduct Standard 3 of 2018 establishes the trade-reporting obligation for an ODP: report the prescribed OTC-derivative transaction data to a licensed trade repository (or the FSCA) and the scope of reportable transactions.",
+      "metadata": { "instrumentId": "CS-3-2018", "section": "3" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-3-2018:s.4",
+      "nodeType": "Provision",
+      "label": "CS 3/2018 ss.4-5 — Timing and manner of reporting",
+      "level": "section",
+      "text": "Sections 4 and 5 of Conduct Standard 3 of 2018 set the timing (reporting deadlines, lifecycle-event updates) and the manner of submitting OTC-derivative transaction reports.",
+      "metadata": { "instrumentId": "CS-3-2018", "section": "4" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-3-2018:s.6",
+      "nodeType": "Provision",
+      "label": "CS 3/2018 ss.6-8 — Reconciliation, record-keeping and data quality of reports",
+      "level": "section",
+      "text": "Sections 6 to 8 of Conduct Standard 3 of 2018 require reconciliation of reported data, retention of reporting records, and controls over the completeness and accuracy of the reported OTC-derivative data.",
+      "metadata": { "instrumentId": "CS-3-2018", "section": "6" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-3-2018:s.9",
+      "nodeType": "Provision",
+      "label": "CS 3/2018 s.9 — Conflicts management and conduct dimensions of reporting",
+      "level": "section",
+      "text": "Section 9 of Conduct Standard 3 of 2018 addresses conflicts management and the conduct dimensions of the reporting obligation (the §§3-9 dimensional reading also encoded in Domain M ORG-CS3-001..009).",
+      "metadata": { "instrumentId": "CS-3-2018", "section": "9" }
+    },
+    {
+      "id": "urn:reg:za:fsca-cs-3-2018:annexure-a",
+      "nodeType": "Provision",
+      "label": "CS 3/2018 Annexure A — Reportable data fields (counterparty, product, transaction, valuation)",
+      "level": "section",
+      "text": "Annexure A to Conduct Standard 3 of 2018 enumerates the reportable data fields (counterparty, product and transaction data fields items 1-59; asset-class-specific and event/valuation data fields items 60-100) that an ODP must populate in each trade report.",
+      "metadata": { "instrumentId": "CS-3-2018", "section": "annexure-a" }
+    },
+
+    {
+      "id": "urn:reg:za:financial-markets-act-19-2012",
+      "nodeType": "Document",
+      "label": "Financial Markets Act 19 of 2012 (FMA)",
+      "metadata": {
+        "instrumentId": "FINANCIAL-MARKETS-ACT-19-2012",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:za:financial-markets-act-19-2012:s.5",
+      "nodeType": "Provision",
+      "label": "FMA s.5 — Exchange licence and licence conditions",
+      "level": "section",
+      "text": "Section 5 of the Financial Markets Act governs the licensing of an exchange and the conditions attaching to an exchange licence, under which the JSE operates the licensed exchanges and their rule-sets.",
+      "metadata": { "instrumentId": "FINANCIAL-MARKETS-ACT-19-2012", "section": "5" }
+    },
+    {
+      "id": "urn:reg:za:financial-markets-act-19-2012:s.6a",
+      "nodeType": "Provision",
+      "label": "FMA s.6A — Authorisation of OTC derivative providers",
+      "level": "section",
+      "text": "Section 6A of the Financial Markets Act provides for the authorisation of OTC derivative providers and is the enabling provision under which the FSCA issued Conduct Standards 1, 2 and 3 of 2018.",
+      "metadata": { "instrumentId": "FINANCIAL-MARKETS-ACT-19-2012", "section": "6A" }
+    },
+    {
+      "id": "urn:reg:za:financial-markets-act-19-2012:ch.x",
+      "nodeType": "Provision",
+      "label": "FMA Chapter X — Market abuse (insider trading, prohibited trading practices, false reporting)",
+      "level": "chapter",
+      "text": "Chapter X of the Financial Markets Act prohibits market abuse: insider trading, prohibited trading practices (manipulative or deceptive practices), and the making or publication of false, misleading or deceptive statements, promises or forecasts in respect of listed securities. It establishes the surveillance, investigation and enforcement regime for market-integrity offences.",
+      "metadata": { "instrumentId": "FINANCIAL-MARKETS-ACT-19-2012", "section": "X" }
+    },
+    {
+      "id": "urn:reg:za:financial-markets-act-19-2012:s.109",
+      "nodeType": "Provision",
+      "label": "FMA s.109 — Offences and penalties",
+      "level": "section",
+      "text": "Section 109 of the Financial Markets Act sets out the offences and penalties under the Act, including in respect of market-abuse and licensing contraventions.",
+      "metadata": { "instrumentId": "FINANCIAL-MARKETS-ACT-19-2012", "section": "109" }
+    },
+
+    {
+      "id": "urn:reg:za:fma-regulations-gn-r98-2018",
+      "nodeType": "Document",
+      "label": "Financial Markets Act Regulations, 2018 (GN R.98 of 2018)",
+      "metadata": {
+        "instrumentId": "FMA-REGULATIONS-GN-R98-2018",
+        "jurisdiction": "ZA",
+        "issuingBody": "National Treasury",
+        "applicabilityStatus": "direct",
+        "enabledBy": "urn:reg:za:financial-markets-act-19-2012"
+      }
+    },
+    {
+      "id": "urn:reg:za:fma-regulations-gn-r98-2018:reg.3",
+      "nodeType": "Provision",
+      "label": "FMA Regulations reg.3 — Requirements for unlisted securities / OTC market conduct",
+      "level": "section",
+      "text": "Regulation 3 of the Financial Markets Act Regulations (GN R.98 of 2018) prescribes requirements relating to the trading of, and conduct in respect of, securities under the FMA framework.",
+      "metadata": { "instrumentId": "FMA-REGULATIONS-GN-R98-2018", "section": "3" }
+    },
+
+    {
+      "id": "urn:reg:za:fsca-jn-2-2024",
+      "nodeType": "Document",
+      "label": "FSCA Joint Notice / market-risk reporting notice 2 of 2024 (MR reporting schema)",
+      "metadata": {
+        "instrumentId": "JN-2-2024",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct"
+      }
+    },
+    {
+      "id": "urn:reg:za:fsca-jn-2-2024:s.2",
+      "nodeType": "Provision",
+      "label": "JN 2/2024 ss.2-3 — Reporting scope, frequency and submission",
+      "level": "section",
+      "text": "Sections 2 and 3 of Joint Notice 2 of 2024 set the scope, frequency and submission requirements for the prescribed market reporting return.",
+      "metadata": { "instrumentId": "JN-2-2024", "section": "2" }
+    },
+    {
+      "id": "urn:reg:za:fsca-jn-2-2024:appendix-a",
+      "nodeType": "Provision",
+      "label": "JN 2/2024 Appendix A — MR Version 1 schema",
+      "level": "section",
+      "text": "Appendix A to Joint Notice 2 of 2024 specifies the MR Version 1 reporting schema (the field-level data model for the market reporting return).",
+      "metadata": { "instrumentId": "JN-2-2024", "section": "appendix-a" }
+    },
+
+    {
+      "id": "urn:reg:za:joint-standard-1-2020",
+      "nodeType": "Document",
+      "label": "Joint Standard 1 of 2020 — Significant Owners (PA + FSCA)",
+      "metadata": {
+        "instrumentId": "JS-1-2020",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "coIssuedWith": "REG-SARB-PA",
+        "enabledBy": "urn:reg:za:fsr-act-9-2017:s.57"
+      }
+    },
+    {
+      "id": "urn:reg:za:joint-standard-1-2020:s.5",
+      "nodeType": "Provision",
+      "label": "Joint Standard 1/2020 ss.5-8 — Significant-owner self-assessment, notification, fitness & propriety, threshold",
+      "level": "section",
+      "text": "Sections 5 to 8 of Joint Standard 1 of 2020 require significant owners of financial institutions to perform an annual fit-and-proper self-assessment and attestation; require the financial institution and significant owner to notify the Authorities of significant ownership, non-compliance or fit-and-proper changes within 30 days; set the fitness-and-propriety and financial-standing criteria (s.6); and define the 5-percentage-point change in qualifying stake that triggers FSR Act s.159(1)(b) notification (s.8).",
+      "metadata": { "instrumentId": "JS-1-2020", "section": "5" }
+    },
+
+    {
+      "id": "urn:reg:za:joint-standard-1-2023",
+      "nodeType": "Document",
+      "label": "Joint Standard 1 of 2023 — IT Governance and Risk Management Requirements for Financial Institutions (PA + FSCA)",
+      "metadata": {
+        "instrumentId": "JS-1-2023",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "coIssuedWith": "REG-SARB-PA",
+        "enabledBy": "urn:reg:za:fsr-act-9-2017:s.57"
+      }
+    },
+    {
+      "id": "urn:reg:za:joint-standard-1-2023:p.it-governance",
+      "nodeType": "Provision",
+      "label": "Joint Standard 1/2023 — IT governance requirements",
+      "level": "section",
+      "text": "Joint Standard 1 of 2023 (commenced 15 November 2024) requires financial institutions to establish IT-governance arrangements: governing-body responsibility for IT governance, IT-strategy alignment, change-management governance, CIO designation and escalation authority, within the institution's governance framework.",
+      "metadata": { "instrumentId": "JS-1-2023", "section": "it-governance" }
+    },
+    {
+      "id": "urn:reg:za:joint-standard-1-2023:p.it-risk-management",
+      "nodeType": "Provision",
+      "label": "Joint Standard 1/2023 — IT risk-management requirements",
+      "level": "section",
+      "text": "Joint Standard 1 of 2023 requires financial institutions to maintain an IT-risk-management framework: IT-risk taxonomy and control catalogue, third-party (IT outsourcing) risk management, incident management, and resilience and continuity testing.",
+      "metadata": { "instrumentId": "JS-1-2023", "section": "it-risk-management" }
+    },
+
+    {
+      "id": "urn:reg:za:joint-standard-2-2024",
+      "nodeType": "Document",
+      "label": "Joint Standard 2 of 2024 — Cybersecurity and Cyber Resilience Requirements for Financial Institutions (PA + FSCA)",
+      "metadata": {
+        "instrumentId": "JS-2-2024",
+        "jurisdiction": "ZA",
+        "issuingBody": "FSCA",
+        "applicabilityStatus": "direct",
+        "coIssuedWith": "REG-SARB-PA",
+        "enabledBy": "urn:reg:za:fsr-act-9-2017:s.57"
+      }
+    },
+    {
+      "id": "urn:reg:za:joint-standard-2-2024:s.3",
+      "nodeType": "Provision",
+      "label": "Joint Standard 2/2024 s.3 — Scope, banking-group applicability and proportionality",
+      "level": "section",
+      "text": "Section 3 of Joint Standard 2 of 2024 sets the scope (applies to financial institutions — s.3.1), the banking-group applicability requiring a bank or controlling company to extend the cyber programme to all juristic persons structured under it (s.3.2), and proportionality (s.3.4). Commenced 1 June 2025.",
+      "metadata": { "instrumentId": "JS-2-2024", "section": "3" }
+    },
+    {
+      "id": "urn:reg:za:joint-standard-2-2024:s.5",
+      "nodeType": "Provision",
+      "label": "Joint Standard 2/2024 ss.4-9 — Governance, strategy, security controls and incident notification",
+      "level": "section",
+      "text": "Sections 4 to 9 of Joint Standard 2 of 2024 require: governing-body ultimate responsibility and cyber-risk oversight (s.4); governance roles and a CISO function (s.5); a board-approved cybersecurity strategy and framework with annual review (s.6); the cyber-resilience dimensions of threat intelligence, identity and access, asset management, response and recovery, third-party risk and data security (s.7); the security-control baseline including access management, MFA, network perimeter, vulnerability/patch and malware protection (s.8); and material-incident notification to the responsible authority (s.9).",
+      "metadata": { "instrumentId": "JS-2-2024", "section": "5" }
+    },
+
+    {
+      "id": "urn:reg:za:cofi-bill",
+      "nodeType": "Document",
+      "label": "Conduct of Financial Institutions (COFI) Bill",
+      "metadata": {
+        "instrumentId": "COFI-BILL",
+        "jurisdiction": "ZA",
+        "issuingBody": "National Treasury",
+        "applicabilityStatus": "monitored",
+        "status": "in-parliament"
+      }
+    },
+    {
+      "id": "urn:reg:za:cofi-bill:p.conduct-framework",
+      "nodeType": "Provision",
+      "label": "COFI Bill — consolidated market-conduct framework (monitored)",
+      "level": "section",
+      "text": "The Conduct of Financial Institutions (COFI) Bill, currently before Parliament, will consolidate the market-conduct regulatory framework for financial institutions under the Twin Peaks model, replacing and harmonising sector-specific conduct legislation. Monitored as forward-looking conduct law not yet in force.",
+      "metadata": { "instrumentId": "COFI-BILL", "section": "conduct-framework" }
+    }
+  ],
+  "edges": [
+    { "id": "FSCA-ISSUED_BY-FAIS-ACT", "fromId": "urn:reg:za:fais-act-37-2002", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-FAIS-GCC", "fromId": "urn:reg:za:fais-gcc", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-FAIS-FP", "fromId": "urn:reg:za:fais-fit-and-proper-determination-2017", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-FAIS-COI", "fromId": "urn:reg:za:fais-coi-code", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-CS-1-2018", "fromId": "urn:reg:za:fsca-cs-1-2018", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-CS-2-2018", "fromId": "urn:reg:za:fsca-cs-2-2018", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-CS-3-2018", "fromId": "urn:reg:za:fsca-cs-3-2018", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-FMA", "fromId": "urn:reg:za:financial-markets-act-19-2012", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-FMA-REGS", "fromId": "urn:reg:za:fma-regulations-gn-r98-2018", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-JN-2-2024", "fromId": "urn:reg:za:fsca-jn-2-2024", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-COFI", "fromId": "urn:reg:za:cofi-bill", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "FSCA-ISSUED_BY-JS1-2020-FSCA", "fromId": "urn:reg:za:joint-standard-1-2020", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-JS1-2020-PA", "fromId": "urn:reg:za:joint-standard-1-2020", "toId": "REG-SARB-PA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-JS1-2023-FSCA", "fromId": "urn:reg:za:joint-standard-1-2023", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-JS1-2023-PA", "fromId": "urn:reg:za:joint-standard-1-2023", "toId": "REG-SARB-PA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-JS2-2024-FSCA", "fromId": "urn:reg:za:joint-standard-2-2024", "toId": "REG-FSCA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-ISSUED_BY-JS2-2024-PA", "fromId": "urn:reg:za:joint-standard-2-2024", "toId": "REG-SARB-PA", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "FSCA-CONTAINS-FAIS-s8", "fromId": "urn:reg:za:fais-act-37-2002", "toId": "urn:reg:za:fais-act-37-2002:s.8", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FAIS-s13", "fromId": "urn:reg:za:fais-act-37-2002", "toId": "urn:reg:za:fais-act-37-2002:s.13", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FAIS-s15", "fromId": "urn:reg:za:fais-act-37-2002", "toId": "urn:reg:za:fais-act-37-2002:s.15", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FAIS-s18", "fromId": "urn:reg:za:fais-act-37-2002", "toId": "urn:reg:za:fais-act-37-2002:s.18", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-GCC-s3", "fromId": "urn:reg:za:fais-gcc", "toId": "urn:reg:za:fais-gcc:s.3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-GCC-s7", "fromId": "urn:reg:za:fais-gcc", "toId": "urn:reg:za:fais-gcc:s.7", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-GCC-s8", "fromId": "urn:reg:za:fais-gcc", "toId": "urn:reg:za:fais-gcc:s.8", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-GCC-s9", "fromId": "urn:reg:za:fais-gcc", "toId": "urn:reg:za:fais-gcc:s.9", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-GCC-s16", "fromId": "urn:reg:za:fais-gcc", "toId": "urn:reg:za:fais-gcc:s.16", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FP-ki", "fromId": "urn:reg:za:fais-fit-and-proper-determination-2017", "toId": "urn:reg:za:fais-fit-and-proper-determination-2017:p.ki", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-COI", "fromId": "urn:reg:za:fais-coi-code", "toId": "urn:reg:za:fais-coi-code:p.coi", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS1-s3", "fromId": "urn:reg:za:fsca-cs-1-2018", "toId": "urn:reg:za:fsca-cs-1-2018:s.3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS1-s4", "fromId": "urn:reg:za:fsca-cs-1-2018", "toId": "urn:reg:za:fsca-cs-1-2018:s.4", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS1-s5", "fromId": "urn:reg:za:fsca-cs-1-2018", "toId": "urn:reg:za:fsca-cs-1-2018:s.5", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS1-s6", "fromId": "urn:reg:za:fsca-cs-1-2018", "toId": "urn:reg:za:fsca-cs-1-2018:s.6", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS2-s3", "fromId": "urn:reg:za:fsca-cs-2-2018", "toId": "urn:reg:za:fsca-cs-2-2018:s.3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS2-s4", "fromId": "urn:reg:za:fsca-cs-2-2018", "toId": "urn:reg:za:fsca-cs-2-2018:s.4", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS3-s3", "fromId": "urn:reg:za:fsca-cs-3-2018", "toId": "urn:reg:za:fsca-cs-3-2018:s.3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS3-s4", "fromId": "urn:reg:za:fsca-cs-3-2018", "toId": "urn:reg:za:fsca-cs-3-2018:s.4", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS3-s6", "fromId": "urn:reg:za:fsca-cs-3-2018", "toId": "urn:reg:za:fsca-cs-3-2018:s.6", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS3-s9", "fromId": "urn:reg:za:fsca-cs-3-2018", "toId": "urn:reg:za:fsca-cs-3-2018:s.9", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-CS3-annex", "fromId": "urn:reg:za:fsca-cs-3-2018", "toId": "urn:reg:za:fsca-cs-3-2018:annexure-a", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FMA-s5", "fromId": "urn:reg:za:financial-markets-act-19-2012", "toId": "urn:reg:za:financial-markets-act-19-2012:s.5", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FMA-s6a", "fromId": "urn:reg:za:financial-markets-act-19-2012", "toId": "urn:reg:za:financial-markets-act-19-2012:s.6a", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FMA-chx", "fromId": "urn:reg:za:financial-markets-act-19-2012", "toId": "urn:reg:za:financial-markets-act-19-2012:ch.x", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FMA-s109", "fromId": "urn:reg:za:financial-markets-act-19-2012", "toId": "urn:reg:za:financial-markets-act-19-2012:s.109", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-FMAREG-reg3", "fromId": "urn:reg:za:fma-regulations-gn-r98-2018", "toId": "urn:reg:za:fma-regulations-gn-r98-2018:reg.3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-JN2-s2", "fromId": "urn:reg:za:fsca-jn-2-2024", "toId": "urn:reg:za:fsca-jn-2-2024:s.2", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-JN2-appa", "fromId": "urn:reg:za:fsca-jn-2-2024", "toId": "urn:reg:za:fsca-jn-2-2024:appendix-a", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-JS1-2020-s5", "fromId": "urn:reg:za:joint-standard-1-2020", "toId": "urn:reg:za:joint-standard-1-2020:s.5", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-JS1-2023-gov", "fromId": "urn:reg:za:joint-standard-1-2023", "toId": "urn:reg:za:joint-standard-1-2023:p.it-governance", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-JS1-2023-risk", "fromId": "urn:reg:za:joint-standard-1-2023", "toId": "urn:reg:za:joint-standard-1-2023:p.it-risk-management", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-JS2-2024-s3", "fromId": "urn:reg:za:joint-standard-2-2024", "toId": "urn:reg:za:joint-standard-2-2024:s.3", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-JS2-2024-s5", "fromId": "urn:reg:za:joint-standard-2-2024", "toId": "urn:reg:za:joint-standard-2-2024:s.5", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+    { "id": "FSCA-CONTAINS-COFI-p", "fromId": "urn:reg:za:cofi-bill", "toId": "urn:reg:za:cofi-bill:p.conduct-framework", "edgeType": "CONTAINS", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z" },
+
+    { "id": "FSCA-EXPRESSES-FAIS-s8-CD02", "fromId": "urn:reg:za:fais-act-37-2002:s.8", "toId": "OBL-ORG-CD-02", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-act-37-2002:s.8" },
+    { "id": "FSCA-EXPRESSES-FAIS-s8-CD03", "fromId": "urn:reg:za:fais-act-37-2002:s.8", "toId": "OBL-ORG-CD-03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-act-37-2002:s.8" },
+    { "id": "FSCA-EXPRESSES-FAIS-s8-FAISKI", "fromId": "urn:reg:za:fais-act-37-2002:s.8", "toId": "OBL-ORG-FAIS-KI", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-act-37-2002:s.8" },
+    { "id": "FSCA-EXPRESSES-FP-FAISKI", "fromId": "urn:reg:za:fais-fit-and-proper-determination-2017:p.ki", "toId": "OBL-ORG-FAIS-KI", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-fit-and-proper-determination-2017:p.ki" },
+    { "id": "FSCA-EXPRESSES-FAIS-s13-CD03", "fromId": "urn:reg:za:fais-act-37-2002:s.13", "toId": "OBL-ORG-CD-03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-act-37-2002:s.13" },
+    { "id": "FSCA-EXPRESSES-GCC-s3-RKGEN", "fromId": "urn:reg:za:fais-gcc:s.3", "toId": "OBL-ORG-FAIS-RK-GENERAL-CODE", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-gcc:s.3" },
+    { "id": "FSCA-EXPRESSES-GCC-s3-CD04", "fromId": "urn:reg:za:fais-gcc:s.3", "toId": "OBL-ORG-CD-04", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-gcc:s.3" },
+    { "id": "FSCA-EXPRESSES-GCC-s7-FEE", "fromId": "urn:reg:za:fais-gcc:s.7", "toId": "OBL-ORG-FAIS-RK-FEE-DISCLOSURE", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-gcc:s.7" },
+    { "id": "FSCA-EXPRESSES-GCC-s8-SUIT", "fromId": "urn:reg:za:fais-gcc:s.8", "toId": "OBL-ORG-FAIS-RK-SUITABILITY", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-gcc:s.8" },
+    { "id": "FSCA-EXPRESSES-GCC-s9-ADV", "fromId": "urn:reg:za:fais-gcc:s.9", "toId": "OBL-ORG-FAIS-RK-ADVICE", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-gcc:s.9" },
+    { "id": "FSCA-EXPRESSES-GCC-s16-COMPL", "fromId": "urn:reg:za:fais-gcc:s.16", "toId": "OBL-ORG-FAIS-RK-COMPLAINT-HANDLING", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-gcc:s.16" },
+    { "id": "FSCA-EXPRESSES-FAIS-s18-COMPL", "fromId": "urn:reg:za:fais-act-37-2002:s.18", "toId": "OBL-ORG-FAIS-RK-COMPLAINT-HANDLING", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-act-37-2002:s.18" },
+    { "id": "FSCA-EXPRESSES-GCC-CD04", "fromId": "urn:reg:za:fais-gcc:s.3", "toId": "OBL-ORG-CD-01", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-gcc:s.3" },
+    { "id": "FSCA-EXPRESSES-COI-CD05", "fromId": "urn:reg:za:fais-coi-code:p.coi", "toId": "OBL-ORG-CD-05", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fais-coi-code:p.coi" },
+
+    { "id": "FSCA-EXPRESSES-CS1-s3-CS1001", "fromId": "urn:reg:za:fsca-cs-1-2018:s.3", "toId": "OBL-ORG-CS1-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.3" },
+    { "id": "FSCA-EXPRESSES-CS1-s4-CS1002", "fromId": "urn:reg:za:fsca-cs-1-2018:s.4", "toId": "OBL-ORG-CS1-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS1-s5-CS1003", "fromId": "urn:reg:za:fsca-cs-1-2018:s.5", "toId": "OBL-ORG-CS1-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.5" },
+    { "id": "FSCA-EXPRESSES-CS1-s6-CS1004", "fromId": "urn:reg:za:fsca-cs-1-2018:s.6", "toId": "OBL-ORG-CS1-004", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.6" },
+    { "id": "FSCA-EXPRESSES-CS1-s4-AUTH001", "fromId": "urn:reg:za:fsca-cs-1-2018:s.4", "toId": "OBL-ORG-ODP-AUTH-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS1-s4-AUTH002", "fromId": "urn:reg:za:fsca-cs-1-2018:s.4", "toId": "OBL-ORG-ODP-AUTH-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS1-s4-AUTH003", "fromId": "urn:reg:za:fsca-cs-1-2018:s.4", "toId": "OBL-ORG-ODP-AUTH-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS1-s4-AUTH004", "fromId": "urn:reg:za:fsca-cs-1-2018:s.4", "toId": "OBL-ORG-ODP-AUTH-004", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS1-s4-AUTH005", "fromId": "urn:reg:za:fsca-cs-1-2018:s.4", "toId": "OBL-ORG-ODP-AUTH-005", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS1-s4-AUTH006", "fromId": "urn:reg:za:fsca-cs-1-2018:s.4", "toId": "OBL-ORG-ODP-AUTH-006", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-1-2018:s.4" },
+
+    { "id": "FSCA-EXPRESSES-CS2-s3-CS2001", "fromId": "urn:reg:za:fsca-cs-2-2018:s.3", "toId": "OBL-ORG-CS2-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.3" },
+    { "id": "FSCA-EXPRESSES-CS2-s3-COND001", "fromId": "urn:reg:za:fsca-cs-2-2018:s.3", "toId": "OBL-ORG-ODP-COND-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.3" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND002", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND003", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND004", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-004", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND005", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-005", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND006", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-006", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND007", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-007", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND008", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-008", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND009", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-009", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND010", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-010", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND011", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-011", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS2-s4-COND012", "fromId": "urn:reg:za:fsca-cs-2-2018:s.4", "toId": "OBL-ORG-ODP-COND-012", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-2-2018:s.4" },
+
+    { "id": "FSCA-EXPRESSES-CS3-s3-CS3001", "fromId": "urn:reg:za:fsca-cs-3-2018:s.3", "toId": "OBL-ORG-CS3-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.3" },
+    { "id": "FSCA-EXPRESSES-CS3-s4-CS3002", "fromId": "urn:reg:za:fsca-cs-3-2018:s.4", "toId": "OBL-ORG-CS3-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS3-s4-CS3003", "fromId": "urn:reg:za:fsca-cs-3-2018:s.4", "toId": "OBL-ORG-CS3-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS3-s6-CS3004", "fromId": "urn:reg:za:fsca-cs-3-2018:s.6", "toId": "OBL-ORG-CS3-004", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.6" },
+    { "id": "FSCA-EXPRESSES-CS3-s6-CS3005", "fromId": "urn:reg:za:fsca-cs-3-2018:s.6", "toId": "OBL-ORG-CS3-005", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.6" },
+    { "id": "FSCA-EXPRESSES-CS3-s6-CS3006", "fromId": "urn:reg:za:fsca-cs-3-2018:s.6", "toId": "OBL-ORG-CS3-006", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.6" },
+    { "id": "FSCA-EXPRESSES-CS3-s9-CS3007", "fromId": "urn:reg:za:fsca-cs-3-2018:s.9", "toId": "OBL-ORG-CS3-007", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.9" },
+    { "id": "FSCA-EXPRESSES-CS3-s9-CS3008", "fromId": "urn:reg:za:fsca-cs-3-2018:s.9", "toId": "OBL-ORG-CS3-008", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.9" },
+    { "id": "FSCA-EXPRESSES-CS3-s9-CS3009", "fromId": "urn:reg:za:fsca-cs-3-2018:s.9", "toId": "OBL-ORG-CS3-009", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.9" },
+    { "id": "FSCA-EXPRESSES-CS3-s3-RPT001", "fromId": "urn:reg:za:fsca-cs-3-2018:s.3", "toId": "OBL-ORG-ODP-RPT-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.3" },
+    { "id": "FSCA-EXPRESSES-CS3-s4-RPT002", "fromId": "urn:reg:za:fsca-cs-3-2018:s.4", "toId": "OBL-ORG-ODP-RPT-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.4" },
+    { "id": "FSCA-EXPRESSES-CS3-s6-RPT003", "fromId": "urn:reg:za:fsca-cs-3-2018:s.6", "toId": "OBL-ORG-ODP-RPT-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.6" },
+    { "id": "FSCA-EXPRESSES-CS3-annex-RPT004", "fromId": "urn:reg:za:fsca-cs-3-2018:annexure-a", "toId": "OBL-ORG-ODP-RPT-004", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:annexure-a" },
+    { "id": "FSCA-EXPRESSES-CS3-annex-RPT005", "fromId": "urn:reg:za:fsca-cs-3-2018:annexure-a", "toId": "OBL-ORG-ODP-RPT-005", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:annexure-a" },
+    { "id": "FSCA-EXPRESSES-CS3-s3-MK14", "fromId": "urn:reg:za:fsca-cs-3-2018:s.3", "toId": "OBL-ORG-MK-14", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-cs-3-2018:s.3" },
+
+    { "id": "FSCA-EXPRESSES-FMA-s6a-FMA001", "fromId": "urn:reg:za:financial-markets-act-19-2012:s.6a", "toId": "OBL-ORG-FMA-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:financial-markets-act-19-2012:s.6a" },
+    { "id": "FSCA-EXPRESSES-FMA-s109-FMA002", "fromId": "urn:reg:za:financial-markets-act-19-2012:s.109", "toId": "OBL-ORG-FMA-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:financial-markets-act-19-2012:s.109" },
+    { "id": "FSCA-EXPRESSES-FMAREG-reg3-FMA003", "fromId": "urn:reg:za:fma-regulations-gn-r98-2018:reg.3", "toId": "OBL-ORG-FMA-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fma-regulations-gn-r98-2018:reg.3" },
+    { "id": "FSCA-EXPRESSES-FMA-chx-MK01", "fromId": "urn:reg:za:financial-markets-act-19-2012:ch.x", "toId": "OBL-ORG-MK-01", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:financial-markets-act-19-2012:ch.x" },
+    { "id": "FSCA-EXPRESSES-FMA-chx-MK02", "fromId": "urn:reg:za:financial-markets-act-19-2012:ch.x", "toId": "OBL-ORG-MK-02", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:financial-markets-act-19-2012:ch.x" },
+    { "id": "FSCA-EXPRESSES-FMA-chx-MK03", "fromId": "urn:reg:za:financial-markets-act-19-2012:ch.x", "toId": "OBL-ORG-MK-03", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:financial-markets-act-19-2012:ch.x" },
+    { "id": "FSCA-EXPRESSES-FMA-chx-MK05", "fromId": "urn:reg:za:financial-markets-act-19-2012:ch.x", "toId": "OBL-ORG-MK-05", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:financial-markets-act-19-2012:ch.x" },
+
+    { "id": "FSCA-EXPRESSES-JN2-s2-MKRPT001", "fromId": "urn:reg:za:fsca-jn-2-2024:s.2", "toId": "OBL-ORG-MK-RPT-001", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-jn-2-2024:s.2" },
+    { "id": "FSCA-EXPRESSES-JN2-s2-MKRPT002", "fromId": "urn:reg:za:fsca-jn-2-2024:s.2", "toId": "OBL-ORG-MK-RPT-002", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-jn-2-2024:s.2" },
+    { "id": "FSCA-EXPRESSES-JN2-appa-MKRPT003", "fromId": "urn:reg:za:fsca-jn-2-2024:appendix-a", "toId": "OBL-ORG-MK-RPT-003", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:fsca-jn-2-2024:appendix-a" },
+
+    { "id": "FSCA-EXPRESSES-JS1-2020-GV22", "fromId": "urn:reg:za:joint-standard-1-2020:s.5", "toId": "OBL-ORG-GV-22", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:joint-standard-1-2020:s.5" },
+    { "id": "FSCA-EXPRESSES-JS1-2023-gov-CY15", "fromId": "urn:reg:za:joint-standard-1-2023:p.it-governance", "toId": "OBL-ORG-CY-15", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:joint-standard-1-2023:p.it-governance" },
+    { "id": "FSCA-EXPRESSES-JS1-2023-risk-CY16", "fromId": "urn:reg:za:joint-standard-1-2023:p.it-risk-management", "toId": "OBL-ORG-CY-16", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:joint-standard-1-2023:p.it-risk-management" },
+    { "id": "FSCA-EXPRESSES-JS2-2024-s5-CY17", "fromId": "urn:reg:za:joint-standard-2-2024:s.5", "toId": "OBL-ORG-CY-17", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:joint-standard-2-2024:s.5" },
+    { "id": "FSCA-EXPRESSES-JS2-2024-s3-BNKCYBER", "fromId": "urn:reg:za:joint-standard-2-2024:s.3", "toId": "OBL-ORG-BNK-CYBER-CONS", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:joint-standard-2-2024:s.3" },
+
+    { "id": "FSCA-EXPRESSES-COFI-CD09", "fromId": "urn:reg:za:cofi-bill:p.conduct-framework", "toId": "OBL-ORG-CD-09", "edgeType": "EXPRESSES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:za:cofi-bill:p.conduct-framework" }
+  ]
+}

@@ -67,6 +67,20 @@ export interface SeedStats {
     skipped: number;
   };
   /**
+   * Regulatory-intelligence instrument-stack artefacts imported
+   * (Regulations/**\/*-instruments-graph.json). Each is a
+   * `RegulatoryExtractionArtefact` modelling Regulator → Document → Provision →
+   * Obligation for a jurisdiction's instrument stack (e.g. the FSCA conduct
+   * stack), bridging the bank's adopted `OBL-ORG-*` obligations to their source
+   * provisions via EXPRESSES edges. D-FSCA-REGULATORY-INTELLIGENCE-INGESTION.
+   */
+  instrumentArtefacts?: {
+    artefacts: number;
+    nodes: number;
+    edges: number;
+    skipped: number;
+  };
+  /**
    * BCBS obligation nodes created to cover equivalence verdicts whose endpoint
    * was missing from the pre-built graphs (gap-driven, idempotent). `created`
    * are the BCBS obligation ids backfilled; `missingText` are those whose
@@ -624,6 +638,140 @@ function importObjectiveArtefacts(now: string): NonNullable<SeedStats["objective
     // Edges — endpoints must resolve to a node (FK). Guarded: an edge whose
     // from/to node is absent in the graph is skipped (e.g. an obligation/policy
     // id that did not seed) rather than aborting the whole import.
+    const nodeExists = db.prepare("SELECT 1 FROM graph_nodes WHERE id = ? LIMIT 1");
+    db.exec("BEGIN");
+    try {
+      for (const e of edges) {
+        if (!e?.id || !e.fromId || !e.toId || !e.edgeType) {
+          result.skipped++;
+          continue;
+        }
+        if (!nodeExists.get(e.fromId) || !nodeExists.get(e.toId)) {
+          result.skipped++;
+          continue;
+        }
+        const provenance = e.provenance ?? fileProvenance;
+        upsertEdge({
+          ...e,
+          extractionMethod: e.extractionMethod ?? fileProvenance.extractionMethod,
+          confidenceScore: typeof e.confidenceScore === "number" ? e.confidenceScore : 1,
+          extractedAt: e.extractedAt ?? now,
+          metadata: { ...(e.metadata ?? {}), ...provenanceMeta(provenance) },
+        });
+        result.edges++;
+      }
+      db.exec("COMMIT");
+    } catch (err) {
+      db.exec("ROLLBACK");
+      throw err;
+    }
+    result.artefacts++;
+  }
+  return result;
+}
+
+/**
+ * Import the regulatory-intelligence instrument-stack artefacts
+ * (Regulations/ ** /*-instruments-graph.json) into the graph DB. Each file is a
+ * `RegulatoryExtractionArtefact` modelling a jurisdiction's instrument stack as
+ * `Regulator ← ISSUED_BY ← Document ← CONTAINS ← Provision → EXPRESSES →
+ * Obligation` (the same Document/Provision/Obligation ontology and EXPRESSES
+ * bridge convention as the BCBS obligation graphs). The first instance is the
+ * FSCA conduct stack (FAIS Act + General Code of Conduct + Conduct Standards
+ * 1/2/3-2018 + Financial Markets Act + Joint Standards + COFI Bill).
+ *
+ * The artefact authors the Provision nodes (real source provisions, carrying
+ * `text`/`level`) AND the EXPRESSES edges that bridge them to the bank's already-
+ * seeded adopted obligations (`OBL-ORG-*`, created in Step 6). The free-text
+ * obligation citations on the conduct/markets register rows do not parse cleanly
+ * through `extractSectionIdsFromCitation` (prose like "FAIS + FSCA conduct
+ * standards"), so the automatic citation→EXPRESSES bridge cannot resolve them;
+ * authoring the EXPRESSES edges directly in the artefact is the same explicit
+ * convention the BCBS graphs use (Provision → Obligation EXPRESSES). The edge
+ * endpoint FK guard skips any edge whose `OBL-ORG-*` target was not seeded, so a
+ * stale obligation id never aborts the import.
+ *
+ * Reuses the same `validateExtractionArtefact` ingestion contract, node-then-edge
+ * FK ordering, per-phase transactions, and idempotency as importObjectiveArtefacts.
+ *
+ * MUST be called AFTER the Step-6 obligation nodes are seeded so the EXPRESSES
+ * (Provision → Obligation) endpoints resolve, and AFTER the regulator nodes
+ * (Step 1) so ISSUED_BY (Document → Regulator) resolves — both hold at the call
+ * site in runSeed (alongside importBcbsObligationGraphs).
+ *
+ * Authority: D-FSCA-REGULATORY-INTELLIGENCE-INGESTION (CEO session-delegation 2026-06-10).
+ * Author: Mira (Compliance / RegTech engineer, regulatory).
+ */
+function importInstrumentArtefacts(now: string): NonNullable<SeedStats["instrumentArtefacts"]> {
+  const root = repoPath("Regulations");
+  const result = { artefacts: 0, nodes: 0, edges: 0, skipped: 0 };
+  if (!existsSync(root)) return result;
+
+  const files = walkBySuffix(root, "-instruments-graph.json").sort();
+  const db = getDb();
+
+  for (const file of files) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(readFileSync(file, "utf-8"));
+    } catch {
+      result.skipped++;
+      continue;
+    }
+
+    // Plane-A ingestion contract: reject a malformed artefact wholesale rather
+    // than letting non-ontology nodes/edges silently pollute the reference graph.
+    const validation = validateExtractionArtefact(raw);
+    if (!validation.valid) {
+      result.skipped++;
+      continue;
+    }
+    const doc = raw as RegulatoryExtractionArtefact;
+
+    const fileProvenance: ExtractionProvenance = {
+      extractionMethod: doc.extractionMethod,
+      extractorId: doc.provenance?.extractorId ?? `instruments-graph:${doc.instrumentId}`,
+      confidenceScore: doc.provenance?.confidenceScore ?? 1,
+      extractedAt: doc.generatedAt ?? now,
+    };
+
+    const nodes = doc.nodes as ProvenancedNode[];
+    const edges = (Array.isArray(doc.edges) ? doc.edges : []) as ProvenancedEdge[];
+
+    // Nodes first — graph_edges has an FK to graph_nodes.
+    db.exec("BEGIN");
+    try {
+      for (const n of nodes) {
+        if (!n?.id || !n.nodeType || !n.label) {
+          result.skipped++;
+          continue;
+        }
+        const provenance = n.provenance ?? fileProvenance;
+        // Fold descriptive top-level fields into metadata — upsertNode only
+        // persists id/label/metadata, so top-level fields are otherwise lost.
+        // Provision: text (full regulatory paragraph text), level. Obligation:
+        // actionSummary, obligationType, actor, trigger. (Document carries
+        // applicabilityStatus via metadata already.)
+        const rawNode = n as unknown as Record<string, unknown>;
+        const descriptive: GraphNodeMetadata = {};
+        for (const k of ["actionSummary", "obligationType", "actor", "trigger", "text", "level"]) {
+          if (typeof rawNode[k] === "string") descriptive[k] = rawNode[k] as string;
+        }
+        upsertNode({
+          ...n,
+          metadata: { ...(n.metadata ?? {}), ...descriptive, ...provenanceMeta(provenance) },
+        });
+        result.nodes++;
+      }
+      db.exec("COMMIT");
+    } catch (e) {
+      db.exec("ROLLBACK");
+      throw e;
+    }
+
+    // Edges — endpoints must resolve to a node (FK). Guarded: an edge whose
+    // from/to node is absent (e.g. an OBL-ORG-* id that did not seed) is
+    // skipped rather than aborting the whole import.
     const nodeExists = db.prepare("SELECT 1 FROM graph_nodes WHERE id = ? LIMIT 1");
     db.exec("BEGIN");
     try {
@@ -1989,6 +2137,17 @@ export async function runSeed(): Promise<SeedStats> {
   // ontology. Imported as part of the projection so it survives re-seeds.
   const obligationGraphs = importBcbsObligationGraphs(now);
 
+  // ── Regulatory-intelligence instrument stacks ─────────────────────────────
+  // Import the jurisdiction instrument-stack artefacts
+  // (Regulations/ ** /*-instruments-graph.json) — Regulator → Document →
+  // Provision → Obligation, with EXPRESSES edges bridging the bank's adopted
+  // OBL-ORG-* obligations to their source provisions. The first instance is the
+  // FSCA conduct stack. Runs AFTER the Step-6 obligation nodes (so the EXPRESSES
+  // bridge resolves) and the Step-1 regulator nodes (so ISSUED_BY resolves), and
+  // before the objective import below (whose SERVES edges target the same
+  // OBL-ORG-* obligations, already seeded). Authority: D-FSCA-REGULATORY-INTELLIGENCE-INGESTION.
+  const instrumentArtefacts = importInstrumentArtefacts(now);
+
   // ── BCBS equivalence-endpoint coverage backfill ──────────────────────────
   // The pre-built obligation graphs omit paragraphs their rule-based classifier
   // deems non-normative, but SA↔BCBS equivalence verdicts may still reference
@@ -2109,6 +2268,7 @@ export async function runSeed(): Promise<SeedStats> {
     durationMs,
     obligationGraphs,
     objectiveArtefacts,
+    instrumentArtefacts,
     equivalenceBackfill,
   };
 }
