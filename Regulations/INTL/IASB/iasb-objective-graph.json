@@ -1,0 +1,87 @@
+{
+  "instrumentId": "INTL-IASB-OBJECTIVES",
+  "standardName": "International Accounting Standards Board objective/mandate layer (IFRS Foundation Constitution)",
+  "ontology": "platform/regulatory/graph/types.ts (GraphNode/GraphEdge — RegulatoryObjective layer)",
+  "extractionMethod": "rule-based",
+  "provenance": {
+    "extractionMethod": "rule-based",
+    "extractorId": "mira:iasb-objective-graph",
+    "confidenceScore": 1.0,
+    "extractedAt": "2026-06-10T00:00:00Z"
+  },
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "source": "IFRS Foundation Constitution (objective of the IFRS Foundation and the IASB: to develop a single set of high-quality, understandable, enforceable and globally accepted financial-reporting standards bringing transparency, accountability and efficiency to financial markets). Authority: D-IASB-REGULATORY-INTELLIGENCE-INGESTION.",
+  "comment": "Regulatory-intelligence objective/mandate layer — IASB. Mirrors the FIC objective artefact (Regulations/ZA/FIC/fic-objective-graph.json). The objective nodes (the 'why' an IFRS accounting requirement exists) are Plane-A reference data, re-derivable from the standard-setter's own statement of objectives (IFRS Foundation Constitution), NOT events (D-REGULATORY-ARCHITECTURE-TWO-PLANE). PURSUES/REFINES/SERVES/ALIGNS_TO edges target EXISTING graph nodes: Regulator REG-IASB (seed-projection.ts Step 1); the IFRS Document nodes urn:reg:ifrs:* (seeded by iasb-instruments-graph.json — importInstrumentArtefacts runs before importObjectiveArtefacts); Obligation nodes OBL-ORG-AC-* / OBL-ORG-GRP-FINREP (Step 6, keyed OBL-<ORG-id>, from Regulations/_obligations.seed.json); Policy nodes POL-<policy-id> (Step 9, from Policies/*.md frontmatter policy-id). SERVES wiring rationale, following the brief's partition: the recognition/measurement standards (IFRS 9 -> AC-01/02/03; IFRS 13 -> AC-05; IFRS 15 -> AC-06; IFRS 16 -> AC-07; IAS 12 -> AC-09; IAS 21 -> AC-10; IFRIC 23 -> AC-12) and the disclosure standards (IFRS 7 -> AC-04; IAS 1 -> AC-08; IAS 24 -> AC-11) SERVE transparency (faithful, comparable representation of financial position and performance); consolidation (IFRS 10 -> GRP-FINREP) SERVES accountability (a control-based view of the whole economic entity so management is accountable for the full group). Market-efficiency is additionally served by the two standards that most directly support efficient price formation: IFRS 13 fair-value measurement (AC-05) and IFRS 7 financial-instrument risk disclosure (AC-04). ALIGNS_TO wiring: the IFRS accounting-bundle policies (FIN-ACCT-01 Accounting Policies IFRS, ifrs9-ecl-provisioning-policy, HEDGE-ACCOUNTING-V1, financial-reporting-policy, pillar-3-disclosure-policy, TAX-POL-01) align to transparency/accountability. Every SERVES/ALIGNS_TO target id was confirmed present in the seeded graph (OBL-ORG-AC-*/OBL-ORG-GRP-FINREP from the seed; POL-* from Policies/*.md frontmatter); 0 skipped at ingest proves it.",
+  "nodes": [
+    {
+      "id": "OBJ-IASB-MANDATE",
+      "nodeType": "RegulatoryObjective",
+      "label": "Objective of the IFRS Foundation and the IASB",
+      "objectiveText": "To develop, in the public interest, a single set of high-quality, understandable, enforceable and globally accepted financial-reporting standards based upon clearly articulated principles, that require high-quality, transparent and comparable information in financial statements and other financial reporting to help investors, other participants in capital markets and other users of financial information make economic decisions — bringing transparency, accountability and efficiency to financial markets around the world.",
+      "objectiveLevel": "mandate",
+      "sourceCitation": "urn:reg:ifrs:ifrs-foundation-constitution"
+    },
+    {
+      "id": "OBJ-IASB-TRANSPARENCY",
+      "nodeType": "RegulatoryObjective",
+      "label": "Transparency",
+      "objectiveText": "Enhance the international comparability and quality of financial information, enabling investors and other market participants to make informed economic decisions, by requiring faithful, relevant and comparable recognition, measurement, presentation and disclosure of an entity's financial position, financial performance and cash flows.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:ifrs:ifrs-foundation-constitution"
+    },
+    {
+      "id": "OBJ-IASB-ACCOUNTABILITY",
+      "nodeType": "RegulatoryObjective",
+      "label": "Accountability",
+      "objectiveText": "Reduce the information gap between the providers of capital and the people to whom they have entrusted their money, by giving information needed to hold management to account — including a control-based, consolidated view of the whole economic entity so that the stewardship of the group's resources can be assessed.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:ifrs:ifrs-foundation-constitution"
+    },
+    {
+      "id": "OBJ-IASB-MARKET-EFFICIENCY",
+      "nodeType": "RegulatoryObjective",
+      "label": "Market efficiency",
+      "objectiveText": "Contribute to economic efficiency by helping investors identify opportunities and risks across the world, improving capital allocation; a single, trusted accounting language — including market-based fair-value measurement and risk disclosure — lowers the cost of capital and reduces international reporting costs.",
+      "objectiveLevel": "objective",
+      "sourceCitation": "urn:reg:ifrs:ifrs-foundation-constitution"
+    }
+  ],
+  "edges": [
+    { "id": "OBJ-IASB-ISSUED_BY-IFRS9", "fromId": "urn:reg:ifrs:ifrs-9", "toId": "REG-IASB", "edgeType": "ISSUED_BY", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+
+    { "id": "OBJ-IASB-PURSUES-MANDATE", "fromId": "REG-IASB", "toId": "OBJ-IASB-MANDATE", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+    { "id": "OBJ-IASB-PURSUES-TRANSPARENCY", "fromId": "REG-IASB", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+    { "id": "OBJ-IASB-PURSUES-ACCOUNTABILITY", "fromId": "REG-IASB", "toId": "OBJ-IASB-ACCOUNTABILITY", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+    { "id": "OBJ-IASB-PURSUES-MARKET-EFFICIENCY", "fromId": "REG-IASB", "toId": "OBJ-IASB-MARKET-EFFICIENCY", "edgeType": "PURSUES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+
+    { "id": "OBJ-IASB-REFINES-TRANSPARENCY", "fromId": "OBJ-IASB-TRANSPARENCY", "toId": "OBJ-IASB-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+    { "id": "OBJ-IASB-REFINES-ACCOUNTABILITY", "fromId": "OBJ-IASB-ACCOUNTABILITY", "toId": "OBJ-IASB-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+    { "id": "OBJ-IASB-REFINES-MARKET-EFFICIENCY", "fromId": "OBJ-IASB-MARKET-EFFICIENCY", "toId": "OBJ-IASB-MANDATE", "edgeType": "REFINES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+
+    { "id": "OBJ-IASB-SERVES-AC01-TR", "fromId": "OBL-ORG-AC-01", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.4" },
+    { "id": "OBJ-IASB-SERVES-AC02-TR", "fromId": "OBL-ORG-AC-02", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.5.5" },
+    { "id": "OBJ-IASB-SERVES-AC03-TR", "fromId": "OBL-ORG-AC-03", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.6" },
+    { "id": "OBJ-IASB-SERVES-AC05-TR", "fromId": "OBL-ORG-AC-05", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-13:s.72-90" },
+    { "id": "OBJ-IASB-SERVES-AC06-TR", "fromId": "OBL-ORG-AC-06", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-15:s.9-90" },
+    { "id": "OBJ-IASB-SERVES-AC07-TR", "fromId": "OBL-ORG-AC-07", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-16:s.22-60" },
+    { "id": "OBJ-IASB-SERVES-AC09-TR", "fromId": "OBL-ORG-AC-09", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-12:s.5-88" },
+    { "id": "OBJ-IASB-SERVES-AC10-TR", "fromId": "OBL-ORG-AC-10", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-21:s.28" },
+    { "id": "OBJ-IASB-SERVES-AC12-TR", "fromId": "OBL-ORG-AC-12", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifric-23:s.9-14" },
+
+    { "id": "OBJ-IASB-SERVES-AC04-TR", "fromId": "OBL-ORG-AC-04", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-7:s.31-42" },
+    { "id": "OBJ-IASB-SERVES-AC08-TR", "fromId": "OBL-ORG-AC-08", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-1:s.10-138" },
+    { "id": "OBJ-IASB-SERVES-AC11-TR", "fromId": "OBL-ORG-AC-11", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-24:s.13-24" },
+
+    { "id": "OBJ-IASB-SERVES-GRPFINREP-ACC", "fromId": "OBL-ORG-GRP-FINREP", "toId": "OBJ-IASB-ACCOUNTABILITY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-10:s.5-26" },
+
+    { "id": "OBJ-IASB-SERVES-AC05-ME", "fromId": "OBL-ORG-AC-05", "toId": "OBJ-IASB-MARKET-EFFICIENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-13:s.72-90" },
+    { "id": "OBJ-IASB-SERVES-AC04-ME", "fromId": "OBL-ORG-AC-04", "toId": "OBJ-IASB-MARKET-EFFICIENCY", "edgeType": "SERVES", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-7:s.31-42" },
+
+    { "id": "OBJ-IASB-ALIGNS_TO-FINACCT-TR", "fromId": "POL-FIN-ACCT-01", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-foundation-constitution" },
+    { "id": "OBJ-IASB-ALIGNS_TO-ECL-TR", "fromId": "POL-ifrs9-ecl-provisioning-policy", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.5.5" },
+    { "id": "OBJ-IASB-ALIGNS_TO-HEDGE-TR", "fromId": "POL-HEDGE-ACCOUNTING-V1", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-9:s.6" },
+    { "id": "OBJ-IASB-ALIGNS_TO-FINREP-TR", "fromId": "POL-financial-reporting-policy", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-1:s.10-138" },
+    { "id": "OBJ-IASB-ALIGNS_TO-PILLAR3-ME", "fromId": "POL-pillar-3-disclosure-policy", "toId": "OBJ-IASB-MARKET-EFFICIENCY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 0.9, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ifrs-7:s.31-42" },
+    { "id": "OBJ-IASB-ALIGNS_TO-TAX-TR", "fromId": "POL-TAX-POL-01", "toId": "OBJ-IASB-TRANSPARENCY", "edgeType": "ALIGNS_TO", "extractionMethod": "rule-based", "confidenceScore": 1.0, "extractedAt": "2026-06-10T00:00:00Z", "sourceProvision": "urn:reg:ifrs:ias-12:s.5-88" }
+  ]
+}
