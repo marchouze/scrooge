@@ -66,6 +66,7 @@
 //   D-REGULATORY-READINESS-GATE-PLAN (CEO-approved 2026-05-10)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { rwaInstrumentClassWeights } from "../config/financial-constants";
 import type { BondTradeExecutedPayload } from "../event-store/event-types/bond-accounting";
 import type { CcrEadComputedPayload } from "../event-store/event-types/counterparty-credit-risk";
@@ -77,6 +78,7 @@ import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
+import { logger } from "../observability/logger";
 import { resolveAllCounterpartyClasses } from "../risk/counterparty-classification";
 import {
   type CreditExposure,
@@ -349,6 +351,15 @@ export function computeRwaFromPositions(
   // recon:counterparty-basel-classification-coverage so the residual is visible.
   const classByCounterparty = resolveAllCounterpartyClasses(eventStore, asOf);
 
+  // Event-sourced FX rate map (D-FX-EAD-FX-CONVERSION). A non-ZAR netting set's
+  // EAD is converted to functional currency (ZAR) before it enters CreditRWA —
+  // the RWA engine sums eadMinor without FX conversion, so a non-ZAR amount must
+  // be converted HERE or it would be mis-summed. Previously non-ZAR EAD was
+  // silently dropped; now it converts via the canonical buildRateMap/convertMinor
+  // (P1 — rates derived from FxTradeExecuted). A netting set whose currency has
+  // NO rate path to ZAR is skipped with a logged note (observable, not silent).
+  const fxRates = buildRateMap([...eventStore.replay({ type: "FxTradeExecuted", asOf })]);
+
   const latestEadByNettingSet = new Map<string, { p: CcrEadComputedPayload; eventId: string }>();
   for (const ev of eventStore.replay({ type: "CcrEadComputed", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
@@ -360,16 +371,38 @@ export function computeRwaFromPositions(
   }
   for (const { p, eventId } of latestEadByNettingSet.values()) {
     if (p.ead <= 0) continue;
-    // ZAR netting sets only — see currency note above.
-    if (p.currency !== FUNCTIONAL_CURRENCY) continue;
+
+    // Convert non-ZAR EAD to functional currency (ZAR). ZAR passes through.
+    let eadZarMinor = p.ead;
+    let conversionNote = "";
+    if (p.currency !== FUNCTIONAL_CURRENCY) {
+      const converted = convertMinor(p.ead, p.currency, FUNCTIONAL_CURRENCY, fxRates);
+      if (converted === null) {
+        // No rate path ccy→ZAR. Skip — but observable (Vera can assert on a
+        // CcrEadComputed with no consuming CreditExposure), not a silent drop.
+        logger.warn(
+          {
+            component: "rwa-from-positions.ccr-ead",
+            nettingSetId: p.nettingSetId,
+            currency: p.currency,
+            asOf,
+          },
+          "CcrEadComputed in a non-ZAR currency with no FX rate path to ZAR; EAD excluded from CreditRWA pending a rate.",
+        );
+        continue;
+      }
+      eadZarMinor = converted;
+      conversionNote = ` [converted ${p.currency} ${p.ead} → ZAR ${eadZarMinor}]`;
+    }
+
     const assigned = classByCounterparty.get(p.counterpartyId);
     const note = assigned
-      ? `SA-CCR EAD nettingSet=${p.nettingSetId} — authoritative class ${assigned.baselClass} (CRO-assigned ${assigned.sourceEventId}; D-FX-COUNTERPARTY-BASEL-CLASSIFICATION)`
-      : `SA-CCR EAD nettingSet=${p.nettingSetId} — interim conservative class (corporate-non-ig, 100%) pending authoritative counterparty classification (D-FX-CCR-INTERIM-CONSERVATIVE-RWA)`;
+      ? `SA-CCR EAD nettingSet=${p.nettingSetId} — authoritative class ${assigned.baselClass} (CRO-assigned ${assigned.sourceEventId}; D-FX-COUNTERPARTY-BASEL-CLASSIFICATION)${conversionNote}`
+      : `SA-CCR EAD nettingSet=${p.nettingSetId} — interim conservative class (corporate-non-ig, 100%) pending authoritative counterparty classification (D-FX-CCR-INTERIM-CONSERVATIVE-RWA)${conversionNote}`;
     creditExposures.push({
       counterpartyId: p.counterpartyId,
       counterpartyType: assigned?.baselClass ?? "corporate-non-ig",
-      eadMinor: p.ead,
+      eadMinor: eadZarMinor,
       currency: FUNCTIONAL_CURRENCY,
       ratingBucket: assigned?.ratingBucket ?? "unrated",
       residualMaturity: assigned?.residualMaturity ?? "long-term",
