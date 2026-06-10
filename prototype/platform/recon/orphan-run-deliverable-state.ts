@@ -24,6 +24,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { eventStore } from "../composition";
+import { nowUtc } from "../core/types";
 import { ORPHAN_DELIVERABLE_READY_ALERT_PREFIX } from "../escalation/decision-required-surface";
 import { makeAgentRunCompleted } from "../event-store/event-types";
 import { makeSubstrateAlert } from "../event-store/event-types/platform";
@@ -315,7 +316,7 @@ function autoReconcileMergedOrphan(
 }
 
 if (import.meta.main) {
-  const asOf = new Date().toISOString(); // wall-clock: CLI entrypoint only
+  const asOf = nowUtc(); // approved wall-clock boundary helper (CLI entrypoint)
   // CLI wires a real gh-backed PR-state lookup. Kept thin and lazy so the
   // module stays import-pure for tests.
   const { ghPrStateLookup, ghAvailable } = await import("./orphan-run-gh-lookup");
