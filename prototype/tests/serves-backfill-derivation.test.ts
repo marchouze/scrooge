@@ -32,13 +32,17 @@ import { buildAdoptedServesBackfillArtefact } from "../platform/regulatory/graph
 import {
   type AdoptedRegisterRow,
   type DerivedServesEdge,
-  deriveServesBackfill,
   SERVES_CONFIDENCE_THRESHOLD,
   type ServesResidual,
+  deriveServesBackfill,
 } from "../platform/regulatory/graph/serves-backfill-derivation";
 
 const REPO_ROOT = join(import.meta.dir, "..", "..");
-const ARTEFACT_PATH = join(REPO_ROOT, "Regulations", "_adopted-serves-backfill-objective-graph.json");
+const ARTEFACT_PATH = join(
+  REPO_ROOT,
+  "Regulations",
+  "_adopted-serves-backfill-objective-graph.json",
+);
 
 const NONE: ReadonlySet<string> = new Set();
 
@@ -177,7 +181,8 @@ describe("serves-backfill derivation — honesty bar (no fake edges)", () => {
   test("exchange-control (FinSurv) and tax (SARS) sources stay unmapped — no objective graph yet", () => {
     const excon = deriveOne({
       id: "ORG-TEST-FX",
-      citation: "Currency and Exchanges Manual for Authorised Dealers (2026-05-15 ed.), Section B.1",
+      citation:
+        "Currency and Exchanges Manual for Authorised Dealers (2026-05-15 ed.), Section B.1",
     });
     const tax = deriveOne({ id: "ORG-TEST-TX", citation: "Income Tax Act 58/1962" });
     expect(excon.residual?.reasonClass).toBe("no-objective-graph:SARB-FinSurv");
