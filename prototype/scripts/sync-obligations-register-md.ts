@@ -110,14 +110,17 @@ function main(): number {
       ownerPatched++;
     }
 
-    // Domain-A review pass (D-OBLIGATIONS-REGISTER-CLEANUP P4): for the
-    // Prudential rows only, patch the Requirement column (segs[4]) where the
-    // seed rewrote it, plus the four review columns so the markdown render
-    // reflects Mira's reviewed summaries in lockstep with the seed.
-    // Non-Domain-A rows are left untouched (no other domains in scope).
-    if (row.domain === "A") {
+    // Review pass (D-OBLIGATIONS-REGISTER-CLEANUP P4 + P4-SCALE): patch the
+    // Requirement column (segs[4]) where the seed rewrote it, plus the four
+    // review columns so the markdown render reflects Mira's reviewed summaries
+    // in lockstep with the seed. The Domain-A pilot (PR #1146) gated this on
+    // `row.domain === "A"`; the SCALE pass extends it to every domain — the
+    // column-safety logic is domain-agnostic (Requirement sits before the
+    // variable-column region; review columns are patched only on schema-shaped
+    // rows; malformed rows are skipped safely either way).
+    {
       // Requirement (segs[4]) sits before the variable-column region, so it is
-      // safe to patch on every Domain-A row regardless of column count.
+      // safe to patch on every row regardless of column count.
       const desiredRequirement = row.requirement ?? "";
       assertCellSafe(idCell, "requirement", desiredRequirement);
       const curRequirement = (segs[4] ?? "").trim();
@@ -158,11 +161,11 @@ function main(): number {
   console.log(`  ORG- rows in register: ${rowsSeen}`);
   console.log(`  URN cells patched: ${urnPatched}`);
   console.log(`  owner cells patched: ${ownerPatched}`);
-  console.log(`  Domain-A requirement cells patched: ${requirementPatched}`);
-  console.log(`  Domain-A review cells patched: ${reviewPatched}`);
+  console.log(`  requirement cells patched: ${requirementPatched}`);
+  console.log(`  review cells patched: ${reviewPatched}`);
   if (reviewSkippedMalformed.length > 0) {
     console.log(
-      `  NOTE — review cells skipped on ${reviewSkippedMalformed.length} malformed (non-canonical-column) Domain-A row(s); event-sourced coverage is unaffected:`,
+      `  NOTE — review cells skipped on ${reviewSkippedMalformed.length} malformed (non-canonical-column) row(s); event-sourced coverage is unaffected:`,
     );
     for (const id of reviewSkippedMalformed) console.log(`    ${id}`);
   }
