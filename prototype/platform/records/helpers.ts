@@ -101,6 +101,15 @@ function requireNonEmptyArray(field: string, value: readonly unknown[] | undefin
   }
 }
 
+/** A document body may be a UTF-8 string or raw bytes; both must be non-empty. */
+function requireNonEmptyBody(field: string, value: string | Uint8Array | undefined): void {
+  if (value instanceof Uint8Array) {
+    if (value.length === 0) throw new Error(`${field} is required`);
+    return;
+  }
+  requireNonEmpty(field, value);
+}
+
 // ---------------------------------------------------------------------------
 // recordBriefIssued — RMS-1
 // ---------------------------------------------------------------------------
@@ -559,8 +568,15 @@ export function supersedeBrief(input: SupersedeBriefInput, asOf: string): Supers
 export interface RecordFiledInput {
   readonly recordId: string;
   readonly registerKey: RecordFiledPayload["registerKey"];
-  /** Document body to file. Put into the store; hash becomes `documentHash`. */
-  readonly body: string;
+  /**
+   * Document body to file. Put into the store; the BLAKE3 hash of the bytes
+   * becomes `documentHash`. Strings are UTF-8 encoded by `documentStore.put`;
+   * `Uint8Array` is stored verbatim (binary sources — PDFs etc. — file
+   * losslessly). Nothing downstream assumes `body` is UTF-8 text: the hash is
+   * computed over the bytes, `documentHash` is the only payload field derived
+   * from the body, and the event carries no decoded copy.
+   */
+  readonly body: string | Uint8Array;
   readonly classification: RecordFiledPayload["classification"];
   readonly retention: RecordFiledPayload["retention"];
   readonly supersedes?: string;
@@ -582,7 +598,7 @@ export function recordFiled(
   deps?: RecordHelperDeps,
 ): RecordHelperResult {
   requireNonEmpty("recordId", input.recordId);
-  requireNonEmpty("body", input.body);
+  requireNonEmptyBody("body", input.body);
   requireNonEmpty("retention.citationRef", input.retention.citationRef);
   requireNonEmptyArray("citations", input.citations);
 
@@ -616,6 +632,89 @@ export function recordFiled(
     documentHash: put.hash,
     isNewDocument: put.isNew,
   };
+}
+
+// ---------------------------------------------------------------------------
+// recordRegulatorySource — WS-REGULATORY-LIBRARY-V1 Slice 1
+// ---------------------------------------------------------------------------
+
+export interface RecordRegulatorySourceInput {
+  /**
+   * The instrument this source binary is the published text of (e.g.
+   * `FAIS-ACT-37-2002`). Used by the seed-projection to hash-link the blob to
+   * its graph Document node.
+   */
+  readonly instrumentId: string;
+  /** The structured-document slug for the same instrument (e.g. `fais-act`). */
+  readonly slug: string;
+  /** Human title (e.g. "Financial Advisory and Intermediary Services Act 37 of 2002"). */
+  readonly title: string;
+  /** Repo-relative path the bytes were acquired from (provenance, not a load-bearing pointer). */
+  readonly path: string;
+  /** The regulator's published-source URL (provenance). */
+  readonly sourceUrl?: string;
+  /** MIME content type of the bytes (e.g. `application/pdf`). */
+  readonly contentType: string;
+  /** The raw source bytes (PDF etc.) or text. */
+  readonly body: string | Uint8Array;
+  /** Stable recordId; defaults to `reg-source:<instrumentId>`. */
+  readonly recordId?: string;
+  readonly actor: Actor;
+  readonly entity?: string;
+}
+
+/**
+ * File a regulatory source binary into the content-addressed document store
+ * via a `RecordFiled{registerKey:"documents"}` event (Principle 1 — the event
+ * is canonical; the blob is the heavy bytes it cites by hash).
+ *
+ * Thin wrapper over {@link recordFiled} that fixes the regulatory-library
+ * envelope: `classification:"public-disclosure"` (the regulators' texts are
+ * public), `retention.citationRef:"D-REGULATORY-LIBRARY-V1"`, and
+ * `metadata.category:"regulatory-source"` so the seed-projection can replay
+ * exactly these filings and inject `goldenSourceHash` onto the Document node.
+ *
+ * Authority: D-REGULATORY-LIBRARY-V1 (CEO-approved 2026-06-11).
+ * Author: Mira (Compliance / RegTech engineer, engineering) +
+ *         Atlas (Core banking platform architect, engineering).
+ */
+export function recordRegulatorySource(
+  input: RecordRegulatorySourceInput,
+  asOf: string,
+  deps?: RecordHelperDeps,
+): RecordHelperResult {
+  requireNonEmpty("instrumentId", input.instrumentId);
+  requireNonEmpty("slug", input.slug);
+  requireNonEmpty("title", input.title);
+  requireNonEmpty("contentType", input.contentType);
+
+  return recordFiled(
+    {
+      recordId: input.recordId ?? `reg-source:${input.instrumentId}`,
+      registerKey: "documents",
+      body: input.body,
+      classification: "public-disclosure",
+      retention: {
+        citationRef: "D-REGULATORY-LIBRARY-V1",
+        minimumYears: 7,
+        archivalTier: "cool",
+      },
+      metadata: {
+        title: input.title,
+        path: input.path,
+        category: "regulatory-source",
+        instrumentId: input.instrumentId,
+        slug: input.slug,
+        ...(input.sourceUrl ? { sourceUrl: input.sourceUrl } : {}),
+        contentType: input.contentType,
+      },
+      citations: ["D-REGULATORY-LIBRARY-V1"],
+      actor: input.actor,
+      ...(input.entity ? { entity: input.entity } : {}),
+    },
+    asOf,
+    deps,
+  );
 }
 
 // ---------------------------------------------------------------------------
