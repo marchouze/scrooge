@@ -563,7 +563,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   // Brief-bound dispatch path: when the loop selected a decision and there is
   // an open brief addressed to Rohan, bind a run to the oldest brief and emit
-  // its dispatch lifecycle (triage-and-route) instead of only the cadence
+  // its run lifecycle (terminal blocked, never auto-routed) instead of only the cadence
   // attestation. Skipped under --dry-run (no real run-lifecycle side-effects).
   const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForRohan() : [];
   const [brief] = openBriefs;

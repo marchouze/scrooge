@@ -64,16 +64,17 @@ import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-s
 import { eventStore, logger } from "../../platform/composition";
 import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
-import { routeBlockedBrief } from "../../platform/records/brief-router";
-import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 // Import the underlying liquidity-snapshot handler directly to avoid the circular
 // dependency that would arise from importing run.ts here.
 // (run.ts imports handler-callables.ts which imports this file.)
 import eitanLiquiditySnapshot from "./eitan-liquidity-snapshot";
-
-// Authority cited on the brief-bound run-lifecycle events this loop emits.
-const RISK_TREASURY_AUTHORITY = "D-AGENT-AUTONOMY-RISK-TREASURY-PILOT" as const;
+import {
+  type GoalLoopBriefDispatchConfig,
+  dispatchBriefBoundRun,
+  isSelfExecutableBrief,
+  openBriefsListForAgent,
+} from "./goal-loop-brief-dispatch";
 
 // ---------------------------------------------------------------------------
 // Rule-engine goal deriver for Eitan
@@ -185,39 +186,16 @@ function lastALCOMinutesApprovedMs(): number | undefined {
 
 /**
  * Returns the open (not yet started/completed) briefs addressed to Eitan,
- * older than `minAgeMs` (default 30 min), oldest-first. Mirrors Bea's
- * `openBriefsListForBea`. Authority: D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+ * older than `minAgeMs` (default 30 min), oldest-first. Delegates to the
+ * shared `openBriefsListForAgent` (goal-loop-brief-dispatch.ts) so the
+ * open-brief semantics exist once across all goal-loops.
+ * Authority: D-GOAL-LOOP-SHARED-DISPATCH-MIGRATION-AND-BLOCKED-DRAIN.
  */
 export function openBriefsListForEitan(
   store: EventStore = eventStore,
   minAgeMs = 30 * 60 * 1000,
 ): AgentBriefIssuedPayload[] {
-  const handledBriefIds = new Set<string>();
-  for (const e of store.replay({ type: "AgentRunCompleted" })) {
-    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
-    if (id) handledBriefIds.add(id);
-  }
-  for (const e of store.replay({ type: "AgentRunStarted" })) {
-    const id = String((e.payload as Record<string, unknown>).briefId ?? "");
-    if (id) handledBriefIds.add(id);
-  }
-  const open: Array<{ asOfMs: number; payload: AgentBriefIssuedPayload }> = [];
-  for (const e of store.replay({ type: "AgentBriefIssued" })) {
-    const p = e.payload as AgentBriefIssuedPayload;
-    const briefId = String(p.briefId ?? e.event_id);
-    if (
-      !String(p.issuedTo?.name ?? "")
-        .toLowerCase()
-        .includes("eitan")
-    )
-      continue;
-    if (handledBriefIds.has(briefId)) continue;
-    const t = new Date(e.as_of).getTime();
-    if (Number.isNaN(t) || Date.now() - t <= minAgeMs) continue;
-    open.push({ asOfMs: t, payload: p });
-  }
-  open.sort((a, b) => a.asOfMs - b.asOfMs);
-  return open.map((o) => o.payload);
+  return openBriefsListForAgent("eitan", store, minAgeMs);
 }
 
 /** Count of open briefs addressed to Eitan. Drives candidate-0. */
@@ -501,141 +479,45 @@ export const eitanGoalDeriver: GoalDeriver = async (
 };
 
 // ---------------------------------------------------------------------------
-// Brief-bound dispatch (D-AGENT-AUTONOMY-RISK-TREASURY-PILOT — triage-and-route)
-// Self-executable liquidity/ALM attestations close delivered; everything else
-// closes blocked + routes to the engineering-execution substrate. Never fakes
-// delivery. Mirrors Bea / Rohan / Ravi / Helena.
+// Brief-bound dispatch — shared module (goal-loop-brief-dispatch.ts)
+//
+// Self-executable liquidity/ALM attestations close delivered (live handler);
+// everything else closes blocked with the substrate gap surfaced and
+// followOnRoutes: []. Blocked is TERMINAL — the legacy auto-routing of blocked
+// briefs into the brief-router is removed (it re-issued briefs without an
+// executor: the phantom-backlog failure mode of PR #1182). A Scrooge-
+// coordinated / LLM-backed dispatched run picks the gap up. Never fakes
+// delivery.
+//
+// Run-lifecycle citations come from GOAL_LOOP_RUN_LIFECYCLE_AUTHORITIES in the
+// shared module. Eitan's cohort behaviour (candidate set, classifier pattern)
+// still derives from D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.
+// Authority: D-GOAL-LOOP-SHARED-DISPATCH-MIGRATION-AND-BLOCKED-DRAIN
+// (CEO-approved 2026-06-11).
 // ---------------------------------------------------------------------------
 
-const EITAN_GOAL_LOOP_ACTOR = { type: "service", id: "agent:eitan" } as const;
+/**
+ * Title pattern for the attestation class Eitan's deterministic handler
+ * genuinely delivers. The only deterministic deliverable Eitan's goal-loop
+ * owns today is the LiquiditySnapshot.
+ */
+const EITAN_SELF_EXECUTABLE_PATTERN = /liquidity|lcr|nsfr|irrbb|alco|treasury/i;
 
 /**
  * Self-executable only if the brief asks for the liquidity / LCR / NSFR / ALCO
- * readiness attestation AND needs no code-PR. The only deterministic
- * deliverable Eitan's goal-loop owns today is the LiquiditySnapshot.
+ * readiness attestation AND needs no code-PR.
  */
 export function isSelfExecutableByEitan(brief: AgentBriefIssuedPayload): boolean {
-  const needsCode = brief.expectedOutputs.some((o) => o.kind === "code-pr");
-  if (needsCode) return false;
-  return /liquidity|lcr|nsfr|irrbb|alco|treasury/i.test(brief.title);
+  return isSelfExecutableBrief(brief, EITAN_SELF_EXECUTABLE_PATTERN);
 }
 
-async function dispatchBriefBoundRun(
-  ctx: AgentRunContext,
-  brief: AgentBriefIssuedPayload,
-  iterationId: string,
-  remainingOpen: number,
-): Promise<{ eventsEmitted: number; summary: string }> {
-  const runId = `run:eitan:goal-loop:${iterationId}`;
-  const agent = brief.issuedTo;
-
-  recordAgentRunStarted(
-    {
-      runId,
-      briefId: brief.briefId,
-      agent,
-      startedAt: ctx.asOf,
-      substrate: "agent-runtime",
-      citations: [RISK_TREASURY_AUTHORITY],
-      actor: EITAN_GOAL_LOOP_ACTOR,
-    },
-    ctx.asOf,
-  );
-
-  let eventsEmitted = 1;
-
-  if (isSelfExecutableByEitan(brief)) {
-    const handlerOutput = await eitanLiquiditySnapshot({ ...ctx, dryRun: false });
-    eventsEmitted += handlerOutput.eventsEmitted;
-    recordAgentRunCompleted(
-      {
-        runId,
-        briefId: brief.briefId,
-        agent,
-        completedAt: ctx.asOf,
-        outcome: "delivered",
-        deliverableBodies: [
-          `Eitan goal-loop delivered the liquidity attestation for brief ${brief.briefId} ("${brief.title}"). ${handlerOutput.summary}`,
-        ],
-        substrateGapsSurfaced: [],
-        deliverableCitations: [RISK_TREASURY_AUTHORITY],
-        followOnRoutes: [],
-        citations: [RISK_TREASURY_AUTHORITY],
-        actor: EITAN_GOAL_LOOP_ACTOR,
-      },
-      ctx.asOf,
-    );
-    eventsEmitted += 1;
-    logger.info(
-      { briefId: brief.briefId, runId, remainingOpen },
-      "eitan:goal-loop — brief delivered (liquidity attestation class)",
-    );
-    return {
-      eventsEmitted,
-      summary: `brief ${brief.briefId} delivered (liquidity); ${remainingOpen} open brief(s) remain`,
-    };
-  }
-
-  const routeKind = brief.expectedOutputs.some((o) => o.kind === "code-pr") ? "code-pr" : "agent";
-  const gap = `Eitan goal-loop (rule-engine) triaged brief ${brief.briefId} ("${brief.title}") but cannot execute it autonomously — it requires engineering/judgement work outside the rule-engine capability. Routed to the engineering-execution substrate. This is the goal-loop→dispatched-run substrate gap.`;
-  const followOnRoutes = [
-    {
-      kind: routeKind as "code-pr" | "agent",
-      target: "engineering-execution-substrate",
-      directive: `Execute brief ${brief.briefId}: ${brief.title}${
-        brief.workstreamId ? ` (workstream ${brief.workstreamId})` : ""
-      }. Triaged and routed by Eitan's autonomous goal-loop; requires an engineering-execution run.`,
-    },
-  ];
-  recordAgentRunCompleted(
-    {
-      runId,
-      briefId: brief.briefId,
-      agent,
-      completedAt: ctx.asOf,
-      outcome: "blocked",
-      deliverableBodies: [],
-      substrateGapsSurfaced: [gap],
-      deliverableCitations: [RISK_TREASURY_AUTHORITY],
-      followOnRoutes,
-      citations: [RISK_TREASURY_AUTHORITY],
-      actor: EITAN_GOAL_LOOP_ACTOR,
-    },
-    ctx.asOf,
-  );
-  eventsEmitted += 1;
-
-  // Auto-issue follow-on briefs for each blocked route so the next executor
-  // picks them up on its next tick (D-AGENT-AUTONOMY-COHORT-2-PILOT).
-  let followOnBriefsIssued = 0;
-  for (const route of followOnRoutes) {
-    const routeResult = routeBlockedBrief({
-      blockedRunId: runId,
-      route,
-      parentBriefId: brief.briefId,
-      parentBriefTitle: brief.title,
-      issuedBy: agent,
-      asOf: ctx.asOf,
-    });
-    if (!routeResult.alreadyExists) {
-      followOnBriefsIssued++;
-      logger.info(
-        { blockedRunId: runId, routeBriefId: routeResult.briefId, routeKind: route.kind },
-        "eitan:goal-loop — follow-on brief issued for blocked route",
-      );
-    }
-  }
-  eventsEmitted += followOnBriefsIssued; // AgentBriefIssued counts as emitted event
-
-  logger.info(
-    { briefId: brief.briefId, runId, routeKind, remainingOpen },
-    "eitan:goal-loop — brief triaged + routed to engineering-execution substrate (blocked, gap surfaced)",
-  );
-  return {
-    eventsEmitted,
-    summary: `brief ${brief.briefId} routed→executor (blocked); followOnBriefs=${followOnBriefsIssued}; ${remainingOpen} open brief(s) remain`,
-  };
-}
+/** Shared brief-dispatch config — the delivered class (liquidity attestation) stays live. */
+export const EITAN_BRIEF_DISPATCH: GoalLoopBriefDispatchConfig = {
+  agentSlug: "eitan",
+  selfExecutablePattern: EITAN_SELF_EXECUTABLE_PATTERN,
+  deliveredClassLabel: "liquidity attestation",
+  runHandler: eitanLiquiditySnapshot,
+};
 
 // Lazy singletons — avoid re-constructing per handler call.
 let _goalLoopRunner: LocalAgentGoalLoopRunner | undefined;
@@ -716,11 +598,17 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   // Brief-bound dispatch path: when the loop selected a decision and there is
   // an open brief addressed to Eitan, bind a run to the oldest brief and emit
-  // its dispatch lifecycle (triage-and-route). Skipped under --dry-run.
+  // its run lifecycle (terminal blocked, never auto-routed). Skipped under --dry-run.
   const openBriefs = shouldRunHandler && !ctx.dryRun ? openBriefsListForEitan() : [];
   const [brief] = openBriefs;
   if (brief) {
-    const dispatch = await dispatchBriefBoundRun(ctx, brief, iterationId, openBriefs.length - 1);
+    const dispatch = await dispatchBriefBoundRun(
+      ctx,
+      brief,
+      iterationId,
+      openBriefs.length - 1,
+      EITAN_BRIEF_DISPATCH,
+    );
     logger.info(
       { agent: ctx.agent, iterationId, briefId: brief.briefId, openBriefs: openBriefs.length },
       "eitan:goal-loop — run complete (brief-bound dispatch)",
