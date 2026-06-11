@@ -41,7 +41,9 @@ SARB-PA/
   ...
 ```
 
-The canonical regulatory text itself is referenced by URL — we do not redistribute the regulators' published documents. Where excerpts are useful, they are quoted in the analysis file with attribution.
+The canonical regulatory text itself is referenced by URL. Where excerpts are useful, they are quoted in the analysis file with attribution.
+
+Per `D-REGULATORY-LIBRARY-V1` (CEO-approved 2026-06-11, WS-REGULATORY-LIBRARY-V1), the source binaries themselves (the regulators' published PDFs/texts — including BCBS/BIS standards) are now also stored **internally** in the bank's BLAKE3 content-addressed document store, filed as a `RecordFiled{registerKey:"documents"}` event (`bun run acquire:source`). This is internal retention for traceability and offline integrity-checking, not public redistribution: access is gated by the RMS `classification` field (these sources carry `public-disclosure`), and each filed source is hash-linked to its graph `Document` node via `metadata.goldenSourceHash`. The first instrument filed under this primitive is the FAIS Act 37 of 2002.
 
 ## Obligations register
 

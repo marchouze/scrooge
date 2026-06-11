@@ -198,6 +198,14 @@ export const recordFiledPayloadSchema = z.object({
       author: z.string().optional(),
       date: z.string().optional(),
       prRef: z.string().optional(),
+      // Regulatory-source filing fields (D-REGULATORY-LIBRARY-V1, Slice 1).
+      // Present when `category === "regulatory-source"`; the seed-projection
+      // hash-links the filed binary to its graph Document node by matching
+      // `instrumentId` / `slug`. All additive + optional — back-compatible.
+      instrumentId: z.string().optional(),
+      slug: z.string().optional(),
+      sourceUrl: z.string().optional(),
+      contentType: z.string().optional(),
     })
     .optional(),
 });

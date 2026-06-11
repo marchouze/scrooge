@@ -193,6 +193,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:rwa-computed-sourcing",
     "recon:fx-subledger-reconciliation",
     "recon:escalation-surface-parity",
+    "recon:regulatory-golden-source-integrity",
   ],
 };
 
