@@ -71,4 +71,19 @@ export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Rohan", "conduct-risk-events", "event-driven", {
     subscribesTo: ["FxTradeExecuted"],
   }),
+  // FX conduct surveillance sweep — the reliable dispatch path for best-
+  // execution + FAIS-suitability + conflict surveillance. The event-driven
+  // conduct-risk-events handler fires only when an FxTradeExecuted lands inside
+  // an agent run; FX trades are booked by the operator / pre-trade-gateway path
+  // (not an agent run), so they never reached the handler. This scheduled sweep
+  // scans the store for any FxTradeExecuted lacking a surveillance outcome and
+  // evaluates it (same pattern as the BA310/BA300 period-close handlers). Daily
+  // 18:45 UTC = 15 min after rohan:market-risk-measure (18:30 UTC). Idempotent.
+  // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH (CEO session-
+  //            delegation 2026-06-11); D-MARKET-CONDUCT; FAIS Act 37/2002 §§16–17.
+  // Brief: brief:zara:otc-vanilla-fx-conduct-dimension-wire-inert-cond:2026-06-11.
+  entry("Rohan", "conduct-surveillance-sweep", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "45 18 * * 1-5",
+  }),
 ];
