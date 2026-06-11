@@ -52,8 +52,8 @@ import {
   existsSync,
   watch as fsWatch,
   mkdirSync,
-  readdirSync,
   readFileSync,
+  readdirSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 

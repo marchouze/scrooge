@@ -50,6 +50,18 @@ interface RegSection {
   text: string;
   verbatim: boolean;
   subsections?: RegSubsection[];
+  /**
+   * Excerpt records filed via recordRegulatoryExcerpt()
+   * (WS-REGULATORY-LIBRARY-V1 Slice 4, D-REGULATORY-LIBRARY-V1).
+   * Passed through to the client for inline image rendering.
+   */
+  excerpts?: Array<{
+    id: string;
+    kind: string;
+    hash?: string;
+    pages?: string;
+    caption?: string;
+  }>;
 }
 
 interface RegChapter {

@@ -251,8 +251,7 @@
                         exc.caption ||
                           (exc.kind
                             ? exc.kind.charAt(0).toUpperCase() + exc.kind.slice(1)
-                            : "Excerpt") +
-                            (exc.pages ? ` (p. ${exc.pages})` : ""),
+                            : "Excerpt") + (exc.pages ? ` (p. ${exc.pages})` : ""),
                       );
                       return `<figure class="reg-excerpt" style="margin:var(--space-3) 0;padding:var(--space-2);border:1px solid var(--color-border);border-radius:4px;background:var(--color-surface-muted,#f9fafb)">
   <img src="${src}" alt="${alt}" loading="lazy" style="max-width:100%;height:auto;display:block"
