@@ -47,6 +47,7 @@ import { quoteRfq } from "../dashboard/markets-fx-trade";
 import { newEventId } from "../platform/core/types";
 import {
   makeCounterpartyEligibilityScreened,
+  makeCounterpartyFaisClassified,
   makeOrderApprovedAtGateway,
   makeOrderRejectedAtGateway,
   makeRwaComputed,
@@ -118,6 +119,23 @@ function seedEligibleCounterparty(store: EventStore, counterpartyId: string): vo
         outcome: "institutional-eligible",
         evidenceRefs: ["SARB-licence-fixture"],
         asOf: T_2026,
+      },
+    }),
+  );
+  // An institutionally-eligible bank counterparty is FAIS-classified as a
+  // market-counterparty in this venue — required for the enforced suitability
+  // gateway check (D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH) to admit.
+  store.append(
+    makeCounterpartyFaisClassified({
+      asOf: T_2026,
+      entity: ENTITY,
+      actor: NIKO_ACTOR,
+      citations: ELIGIBILITY_CITATIONS,
+      payload: {
+        counterpartyId,
+        faisCategory: "market-counterparty",
+        classifiedAt: T_2026,
+        classifiedBy: "agent:niko:counterparty-lifecycle",
       },
     }),
   );

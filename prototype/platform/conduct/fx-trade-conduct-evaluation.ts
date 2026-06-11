@@ -151,7 +151,10 @@ function outputExistsForTrade(
 // FAIS classification lookup — latest CounterpartyFaisClassified wins.
 // ---------------------------------------------------------------------------
 
-function lookupFaisCategory(store: EventStore, counterpartyId: string): FaisCategory | null {
+export function lookupFaisCategory(
+  store: Pick<EventStore, "replay">,
+  counterpartyId: string,
+): FaisCategory | null {
   let latest: FaisCategory | null = null;
   for (const e of store.replay({ type: "CounterpartyFaisClassified" })) {
     const p = e.payload as { counterpartyId?: unknown; faisCategory?: unknown };
