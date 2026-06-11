@@ -19,8 +19,7 @@ import "../platform/event-store/resolve-event-db-boot";
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
 
-const RECORD_ID =
-  "record:documents:eitan:proc-risk-cfp-01-cfp-invocation-and-rehearsal:2026-06-11";
+const RECORD_ID = "record:documents:eitan:proc-risk-cfp-01-cfp-invocation-and-rehearsal:2026-06-11";
 
 const alreadyFiled = [...eventStore.replay({ type: "RecordFiled" })].some(
   (e) => (e.payload as { recordId?: string }).recordId === RECORD_ID,
@@ -32,10 +31,7 @@ if (alreadyFiled) {
 }
 
 const WORKTREE_ROOT = resolve(import.meta.dir, "../../");
-const DOC_PATH = resolve(
-  WORKTREE_ROOT,
-  "Procedures/by-policy/cfp-invocation-and-rehearsal.md",
-);
+const DOC_PATH = resolve(WORKTREE_ROOT, "Procedures/by-policy/cfp-invocation-and-rehearsal.md");
 const body = readFileSync(DOC_PATH, "utf8");
 
 const result = recordFiled(

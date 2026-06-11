@@ -16,11 +16,10 @@ import { resolve } from "node:path";
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../platform/composition";
-import { recordFiled } from "../platform/records";
 import { eventStore } from "../platform/composition";
+import { recordFiled } from "../platform/records";
 
-const RECORD_ID =
-  "record:documents:eitan:cfp-funding-source-inventory:2026-06-11";
+const RECORD_ID = "record:documents:eitan:cfp-funding-source-inventory:2026-06-11";
 
 const alreadyFiled = [...eventStore.replay({ type: "RecordFiled" })].some(
   (e) => (e.payload as { recordId?: string }).recordId === RECORD_ID,

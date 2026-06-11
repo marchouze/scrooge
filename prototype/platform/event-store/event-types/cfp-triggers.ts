@@ -517,9 +517,7 @@ export type CfpActivationTriggerType = (typeof CFP_ACTIVATION_TRIGGER_TYPES)[num
  * `RehearsalEvidenceCollected` is a lifecycle/evidence event, not an
  * activation trigger — it has no tier mapping.
  */
-export const CFP_TIER_BY_TRIGGER: Readonly<
-  Record<CfpActivationTriggerType, readonly CfpTier[]>
-> = {
+export const CFP_TIER_BY_TRIGGER: Readonly<Record<CfpActivationTriggerType, readonly CfpTier[]>> = {
   IntradayStressDetected: ["tier-1"],
   CriticalSettlementObligationAtRisk: ["tier-1"],
   LcrRatioBreach: ["tier-2", "tier-3"],

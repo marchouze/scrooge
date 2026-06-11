@@ -44,13 +44,6 @@ import "../event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../composition";
 import {
-  CFP_ACTIVATION_TRIGGER_TYPES,
-  INTRADAY_STRESS_USAGE_PCT,
-  LCR_INTERNAL_FLOOR_PCT,
-  LCR_REGULATORY_MINIMUM_PCT,
-  NSFR_REGULATORY_MINIMUM_PCT,
-} from "./cfp-ewi";
-import {
   type CfpTier,
   makeCriticalSettlementObligationAtRisk,
   makeExternalCreditEventDetected,
@@ -61,6 +54,11 @@ import {
   makeRecoveryEarlyWarningTriggered,
   makeRehearsalEvidenceCollected,
 } from "../event-store/event-types/cfp-triggers";
+import {
+  INTRADAY_STRESS_USAGE_PCT,
+  LCR_INTERNAL_FLOOR_PCT,
+  NSFR_REGULATORY_MINIMUM_PCT,
+} from "./cfp-ewi";
 
 // ---------------------------------------------------------------------------
 // CLI argument parsing
@@ -73,7 +71,7 @@ const storeOverride = (() => {
   return idx >= 0 ? args[idx + 1] : undefined;
 })();
 
-if (storeOverride) process.env["BANK_EVENT_DB"] = storeOverride;
+if (storeOverride) process.env.BANK_EVENT_DB = storeOverride;
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -152,7 +150,7 @@ function validateInventory(): InventoryValidation {
 
   if (tbdCount > 0) {
     openFindings.push(
-      `T2.2 correspondent facility — W2.1 externally blocked: ZAR correspondent/sponsor bank counterparty TBD (pre-licence mandatory deliverable)`,
+      "T2.2 correspondent facility — W2.1 externally blocked: ZAR correspondent/sponsor bank counterparty TBD (pre-licence mandatory deliverable)",
     );
   }
   if (blockedCount > 0 && tbdCount === 0) {
@@ -218,7 +216,7 @@ function buildSyntheticPayloads(asOf: string) {
         cfpTier: "tier-1" as CfpTier,
         detectedAt: asOf,
         obligationRef: `REHEARSAL-BONDSERV-${date}`,
-        deadline: asOf.slice(0, 16).replace("T", " ") + " (simulated BondservAfrica cut-off)",
+        deadline: `${asOf.slice(0, 16).replace("T", " ")} (simulated BondservAfrica cut-off)`,
         requiredZar: 10_000_000, // ZAR 10m simulated obligation
         projectedAvailableZar: 7_000_000, // below required — triggers the event
       },
@@ -275,7 +273,8 @@ function buildSyntheticPayloads(asOf: string) {
         observedDetail:
           "Synthetic rehearsal payload: simulated ZAR correspondent bank CDS widening to 350bps — material external credit event.",
         threshold: null,
-        thresholdDescription: "Material external credit event — material impact on bank's funding access",
+        thresholdDescription:
+          "Material external credit event — material impact on bank's funding access",
         cfpTier: "tier-2" as CfpTier,
         detectedAt: asOf,
         impact: "material",
@@ -337,9 +336,11 @@ async function main() {
   const rehearsalDate = asOf.slice(0, 10);
 
   console.log("\n=== CFP Annual Rehearsal Harness ===");
-  console.log(`Mode:          ${dryRun ? "DRY-RUN (no store writes)" : "LIVE (store writes ENABLED)"}`);
+  console.log(
+    `Mode:          ${dryRun ? "DRY-RUN (no store writes)" : "LIVE (store writes ENABLED)"}`,
+  );
   console.log(`Rehearsal date: ${rehearsalDate}`);
-  console.log(`Store:          ${storeOverride ?? process.env["BANK_EVENT_DB"] ?? "(default)"}`);
+  console.log(`Store:          ${storeOverride ?? process.env.BANK_EVENT_DB ?? "(default)"}`);
   console.log("");
 
   // Step 1 — validate inventory
@@ -352,7 +353,9 @@ async function main() {
   }
 
   console.log(`  ✓ Inventory found: ${INVENTORY_REPO_PATH}`);
-  console.log(`  Coverage: ${inventory.coveragePct}% operational (${inventory.openFindings.length} open findings)`);
+  console.log(
+    `  Coverage: ${inventory.coveragePct}% operational (${inventory.openFindings.length} open findings)`,
+  );
   for (const f of inventory.openFindings) {
     console.log(`  OPEN FINDING: ${f}`);
   }
@@ -432,9 +435,11 @@ async function main() {
 
   if (!dryRun) {
     eventStore.append(evidenceEvent);
-    console.log(`  [LIVE] RehearsalEvidenceCollected persisted (event_id: ${evidenceEvent.event_id})`);
+    console.log(
+      `  [LIVE] RehearsalEvidenceCollected persisted (event_id: ${evidenceEvent.event_id})`,
+    );
   } else {
-    console.log(`  [DRY-RUN] RehearsalEvidenceCollected validated (not persisted)`);
+    console.log("  [DRY-RUN] RehearsalEvidenceCollected validated (not persisted)");
   }
 
   // Step 5 — summary
