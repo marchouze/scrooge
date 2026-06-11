@@ -2,9 +2,9 @@
 document-id: "policy:bank-strategy:v2"
 title: "Hoz Bank — Institutional Strategy v2"
 version: "2"
-status: DRAFT — PENDING CEO APPROVAL
+status: APPROVED
 owner: CEO
-effective-from: TBC — on CEO approval
+effective-from: "2026-06-11"
 next-review: "2027-06-11"
 supersedes: "policy:bank-strategy:v1"
 authors:
@@ -17,7 +17,7 @@ authors:
   - CCO (Chief Compliance Officer, governance) — compliance posture
   - Treasurer (Eitan, governance) — capital structure, funding, ALCO, contingency funding, intraday liquidity
 date: 2026-06-11
-decision-required: true
+decision-required: false
 citations:
   - "urn:reg:za:banks-act-94-1990"
   - "urn:reg:za:fais-act-37-2002"
@@ -45,7 +45,7 @@ summary: >
   product scope (OTC vanilla FX umbrella), 17-line structured RAS register,
   Treasurer governance substrate, regulatory library v1 — and adds a
   machine-extractable typed-scope appendix (§13) that a typed strategy register
-  will encode 1:1. Pending CEO approval under decisionId D-BANK-STRATEGY-V2.
+  will encode 1:1. APPROVED by the CEO 2026-06-11 under decisionId D-BANK-STRATEGY-V2.
 kind: other
 ---
 
@@ -53,7 +53,7 @@ kind: other
 
 **Author:** Scrooge (Chief of Staff, orchestration) — synthesised from governance-seat inputs; typed-scope appendix authored by Owen (Company Secretary, governance)  
 **Date:** 2026-06-11  
-**Status:** DRAFT — PENDING CEO APPROVAL  
+**Status:** APPROVED — `D-BANK-STRATEGY-V2` (CEO, 2026-06-11)  
 **Approval authority:** CEO  
 **Approval decisionId:** `D-BANK-STRATEGY-V2`  
 **Supersedes:** `Policies/bank-strategy-v1.md` (v1 DRAFT, 2026-05-22 — never approved; `D-BANK-STRATEGY-V1` was never recorded)  
@@ -440,9 +440,10 @@ No Chief Strategy Officer (CSO) is currently on the team roster. This document w
 | v1 DRAFT | 2026-05-22 | Chief of Staff (orchestration) | Initial draft — synthesis of governance-seat inputs; submitted for CEO review and approval. Never approved; `D-BANK-STRATEGY-V1` never recorded. Superseded by v2 |
 | v2 DRAFT | 2026-06-11 | Chief of Staff (orchestration); typed-scope appendix by Owen (Company Secretary, governance) | Refresh to 2026-06-11 substrate/governance state: §4.2 product table re-sourced from the typed product register (OTC vanilla FX umbrella `approved-conditional`, spot/forward/swap, option NOT approved); §6.4 milestones refreshed (LCR/NSFR live, RWA engine live via `RwaComputed`, returns wiring in progress, regulatory library v1 complete, Treasurer Wave-1 complete); §7.1 re-sourced from the 17-line structured RAS register; §7.2 Treasurer (Eitan) governance added; §8.1 aligned to regulatory library v1 (15/15 active sources, 6 objective layers); **new §13 machine-extractable typed-scope appendix** (ACT-*, product permissions, SEG-*, exclusions, jurisdictions, STERM-* defined terms). Submitted for CEO approval under `D-BANK-STRATEGY-V2` |
 | v2 DRAFT rev 2 | 2026-06-11 | Owen (Company Secretary, governance), per CEO in-session instruction 2026-06-11 (Marc, CEO) | **JSE cash equity removed from scope**: §1/§2.2/§4.1 operative language; §4.2 JSE Equity Desk row removed; §4.4 Hoz Securities Limited pathway deferred (reactivation requires NPA gate + strategy amendment); §8.1 JSE regulator row deferred/inactive; §13.1 `ACT-TRADE-EQUITY` moved to not-mandated; §13.2 `listed-equity` row → reserved/zero-permission; §13.4 `EXCL-LISTED-EQUITY` added; §13.6 `STERM-JSE-LISTED-EQUITY` resolution marked excluded. **FX forward tenor cap removed**: §4.2 note + §13.2 FX row + §13.6 `STERM-FX-FORWARD` — tenor governed by typed product scope (T+2 to T+N) and RAS market-risk lines, no fixed cap. Trading Mandate aligned at v1.1 (trading-mandate-v1.md). Status remains DRAFT — PENDING CEO APPROVAL under `D-BANK-STRATEGY-V2` |
+| v2 APPROVED | 2026-06-11 | Marc (CEO); recorded by Scrooge (Chief of Staff, orchestration) via session delegation | Approved as the operative institutional strategy — `D-BANK-STRATEGY-V2` Decision(approved); status flipped to APPROVED; effective-from 2026-06-11 |
 
 **Approval required from:** CEO  
-**Approval method:** In-session CEO confirmation triggers `Decision(approved)` event via `recordDecision` with `decisionId: D-BANK-STRATEGY-V2`.  
+**Approval record:** `D-BANK-STRATEGY-V2` Decision(requested 2026-06-11T12:40Z → approved 2026-06-11T12:41Z), authority CEO (marc@tgv.co.za), recorded via scrooge:session-delegation (`prototype/scripts/decisions/record-d-bank-strategy-v2.ts`).  
 **Approval action:** Scrooge (Chief of Staff, orchestration) records the decision, updates this document to `status: APPROVED`, and dispatches Owen (Company Secretary, governance) to register the strategy document in the governance framework register. The follow-on typed strategy register PR encodes §13 1:1.
 
 ---
