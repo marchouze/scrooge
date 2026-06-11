@@ -139,6 +139,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:entity-identity-coherence",
     "recon:procedure-event-name-coherence",
     "recon:regulatory-extraction-coverage",
+    "recon:provision-tick-drift",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",

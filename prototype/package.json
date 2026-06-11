@@ -61,6 +61,7 @@
     "recon:coa-name-no-currency": "bun run platform/recon/coa-name-no-currency.ts",
     "recon:fx-supported-currency-no-suspense": "bun run platform/recon/fx-supported-currency-no-suspense.ts",
     "recon:account-designated-currency": "bun run platform/recon/account-designated-currency.ts",
+    "recon:provision-tick-drift": "bun run platform/recon/provision-tick-drift.ts",
     "recon:valuation-adjustment-additive": "bun run platform/recon/valuation-adjustment-additive.ts",
     "recon:orphan-open-runs": "bun run platform/recon/orphan-run-detector.ts",
     "recon:orphan-run-deliverable-state": "bun run platform/recon/orphan-run-deliverable-state.ts",
