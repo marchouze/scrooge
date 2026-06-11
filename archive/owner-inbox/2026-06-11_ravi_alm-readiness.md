@@ -1,7 +1,7 @@
 ---
 agent: Ravi
 trigger: alm-readiness
-asOf: 2026-06-11T05:38:51.215Z
+asOf: 2026-06-11T06:23:58.691Z
 decision-required: false
 ---
 
@@ -64,7 +64,7 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 | `FXPositionReported` | 0 |
 | `CollateralUpdated` | 0 |
 | `FundingDrawnDown` | 0 |
-| Prior `ALMReadinessSnapshot` (this agent) | 14 |
+| Prior `ALMReadinessSnapshot` (this agent) | 13 |
 
 ## Substrate gaps surfaced this run
 
@@ -78,7 +78,7 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 
 ## Ravi's narrative
 
-_Narrative generation failed (api error undefined: Connection error.)._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbvzaXFvNYVWc5dBzHZHf"})._
 
 ## Provenance
 
