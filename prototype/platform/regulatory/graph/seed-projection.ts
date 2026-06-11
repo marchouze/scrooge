@@ -233,7 +233,10 @@ const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
 
 /** A section (or subsection) in an SA `*-structured.json` source doc. Some
  * instruments (e.g. the RRB) carry their text in nested `subsections[].text`
- * rather than a populated top-level `text`. */
+ * rather than a populated top-level `text`.
+ *
+ * Extended by WS-REGULATORY-LIBRARY-V1 Slice 2 (D-REGULATORY-LIBRARY-V1) to
+ * carry optional `pages` (PDF page range) and `footnotes` arrays. */
 interface StructuredSection {
   number?: string;
   sectionNumber?: string;
@@ -241,6 +244,10 @@ interface StructuredSection {
   heading?: string;
   title?: string;
   text?: string;
+  verbatim?: boolean;
+  /** PDF page range this section spans, e.g. "12–14". */
+  pages?: string;
+  footnotes?: Array<{ marker: string; text: string }>;
   subsections?: StructuredSection[];
 }
 
@@ -1389,6 +1396,8 @@ export async function runSeed(): Promise<SeedStats> {
       title: string;
       regulator?: string;
       year?: number;
+      /** BLAKE3 hash of the source PDF (WS-REGULATORY-LIBRARY-V1 Slice 2, D-REGULATORY-LIBRARY-V1). */
+      goldenSourceHash?: string;
       chapters: Array<{
         sections: StructuredSection[];
       }>;
@@ -1403,6 +1412,14 @@ export async function runSeed(): Promise<SeedStats> {
     const slugUpper = slug.toUpperCase();
     const docNodeId = `DOC-${slugUpper}`;
 
+    // Golden-source hash from the JSON itself (Slice 2). Prefer the
+    // event-store-derived value (goldenSourceMeta) which is always current;
+    // the JSON field is a persisted convenience for offline inspection.
+    const docGoldenSourceHash =
+      typeof doc.goldenSourceHash === "string" && doc.goldenSourceHash
+        ? doc.goldenSourceHash
+        : undefined;
+
     // Upsert Document node (may already exist from event store; idempotent)
     upsertNode({
       id: docNodeId,
@@ -1416,6 +1433,9 @@ export async function runSeed(): Promise<SeedStats> {
         // Prefer slug-keyed golden source; fall back to the instrumentId axis
         // for instruments registered under the FAIS-ACT-37-2002-style id.
         ...goldenSourceMeta(slug),
+        // JSON-level hash as a belt-and-suspenders field (may overlap with the
+        // event-store value above; last-write-wins is acceptable here).
+        ...(docGoldenSourceHash ? { goldenSourceHash: docGoldenSourceHash } : {}),
       },
     });
 
@@ -1449,6 +1469,16 @@ export async function runSeed(): Promise<SeedStats> {
             section: numPart,
             heading,
             ...(bodyText ? { text: bodyText } : {}),
+            // Golden-source linkage — WS-REGULATORY-LIBRARY-V1 Slice 2
+            // (D-REGULATORY-LIBRARY-V1). The hash traces every Provision node
+            // back to the content-addressed binary of the source PDF. Only
+            // injected when the JSON carries the field (set by extract:structured
+            // --hash). All three are flat primitives (string) per GraphNodeMetadata.
+            ...(docGoldenSourceHash ? { goldenSourceHash: docGoldenSourceHash } : {}),
+            ...(section.pages ? { sourcePages: section.pages } : {}),
+            ...(section.footnotes?.length
+              ? { footnotesJson: JSON.stringify(section.footnotes) }
+              : {}),
           },
         };
         upsertNode(provNode);
