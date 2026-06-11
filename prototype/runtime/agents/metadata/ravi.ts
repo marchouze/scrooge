@@ -73,6 +73,18 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
   // Ravi: SARB repo + prime rate ingest — build-phase fixture, on-request.
   // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8; D-MARKETS-SCHEMA-FOUNDATION.
   entry("Ravi", "repo-rate-ingest", "on-request"),
+  // Ravi: ZARONIA overnight + term-rate ingest — W2.3 FTP feed adapter.
+  // Build-phase: SarbRbondMarketDataAdapter (SARB SarbWebApi + rbond.co.za).
+  // on-request — daily cadence confirmed at vendor selection; no cron until then.
+  // Emits: ZaroniaRatePublished + ZaroniaTermRatePublished.
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE.
+  entry("Ravi", "zaronia-ingest", "on-request"),
+  // Ravi: SAGB benchmark yields + OIS curve ingest — W2.3 FTP feed adapter.
+  // Build-phase: SarbRbondMarketDataAdapter (rbond.co.za generics + curve).
+  // on-request — daily cadence confirmed at vendor selection; no cron until then.
+  // Emits: SagbYieldsPublished + OisCurvePublished.
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE.
+  entry("Ravi", "sagb-yield-ingest", "on-request"),
   // ravi:goal-loop — daily 06:23 UTC; autonomous promotion (risk/treasury pilot),
   // placed after ravi:alm-readiness (05:37) so a same-day ALMReadinessSnapshot exists.
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3; D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.

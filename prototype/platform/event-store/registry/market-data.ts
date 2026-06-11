@@ -22,7 +22,14 @@
 //   Rohan (Quant Risk Engineer, markets) +
 //   Helena (Chief Risk Officer, governance).
 
-import { marketDataStaleAlertPayloadSchema } from "../event-types/market-data";
+import {
+  jibarFixingPublishedPayloadSchema,
+  marketDataStaleAlertPayloadSchema,
+  oisCurvePublishedPayloadSchema,
+  sagbYieldsPublishedPayloadSchema,
+  zaroniaRatePublishedPayloadSchema,
+  zaroniaTermRatePublishedPayloadSchema,
+} from "../event-types/market-data";
 import { modelValidationApprovedPayloadSchema } from "../event-types/model-risk";
 import { RETENTION_BANKING_5Y } from "./types";
 import type { EventTypeMetadata } from "./types";
@@ -67,5 +74,63 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: modelValidationApprovedPayloadSchema,
     source: "platform/event-store/event-types/model-risk.ts; Policies/valuation-policy-v1.md §5",
     citationsHint: ["BCBS-239-2013", "D-MARKETS-SCHEMA-FOUNDATION"],
+  },
+  // -------------------------------------------------------------------------
+  // FTP / ALM market-data feed events (W2.3, D-TREASURER-WAVE2-SUBSTRATE)
+  // -------------------------------------------------------------------------
+  {
+    type: "ZaroniaRatePublished",
+    class: "markets",
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Eitan"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: zaroniaRatePublishedPayloadSchema,
+    source: "platform/event-store/event-types/market-data.ts",
+    citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+  },
+  {
+    type: "ZaroniaTermRatePublished",
+    class: "markets",
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Eitan"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: zaroniaTermRatePublishedPayloadSchema,
+    source: "platform/event-store/event-types/market-data.ts",
+    citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+  },
+  {
+    type: "JibarFixingPublished",
+    class: "markets",
+    issuer: "Ravi",
+    subscribers: ["Ravi"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: jibarFixingPublishedPayloadSchema,
+    source: "platform/event-store/event-types/market-data.ts",
+    citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+  },
+  {
+    type: "OisCurvePublished",
+    class: "markets",
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Eitan"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: oisCurvePublishedPayloadSchema,
+    source: "platform/event-store/event-types/market-data.ts",
+    citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+  },
+  {
+    type: "SagbYieldsPublished",
+    class: "markets",
+    issuer: "Ravi",
+    subscribers: ["Ravi", "Eitan"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: sagbYieldsPublishedPayloadSchema,
+    source: "platform/event-store/event-types/market-data.ts",
+    citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
   },
 ];
