@@ -120,6 +120,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // The composition root itself is the canonical wrap site — the raw store
   // is built here and immediately gated on the next statement.
   "platform/composition.ts",
+  // Append-only recon test suite — co-located with its pipeline (same
+  // carve-out rationale as tests/): builds mkdtempSync-isolated fixture
+  // stores to red-team the DELETE detector and to assert the
+  // partition-aware archive-extraction semantics end-to-end
+  // (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION). No production access
+  // path. Citation: P4-SECURITY-DESIGNED-IN.
+  "platform/recon/event-store-append-only.test.ts",
   // The recon self-test (formerly harness.ts) builds an in-memory throwaway
   // store for the round-trip assertion; gating it would require synthesising
   // a fake policy resolver for every test event, defeating the purpose.
