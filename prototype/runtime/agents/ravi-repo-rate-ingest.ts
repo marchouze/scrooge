@@ -4,14 +4,19 @@
 // function from `scripts/agents/repo-rate-ingest.ts` so the
 // in-process scheduler can fire it on request.
 //
-// No API key required — fixture data only in the build phase. Production
-// SARB MPC decision ingestion is sequenced post-licence.
+// ADAPTER WIRING: The underlying `SarbRepoPrimeSource` interface in
+// `platform/market-data/sarb-repo-prime-ingester.ts` is the injection seam
+// for live-feed adapters. The build-phase adapter `SarbRbondMarketDataAdapter`
+// provides SARB SarbWebApi CurrentMarketRates (repo rate spot) as a pre-go-live
+// source via `fetchRate` (ZaroniaFeedAdapter). At vendor selection, swap in a
+// concrete live-feed implementation.
 //
-// Kept as on-request callable so `ravi:repo-rate-ingest` can be called
-// from ad-hoc runs and the launchd scheduler without double-firing.
+// Fallback invariant: build-phase behaviour is byte-identical to pre-W2.3
+// when the adapter returns null — the fixture remains the default.
 //
 // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26)
 //            D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07)
+//            D-TREASURER-WAVE2-SUBSTRATE (adapter seam documented)
 //
 // Author: Ravi (Treasury / ALM engineer, engineering)
 

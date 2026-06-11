@@ -4,11 +4,19 @@
 // function from `scripts/agents/jibar-swap-curve-ingest.ts` so the
 // in-process scheduler can fire it on request.
 //
-// No API key required — fixture data only in the build phase. Production
-// SARB/Bloomberg curve feed integration is sequenced post-licence.
+// JIBAR CESSATION NOTE: JIBAR new-trade cessation was May 2026; full cessation
+// December 2026. This handler manages the legacy JIBAR swap-curve calibration
+// for existing IRS instruments during the wind-down window.
+// Forward-looking curve logic should use `ravi:zaronia-ingest` (OIS curve).
 //
-// Kept as on-request callable so `ravi:jibar-swap-curve-ingest` can be
-// called from ad-hoc runs and the launchd scheduler without double-firing.
+// ADAPTER WIRING: The underlying swap-curve source interface in
+// `platform/market-data/jibar-swap-curve-ingester.ts` is the injection seam.
+// At vendor selection, wire a `OisCurveFeedAdapter`-backed source to replace
+// the fixture. The build-phase adapter `SarbRbondMarketDataAdapter` provides
+// rbond OIS curve data (via fetchCurve) as the pre-go-live source.
+//
+// Fallback invariant: build-phase behaviour is byte-identical to pre-W2.3
+// when the adapter returns null — the fixture remains the default.
 //
 // The swap-curve ticks stored here are consumed by
 // `MarketDataStoreJibarRateSource` (platform/markets/eod/make-jibar-rate-source.ts)
@@ -16,6 +24,7 @@
 //
 // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26)
 //            D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07)
+//            D-TREASURER-WAVE2-SUBSTRATE (adapter seam documented)
 //
 // Author: Ravi (Treasury / ALM engineer, engineering)
 

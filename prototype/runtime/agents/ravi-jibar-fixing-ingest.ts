@@ -4,14 +4,24 @@
 // function from `scripts/agents/jibar-fixing-ingest.ts` so the
 // in-process scheduler can fire it on request.
 //
-// No API key required — fixture data only in the build phase. Production
-// AFMA feed integration is sequenced post-licence.
+// JIBAR CESSATION NOTE: JIBAR new-trade cessation was May 2026; full cessation
+// December 2026. This handler is retained as a legacy calibration anchor for
+// existing JIBAR-linked instruments during the wind-down window.
+// DO NOT use for new FTP curve design — use `ravi:zaronia-ingest` instead.
 //
-// Kept as on-request callable so `ravi:jibar-fixing-ingest` can be called
-// from ad-hoc runs and the launchd scheduler without double-firing.
+// ADAPTER WIRING: The underlying `JibarFixingSource` interface in
+// `platform/market-data/jibar-fixing-ingester.ts` is the injection seam for
+// live-feed adapters. At vendor selection, provide a `JibarFeedAdapter`-backed
+// `JibarFixingSource` to replace the fixture path. The build-phase adapter
+// `SarbRbondMarketDataAdapter` provides SARB CPDRates (via fetchFixing) as the
+// pre-go-live source.
+//
+// Fallback invariant: build-phase behaviour is byte-identical to pre-W2.3
+// when the adapter returns null — the fixture remains the default.
 //
 // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8 (CEO session-delegation 2026-05-26)
 //            D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07)
+//            D-TREASURER-WAVE2-SUBSTRATE (adapter seam documented)
 //
 // Author: Ravi (Treasury / ALM engineer, engineering)
 
