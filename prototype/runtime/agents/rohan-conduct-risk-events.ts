@@ -92,7 +92,14 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   }
 
   logger.info(
-    { fxTrades: fxTrades.length, processed, skipped, errors, faisUnclassified, eventsEmitted: totalEventsEmitted },
+    {
+      fxTrades: fxTrades.length,
+      processed,
+      skipped,
+      errors,
+      faisUnclassified,
+      eventsEmitted: totalEventsEmitted,
+    },
     "rohan:conduct-risk-events — done",
   );
 

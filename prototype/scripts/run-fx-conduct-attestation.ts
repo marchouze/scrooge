@@ -22,8 +22,8 @@
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
-import { classifyFxCounterparties } from "../platform/conduct/fx-counterparty-fais-classification";
 import { sweepFxConductSurveillance } from "../platform/conduct/fx-conduct-surveillance-sweep";
+import { classifyFxCounterparties } from "../platform/conduct/fx-counterparty-fais-classification";
 import { runFxConductAttestation } from "../platform/markets/products/npa-fx-conduct-attestation";
 
 /** Set of FxTradeExecuted tradeIds on the book. */

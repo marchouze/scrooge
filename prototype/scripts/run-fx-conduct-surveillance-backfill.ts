@@ -28,8 +28,8 @@
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
-import { classifyFxCounterparties } from "../platform/conduct/fx-counterparty-fais-classification";
 import { sweepFxConductSurveillance } from "../platform/conduct/fx-conduct-surveillance-sweep";
+import { classifyFxCounterparties } from "../platform/conduct/fx-counterparty-fais-classification";
 
 if (import.meta.main) {
   const asOf = clock.now();

@@ -61,13 +61,11 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   return {
     eventsEmitted: result.eventsEmitted,
-    summary:
-      `conduct surveillance sweep: ${result.tradesScanned} FX trade(s) scanned, ` +
-      `${result.tradesProcessed} newly evaluated, ${result.tradesAlreadyCovered} already covered, ` +
-      `${result.eventsEmitted} surveillance event(s) emitted` +
-      (result.faisUnclassifiedTradeIds.length > 0
+    summary: `conduct surveillance sweep: ${result.tradesScanned} FX trade(s) scanned, ${result.tradesProcessed} newly evaluated, ${result.tradesAlreadyCovered} already covered, ${result.eventsEmitted} surveillance event(s) emitted${
+      result.faisUnclassifiedTradeIds.length > 0
         ? `; ${result.faisUnclassifiedTradeIds.length} FAIS-suitability skipped (unclassified counterparty)`
-        : ""),
+        : ""
+    }`,
     ok: true,
   };
 };

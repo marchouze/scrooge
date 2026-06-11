@@ -94,7 +94,9 @@ const alreadyFiled = [...eventStore.replay({ type: "RecordFiled" })].some(
 
 if (import.meta.main) {
   if (alreadyFiled) {
-    console.log(`[file-fx-conduct-surveillance-verification] ${RECORD_ID} already filed — skipping.`);
+    console.log(
+      `[file-fx-conduct-surveillance-verification] ${RECORD_ID} already filed — skipping.`,
+    );
     process.exit(0);
   }
 

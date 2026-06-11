@@ -76,8 +76,7 @@ export const CONDUCT_DEFERRED_GAPS: readonly ProductDeferredGap[] = [
     title:
       "Best-execution tolerance bps are fixed build-phase constants (BE_TOLERANCE_BY_ASSET_CLASS); production drives them from a published BestExecutionPolicySchedule event so the conduct committee owns the thresholds.",
     owner: "Zara (Chief Compliance Officer, governance)",
-    targetTrigger:
-      "conduct committee publishes a BestExecutionPolicySchedule event of record",
+    targetTrigger: "conduct committee publishes a BestExecutionPolicySchedule event of record",
     citations: ["D-MARKET-CONDUCT", "platform/conduct/fx-trade-conduct-evaluation.ts"],
   },
   {

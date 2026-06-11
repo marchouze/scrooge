@@ -135,11 +135,7 @@ function isSuitableForFaisCategory(
 // Idempotency helpers — keyed on (tradeId, output type) against the store.
 // ---------------------------------------------------------------------------
 
-function outputExistsForTrade(
-  store: EventStore,
-  type: string,
-  tradeId: string,
-): boolean {
+function outputExistsForTrade(store: EventStore, type: string, tradeId: string): boolean {
   for (const e of store.replay({ type })) {
     const p = e.payload as { tradeId?: unknown };
     if (p.tradeId === tradeId) return true;
@@ -324,7 +320,10 @@ export function evaluateFxTradeConduct(
   //    approved) so the residual is visible.
   // -------------------------------------------------------------------------
 
-  if (!outputExistsForTrade(store, "FaisClassificationSuitabilityChecked", tradeId) && counterpartyId) {
+  if (
+    !outputExistsForTrade(store, "FaisClassificationSuitabilityChecked", tradeId) &&
+    counterpartyId
+  ) {
     const faisCategory = lookupFaisCategory(store, counterpartyId);
 
     if (faisCategory !== null) {

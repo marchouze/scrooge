@@ -173,6 +173,10 @@ describe("sweepFxConductSurveillance", () => {
     expect((fais[0]?.payload as { suitable?: boolean }).suitable).toBe(false);
     // A conduct obligation is flagged at breach severity.
     const flagged = [...store.replay({ type: "ConductObligationFlagged" })];
-    expect(flagged.some((e) => (e.payload as { obligationCode?: string }).obligationCode === "fais-suitability")).toBe(true);
+    expect(
+      flagged.some(
+        (e) => (e.payload as { obligationCode?: string }).obligationCode === "fais-suitability",
+      ),
+    ).toBe(true);
   });
 });

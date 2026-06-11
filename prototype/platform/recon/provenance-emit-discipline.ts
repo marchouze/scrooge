@@ -92,6 +92,10 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
     "build-phase-fixture tag on NPA dimension attestations (same basis as npa-attestation-runner.ts) — " +
     "the third provenance kind is deliberately not expressible in the category policy " +
     "(real build-phase bank state, not mode-dependent).",
+  "platform/markets/products/npa-fx-conduct-attestation.ts":
+    "build-phase-fixture tag on the FX conduct-dimension attestation (same basis as " +
+    "npa-fx-verification-pass-2.ts) — the third provenance kind is deliberately not expressible in the " +
+    "category policy (real build-phase bank state, not mode-dependent).",
   "platform/market-data/sarb-fixing-ingester.ts":
     "structurally simulated fixture ingester — the source is a JSON fixture regardless of bank mode; " +
     "scenario-bound by construction (SARB_FIXING_FIXTURE_PROVENANCE).",
