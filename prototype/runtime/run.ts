@@ -62,6 +62,7 @@ import { LocalEventTriggerBus, defaultBusSource } from "../platform/event-trigge
 import { logger } from "../platform/observability/logger";
 import { HANDLER_CALLABLES } from "./handler-callables";
 import { HANDLERS_METADATA, type HandlerMetadata } from "./handlers-metadata";
+import { recordDeliverableFiled } from "./lib/record-deliverable";
 import type { AgentRunContext, AgentRunHandler, AgentRunOutput } from "./types";
 
 interface HandlerEntry {
@@ -695,6 +696,33 @@ export async function runAgent(opts: CliArgs): Promise<AgentRunOutput> {
     ...(result.deliverable !== undefined ? { deliverable: result.deliverable } : {}),
     summary: result.summary,
   });
+
+  // ---------------------------------------------------------------------
+  // Central RecordFiled emission (D-SCHEDULER-RECORDFILED-EMISSION,
+  // 2026-06-11). Every scheduler deliverable that lands as an `Owner
+  // Inbox/*.md` markdown gets a backing `RecordFiled(documents)` event so
+  // the markdown is a render of a record, not a markdown-without-event
+  // Principle-1 violation. The helper is idempotent: it skips deliverables
+  // the handler already self-filed (any RecordFiled emitted this run that
+  // matches the path or files the documents register) and skips paths a
+  // prior run already filed. Best-effort — a failure here logs and does not
+  // fail the run. Authority: D-SCHEDULER-RECORDFILED-EMISSION; D-RMS-PHASE-3.
+  // ---------------------------------------------------------------------
+  if (!ctx.dryRun && result.deliverable !== undefined) {
+    const recordFiledThisRun = newEventsThisRun.filter((e) => e.type === "RecordFiled");
+    recordDeliverableFiled(ctx, result, recordFiledThisRun, () => {
+      const paths = new Set<string>();
+      for (const e of eventStore.replay({ type: "RecordFiled" })) {
+        const payload = e.payload as Record<string, unknown>;
+        if (payload.registerKey !== "documents") continue;
+        const metadata = payload.metadata as Record<string, unknown> | undefined;
+        const p = typeof metadata?.path === "string" ? metadata.path : null;
+        if (p) paths.add(p);
+      }
+      return paths;
+    });
+  }
+
   logger.info(
     {
       agent: ctx.agent,
