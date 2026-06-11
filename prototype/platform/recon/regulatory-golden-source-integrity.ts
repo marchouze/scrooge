@@ -52,6 +52,7 @@
 // Author: Mira (Compliance / RegTech engineer, engineering) +
 //         Atlas (Core banking platform architect, engineering).
 
+import { clock } from "../composition";
 import { LocalFsDocumentStore } from "../document-store/local-fs";
 import { inRepoDocumentStoreRoot } from "../document-store/resolve-document-store";
 import type { DocumentHash, DocumentStore } from "../document-store/types";
@@ -87,7 +88,7 @@ export interface GoldenSourceIntegrityDeps {
   readonly legacyStore?: DocumentStore | null;
   /** Enforcement boundary override (tests). Default `ENFORCEMENT_DATE`. */
   readonly enforcementDate?: string;
-  /** "Now" override (tests). Default `new Date()`. */
+  /** "Now" override (tests). Default `clock.now()`. */
   readonly asOfDate?: string;
 }
 
@@ -125,7 +126,7 @@ export function run(deps: GoldenSourceIntegrityDeps = {}): ReconResult {
   const violations: ReconViolation[] = [];
 
   const enforcementDate = deps.enforcementDate ?? ENFORCEMENT_DATE;
-  const asOfDate = (deps.asOfDate ?? new Date().toISOString()).slice(0, 10);
+  const asOfDate = (deps.asOfDate ?? clock.now()).slice(0, 10);
   const postEnforcement = asOfDate >= enforcementDate;
 
   let resolvedStore: DocumentStore;
