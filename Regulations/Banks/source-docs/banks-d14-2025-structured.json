@@ -21,69 +21,606 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d14-2025-1",
-      "title": "Full Text",
+      "id": "ch-banks-d14-2025-main",
+      "title": "Directive D14/2025",
       "sections": [
         {
           "id": "s-banks-d14-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Composition of the committee appointed by the Board of Directors to approve large exposures and matters related to the requirements for measuring and controlling large exposures. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.            Introduction\n\n1.1           The BCBS standard issued in April 2014 titled ‘Supervisory framework for\n              measuring and controlling large exposures’1 (LEX framework) complements\n              the BCBS’s risk-based capital standard. The LEX framework is designed to\n              specifically protect banks from material losses resulting from the non-\n              performance of a single counterparty or a group of connected counterparties\n              that could ultimately threaten the solvency and liquidity of banks or banking\n              groups.\n\n1.2           Amendments to the LEX framework, which incorporate the relevant revisions\n              to the market risk framework, published in January 2019 and revised in\n              February 2019,2 required specific amendments to regulation 24 of the\n              Regulations. These amendments ensure that relevant parts of the revised\n              market risk framework are integrated into the LEX regulatory requirements,\n              which form part of the Basel III post-crisis reforms.\n\n1.3           The LEX framework specifies that the sum of all exposure values of a bank to\n              a counterparty or to a group of connected counterparties must be defined as a\n              LEX if it is equal to or exceeds 10% of the bank’s qualifying common equity\n              tier 1 capital and reserve funds and additional tier 1 capital and reserve funds\n              (tier 1 capital and reserve funds).\n\n1.4           Credit concentration can result in substantial losses if such concentration risk\n              is not managed adequately by the bank. When a bank evaluates a credit\n              application for approval, the bank must take into consideration potential future\n              changes in economic conditions and assess its credit risk exposures under\n              stressful conditions. In terms of section 73 of the Banks Act, a bank shall not\n              make investments with, or grant loans or advances or other credit, to any\n              person to an aggregate amount exceeding 10% of such amount of its capital\n              and reserves as may be prescribed, without first having obtained the\n              permission of the bank’s Board or a committee established by the Board and\n              approved by the PA.\n\n1.5           This Directive directs banks to apply the criteria related to the composition of\n              the aforementioned committee as well as the requirements, conditions and/or\n              limits specified herein.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d14-2025-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "The BCBS standard issued in April 2014 titled ‘Supervisory framework for",
+              "text": "1.1           The BCBS standard issued in April 2014 titled ‘Supervisory framework for\n              measuring and controlling large exposures’1 (LEX framework) complements\n              the BCBS’s risk-based capital standard. The LEX framework is designed to\n              specifically protect banks from material losses resulting from the non-\n              performance of a single counterparty or a group of connected counterparties\n              that could ultimately threaten the solvency and liquidity of banks or banking\n              groups.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d14-2025-1-2",
               "number": "1.2",
-              "text": "Composition of the committee appointed by the Board of Directors to approve large exposures and matters related to the requirements for measuring and controlling large exposures.",
-              "verbatim": true
+              "heading": "Amendments to the LEX framework, which incorporate the relevant revisions",
+              "text": "1.2           Amendments to the LEX framework, which incorporate the relevant revisions\n              to the market risk framework, published in January 2019 and revised in\n              February 2019,2 required specific amendments to regulation 24 of the\n              Regulations. These amendments ensure that relevant parts of the revised\n              market risk framework are integrated into the LEX regulatory requirements,\n              which form part of the Basel III post-crisis reforms.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d14-2025-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "The LEX framework specifies that the sum of all exposure values of a bank to",
+              "text": "1.3           The LEX framework specifies that the sum of all exposure values of a bank to\n              a counterparty or to a group of connected counterparties must be defined as a\n              LEX if it is equal to or exceeds 10% of the bank’s qualifying common equity\n              tier 1 capital and reserve funds and additional tier 1 capital and reserve funds\n              (tier 1 capital and reserve funds).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-1-4",
+              "number": "1.4",
+              "heading": "Credit concentration can result in substantial losses if such concentration risk",
+              "text": "1.4           Credit concentration can result in substantial losses if such concentration risk\n              is not managed adequately by the bank. When a bank evaluates a credit\n              application for approval, the bank must take into consideration potential future\n              changes in economic conditions and assess its credit risk exposures under\n              stressful conditions. In terms of section 73 of the Banks Act, a bank shall not\n              make investments with, or grant loans or advances or other credit, to any\n              person to an aggregate amount exceeding 10% of such amount of its capital\n              and reserves as may be prescribed, without first having obtained the\n              permission of the bank’s Board or a committee established by the Board and\n              approved by the PA.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-1-5",
+              "number": "1.5",
+              "heading": "This Directive directs banks to apply the criteria related to the composition of",
+              "text": "1.5           This Directive directs banks to apply the criteria related to the composition of\n              the aforementioned committee as well as the requirements, conditions and/or\n              limits specified herein.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d14-2025-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "Banks Act references",
+          "text": "2.            Banks Act references\n\n2.1           In terms of section 73(1)(a) of the Banks Act, a bank “shall not make\n              investments with or grant loans or advances or other credit to any person, to\n              an aggregate amount exceeding 10 per cent of such amount of its capital and\n              reserves as may be prescribed, without first having obtained the permission of\n              its board of directors, or of a committee appointed for such purpose (for the\n\n1   Available at https://www.bis.org/basel_framework/standard/LEX.htm\n2   Available at https://www.bis.org/bcbs/publ/d457.pdf\n\n\n\n                                                                                            2\n\n              composition of which committee the prior written approval of the PA has to be\n              obtained), to make such investments or to grant such loans, advances or other\n              credit”.\n\n2.2           To enhance independence and objectivity of the bank’s Board or the bank’s\n              Board appointed committee approved by the PA, section 60(3) of the Banks\n              Act requires that the majority of a bank’s Board members be non-executive\n              directors.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d14-2025-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "In terms of section 73(1)(a) of the Banks Act, a bank “shall not make",
+              "text": "2.1           In terms of section 73(1)(a) of the Banks Act, a bank “shall not make\n              investments with or grant loans or advances or other credit to any person, to\n              an aggregate amount exceeding 10 per cent of such amount of its capital and\n              reserves as may be prescribed, without first having obtained the permission of\n              its board of directors, or of a committee appointed for such purpose (for the\n\n1   Available at https://www.bis.org/basel_framework/standard/LEX.htm\n2   Available at https://www.bis.org/bcbs/publ/d457.pdf\n\n\n\n                                                                                            2\n\n              composition of which committee the prior written approval of the PA has to be\n              obtained), to make such investments or to grant such loans, advances or other\n              credit”.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-2-2",
+              "id": "s-banks-d14-2025-2-2",
               "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "To enhance independence and objectivity of the bank’s Board or the bank’s",
+              "text": "2.2           To enhance independence and objectivity of the bank’s Board or the bank’s\n              Board appointed committee approved by the PA, section 60(3) of the Banks\n              Act requires that the majority of a bank’s Board members be non-executive\n              directors.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d14-2025-3",
           "number": "3",
-          "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "heading": "Regulatory references",
+          "text": "3.            Regulatory references\n\n3.1           Regulation 8 of the Regulations deals with the calculation of average daily\n              balances for a month in respect of any liability or asset item by totalling the\n              amounts thereof for each day of the month and dividing the total by the number\n              of calendar days in that particular month.\n\n3.2           Regulation 23 of the Regulations deals with the measurement of credit risk\n              exposures, including the application of credit conversion factors (CCF) and\n              credit risk mitigation (CRM).\n\n3.3           Regulation 24 of the Regulations deals with various requirements relating to\n              measuring, monitoring and controlling LEX in accordance with the LEX\n              framework issued by the BCBS.\n\n3.4           Regulation 36 of the Regulations deals with various requirements relating to\n              measuring, monitoring and controlling LEX in accordance with the LEX\n              framework, in relation to consolidated reporting.\n\n3.5           Regulation 37 of the Regulations specifies that foreign operations of South\n              African banks must, mutatis mutandis, apply the directives and interpretations\n              related to the completion of risk-based returns on a solo basis by a bank in the\n              Republic of South Africa, or for the calculation of the relevant minimum\n              required amount of capital and reserve funds on a solo basis by a bank in the\n              Republic, as set out in the form BA 610.\n\n3.6           Regulations 39 to 41 of the Regulations deal with provisions relating to\n              corporate governance and set out, among other things, the duties and\n              responsibilities of directors and the senior management of a bank.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-3-1",
+              "id": "s-banks-d14-2025-3-1",
               "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
+              "heading": "Regulation 8 of the Regulations deals with the calculation of average daily",
+              "text": "3.1           Regulation 8 of the Regulations deals with the calculation of average daily\n              balances for a month in respect of any liability or asset item by totalling the\n              amounts thereof for each day of the month and dividing the total by the number\n              of calendar days in that particular month.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-3-2",
+              "number": "3.2",
+              "heading": "Regulation 23 of the Regulations deals with the measurement of credit risk",
+              "text": "3.2           Regulation 23 of the Regulations deals with the measurement of credit risk\n              exposures, including the application of credit conversion factors (CCF) and\n              credit risk mitigation (CRM).",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-3-3",
+              "number": "3.3",
+              "heading": "Regulation 24 of the Regulations deals with various requirements relating to",
+              "text": "3.3           Regulation 24 of the Regulations deals with various requirements relating to\n              measuring, monitoring and controlling LEX in accordance with the LEX\n              framework issued by the BCBS.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-3-4",
+              "number": "3.4",
+              "heading": "Regulation 36 of the Regulations deals with various requirements relating to",
+              "text": "3.4           Regulation 36 of the Regulations deals with various requirements relating to\n              measuring, monitoring and controlling LEX in accordance with the LEX\n              framework, in relation to consolidated reporting.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-3-5",
+              "number": "3.5",
+              "heading": "Regulation 37 of the Regulations specifies that foreign operations of South",
+              "text": "3.5           Regulation 37 of the Regulations specifies that foreign operations of South\n              African banks must, mutatis mutandis, apply the directives and interpretations\n              related to the completion of risk-based returns on a solo basis by a bank in the\n              Republic of South Africa, or for the calculation of the relevant minimum\n              required amount of capital and reserve funds on a solo basis by a bank in the\n              Republic, as set out in the form BA 610.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-3-6",
+              "number": "3.6",
+              "heading": "Regulations 39 to 41 of the Regulations deal with provisions relating to",
+              "text": "3.6           Regulations 39 to 41 of the Regulations deal with provisions relating to\n              corporate governance and set out, among other things, the duties and\n              responsibilities of directors and the senior management of a bank.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-4",
+          "number": "4",
+          "heading": "International references",
+          "text": "4.            International references\n\n4.1           The Basel Core Principles for Effective Banking Supervision (Core Principles)\n              comprise 29 global standards developed by the BCBS to guide regulatory\n              authorities in ensuring a sound and stable banking system. These Core\n              Principles serve as a benchmark for prudential regulation, risk management\n              and supervisory practices worldwide.\n\n4.2           Basel Core Principle (BCP) 12 of the Core Principles3 issued by the BCBS on\n              25 April 2024 addresses consolidated supervision. BCP 12 imposes a duty on\n              supervisors to supervise banking groups on a consolidated basis as well as,\n3   Available at https://www.bis.org/bcbs/publ/d573.pdf\n\n\n\n                                                                                            3\n\n        to adequately monitor and, where appropriate, apply prudential standards to\n        all aspects of the business conducted by the banking group worldwide.\n\n4.3     BCP 19 of the Core Principles requires banking supervisors to ensure “banks\n        have adequate policies and processes to identify, measure, evaluate, monitor,\n        report and control or mitigate concentrations of risk on a timely basis” and “set\n        prudential limits to restrict bank exposures to single counterparties or groups\n        of connected counterparties”.\n\n4.4     BCP 20 of the Core Principles deals with transactions with related parties. To\n        prevent abuses arising in transactions with related parties, and to address the\n        risk of conflicts of interest, supervisors should require banks to enter into any\n        transactions with related parties on an arm’s-length basis, monitor these\n        transactions, take appropriate steps to control or mitigate the risks; and write\n        off exposures to related parties in accordance with standard policies and\n        processes.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-4-1",
+              "number": "4.1",
+              "heading": "The Basel Core Principles for Effective Banking Supervision (Core Principles)",
+              "text": "4.1           The Basel Core Principles for Effective Banking Supervision (Core Principles)\n              comprise 29 global standards developed by the BCBS to guide regulatory\n              authorities in ensuring a sound and stable banking system. These Core\n              Principles serve as a benchmark for prudential regulation, risk management\n              and supervisory practices worldwide.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-4-2",
+              "number": "4.2",
+              "heading": "Basel Core Principle (BCP) 12 of the Core Principles3 issued by the BCBS on",
+              "text": "4.2           Basel Core Principle (BCP) 12 of the Core Principles3 issued by the BCBS on\n              25 April 2024 addresses consolidated supervision. BCP 12 imposes a duty on\n              supervisors to supervise banking groups on a consolidated basis as well as,\n3   Available at https://www.bis.org/bcbs/publ/d573.pdf\n\n\n\n                                                                                            3\n\n        to adequately monitor and, where appropriate, apply prudential standards to\n        all aspects of the business conducted by the banking group worldwide.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-4-3",
+              "number": "4.3",
+              "heading": "BCP 19 of the Core Principles requires banking supervisors to ensure “banks",
+              "text": "4.3     BCP 19 of the Core Principles requires banking supervisors to ensure “banks\n        have adequate policies and processes to identify, measure, evaluate, monitor,\n        report and control or mitigate concentrations of risk on a timely basis” and “set\n        prudential limits to restrict bank exposures to single counterparties or groups\n        of connected counterparties”.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-4-4",
+              "number": "4.4",
+              "heading": "BCP 20 of the Core Principles deals with transactions with related parties. To",
+              "text": "4.4     BCP 20 of the Core Principles deals with transactions with related parties. To\n        prevent abuses arising in transactions with related parties, and to address the\n        risk of conflicts of interest, supervisors should require banks to enter into any\n        transactions with related parties on an arm’s-length basis, monitor these\n        transactions, take appropriate steps to control or mitigate the risks; and write\n        off exposures to related parties in accordance with standard policies and\n        processes.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-5",
+          "number": "5",
+          "heading": "Directive",
+          "text": "5.      Directive\n\n5.1     Based on the aforesaid, and in accordance with the provisions of section 6(6)\n        of the Banks Act, banks are hereby directed to comply with the respective\n        requirements specified in paragraphs 6 to 15 below:",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-5-1",
+              "number": "5.1",
+              "heading": "Based on the aforesaid, and in accordance with the provisions of section 6(6)",
+              "text": "5.1     Based on the aforesaid, and in accordance with the provisions of section 6(6)\n        of the Banks Act, banks are hereby directed to comply with the respective\n        requirements specified in paragraphs 6 to 15 below:",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-6",
+          "number": "6",
+          "heading": "Criteria relating to composition of Board-appointed committees to",
+          "text": "6.      Criteria relating to composition of Board-appointed committees to\n        approve LEX\n\n6.1     The Board of a bank is ultimately responsible for overseeing the maintenance\n        of effective risk management within the bank. In discharging its responsibilities,\n        the Board plays a critical role in overseeing the credit-granting and credit risk\n        management functions of the bank and must ensure, among other things, that:\n\n6.1.1   credit activities are conducted in line with the risk strategy, policies and\n        tolerances approved by the Board;\n\n6.1.2   the bank conducts business according to sound and well-defined credit-\n        granting criteria;\n\n6.1.3   all extensions of credit are made on an arm’s-length basis;\n\n6.1.4   the senior management of the bank is fully capable of managing the credit\n        activities conducted by the bank;\n\n6.1.5   credit activities are subject to adequate internal controls and appropriate\n        internal audit coverage; and\n\n6.1.6   the bank maintains adequate capital and reserve funds for the risks that it\n        assumes.\n\n6.2     A bank or controlling company must ensure that a credit committee appointed\n        by the Board to approve LEX includes, at a minimum:\n\n\n\n                                                                                        4\n\n6.2.1   at least three non-executive directors who are persons that are not employees\n        of the bank or of any of its subsidiaries, its controlling company or any\n        subsidiary of its controlling company, with one serving as the Chairperson of\n        the said committee;\n\n6.2.2   the Chief Executive Officer of the bank;\n\n6.2.3   the bank’s Head of Finance;\n\n6.2.4   the bank’s Head of Risk or an equivalent function, such as the Head of\n        Enterprise-wide Risk Management; and\n\n6.2.5   the bank’s Head of Credit.\n\n6.3     When a bank’s Board-appointed LEX credit committee requires specific input\n        from particular business units in respect of a proposed credit exposure, it may\n        invite the relevant executive director or executive officer to make the required\n        presentations to it.\n\n6.4     The decisions on LEX made by the Board-appointed LEX credit committee\n        must be recorded in writing and tabled at the Board meeting immediately\n        following the meeting of the said LEX credit committee for the Board's review\n        and ratification.\n\n6.5     The LEX credit committee of the bank must also periodically assess its own\n        performance, determine where weaknesses exist and, where possible, take\n        appropriate corrective actions.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-6-1",
+              "number": "6.1",
+              "heading": "The Board of a bank is ultimately responsible for overseeing the maintenance",
+              "text": "6.1     The Board of a bank is ultimately responsible for overseeing the maintenance\n        of effective risk management within the bank. In discharging its responsibilities,\n        the Board plays a critical role in overseeing the credit-granting and credit risk\n        management functions of the bank and must ensure, among other things, that:\n\n6.1.1   credit activities are conducted in line with the risk strategy, policies and\n        tolerances approved by the Board;\n\n6.1.2   the bank conducts business according to sound and well-defined credit-\n        granting criteria;\n\n6.1.3   all extensions of credit are made on an arm’s-length basis;\n\n6.1.4   the senior management of the bank is fully capable of managing the credit\n        activities conducted by the bank;\n\n6.1.5   credit activities are subject to adequate internal controls and appropriate\n        internal audit coverage; and\n\n6.1.6   the bank maintains adequate capital and reserve funds for the risks that it\n        assumes.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-6-2",
+              "number": "6.2",
+              "heading": "A bank or controlling company must ensure that a credit committee appointed",
+              "text": "6.2     A bank or controlling company must ensure that a credit committee appointed\n        by the Board to approve LEX includes, at a minimum:\n\n\n\n                                                                                        4\n\n6.2.1   at least three non-executive directors who are persons that are not employees\n        of the bank or of any of its subsidiaries, its controlling company or any\n        subsidiary of its controlling company, with one serving as the Chairperson of\n        the said committee;\n\n6.2.2   the Chief Executive Officer of the bank;\n\n6.2.3   the bank’s Head of Finance;\n\n6.2.4   the bank’s Head of Risk or an equivalent function, such as the Head of\n        Enterprise-wide Risk Management; and\n\n6.2.5   the bank’s Head of Credit.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-6-3",
+              "number": "6.3",
+              "heading": "When a bank’s Board-appointed LEX credit committee requires specific input",
+              "text": "6.3     When a bank’s Board-appointed LEX credit committee requires specific input\n        from particular business units in respect of a proposed credit exposure, it may\n        invite the relevant executive director or executive officer to make the required\n        presentations to it.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-6-4",
+              "number": "6.4",
+              "heading": "The decisions on LEX made by the Board-appointed LEX credit committee",
+              "text": "6.4     The decisions on LEX made by the Board-appointed LEX credit committee\n        must be recorded in writing and tabled at the Board meeting immediately\n        following the meeting of the said LEX credit committee for the Board's review\n        and ratification.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-6-5",
+              "number": "6.5",
+              "heading": "The LEX credit committee of the bank must also periodically assess its own",
+              "text": "6.5     The LEX credit committee of the bank must also periodically assess its own\n        performance, determine where weaknesses exist and, where possible, take\n        appropriate corrective actions.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-7",
+          "number": "7",
+          "heading": "Definition of LEX and limits specified in regulation 24(7)(c) of the",
+          "text": "7.      Definition of LEX and limits specified in regulation 24(7)(c) of the\n        Regulations\n\n7.1     An exposure is a LEX if the relevant aggregate amount related to the exposure\n        is equal to or exceeds 10% of the bank’s tier 1 capital and reserve funds, as\n        specified in regulation 24(7)(a) of the Regulations:\n\n7.1.1   after taking into consideration any relevant CCF, subject to a CCF floor of 10%;\n        and\n\n7.1.2   after taking into consideration any specific credit impairment raised against the\n        exposure; but\n\n7.1.3   before taking into consideration any eligible CRM to mitigate the bank’s original\n        exposure to the relevant person or counterparty.\n\n7.2     The relevant aggregate amount relating to the LEX must be less than or equal\n        to the limits specified in regulation 24(7)(c) of the Regulations after taking into\n        consideration:\n\n7.2.1   any relevant CCF, subject to a CCF floor of 10%;\n\n7.2.2   any specific credit impairment raised against the exposure; and\n\n\n                                                                                         5\n\n7.2.3    any eligible CRM to mitigate or reduce the bank’s original exposure to the\n         relevant person or counterparty.\n\n7.3      Where an exposure meets the definition of a LEX, as stipulated under\n         paragraph 7.1, banks must identify and monitor these exposures in compliance\n         with the provisions of the Directive. Where the prescribed or specified LEX limit\n         is breached, banks must report the breach to the PA as soon as possible but\n         no later than 24 hours of identification for all the prescribed or specified\n         requirements.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-7-1",
+              "number": "7.1",
+              "heading": "An exposure is a LEX if the relevant aggregate amount related to the exposure",
+              "text": "7.1     An exposure is a LEX if the relevant aggregate amount related to the exposure\n        is equal to or exceeds 10% of the bank’s tier 1 capital and reserve funds, as\n        specified in regulation 24(7)(a) of the Regulations:\n\n7.1.1   after taking into consideration any relevant CCF, subject to a CCF floor of 10%;\n        and\n\n7.1.2   after taking into consideration any specific credit impairment raised against the\n        exposure; but\n\n7.1.3   before taking into consideration any eligible CRM to mitigate the bank’s original\n        exposure to the relevant person or counterparty.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-7-2",
+              "number": "7.2",
+              "heading": "The relevant aggregate amount relating to the LEX must be less than or equal",
+              "text": "7.2     The relevant aggregate amount relating to the LEX must be less than or equal\n        to the limits specified in regulation 24(7)(c) of the Regulations after taking into\n        consideration:\n\n7.2.1   any relevant CCF, subject to a CCF floor of 10%;\n\n7.2.2   any specific credit impairment raised against the exposure; and\n\n\n                                                                                         5\n\n7.2.3    any eligible CRM to mitigate or reduce the bank’s original exposure to the\n         relevant person or counterparty.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-7-3",
+              "number": "7.3",
+              "heading": "Where an exposure meets the definition of a LEX, as stipulated under",
+              "text": "7.3      Where an exposure meets the definition of a LEX, as stipulated under\n         paragraph 7.1, banks must identify and monitor these exposures in compliance\n         with the provisions of the Directive. Where the prescribed or specified LEX limit\n         is breached, banks must report the breach to the PA as soon as possible but\n         no later than 24 hours of identification for all the prescribed or specified\n         requirements.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-8",
+          "number": "8",
+          "heading": "Eligible CRM considerations when calculating relevant adjusted",
+          "text": "8.       Eligible CRM considerations when calculating relevant adjusted\n         exposure post-CCF and post-specific credit impairments\n\n8.1      A bank or controlling company that obtained eligible CRM must elect whether\n         or not to take that eligible CRM into consideration when calculating the relevant\n         adjusted exposure after applying the relevant CCF and any specific credit\n         impairments to that counterparty, provided that the relevant provisions of\n         regulation 24(6)(d) of the Regulations are met.\n\n8.2      When a bank elects not to take the eligible CRM into consideration, then the\n         bank must not reduce the relevant exposure value of the counterparty in\n         respect of which eligible credit protection was obtained, however; the bank\n         must account and report for the subsequent and related exposure to the\n         provider of the eligible CRM provided that the exposure is a LEX and/forms\n         part of the “20 largest exposures”.\n\n8.3      When a bank elects to take the eligible CRM into consideration to a\n         counterparty, then the bank or controlling company must reduce the relevant\n         adjusted exposure value of the counterparty in respect of which eligible credit\n         protection was obtained; however:\n\n8.3.1    in the case of exposures – regardless of whether the exposures are exempt in\n         terms of LEX – that do meet the requirements as being considered a LEX and\n         form part of the “20 largest exposures” based on gross exposure pre-CCF,\n         pre-specific impairments and pre-CRM, then:\n\n8.3.1.1 the bank must account and report the subsequent and related exposure to the\n        provider of the eligible CRM for both “large exposures to a person” and “20\n        largest exposures” reporting purposes.\n\n8.3.2.   in the case of exposures – regardless of whether they are exempt exposures\n         – that do meet the requirements as being considered a LEX but do not form\n         part of the “20 largest exposures” based on gross exposure pre-CCF, pre-\n         specific impairments and pre-CRM then:\n\n8.3.2.1 the bank must account and report for the subsequent and related exposure to\n        the provider of the eligible CRM for “large exposures to a person” for reporting\n        purposes only.\n\n\n                                                                                        6\n\n8.3.3.        in the case of exposures – regardless of whether they are exempt exposures,\n              – that do not meet the requirements as being considered a LEX but do form\n              part of the “20 largest exposures” based on gross exposure pre-CCF, pre-\n              specific impairments and pre-CRM then:\n\n8.3.3.1 the bank must account and report for the subsequent and related exposure to\n        the provider of the eligible CRM for the purposes of “20 largest exposures”\n        reporting only.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-8-1",
+              "number": "8.1",
+              "heading": "A bank or controlling company that obtained eligible CRM must elect whether",
+              "text": "8.1      A bank or controlling company that obtained eligible CRM must elect whether\n         or not to take that eligible CRM into consideration when calculating the relevant\n         adjusted exposure after applying the relevant CCF and any specific credit\n         impairments to that counterparty, provided that the relevant provisions of\n         regulation 24(6)(d) of the Regulations are met.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-8-2",
+              "number": "8.2",
+              "heading": "When a bank elects not to take the eligible CRM into consideration, then the",
+              "text": "8.2      When a bank elects not to take the eligible CRM into consideration, then the\n         bank must not reduce the relevant exposure value of the counterparty in\n         respect of which eligible credit protection was obtained, however; the bank\n         must account and report for the subsequent and related exposure to the\n         provider of the eligible CRM provided that the exposure is a LEX and/forms\n         part of the “20 largest exposures”.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-8-3",
+              "number": "8.3",
+              "heading": "When a bank elects to take the eligible CRM into consideration to a",
+              "text": "8.3      When a bank elects to take the eligible CRM into consideration to a\n         counterparty, then the bank or controlling company must reduce the relevant\n         adjusted exposure value of the counterparty in respect of which eligible credit\n         protection was obtained; however:\n\n8.3.1    in the case of exposures – regardless of whether the exposures are exempt in\n         terms of LEX – that do meet the requirements as being considered a LEX and\n         form part of the “20 largest exposures” based on gross exposure pre-CCF,\n         pre-specific impairments and pre-CRM, then:\n\n8.3.1.1 the bank must account and report the subsequent and related exposure to the\n        provider of the eligible CRM for both “large exposures to a person” and “20\n        largest exposures” reporting purposes.\n\n8.3.2.   in the case of exposures – regardless of whether they are exempt exposures\n         – that do meet the requirements as being considered a LEX but do not form\n         part of the “20 largest exposures” based on gross exposure pre-CCF, pre-\n         specific impairments and pre-CRM then:\n\n8.3.2.1 the bank must account and report for the subsequent and related exposure to\n        the provider of the eligible CRM for “large exposures to a person” for reporting\n        purposes only.\n\n\n                                                                                        6\n\n8.3.3.        in the case of exposures – regardless of whether they are exempt exposures,\n              – that do not meet the requirements as being considered a LEX but do form\n              part of the “20 largest exposures” based on gross exposure pre-CCF, pre-\n              specific impairments and pre-CRM then:\n\n8.3.3.1 the bank must account and report for the subsequent and related exposure to\n        the provider of the eligible CRM for the purposes of “20 largest exposures”\n        reporting only.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-9",
+          "number": "9",
+          "heading": "Treatment of the revised market risk framework in the LEX framework",
+          "text": "9.            Treatment of the revised market risk framework in the LEX framework\n\n9.1           All relevant requirements specified in this Directive apply to the revised market\n              risk provisions contained in regulation 24(6)(e) of the Regulations.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-9-1",
+              "number": "9.1",
+              "heading": "All relevant requirements specified in this Directive apply to the revised market",
+              "text": "9.1           All relevant requirements specified in this Directive apply to the revised market\n              risk provisions contained in regulation 24(6)(e) of the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-10",
+          "number": "10",
+          "heading": "Identification, monitoring and reporting",
+          "text": "10.           Identification, monitoring and reporting\n\n10.1          A relevant aggregated exposure must be considered as part of the “20 largest\n              exposures” based on the “20 largest gross exposures” pre-CCF, pre-specific\n              impairments and pre-CRM to a single counterparty or a group of connected\n              counterparties regarded as a single counterparty, irrespective of whether the\n              relevant aggregated exposures is considered a LEX.\n\n10.2          For reporting purposes related to “large exposures to a person” and “20 largest\n              exposures”, the respective columns must be completed in accordance with:\n\n10.2.1 the respective requirements for the completion of forms BA 210, BA 600 and\n       BA 610 as specified in regulations 24(6) to 24(8), 36(14) and 37 of the\n       Regulations, respectively; and\n\n10.2.2 Directive 6 of 2025,4 or any subsequent Directive replacing the aforementioned\n       Directive, for the completion of forms BA 210, BA 600 and BA 610 respectively.\n\n10.3          In accordance with regulation 24(6)(a) of the Regulations, a bank or controlling\n              company must calculate and report its credit concentration risk at every\n              relevant tier within the banking group, that is, at a minimum, at every relevant\n              branch, bank solo and consolidated level, in accordance with the relevant\n              requirements specified in the Regulations.\n\n10.4          When calculating and reporting credit concentration risk exposures to a single\n              counterparty or a group of connected counterparties, which must be regarded\n              as a single counterparty in forms BA 210, BA 600 and BA 610:\n\n10.4.1 for internal LEX identification purposes – the relevant aggregate exposure\n       amount must be calculated on any given day in a month as the sum of all\n       relevant on-balance-sheet and off-balance-sheet credit exposures, including\n       transactions in instruments that give rise to counterparty credit risk, included\n       in either the bank’s banking book or trading book as required in\n\n4   Available online at: D6-2025 - Directive returns to be submitted to the PA from 1 July 2025\n\n\n\n                                                                                                  7\n\n        regulations 24(6)(c) and 24(6)(e) of the Regulations which is post-CCF, post-\n        specific impairments but before CRM.\n\n10.4.2 for LEX identification and reporting purposes – the relevant aggregate\n       exposure amount must be calculated and reported to the PA at month-end\n       for the relevant reporting period(s) as the sum of all relevant on-balance\n       sheet and off-balance sheet credit exposures, including transactions in\n       instruments that give rise to counterparty credit risk, included in either the\n       bank’s banking book or trading book as required in regulations 24(6)(c) and\n       24(6)(e) of the Regulations which is post-CCF, post-specific impairments but\n       before CRM.\n\n10.4.3 for internal LEX limit monitoring purposes – the relevant aggregate\n       exposure amount must be calculated on any day in a given month as the\n       sum of all relevant on-balance sheet and off-balance sheet credit exposures,\n       including transactions in instruments that give rise to counterparty credit risk,\n       included in either the bank’s banking book or trading book as required in\n       regulation 24(6)(c), regulations 24(6)(d) and 24(6)(e) of the Regulations which\n       is post-CCF, post-specific impairments and post-CRM.\n\n10.4.4 for LEX limit monitoring purposes – the relevant aggregate exposure\n       amount must be calculated and reported to the PA at month-end for the\n       relevant reporting period(s) as the sum of all relevant on-balance-sheet and\n       off-balance sheet credit exposures, including transactions in instruments that\n       give rise to counterparty credit risk, included in either the bank’s banking book\n       or trading book as required in regulations 24(6)(c), 24(6)(d) and 24(6)(e) of the\n       Regulations which is post-CCF, post-specific impairments and post-CRM.\n\n10.4.5 in this regard, average daily balances for each reporting month must not be\n       calculated in determining relevant exposure values for reporting purposes in\n       the “large exposures to a person” tables in forms BA 210, BA 600 and BA 610,\n       as well as in the “20 largest exposures” tables in forms BA 210 and BA 600.\n\n10.5    For exposures to the counterparty acting as a CRM provider, regardless of\n        whether banks elect or do not elect to take eligible CRM into consideration –\n        banks must account and report the subsequent and related exposure to the\n        provider of the eligible CRM provided that the exposure is a LEX and/or forms\n        part of the “20 largest exposures” as follows:\n\n10.5.1 In respect of the “large exposures to a person” and the “20 largest exposures”\n       tables in forms BA 210 and BA 600 – in the column specified as “Exposure to\n       the counterparty acting as a CRM provider” and all relevant subsequent\n       columns;\n\n10.5.2 In respect of the “large exposures to a person” table in form BA 610 – in the\n       column specified as “Gross credit exposure (pre-CCF, pre-specific credit\n       impairments and pre-CRM)” and all relevant subsequent columns; and\n\n\n\n\n                                                                                      8\n\n10.5.3 In cases where exposures to the counterparty acting as a CRM provider do\n       not meet the definition of LEX and/or do not form part of the “20 largest\n       exposures” – banks must report the names and the relevant notional values of\n       the exposure to the “counterparty acting as a CRM provider” in the\n       “Comments” worksheet in forms BA 210, BA 600 and BA610.\n\n10.6    Average daily balances for each month must only be calculated in accordance\n        with the requirements specified in regulation 8 of the Regulations, for internal\n        monitoring and compliance purposes by banks, against the respective\n        interbank monthly average limits specified in Annexure 1 of this Directive.\n\n10.7    Banks must internally monitor all relevant aggregate exposure values –\n        calculated in accordance with paragraph 7.2 above and the requirements of\n        regulations 24(6)(c), 24(6)(d) and 24(6)(e) of the Regulations – to a single\n        counterparty or group of connected counterparties regarded as a single\n        counterparty, and are classified as a LEX in accordance with paragraph 7.1\n        above, against the respective maximum daily and monthly average limits\n        specified in Annexure 1 of this Directive.\n\n10.8    Where the prescribed or specified LEX limit is breached, banks must report\n        the breach to the PA as soon as possible but no later than 24 hours of\n        identification by submitting a duly completed Annexure 2 of this Directive,\n        including a formal application requesting condonation, for such a breach.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-10-1",
+              "number": "10.1",
+              "heading": "A relevant aggregated exposure must be considered as part of the “20 largest",
+              "text": "10.1          A relevant aggregated exposure must be considered as part of the “20 largest\n              exposures” based on the “20 largest gross exposures” pre-CCF, pre-specific\n              impairments and pre-CRM to a single counterparty or a group of connected\n              counterparties regarded as a single counterparty, irrespective of whether the\n              relevant aggregated exposures is considered a LEX.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-10-2",
+              "number": "10.2",
+              "heading": "For reporting purposes related to “large exposures to a person” and “20 largest",
+              "text": "10.2          For reporting purposes related to “large exposures to a person” and “20 largest\n              exposures”, the respective columns must be completed in accordance with:\n\n10.2.1 the respective requirements for the completion of forms BA 210, BA 600 and\n       BA 610 as specified in regulations 24(6) to 24(8), 36(14) and 37 of the\n       Regulations, respectively; and\n\n10.2.2 Directive 6 of 2025,4 or any subsequent Directive replacing the aforementioned\n       Directive, for the completion of forms BA 210, BA 600 and BA 610 respectively.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-10-3",
+              "number": "10.3",
+              "heading": "In accordance with regulation 24(6)(a) of the Regulations, a bank or controlling",
+              "text": "10.3          In accordance with regulation 24(6)(a) of the Regulations, a bank or controlling\n              company must calculate and report its credit concentration risk at every\n              relevant tier within the banking group, that is, at a minimum, at every relevant\n              branch, bank solo and consolidated level, in accordance with the relevant\n              requirements specified in the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-10-4",
+              "number": "10.4",
+              "heading": "When calculating and reporting credit concentration risk exposures to a single",
+              "text": "10.4          When calculating and reporting credit concentration risk exposures to a single\n              counterparty or a group of connected counterparties, which must be regarded\n              as a single counterparty in forms BA 210, BA 600 and BA 610:\n\n10.4.1 for internal LEX identification purposes – the relevant aggregate exposure\n       amount must be calculated on any given day in a month as the sum of all\n       relevant on-balance-sheet and off-balance-sheet credit exposures, including\n       transactions in instruments that give rise to counterparty credit risk, included\n       in either the bank’s banking book or trading book as required in\n\n4   Available online at: D6-2025 - Directive returns to be submitted to the PA from 1 July 2025\n\n\n\n                                                                                                  7\n\n        regulations 24(6)(c) and 24(6)(e) of the Regulations which is post-CCF, post-\n        specific impairments but before CRM.\n\n10.4.2 for LEX identification and reporting purposes – the relevant aggregate\n       exposure amount must be calculated and reported to the PA at month-end\n       for the relevant reporting period(s) as the sum of all relevant on-balance\n       sheet and off-balance sheet credit exposures, including transactions in\n       instruments that give rise to counterparty credit risk, included in either the\n       bank’s banking book or trading book as required in regulations 24(6)(c) and\n       24(6)(e) of the Regulations which is post-CCF, post-specific impairments but\n       before CRM.\n\n10.4.3 for internal LEX limit monitoring purposes – the relevant aggregate\n       exposure amount must be calculated on any day in a given month as the\n       sum of all relevant on-balance sheet and off-balance sheet credit exposures,\n       including transactions in instruments that give rise to counterparty credit risk,\n       included in either the bank’s banking book or trading book as required in\n       regulation 24(6)(c), regulations 24(6)(d) and 24(6)(e) of the Regulations which\n       is post-CCF, post-specific impairments and post-CRM.\n\n10.4.4 for LEX limit monitoring purposes – the relevant aggregate exposure\n       amount must be calculated and reported to the PA at month-end for the\n       relevant reporting period(s) as the sum of all relevant on-balance-sheet and\n       off-balance sheet credit exposures, including transactions in instruments that\n       give rise to counterparty credit risk, included in either the bank’s banking book\n       or trading book as required in regulations 24(6)(c), 24(6)(d) and 24(6)(e) of the\n       Regulations which is post-CCF, post-specific impairments and post-CRM.\n\n10.4.5 in this regard, average daily balances for each reporting month must not be\n       calculated in determining relevant exposure values for reporting purposes in\n       the “large exposures to a person” tables in forms BA 210, BA 600 and BA 610,\n       as well as in the “20 largest exposures” tables in forms BA 210 and BA 600.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-10-5",
+              "number": "10.5",
+              "heading": "For exposures to the counterparty acting as a CRM provider, regardless of",
+              "text": "10.5    For exposures to the counterparty acting as a CRM provider, regardless of\n        whether banks elect or do not elect to take eligible CRM into consideration –\n        banks must account and report the subsequent and related exposure to the\n        provider of the eligible CRM provided that the exposure is a LEX and/or forms\n        part of the “20 largest exposures” as follows:\n\n10.5.1 In respect of the “large exposures to a person” and the “20 largest exposures”\n       tables in forms BA 210 and BA 600 – in the column specified as “Exposure to\n       the counterparty acting as a CRM provider” and all relevant subsequent\n       columns;\n\n10.5.2 In respect of the “large exposures to a person” table in form BA 610 – in the\n       column specified as “Gross credit exposure (pre-CCF, pre-specific credit\n       impairments and pre-CRM)” and all relevant subsequent columns; and\n\n\n\n\n                                                                                      8\n\n10.5.3 In cases where exposures to the counterparty acting as a CRM provider do\n       not meet the definition of LEX and/or do not form part of the “20 largest\n       exposures” – banks must report the names and the relevant notional values of\n       the exposure to the “counterparty acting as a CRM provider” in the\n       “Comments” worksheet in forms BA 210, BA 600 and BA610.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-10-6",
+              "number": "10.6",
+              "heading": "Average daily balances for each month must only be calculated in accordance",
+              "text": "10.6    Average daily balances for each month must only be calculated in accordance\n        with the requirements specified in regulation 8 of the Regulations, for internal\n        monitoring and compliance purposes by banks, against the respective\n        interbank monthly average limits specified in Annexure 1 of this Directive.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-10-7",
+              "number": "10.7",
+              "heading": "Banks must internally monitor all relevant aggregate exposure values –",
+              "text": "10.7    Banks must internally monitor all relevant aggregate exposure values –\n        calculated in accordance with paragraph 7.2 above and the requirements of\n        regulations 24(6)(c), 24(6)(d) and 24(6)(e) of the Regulations – to a single\n        counterparty or group of connected counterparties regarded as a single\n        counterparty, and are classified as a LEX in accordance with paragraph 7.1\n        above, against the respective maximum daily and monthly average limits\n        specified in Annexure 1 of this Directive.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-10-8",
+              "number": "10.8",
+              "heading": "Where the prescribed or specified LEX limit is breached, banks must report",
+              "text": "10.8    Where the prescribed or specified LEX limit is breached, banks must report\n        the breach to the PA as soon as possible but no later than 24 hours of\n        identification by submitting a duly completed Annexure 2 of this Directive,\n        including a formal application requesting condonation, for such a breach.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-11",
+          "number": "11",
+          "heading": "Application of the LEX requirements to all subsidiaries within a banking",
+          "text": "11.     Application of the LEX requirements to all subsidiaries within a banking\n        group, where a bank within the group has been designated as a domestic\n        systemically important bank, domestic systemically important financial\n        institution or global systemically important bank\n\n11.1    In the case where a bank within a banking group is designated as:\n\n11.1.1 A domestic systemically important bank (D-SIB)/domestic systemically\n       important financial institution (D-SIFI) by the PA or the South African Reserve\n       Bank, for LEX purposes, and when determining the limit applicable to all other\n       subsidiaries within the group where an entity within the group has been\n       designated as a D-SIB/D-SIFI, the D-SIB/D-SIFI designation must be applied\n       to the controlling company of the D-SIB/D-SIFI as well as all other subsidiaries\n       of the bank and controlling company; or\n\n11.1.2 A global systemically important bank (G-SIB), as published by the Financial\n       Stability Board (FSB) from time to time, for LEX purposes, and when\n       determining the limit applicable to all other subsidiaries within the group where\n       an entity within the group has been designated as a G-SIB, the G-SIB\n       designation must be applied to the controlling company of the G-SIB as well\n       as all other subsidiaries of the bank and controlling company.\n\n11.2    The D-SIB/D-SIFI/G-SIB limit applies to all subsidiaries of the bank’s\n        controlling company and not only to the designated D-SIB/D-SIFI/G-SIB. For\n        each subsidiary within the banking group, the limit must be based on the\n\n\n\n                                                                                      9\n\n       relevant amount of tier 1 capital and reserve funds, as specified in\n       regulation 24(7)(c) of the Regulations.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-11-1",
+              "number": "11.1",
+              "heading": "In the case where a bank within a banking group is designated as:",
+              "text": "11.1    In the case where a bank within a banking group is designated as:\n\n11.1.1 A domestic systemically important bank (D-SIB)/domestic systemically\n       important financial institution (D-SIFI) by the PA or the South African Reserve\n       Bank, for LEX purposes, and when determining the limit applicable to all other\n       subsidiaries within the group where an entity within the group has been\n       designated as a D-SIB/D-SIFI, the D-SIB/D-SIFI designation must be applied\n       to the controlling company of the D-SIB/D-SIFI as well as all other subsidiaries\n       of the bank and controlling company; or\n\n11.1.2 A global systemically important bank (G-SIB), as published by the Financial\n       Stability Board (FSB) from time to time, for LEX purposes, and when\n       determining the limit applicable to all other subsidiaries within the group where\n       an entity within the group has been designated as a G-SIB, the G-SIB\n       designation must be applied to the controlling company of the G-SIB as well\n       as all other subsidiaries of the bank and controlling company.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-11-2",
+              "number": "11.2",
+              "heading": "The D-SIB/D-SIFI/G-SIB limit applies to all subsidiaries of the bank’s",
+              "text": "11.2    The D-SIB/D-SIFI/G-SIB limit applies to all subsidiaries of the bank’s\n        controlling company and not only to the designated D-SIB/D-SIFI/G-SIB. For\n        each subsidiary within the banking group, the limit must be based on the\n\n\n\n                                                                                      9\n\n       relevant amount of tier 1 capital and reserve funds, as specified in\n       regulation 24(7)(c) of the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-12",
+          "number": "12",
+          "heading": "Treatment of intraday exposures",
+          "text": "12.    Treatment of intraday exposures\n\n12.1   To avoid disturbing the payment and settlement system or any processes\n       related thereto, intraday interbank exposures are exempt from the LEX\n       requirements specified in the Regulations.\n\n12.2   Any intraday exposure, limit and facility, other than intraday interbank\n       exposures, is subject to the respective LEX requirements specified in the\n       Regulations.\n\n12.3   As at the relevant reporting date and where required, intraday exposures, limits\n       and facilities must be reported as follows:\n\n12.3.1 Utilised portions of on-balance sheet exposures, limits and facilities must be\n       reported in forms BA100, BA200, BA210, BA600 and BA610.\n\n12.3.2 Unutilised portions of committed and uncommitted exposures, limits and\n       facilities must be reported in forms BA110, BA200, BA210, BA600 and BA610.\n\n12.3.3 Unutilised portions of off-balance sheet commitments must be subject to a\n       CCF floor of 10% for the purposes of “large exposures to a person” reporting\n       in forms BA 210, BA 600 and BA 610, as well as “20 largest exposures”\n       reporting in forms BA 210 and BA 600.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-12-1",
+              "number": "12.1",
+              "heading": "To avoid disturbing the payment and settlement system or any processes",
+              "text": "12.1   To avoid disturbing the payment and settlement system or any processes\n       related thereto, intraday interbank exposures are exempt from the LEX\n       requirements specified in the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-12-2",
+              "number": "12.2",
+              "heading": "Any intraday exposure, limit and facility, other than intraday interbank",
+              "text": "12.2   Any intraday exposure, limit and facility, other than intraday interbank\n       exposures, is subject to the respective LEX requirements specified in the\n       Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-12-3",
+              "number": "12.3",
+              "heading": "As at the relevant reporting date and where required, intraday exposures, limits",
+              "text": "12.3   As at the relevant reporting date and where required, intraday exposures, limits\n       and facilities must be reported as follows:\n\n12.3.1 Utilised portions of on-balance sheet exposures, limits and facilities must be\n       reported in forms BA100, BA200, BA210, BA600 and BA610.\n\n12.3.2 Unutilised portions of committed and uncommitted exposures, limits and\n       facilities must be reported in forms BA110, BA200, BA210, BA600 and BA610.\n\n12.3.3 Unutilised portions of off-balance sheet commitments must be subject to a\n       CCF floor of 10% for the purposes of “large exposures to a person” reporting\n       in forms BA 210, BA 600 and BA 610, as well as “20 largest exposures”\n       reporting in forms BA 210 and BA 600.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-13",
+          "number": "13",
+          "heading": "Monitoring and managing interbank exposures",
+          "text": "13.    Monitoring and managing interbank exposures\n\n13.1   A bank other than a D-SIB or D-SIFI must manage its business in such a\n       manner that the aggregate amount of its concentrated credit exposure,\n       calculated in accordance with the relevant requirements specified in regulation\n       24(6) of the Regulations to a D-SIB or D-SIFI, complies with the requirements\n       specified below:\n\n13.1.1 The aggregate exposure must not at any time exceed 25% of the sum of the\n       bank or controlling company’s tier 1 capital and reserve funds, as reported in\n       form BA 700, as at the end of the reporting date immediately preceding the\n       reporting date to which the form BA 210 relates.\n\n13.2   Following the 12th month after the date that the bank or controlling company\n       itself has been designated as a D-SIB or D-SIFI, the aggregate amount of its\n       concentrated credit exposure calculated in accordance with the relevant\n       requirements specified in regulation 24(6) of the Regulations to a D-SIB or\n       D-SIFI, must comply with the requirements specified below:\n\n13.2.1 The aggregate exposure must not, at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations), exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n\n\n                                                                                    10\n\n        BA 700, as at the end of the reporting date immediately preceding the reporting\n        date to which the form BA 210 relates.\n\n13.2.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 18% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.\n\n13.3    A bank other than a D-SIB or G-SIB must manage its business in such a\n        manner that the aggregate amount of its concentrated credit exposure –\n        calculated in accordance with the relevant requirements specified in regulation\n        24(6) of the Regulations – to an institution designated as and included in the\n        list of G-SIBs (which includes any branch of a G-SIB), published by the FSB\n        from time to time, complies with the requirements specified below:\n\n13.3.1 The aggregate exposure must not at any time exceed 25% of the sum of the\n       bank or controlling company’s tier 1 capital and reserve funds, as reported in\n       form BA 700, as at the end of the reporting date immediately preceding the\n       reporting date to which the form BA 210 relates.\n\n13.4    A bank designated as a D-SIB must manage its business in such a manner\n        that the aggregate amount of its concentrated credit exposure, calculated in\n        accordance with the relevant requirements specified in regulation 24(6) of the\n        Regulations to a G-SIB (which includes any branch of a G-SIB), complies with\n        the requirements specified below:\n\n13.4.1 The aggregate exposure must not at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations) exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n       BA 700, as at the end of the reporting date immediately preceding the reporting\n       date to which the form BA 210 relates.\n\n13.4.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 18% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.\n\n13.5    A bank designated as a G-SIB (which includes any branch of a G-SIB) must\n        manage its business in such a manner that the aggregate amount of its\n        concentrated credit exposure, calculated in accordance with the relevant\n        requirements specified in regulation 24(6) of the Regulations to a G-SIB (which\n        includes any branch of a G-SIB), complies with the requirements specified\n        below:\n\n13.5.1 The aggregate exposure must not at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations) exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n\n\n\n                                                                                    11\n\n        BA 700, as at the end of the reporting date immediately preceding the reporting\n        date to which the form BA 210 relates.\n\n13.5.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 15% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.\n\n13.6    A bank designated as a G-SIB (which includes any branch of a G-SIB) must\n        manage its business in such a manner that the aggregate amount of its\n        concentrated credit exposure, calculated in accordance with the relevant\n        requirements specified in regulation 24(6) of the Regulations to a D-SIB or\n        D-SIFI, must comply with the requirements specified below:\n\n13.6.1 The aggregate exposure must not at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations) exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n       BA 700, as at the end of the reporting date immediately preceding the reporting\n       date to which the form BA 210 relates.\n\n13.6.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 15% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-13-1",
+              "number": "13.1",
+              "heading": "A bank other than a D-SIB or D-SIFI must manage its business in such a",
+              "text": "13.1   A bank other than a D-SIB or D-SIFI must manage its business in such a\n       manner that the aggregate amount of its concentrated credit exposure,\n       calculated in accordance with the relevant requirements specified in regulation\n       24(6) of the Regulations to a D-SIB or D-SIFI, complies with the requirements\n       specified below:\n\n13.1.1 The aggregate exposure must not at any time exceed 25% of the sum of the\n       bank or controlling company’s tier 1 capital and reserve funds, as reported in\n       form BA 700, as at the end of the reporting date immediately preceding the\n       reporting date to which the form BA 210 relates.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-13-2",
+              "number": "13.2",
+              "heading": "Following the 12th month after the date that the bank or controlling company",
+              "text": "13.2   Following the 12th month after the date that the bank or controlling company\n       itself has been designated as a D-SIB or D-SIFI, the aggregate amount of its\n       concentrated credit exposure calculated in accordance with the relevant\n       requirements specified in regulation 24(6) of the Regulations to a D-SIB or\n       D-SIFI, must comply with the requirements specified below:\n\n13.2.1 The aggregate exposure must not, at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations), exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n\n\n                                                                                    10\n\n        BA 700, as at the end of the reporting date immediately preceding the reporting\n        date to which the form BA 210 relates.\n\n13.2.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 18% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-13-3",
+              "number": "13.3",
+              "heading": "A bank other than a D-SIB or G-SIB must manage its business in such a",
+              "text": "13.3    A bank other than a D-SIB or G-SIB must manage its business in such a\n        manner that the aggregate amount of its concentrated credit exposure –\n        calculated in accordance with the relevant requirements specified in regulation\n        24(6) of the Regulations – to an institution designated as and included in the\n        list of G-SIBs (which includes any branch of a G-SIB), published by the FSB\n        from time to time, complies with the requirements specified below:\n\n13.3.1 The aggregate exposure must not at any time exceed 25% of the sum of the\n       bank or controlling company’s tier 1 capital and reserve funds, as reported in\n       form BA 700, as at the end of the reporting date immediately preceding the\n       reporting date to which the form BA 210 relates.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-13-4",
+              "number": "13.4",
+              "heading": "A bank designated as a D-SIB must manage its business in such a manner",
+              "text": "13.4    A bank designated as a D-SIB must manage its business in such a manner\n        that the aggregate amount of its concentrated credit exposure, calculated in\n        accordance with the relevant requirements specified in regulation 24(6) of the\n        Regulations to a G-SIB (which includes any branch of a G-SIB), complies with\n        the requirements specified below:\n\n13.4.1 The aggregate exposure must not at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations) exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n       BA 700, as at the end of the reporting date immediately preceding the reporting\n       date to which the form BA 210 relates.\n\n13.4.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 18% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-13-5",
+              "number": "13.5",
+              "heading": "A bank designated as a G-SIB (which includes any branch of a G-SIB) must",
+              "text": "13.5    A bank designated as a G-SIB (which includes any branch of a G-SIB) must\n        manage its business in such a manner that the aggregate amount of its\n        concentrated credit exposure, calculated in accordance with the relevant\n        requirements specified in regulation 24(6) of the Regulations to a G-SIB (which\n        includes any branch of a G-SIB), complies with the requirements specified\n        below:\n\n13.5.1 The aggregate exposure must not at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations) exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n\n\n\n                                                                                    11\n\n        BA 700, as at the end of the reporting date immediately preceding the reporting\n        date to which the form BA 210 relates.\n\n13.5.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 15% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-13-6",
+              "number": "13.6",
+              "heading": "A bank designated as a G-SIB (which includes any branch of a G-SIB) must",
+              "text": "13.6    A bank designated as a G-SIB (which includes any branch of a G-SIB) must\n        manage its business in such a manner that the aggregate amount of its\n        concentrated credit exposure, calculated in accordance with the relevant\n        requirements specified in regulation 24(6) of the Regulations to a D-SIB or\n        D-SIFI, must comply with the requirements specified below:\n\n13.6.1 The aggregate exposure must not at any time on an average daily balance\n       basis for the month (calculated in accordance with the requirements specified\n       in regulation 8 of the Regulations) exceed 15% of the sum of the bank or\n       controlling company’s tier 1 capital and reserve funds, as reported in form\n       BA 700, as at the end of the reporting date immediately preceding the reporting\n       date to which the form BA 210 relates.\n\n13.6.2 The maximum daily aggregate exposure during the month must not at any time\n       exceed 15% of the sum of the bank or controlling company’s tier 1 capital and\n       reserve funds, as reported in form BA 700, as at the end of the reporting date\n       immediately preceding the reporting date to which the form BA 210 relates.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-14",
+          "number": "14",
+          "heading": "Application of LEX requirements on intragroup exposures",
+          "text": "14.     Application of LEX requirements on intragroup exposures\n\n14.1    A bank or controlling company must manage its intragroup exposures in such\n        a manner that the aggregate amount of its exposure to entities within the group\n        complies with the requirements specified below:\n\n14.1.1 Unless otherwise specified in writing by the PA, intragroup exposures risk\n       weighted at 0% in terms of regulation 23(6)(j) of the Regulations are exempt\n       from the LEX limit.\n\n14.1.2 For intragroup exposures other than intragroup exposures risk weighted at 0%\n       in terms of regulation 23(6)(j) of the Regulations, the bank or controlling\n       company is not required to determine the connectedness of the intragroup\n       entities, unless otherwise specified in writing by the PA. However, the\n       aggregate exposure to each intragroup entity must comply with the relevant\n       LEX limit specified in regulation 24(6) and 24(7) of the Regulations.\n\n14.1.3 Where the bank or controlling company is of the opinion that the LEX limit\n       specified or imposed is not appropriate for a certain intragroup entity, the bank\n       or controlling company must demonstrate to the satisfaction of the PA that,\n       due to the existence of specific circumstances, a different LEX limit or\n       treatment should be considered.\n\n14.2    The PA acknowledges the interconnectedness between entities within a group,\n        but also acknowledges that, for the LEX requirement purposes, intragroup\n\n\n                                                                                     12\n\n       exposures cannot necessarily and in all cases be regarded as a group of\n       connected counterparties and be regarded as a single counterparty.\n       Therefore, the Regulations have an enabling provision to specify conditions\n       where intragroup exposures are not subject to all of the LEX requirements.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-14-1",
+              "number": "14.1",
+              "heading": "A bank or controlling company must manage its intragroup exposures in such",
+              "text": "14.1    A bank or controlling company must manage its intragroup exposures in such\n        a manner that the aggregate amount of its exposure to entities within the group\n        complies with the requirements specified below:\n\n14.1.1 Unless otherwise specified in writing by the PA, intragroup exposures risk\n       weighted at 0% in terms of regulation 23(6)(j) of the Regulations are exempt\n       from the LEX limit.\n\n14.1.2 For intragroup exposures other than intragroup exposures risk weighted at 0%\n       in terms of regulation 23(6)(j) of the Regulations, the bank or controlling\n       company is not required to determine the connectedness of the intragroup\n       entities, unless otherwise specified in writing by the PA. However, the\n       aggregate exposure to each intragroup entity must comply with the relevant\n       LEX limit specified in regulation 24(6) and 24(7) of the Regulations.\n\n14.1.3 Where the bank or controlling company is of the opinion that the LEX limit\n       specified or imposed is not appropriate for a certain intragroup entity, the bank\n       or controlling company must demonstrate to the satisfaction of the PA that,\n       due to the existence of specific circumstances, a different LEX limit or\n       treatment should be considered.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-14-2",
+              "number": "14.2",
+              "heading": "The PA acknowledges the interconnectedness between entities within a group,",
+              "text": "14.2    The PA acknowledges the interconnectedness between entities within a group,\n        but also acknowledges that, for the LEX requirement purposes, intragroup\n\n\n                                                                                     12\n\n       exposures cannot necessarily and in all cases be regarded as a group of\n       connected counterparties and be regarded as a single counterparty.\n       Therefore, the Regulations have an enabling provision to specify conditions\n       where intragroup exposures are not subject to all of the LEX requirements.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-15",
+          "number": "15",
+          "heading": "Application of LEX requirements on a foreign subsidiary or branch of a",
+          "text": "15.    Application of LEX requirements on a foreign subsidiary or branch of a\n       bank controlling company required to report on a solo basis\n\n15.1   The PA acknowledges that foreign subsidiaries are subject to the regulatory\n       requirements and concentration risk requirements imposed by the prudential\n       supervisors in the jurisdictions where they conduct business, while the\n       controlling company is subject to regulatory requirements and concentration\n       risk requirements as imposed by the PA as the home supervisor. Therefore,\n       unless otherwise instructed by the PA, the LEX limit imposed on a foreign\n       subsidiary must be based on the controlling company’s tier 1 capital and\n       reserve funds.\n\n15.2   Foreign subsidiaries are, however, exposed to concentration risk similar to\n       other separately capitalised institutions or banks, which potentially endangers\n       their survival, that of their bank controlling companies or even the wider\n       banking group. Therefore, for the PA to monitor and supervise concentration\n       risk within a foreign subsidiary in accordance with the requirements specified\n       in the LEX framework and the Core Principles, the said subsidiary is required\n       to report credit concentration risk exposures on form BA 610 based on the\n       foreign subsidiary’s own tier 1 capital and reserve funds calculated in\n       accordance with the relevant requirements specified in the Regulations.\n\n15.3   For the purposes of regulation 24(7)(a)(iii) of the Regulations, in the case of a\n       foreign subsidiary of a controlling company required to report on a solo basis\n       where the PA is also responsible for the supervision of the controlling\n       company, the specified amount as contemplated in section 73(1)(a) of the\n       Banks Act must for reporting purposes be 10% of the sum of the tier 1 capital\n       and reserve funds of the relevant foreign subsidiary, calculated in accordance\n       with the relevant requirements specified in the Regulations.\n\n15.4   For the purposes of regulation 24(7)(c)(iii) of the Regulations, in the case of a\n       foreign subsidiary of a controlling company required to report on a solo basis,\n       the specified percentage and the specified amount must be the relevant\n       percentage of the sum of the tier 1 capital and reserve funds of the controlling\n       company of the foreign subsidiary unless specifically otherwise directed in\n       writing in specific cases.\n\n15.5   When completing returns in respect of a foreign operation of a South African\n       bank, the definitions and interpretation of items in the Regulations must be\n       applied. In this regard, for LEX purposes and with reference to the form BA610\n       reporting:\n\n15.5.1 a foreign subsidiary or branch of a controlling company with an exposure to a\n       South African designated D-SIB or D-SIFI must be reported under the ‘D-SIB\n       or D-SIFI’ line item;\n\n\n\n                                                                                     13\n\n15.5.2 a foreign subsidiary or branch of a controlling company with an exposure to a\n       bank not domiciled in South Africa but designated as a D-SIB or D-SIFI in the\n       host/foreign jurisdiction must be reported under the ‘Banks other than D-SIBs\n       and G-SIBs’ line item; and\n\n15.5.3 a foreign subsidiary or branch of a controlling company with an exposure to a\n       bank designated as a G-SIB by the FSB must be reported in the ‘G-SIBs’ line\n       item.",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-15-1",
+              "number": "15.1",
+              "heading": "The PA acknowledges that foreign subsidiaries are subject to the regulatory",
+              "text": "15.1   The PA acknowledges that foreign subsidiaries are subject to the regulatory\n       requirements and concentration risk requirements imposed by the prudential\n       supervisors in the jurisdictions where they conduct business, while the\n       controlling company is subject to regulatory requirements and concentration\n       risk requirements as imposed by the PA as the home supervisor. Therefore,\n       unless otherwise instructed by the PA, the LEX limit imposed on a foreign\n       subsidiary must be based on the controlling company’s tier 1 capital and\n       reserve funds.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-15-2",
+              "number": "15.2",
+              "heading": "Foreign subsidiaries are, however, exposed to concentration risk similar to",
+              "text": "15.2   Foreign subsidiaries are, however, exposed to concentration risk similar to\n       other separately capitalised institutions or banks, which potentially endangers\n       their survival, that of their bank controlling companies or even the wider\n       banking group. Therefore, for the PA to monitor and supervise concentration\n       risk within a foreign subsidiary in accordance with the requirements specified\n       in the LEX framework and the Core Principles, the said subsidiary is required\n       to report credit concentration risk exposures on form BA 610 based on the\n       foreign subsidiary’s own tier 1 capital and reserve funds calculated in\n       accordance with the relevant requirements specified in the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-15-3",
+              "number": "15.3",
+              "heading": "For the purposes of regulation 24(7)(a)(iii) of the Regulations, in the case of a",
+              "text": "15.3   For the purposes of regulation 24(7)(a)(iii) of the Regulations, in the case of a\n       foreign subsidiary of a controlling company required to report on a solo basis\n       where the PA is also responsible for the supervision of the controlling\n       company, the specified amount as contemplated in section 73(1)(a) of the\n       Banks Act must for reporting purposes be 10% of the sum of the tier 1 capital\n       and reserve funds of the relevant foreign subsidiary, calculated in accordance\n       with the relevant requirements specified in the Regulations.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-15-4",
+              "number": "15.4",
+              "heading": "For the purposes of regulation 24(7)(c)(iii) of the Regulations, in the case of a",
+              "text": "15.4   For the purposes of regulation 24(7)(c)(iii) of the Regulations, in the case of a\n       foreign subsidiary of a controlling company required to report on a solo basis,\n       the specified percentage and the specified amount must be the relevant\n       percentage of the sum of the tier 1 capital and reserve funds of the controlling\n       company of the foreign subsidiary unless specifically otherwise directed in\n       writing in specific cases.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d14-2025-15-5",
+              "number": "15.5",
+              "heading": "When completing returns in respect of a foreign operation of a South African",
+              "text": "15.5   When completing returns in respect of a foreign operation of a South African\n       bank, the definitions and interpretation of items in the Regulations must be\n       applied. In this regard, for LEX purposes and with reference to the form BA610\n       reporting:\n\n15.5.1 a foreign subsidiary or branch of a controlling company with an exposure to a\n       South African designated D-SIB or D-SIFI must be reported under the ‘D-SIB\n       or D-SIFI’ line item;\n\n\n\n                                                                                     13\n\n15.5.2 a foreign subsidiary or branch of a controlling company with an exposure to a\n       bank not domiciled in South Africa but designated as a D-SIB or D-SIFI in the\n       host/foreign jurisdiction must be reported under the ‘Banks other than D-SIBs\n       and G-SIBs’ line item; and\n\n15.5.3 a foreign subsidiary or branch of a controlling company with an exposure to a\n       bank designated as a G-SIB by the FSB must be reported in the ‘G-SIBs’ line\n       item.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d14-2025-16",
+          "number": "16",
+          "heading": "Acknowledgement of receipt",
+          "text": "16.        Acknowledgement of receipt\n\n16.1       Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and\n           the said auditors, should be returned to the PA at the earliest convenience of\n           the signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/12/25\n\nEncl.: 3\n\nThe previous Directive issued was Directive 13/2025, dated 20 November 2025.\n\n\n\n\n                                                                                           14",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d14-2025-16-1",
+              "number": "16.1",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "16.1       Kindly ensure that a copy of this Directive is made available to your institution’s\n           external auditors. In addition, the attached acknowledgement of receipt, duly\n           completed and signed by both the Chief Executive Officer of the institution and\n           the said auditors, should be returned to the PA at the earliest convenience of\n           the signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 01/12/25\n\nEncl.: 3\n\nThe previous Directive issued was Directive 13/2025, dated 20 November 2025.\n\n\n\n\n                                                                                           14",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         }
