@@ -2085,6 +2085,59 @@ async function handleRegDistill(req: Request, slug: string): Promise<Response> {
     return jsonResponse({ proposals: [], message: "No adopted provisions in this scope" });
   }
 
+  // ── Stub mode (BANK_DISTILL_STUB=1) — deterministic heuristic proposals ──
+  // Lets the full tick → distill → review → approve flow be exercised with no
+  // ANTHROPIC_API_KEY. Proposals are clearly labelled: ORG-STUB-* ids,
+  // confidence 0, requirement prefixed "[STUB]". Never enabled by default.
+  if (process.env.BANK_DISTILL_STUB === "1") {
+    const groups = new Map<string, string[]>();
+    for (const leafId of adoptedLeaves) {
+      const parentId = tree.get(leafId)?.parentId ?? scopeId;
+      const g = groups.get(parentId);
+      if (g) g.push(leafId);
+      else groups.set(parentId, [leafId]);
+    }
+    const stubProposals: DistillationProposal[] = [...groups.entries()].map(
+      ([parentId, leaves], i) => {
+        const parent = tree.get(parentId);
+        const heading = [parent?.number, parent?.heading].filter(Boolean).join(" ") || parentId;
+        const verbatim: Record<string, string> = {};
+        for (const l of leaves) {
+          const t = (tree.get(l)?.text ?? "").trim();
+          if (t) verbatim[l] = t.slice(0, 180);
+        }
+        const firstText = leaves
+          .map((l) => (tree.get(l)?.text ?? "").trim())
+          .find((t) => t.length > 0);
+        const slugPart = heading
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "")
+          .slice(0, 40);
+        return {
+          suggestedSlug: `stub-${slugPart || `group-${i + 1}`}`,
+          suggestedUrn: `urn:obligation:bank:stub:${slugPart || `group-${i + 1}`}`,
+          suggestedOrgId: `ORG-STUB-${String(i + 1).padStart(2, "0")}`,
+          requirement: `[STUB — heuristic, no LLM] Comply with "${heading}" of ${doc.title ?? slug}: ${(firstText ?? "(no verbatim text)").slice(0, 200)}`,
+          contributingProvisionIds: leaves,
+          verbatimSourceText: verbatim,
+          confidence: 0,
+        };
+      },
+    );
+    logger.info(
+      { slug, scopeId, groups: stubProposals.length },
+      "distill served by STUB mode (BANK_DISTILL_STUB=1)",
+    );
+    return jsonResponse({
+      slug,
+      scopeId,
+      adoptedCount: adoptedLeaves.length,
+      stub: true,
+      proposals: stubProposals,
+    });
+  }
+
   // Build the user prompt listing adopted provision texts
   const provisionLines = adoptedLeaves
     .map((leafId) => {
