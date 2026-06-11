@@ -47,6 +47,8 @@
 // Author: Ravi (Treasury and ALM engineer, engineering — reports to Eitan
 //   (Treasurer, governance)).
 
+import { HANDLER_CALLABLES } from "../../runtime/handler-callables";
+import { HANDLERS_METADATA } from "../../runtime/handlers-metadata";
 import {
   EWI_MONITOR_MEASUREMENT_TYPES,
   EWI_WIRED_TRIGGER_TYPES,
@@ -59,8 +61,6 @@ import {
 } from "../event-store/event-types/cfp-triggers";
 import { TYPED_EVENT_TYPES } from "../event-store/event-types/index";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
-import { HANDLER_CALLABLES } from "../../runtime/handler-callables";
-import { HANDLERS_METADATA } from "../../runtime/handlers-metadata";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "cfp-trigger-coverage";

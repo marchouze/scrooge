@@ -34,7 +34,9 @@ describe("recon:cfp-trigger-coverage — real repository state", () => {
     const r = run();
     expect(r.violations).toEqual([]);
     expect(r.ok).toBe(true);
-    expect(r.asserted).toBeGreaterThanOrEqual(7 * 2 + 1 + EWI_MONITOR_MEASUREMENT_TYPES.length + 1 + 3);
+    expect(r.asserted).toBeGreaterThanOrEqual(
+      7 * 2 + 1 + EWI_MONITOR_MEASUREMENT_TYPES.length + 1 + 3,
+    );
   });
 });
 

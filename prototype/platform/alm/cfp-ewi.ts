@@ -256,7 +256,8 @@ export function evaluateCfpEwis(asOf: string, inputs: CfpEwiInputs): CfpTriggerE
           sourceMeasure: "lcr-ratio-pct",
           observed: lcr,
           threshold: LCR_REGULATORY_MINIMUM_PCT,
-          thresholdDescription: "LCR at or below the 100% PA regulatory minimum (LRM Policy v1 §5.2 Tier 3)",
+          thresholdDescription:
+            "LCR at or below the 100% PA regulatory minimum (LRM Policy v1 §5.2 Tier 3)",
           cfpTier: "tier-3",
           detectedAt: asOf,
           severity: "critical",
@@ -291,7 +292,8 @@ export function evaluateCfpEwis(asOf: string, inputs: CfpEwiInputs): CfpTriggerE
         sourceMeasure: "nsfr-ratio-pct",
         observed: inputs.nsfrRatioPct,
         threshold: NSFR_REGULATORY_MINIMUM_PCT,
-        thresholdDescription: "NSFR at or below the 100% PA regulatory minimum (LRM Policy v1 §5.2 Tier 3)",
+        thresholdDescription:
+          "NSFR at or below the 100% PA regulatory minimum (LRM Policy v1 §5.2 Tier 3)",
         cfpTier: "tier-3",
         detectedAt: asOf,
         severity: "critical",
@@ -329,7 +331,9 @@ export function evaluateCfpEwis(asOf: string, inputs: CfpEwiInputs): CfpTriggerE
   const peak = inputs.intradayMetrics.peakUsagePctOfAvailable;
   if (peak !== null && peak > INTRADAY_STRESS_USAGE_PCT) {
     const stressedWindows = inputs.intradayMetrics.usageByWindow
-      .filter((w) => w.usagePctOfAvailable !== null && w.usagePctOfAvailable > INTRADAY_STRESS_USAGE_PCT)
+      .filter(
+        (w) => w.usagePctOfAvailable !== null && w.usagePctOfAvailable > INTRADAY_STRESS_USAGE_PCT,
+      )
       .map((w) => w.windowLabel);
     out.push({
       type: "IntradayStressDetected",

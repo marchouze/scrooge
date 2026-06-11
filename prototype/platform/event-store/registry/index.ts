@@ -214,6 +214,7 @@ import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
+import { CFP_TRIGGER_EVENT_TYPES_REGISTRY } from "./cfp-triggers";
 import { CISO_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./ciso-governance";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
@@ -240,14 +241,13 @@ import { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-run
 import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
 import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
+import { INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY } from "./intraday-liquidity";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import {
   ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY,
   OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY,
 } from "./isda-odp";
-import { CFP_TRIGGER_EVENT_TYPES_REGISTRY } from "./cfp-triggers";
-import { INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY } from "./intraday-liquidity";
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import { LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY } from "./liquidity-limit";

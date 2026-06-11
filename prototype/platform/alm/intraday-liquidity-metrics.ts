@@ -58,7 +58,11 @@ import type {
   IntradayLiquidityMetric,
 } from "../event-store/event-types/intraday-liquidity";
 import type { EventStore } from "../event-store/store";
-import { type IntradayStressResult, SETTLEMENT_WINDOWS, runIntradayStress } from "./intraday-stress";
+import {
+  type IntradayStressResult,
+  SETTLEMENT_WINDOWS,
+  runIntradayStress,
+} from "./intraday-stress";
 
 // ---------------------------------------------------------------------------
 // Types
