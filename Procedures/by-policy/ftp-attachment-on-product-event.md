@@ -171,7 +171,7 @@ At 17:00 SAST each business day, the FTP engine runs an end-of-day reconciliatio
 | Eitan (Treasurer) | Procedure owner; FTP curve calibration; exception escalation resolution; amendment approval |
 | Anya (platform & data engineer) | FTP engine substrate build and maintenance; curve data pipeline; event schema ownership |
 | Ravi (ALM quant engineer) | FTP curve model validation; liquidity-premium calibration model; ALCO reporting support |
-| Camille (CFO, governance) | FTP Methodology Policy approval; business-line P&L attribution governance |
+| Camille (CFO, governance) | Funds Transfer Pricing Policy co-author (`funds-transfer-pricing-policy-v1`); business-line P&L attribution governance |
 | Helena (Chief Risk Officer, governance) | RAS oversight; FTP as a risk-management control |
 | ALCO | Monthly curve parameter approval; methodology exceptions |
 

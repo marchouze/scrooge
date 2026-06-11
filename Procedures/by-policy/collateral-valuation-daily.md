@@ -242,7 +242,7 @@ The report is formatted per PA Umoja specifications and submitted via the PA rep
 | `@platform/alm/collateral-ledger` | PLANNED | Collateral account balances per counterparty; VM and IM separation; custodian reconciliation |
 | `@risk/otc-mtm` | PLANNED | End-of-day OTC IRD mark-to-market (shared with PROC-MK-ODP-03) |
 | `@platform/events/margin-call-issued` | PLANNED | Typed event schema: `MarginCallIssued`, `MarginCallReceived`, `MarginCallSettlementFail`, `CollateralEligibilityBreach`, `CollateralReconciliationBreak` |
-| `@platform/alm/ftp-engine` | PLANNED | FTP rate on collateral assets (opportunity cost attribution, per PROC-ALM-FTP-01) |
+| `@platform/ftp` | ✓ LIVE | FTP rate on collateral assets (opportunity cost attribution, per PROC-ALM-FTP-01 / PROC-ALM-FTC-01) |
 | `@platform/risk/im-simm` | PLANNED | SIMM IM computation (per PROC-MK-ODP-04; cross-referenced) |
 | `@platform/ops/correspondent-channel` | PLANNED | SWIFT MT202 / STRATE DvP settlement instructions |
 | `@platform/reporting/pa-umoja` | PLANNED | PA Umoja daily collateral report submission |

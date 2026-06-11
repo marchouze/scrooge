@@ -247,7 +247,7 @@ Bea (financial-reporting engineer) posts the required journal entries and update
 | `@platform/alm/hedge-accounting-engine` | PLANNED | Designation, effectiveness testing, rebalancing, de-designation agent; hedge register |
 | `@platform/events/hedge-designated` | PLANNED | Typed event schema: `HedgeDesignated`, `HedgeRebalanced`, `HedgeEffectivenessBreached`, `HedgeEffectivenessConfirmed`, `HedgeDessignated` |
 | `@platform/alm/hedge-register` | PLANNED | Active and closed hedge relationships; hedge-ratio history; documentation cross-references |
-| `@platform/alm/ftp-engine` | PLANNED | Cross-referenced for internal benchmark rate (per PROC-ALM-FTP-01) |
+| `@platform/ftp` | ✓ LIVE | Cross-referenced for internal benchmark rate (per PROC-ALM-FTP-01) |
 | `@platform/risk/bond-pricer` | PLANNED | Fair-value attribution of benchmark rate component for hedged items |
 | `@risk/otc-mtm` | PLANNED | Mark-to-market of OTC IRD hedging instruments (per PROC-MK-ODP-03) |
 | `@platform/rms/document-store` | PLANNED | BLAKE3 content-addressed storage of hedge designation documentation packages |
