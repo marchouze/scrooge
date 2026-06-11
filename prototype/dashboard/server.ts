@@ -170,17 +170,16 @@ import {
 } from "../platform/event-store/event-types/obligation-lifecycle";
 import { loadProvisionAdoptionState } from "../platform/obligations/projection";
 import {
+  currentBankModePolicy,
+  syncBankModeToLifecyclePhase,
+} from "../platform/projections/bank-mode";
+import {
   type RegStructuredDocMinimal,
   buildProvisionTree,
   computeScopeVerbatimHash,
   getLeafDescendants,
   resolveLeafAdoptionState,
 } from "../platform/regulatory/graph/provision-tree";
-import { tryGenerateNarrative } from "../runtime/claude";
-import {
-  currentBankModePolicy,
-  syncBankModeToLifecyclePhase,
-} from "../platform/projections/bank-mode";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
@@ -193,6 +192,7 @@ import {
 } from "../projections/decisions";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import { recordBankModePolicy } from "../runtime/bank-mode/record";
+import { tryGenerateNarrative } from "../runtime/claude";
 import { backfillCeoDecisionsFromRecords } from "../runtime/decisions/backfill-from-records";
 import {
   type RecordDecisionCommentResult,
@@ -2062,7 +2062,8 @@ async function handleRegDistill(req: Request, slug: string): Promise<Response> {
     return jsonResponse({ error: "invalid JSON body" }, 400);
   }
   const body = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
-  const scopeId = typeof body.scopeId === "string" && body.scopeId.trim() ? body.scopeId.trim() : slug;
+  const scopeId =
+    typeof body.scopeId === "string" && body.scopeId.trim() ? body.scopeId.trim() : slug;
 
   const doc = loadStructuredDocForSlug(slug);
   if (!doc) return jsonResponse({ error: `Instrument not found: ${slug}` }, 404);
@@ -2122,7 +2123,10 @@ Adopted provisions (${adoptedLeaves.length}):\n\n${provisionLines}`;
     proposals = Array.isArray(parsed) ? (parsed as DistillationProposal[]) : [];
   } catch {
     logger.warn({ slug, scopeId, text: llmResult.result.text }, "LLM response was not valid JSON");
-    return jsonResponse({ error: "LLM returned invalid JSON", rawText: llmResult.result.text }, 502);
+    return jsonResponse(
+      { error: "LLM returned invalid JSON", rawText: llmResult.result.text },
+      502,
+    );
   }
 
   return jsonResponse({ slug, scopeId, adoptedCount: adoptedLeaves.length, proposals });

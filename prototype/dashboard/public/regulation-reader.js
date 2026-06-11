@@ -521,7 +521,10 @@
 
   function renderDistillProposals(overlay, proposals) {
     if (proposals.length === 0) {
-      renderDistillError(overlay, "No obligation proposals generated. Try adopting more provisions.");
+      renderDistillError(
+        overlay,
+        "No obligation proposals generated. Try adopting more provisions.",
+      );
       return;
     }
 
@@ -550,7 +553,8 @@
       .join("");
 
     const header = overlay.querySelector(".rr-modal-header span");
-    if (header) header.textContent = `${proposals.length} obligation proposal${proposals.length !== 1 ? "s" : ""} — review and approve`;
+    if (header)
+      header.textContent = `${proposals.length} obligation proposal${proposals.length !== 1 ? "s" : ""} — review and approve`;
 
     const body = overlay.querySelector(".rr-modal-body");
     if (body) {
@@ -591,7 +595,8 @@
 
   async function approveObligations(proposals, overlay) {
     const body = overlay.querySelector(".rr-modal-body");
-    if (body) body.innerHTML = `<div style="color:var(--color-text-muted);font-style:italic">Emitting ObligationAdopted events…</div>`;
+    if (body)
+      body.innerHTML = `<div style="color:var(--color-text-muted);font-style:italic">Emitting ObligationAdopted events…</div>`;
 
     const obligations = proposals.map((p) => ({
       obligationId: p.suggestedOrgId,
@@ -609,7 +614,8 @@
     });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({ error: resp.statusText }));
-      if (body) body.innerHTML = `<div style="color:var(--color-error,#ef4444)">Failed: ${esc(err.error || "unknown error")}</div>`;
+      if (body)
+        body.innerHTML = `<div style="color:var(--color-error,#ef4444)">Failed: ${esc(err.error || "unknown error")}</div>`;
       return;
     }
     const data = await resp.json();

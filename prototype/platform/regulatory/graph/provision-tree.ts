@@ -177,9 +177,7 @@ export function resolveLeafAdoptionState(
     return idx === -1 ? Number.MAX_SAFE_INTEGER : idx + 1;
   };
 
-  const covering = events.filter(
-    (e) => e.scopeId === leafId || ancestors.includes(e.scopeId),
-  );
+  const covering = events.filter((e) => e.scopeId === leafId || ancestors.includes(e.scopeId));
   if (covering.length === 0) return false;
 
   // Sort: most recent first; ties → shallowest depth (i.e. most specific) first
@@ -188,7 +186,8 @@ export function resolveLeafAdoptionState(
     return depthOf(a.scopeId) - depthOf(b.scopeId);
   });
 
-  return covering[0]!.adopted;
+  // covering.length > 0 is guaranteed by the early-return guard above
+  return (covering[0] as ScopeEvent).adopted;
 }
 
 // ---------------------------------------------------------------------------
@@ -202,8 +201,6 @@ export function resolveLeafAdoptionState(
  */
 export function computeScopeVerbatimHash(tree: ProvisionTree, scopeId: string): string {
   const leaves = getLeafDescendants(tree, scopeId);
-  const combined = leaves
-    .map((id) => tree.get(id)?.text ?? "")
-    .join("\n\n---\n\n");
+  const combined = leaves.map((id) => tree.get(id)?.text ?? "").join("\n\n---\n\n");
   return createHash("sha256").update(combined).digest("hex");
 }
