@@ -311,17 +311,21 @@ describe("findOpenRunIdsForAgent", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Follow-on routing: non-self-executable briefs are classified for routing
-// (D-AGENT-AUTONOMY-COHORT-2-PILOT — routeBlockedBrief wiring)
+// Blocked-class classification: non-self-executable briefs close their
+// brief-bound run blocked and the blocked outcome is TERMINAL — the legacy
+// routeBlockedBrief auto-routing is removed per
+// D-GOAL-LOOP-SHARED-DISPATCH-MIGRATION-AND-BLOCKED-DRAIN (the #1182
+// phantom-backlog failure mode). Dispatch-level assertions (blocked emits NO
+// AgentBriefIssued route brief; the delivered class still closes delivered)
+// live in goal-loop-brief-dispatch.test.ts.
 // ---------------------------------------------------------------------------
 
-describe("bea goal-loop — follow-on routing classification", () => {
-  // `dispatchBriefBoundRun` is private; we verify the routing gate via the
-  // exported `isSelfExecutableByBea` classifier. A brief that is NOT
-  // self-executable triggers the blocked path, which calls `routeBlockedBrief`
-  // and emits an AgentBriefIssued for the follow-on executor. The full
-  // emission test lives in platform/records/brief-router.test.ts.
-  it("a code-pr brief is classified as NOT self-executable (routes to executor)", () => {
+describe("bea goal-loop — blocked-class classification", () => {
+  // We verify the blocked gate via the exported `isSelfExecutableByBea`
+  // classifier. A brief that is NOT self-executable closes its brief-bound run
+  // blocked with followOnRoutes: [] — terminal, no follow-on brief issued. The
+  // dispatch-level emission tests live in goal-loop-brief-dispatch.test.ts.
+  it("a code-pr brief is classified as NOT self-executable (closes blocked, terminal)", () => {
     const brief: AgentBriefIssuedPayload = {
       briefId: "brief:bea:code-pr-routing-test:2026-06-02",
       issuedTo: BEA_REF,
@@ -331,8 +335,9 @@ describe("bea goal-loop — follow-on routing classification", () => {
       priority: "now",
       expectedOutputs: [{ kind: "code-pr", description: "PR with posting rule" }],
     };
-    // Must be false → dispatcher emits AgentRunCompleted{outcome:"blocked"}
-    // and then calls routeBlockedBrief which issues the follow-on brief.
+    // Must be false → the shared dispatcher emits
+    // AgentRunCompleted{outcome:"blocked"} with followOnRoutes: [] — terminal;
+    // no follow-on brief is issued.
     expect(isSelfExecutableByBea(brief)).toBe(false);
   });
 });

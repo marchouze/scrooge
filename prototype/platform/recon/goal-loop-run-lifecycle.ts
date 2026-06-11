@@ -21,7 +21,9 @@
 //           `runtime/agents/goal-loop-brief-dispatch.ts`
 //           (D-QUEUE-CLOSEOUT-2026-06-10 completion pattern), or
 //       (b) calls `recordAgentRunStarted` directly (the #1182-era in-file
-//           pattern used by atlas/rohan/helena/eitan/bea/ravi).
+//           pattern; only atlas-goal-loop.ts remains on it after the
+//           rohan/helena/eitan/bea/ravi migration per
+//           D-GOAL-LOOP-SHARED-DISPATCH-MIGRATION-AND-BLOCKED-DRAIN).
 //       A module doing neither can never emit
 //       `AgentRunStarted{agent-runtime}` ⇒ invisible to the run-feed ⇒ FAIL.
 //

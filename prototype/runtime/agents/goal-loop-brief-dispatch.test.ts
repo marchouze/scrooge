@@ -322,3 +322,121 @@ describe("dispatchBriefBoundRun — run-feed instrumentation", () => {
     expect(routeBriefs).toBe(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Cohort goal-loop configs (rohan / bea / helena / eitan / ravi) — migrated
+// onto the shared dispatch per
+// D-GOAL-LOOP-SHARED-DISPATCH-MIGRATION-AND-BLOCKED-DRAIN (CEO-approved
+// 2026-06-11). Asserts per loop:
+//   (a) a blocked brief-bound run emits NO AgentBriefIssued route brief —
+//       blocked is terminal (the legacy routeBlockedBrief auto-routing is
+//       removed; routing without an executor was the #1182 phantom-backlog
+//       failure mode), and
+//   (b) the self-executable delivered class is preserved — a live runHandler
+//       is configured and the loop's attestation title still classifies as
+//       self-executable, closing outcome="delivered".
+// ---------------------------------------------------------------------------
+
+const { ROHAN_BRIEF_DISPATCH } = await import("./rohan-goal-loop");
+const { BEA_BRIEF_DISPATCH } = await import("./bea-goal-loop");
+const { HELENA_BRIEF_DISPATCH } = await import("./helena-goal-loop");
+const { EITAN_BRIEF_DISPATCH } = await import("./eitan-goal-loop");
+const { RAVI_BRIEF_DISPATCH } = await import("./ravi-goal-loop");
+
+const COHORT_CASES = [
+  {
+    config: ROHAN_BRIEF_DISPATCH,
+    deliveredTitle: "Daily risk-run readiness attestation",
+    ref: { name: "Rohan", position: "Risk engineer" },
+  },
+  {
+    config: BEA_BRIEF_DISPATCH,
+    deliveredTitle: "Accounting-readiness attestation",
+    ref: { name: "Bea", position: "Accounting and financial reporting engineer" },
+  },
+  {
+    config: HELENA_BRIEF_DISPATCH,
+    deliveredTitle: "Risk-appetite (RAS) readiness attestation",
+    ref: { name: "Helena", position: "Chief Risk Officer" },
+  },
+  {
+    config: EITAN_BRIEF_DISPATCH,
+    deliveredTitle: "Liquidity snapshot attestation",
+    ref: { name: "Eitan", position: "Treasury / ALM engineer" },
+  },
+  {
+    config: RAVI_BRIEF_DISPATCH,
+    deliveredTitle: "ALM-readiness attestation",
+    ref: { name: "Ravi", position: "ALM engineer" },
+  },
+] as const;
+
+function countAgentBriefIssued(): number {
+  let n = 0;
+  for (const _ of eventStore.replay({ type: "AgentBriefIssued" })) n++;
+  return n;
+}
+
+describe("cohort goal-loop configs — terminal blocked + preserved delivered class", () => {
+  for (const c of COHORT_CASES) {
+    const slug = c.config.agentSlug;
+
+    test(`${slug}: blocked brief-bound run emits NO AgentBriefIssued route brief (terminal)`, async () => {
+      const briefId = `brief:${slug}:cohort-blocked:dispatch`;
+      const brief = makeBriefPayload(
+        briefId,
+        `Implement the ${slug} substrate change`,
+        "code-pr",
+        c.ref,
+      );
+      const briefsBefore = countAgentBriefIssued();
+
+      const result = await dispatchBriefBoundRun(
+        makeCtx("2026-06-11T08:00:00.000Z"),
+        brief,
+        `iter:cohort-blocked-${slug}`,
+        0,
+        c.config,
+      );
+
+      // started + blocked completion only — no handler events, no route brief.
+      expect(result.eventsEmitted).toBe(2);
+      const lc = runLifecycleForBrief(briefId);
+      expect(lc.started).toHaveLength(1);
+      expect(lc.started[0]?.substrate).toBe("agent-runtime");
+      expect(lc.started[0]?.actorId).toBe(`agent:${slug}`);
+      expect(lc.completed).toHaveLength(1);
+      expect(lc.completed[0]?.outcome).toBe("blocked");
+      expect(lc.completed[0]?.gaps.length).toBeGreaterThan(0);
+      expect(lc.completed[0]?.routes).toHaveLength(0);
+      // Blocked is TERMINAL: zero new AgentBriefIssued envelopes.
+      expect(countAgentBriefIssued()).toBe(briefsBefore);
+    });
+
+    test(`${slug}: self-executable attestation class still closes delivered`, async () => {
+      // The delivered class is live (not shadow-mode) and its title classifies.
+      expect(c.config.runHandler).toBeDefined();
+      expect(c.config.selfExecutablePattern?.test(c.deliveredTitle)).toBe(true);
+
+      const briefId = `brief:${slug}:cohort-delivered:dispatch`;
+      const brief = makeBriefPayload(briefId, c.deliveredTitle, "deliverable-document", c.ref);
+      const stub = makeStubHandler();
+
+      await dispatchBriefBoundRun(
+        makeCtx("2026-06-11T09:00:00.000Z"),
+        brief,
+        `iter:cohort-delivered-${slug}`,
+        0,
+        { ...c.config, runHandler: stub.handler },
+      );
+
+      expect(stub.callCount()).toBe(1);
+      const lc = runLifecycleForBrief(briefId);
+      expect(lc.started).toHaveLength(1);
+      expect(lc.started[0]?.runId).toBe(`run:${slug}:goal-loop:iter:cohort-delivered-${slug}`);
+      expect(lc.completed).toHaveLength(1);
+      expect(lc.completed[0]?.outcome).toBe("delivered");
+      expect(lc.completed[0]?.routes).toHaveLength(0);
+    });
+  }
+});
