@@ -8,7 +8,7 @@ date: 2026-05-15
 owner: Helena (Chief Risk Officer, governance) · Eitan (Treasurer, governance) · Ravi (Treasury/ALM engineer, engineering)
 status: POPULATED
 policy-cited: irrbb-policy-v1
-system-capability: "@platform/alm (LIVE — eve.ts ΔEVE six BCBS d365 shocks + nii.ts ΔNII + repricing-gap.ts; ravi:alm-run daily, emits ALMRunCompleted + IRRBBChecked)"
+system-capability: "@platform/alm (LIVE — eve, nii, repricing-gap via daily ravi:alm-run emitting ALMRunCompleted and IRRBBChecked)"
 ---
 
 # Procedure — IRRBB measurement cycle

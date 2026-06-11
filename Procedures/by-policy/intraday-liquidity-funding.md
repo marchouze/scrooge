@@ -8,7 +8,7 @@ date: 2026-05-15
 owner: Eitan (Treasurer, governance) · Ravi (Treasury/ALM engineer, engineering) · Helena (Chief Risk Officer, governance — RAS approval)
 status: POPULATED
 policy-cited: liquidity-risk-management-policy-v1
-system-capability: "@platform/alm/intraday-stress (LIVE — ravi:intraday-stress; BCBS 248 HQLA-stress projection, BAU + 2 stress scenarios × 4 NPS windows) · @platform/alm/intraday-liquidity-engine (PLANNED — real-time position monitor)"
+system-capability: "@platform/alm/intraday-stress (LIVE — ravi:intraday-stress, BCBS 248 HQLA-stress projection across 4 NPS windows) · @platform/alm/intraday-liquidity-engine (PLANNED — real-time position monitor)"
 ---
 
 # Procedure — Intraday liquidity and funding monitoring

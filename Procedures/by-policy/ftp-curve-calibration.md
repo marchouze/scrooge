@@ -8,7 +8,7 @@ date: 2026-06-11
 owner: Ravi (Treasury/ALM engineer, engineering — lead) · Eitan (Treasurer, governance — methodology owner, ALCO chair) · Anya (Platform & data engineer, engineering — market-data pipeline)
 status: POPULATED
 policy-cited: funds-transfer-pricing-policy-v1
-system-capability: "@platform/ftp (LIVE — curve.ts + attribution.ts + projection.ts) · @platform/alm/ftp-curve-publisher (LIVE — publishFtpCurveIfMissing) · prototype/runtime/agents/ravi-ftp-curve-publish.ts (LIVE — ravi:ftp-curve-publish, daily)"
+system-capability: "@platform/ftp (LIVE — curve, attribution, projection) · @platform/alm/ftp-curve-publisher (LIVE — publishFtpCurveIfMissing) · prototype/runtime/agents/ravi-ftp-curve-publish.ts (LIVE — ravi:ftp-curve-publish, daily)"
 ---
 
 # Procedure — FTP curve calibration

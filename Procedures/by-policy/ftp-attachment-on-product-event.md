@@ -8,7 +8,7 @@ date: 2026-05-16
 owner: Eitan (Treasurer, governance) · Anya (Platform & data engineer, engineering)
 status: POPULATED
 policy-cited: funds-transfer-pricing-policy-v1
-system-capability: "@platform/ftp (LIVE — curve.ts + attribution.ts + projection.ts) · prototype/runtime/agents/ravi-ftp-attribution.ts (LIVE — ravi:ftp-attribution, event-driven)"
+system-capability: "@platform/ftp (LIVE — curve, attribution, projection) · prototype/runtime/agents/ravi-ftp-attribution.ts (LIVE — ravi:ftp-attribution, event-driven)"
 ---
 
 # Procedure — Funds transfer pricing rate attachment on product lifecycle events

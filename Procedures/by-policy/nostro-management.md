@@ -8,7 +8,7 @@ date: 2026-05-16
 owner: Tomas (Operations & payments engineer, engineering) · Eitan (Treasurer, governance)
 status: POPULATED
 policy-cited: nostro-correspondent-banking-policy-v1 · payments-settlement-policy-v1
-system-capability: "@platform/payments/reconciliation (LIVE — tomas:daily-reconciliation; nostro-leg break classification) · @platform/payments/nostro (PLANNED — balance feed + intraday projection engine)"
+system-capability: "@platform/payments/reconciliation (LIVE — tomas:daily-reconciliation, nostro-leg break classification) · @platform/payments/nostro (PLANNED — balance feed and intraday projection engine)"
 ---
 
 # Procedure — Nostro account management — correspondent balance and settlement feed

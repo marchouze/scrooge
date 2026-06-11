@@ -8,7 +8,7 @@ date: 2026-06-11
 owner: Ravi (Treasury/ALM engineer, engineering — run owner) · Eitan (Treasurer, governance — output consumer and sign-off)
 status: POPULATED
 policy-cited: asset-liability-management-policy-v1
-system-capability: "@platform/alm (LIVE — repricing-gap.ts + eve.ts + nii.ts) · prototype/runtime/agents/ravi-alm-run.ts (LIVE — ravi:alm-run, daily) · @platform/liquidity (LIVE — projection.ts status feed)"
+system-capability: "@platform/alm (LIVE — repricing-gap, eve, nii) · prototype/runtime/agents/ravi-alm-run.ts (LIVE — ravi:alm-run, daily) · @platform/liquidity (LIVE — projection status feed)"
 ---
 
 # Procedure — Daily ALM run

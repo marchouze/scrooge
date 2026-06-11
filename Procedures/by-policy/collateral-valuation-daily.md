@@ -8,7 +8,7 @@ date: 2026-05-16
 owner: Eitan (Treasurer, governance) · Saskia (Head of Global Markets, governance)
 status: POPULATED
 policy-cited: collateral-management-policy-v1 · margin-policy-v1
-system-capability: "@platform/collateral (LIVE — hqla-classifier.ts + inventory.ts; atlas:collateral-snapshot) · @platform/alm/collateral-engine (PLANNED — margin-call orchestration)"
+system-capability: "@platform/collateral (LIVE — hqla-classifier, inventory via atlas:collateral-snapshot) · @platform/alm/collateral-engine (PLANNED — margin-call orchestration)"
 ---
 
 # Procedure — Daily collateral valuation and margin call management

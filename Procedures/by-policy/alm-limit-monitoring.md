@@ -8,7 +8,7 @@ date: 2026-06-11
 owner: Ravi (Treasury/ALM engineer, engineering — monitoring substrate) · Helena (Chief Risk Officer, governance — second-line calibration challenge) · Eitan (Treasurer, governance — first-line owner, ALCO chair)
 status: POPULATED
 policy-cited: asset-liability-management-policy-v1
-system-capability: "@platform/alm (LIVE — repricing-gap.ts + eve.ts + nii.ts; ravi:alm-run) · @platform/risk/liquidity-limit-engine (LIVE) · @platform/risk/ras-appetite-register (LIVE)"
+system-capability: "@platform/alm (LIVE — repricing-gap, eve, nii via ravi:alm-run) · @platform/risk/liquidity-limit-engine (LIVE) · @platform/risk/ras-appetite-register (LIVE)"
 ---
 
 # Procedure — ALM limit monitoring
