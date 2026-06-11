@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T12:46:11.238Z",
+  "generatedAt": "2026-06-11T15:54:31.042Z",
   "totalInstruments": 155,
   "byStatus": {
     "direct": 126,
@@ -9,7 +9,7 @@
   },
   "acquired": 141,
   "extracted": 155,
-  "fullyLinked": 0,
+  "fullyLinked": 95,
   "rows": [
     {
       "instrumentId": "BANKS-ACT-94-1990",
@@ -20,7 +20,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:90b97bba92be732e953fede546fe421301f601ed65d680a624787b6f883cf014",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 13,
       "structuredJsonPath": "Regulations/SARB-PA/source-docs/banks-act-structured.json"
     },
     {
@@ -32,7 +32,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:84b89f97f78baced65bde8907d347607a7e215aa8a8a76504e5c511d31f330a3",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c1-2026-structured.json"
     },
     {
@@ -44,7 +44,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:310b5a8a78ce5f13139793e7803595673c5dfdb17ee1936fba09b7b1052c8e52",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2014-structured.json"
     },
     {
@@ -56,7 +56,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:514e472233fe177b9b1c8fdc676acefead35014649858ac0d2c7b6fb733aa964",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2018-structured.json"
     },
     {
@@ -68,7 +68,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:659aad3f4f1b1c0f6e46cccb2a0ec74c4facd6fa8864656f26dc9f0772280465",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2020-structured.json"
     },
     {
@@ -80,7 +80,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:93a1bd39c6dee2b5e5185ce393c93add92e86bafb28d1db602cc14d0bfd5163a",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2023-structured.json"
     },
     {
@@ -92,7 +92,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:dfce78d80a10c72435383aa10149663c85cd760a572642839f3ac76d8aa05277",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2013-structured.json"
     },
     {
@@ -104,7 +104,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:c51537e35ad878e3b29bc74be24e64ac3728f484f11c2bb3b4f8b6420d774c9f",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2020-structured.json"
     },
     {
@@ -116,7 +116,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:6f553d93d7f33b3201720ea08fd73a586a0648ef92ec1bb420310e3e41820e7a",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2023-structured.json"
     },
     {
@@ -128,7 +128,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:6c758203abfc55240a501253c0714363a10eccad077412bbbe407627b6f80d14",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2025-structured.json"
     },
     {
@@ -140,7 +140,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:2dc18bf0b6df9d2419740e163c863a30628b6cad5e689088c7834dfaf70bc28a",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2013-structured.json"
     },
     {
@@ -152,7 +152,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:624d55c4bef78a30feaface42cff01a39aa603a141a4b0c0d305b0953405035c",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2015-structured.json"
     },
     {
@@ -164,7 +164,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:b785cf08f65afe134df9a88e1e4ac4c986b7f1b686f496ee9ab2e9bbca41b511",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2016-structured.json"
     },
     {
@@ -176,7 +176,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:11a2a8e367bef71356da78377335826f80e864d0019d13ba5cdc128a14d11200",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2025-structured.json"
     },
     {
@@ -188,7 +188,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:0a9d9807522de755bcca57152cfe91e946e70a1b727f682f5c31913b14184378",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c5-2013-structured.json"
     },
     {
@@ -200,7 +200,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:fa7299d089fb7397072492356b5f01d99bc4fba07c9d39369558254d97f8d102",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c5-2015-structured.json"
     },
     {
@@ -212,7 +212,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:5a770e33835b8feb727e0fb48642ff04571db0c4a5522f01c274865c1a9867b1",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c5-2016-structured.json"
     },
     {
@@ -224,7 +224,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:313661b3e8ba39e8114b0eb69b0e3676a8f87ff4eeae5489c6ae453e7ed12bf9",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c7-2014-structured.json"
     },
     {
@@ -236,7 +236,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:5b8152b8c41bf3be8608e7b27cf0846b670db2f8c2e1b4ff243e30bbf23813aa",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c7-2016-structured.json"
     },
     {
@@ -248,7 +248,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:fdf75d9f7ca03d6848cb0e52dd0740faaf74720259f7e5613ca2f725dff42d2b",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c8-2015-structured.json"
     },
     {
@@ -260,7 +260,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7dc0454c42098bcb878887de2f5dbb3d2b81e1dd02d62f828882619db5d8c631",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2008-structured.json"
     },
     {
@@ -272,7 +272,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:4e9fb8fcbe45b28c3726ed9dce2f912a1a5d1081f195ab9ccff8dba48311dccc",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2012-structured.json"
     },
     {
@@ -284,7 +284,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:a44de97e4872fa689a11b685bcc22ed22f4fc301bba4c8cdd930aadbbe4395f4",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2015-structured.json"
     },
     {
@@ -296,7 +296,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:6eb893195e1e48e05d971f5461372e5afe012a45a39eada09ab35f3828a7bd3d",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2017-structured.json"
     },
     {
@@ -308,7 +308,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:4f6e03953d2db3699773661d50df82a2c3f9818fc69e53548d9731b02902968c",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 12,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2022-structured.json"
     },
     {
@@ -320,7 +320,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:a7eae03423a4b6a43bdff1175912e90cb1819ac8c005e6b45012616650c0ea66",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 14,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2023-structured.json"
     },
     {
@@ -332,7 +332,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:a44a73a11bdee21bb7527a19fa228975be35d98b13d2ea386271588fae1c6084",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 5,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2024-structured.json"
     },
     {
@@ -344,7 +344,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:8f9d49679ad78797a026ac33bbe8c87a0281a2a3e33bf91fa0116d06c3da7c18",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2026-structured.json"
     },
     {
@@ -356,7 +356,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:0acd0e12d9e18913b77e223c1cca05c6e390b692e496ac8a2419812c2d55c93b",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2013-structured.json"
     },
     {
@@ -368,7 +368,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:30d5c927878f1650bd37e2271ecd2092cb6a26e71a13c67cff6cbf4130bc695b",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2015-structured.json"
     },
     {
@@ -380,7 +380,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:8244107914deda3febcdb3fbade4bd9cfc66da65b1eccc7690d54622a6d86b4f",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2022-structured.json"
     },
     {
@@ -392,7 +392,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7143246b64c3207f2271bbacc5e9c82ee73a4b45fdf9065a01ad9cafe59e2675",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2025-structured.json"
     },
     {
@@ -404,7 +404,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:2ee679276b8370514ce2a99c2da2597b4a39ac69370af0cdfba4038a0b44ae51",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d11-2022-structured.json"
     },
     {
@@ -416,7 +416,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:52dfb15a6c03d200ac35c5e8b028295d6576427114e9108ec3a58bcde33e84fb",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d11-2025-structured.json"
     },
     {
@@ -428,7 +428,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:0ca08ee046adb6a1f8584b1fdb9bab64edf24b2b0fc59ac9ba4f8105192753b3",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 6,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d12-2025-structured.json"
     },
     {
@@ -440,7 +440,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:76114d8032e13b30ce199ae1e9876027fe499f58976ca7cc370d19f3fa051929",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d13-2013-structured.json"
     },
     {
@@ -452,7 +452,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7edd4d63cec63e5c871bffe5287024fac3ffbd69dd8162d0707a301d413e4718",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d13-2025-structured.json"
     },
     {
@@ -464,7 +464,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:be122fa7574e9aa0c8730d7bf24fa8527a73504cc597793812699b72059a72b3",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d14-2025-structured.json"
     },
     {
@@ -476,7 +476,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:713c426c29d5ee3cf1241c65cb155b61f111534fbd53764ac13a0ba6b1081b2f",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2008-structured.json"
     },
     {
@@ -488,7 +488,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:9eb394afb3a46c803515bccd49bc8b17a0df7946d33c6fbb4dd4771d2e507d0e",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2011-structured.json"
     },
     {
@@ -500,7 +500,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:ab83b6ce8dc0d040c23d0c258cd2c790376bbdad1e59e5bc4fa7346920d9f080",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2014-structured.json"
     },
     {
@@ -512,7 +512,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:72a68defbd23803acb624711fcf3b58f4ff6edbbe9d92f3db3318c41bfabf02f",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 10,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2015-structured.json"
     },
     {
@@ -524,7 +524,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:6396a2d9fd1c14b4fa6908b8eda76be1bcc408b5317b360b41d9b5d94c7e4108",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2017-structured.json"
     },
     {
@@ -536,7 +536,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7970453a2f54e9bc47d723ee717d28e3824c96c831a7c2fe7af284ae7cb387c2",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2018-structured.json"
     },
     {
@@ -548,7 +548,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:5179f1f5b4b385f403857b70d56840e0dd5cc183ab5920cca4404256c96c4978",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2019-structured.json"
     },
     {
@@ -560,7 +560,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:c6b10a16ebd7c32ff32e096e56a5fdc5c1ebf45490f4ac6893c18ea22d6a9676",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2021-structured.json"
     },
     {
@@ -572,7 +572,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7a74529cbbcb02d774a37880310ec770968355e39a1d699d4506fee23ee8f6dd",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2022-structured.json"
     },
     {
@@ -584,7 +584,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:3c9d88af2cd7bccc8b8cbf76347f869665d8c7f732820984807b8b6d2d441f27",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 3,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2023-structured.json"
     },
     {
@@ -596,7 +596,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:f373bb5516d646ab9daff9dc4fc00e10963b3147e7f594cf8109f94fbb006d64",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 4,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2024-structured.json"
     },
     {
@@ -608,7 +608,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:605460e7d2e5b0c48b01b1ab420d5dbdc7a6e7d5b71c03c6943fddb7f29e6c59",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2025-structured.json"
     },
     {
@@ -620,7 +620,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:fed9c2f0ab2b6ee4dbc015246a5c25a36a2019afc441eb10d792042aeb1d4b30",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2008-structured.json"
     },
     {
@@ -632,7 +632,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:28b46ae9ecfce7fa132cbc675b7f44b350592ffdbad8416bfa29b480777c050a",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2017-structured.json"
     },
     {
@@ -644,7 +644,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:deb87801a5f4df6c52d2ef8561563f9ab6dd4ace9e02e387f51124cdac74c400",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2018-structured.json"
     },
     {
@@ -656,7 +656,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:60b5c20aeeab292b35d98d1278136e4270be8ac0d0103df6068764fb8c2250f9",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2023-structured.json"
     },
     {
@@ -668,7 +668,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:9500ea96c2b2c4463357436eb56eaa245a019ccfa6cda8944574db44a5116635",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2024-structured.json"
     },
     {
@@ -680,7 +680,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:f900a02d3e18af2ca66536602617545781ef25f18380e6b9a7ff7cdc674ac712",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2025-structured.json"
     },
     {
@@ -692,7 +692,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:32a207b84a05665bd1588f45b6b550f11240e25aec9dd68c1decc29499666060",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2008-structured.json"
     },
     {
@@ -704,7 +704,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:1646cd6377e9f74a27d4390462556c33e99f0830386e41be04c7f753b682e18e",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2015-structured.json"
     },
     {
@@ -716,7 +716,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:12f09cd9b83b5e47d8d652c8974b863f3394ef332bf50952a1e6c3b6921f740d",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2017-structured.json"
     },
     {
@@ -728,7 +728,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:87f23766aef07172239db43ab937e74bac35048bf3bfbc87faacc0e0af0f9a4e",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2021-structured.json"
     },
     {
@@ -740,7 +740,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7f8884a564850e12b3f2dccf37d2e1db5939c648865a21fc111dc0ecb381d7d0",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2022-structured.json"
     },
     {
@@ -752,7 +752,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:fed901147b8ddbfc20bdd606abfce3969a08da71ab48b68afdd294a82869f772",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 9,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2023-structured.json"
     },
     {
@@ -764,7 +764,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:ba929f7a343eb2d4d9a1b8deb4c141fa11efe158249a07b1e46c8686a8d6d6a1",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2025-structured.json"
     },
     {
@@ -776,7 +776,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:5b3b89ce4a9e5d1621cb85e2fbb6cb0145a52b33d50de5e4425dcab88a6a6ac1",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2011-structured.json"
     },
     {
@@ -788,7 +788,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7ab90eb0898b98c1f709a207a66b83673ea3b6be0e1b0b1c5aa97ded4fe73ac2",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2016-structured.json"
     },
     {
@@ -800,7 +800,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:7da05e03e7fa77ae6d16ae076eda0d99065db08e949fb3cd16e825e6b2014769",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 14,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2020-structured.json"
     },
     {
@@ -812,7 +812,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:c52a2a7a46a414dbdabff4fad057173de66ab05154d0a3e7b9a0f49e65d7ce65",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 3,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2021-structured.json"
     },
     {
@@ -824,7 +824,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:edb8b83c90861bf9ccd1d164a85cdd53dab43dec26c099638802e0182ababa15",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2022-structured.json"
     },
     {
@@ -836,7 +836,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:a813024444986f76c3d3086e9c0a20dfd9e5300d96134f5b12ebaac7be5c6e42",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2024-structured.json"
     },
     {
@@ -848,7 +848,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:f351eba6503537bba9ac6265c09f4ed7aef295aa11844043be932c3325cb57c4",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 32,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2025-structured.json"
     },
     {
@@ -860,7 +860,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:d59f898eff72d871576fa181efd21277daf543cde1f7cc72273fbd143d144e39",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2008-structured.json"
     },
     {
@@ -872,7 +872,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:31db353c89bdc95fce16fc9872a1cc4ba967f939bd80a817e107a150e902f31a",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2017-structured.json"
     },
     {
@@ -884,7 +884,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:dbfeb99c2de4d318f297a97b81c3d1fbeff5b3998cee274c804686cddd85a442",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2021-structured.json"
     },
     {
@@ -896,7 +896,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:ba2bf2174bbeb1c1316cf2036c236309b77b61143944bc6747ada35ca64c7aee",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 7,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2022-structured.json"
     },
     {
@@ -908,7 +908,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:f2a758eab23041a7615afe63212cd19171eaf4f7d8573c2941b50a53f2e16913",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2024-structured.json"
     },
     {
@@ -920,7 +920,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:e6a5a6e2a728c05335977a9a7a5daebb7510283d0688918ed77df08280b94b76",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 3,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2025-structured.json"
     },
     {
@@ -932,7 +932,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:cf14e01416981c9b6b19e6ee56a81d80721f1cacf333c27cd2e8f236cd361a3f",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2015-structured.json"
     },
     {
@@ -944,7 +944,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:baf84dda6de74b01bbeedda88b3448f9aeaddf931074d4a594a5530e452a8a17",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2016-structured.json"
     },
     {
@@ -956,7 +956,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:d240015402f7e435e3d35af1864dce3772e7f48c48141eb884b0b175f65cd2b7",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 12,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2020-structured.json"
     },
     {
@@ -968,7 +968,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:3af4706e891edaa832c96ce997518d23329be9fc41d3389c5b087bf9db1c5943",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 7,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2022-structured.json"
     },
     {
@@ -980,7 +980,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:985b9578e968022c544c23e2effa82f5feb219e02cff6347f25112573fadde80",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2023-structured.json"
     },
     {
@@ -992,7 +992,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:134e1841299f5b7e0f315f7e9780fa20eb69619bc701d48a61228528ac1a582e",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2025-structured.json"
     },
     {
@@ -1004,7 +1004,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:0c86f38c6905124e2e124e8468725d557661d163e763a42c789065e17564e55d",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d8-2014-structured.json"
     },
     {
@@ -1016,7 +1016,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:e14a68e97e9c692aa923bbc38dd6e0c5828f81d305a477ed91429539fef64554",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d8-2016-structured.json"
     },
     {
@@ -1028,7 +1028,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:dffa18db07be5292c2d610afc917e08dc9896e66b22bd50fbdad474ec06de9c6",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d8-2025-structured.json"
     },
     {
@@ -1040,7 +1040,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:9b6b4e139f4954609909eb3c2d542893c46946e098c14b379e1dca59eb0a5c86",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2013-structured.json"
     },
     {
@@ -1052,7 +1052,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:3eb62097af8759d930ee7cd36b34dfe948734339128f31063126fa2651b378ca",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2021-structured.json"
     },
     {
@@ -1064,7 +1064,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:3beb05d85a9a2709fa31e5f2750ef82c8f934b4e42c3a1f9a94d34064a308e5a",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2022-structured.json"
     },
     {
@@ -1076,7 +1076,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:5e9e099c0de221e7d5bbac60a7c68b4dff07d0b34de1a381562c12a4515395c0",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2025-structured.json"
     },
     {
@@ -1232,7 +1232,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:4b03ed7bab3a5586e3d0b2e679b0a0e926ac932fb1a13423e533d45da2dfde3d",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn3-2025-structured.json"
     },
     {
@@ -1316,7 +1316,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:180033880af1bc227ca307e118490f3e00445d88acdbc76f0cb889bf3bf5b0e9",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 1,
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2013-structured.json"
     },
     {
@@ -1484,7 +1484,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:ecd52d04eaf0ad744e6454f8fd47186ac87da83450cdc5ad380e0ad11c4b73c8",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 4,
       "structuredJsonPath": "Regulations/FSCA/source-docs/fais-act-structured.json"
     },
     {
@@ -1508,7 +1508,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:235fa089752bae659f6755d96244c972e6682f302a3787b255a2d82e23ccf586",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 4,
       "structuredJsonPath": "Regulations/ODP/source-docs/js-2-2020-structured.json"
     },
     {
@@ -1520,7 +1520,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:79ef3954e9d63c53a758a817700019bd7b2100693da6f338ac5d02d78d502162",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 9,
       "structuredJsonPath": "Regulations/SARB-PA/source-docs/rrb-structured.json"
     },
     {
@@ -1700,7 +1700,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 3,
       "structuredJsonPath": "Regulations/ODP/source-docs/cs-1-2018-structured.json"
     },
     {
@@ -1724,7 +1724,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 9,
       "structuredJsonPath": "Regulations/ODP/source-docs/cs-3-2018-structured.json"
     },
     {
@@ -1760,7 +1760,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:e34667fe5660247046e3872c9fcc42a23186096ffaa61a632ac7d84842283e2e",
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 8,
       "structuredJsonPath": "Regulations/FSCA/source-docs/fais-gcc-structured.json"
     },
     {
@@ -1772,7 +1772,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 2,
       "structuredJsonPath": "Regulations/FIC/source-docs/fic-act-structured.json"
     },
     {
@@ -1868,7 +1868,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 0,
+      "obligationsLinked": 18,
       "structuredJsonPath": "Regulations/Information-Regulator/source-docs/popia-structured.json"
     }
   ]
