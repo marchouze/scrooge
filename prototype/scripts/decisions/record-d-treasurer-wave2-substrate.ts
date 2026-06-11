@@ -115,7 +115,8 @@ requestDecision(
     title: TITLE,
     category: "engineering",
     recommendation: RECOMMENDATION,
-    rationale: "Wave-2 pre-licence set from Part D.2 of role-definition review; opens the decision lifecycle.",
+    rationale:
+      "Wave-2 pre-licence set from Part D.2 of role-definition review; opens the decision lifecycle.",
     citations: CITATIONS,
     recordedVia: "scrooge:session-delegation",
   },
