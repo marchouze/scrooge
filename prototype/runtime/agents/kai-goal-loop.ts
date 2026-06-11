@@ -63,6 +63,7 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   type GoalLoopBriefDispatchConfig,
   dispatchBriefBoundRun,
+  dispatchCadenceRun,
   openBriefsListForAgent,
 } from "./goal-loop-brief-dispatch";
 // Import the underlying kai:m1-cdm-typescript-bindings handler directly
@@ -549,9 +550,23 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
 
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (cohort-3 first ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
-    dryRun: ctx.dryRun || !shouldRunHandler,
+    if (shouldRunHandler && !ctx.dryRun) {
+    const cadence = await dispatchCadenceRun(ctx, iterationId, KAI_BRIEF_DISPATCH);
+    logger.info(
+      { agent: ctx.agent, iterationId },
+      "kai:goal-loop — cohort-3 run complete (cadence, instrumented)",
+    );
+    return {
+      eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
+      ok: cadence.handlerOutput.ok,
+      summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
+      ...(cadence.handlerOutput.deliverable ? { deliverable: cadence.handlerOutput.deliverable } : {}),
+    };
+  }
+
+  const handlerCtx: AgentRunContext = {
+    ...ctx,
+    dryRun: true,
   };
 
   const handlerOutput = await kaiM1CdmTypescriptBindings(handlerCtx);
@@ -565,7 +580,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "kai:goal-loop — cohort-3 run complete",
+    "kai:goal-loop — cohort-3 run complete (deferred)",
   );
 
   return {

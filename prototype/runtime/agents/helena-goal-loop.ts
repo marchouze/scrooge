@@ -68,6 +68,7 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   type GoalLoopBriefDispatchConfig,
   dispatchBriefBoundRun,
+  dispatchCadenceRun,
   isSelfExecutableBrief,
   openBriefsListForAgent,
 } from "./goal-loop-brief-dispatch";
@@ -626,11 +627,25 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
-  // Cadence path: no open brief — run the risk-appetite attestation live when
-  // the loop selected a decision; dry-run only when it deferred or --dry-run.
+  // Cadence path: no open brief — wrap with run-lifecycle when the loop selected
+  // a decision; dry-run only when deferred (no lifecycle events on deferred).
+  if (shouldRunHandler && !ctx.dryRun) {
+    const cadence = await dispatchCadenceRun(ctx, iterationId, HELENA_BRIEF_DISPATCH);
+    logger.info(
+      { agent: ctx.agent, iterationId },
+      "helena:goal-loop — run complete (cadence, instrumented)",
+    );
+    return {
+      eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
+      ok: cadence.handlerOutput.ok,
+      summary: `goal-loop: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
+      ...(cadence.handlerOutput.deliverable ? { deliverable: cadence.handlerOutput.deliverable } : {}),
+    };
+  }
+
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    dryRun: ctx.dryRun || !shouldRunHandler,
+    dryRun: true,
   };
 
   const handlerOutput = await helenaRiskAppetiteWatch(handlerCtx);
@@ -644,7 +659,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "helena:goal-loop — run complete (cadence)",
+    "helena:goal-loop — run complete (deferred)",
   );
 
   return {

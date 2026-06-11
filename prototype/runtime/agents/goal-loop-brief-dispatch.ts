@@ -141,6 +141,134 @@ export function isSelfExecutableBrief(
 }
 
 /**
+ * Wrap the cadence path (no open brief) with AgentRunStarted{agent-runtime} →
+ * AgentRunCompleted lifecycle events so the iteration is visible in the
+ * autonomy run-feed. The underlying handler is invoked inside the lifecycle
+ * envelope.
+ *
+ * Called from every goal-loop handler when `shouldRunHandler` is true and
+ * no open brief was found (the "cadence path"). On the deferred path
+ * (`shouldRunHandler` is false) the caller should skip this wrapper and
+ * call the handler directly with dryRun=true (the same behaviour as before
+ * instrumentation — deferred iterations are not run-lifecycle events).
+ *
+ * Authority: D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION (CEO-approved 2026-06-10).
+ */
+export async function dispatchCadenceRun(
+  ctx: AgentRunContext,
+  iterationId: string,
+  config: GoalLoopBriefDispatchConfig,
+): Promise<{ eventsEmitted: number; handlerOutput: AgentRunOutput }> {
+  const { agentSlug } = config;
+  const runId = `run:${agentSlug}:goal-loop:cadence:${iterationId}`;
+  const actor = { type: "service", id: `agent:${agentSlug}` } as const;
+  const citations = [...GOAL_LOOP_RUN_LIFECYCLE_AUTHORITIES];
+
+  // Build a minimal agent ref from the config slug (no brief to pull from).
+  const agent = { name: agentSlug, position: `agent:${agentSlug}` } as const;
+
+  recordAgentRunStarted(
+    {
+      runId,
+      agent,
+      startedAt: ctx.asOf,
+      substrate: "agent-runtime",
+      citations,
+      actor,
+    },
+    ctx.asOf,
+  );
+
+  let eventsEmitted = 1;
+
+  if (config.runHandler) {
+    let handlerOutput: AgentRunOutput;
+    try {
+      handlerOutput = await config.runHandler({ ...ctx, dryRun: false });
+    } catch (err) {
+      const gap = `${agentSlug} goal-loop cadence run ${runId} failed: handler threw: ${err instanceof Error ? err.message : String(err)}. Run closed blocked.`;
+      recordAgentRunCompleted(
+        {
+          runId,
+          agent,
+          completedAt: ctx.asOf,
+          outcome: "blocked",
+          deliverableBodies: [],
+          substrateGapsSurfaced: [gap],
+          deliverableCitations: citations,
+          followOnRoutes: [],
+          citations,
+          actor,
+        },
+        ctx.asOf,
+      );
+      eventsEmitted += 1;
+      logger.error(
+        { agentSlug, runId, err: String(err) },
+        `${agentSlug}:goal-loop — cadence handler threw; closed blocked`,
+      );
+      const errorOutput: AgentRunOutput = {
+        eventsEmitted: 0,
+        ok: false,
+        summary: `cadence handler failed: ${err instanceof Error ? err.message : String(err)}`,
+      };
+      return { eventsEmitted, handlerOutput: errorOutput };
+    }
+    eventsEmitted += handlerOutput.eventsEmitted;
+    const classLabel = config.deliveredClassLabel ?? "cadence attestation";
+    recordAgentRunCompleted(
+      {
+        runId,
+        agent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `${agentSlug} goal-loop cadence run delivered ${classLabel}. ${handlerOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: citations,
+        followOnRoutes: [],
+        citations,
+        actor,
+      },
+      ctx.asOf,
+    );
+    eventsEmitted += 1;
+    logger.info(
+      { agentSlug, runId },
+      `${agentSlug}:goal-loop — cadence run delivered (${classLabel})`,
+    );
+    return { eventsEmitted, handlerOutput };
+  }
+
+  // No runHandler configured (shadow-mode cohort): close blocked.
+  const gap = `${agentSlug} goal-loop cadence run ${runId}: no deterministic handler configured (shadow-mode cohort). Run closed blocked — no live side-effects.`;
+  recordAgentRunCompleted(
+    {
+      runId,
+      agent,
+      completedAt: ctx.asOf,
+      outcome: "blocked",
+      deliverableBodies: [],
+      substrateGapsSurfaced: [gap],
+      deliverableCitations: citations,
+      followOnRoutes: [],
+      citations,
+      actor,
+    },
+    ctx.asOf,
+  );
+  eventsEmitted += 1;
+  logger.info({ agentSlug, runId }, `${agentSlug}:goal-loop — cadence run blocked (shadow-mode)`);
+  const noHandlerOutput: AgentRunOutput = {
+    eventsEmitted: 0,
+    ok: true,
+    summary: `cadence run blocked (shadow-mode: no handler)`,
+  };
+  return { eventsEmitted, handlerOutput: noHandlerOutput };
+}
+
+/**
  * Bind a run to one open brief and emit AgentRunStarted{agent-runtime} →
  * AgentRunCompleted. Returns the number of run-lifecycle events emitted plus
  * a summary fragment for the goal-loop handler's AgentRunOutput.

@@ -56,6 +56,7 @@ import anyaProjectionDrift from "./anya-projection-drift";
 import {
   type GoalLoopBriefDispatchConfig,
   dispatchBriefBoundRun,
+  dispatchCadenceRun,
   openBriefsListForAgent,
 } from "./goal-loop-brief-dispatch";
 
@@ -406,11 +407,31 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
+  // Cadence path: no open brief.
+  // When the loop selected a decision, wrap the cadence handler call with
+  // AgentRunStarted{agent-runtime} → AgentRunCompleted so the iteration is
+  // visible in the autonomy run-feed. When deferred, run the handler dry-run
+  // only (no live side-effects; no lifecycle events — deferred iterations are
+  // not run-lifecycle events per D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION).
+  if (shouldRunHandler && !ctx.dryRun) {
+    const cadence = await dispatchCadenceRun(ctx, iterationId, ANYA_BRIEF_DISPATCH);
+    logger.info(
+      { agent: ctx.agent, iterationId, outcome: goalOutcome?.kind ?? "deferred" },
+      "anya:goal-loop — cohort-3 run complete (cadence, instrumented)",
+    );
+    return {
+      eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
+      ok: cadence.handlerOutput.ok,
+      summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
+      ...(cadence.handlerOutput.deliverable ? { deliverable: cadence.handlerOutput.deliverable } : {}),
+    };
+  }
+
   const handlerCtx: AgentRunContext = {
     ...ctx,
     // In shadow mode (cohort-3 ticks), always dry-run the handler
     // so we observe the trace without side-effects.
-    dryRun: ctx.dryRun || !shouldRunHandler,
+    dryRun: true,
   };
 
   const handlerOutput = await anyaProjectionDrift(handlerCtx);
@@ -424,7 +445,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "anya:goal-loop — cohort-3 run complete",
+    "anya:goal-loop — cohort-3 run complete (deferred)",
   );
 
   return {
