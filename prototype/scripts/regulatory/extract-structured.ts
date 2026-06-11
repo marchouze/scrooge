@@ -344,10 +344,7 @@ function looksTabular(pageText: string): boolean {
  * Return the section heading nearest to a given page number, or a default
  * label, for use as excerpt caption.
  */
-function captionForPage(
-  pageNum: number,
-  extractedSections: ExtractedSection[],
-): string {
+function captionForPage(pageNum: number, extractedSections: ExtractedSection[]): string {
   // Walk sections by start page — find the last section that starts at or
   // before this page.
   let best: ExtractedSection | null = null;
@@ -388,8 +385,19 @@ function rasterisePage(
     return null;
   }
 
-  // Find the generated PNG (always ends in -000001.png for single-page rasters)
-  const pngPath = `${outPrefix}-000001.png`;
+  // pdftoppm names the output file with the zero-padded PDF page number as
+  // the suffix (e.g. page 2 → "-02.png", page 13 → "-13.png"). Fall back
+  // to a glob-style search if the expected path isn't found.
+  const paddedPage = String(pageNum).padStart(2, "0");
+  let pngPath = `${outPrefix}-${paddedPage}.png`;
+  if (!existsSync(pngPath)) {
+    // Wider padding (e.g. 3-digit pages)
+    const paddedPage3 = String(pageNum).padStart(3, "0");
+    const alt3 = `${outPrefix}-${paddedPage3}.png`;
+    if (existsSync(alt3)) {
+      pngPath = alt3;
+    }
+  }
   if (!existsSync(pngPath)) {
     process.stderr.write(`[warn] pdftoppm output not found: ${pngPath}\n`);
     return null;
@@ -433,10 +441,7 @@ function rasterisePage(
  * tree. Section matching is by page-range overlap; if no match, the excerpt
  * is attached to the first section.
  */
-function attachExcerptsToSections(
-  doc: StructuredSourceDocument,
-  excerpts: ExcerptRecord[],
-): void {
+function attachExcerptsToSections(doc: StructuredSourceDocument, excerpts: ExcerptRecord[]): void {
   if (excerpts.length === 0) return;
 
   // Build a flat list of section references with page bounds for matching
@@ -494,16 +499,39 @@ function attachExcerptsToSections(
 }
 
 /**
+ * Get the real page count of a PDF via pdfinfo.
+ * Returns undefined if pdfinfo is unavailable or fails.
+ */
+function getPdfPageCount(pdfPath: string): number | undefined {
+  try {
+    const out = execSync(`pdfinfo "${pdfPath}" 2>/dev/null | grep -i '^Pages:'`, {
+      encoding: "utf-8",
+    });
+    const match = out.match(/Pages:\s*(\d+)/i);
+    return match ? Number(match[1]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Detect pages to rasterise given pdftotext output and extracted sections.
  * Returns an array of `{ pageNum, kind }` entries.
+ *
+ * @param pdfPageCount - real PDF page count; pages beyond this are skipped
+ *   (pdftotext emits a trailing form-feed that creates a phantom extra page).
  */
 function detectExcerptPages(
   pages: ParsedPage[],
-  extractedSections: ExtractedSection[],
+  _extractedSections: ExtractedSection[],
+  pdfPageCount: number | undefined,
 ): Array<{ pageNum: number; kind: "table" | "full-page" }> {
+  // Filter to real pages only (skip pdftotext's trailing phantom page)
+  const realPages = pdfPageCount ? pages.filter((p) => p.pageNum <= pdfPageCount) : pages;
+
   const imageOnly: Array<{ pageNum: number; kind: "table" | "full-page" }> = [];
 
-  for (const page of pages) {
+  for (const page of realPages) {
     const pageText = page.lines.join("\n");
     const nws = pageNonWsCount(pageText);
     if (nws <= 20) {
@@ -516,7 +544,7 @@ function detectExcerptPages(
   // Table heuristic — check for tabular pages whose section heading contains
   // a keyword like "schedule", "table", "annex", "formula".
   const tablePages: Array<{ pageNum: number; kind: "table" | "full-page" }> = [];
-  for (const page of pages) {
+  for (const page of realPages) {
     const pageText = page.lines.join("\n");
     if (!looksTabular(pageText)) continue;
 
@@ -545,7 +573,8 @@ function generateExcerpts(
   extractedSections: ExtractedSection[],
   doc: StructuredSourceDocument,
 ): ExcerptRecord[] {
-  const toRasterise = detectExcerptPages(pages, extractedSections);
+  const pdfPageCount = getPdfPageCount(fromPdf);
+  const toRasterise = detectExcerptPages(pages, extractedSections, pdfPageCount);
 
   const produced: ExcerptRecord[] = [];
   for (const { pageNum, kind } of toRasterise) {
