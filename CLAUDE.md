@@ -87,6 +87,7 @@ Every `Decision(approved)` event must be attributed to the seat that holds natur
 | Threat-model gate, SBOM, key-ceremony, vendor-security, JS-2 programme | CISO | Regulator-reportable cyber; strategic deployment refusal; quorum failure |
 | Audit findings, audit plan, third-line opinion, QAIP, investigations | CAE | Material fraud → AC pathway (not CEO) |
 | RMCP attestation, STR/CTR/TPR filing, obligation interpretation, EDD sign-off | CCO | Sanctions true-positive; material exposure; PA/FIC notification |
+| Daily/term funding-plan approvals, FTP curve recalibration within agreed methodology, hedge-programme approval within RAS, collateral/repo-book sizing within RAS, HQLA portfolio composition | Treasurer | Approaching LCR/NSFR or RAS-threshold breach; material funding-strategy change (via ALCO) |
 | Strategic decisions crossing RAS or Board thresholds | CEO | All seats escalate here |
 | Engineering build decisions (substrate, platform, schema) | CEO (build phase) | Build-phase norm until governance-seat authorities active |
 | Risk-appetite calibration | CRO | Already active; no gap |
