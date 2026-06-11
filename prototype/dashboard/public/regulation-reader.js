@@ -240,6 +240,28 @@
                 ? section.subsections.map((sub) => renderSubsection(sub, 1)).join("")
                 : "";
 
+            // Render inline excerpt images (WS-REGULATORY-LIBRARY-V1 Slice 4)
+            const excerptsHtml =
+              section.excerpts && section.excerpts.length > 0
+                ? section.excerpts
+                    .map((exc) => {
+                      const src = `/api/regulation-reader/${esc(currentSlug)}/excerpt/${esc(exc.id)}`;
+                      const alt = esc(exc.caption || exc.kind || "excerpt");
+                      const caption = esc(
+                        exc.caption ||
+                          (exc.kind
+                            ? exc.kind.charAt(0).toUpperCase() + exc.kind.slice(1)
+                            : "Excerpt") + (exc.pages ? ` (p. ${exc.pages})` : ""),
+                      );
+                      return `<figure class="reg-excerpt" style="margin:var(--space-3) 0;padding:var(--space-2);border:1px solid var(--color-border);border-radius:4px;background:var(--color-surface-muted,#f9fafb)">
+  <img src="${src}" alt="${alt}" loading="lazy" style="max-width:100%;height:auto;display:block"
+       onerror="this.parentElement.style.display='none'">
+  <figcaption style="margin-top:var(--space-1);font-size:0.8em;color:var(--color-text-muted);font-style:italic">${caption}</figcaption>
+</figure>`;
+                    })
+                    .join("")
+                : "";
+
             const obligationsHtml = renderObligations(section.obligations);
             const oblCount = section.obligations?.length || 0;
             const toggleHtml =
@@ -259,6 +281,7 @@
     ${toggleHtml}
   </div>
   ${bodyHtml}
+  ${excerptsHtml}
   ${subsectionsHtml}
   ${obligationsHtml}
 </div>`;

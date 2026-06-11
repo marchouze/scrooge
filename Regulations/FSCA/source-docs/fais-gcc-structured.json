@@ -30,7 +30,8 @@
               "heading": "(1)",
               "text": "(1) In this Code \"the Act\" means the Financial Advisory and Intermediary Services Act, 2002 (Act No. 37 of 2002), a word or expression to which a meaning has been assigned in the Act shall have that meaning, and, unless the context indicates otherwise \"advertisement\", in relation to a provider, means any written, printed, electronic or oral communication (including a communication by means of a public radio service), which is directed to the general public, or any section thereof, or to any client on request, by any such person, which is intended merely to call attention to the marketing or promotion of financial services offered by such person, and which does not purport to provide detailed information regarding any such financial services; and \"advertising\" or \"advertises\" has a corresponding meaning; \"Direct marketing\", means the rendering of financial services by way of telephone, internet, media insert, direct mail, or electronic mail, excluding any such means which are advertisements not containing transaction requirements. \"Direct marketer\" means a provider who, in the normal course of business, provides all or the predominant part of the financial services concerned in the form of direct marketing. \"provider\" means an authorised financial services provider, and includes a representative; \"transaction requirement\" means any application, proposal, order, instruction or other contractual information required to be completed for, or submitted to, a product supplier by or on behalf of a client relating to the purchase of or investment in any financial product, including any amendment thereof or variation thereto; \"writing\" includes communication by telefax or any appropriate electronic medium that is accurately and readily reducible to written or printed form; and \"written\" has a corresponding meaning.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–21"
             },
             {
               "id": "gcc1.2",
@@ -72,7 +73,8 @@
                     }
                   ]
                 }
-              ]
+              ],
+              "pages": "2–22"
             },
             {
               "id": "gcc1.3",
@@ -80,7 +82,32 @@
               "heading": "(3)",
               "text": "(3) The provisions of this Code apply, unless stated otherwise in this Code or otherwise by law, to all financial services providers and representatives.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–18"
+            }
+          ],
+          "pages": "2–21",
+          "excerpts": [
+            {
+              "id": "fais-gcc-p2",
+              "kind": "table",
+              "hash": "blake3:278cfcca8a88b613c3c12d774245d228c99f0e41a25be670fc551dda79d146ec",
+              "pages": "2",
+              "caption": "s19: 19"
+            },
+            {
+              "id": "fais-gcc-p13",
+              "kind": "table",
+              "hash": "blake3:a1dcc4b97c1abe60aa7948cf28edeb52887776916b615af381b8f4391bf91a6a",
+              "pages": "13",
+              "caption": "s7: 7"
+            },
+            {
+              "id": "fais-gcc-p15",
+              "kind": "table",
+              "hash": "blake3:5c9cf9650e27efeb8788b517f4928d3cf4d2eb1352abb2fbbac8f1808b360cec",
+              "pages": "15",
+              "caption": "s14: 14"
             }
           ]
         }
@@ -96,7 +123,8 @@
           "number": "2",
           "heading": "General duty of provider",
           "text": "A provider must at all times render financial services honestly, fairly, with due skill, care and diligence, and in the interests of clients and the integrity of the financial services industry.",
-          "verbatim": true
+          "verbatim": true,
+          "pages": "2–22"
         },
         {
           "id": "gcc3",
@@ -217,7 +245,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc3.2",
@@ -283,7 +312,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–22"
             },
             {
               "id": "gcc3.3",
@@ -291,9 +321,11 @@
               "heading": "(3)",
               "text": "(3) A provider may not disclose any confidential information acquired or obtained from a client or, subject to section 4(1), a product supplier in regard to such client or supplier, unless the written consent of the client or product supplier, as the case may be, has been obtained beforehand or disclosure of the information is required in the public interest or under any law.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–18"
             }
-          ]
+          ],
+          "pages": "2–18"
         }
       ]
     },
@@ -349,7 +381,8 @@
                     }
                   ]
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc4.2",
@@ -357,7 +390,8 @@
               "heading": "(2)",
               "text": "(2) A product supplier which is an authorised financial services provider, and which has entered into an intermediary contract or similar contractual relationship with another provider (not being a representative) for the purpose of rendering a financial service in respect of its financial products, must within a reasonable time after being requested to do so by such other provider, provide such other provider with sufficient particulars to enable the provider to comply with the disclosure requirements of this Code relating to the furnishing of details of the product supplier and the product in question.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–22"
             },
             {
               "id": "gcc4.3",
@@ -365,7 +399,8 @@
               "heading": "(3)",
               "text": "(3) A provider must, where the relevant licence, terms of employment or mandate enables such provider to provide clients with financial services in respect of a choice of product suppliers, exercise judgment objectively in the interest of the client concerned.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–18"
             },
             {
               "id": "gcc4.4",
@@ -373,9 +408,11 @@
               "heading": "(4)",
               "text": "(4) A provider may not, in dealing with a client, compare different financial products, product suppliers, providers or representatives, unless the differing characteristics of each are made clear, and may not make inaccurate, unfair or unsubstantiated criticisms of any financial product, product supplier, provider or representative.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "6–18"
             }
-          ]
+          ],
+          "pages": "6–18"
         }
       ]
     },
@@ -447,7 +484,8 @@
               "verbatim": true,
               "subsections": []
             }
-          ]
+          ],
+          "pages": "7–18"
         }
       ]
     },
@@ -461,7 +499,8 @@
           "number": "6",
           "heading": "Contacting of client",
           "text": "A provider must– (a) in making contact arrangements, and in all communications and dealings with a client, act honourably, professionally and with due regard to the convenience of the client; and (b) at the commencement of any contact, visit or call initiated by the provider, explain the purpose thereof and at the earliest opportunity, provide the information referred to in section 5.",
-          "verbatim": true
+          "verbatim": true,
+          "pages": "7–19"
         }
       ]
     },
@@ -703,7 +742,8 @@
                     }
                   ]
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc7.2",
@@ -711,7 +751,8 @@
               "heading": "(2)",
               "text": "(2) No provider may in the course of the rendering of a financial service request any client to sign any written or printed form or document unless all details required to be inserted thereon by the client or on behalf of the client have already been inserted.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–22"
             },
             {
               "id": "gcc7.3",
@@ -719,7 +760,8 @@
               "heading": "(3)",
               "text": "(3) A provider must, where applicable, at the request of a client, provide the client with a statement of account in connection with any financial service rendered to the client.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–18"
             },
             {
               "id": "gcc7.4",
@@ -760,9 +802,11 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "6–18"
             }
-          ]
+          ],
+          "pages": "8"
         }
       ]
     },
@@ -898,7 +942,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc8.2",
@@ -906,7 +951,8 @@
               "heading": "(2)",
               "text": "(2) The provider must take reasonable steps to ensure that the client understands the advice and that the client is in a position to make an informed decision.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–22"
             },
             {
               "id": "gcc8.3",
@@ -914,7 +960,8 @@
               "heading": "(3)",
               "text": "(3) A provider providing advice to a client to replace an existing long-term insurance contract or policy with any other financial product must at the earliest practicable opportunity after providing such advice, but in any event no later than the date on which any transaction requirement is submitted to a product supplier in respect of any replacement product, notify the issuer of the existing and the replacement long-term insurance contract or policy of such advice.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–18"
             },
             {
               "id": "gcc8.4",
@@ -939,9 +986,11 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "6–18"
             }
-          ]
+          ],
+          "pages": "2"
         },
         {
           "id": "gcc9",
@@ -1006,7 +1055,8 @@
                     }
                   ]
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc9.2",
@@ -1014,9 +1064,11 @@
               "heading": "(2)",
               "text": "(2) A provider, other than a direct marketer, must provide a client with a copy of the record contemplated in 9(1) in writing.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–22"
             }
-          ]
+          ],
+          "pages": "2"
         }
       ]
     },
@@ -1137,7 +1189,8 @@
                     }
                   ]
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc10.2",
@@ -1145,7 +1198,8 @@
               "heading": "(2)",
               "text": "(2) Where a transaction or agreement has been recorded in writing, the provider who dealt with the client must ensure that the original agreement is delivered to the client for safe custody.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–22"
             },
             {
               "id": "gcc10.3",
@@ -1153,9 +1207,11 @@
               "heading": "(3)",
               "text": "(3) Section 10(1)(d) is not applicable to a provider subject to section 45 of the Short-term Insurance Act, 1998 (Act No. 53 of 1998), if the provider complies with the requirements contemplated in that section.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–18"
             }
-          ]
+          ],
+          "pages": "14"
         }
       ]
     },
@@ -1169,7 +1225,8 @@
           "number": "11",
           "heading": "Control measures",
           "text": "A provider must at all times have and effectively employ the resources, procedures and appropriate technological systems that can reasonably be expected to eliminate as far as reasonably possible, the risk that clients, product suppliers and other providers or representatives will suffer financial loss through theft, fraud, other dishonest acts, poor administration, negligence, professional misconduct or culpable omissions.",
-          "verbatim": true
+          "verbatim": true,
+          "pages": "2–15"
         },
         {
           "id": "gcc12",
@@ -1202,14 +1259,16 @@
               "verbatim": true,
               "subsections": []
             }
-          ]
+          ],
+          "pages": "2–15"
         },
         {
           "id": "gcc13",
           "number": "13",
           "heading": "Insurance",
           "text": "A provider, excluding a representative, must, if, and to the extent, required by the registrar maintain in force suitable guarantees or professional indemnity or fidelity insurance cover.",
-          "verbatim": true
+          "verbatim": true,
+          "pages": "2–15"
         }
       ]
     },
@@ -1314,7 +1373,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc14.2",
@@ -1347,7 +1407,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–22"
             },
             {
               "id": "gcc14.3",
@@ -1355,9 +1416,11 @@
               "heading": "(3)",
               "text": "(3) Where a provider advertises a financial service by means of a public radio service, the advertisement must include the business name of the provider.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–18"
             }
-          ]
+          ],
+          "pages": "15"
         },
         {
           "id": "gcc15",
@@ -1413,7 +1476,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc15.2",
@@ -1528,7 +1592,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–22"
             },
             {
               "id": "gcc15.3",
@@ -1633,7 +1698,8 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–18"
             },
             {
               "id": "gcc15.5",
@@ -1641,7 +1707,8 @@
               "heading": "(5)",
               "text": "(5) A direct marketer shall be obliged to record all telephone conversations with clients in the course of direct marketing and must have appropriate procedures and systems in place to store and retrieve such recordings. Records of advice furnished to a client telephonically need not be reduced to writing but a copy of the relevant voice-logged records must be provided, on request, to the client or Registrar within a reasonable time.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "7–18"
             },
             {
               "id": "gcc15.6",
@@ -1649,7 +1716,8 @@
               "heading": "(6)",
               "text": "(6) Notwithstanding the above or contrary provision in the code, such of the information required to be provided to the client in terms of clauses 4, 5 and 7 of this Code as has not yet been recorded or provided to the client in writing before the conclusion of any transaction, must be provided to the client in writing within 30 days thereafter.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "7–19"
             }
           ]
         }
@@ -1673,7 +1741,8 @@
               "heading": "(1)",
               "text": "(1) In this Part \"complaint\" means a complaint as defined in section 1(1) of the Act (excluding the reference to section 26(1)(a)(iii) therein), submitted by a client to a provider for purposes of resolution by the provider; \"internal complaint resolution system and procedures\", in relation to a provider and a client, means the system and procedures established and maintained by the provider in accordance with this Code for the resolution of complaints by clients; \"Ombud\" means the Ombud for Financial Services Providers referred to in section 20(2) of the Act; \"resolution\", or \"internal resolution\", in relation to a complaint and a provider, means the process of the resolving of a complaint through and in accordance with the internal complaint resolution system and procedures of the provider; \"Rules\" means the Rules on Proceedings of the Office of the Ombud for Financial Services Providers, 2002.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–21"
             },
             {
               "id": "gcc16.2",
@@ -1722,9 +1791,11 @@
                   "verbatim": true,
                   "subsections": []
                 }
-              ]
+              ],
+              "pages": "2–22"
             }
-          ]
+          ],
+          "pages": "2"
         },
         {
           "id": "gcc17",
@@ -1765,7 +1836,8 @@
               "verbatim": true,
               "subsections": []
             }
-          ]
+          ],
+          "pages": "2–20"
         },
         {
           "id": "gcc18",
@@ -1814,7 +1886,8 @@
               "verbatim": true,
               "subsections": []
             }
-          ]
+          ],
+          "pages": "2–20"
         },
         {
           "id": "gcc19",
@@ -1912,7 +1985,8 @@
                     }
                   ]
                 }
-              ]
+              ],
+              "pages": "2–21"
             },
             {
               "id": "gcc19.2",
@@ -1920,9 +1994,11 @@
               "heading": "(2)",
               "text": "(2) In any case where a complaint is resolved in favour of a client, the provider must ensure that a full and appropriate level of redress is offered to the client without any delay.",
               "verbatim": true,
-              "subsections": []
+              "subsections": [],
+              "pages": "2–22"
             }
-          ]
+          ],
+          "pages": "2–3"
         }
       ]
     },
@@ -1954,7 +2030,8 @@
               "verbatim": true,
               "subsections": []
             }
-          ]
+          ],
+          "pages": "19–22"
         }
       ]
     },
@@ -1968,7 +2045,8 @@
           "number": "21",
           "heading": "Waiver of rights",
           "text": "No provider may request or induce in any manner a client to waive any right or benefit conferred on the client by, or in terms of, any provision of this Code or recognise, accept or act on any such waiver by the client, and any such waiver is null and void.",
-          "verbatim": true
+          "verbatim": true,
+          "pages": "22"
         }
       ]
     },
@@ -1982,9 +2060,11 @@
           "number": "22",
           "heading": "Short title and commencement",
           "text": "This Code is called the General Code of Conduct for Authorised Financial Services Providers and Representatives, 2003, and comes into operation on the date determined by the Minister under section 7(1) of the Act.",
-          "verbatim": true
+          "verbatim": true,
+          "pages": "22–23"
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:e34667fe5660247046e3872c9fcc42a23186096ffaa61a632ac7d84842283e2e"
 }

@@ -26,7 +26,9 @@ export interface StructuredSection {
   subsections?: StructuredSection[];
   excerpts?: Array<{
     id: string;
-    kind: "table" | "diagram" | "formula";
+    /** Visual kind — "full-page" is the fallback for text-layer PDFs. */
+    kind: "table" | "diagram" | "formula" | "full-page";
+    /** BLAKE3 hash of the PNG filed via `recordRegulatoryExcerpt()`. */
     hash?: string;
     pages?: string;
     caption?: string;

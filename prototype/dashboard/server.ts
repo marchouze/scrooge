@@ -47,7 +47,14 @@
 // Author: Atlas · Anya (derivation)
 
 import { execSync } from "node:child_process";
-import { type FSWatcher, existsSync, watch as fsWatch, mkdirSync, readFileSync } from "node:fs";
+import {
+  type FSWatcher,
+  existsSync,
+  watch as fsWatch,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 // Must precede any import of platform/composition — sets BANK_EVENT_DB to the
@@ -3368,6 +3375,101 @@ const server = Bun.serve({
         return jsonResponse({
           ...detail,
           pageProvenance: proseAuthoredPageProvenance(),
+        });
+      }
+    }
+
+    // GET /api/regulation-reader/:slug/excerpt/:id
+    //
+    // Resolves an excerpt record in the slug's structured JSON, fetches the
+    // PNG bytes from the content-addressed document store, and streams them as
+    // image/png with an immutable Cache-Control header (content-addressed →
+    // safe to cache forever by hash).
+    //
+    // Security: the `:id` is resolved against the structured JSON — it is NOT
+    // used as a direct hash probe, preventing arbitrary store enumeration.
+    // Returns 404 (never 500) when slug, excerpt, or blob is absent.
+    //
+    // Authority: D-REGULATORY-LIBRARY-V1 (WS-REGULATORY-LIBRARY-V1 Slice 4).
+    // Author: Mira (Compliance / RegTech engineer, engineering).
+    // ---------------------------------------------------------------------------
+    {
+      const excerptMatch = url.pathname.match(
+        /^\/api\/regulation-reader\/([a-z0-9-]+)\/excerpt\/([a-z0-9-]+)$/,
+      );
+      if (excerptMatch?.[1] && excerptMatch?.[2] && req.method === "GET") {
+        const slugEx = excerptMatch[1];
+        const excerptId = excerptMatch[2];
+
+        // Discover the structured JSON for this slug
+        let excerptDoc: {
+          chapters?: Array<{
+            sections?: Array<{
+              excerpts?: Array<{ id: string; hash?: string }>;
+            }>;
+          }>;
+        } | null = null;
+        try {
+          const regsDir = join(REPO_ROOT, "Regulations");
+          if (existsSync(regsDir)) {
+            for (const sub of readdirSync(regsDir, { encoding: "utf-8" })) {
+              const candidate = join(regsDir, sub, "source-docs", `${slugEx}-structured.json`);
+              if (existsSync(candidate)) {
+                excerptDoc = JSON.parse(readFileSync(candidate, "utf-8")) as typeof excerptDoc;
+                break;
+              }
+            }
+          }
+        } catch {
+          return new Response("Document not found", { status: 404 });
+        }
+        if (!excerptDoc) {
+          return new Response("Instrument not found", { status: 404 });
+        }
+
+        // Find the excerpt record by id
+        let foundHash: string | undefined;
+        outer: for (const chapter of excerptDoc.chapters ?? []) {
+          for (const section of chapter.sections ?? []) {
+            for (const exc of section.excerpts ?? []) {
+              if (exc.id === excerptId) {
+                foundHash = exc.hash;
+                break outer;
+              }
+            }
+          }
+        }
+        if (foundHash === undefined) {
+          return new Response("Excerpt not found", { status: 404 });
+        }
+        if (!foundHash) {
+          return new Response(JSON.stringify({ error: "excerpt not yet filed" }), {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+
+        // Resolve hash in document store
+        let pngBytes: Uint8Array;
+        try {
+          pngBytes = defaultDocumentStore.get(
+            foundHash as import("../platform/document-store").DocumentHash,
+          );
+        } catch (e) {
+          const msg = (e as Error).message ?? String(e);
+          if (msg.includes("not found") || msg.includes("DocumentStoreMiss")) {
+            return new Response("Excerpt blob not found", { status: 404 });
+          }
+          logger.warn(`excerpt blob lookup error for ${foundHash}: ${msg}`);
+          return new Response("Excerpt blob not found", { status: 404 });
+        }
+
+        return new Response(pngBytes, {
+          status: 200,
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=31536000, immutable",
+          },
         });
       }
     }
