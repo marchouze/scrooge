@@ -1,14 +1,14 @@
 ---
-policy-parent: Hedge Accounting Policy (planned)
-last-reviewed: 2026-05-16
+policy-parent: hedge-accounting-policy-v1
+last-reviewed: 2026-06-11
 procedureId: PROC-ALM-HDT-01
 title: IFRS 9 hedge designation and effectiveness test
-author: Eitan (Treasurer) · Bea (financial-reporting engineer)
+author: Eitan (Treasurer, governance) · Bea (Accounting & financial reporting engineer, engineering)
 date: 2026-05-16
-owner: Eitan (Treasurer) · Bea (financial-reporting engineer)
+owner: Eitan (Treasurer, governance) · Bea (Accounting & financial reporting engineer, engineering)
 status: POPULATED
-policy-cited: Hedge Accounting Policy (planned)
-system-capability: "@platform/alm/hedge-accounting-engine (PLANNED)"
+policy-cited: hedge-accounting-policy-v1
+system-capability: "@platform/alm/hedge-accounting-engine (PLANNED — gated on first hedge designation, post-licence per Team/Ravi.md §16)"
 ---
 
 # Procedure — IFRS 9 hedge designation and effectiveness test
@@ -17,24 +17,26 @@ system-capability: "@platform/alm/hedge-accounting-engine (PLANNED)"
 **Owner:** Eitan (Treasurer) · Bea (financial-reporting engineer)
 **Approval:** ALCO (hedge strategy); CFO (Hedge Accounting Policy); external auditor (hedge documentation review at period-end)
 **Cadence:** Per-designation (prospective test at inception); daily (ongoing effectiveness monitoring); period-end (retrospective effectiveness assessment and de-designation review); annual (methodology review)
-**Version:** v0.1 — 2026-05-16
+**Version:** v0.2 — 2026-06-11
 **Status:** POPULATED
 
 ---
 
 ## 1. Source policy
 
-- Hedge Accounting Policy (planned; to be authored by Eitan (Treasurer) with Bea (financial-reporting engineer) and Camille (CFO, governance) approval; required before first hedge relationship is designated).
+- [`Policies/hedge-accounting-policy-v1.md`](../../Policies/hedge-accounting-policy-v1.md) — Hedge Accounting Policy (IN FORCE; owner: Camille (Chief Financial Officer, governance); Eitan (Treasurer, governance) consumer on the designation/effectiveness side per `Team/Ravi.md` §15 — Ravi (Treasury/ALM engineer, engineering) owns designation + effectiveness, Bea (Accounting & financial reporting engineer, engineering) owns posting).
 - IFRS 9 Financial Instruments (as adopted in South Africa via IFRS for South Africa, effective 1 January 2018) — Chapter 6 (Hedge Accounting).
-- `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` §B3 — interest-rate risk appetite; the RAS frames the hedge programme as the primary control for IRRBB within appetite.
+- [`archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md`](../../archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md) §B3 — interest-rate risk appetite; the RAS frames the hedge programme as the primary control for IRRBB within appetite (structured successor register: `prototype/platform/risk/ras-appetite-register.ts`, line `appetite:irrbb:delta-eve-outlier`).
 
-The obligation chain:
+The obligation chain (Principle 2):
 
 ```
-Regulation (Banks Act s.71 — fair value and IFRS adoption requirement; Reg 39 IRRBB)
-  → Hedge Accounting Policy (PLANNED)
+Regulation (Banks Act s.71 — fair value and IFRS adoption requirement; Reg 26/27 IRRBB)
+  → Policy: hedge-accounting-policy-v1 (IN FORCE)
     → PROC-ALM-HDT-01 (this procedure)
-      → @platform/alm/hedge-accounting-engine (PLANNED)
+      → @platform/alm/hedge-accounting-engine (PLANNED — gated on first hedge
+        designation; today only HedgeIneffective is registered, in
+        prototype/platform/event-store/event-types/markets-trading-extended.ts)
       → @platform/events/hedge-designated (PLANNED)
 ```
 
@@ -282,3 +284,12 @@ Bea (financial-reporting engineer) posts the required journal entries and update
 | Journal entries on de-designation | 7 years | RMS (per PROC-FIN-MC-01 audit trail) |
 
 All retention periods align with Banks Act requirements and SARS five-year minimum, with the longer period applied.
+
+---
+
+## 11. Change log
+
+| Version | Date | Author | Change |
+|---|---|---|---|
+| v0.1 | 2026-05-16 | Eitan (Treasurer, governance) · Bea (Accounting & financial reporting engineer, engineering) | Initial population (design-era anchors). |
+| v0.2 | 2026-06-11 | Ravi (Treasury/ALM engineer, engineering) | Anchor reconciliation under `brief:ravi:treasury-procedure-tail-3-missing-procedures-6-a:2026-06-11` (W1.3): policy-parent `Hedge Accounting Policy (planned)` → in-force `hedge-accounting-policy-v1`; archived RAS path re-anchored to `archive/owner-inbox/` + structured RAS register; hedge-accounting engine stays PLANNED (true state — gated on first hedge designation, W3.1; only `HedgeIneffective` is registered today). No substance change. |

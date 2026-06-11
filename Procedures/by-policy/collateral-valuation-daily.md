@@ -1,14 +1,14 @@
 ---
-policy-parent: Collateral Management Policy (planned)
-last-reviewed: 2026-05-16
+policy-parent: collateral-management-policy-v1
+last-reviewed: 2026-06-11
 procedureId: PROC-ALM-CVD-01
 title: Daily collateral valuation and margin call management
-author: Eitan (Treasurer) · Saskia (Head of Global Markets)
+author: Eitan (Treasurer, governance) · Saskia (Head of Global Markets, governance)
 date: 2026-05-16
-owner: Eitan (Treasurer) · Saskia (Head of Global Markets)
+owner: Eitan (Treasurer, governance) · Saskia (Head of Global Markets, governance)
 status: POPULATED
-policy-cited: Collateral Management Policy (planned)
-system-capability: "@platform/alm/collateral-engine (PLANNED)"
+policy-cited: collateral-management-policy-v1 · margin-policy-v1
+system-capability: "@platform/collateral (LIVE — hqla-classifier.ts + inventory.ts; atlas:collateral-snapshot) · @platform/alm/collateral-engine (PLANNED — margin-call orchestration)"
 ---
 
 # Procedure — Daily collateral valuation and margin call management
@@ -17,25 +17,26 @@ system-capability: "@platform/alm/collateral-engine (PLANNED)"
 **Owner:** Eitan (Treasurer) · Saskia (Head of Global Markets)
 **Approval:** ALCO (Collateral Management Policy; eligible-collateral schedule; haircut grid); ALCO + BRC (margin policy — shared with PROC-MK-ODP-03 and PROC-MK-ODP-04)
 **Cadence:** Daily (end-of-day valuation cycle, 17:00 SAST cutoff; margin calls issued by 18:00 SAST); intraday (on material MTM move > threshold); monthly ALCO collateral report
-**Version:** v0.1 — 2026-05-16
+**Version:** v0.2 — 2026-06-11
 **Status:** POPULATED
 
 ---
 
 ## 1. Source policy
 
-- Collateral Management Policy (planned; to be authored by Eitan (Treasurer) with Saskia (Head of Global Markets); Helena (Chief Risk Officer, governance) approval; required before first OTC derivative trade).
-- `Policies/margin-policy-v1.md` — Margin Policy (PLANNED; shared with PROC-MK-ODP-03 and PROC-MK-ODP-04).
-- `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` §B4 — counterparty credit risk appetite; collateral is the primary first-loss mitigation.
+- [`Policies/collateral-management-policy-v1.md`](../../Policies/collateral-management-policy-v1.md) — Collateral Management Policy (IN FORCE since 2026-05-14; owner: Eitan (Treasurer, governance); Saskia (Head of Global Markets, governance) co-author; Helena (Chief Risk Officer, governance) approval).
+- [`Policies/margin-policy-v1.md`](../../Policies/margin-policy-v1.md) — Margin Policy (IN FORCE; shared with PROC-MK-ODP-03 and PROC-MK-ODP-04).
+- [`archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md`](../../archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md) §B4 — counterparty credit risk appetite; collateral is the primary first-loss mitigation (structured successor register: `prototype/platform/risk/ras-appetite-register.ts`).
 
-The obligation chain:
+The obligation chain (Principle 2):
 
 ```
 Regulation (PA Umoja Directive — VM reporting; Joint Standard JS 2/2020 — UMR IM; BCBS-IOSCO margin requirements)
-  → Collateral Management Policy (PLANNED)
-    → Margin Policy (PLANNED)
+  → Policy: collateral-management-policy-v1 (IN FORCE)
+    → Policy: margin-policy-v1 (IN FORCE)
       → PROC-ALM-CVD-01 (this procedure)
-        → @platform/alm/collateral-engine (PLANNED)
+        → @platform/collateral (LIVE — hqla-classifier.ts + inventory.ts; atlas:collateral-snapshot)
+        → @platform/alm/collateral-engine (PLANNED — margin-call orchestration)
         → @platform/events/margin-call-issued (PLANNED)
 ```
 
@@ -236,6 +237,7 @@ The report is formatted per PA Umoja specifications and submitted via the PA rep
 
 | Capability | Status | Description |
 |---|---|---|
+| `@platform/collateral` | ✓ LIVE | Collateral inventory + HQLA classifier (`inventory.ts`, `hqla-classifier.ts`; L1/L2a/L2b levels); daily snapshot via `atlas:collateral-snapshot`; zero positions in build phase |
 | `@platform/alm/collateral-engine` | PLANNED | Daily valuation cycle orchestrator; netting; haircut application; margin call generation; eligibility checking |
 | `@platform/alm/collateral-ledger` | PLANNED | Collateral account balances per counterparty; VM and IM separation; custodian reconciliation |
 | `@risk/otc-mtm` | PLANNED | End-of-day OTC IRD mark-to-market (shared with PROC-MK-ODP-03) |
@@ -280,3 +282,12 @@ The report is formatted per PA Umoja specifications and submitted via the PA rep
 | ISDA CSA terms per counterparty (collateral provisions) | Life of agreement + 7 years | Imani (legal-as-code engineer) — contract register + RMS |
 
 All retention periods comply with Banks Act requirements and SARS five-year minimum, with the longer period applied.
+
+---
+
+## 11. Change log
+
+| Version | Date | Author | Change |
+|---|---|---|---|
+| v0.1 | 2026-05-16 | Eitan (Treasurer, governance) · Saskia (Head of Global Markets, governance) | Initial population (design-era anchors). |
+| v0.2 | 2026-06-11 | Ravi (Treasury/ALM engineer, engineering) | Anchor reconciliation under `brief:ravi:treasury-procedure-tail-3-missing-procedures-6-a:2026-06-11` (W1.3): policy-parent `Collateral Management Policy (planned)` → in-force `collateral-management-policy-v1` (+ in-force `margin-policy-v1`); archived RAS path re-anchored to `archive/owner-inbox/`; live `@platform/collateral` (inventory + HQLA classifier, `atlas:collateral-snapshot`) bound in frontmatter and §8; margin-call orchestration engine stays PLANNED (true state). No substance change. |

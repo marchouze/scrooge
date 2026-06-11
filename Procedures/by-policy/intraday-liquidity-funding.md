@@ -1,14 +1,14 @@
 ---
-policy-parent: Liquidity Risk Management Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B5
-last-reviewed: 2026-05-15
+policy-parent: liquidity-risk-management-policy-v1
+last-reviewed: 2026-06-11
 procedureId: PROC-RISK-ILF-01
 title: Intraday liquidity and funding monitoring
-author: Eitan (Treasurer) · Ravi (ALM quant engineer)
+author: Eitan (Treasurer, governance) · Ravi (Treasury/ALM engineer, engineering)
 date: 2026-05-15
-owner: Eitan (Treasurer) · Ravi (ALM quant engineer) · Helena (Chief Risk Officer, governance — RAS approval)
+owner: Eitan (Treasurer, governance) · Ravi (Treasury/ALM engineer, engineering) · Helena (Chief Risk Officer, governance — RAS approval)
 status: POPULATED
-policy-cited: Liquidity Risk Management Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B5
-system-capability: "@platform/alm/intraday-liquidity-engine (PLANNED)"
+policy-cited: liquidity-risk-management-policy-v1
+system-capability: "@platform/alm/intraday-stress (LIVE — ravi:intraday-stress; BCBS 248 HQLA-stress projection, BAU + 2 stress scenarios × 4 NPS windows) · @platform/alm/intraday-liquidity-engine (PLANNED — real-time position monitor)"
 ---
 
 # Procedure — Intraday liquidity and funding monitoring
@@ -22,17 +22,18 @@ system-capability: "@platform/alm/intraday-liquidity-engine (PLANNED)"
 
 ## 1. Source policy
 
-- Liquidity Risk Management Policy (planned; to be authored by Helena with Eitan; pending at licence-day pre-go-live readiness gate).
-- `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` §B5 — Liquidity appetite: LCR floor; NSFR floor; intraday liquidity buffer minimum; stress-survival horizon.
+- [`Policies/liquidity-risk-management-policy-v1.md`](../../Policies/liquidity-risk-management-policy-v1.md) — Liquidity Risk Management Policy v1 (IN FORCE 2026-05-11; owners: Camille (Chief Financial Officer, governance) + Eitan (Treasurer, governance) + Helena (Chief Risk Officer, governance)) — specifically **§4 (Intraday liquidity)**: the seven BCBS 248 monitoring tools (§4.2), intraday buffer (§4.3), end-of-day discipline (§4.4), stress response (§4.5).
+- [`archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md`](../../archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md) **§B3** — RAS liquidity appetite: LCR floor; NSFR floor; intraday liquidity buffer minimum; stress-survival horizon. *(Anchor corrected 2026-06-11: the prior "§B5" reference pointed at the financial-crime section of the archived RAS document; the liquidity appetite is §B3. Structured successor register: `prototype/platform/risk/ras-appetite-register.ts` — an `appetite:liquidity:intraday` line is the named Wave-1 gap W1.2.)*
 - Basel III Liquidity Coverage Ratio (LCR) and NSFR standards — the ILAAP liquidity section incorporates intraday liquidity management.
-- BCBS January 2013 Monitoring Tools for Intraday Liquidity Management — seven monitoring metrics.
+- BCBS January 2013 Monitoring Tools for Intraday Liquidity Management (BCBS 248) — seven monitoring metrics.
 
-The obligation chain:
+The obligation chain (Principle 2):
 ```
-Regulation (Banks Act Reg 39 / PA LCR Directive / BCBS ILAAP / BCBS Intraday Liquidity Tools)
-  → Liquidity Risk Management Policy
+Regulation (Banks Act ss.60–72 / Reg 26 / PA LCR Directive / BCBS ILAAP / BCBS 248)
+  → Policy: liquidity-risk-management-policy-v1 §4 (intraday liquidity)
     → PROC-RISK-ILF-01 (this procedure)
-      → @platform/alm/intraday-liquidity-engine (PLANNED)
+      → @platform/alm/intraday-stress (LIVE — ravi:intraday-stress HQLA-stress projection)
+      → @platform/alm/intraday-liquidity-engine (PLANNED — real-time position monitor)
 ```
 
 ## 2. Source regulation(s)
@@ -49,7 +50,7 @@ Regulation (Banks Act Reg 39 / PA LCR Directive / BCBS ILAAP / BCBS Intraday Liq
 
 Monitor and manage the bank's intraday liquidity position — the real-time availability of funds to meet payment, settlement, and collateral obligations as they fall due throughout the trading day. The procedure:
 
-1. Tracks the bank's intraday liquidity position in real-time against the intraday buffer minimum (RAS B5).
+1. Tracks the bank's intraday liquidity position in real-time against the intraday buffer minimum (RAS §B3).
 2. Monitors intraday peak usage and minimum balance against ALCO-approved limits.
 3. Manages the intraday funding facility with the correspondent bank (Tomas's payments channel — `outbound-payment-sponsor-bank-channel.md`).
 4. Reconciles settlement activity at end-of-day and emits confirmed position events.
@@ -79,7 +80,7 @@ Monitor and manage the bank's intraday liquidity position — the real-time avai
 | # | Action | Actor | System capability | Notes |
 |---|---|---|---|---|
 | 1 | At 07:00 SAST: read opening balance from correspondent bank account (via Tomas's correspondent-bank feed); read scheduled payment obligations (queued outgoing payments, known incoming settlements); calculate projected intraday position | `agent` (Eitan) | `@platform/alm/intraday-liquidity-engine` (`PLANNED`) + `@platform/payments/correspondent-feed` (`PLANNED`) | Opening balance from Tomas's correspondent-bank interface; scheduled payment obligations from Kai's (OTC pre-trade) and Tomas's (payments) event feeds. |
-| 2 | Emit `IntradayMonitoringStarted { date, opening_balance, projected_minimum_balance, intraday_buffer_minimum_limit }` | `system` | `@platform/event-store` ✓ | The `intraday_buffer_minimum_limit` is the RAS B5 floor; breaching it triggers an immediate escalation. |
+| 2 | Emit `IntradayMonitoringStarted { date, opening_balance, projected_minimum_balance, intraday_buffer_minimum_limit }` | `system` | `@platform/event-store` ✓ | The `intraday_buffer_minimum_limit` is the RAS §B3 floor; breaching it triggers an immediate escalation. |
 | 3 | **Continuous monitoring.** On every `PaymentInstructionQueued`, `SettlementConfirmed`, and `CollateralCallReceived`: recalculate the current projected intraday position; emit `IntradayPositionUpdated { timestamp, current_balance, projected_minimum_remaining, utilisation_of_buffer_pct }` | `system` | `@platform/alm/intraday-liquidity-engine` (`PLANNED`) | Frequency: per event (event-driven, not polling). The engine aggregates multi-currency positions in ZAR reporting currency. |
 | 4 | **Limit check on each update.** If projected minimum balance < intraday buffer minimum limit: emit `IntradayLimitBreached { date, breach_time, projected_balance, limit, shortfall, severity }` and route to Eitan immediately | `system` | `@platform/event-store` ✓ + `@platform/escalation` (existing) | Severity: Warning = < 110% of limit; Minor = < 100% limit; Major = < 80%; Critical = < 50%. |
 | 5 | **Correspondent bank funding call (if needed).** If an intraday funding shortfall is projected: Eitan calls the correspondent bank funding facility; confirms amount and timing; emits `IntradayFundingDrawn { date, amount, currency, facility_ref, purpose }` | `agent` (Eitan — human call to correspondent bank) | `@platform/alm/intraday-liquidity-engine` (`PLANNED`) | The correspondent bank intraday facility is a contractual line (Tomas's correspondent-bank agreement — `outbound-payment-sponsor-bank-channel.md`); drawdown is discretionary within the agreed limit. |
@@ -153,6 +154,7 @@ Monitor and manage the bank's intraday liquidity position — the real-time avai
 |---|---|---|---|
 | v0.1 | 2026-05-15 | Eitan + Ravi | Initial draft — PLANNED → POPULATED; full 12-section procedure; BCBS seven intraday monitoring metrics; correspondent bank funding path; ALCO and ILAAP integration. |
 | v0.2 | 2026-05-29 | Ravi | Step 6 note added: HQLA pool is sourced from instrument-level position register (SecurityMaster × unified-position), not GL account balances. Account-level COA hqlaLevel tags deprecated. Authority: `D-FINANCIAL-INSTRUMENT-ENTITY`; `brief:ravi:fix-ba-325-hqla-stock-instrument-level-positions:2026-05-29`. |
+| v0.3 | 2026-06-11 | Ravi (Treasury/ALM engineer, engineering) | Anchor reconciliation under `brief:ravi:treasury-procedure-tail-3-missing-procedures-6-a:2026-06-11` (W1.3): policy-parent re-anchored to in-force `liquidity-risk-management-policy-v1` §4 (was "planned" + archived Owner Inbox path); RAS "§B5" mis-anchor corrected to §B3 (B5 is the financial-crime section); live `@platform/alm/intraday-stress` (`ravi:intraday-stress`, BCBS 248 HQLA-stress projection) bound in frontmatter — the real-time intraday position monitor remains PLANNED (true state; W1.2 adds the `appetite:liquidity:intraday` RAS line). No substance change. |
 
 ## 12. Audit / assurance
 

@@ -1,14 +1,14 @@
 ---
-policy-parent: IRRBB Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B6
-last-reviewed: 2026-05-15
+policy-parent: irrbb-policy-v1
+last-reviewed: 2026-06-11
 procedureId: PROC-RISK-IRRBB-01
 title: IRRBB measurement cycle
-author: Helena (Chief Risk Officer, governance) · Eitan (Treasurer) · Ravi (ALM quant engineer)
+author: Helena (Chief Risk Officer, governance) · Eitan (Treasurer, governance) · Ravi (Treasury/ALM engineer, engineering)
 date: 2026-05-15
-owner: Helena (Chief Risk Officer, governance) · Eitan (Treasurer) · Ravi (ALM quant engineer)
+owner: Helena (Chief Risk Officer, governance) · Eitan (Treasurer, governance) · Ravi (Treasury/ALM engineer, engineering)
 status: POPULATED
-policy-cited: IRRBB Policy · Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md §B6
-system-capability: "@platform/alm/irrbb-engine (PLANNED)"
+policy-cited: irrbb-policy-v1
+system-capability: "@platform/alm (LIVE — eve.ts ΔEVE six BCBS d365 shocks + nii.ts ΔNII + repricing-gap.ts; ravi:alm-run daily, emits ALMRunCompleted + IRRBBChecked)"
 ---
 
 # Procedure — IRRBB measurement cycle
@@ -22,17 +22,19 @@ system-capability: "@platform/alm/irrbb-engine (PLANNED)"
 
 ## 1. Source policy
 
-- IRRBB Policy (planned; to be authored by Helena with Eitan input; pending at licence-day pre-go-live readiness gate).
-- `Owner Inbox/2026-05-06_risk-appetite-statement-and-framework.md` §B6 — IRRBB appetite: EVE sensitivity limit; NII sensitivity limit; basis risk monitoring.
-- `Owner Inbox/2026-05-07_rohan_risk-policies-bundle-v0.md` — IRRBB excerpt.
-- Basel III / IRRBB Standards (BCBS April 2016, effective 2018) — industry-standard six shock scenarios and reporting metrics: EVE, NII, CSRBB (credit spread risk in the banking book).
+- [`Policies/irrbb-policy-v1.md`](../../Policies/irrbb-policy-v1.md) — Interest Rate Risk in the Banking Book (IRRBB) Policy v1 (IN FORCE; joint owners: Helena (Chief Risk Officer, governance) + Eitan (Treasurer, governance) — Eitan leads substrate + measurement methodology).
+- [`archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md`](../../archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md) §B6 — IRRBB appetite: EVE sensitivity limit; NII sensitivity limit; basis risk monitoring (structured successor register: `prototype/platform/risk/ras-appetite-register.ts`, line `appetite:irrbb:delta-eve-outlier`).
+- [`archive/owner-inbox/2026-05-07_rohan_risk-policies-bundle-v0.md`](../../archive/owner-inbox/2026-05-07_rohan_risk-policies-bundle-v0.md) — IRRBB excerpt (historical design input; superseded by `irrbb-policy-v1`).
+- Basel III / IRRBB Standards (BCBS d365, April 2016, effective 2018) — industry-standard six shock scenarios and reporting metrics: EVE, NII, CSRBB (credit spread risk in the banking book).
 
-The obligation chain:
+The obligation chain (Principle 2):
 ```
-Regulation (Banks Act Reg 39 / BCBS IRRBB Standards / PA IRRBB Directive)
-  → IRRBB Policy
+Regulation (Banks Act Reg 26/27 / BCBS d365 IRRBB / PA IRRBB Directive)
+  → Policy: irrbb-policy-v1 (IN FORCE)
     → PROC-RISK-IRRBB-01 (this procedure)
-      → @platform/alm/irrbb-engine (PLANNED)
+      → @platform/alm (LIVE — eve.ts + nii.ts + repricing-gap.ts;
+        daily ravi:alm-run emits ALMRunCompleted + IRRBBChecked,
+        governed by PROC-ALM-DAR-01 daily-alm-run.md)
 ```
 
 ## 2. Source regulation(s)
@@ -143,6 +145,7 @@ Measure and monitor the bank's Interest Rate Risk in the Banking Book (IRRBB) �
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-15 | Helena + Eitan + Ravi | Initial draft — PLANNED → POPULATED; full 12-section procedure; BCBS six-scenario framework; PA outlier test; ALCO governance path. |
+| v0.2 | 2026-06-11 | Ravi (Treasury/ALM engineer, engineering) | Anchor reconciliation under `brief:ravi:treasury-procedure-tail-3-missing-procedures-6-a:2026-06-11` (W1.3): policy-parent re-anchored to in-force `irrbb-policy-v1` (was "planned" + archived Owner Inbox §B6 path); `@platform/alm/irrbb-engine (PLANNED)` → live `@platform/alm` (eve.ts/nii.ts; daily `ravi:alm-run` per PROC-ALM-DAR-01, emitting `ALMRunCompleted` + `IRRBBChecked`); archived RAS path re-anchored with structured register line `appetite:irrbb:delta-eve-outlier`. Step-table design-era event names (`IRRBBMeasurementCompleted` etc.) retained as the monthly governance-cycle design pending the monthly-cycle substrate; the daily measurement surface is live via PROC-ALM-DAR-01. No substance change. |
 
 ## 12. Audit / assurance
 
