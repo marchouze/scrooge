@@ -564,9 +564,14 @@ function parseSagbArray(arr: unknown[]): Array<{ tenor: string; yieldPct: number
     const tenor = String(obj.tenor ?? obj.term ?? obj.maturity ?? "");
     const raw = obj.yield ?? obj.yieldPct ?? obj.rate ?? obj.Rate;
     const n = Number(raw);
-    const isin = obj.isin != null ? String(obj.isin) : undefined;
+    const isinStr = obj.isin != null ? String(obj.isin) : undefined;
     if (tenor && !Number.isNaN(n) && n > 0) {
-      out.push({ tenor, yieldPct: n > 1 ? n : n * 100, isin });
+      const entry: { tenor: string; yieldPct: number; isin?: string } = {
+        tenor,
+        yieldPct: n > 1 ? n : n * 100,
+      };
+      if (isinStr !== undefined) entry.isin = isinStr;
+      out.push(entry);
     }
   }
   return out;
