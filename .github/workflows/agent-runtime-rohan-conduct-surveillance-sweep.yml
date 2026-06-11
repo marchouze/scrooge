@@ -1,0 +1,61 @@
+# Rohan — FX conduct surveillance sweep (autonomous)
+#
+# Daily store-scanning sweep that fires best-execution + FAIS-suitability +
+# conflict surveillance over every FxTradeExecuted lacking a surveillance outcome
+# (platform/conduct/fx-conduct-surveillance-sweep.ts). It is the reliable
+# dispatch path for the conduct surveillance the event-driven
+# rohan:conduct-risk-events handler missed: FX trades are booked by the operator
+# / pre-trade-gateway path (store.append, no bus tick), so they never reached the
+# event-driven handler. Same pattern as the BA310/BA300 period-close handlers.
+#
+# Cadence is via the launchd scheduler (com.scrooge.scheduler-tick), which reads
+# the cron from runtime/agents/metadata/rohan.ts (`45 18 * * 1-5` — 18:45 UTC
+# weekdays, 15 min after the daily market-risk measure at 18:30 UTC so the book
+# is marked first). This workflow is workflow_dispatch-only for manual / on-demand
+# runs (GH-Actions schedule crons were decommissioned 2026-05-11; metadata is the
+# sole cron source).
+#
+# Idempotent: a trade already surveilled (by this sweep or the event-driven
+# handler) is a no-op.
+# Brief: brief:zara:otc-vanilla-fx-conduct-dimension-wire-inert-cond:2026-06-11
+# Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; D-MARKET-CONDUCT;
+#            FAIS Act 37/2002 §§16–17, §8D, §4.
+
+name: Rohan FX conduct surveillance sweep
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - working-directory: prototype
+        run: bun install --frozen-lockfile
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
+      - working-directory: prototype
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bun run agent:rohan-conduct-surveillance-sweep
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync

@@ -5,6 +5,7 @@
 import type { AgentRunHandler } from "../../types";
 import rohanBacktestHarness from "../rohan-backtest-harness";
 import rohanConductRiskEvents from "../rohan-conduct-risk-events";
+import rohanConductSurveillanceSweep from "../rohan-conduct-surveillance-sweep";
 import rohanDailyMtm from "../rohan-daily-mtm";
 import rohanEventTriage from "../rohan-event-triage";
 import rohanGoalLoop from "../rohan-goal-loop";
@@ -19,6 +20,7 @@ export const ROHAN_CALLABLES: Record<string, AgentRunHandler> = {
   "rohan:event-triage": rohanEventTriage,
   "rohan:market-risk-limit-check": rohanMarketRiskLimitCheck,
   "rohan:conduct-risk-events": rohanConductRiskEvents,
+  "rohan:conduct-surveillance-sweep": rohanConductSurveillanceSweep,
   "rohan:daily-mtm": rohanDailyMtm,
   "rohan:market-risk-measure": rohanMarketRiskMeasure,
 };

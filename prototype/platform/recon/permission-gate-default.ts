@@ -420,6 +420,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // and BA 700 threading assertions, not a production access path. T-01 carve-out.
   // Citation: D-RWA-ENGINE-W2-SLICE-3, P4-SECURITY-DESIGNED-IN.
   "platform/risk/rwa-computed-engine.test.ts",
+  // FX conduct surveillance sweep unit tests — co-located per-module test
+  // convention. Raw EventStore(":memory:") is a build-phase fixture for the
+  // surveillance-firing / idempotency / unclassified-counterparty / dry-run /
+  // retail-flag assertions, not a production access path. T-01 carve-out.
+  // Citation: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH, P4-SECURITY-DESIGNED-IN.
+  "platform/conduct/fx-conduct-surveillance-sweep.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
