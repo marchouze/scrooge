@@ -385,6 +385,7 @@
     "@noble/hashes": "^2.2.0",
     "pdfjs-dist": "^5.7.284",
     "pino": "^9.5.0",
+    "tesseract.js": "^7.0.0",
     "zod": "^3.23.8"
   }
 }
