@@ -45,7 +45,7 @@ const PIPELINE = "regulatory-source-extract-quality";
  */
 export const ADVISORY_UNTIL = "2026-06-11";
 
-export type BlockReason = "image-only-ocr-blocked" | "no-public-url" | "genuinely-short";
+export type BlockReason = "no-public-url" | "genuinely-short";
 
 export interface AllowlistEntry {
   reason: BlockReason;
@@ -55,36 +55,20 @@ export interface AllowlistEntry {
 /**
  * Governed allowlist of instruments whose extract is poor for a verified,
  * non-remediable-now reason. Each was probed during the WS-PA-SOURCE-QUALITY
- * remediation pass:
- *   - `image-only-ocr-blocked` — the SARB PDF downloads but `pdftotext` yields
- *     0 chars (scanned image). Recoverable only via OCR (deferred substrate gap,
- *     `GAP-PA-SOURCE-OCR`).
+ * remediation pass (and again during the GAP-PA-SOURCE-OCR OCR build):
  *   - `no-public-url` — no published PDF URL resolves (override stale and
  *     auto-discovery exhausted). Mostly pre-2014 / superseded instruments.
  *   - `genuinely-short` — a one-page circular whose full text really is brief.
+ *
+ * Note: the former `image-only-ocr-blocked` reason was retired when the
+ * GAP-PA-SOURCE-OCR OCR build (tesseract.js + pdftoppm) recovered all 16
+ * scanned-image PDFs to `partial`/`complete` quality (2026-06-11).
  *
  * Removing an instrument from this list once it has been re-extracted to
  * `partial`/`complete` is the expected lifecycle; an entry that no longer scores
  * poor is reported (stale allowlist) so the list self-cleans.
  */
 export const POOR_QUALITY_ALLOWLIST: Record<string, AllowlistEntry> = {
-  // --- image-only scans (pdftotext → 0 chars); OCR-deferred -----------------
-  "banks-c2-2018": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d1-2015": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d2-2014": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d2-2015": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d2-2018": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d2-2019": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d3-2017": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d4-2017": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d5-2011": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d5-2016": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d6-2017": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d7-2015": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d7-2016": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d8-2014": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d8-2016": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
-  "banks-d9-2013": { reason: "image-only-ocr-blocked", note: "scanned PDF" },
   // --- no resolvable public URL (override stale + discovery exhausted) -------
   "banks-c2-2014": { reason: "no-public-url", note: "interpretation circular; no public PDF" },
   "banks-c2-2020": { reason: "no-public-url", note: "no public PDF" },
@@ -208,7 +192,7 @@ export function run(deps: ExtractQualityDeps = {}): ReconResult & {
       allowlisted++;
       violations.push({
         subject: `${row.slug} (${row.tier})`,
-        message: `Poor extract \`${row.slug}\` (${row.tier}) — allowlisted: ${entry.reason} (${entry.note}). Remediation: ${entry.reason === "image-only-ocr-blocked" ? "OCR (GAP-PA-SOURCE-OCR, deferred)" : entry.reason === "no-public-url" ? "locate published PDF + add to URL_OVERRIDES" : "none — genuinely brief"}.`,
+        message: `Poor extract \`${row.slug}\` (${row.tier}) — allowlisted: ${entry.reason} (${entry.note}). Remediation: ${entry.reason === "no-public-url" ? "locate published PDF + add to URL_OVERRIDES" : "none — genuinely brief"}.`,
         severity: "warn",
       });
     } else {

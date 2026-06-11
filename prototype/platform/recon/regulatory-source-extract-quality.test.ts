@@ -14,7 +14,7 @@ import {
 } from "./regulatory-source-extract-quality";
 
 const ALLOW: Record<string, AllowlistEntry> = {
-  "banks-d1-2015": { reason: "image-only-ocr-blocked", note: "scanned" },
+  "banks-d1-2015": { reason: "no-public-url", note: "test fixture" },
   "banks-c3-2020": { reason: "genuinely-short", note: "one-pager" },
 };
 

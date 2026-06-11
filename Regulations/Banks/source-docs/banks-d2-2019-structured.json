@@ -21,71 +21,16 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d2-2019-1",
-      "title": "Full Text",
+      "id": "ch-banks-d2-2019-main",
+      "title": "Directive D2/2019",
       "sections": [
         {
-          "id": "s-banks-d2-2019-1",
+          "id": "s-banks-d2-2019-1-body",
           "number": "1",
-          "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Reporting of material information technology and/or cyber incidents. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "heading": "Body",
+          "text": "1. Introduction\n\n1.1 The Prudential Authority (PA) is cognisant of the different participants in the\nfinancial services sector, including regulators, industry associations, financial\ninstitutions and other role players reporting on information technology (IT)\nincidents to different forums/committees within the South African Reserve\nBank (SARB). The focus areas, purpose of reporting and the level of detail\nreported to these forums are often substantially different from the requirements\nof the PA.\n\n1.2 The PA is aware that there are general IT and cyber incidents which could\ncause significant disruptions to the operations of a bank or have a material\nimpact on the bank.\n\n1.3 The Bank for International Settlements’ Financial Stability Institute (FSI)\npublished a paper titled ‘FSI Insight on policy implementation No 2: regulatory\napproaches to enhance bank's cyber-security frameworks’, which requires\nbanks to establish a sound governance framework with clear accountabilities\nwith regard to cyber-risk, as IT exposes banks to cyber-risk and cyberattacks.\n\n1 https://www.bis.org/fsi/publ/insights2. pdf\n\nPOBox 8432 Pretoria 0001 - 370 Helen Joseph Street Pretoria 0002 - South Africa + Tel +27 12313 3911/0861127272 + Fax +27 12313 3758 + www resbank co za\n\n--- Page 2 ---\n2\n\n1.4 In this regard, the PA has decided to implement minimum reporting\nrequirements with regard to material IT and cyber incidents.\n\n1.5 The classification of materiality should be performed in accordance with the\nbank's risk profile based on the nature, size and complexity of its business.\n\n1.6 For the purpose of this Directive:\n\n1.6.1 A ‘material incident’ refers to a disruption of a business activity, process or\nfunction which has, or is likely to have, a severe and widespread impact on the\nbank's operations, services to its customers, or the broader financial system\nand economy.\n\n1.6.2 An 'IT incident’ is defined as an event, occurrence or circumstance that is not\nexpected or planned as part of the normal operations of a bank and has an\neffect of disrupting the normal operations of the bank's IT systems or services.\n\n1.6.3 A ‘cyber incident is any observable occurrence in an information system that\n(i) jeopardises the cybersecurity of an information system or the information\nprocessed, stored or transmitted by the system; or (ii) violates the security\npolicies, security procedures or acceptable use policies, whether resulting\nfrom malicious activity or not.\n\n1.6.4 An ‘information system is a set of applications, services, information\ntechnology assets or other information-handling components, which includes\nthe operating environment.\n\n1.7 The purpose of this Directive is to set out the PA's minimum reporting\nrequirements in relation to material incidents that are IT and/or cyber related.\n\n2. Directive\n\n2.1 Based on the aforesaid, and in accordance with the provisions of section 6(6)\nof the Banks Act 94 of 1990, banks are hereby directed to:\n\n2.1.1 comply with the reporting requirements set out in this directive in relation to\nmaterial IT and/ or cyber incidents;\n\n2.1.2 establish and maintain robust governance structures, which includes the\ncoverage of IT, to ensure adequate management and operational oversight\nover critical business functions, resources and infrastructure;\n\n2.1.3 implement a sufficiently robust incident management framework to manage\nand report IT and cyber incidents;\n\n2.1.4 notify the PA, as soon as practically possible but not later than one day,\nfollowing the discovery of a material IT and/or cyber incident;\n\n2 http://www .fsb.org/wp-content/uploads/P121118-1.pdf\n\n3 http://www fsb.org/wp-content/uploads/P121118-1.pdf\n\n--- Page 3 ---\n3\n\n2.1.5 complete the form titled ‘Material IT and cyber incident report’ (Annexure A) in\naccordance with the relevant instructions specified on the form, and submit the\nduly completed form to: SARB-PA-ITIncidentReporting@resbank.co.za; and\n\n2.1.6 submit a root cause and impact analysis report, with available information to\nthe PA within 14 calendar days from the date of notification to the PA referred\nto in paragraph 2.1.4. Subsequent updates are to be sent to the PA based on\nthe timelines agreed with the PA.\n\n3. Acknowledgement of receipt\n\n3.1 Kindly ensure that a copy of this Directive is made available to your institution's\nexternal auditors. The attached acknowledgement of receipt duly completed\nand signed by both the chief executive officer of the institution and the said\nauditors should be returned to the PA at the earliest convenience of the\naforementioned signatories.\n\nod eos\n\nKuben Naidoo\n\nDeputy Governor and CEO: Prudential Authority\n\nDate: (© Ser TARR. 2(Y\n\nEncl. 1\n\nThe previous directive issued was Directive 1/2019 dated 20 May 2019.",
           "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-1-1",
-              "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-2",
-              "number": "1.2",
-              "text": "Reporting of material information technology and/or cyber incidents.",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-3",
-              "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
-            }
-          ]
-        },
-        {
-          "id": "s-banks-d2-2019-2",
-          "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-2-1",
-              "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
-            }
-          ]
-        },
-        {
-          "id": "s-banks-d2-2019-3",
-          "number": "3",
-          "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "subsections": []
         }
       ]
     }

@@ -3,7 +3,8 @@
  * sarb-pdf-extract.ts — Atlas (Core banking platform architect, engineering)
  *
  * CLI tool: fetch a SARB Prudential Authority PDF URL (or local file path) and
- * extract its embedded text layer using pdfjs-dist.
+ * extract its embedded text layer using pdfjs-dist, falling back to OCR via
+ * tesseract.js for image-only scanned PDFs.
  *
  * Usage:
  *   bun run platform/tools/sarb-pdf-extract.ts <url-or-path> [--output <file>]
@@ -12,14 +13,19 @@
  * Strategy:
  *   Step A — pdfjs-dist text-layer extraction (handles digitally-signed PDFs
  *             with embedded text, which is the common SARB PA case).
- *   Step B — OCR via tesseract.js (substrate gap; see Owner Inbox brief).
+ *   Step B — OCR via tesseract.js + pdftoppm rendering (for image-only scanned
+ *             PDFs; requires pdftoppm from poppler to be on PATH or at the
+ *             PDFTOPPM constant below).
  *   Step C — fallback error with exit code 1.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
+import { createWorker } from "tesseract.js";
 
 // Suppress the "Setting up fake worker" warning from pdfjs-dist in Node env
 const pdfjsLib = pdfjs as unknown as {
@@ -42,6 +48,11 @@ interface PDFPageProxy {
 interface TextContent {
   items: Array<{ str?: string }>;
 }
+
+const PDFTOPPM = "/opt/homebrew/bin/pdftoppm";
+
+// Language data cache — shared across worktrees, persists between runs.
+const TESSERACT_CACHE = join(homedir(), ".local", "share", "bank", "tesseract-cache");
 
 function printUsage(): void {
   console.log(`sarb-pdf-extract — SARB PA PDF text extractor (Atlas, 2026-05-16)
@@ -135,6 +146,68 @@ async function extractTextLayer(data: Uint8Array): Promise<string | null> {
   return pageTexts.join("\n\n");
 }
 
+// Step B: OCR via tesseract.js. Renders PDF pages to PNG images using
+// pdftoppm then runs English OCR on each page.
+async function extractTextOcr(data: Uint8Array): Promise<string | null> {
+  const tmpDir = mkdtempSync(join(tmpdir(), "sarb-ocr-"));
+  const pdfPath = join(tmpDir, "input.pdf");
+  const imgPrefix = join(tmpDir, "page");
+
+  try {
+    writeFileSync(pdfPath, data);
+
+    log("OCR: rendering PDF pages with pdftoppm (200 DPI)...");
+    const proc = spawnSync(PDFTOPPM, ["-r", "200", "-png", pdfPath, imgPrefix], {
+      timeout: 120_000,
+    });
+    if (proc.status !== 0) {
+      const stderr = proc.stderr?.toString() ?? "";
+      log(`OCR: pdftoppm failed (exit ${proc.status ?? "?"}): ${stderr.slice(0, 200)}`);
+      return null;
+    }
+
+    const pageImages = readdirSync(tmpDir)
+      .filter((f) => f.startsWith("page") && f.endsWith(".png"))
+      .sort()
+      .map((f) => join(tmpDir, f));
+
+    if (pageImages.length === 0) {
+      log("OCR: pdftoppm produced no images");
+      return null;
+    }
+
+    log(`OCR: processing ${pageImages.length} page(s) with tesseract.js...`);
+
+    // OEM 1 = LSTM_ONLY (neural net, most accurate for typed legal text)
+    const worker = await createWorker("eng", 1, {
+      cachePath: TESSERACT_CACHE,
+      logger: (m: { status: string; progress: number }) => {
+        if (m.status === "recognizing text") {
+          const pct = Math.round(m.progress * 100);
+          if (pct % 20 === 0) log(`OCR: ${pct}%`);
+        }
+      },
+    });
+
+    const pageTexts: string[] = [];
+    for (let i = 0; i < pageImages.length; i++) {
+      log(`OCR: page ${i + 1}/${pageImages.length}...`);
+      const img = pageImages[i];
+      if (!img) continue;
+      const { data: result } = await worker.recognize(img);
+      const pageText = result.text.trim();
+      if (pageText) pageTexts.push(`--- Page ${i + 1} ---\n${pageText}`);
+    }
+
+    await worker.terminate();
+
+    const combined = pageTexts.join("\n\n").trim();
+    return combined || null;
+  } finally {
+    rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
@@ -178,6 +251,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Keep a copy before Step A — pdfjs-dist may transfer (detach) the
+  // underlying ArrayBuffer when loading, leaving pdfData zeroed.
+  const pdfDataForOcr = pdfData.slice();
+
   // Step A: text layer extraction
   let text: string | null = null;
   try {
@@ -185,14 +262,25 @@ async function main(): Promise<void> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     log(`text layer extraction failed: ${msg}`);
-    // Fall through to Step C
+    // Fall through to Step B
   }
 
   if (text === null) {
-    // Step B (not yet implemented — substrate gap)
-    log("no text layer found in PDF (image-only PDF). OCR path not yet implemented.");
+    // Step B — OCR via tesseract.js (for image-only scanned PDFs)
+    log("no text layer found — attempting OCR via tesseract.js + pdftoppm...");
+    try {
+      text = await extractTextOcr(pdfDataForOcr);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log(`OCR failed: ${msg}`);
+      // Fall through to Step C
+    }
+  }
+
+  // Step C: error
+  if (text === null) {
     console.error(
-      `[sarb-pdf-extract] ERROR: could not extract text from ${inputArg}. PDF appears to be image-only. OCR (tesseract.js) is a planned substrate gap — see Owner Inbox brief. PDF may also be encrypted or unsupported.`,
+      `[sarb-pdf-extract] ERROR: could not extract text from ${inputArg}. PDF appears to be image-only and OCR failed (check pdftoppm at ${PDFTOPPM}). PDF may also be encrypted or corrupt.`,
     );
     process.exit(1);
   }

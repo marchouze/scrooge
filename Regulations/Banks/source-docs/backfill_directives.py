@@ -402,6 +402,11 @@ def download_pdf(url: str, dest: Path, timeout: int = 60) -> bool:
 
 PDFTOTEXT = "/opt/homebrew/bin/pdftotext"
 
+# sarb-pdf-extract.ts lives in prototype/platform/tools/ relative to the repo root.
+# SCRIPT_DIR = Regulations/Banks/source-docs/ → 3 parents up = repo root.
+_PROTOTYPE_DIR = SCRIPT_DIR.parent.parent.parent / "prototype"
+_SARB_PDF_EXTRACT = _PROTOTYPE_DIR / "platform" / "tools" / "sarb-pdf-extract.ts"
+
 
 def extract_text(pdf_path: Path) -> str:
     """Extract text from PDF using pdftotext -layout."""
@@ -411,6 +416,24 @@ def extract_text(pdf_path: Path) -> str:
         text=True,
         timeout=60,
     )
+    return result.stdout
+
+
+def extract_text_ocr(pdf_path: Path) -> str:
+    """OCR fallback via sarb-pdf-extract.ts (tesseract.js + pdftoppm).
+
+    Called when pdftotext yields < MIN_TEXT_CHARS (image-only scanned PDF).
+    Returns extracted text or empty string on failure.
+    """
+    result = subprocess.run(
+        ["bun", "run", str(_SARB_PDF_EXTRACT), str(pdf_path)],
+        capture_output=True,
+        text=True,
+        timeout=600,
+        cwd=str(_PROTOTYPE_DIR),
+    )
+    if result.returncode != 0:
+        return ""
     return result.stdout
 
 
@@ -710,11 +733,15 @@ def process_slug(
             return slug, "download_failed"
         print(f"  [{slug}] Downloaded ({pdf_path.stat().st_size:,} bytes)")
 
-    # Extract text
+    # Extract text (pdftotext; fall back to OCR for image-only PDFs)
     text = extract_text(pdf_path)
     if len(text.strip()) < MIN_TEXT_CHARS:
-        print(f"  [{slug}] Text too short ({len(text.strip())} chars) — skipping")
-        return slug, "text_too_short"
+        print(f"  [{slug}] pdftotext short ({len(text.strip())} chars) — trying OCR...")
+        text = extract_text_ocr(pdf_path)
+        if len(text.strip()) < MIN_TEXT_CHARS:
+            print(f"  [{slug}] OCR also short ({len(text.strip())} chars) — skipping")
+            return slug, "text_too_short"
+        print(f"  [{slug}] OCR extracted {len(text.strip())} chars")
 
     # Parse sections
     sections = parse_sections(text, slug)

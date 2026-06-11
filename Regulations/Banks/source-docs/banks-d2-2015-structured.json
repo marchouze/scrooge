@@ -21,71 +21,16 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d2-2015-1",
-      "title": "Full Text",
+      "id": "ch-banks-d2-2015-main",
+      "title": "Directive D2/2015",
       "sections": [
         {
-          "id": "s-banks-d2-2015-1",
+          "id": "s-banks-d2-2015-1-body",
           "number": "1",
-          "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Effective risk data aggregation and risk reporting. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "heading": "Body",
+          "text": "1. Introduction\n1.1 The Principles for Effective Risk Data Aggregation and Risk Reporting’ (the\nPrinciples) were issued by the Basel Committee on Banking Supervision (BCBS)\nin January 2013. The Principles aim to strengthen banks’ risk management\npractices by improving their risk data aggregation and risk reporting. It is\nanticipated that complying with the Principles will improve banks’ ability to\nprovide rapid and comprehensive risk data by legal entity and business line,\nwhich will ultimately enhance banks’ decision-making processes and improve\ntheir resolvability.\n' See http://www. bis.org/publ/bcbs239. pdf.\nPO Box 8432 Pretoria 0001 + 370 Helen Joseph Street Pretoria 0002 . South Africa ‘ Tel #27 12 3133911/0861 12 7272 . Fax +27 12 3133758 . www.reservebank.co.za\n\n--- Page 2 ---\n2\n\n1.2 The Principles were specifically addressed to global systemically important banks\n(G-SIBs) and apply not only at a group level, but also to all material business\nunits or entities within the G-SIB group. National supervisors may nevertheless\nchoose to apply the Principles to all banks in their jurisdiction.\n\n1.3 Following the issuance of guidance note 3 of 2014 and the completion of the seif-\nassessment against the Principles by banks, this Office has decided to adopt the\nPrinciples as an integral part of its regulatory and supervisory framework.\n\n2. Directive\nBased on the aforesaid, and in accordance with the provisions of section 6(6) of\nthe Banks Act, 1990:\n\n2.1 domestic systemically important banks (D-SIBs) are hereby directed to comply\nwith the Principles from 1 January 2017 onwards;\n\n2.2 banks that fall under a controlling company or bank that has been designated as\na G-SIB are directed to comply with the due date specified by the BCBS for G-\nSIBs; and\n\n2.3 the effective due date for compliance with the high-level Principles and any\nspecified detailed requirements by non-D-SIBs shall be considered on a case-by-\ncase basis and shall be agreed and confirmed in writing by this Office with each\nrelevant non-D-SIB individually.\n\n3. Acknowledgement of receipt\nTwo additional copies of this directive are enclosed for the use of your\ninstitution's independent auditors. The attached acknowledgement of receipt,\nduly completed and signed by both the chief executive officer of the institution\nand the said auditors, should be returned to this Office at the earliest\nconvenience of the aforementioned signatories.\n\nRené van Wyk\n\nRegistrar of Banks\n\nThe previous directive issued was Directive 1/2015, dated 04 February 2015.",
           "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-1-1",
-              "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-2",
-              "number": "1.2",
-              "text": "Effective risk data aggregation and risk reporting.",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-3",
-              "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
-            }
-          ]
-        },
-        {
-          "id": "s-banks-d2-2015-2",
-          "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-2-1",
-              "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
-            }
-          ]
-        },
-        {
-          "id": "s-banks-d2-2015-3",
-          "number": "3",
-          "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "subsections": []
         }
       ]
     }
