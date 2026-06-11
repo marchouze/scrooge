@@ -25,7 +25,8 @@
 //
 // Authority: D-RAS (CEO-approved 2026-05-06); D-RAS-STRUCTURED-REGISTER
 //   (CEO-approved 2026-06-08); D-BOND-RAS-APPETITE (CRO-approved 2026-06-08);
-//   RAS §§B2–B8 + A2.
+//   D-INTRADAY-RAS-APPETITE (CRO-approved 2026-06-11, under
+//   D-TREASURER-WAVE1-SUBSTRATE); RAS §§B2–B8 + A2.
 // Author: Atlas (Substrate engineer, engineering) — extraction substrate;
 //         Helena (Chief Risk Officer, governance) — appetite-line authority.
 
@@ -122,6 +123,10 @@ export function formatThresholds(t: RasThresholds): string {
  * evaluated: null → green; below the critical bound → red; below the red
  * bound → red; below the amber lower bound → amber; else green.
  *
+ * LOWER-IS-WORSE ladders only (LCR / NSFR style: green is the ≥ band). For
+ * usage-style HIGHER-IS-WORSE ladders (green is the < band) use
+ * `classifyUsageRatio`.
+ *
  * Returns `null` for posture thresholds (no numeric classification).
  */
 export function classifyRatio(t: RasThresholds, ratioPct: number | null): RasMetricStatus | null {
@@ -137,6 +142,36 @@ export function classifyRatio(t: RasThresholds, ratioPct: number | null): RasMet
   const greenLower = green?.lowerPct;
   if (amberLower !== undefined && ratioPct < amberLower) return "red";
   if (greenLower !== undefined && ratioPct < greenLower) return "amber";
+  return "green";
+}
+
+/**
+ * Classify a usage-style ratio (percent, or `null` for the build-phase
+ * no-usage case) into a RAG status under a HIGHER-IS-WORSE `ratio` threshold
+ * ladder (green is the `<` band; amber/red/critical rise with the measure —
+ * e.g. `appetite:liquidity:intraday` peak intraday usage as % of available
+ * start-of-day liquidity). Mirrors `classifyRatio`'s contract: null → green
+ * (no measurable usage); at/above the red lower bound → red (the critical
+ * band is a sub-band of red and resolves to red, exactly as in
+ * `classifyRatio`); at/above the amber lower bound → amber; else green.
+ *
+ * Returns `null` for posture thresholds (no numeric classification).
+ */
+export function classifyUsageRatio(
+  t: RasThresholds,
+  usagePct: number | null,
+): RasMetricStatus | null {
+  if (t.kind !== "ratio") return null;
+  // Null usage is the build-phase "nothing to measure" case (zero start-of-day
+  // availability ⇒ the headline measure is undefined). Treat as green —
+  // consistent with classifyRatio's null-handling.
+  if (usagePct === null) return "green";
+  const amber = t.bands.find((b) => b.band === "amber");
+  const red = t.bands.find((b) => b.band === "red");
+  const redLower = red?.lowerPct;
+  const amberLower = amber?.lowerPct;
+  if (redLower !== undefined && usagePct >= redLower) return "red";
+  if (amberLower !== undefined && usagePct >= amberLower) return "amber";
   return "green";
 }
 
@@ -158,6 +193,15 @@ export interface RasAppetiteLine {
   readonly tier: RasTier;
   /** Structured thresholds — typed, evaluable, round-trippable to print. */
   readonly thresholds: RasThresholds;
+  /**
+   * Governed monetary floor (ZAR, major units) for lines whose calibration
+   * carries an absolute buffer floor in addition to the ratio bands. This is
+   * the CANONICAL source of the value consuming engines evaluate — e.g.
+   * `platform/alm/intraday-stress.ts` reads the intraday floor from here
+   * rather than a module-local constant (D-INTRADAY-RAS-APPETITE). Absent for
+   * lines with no monetary-floor calibration.
+   */
+  readonly floorZar?: number;
   /**
    * The projection / event that MEASURES this line (function name or event
    * type), or `null` when the line is genuinely unmeasured today. Turns the
@@ -185,7 +229,8 @@ const RAS_FRAMEWORK = "RAS-FRAMEWORK-2026-05-06";
 // ---------------------------------------------------------------------------
 // Canonical register — 14 appetite lines as of the 2026-05-06 RAS approval
 // (D-RAS-STRUCTURED-REGISTER), plus 2 bond-trading lines added 2026-06-08
-// (D-BOND-RAS-APPETITE): 16 lines total.
+// (D-BOND-RAS-APPETITE), plus 1 intraday-liquidity line added 2026-06-11
+// (D-INTRADAY-RAS-APPETITE): 17 lines total.
 // Byte-faithful extraction (D-RAS-STRUCTURED-REGISTER). Order preserved from
 // the legacy APPETITE_LINES array so the snapshot keyset is identical.
 // ---------------------------------------------------------------------------
@@ -529,6 +574,74 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
       "Build-phase Tier-1 target R300m (licence-day capital plan). " +
       "Breach triggers ALCO escalation within 1 business day and PA notification pathway per BCBS d365 Principle 5; " +
       "escalate to CEO if breach persists >5 business days.",
+  },
+  // ── Intraday-liquidity appetite line — added 2026-06-11 per D-INTRADAY-RAS-APPETITE ──
+  // Authority: D-INTRADAY-RAS-APPETITE (CRO-approved 2026-06-11), under
+  //   D-TREASURER-WAVE1-SUBSTRATE (CEO-approved 2026-06-11).
+  // Calibration (Helena, Chief Risk Officer, governance):
+  //   - Headline measure: `peakUsagePctOfAvailable` — BCBS 248 tool 1 (daily
+  //     maximum intraday usage) over tool 2 (available at start of day), from
+  //     `computeIntradayLiquidityMetrics` (platform/alm/intraday-liquidity-
+  //     metrics.ts, PR #1206).
+  //   - red ≥80% IS the LRM Policy v1 §4.5 intraday-stress definition ("peak
+  //     intraday usage exceeds 80% of the intraday buffer") — the §4.5
+  //     response protocol activates at red.
+  //   - amber 60-80% is the CRO early-warning band ahead of the §4.5 trigger;
+  //     coherent with the §4.3 buffer-sizing target (buffer = 120% of the
+  //     99th-percentile peak ⇒ at-target peak usage ≈ 83% — amber lights well
+  //     before the sizing target is consumed).
+  //   - critical ≥100%: usage exceeds available start-of-day liquidity —
+  //     reliance on uncovered correspondent intraday credit; breaches the
+  //     §4.4 zero-net-intraday-credit objective (High-severity event per
+  //     §9.2). Resolves to red in classifyUsageRatio, as critical bands do
+  //     in classifyRatio.
+  //   - floorZar R50m: the governed intraday HQLA floor — promotes the former
+  //     `INTRADAY_FLOOR_ZAR` build-phase constant in
+  //     `platform/alm/intraday-stress.ts` into this register (that module now
+  //     reads it from here). Value unchanged at calibration (build-phase
+  //     behaviour preserved); recalibrated via ILAAP once live flow history
+  //     exists (§4.3 backward-looking 99th-percentile sizing).
+  {
+    id: "appetite:liquidity:intraday",
+    label: "Intraday liquidity usage — BCBS 248 peak usage vs available",
+    rasSection: "RAS §B3",
+    category: "liquidity",
+    tier: "tier-1",
+    thresholds: {
+      kind: "ratio",
+      printed: "green <60% / amber 60-80% / red ≥80% / critical ≥100%",
+      bands: [
+        { band: "green", formatted: "green <60%", comparator: "lt", upperPct: 60 },
+        {
+          band: "amber",
+          formatted: "amber 60-80%",
+          comparator: "between",
+          lowerPct: 60,
+          upperPct: 80,
+        },
+        { band: "red", formatted: "red ≥80%", comparator: "gte", lowerPct: 80 },
+        { band: "critical", formatted: "critical ≥100%", comparator: "gte", lowerPct: 100 },
+      ],
+    },
+    floorZar: 50_000_000,
+    measurementBinding: "computeIntradayLiquidityMetrics",
+    measurementOwner: "Ravi (eng) → Eitan (Treasurer)",
+    citations: [
+      D_RAS,
+      "D-INTRADAY-RAS-APPETITE",
+      "D-TREASURER-WAVE1-SUBSTRATE",
+      "BCBS-248",
+      "BANKS-REG-26",
+      "ORG-PR-08",
+    ],
+    summary:
+      "Peak intraday liquidity usage (BCBS 248 tool 1) as % of available start-of-day liquidity (tool 2); " +
+      "headline measure peakUsagePctOfAvailable from computeIntradayLiquidityMetrics. " +
+      "Red at 80% is the LRM Policy v1 §4.5 intraday-stress trigger (30-min Eitan response; persistent stress " +
+      "activates CFP Tier 1 and notifies Helena); amber at 60% is the CRO early-warning band; critical at 100% " +
+      "means reliance on uncovered correspondent intraday credit (§4.4 zero-net-intraday-credit objective breached). " +
+      "Governed intraday HQLA floor R50m (floorZar) — promotes the former intraday-stress.ts build-phase constant " +
+      "into this register; ILAAP-recalibrated once live flow history exists.",
   },
 ];
 

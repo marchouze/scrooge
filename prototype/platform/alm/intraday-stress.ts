@@ -23,22 +23,27 @@
 //     "red"          — projectedHQLAZar ≤ 0
 //
 // Floor:
-//   Build-phase constant ZAR 50,000,000 (50m) per Helena's RAS intraday
-//   liquidity floor. Future: read from `RASCalibrationChange` events once
-//   the RAS event substrate lands.
+//   ZAR 50,000,000 (50m) — read from the governed `appetite:liquidity:intraday`
+//   line in the canonical RAS register (`platform/risk/ras-appetite-register.ts`
+//   `floorZar`; D-INTRADAY-RAS-APPETITE, CRO-approved 2026-06-11). Previously a
+//   module-local build-phase constant; the value is unchanged at calibration so
+//   build-phase behaviour is identical (pinned in test).
 //
 // NPS settlement is accessed via correspondent bank (indirect-participant operating
 // posture — memory: `project_indirect_participant_posture.md`). The window
 // labels reflect NPS settlement session times; actual settlement messages
 // route through the correspondent connector (Tomas's scope).
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS 248 (Monitoring tools for intraday
-//   liquidity management, 2013); Banks Act 94 of 1990 Reg 26.
-// Author: Ravi (Treasury/ALM Engineer, engineering)
+// Authority: D-TREASURY-GAPS-WAVE1; D-INTRADAY-RAS-APPETITE (floor sourcing);
+//   BCBS 248 (Monitoring tools for intraday liquidity management, 2013);
+//   Banks Act 94 of 1990 Reg 26.
+// Author: Ravi (Treasury/ALM Engineer, engineering); floor governance wiring
+//   Helena (Chief Risk Officer, governance).
 
 import { getCollateralInventory } from "../collateral";
 import type { FundingDrawnDownPayload } from "../event-store/event-types/ifrs-accounting-extended";
 import type { EventStore } from "../event-store/store";
+import { requireRasAppetiteLine } from "../risk/ras-appetite-register";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,13 +108,30 @@ export const SETTLEMENT_WINDOWS: readonly SettlementWindow[] = ["09:00", "12:00"
 /**
  * RAS intraday liquidity floor — ZAR 50,000,000 (50m).
  *
- * Build-phase constant. Represents Helena's RAS-calibrated intraday minimum
- * buffer per Banks Act Reg 26. Future substrate: read from `RASCalibrationChange`
- * events once Helena's RAS event layer lands.
+ * GOVERNED calibration: read from the canonical RAS appetite register's
+ * `appetite:liquidity:intraday` line (`floorZar`), CRO-calibrated under
+ * D-INTRADAY-RAS-APPETITE (2026-06-11). This closes the former module TODO
+ * ("read from RASCalibrationChange events once the RAS event substrate
+ * lands"): the typed register is the canonical RAS calibration surface
+ * (D-RAS-STRUCTURED-REGISTER), and the calibration decision is recorded as a
+ * `Decision` event (`scripts/decisions/helena-intraday-ras-appetite-approve.ts`).
+ * The export name and value are unchanged — build-phase behaviour is
+ * identical (pinned in `__tests__/intraday-stress.test.ts`).
  *
- * Authority: D-TREASURY-GAPS-WAVE1; Banks Act Reg 26 / Helena's RAS.
+ * Authority: D-INTRADAY-RAS-APPETITE; D-TREASURY-GAPS-WAVE1;
+ *   Banks Act Reg 26 / Helena's RAS.
  */
-export const INTRADAY_FLOOR_ZAR = 50_000_000;
+export const INTRADAY_FLOOR_ZAR: number = (() => {
+  const line = requireRasAppetiteLine("appetite:liquidity:intraday");
+  if (line.floorZar === undefined) {
+    throw new Error(
+      "RAS line appetite:liquidity:intraday carries no floorZar — the intraday " +
+        "HQLA floor must be governed in platform/risk/ras-appetite-register.ts " +
+        "(D-INTRADAY-RAS-APPETITE).",
+    );
+  }
+  return line.floorZar;
+})();
 
 /** BCBS 248 stress haircut on inflows: 20% delayed-settlement assumption. */
 const STRESS_INFLOW_HAIRCUT = 0.2;

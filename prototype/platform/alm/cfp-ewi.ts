@@ -35,11 +35,12 @@
 //       (ICAAP/ILAAP/Recovery framework §3.3.5); injectable feed until
 //       Helena's recovery-plan indicator substrate lands.
 //
-// §5.2 LCR warning-threshold note: the policy's typed pattern literal is
-// `threshold: 115` while its prose rule is "below the internal floor of
-// 120% but remains ≥ 100%". The prose rule is operative here (matches §2's
-// internal floor + RAS §B3); see the cfp-triggers event-type module header
-// for the erratum flag.
+// §5.2 LCR warning-threshold note: the policy's typed pattern literal
+// originally read `threshold: 115` against a prose rule of "below the
+// internal floor of 120% but remains ≥ 100%". The prose rule is operative
+// here (matches §2's internal floor + RAS §B3). Erratum resolved 2026-06-11:
+// Helena (Chief Risk Officer, governance — LRM policy owner) corrected the
+// §5.2 literal to 120 (LRM Policy v1.4 change log); policy and code agree.
 //
 // Build-phase posture: zero positions → every measure is null /
 // no-positions → `evaluateCfpEwis` returns []. No false fires; tests
@@ -273,7 +274,7 @@ export function evaluateCfpEwis(asOf: string, inputs: CfpEwiInputs): CfpTriggerE
           observed: lcr,
           threshold: LCR_INTERNAL_FLOOR_PCT,
           thresholdDescription:
-            "LCR below the 120% internal floor but at or above the 100% PA minimum (LRM Policy v1 §5.2 Tier 2; §5.2 pattern literal 115 superseded by the prose rule — see cfp-triggers module header)",
+            "LCR below the 120% internal floor but at or above the 100% PA minimum (LRM Policy v1 §5.2 Tier 2; §5.2 literal corrected 115→120 in the v1.4 erratum — policy and code agree)",
           cfpTier: "tier-2",
           detectedAt: asOf,
           severity: "warning",

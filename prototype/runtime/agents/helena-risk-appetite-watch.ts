@@ -47,6 +47,7 @@ import type { EventStore } from "../../platform/event-store/store";
 // before Helena emits a formal substrate-gap escalation to Scrooge.
 // Must match the threshold in helena-goal-loop.ts.
 const UNMEASURED_ESCALATION_THRESHOLD = 3;
+import { computeIntradayLiquidityMetrics } from "../../platform/alm/intraday-liquidity-metrics";
 import { computeLCR } from "../../platform/liquidity/lcr";
 import { computeNSFR } from "../../platform/liquidity/nsfr";
 import { getALMPositionSnapshot } from "../../platform/projections/alm-positions";
@@ -64,6 +65,7 @@ import {
   RAS_APPETITE_LINES,
   type RasAppetiteLine,
   type RasMetricStatus,
+  classifyUsageRatio,
   formatThresholds,
   requireRasAppetiteLine,
 } from "../../platform/risk/ras-appetite-register";
@@ -99,7 +101,7 @@ type Tier = RasAppetiteLine["tier"];
 type MetricStatus = RasMetricStatus;
 type AppetiteLine = RasAppetiteLine;
 
-/** The canonical 14 RAS appetite lines, imported from the register. */
+/** The canonical RAS appetite lines, imported from the register. */
 const APPETITE_LINES: readonly AppetiteLine[] = RAS_APPETITE_LINES;
 
 interface LineState {
@@ -126,9 +128,10 @@ export interface AppetiteSnapshot {
 // ---------------------------------------------------------------------------
 // Liquidity metric (RAS §B3 thresholds)
 // ---------------------------------------------------------------------------
-// Builds the LCR + NSFR measurement for the appetite:liquidity:lcr and
-// appetite:liquidity:nsfr lines via Ravi (Treasury and ALM engineer)'s
-// ALM-positions projection. Build-phase posture: when no positions are fed
+// Builds the LCR + NSFR + intraday measurements for the
+// appetite:liquidity:lcr, appetite:liquidity:nsfr, and
+// appetite:liquidity:intraday lines via Ravi (Treasury and ALM engineer)'s
+// ALM-positions projection and BCBS 248 metrics engine. Build-phase posture: when no positions are fed
 // (empty inputs → `status: no-positions` from `computeLCR`/`computeNSFR`),
 // the appetite line resolves to a measured green-with-substrate-gap rather
 // than `unmeasured` — the framework knows the answer is "above-minimum" by
@@ -170,6 +173,7 @@ function statusForNsfrRatio(ratioPct: number | null): MetricStatus {
 function buildLiquidityMetric(asOf: string): {
   lcr: LiquidityMetricForLine;
   nsfr: LiquidityMetricForLine;
+  intraday: LiquidityMetricForLine;
 } {
   // T+30 snapshot is the canonical horizon for the RAS §B3 buffer line
   // (30-day stress per BA 110). Anya's daily handler computes both T+0 and
@@ -207,9 +211,35 @@ function buildLiquidityMetric(asOf: string): {
       ? `Build-phase: no positions in store → no-RSF construction; RAS §B3 NSFR appetite line resolves to green-with-substrate-gap.${gapSummary} Source: Ravi (Treasury and ALM engineer, engineering) ALM-positions projection T+30.`
       : `NSFR T+30 = ${nsfr.nsfrRatioPct === null ? "∞" : `${nsfr.nsfrRatioPct.toFixed(1)}%`} (ASF R${nsfr.asfZar.toLocaleString()}, RSF R${nsfr.rsfZar.toLocaleString()}). RAS §B3 thresholds: ${nsfrThresholds}.${gapSummary}`;
 
+  // appetite:liquidity:intraday — measured by Ravi (Treasury and ALM
+  // engineer, engineering)'s BCBS 248 seven-tool computation
+  // (`computeIntradayLiquidityMetrics`, platform/alm/intraday-liquidity-
+  // metrics.ts). Build-phase posture: zero positions → overallStatus
+  // "no-positions" → green-with-substrate-gap (zero usage of a zero buffer by
+  // construction — same convention as LCR/NSFR above). When measured, the
+  // headline `peakUsagePctOfAvailable` classifies under the register line's
+  // higher-is-worse ladder via `classifyUsageRatio` — thresholds are READ
+  // from the canonical register, never re-typed here.
+  // Authority: D-INTRADAY-RAS-APPETITE (CRO-approved 2026-06-11);
+  //   D-TREASURER-WAVE1-SUBSTRATE; RAS §B3; BCBS 248; LRM Policy v1 §4.5.
+  const intradayLine = requireRasAppetiteLine("appetite:liquidity:intraday");
+  const intradayMetrics = computeIntradayLiquidityMetrics(asOf, { eventStore });
+  const intradayThresholds = formatThresholds(intradayLine.thresholds);
+  let intradayStatus: MetricStatus;
+  let intradayNote: string;
+  if (intradayMetrics.overallStatus === "no-positions") {
+    intradayStatus = "green";
+    intradayNote = `Build-phase: zero start-of-day intraday liquidity → zero usage by construction; RAS §B3 intraday appetite line resolves to green-with-substrate-gap. Governed floor R${(intradayLine.floorZar ?? 0).toLocaleString()} (register floorZar; D-INTRADAY-RAS-APPETITE). Source: Ravi (Treasury and ALM engineer, engineering) BCBS 248 metrics (computeIntradayLiquidityMetrics).`;
+  } else {
+    const peak = intradayMetrics.peakUsagePctOfAvailable;
+    intradayStatus = classifyUsageRatio(intradayLine.thresholds, peak) ?? "green";
+    intradayNote = `Intraday peak usage = ${peak === null ? "0" : peak.toFixed(1)}% of available start-of-day liquidity (R${intradayMetrics.availableAtStartZar.toLocaleString()} available; BCBS 248 tools 1/2). RAS §B3 thresholds: ${intradayThresholds}. Governed floor R${(intradayLine.floorZar ?? 0).toLocaleString()} (D-INTRADAY-RAS-APPETITE). LRM Policy v1 §4.5 stress trigger at red (≥80%).`;
+  }
+
   return {
     lcr: { status: lcrStatus, note: lcrNote },
     nsfr: { status: nsfrStatus, note: nsfrNote },
+    intraday: { status: intradayStatus, note: intradayNote },
   };
 }
 
@@ -284,6 +314,20 @@ function statusForLine(
       line,
       status: liquidityMetric.nsfr.status,
       note: liquidityMetric.nsfr.note,
+    };
+  }
+
+  // appetite:liquidity:intraday — measured by Ravi's BCBS 248 seven-tool
+  // computation (computeIntradayLiquidityMetrics). Build-phase posture: zero
+  // positions → green-with-substrate-gap; once intraday flows exist, the
+  // headline peakUsagePctOfAvailable classifies under the register ladder.
+  // Authority: D-INTRADAY-RAS-APPETITE (2026-06-11); RAS §B3; BCBS 248;
+  // LRM Policy v1 §4.5.
+  if (line.id === "appetite:liquidity:intraday" && liquidityMetric !== undefined) {
+    return {
+      line,
+      status: liquidityMetric.intraday.status,
+      note: liquidityMetric.intraday.note,
     };
   }
 

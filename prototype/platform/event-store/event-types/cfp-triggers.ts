@@ -30,15 +30,16 @@
 // the detection timestamp; citations ride on the event envelope (Principle 2).
 //
 // NOTE on the §5.2 LCR warning threshold literal: the policy's typed-event
-// pattern reads `LcrRatioBreach { severity: "warning", threshold: 115 }`
-// while its own prose defines the warning band as "LCR falls below the
-// internal floor of 120% but remains ≥ 100%". The prose definition is the
-// operative rule (it matches §2's 120% internal floor and the RAS §B3
-// LCR bands); the EWI monitor therefore emits `threshold: 120` for the
-// warning severity. The `115` literal is flagged back to Eitan (Treasurer,
-// governance) + Helena (Chief Risk Officer, governance) for a policy
-// erratum at the next LRM Policy review — this run does not touch policy
-// files (parallel-run collision guard).
+// pattern originally read `LcrRatioBreach { severity: "warning",
+// threshold: 115 }` while its own prose defines the warning band as "LCR
+// falls below the internal floor of 120% but remains ≥ 100%". The prose
+// definition was always the operative rule (it matches §2's 120% internal
+// floor and the RAS §B3 LCR bands); the EWI monitor emits `threshold: 120`
+// for the warning severity. ERRATUM RESOLVED: Helena (Chief Risk Officer,
+// governance — LRM policy owner) corrected the §5.2 literal to 120 on
+// 2026-06-11 (LRM Policy v1.4 change log; dispatch
+// brief:helena:appetite-liquidity-intraday-ras-line-calibrate-b:2026-06-11,
+// under D-TREASURER-WAVE1-SUBSTRATE). Policy and code now agree.
 //
 // Build-phase posture: zero positions → no false trigger fires. The EWI
 // monitor (`ravi:cfp-ewi-monitor`) only emits when a live measure crosses

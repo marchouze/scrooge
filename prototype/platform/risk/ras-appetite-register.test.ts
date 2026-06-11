@@ -1,13 +1,15 @@
 // platform/risk/ras-appetite-register.test.ts
 //
 // Pins the canonical RAS appetite register (D-RAS-STRUCTURED-REGISTER,
-// CEO-approved 2026-06-08; D-BOND-RAS-APPETITE, CRO-approved 2026-06-08).
+// CEO-approved 2026-06-08; D-BOND-RAS-APPETITE, CRO-approved 2026-06-08;
+// D-INTRADAY-RAS-APPETITE, CRO-approved 2026-06-11).
 // This is the byte-faithful-extraction contract:
-// the 14 original lines + 2 bond-trading lines (16 total), their ids,
-// thresholds, and citations are asserted against the canonical set so the
-// extraction provably changes no appetite semantics.
+// the 14 original lines + 2 bond-trading lines + 1 intraday-liquidity line
+// (17 total), their ids, thresholds, and citations are asserted against the
+// canonical set so the extraction provably changes no appetite semantics.
 //
-// Author: Atlas (Substrate engineer, engineering).
+// Author: Atlas (Substrate engineer, engineering) ·
+//         Helena (Chief Risk Officer, governance) — intraday line.
 
 import { describe, expect, it } from "bun:test";
 
@@ -15,13 +17,15 @@ import {
   RAS_APPETITE_LINES,
   RAS_APPETITE_LINE_IDS,
   classifyRatio,
+  classifyUsageRatio,
   formatThresholds,
   requireRasAppetiteLine,
 } from "./ras-appetite-register";
 
-// The canonical 16 ids in the canonical order:
+// The canonical 17 ids in the canonical order:
 //   - 14 original lines extracted from the pre-change handler (D-RAS-STRUCTURED-REGISTER)
 //   - 2 bond-trading lines added 2026-06-08 (D-BOND-RAS-APPETITE)
+//   - 1 intraday-liquidity line added 2026-06-11 (D-INTRADAY-RAS-APPETITE)
 // The RiskAppetiteSnapshot.lineStatuses keyset must equal this set.
 const CANONICAL_LINE_IDS: readonly string[] = [
   "appetite:liquidity:lcr",
@@ -41,15 +45,17 @@ const CANONICAL_LINE_IDS: readonly string[] = [
   // Bond-trading lines — D-BOND-RAS-APPETITE (CRO-approved 2026-06-08)
   "appetite:market:bond-inventory-face-value",
   "appetite:irrbb:delta-eve-outlier",
+  // Intraday-liquidity line — D-INTRADAY-RAS-APPETITE (CRO-approved 2026-06-11)
+  "appetite:liquidity:intraday",
 ];
 
 // The EXACT threshold strings the pre-change LCR/NSFR render printed.
 const LCR_THRESHOLDS = "green ≥120% / amber 110-120% / red <110% / critical <105%";
 const NSFR_THRESHOLDS = "green ≥115% / amber 108-115% / red <108% / critical <103%";
 
-describe("RAS appetite register — canonical 16-line contract", () => {
-  it("has exactly 16 lines (14 original + 2 bond-trading) in the canonical order", () => {
-    expect(RAS_APPETITE_LINES).toHaveLength(16);
+describe("RAS appetite register — canonical 17-line contract", () => {
+  it("has exactly 17 lines (14 original + 2 bond-trading + 1 intraday) in the canonical order", () => {
+    expect(RAS_APPETITE_LINES).toHaveLength(17);
     expect(RAS_APPETITE_LINE_IDS).toEqual(CANONICAL_LINE_IDS);
   });
 
@@ -135,5 +141,46 @@ describe("RAS appetite register — classifier reproduces legacy LCR/NSFR band l
   it("posture thresholds classify to null (no numeric band)", () => {
     const tcf = requireRasAppetiteLine("appetite:conduct:tcf");
     expect(classifyRatio(tcf.thresholds, 50)).toBeNull();
+  });
+});
+
+describe("RAS appetite register — intraday-liquidity line (D-INTRADAY-RAS-APPETITE)", () => {
+  const intraday = requireRasAppetiteLine("appetite:liquidity:intraday");
+
+  it("carries the CRO calibration: tier-1, liquidity, §B3, binding + R50m floor", () => {
+    expect(intraday.tier).toBe("tier-1");
+    expect(intraday.category).toBe("liquidity");
+    expect(intraday.rasSection).toBe("RAS §B3");
+    expect(intraday.measurementBinding).toBe("computeIntradayLiquidityMetrics");
+    expect(intraday.floorZar).toBe(50_000_000);
+    expect(intraday.citations).toContain("D-INTRADAY-RAS-APPETITE");
+  });
+
+  it("threshold ladder prints the calibrated bands", () => {
+    expect(formatThresholds(intraday.thresholds)).toBe(
+      "green <60% / amber 60-80% / red ≥80% / critical ≥100%",
+    );
+  });
+
+  // classifyUsageRatio is higher-is-worse: null→green (build-phase no-usage);
+  // ≥80 (the LRM Policy v1 §4.5 stress trigger) → red; ≥100 (critical
+  // sub-band) → red; ≥60 → amber; else green.
+  it.each([
+    [null, "green"],
+    [0, "green"],
+    [59.9, "green"],
+    [60, "amber"],
+    [79.9, "amber"],
+    [80, "red"],
+    [99.9, "red"],
+    [100, "red"],
+    [150, "red"],
+  ] as const)("peak usage %p%% of available classifies as %p", (usage, expected) => {
+    expect(classifyUsageRatio(intraday.thresholds, usage)).toBe(expected);
+  });
+
+  it("classifyUsageRatio returns null for posture thresholds", () => {
+    const tcf = requireRasAppetiteLine("appetite:conduct:tcf");
+    expect(classifyUsageRatio(tcf.thresholds, 50)).toBeNull();
   });
 });
