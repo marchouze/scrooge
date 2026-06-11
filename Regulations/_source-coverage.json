@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T11:12:07.729Z",
+  "generatedAt": "2026-06-11T12:46:11.238Z",
   "totalInstruments": 155,
   "byStatus": {
     "direct": 126,
@@ -9,7 +9,7 @@
   },
   "acquired": 141,
   "extracted": 155,
-  "fullyLinked": 3,
+  "fullyLinked": 0,
   "rows": [
     {
       "instrumentId": "BANKS-ACT-94-1990",
@@ -20,7 +20,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:90b97bba92be732e953fede546fe421301f601ed65d680a624787b6f883cf014",
       "extracted": true,
-      "obligationsLinked": 5,
+      "obligationsLinked": 0,
       "structuredJsonPath": "Regulations/SARB-PA/source-docs/banks-act-structured.json"
     },
     {
@@ -1484,7 +1484,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:ecd52d04eaf0ad744e6454f8fd47186ac87da83450cdc5ad380e0ad11c4b73c8",
       "extracted": true,
-      "obligationsLinked": 4,
+      "obligationsLinked": 0,
       "structuredJsonPath": "Regulations/FSCA/source-docs/fais-act-structured.json"
     },
     {
@@ -1508,7 +1508,7 @@
       "sourceAcquired": true,
       "goldenSourceHash": "blake3:235fa089752bae659f6755d96244c972e6682f302a3787b255a2d82e23ccf586",
       "extracted": true,
-      "obligationsLinked": 4,
+      "obligationsLinked": 0,
       "structuredJsonPath": "Regulations/ODP/source-docs/js-2-2020-structured.json"
     },
     {
@@ -1700,7 +1700,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 3,
+      "obligationsLinked": 0,
       "structuredJsonPath": "Regulations/ODP/source-docs/cs-1-2018-structured.json"
     },
     {
@@ -1724,7 +1724,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 9,
+      "obligationsLinked": 0,
       "structuredJsonPath": "Regulations/ODP/source-docs/cs-3-2018-structured.json"
     },
     {
@@ -1772,7 +1772,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 2,
+      "obligationsLinked": 0,
       "structuredJsonPath": "Regulations/FIC/source-docs/fic-act-structured.json"
     },
     {
@@ -1868,7 +1868,7 @@
       "sourceAcquired": false,
       "goldenSourceHash": null,
       "extracted": true,
-      "obligationsLinked": 18,
+      "obligationsLinked": 0,
       "structuredJsonPath": "Regulations/Information-Regulator/source-docs/popia-structured.json"
     }
   ]
