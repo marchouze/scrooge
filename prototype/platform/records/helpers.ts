@@ -34,7 +34,7 @@
 // Author: Owen (Company Secretary, governance) +
 //         Atlas (Core banking platform architect, engineering)
 
-import { eventStore } from "../composition";
+import { clock, eventStore } from "../composition";
 import { type DocumentHash, type DocumentStore, defaultDocumentStore } from "../document-store";
 import {
   type AgentBriefIssuedPayload,
@@ -779,7 +779,7 @@ export function recordRegulatoryExcerpt(
   requireNonEmpty("sectionId", input.sectionId);
   requireNonEmpty("excerptId", input.excerptId);
 
-  const effectiveAsOf = asOf ?? new Date().toISOString();
+  const effectiveAsOf = asOf ?? clock.now();
 
   return recordFiled(
     {
