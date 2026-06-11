@@ -36,6 +36,8 @@ summary: >
 kind: other
 ---
 
+> **SUPERSEDED — see [`bank-strategy-v2.md`](bank-strategy-v2.md).** This v1 DRAFT (2026-05-22) was never approved — `D-BANK-STRATEGY-V1` was never recorded. It is superseded by Institutional Strategy v2 (`policy:bank-strategy:v2`, dated 2026-06-11), which is itself DRAFT pending CEO approval under `D-BANK-STRATEGY-V2`. This file is retained as a historical record only; do not cite it as the operative strategy.
+
 # Hoz Bank — Institutional Strategy v1
 
 **Author:** Chief of Staff (orchestration) — synthesised from governance-seat inputs  
