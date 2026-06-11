@@ -39,6 +39,30 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "55 5 * * *",
   }),
+  // Ravi: BCBS 248 seven intraday monitoring metrics — daily, after
+  // intraday-stress (05:55) so the same business date's projection inputs
+  // are in place. Emits IntradayLiquidityReported ×7 +
+  // IntradayLiquidityMetricsComputed (RAS appetite:liquidity:intraday
+  // measurement source).
+  // Authority: D-TREASURER-WAVE1-SUBSTRATE; BCBS 248; LRM Policy v1 §4.2.
+  entry("Ravi", "intraday-liquidity-metrics", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "58 5 * * *",
+  }),
+  // Ravi: CFP EWI monitor — event-driven on the liquidity measures the
+  // LRM Policy v1 §5.2 EWI set evaluates; emits the seven typed CFP
+  // trigger events on threshold crossings.
+  // Authority: D-TREASURER-WAVE1-SUBSTRATE; LRM Policy v1 §5.2 + §4.5.
+  entry("Ravi", "cfp-ewi-monitor", "event-driven", {
+    subscribesTo: [
+      "LCRComputed",
+      "NSFRComputed",
+      "IntradayLiquidityMetricsComputed",
+      "IntradayHQLAStressProjection",
+      "ALCOPackGenerated",
+      "FundingDrawnDown",
+    ],
+  }),
   // Ravi: JIBAR 3M fixing ingest — build-phase fixture, on-request.
   // Authority: D-PRODUCT-CONSTRUCTION-SLICES-4-8; D-MARKETS-SCHEMA-FOUNDATION.
   entry("Ravi", "jibar-fixing-ingest", "on-request"),

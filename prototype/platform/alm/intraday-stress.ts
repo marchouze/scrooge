@@ -188,11 +188,14 @@ function computeWindowsForScenario(
 }
 
 /**
- * Map a `drawnAt` ISO instant to the NPS settlement window it falls in.
- * SA local time = UTC + 2. A draw before 12:00 SAST lands in the 09:00 window,
- * before 15:00 in the 12:00 window, before 16:30 in the 15:00 window, else 16:30.
+ * Map an ISO instant to the NPS settlement window it falls in.
+ * SA local time = UTC + 2. An instant before 12:00 SAST lands in the 09:00
+ * window, before 15:00 in the 12:00 window, before 16:30 in the 15:00
+ * window, else 16:30. Exported for the BCBS 248 metrics engine
+ * (`platform/alm/intraday-liquidity-metrics.ts`) so deadline-to-window
+ * mapping stays single-sourced.
  */
-function windowIndexForInstant(drawnAtIso: string): number {
+export function windowIndexForInstant(drawnAtIso: string): number {
   const d = new Date(drawnAtIso);
   // SA local time (UTC+2) — minutes-since-midnight.
   const saMinutes = (d.getUTCHours() * 60 + d.getUTCMinutes() + 120) % (24 * 60);

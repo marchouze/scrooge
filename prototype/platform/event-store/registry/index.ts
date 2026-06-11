@@ -106,6 +106,12 @@ export { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit lifecycle events.
 // Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
 export { LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY } from "./liquidity-limit";
+// WS-TREASURER-WAVE1-SUBSTRATE — CFP trigger events (LRM Policy v1 §5.2).
+// Authority: D-TREASURER-WAVE1-SUBSTRATE; LRM Policy v1 §5.2; BCBS 144.
+export { CFP_TRIGGER_EVENT_TYPES_REGISTRY } from "./cfp-triggers";
+// WS-TREASURER-WAVE1-SUBSTRATE — BCBS 248 intraday liquidity monitoring.
+// Authority: D-TREASURER-WAVE1-SUBSTRATE; BCBS 248; Banks Act Reg 26.
+export { INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY } from "./intraday-liquidity";
 // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
 export { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
@@ -208,6 +214,7 @@ import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
+import { CFP_TRIGGER_EVENT_TYPES_REGISTRY } from "./cfp-triggers";
 import { CISO_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./ciso-governance";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
@@ -234,6 +241,7 @@ import { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-run
 import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
 import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
+import { INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY } from "./intraday-liquidity";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
 import {
@@ -359,6 +367,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS-LIQUIDITY-LIMIT-ENGINE — liquidity-limit breach lifecycle events.
   // Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
   ...LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY,
+  // WS-TREASURER-WAVE1-SUBSTRATE — CFP trigger events (LRM Policy v1 §5.2).
+  // Authority: D-TREASURER-WAVE1-SUBSTRATE; LRM Policy v1 §5.2; BCBS 144.
+  ...CFP_TRIGGER_EVENT_TYPES_REGISTRY,
+  // WS-TREASURER-WAVE1-SUBSTRATE — BCBS 248 intraday liquidity monitoring.
+  // Authority: D-TREASURER-WAVE1-SUBSTRATE; BCBS 248; Banks Act Reg 26.
+  ...INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
   // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
   ...ILAAP_EVENT_TYPES_REGISTRY,
