@@ -14,7 +14,7 @@ import {
   type BankModePolicySetPayload,
   makeBankModePolicySet,
 } from "../../platform/event-store/event-types/bank-mode";
-import { productionTag } from "../../platform/event-store/provenance";
+import { provenanceForEmit } from "../../platform/event-store/provenance";
 import type { Actor, Event } from "../../platform/event-store/types";
 
 export interface RecordBankModePolicyInput {
@@ -51,7 +51,10 @@ export function recordBankModePolicy(
   });
   const withProvenance: Event = {
     ...event,
-    provenance: productionTag({ sourceLineage: "bank-mode-policy" }),
+    // Policy-routed (PR6): 'BankModePolicySet' is governance → production under
+    // the default category policy — byte-identical to the legacy
+    // productionTag({ sourceLineage: "bank-mode-policy" }).
+    provenance: provenanceForEmit("BankModePolicySet", { sourceLineage: "bank-mode-policy" }),
   };
 
   // Idempotency guard: identical (bankMode, as_of) already recorded → no-op.

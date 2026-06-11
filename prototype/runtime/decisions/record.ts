@@ -32,7 +32,7 @@ import {
   decisionPayloadSchema,
   makeDecision,
 } from "../../platform/event-store/event-types/decision";
-import { PRODUCTION_CARVE_OUTS } from "../../platform/event-store/provenance";
+import { provenanceForEmit } from "../../platform/event-store/provenance";
 import type { Event } from "../../platform/event-store/types";
 import { validateDecisionSlug } from "./registry";
 
@@ -238,7 +238,10 @@ export function recordDecision(input: RecordDecisionInput, asOf?: string): Recor
   const aggregateLabel = makeAggregateLabel("decision", input.decisionId);
   const withProvenance: Event = {
     ...event,
-    provenance: PRODUCTION_CARVE_OUTS.Decision,
+    // Policy-routed (PR6): under the default category policy 'Decision' is
+    // governance → production with the registered carve-out lineage
+    // 'decision-record' — byte-identical to the legacy PRODUCTION_CARVE_OUTS.Decision.
+    provenance: provenanceForEmit("Decision"),
     aggregateId: deterministicAggregateId(aggregateLabel),
     aggregateLabel,
   };
@@ -387,7 +390,10 @@ export function recordDecisionComment(
   // under the unified Decision audit trail; tag with the Decision lineage.
   const eventWithProvenance: Event = {
     ...event,
-    provenance: PRODUCTION_CARVE_OUTS.Decision,
+    // Policy-routed (PR6): 'DecisionComment' is governance → production; the
+    // explicit lineage keeps the legacy Decision-family value 'decision-record'
+    // (byte-identical to the retired PRODUCTION_CARVE_OUTS.Decision reference).
+    provenance: provenanceForEmit("DecisionComment", { sourceLineage: "decision-record" }),
   };
   eventStore.append(eventWithProvenance);
 

@@ -89,6 +89,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:provenance-badge-coverage",
     "recon:operating-book-selector-coverage",
     "recon:category-policy-coverage",
+    "recon:provenance-emit-discipline",
     "recon:ras-b2-calibration-coverage",
     "recon:ras-cluster-feeder-coverage",
     "recon:ras-b7-model-tier-discipline-coverage",

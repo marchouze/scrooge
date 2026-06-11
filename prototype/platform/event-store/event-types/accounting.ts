@@ -411,7 +411,6 @@ export function makeBalanceSheetSubstantiationCompleted(args: {
   citations: string[];
   payload: BalanceSheetSubstantiationCompletedPayload;
   eventId?: string;
-  provenance?: Event["provenance"];
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -421,7 +420,6 @@ export function makeBalanceSheetSubstantiationCompleted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: balanceSheetSubstantiationCompletedPayloadSchema.parse(args.payload),
-    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 

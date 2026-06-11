@@ -145,6 +145,7 @@
     "recon:provenance-badge-coverage": "bun run platform/recon/provenance-badge-coverage.ts",
     "recon:operating-book-selector-coverage": "bun run platform/recon/operating-book-selector-coverage.ts",
     "recon:category-policy-coverage": "bun run platform/recon/category-policy-coverage.ts",
+    "recon:provenance-emit-discipline": "bun run platform/recon/provenance-emit-discipline.ts",
     "recon:trade-lifecycle-parity": "bun run platform/recon/trade-lifecycle-parity.ts",
     "recon:ras-b2-calibration-coverage": "bun run platform/recon/ras-b2-calibration-coverage.ts",
     "recon:ras-cluster-feeder-coverage": "bun run platform/recon/ras-cluster-feeder-coverage.ts",
