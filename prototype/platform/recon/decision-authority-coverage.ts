@@ -56,10 +56,11 @@ const PERSONA_TO_AUTHORITY: Record<string, DecisionAuthority> = {
   Mira: "CCO", // engineering, but assist authority — Slice A non-strict
   Camille: "CFO",
   Devon: "COO",
-  Eitan: "CISO",
+  Eitan: "Treasurer",
+  Rashida: "CISO",
   Thandiwe: "CAE",
   Owen: "CoSec",
-  Ivana: "IO",
+  Iris: "IO",
 };
 
 function isPaused(p: RosterPersona): boolean {

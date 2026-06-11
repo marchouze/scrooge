@@ -62,6 +62,7 @@ export const DECISION_AUTHORITIES = [
   "CRO",
   "CCO",
   "CFO",
+  "Treasurer",
   "COO",
   "CISO",
   "CAE",
