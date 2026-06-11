@@ -196,6 +196,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:escalation-surface-parity",
     "recon:regulatory-golden-source-integrity",
     "recon:regulatory-source-coverage",
+    "recon:regulatory-source-extract-quality",
   ],
 };
 

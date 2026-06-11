@@ -161,6 +161,9 @@ URL_OVERRIDES: dict[str, str] = {
     "banks-d9-2025": f"{_D}/2025/D9-2025%20-%20Prudential%20treatment%20of%20credit%20exposures%20secured%20by%20forest%20and%20agricultural%20land.pdf",
     "banks-d10-2025": f"{_D}/2025/d10-2025/D10-2025%20-%20Directive%20on%20Pillar%203%20disclosure%20requirements.pdf",
     "banks-d11-2025": f"{_D}/2025/d11/D11-2025%20-%20Prudential%20treatment%20of%20distressed%20restructured%20credit%20exposures.pdf",
+    "banks-d12-2025": f"{_D}/2025/d12/D12-2025%20-%20Credit%20Risk%20Roadmap.pdf",
+    "banks-d13-2025": f"{_D}/2025/D13-2025%20-%20Directive%20on%20the%20submission%20of%20Auditor%20Applications%20for%20Banks.pdf",
+    "banks-d14-2025": f"{_D}/2025/d14-of-2025/Directive%2014%20of%202025%20-%20Large%20exposure%20requirements.pdf",
     # --- 2025 circulars ---
     "banks-c3-2025": f"{_C}/2025/C3-2025.pdf",
     "banks-c4-2025": f"{_C}/2025/C4-2025-Basel%20III%20post-crisis%20reforms%20reporting.pdf",

@@ -21,69 +21,130 @@
   "priority": 5,
   "chapters": [
     {
-      "id": "ch-banks-d13-2025-1",
-      "title": "Full Text",
+      "id": "ch-banks-d13-2025-main",
+      "title": "Directive D13/2025",
       "sections": [
         {
           "id": "s-banks-d13-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Appointment of auditors in terms of section 61(2) of the Banks Act, 1990 (Act No. 94 of 1990). 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
+          "text": "1.        Introduction\n\n1.1       Section 61(2) of the Banks Act states that a bank shall, within 30 days of the\n          appointment of an auditor, apply to the PA, on the prescribed form, for the PA’s\n          approval of such appointment.\n\n1.2       Regulation 53 of the Regulations relating to Banks (Regulations) prescribes that a\n          form BA 006 must be submitted by a bank for the approval of the appointment of the\n          bank’s auditor(s) in terms of section 61(2) of the Banks Act.\n\n1.3       Regulation 52 of the Regulations states that every application form submitted by a\n          bank in terms of regulation 53 of the Regulations shall include every prescribed item\n          as indicated in the application form.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-1-1",
+              "id": "s-banks-d13-2025-1-1",
               "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Section 61(2) of the Banks Act states that a bank shall, within 30 days of the",
+              "text": "1.1       Section 61(2) of the Banks Act states that a bank shall, within 30 days of the\n          appointment of an auditor, apply to the PA, on the prescribed form, for the PA’s\n          approval of such appointment.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-2",
+              "id": "s-banks-d13-2025-1-2",
               "number": "1.2",
-              "text": "Appointment of auditors in terms of section 61(2) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "Regulation 53 of the Regulations relating to Banks (Regulations) prescribes that a",
+              "text": "1.2       Regulation 53 of the Regulations relating to Banks (Regulations) prescribes that a\n          form BA 006 must be submitted by a bank for the approval of the appointment of the\n          bank’s auditor(s) in terms of section 61(2) of the Banks Act.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-1-3",
+              "id": "s-banks-d13-2025-1-3",
               "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
+              "heading": "Regulation 52 of the Regulations states that every application form submitted by a",
+              "text": "1.3       Regulation 52 of the Regulations states that every application form submitted by a\n          bank in terms of regulation 53 of the Regulations shall include every prescribed item\n          as indicated in the application form.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d13-2025-2",
           "number": "2",
-          "heading": "Application",
-          "text": "Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
+          "heading": "PA approval process",
+          "text": "2.        PA approval process\n\n2.1       The PA’s auditor approval process assesses the following key areas regarding the\n          proposed audit firm and proposed engagement partner:\n\n                the competence, experience and resourcing of the audit firm;\n                the audit quality review outcomes of the audit firm;\n                the competence, integrity and experience of the engagement partner;\n                the capacity of the engagement partner to take on an additional engagement;\n\n\n                                                                                              1\n\n            the audit quality review outcomes of the engagement partner; and\n            the independence of the audit firm and the engagement partner.\n\n2.2    The existing version of form BA 006 does not include, as prescribed items,\n       confirmation of the proposed engagement partner’s current work commitments\n       as well as the outcomes of the proposed audit firm and/or the proposed engagement\n       partner’s audit quality reviews.\n\n2.3    To assess the suitability of banks’ proposed auditors, the PA must, as part of every\n       application, request documentation that substantiates the key areas of the PA’s\n       auditor assessment process detailed in paragraph 2.2 from the bank.\n\n2.4    Consequently, the current process where the PA must specifically request additional\n       documentation for both the proposed audit firm and the proposed engagement\n       partner often delays the application process. This Directive aims to improve the\n       efficiency of the auditor application process by prescribing all the documentation\n       required to accompany the form BA 006 for submission to the PA.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-2-1",
+              "id": "s-banks-d13-2025-2-1",
               "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
+              "heading": "The PA’s auditor approval process assesses the following key areas regarding the",
+              "text": "2.1       The PA’s auditor approval process assesses the following key areas regarding the\n          proposed audit firm and proposed engagement partner:\n\n                the competence, experience and resourcing of the audit firm;\n                the audit quality review outcomes of the audit firm;\n                the competence, integrity and experience of the engagement partner;\n                the capacity of the engagement partner to take on an additional engagement;\n\n\n                                                                                              1\n\n            the audit quality review outcomes of the engagement partner; and\n            the independence of the audit firm and the engagement partner.",
+              "verbatim": true,
+              "subsections": []
             },
             {
-              "id": "sub-2-2",
+              "id": "s-banks-d13-2025-2-2",
               "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
+              "heading": "The existing version of form BA 006 does not include, as prescribed items,",
+              "text": "2.2    The existing version of form BA 006 does not include, as prescribed items,\n       confirmation of the proposed engagement partner’s current work commitments\n       as well as the outcomes of the proposed audit firm and/or the proposed engagement\n       partner’s audit quality reviews.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d13-2025-2-3",
+              "number": "2.3",
+              "heading": "To assess the suitability of banks’ proposed auditors, the PA must, as part of every",
+              "text": "2.3    To assess the suitability of banks’ proposed auditors, the PA must, as part of every\n       application, request documentation that substantiates the key areas of the PA’s\n       auditor assessment process detailed in paragraph 2.2 from the bank.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d13-2025-2-4",
+              "number": "2.4",
+              "heading": "Consequently, the current process where the PA must specifically request additional",
+              "text": "2.4    Consequently, the current process where the PA must specifically request additional\n       documentation for both the proposed audit firm and the proposed engagement\n       partner often delays the application process. This Directive aims to improve the\n       efficiency of the auditor application process by prescribing all the documentation\n       required to accompany the form BA 006 for submission to the PA.",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         },
         {
           "id": "s-banks-d13-2025-3",
           "number": "3",
-          "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
+          "heading": "Directive",
+          "text": "3.     Directive\n\n3.1    Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n       Banks Act, banks are hereby directed as follows:\n\n3.1.1 In addition to the prescribed BA 006 application form, banks must submit the following\n      documents to the PA:\n\n            a list of engagements1 that are allocated to the proposed engagement partner at\n            the time of submission, including the name of the entity, the financial year-end of\n            the entity and the position held by the proposed engagement partner;\n            the latest Independent Regulatory Board for Auditors (IRBA) inspection report2 of\n            the proposed audit firm(s), where applicable;\n            the latest IRBA inspection report2 of the proposed engagement partner(s), where\n            applicable (note that this report must not be older than five years);\n            the outcome of the proposed engagement partner’s latest internal quality review,\n            where applicable (note that this review must not be older than four years);\n            a root-cause analysis and remedial action plan that addresses the deficiencies\n            identified during these reviews if the outcomes of the IRBA inspection(s) or the\n            internal quality review(s) above is/are unsatisfactory/non-compliant or signifies\n            that some or significant improvement is required;\n            any additional documents or information that may be necessary for the PA’s\n            auditor assessment process; and\n            any amendments/updates to the information submitted, before the bank receives\n            formal feedback from the PA must be communicated to the PA by no later than 5\n            business days of becoming aware of the amendment/update.\n\n1 This refers to all the work commitments allocated to the proposed engagement partner, including, but not\n\nlimited to, work commitments where the proposed engagement partner serves as an engagement partner,\nan engagement quality reviewer, a practitioner for non-assurance engagements, and so forth.\n2 The PA acknowledges that IRBA takes a risk-based approach to inspections. As such, if the proposed audit\n\nfirm and/or proposed engagement partner has never been subjected to an inspection or the latest inspection\nreport of the proposed audit firm and/or proposed engagement partner is older than five years, either\ninstance must be clearly indicated in the submission. It should also be noted that not having an IRBA\ninspection report or having an outdated inspection report will not necessarily have a negative impact on the\nassessment.\n\n                                                                                                          2\n\n3.1.2 The appointment of an auditor for banks must comply with the respective\n      requirements specified in section 61 of the Banks Act read with section 90 of the\n      Companies Act, 2008 (Act No. 71 of 2008).\n\n3.1.3 Upon request, both proposed and approved auditors are required to grant permission\n      to IRBA and the South African Institute of Chartered Accountants to disclose any\n      information to the PA that may be relevant for assessing the suitability of banks’\n      proposed auditor(s) during the PA’s auditor assessment process and throughout the\n      approved auditor’s tenure. The auditor(s) will be required to grant permission for the\n      disclosure of this information in a form and manner that will be determined by the PA.\n\n3.2     Banks must note that the PA may grant an approval with conditions, which will be\n        stipulated in the approval letter of the proposed engagement partner. An engagement\n        partner who has been granted an approval with conditions will not be considered for\n        any other auditor application until the stipulated approval conditions are met.\n\n3.3     In accordance with section 61(2) of the Banks Act, banks must submit their\n        applications for the appointment of auditors to the Chief Executive Officer (CEO) of\n        the PA within 30 days of the auditor’s appointment.",
           "verbatim": true,
           "subsections": [
             {
-              "id": "sub-3-1",
+              "id": "s-banks-d13-2025-3-1",
               "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
+              "heading": "Based on the aforesaid, and in accordance with the provisions of section 6(6) of the",
+              "text": "3.1    Based on the aforesaid, and in accordance with the provisions of section 6(6) of the\n       Banks Act, banks are hereby directed as follows:\n\n3.1.1 In addition to the prescribed BA 006 application form, banks must submit the following\n      documents to the PA:\n\n            a list of engagements1 that are allocated to the proposed engagement partner at\n            the time of submission, including the name of the entity, the financial year-end of\n            the entity and the position held by the proposed engagement partner;\n            the latest Independent Regulatory Board for Auditors (IRBA) inspection report2 of\n            the proposed audit firm(s), where applicable;\n            the latest IRBA inspection report2 of the proposed engagement partner(s), where\n            applicable (note that this report must not be older than five years);\n            the outcome of the proposed engagement partner’s latest internal quality review,\n            where applicable (note that this review must not be older than four years);\n            a root-cause analysis and remedial action plan that addresses the deficiencies\n            identified during these reviews if the outcomes of the IRBA inspection(s) or the\n            internal quality review(s) above is/are unsatisfactory/non-compliant or signifies\n            that some or significant improvement is required;\n            any additional documents or information that may be necessary for the PA’s\n            auditor assessment process; and\n            any amendments/updates to the information submitted, before the bank receives\n            formal feedback from the PA must be communicated to the PA by no later than 5\n            business days of becoming aware of the amendment/update.\n\n1 This refers to all the work commitments allocated to the proposed engagement partner, including, but not\n\nlimited to, work commitments where the proposed engagement partner serves as an engagement partner,\nan engagement quality reviewer, a practitioner for non-assurance engagements, and so forth.\n2 The PA acknowledges that IRBA takes a risk-based approach to inspections. As such, if the proposed audit\n\nfirm and/or proposed engagement partner has never been subjected to an inspection or the latest inspection\nreport of the proposed audit firm and/or proposed engagement partner is older than five years, either\ninstance must be clearly indicated in the submission. It should also be noted that not having an IRBA\ninspection report or having an outdated inspection report will not necessarily have a negative impact on the\nassessment.\n\n                                                                                                          2\n\n3.1.2 The appointment of an auditor for banks must comply with the respective\n      requirements specified in section 61 of the Banks Act read with section 90 of the\n      Companies Act, 2008 (Act No. 71 of 2008).\n\n3.1.3 Upon request, both proposed and approved auditors are required to grant permission\n      to IRBA and the South African Institute of Chartered Accountants to disclose any\n      information to the PA that may be relevant for assessing the suitability of banks’\n      proposed auditor(s) during the PA’s auditor assessment process and throughout the\n      approved auditor’s tenure. The auditor(s) will be required to grant permission for the\n      disclosure of this information in a form and manner that will be determined by the PA.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d13-2025-3-2",
+              "number": "3.2",
+              "heading": "Banks must note that the PA may grant an approval with conditions, which will be",
+              "text": "3.2     Banks must note that the PA may grant an approval with conditions, which will be\n        stipulated in the approval letter of the proposed engagement partner. An engagement\n        partner who has been granted an approval with conditions will not be considered for\n        any other auditor application until the stipulated approval conditions are met.",
+              "verbatim": true,
+              "subsections": []
+            },
+            {
+              "id": "s-banks-d13-2025-3-3",
+              "number": "3.3",
+              "heading": "In accordance with section 61(2) of the Banks Act, banks must submit their",
+              "text": "3.3     In accordance with section 61(2) of the Banks Act, banks must submit their\n        applications for the appointment of auditors to the Chief Executive Officer (CEO) of\n        the PA within 30 days of the auditor’s appointment.",
+              "verbatim": true,
+              "subsections": []
+            }
+          ]
+        },
+        {
+          "id": "s-banks-d13-2025-4",
+          "number": "4",
+          "heading": "Acknowledgement of receipt",
+          "text": "4.      Acknowledgement of receipt\n\n4.1     Kindly ensure that a copy of this Directive is made available to your institution’s Board\n        of Directors, Audit Committee and external auditors. In addition, the attached\n        acknowledgement of receipt, duly completed and signed by both the CEO of your\n        institution and said auditors, should be returned to the PA at the earliest convenience\n        of the signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\n\n\n\n                                                                                               3",
+          "verbatim": true,
+          "subsections": [
+            {
+              "id": "s-banks-d13-2025-4-1",
+              "number": "4.1",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s Board",
+              "text": "4.1     Kindly ensure that a copy of this Directive is made available to your institution’s Board\n        of Directors, Audit Committee and external auditors. In addition, the attached\n        acknowledgement of receipt, duly completed and signed by both the CEO of your\n        institution and said auditors, should be returned to the PA at the earliest convenience\n        of the signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\n\n\n\n                                                                                               3",
+              "verbatim": true,
+              "subsections": []
             }
           ]
         }
