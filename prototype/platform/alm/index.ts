@@ -60,3 +60,40 @@ export type {
   IntradayWindowStatus,
   SettlementWindow,
 } from "./intraday-stress";
+
+// WS-TREASURER-WAVE1-SUBSTRATE — BCBS 248 seven intraday monitoring metrics.
+// `computeIntradayLiquidityMetrics` is the RAS `appetite:liquidity:intraday`
+// measurement binding (Helena (Chief Risk Officer, governance) follow-on).
+export {
+  BCBS_248_TOOL_LABELS,
+  computeIntradayLiquidityMetrics,
+} from "./intraday-liquidity-metrics";
+
+export type {
+  ComputeIntradayLiquidityMetricsOpts,
+  IntradayLiquidityMetricsResult,
+  IntradayThroughputRow,
+  IntradayUsageRow,
+  TimeSpecificObligation,
+} from "./intraday-liquidity-metrics";
+
+// WS-TREASURER-WAVE1-SUBSTRATE — CFP EWI evaluation engine (LRM Policy v1 §5.2).
+export {
+  EWI_MONITOR_MEASUREMENT_TYPES,
+  EWI_WIRED_TRIGGER_TYPES,
+  FUNDING_CONCENTRATION_COUNTERPARTY_LIMIT_PCT,
+  INTRADAY_STRESS_USAGE_PCT,
+  LCR_INTERNAL_FLOOR_PCT,
+  LCR_REGULATORY_MINIMUM_PCT,
+  NSFR_REGULATORY_MINIMUM_PCT,
+  evaluateCfpEwis,
+  loadCfpEwiInputs,
+  wiredCfpTiers,
+} from "./cfp-ewi";
+
+export type {
+  CfpEwiInputs,
+  CfpTriggerEvaluation,
+  ExternalCreditEventObservation,
+  RecoveryEwiObservation,
+} from "./cfp-ewi";
