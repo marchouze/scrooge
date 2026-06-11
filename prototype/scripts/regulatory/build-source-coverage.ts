@@ -28,7 +28,7 @@
 import "../dispatch/resolve-event-db-boot";
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join, relative, resolve as pathResolve } from "node:path";
+import { join, resolve as pathResolve, relative } from "node:path";
 
 import { clock } from "../../platform/composition";
 import { eventStore } from "../../platform/composition";
@@ -196,7 +196,11 @@ export function buildSourceCoverage(): SourceCoverageReport {
       const relPath = relative(root, absPath);
       rows.push({
         instrumentId: null,
-        slug: absPath.split("/").pop()?.replace(/-structured\.json$/, "") ?? absPath,
+        slug:
+          absPath
+            .split("/")
+            .pop()
+            ?.replace(/-structured\.json$/, "") ?? absPath,
         title: "(parse error)",
         regulator: null,
         applicabilityStatus: "unknown",

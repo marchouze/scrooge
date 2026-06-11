@@ -27,9 +27,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import type {
+  SourceCoverageReport,
+  SourceCoverageRow,
+} from "../../scripts/regulatory/build-source-coverage";
 import { clock } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
-import type { SourceCoverageReport, SourceCoverageRow } from "../../scripts/regulatory/build-source-coverage";
 
 const PIPELINE = "regulatory-source-coverage";
 
@@ -113,11 +116,7 @@ export function run(deps: SourceCoverageDeps = {}): ReconResult & {
     if (!row.sourceAcquired) {
       violations.push({
         subject,
-        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has no filed regulatory source. ` +
-          `Remediation: \`BANK_EVENT_DB="$HOME/.local/share/bank/event.db" ` +
-          `bun run acquire:source --instrument-id <ID> --slug ${row.slug} --title "${row.title}" ` +
-          `--regulator "${row.regulator ?? ""}" --from <path-to-pdf>\`. ` +
-          `Citation: D-REGULATORY-LIBRARY-V1.`,
+        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has no filed regulatory source. Remediation: \`BANK_EVENT_DB="$HOME/.local/share/bank/event.db" bun run acquire:source --instrument-id <ID> --slug ${row.slug} --title "${row.title}" --regulator "${row.regulator ?? ""}" --from <path-to-pdf>\`. Citation: D-REGULATORY-LIBRARY-V1.`,
         severity: "warn",
       });
     }
@@ -125,8 +124,7 @@ export function run(deps: SourceCoverageDeps = {}): ReconResult & {
     if (!row.extracted) {
       violations.push({
         subject,
-        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has no structured JSON (\`extracted:false\`). ` +
-          `Remediation: run extraction pipeline for this slug. Citation: D-REGULATORY-LIBRARY-V1.`,
+        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has no structured JSON (\`extracted:false\`). Remediation: run extraction pipeline for this slug. Citation: D-REGULATORY-LIBRARY-V1.`,
         severity: "warn",
       });
     }
@@ -134,9 +132,7 @@ export function run(deps: SourceCoverageDeps = {}): ReconResult & {
     if (row.obligationsLinked === 0) {
       violations.push({
         subject,
-        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has 0 EXPRESSES edges (no obligations linked). ` +
-          `Remediation: re-seed the graph (\`bun run graph:seed\`) and verify obligation extraction. ` +
-          `Citation: D-REGULATORY-LIBRARY-V1, Principle 2.`,
+        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has 0 EXPRESSES edges (no obligations linked). Remediation: re-seed the graph (\`bun run graph:seed\`) and verify obligation extraction. Citation: D-REGULATORY-LIBRARY-V1, Principle 2.`,
         severity: "warn",
       });
     }

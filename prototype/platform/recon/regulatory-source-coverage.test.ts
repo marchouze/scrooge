@@ -140,17 +140,22 @@ describe("recon:regulatory-source-coverage", () => {
   it("exposes correct summary counters across a mixed population", () => {
     const r = run({
       rows: [
-        makeRow({ slug: "fais-act", applicabilityStatus: "direct" }),             // fully-linked
+        makeRow({ slug: "fais-act", applicabilityStatus: "direct" }), // fully-linked
         makeRow({ slug: "fic-act", applicabilityStatus: "direct", obligationsLinked: 0 }), // no links
-        makeRow({ slug: "bcbs-cre", applicabilityStatus: "transposed", sourceAcquired: false, goldenSourceHash: null }), // no source
-        makeRow({ slug: "eu-crd", applicabilityStatus: "reference" }),              // out of scope
+        makeRow({
+          slug: "bcbs-cre",
+          applicabilityStatus: "transposed",
+          sourceAcquired: false,
+          goldenSourceHash: null,
+        }), // no source
+        makeRow({ slug: "eu-crd", applicabilityStatus: "reference" }), // out of scope
       ],
       advisoryUntil: ADVISORY_DATE,
       asOfDate: PRE_ADVISORY_NOW,
     });
     expect(r.ok).toBe(true);
-    expect(r.active).toBe(3);     // direct×2 + transposed×1
-    expect(r.acquired).toBe(2);   // fais-act + fic-act
+    expect(r.active).toBe(3); // direct×2 + transposed×1
+    expect(r.acquired).toBe(2); // fais-act + fic-act
     expect(r.fullyLinked).toBe(1); // only fais-act
     expect(r.violations).toHaveLength(2); // fic-act: 1 (no links) + bcbs-cre: 1 (no source)
   });
