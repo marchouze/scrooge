@@ -21,6 +21,7 @@ import { describe, expect, it } from "bun:test";
 
 import { makeFundingDrawnDown } from "../../event-store/event-types/ifrs-accounting-extended";
 import { EventStore } from "../../event-store/store";
+import { requireRasAppetiteLine } from "../../risk/ras-appetite-register";
 import { INTRADAY_FLOOR_ZAR, SETTLEMENT_WINDOWS, runIntradayStress } from "../intraday-stress";
 
 // ---------------------------------------------------------------------------
@@ -67,6 +68,23 @@ describe("runIntradayStress — zero-position baseline (build phase)", () => {
 
   it("returns floorZar = INTRADAY_FLOOR_ZAR constant", () => {
     expect(result.floorZar).toBe(INTRADAY_FLOOR_ZAR);
+  });
+
+  // D-INTRADAY-RAS-APPETITE (CRO-approved 2026-06-11): the floor is now read
+  // from the governed `appetite:liquidity:intraday` register line instead of a
+  // module-local literal. Build-phase behaviour MUST be identical — the
+  // governed calibration is the same ZAR 50m the engine has always used.
+  describe("governed floor sourcing (D-INTRADAY-RAS-APPETITE)", () => {
+    it("INTRADAY_FLOOR_ZAR equals the register line's floorZar", () => {
+      expect(INTRADAY_FLOOR_ZAR).toBe(
+        requireRasAppetiteLine("appetite:liquidity:intraday").floorZar as number,
+      );
+    });
+
+    it("build-phase behaviour preserved: floor is exactly ZAR 50,000,000", () => {
+      expect(INTRADAY_FLOOR_ZAR).toBe(50_000_000);
+      expect(result.floorZar).toBe(50_000_000);
+    });
   });
 
   it("returns currency = ZAR", () => {

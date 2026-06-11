@@ -156,18 +156,20 @@ describe("helena-risk-appetite-watch — substrate gaps derived from store (D-CR
 });
 
 // Faithfulness of the register extraction (D-RAS-STRUCTURED-REGISTER;
-// D-BOND-RAS-APPETITE). Proves the handler now sources its appetite lines +
-// LCR/NSFR thresholds from the canonical register, with NO semantic change vs
-// the pre-change hand-curated constants. The 14 original line ids and the
-// LCR/NSFR threshold strings are byte-identical to what the report has always
-// printed. The 2 bond-trading lines added 2026-06-08 extend the register.
+// D-BOND-RAS-APPETITE; D-INTRADAY-RAS-APPETITE). Proves the handler now
+// sources its appetite lines + LCR/NSFR thresholds from the canonical
+// register, with NO semantic change vs the pre-change hand-curated constants.
+// The 14 original line ids and the LCR/NSFR threshold strings are
+// byte-identical to what the report has always printed. The 2 bond-trading
+// lines added 2026-06-08 and the intraday-liquidity line added 2026-06-11
+// extend the register.
 describe("helena-risk-appetite-watch — faithful register extraction (D-RAS-STRUCTURED-REGISTER)", () => {
   const HANDLER_SRC = readFileSync(
     new URL("./helena-risk-appetite-watch.ts", import.meta.url),
     "utf8",
   );
 
-  it("the register carries the 14 original line ids + 2 bond-trading lines (D-BOND-RAS-APPETITE)", () => {
+  it("the register carries the 14 original line ids + 2 bond-trading + 1 intraday line", () => {
     expect(RAS_APPETITE_LINES.map((l) => l.id)).toEqual([
       "appetite:liquidity:lcr",
       "appetite:liquidity:nsfr",
@@ -186,6 +188,8 @@ describe("helena-risk-appetite-watch — faithful register extraction (D-RAS-STR
       // Bond-trading lines — D-BOND-RAS-APPETITE (CRO-approved 2026-06-08)
       "appetite:market:bond-inventory-face-value",
       "appetite:irrbb:delta-eve-outlier",
+      // Intraday-liquidity line — D-INTRADAY-RAS-APPETITE (CRO-approved 2026-06-11)
+      "appetite:liquidity:intraday",
     ]);
   });
 
