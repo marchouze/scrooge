@@ -152,12 +152,16 @@ function parseSimpleYaml(block: string): Record<string, string | string[]> {
   };
 
   const flushBlock = () => {
+    // Only reset state when a block scalar was actually being collected.
+    // Nulling `currentKey` unconditionally would clobber a pending trailing
+    // ARRAY (the array's flush below reads `currentKey`) — `obligations:` is
+    // frequently the last frontmatter key, and that array must still flush.
     if (currentKey && collectingBlock) {
       result[currentKey] = currentBlock.join(blockFold ? " " : "\n").trim();
       currentBlock.length = 0;
       collectingBlock = false;
+      currentKey = null;
     }
-    currentKey = null;
   };
 
   for (const line of lines) {
