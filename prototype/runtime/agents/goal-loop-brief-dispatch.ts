@@ -167,9 +167,15 @@ export async function dispatchCadenceRun(
   // Build a minimal agent ref from the config slug (no brief to pull from).
   const agent = { name: agentSlug, position: `agent:${agentSlug}` } as const;
 
+  // Cadence runs have no brief — use a synthetic briefId so the lifecycle event
+  // schema is satisfied. "cadence:<runId>" is stable, unique, and clearly not a
+  // real brief. The dashboard will show it as the briefId in the run-feed row.
+  const syntheticBriefId = `cadence:${runId}`;
+
   recordAgentRunStarted(
     {
       runId,
+      briefId: syntheticBriefId,
       agent,
       startedAt: ctx.asOf,
       substrate: "agent-runtime",
@@ -190,6 +196,7 @@ export async function dispatchCadenceRun(
       recordAgentRunCompleted(
         {
           runId,
+          briefId: syntheticBriefId,
           agent,
           completedAt: ctx.asOf,
           outcome: "blocked",
@@ -219,6 +226,7 @@ export async function dispatchCadenceRun(
     recordAgentRunCompleted(
       {
         runId,
+        briefId: syntheticBriefId,
         agent,
         completedAt: ctx.asOf,
         outcome: "delivered",
@@ -246,6 +254,7 @@ export async function dispatchCadenceRun(
   recordAgentRunCompleted(
     {
       runId,
+      briefId: syntheticBriefId,
       agent,
       completedAt: ctx.asOf,
       outcome: "blocked",
@@ -263,7 +272,7 @@ export async function dispatchCadenceRun(
   const noHandlerOutput: AgentRunOutput = {
     eventsEmitted: 0,
     ok: true,
-    summary: `cadence run blocked (shadow-mode: no handler)`,
+    summary: "cadence run blocked (shadow-mode: no handler)",
   };
   return { eventsEmitted, handlerOutput: noHandlerOutput };
 }

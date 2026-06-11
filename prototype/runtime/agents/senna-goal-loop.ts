@@ -537,9 +537,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
-  const handlerCtx: AgentRunContext = {
-    ...ctx,
-    if (shouldRunHandler && !ctx.dryRun) {
+  if (shouldRunHandler && !ctx.dryRun) {
     const cadence = await dispatchCadenceRun(ctx, iterationId, SENNA_BRIEF_DISPATCH);
     logger.info(
       { agent: ctx.agent, iterationId },
@@ -549,7 +547,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
       ok: cadence.handlerOutput.ok,
       summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
-      ...(cadence.handlerOutput.deliverable ? { deliverable: cadence.handlerOutput.deliverable } : {}),
+      ...(cadence.handlerOutput.deliverable
+        ? { deliverable: cadence.handlerOutput.deliverable }
+        : {}),
     };
   }
 

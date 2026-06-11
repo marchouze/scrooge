@@ -596,7 +596,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // Shadow mode (cohort-3): always dry-run the underlying handler so we
   // observe the trace without side-effects, regardless of goal outcome.
   // The handler will be promoted to live once cohort validation passes.
-  if (shouldRunHandler && !ctx.dryRun) {
+  if (selectedDecision && !ctx.dryRun) {
     const cadence = await dispatchCadenceRun(ctx, iterationId, ZARA_BRIEF_DISPATCH);
     logger.info(
       { agent: ctx.agent, iterationId },
@@ -606,7 +606,9 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
       ok: cadence.handlerOutput.ok,
       summary: `goal-loop cohort-3 shadow: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
-      ...(cadence.handlerOutput.deliverable ? { deliverable: cadence.handlerOutput.deliverable } : {}),
+      ...(cadence.handlerOutput.deliverable
+        ? { deliverable: cadence.handlerOutput.deliverable }
+        : {}),
     };
   }
 

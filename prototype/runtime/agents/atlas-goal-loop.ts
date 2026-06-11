@@ -720,10 +720,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION).
   if (shouldRunHandler && !ctx.dryRun) {
     const cadenceRunId = `run:atlas:goal-loop:cadence:${iterationId}`;
+    const cadenceBriefId = `cadence:${cadenceRunId}`;
     const cadenceAgent = { name: "atlas", position: "agent:atlas" } as const;
     recordAgentRunStarted(
       {
         runId: cadenceRunId,
+        briefId: cadenceBriefId,
         agent: cadenceAgent,
         startedAt: ctx.asOf,
         substrate: "agent-runtime",
@@ -736,6 +738,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     recordAgentRunCompleted(
       {
         runId: cadenceRunId,
+        briefId: cadenceBriefId,
         agent: cadenceAgent,
         completedAt: ctx.asOf,
         outcome: "delivered",
