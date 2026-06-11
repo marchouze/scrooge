@@ -204,6 +204,12 @@ export { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collatera
 // Authority: ORG-ODP-RPT-003; ORG-MK-RPT-002; urn:regulation:odp:cs-3-2018;
 //   urn:regulation:odp:jn-2-2024; ISO 23602:2020.
 export { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
+// D-TREASURER-WAVE2-SUBSTRATE — correspondent settlement interface stubs.
+// CorrespondentSettlementInstructionSent, CorrespondentSettlementStatusReceived,
+//   NostroStatementReceived (ISO 20022 pacs.008/009/002 + camt.053 event-of-record).
+// Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
+//   NPS-ACT-78-1998; SARB-NPSD; ISO-20022; PROC-PAY-RBH-01.
+export { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -220,6 +226,7 @@ import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
+import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
@@ -477,6 +484,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 4c); D-SLA-APPROVAL-WORKFLOW-SEGREGATION
   //   (CoSec Owen — the 5 SoD controls); D-SLA-REPRESENTATION-ACTIVATION-JOINT-APPROVAL.
   ...SLA_APPROVAL_EVENT_TYPES_REGISTRY,
+  // D-TREASURER-WAVE2-SUBSTRATE — correspondent settlement interface stubs.
+  // CorrespondentSettlementInstructionSent, CorrespondentSettlementStatusReceived,
+  //   NostroStatementReceived. Placed last so typed schema rows override any
+  //   placeholder rows from missing-types.ts.
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11).
+  ...CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
