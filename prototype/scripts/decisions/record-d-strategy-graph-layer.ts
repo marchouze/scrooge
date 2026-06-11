@@ -1,5 +1,11 @@
 // scripts/decisions/record-d-strategy-graph-layer.ts
 //
+// ⚠️ WITHDRAWN 2026-06-11: this approval was withdrawn the same day by CEO
+// in-session instruction ("keep updated bank strategy but undo additional
+// graph layer") before any build occurred. See
+// scripts/decisions/withdraw-d-strategy-graph-layer.ts — the `withdrawn`
+// phase event is the operative tail of the decision aggregate.
+//
 // Records D-STRATEGY-GRAPH-LAYER — Marc's in-session approval (2026-06-11)
 // of the strategy-layer ontology extension for the regulatory knowledge graph,
 // part of the strategy-driven traceability workstream (WS-STRATEGY-TRACEABILITY).
