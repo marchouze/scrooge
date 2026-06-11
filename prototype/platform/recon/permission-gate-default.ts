@@ -264,6 +264,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // idempotency regression, not a production access path. T-01 carve-out.
   // Citation: D-RETURNS-SUBMISSION-WIRING-WORKSTREAM, P4-SECURITY-DESIGNED-IN.
   "runtime/agents/bea-ba700-period-close.test.ts",
+  // BA 400 operational-risk (BIA) period-close handler unit test (W2.2 —
+  // D-TREASURER-WAVE2-SUBSTRATE) — co-located per-module test convention. Raw
+  // EventStore(":memory:") is a build-phase fixture for the generation/
+  // idempotency regression (golden path, pre-commencement zero capital, non-bank
+  // skip), not a production access path. T-01 carve-out.
+  // Citation: D-TREASURER-WAVE2-SUBSTRATE; D-RETURNS-SUBMISSION-WIRING-WORKSTREAM;
+  //           P4-SECURITY-DESIGNED-IN.
+  "runtime/agents/bea-ba400-period-close.test.ts",
   // Helena risk-appetite-watch substrate-gap derivation unit test — co-located
   // per-module test convention. Raw EventStore(":memory:") is a build-phase
   // fixture for the gap-section store-probe regression, not a production

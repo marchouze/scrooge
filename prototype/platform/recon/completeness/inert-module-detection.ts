@@ -157,21 +157,14 @@ export interface WiredComponentDeferral {
 // in the ProductDeferredGap shape (gapId + owner + targetTrigger + citations;
 // D-FX-OTC-NPA-SCOPE-EXPANSION pattern); the gate FAILs on any hollow
 // deferral (empty gapId / targetTrigger / citations).
+// NOTE — ba400 (Operational Risk, BIA) was WIRED in W2.2
+// (`runtime/agents/bea-ba400-period-close.ts`, D-TREASURER-WAVE2-SUBSTRATE,
+// 2026-06-11) and de-allowlisted here. The gross-income source remains a named
+// tracked component deferral — see `WIRED_RETURN_COMPONENT_DEFERRALS` below.
+// The BA 400 BIA capital is CORRECTLY zero pre-commencement (no gross income
+// has accrued since incorporation), so the submitted return is accurate, not
+// hollow — identical reasoning to GAP-RETURNS-BA700-OPERATIONAL-RWA on BA 700.
 export const KNOWN_INERT_PENDING_WIRING: readonly AllowlistEntry[] = [
-  {
-    module: "platform/returns/ba400/period-close-subscriber.ts",
-    owner: "Mira (Compliance / RegTech engineer) + Bea (Accounting & financial reporting engineer)",
-    gapId: "GAP-RETURNS-BA400-GROSS-INCOME",
-    targetTrigger:
-      "Commencement-of-trading gross-income event feed lands (e.g. RevenueRecognitionEmitted) — BIA needs audited gross income, accruing only post-licence-day; first real BA 400 is computable after the first audited fiscal year.",
-    citations: [
-      "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
-      "D-BA-RETURN-NUMBERING-EXCEL-CANONICAL",
-      "[citation: TBC — Regulations Relating to Banks Reg 33 (operational risk); BCBS OPE25 (BIA)]",
-    ],
-    closing:
-      "WS-RETURNS-SUBMISSION-WIRING — NOT wired: stub-fed generator. BA 400 (operational risk, BIA) gross-income rows are caller-supplied and explicitly post-commencement-of-trading (subscriber: 'Live numbers populate after commencement-of-trading + 3 fiscal years of audited gross income'; default placeholder zeros). Unlike BA 700 (where op-risk is one component of an otherwise event-sourced return), the gross-income rows ARE the substance of BA 400 — wiring it pre-licence would submit a fully-empty return.",
-  },
   {
     module: "platform/returns/conduct/period-close-subscriber.ts",
     owner: "Mira (Compliance / RegTech engineer)",
@@ -222,6 +215,23 @@ export const KNOWN_INERT_PENDING_WIRING: readonly AllowlistEntry[] = [
 // ---------------------------------------------------------------------------
 
 export const WIRED_RETURN_COMPONENT_DEFERRALS: readonly WiredComponentDeferral[] = [
+  {
+    gapId: "GAP-RETURNS-BA400-GROSS-INCOME",
+    formId: "BA400",
+    module: "platform/returns/ba400/period-close-subscriber.ts",
+    title:
+      "Gross-income rows sourced from live RevenueRecognitionEmitted events — deferred to commencement-of-trading. Pre-commencement, the subscriber is called with empty gross-income rows; the BIA formula yields zero capital (α × avg(positive annual gross income, 3y) = 0). Zero IS the correct SARB-reportable value for a bank that has not yet commenced trading — NOT an understatement. Identical reasoning to GAP-RETURNS-BA700-OPERATIONAL-RWA on the BA 700 capital-adequacy return.",
+    owner: "Bea (Accounting & financial reporting engineer, engineering)",
+    targetTrigger:
+      "Commencement-of-trading + first audited fiscal year of gross income — at that point real RevenueRecognitionEmitted events start accruing and the gross-income rows must be derived from the income-statement event stream rather than supplied as empty (GAP-RETURNS-BA400-GROSS-INCOME re-opens).",
+    citations: [
+      "D-TREASURER-WAVE2-SUBSTRATE",
+      "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
+      "D-BA-RETURN-NUMBERING-EXCEL-CANONICAL",
+      "Regulations Relating to Banks Reg 33 (operational risk)",
+      "BCBS D196 §645–§654 (BIA)",
+    ],
+  },
   {
     gapId: "GAP-RETURNS-BA700-OPERATIONAL-RWA",
     formId: "BA700",
