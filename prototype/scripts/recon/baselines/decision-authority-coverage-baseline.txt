@@ -3,14 +3,24 @@
 # Helena (CRO) and Owen (CoSec) removed: Slice D activates both seats with
 # first Decision events (scripts/record-d-governance-seat-activations.ts).
 #
-# Remaining 5 entries: governance seats with no Decision events yet.
+# Remaining entries: governance seats with no Decision events yet.
 # These will be activated in future slices as each seat's decision scope
 # is established. To suppress warnings for a seat, either:
 #   (a) emit a Decision event under that authority, OR
 #   (b) mark the persona `buildPhaseStatus: paused` in Team/_team-roster.json.
 #
+# 2026-06-11 (D-TREASURER-WAVE1-SUBSTRATE follow-up): corrected the
+# PERSONA_TO_AUTHORITY seat map — Eitan is the Treasurer (not CISO);
+# Rashida is the CISO; the Information Officer is Iris (not the
+# non-existent "Ivana"). Baseline subjects re-stamped accordingly:
+# `Eitan (CISO)` -> `Eitan (Treasurer)`; `Rashida (CISO)` and `Iris (IO)`
+# added as build-phase informational seats (no Decision events under their
+# authority yet in the canonical store — they activate in a future slice).
+#
 Camille (CFO)
 Devon (COO)
-Eitan (CISO)
+Eitan (Treasurer)
+Iris (IO)
+Rashida (CISO)
 Thandiwe (CAE)
 Zara (CCO)
