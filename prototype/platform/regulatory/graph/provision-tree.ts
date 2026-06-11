@@ -61,8 +61,8 @@ export interface ProvisionNode {
   readonly children: string[];
   /** Verbatim / summary text for this node (may be empty). */
   readonly text: string;
-  readonly number?: string;
-  readonly heading?: string;
+  readonly number?: string | undefined;
+  readonly heading?: string | undefined;
 }
 
 export type ProvisionTree = Map<string, ProvisionNode>;
