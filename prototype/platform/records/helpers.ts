@@ -718,6 +718,106 @@ export function recordRegulatorySource(
 }
 
 // ---------------------------------------------------------------------------
+// recordRegulatoryExcerpt — WS-REGULATORY-LIBRARY-V1 Slice 4
+// ---------------------------------------------------------------------------
+
+export interface RecordRegulatoryExcerptInput {
+  /**
+   * Raw PNG bytes of the rasterised page excerpt. Stored verbatim
+   * (content-addressed); the hash is what goes in the structured JSON.
+   */
+  readonly body: Uint8Array;
+  /**
+   * The instrument this excerpt belongs to (e.g. `FAIS-GCC-2003`).
+   * Recorded in event metadata for replay / re-association.
+   */
+  readonly instrumentId: string;
+  /** The structured-document slug (e.g. `fais-gcc`). */
+  readonly slug: string;
+  /**
+   * Section identifier within the instrument (e.g. `fais-gcc:s-schedule`).
+   * Used to re-associate the excerpt with its section node.
+   */
+  readonly sectionId: string;
+  /**
+   * Excerpt identifier — unique within the instrument. Used as the path
+   * component in `GET /api/regulation-reader/:slug/excerpt/:id`.
+   */
+  readonly excerptId: string;
+  /** Visual kind of excerpt — drives rendering hints in the reader. */
+  readonly kind: "table" | "diagram" | "formula" | "full-page";
+  /** PDF page or range this excerpt covers (e.g. "2" or "2-3"). */
+  readonly pages: string;
+  /** Optional human-readable label surfaced in `<figcaption>`. */
+  readonly caption?: string;
+  /** Regulator's published-source URL for provenance (not load-bearing). */
+  readonly sourceUrl?: string;
+  readonly actor: Actor;
+  readonly entity?: string;
+}
+
+/**
+ * File a regulatory excerpt PNG into the content-addressed document store via
+ * a `RecordFiled{registerKey:"documents"}` event, and return the
+ * `documentHash` so the caller can embed it in the structured JSON.
+ *
+ * Thin wrapper over {@link recordFiled} that fixes the regulatory-library
+ * envelope: `classification:"public-disclosure"`, `retention.citationRef:
+ * "D-REGULATORY-LIBRARY-V1"`, `metadata.category:"regulatory-excerpt"`, plus
+ * the excerpt-specific metadata fields.
+ *
+ * Authority: D-REGULATORY-LIBRARY-V1 (CEO-approved 2026-06-11).
+ * Author: Mira (Compliance / RegTech engineer, engineering).
+ */
+export function recordRegulatoryExcerpt(
+  input: RecordRegulatoryExcerptInput,
+  asOf?: string,
+  deps?: RecordHelperDeps,
+): RecordHelperResult {
+  requireNonEmpty("instrumentId", input.instrumentId);
+  requireNonEmpty("slug", input.slug);
+  requireNonEmpty("sectionId", input.sectionId);
+  requireNonEmpty("excerptId", input.excerptId);
+
+  const effectiveAsOf = asOf ?? new Date().toISOString();
+
+  return recordFiled(
+    {
+      recordId: `reg-excerpt:${input.excerptId}`,
+      registerKey: "documents",
+      body: input.body,
+      classification: "public-disclosure",
+      retention: {
+        citationRef: "D-REGULATORY-LIBRARY-V1",
+        minimumYears: 7,
+        archivalTier: "cool",
+      },
+      metadata: {
+        // `title` and `path` are required by the RecordFiledPayload schema.
+        // For excerpts, title is a human label; path is a synthetic excerpt ref.
+        title: `${input.slug} excerpt — ${input.kind} (p. ${input.pages})`,
+        path: `reg-excerpt:${input.excerptId}`,
+        category: "regulatory-excerpt",
+        instrumentId: input.instrumentId,
+        slug: input.slug,
+        sectionId: input.sectionId,
+        excerptId: input.excerptId,
+        kind: input.kind,
+        pages: input.pages,
+        contentType: "image/png",
+        ...(input.caption ? { caption: input.caption } : {}),
+        ...(input.sourceUrl ? { sourceUrl: input.sourceUrl } : {}),
+      },
+      citations: ["D-REGULATORY-LIBRARY-V1"],
+      actor: input.actor,
+      ...(input.entity ? { entity: input.entity } : {}),
+    },
+    effectiveAsOf,
+    deps,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Default retention for a register key — RMS Phase 2 Block B.
 //
 // Maps each of the seven RMS register keys to its default retention

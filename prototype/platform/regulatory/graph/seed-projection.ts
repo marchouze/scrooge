@@ -249,6 +249,14 @@ interface StructuredSection {
   pages?: string;
   footnotes?: Array<{ marker: string; text: string }>;
   subsections?: StructuredSection[];
+  /** Excerpt records filed via recordRegulatoryExcerpt() (Slice 4, D-REGULATORY-LIBRARY-V1). */
+  excerpts?: Array<{
+    id: string;
+    kind: string;
+    hash?: string;
+    pages?: string;
+    caption?: string;
+  }>;
 }
 
 /**
@@ -1478,6 +1486,18 @@ export async function runSeed(): Promise<SeedStats> {
             ...(section.pages ? { sourcePages: section.pages } : {}),
             ...(section.footnotes?.length
               ? { footnotesJson: JSON.stringify(section.footnotes) }
+              : {}),
+            // Excerpt metadata — WS-REGULATORY-LIBRARY-V1 Slice 4
+            // (D-REGULATORY-LIBRARY-V1). Propagates excerpt count and hashes
+            // onto Provision nodes so the obligation drill-down can surface
+            // the visual excerpt alongside verbatim text.
+            ...(section.excerpts?.length
+              ? {
+                  excerptCount: section.excerpts.length,
+                  excerptHashesJson: JSON.stringify(
+                    section.excerpts.map((e) => e.hash).filter(Boolean),
+                  ),
+                }
               : {}),
           },
         };
