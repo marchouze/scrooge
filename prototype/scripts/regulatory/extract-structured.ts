@@ -5,9 +5,9 @@
 // Two modes:
 //
 //   Hash-stamp mode (--hash):
-//     Loads an existing `*-structured.json` for the given slug and stamps
-//     `goldenSourceHash` onto it without touching sections, text, or subsections.
-//     Use this after filing a PDF via `acquire:source` to link the structured
+//     Loads an existing structured JSON for the given slug and stamps
+//     goldenSourceHash onto it without touching sections, text, or subsections.
+//     Use this after filing a PDF via acquire:source to link the structured
 //     JSON to its content-addressed binary.
 //
 //     BANK_EVENT_DB="$HOME/.local/share/bank/event.db" \
@@ -16,10 +16,10 @@
 //       --hash "blake3:ecd52d04eaf0ad744e6454f8fd47186ac87da83450cdc5ad380e0ad11c4b73c8"
 //
 //   Full-extraction mode (--from):
-//     Runs `pdftotext -layout` on the source PDF, segments by section-numbering
+//     Runs pdftotext -layout on the source PDF, segments by section-numbering
 //     heuristics, tracks page ranges, collects footnotes, and MERGES the result
-//     into any existing `*-structured.json` (preserving hand-curated text and
-//     subsections; only filling missing `pages` and `footnotes`).
+//     into any existing structured JSON (preserving hand-curated text and
+//     subsections; only filling missing pages and footnotes).
 //
 //     bun run extract:structured \
 //       --slug fais-act \
@@ -30,10 +30,13 @@
 // Authority: D-REGULATORY-LIBRARY-V1 (CEO-approved 2026-06-11).
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
+import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { execSync } from "node:child_process";
-import type { StructuredSection, StructuredSourceDocument } from "../../platform/regulatory/structured-source-schema";
+import type {
+  StructuredSection,
+  StructuredSourceDocument,
+} from "../../platform/regulatory/structured-source-schema";
 import { die, emitOk, optionalString, parseArgs, requireString } from "../dispatch/args";
 
 const PDFTOTEXT_BIN = "/opt/homebrew/bin/pdftotext";
@@ -71,21 +74,22 @@ function findStructuredJsonPath(slug: string): string | undefined {
 // ---------------------------------------------------------------------------
 
 function hashStampMode(slug: string, hash: string, outPath: string | undefined): void {
-  const jsonPath = outPath ?? findStructuredJsonPath(slug);
-  if (!jsonPath) die(`No structured JSON found for slug "${slug}". Pass --out <path> to create one.`);
-  if (!existsSync(jsonPath!)) die(`Structured JSON not found: ${jsonPath}`);
+  const resolved = outPath ?? findStructuredJsonPath(slug);
+  if (!resolved)
+    die(`No structured JSON found for slug "${slug}". Pass --out <path> to create one.`);
+  if (!existsSync(resolved)) die(`Structured JSON not found: ${resolved}`);
 
-  const raw = readFileSync(jsonPath!, "utf-8");
+  const raw = readFileSync(resolved, "utf-8");
   let doc: StructuredSourceDocument;
   try {
     doc = JSON.parse(raw) as StructuredSourceDocument;
   } catch (e) {
-    die(`Failed to parse ${jsonPath}: ${e instanceof Error ? e.message : String(e)}`);
+    die(`Failed to parse ${resolved}: ${e instanceof Error ? e.message : String(e)}`);
   }
 
   doc.goldenSourceHash = hash;
 
-  writeFileSync(jsonPath!, JSON.stringify(doc, null, 2) + "\n", "utf-8");
+  writeFileSync(resolved, `${JSON.stringify(doc, null, 2)}\n`, "utf-8");
 
   // Count sections for summary
   let sectionsEnriched = 0;
@@ -99,7 +103,7 @@ function hashStampMode(slug: string, hash: string, outPath: string | undefined):
     sectionsEnriched,
     pagesAdded: 0,
     footnotesAdded: 0,
-    path: jsonPath,
+    path: resolved,
   });
 }
 
@@ -129,18 +133,18 @@ function splitPages(raw: string): ParsedPage[] {
   }));
 }
 
-/** Detect section-heading lines: "1.", "Section 1", "(1)", "PART I", etc. */
+/** Detect section-heading lines: "1.", "Section 1", "(1)", etc. */
 function isSectionHeading(line: string): { number: string; heading: string } | null {
   const trimmed = line.trim();
-  // "1." / "1." at start
+  // "1." at start
   const numDot = trimmed.match(/^(\d+)\.\s+(.*)/);
-  if (numDot) return { number: numDot[1]!, heading: numDot[2]?.trim() ?? "" };
+  if (numDot) return { number: numDot[1] ?? "", heading: numDot[2]?.trim() ?? "" };
   // "Section 1" / "section 1"
   const secN = trimmed.match(/^[Ss]ection\s+(\d+[A-Z]?)\s*(.*)/);
-  if (secN) return { number: secN[1]!, heading: secN[2]?.trim() ?? "" };
+  if (secN) return { number: secN[1] ?? "", heading: secN[2]?.trim() ?? "" };
   // "(1)" standalone
   const paren = trimmed.match(/^\((\d+)\)\s+(.*)/);
-  if (paren) return { number: paren[1]!, heading: paren[2]?.trim() ?? "" };
+  if (paren) return { number: paren[1] ?? "", heading: paren[2]?.trim() ?? "" };
   return null;
 }
 
@@ -149,10 +153,10 @@ function isFootnoteLine(line: string): { marker: string; text: string } | null {
   const trimmed = line.trim();
   // Numeric footnote: "1 Some footnote text."
   const numFn = trimmed.match(/^(\d+)\s+([A-Z][^.]{5,}\.?)$/);
-  if (numFn) return { marker: numFn[1]!, text: numFn[2]! };
+  if (numFn) return { marker: numFn[1] ?? "", text: numFn[2] ?? "" };
   // Bracket footnote: "[1] Some footnote text."
   const brFn = trimmed.match(/^\[(\d+)\]\s+(.+)/);
-  if (brFn) return { marker: `[${brFn[1]}]`, text: brFn[2]! };
+  if (brFn) return { marker: `[${brFn[1]}]`, text: brFn[2] ?? "" };
   return null;
 }
 
@@ -165,7 +169,14 @@ function isFootnoteLine(line: string): { marker: string; text: string } | null {
 function extractSectionsFromPages(pages: ParsedPage[]): ExtractedSection[] {
   const sections = new Map<
     string,
-    { number: string; heading: string; startPage: number; endPage: number; lines: string[]; footnotes: Array<{ marker: string; text: string }> }
+    {
+      number: string;
+      heading: string;
+      startPage: number;
+      endPage: number;
+      lines: string[];
+      footnotes: Array<{ marker: string; text: string }>;
+    }
   >();
   let currentSectionNum: string | null = null;
 
@@ -196,9 +207,11 @@ function extractSectionsFromPages(pages: ParsedPage[]): ExtractedSection[] {
           });
         }
       } else if (currentSectionNum) {
-        const sec = sections.get(currentSectionNum)!;
-        sec.endPage = pageNum;
-        sec.lines.push(line);
+        const sec = sections.get(currentSectionNum);
+        if (sec) {
+          sec.endPage = pageNum;
+          sec.lines.push(line);
+        }
       }
     }
 
@@ -244,7 +257,7 @@ function extractSectionsFromPages(pages: ParsedPage[]): ExtractedSection[] {
 /**
  * Merge extracted sections (pages + footnotes) into an existing structured
  * section tree. Preserves all existing text/subsections; only fills missing
- * `pages` and `footnotes`.
+ * pages and footnotes.
  */
 function mergeExtracted(
   existing: StructuredSection[],
@@ -345,8 +358,8 @@ function fullExtractionMode(
     }
   }
 
-  const writePath = outPath ?? jsonPath!;
-  writeFileSync(writePath, JSON.stringify(doc, null, 2) + "\n", "utf-8");
+  const writePath = outPath ?? jsonPath ?? `${slug}-structured.json`;
+  writeFileSync(writePath, `${JSON.stringify(doc, null, 2)}\n`, "utf-8");
 
   let sectionsEnriched = 0;
   for (const chapter of doc.chapters ?? []) {
