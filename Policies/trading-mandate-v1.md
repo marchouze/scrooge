@@ -28,7 +28,7 @@ obligations:
 
 # Trading Mandate v1
 
-> **AMENDMENT — v1.1 (2026-06-11).** Per CEO in-session instruction 2026-06-11 (Marc, CEO), recorded under `D-BANK-STRATEGY-V2` (decision pending — recording occurs at strategy v2 approval), aligning this mandate with `Policies/bank-strategy-v2.md`:
+> **AMENDMENT — v1.1 (2026-06-11).** Per CEO in-session instruction 2026-06-11 (Marc, CEO), recorded under `D-BANK-STRATEGY-V2` (approved 2026-06-11), aligning this mandate with `Policies/bank-strategy-v2.md`:
 > 1. **JSE Equity Desk removed from scope.** All JSE cash-equity trading authority is withdrawn. The §2.2 instrument list, the §4.1 desk row, the §4.3 presumptive trading-book line, and the §5.1/§5.2/§5.3 equity limit rows are struck (marked below with strikethrough; text preserved for audit trail). Reactivation requires the Hoz Securities Limited JSE-membership pathway, an NPA gate pass, and amendment of strategy v2 (`EXCL-LISTED-EQUITY`, strategy §13.4).
 > 2. **FX forward tenor cap removed.** The "≤ 1 year at v1" outright-forward settlement cap in §2.5 is removed; forward/swap tenor is governed by the typed product scope (`prd:bank:fx:otc-vanilla`, T+2 to T+N) and the RAS market-risk appetite lines, not a fixed tenor ceiling.
 > See §11 (Amendment log).
@@ -470,7 +470,7 @@ The following gaps are surfaced for the roadmap — they do not prevent this man
 | Version | Date | Author / instrument | Authority | Change |
 |---|---|---|---|---|
 | v1 | 2026-05-11 | Kai (Structured rates trader, markets) — lead; Helena (Chief Risk Officer, governance); Devon (COO, governance) | Board (interim: CEO Marc) | Inaugural mandate |
-| v1.1 | 2026-06-11 | Owen (Company Secretary, governance), aligning with `Policies/bank-strategy-v2.md` | CEO in-session instruction 2026-06-11 (Marc, CEO); recorded under `D-BANK-STRATEGY-V2` — decision pending, recording occurs at strategy v2 approval | (1) JSE Equity Desk REMOVED FROM SCOPE — §2.2 instrument list, §4.1 desk row, §4.3 presumptive trading-book line, §5.1 VaR row, §5.2 intraday equity placeholder, §5.3 end-of-day equity row struck (text preserved with strikethrough); `ORG-MK-09` closure suspended; `DESK-EQUITY` identifier retired. (2) FX forward tenor cap removed — §2.5 "≤ 1 year at v1" struck; tenor governed by RAS market-risk lines + typed product scope (T+2 to T+N). Note: the §7.3 `PolicyAmendment` typed event is not yet in the event catalogue (substrate gap §9 #4); this markdown amendment is the interim record |
+| v1.1 | 2026-06-11 | Owen (Company Secretary, governance), aligning with `Policies/bank-strategy-v2.md` | CEO in-session instruction 2026-06-11 (Marc, CEO); recorded under `D-BANK-STRATEGY-V2` (approved 2026-06-11) | (1) JSE Equity Desk REMOVED FROM SCOPE — §2.2 instrument list, §4.1 desk row, §4.3 presumptive trading-book line, §5.1 VaR row, §5.2 intraday equity placeholder, §5.3 end-of-day equity row struck (text preserved with strikethrough); `ORG-MK-09` closure suspended; `DESK-EQUITY` identifier retired. (2) FX forward tenor cap removed — §2.5 "≤ 1 year at v1" struck; tenor governed by RAS market-risk lines + typed product scope (T+2 to T+N). Note: the §7.3 `PolicyAmendment` typed event is not yet in the event catalogue (substrate gap §9 #4); this markdown amendment is the interim record |
 
 ---
 
