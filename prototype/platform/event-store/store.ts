@@ -25,7 +25,8 @@
 
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
-import { dirname } from "node:path";
+import { homedir } from "node:os";
+import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 import {
@@ -175,6 +176,103 @@ export interface ArchiveResult {
   readonly sha256Hash: string;
 }
 
+/**
+ * D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION — selection contract for
+ * `EventStore.extractToArchivePartition()`.
+ *
+ * Two selection modes:
+ *   - `eventIds`  — explicit list of `event_id` values to extract.
+ *   - `predicate` — a SQL WHERE fragment over the `events` table columns
+ *     (e.g. `entity LIKE ? OR entity = ?`) with bound `params`. The
+ *     fragment is TRUSTED INTERNAL INPUT (operator scripts only — never
+ *     interpolate user data); parameters must be bound, not inlined.
+ */
+export type ExtractionSelection =
+  | { readonly eventIds: readonly string[] }
+  | {
+      readonly predicate: {
+        readonly where: string;
+        readonly params?: readonly (string | number)[];
+      };
+    };
+
+/**
+ * Return value of `EventStore.extractToArchivePartition()`.
+ * Extends the Phase-5 `ArchiveResult` with per-type / per-entity
+ * breakdowns for audit logging.
+ */
+export interface ExtractionResult extends ArchiveResult {
+  readonly archivePath: string;
+  readonly byType: Readonly<Record<string, number>>;
+  readonly byEntity: Readonly<Record<string, number>>;
+}
+
+/**
+ * Pure decision core of the bun-test home-store guard. Returns the path of
+ * the forbidden shared store when construction must be refused, else null.
+ *
+ * Refusal conditions (ALL must hold):
+ *   1. The process runs under `bun test` (`NODE_ENV === "test"` — bun test
+ *      sets this automatically).
+ *   2. The escape hatch `BANK_TEST_USE_AMBIENT_DB === "1"` is NOT set
+ *      (same opt-in `tests/_setup.ts` honours).
+ *   3. The requested path resolves to the shared home store: either the
+ *      home-default `$HOME/.local/share/bank/event.db` or the explicit
+ *      `BANK_HOME_EVENT_DB` location.
+ *
+ * Root cause being closed: between 2026-05-26 and 2026-05-29 test runs
+ * resolved the home-default store and appended 2,857 fixture rows
+ * (BANK-FIXTURE-*, TEST-ENTITY-ANYA-M1-*, bare `bank`) into the canonical
+ * log. The tests/_setup.ts preload now redirects unconditionally, but the
+ * preload only covers in-process stores — this guard is the backstop at
+ * the construction site itself.
+ *
+ * Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION (CEO-approved
+ * 2026-06-11).
+ */
+export function forbiddenTestHomeStorePath(
+  path: string,
+  env: {
+    readonly nodeEnv?: string | undefined;
+    readonly allowAmbient?: string | undefined;
+    readonly bankHomeEventDb?: string | undefined;
+  },
+  home: string,
+): string | null {
+  if (path === ":memory:") return null;
+  if (env.nodeEnv !== "test") return null;
+  if (env.allowAmbient === "1") return null;
+  const requested = resolve(path);
+  const homeDefault = resolve(home, ".local", "share", "bank", "event.db");
+  if (requested === homeDefault) return homeDefault;
+  const explicitHome = env.bankHomeEventDb?.trim();
+  if (explicitHome && requested === resolve(explicitHome)) return resolve(explicitHome);
+  return null;
+}
+
+function assertNotHomeStoreUnderTest(path: string): void {
+  const forbidden = forbiddenTestHomeStorePath(
+    path,
+    {
+      nodeEnv: process.env.NODE_ENV,
+      allowAmbient: process.env.BANK_TEST_USE_AMBIENT_DB,
+      bankHomeEventDb: process.env.BANK_HOME_EVENT_DB,
+    },
+    homedir(),
+  );
+  if (forbidden !== null) {
+    throw new Error(
+      [
+        `EventStore: refusing to open the shared home store "${forbidden}" under bun test.`,
+        "Tests must set BANK_EVENT_DB to a tmpdir (tests/_setup.ts does this by default);",
+        "set BANK_TEST_USE_AMBIENT_DB=1 only for an explicit, documented opt-in.",
+        "Root cause: 2,857 fixture rows polluted the canonical store 2026-05-26..29.",
+        "Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.",
+      ].join(" "),
+    );
+  }
+}
+
 export interface ReplayOpts {
   fromSequence?: number;
   /**
@@ -268,8 +366,35 @@ export interface SnapshotCadenceCheck {
 
 export class EventStore {
   private readonly db: Database;
+  /**
+   * `true` when the store was opened with `{ readonly: true }`. Read-only
+   * stores skip ALL open-time side effects (PRAGMAs, DDL migrations,
+   * soft-tagger, dispatch-claim backfill) so opening one never changes a
+   * single byte of the underlying file. This is load-bearing for cold
+   * archive partitions: their registered SHA-256 must stay valid across
+   * replays (`PartitionedEventStore.verifyArchiveIntegrity()`).
+   * Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION;
+   * D-EVENT-STORE-SCALING-PHASE-5.
+   */
+  readonly readonlyMode: boolean;
 
-  constructor(path = ":memory:") {
+  constructor(path = ":memory:", opts?: { readonly?: boolean }) {
+    this.readonlyMode = opts?.readonly === true;
+    // Root-cause guard for the 2026-05-26..29 home-store test-pollution
+    // incident (2,857 fixture rows): refuse to open the shared home-default
+    // store from inside a `bun test` process. Tests must point
+    // BANK_EVENT_DB at a tmpdir (tests/_setup.ts does this by default).
+    // Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.
+    if (!this.readonlyMode) {
+      assertNotHomeStoreUnderTest(path);
+    }
+    if (this.readonlyMode) {
+      // Read-only open: no directory creation, no PRAGMAs, no DDL, no
+      // migrations, no soft-tagger, no claim backfill. Any write throws
+      // at the SQLite level ("attempt to write a readonly database").
+      this.db = new Database(path, { readonly: true });
+      return;
+    }
     // Ensure parent directory exists for file-backed stores. On a fresh
     // GitHub Actions runner the `.local/` directory doesn't exist yet, and
     // `bun:sqlite` will refuse to create the database file otherwise.
@@ -1219,6 +1344,228 @@ export class EventStore {
   }
 
   /**
+   * D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION — selective archive
+   * extraction. Moves an arbitrary (possibly sparse, mid-range) set of
+   * rows from the hot `events` table into a NEW cold partition SQLite
+   * file and registers it in `archive_partitions`.
+   *
+   * Differences from `archiveEventsOlderThan` (Phase-5 cold-tier
+   * eviction):
+   *   - Selection is by explicit event-id list or SQL predicate, not a
+   *     sequence cutoff. Sparse sequence ranges are legal (precedent:
+   *     partition 201112–201800 holds count=685 over a 689 span).
+   *   - The hot store keeps rows below, inside, and above the extracted
+   *     range; the partition may OVERLAP the hot store's [min,max]
+   *     sequence window. `PartitionedEventStore` replays cold-first.
+   *
+   * Events are NEVER destroyed — they move to the archive file with
+   * sequence, payload, provenance, and all envelope columns preserved,
+   * and remain replayable via `PartitionedEventStore`. The partition's
+   * SHA-256 is computed on the final file bytes; cold opens are
+   * read-only (`{ readonly: true }`) so the hash stays valid.
+   *
+   * Concurrency contract: launchd agents append to the hot store
+   * concurrently. The SELECT snapshot is taken first (cheap reads);
+   * the only write transaction on the hot store is a single short
+   * `BEGIN IMMEDIATE`-equivalent transaction that (a) registers the
+   * partition row and (b) deletes EXACTLY the selected sequences. The
+   * delete targets the captured sequence list — concurrent inserts that
+   * match the predicate after the snapshot are left untouched (they can
+   * be extracted by a later run).
+   *
+   * Atomicity contract: any failure before the final transaction leaves
+   * the hot store untouched and removes the partial archive file. A
+   * failure inside the final transaction rolls the hot store back and
+   * removes the archive file.
+   *
+   * Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION (CEO-approved
+   * 2026-06-11); partition model per D-EVENT-STORE-SCALING-PHASE-5.
+   */
+  extractToArchivePartition(selection: ExtractionSelection, archivePath: string): ExtractionResult {
+    if (this.readonlyMode) {
+      throw new Error(
+        "EventStore.extractToArchivePartition: store is read-only (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)",
+      );
+    }
+    if (!archivePath || archivePath.trim() === "") {
+      throw new Error(
+        "EventStore.extractToArchivePartition: archivePath must be non-empty (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)",
+      );
+    }
+    if (existsSync(archivePath)) {
+      throw new Error(
+        `EventStore.extractToArchivePartition: archive file already exists at "${archivePath}" — refusing to overwrite (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)`,
+      );
+    }
+
+    // Step 1 — snapshot the selected rows (ordered by sequence).
+    const selectedRows = this.selectExtractionRows(selection);
+    if (selectedRows.length === 0) {
+      throw new Error(
+        "EventStore.extractToArchivePartition: selection matched zero rows — nothing to extract (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)",
+      );
+    }
+
+    // Step 2 — create the archive DB with the same DDL and copy rows,
+    // preserving the original sequence values.
+    mkdirSync(dirname(archivePath), { recursive: true });
+    const archiveDb = new Database(archivePath);
+    try {
+      archiveDb.exec(DDL);
+      const insertStmt = archiveDb.prepare(
+        `INSERT INTO events
+           (sequence, event_id, type, as_of, entity, actor_type, actor_id, citations, payload,
+            recorded_at, provenance, aggregate_id, aggregate_label)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      );
+      const copyTx = archiveDb.transaction((rows: RowShape[]) => {
+        for (const r of rows) {
+          insertStmt.run(
+            r.sequence,
+            r.event_id,
+            r.type,
+            r.as_of,
+            r.entity,
+            r.actor_type,
+            r.actor_id,
+            r.citations,
+            r.payload,
+            r.recorded_at,
+            r.provenance ?? null,
+            r.aggregate_id ?? null,
+            r.aggregate_label ?? null,
+          );
+        }
+      });
+      copyTx(selectedRows);
+
+      // Step 3 — integrity gate: archive count must equal selection count.
+      const archiveCount = (
+        archiveDb.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }
+      ).n;
+      if (archiveCount !== selectedRows.length) {
+        throw new Error(
+          `EventStore.extractToArchivePartition: integrity mismatch — archive has ${archiveCount} rows but selection captured ${selectedRows.length} (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)`,
+        );
+      }
+      archiveDb.close(); // flush before hashing
+
+      // Step 4 — SHA-256 of the final archive file bytes. Cold opens are
+      // read-only so this hash stays valid across future replays.
+      const fileBytes = readFileSync(archivePath);
+      const hasher = new Bun.CryptoHasher("sha256");
+      hasher.update(fileBytes);
+      const sha256Hash = hasher.digest("hex");
+
+      // Step 5 — single short hot-store transaction: register the
+      // partition row + delete EXACTLY the captured sequences.
+      const partitionId = randomUUID();
+      const firstRow = selectedRows[0];
+      const lastRow = selectedRows[selectedRows.length - 1];
+      if (!firstRow || !lastRow) {
+        throw new Error(
+          "EventStore.extractToArchivePartition: unexpected empty selection after count check (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)",
+        );
+      }
+      const minSeq: number = firstRow.sequence;
+      const maxSeq: number = lastRow.sequence;
+      const sequences = selectedRows.map((r) => r.sequence);
+
+      const finalTx = this.db.transaction(() => {
+        this.db
+          .prepare(
+            `INSERT INTO archive_partitions
+               (partition_id, path, min_sequence, max_sequence, event_count, sha256_hash)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+          )
+          .run(partitionId, archivePath, minSeq, maxSeq, selectedRows.length, sha256Hash);
+        let deleted = 0;
+        for (const chunk of chunked(sequences, 500)) {
+          const placeholders = chunk.map(() => "?").join(", ");
+          const res = this.db
+            .prepare(`DELETE FROM events WHERE sequence IN (${placeholders})`)
+            .run(...(chunk as number[]));
+          deleted += res.changes;
+        }
+        if (deleted !== selectedRows.length) {
+          // Throwing inside the transaction rolls everything back —
+          // partition row + deletes — leaving the hot store untouched.
+          throw new Error(
+            `EventStore.extractToArchivePartition: hot-store delete removed ${deleted} rows but selection captured ${selectedRows.length} — rolled back (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)`,
+          );
+        }
+      });
+      finalTx.immediate();
+
+      // Step 6 — breakdowns for audit logging.
+      const byType: Record<string, number> = {};
+      const byEntity: Record<string, number> = {};
+      for (const r of selectedRows) {
+        byType[r.type] = (byType[r.type] ?? 0) + 1;
+        byEntity[r.entity] = (byEntity[r.entity] ?? 0) + 1;
+      }
+
+      return {
+        partitionId,
+        minSeq,
+        maxSeq,
+        eventCount: selectedRows.length,
+        sha256Hash,
+        archivePath,
+        byType,
+        byEntity,
+      };
+    } catch (err) {
+      try {
+        archiveDb.close();
+      } catch {
+        // already closed
+      }
+      try {
+        if (existsSync(archivePath)) unlinkSync(archivePath);
+      } catch {
+        // best-effort
+      }
+      throw err;
+    }
+  }
+
+  /** Resolve an `ExtractionSelection` to its row snapshot (sequence ASC). */
+  private selectExtractionRows(selection: ExtractionSelection): RowShape[] {
+    if ("eventIds" in selection) {
+      const unique = [...new Set(selection.eventIds)];
+      const rows: RowShape[] = [];
+      for (const chunk of chunked(unique, 500)) {
+        const placeholders = chunk.map(() => "?").join(", ");
+        rows.push(
+          ...(this.db
+            .prepare(`SELECT * FROM events WHERE event_id IN (${placeholders})`)
+            .all(...(chunk as string[])) as RowShape[]),
+        );
+      }
+      if (rows.length !== unique.length) {
+        const found = new Set(rows.map((r) => r.event_id));
+        const missing = unique.filter((id) => !found.has(id));
+        throw new Error(
+          `EventStore.extractToArchivePartition: ${missing.length} of ${unique.length} requested event-ids not present in the hot store (first missing: "${missing[0]}") (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)`,
+        );
+      }
+      rows.sort((a, b) => a.sequence - b.sequence);
+      return rows;
+    }
+    const where = selection.predicate.where.trim();
+    if (where === "") {
+      throw new Error(
+        "EventStore.extractToArchivePartition: predicate.where must be non-empty (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION)",
+      );
+    }
+    const params = (selection.predicate.params ?? []) as (string | number)[];
+    return this.db
+      .prepare(`SELECT * FROM events WHERE ${where} ORDER BY sequence ASC`)
+      .all(...params) as RowShape[];
+  }
+
+  /**
    * List all archive partition rows ordered by min_sequence ASC.
    * Used by PartitionedEventStore to discover cold stores.
    *
@@ -1273,6 +1620,18 @@ function resolveCadence(eventType?: string): SnapshotCadence {
   if (!eventType) return DEFAULT_SNAPSHOT_CADENCE;
   const meta = lookupEventType(eventType);
   return meta?.cadence ?? DEFAULT_SNAPSHOT_CADENCE;
+}
+
+/**
+ * Split `items` into chunks of at most `size` — keeps bound-parameter
+ * counts under SQLite's per-statement limit for IN (...) queries.
+ */
+function chunked<T>(items: readonly T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    out.push(items.slice(i, i + size) as T[]);
+  }
+  return out;
 }
 
 function secondsBetween(fromIso: string, toIso: string): number {

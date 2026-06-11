@@ -34,6 +34,18 @@
 //       *decrease* in `interiorGap` accompanied by no count growth is
 //       structurally impossible without mutation; flagged.
 //
+// Partition-awareness (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION,
+// CEO-approved 2026-06-11). Signals (A) and (B) operate on EFFECTIVE
+// values spanning the hot store plus registered archive partitions:
+// effective row count = hot COUNT(*) + Σ archive_partitions.event_count;
+// effective max-sequence = max(hot MAX(sequence), max partition
+// max_sequence). A hot row-count decrease is therefore sanctioned IFF it
+// is exactly covered by newly registered archive partitions (rows moved
+// cold, none destroyed) — surfaced as an `info` note, never silent. Any
+// uncovered decrease remains a fail. Two additional file-level checks
+// (registry-parity, hot-overlap) assert the cold files actually hold
+// what the registry claims and that no row lives in both tiers.
+//
 // The baseline is persisted at
 //
 //   $BANK_RECON_BASELINE_DIR/event-store-append-only.json  (default
@@ -79,28 +91,48 @@ const PIPELINE = "event-store-append-only";
  *
  * `interiorGap` is `(maxSequence - minSequence + 1) - rowCount`. It can
  * be > 0 legitimately (cloud-merge brings rows whose birth-store
- * sequence allocation produced gaps); we only flag a *decrease*, since
- * a decrease at constant or shrinking rowCount is structurally
- * impossible without mutation.
+ * sequence allocation produced gaps; archive extraction carves sparse
+ * holes); we only flag a *decrease*, since a decrease at constant or
+ * shrinking rowCount is structurally impossible without mutation.
+ *
+ * `archivedCount` / `archivedMaxSequence` summarise the registered
+ * `archive_partitions` rows (0 when none / table absent). They make the
+ * pipeline partition-aware (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION):
+ * the load-bearing monotonic invariant is the EFFECTIVE row count
+ * `rowCount + archivedCount` — moving rows hot→cold preserves it,
+ * appends grow it, and only true destruction shrinks it.
  */
 export interface EventStoreObservation {
   readonly rowCount: number;
   readonly maxSequence: number;
   readonly minSequence: number;
   readonly interiorGap: number;
+  /** Sum of `event_count` across registered archive partitions. */
+  readonly archivedCount: number;
+  /** Max `max_sequence` across registered archive partitions (0 = none). */
+  readonly archivedMaxSequence: number;
   readonly observedAt: string;
 }
 
 /**
- * Persisted baseline. The pipeline ratchets each field forward on
- * successful runs (row count and max-sequence monotonic upward;
- * interior gap retains the maximum legitimate value seen).
+ * Persisted baseline. The pipeline moves each field forward on
+ * successful runs:
+ *   - `rowCount` + `archivedCount` snap to the clean observation (the
+ *     monotonic invariant is their SUM — the effective row count; the
+ *     hot count alone may legitimately shrink on archive extraction).
+ *   - `maxSequence` ratchets to the effective max (hot ∪ archived).
+ *   - `interiorGap` retains the maximum legitimate value seen.
+ *
+ * Legacy baselines (written before partition-awareness) lack
+ * `archivedCount`; `loadBaselineFromDisk` defaults it to 0, which is
+ * strictly conservative-or-equal for the effective-count comparison.
  */
 export interface EventStoreBaseline {
   readonly rowCount: number;
   readonly maxSequence: number;
   readonly minSequence: number;
   readonly interiorGap: number;
+  readonly archivedCount: number;
   readonly baselineAt: string;
   readonly updatedAt: string;
 }
@@ -163,11 +195,31 @@ export function observeEventStore(dbPath: string): EventStoreObservation | null 
     const minSequence = Number(row.minSeq ?? 0);
     const maxSequence = Number(row.maxSeq ?? 0);
     const interiorGap = rowCount === 0 ? 0 : Math.max(0, maxSequence - minSequence + 1 - rowCount);
+
+    // Archive partition summary (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION).
+    // Pre-Phase-5 stores / minimal test fixtures have no table → zeros.
+    let archivedCount = 0;
+    let archivedMaxSequence = 0;
+    const partitionTable = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='archive_partitions'")
+      .get();
+    if (partitionTable) {
+      const agg = db
+        .prepare(
+          "SELECT COALESCE(SUM(event_count), 0) AS archived, COALESCE(MAX(max_sequence), 0) AS archivedMax FROM archive_partitions",
+        )
+        .get() as { archived: number; archivedMax: number };
+      archivedCount = Number(agg.archived ?? 0);
+      archivedMaxSequence = Number(agg.archivedMax ?? 0);
+    }
+
     return {
       rowCount,
       maxSequence,
       minSequence,
       interiorGap,
+      archivedCount,
+      archivedMaxSequence,
       observedAt: new Date().toISOString(),
     };
   } finally {
@@ -199,6 +251,12 @@ export function loadBaselineFromDisk(path: string): EventStoreBaseline | null {
       maxSequence: parsed.maxSequence,
       minSequence: parsed.minSequence,
       interiorGap: parsed.interiorGap,
+      // Legacy (pre-partition-aware) baselines lack archivedCount.
+      // Defaulting to 0 keeps the effective-count comparison
+      // conservative-or-equal: the baseline's effective count is then
+      // its hot count alone, which the observation's hot+archived sum
+      // must still meet or exceed.
+      archivedCount: typeof parsed.archivedCount === "number" ? parsed.archivedCount : 0,
       baselineAt: parsed.baselineAt,
       updatedAt: parsed.updatedAt,
     };
@@ -220,6 +278,15 @@ export function writeBaselineToDisk(path: string, baseline: EventStoreBaseline):
  * Pure comparison: produce the set of violations for `observation`
  * against `baseline`. Returns `[]` if no baseline (first run is
  * informational, no violation).
+ *
+ * Partition-aware semantics (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION):
+ * a HOT row-count decrease is sanctioned IFF the effective row count
+ * (hot + registered archive partitions) did not shrink — i.e. the
+ * decrease is exactly matched (or exceeded, allowing concurrent
+ * appends) by newly registered archive partitions covering the removed
+ * rows. Any uncovered decrease remains a fail. Sequence-level coverage
+ * of the moved rows is asserted separately by `runArchiveChecks`
+ * (registry-parity + hot-overlap checks against the actual cold files).
  */
 export function compareToBaseline(
   observation: EventStoreObservation,
@@ -227,17 +294,28 @@ export function compareToBaseline(
 ): ReconViolation[] {
   if (!baseline) return [];
   const v: ReconViolation[] = [];
-  if (observation.rowCount < baseline.rowCount) {
+  const observedEffective = observation.rowCount + observation.archivedCount;
+  const baselineEffective = baseline.rowCount + baseline.archivedCount;
+  if (observedEffective < baselineEffective) {
     v.push({
       subject: "events:rowCount",
-      message: `Row count regressed from ${baseline.rowCount} to ${observation.rowCount} (delta ${observation.rowCount - baseline.rowCount}). Direct SQL DELETE against the events table is the canonical cause; the event log must be append-only per Principle 1. Baseline recorded ${baseline.updatedAt}; current observation ${observation.observedAt}.`,
+      message: `Effective row count (hot + archived) regressed from ${baselineEffective} (hot ${baseline.rowCount} + archived ${baseline.archivedCount}) to ${observedEffective} (hot ${observation.rowCount} + archived ${observation.archivedCount}) — delta ${observedEffective - baselineEffective}. A hot decrease is sanctioned ONLY when exactly covered by newly registered archive partitions (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION); this decrease is NOT covered. Direct SQL DELETE against the events table is the canonical cause; the event log must be append-only per Principle 1. Baseline recorded ${baseline.updatedAt}; current observation ${observation.observedAt}.`,
       severity: "fail",
     });
+  } else if (observation.rowCount < baseline.rowCount) {
+    // Hot decrease fully covered by archive partitions — sanctioned
+    // archival, surfaced as an informational note (never silent).
+    v.push({
+      subject: "events:rowCount:archive-sanctioned",
+      message: `Hot row count decreased from ${baseline.rowCount} to ${observation.rowCount} (delta ${observation.rowCount - baseline.rowCount}) but the effective row count (hot + archived) held: ${baselineEffective} → ${observedEffective}. The decrease is covered by registered archive partitions (archived ${baseline.archivedCount} → ${observation.archivedCount}); rows moved cold, none destroyed. Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION; D-EVENT-STORE-SCALING-PHASE-5.`,
+      severity: "info",
+    });
   }
-  if (observation.maxSequence < baseline.maxSequence) {
+  const observedEffectiveMax = Math.max(observation.maxSequence, observation.archivedMaxSequence);
+  if (observedEffectiveMax < baseline.maxSequence) {
     v.push({
       subject: "events:maxSequence",
-      message: `MAX(sequence) regressed from ${baseline.maxSequence} to ${observation.maxSequence}. AUTOINCREMENT only advances; physical removal of the highest-sequence row, a VACUUM, or a store rebuild is the only explanation. Baseline recorded ${baseline.updatedAt}; current observation ${observation.observedAt}.`,
+      message: `Effective MAX(sequence) (hot ∪ archived) regressed from ${baseline.maxSequence} to ${observedEffectiveMax} (hot ${observation.maxSequence}, archived ${observation.archivedMaxSequence}). AUTOINCREMENT only advances; physical removal of the highest-sequence row, a VACUUM, or a store rebuild is the only explanation — archival to a registered partition would have preserved the sequence in the archived max. Baseline recorded ${baseline.updatedAt}; current observation ${observation.observedAt}.`,
       severity: "fail",
     });
   }
@@ -256,10 +334,19 @@ export function compareToBaseline(
 }
 
 /**
- * Ratchet a baseline forward given a clean observation. Returns the
- * new baseline. `rowCount`, `maxSequence`, and `interiorGap` move to
- * the larger of (baseline, observation); `minSequence` to the smaller
- * (oldest event preserved); timestamps refresh.
+ * Move a baseline forward given a clean observation. Returns the new
+ * baseline.
+ *
+ * - `rowCount` + `archivedCount` SNAP to the clean observation: the
+ *   monotonic invariant is their sum (the effective row count, already
+ *   asserted clean by `compareToBaseline` before any ratchet) — the hot
+ *   count alone may legitimately shrink when rows move to a registered
+ *   archive partition, and pinning it at the historical max would
+ *   re-report the same sanctioned archival forever.
+ * - `maxSequence` ratchets to the effective max (hot ∪ archived).
+ * - `interiorGap` retains the maximum legitimate value seen;
+ *   `minSequence` the smallest (oldest event preserved); timestamps
+ *   refresh.
  */
 export function ratchetBaseline(
   observation: EventStoreObservation,
@@ -268,16 +355,22 @@ export function ratchetBaseline(
   if (!baseline) {
     return {
       rowCount: observation.rowCount,
-      maxSequence: observation.maxSequence,
+      maxSequence: Math.max(observation.maxSequence, observation.archivedMaxSequence),
       minSequence: observation.minSequence,
       interiorGap: observation.interiorGap,
+      archivedCount: observation.archivedCount,
       baselineAt: observation.observedAt,
       updatedAt: observation.observedAt,
     };
   }
   return {
-    rowCount: Math.max(baseline.rowCount, observation.rowCount),
-    maxSequence: Math.max(baseline.maxSequence, observation.maxSequence),
+    rowCount: observation.rowCount,
+    archivedCount: observation.archivedCount,
+    maxSequence: Math.max(
+      baseline.maxSequence,
+      observation.maxSequence,
+      observation.archivedMaxSequence,
+    ),
     minSequence:
       observation.minSequence > 0
         ? Math.min(
@@ -300,22 +393,153 @@ export function ratchetBaseline(
 // ---------------------------------------------------------------------------
 
 /**
- * Run the two archive-specific recon checks:
+ * Run the archive-specific recon checks:
  *
- *  (D) No-gap check — if archive partitions exist, the hot store's
- *      MIN(sequence) must equal max(partitions.max_sequence) + 1.
- *      A gap or overlap means events were lost or duplicated during
- *      archival.
+ *  (D) No-gap check — restricted to PRE-FLOOR partitions (those whose
+ *      max_sequence lies entirely below the hot store's MIN(sequence),
+ *      i.e. the Phase-5 cutoff-eviction mode): the hot floor must equal
+ *      max(pre-floor partitions.max_sequence) + 1. A gap means events
+ *      between the last cutoff archive and the hot floor are
+ *      unaccounted for. Partitions that OVERLAP the hot range (sparse
+ *      selective extractions per
+ *      D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION) are excluded from
+ *      this boundary check — their coverage is asserted by (F)/(G).
+ *      NOTE: the known historical home-store gap (rows 203832–222995,
+ *      predating this pipeline's partition-awareness) intentionally
+ *      REMAINS a visible finding here — it is not absorbed.
  *
  *  (E) Hash integrity check — re-hash each archive file and compare to
  *      the stored sha256_hash. A mismatch means the archive file was
  *      tampered with or corrupted after archival.
  *
- * Opens the EventStore in read-write mode (required to run DDL migrations
- * on open) but performs no writes. Closes the store before returning.
+ *  (F) Registry-parity check — open each archive file read-only and
+ *      assert its actual COUNT(*) / MIN(sequence) / MAX(sequence)
+ *      match the registered event_count / min_sequence / max_sequence.
  *
- * Authority: D-EVENT-STORE-SCALING-PHASE-5.
+ *  (G) Hot-overlap check — for partitions overlapping the hot range,
+ *      assert no sequence exists in BOTH the hot store and the archive
+ *      (a row must live in exactly one tier; duplication means the
+ *      extraction delete was incomplete or rows were re-inserted).
+ *
+ * Opens the hot EventStore in read-write mode (required to run DDL
+ * migrations on open) but performs no writes; archive files are opened
+ * strictly read-only. Closes everything before returning.
+ *
+ * Authority: D-EVENT-STORE-SCALING-PHASE-5;
+ * D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.
  */
+/**
+ * Checks (F) registry-parity and (G) hot-overlap. Opens every archive
+ * file strictly read-only (raw `bun:sqlite` `{ readonly: true }` — no
+ * DDL, no PRAGMAs, zero byte mutation, so registered SHA-256 hashes
+ * stay valid). The hot store is likewise opened read-only here.
+ *
+ * Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.
+ */
+function runPartitionCoverageChecks(
+  hotDbPath: string,
+  partitions: ReadonlyArray<{
+    partition_id: string;
+    path: string;
+    min_sequence: number;
+    max_sequence: number;
+    event_count: number;
+  }>,
+  overlapping: ReadonlyArray<{ partition_id: string; path: string }>,
+): ReconViolation[] {
+  const violations: ReconViolation[] = [];
+  const overlappingIds = new Set(overlapping.map((p) => p.partition_id));
+  let hotDb: Database | undefined;
+  try {
+    hotDb = new Database(hotDbPath, { readonly: true });
+    for (const partition of partitions) {
+      if (!existsSync(partition.path)) continue; // (E) already reports missing files
+      let coldDb: Database | undefined;
+      try {
+        coldDb = new Database(partition.path, { readonly: true });
+        const agg = coldDb
+          .prepare(
+            "SELECT COUNT(*) AS n, COALESCE(MIN(sequence), 0) AS minSeq, COALESCE(MAX(sequence), 0) AS maxSeq FROM events",
+          )
+          .get() as { n: number; minSeq: number; maxSeq: number };
+
+        // Check (F) — registry parity.
+        if (
+          agg.n !== partition.event_count ||
+          agg.minSeq !== partition.min_sequence ||
+          agg.maxSeq !== partition.max_sequence
+        ) {
+          violations.push({
+            subject: `archive_partitions:registry-parity:${partition.partition_id}`,
+            message: `Archive partition ${partition.partition_id} (${partition.path}) does not match its registry row: file has count=${agg.n} min=${agg.minSeq} max=${agg.maxSeq}; registry says count=${partition.event_count} min=${partition.min_sequence} max=${partition.max_sequence}. Rows registered as archived are not all present in the cold file. Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.`,
+            severity: "fail",
+          });
+        }
+
+        // Check (G) — hot-overlap (only meaningful for partitions that
+        // share the hot [min,max] window; pre-floor partitions cannot
+        // overlap by construction).
+        if (overlappingIds.has(partition.partition_id)) {
+          const coldSequences = (
+            coldDb.prepare("SELECT sequence FROM events ORDER BY sequence ASC").all() as Array<{
+              sequence: number;
+            }>
+          ).map((r) => r.sequence);
+          let duplicated = 0;
+          let firstDuplicate: number | undefined;
+          for (let i = 0; i < coldSequences.length; i += 500) {
+            const chunk = coldSequences.slice(i, i + 500);
+            const placeholders = chunk.map(() => "?").join(", ");
+            const dupRow = hotDb
+              .prepare(
+                `SELECT COUNT(*) AS n, MIN(sequence) AS firstSeq FROM events WHERE sequence IN (${placeholders})`,
+              )
+              .get(...chunk) as { n: number; firstSeq: number | null };
+            if (dupRow.n > 0) {
+              duplicated += dupRow.n;
+              if (firstDuplicate === undefined && dupRow.firstSeq !== null) {
+                firstDuplicate = dupRow.firstSeq;
+              }
+            }
+          }
+          if (duplicated > 0) {
+            violations.push({
+              subject: `archive_partitions:hot-overlap:${partition.partition_id}`,
+              message: `Archive partition ${partition.partition_id} (${partition.path}) shares ${duplicated} sequence(s) with the hot store (first: ${firstDuplicate}). A row must live in exactly one tier — duplication means the extraction's hot-side delete was incomplete or rows were re-inserted at archived sequences. Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.`,
+              severity: "fail",
+            });
+          }
+        }
+      } catch (err) {
+        violations.push({
+          subject: `archive_partitions:coverage-check-error:${partition.partition_id}`,
+          message: `Error running registry-parity/hot-overlap checks for partition ${partition.partition_id} (${partition.path}): ${err instanceof Error ? err.message : String(err)}. Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.`,
+          severity: "warn",
+        });
+      } finally {
+        try {
+          coldDb?.close();
+        } catch {
+          /* best-effort */
+        }
+      }
+    }
+  } catch (err) {
+    violations.push({
+      subject: "archive_partitions:coverage-check-error",
+      message: `Error opening hot store read-only for partition coverage checks: ${err instanceof Error ? err.message : String(err)}. Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION.`,
+      severity: "warn",
+    });
+  } finally {
+    try {
+      hotDb?.close();
+    } catch {
+      /* best-effort */
+    }
+  }
+  return violations;
+}
+
 function runArchiveChecks(eventDbPath: string): ReconViolation[] {
   // Step 1: use a raw read-only connection to check whether the
   // archive_partitions table exists. Databases without the Phase-5 DDL
@@ -349,16 +573,29 @@ function runArchiveChecks(eventDbPath: string): ReconViolation[] {
     const partitions = store.listArchivePartitions();
 
     if (partitions.length > 0) {
-      // Check (D) — no-gap between last partition and hot store floor.
-      const maxPartitionSeq = Math.max(...partitions.map((p) => p.max_sequence));
       const hotMin = store.minSequence();
-      const expectedHotMin = maxPartitionSeq + 1;
-      if (hotMin !== 0 && hotMin !== expectedHotMin) {
-        violations.push({
-          subject: "archive_partitions:sequence-gap",
-          message: `Sequence boundary mismatch between archive partitions and hot store. Last partition max_sequence=${maxPartitionSeq}; hot store MIN(sequence)=${hotMin}. Expected hot floor at ${expectedHotMin}. Gap or overlap indicates events were lost or duplicated during archival. Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
-          severity: "fail",
-        });
+
+      // Classify: pre-floor (Phase-5 cutoff eviction — entirely below the
+      // hot floor) vs overlapping (selective extraction — shares the hot
+      // [min,max] window). An empty hot store (hotMin=0) has no floor;
+      // every partition is then pre-floor and (D)/(G) are vacuous.
+      const preFloor =
+        hotMin === 0 ? partitions : partitions.filter((p) => p.max_sequence < hotMin);
+      const overlapping = hotMin === 0 ? [] : partitions.filter((p) => p.max_sequence >= hotMin);
+
+      // Check (D) — no-gap between the last PRE-FLOOR partition and the
+      // hot store floor. Overlapping (extracted) partitions are excluded:
+      // they do not form the floor boundary.
+      if (hotMin !== 0 && preFloor.length > 0) {
+        const maxPartitionSeq = Math.max(...preFloor.map((p) => p.max_sequence));
+        const expectedHotMin = maxPartitionSeq + 1;
+        if (hotMin !== expectedHotMin) {
+          violations.push({
+            subject: "archive_partitions:sequence-gap",
+            message: `Sequence boundary mismatch between archive partitions and hot store. Last pre-floor partition max_sequence=${maxPartitionSeq}; hot store MIN(sequence)=${hotMin}. Expected hot floor at ${expectedHotMin}. Rows ${maxPartitionSeq + 1}–${hotMin - 1} are in neither the hot store nor any registered partition. Authority: D-EVENT-STORE-SCALING-PHASE-5.`,
+            severity: "fail",
+          });
+        }
       }
 
       // Check (E) — hash integrity of each archive file.
@@ -373,6 +610,10 @@ function runArchiveChecks(eventDbPath: string): ReconViolation[] {
           });
         }
       }
+
+      // Checks (F) + (G) — registry parity and hot-overlap, against the
+      // actual cold files (read-only opens; never mutates archive bytes).
+      violations.push(...runPartitionCoverageChecks(eventDbPath, partitions, overlapping));
     }
   } catch (err) {
     violations.push({
@@ -468,7 +709,7 @@ export function runEventStoreAppendOnlyRecon(
 
   return {
     ...base,
-    asserted: 5, // rowCount, maxSequence, interiorGap, archive-no-gap, archive-hash-integrity
+    asserted: 7, // effective-rowCount, effective-maxSequence, interiorGap, archive-no-gap, archive-hash-integrity, archive-registry-parity, archive-hot-overlap
     violations,
     ok,
     observation,
@@ -490,6 +731,7 @@ if (import.meta.main) {
   const r = runEventStoreAppendOnlyRecon();
   const failCount = r.violations.filter((v) => v.severity === "fail").length;
   if (failCount === 0) {
+    const infoNotes = r.violations.filter((v) => v.severity === "info");
     console.log(
       JSON.stringify({
         level: "info",
@@ -500,13 +742,16 @@ if (import.meta.main) {
         eventDbPath: r.eventDbPath,
         baselinePath: r.baselinePath,
         rowCount: r.observation?.rowCount ?? 0,
+        archivedCount: r.observation?.archivedCount ?? 0,
         maxSequence: r.observation?.maxSequence ?? 0,
+        archivedMaxSequence: r.observation?.archivedMaxSequence ?? 0,
         interiorGap: r.observation?.interiorGap ?? 0,
         firstRun: r.baselineBefore === null,
+        infoNotes: infoNotes.map((v) => `${v.subject}: ${v.message}`),
         msg: r.observation
           ? r.baselineBefore === null
             ? "event-store-append-only: baseline initialised; future runs will assert against this snapshot"
-            : "event-store-append-only: invariants hold (row count + max-sequence + interior-gap all consistent with append-only)"
+            : "event-store-append-only: invariants hold (effective row count + effective max-sequence + interior-gap + archive coverage all consistent with append-only)"
           : "event-store-append-only: no event store found at the resolved path; skipping",
       }),
     );

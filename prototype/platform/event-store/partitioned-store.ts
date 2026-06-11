@@ -124,7 +124,17 @@ export class PartitionedEventStore {
   private openColdStore(partition: ArchivePartitionRow): EventStore {
     const cached = this.coldStores.get(partition.partition_id);
     if (cached) return cached;
-    const store = new EventStore(partition.path);
+    // READ-ONLY open — load-bearing for hash integrity. A read-write
+    // `EventStore` open runs open-time side effects (journal_mode=WAL
+    // PRAGMA, DDL migrations, soft-tagger, dispatch-claim backfill) that
+    // mutate the archive file's bytes and permanently invalidate the
+    // SHA-256 registered in `archive_partitions` (verified empirically
+    // 2026-06-11: one replay flipped the journal-mode header byte and
+    // broke the stored hash). Cold partitions are immutable by contract;
+    // the read-only open skips every side effect so `replay()` never
+    // changes a byte. Authority: D-EVENT-STORE-SELECTIVE-ARCHIVE-
+    // EXTRACTION; D-EVENT-STORE-SCALING-PHASE-5.
+    const store = new EventStore(partition.path, { readonly: true });
     this.coldStores.set(partition.partition_id, store);
     return store;
   }

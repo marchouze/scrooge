@@ -44,6 +44,8 @@ function obs(partial: Partial<EventStoreObservation>): EventStoreObservation {
     maxSequence: 100,
     minSequence: 1,
     interiorGap: 0,
+    archivedCount: 0,
+    archivedMaxSequence: 0,
     observedAt: "2026-05-21T16:00:00.000Z",
     ...partial,
   };
@@ -55,6 +57,7 @@ function baseline(partial: Partial<EventStoreBaseline>): EventStoreBaseline {
     maxSequence: 100,
     minSequence: 1,
     interiorGap: 0,
+    archivedCount: 0,
     baselineAt: "2026-05-21T12:00:00.000Z",
     updatedAt: "2026-05-21T12:00:00.000Z",
     ...partial,
@@ -436,6 +439,8 @@ describe("red-team: DELETE FROM events triggers the pipeline", () => {
           maxSequence: 95,
           minSequence: 1,
           interiorGap: 0,
+          archivedCount: 0,
+          archivedMaxSequence: 0,
           observedAt: "2026-05-21T17:00:00.000Z",
         },
       });
@@ -445,6 +450,282 @@ describe("red-team: DELETE FROM events triggers the pipeline", () => {
       expect(subjects).toEqual(["events:maxSequence", "events:rowCount"]);
     } finally {
       rmSync(tmp2, { recursive: true, force: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Partition-aware semantics (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION):
+// a hot row-count decrease is sanctioned IFF covered by newly registered
+// archive partitions; uncovered decreases still fail.
+// ---------------------------------------------------------------------------
+
+describe("partition-aware compareToBaseline", () => {
+  it("sanctions a hot decrease exactly covered by new archive partitions (info note, no fail)", () => {
+    const v = compareToBaseline(
+      obs({ rowCount: 80, archivedCount: 20, maxSequence: 100, archivedMaxSequence: 95 }),
+      baseline({ rowCount: 100, archivedCount: 0, maxSequence: 100 }),
+    );
+    expect(v.filter((x) => x.severity === "fail")).toHaveLength(0);
+    expect(v).toHaveLength(1);
+    expect(v[0]?.severity).toBe("info");
+    expect(v[0]?.subject).toBe("events:rowCount:archive-sanctioned");
+    expect(v[0]?.message).toContain("covered by registered archive partitions");
+  });
+
+  it("sanctions a hot decrease covered by archival with concurrent appends (effective count grew)", () => {
+    // 2857 extracted, 500 appended: hot 100000 → 97643, archived 0 → 2857.
+    const v = compareToBaseline(
+      obs({
+        rowCount: 97_643,
+        archivedCount: 2_857,
+        maxSequence: 100_500,
+        archivedMaxSequence: 99_000,
+      }),
+      baseline({ rowCount: 100_000, archivedCount: 0, maxSequence: 100_000 }),
+    );
+    expect(v.filter((x) => x.severity === "fail")).toHaveLength(0);
+  });
+
+  it("fails a hot decrease NOT covered by archive partitions (partial coverage)", () => {
+    // 20 rows left hot, only 15 arrived in partitions — 5 destroyed.
+    const v = compareToBaseline(
+      obs({ rowCount: 80, archivedCount: 15, maxSequence: 100 }),
+      baseline({ rowCount: 100, archivedCount: 0, maxSequence: 100 }),
+    );
+    expect(v).toHaveLength(1);
+    expect(v[0]?.severity).toBe("fail");
+    expect(v[0]?.subject).toBe("events:rowCount");
+    expect(v[0]?.message).toContain("NOT covered");
+  });
+
+  it("fails when a previously registered partition's rows vanish (effective shrink without hot decrease)", () => {
+    const v = compareToBaseline(
+      obs({ rowCount: 100, archivedCount: 0, maxSequence: 100 }),
+      baseline({ rowCount: 100, archivedCount: 20, maxSequence: 100 }),
+    );
+    expect(v).toHaveLength(1);
+    expect(v[0]?.severity).toBe("fail");
+    expect(v[0]?.subject).toBe("events:rowCount");
+  });
+
+  it("does NOT flag a hot max-sequence drop when the max row moved to a partition", () => {
+    const v = compareToBaseline(
+      obs({ rowCount: 90, archivedCount: 10, maxSequence: 95, archivedMaxSequence: 100 }),
+      baseline({ rowCount: 100, archivedCount: 0, maxSequence: 100 }),
+    );
+    expect(v.filter((x) => x.severity === "fail")).toHaveLength(0);
+  });
+
+  it("still fails when even the effective max-sequence regressed", () => {
+    const v = compareToBaseline(
+      obs({ rowCount: 100, archivedCount: 0, maxSequence: 80, archivedMaxSequence: 70 }),
+      baseline({ rowCount: 100, maxSequence: 100 }),
+    );
+    expect(v).toHaveLength(1);
+    expect(v[0]?.subject).toBe("events:maxSequence");
+  });
+
+  it("legacy baseline without archivedCount loads with archivedCount=0", () => {
+    const tmp = mkdtempSync(join(tmpdir(), "vera-legacy-baseline-"));
+    try {
+      const p = join(tmp, "legacy.json");
+      writeFileSync(
+        p,
+        JSON.stringify({
+          rowCount: 100,
+          maxSequence: 100,
+          minSequence: 1,
+          interiorGap: 0,
+          baselineAt: "2026-05-21T12:00:00.000Z",
+          updatedAt: "2026-05-21T12:00:00.000Z",
+        }),
+      );
+      const loaded = loadBaselineFromDisk(p);
+      expect(loaded?.archivedCount).toBe(0);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("ratchet snaps hot/archived counts to the clean observation (no eternal re-report after archival)", () => {
+    const b = ratchetBaseline(
+      obs({ rowCount: 80, archivedCount: 20, maxSequence: 100, archivedMaxSequence: 95 }),
+      baseline({ rowCount: 100, archivedCount: 0, maxSequence: 100 }),
+    );
+    expect(b.rowCount).toBe(80);
+    expect(b.archivedCount).toBe(20);
+    expect(b.maxSequence).toBe(100);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// End-to-end: selective extraction against a real store keeps the recon
+// green (sanctioned), while a DELETE without a partition still fails.
+// ---------------------------------------------------------------------------
+
+describe("end-to-end: extraction is sanctioned, bare DELETE is not", () => {
+  let tmp: string;
+  let dbPath: string;
+  let baselinePath: string;
+
+  beforeAll(() => {
+    tmp = mkdtempSync(join(tmpdir(), "vera-extraction-e2e-"));
+    dbPath = join(tmp, "event.db");
+    baselinePath = join(tmp, "baseline.json");
+  });
+
+  afterAll(() => {
+    rmSync(tmp, { recursive: true, force: true });
+  });
+
+  it("extraction → recon ok with sanctioned info note; boundary check ignores the overlapping partition", async () => {
+    const { EventStore } = await import("../event-store/store");
+    const store = new EventStore(dbPath);
+    for (let i = 1; i <= 50; i++) {
+      store.append({
+        event_id: `evt-e2e-${i}`,
+        type: i % 5 === 0 ? "FixtureNoise" : "RealEvent",
+        as_of: "2026-06-11T00:00:00.000Z",
+        entity: i % 5 === 0 ? "BANK-FIXTURE-OK" : "LE-ZA-HOZ-BANK",
+        actor: { type: "system", id: "vera-test" },
+        citations: ["D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION"],
+        payload: {},
+      });
+    }
+
+    // Seed baseline at 50 hot / 0 archived.
+    const first = runEventStoreAppendOnlyRecon({ eventDbPath: dbPath, baselinePath });
+    expect(first.ok).toBe(true);
+    expect(first.observation?.rowCount).toBe(50);
+    expect(first.observation?.archivedCount).toBe(0);
+
+    // Selectively extract the 10 fixture rows (sparse, mid-range).
+    const archivePath = join(tmp, "fixture-extract.db");
+    const result = store.extractToArchivePartition(
+      { predicate: { where: "entity = ?", params: ["BANK-FIXTURE-OK"] } },
+      archivePath,
+    );
+    expect(result.eventCount).toBe(10);
+    store.close();
+
+    // Recon must pass: hot decrease 50→40 covered by archived 0→10.
+    const r = runEventStoreAppendOnlyRecon({ eventDbPath: dbPath, baselinePath });
+    expect(r.ok).toBe(true);
+    expect(r.observation?.rowCount).toBe(40);
+    expect(r.observation?.archivedCount).toBe(10);
+    const fails = r.violations.filter((x) => x.severity === "fail");
+    expect(fails).toHaveLength(0);
+    // Sanctioned info note present.
+    expect(r.violations.some((x) => x.subject === "events:rowCount:archive-sanctioned")).toBe(true);
+    // Baseline snapped to the new split.
+    const persisted = loadBaselineFromDisk(baselinePath);
+    expect(persisted?.rowCount).toBe(40);
+    expect(persisted?.archivedCount).toBe(10);
+  });
+
+  it("a subsequent bare DELETE (no partition) still fails", () => {
+    const sideband = new Database(dbPath);
+    sideband.exec("DELETE FROM events WHERE sequence IN (1, 2)");
+    sideband.close();
+
+    const r = runEventStoreAppendOnlyRecon({ eventDbPath: dbPath, baselinePath });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((x) => x.subject === "events:rowCount" && x.severity === "fail")).toBe(
+      true,
+    );
+  });
+
+  it("hot-overlap check fails when an archived sequence is duplicated back into the hot store", async () => {
+    // Fresh fixture store.
+    const tmp2 = mkdtempSync(join(tmpdir(), "vera-overlap-"));
+    try {
+      const dbPath2 = join(tmp2, "event.db");
+      const baselinePath2 = join(tmp2, "baseline.json");
+      const { EventStore } = await import("../event-store/store");
+      const store = new EventStore(dbPath2);
+      for (let i = 1; i <= 10; i++) {
+        store.append({
+          event_id: `evt-ov-${i}`,
+          type: "TestEvent",
+          as_of: "2026-06-11T00:00:00.000Z",
+          entity: i <= 5 ? "BANK-FIXTURE-OK" : "LE-ZA-HOZ-BANK",
+          actor: { type: "system", id: "vera-test" },
+          citations: ["D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION"],
+          payload: {},
+        });
+      }
+      store.extractToArchivePartition(
+        { predicate: { where: "entity = ?", params: ["BANK-FIXTURE-OK"] } },
+        join(tmp2, "extract.db"),
+      );
+      store.close();
+
+      // Re-insert a row at an archived sequence (1) — tier duplication.
+      const sideband = new Database(dbPath2);
+      sideband
+        .prepare(
+          "INSERT INTO events (sequence, event_id, type, as_of, entity, actor_type, actor_id, citations, payload) VALUES (1, 'evt-dup', 'TestEvent', '2026-06-11', 'LE-ZA-HOZ-BANK', 'system', 'vera-test', '[]', '{}')",
+        )
+        .run();
+      sideband.close();
+
+      const r = runEventStoreAppendOnlyRecon({
+        eventDbPath: dbPath2,
+        baselinePath: baselinePath2,
+      });
+      expect(
+        r.violations.some(
+          (x) => x.subject.startsWith("archive_partitions:hot-overlap:") && x.severity === "fail",
+        ),
+      ).toBe(true);
+    } finally {
+      rmSync(tmp2, { recursive: true, force: true });
+    }
+  });
+
+  it("registry-parity check fails when rows are deleted from the cold file", async () => {
+    const tmp3 = mkdtempSync(join(tmpdir(), "vera-parity-"));
+    try {
+      const dbPath3 = join(tmp3, "event.db");
+      const baselinePath3 = join(tmp3, "baseline.json");
+      const { EventStore } = await import("../event-store/store");
+      const store = new EventStore(dbPath3);
+      for (let i = 1; i <= 10; i++) {
+        store.append({
+          event_id: `evt-pp-${i}`,
+          type: "TestEvent",
+          as_of: "2026-06-11T00:00:00.000Z",
+          entity: i <= 5 ? "BANK-FIXTURE-OK" : "LE-ZA-HOZ-BANK",
+          actor: { type: "system", id: "vera-test" },
+          citations: ["D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION"],
+          payload: {},
+        });
+      }
+      const coldPath = join(tmp3, "extract.db");
+      store.extractToArchivePartition(
+        { predicate: { where: "entity = ?", params: ["BANK-FIXTURE-OK"] } },
+        coldPath,
+      );
+      store.close();
+
+      // Tamper: remove a row from the cold file.
+      const cold = new Database(coldPath);
+      cold.exec("DELETE FROM events WHERE sequence = 2");
+      cold.close();
+
+      const r = runEventStoreAppendOnlyRecon({
+        eventDbPath: dbPath3,
+        baselinePath: baselinePath3,
+      });
+      expect(
+        r.violations.some(
+          (x) =>
+            x.subject.startsWith("archive_partitions:registry-parity:") && x.severity === "fail",
+        ),
+      ).toBe(true);
+    } finally {
+      rmSync(tmp3, { recursive: true, force: true });
     }
   });
 });

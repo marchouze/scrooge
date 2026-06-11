@@ -68,12 +68,14 @@ const ALLOWLIST_RELATIVE_PATHS: ReadonlySet<string> = new Set([
   // alongside the Step-0 truncate in seed-projection.ts that fixes the
   // sequence-ID PK collision on re-runs.
   "platform/regulatory/graph/db.ts",
-  // Cold archive partitioning (D-EVENT-STORE-SCALING-PHASE-5) — the only
-  // sanctioned DELETE on the events table. archiveEventsOlderThan() deletes
-  // rows from the hot store ONLY AFTER successfully copying them to an
-  // immutable archive file and verifying integrity. This is the approved
-  // cold-tier eviction path; the rows are not destroyed — they are preserved
-  // in the archive DB at archivePath. Authority: D-EVENT-STORE-SCALING-PHASE-5.
+  // Cold archive partitioning — the only sanctioned DELETEs on the events
+  // table. archiveEventsOlderThan() (D-EVENT-STORE-SCALING-PHASE-5) and
+  // extractToArchivePartition() (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION,
+  // CEO-approved 2026-06-11) delete rows from the hot store ONLY AFTER
+  // successfully copying them to an immutable archive file and verifying
+  // integrity. These are the approved cold-tier paths; the rows are not
+  // destroyed — they are preserved in the archive DB at archivePath and
+  // remain replayable via PartitionedEventStore.
   "platform/event-store/store.ts",
 ]);
 
