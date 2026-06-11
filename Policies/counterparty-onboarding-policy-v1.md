@@ -24,6 +24,7 @@ summary: >
   screening, and ongoing monitoring. Closes obligations ORG-CS3-001, ORG-MK-06
   (documentation gate), ORG-MK-12 (CSA execution), ORG-MK-13 (GMRA execution).
   COMMENCEMENT-BIND for OTC; IN_FORCE for AML/CDD baseline.
+  Closes OTC-derivative obligations ORG-CS3-005 (client/counterparty categorisation and pre-trade due diligence), ORG-ODP-COND-002 (counterparty/client categorisation prior to transaction), and ORG-ODP-COND-005 (written trading-relationship agreement covering payment, netting, default and collateral terms).
 decision-required: false
 riskTaxonomy:
   - RT-CD.CC

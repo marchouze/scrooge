@@ -17,7 +17,7 @@ citations:
   - POPIA-4-2013
 author: Owen (Company Secretary, governance) + Atlas (Core banking platform architect, engineering)
 date: 2026-05-17
-summary: Records Management Policy governing the bank's typed-event-first RMS substrate. All correspondence, briefs, deliverables, decisions, feedback, agent-run records, and workstream artefacts are stored as typed events and surfaced via seven projection-derived registers. Legacy inbox directories archived to archive/ after Phase 4 cutover. CORPORATE-BIND.
+summary: Records Management Policy governing the bank's typed-event-first RMS substrate. All correspondence, briefs, deliverables, decisions, feedback, agent-run records, and workstream artefacts are stored as typed events and surfaced via seven projection-derived registers. Legacy inbox directories archived to archive/ after Phase 4 cutover. CORPORATE-BIND. Closes OTC-derivative record-keeping obligation ORG-CS3-009 (records retained at least five years, tamper-evident).
 decision-required: false
 riskTaxonomy:
   - RT-OP.RC

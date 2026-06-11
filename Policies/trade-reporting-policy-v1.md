@@ -18,6 +18,7 @@ summary: >
   Establishes Hoz Bank Limited's framework for complying with South African OTC derivative trade reporting obligations
   to the Strate Trade Repository, covering the 169-element CS 2/2018 schema for transaction reporting and Joint Notice
   2/2024 margin reporting to the PA. Closes obligations ORG-FMA-003, ORG-CS2-001, and ORG-JN2-2024. LICENCE-BIND.
+  Also closes the FSCA CS 3/2018 reporting obligations ORG-ODP-RPT-001, ORG-ODP-RPT-002, ORG-ODP-RPT-003, ORG-ODP-RPT-004 and ORG-ODP-RPT-005, and the JN 2/2024 margin-reporting obligations ORG-MK-RPT-001, ORG-MK-RPT-002 and ORG-MK-RPT-003.
 decision-required: false
 riskTaxonomy:
   - RT-LR.RC

@@ -132,7 +132,15 @@ function parseSimpleYaml(block: string): Record<string, string | string[]> {
   const lines = block.split("\n");
   let currentKey: string | null = null;
   let collectingArray = false;
+  // Block-scalar (`>` folded / `|` literal) collection. `>` joins continuation
+  // lines with spaces; `|` joins with newlines. Without this, a `summary: >`
+  // block was silently captured as "" — which dropped every CLOSES obligation
+  // id declared inside a folded summary (8 policies in the estate did exactly
+  // this, e.g. trade-reporting-policy "Closes obligations ORG-FMA-003, …").
+  let collectingBlock = false;
+  let blockFold = false;
   const currentArray: string[] = [];
+  const currentBlock: string[] = [];
 
   const flushArray = () => {
     if (currentKey && collectingArray) {
@@ -143,7 +151,26 @@ function parseSimpleYaml(block: string): Record<string, string | string[]> {
     currentKey = null;
   };
 
+  const flushBlock = () => {
+    if (currentKey && collectingBlock) {
+      result[currentKey] = currentBlock.join(blockFold ? " " : "\n").trim();
+      currentBlock.length = 0;
+      collectingBlock = false;
+    }
+    currentKey = null;
+  };
+
   for (const line of lines) {
+    // Block-scalar continuation: any indented (or blank) line belongs to the
+    // block until a new non-indented key appears.
+    if (collectingBlock) {
+      if (!line.trim() || /^\s/.test(line)) {
+        currentBlock.push(line.replace(/^\s+/, "").trim());
+        continue;
+      }
+      flushBlock();
+    }
+
     // Array item under current key
     if (collectingArray && /^\s{1,}-\s+/.test(line)) {
       const item = line
@@ -172,8 +199,17 @@ function parseSimpleYaml(block: string): Record<string, string | string[]> {
     const key = kvMatch[1] as string;
     const val = (kvMatch[2] ?? "").trim();
 
-    if (!val || val === "|" || val === ">") {
-      // Start of array or multiline block
+    if (val === "|" || val === ">") {
+      // Start of a block scalar (literal `|` or folded `>`).
+      currentKey = key;
+      collectingBlock = true;
+      blockFold = val === ">";
+      result[key] = "";
+      continue;
+    }
+
+    if (!val) {
+      // Start of an array (items follow on subsequent `- ` lines).
       currentKey = key;
       collectingArray = true;
       result[key] = "";
@@ -187,7 +223,8 @@ function parseSimpleYaml(block: string): Record<string, string | string[]> {
     collectingArray = false;
   }
 
-  // Flush trailing array
+  // Flush any trailing block scalar or array.
+  flushBlock();
   if (collectingArray && currentKey) {
     result[currentKey] = [...currentArray];
   }

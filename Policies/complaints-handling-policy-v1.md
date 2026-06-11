@@ -22,6 +22,7 @@ summary: >
   acknowledging, investigating, and resolving complaints from clients and
   counterparties in accordance with FAIS TCF Principle 6 and Banks Act s.87.
   Closes obligation ORG-CD-07. LICENCE-BIND.
+  Closes OTC-derivative complaints-handling obligation ORG-CS3-008.
 decision-required: false
 riskTaxonomy:
   - RT-CD.CC
