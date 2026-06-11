@@ -348,6 +348,7 @@
     "recon:fx-gateway-threshold-enforcement": "bun run platform/recon/fx-gateway-threshold-enforcement.ts",
     "recon:liquidity-limit-breach-unescalated": "bun run platform/recon/liquidity-limit-breach-unescalated.ts",
     "recon:liquidity-limit-coverage": "bun run platform/recon/liquidity-limit-coverage.ts",
+    "recon:cfp-trigger-coverage": "bun run platform/recon/cfp-trigger-coverage.ts",
     "recon:obligation-policy-coverage": "bun run platform/recon/obligation-policy-coverage.ts",
     "recon:obligation-review-status": "bun run platform/recon/obligation-review-status.ts",
     "recon:regulatory-extraction-coverage": "bun run platform/recon/regulatory-extraction-coverage.ts",

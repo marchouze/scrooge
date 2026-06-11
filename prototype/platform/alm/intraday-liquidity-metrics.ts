@@ -53,12 +53,12 @@
 // Author: Ravi (Treasury and ALM engineer, engineering — reports to Eitan
 //   (Treasurer, governance)).
 
-import type { EventStore } from "../event-store/store";
 import type {
   Bcbs248Tool,
   IntradayLiquidityMetric,
 } from "../event-store/event-types/intraday-liquidity";
-import { SETTLEMENT_WINDOWS, runIntradayStress } from "./intraday-stress";
+import type { EventStore } from "../event-store/store";
+import { type IntradayStressResult, SETTLEMENT_WINDOWS, runIntradayStress } from "./intraday-stress";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -137,6 +137,12 @@ export interface ComputeIntradayLiquidityMetricsOpts {
   timeSpecificObligations?: readonly TimeSpecificObligation[];
   /** Undrawn correspondent intraday credit lines (tool 2 add-on). Build phase: 0. */
   undrawnIntradayCreditLinesZar?: number;
+  /**
+   * Override the intraday-stress projection — used by tests to exercise
+   * the seven-tool fold deterministically without the composition
+   * event-store / collateral-inventory globals.
+   */
+  projection?: IntradayStressResult;
 }
 
 // ---------------------------------------------------------------------------
@@ -178,7 +184,7 @@ export function computeIntradayLiquidityMetrics(
   asOf: string,
   opts: ComputeIntradayLiquidityMetricsOpts = {},
 ): IntradayLiquidityMetricsResult {
-  const projection = runIntradayStress(asOf, opts.eventStore);
+  const projection = opts.projection ?? runIntradayStress(asOf, opts.eventStore);
   const obligations = [...(opts.timeSpecificObligations ?? [])];
   const undrawnCreditZar = opts.undrawnIntradayCreditLinesZar ?? 0;
 
@@ -189,7 +195,7 @@ export function computeIntradayLiquidityMetrics(
   // cumulative OUTFLOW (most negative cumulative net position) across the
   // day. A day with net inflows throughout has zero usage.
   const minCumulativeNetZar = Math.min(0, ...bau.map((w) => w.cumulativeNetZar));
-  const dailyMaxUsageZar = -minCumulativeNetZar;
+  const dailyMaxUsageZar = Math.max(0, -minCumulativeNetZar);
 
   // Tool 2 — available intraday liquidity at start of day.
   const availableAtStartZar = projection.startingHQLAZar + undrawnCreditZar;

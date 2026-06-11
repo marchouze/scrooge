@@ -122,6 +122,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:risk-register-closure",
     "recon:liquidity-limit-breach-unescalated",
     "recon:liquidity-limit-coverage",
+    "recon:cfp-trigger-coverage",
     "recon:position-revalued-cites-mark",
     "recon:mtm-reversal-paired-with-reval",
     "recon:no-prop-attribution",
