@@ -1,6 +1,6 @@
 {
   "slug": "banks-gn1-2026",
-  "title": "Banks Act Guidance Note 1/2026 \u2014 Status of Previously Issued Guidance Notes",
+  "title": "Banks Act Guidance Note 1/2026 — Status of Previously Issued Guidance Notes",
   "shortTitle": "GN 1/2026 (Status Note)",
   "regulator": "Prudential Authority",
   "year": 2026,
@@ -56,7 +56,7 @@
             {
               "id": "s2-2-5",
               "number": "2.5",
-              "text": "Banks Act Guidance Note 8/2008 Financial Action Task Force\u2019s call for enhanced scrutiny of transactions within certain jurisdictions, and United Nations sanctions in relation to proliferation of weapons of mass destruction",
+              "text": "Banks Act Guidance Note 8/2008 Financial Action Task Force’s call for enhanced scrutiny of transactions within certain jurisdictions, and United Nations sanctions in relation to proliferation of weapons of mass destruction",
               "verbatim": true
             },
             {
@@ -92,7 +92,7 @@
             {
               "id": "s2-2-11",
               "number": "2.11",
-              "text": "Banks Act Guidance Note 4/2014 Application process in respect of the proposed adoption of the internal ratings-based approach for the measurement of banks\u2019 credit risk exposure in respect of positions held in the banking book",
+              "text": "Banks Act Guidance Note 4/2014 Application process in respect of the proposed adoption of the internal ratings-based approach for the measurement of banks’ credit risk exposure in respect of positions held in the banking book",
               "verbatim": true
             },
             {
@@ -104,7 +104,7 @@
             {
               "id": "s2-2-13",
               "number": "2.13",
-              "text": "Banks Act Guidance Note 4/2015 This guidance note outlines Expectations of the Bank Supervision Department (BSD) of the South African Reserve Bank (the Bank) with respect to the internal capital adequacy assessment process (ICAAP) of banks, controlling companies and branches of foreign institutions \u2013 hereinafter referred to as \u2018banks\u2019",
+              "text": "Banks Act Guidance Note 4/2015 This guidance note outlines Expectations of the Bank Supervision Department (BSD) of the South African Reserve Bank (the Bank) with respect to the internal capital adequacy assessment process (ICAAP) of banks, controlling companies and branches of foreign institutions – hereinafter referred to as ‘banks’",
               "verbatim": true
             },
             {
@@ -233,7 +233,7 @@
             {
               "id": "s3-1",
               "number": "3.1",
-              "text": "Kindly ensure that a copy of this guidance note is made available to your institution\u2019s auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Guidance Note 3/2025 dated 7 October 2025.",
+              "text": "Kindly ensure that a copy of this guidance note is made available to your institution’s auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories. Fundi Tshazibana Chief Executive Officer Date: The previous guidance note issued was Guidance Note 3/2025 dated 7 October 2025.",
               "verbatim": true,
               "subsections": []
             }
@@ -241,5 +241,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:baeef6308379313fda15f7ffcd2adaa5cacbddf20f724a9c201a782204bc4a0d"
 }

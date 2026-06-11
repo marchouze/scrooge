@@ -1,6 +1,6 @@
 {
   "slug": "banks-d5-2020",
-  "title": "Banks Act Directive D5/2020 \u2014 Prudent Valuation Adjustments Framework",
+  "title": "Banks Act Directive D5/2020 — Prudent Valuation Adjustments Framework",
   "shortTitle": "Directive D5/2020",
   "regulator": "Prudential Authority",
   "year": 2020,
@@ -40,35 +40,35 @@
                 {
                   "id": "s2-1-1",
                   "number": "2.1.1",
-                  "text": "Investing and funding costs \u2012 PVA to reflect the valuation uncertainty in the funding costs that would be factored into the exit price for a position or portfolio. It includes funding valuation adjustments on derivatives exposures.",
+                  "text": "Investing and funding costs ‒ PVA to reflect the valuation uncertainty in the funding costs that would be factored into the exit price for a position or portfolio. It includes funding valuation adjustments on derivatives exposures.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-2",
                   "number": "2.1.2",
-                  "text": "Close-out uncertainty, of which: a. Mid-market value \u2013 PVA required to take into account uncertainty surrounding the application of an average between the bid prices and ask prices. b. Close-out cost \u2012 PVA required to take account of the valuation uncertainty to adjust for the fact that the position level valuations calculated do not reflect an exit price for the position or portfolio (for example, where such valuations are calibrated to a mid-market price). 3 c. Concentration \u2012 PVA over and above mid-market price and closeout costs that would be required to get to a prudent exit price for positions that are larger than the size of positions for which the valuation has been calculated (that is, cases where the aggregate position held by the institution is larger than normal traded volume or larger than the position sizes on which observable quotes or trades that are used to calibrate the price or inputs used by the core valuation model are based).",
+                  "text": "Close-out uncertainty, of which: a. Mid-market value – PVA required to take into account uncertainty surrounding the application of an average between the bid prices and ask prices. b. Close-out cost ‒ PVA required to take account of the valuation uncertainty to adjust for the fact that the position level valuations calculated do not reflect an exit price for the position or portfolio (for example, where such valuations are calibrated to a mid-market price). 3 c. Concentration ‒ PVA over and above mid-market price and closeout costs that would be required to get to a prudent exit price for positions that are larger than the size of positions for which the valuation has been calculated (that is, cases where the aggregate position held by the institution is larger than normal traded volume or larger than the position sizes on which observable quotes or trades that are used to calibrate the price or inputs used by the core valuation model are based).",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-3",
                   "number": "2.1.3",
-                  "text": "Unearned credit spreads \u2012 PVA to consider the valuation uncertainty in the adjustment necessary to include the current value of expected losses due to counterparty default on derivative positions, including the valuation uncertainty on credit valuation adjustments (CVAs).",
+                  "text": "Unearned credit spreads ‒ PVA to consider the valuation uncertainty in the adjustment necessary to include the current value of expected losses due to counterparty default on derivative positions, including the valuation uncertainty on credit valuation adjustments (CVAs).",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-4",
                   "number": "2.1.4",
-                  "text": "Early termination \u2012 PVA to take into account the potential losses arising from contractual or non-contractual early terminations of customer trades that are not reflected in the valuation under normal market conditions. This PVA is to be assessed under normal market conditions, in the ordinary course of business, taking into account the likelihood of early termination given prior early terminations by clients. Furthermore, this must only be included as a PVA where the cost of early termination is not passed on to the client.",
+                  "text": "Early termination ‒ PVA to take into account the potential losses arising from contractual or non-contractual early terminations of customer trades that are not reflected in the valuation under normal market conditions. This PVA is to be assessed under normal market conditions, in the ordinary course of business, taking into account the likelihood of early termination given prior early terminations by clients. Furthermore, this must only be included as a PVA where the cost of early termination is not passed on to the client.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-5",
                   "number": "2.1.5",
-                  "text": "Model risk \u2012 PVA to take into account valuation model risk which arises due to: a. the potential existence of a range of different models or model calibrations; b. the lack of a firm exit price for the specific product being valued; c. the use of an incorrect valuation methodology; d. the risk of using unobservable and possibly incorrect calibration parameters; or e. the fact that market or product factors are not captured by the core valuation model.",
+                  "text": "Model risk ‒ PVA to take into account valuation model risk which arises due to: a. the potential existence of a range of different models or model calibrations; b. the lack of a firm exit price for the specific product being valued; c. the use of an incorrect valuation methodology; d. the risk of using unobservable and possibly incorrect calibration parameters; or e. the fact that market or product factors are not captured by the core valuation model.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -82,14 +82,14 @@
                 {
                   "id": "s2-1-7",
                   "number": "2.1.7",
-                  "text": "Future administrative costs \u2012 PVA to take into account the administrative costs and future hedging costs over the expected life of the exposures for which a direct exit price is not applied for the closeout costs. This valuation adjustment has to include the operational costs arising from hedging, administration and settlement of contracts in the portfolio. The future administrative costs are incurred by the portfolio or position, but are not reflected in the core valuation model or the prices used to calibrate inputs to that model.",
+                  "text": "Future administrative costs ‒ PVA to take into account the administrative costs and future hedging costs over the expected life of the exposures for which a direct exit price is not applied for the closeout costs. This valuation adjustment has to include the operational costs arising from hedging, administration and settlement of contracts in the portfolio. The future administrative costs are incurred by the portfolio or position, but are not reflected in the core valuation model or the prices used to calibrate inputs to that model.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-1-8",
                   "number": "2.1.8",
-                  "text": "Other \u2013 Other PVAs which are required to take into account factors that will influence the exit price, but which do not fall in any of the categories specified above. These have to be described by banks in the narrative commentary that supports the disclosure.",
+                  "text": "Other – Other PVAs which are required to take into account factors that will influence the exit price, but which do not fall in any of the categories specified above. These have to be described by banks in the narrative commentary that supports the disclosure.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -134,28 +134,28 @@
                 {
                   "id": "s3-1-1",
                   "number": "3.1.1",
-                  "text": "\u2018PVA\u2019 means the excess of valuation adjustments required to achieve the identified prudent value over and above any adjustments applied under the applicable financial reporting framework.",
+                  "text": "‘PVA’ means the excess of valuation adjustments required to achieve the identified prudent value over and above any adjustments applied under the applicable financial reporting framework.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s3-1-2",
                   "number": "3.1.2",
-                  "text": "\u2018Valuation position\u2019 means a financial instrument, commodity, portfolio of financial instruments or commodities held in both trading and non-trading books, which are measured at fair value.",
+                  "text": "‘Valuation position’ means a financial instrument, commodity, portfolio of financial instruments or commodities held in both trading and non-trading books, which are measured at fair value.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s3-1-3",
                   "number": "3.1.3",
-                  "text": "\u2018Valuation input\u2019 means a market observable or non-observable parameter or matrix of parameters that influences the fair value of a valuation position.",
+                  "text": "‘Valuation input’ means a market observable or non-observable parameter or matrix of parameters that influences the fair value of a valuation position.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s3-1-4",
                   "number": "3.1.4",
-                  "text": "\u2018Valuation exposure\u2019 means the amount of a valuation position which is sensitive to the movement in a valuation input.",
+                  "text": "‘Valuation exposure’ means the amount of a valuation position which is sensitive to the movement in a valuation input.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -167,7 +167,7 @@
           "id": "s-banks-d5-2020-4",
           "number": "4",
           "heading": "Reporting and disclosure",
-          "text": "4.1   The aggregate PVA must be reported in line item 203 of the form BA 700.\n\n4.2   Banks must estimate their PVAs at least on a quarterly basis. The PVA must be\n      disclosed annually, in accordance with Directive 1 of 2019. Rows which are not\n      applicable to the reporting bank must be completed as zero (\u20180\u2019) and the reason why\n      they are not applicable must be explained in the accompanying narrative.\n\n4.3   The PVAs must be estimated at bank solo, bank consolidated, controlling company\n      consolidated and branches as well as subsidiaries of local banks. The rationale\n      behind estimating at consolidated level is to minimise any arbitrage of the\n      framework through the use of complex organisation structures, which could be\n      cross jurisdictional.\n\n                                           5",
+          "text": "4.1   The aggregate PVA must be reported in line item 203 of the form BA 700.\n\n4.2   Banks must estimate their PVAs at least on a quarterly basis. The PVA must be\n      disclosed annually, in accordance with Directive 1 of 2019. Rows which are not\n      applicable to the reporting bank must be completed as zero (‘0’) and the reason why\n      they are not applicable must be explained in the accompanying narrative.\n\n4.3   The PVAs must be estimated at bank solo, bank consolidated, controlling company\n      consolidated and branches as well as subsidiaries of local banks. The rationale\n      behind estimating at consolidated level is to minimise any arbitrage of the\n      framework through the use of complex organisation structures, which could be\n      cross jurisdictional.\n\n                                           5",
           "verbatim": true,
           "subsections": [
             {
@@ -182,7 +182,7 @@
               "id": "s-banks-d5-2020-4-2",
               "number": "4.2",
               "heading": "Banks must estimate their PVAs at least on a quarterly basis. The PVA must be",
-              "text": "4.2   Banks must estimate their PVAs at least on a quarterly basis. The PVA must be\n      disclosed annually, in accordance with Directive 1 of 2019. Rows which are not\n      applicable to the reporting bank must be completed as zero (\u20180\u2019) and the reason why\n      they are not applicable must be explained in the accompanying narrative.",
+              "text": "4.2   Banks must estimate their PVAs at least on a quarterly basis. The PVA must be\n      disclosed annually, in accordance with Directive 1 of 2019. Rows which are not\n      applicable to the reporting bank must be completed as zero (‘0’) and the reason why\n      they are not applicable must be explained in the accompanying narrative.",
               "verbatim": true,
               "subsections": []
             },
@@ -200,14 +200,14 @@
           "id": "s-banks-d5-2020-5",
           "number": "5",
           "heading": "Acknowledgement of Receipt",
-          "text": "5.1   Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n      external auditors. The attached acknowledgement of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-09-02\n\nEncl. 1\n\nThe previous directive issued was Directive 4/2020 dated 27 August 2020.\n\n                                                                              Annexure A:\n\nOverview of the PVA methodology\n\nIn order to ensure that the prudent valuation of their fair valued positions achieves an\nappropriate degree of certainty, banks must calculate PVAs necessary to adjust fair values\nto prudent values and must calculate these PVAs in accordance with the methods specified\nin this Annexure A.",
+          "text": "5.1   Kindly ensure that a copy of this Directive is made available to your institution’s\n      external auditors. The attached acknowledgement of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-09-02\n\nEncl. 1\n\nThe previous directive issued was Directive 4/2020 dated 27 August 2020.\n\n                                                                              Annexure A:\n\nOverview of the PVA methodology\n\nIn order to ensure that the prudent valuation of their fair valued positions achieves an\nappropriate degree of certainty, banks must calculate PVAs necessary to adjust fair values\nto prudent values and must calculate these PVAs in accordance with the methods specified\nin this Annexure A.",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d5-2020-5-1",
               "number": "5.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "5.1   Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n      external auditors. The attached acknowledgement of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-09-02\n\nEncl. 1\n\nThe previous directive issued was Directive 4/2020 dated 27 August 2020.\n\n                                                                              Annexure A:\n\nOverview of the PVA methodology\n\nIn order to ensure that the prudent valuation of their fair valued positions achieves an\nappropriate degree of certainty, banks must calculate PVAs necessary to adjust fair values\nto prudent values and must calculate these PVAs in accordance with the methods specified\nin this Annexure A.",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "5.1   Kindly ensure that a copy of this Directive is made available to your institution’s\n      external auditors. The attached acknowledgement of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-09-02\n\nEncl. 1\n\nThe previous directive issued was Directive 4/2020 dated 27 August 2020.\n\n                                                                              Annexure A:\n\nOverview of the PVA methodology\n\nIn order to ensure that the prudent valuation of their fair valued positions achieves an\nappropriate degree of certainty, banks must calculate PVAs necessary to adjust fair values\nto prudent values and must calculate these PVAs in accordance with the methods specified\nin this Annexure A.",
               "verbatim": true,
               "subsections": []
             }
@@ -217,7 +217,7 @@
           "id": "s-banks-d5-2020-1",
           "number": "1",
           "heading": "Sources of market data",
-          "text": "1.1       Where banks calculate PVAs based on market data, they must consider the same\n          range of market data used in the independent price verification (IPV) process,\n          subject to the adjustments described in this Directive.\n\n1.2       For the purposes of this Directive, banks must consider a full range of available\n          and reliable market data sources to determine a prudent value, including each of\n          the following, where relevant:\n\n          a.    exchange prices in a liquid market;\n          b.    trades in similar instruments, either from the bank\u2019s own records or trades\n                from across the markets;\n          c.    tradable quotes from brokers and other market participants;\n          d.    consensus service data;\n          e.    indicative broker quotes; and\n          f.    counterparty collateral valuations.\n\n1.3       Where banks use an internal expert-based approach referred to in this Directive,\n          alternative methods and sources of information must be considered, including\n          each of the following, where applicable:\n\n          a.    the use of proxy data based on similar instruments for which sufficient data\n                is available;\n          b.    application of prudential shifts to valuation inputs; and\n          c.    identification of natural bounds to the value of an instrument.",
+          "text": "1.1       Where banks calculate PVAs based on market data, they must consider the same\n          range of market data used in the independent price verification (IPV) process,\n          subject to the adjustments described in this Directive.\n\n1.2       For the purposes of this Directive, banks must consider a full range of available\n          and reliable market data sources to determine a prudent value, including each of\n          the following, where relevant:\n\n          a.    exchange prices in a liquid market;\n          b.    trades in similar instruments, either from the bank’s own records or trades\n                from across the markets;\n          c.    tradable quotes from brokers and other market participants;\n          d.    consensus service data;\n          e.    indicative broker quotes; and\n          f.    counterparty collateral valuations.\n\n1.3       Where banks use an internal expert-based approach referred to in this Directive,\n          alternative methods and sources of information must be considered, including\n          each of the following, where applicable:\n\n          a.    the use of proxy data based on similar instruments for which sufficient data\n                is available;\n          b.    application of prudential shifts to valuation inputs; and\n          c.    identification of natural bounds to the value of an instrument.",
           "verbatim": true,
           "subsections": [
             {
@@ -232,7 +232,7 @@
               "id": "s-banks-d5-2020-1-2",
               "number": "1.2",
               "heading": "For the purposes of this Directive, banks must consider a full range of available",
-              "text": "1.2       For the purposes of this Directive, banks must consider a full range of available\n          and reliable market data sources to determine a prudent value, including each of\n          the following, where relevant:\n\n          a.    exchange prices in a liquid market;\n          b.    trades in similar instruments, either from the bank\u2019s own records or trades\n                from across the markets;\n          c.    tradable quotes from brokers and other market participants;\n          d.    consensus service data;\n          e.    indicative broker quotes; and\n          f.    counterparty collateral valuations.",
+              "text": "1.2       For the purposes of this Directive, banks must consider a full range of available\n          and reliable market data sources to determine a prudent value, including each of\n          the following, where relevant:\n\n          a.    exchange prices in a liquid market;\n          b.    trades in similar instruments, either from the bank’s own records or trades\n                from across the markets;\n          c.    tradable quotes from brokers and other market participants;\n          d.    consensus service data;\n          e.    indicative broker quotes; and\n          f.    counterparty collateral valuations.",
               "verbatim": true,
               "subsections": []
             },
@@ -381,7 +381,7 @@
                 {
                   "id": "s4-2-3",
                   "number": "4.2.3",
-                  "text": "PVAs must be considered to be the excess of valuation adjustments required to achieve the identified prudent value, over any adjustment applied in the institution\u2019s fair value that can be identified as addressing the same source of valuation uncertainty as the PVA. Where an adjustment applied in the institution\u2019s fair value cannot be identified as addressing a specific PVA category at the level at which the relevant PVAs are calculated, that adjustment must not be included in the calculation of PVAs.",
+                  "text": "PVAs must be considered to be the excess of valuation adjustments required to achieve the identified prudent value, over any adjustment applied in the institution’s fair value that can be identified as addressing the same source of valuation uncertainty as the PVA. Where an adjustment applied in the institution’s fair value cannot be identified as addressing a specific PVA category at the level at which the relevant PVAs are calculated, that adjustment must not be included in the calculation of PVAs.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -510,7 +510,7 @@
                 {
                   "id": "s4-5-1",
                   "number": "4.5.1",
-                  "text": "Where appropriate, banks must estimate a model risk PVA for each valuation model (individual model risk PVA) by considering valuation model risk which arises due to the potential existence of a range of different models or model calibrations, which are used by market participants, and the lack of a firm exit price for the specific product being valued. Banks must not consider valuation model risk which arises due to calibrations from market derived parameters \u2012 which must be captured according to the methodology for the calculation of the mid-market value PVA.",
+                  "text": "Where appropriate, banks must estimate a model risk PVA for each valuation model (individual model risk PVA) by considering valuation model risk which arises due to the potential existence of a range of different models or model calibrations, which are used by market participants, and the lack of a firm exit price for the specific product being valued. Banks must not consider valuation model risk which arises due to calibrations from market derived parameters ‒ which must be captured according to the methodology for the calculation of the mid-market value PVA.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -611,7 +611,7 @@
                 {
                   "id": "s4-8-2",
                   "number": "4.8.2",
-                  "text": "For the purposes of subparagraph (a) of paragraph 4.8.1, the identification of concentrated valuation positions must consider all of the following: a. the size of all valuation positions relative to the liquidity of the related market; b. the institution\u2019s ability to trade in that market; and c the average daily market volume and typical daily trading volume of the bank. Banks must establish and document the methodology applied to determine concentrated valuation positions for which a concentrated positions PVA must be calculated.",
+                  "text": "For the purposes of subparagraph (a) of paragraph 4.8.1, the identification of concentrated valuation positions must consider all of the following: a. the size of all valuation positions relative to the liquidity of the related market; b. the institution’s ability to trade in that market; and c the average daily market volume and typical daily trading volume of the bank. Banks must establish and document the methodology applied to determine concentrated valuation positions for which a concentrated positions PVA must be calculated.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -710,11 +710,12 @@
           "id": "s-banks-d5-2020-5",
           "number": "5",
           "heading": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs",
-          "text": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs Method 1: APV A = (FV \u2013 PV) \u2013 50%*(FV \u2013 PV) = 50%*(FV-PV) PVA = \u03a3APV A Method 2: APV A = max{0, (FV \u2013 PV) \u2013 50%*(EV \u2013 PV)} =max{0,FV \u2013 50%*(EV + PV)} PVA = \u03a3APV A Where: FV = The valuation exposure level fair value after any accounting adjustment applied in the bank\u2019s fair value that can be identified as addressing the same source of valuation uncertainty at the relevant PVA. PV = The valuation exposure level prudent value determined in accordance with this Directive. EV = The expected value at a valuation exposure level taken from the range of plausible values as referred to in this Directive. APV A = The valuation exposure level PVA after adjusting for aggregation. PVA = The total category level PVA after adjusting for aggregation. 8",
+          "text": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs Method 1: APV A = (FV – PV) – 50%*(FV – PV) = 50%*(FV-PV) PVA = ΣAPV A Method 2: APV A = max{0, (FV – PV) – 50%*(EV – PV)} =max{0,FV – 50%*(EV + PV)} PVA = ΣAPV A Where: FV = The valuation exposure level fair value after any accounting adjustment applied in the bank’s fair value that can be identified as addressing the same source of valuation uncertainty at the relevant PVA. PV = The valuation exposure level prudent value determined in accordance with this Directive. EV = The expected value at a valuation exposure level taken from the range of plausible values as referred to in this Directive. APV A = The valuation exposure level PVA after adjusting for aggregation. PVA = The total category level PVA after adjusting for aggregation. 8",
           "verbatim": true,
           "subsections": []
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:7da05e03e7fa77ae6d16ae076eda0d99065db08e949fb3cd16e825e6b2014769"
 }

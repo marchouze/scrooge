@@ -1,6 +1,6 @@
 {
   "slug": "banks-d7-2020",
-  "title": "Banks Act Directive D7/2020 \u2014 Calculation of derivative exposure amount for the purposes of determining the leverage ratio",
+  "title": "Banks Act Directive D7/2020 — Calculation of derivative exposure amount for the purposes of determining the leverage ratio",
   "shortTitle": "Directive D7/2020",
   "regulator": "Prudential Authority",
   "year": 2020,
@@ -28,14 +28,14 @@
           "id": "s-banks-d7-2020-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1       The Prudential Authority (PA) has proposed amendments to the Regulations in order\n          to replace the current exposure method with the SA-CCR for the purposes of\n          calculating the relevant amount related to a bank\u2019s derivative exposures for\n          risk-based capital requirements.\n\n1.2       The above-mentioned proposed changes, require the PA to specify requirements for\n          the calculation of the derivative exposures for the purposes of determining the\n          leverage ratio.",
+          "text": "1.1       The Prudential Authority (PA) has proposed amendments to the Regulations in order\n          to replace the current exposure method with the SA-CCR for the purposes of\n          calculating the relevant amount related to a bank’s derivative exposures for\n          risk-based capital requirements.\n\n1.2       The above-mentioned proposed changes, require the PA to specify requirements for\n          the calculation of the derivative exposures for the purposes of determining the\n          leverage ratio.",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d7-2020-1-1",
               "number": "1.1",
               "heading": "The Prudential Authority (PA) has proposed amendments to the Regulations in order",
-              "text": "1.1       The Prudential Authority (PA) has proposed amendments to the Regulations in order\n          to replace the current exposure method with the SA-CCR for the purposes of\n          calculating the relevant amount related to a bank\u2019s derivative exposures for\n          risk-based capital requirements.",
+              "text": "1.1       The Prudential Authority (PA) has proposed amendments to the Regulations in order\n          to replace the current exposure method with the SA-CCR for the purposes of\n          calculating the relevant amount related to a bank’s derivative exposures for\n          risk-based capital requirements.",
               "verbatim": true,
               "subsections": []
             },
@@ -102,14 +102,14 @@
                 {
                   "id": "s2-3-1",
                   "number": "2.3.1",
-                  "text": "Since collateral received in respect of any derivative contract does not necessarily reduce the leverage inherent in a bank\u2019s derivatives position, the bank shall not apply any netting between the collateral received and the bank\u2019s derivative exposure, irrespective of whether or not netting may be permitted in terms of the bank\u2019s operative accounting or risk-based framework provided for in the Regulations; that is, whenever the bank calculates its relevant exposure amount, the bank shall not reduce the exposure amount by any collateral received from the counterparty. 2 CONFIDENTIAL CONFIDENTIAL",
+                  "text": "Since collateral received in respect of any derivative contract does not necessarily reduce the leverage inherent in a bank’s derivatives position, the bank shall not apply any netting between the collateral received and the bank’s derivative exposure, irrespective of whether or not netting may be permitted in terms of the bank’s operative accounting or risk-based framework provided for in the Regulations; that is, whenever the bank calculates its relevant exposure amount, the bank shall not reduce the exposure amount by any collateral received from the counterparty. 2 CONFIDENTIAL CONFIDENTIAL",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-3-2",
                   "number": "2.3.2",
-                  "text": "Whenever the bank provides collateral, the bank shall gross up its relevant exposure measure by the amount of any derivatives collateral so provided when the provision of such collateral reduces the value of the bank\u2019s balance sheet assets in terms of its relevant operative accounting framework.",
+                  "text": "Whenever the bank provides collateral, the bank shall gross up its relevant exposure measure by the amount of any derivatives collateral so provided when the provision of such collateral reduces the value of the bank’s balance sheet assets in terms of its relevant operative accounting framework.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -118,7 +118,7 @@
             {
               "id": "s2-4",
               "number": "2.4",
-              "text": "below and for which the amount has not as yet reduced the market value of the derivative transaction V under the bank\u2019s operative accounting standard. (c) CVMp is the cash variation margin provided by the bank and that meets the conditions set out in paragraph",
+              "text": "below and for which the amount has not as yet reduced the market value of the derivative transaction V under the bank’s operative accounting standard. (c) CVMp is the cash variation margin provided by the bank and that meets the conditions set out in paragraph",
               "verbatim": true,
               "subsections": [
                 {
@@ -131,7 +131,7 @@
                 {
                   "id": "s2-4-2",
                   "number": "2.4.2",
-                  "text": "below are met, the bank- (a) may regard the cash portion of any variation margin exchanged between counterparties as a form of pre-settlement payment; and (b) may reduce the replacement cost portion of the exposure measure with the cash portion of the variation margin received and the bank may deduct from the exposure measure the receivable asset(s) in respect of the cash variation margin provided, as set out below: (i) in the case of cash variation margin received, the receiving bank may reduce the replacement cost, but not the PFE, of the exposure amount of the derivative asset by the amount of cash received if the positive mark-to market value of the derivative contract(s) has not already been reduced by the same amount of cash variation margin received in terms of the bank\u2019s relevant operative accounting standard; and (ii) in the case of cash variation margin provided to a counterparty, the posting bank may deduct any resulting receivable from its relevant exposure measure, where the cash variation margin has been recognised as an asset in terms of the bank\u2019s relevant operative accounting framework, and instead include the cash variation margin provided in the calculation of the derivative replacement cost.",
+                  "text": "below are met, the bank- (a) may regard the cash portion of any variation margin exchanged between counterparties as a form of pre-settlement payment; and (b) may reduce the replacement cost portion of the exposure measure with the cash portion of the variation margin received and the bank may deduct from the exposure measure the receivable asset(s) in respect of the cash variation margin provided, as set out below: (i) in the case of cash variation margin received, the receiving bank may reduce the replacement cost, but not the PFE, of the exposure amount of the derivative asset by the amount of cash received if the positive mark-to market value of the derivative contract(s) has not already been reduced by the same amount of cash variation margin received in terms of the bank’s relevant operative accounting standard; and (ii) in the case of cash variation margin provided to a counterparty, the posting bank may deduct any resulting receivable from its relevant exposure measure, where the cash variation margin has been recognised as an asset in terms of the bank’s relevant operative accounting framework, and instead include the cash variation margin provided in the calculation of the derivative replacement cost.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -146,7 +146,7 @@
                 {
                   "id": "s2-5-1",
                   "number": "2.5.1",
-                  "text": "When the bank acts as a clearing member and offers clearing services to clients, - (a) and the bank is obliged to reimburse a client for any losses suffered due to changes in the value of all relevant transactions in the event that a central counterparty (CCP) defaults, the bank shall capture all relevant trade exposures to the CCP in a manner similar to any other type of derivatives transaction entered into by the bank, provided that for the purposes of regulation 38(15) of the Regulations and this directive, the bank\u2019s relevant amount of trade exposures shall include variation margin, whether or not it is posted in a manner that makes it insolvency remote from the relevant CCP; (b) but the bank has no obligation, based on a legally enforceable contractual agreement with the client, to reimburse the client for any losses suffered due to changes in the value of its transactions in the event that a QCCP defaults, the bank may exclude the relevant amounts resulting from any such trade exposures to the QCCP from its exposure measure; (c) and the bank guarantees the performance of its client\u2019s derivative exposures to the CCP, as a result of the derivatives transactions directly entered into between the client of the bank and the CCP, the bank shall calculate its related leverage ratio exposure resulting from the guarantee as a derivative exposure, as if the bank had directly entered into the transaction with the client, including any relevant amount related to the receipt or provision of any cash variation margin.",
+                  "text": "When the bank acts as a clearing member and offers clearing services to clients, - (a) and the bank is obliged to reimburse a client for any losses suffered due to changes in the value of all relevant transactions in the event that a central counterparty (CCP) defaults, the bank shall capture all relevant trade exposures to the CCP in a manner similar to any other type of derivatives transaction entered into by the bank, provided that for the purposes of regulation 38(15) of the Regulations and this directive, the bank’s relevant amount of trade exposures shall include variation margin, whether or not it is posted in a manner that makes it insolvency remote from the relevant CCP; (b) but the bank has no obligation, based on a legally enforceable contractual agreement with the client, to reimburse the client for any losses suffered due to changes in the value of its transactions in the event that a QCCP defaults, the bank may exclude the relevant amounts resulting from any such trade exposures to the QCCP from its exposure measure; (c) and the bank guarantees the performance of its client’s derivative exposures to the CCP, as a result of the derivatives transactions directly entered into between the client of the bank and the CCP, the bank shall calculate its related leverage ratio exposure resulting from the guarantee as a derivative exposure, as if the bank had directly entered into the transaction with the client, including any relevant amount related to the receipt or provision of any cash variation margin.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -161,28 +161,28 @@
                 {
                   "id": "s2-6-1",
                   "number": "2.6.1",
-                  "text": "Since a written credit derivative instrument creates a notional credit exposure that arises from the creditworthiness of the relevant reference entity, a bank shall, in addition to the CCR exposure arising from the fair value of the relevant contract and any related collateral, treat any written credit derivative instrument consistently with cash instruments, such as loans or bonds, for the purposes of the bank\u2019s exposure measure.",
+                  "text": "Since a written credit derivative instrument creates a notional credit exposure that arises from the creditworthiness of the relevant reference entity, a bank shall, in addition to the CCR exposure arising from the fair value of the relevant contract and any related collateral, treat any written credit derivative instrument consistently with cash instruments, such as loans or bonds, for the purposes of the bank’s exposure measure.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-6-2",
                   "number": "2.6.2",
-                  "text": "In order to capture the credit exposure to the relevant underlying reference entity, the bank shall include in its exposure measure the effective notional amount referenced by the relevant written credit derivative instrument. The bank may reduce the effective notional amount of the written credit derivative instrument by any negative change in the fair value amount reflected in the calculation of the bank\u2019s tier 1 capital. CONFIDENTIAL CONFIDENTIAL",
+                  "text": "In order to capture the credit exposure to the relevant underlying reference entity, the bank shall include in its exposure measure the effective notional amount referenced by the relevant written credit derivative instrument. The bank may reduce the effective notional amount of the written credit derivative instrument by any negative change in the fair value amount reflected in the calculation of the bank’s tier 1 capital. CONFIDENTIAL CONFIDENTIAL",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-6-3",
                   "number": "2.6.3",
-                  "text": "The bank may also reduce the resulting amount by the effective notional amount of a purchased credit derivative instrument on the reference name, provided that: (a) two reference names shall be considered the same or identical only if they refer to exactly the same legal entity or person; (b) the remaining maturity of the credit protection purchased shall be equal to or greater than the remaining maturity of the written credit derivative instrument; (c) the effective notional amount of any offsetting purchased credit protection shall also be reduced by any resulting positive change in the fair value reflected in the calculation of the bank\u2019s tier 1 capital; (d) In the case of a single name credit derivative instrument the bank shall comply with the relevant further requirements specified below: (i) credit protection purchased shall be in respect of a reference obligation that ranks pari passu with or junior to the underlying reference obligation of the written credit derivative, provided that in the case of tranched products, the purchased protection shall be on a reference obligation with the same level of seniority; (ii) protection purchased that references a subordinated position may offset protection sold on a more senior position of the same reference entity only if a credit event on the senior reference asset would result in a credit event on the subordinated reference asset. (e) protection purchased on a pool of reference entities may offset the relevant amount related to protection sold on individual reference names only if the protection purchased is economically equivalent to buying protection separately on each of the relevant individual names in the pool. This would, for example, be the case if the bank purchased protection on an entire securitisation structure. (f) when the bank purchases protection on a pool of reference names, but the credit protection does not cover the entire pool, that is, the protection covers only a subset of the pool, as, for example, in the case of an nth-to-default credit derivative or a securitisation tranche, then no offsetting shall be permitted for the protection sold on individual reference names. However, the said purchased protections may offset sold protections on a pool, provided the purchased protections cover the entirety of the subset of the pool on which protection has been sold (i.e, the bank shall only recognise offsetting when the pool of reference entities and the level of subordination in both transactions are identical).",
+                  "text": "The bank may also reduce the resulting amount by the effective notional amount of a purchased credit derivative instrument on the reference name, provided that: (a) two reference names shall be considered the same or identical only if they refer to exactly the same legal entity or person; (b) the remaining maturity of the credit protection purchased shall be equal to or greater than the remaining maturity of the written credit derivative instrument; (c) the effective notional amount of any offsetting purchased credit protection shall also be reduced by any resulting positive change in the fair value reflected in the calculation of the bank’s tier 1 capital; (d) In the case of a single name credit derivative instrument the bank shall comply with the relevant further requirements specified below: (i) credit protection purchased shall be in respect of a reference obligation that ranks pari passu with or junior to the underlying reference obligation of the written credit derivative, provided that in the case of tranched products, the purchased protection shall be on a reference obligation with the same level of seniority; (ii) protection purchased that references a subordinated position may offset protection sold on a more senior position of the same reference entity only if a credit event on the senior reference asset would result in a credit event on the subordinated reference asset. (e) protection purchased on a pool of reference entities may offset the relevant amount related to protection sold on individual reference names only if the protection purchased is economically equivalent to buying protection separately on each of the relevant individual names in the pool. This would, for example, be the case if the bank purchased protection on an entire securitisation structure. (f) when the bank purchases protection on a pool of reference names, but the credit protection does not cover the entire pool, that is, the protection covers only a subset of the pool, as, for example, in the case of an nth-to-default credit derivative or a securitisation tranche, then no offsetting shall be permitted for the protection sold on individual reference names. However, the said purchased protections may offset sold protections on a pool, provided the purchased protections cover the entirety of the subset of the pool on which protection has been sold (i.e, the bank shall only recognise offsetting when the pool of reference entities and the level of subordination in both transactions are identical).",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-6-4",
                   "number": "2.6.4",
-                  "text": "When the bank buys credit protection through a total return swap (TRS) and records the net payments received as net income, but does not record offsetting deterioration in the value of the written credit derivative, either through reductions in fair value or by an addition to reserves, reflected in the bank\u2019s tier 1 capital, the credit protection shall not be recognised for the purpose of offsetting the effective notional amounts related to written credit derivative instruments.",
+                  "text": "When the bank buys credit protection through a total return swap (TRS) and records the net payments received as net income, but does not record offsetting deterioration in the value of the written credit derivative, either through reductions in fair value or by an addition to reserves, reflected in the bank’s tier 1 capital, the credit protection shall not be recognised for the purpose of offsetting the effective notional amounts related to written credit derivative instruments.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -208,14 +208,14 @@
           "id": "s-banks-d7-2020-3",
           "number": "3",
           "heading": "Acknowledgement of Receipt",
-          "text": "3.1   Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n      external auditors. The attached acknowledgment of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-12-01\n\nEncl. 1\n\nThe previous directive issued was Directive 6/2020 dated 23 September 2020.\n\n\n\n\n                                                                                       6\n                                     CONFIDENTIAL",
+          "text": "3.1   Kindly ensure that a copy of this Directive is made available to your institution’s\n      external auditors. The attached acknowledgment of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-12-01\n\nEncl. 1\n\nThe previous directive issued was Directive 6/2020 dated 23 September 2020.\n\n\n\n\n                                                                                       6\n                                     CONFIDENTIAL",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d7-2020-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "3.1   Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n      external auditors. The attached acknowledgment of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-12-01\n\nEncl. 1\n\nThe previous directive issued was Directive 6/2020 dated 23 September 2020.\n\n\n\n\n                                                                                       6\n                                     CONFIDENTIAL",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "3.1   Kindly ensure that a copy of this Directive is made available to your institution’s\n      external auditors. The attached acknowledgment of receipt duly completed and\n      signed by both the chief executive officer of the institution and the said auditors\n      should be returned to the PA at the earliest convenience of the aforementioned\n      signatories.\n\n\n\n\nKuben Naidoo\nDeputy Governor and CEO: Prudential Authority\n\nDate: 2020-12-01\n\nEncl. 1\n\nThe previous directive issued was Directive 6/2020 dated 23 September 2020.\n\n\n\n\n                                                                                       6\n                                     CONFIDENTIAL",
               "verbatim": true,
               "subsections": []
             }
@@ -223,5 +223,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:d240015402f7e435e3d35af1864dce3772e7f48c48141eb884b0b175f65cd2b7"
 }

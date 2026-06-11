@@ -1,6 +1,6 @@
 {
   "slug": "banks-d2-2023",
-  "title": "Banks Act Directive D2/2023 \u2014 Directive for the completion of the form BA 330 and public comments received on the proposed Directive",
+  "title": "Banks Act Directive D2/2023 — Directive for the completion of the form BA 330 and public comments received on the proposed Directive",
   "shortTitle": "Directive D2/2023",
   "regulator": "Prudential Authority",
   "year": 2023,
@@ -105,7 +105,7 @@
                 {
                   "id": "s2-1-1",
                   "number": "2.1.1",
-                  "text": "A bank shall construct the relevant required repricing gap by classifying all relevant interest rate-sensitive assets and liabilities in time buckets according to their repricing characteristics or maturity dates. The repricing gap: (a) measures the bank\u2019s exposure to risk by focusing on changes to future profitability within a given time horizon, eventually affecting future levels of the bank\u2019s equity; (b) is derived from a static balance sheet; and (c) assumes that the derived potential rate movements will occur through a parallel rate shock to all maturities along the yield curve.",
+                  "text": "A bank shall construct the relevant required repricing gap by classifying all relevant interest rate-sensitive assets and liabilities in time buckets according to their repricing characteristics or maturity dates. The repricing gap: (a) measures the bank’s exposure to risk by focusing on changes to future profitability within a given time horizon, eventually affecting future levels of the bank’s equity; (b) is derived from a static balance sheet; and (c) assumes that the derived potential rate movements will occur through a parallel rate shock to all maturities along the yield curve.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -236,14 +236,14 @@
           "id": "s-banks-d2-2023-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": " 3.1    Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n        external auditors. In addition, the attached acknowledgement of receipt duly\n        completed and signed by both the chief executive officer of the institution and the\n        said auditors should be returned to the PA at the earliest convenience of the\n        aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22/02/23\n\nThe previous Directive issued was Directive 1/2023, dated 23 January 2023.\n\n\n\n\n                                                                                           12",
+          "text": " 3.1    Kindly ensure that a copy of this Directive is made available to your institution’s\n        external auditors. In addition, the attached acknowledgement of receipt duly\n        completed and signed by both the chief executive officer of the institution and the\n        said auditors should be returned to the PA at the earliest convenience of the\n        aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22/02/23\n\nThe previous Directive issued was Directive 1/2023, dated 23 January 2023.\n\n\n\n\n                                                                                           12",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d2-2023-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "3.1    Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n        external auditors. In addition, the attached acknowledgement of receipt duly\n        completed and signed by both the chief executive officer of the institution and the\n        said auditors should be returned to the PA at the earliest convenience of the\n        aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22/02/23\n\nThe previous Directive issued was Directive 1/2023, dated 23 January 2023.\n\n\n\n\n                                                                                           12",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "3.1    Kindly ensure that a copy of this Directive is made available to your institution’s\n        external auditors. In addition, the attached acknowledgement of receipt duly\n        completed and signed by both the chief executive officer of the institution and the\n        said auditors should be returned to the PA at the earliest convenience of the\n        aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22/02/23\n\nThe previous Directive issued was Directive 1/2023, dated 23 January 2023.\n\n\n\n\n                                                                                           12",
               "verbatim": true,
               "subsections": []
             }
@@ -251,5 +251,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:3c9d88af2cd7bccc8b8cbf76347f869665d8c7f732820984807b8b6d2d441f27"
 }

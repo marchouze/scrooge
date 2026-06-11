@@ -1,6 +1,6 @@
 {
   "slug": "banks-c4-2016",
-  "title": "Banks Act Circular C4/2016 \u2014 Matters relating to the implementation of the capital conservation buffer",
+  "title": "Banks Act Circular C4/2016 — Matters relating to the implementation of the capital conservation buffer",
   "shortTitle": "Circular C4/2016",
   "regulator": "Prudential Authority",
   "year": 2016,
@@ -126,7 +126,7 @@
             {
               "id": "s5-1",
               "number": "5.1",
-              "text": "Two additional copies of this circular are enclosed for the use of your institution\u2019s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer and the said auditors, must be returned to this Office at the earliest convenience of the aforementioned signatories. Ren\u00e9 van Wyk Registrar of Banks The previous circular issued was Banks Act Circular 3/2016, dated 31 March 2016.",
+              "text": "Two additional copies of this circular are enclosed for the use of your institution’s independent auditors. The attached acknowledgement of receipt, duly completed and signed by both the chief executive officer and the said auditors, must be returned to this Office at the earliest convenience of the aforementioned signatories. René van Wyk Registrar of Banks The previous circular issued was Banks Act Circular 3/2016, dated 31 March 2016.",
               "verbatim": true,
               "subsections": []
             }
@@ -134,5 +134,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:b785cf08f65afe134df9a88e1e4ac4c986b7f1b686f496ee9ab2e9bbca41b511"
 }

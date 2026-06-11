@@ -89,5 +89,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:32a207b84a05665bd1588f45b6b550f11240e25aec9dd68c1decc29499666060"
 }

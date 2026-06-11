@@ -1,6 +1,6 @@
 {
   "slug": "banks-c3-2020",
-  "title": "Banks Act Circular C3/2020 \u2014 Disclosure of capital-related matters",
+  "title": "Banks Act Circular C3/2020 — Disclosure of capital-related matters",
   "shortTitle": "Circular C3/2020",
   "regulator": "Prudential Authority",
   "year": 2020,
@@ -34,5 +34,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:c51537e35ad878e3b29bc74be24e64ac3728f484f11c2bb3b4f8b6420d774c9f"
 }

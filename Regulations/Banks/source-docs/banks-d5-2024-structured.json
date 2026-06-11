@@ -1,6 +1,6 @@
 {
   "slug": "banks-d5-2024",
-  "title": "Banks Act Directive D5/2024 \u2014 Loss absorbency requirements for additional tier 1 and tier 2 capital instruments",
+  "title": "Banks Act Directive D5/2024 — Loss absorbency requirements for additional tier 1 and tier 2 capital instruments",
   "shortTitle": "Directive D5/2024",
   "regulator": "Prudential Authority",
   "year": 2024,
@@ -209,7 +209,7 @@
                     {
                       "id": "s2-5-1-1",
                       "number": "2.5.1.1",
-                      "text": "The Reserve Bank\u2019s considerations, including financial stability, market confidence, and the resolution plans of the banking group.",
+                      "text": "The Reserve Bank’s considerations, including financial stability, market confidence, and the resolution plans of the banking group.",
                       "verbatim": true,
                       "subsections": []
                     },
@@ -291,7 +291,7 @@
                     {
                       "id": "s3-2-1-2",
                       "number": "3.2.1.2",
-                      "text": "the conversion price, which must be determined as the greater of: a. the arithmetic mean of the closing price of the shares on each of the five consecutive dealing days prior to the date of the trigger event; or b. a floor price of 20% of the shares\u2019 closing price at the same date as issuance of the capital instrument.",
+                      "text": "the conversion price, which must be determined as the greater of: a. the arithmetic mean of the closing price of the shares on each of the five consecutive dealing days prior to the date of the trigger event; or b. a floor price of 20% of the shares’ closing price at the same date as issuance of the capital instrument.",
                       "verbatim": true,
                       "subsections": []
                     }
@@ -329,7 +329,7 @@
                 {
                   "id": "s3-2-3",
                   "number": "3.2.3",
-                  "text": "Conversion shall occur in the form of listed ordinary shares of the relevant bank if such bank is listed on an exchange or, alternatively, that of the bank\u2019s controlling company if the said bank is a wholly owned subsidiary.",
+                  "text": "Conversion shall occur in the form of listed ordinary shares of the relevant bank if such bank is listed on an exchange or, alternatively, that of the bank’s controlling company if the said bank is a wholly owned subsidiary.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -348,14 +348,14 @@
           "id": "s-banks-d5-2024-4",
           "number": "4",
           "heading": "Acknowledgement of receipt",
-          "text": "4.1.           Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n               external auditors. In addition, the attached acknowledgement of receipt, duly\n               completed and signed by both the CEO of the institution and the said auditors,\n               should be returned to the PA at the earliest convenience of the aforementioned\n               signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22 October 2024\n\nThe previous Directive issued was Directive 4/2024, dated 10 September 2024.\n\n\n\n\n                                                                                                5",
+          "text": "4.1.           Kindly ensure that a copy of this Directive is made available to your institution’s\n               external auditors. In addition, the attached acknowledgement of receipt, duly\n               completed and signed by both the CEO of the institution and the said auditors,\n               should be returned to the PA at the earliest convenience of the aforementioned\n               signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22 October 2024\n\nThe previous Directive issued was Directive 4/2024, dated 10 September 2024.\n\n\n\n\n                                                                                                5",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d5-2024-4-1",
               "number": "4.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "4.1.           Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n               external auditors. In addition, the attached acknowledgement of receipt, duly\n               completed and signed by both the CEO of the institution and the said auditors,\n               should be returned to the PA at the earliest convenience of the aforementioned\n               signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22 October 2024\n\nThe previous Directive issued was Directive 4/2024, dated 10 September 2024.\n\n\n\n\n                                                                                                5",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "4.1.           Kindly ensure that a copy of this Directive is made available to your institution’s\n               external auditors. In addition, the attached acknowledgement of receipt, duly\n               completed and signed by both the CEO of the institution and the said auditors,\n               should be returned to the PA at the earliest convenience of the aforementioned\n               signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 22 October 2024\n\nThe previous Directive issued was Directive 4/2024, dated 10 September 2024.\n\n\n\n\n                                                                                                5",
               "verbatim": true,
               "subsections": []
             }
@@ -363,5 +363,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:a813024444986f76c3d3086e9c0a20dfd9e5300d96134f5b12ebaac7be5c6e42"
 }

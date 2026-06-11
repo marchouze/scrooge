@@ -1,6 +1,6 @@
 {
   "slug": "banks-d11-2025",
-  "title": "Banks Act Directive D11/2025 \u2014 Prudential treatment of distressed restructured credit exposures",
+  "title": "Banks Act Directive D11/2025 — Prudential treatment of distressed restructured credit exposures",
   "shortTitle": "Directive D11/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -34,14 +34,14 @@
             {
               "id": "s1-1",
               "number": "1.1",
-              "text": "Regulation 67 of the Regulations defines a restructured credit exposure as a credit exposure in respect of which the bank grants a concession owing to a deterioration in the obligor\u2019s financial condition1 or a distressed financial situation.",
+              "text": "Regulation 67 of the Regulations defines a restructured credit exposure as a credit exposure in respect of which the bank grants a concession owing to a deterioration in the obligor’s financial condition1 or a distressed financial situation.",
               "verbatim": true,
               "subsections": []
             },
             {
               "id": "s1-2",
               "number": "1.2",
-              "text": "This definition of restructured credit exposure has significant implications for both the definition and classification of credit exposures in default, as outlined in regulation 67 of the Regulations. This is because \u2018default\u2019 is defined to include, among other things, credit exposures on which \u201cthe bank has consented to a distressed restructuring of the credit obligation, which restructuring is likely to result in a reduced financial obligation\u201d.",
+              "text": "This definition of restructured credit exposure has significant implications for both the definition and classification of credit exposures in default, as outlined in regulation 67 of the Regulations. This is because ‘default’ is defined to include, among other things, credit exposures on which “the bank has consented to a distressed restructuring of the credit obligation, which restructuring is likely to result in a reduced financial obligation”.",
               "verbatim": true,
               "subsections": []
             },
@@ -104,13 +104,13 @@
                 {
                   "id": "s1-4-1",
                   "number": "1.4.1",
-                  "text": "The word \u2018likely\u2019 in this context is instructive, for two reasons:",
+                  "text": "The word ‘likely’ in this context is instructive, for two reasons:",
                   "verbatim": true,
                   "subsections": [
                     {
                       "id": "s1-4-1-1",
                       "number": "1.4.1.1",
-                      "text": "Firstly, financial distress logically implies a deterioration in the counterparty\u2019s credit quality. This, in turn, increases the likelihood that the counterparty will not be able to repay all the contractually due amounts, potentially suggesting a default event and, with that, the likelihood that the bank will experience a loss. Therefore, the bank would restructure the loan agreement based on its assessment that the counterparty is more likely to repay all contractually due amounts under less stringent terms and conditions. However, this assessment may not yield the desired outcome given the uncertainties regarding the client\u2019s performance under an amended loan agreement and less stringent terms and conditions. Throughout this Directive, a distinction is made between restructured credit exposure, as defined in regulation 67 of the Regulations, and what is referred to as business-as-usual (BAU) restructures. Therefore, unless specifically stated otherwise, restructures will mean all restructures, including distressed and BAU restructures. 2",
+                      "text": "Firstly, financial distress logically implies a deterioration in the counterparty’s credit quality. This, in turn, increases the likelihood that the counterparty will not be able to repay all the contractually due amounts, potentially suggesting a default event and, with that, the likelihood that the bank will experience a loss. Therefore, the bank would restructure the loan agreement based on its assessment that the counterparty is more likely to repay all contractually due amounts under less stringent terms and conditions. However, this assessment may not yield the desired outcome given the uncertainties regarding the client’s performance under an amended loan agreement and less stringent terms and conditions. Throughout this Directive, a distinction is made between restructured credit exposure, as defined in regulation 67 of the Regulations, and what is referred to as business-as-usual (BAU) restructures. Therefore, unless specifically stated otherwise, restructures will mean all restructures, including distressed and BAU restructures. 2",
                       "verbatim": true,
                       "subsections": []
                     },
@@ -252,7 +252,7 @@
             {
               "id": "s2-2",
               "number": "2.2",
-              "text": "The process of identifying and consenting to a distressed restructured credit exposure must be supported by an assessment of the counterparty\u2019s current financial position and ability to repay in line with the amended terms and conditions of the loan agreement. This assessment must, in turn, be supported by credible documentation of the counterparty\u2019s financial status, overall current debt obligations, and how this is likely to impact the counterparty\u2019s performance under the amended terms and conditions of the distressed restructured credit exposure. 4",
+              "text": "The process of identifying and consenting to a distressed restructured credit exposure must be supported by an assessment of the counterparty’s current financial position and ability to repay in line with the amended terms and conditions of the loan agreement. This assessment must, in turn, be supported by credible documentation of the counterparty’s financial status, overall current debt obligations, and how this is likely to impact the counterparty’s performance under the amended terms and conditions of the distressed restructured credit exposure. 4",
               "verbatim": true,
               "subsections": []
             },
@@ -265,7 +265,7 @@
                 {
                   "id": "s2-3-1",
                   "number": "2.3.1",
-                  "text": "In the case of wholesale exposures, only exposures in excess of 1% (as a percentage of the counterparty\u2019s cumulative exposures) will be considered material for the purposes of this Directive. In this case, exposure refers to both the on- and off-balance sheet amount.",
+                  "text": "In the case of wholesale exposures, only exposures in excess of 1% (as a percentage of the counterparty’s cumulative exposures) will be considered material for the purposes of this Directive. In this case, exposure refers to both the on- and off-balance sheet amount.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -281,7 +281,7 @@
             {
               "id": "s2-4",
               "number": "2.4",
-              "text": "For the purposes of this Directive, a distressed restructure must be defined to include, among other things, exposures that are deemed to constitute a substantial modification in terms of IFRS 9, thereby resulting in the original exposure being derecognised and a \u2018new\u2019 exposure being recognised.",
+              "text": "For the purposes of this Directive, a distressed restructure must be defined to include, among other things, exposures that are deemed to constitute a substantial modification in terms of IFRS 9, thereby resulting in the original exposure being derecognised and a ‘new’ exposure being recognised.",
               "verbatim": true,
               "subsections": []
             },
@@ -342,14 +342,14 @@
                     {
                       "id": "s2-6-3-3",
                       "number": "2.6.3.3",
-                      "text": "a credit exposure that is not in arrears at the time of the restructure, but where it is probable that the counterparty will be past due in the foreseeable future if the bank does not grant a concession; and For the purposes of this Directive, \u2018in arrears\u2019 means a payment or portion of a payment that is one day past due in terms of the contractual due date. 3 For the purposes of this Directive, \u2018technical arrears\u2019 means any account that is classified as being in arrears for technical reasons such as operational errors or the bank\u2019s information technology system not updating the relevant information on time. 5",
+                      "text": "a credit exposure that is not in arrears at the time of the restructure, but where it is probable that the counterparty will be past due in the foreseeable future if the bank does not grant a concession; and For the purposes of this Directive, ‘in arrears’ means a payment or portion of a payment that is one day past due in terms of the contractual due date. 3 For the purposes of this Directive, ‘technical arrears’ means any account that is classified as being in arrears for technical reasons such as operational errors or the bank’s information technology system not updating the relevant information on time. 5",
                       "verbatim": true,
                       "subsections": []
                     },
                     {
                       "id": "s2-6-3-4",
                       "number": "2.6.3.4",
-                      "text": "a restructure of a counterparty\u2019s debt obligations on account of changed financial circumstances, resulting in the bank offering revised terms and conditions which the bank would not ordinarily grant as part of its BAU credit granting process. For example, this may include the counterparty not being able to obtain a contractual interest rate at an amount lower than or equal to the interest rate for similar loans to a counterparty that is not experiencing financial distress.",
+                      "text": "a restructure of a counterparty’s debt obligations on account of changed financial circumstances, resulting in the bank offering revised terms and conditions which the bank would not ordinarily grant as part of its BAU credit granting process. For example, this may include the counterparty not being able to obtain a contractual interest rate at an amount lower than or equal to the interest rate for similar loans to a counterparty that is not experiencing financial distress.",
                       "verbatim": true,
                       "subsections": []
                     }
@@ -407,21 +407,21 @@
                     {
                       "id": "s2-6-6-3",
                       "number": "2.6.6.3",
-                      "text": "The counterparty\u2019s listed shares have been suspended, delisted, are in the process of being delisted or are under threat of being delisted from an exchange due to non-compliance with the listing requirements, or for financial or other reasons indicative of distress. In this case, revolving facilities refers to exposures that are defined or referred to in regulation 23(11)(c)(iv)(B)(ii) of the Regulations for the IRB approach, and regulation 23(6)(b)(ii)(A) of the Regulations for the standardised (STA) approach. 5 Wholesale credit exposures are credit exposures classified under the following regulatory asset classes: corporates (including specialised lending and small and medium-sized enterprises); public sector entities; local government; sovereign (including central government and central bank); banks; and securities firms. 6",
+                      "text": "The counterparty’s listed shares have been suspended, delisted, are in the process of being delisted or are under threat of being delisted from an exchange due to non-compliance with the listing requirements, or for financial or other reasons indicative of distress. In this case, revolving facilities refers to exposures that are defined or referred to in regulation 23(11)(c)(iv)(B)(ii) of the Regulations for the IRB approach, and regulation 23(6)(b)(ii)(A) of the Regulations for the standardised (STA) approach. 5 Wholesale credit exposures are credit exposures classified under the following regulatory asset classes: corporates (including specialised lending and small and medium-sized enterprises); public sector entities; local government; sovereign (including central government and central bank); banks; and securities firms. 6",
                       "verbatim": true,
                       "subsections": []
                     },
                     {
                       "id": "s2-6-6-4",
                       "number": "2.6.6.4",
-                      "text": "Based on actual performance, estimates and projections that encompass the counterparty\u2019s current capabilities, the bank forecasts that all the counterparty\u2019s committed or available cash flows will be insufficient to service all of its loans or debt obligations in accordance with the contractual terms of the existing agreement for the foreseeable future. These estimates may be based on an analysis of the counterparty\u2019s internally assigned and up-to-date credit risk ratings, external credit ratings and other relevant quantitative and qualitative information, collected on a best-effort basis.",
+                      "text": "Based on actual performance, estimates and projections that encompass the counterparty’s current capabilities, the bank forecasts that all the counterparty’s committed or available cash flows will be insufficient to service all of its loans or debt obligations in accordance with the contractual terms of the existing agreement for the foreseeable future. These estimates may be based on an analysis of the counterparty’s internally assigned and up-to-date credit risk ratings, external credit ratings and other relevant quantitative and qualitative information, collected on a best-effort basis.",
                       "verbatim": true,
                       "subsections": []
                     },
                     {
                       "id": "s2-6-6-5",
                       "number": "2.6.6.5",
-                      "text": "A counterparty\u2019s committed or available cash flows include, but are not limited to, cash flows from committed assets, shareholder guarantees and other similar credit contracts.6",
+                      "text": "A counterparty’s committed or available cash flows include, but are not limited to, cash flows from committed assets, shareholder guarantees and other similar credit contracts.6",
                       "verbatim": true,
                       "subsections": []
                     },
@@ -449,14 +449,14 @@
                     {
                       "id": "s2-6-6-9",
                       "number": "2.6.6.9",
-                      "text": "Based on actual performance, estimates and projections that encompass the counterparty\u2019s current capabilities, the bank forecasts that all the counterparty\u2019s committed or available cash flows will be insufficient to service all of its loans or debt obligations in accordance with the contractual terms of the existing agreement for the foreseeable future. These estimates may be informed by the counterparty\u2019s behavioural scores and other relevant quantitative and qualitative indicators collected (e.g. from credit bureaus) that list the counterparty\u2019s credit obligations, debt payment capacity as well as debt-to-income, debt service coverage or bureau scores.",
+                      "text": "Based on actual performance, estimates and projections that encompass the counterparty’s current capabilities, the bank forecasts that all the counterparty’s committed or available cash flows will be insufficient to service all of its loans or debt obligations in accordance with the contractual terms of the existing agreement for the foreseeable future. These estimates may be informed by the counterparty’s behavioural scores and other relevant quantitative and qualitative indicators collected (e.g. from credit bureaus) that list the counterparty’s credit obligations, debt payment capacity as well as debt-to-income, debt service coverage or bureau scores.",
                       "verbatim": true,
                       "subsections": []
                     },
                     {
                       "id": "s2-6-6-10",
                       "number": "2.6.6.10",
-                      "text": "A counterparty\u2019s committed or available cash flows include, but are not limited to, cash flows from committed assets, shareholder guarantees and other similar credit contracts.7 Exclusions",
+                      "text": "A counterparty’s committed or available cash flows include, but are not limited to, cash flows from committed assets, shareholder guarantees and other similar credit contracts.7 Exclusions",
                       "verbatim": true,
                       "subsections": []
                     }
@@ -472,7 +472,7 @@
                 {
                   "id": "s2-6-8",
                   "number": "2.6.8",
-                  "text": "Accordingly, banks\u2019 internal policies must make a clear distinction between BAU restructures and distressed restructures. These policies must be applied consistently over time and across all credit exposures.",
+                  "text": "Accordingly, banks’ internal policies must make a clear distinction between BAU restructures and distressed restructures. These policies must be applied consistently over time and across all credit exposures.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -499,7 +499,7 @@
                     {
                       "id": "s2-6-9-3",
                       "number": "2.6.9.3",
-                      "text": "There are revisions to terms and conditions based on changes in a counterparty\u2019s business activities, the industry in which it conducts business or the nature of its revenues. These changes must not be due to financial distress but should be a reflection of changes in the counterparty\u2019s business conditions which give rise to different banking needs (e.g. changes in revenue streams of a counterparty which may necessitate a change in the payment schedules of its loans from monthly to quarterly).",
+                      "text": "There are revisions to terms and conditions based on changes in a counterparty’s business activities, the industry in which it conducts business or the nature of its revenues. These changes must not be due to financial distress but should be a reflection of changes in the counterparty’s business conditions which give rise to different banking needs (e.g. changes in revenue streams of a counterparty which may necessitate a change in the payment schedules of its loans from monthly to quarterly).",
                       "verbatim": true,
                       "subsections": []
                     },
@@ -515,7 +515,7 @@
                 {
                   "id": "s2-6-10",
                   "number": "2.6.10",
-                  "text": "Where a bank applies a blanket approach, for example, by classifying all or portions of its restructured exposures as distressed restructured credit exposures, this must be well documented in its credit or impairment policies and reporting in the form BA 210 must be in line with this internal blanket approach. The PA must be notified in writing within three months of the policy\u2019s approval if a bank decides to apply this approach.",
+                  "text": "Where a bank applies a blanket approach, for example, by classifying all or portions of its restructured exposures as distressed restructured credit exposures, this must be well documented in its credit or impairment policies and reporting in the form BA 210 must be in line with this internal blanket approach. The PA must be notified in writing within three months of the policy’s approval if a bank decides to apply this approach.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -524,7 +524,7 @@
             {
               "id": "s2-7",
               "number": "2.7",
-              "text": "Reduced financial obligation and the definition of \u2018default\u2019",
+              "text": "Reduced financial obligation and the definition of ‘default’",
               "verbatim": true,
               "subsections": [
                 {
@@ -559,7 +559,7 @@
                 {
                   "id": "s2-7-2",
                   "number": "2.7.2",
-                  "text": "A reduced financial obligation, in this context, must be interpreted to refer to instances where the amended loan agreement and its related revised terms and conditions will result, or are likely to result, in a loss for the bank. In essence, if the revised terms and conditions result in the bank not recovering the total amount due \u2012 both the interest and capital amounts \u2012 the bank must classify the loan as being in default.",
+                  "text": "A reduced financial obligation, in this context, must be interpreted to refer to instances where the amended loan agreement and its related revised terms and conditions will result, or are likely to result, in a loss for the bank. In essence, if the revised terms and conditions result in the bank not recovering the total amount due ‒ both the interest and capital amounts ‒ the bank must classify the loan as being in default.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -653,7 +653,7 @@
                 {
                   "id": "s2-8-1",
                   "number": "2.8.1",
-                  "text": "If a bank has consented to a distressed restructure of a credit exposure, the arrears status must be reset to zero days at the beginning of the probation period. The distressed restructured credit exposure must migrate across arrears buckets during the probation period. However, the resetting of the arrears status does not remove banks\u2019 responsibility to assess the distressed restructured credit exposure for a significant increase in credit risk in terms of IFRS 9. 9",
+                  "text": "If a bank has consented to a distressed restructure of a credit exposure, the arrears status must be reset to zero days at the beginning of the probation period. The distressed restructured credit exposure must migrate across arrears buckets during the probation period. However, the resetting of the arrears status does not remove banks’ responsibility to assess the distressed restructured credit exposure for a significant increase in credit risk in terms of IFRS 9. 9",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -703,7 +703,7 @@
                 {
                   "id": "s2-9-1",
                   "number": "2.9.1",
-                  "text": "The start of the probation period will depend on the distressed restructured credit exposure\u2019s payment schedule. For distressed restructured credit exposures with monthly payment schedules, the probation period must begin on the date that the payments under the amended loan agreement and revised terms and conditions are due to begin. For distressed restructured credit exposures with payment schedules that are not monthly, the beginning of the probation period must be the effective date of implementation of the amended loan agreement and revised terms and conditions.",
+                  "text": "The start of the probation period will depend on the distressed restructured credit exposure’s payment schedule. For distressed restructured credit exposures with monthly payment schedules, the probation period must begin on the date that the payments under the amended loan agreement and revised terms and conditions are due to begin. For distressed restructured credit exposures with payment schedules that are not monthly, the beginning of the probation period must be the effective date of implementation of the amended loan agreement and revised terms and conditions.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -717,7 +717,7 @@
                 {
                   "id": "s2-9-3",
                   "number": "2.9.3",
-                  "text": "Similarly, the probation period for wholesale distressed restructured credit exposure must be a minimum of 12 months. However, in exceptional circumstances, a wholesale distressed restructured credit exposure may exit the probation period after no less than six months, subject to the counterparty having been approved for exit by an internal credit committee with the relevant delegated authority. This approval must be based on, among other things, an appropriate assessment that demonstrates that the counterparty\u2019s distressed position has been sufficiently mitigated to reasonably be expected to perform in line with the revised terms and conditions.",
+                  "text": "Similarly, the probation period for wholesale distressed restructured credit exposure must be a minimum of 12 months. However, in exceptional circumstances, a wholesale distressed restructured credit exposure may exit the probation period after no less than six months, subject to the counterparty having been approved for exit by an internal credit committee with the relevant delegated authority. This approval must be based on, among other things, an appropriate assessment that demonstrates that the counterparty’s distressed position has been sufficiently mitigated to reasonably be expected to perform in line with the revised terms and conditions.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -731,7 +731,7 @@
                 {
                   "id": "s2-9-5",
                   "number": "2.9.5",
-                  "text": "To conclude that the distressed restructured counterparty has rehabilitated, the bank must determine whether the counterparty has resolved its financial difficulties and that the amended loan agreement and revised terms and conditions will likely result in the full repayment of the credit exposure over the revised and remaining term of the loan. This assessment must be consistent with the bank\u2019s relevant policies and processes.",
+                  "text": "To conclude that the distressed restructured counterparty has rehabilitated, the bank must determine whether the counterparty has resolved its financial difficulties and that the amended loan agreement and revised terms and conditions will likely result in the full repayment of the credit exposure over the revised and remaining term of the loan. This assessment must be consistent with the bank’s relevant policies and processes.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -752,7 +752,7 @@
                 {
                   "id": "s2-9-6",
                   "number": "2.9.6",
-                  "text": "have been satisfied. It is assumed that the restructuring of the obligor\u2019s revolving credit facility will result in a revised limit that is smaller than the obligor's existing outstanding amount. In such a case, it is further assumed that the bank will not allow the counterparty to draw down on the remaining limit. Rehabilitation relates to whether the counterparty repays the amount in excess of the new limit. In cases where the outstanding balance is below the limit but the counterparty is in arrears, then rehabilitation relates to the counterparty clearing the arrears amounts. 11",
+                  "text": "have been satisfied. It is assumed that the restructuring of the obligor’s revolving credit facility will result in a revised limit that is smaller than the obligor's existing outstanding amount. In such a case, it is further assumed that the bank will not allow the counterparty to draw down on the remaining limit. Rehabilitation relates to whether the counterparty repays the amount in excess of the new limit. In cases where the outstanding balance is below the limit but the counterparty is in arrears, then rehabilitation relates to the counterparty clearing the arrears amounts. 11",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -779,7 +779,7 @@
                     {
                       "id": "s2-9-6-4",
                       "number": "2.9.6.4",
-                      "text": "For wholesale credit exposures, the ultimate decision as to whether the underlying counterparty has rehabilitated must be taken by the bank\u2019s relevant committee, which holds the requisite authority to monitor and make the decision on the distressed restructured credit exposure. This decision must be based on an objective assessment of the counterparty\u2019s financial circumstances and debt repayment capacity, given its existing debt obligations. This assessment must rely on credible quantitative and qualitative information, including but not limited to the distressed counterparty\u2019s internally assigned credit risk ratings and, where necessary, external credit ratings, financial statements and its performance during the probation period.",
+                      "text": "For wholesale credit exposures, the ultimate decision as to whether the underlying counterparty has rehabilitated must be taken by the bank’s relevant committee, which holds the requisite authority to monitor and make the decision on the distressed restructured credit exposure. This decision must be based on an objective assessment of the counterparty’s financial circumstances and debt repayment capacity, given its existing debt obligations. This assessment must rely on credible quantitative and qualitative information, including but not limited to the distressed counterparty’s internally assigned credit risk ratings and, where necessary, external credit ratings, financial statements and its performance during the probation period.",
                       "verbatim": true,
                       "subsections": []
                     }
@@ -810,7 +810,7 @@
                 {
                   "id": "s2-10-1",
                   "number": "2.10.1",
-                  "text": "It is not the intention of this Directive to require banks to deviate from the requirements of IFRS 9 or from banks\u2019 internal policies and methodologies put in place to give practical effect to these IFRS 9 requirements. This implies, among other things, that this Directive does not prescribe specific approaches, but rather relies on banks\u2019 approved policies and methodologies used for the staging11 and estimation of expected losses of distressed credit exposures.",
+                  "text": "It is not the intention of this Directive to require banks to deviate from the requirements of IFRS 9 or from banks’ internal policies and methodologies put in place to give practical effect to these IFRS 9 requirements. This implies, among other things, that this Directive does not prescribe specific approaches, but rather relies on banks’ approved policies and methodologies used for the staging11 and estimation of expected losses of distressed credit exposures.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -825,7 +825,7 @@
                 {
                   "id": "s2-11-1",
                   "number": "2.11.1",
-                  "text": "Paragraph (b)(iv) of the definition of a restructured credit exposure in regulation 67 of the Regulations states that the restructuring agreement must be in writing. For the purposes of this Directive, \u2018in writing\u2019 shall include:",
+                  "text": "Paragraph (b)(iv) of the definition of a restructured credit exposure in regulation 67 of the Regulations states that the restructuring agreement must be in writing. For the purposes of this Directive, ‘in writing’ shall include:",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -890,7 +890,7 @@
                 {
                   "id": "s2-12-3",
                   "number": "2.12.3",
-                  "text": "For regulatory reporting purposes, all banks are required to start reporting distressed restructured credit exposures in accordance with this Directive starting from the reporting month of April 2027. In this regard, \u2018staging\u2019 refers to the process of categorising exposures into the three IFRS 9 stages. 12",
+                  "text": "For regulatory reporting purposes, all banks are required to start reporting distressed restructured credit exposures in accordance with this Directive starting from the reporting month of April 2027. In this regard, ‘staging’ refers to the process of categorising exposures into the three IFRS 9 stages. 12",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -930,14 +930,14 @@
           "id": "s-banks-d11-2025-3",
           "number": "3",
           "heading": "Acknowledgment of receipt",
-          "text": "3.1            Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n               external auditors. In addition, the attached acknowledgment of receipt, duly\n               completed and signed by both the Chief Executive Officer of the institution and said\n               auditors, should be returned to the PA at the earliest convenience of the\n               aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:    21/10/25\n\n\n\n\nThe previous Directive issued was Directive 10/2025, dated 11 August 2025.\n\n\n\n\n                                                                                                13",
+          "text": "3.1            Kindly ensure that a copy of this Directive is made available to your institution’s\n               external auditors. In addition, the attached acknowledgment of receipt, duly\n               completed and signed by both the Chief Executive Officer of the institution and said\n               auditors, should be returned to the PA at the earliest convenience of the\n               aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:    21/10/25\n\n\n\n\nThe previous Directive issued was Directive 10/2025, dated 11 August 2025.\n\n\n\n\n                                                                                                13",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d11-2025-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "3.1            Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n               external auditors. In addition, the attached acknowledgment of receipt, duly\n               completed and signed by both the Chief Executive Officer of the institution and said\n               auditors, should be returned to the PA at the earliest convenience of the\n               aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:    21/10/25\n\n\n\n\nThe previous Directive issued was Directive 10/2025, dated 11 August 2025.\n\n\n\n\n                                                                                                13",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "3.1            Kindly ensure that a copy of this Directive is made available to your institution’s\n               external auditors. In addition, the attached acknowledgment of receipt, duly\n               completed and signed by both the Chief Executive Officer of the institution and said\n               auditors, should be returned to the PA at the earliest convenience of the\n               aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:    21/10/25\n\n\n\n\nThe previous Directive issued was Directive 10/2025, dated 11 August 2025.\n\n\n\n\n                                                                                                13",
               "verbatim": true,
               "subsections": []
             }
@@ -945,5 +945,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:52dfb15a6c03d200ac35c5e8b028295d6576427114e9108ec3a58bcde33e84fb"
 }

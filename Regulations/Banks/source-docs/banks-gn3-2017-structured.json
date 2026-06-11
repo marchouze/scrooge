@@ -1,6 +1,6 @@
 {
   "slug": "banks-gn3-2017",
-  "title": "Banks Act Guidance Note 3/2017 \u2014 Audit Implications of the Expected Credit Loss Model",
+  "title": "Banks Act Guidance Note 3/2017 — Audit Implications of the Expected Credit Loss Model",
   "shortTitle": "GN 3/2017 (ECL Audit)",
   "regulator": "Prudential Authority",
   "year": 2017,
@@ -41,5 +41,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:d994464e742800cc32587f4599d897b2a02d85282128ed7301c9fb98577364a2"
 }
