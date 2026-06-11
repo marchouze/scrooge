@@ -184,6 +184,8 @@
     "recon:rms-documents-parity": "bun run platform/recon/rms-documents-parity.ts",
     "recon:rms-document-blob-integrity": "bun run platform/recon/rms-document-blob-integrity.ts",
     "recon:regulatory-golden-source-integrity": "bun run platform/recon/regulatory-golden-source-integrity.ts",
+    "recon:regulatory-source-coverage": "bun run platform/recon/regulatory-source-coverage.ts",
+    "build:source-coverage": "bun run scripts/regulatory/build-source-coverage.ts",
     "recon:dispatch-sync-integrity": "bun run platform/recon/dispatch-sync-integrity.ts",
     "recon:conduct-surveillance-coverage": "bun run platform/recon/conduct-surveillance-coverage.ts",
     "recon:counterparty-exposure-coverage": "bun run platform/recon/counterparty-exposure-coverage.ts",
