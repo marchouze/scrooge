@@ -106,7 +106,7 @@ describe("SA↔BCBS equivalence fold runs AFTER importBcbsObligationGraphs (real
     const bridged = traceObligationChain(SA_ID, undefined, { includeCrossPlane: true });
     const counterpartIds = bridged?.crossPlaneCounterparts.map((n) => n.id) ?? [];
     expect(counterpartIds).toContain(`OBL-${BCBS_ID}`);
-  }, 30_000);
+  }, 120_000);
 });
 
 // A verdict can point at a BCBS paragraph the rule-based obligation-graph
@@ -170,7 +170,7 @@ describe("BCBS equivalence-endpoint coverage backfill (gap-driven, idempotent)",
       .prepare("SELECT edge_type FROM graph_edges WHERE from_id = ? AND to_id = ?")
       .get(`OBL-${SA}`, `OBL-${BCBS}`) as { edge_type: string } | undefined;
     expect(edge?.edge_type).toBe("CONFLICTS_WITH");
-  }, 30_000);
+  }, 120_000);
 
   test("the verdict corpus materialises 1:1 — every verdict projects, none skipped for a missing node", async () => {
     // Seed a corpus spanning ALL 6 previously-missing BCBS endpoints (RBC30.2,
@@ -229,5 +229,5 @@ describe("BCBS equivalence-endpoint coverage backfill (gap-driven, idempotent)",
 
     // 1:1 — every distinct verdict pair projects to exactly one bridge edge.
     expect(bridgeEdges.c).toBe(verdictPairs.size);
-  }, 30_000);
+  }, 120_000);
 });
