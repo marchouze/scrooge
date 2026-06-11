@@ -52,8 +52,8 @@ import {
   existsSync,
   watch as fsWatch,
   mkdirSync,
-  readdirSync,
   readFileSync,
+  readdirSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
@@ -3433,7 +3433,9 @@ const server = Bun.serve({
           }>;
         };
         try {
-          structuredDoc = JSON.parse(readFileSync(slugPaths[0] as string, "utf-8")) as typeof structuredDoc;
+          structuredDoc = JSON.parse(
+            readFileSync(slugPaths[0] as string, "utf-8"),
+          ) as typeof structuredDoc;
         } catch {
           return jsonResponse({ error: "Failed to load instrument" }, 404);
         }

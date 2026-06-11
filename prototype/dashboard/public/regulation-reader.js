@@ -225,9 +225,7 @@
       .map((exc) => {
         const src = `/api/regulation-reader/${esc(slug)}/excerpt/${esc(exc.id)}`;
         const alt = esc(exc.caption || exc.kind);
-        const cap = esc(
-          exc.caption || `${capitalise(exc.kind)} (p. ${exc.pages || "?"})`,
-        );
+        const cap = esc(exc.caption || `${capitalise(exc.kind)} (p. ${exc.pages || "?"})`);
         return `<figure class="reg-excerpt" style="margin:var(--space-4) 0;padding:0">
   <img src="${src}"
        alt="${alt}"

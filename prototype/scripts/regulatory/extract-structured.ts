@@ -32,12 +32,13 @@
 
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+// node:fs already covers readdirSync for scanning /tmp
 import { join } from "node:path";
+import { recordRegulatoryExcerpt } from "../../platform/records";
 import type {
   StructuredSection,
   StructuredSourceDocument,
 } from "../../platform/regulatory/structured-source-schema";
-import { recordRegulatoryExcerpt } from "../../platform/records";
 import { die, emitOk, optionalString, parseArgs, requireString } from "../dispatch/args";
 
 const PDFTOTEXT_BIN = "/opt/homebrew/bin/pdftotext";
@@ -308,10 +309,18 @@ export interface GeneratedExcerpt {
 function detectExcerptPages(
   pages: ParsedPage[],
 ): Array<{ pageNum: number; kind: "table" | "full-page"; caption: string }> {
+  // Exclude the trailing empty "page" that pdftotext adds after the last \f.
+  // Heuristic: if the last entry has 0 non-whitespace chars AND the second-to-last
+  // has content, treat the last as an artefact of the \f-split and drop it.
+  const significantPages = pages.filter((p) => {
+    const nonWs = p.lines.join("").replace(/\s/g, "").length;
+    return nonWs > 0 || p.pageNum === 1; // always keep page 1
+  });
+
   const results: Array<{ pageNum: number; kind: "table" | "full-page"; caption: string }> = [];
 
-  // Pass 1 — image-only
-  for (const page of pages) {
+  // Pass 1 — image-only (≤20 non-ws chars, but must be a real page)
+  for (const page of significantPages) {
     const nonWs = page.lines.join("").replace(/\s/g, "").length;
     if (nonWs <= 20) {
       results.push({ pageNum: page.pageNum, kind: "full-page", caption: `Page ${page.pageNum}` });
@@ -320,7 +329,7 @@ function detectExcerptPages(
 
   // Pass 2 — table heuristic (only if we haven't already captured this page)
   const capturedPages = new Set(results.map((r) => r.pageNum));
-  for (const page of pages) {
+  for (const page of significantPages) {
     if (capturedPages.has(page.pageNum)) continue;
     const pageText = page.lines.join("\n").toLowerCase();
     const hasKeyword = ["schedule", "table", "annex", "formula"].some((kw) =>
@@ -341,7 +350,7 @@ function detectExcerptPages(
   }
 
   // Force-rasterise page 1 if nothing found (demonstrates end-to-end pipeline)
-  if (results.length === 0 && pages.length > 0) {
+  if (results.length === 0 && significantPages.length > 0) {
     results.push({ pageNum: 1, kind: "full-page", caption: "Cover page" });
   }
 
@@ -365,28 +374,28 @@ function rasteriseAndFileExcerpt(
 ): GeneratedExcerpt | null {
   const prefix = `/tmp/${slug}-p${pageNum}`;
   try {
-    execSync(
-      `${PDFTOPPM_BIN} -r 150 -png -f ${pageNum} -l ${pageNum} "${fromPdf}" "${prefix}"`,
-      { encoding: "utf-8" },
-    );
+    execSync(`${PDFTOPPM_BIN} -r 150 -png -f ${pageNum} -l ${pageNum} "${fromPdf}" "${prefix}"`, {
+      encoding: "utf-8",
+    });
   } catch (e) {
-    console.error(`pdftoppm failed for page ${pageNum}: ${e instanceof Error ? e.message : String(e)}`);
+    console.error(
+      `pdftoppm failed for page ${pageNum}: ${e instanceof Error ? e.message : String(e)}`,
+    );
     return null;
   }
 
-  // pdftoppm produces <prefix>-000001.png (zero-padded)
-  const paddedNum = String(pageNum).padStart(6, "0");
-  const pngPath = `${prefix}-${paddedNum}.png`;
-  if (!existsSync(pngPath)) {
-    // Try single-digit variant
-    const altPngPath = `${prefix}-1.png`;
-    if (!existsSync(altPngPath)) {
-      console.error(`PNG not found at ${pngPath}`);
-      return null;
-    }
+  // pdftoppm produces <prefix>-<N>.png where <N> is zero-padded based on
+  // total page count (e.g. "-01.png" for 1–99 pages, "-001.png" for 100–999).
+  // Scan /tmp for files matching the prefix to handle any padding width.
+  const prefixBasename = prefix.replace("/tmp/", "");
+  const tmpFiles = readdirSync("/tmp").filter(
+    (f) => f.startsWith(`${prefixBasename}-`) && f.endsWith(".png"),
+  );
+  if (tmpFiles.length === 0) {
+    console.error(`PNG not found with prefix ${prefix}`);
+    return null;
   }
-
-  const actualPngPath = existsSync(pngPath) ? pngPath : `${prefix}-1.png`;
+  const actualPngPath = `/tmp/${tmpFiles[0]}`;
   const pngBytes = new Uint8Array(readFileSync(actualPngPath));
 
   const excerptId = `${slug}-p${pageNum}`;
@@ -439,7 +448,12 @@ function attachExcerptsToSections(
           const parts = secPages.split(/[–-]/);
           const start = Number(parts[0]);
           const end = parts[1] ? Number(parts[1]) : start;
-          if (!Number.isNaN(start) && !Number.isNaN(end) && excerptPage >= start && excerptPage <= end) {
+          if (
+            !Number.isNaN(start) &&
+            !Number.isNaN(end) &&
+            excerptPage >= start &&
+            excerptPage <= end
+          ) {
             if (!section.excerpts) section.excerpts = [];
             section.excerpts.push(excerpt);
             attached = true;
@@ -584,9 +598,7 @@ function fullExtractionMode(
     pagesAdded,
     footnotesAdded,
     excerptCount: generatedExcerpts.length,
-    ...(generatedExcerpts.length > 0
-      ? { hashes: generatedExcerpts.map((e) => e.hash) }
-      : {}),
+    ...(generatedExcerpts.length > 0 ? { hashes: generatedExcerpts.map((e) => e.hash) } : {}),
     path: writePath,
   });
 }
