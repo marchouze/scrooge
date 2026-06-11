@@ -54,8 +54,8 @@
 //   (Treasurer, governance)).
 
 import type {
+  CfpActivationTriggerType,
   CfpTier,
-  CfpTriggerEventType,
   CriticalSettlementObligationAtRiskPayload,
   ExternalCreditEventDetectedPayload,
   ExternalCreditEventImpact,
@@ -203,11 +203,13 @@ export type CfpTriggerEvaluation =
   | { type: "RecoveryEarlyWarningTriggered"; payload: RecoveryEarlyWarningTriggeredPayload };
 
 /**
- * The trigger event types this engine has a wired firing path for. All
- * seven §5.2 types are wired; `recon:cfp-trigger-coverage` asserts every
- * CFP tier is reachable through this set.
+ * The CFP-activation trigger event types this engine has a wired firing
+ * path for. All seven §5.2 activation types are wired; `recon:cfp-trigger-
+ * coverage` asserts every CFP tier is reachable through this set.
+ * `RehearsalEvidenceCollected` is a lifecycle event, not an activation
+ * trigger — it is not included here.
  */
-export const EWI_WIRED_TRIGGER_TYPES: readonly CfpTriggerEventType[] = [
+export const EWI_WIRED_TRIGGER_TYPES: readonly CfpActivationTriggerType[] = [
   "IntradayStressDetected",
   "CriticalSettlementObligationAtRisk",
   "LcrRatioBreach",

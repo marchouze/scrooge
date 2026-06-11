@@ -415,6 +415,62 @@ export function makeRecoveryEarlyWarningTriggered(args: {
 }
 
 // ---------------------------------------------------------------------------
+// RehearsalEvidenceCollected — annual CFP rehearsal evidence event
+// (LRM Policy v1 §5.4; PROC-RISK-CFP-01 §9.3; D-TREASURER-WAVE2-SUBSTRATE)
+// ---------------------------------------------------------------------------
+
+export const rehearsalEvidenceCollectedPayloadSchema = z.object({
+  /** ISO 8601 date the rehearsal was conducted. */
+  rehearsalDate: z.string().min(1),
+  /** CFP tiers exercised in this rehearsal run. */
+  tiersExercised: z.array(cfpTierSchema).min(1),
+  /** Typed event types fired in sequence during the rehearsal. */
+  triggersFired: z.array(z.string().min(1)).min(1),
+  /**
+   * Fraction (0–100) of funding-source inventory entries that are
+   * confirmed operational (i.e. not "TBD" or "externally blocked").
+   * Derived from the CFP funding-source inventory at the time of rehearsal.
+   */
+  inventoryCoveragePct: z.number().min(0).max(100),
+  /**
+   * Open findings identified during the rehearsal. Each string is a short
+   * description (e.g. "T2.2 correspondent facility W2.1 blocked — TBD").
+   */
+  openFindings: z.array(z.string().min(1)),
+  /**
+   * Whether this was a dry-run (no real store writes; payloads validated but
+   * not persisted). Must be `true` outside the annual live rehearsal.
+   */
+  dryRun: z.boolean(),
+});
+
+export type RehearsalEvidenceCollectedPayload = z.infer<
+  typeof rehearsalEvidenceCollectedPayloadSchema
+>;
+
+export function makeRehearsalEvidenceCollected(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RehearsalEvidenceCollectedPayload;
+  eventId?: string;
+}): Event {
+  const aggregateLabel = makeAggregateLabel("cfp-rehearsal", args.payload.rehearsalDate);
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RehearsalEvidenceCollected",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: rehearsalEvidenceCollectedPayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // CFP_TRIGGER_TYPED_EVENT_TYPES — registry of event types in this module.
 //
 // To add a new CFP trigger event type:
@@ -432,9 +488,23 @@ export const CFP_TRIGGER_TYPED_EVENT_TYPES = [
   "FundingConcentrationAlertTriggered",
   "ExternalCreditEventDetected",
   "RecoveryEarlyWarningTriggered",
+  "RehearsalEvidenceCollected",
 ] as const;
 
 export type CfpTriggerEventType = (typeof CFP_TRIGGER_TYPED_EVENT_TYPES)[number];
+
+/** CFP trigger event types that activate a CFP tier (excludes rehearsal evidence). */
+export const CFP_ACTIVATION_TRIGGER_TYPES = [
+  "IntradayStressDetected",
+  "CriticalSettlementObligationAtRisk",
+  "LcrRatioBreach",
+  "NsfrRatioBreach",
+  "FundingConcentrationAlertTriggered",
+  "ExternalCreditEventDetected",
+  "RecoveryEarlyWarningTriggered",
+] as const satisfies readonly CfpTriggerEventType[];
+
+export type CfpActivationTriggerType = (typeof CFP_ACTIVATION_TRIGGER_TYPES)[number];
 
 /**
  * CFP tier(s) each trigger type can activate per LRM Policy v1 §5.2.
@@ -443,8 +513,13 @@ export type CfpTriggerEventType = (typeof CFP_TRIGGER_TYPED_EVENT_TYPES)[number]
  *
  * The `recon:cfp-trigger-coverage` gate asserts every tier has at least
  * one wired firing path through this map.
+ *
+ * `RehearsalEvidenceCollected` is a lifecycle/evidence event, not an
+ * activation trigger — it has no tier mapping.
  */
-export const CFP_TIER_BY_TRIGGER: Readonly<Record<CfpTriggerEventType, readonly CfpTier[]>> = {
+export const CFP_TIER_BY_TRIGGER: Readonly<
+  Record<CfpActivationTriggerType, readonly CfpTier[]>
+> = {
   IntradayStressDetected: ["tier-1"],
   CriticalSettlementObligationAtRisk: ["tier-1"],
   LcrRatioBreach: ["tier-2", "tier-3"],

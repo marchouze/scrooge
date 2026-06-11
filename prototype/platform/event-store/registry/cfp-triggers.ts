@@ -37,6 +37,7 @@ import {
   lcrRatioBreachPayloadSchema,
   nsfrRatioBreachPayloadSchema,
   recoveryEarlyWarningTriggeredPayloadSchema,
+  rehearsalEvidenceCollectedPayloadSchema,
 } from "../event-types/cfp-triggers";
 import { RETENTION_BANKING_5Y } from "./types";
 import type { EventTypeMetadata } from "./types";
@@ -143,5 +144,21 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: recoveryEarlyWarningTriggeredPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "ICAAP-ILAAP-RECOVERY-FRAMEWORK-S3.3.5"],
+  },
+  {
+    type: "RehearsalEvidenceCollected",
+    class: "audit",
+    issuer: "Eitan",
+    subscribers: ["Eitan", "Helena", "Camille", "Ravi", "Owen", "Vera", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: rehearsalEvidenceCollectedPayloadSchema,
+    source: "platform/event-store/event-types/cfp-triggers.ts",
+    citationsHint: [
+      ...CFP_TRIGGER_CITATIONS_HINT,
+      "POLICY:liquidity-risk-management-policy-v1-S5.4",
+      "D-TREASURER-WAVE2-SUBSTRATE",
+      "PROC-RISK-CFP-01",
+    ],
   },
 ];

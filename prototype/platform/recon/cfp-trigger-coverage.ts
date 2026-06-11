@@ -55,6 +55,7 @@ import {
   wiredCfpTiers,
 } from "../alm/cfp-ewi";
 import {
+  CFP_ACTIVATION_TRIGGER_TYPES,
   CFP_TIER_BY_TRIGGER,
   CFP_TRIGGER_TYPED_EVENT_TYPES,
   type CfpTier,
@@ -156,9 +157,11 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   // -------------------------------------------------------------------------
   // Assertion 3: every CFP tier has at least one wired firing path.
+  // Only activation triggers (not RehearsalEvidenceCollected) have tier
+  // mappings in CFP_TIER_BY_TRIGGER.
   // -------------------------------------------------------------------------
   const reachableTiers = new Set<CfpTier>();
-  for (const type of CFP_TRIGGER_TYPED_EVENT_TYPES) {
+  for (const type of CFP_ACTIVATION_TRIGGER_TYPES) {
     if (!wiredTriggers.has(type)) continue;
     for (const tier of CFP_TIER_BY_TRIGGER[type]) reachableTiers.add(tier);
   }
