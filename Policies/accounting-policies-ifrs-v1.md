@@ -19,7 +19,7 @@ citations:
   - "ISA 700: Forming an Opinion and Reporting on Financial Statements"
 author: Owen (Company Secretary, governance)
 date: 2026-05-13
-summary: Establishes IFRS accounting policies for recognition, measurement, and disclosure of financial instruments, impairment, fair value, income taxes, and related-party transactions.
+summary: Establishes IFRS accounting policies for recognition, measurement, and disclosure of financial instruments, impairment, fair value, income taxes, and related-party transactions. Closes obligation ORG-AC-10 (IAS 21 — the effects of changes in foreign-exchange rates).
 decision-required: false
 riskTaxonomy:
   - "FIN-001"

@@ -14,7 +14,7 @@ citations:
   - "King IV: Principles 1-17"
 author: Owen (Company Secretary, governance)
 date: 2026-05-13
-summary: Establishes the bank's governance architecture — board structure, delegated authority, three-lines model, senior management accountability, CRO/CFO independence, and regulatory engagement obligations.
+summary: Establishes the bank's governance architecture — board structure, delegated authority, three-lines model, senior management accountability, CRO/CFO independence, and regulatory engagement obligations. Closes OTC-derivative governance obligations ORG-CS1-003 (board-approved written risk-management framework) and ORG-ODP-AUTH-006 (responsible and effective organisation of affairs with sound, board-approved risk policies).
 decision-required: false
 riskTaxonomy:
   - "GOV-001"

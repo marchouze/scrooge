@@ -16,7 +16,7 @@ citations:
   - JSE Rules (market conduct for JSE member firms)
 author: Helena (Chief Risk Officer, governance) + Zara (Chief Compliance Officer, governance) + Saskia (Head of Global Markets, governance)
 date: 2026-05-22
-summary: Conduct Risk Policy covering conduct risk taxonomy (manipulation, front-running, mis-selling, information barriers, conflicts), communication recording, surveillance alert governance, pre-trade conduct gate, PA dealing pre-clearance, Chinese Wall policy, escalation path, conduct risk appetite metrics, and training cadence. COMMENCEMENT-BIND.
+summary: Conduct Risk Policy covering conduct risk taxonomy (manipulation, front-running, mis-selling, information barriers, conflicts), communication recording, surveillance alert governance, pre-trade conduct gate, PA dealing pre-clearance, Chinese Wall policy, escalation path, conduct risk appetite metrics, and training cadence. COMMENCEMENT-BIND. Closes obligation ORG-MK-03 (voice and electronic communications recording for trading personnel).
 decision-required: false
 riskTaxonomy:
   - RT-OR

@@ -16,7 +16,7 @@ citations:
   - "FSCA Conduct Standard 2 of 2018 (ODP): §9 (portfolio reconciliation — written agreement, frequencies, deemed disputes), §11 (portfolio compression)"
 author: Tomas (Operations & payments engineer, engineering) + Kai (Trading systems engineer, engineering)
 date: 2026-05-22
-summary: Trade Confirmation and Affirmation Policy establishing confirmation timelines for FX spot/forward (T+1) and IRS/CDS (T+2), electronic confirmation platform requirements, escalation for unsigned/unconfirmed trades, daily portfolio reconciliation for active OTC counterparties, dispute definition and resolution, long-form confirmation for structured products, and settlement gate. Typed events TradeConfirmed, TradeDisputeOpened, TradeDisputeResolved. COMMENCEMENT-BIND.
+summary: Trade Confirmation and Affirmation Policy establishing confirmation timelines for FX spot/forward (T+1) and IRS/CDS (T+2), electronic confirmation platform requirements, escalation for unsigned/unconfirmed trades, daily portfolio reconciliation for active OTC counterparties, dispute definition and resolution, long-form confirmation for structured products, and settlement gate. Typed events TradeConfirmed, TradeDisputeOpened, TradeDisputeResolved. COMMENCEMENT-BIND. Closes OTC-derivative obligations ORG-CS3-002 (timely confirmation of material terms), ORG-CS3-004 (dispute-resolution procedures), ORG-ODP-COND-006 (next-business-day confirmation), and ORG-ODP-COND-008 (dispute identification and monitoring procedures).
 decision-required: false
 riskTaxonomy:
   - RT-OR

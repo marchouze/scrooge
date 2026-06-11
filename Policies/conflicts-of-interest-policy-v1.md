@@ -14,7 +14,7 @@ citations:
   - "Companies Act 71/2008: s75 (directors' duty to disclose personal financial interest)"
 author: Zara (Chief Compliance Officer, governance)
 date: 2026-05-13
-summary: Establishes the bank's conflicts of interest management framework — identification, disclosure, management and mitigation of conflicts across trading, advisory, and governance activities — in compliance with FAIS General Code r.3A.
+summary: Establishes the bank's conflicts of interest management framework — identification, disclosure, management and mitigation of conflicts across trading, advisory, and governance activities — in compliance with FAIS General Code r.3A. Closes OTC-derivative conflicts-of-interest obligation ORG-CS3-007.
 decision-required: false
 riskTaxonomy:
   - "COND-001"
